@@ -452,14 +452,11 @@ int legacy_params(dt_iop_module_t *self,
     // v5 adds 'completely_reverse_primaries' after 'master_outset_ratio'.
     // Copy data in two parts around the new field.
 
-    // Fields before 'completely_reverse_primaries'.
     const size_t part1_size = offsetof(dt_iop_agx_params_t, completely_reverse_primaries);
     memcpy(np, op, part1_size);
 
-    // The new param.
     np->completely_reverse_primaries = FALSE;
 
-    // Fields after 'completely_reverse_primaries'.
     const void *old_part2_start = &op->master_unrotation_ratio;
     void *new_part2_start = &np->master_unrotation_ratio;
     const size_t part2_size = sizeof(dt_iop_agx_params_v2_3_4_t) - offsetof(dt_iop_agx_params_v2_3_4_t, master_unrotation_ratio);
@@ -468,7 +465,7 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = 5;
-    return 0; // success
+    return 0;
   }
 
   return 1; // no other conversion possible
@@ -556,12 +553,13 @@ static void _set_smooth_primaries(dt_iop_agx_params_t *p)
   p->red_rotation = deg2radf(2.f);
   p->green_rotation = deg2radf(-1.f);
   p->blue_rotation = deg2radf(-3.f);
-  p->red_outset = 0.1f;
-  p->green_outset = 0.1f;
-  p->blue_outset = 0.15f;
 
   // sigmoid: "Don't restore purity - try to avoid posterization."
   p->master_outset_ratio = 0.f;
+  // but allow the user to do so simply by dragging the master control
+  p->red_outset = 0.1f;
+  p->green_outset = 0.1f;
+  p->blue_outset = 0.15f;
 
   // sigmoid always reverses rotations
   p->master_unrotation_ratio = 1.f;
@@ -1171,13 +1169,20 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
     {
       primaries_params.outset[i] = primaries_params.inset[i];
       primaries_params.unrotation[i] = primaries_params.rotation[i];
+      primaries_params.master_outset_ratio = 1.f;
+      primaries_params.master_unrotation_ratio = 1.f;
     }
   }
   else
   {
-    primaries_params.outset[0] = p->red_outset; primaries_params.outset[1] = p->green_outset; primaries_params.outset[2] = p->blue_outset;
-    primaries_params.unrotation[0] = p->red_unrotation; primaries_params.unrotation[1] = p->green_unrotation; primaries_params.unrotation[2] = p->blue_unrotation;
+    primaries_params.outset[0] = p->red_outset;
+    primaries_params.outset[1] = p->green_outset;
+    primaries_params.outset[2] = p->blue_outset;
+    primaries_params.unrotation[0] = p->red_unrotation;
+    primaries_params.unrotation[1] = p->green_unrotation;
+    primaries_params.unrotation[2] = p->blue_unrotation;
   }
+
   return primaries_params;
 }
 
