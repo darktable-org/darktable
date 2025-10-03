@@ -137,7 +137,6 @@ typedef struct dt_iop_agx_params_t
   float blue_rotation;    // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue rotation"
 
   float master_outset_ratio;     // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master purity boost"
-  gboolean completely_reverse_primaries; // $DEFAULT: 0 $DESCRIPTION: "reverse all"
   float master_unrotation_ratio; // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master rotation reversal"
   float red_outset;              // $MIN:  0.f  $MAX: 2.f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
   float red_unrotation;          // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red reverse rotation"
@@ -145,6 +144,9 @@ typedef struct dt_iop_agx_params_t
   float green_unrotation;        // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "green reverse rotation"
   float blue_outset;             // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "blue purity boost"
   float blue_unrotation;         // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue reverse rotation"
+
+  // v5
+  gboolean completely_reverse_primaries; // $DEFAULT: 0 $DESCRIPTION: "reverse all"
 } dt_iop_agx_params_t;
 
 typedef struct dt_iop_basic_curve_controls_t
@@ -446,26 +448,17 @@ int legacy_params(dt_iop_module_t *self,
   }
   if(old_version == 4)
   {
-    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    // v5 adds 'completely_reverse_primaries' at the end of the struct
     const dt_iop_agx_params_v2_3_4_t *op = old_params;
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
 
-    // v5 adds 'completely_reverse_primaries' after 'master_outset_ratio'.
-    // Copy data in two parts around the new field.
-
-    const size_t part1_size = offsetof(dt_iop_agx_params_t, completely_reverse_primaries);
-    memcpy(np, op, part1_size);
-
-    np->completely_reverse_primaries = FALSE;
-
-    const void *old_part2_start = &op->master_unrotation_ratio;
-    void *new_part2_start = &np->master_unrotation_ratio;
-    const size_t part2_size = sizeof(dt_iop_agx_params_v2_3_4_t) - offsetof(dt_iop_agx_params_v2_3_4_t, master_unrotation_ratio);
-    memcpy(new_part2_start, old_part2_start, part2_size);
+    memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
 
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = 5;
-    return 0;
+
+    return 0; // success
   }
 
   return 1; // no other conversion possible
