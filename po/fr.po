@@ -15810,7 +15810,7 @@ msgid ""
 "inspired by Blender's AgX tone mapper"
 msgstr ""
 "Applique une courbe de tonalité.\n"
-"Inspiré de mapper de tonalité AgX de Blender."
+"Inspiré du mappeur de tonalité AgX de Blender"
 
 #: ../src/iop/agx.c:57 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
