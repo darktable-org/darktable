@@ -198,8 +198,8 @@ typedef struct {
   const char   *searchstring;	   // sub-signature which might be anywhere in first 512 bytes of file
 } dt_magic_bytes_t;
 
-static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed(
-    dt_image_t *img,
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
+   (dt_image_t *img,
     const char *filename,
     dt_mipmap_buffer_t *mbuf);
 
@@ -590,8 +590,8 @@ static const dt_magic_bytes_t *_find_signature(const char *filename)
 // and limits itself to processing only .tif/.tiff. So it's safe for nearly
 // all raw files except those few disguised as TIFF files with .tif extension.
 // Obviously, for them, this function should not be called.
-static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed(
-    dt_image_t *img,
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
+   (dt_image_t *img,
     const char *filename,
     dt_mipmap_buffer_t *mbuf)
 {
