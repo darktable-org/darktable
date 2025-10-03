@@ -2,7 +2,10 @@
 #define MyAppName "darktable"
 #define MyAppVersion "${PROJECT_VERSION}"
 #define MyAppVersionLength Len(MyAppVersion)
-#define MyAppCopyright "Copyright © 2009-2025 darktable developers"
+
+#define CurrentYear GetDateTimeString('yyyy', '', '')
+#define MyAppCopyright "Copyright © 2009-" + CurrentYear + " darktable developers"
+
 #define MyAppPublisher "darktable team"
 #define MyAppURL "https://darktable.org/"
 #define MyAppExeName "darktable.exe"
