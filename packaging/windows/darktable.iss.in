@@ -1,6 +1,7 @@
 
 #define MyAppName "darktable"
 #define MyAppVersion "${PROJECT_VERSION}"
+#define MyAppVersionLength Len(MyAppVersion)
 #define MyAppCopyright "Copyright © 2009-2025 darktable developers"
 #define MyAppPublisher "darktable team"
 #define MyAppURL "https://darktable.org/"
@@ -8,10 +9,11 @@
 #define MyAppCliExeName "darktable-cli.exe"
 
 [Setup]
-; The value of AppId uniquely identifies the application. We also realize that
-; some users install more than one darktable version (e.g. stable and nightly
-; snapshot), so having the app name plus version as the AppId makes sense.
-AppId={#MyAppName}{#MyAppVersion}
+; The value of AppId uniquely identifies the application. Some users install
+; both a darktable release and a development snapshot (as a daily driver and
+; for testing, respectively), so it makes sense to use the application name
+; along with the release/non-release discriminator as the AppId.
+AppId={#MyAppName}{code:SuffixIfNotRelease}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 
@@ -25,7 +27,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
 
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
@@ -39,7 +41,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 ChangesAssociations=yes
-DefaultGroupName={#MyAppName}
+DefaultGroupName={#MyAppName}{code:SuffixIfNotRelease}
 AllowNoIcons=yes
 LicenseFile=share\doc\darktable\LICENSE
 
@@ -59,6 +61,14 @@ OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experiment
 
 SolidCompression=yes
 WizardStyle=modern
+
+; These parameters must be set to "no" if the AppId contains constants. We use
+; scripted constant to have different AppIds for release and nightly snapshot.
+; However, the behavior for "no" values seems logical, so these values are what
+; would make sense to set even if we weren't forced to.
+UsePreviousLanguage=no
+UsePreviousPrivileges=no
+
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -120,4 +130,17 @@ begin
     Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
   else
     Result := 'Environment'
+end;
+
+function SuffixIfNotRelease(Param: String): String;
+begin
+  (*
+  The length of the release version string is 5, but let's add some safety
+  margin (the major and minor numbers may become double digits someday),
+  the git snapshot version is _much_ longer anyway.
+  *)
+  if {#MyAppVersionLength} > 7 then
+    Result := '-dev'
+  else
+    Result := ''
 end;
