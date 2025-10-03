@@ -18,7 +18,7 @@
 
 #include "dtgtk/resetlabel.h"
 
-G_DEFINE_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, GTK_TYPE_EVENT_BOX);
+G_DEFINE_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, GTK_TYPE_BOX);
 
 static void dtgtk_reset_label_class_init(GtkDarktableResetLabelClass *klass)
 {
@@ -64,6 +64,7 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("double-click to reset"));
   gtk_container_add(GTK_CONTAINER(label), GTK_WIDGET(label->lb));
   gtk_widget_add_events(GTK_WIDGET(label), GDK_BUTTON_PRESS_MASK);
+  if(0) // GTK
   g_signal_connect(G_OBJECT(label), "button-press-event", G_CALLBACK(_reset_label_callback), (gpointer)NULL);
 
   return (GtkWidget *)label;

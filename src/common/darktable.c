@@ -1857,6 +1857,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_view_manager_gui_init(darktable.view_manager);
   }
 
+
+
+
+
+
+  // g_log_set_always_fatal(G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL);
+
+
+
+
+
+
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing Lua"));
@@ -2631,6 +2643,386 @@ void dt_print_mem_usage(char *info)
 #else
   dt_print(DT_DEBUG_ALWAYS, "dt_print_mem_usage() currently unsupported on this platform");
 #endif
+}
+
+
+
+
+
+
+
+// GTK4
+
+
+void gtk_container_add(GtkContainer *container, GtkWidget *child)
+{
+  g_return_if_fail(GTK_IS_WIDGET (container));
+  g_return_if_fail(GTK_IS_WIDGET (child));
+
+  if(GTK_IS_BOX(container))
+  {
+    gtk_box_append(GTK_BOX (container), child);
+  }
+  else if(GTK_IS_GRID(container))
+  {
+    gtk_grid_attach (GTK_GRID (container), child, 0, 0, 1, 1);
+  }
+  else if(GTK_IS_OVERLAY(container))
+  {
+    gtk_overlay_set_child(GTK_OVERLAY(container), child);
+  }
+  else if(GTK_IS_SCROLLED_WINDOW(container))
+  {
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(container), child);
+  }
+  else if(GTK_IS_FRAME(container))
+  {
+    gtk_frame_set_child(GTK_FRAME(container), child);
+  }
+  else if(GTK_IS_WINDOW(container))
+  {
+    gtk_window_set_child(GTK_WINDOW(container), child);
+  }
+  else if(GTK_IS_EXPANDER(container))
+  {
+    gtk_expander_set_child(GTK_EXPANDER(container), child);
+  }
+  else if(GTK_IS_LIST_BOX(container))
+  {
+    gtk_list_box_append(GTK_LIST_BOX (container), child);
+  }
+  else if(GTK_IS_STACK (container))
+  {
+    gtk_stack_add_named(GTK_STACK(container), child, G_OBJECT_TYPE_NAME(child));
+  }
+  else if(GTK_IS_NOTEBOOK(container))
+  {
+    gtk_notebook_append_page(GTK_NOTEBOOK (container), child, NULL);
+  }
+  else if(GTK_IS_POPOVER(container))
+  {
+    gtk_popover_set_child(GTK_POPOVER(container), child);
+  }
+  else if(GTK_IS_VIEWPORT(container))
+  {
+    gtk_viewport_set_child(GTK_VIEWPORT(container), child);
+  }
+  else if(GTK_IS_BUTTON(container))
+  {
+    gtk_button_set_child(GTK_BUTTON(container), child);
+  }
+  else if(GTK_IS_CHECK_BUTTON(container))
+  {
+    gtk_check_button_set_child(GTK_CHECK_BUTTON(container), child);
+  }
+  else if(GTK_IS_REVEALER(container))
+  {
+    gtk_revealer_set_child(GTK_REVEALER(container), child);
+  }
+  else if(GTK_IS_FLOW_BOX(container))
+  {
+    gtk_flow_box_append(GTK_FLOW_BOX(container), child);
+  }
+  else {
+    g_warning("gtk_container_add: unsupported container type %s",
+              G_OBJECT_TYPE_NAME (container));
+  }
+}
+
+GtkWidget *gtk_bin_get_child(gpointer bin)
+{
+  g_return_val_if_fail(GTK_IS_WIDGET (bin), NULL);
+
+  if(GTK_IS_OVERLAY(bin))
+  {
+    return gtk_overlay_get_child(GTK_OVERLAY(bin));
+  }
+  else if(GTK_IS_SCROLLED_WINDOW(bin))
+  {
+    return gtk_scrolled_window_get_child(GTK_SCROLLED_WINDOW(bin));
+  }
+  else if(GTK_IS_FRAME(bin))
+  {
+    return gtk_frame_get_child(GTK_FRAME(bin));
+  }
+  else if(GTK_IS_WINDOW(bin))
+  {
+    return gtk_window_get_child(GTK_WINDOW(bin));
+  }
+  else if(GTK_IS_EXPANDER(bin))
+  {
+    return gtk_expander_get_child(GTK_EXPANDER(bin));
+  }
+  else if(GTK_IS_POPOVER(bin))
+  {
+    return gtk_popover_get_child(GTK_POPOVER(bin));
+  }
+  else if(GTK_IS_VIEWPORT(bin))
+  {
+    return gtk_viewport_get_child(GTK_VIEWPORT(bin));
+  }
+  else if(GTK_IS_BUTTON(bin))
+  {
+    return gtk_button_get_child(GTK_BUTTON(bin));
+  }
+  else if(GTK_IS_CHECK_BUTTON(bin))
+  {
+    static GtkWidget *label = NULL;
+    // GTK4 check box no longer contains a label object;
+    // just allow code to gtk_label_set_ellipsize without error
+    if(!label) label = gtk_label_new(NULL);
+    return label;
+  }
+  else if(GTK_IS_REVEALER(bin))
+  {
+    return gtk_revealer_get_child(GTK_REVEALER(bin));
+  }
+  else {
+    g_warning("gtk_bin_get_child: unsupported container type %s",
+              G_OBJECT_TYPE_NAME (bin));
+    return NULL;
+  }
+}
+
+static void _widget_button_press(GtkGestureSingle *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 GtkWidget *widget)
+{
+  GdkEventButton event;
+  memset(&event, 0, sizeof(event));
+  event.type = n_press > 1 ? GDK_DOUBLE_BUTTON_PRESS + n_press - 2 : GDK_BUTTON_PRESS;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = x;
+  event.y = y;
+  event.axes = NULL;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+  event.button = gtk_gesture_single_get_current_button(gesture);
+  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "button-press-event", &event, &ret);
+  if(ret) dt_gui_claim(gesture);
+}
+
+static void _widget_button_release(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   GtkWidget *widget)
+{
+  GdkEventButton event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_BUTTON_RELEASE;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = x;
+  event.y = y;
+  event.axes = NULL;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+  event.button = gtk_gesture_single_get_current_button(gesture);
+  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "button-release-event", &event, &ret);
+  if(ret) dt_gui_claim(gesture);
+}
+
+static void _widget_motion(GtkEventControllerMotion *controller,
+                           double x,
+                           double y,
+                           GtkWidget *widget)
+{
+  GdkEventMotion event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_MOTION_NOTIFY;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = x;
+  event.y = y;
+  event.axes = NULL;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "motion-notify-event", &event, &ret);
+}
+
+static void _widget_enter(GtkEventControllerMotion *controller,
+                          double x,
+                          double y,
+                          GtkWidget *widget)
+{
+  GdkEventCrossing event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_ENTER_NOTIFY;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = x;
+  event.y = y;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "enter-notify-event", &event, &ret);
+}
+
+static void _widget_leave(GtkEventControllerMotion *controller,
+                          GtkWidget *widget)
+{
+  GdkEventCrossing event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_LEAVE_NOTIFY;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "leave-notify-event", &event, &ret);
+}
+
+static gboolean _widget_scroll(GtkEventControllerScroll* self,
+                               gdouble dx,
+                               gdouble dy,
+                               GtkWidget *widget)
+{
+  GdkEventScroll event;
+  memset(&event, 0, sizeof(event));
+  event.type = GDK_SCROLL;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = 0;
+  event.y = 0;
+  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(self));
+  event.direction = GDK_SCROLL_SMOOTH;
+  event.delta_x = dx;
+  event.delta_y = dy;
+  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  gboolean ret = FALSE;
+  g_signal_emit_by_name(widget, "scroll-event", &event, &ret);
+  return ret;
+}
+
+void _map(GtkWidget *widget)
+{
+  GtkWidgetClass *parent_class = GTK_WIDGET_CLASS(g_type_class_peek_parent(GTK_WIDGET_GET_CLASS(widget)));
+  parent_class->map(widget);
+
+  gboolean press = g_signal_has_handler_pending(widget, g_signal_lookup("button-press-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  gboolean release = g_signal_has_handler_pending(widget, g_signal_lookup("button-release-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  if(press || release)
+  {
+    dt_gui_connect_click_all(widget, press ? _widget_button_press: NULL,
+                                     release ? _widget_button_release: NULL, widget);
+  }
+  gboolean motion = g_signal_has_handler_pending(widget, g_signal_lookup("motion-notify-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  gboolean enter = g_signal_has_handler_pending(widget, g_signal_lookup("enter-notify-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  gboolean leave = g_signal_has_handler_pending(widget, g_signal_lookup("leave-notify-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  if(motion || enter || leave)
+  {
+    dt_gui_connect_motion(widget, motion ? _widget_motion : NULL,
+                                  enter ? _widget_enter : NULL,
+                                  leave ? _widget_leave : NULL, widget);
+  }
+  gboolean scroll = g_signal_has_handler_pending(widget, g_signal_lookup("scroll-event", G_TYPE_FROM_INSTANCE(widget)), 0, FALSE);
+  if(scroll)
+  {
+    GtkEventController *controller = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+    gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+    g_signal_connect(controller, "scroll", G_CALLBACK(_widget_scroll), widget);
+  }
+}
+
+void dt_add_legacy_signals(GtkWidgetClass *klass)
+{
+  klass->map = _map;
+  g_signal_new ("button-press-event",
+    G_TYPE_FROM_CLASS(klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,// return type
+    1,             // number of params
+    G_TYPE_POINTER);
+  g_signal_new ("button-release-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  g_signal_new ("motion-notify-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  g_signal_new ("enter-notify-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  g_signal_new ("leave-notify-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  g_signal_new ("scroll-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  g_signal_new ("key-press-event",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_BOOLEAN,
+    1, G_TYPE_POINTER);
+  
+
+
+
+  g_signal_new ("drag-data-received",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_NONE,
+    0);
+  g_signal_new ("drag-motion",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_NONE,
+    0);
+  g_signal_new ("drag-leave",
+    G_TYPE_FROM_CLASS (klass),
+    G_SIGNAL_RUN_LAST,
+    0,
+    NULL, NULL,
+    NULL,
+    G_TYPE_NONE,
+    0);
 }
 
 // clang-format off

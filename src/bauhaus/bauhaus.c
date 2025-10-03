@@ -23,14 +23,12 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef GDK_WINDOWING_WAYLAND
-#include <gdk/gdkwayland.h>
 #endif
 
 #include <strings.h>
@@ -66,18 +64,6 @@ static void _popup_reject(void);
 static void _popup_hide(void);
 static gboolean _popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean _popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf);
-static gboolean _widget_scroll(GtkWidget *widget, GdkEventScroll *event);
-static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event);
-static gboolean _widget_button_press(GtkWidget *widget, GdkEventButton *event);
-static gboolean _widget_button_release(GtkWidget *widget, GdkEventButton *event);
-static gboolean _widget_motion_notify(GtkWidget *widget, GdkEventMotion *event);
-static void _widget_get_preferred_width(GtkWidget *widget,
-                                        gint *minimum_size,
-                                        gint *natural_size);
-static void _widget_get_preferred_height(GtkWidget *widget,
-                                         gint *minimum_height,
-                                         gint *natural_height);
 static void _combobox_set(dt_bauhaus_widget_t *w,
                           const int pos,
                           const gboolean mute);
@@ -666,32 +652,11 @@ static void _window_show(GtkWidget *w, gpointer user_data)
   gtk_grab_add(GTK_WIDGET(user_data));
 }
 
-static void dt_bh_init(DtBauhausWidget *w)
+static void _widget_leave(GtkEventControllerMotion *controller,
+                          dt_bauhaus_widget_t *w)
 {
-  w->field = NULL;
-
-  w->section = NULL;
-
-  // no quad icon and no toggle button:
-  w->quad_paint = 0;
-  w->quad_paint_data = NULL;
-  w->quad_toggle = 0;
-  w->show_quad = TRUE;
-  w->show_label = TRUE;
-
-  gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK
-                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                       | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                       | GDK_FOCUS_CHANGE_MASK
-                                       | darktable.gui->scroll_mask);
-
-  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
-  dt_gui_add_class(GTK_WIDGET(w), "dt_bauhaus");
-}
-
-static gboolean _widget_enter_leave(GtkWidget *widget, GdkEventCrossing *event)
-{
-  if(event->type == GDK_ENTER_NOTIFY)
+  GtkWidget *widget = GTK_WIDGET(w);
+  if(controller == NULL)
     // gtk_widget_set_state_flags triggers resize&draw avalanche
     // instead add GTK_STATE_FLAG_PRELIGHT in _widget_draw
     darktable.bauhaus->hovered = widget;
@@ -699,8 +664,14 @@ static gboolean _widget_enter_leave(GtkWidget *widget, GdkEventCrossing *event)
     darktable.bauhaus->hovered = NULL;
 
   gtk_widget_queue_draw(widget);
+}
 
-  return FALSE;
+static void _widget_enter(GtkEventControllerMotion *controller,
+                          double x,
+                          double y,
+                          dt_bauhaus_widget_t *w)
+{
+  _widget_leave(NULL, w);
 }
 
 static void _widget_finalize(GObject *widget)
@@ -725,35 +696,10 @@ static void _widget_finalize(GObject *widget)
   G_OBJECT_CLASS(dt_bh_parent_class)->finalize(widget);
 }
 
-static void dt_bh_class_init(DtBauhausWidgetClass *class)
-{
-  darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL]
-      = g_signal_new("value-changed", G_TYPE_FROM_CLASS(class),
-                     G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-  darktable.bauhaus->signals[DT_BAUHAUS_QUAD_PRESSED_SIGNAL]
-      = g_signal_new("quad-pressed", G_TYPE_FROM_CLASS(class),
-                     G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
-  widget_class->draw = _widget_draw;
-  widget_class->scroll_event = _widget_scroll;
-  widget_class->key_press_event = _widget_key_press;
-  widget_class->button_press_event = _widget_button_press;
-  widget_class->button_release_event = _widget_button_release;
-  widget_class->motion_notify_event = _widget_motion_notify;
-  widget_class->get_preferred_width = _widget_get_preferred_width;
-  widget_class->get_preferred_height = _widget_get_preferred_height;
-  widget_class->enter_notify_event = _widget_enter_leave;
-  widget_class->leave_notify_event = _widget_enter_leave;
-  G_OBJECT_CLASS(class)->finalize = _widget_finalize;
-}
-
 void dt_bauhaus_load_theme()
 {
   GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
-  GtkStyleContext *ctx = gtk_style_context_new();
+  GtkStyleContext *ctx = gtk_widget_get_style_context(root_window);
   GtkWidgetPath *path = gtk_widget_path_new();
   const int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
   gtk_widget_path_iter_add_class(path, pos, "dt_bauhaus");
@@ -813,8 +759,8 @@ void dt_bauhaus_load_theme()
   if(bh->pango_font_desc)
     pango_font_description_free(bh->pango_font_desc);
   bh->pango_font_desc = NULL;
-  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font",
-                        &bh->pango_font_desc, NULL);
+  PangoContext* pctx = gtk_widget_get_pango_context(root_window);
+  bh->pango_font_desc = pango_context_get_font_description(pctx);
 
   if(bh->pango_sec_font_desc)
     pango_font_description_free(bh->pango_sec_font_desc);
@@ -1131,7 +1077,7 @@ gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
                    && element == DT_ACTION_ELEMENT_BUTTON
                  ? DT_BAUHAUS_WIDGET(widget)->tooltip : NULL;
   if(!(tooltip))
-    return gtk_widget_get_tooltip_markup(widget);
+    return g_strdup(gtk_widget_get_tooltip_markup(widget)); // GTK4
 
   return g_markup_escape_text(tooltip, -1);
 }
@@ -2467,11 +2413,17 @@ static gboolean _popup_draw(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _widget_draw(GtkWidget *widget,
-                             cairo_t *crf)
+
+static void _widget_snapshot(GtkWidget* widget,
+                             GtkSnapshot* snapshot)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+
+  graphene_rect_t bounds;
+  graphene_rect_init(&bounds, 0, 0, allocation.width, allocation.height);
+  cairo_t* crf = gtk_snapshot_append_cairo(snapshot, &bounds);
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   const int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -2487,7 +2439,9 @@ static gboolean _widget_draw(GtkWidget *widget,
   gtk_style_context_get_color(context, state, text_color);
 
   gtk_style_context_get_color(context, state, fg_color);
-  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
+  // gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
+  GdkRGBA color = {.red = 0.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f};
+  bg_color = gdk_rgba_copy(&color);
 
   // translate to account for the widget spacing
   const int h2 = height - w->margin.top - w->margin.bottom;
@@ -2626,6 +2580,7 @@ static gboolean _widget_draw(GtkWidget *widget,
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+  cairo_destroy(crf);
 
   // render eventual css borders
   gtk_render_frame(context, crf, w->margin.left, w->margin.top, w2, h2);
@@ -2633,8 +2588,6 @@ static gboolean _widget_draw(GtkWidget *widget,
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);
   gdk_rgba_free(bg_color);
-
-  return TRUE;
 }
 
 static gint _natural_width(GtkWidget *widget,
@@ -2706,34 +2659,35 @@ static gint _natural_width(GtkWidget *widget,
   return natural_size;
 }
 
-static void _widget_get_preferred_width(GtkWidget *widget,
-                                        gint *minimum_width,
-                                        gint *natural_width)
+static void _widget_measure(GtkWidget* widget,
+                            GtkOrientation orientation,
+                            int for_size,
+                            int* minimum,
+                            int* natural,
+                            int* minimum_baseline,
+                            int* natural_baseline)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   _margins_retrieve(w);
-
-  *natural_width = _natural_width(widget, FALSE)
-                   + w->margin.left + w->margin.right + w->padding.left + w->padding.right;
-}
-
-static void _widget_get_preferred_height(GtkWidget *widget,
-                                         gint *minimum_height,
-                                         gint *natural_height)
-{
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  _margins_retrieve(w);
-
-  *minimum_height = w->margin.top + w->margin.bottom + w->padding.top + w->padding.bottom
-                    + darktable.bauhaus->line_height;
-  if(w->type == DT_BAUHAUS_SLIDER)
+  if(orientation == GTK_ORIENTATION_HORIZONTAL)
   {
-    // the lower thing to draw is indicator. See _draw_baseline for compute details
-    *minimum_height += INNER_PADDING
-      + darktable.bauhaus->baseline_size + 1.5f * darktable.bauhaus->border_width;
-  }
 
-  *natural_height = *minimum_height;
+    *natural = _natural_width(widget, FALSE)
+               + w->margin.left + w->margin.right + w->padding.left + w->padding.right;
+  }
+  else
+  {
+    *minimum = w->margin.top + w->margin.bottom + w->padding.top + w->padding.bottom
+               + darktable.bauhaus->line_height;
+    if(w->type == DT_BAUHAUS_SLIDER)
+    {
+      // the lower thing to draw is indicator. See _draw_baseline for compute details
+      *minimum += INNER_PADDING
+                  + darktable.bauhaus->baseline_size + 1.5f * darktable.bauhaus->border_width;
+    }
+
+    *natural = *minimum;
+  }
 }
 
 static void _popup_hide()
@@ -2760,6 +2714,7 @@ static void _popup_hide()
 
 static void _popup_show(GtkWidget *widget)
 {
+  return; // GTK4
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
@@ -2938,19 +2893,21 @@ static void _slider_add_step(GtkWidget *widget,
     dt_bauhaus_slider_set(widget, CLAMP(value + delta, d->min, d->max));
 }
 
-static gboolean _widget_scroll(GtkWidget *widget,
-                               GdkEventScroll *event)
+static gboolean _widget_scroll(GtkEventControllerScroll* self,
+                               gdouble dx,
+                               gdouble dy,
+                               GtkWidget *widget)
 {
-  if(dt_gui_ignore_scroll(event)) return FALSE;
+// GTK4
+//   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  // handle speed adjustment in mapping mode in dispatcher
-  if(darktable.control->mapping_widget)
-    return dt_shortcut_dispatcher(widget, (GdkEvent*)event, NULL);
+// // handle speed adjustment in mapping mode in dispatcher
+// if(darktable.control->mapping_widget)
+//   return dt_shortcut_dispatcher(widget, (GdkEvent*)event, NULL);
 
   gtk_widget_grab_focus(widget);
 
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  int delta_y = dx + dy;
   {
     if(delta_y == 0) return TRUE;
 
@@ -2959,15 +2916,17 @@ static gboolean _widget_scroll(GtkWidget *widget,
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
-                       && event->window == gtk_widget_get_window(widget);
-      if(force && dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
-      {
-        _slider_zoom_range(w, delta_y);
-        _slider_zoom_toast(w);
-      }
-      else
-        _slider_add_step(widget, - delta_y, event->state, force);
+      // GTK4
+      // gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
+      //                  && event->window == gtk_widget_get_window(widget);
+      // if(force && dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+      // {
+      //   _slider_zoom_range(w, delta_y);
+      //   _slider_zoom_toast(w);
+      // }
+      // else
+      // _slider_add_step(widget, - delta_y, event->state, force);
+      _slider_add_step(widget, - delta_y, gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(self)), FALSE);
     }
     else
       _combobox_next_sensitive(w, delta_y, 0, FALSE);
@@ -3408,43 +3367,58 @@ static gboolean _popup_key_press(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _widget_button_press(GtkWidget *widget,
-                                     GdkEventButton *event)
+static void _widget_button_press(GtkGestureSingle *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 dt_bauhaus_widget_t *w)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  GtkWidget *widget = GTK_WIDGET(w);
   _request_focus(w);
   gtk_widget_grab_focus(widget);
 
   const int width = gtk_widget_get_allocated_width(widget);
   const int w3 = width - w->margin.left - w->padding.left
                        - w->margin.right - w->padding.right;
-  const double ex = event->x - w->margin.left - w->padding.left;
-  const double ey = event->y - w->margin.top - w->padding.top;
+  const double ex = x - w->margin.left - w->padding.left;
+  const double ey = y - w->margin.top - w->padding.top;
+  guint button = gtk_gesture_single_get_current_button(gesture);
 
-  if(w->quad_paint && event->window == gtk_widget_get_window(widget)
-     && event->x > width - _widget_get_quad_width(w)
-                         - w->margin.right - w->padding.right)
+ if(w->quad_paint
+     && gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)) == widget
+
+
+
+    /// FIXME reimplement #17838 (histogram dragging)
+// && event->window == gtk_widget_get_window(widget)
+
+
+
+
+
+     && x > width - _widget_get_quad_width(w)
+                  - w->margin.right - w->padding.right)
   {
     dt_bauhaus_widget_press_quad(widget);
   }
-  else if(event->button == GDK_BUTTON_PRIMARY
-          && event->type == GDK_2BUTTON_PRESS)
+  else if(button == GDK_BUTTON_PRIMARY && n_press == 2)
   {
-    if(!(dt_modifier_is(event->state, GDK_CONTROL_MASK) && w->field
+    if(!(dt_modifier_eq(gesture, GDK_CONTROL_MASK) && w->field
          && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module, widget)))
       dt_bauhaus_widget_reset(widget); // reset to default.
     // never called for combo, as we popup the other window under your cursor before.
     // (except in weird corner cases where the popup is under the -1st entry
     _popup_hide();
   }
-  else if(event->button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
+  else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
+    GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event(); // TODO cleanup
     darktable.bauhaus->opentime = event->time;
-    darktable.bauhaus->mouse_x = event->x;
-    darktable.bauhaus->mouse_y = event->y;
+    darktable.bauhaus->mouse_x = x;
+    darktable.bauhaus->mouse_y = y;
     _popup_show(widget);
   }
-  else if(event->button == GDK_BUTTON_MIDDLE)
+  else if(button == GDK_BUTTON_MIDDLE)
   {
     _slider_zoom_range(w, 0); // reset zoom range to soft min/max
     _slider_zoom_toast(w);
@@ -3453,7 +3427,12 @@ static gboolean _widget_button_press(GtkWidget *widget,
   {
     dt_bauhaus_slider_data_t *d = &w->data.slider;
     d->is_dragging = -1;
-    if(!dt_modifier_is(event->state, 0) || event->window != gtk_widget_get_window(widget))
+    if(!dt_modifier_eq(gesture, 0) 
+    
+    
+  )
+// FIXME    reimplement #17838 (histogram dragging)
+    //  || event->window != gtk_widget_get_window(widget))
       darktable.bauhaus->mouse_x = ex;
     else if(ey > darktable.bauhaus->line_height / 2.0f)
     {
@@ -3462,58 +3441,61 @@ static gboolean _widget_button_press(GtkWidget *widget,
 
       darktable.bauhaus->mouse_x = NAN;
     }
-    else
-      return FALSE;
   }
 
-  return TRUE;
+  dt_gui_claim(gesture);
 }
 
-static gboolean _widget_button_release(GtkWidget *widget,
-                                       GdkEventButton *event)
+static void _widget_button_release(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_bauhaus_widget_t *w)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  GtkWidget *widget = GTK_WIDGET(w);
   dt_bauhaus_widget_release_quad(widget);
 
-  if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
+  if(w->type != DT_BAUHAUS_SLIDER) return;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(event->button == GDK_BUTTON_PRIMARY && d->is_dragging)
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY  
+     && d->is_dragging)
   {
     d->is_dragging = 0;
     if(d->timeout_handle) g_source_remove(d->timeout_handle);
     d->timeout_handle = 0;
     _slider_set_normalized(w, d->pos);
-
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean _widget_motion_notify(GtkWidget *widget,
-                                      GdkEventMotion *event)
+static void _widget_motion(GtkEventControllerMotion *controller,
+                           double x,
+                           double y,
+                           dt_bauhaus_widget_t *w)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  GtkWidget *widget = GTK_WIDGET(w);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  const int width = gdk_window_get_width(event->window);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  const int width = allocation.width;
   const int w3 = width - w->margin.left - w->padding.left
                        - w->margin.right - w->padding.right;
-  const double ex = event->x - w->margin.left - w->padding.left;
+  const double ex = x - w->margin.left - w->padding.left;
 
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     darktable.control->element =
-      event->x <= width - _widget_get_quad_width(w) || !w->quad_paint
+      x <= width - _widget_get_quad_width(w) || !w->quad_paint
       ? DT_ACTION_ELEMENT_SELECTION : DT_ACTION_ELEMENT_BUTTON;
   }
-  else if(d->is_dragging && event->state & GDK_BUTTON1_MASK)
+  else if(d->is_dragging)
   {
     const float r = _slider_right_pos((float)w3, w);
 
     if(dt_isnan(darktable.bauhaus->mouse_x))
     {
-      if(dt_modifier_is(event->state, 0))
+      if(dt_modifier_eq(controller, 0))
         _slider_set_normalized(w, (ex / w3) / r);
       else
         darktable.bauhaus->mouse_x = ex;
@@ -3523,6 +3505,7 @@ static gboolean _widget_motion_notify(GtkWidget *widget,
       const float scaled_step =
         w3 * r * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
       const float steps = floorf((ex - darktable.bauhaus->mouse_x) / scaled_step);
+      GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event(); // TODO cleanup
       _slider_add_step(widget, copysignf(1, d->factor) * steps, event->state, FALSE);
 
       darktable.bauhaus->mouse_x += steps * scaled_step;
@@ -3541,7 +3524,52 @@ static gboolean _widget_motion_notify(GtkWidget *widget,
       w->quad_paint ? DT_ACTION_ELEMENT_BUTTON : DT_ACTION_ELEMENT_VALUE;
 
   gtk_widget_queue_draw(widget);
-  return TRUE;
+}
+
+static void dt_bh_class_init(DtBauhausWidgetClass *class)
+{
+  darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL]
+      = g_signal_new("value-changed", G_TYPE_FROM_CLASS(class),
+                     G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  darktable.bauhaus->signals[DT_BAUHAUS_QUAD_PRESSED_SIGNAL]
+      = g_signal_new("quad-pressed", G_TYPE_FROM_CLASS(class),
+                     G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+  widget_class->snapshot = _widget_snapshot;
+  widget_class->measure = _widget_measure;
+  // widget_class->scroll_event = _widget_scroll;
+  // widget_class->key_press_event = _widget_key_press;
+  // widget_class->get_preferred_width = _widget_get_preferred_width;
+  // widget_class->get_preferred_height = _widget_get_preferred_height;
+  G_OBJECT_CLASS(class)->finalize = _widget_finalize;
+}
+
+static void dt_bh_init(DtBauhausWidget *w)
+{
+  w->field = NULL;
+  w->section = NULL;
+
+  // no quad icon and no toggle button:
+  w->quad_paint = 0;
+  w->quad_paint_data = NULL;
+  w->quad_toggle = 0;
+  w->show_quad = TRUE;
+  w->show_label = TRUE;
+
+  gtk_widget_add_events(GTK_WIDGET(w), GDK_FOCUS_CHANGE_MASK
+                                       | darktable.gui->scroll_mask);
+
+  dt_gui_connect_click_all(w, _widget_button_press, _widget_button_release, w);
+  dt_gui_connect_motion(w, _widget_motion, _widget_enter, _widget_leave, w);
+  GtkEventController *controller = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+  gtk_widget_add_controller(GTK_WIDGET(w), GTK_EVENT_CONTROLLER(controller));
+  g_signal_connect(controller, "scroll", G_CALLBACK(_widget_scroll), w);
+
+  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
+  dt_gui_add_class(GTK_WIDGET(w), "dt_bauhaus");
 }
 
 void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)

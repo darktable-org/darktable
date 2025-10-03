@@ -33,6 +33,7 @@
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/pixelpipe.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/paint.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"

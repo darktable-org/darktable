@@ -28,9 +28,11 @@ static void dtgtk_thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-  widget_class->draw = _thumbnail_btn_draw;
-  widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
-  widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  // widget_class->draw = _thumbnail_btn_draw;
+  // widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  // widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+
+  dt_add_legacy_signals(widget_class);
 }
 
 static void dtgtk_thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
