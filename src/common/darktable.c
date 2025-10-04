@@ -1876,8 +1876,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       gboolean loaded = FALSE;
       if(langcode && *langcode)
       {
-        fprintf(stderr,"%s",langcode);
-        gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%s", langcode);
+        const char *underscore = strchr(langcode,'_');
+        const int lang_len = underscore ? underscore - langcode : strlen(langcode);
+        gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%.*s", lang_len, langcode);
         gchar *shortcuts_file = g_build_filename(sharedir, localized_file, NULL);
         if(g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
         {
@@ -1894,8 +1895,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         dt_shortcuts_load(shortcuts_file, FALSE);
         g_free(shortcuts_file);
       }
-      // we only need to load defaults once, since they will persist
-      dt_conf_set_bool("accel/load_localized_defaults", FALSE);
     }
 
     // all the default shortcuts have been registered

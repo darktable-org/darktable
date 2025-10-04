@@ -367,28 +367,6 @@ static void init_tab_general(GtkWidget *dialog,
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
                    G_CALLBACK(reset_language_widget), (gpointer)widget);
 
-  // localized shortcuts
-
-  label = gtk_label_new(_("install localized shortcuts on next start"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  GtkWidget *installshortcuts = gtk_check_button_new();
-  gtk_widget_set_tooltip_text(installshortcuts,
-                              _("add default shortcuts localized to the\n"
-                                "currently selected language the next time\n"
-                                "darktable is started.\n"
-                                "this option will be reset after the shortcuts\n"
-                                "have been installed."));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(installshortcuts),
-                               dt_conf_get_bool("accel/load_localized_defaults"));
-  g_signal_connect(G_OBJECT(installshortcuts), "toggled",
-                   G_CALLBACK(install_shortcuts_callback), (gpointer)installshortcuts);
-
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), installshortcuts, labelev, GTK_POS_RIGHT, 1, 1);
-
   // theme
 
   load_themes();

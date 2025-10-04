@@ -111,8 +111,15 @@
     <name>accel/load_defaults</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>load default shortcuts at startup</shortdescription>
+    <shortdescription>load basic default shortcuts at startup</shortdescription>
     <longdescription>load default shortcuts before user settings. switch off to prevent deleted defaults returning</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>accel/load_localized_defaults</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>load additional localized default shortcuts</shortdescription>
+    <longdescription>load additional processing-module shortcuts before user settings (required restart). these shortcuts may be localized to the user-interface language configured at the time they are loaded. switch off again to prevent deleted defaults from returning or a different set of localized shortcuts from being added after switching languages.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>accel/show_tab_in_prefs</name>
