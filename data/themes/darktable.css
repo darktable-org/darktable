@@ -366,7 +366,7 @@ spinbutton button,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  margin: 0.07em;
+  margin: 0.07em 0.4em 0.07em 0.07em;
 }
 
 .combo,
