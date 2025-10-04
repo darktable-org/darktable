@@ -119,6 +119,10 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
 [Run]
+Filename: "https://docs.darktable.org/usermanual/development/"; \
+  Description: "Open darktable user manual"; \
+  Flags: postinstall shellexec runasoriginaluser
+
 Filename: "{app}\bin\{#MyAppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
   Flags: nowait postinstall skipifsilent
