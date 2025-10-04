@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-27 21:46-0300\n"
-"PO-Revision-Date: 2025-09-27 21:45-0300\n"
+"POT-Creation-Date: 2025-10-04 07:56-0300\n"
+"PO-Revision-Date: 2025-10-04 07:55-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2702,8 +2702,8 @@ msgstr "contribuidores de integração"
 msgid "lua-scripts contributors"
 msgstr "contribuidores do lua-scripts"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:242
-#: ../build/lib/darktable/plugins/introspection_agx.c:489
+#: ../build/lib/darktable/plugins/introspection_agx.c:247
+#: ../build/lib/darktable/plugins/introspection_agx.c:500
 #: ../build/lib/darktable/plugins/introspection_blurs.c:131
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
@@ -2712,19 +2712,19 @@ msgstr "contribuidores do lua-scripts"
 msgid "offset"
 msgstr "deslocamento"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:248
-#: ../build/lib/darktable/plugins/introspection_agx.c:493
+#: ../build/lib/darktable/plugins/introspection_agx.c:253
+#: ../build/lib/darktable/plugins/introspection_agx.c:504
 msgid "slope"
 msgstr "inclinação"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:254
-#: ../build/lib/darktable/plugins/introspection_agx.c:497
+#: ../build/lib/darktable/plugins/introspection_agx.c:259
+#: ../build/lib/darktable/plugins/introspection_agx.c:508
 #: ../src/iop/colorbalancergb.c:1941
 msgid "power"
 msgstr "potência"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:260
-#: ../build/lib/darktable/plugins/introspection_agx.c:501
+#: ../build/lib/darktable/plugins/introspection_agx.c:265
+#: ../build/lib/darktable/plugins/introspection_agx.c:512
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:93
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:156
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:67
@@ -2736,20 +2736,20 @@ msgstr "potência"
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3084
-#: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:387
+#: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:385
 #: ../src/iop/velvia.c:73 ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
 msgstr "saturação"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:266
-#: ../build/lib/darktable/plugins/introspection_agx.c:505
+#: ../build/lib/darktable/plugins/introspection_agx.c:271
+#: ../build/lib/darktable/plugins/introspection_agx.c:516
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:146
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
 msgid "preserve hue"
 msgstr "preservar matiz"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:272
-#: ../build/lib/darktable/plugins/introspection_agx.c:509
+#: ../build/lib/darktable/plugins/introspection_agx.c:277
+#: ../build/lib/darktable/plugins/introspection_agx.c:520
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:218
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
@@ -2758,198 +2758,213 @@ msgstr "preservar matiz"
 msgid "black relative exposure"
 msgstr "exposição relativa de preto"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:278
-#: ../build/lib/darktable/plugins/introspection_agx.c:513
+#: ../build/lib/darktable/plugins/introspection_agx.c:283
+#: ../build/lib/darktable/plugins/introspection_agx.c:524
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
 #: ../src/iop/filmic.c:1478
 msgid "white relative exposure"
 msgstr "exposição relativa de branco"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:284
-#: ../build/lib/darktable/plugins/introspection_agx.c:517
+#: ../build/lib/darktable/plugins/introspection_agx.c:289
+#: ../build/lib/darktable/plugins/introspection_agx.c:528
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:260
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:455
 msgid "dynamic range scaling"
 msgstr "escala de alcance dinâmico"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:290
-#: ../build/lib/darktable/plugins/introspection_agx.c:521
+#: ../build/lib/darktable/plugins/introspection_agx.c:295
+#: ../build/lib/darktable/plugins/introspection_agx.c:532
 msgid "pivot input shift"
 msgstr "Deslocamento de entrada do pivô"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:296
-#: ../build/lib/darktable/plugins/introspection_agx.c:525
+#: ../build/lib/darktable/plugins/introspection_agx.c:301
+#: ../build/lib/darktable/plugins/introspection_agx.c:536
 msgid "pivot target output"
 msgstr "alvo da saída do pivô"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:302
-#: ../build/lib/darktable/plugins/introspection_agx.c:529
-msgid "contrast around the pivot"
-msgstr "contraste ao redor do pivô"
+#: ../build/lib/darktable/plugins/introspection_agx.c:307
+#: ../build/lib/darktable/plugins/introspection_agx.c:540
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:116
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
+#: ../src/gui/guides.c:862 ../src/iop/basicadj.c:631 ../src/iop/bilat.c:468
+#: ../src/iop/colisa.c:277 ../src/iop/colorbalance.c:1889
+#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1519
+#: ../src/iop/filmicrgb.c:4507 ../src/iop/lowpass.c:576
+msgid "contrast"
+msgstr "contraste"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:308
-#: ../build/lib/darktable/plugins/introspection_agx.c:533
+#: ../build/lib/darktable/plugins/introspection_agx.c:313
+#: ../build/lib/darktable/plugins/introspection_agx.c:544
 msgid "toe start"
 msgstr "início da base"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:314
-#: ../build/lib/darktable/plugins/introspection_agx.c:537
+#: ../build/lib/darktable/plugins/introspection_agx.c:319
+#: ../build/lib/darktable/plugins/introspection_agx.c:548
 msgid "shoulder start"
 msgstr "início do ombro"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:320
-#: ../build/lib/darktable/plugins/introspection_agx.c:541
+#: ../build/lib/darktable/plugins/introspection_agx.c:325
+#: ../build/lib/darktable/plugins/introspection_agx.c:552
 msgid "toe power"
 msgstr "intensidade da base"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:326
-#: ../build/lib/darktable/plugins/introspection_agx.c:545
+#: ../build/lib/darktable/plugins/introspection_agx.c:331
+#: ../build/lib/darktable/plugins/introspection_agx.c:556
 msgid "shoulder power"
 msgstr "intensidade do ombro"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:332
-#: ../build/lib/darktable/plugins/introspection_agx.c:549
+#: ../build/lib/darktable/plugins/introspection_agx.c:337
+#: ../build/lib/darktable/plugins/introspection_agx.c:560
 msgid "curve y gamma"
 msgstr "gama e curva"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:338
-#: ../build/lib/darktable/plugins/introspection_agx.c:553
-msgid "keep the pivot on the identity line"
-msgstr "manter o pivô na linha de identidade"
+#: ../build/lib/darktable/plugins/introspection_agx.c:343
+#: ../build/lib/darktable/plugins/introspection_agx.c:564
+msgid "keep the pivot on the diagonal"
+msgstr "manter o pivô na diagonal"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:344
-#: ../build/lib/darktable/plugins/introspection_agx.c:557
+#: ../build/lib/darktable/plugins/introspection_agx.c:349
+#: ../build/lib/darktable/plugins/introspection_agx.c:568
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:134
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:249
 msgid "target black"
 msgstr "preto alvo"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:350
-#: ../build/lib/darktable/plugins/introspection_agx.c:561
+#: ../build/lib/darktable/plugins/introspection_agx.c:355
+#: ../build/lib/darktable/plugins/introspection_agx.c:572
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:128
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:245
 msgid "target white"
 msgstr "branco alvo"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:356
-#: ../build/lib/darktable/plugins/introspection_agx.c:565
+#: ../build/lib/darktable/plugins/introspection_agx.c:361
+#: ../build/lib/darktable/plugins/introspection_agx.c:576
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
 msgid "base primaries"
 msgstr "primárias base"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:362
-#: ../build/lib/darktable/plugins/introspection_agx.c:569
+#: ../build/lib/darktable/plugins/introspection_agx.c:367
+#: ../build/lib/darktable/plugins/introspection_agx.c:580
 msgid "disable adjustments"
 msgstr "desabiitar ajustes"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:368
-#: ../build/lib/darktable/plugins/introspection_agx.c:573
+#: ../build/lib/darktable/plugins/introspection_agx.c:373
+#: ../build/lib/darktable/plugins/introspection_agx.c:584
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:152
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
 msgid "red attenuation"
 msgstr "atenuação do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:374
-#: ../build/lib/darktable/plugins/introspection_agx.c:577
+#: ../build/lib/darktable/plugins/introspection_agx.c:379
+#: ../build/lib/darktable/plugins/introspection_agx.c:588
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:158
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
 msgid "red rotation"
 msgstr "rotação do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:380
-#: ../build/lib/darktable/plugins/introspection_agx.c:581
+#: ../build/lib/darktable/plugins/introspection_agx.c:385
+#: ../build/lib/darktable/plugins/introspection_agx.c:592
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:164
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:269
 msgid "green attenuation"
 msgstr "atenuação do verde"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:386
-#: ../build/lib/darktable/plugins/introspection_agx.c:585
+#: ../build/lib/darktable/plugins/introspection_agx.c:391
+#: ../build/lib/darktable/plugins/introspection_agx.c:596
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:170
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:273
 msgid "green rotation"
 msgstr "rotação do verde"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:392
-#: ../build/lib/darktable/plugins/introspection_agx.c:589
+#: ../build/lib/darktable/plugins/introspection_agx.c:397
+#: ../build/lib/darktable/plugins/introspection_agx.c:600
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:176
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:277
 msgid "blue attenuation"
 msgstr "atenuação do azul"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:398
-#: ../build/lib/darktable/plugins/introspection_agx.c:593
+#: ../build/lib/darktable/plugins/introspection_agx.c:403
+#: ../build/lib/darktable/plugins/introspection_agx.c:604
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:182
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:281
 msgid "blue rotation"
 msgstr "rotação do azul"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:404
-#: ../build/lib/darktable/plugins/introspection_agx.c:597
+#: ../build/lib/darktable/plugins/introspection_agx.c:409
+#: ../build/lib/darktable/plugins/introspection_agx.c:608
 msgid "master purity boost"
 msgstr "incremento mestre de pureza"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:410
-#: ../build/lib/darktable/plugins/introspection_agx.c:601
+#: ../build/lib/darktable/plugins/introspection_agx.c:415
+#: ../build/lib/darktable/plugins/introspection_agx.c:612
 msgid "master rotation reversal"
 msgstr "arotação reversa mestre"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:416
-#: ../build/lib/darktable/plugins/introspection_agx.c:605
+#: ../build/lib/darktable/plugins/introspection_agx.c:421
+#: ../build/lib/darktable/plugins/introspection_agx.c:616
 msgid "red purity boost"
 msgstr "reforçar pureza do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:422
-#: ../build/lib/darktable/plugins/introspection_agx.c:609
+#: ../build/lib/darktable/plugins/introspection_agx.c:427
+#: ../build/lib/darktable/plugins/introspection_agx.c:620
 msgid "red reverse rotation"
 msgstr "rotação reversa do vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:428
-#: ../build/lib/darktable/plugins/introspection_agx.c:613
+#: ../build/lib/darktable/plugins/introspection_agx.c:433
+#: ../build/lib/darktable/plugins/introspection_agx.c:624
 msgid "green purity boost"
 msgstr "reforçar pureza do verde"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:434
-#: ../build/lib/darktable/plugins/introspection_agx.c:617
+#: ../build/lib/darktable/plugins/introspection_agx.c:439
+#: ../build/lib/darktable/plugins/introspection_agx.c:628
 msgid "green reverse rotation"
 msgstr "rotação reversa do verde"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:440
-#: ../build/lib/darktable/plugins/introspection_agx.c:621
+#: ../build/lib/darktable/plugins/introspection_agx.c:445
+#: ../build/lib/darktable/plugins/introspection_agx.c:632
 msgid "blue purity boost"
 msgstr "reforçar pureza do azul"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:446
-#: ../build/lib/darktable/plugins/introspection_agx.c:625
+#: ../build/lib/darktable/plugins/introspection_agx.c:451
+#: ../build/lib/darktable/plugins/introspection_agx.c:636
 msgid "blue reverse rotation"
 msgstr "rotação reversa do azul"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:639
+#: ../build/lib/darktable/plugins/introspection_agx.c:457
+#: ../build/lib/darktable/plugins/introspection_agx.c:640
+msgid "reverse all"
+msgstr "reverter tudo"
+
+#: ../build/lib/darktable/plugins/introspection_agx.c:654
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1769
 #: ../src/iop/colorout.c:852
 msgid "export profile"
 msgstr "perfil de exportação"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:640
+#: ../build/lib/darktable/plugins/introspection_agx.c:655
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:308
 #: ../src/iop/colorin.c:2062
 msgid "working profile"
 msgstr "perfil de trabalho"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:641
+#: ../build/lib/darktable/plugins/introspection_agx.c:656
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:309
 msgid "Rec2020"
 msgstr "Rec2020"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:642
+#: ../build/lib/darktable/plugins/introspection_agx.c:657
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:310
 #: ../src/common/colorspaces.c:1789
 msgid "Display P3"
 msgstr "Display P3"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:643
+#: ../build/lib/darktable/plugins/introspection_agx.c:658
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
 #: ../src/common/colorspaces.c:1460 ../src/common/colorspaces.c:1741
@@ -2957,7 +2972,7 @@ msgstr "Display P3"
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
 
-#: ../build/lib/darktable/plugins/introspection_agx.c:644
+#: ../build/lib/darktable/plugins/introspection_agx.c:659
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
@@ -3848,19 +3863,6 @@ msgstr "vivacidade global"
 msgid "contrast gray fulcrum"
 msgstr "pivô (fulcrum) de contraste de cinza"
 
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:230
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:455
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:116
-#: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
-#: ../src/gui/guides.c:862 ../src/iop/basicadj.c:631 ../src/iop/bilat.c:468
-#: ../src/iop/colisa.c:277 ../src/iop/colorbalance.c:1889
-#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1519
-#: ../src/iop/filmicrgb.c:4507 ../src/iop/lowpass.c:576
-msgid "contrast"
-msgstr "contraste"
-
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:418
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:589
 msgid "saturation formula"
@@ -4012,7 +4014,7 @@ msgid "lightness"
 msgstr "luminosidade"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2207 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2262 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3494 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -4610,13 +4612,13 @@ msgstr "tipo de ruído"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
-#: ../src/iop/agx.c:1924
+#: ../src/iop/agx.c:1980
 msgid "contrast in shadows"
 msgstr "contraste nas sombras"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
-#: ../src/iop/agx.c:1948
+#: ../src/iop/agx.c:2004
 msgid "contrast in highlights"
 msgstr "contraste nos realces"
 
@@ -5124,8 +5126,8 @@ msgid "line"
 msgstr "linha"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2440 ../src/iop/basecurve.c:2127 ../src/iop/rgbcurve.c:1523
-#: ../src/iop/tonecurve.c:1288
+#: ../src/iop/agx.c:2107 ../src/iop/agx.c:2537 ../src/iop/basecurve.c:2127
+#: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "curva"
 
@@ -5485,7 +5487,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:644 ../src/iop/channelmixerrgb.c:4619
 #: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3102
-#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:391 ../src/iop/vignette.c:1045
+#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:389 ../src/iop/vignette.c:1045
 #: ../src/libs/history.c:967
 msgid "brightness"
 msgstr "brilho"
@@ -5828,70 +5830,70 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3897
+#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3899
 #: ../src/iop/colorequal.c:3051
 msgid "sliders"
 msgstr "controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3902
+#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3904
 msgid "dropdowns"
 msgstr "menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3907
+#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3909
 msgid "buttons"
 msgstr "botões"
 
-#: ../src/bauhaus/bauhaus.c:3564
+#: ../src/bauhaus/bauhaus.c:3566
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3564
+#: ../src/bauhaus/bauhaus.c:3566
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3565
+#: ../src/bauhaus/bauhaus.c:3567
 msgid "button pressed"
 msgstr "botão pressionado"
 
-#: ../src/bauhaus/bauhaus.c:3802
+#: ../src/bauhaus/bauhaus.c:3804
 msgid "not that many sliders"
 msgstr "nem tantos controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:3816
+#: ../src/bauhaus/bauhaus.c:3818
 msgid "not that many dropdowns"
 msgstr "nem tantos menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:3835
+#: ../src/bauhaus/bauhaus.c:3837
 msgid "not that many buttons"
 msgstr "nem tantos botões"
 
-#: ../src/bauhaus/bauhaus.c:3840 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:3842 ../src/gui/accelerators.c:392
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3841 ../src/bauhaus/bauhaus.c:3847
+#: ../src/bauhaus/bauhaus.c:3843 ../src/bauhaus/bauhaus.c:3849
 #: ../src/gui/accelerators.c:371
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3842
+#: ../src/bauhaus/bauhaus.c:3844
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3843 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:3845 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3846 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3848 ../src/libs/select.c:40
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3886
+#: ../src/bauhaus/bauhaus.c:3888
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3891
+#: ../src/bauhaus/bauhaus.c:3893
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -7663,17 +7665,17 @@ msgstr ""
 "ou, se este diretório não existir, de\n"
 "<b>%s</b>"
 
-#: ../src/common/mipmap_cache.c:1327 ../src/imageio/imageio.c:1056
+#: ../src/common/mipmap_cache.c:1327 ../src/imageio/imageio.c:1086
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
 
-#: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1064
+#: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1094
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "não fi possível carregar a imagem `%s'!"
 
-#: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1067
+#: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1097
 #, c-format
 msgid "image '%s' not supported"
 msgstr "imagem `%s` não é suportada"
@@ -9432,7 +9434,7 @@ msgstr ""
 "pressione 'm' para alternar visualização de máscara."
 
 #: ../src/develop/blend_gui.c:2674 ../src/develop/blend_gui.c:3552
-#: ../src/iop/agx.c:2153 ../src/iop/agx.c:2161 ../src/iop/basicadj.c:624
+#: ../src/iop/agx.c:2208 ../src/iop/agx.c:2216 ../src/iop/basicadj.c:624
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
 #: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
@@ -9440,13 +9442,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4454
 #: ../src/iop/graduatednd.c:1065 ../src/iop/negadoctor.c:1004
 #: ../src/iop/profile_gamma.c:629 ../src/iop/profile_gamma.c:635
-#: ../src/iop/relight.c:249 ../src/iop/soften.c:392 ../src/iop/toneequal.c:3305
-#: ../src/iop/toneequal.c:3308 ../src/iop/toneequal.c:3311
-#: ../src/iop/toneequal.c:3314 ../src/iop/toneequal.c:3317
-#: ../src/iop/toneequal.c:3320 ../src/iop/toneequal.c:3323
-#: ../src/iop/toneequal.c:3326 ../src/iop/toneequal.c:3329
-#: ../src/iop/toneequal.c:3446 ../src/iop/toneequal.c:3455
-#: ../src/iop/toneequal.c:3465 ../src/views/darkroom.c:2651
+#: ../src/iop/relight.c:249 ../src/iop/soften.c:390 ../src/iop/toneequal.c:3236
+#: ../src/iop/toneequal.c:3239 ../src/iop/toneequal.c:3242
+#: ../src/iop/toneequal.c:3245 ../src/iop/toneequal.c:3248
+#: ../src/iop/toneequal.c:3251 ../src/iop/toneequal.c:3254
+#: ../src/iop/toneequal.c:3257 ../src/iop/toneequal.c:3260
+#: ../src/iop/toneequal.c:3317 ../src/iop/toneequal.c:3327
+#: ../src/iop/toneequal.c:3387 ../src/views/darkroom.c:2651
 msgid " EV"
 msgstr " EV"
 
@@ -12824,10 +12826,10 @@ msgstr "selecione a pasta do script"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2422 ../src/iop/channelmixerrgb.c:4420
+#: ../src/iop/agx.c:2519 ../src/iop/channelmixerrgb.c:4420
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3005 ../src/iop/filmicrgb.c:4379
-#: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3298
+#: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
 #: ../src/libs/image.c:497 ../src/views/lighttable.c:1329
 msgid "page"
 msgstr "página"
@@ -14720,7 +14722,7 @@ msgstr "nenhuma predefinição"
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2572
+#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2669
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
@@ -15393,7 +15395,7 @@ msgstr "gráfico"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1084
+#: ../src/imageio/imageio.c:1114
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -15402,17 +15404,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/imageio/imageio.c:1086
+#: ../src/imageio/imageio.c:1116
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/imageio/imageio.c:1086
+#: ../src/imageio/imageio.c:1116
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/imageio/imageio.c:1103
+#: ../src/imageio/imageio.c:1133
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -15785,24 +15787,29 @@ msgstr "não-linear, RGB"
 #: ../src/iop/channelmixer.c:139 ../src/iop/lut3d.c:139
 #: ../src/iop/negadoctor.c:143 ../src/iop/profile_gamma.c:100
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
-#: ../src/iop/rgblevels.c:122 ../src/iop/sigmoid.c:207 ../src/iop/soften.c:102
-#: ../src/iop/soften.c:104
+#: ../src/iop/rgblevels.c:122 ../src/iop/sigmoid.c:207 ../src/iop/soften.c:100
+#: ../src/iop/soften.c:102
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
-#: ../src/iop/agx.c:1895
+#: ../src/iop/agx.c:1941 ../src/iop/agx.c:2131
+msgctxt "section"
+msgid "curve"
+msgstr "curva"
+
+#: ../src/iop/agx.c:1951
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "deslocar o pivô de entrada para preto (-) ou branco (+)"
 
-#: ../src/iop/agx.c:1904
+#: ../src/iop/agx.c:1960
 msgid "darken or brighten the pivot (output)"
 msgstr "escurecer ou clarear o pivô de saída"
 
-#: ../src/iop/agx.c:1910
-msgid "slope of the linear section"
-msgstr "inclinação da seção linear"
+#: ../src/iop/agx.c:1966
+msgid "slope of the linear section around the pivot"
+msgstr "inclinação da seção linear ao redor do pivô"
 
-#: ../src/iop/agx.c:1928
+#: ../src/iop/agx.c:1984
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
 "target black cannot be reached with the selected contrast and pivot "
@@ -15826,7 +15833,7 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de branco)."
 
-#: ../src/iop/agx.c:1952
+#: ../src/iop/agx.c:2008
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "target white cannot be reached with the selected contrast and pivot "
@@ -15850,58 +15857,58 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de preto)."
 
-#: ../src/iop/agx.c:1968
+#: ../src/iop/agx.c:2024
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "parâmetros básicos da curva"
 
-#: ../src/iop/agx.c:1989
+#: ../src/iop/agx.c:2045
 msgid "decrease or increase contrast and brightness"
 msgstr "aumentar ou diminuir contraste e brilho"
 
-#: ../src/iop/agx.c:1994
+#: ../src/iop/agx.c:2050
 msgid "deepen or lift shadows"
 msgstr "aprofundar ou tirar profundidade de sombras"
 
-#: ../src/iop/agx.c:1998
+#: ../src/iop/agx.c:2054
 msgid "increase or decrease brightness"
 msgstr "aumentar ou diminuir brilho"
 
-#: ../src/iop/agx.c:2005
+#: ../src/iop/agx.c:2061
 msgid "decrease or increase saturation"
 msgstr "aumentar ou diminuir saturação"
 
-#: ../src/iop/agx.c:2012
+#: ../src/iop/agx.c:2068
 msgid "increase to bring hues closer to the original"
 msgstr "aumente para trazer as matizes mais próximas do original"
 
-#: ../src/iop/agx.c:2024
+#: ../src/iop/agx.c:2080
 msgctxt "section"
 msgid "look"
 msgstr "aparência"
 
-#: ../src/iop/agx.c:2047
+#: ../src/iop/agx.c:2103
 msgid "show curve"
 msgstr "mostrar a curva"
 
-#: ../src/iop/agx.c:2051 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:2107 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
-#: ../src/iop/rawdenoise.c:908 ../src/iop/toneequal.c:3349
+#: ../src/iop/rawdenoise.c:908 ../src/iop/toneequal.c:3280
 msgid "graph"
 msgstr "gráfico"
 
-#: ../src/iop/agx.c:2054
+#: ../src/iop/agx.c:2110
 msgid "tone mapping curve"
 msgstr "curva de mapeamento de tons"
 
-#: ../src/iop/agx.c:2069
+#: ../src/iop/agx.c:2125
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "parâmetros avançados da curva"
 
-#: ../src/iop/agx.c:2087
+#: ../src/iop/agx.c:2143
 msgid ""
 "length to keep curve linear below pivot.\n"
 "may crush shadows"
@@ -15909,11 +15916,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear abaixo do pivô.\n"
 "pode cortar sombras"
 
-#: ../src/iop/agx.c:2096
+#: ../src/iop/agx.c:2152
 msgid "raise for a faded look"
 msgstr "aumente para um visual desbotado"
 
-#: ../src/iop/agx.c:2105
+#: ../src/iop/agx.c:2161
 msgid ""
 "length to keep curve linear above pivot.\n"
 "may clip highlights"
@@ -15921,11 +15928,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear aima do o pivô.\n"
 "pode cortar realces"
 
-#: ../src/iop/agx.c:2114
+#: ../src/iop/agx.c:2170
 msgid "max output brightness"
 msgstr "brilho máximo de saída"
 
-#: ../src/iop/agx.c:2120
+#: ../src/iop/agx.c:2176
 msgid ""
 "tries to make sure the curve always remains S-shaped,\n"
 "given that contrast is high enough, so toe and shoulder\n"
@@ -15939,7 +15946,7 @@ msgstr ""
 "afeta o contraste global, mas você pode ter que compensar com o deslizador "
 "de contraste, ou com controles de base/ombro"
 
-#: ../src/iop/agx.c:2131
+#: ../src/iop/agx.c:2187
 msgid ""
 "shifts representation (but not output brightness) of pivot\n"
 "along the y axis of the curve.\n"
@@ -15951,20 +15958,20 @@ msgstr ""
 "afeta o contraste global, mas você pode ter que compensar com o deslizador "
 "de contraste, ou com controles de base/ombro."
 
-#: ../src/iop/agx.c:2145
+#: ../src/iop/agx.c:2201
 msgctxt "section"
 msgid "input exposure range"
 msgstr "extensão da exposição de entrada"
 
-#: ../src/iop/agx.c:2155
+#: ../src/iop/agx.c:2210
 msgid "relative exposure above mid-gray (white point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de branco)"
 
-#: ../src/iop/agx.c:2163
+#: ../src/iop/agx.c:2218
 msgid "relative exposure below mid-gray (black point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de preto)"
 
-#: ../src/iop/agx.c:2171 ../src/iop/filmicrgb.c:4421
+#: ../src/iop/agx.c:2226 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -15972,31 +15979,26 @@ msgstr ""
 "simetricamente aumenta ou diminui o alcance dinâmico calculado.\n"
 "útil para dar margem de segurança em luminâncias extremas."
 
-#: ../src/iop/agx.c:2176 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
+#: ../src/iop/agx.c:2231 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
 #: ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
 
-#: ../src/iop/agx.c:2178
+#: ../src/iop/agx.c:2233
 msgid "pick image area to automatically set black and white exposure"
 msgstr ""
 "selecione área da imagem para automaticamente determinar exposição de preto "
 "e de branco"
 
-#: ../src/iop/agx.c:2202
+#: ../src/iop/agx.c:2257
 msgid "blender-like"
 msgstr "como-blender"
 
-#: ../src/iop/agx.c:2212
+#: ../src/iop/agx.c:2267
 msgid "unmodified"
 msgstr "não modificado"
 
-#: ../src/iop/agx.c:2258 ../src/iop/agx.c:2409 ../src/iop/sigmoid.c:923
-#: ../src/iop/sigmoid.c:927
-msgid "primaries"
-msgstr "primárias"
-
-#: ../src/iop/agx.c:2265
+#: ../src/iop/agx.c:2340
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -16010,15 +16012,15 @@ msgstr ""
 "especialmente com luzes com muito brilho e saturadas (p. ex. LEDs).\n"
 "a intenção é principalmente ser uma ferramenta para experimentação."
 
-#: ../src/iop/agx.c:2275
+#: ../src/iop/agx.c:2350
 msgid "reset primaries"
 msgstr "reinicializar primárias"
 
-#: ../src/iop/agx.c:2277
+#: ../src/iop/agx.c:2352
 msgid "reset primaries to a predefined configuration"
 msgstr "reinicializar primárias para a configuração predefinida"
 
-#: ../src/iop/agx.c:2285
+#: ../src/iop/agx.c:2360
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -16026,110 +16028,130 @@ msgstr ""
 "primárias do espaço de cores para usar como base para os ajustes abaixo\n"
 "'perfil de exportação' usa o perfil definido em 'perfil de cor de saída'"
 
-#: ../src/iop/agx.c:2288
+#: ../src/iop/agx.c:2363
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "antes do mapeamento de tons"
 
-#: ../src/iop/agx.c:2309 ../src/iop/sigmoid.c:950
+#: ../src/iop/agx.c:2384 ../src/iop/sigmoid.c:950
 msgid "attenuate the purity of the red primary"
 msgstr "atenuar a pureza do vermelho primário"
 
-#: ../src/iop/agx.c:2311 ../src/iop/sigmoid.c:951
+#: ../src/iop/agx.c:2386 ../src/iop/sigmoid.c:951
 msgid "rotate the red primary"
 msgstr "rotacionar o vermelho primário"
 
-#: ../src/iop/agx.c:2313 ../src/iop/sigmoid.c:952
+#: ../src/iop/agx.c:2388 ../src/iop/sigmoid.c:952
 msgid "attenuate the purity of the green primary"
 msgstr "atenuar a pureza do verde primário"
 
-#: ../src/iop/agx.c:2315 ../src/iop/sigmoid.c:953
+#: ../src/iop/agx.c:2390 ../src/iop/sigmoid.c:953
 msgid "rotate the green primary"
 msgstr "rotacionar o verde primário"
 
-#: ../src/iop/agx.c:2317 ../src/iop/sigmoid.c:954
+#: ../src/iop/agx.c:2392 ../src/iop/sigmoid.c:954
 msgid "attenuate the purity of the blue primary"
 msgstr "atenuar a pureza do azul primário"
 
-#: ../src/iop/agx.c:2319 ../src/iop/sigmoid.c:955
+#: ../src/iop/agx.c:2394 ../src/iop/sigmoid.c:955
 msgid "rotate the blue primary"
 msgstr "rotacionar o azul primário"
 
-#: ../src/iop/agx.c:2321
+#: ../src/iop/agx.c:2396
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "depois do mapeamento de tons"
 
-#: ../src/iop/agx.c:2327
+#: ../src/iop/agx.c:2407
+msgid "completely restore purity and undo all rotations"
+msgstr "restaurar completamente a pureza e desfazer todas as rotações"
+
+#: ../src/iop/agx.c:2409
+msgid "set from above"
+msgstr "determinar a partir de acima"
+
+#: ../src/iop/agx.c:2411
+msgid ""
+"set parameters to completely reverse primaries modifications,\n"
+"but allow subsequent editing"
+msgstr ""
+"determinar parâmetros para revertercompletamente as modificações\n"
+"nas primárias, mas permitindo edições subsequentes"
+
+#: ../src/iop/agx.c:2424
 msgid "overall purity boost"
 msgstr "incremento geral de pureza"
 
-#: ../src/iop/agx.c:2333
+#: ../src/iop/agx.c:2430
 msgid "overall unrotation ratio"
 msgstr "razão de des-rotação global"
 
-#: ../src/iop/agx.c:2336
+#: ../src/iop/agx.c:2433
 msgid "boost the purity of the red primary"
 msgstr "incrementar a pureza do vermelho primário"
 
-#: ../src/iop/agx.c:2338
+#: ../src/iop/agx.c:2435
 msgid "unrotate the red primary"
 msgstr "des-rotacionar o vermelho primário"
 
-#: ../src/iop/agx.c:2340
+#: ../src/iop/agx.c:2437
 msgid "boost the purity of the green primary"
 msgstr "incrementar a pureza do verde primário"
 
-#: ../src/iop/agx.c:2342
+#: ../src/iop/agx.c:2439
 msgid "unrotate the green primary"
 msgstr "des-rotacionar o verde primário"
 
-#: ../src/iop/agx.c:2344
+#: ../src/iop/agx.c:2441
 msgid "boost the purity of the blue primary"
 msgstr "incrementar a pureza do azul primário"
 
-#: ../src/iop/agx.c:2346
+#: ../src/iop/agx.c:2443
 msgid "unrotate the blue primary"
 msgstr "des-rotacionar o azul primário"
 
-#: ../src/iop/agx.c:2409
+#: ../src/iop/agx.c:2506 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+msgid "primaries"
+msgstr "primárias"
+
+#: ../src/iop/agx.c:2506
 msgid "color primaries adjustments"
 msgstr "ajustes de cores primárias"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2432 ../src/iop/agx.c:2455 ../src/iop/temperature.c:2091
+#: ../src/iop/agx.c:2529 ../src/iop/agx.c:2552 ../src/iop/temperature.c:2091
 #: ../src/iop/temperature.c:2104 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2117 ../src/iop/temperature.c:2125
 #: ../src/iop/temperature.c:2144
 msgid "settings"
 msgstr "configurações"
 
-#: ../src/iop/agx.c:2433 ../src/iop/agx.c:2456
+#: ../src/iop/agx.c:2530 ../src/iop/agx.c:2553
 msgid "main look and curve settings"
 msgstr "parâmetros principais do visual e da curva"
 
-#: ../src/iop/agx.c:2441
+#: ../src/iop/agx.c:2538
 msgid "detailed curve settings"
 msgstr "configurações detalhadas da curva"
 
-#: ../src/iop/agx.c:2537
+#: ../src/iop/agx.c:2634
 msgid "unmodified base primaries"
 msgstr "primárias base não modificadas"
 
-#: ../src/iop/agx.c:2548
+#: ../src/iop/agx.c:2645
 msgid "blender-like|base"
 msgstr "como-blender|base"
 
-#: ../src/iop/agx.c:2557
+#: ../src/iop/agx.c:2654
 msgid "blender-like|punchy"
 msgstr "como-blender|reforçado"
 
-#: ../src/iop/agx.c:2588
+#: ../src/iop/agx.c:2685
 msgid "smooth|base"
 msgstr "suave|base"
 
-#: ../src/iop/agx.c:2595
+#: ../src/iop/agx.c:2692
 msgid "smooth|punchy"
 msgstr "suavização|reforçado"
 
@@ -16715,7 +16737,7 @@ msgstr "aplicar ajustes usuais à imagem"
 #: ../src/iop/colorize.c:95 ../src/iop/colormapping.c:152
 #: ../src/iop/colorzones.c:142 ../src/iop/grain.c:391 ../src/iop/highpass.c:75
 #: ../src/iop/levels.c:137 ../src/iop/liquify.c:294 ../src/iop/lowlight.c:89
-#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:101
+#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:99
 #: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:97 ../src/iop/vibrance.c:94
 #: ../src/iop/vignette.c:117 ../src/iop/watermark.c:415
 msgid "creative"
@@ -16884,7 +16906,7 @@ msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
 #: ../src/iop/exposure.c:131 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
-#: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:103
+#: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
 msgstr "linear, RGB"
@@ -16923,7 +16945,7 @@ msgstr "quanto desfoque azul"
 msgid "apply Orton effect for a dreamy ethereal look"
 msgstr "aplica o efeito Orton para um visual etéreo onírico"
 
-#: ../src/iop/bloom.c:414 ../src/iop/soften.c:383 ../src/libs/camera.c:591
+#: ../src/iop/bloom.c:414 ../src/iop/soften.c:381 ../src/libs/camera.c:591
 #: ../src/libs/masks.c:107
 msgid "size"
 msgstr "tamanho"
@@ -23786,27 +23808,27 @@ msgstr ""
 "pode ser usado criativamente para um visual apagado ou estourando brancos "
 "antes."
 
-#: ../src/iop/soften.c:78
+#: ../src/iop/soften.c:76
 msgid "soften"
 msgstr "suavização"
 
-#: ../src/iop/soften.c:100
+#: ../src/iop/soften.c:98
 msgid "create a softened image using the Orton effect"
 msgstr "cria uma imagem suavizada usando o efeito Orton."
 
-#: ../src/iop/soften.c:385
+#: ../src/iop/soften.c:383
 msgid "the size of blur"
 msgstr "o tamanho do desfoque"
 
-#: ../src/iop/soften.c:389
+#: ../src/iop/soften.c:387
 msgid "the saturation of blur"
 msgstr "a saturação do desfoque"
 
-#: ../src/iop/soften.c:393
+#: ../src/iop/soften.c:391
 msgid "the brightness of blur"
 msgstr "o brilho do desfoque"
 
-#: ../src/iop/soften.c:397
+#: ../src/iop/soften.c:395
 msgid "the mix of effect"
 msgstr "a mistura do efeito"
 
@@ -24255,80 +24277,80 @@ msgstr "alguns parâmetros estão fora dos limites"
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3212
+#: ../src/iop/toneequal.c:3144
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:3215
+#: ../src/iop/toneequal.c:3147
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:3218
+#: ../src/iop/toneequal.c:3150
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3302 ../src/iop/toneequal.c:3331
-#: ../src/iop/toneequal.c:3332 ../src/iop/toneequal.c:3333
-#: ../src/iop/toneequal.c:3334 ../src/iop/toneequal.c:3335
-#: ../src/iop/toneequal.c:3336 ../src/iop/toneequal.c:3337
-#: ../src/iop/toneequal.c:3338 ../src/iop/toneequal.c:3339
+#: ../src/iop/toneequal.c:3233 ../src/iop/toneequal.c:3262
+#: ../src/iop/toneequal.c:3263 ../src/iop/toneequal.c:3264
+#: ../src/iop/toneequal.c:3265 ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3267 ../src/iop/toneequal.c:3268
+#: ../src/iop/toneequal.c:3269 ../src/iop/toneequal.c:3270
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3331
+#: ../src/iop/toneequal.c:3262
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3332
+#: ../src/iop/toneequal.c:3263
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3333
+#: ../src/iop/toneequal.c:3264
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3334
+#: ../src/iop/toneequal.c:3265
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3335
+#: ../src/iop/toneequal.c:3266
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3336
+#: ../src/iop/toneequal.c:3267
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3268
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3338
+#: ../src/iop/toneequal.c:3269
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3339
+#: ../src/iop/toneequal.c:3270
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3343
+#: ../src/iop/toneequal.c:3274
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3369
+#: ../src/iop/toneequal.c:3300
 msgid "double-click to reset the curve"
 msgstr "clique-duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3373
+#: ../src/iop/toneequal.c:3304
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3376
+#: ../src/iop/toneequal.c:3307
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -24340,12 +24362,40 @@ msgstr ""
 "valores negativos evitarão oscilações e tem comportamento mais robusto\n"
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
+#: ../src/iop/toneequal.c:3320
+msgid ""
+"use this to slide the mask average exposure along channels\n"
+"for a better control of the exposure correction with the available nodes."
+msgstr ""
+"use para mover a exposição média da máscara pelos canais\n"
+"para melhor controle da correção de exposição com os nós disponíveis."
+
+#: ../src/iop/toneequal.c:3323
+msgid "auto-adjust the average exposure"
+msgstr "auto-ajustar para exposição média"
+
+#: ../src/iop/toneequal.c:3330
+msgid ""
+"use this to counter the averaging effect of the guided filter\n"
+"and dilate the mask contrast around -4EV\n"
+"this allows to spread the exposure histogram over more channels\n"
+"for a better control of the exposure correction."
+msgstr ""
+"use para compensar o efeito do filtro guiado\n"
+"e dilatar o contraste da máscara ao redor de -4EV\n"
+"isto permite espalhar o histograma de exposição sobre mais canais\n"
+"para um controle melhor da correção de exposição."
+
+#: ../src/iop/toneequal.c:3335
+msgid "auto-adjust the contrast"
+msgstr "auto-ajustar contraste"
+
 #. Masking options
-#: ../src/iop/toneequal.c:3386
+#: ../src/iop/toneequal.c:3339
 msgid "masking"
 msgstr "máscara"
 
-#: ../src/iop/toneequal.c:3391
+#: ../src/iop/toneequal.c:3344
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -24353,11 +24403,11 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3394
+#: ../src/iop/toneequal.c:3347
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3397
+#: ../src/iop/toneequal.c:3350
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -24381,7 +24431,7 @@ msgstr ""
 "contrário do filtro guiado que suaviza menos os realces)\n"
 "'EIGF por média' é uma média geométrica dos métodos 'não' e 'EIGF'"
 
-#: ../src/iop/toneequal.c:3410
+#: ../src/iop/toneequal.c:3363
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -24389,7 +24439,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3418
+#: ../src/iop/toneequal.c:3371
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -24399,7 +24449,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "da sala escura muito mais lenta se o módulo de redução de ruído for usado."
 
-#: ../src/iop/toneequal.c:3426
+#: ../src/iop/toneequal.c:3379
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -24413,22 +24463,7 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3440
-msgid ""
-"mask histogram span between the first and last deciles.\n"
-"the central line shows the average. orange bars appear at extrema if "
-"clipping occurs."
-msgstr ""
-"o histograma de máscara se estende entre o primeiro e último decil.\n"
-"a linha central mostra a média. as barras laranja aparecem nos extremos se "
-"houver corte."
-
-#: ../src/iop/toneequal.c:3443
-msgctxt "section"
-msgid "mask post-processing"
-msgstr "pós-processamento da máscara"
-
-#: ../src/iop/toneequal.c:3449
+#: ../src/iop/toneequal.c:3390
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -24439,35 +24474,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3458
-msgid ""
-"use this to slide the mask average exposure along channels\n"
-"for a better control of the exposure correction with the available nodes."
-msgstr ""
-"use para mover a exposição média da máscara pelos canais\n"
-"para melhor controle da correção de exposição com os nós disponíveis."
-
-#: ../src/iop/toneequal.c:3461
-msgid "auto-adjust the average exposure"
-msgstr "auto-ajustar para exposição média"
-
-#: ../src/iop/toneequal.c:3468
-msgid ""
-"use this to counter the averaging effect of the guided filter\n"
-"and dilate the mask contrast around -4EV\n"
-"this allows to spread the exposure histogram over more channels\n"
-"for a better control of the exposure correction."
-msgstr ""
-"use para compensar o efeito do filtro guiado\n"
-"e dilatar o contraste da máscara ao redor de -4EV\n"
-"isto permite espalhar o histograma de exposição sobre mais canais\n"
-"para um controle melhor da correção de exposição."
-
-#: ../src/iop/toneequal.c:3473
-msgid "auto-adjust the contrast"
-msgstr "auto-ajustar contraste"
-
-#: ../src/iop/toneequal.c:3485 ../src/iop/toneequal.c:3492
+#: ../src/iop/toneequal.c:3404 ../src/iop/toneequal.c:3411
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -30280,6 +30287,22 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "contrast around the pivot"
+#~ msgstr "contraste ao redor do pivô"
+
+#~ msgid ""
+#~ "mask histogram span between the first and last deciles.\n"
+#~ "the central line shows the average. orange bars appear at extrema if "
+#~ "clipping occurs."
+#~ msgstr ""
+#~ "o histograma de máscara se estende entre o primeiro e último decil.\n"
+#~ "a linha central mostra a média. as barras laranja aparecem nos extremos "
+#~ "se houver corte."
+
+#~ msgctxt "section"
+#~ msgid "mask post-processing"
+#~ msgstr "pós-processamento da máscara"
 
 #~ msgid "select a preset..."
 #~ msgstr "selecione uma predefinição..."
