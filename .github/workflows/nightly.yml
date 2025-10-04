@@ -287,7 +287,7 @@ jobs:
       - name: Create Inno Setup installer
         shell: pwsh
         run: |
-          choco upgrade innosetup
+          choco upgrade innosetup --no-progress
           cd ${{ env.INSTALL_PREFIX }}
           cp ${{ env.BUILD_DIR }}/darktable.iss ./
           # Create multi-resolution .ico file expected by the .iss script for use as setup file icon.
