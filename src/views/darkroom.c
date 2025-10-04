@@ -1576,6 +1576,7 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
   if(!dev->gui_attached) return;
 
   dev->late_scaling.enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_conf_set_bool("darkroom/ui/late_scaling/enabled", dev->late_scaling.enabled);
 
   // we just toggled off and had one of HQ pipelines running
   if(!dev->late_scaling.enabled
@@ -1621,6 +1622,7 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w,
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
+  dt_conf_set_bool("darkroom/ui/overexposed/enabled", d->overexposed.enabled);
   dt_dev_reprocess_center(d);
 }
 
@@ -1674,6 +1676,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w,
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.enabled = !d->rawoverexposed.enabled;
+  dt_conf_set_bool("darkroom/ui/rawoverexposed/enabled", d->rawoverexposed.enabled);
   dt_dev_reprocess_center(d);
 }
 
@@ -2528,6 +2531,8 @@ void gui_init(dt_view_t *self)
                    G_CALLBACK(_latescaling_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      dev->late_scaling.button, DT_VIEW_DARKROOM);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->late_scaling.button),
+                               dt_conf_get_bool("darkroom/ui/late_scaling/enabled"));
 
   GtkWidget *colorscheme, *mode;
 
@@ -2545,6 +2550,8 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->rawoverexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->rawoverexposed.button, "rawoverexposed");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->rawoverexposed.button),
+                                 dt_conf_get_bool("darkroom/ui/rawoverexposed/enabled"));
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
@@ -2610,6 +2617,8 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->overexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->overexposed.button, "overexposed");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->overexposed.button),
+                                 dt_conf_get_bool("darkroom/ui/overexposed/enabled"));
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);

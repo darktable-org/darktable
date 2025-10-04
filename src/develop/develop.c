@@ -129,6 +129,8 @@ void dt_dev_init(dt_develop_t *dev,
 
   dt_dev_init_chroma(dev);
 
+  dev->late_scaling.enabled = FALSE;
+
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode =
     dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
