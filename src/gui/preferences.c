@@ -195,13 +195,6 @@ static void use_sys_font_callback(GtkWidget *widget,
   reload_ui_last_theme();
 }
 
-static void install_shortcuts_callback(GtkWidget *widget,
-                                       gpointer user_data)
-{
-  dt_conf_set_bool("accel/load_localized_defaults",
-                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-}
-
 static void save_usercss(GtkTextBuffer *buffer)
 {
   // get file locations
