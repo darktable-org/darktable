@@ -454,6 +454,8 @@ int legacy_params(dt_iop_module_t *self,
 
     memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
 
+    np->completely_reverse_primaries = FALSE;
+
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = 5;
