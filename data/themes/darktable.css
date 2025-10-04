@@ -584,7 +584,7 @@ dialog .sidebar row:selected:hover label,
 /* Set modules name header */
 #module-header
 {
-  border-bottom: 1px solid @plugin_bg_color;
+  border-bottom: 1px solid shade(@plugin_bg_color, 1.05);
   padding: 0.5em;
 }
 
