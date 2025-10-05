@@ -1861,6 +1861,18 @@ static void _update_curve_warnings(dt_iop_module_t *self)
                            params.need_concave_shoulder && warnings_enabled);
 }
 
+static void _update_gamma_slider_sensitivity(const dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(g && g->curve_gamma)
+  {
+    // a non-sensitive widget is greyed out and does not respond to input
+    gtk_widget_set_sensitive(g->curve_gamma, !p->auto_gamma);
+  }
+}
+
 static void _update_post_curve_primaries_visibility(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1914,6 +1926,7 @@ void gui_changed(dt_iop_module_t *self,
     darktable.gui->reset--;
   }
 
+  _update_gamma_slider_sensitivity(self);
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
   _update_post_curve_primaries_visibility(self);
@@ -2294,6 +2307,7 @@ static void _set_post_curve_primaries_from_pre_callback(GtkWidget *widget, dt_io
   dt_iop_gui_update(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
 // GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
@@ -2317,6 +2331,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
 
+  _update_gamma_slider_sensitivity(self);
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
   _update_post_curve_primaries_visibility(self);
