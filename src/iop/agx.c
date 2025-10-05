@@ -2404,7 +2404,8 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   g->completely_reverse_primaries = dt_bauhaus_toggle_from_params(self, "completely_reverse_primaries");
   self->widget = parent_vbox;
 
-  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
+  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity, undo all rotations, and hide\n"
+                                                                 "the controls below. uncheck to restore the previous state."));
 
   g->set_post_curve_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
   gtk_widget_set_tooltip_text(g->set_post_curve_primaries_from_pre_button,
