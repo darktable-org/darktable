@@ -87,7 +87,7 @@ static inline void _agx_compress_into_gamut(float4 *pixel)
 static inline float _agx_apply_log_encoding(const float x, const float range_in_ev, const float min_ev)
 {
   const float x_relative = fmax(_epsilon, x / 0.18f);
-  const float mapped = (dtcl_log(fmax(x_relative, 0.0f))/0.69314718056f - min_ev) / range_in_ev;
+  const float mapped = (log2(fmax(x_relative, 0.0f)) - min_ev) / range_in_ev;
   return clamp(mapped, 0.0f, 1.0f);
 }
 
