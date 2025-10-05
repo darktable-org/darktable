@@ -2399,17 +2399,17 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
   SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_inset",
-                    _("attenuate the purity of the red primary"),
+                    _("increase to desaturate reds in highlights faster"),
                     "_rotation",
-                    _("rotate the red primary"));
+                    _("shift the red primary towards yellow (+) or magenta (-)"));
   SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_inset",
-                    _("attenuate the purity of the green primary"),
+                    _("increase to desaturate greens in highlights faster"),
                     "_rotation",
-                    _("rotate the green primary"));
+                    _("shift the green primary towards cyan (+) or yellow (-)"));
   SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_inset",
-                    _("attenuate the purity of the blue primary"),
+                    _("increase to desaturate blues in highlights faster"),
                     "_rotation",
-                    _("rotate the blue primary"));
+                    _("shift the blue primary towards magenta (+) or cyan (-)"));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "after tone mapping")));
 
@@ -2449,17 +2449,17 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, _("overall unrotation ratio"));
 
   SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_outset",
-                    _("boost the purity of the red primary"),
+                    _("restore the purity of red, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the red primary"));
+                    _("reverse the color shift in reds"));
   SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_outset",
-                    _("boost the purity of the green primary"),
+                    _("restore the purity of green, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the green primary"));
+                    _("reverse the color shift in greens"));
   SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_outset",
-                    _("boost the purity of the blue primary"),
+                    _("restore the purity of blue, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the blue primary"));
+                    _("reverse the color shift in blues"));
 #undef SETUP_COLOR_COMBO
 
   self->widget = main_box;
