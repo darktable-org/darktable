@@ -1957,7 +1957,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
-  gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (output)"));
+  gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
 
   // curve_contrast_around_pivot
   slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
@@ -1977,7 +1977,9 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_gui_box_add(self->widget, toe_hbox);
 
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
+  gtk_widget_set_tooltip_text(slider, _("contrast in shadows\n"
+                                        "higher values keep the slope nearly constant for longer,\n"
+                                        "at the cost of a more sudden drop near black"));
   controls->toe_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->toe_warning_icon,
@@ -2001,7 +2003,9 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_gui_box_add(self->widget, shoulder_hbox);
 
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
+  gtk_widget_set_tooltip_text(slider, _("contrast in highlights\n"
+                                        "higher values keep the slope nearly constant for longer,\n"
+                                        "at the cost of a more sudden drop near white"));
   controls->shoulder_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->shoulder_warning_icon,
@@ -2140,7 +2144,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider,
-                              _("length to keep curve linear below pivot.\n"
+                              _("length to keep curve linear below the pivot.\n"
                                   "may crush shadows"));
 
   // Toe intersection point
@@ -2158,7 +2162,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider,
-                              _("length to keep curve linear above pivot.\n"
+                              _("length to keep curve linear above the pivot.\n"
                                   "may clip highlights"));
 
   // Shoulder intersection point
@@ -2167,27 +2171,26 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider, _("max output brightness"));
+  gtk_widget_set_tooltip_text(slider, _("max linear output power"));
 
   // curve_gamma
   g->auto_gamma = dt_bauhaus_toggle_from_params(section, "auto_gamma");
   gtk_widget_set_tooltip_text
     (g->auto_gamma,
-     _("tries to make sure the curve always remains S-shaped,\n"
-       "given that contrast is high enough, so toe and shoulder\n"
-       "controls remain effective.\n"
-       "affects overall contrast, you may have to counteract it with the contrast slider, "
-       "or with toe / shoulder controls."));
+     _("adjusts the gamma automatically, trying to make sure\n"
+       "the curve always remains S-shaped (given that contrast\n"
+       "is high enough), so toe and shoulder controls remain effective."));
 
   slider = dt_bauhaus_slider_from_params(section, "curve_gamma");
   g->curve_gamma = slider;
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text
     (slider,
-     _("shifts representation (but not output brightness) of pivot\n"
+     _("shifts the representation (but not the output power) of the pivot\n"
        "along the y axis of the curve.\n"
-       "affects overall contrast, you may have to counteract it with the contrast slider, "
-       "or with toe / shoulder controls."));
+       "immediate contrast around the pivot is not affected,\n"
+       "but shadows and highlights are; you may have to counteract it\n"
+       "with the contrast slider or with toe / shoulder controls."));
 
   self->widget = parent;
 
