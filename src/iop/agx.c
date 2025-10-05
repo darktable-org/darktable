@@ -1868,7 +1868,6 @@ static void _update_gamma_slider_sensitivity(const dt_iop_module_t *self)
 
   if(g && g->curve_gamma)
   {
-    // a non-sensitive widget is greyed out and does not respond to input
     gtk_widget_set_sensitive(g->curve_gamma, !p->auto_gamma);
   }
 }
