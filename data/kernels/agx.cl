@@ -87,13 +87,13 @@ static inline void _agx_compress_into_gamut(float4 *pixel)
 static inline float _agx_apply_log_encoding(const float x, const float range_in_ev, const float min_ev)
 {
   const float x_relative = fmax(_epsilon, x / 0.18f);
-  const float mapped = (native_log2(fmax(x_relative, 0.0f)) - min_ev) / range_in_ev;
+  const float mapped = (dtcl_log(fmax(x_relative, 0.0f))/0.69314718056f - min_ev) / range_in_ev;
   return clamp(mapped, 0.0f, 1.0f);
 }
 
 static inline float _agx_sigmoid(const float x, const float power)
 {
-  return x / native_powr(1.0f + native_powr(x, power), 1.0f / power);
+  return x / dtcl_pow(1.0f + dtcl_pow(x, power), 1.0f / power);
 }
 
 static inline float _agx_scaled_sigmoid(const float x, const float scale, const float slope, const float power, const float transition_x, const float transition_y)
@@ -103,12 +103,12 @@ static inline float _agx_scaled_sigmoid(const float x, const float scale, const 
 
 static inline float _agx_fallback_toe(const float x, const dt_iop_agx_tone_mapping_params_t *params)
 {
-    return x < 0.0f ? params->target_black : params->target_black + fmax(0.0f, params->toe_fallback_coefficient * native_powr(x, params->toe_fallback_power));
+    return x < 0.0f ? params->target_black : params->target_black + fmax(0.0f, params->toe_fallback_coefficient * dtcl_pow(x, params->toe_fallback_power));
 }
 
 static inline float _agx_fallback_shoulder(const float x, const dt_iop_agx_tone_mapping_params_t *params)
 {
-    return x >= 1.0f ? params->target_white : params->target_white - fmax(0.0f, params->shoulder_fallback_coefficient * native_powr(1.0f - x, params->shoulder_fallback_power));
+    return x >= 1.0f ? params->target_white : params->target_white - fmax(0.0f, params->shoulder_fallback_coefficient * dtcl_pow(1.0f - x, params->shoulder_fallback_power));
 }
 
 static inline float _agx_apply_curve(const float x, const dt_iop_agx_tone_mapping_params_t *params)
@@ -154,9 +154,9 @@ static inline void _agx_look(float4 *pixel, const dt_iop_agx_tone_mapping_params
     temp.y = _agx_apply_slope_offset(pixel->y, slope, offset);
     temp.z = _agx_apply_slope_offset(pixel->z, slope, offset);
 
-    pixel->x = temp.x > 0.0f ? native_powr(temp.x, power) : temp.x;
-    pixel->y = temp.y > 0.0f ? native_powr(temp.y, power) : temp.y;
-    pixel->z = temp.z > 0.0f ? native_powr(temp.z, power) : temp.z;
+    pixel->x = temp.x > 0.0f ? dtcl_pow(temp.x, power) : temp.x;
+    pixel->y = temp.y > 0.0f ? dtcl_pow(temp.y, power) : temp.y;
+    pixel->z = temp.z > 0.0f ? dtcl_pow(temp.z, power) : temp.z;
 
     const float luma = _agx_luminance_from_matrix(*pixel, rendering_to_xyz);
 
@@ -192,9 +192,9 @@ static inline void _agx_tone_mapping(float4 *rgb_in_out, const dt_iop_agx_tone_m
         _agx_look(&transformed_pixel, params, rendering_to_xyz);
     }
 
-    transformed_pixel.x = native_powr(fmax(0.0f, transformed_pixel.x), params->curve_gamma);
-    transformed_pixel.y = native_powr(fmax(0.0f, transformed_pixel.y), params->curve_gamma);
-    transformed_pixel.z = native_powr(fmax(0.0f, transformed_pixel.z), params->curve_gamma);
+    transformed_pixel.x = dtcl_pow(fmax(0.0f, transformed_pixel.x), params->curve_gamma);
+    transformed_pixel.y = dtcl_pow(fmax(0.0f, transformed_pixel.y), params->curve_gamma);
+    transformed_pixel.z = dtcl_pow(fmax(0.0f, transformed_pixel.z), params->curve_gamma);
 
     if(params->restore_hue)
     {
