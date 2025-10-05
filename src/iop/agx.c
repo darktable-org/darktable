@@ -552,9 +552,9 @@ static void _set_smooth_primaries(dt_iop_agx_params_t *p)
   // sigmoid: "Don't restore purity - try to avoid posterization."
   p->master_outset_ratio = 0.f;
   // but allow the user to do so simply by dragging the master control
-  p->red_outset = 0.1f;
-  p->green_outset = 0.1f;
-  p->blue_outset = 0.15f;
+  p->red_outset = p->red_inset;
+  p->green_outset = p->green_inset;
+  p->blue_outset = p->blue_inset;
 
   // sigmoid always reverses rotations
   p->master_unrotation_ratio = 1.f;
