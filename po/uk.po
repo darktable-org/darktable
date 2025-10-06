@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-04 11:59+0200\n"
-"PO-Revision-Date: 2025-10-04 15:52+0300\n"
+"POT-Creation-Date: 2025-10-06 08:00+0200\n"
+"PO-Revision-Date: 2025-10-06 12:42+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4017,7 +4017,7 @@ msgid "lightness"
 msgstr "Світлість"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2262 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2277 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3494 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -4615,13 +4615,11 @@ msgstr "Тип шуму"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
-#: ../src/iop/agx.c:1980
 msgid "contrast in shadows"
 msgstr "Контраст у тінях"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
-#: ../src/iop/agx.c:2004
 msgid "contrast in highlights"
 msgstr "Контраст у світлих тонах"
 
@@ -5118,9 +5116,9 @@ msgstr "Анульовано"
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
 #: ../src/views/darkroom.c:2390 ../src/views/darkroom.c:2910
 #: ../src/views/darkroom.c:2914 ../src/views/lighttable.c:837
-#: ../src/views/lighttable.c:846 ../src/views/lighttable.c:1317
-#: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1325
-#: ../src/views/lighttable.c:1329 ../src/views/lighttable.c:1333
+#: ../src/views/lighttable.c:846 ../src/views/lighttable.c:1322
+#: ../src/views/lighttable.c:1326 ../src/views/lighttable.c:1330
+#: ../src/views/lighttable.c:1334 ../src/views/lighttable.c:1338
 msgid "move"
 msgstr "Переміщення"
 
@@ -5129,7 +5127,7 @@ msgid "line"
 msgstr "Лінія"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2107 ../src/iop/agx.c:2537 ../src/iop/basecurve.c:2127
+#: ../src/iop/agx.c:2123 ../src/iop/agx.c:2555 ../src/iop/basecurve.c:2127
 #: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "Крива"
@@ -9498,7 +9496,7 @@ msgstr ""
 "Натисніть 'm' для перемикання перегляду маски."
 
 #: ../src/develop/blend_gui.c:2674 ../src/develop/blend_gui.c:3552
-#: ../src/iop/agx.c:2208 ../src/iop/agx.c:2216 ../src/iop/basicadj.c:624
+#: ../src/iop/agx.c:2223 ../src/iop/agx.c:2231 ../src/iop/basicadj.c:624
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
 #: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
@@ -12888,11 +12886,11 @@ msgstr "Вибрати каталог сценаріїв"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2519 ../src/iop/channelmixerrgb.c:4420
+#: ../src/iop/agx.c:2537 ../src/iop/channelmixerrgb.c:4420
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3005 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
-#: ../src/libs/image.c:497 ../src/views/lighttable.c:1329
+#: ../src/libs/image.c:497 ../src/views/lighttable.c:1334
 msgid "page"
 msgstr "Сторінка"
 
@@ -13054,7 +13052,7 @@ msgstr "Панорамування"
 #: ../src/iop/ashift.c:5706 ../src/iop/ashift.c:5810 ../src/iop/ashift.c:5812
 #: ../src/iop/ashift.c:6136 ../src/iop/clipping.c:1924
 #: ../src/iop/clipping.c:2105 ../src/iop/clipping.c:2121
-#: ../src/views/darkroom.c:2910 ../src/views/lighttable.c:1321
+#: ../src/views/darkroom.c:2910 ../src/views/lighttable.c:1326
 msgid "horizontal"
 msgstr "Горизонтально"
 
@@ -13062,7 +13060,7 @@ msgstr "Горизонтально"
 #: ../src/iop/ashift.c:5706 ../src/iop/ashift.c:5810 ../src/iop/ashift.c:5812
 #: ../src/iop/ashift.c:6134 ../src/iop/clipping.c:1923
 #: ../src/iop/clipping.c:2106 ../src/iop/clipping.c:2120
-#: ../src/views/darkroom.c:2914 ../src/views/lighttable.c:1325
+#: ../src/views/darkroom.c:2914 ../src/views/lighttable.c:1330
 msgid "vertical"
 msgstr "Вертикально"
 
@@ -14785,7 +14783,7 @@ msgstr "Немає пресетів"
 msgid "display-referred default"
 msgstr "Замовчування процесу \"на основі відображення\""
 
-#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2669
+#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2687
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
@@ -15856,24 +15854,35 @@ msgstr "нелінійна, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "лінійний простір, RGB, на основі відображення"
 
-#: ../src/iop/agx.c:1941 ../src/iop/agx.c:2131
+#: ../src/iop/agx.c:1953 ../src/iop/agx.c:2147
 msgctxt "section"
 msgid "curve"
 msgstr "Крива"
 
-#: ../src/iop/agx.c:1951
+#: ../src/iop/agx.c:1963
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "Змістити вхідний сигнал точи опори в бік чорного (-) або білого (+)"
 
-#: ../src/iop/agx.c:1960
-msgid "darken or brighten the pivot (output)"
-msgstr "Затемнити або освітлити опорну точку (вихід)"
+#: ../src/iop/agx.c:1972
+msgid "darken or brighten the pivot (linear output power)"
+msgstr ""
+"Затемнити або освітлити опорну точку (показник степеня лінійного виходу)"
 
-#: ../src/iop/agx.c:1966
+#: ../src/iop/agx.c:1978
 msgid "slope of the linear section around the pivot"
 msgstr "Нахил лінійної ділянки навколо точки опори"
 
-#: ../src/iop/agx.c:1984
+#: ../src/iop/agx.c:1992
+msgid ""
+"contrast in shadows\n"
+"higher values keep the slope nearly constant for longer,\n"
+"at the cost of a more sudden drop near black"
+msgstr ""
+"Контраст у тінях\n"
+"Вищі значення утримують нахил майже постійним довше,\n"
+"ціною більш різкого падіння поблизу чорного"
+
+#: ../src/iop/agx.c:1998
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
 "target black cannot be reached with the selected contrast and pivot "
@@ -15896,7 +15905,17 @@ msgstr ""
 "відносну експозицію чорного, або перемістіть білу точку ближче до опори\n"
 "зменшивши відносну експозицію білого)."
 
-#: ../src/iop/agx.c:2008
+#: ../src/iop/agx.c:2018
+msgid ""
+"contrast in highlights\n"
+"higher values keep the slope nearly constant for longer,\n"
+"at the cost of a more sudden drop near white"
+msgstr ""
+"Контраст у світлих тонах\n"
+"Вищі значення утримують нахил майже постійним довше,\n"
+"ціною більш різкого падіння поблизу білого"
+
+#: ../src/iop/agx.c:2024
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "target white cannot be reached with the selected contrast and pivot "
@@ -15919,41 +15938,41 @@ msgstr ""
 "відносну експозицію білого, або перемістіть чорну точку ближче до опори,\n"
 "зменшивши відносну експозицію чорного)."
 
-#: ../src/iop/agx.c:2024
+#: ../src/iop/agx.c:2040
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "Основні параметри кривої"
 
-#: ../src/iop/agx.c:2045
+#: ../src/iop/agx.c:2061
 msgid "decrease or increase contrast and brightness"
 msgstr "Зменшити або збільшити контрастність і яскравість"
 
-#: ../src/iop/agx.c:2050
+#: ../src/iop/agx.c:2066
 msgid "deepen or lift shadows"
 msgstr "Поглибити або підняти тіні"
 
-#: ../src/iop/agx.c:2054
+#: ../src/iop/agx.c:2070
 msgid "increase or decrease brightness"
 msgstr "Збільшити або зменшити яскравість"
 
-#: ../src/iop/agx.c:2061
+#: ../src/iop/agx.c:2077
 msgid "decrease or increase saturation"
 msgstr "Зменшити або збільшити насиченість"
 
-#: ../src/iop/agx.c:2068
+#: ../src/iop/agx.c:2084
 msgid "increase to bring hues closer to the original"
 msgstr "Збільшити, щоб наблизити відтінки до оригіналу"
 
-#: ../src/iop/agx.c:2080
+#: ../src/iop/agx.c:2096
 msgctxt "section"
 msgid "look"
 msgstr "Крива"
 
-#: ../src/iop/agx.c:2103
+#: ../src/iop/agx.c:2119
 msgid "show curve"
 msgstr "Показати криву"
 
-#: ../src/iop/agx.c:2107 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:2123 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -15961,80 +15980,79 @@ msgstr "Показати криву"
 msgid "graph"
 msgstr "Діаграма"
 
-#: ../src/iop/agx.c:2110
+#: ../src/iop/agx.c:2126
 msgid "tone mapping curve"
 msgstr "Крива тонального відображення"
 
-#: ../src/iop/agx.c:2125
+#: ../src/iop/agx.c:2141
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "Додаткові параметри кривої"
 
-#: ../src/iop/agx.c:2143
+#: ../src/iop/agx.c:2159
 msgid ""
-"length to keep curve linear below pivot.\n"
+"length to keep curve linear below the pivot.\n"
 "may crush shadows"
 msgstr ""
 "Довжина лінійної частини кривої нижче точки опори.\n"
 "Може призводити до втрати деталей в тінях"
 
-#: ../src/iop/agx.c:2152
+#: ../src/iop/agx.c:2168
 msgid "raise for a faded look"
 msgstr "Підняти для вицвілого вигляду"
 
-#: ../src/iop/agx.c:2161
+#: ../src/iop/agx.c:2177
 msgid ""
-"length to keep curve linear above pivot.\n"
+"length to keep curve linear above the pivot.\n"
 "may clip highlights"
 msgstr ""
 "Довжина лінійної частини кривої вище точки опори.\n"
 "Може обрізати найсвітліші ділянки"
 
-#: ../src/iop/agx.c:2170
-msgid "max output brightness"
-msgstr "Максимальна вихідна яскравість"
+#: ../src/iop/agx.c:2186
+msgid "max linear output power"
+msgstr "Максимальна степінь лінійного виходу"
 
-#: ../src/iop/agx.c:2176
+#: ../src/iop/agx.c:2192
 msgid ""
-"tries to make sure the curve always remains S-shaped,\n"
-"given that contrast is high enough, so toe and shoulder\n"
-"controls remain effective.\n"
-"affects overall contrast, you may have to counteract it with the contrast "
-"slider, or with toe / shoulder controls."
+"adjusts the gamma automatically, trying to make sure\n"
+"the curve always remains S-shaped (given that contrast\n"
+"is high enough), so toe and shoulder controls remain effective."
 msgstr ""
-"Намагається зробити так, щоб крива завжди залишалася S-подібною,\n"
-"за умови, що контрастність достатньо висока, щоб елементи керування\n"
-"нижньою та верхньою частинами кривої залишалися ефективними.\n"
-"Впливає на загальну контрастність, можливо, вам доведеться протидіяти цьому\n"
-"за допомогою повзунка контрастності або елементів керування частинами кривої."
-
-#: ../src/iop/agx.c:2187
-msgid ""
-"shifts representation (but not output brightness) of pivot\n"
-"along the y axis of the curve.\n"
-"affects overall contrast, you may have to counteract it with the contrast "
-"slider, or with toe / shoulder controls."
-msgstr ""
-"Зміщує представлення (але не вихідну яскравість) поворотної точки\n"
-"вздовж осі Y кривої.\n"
-"Впливає на загальний контраст, можливо, вам доведеться протидіяти\n"
-"цьому за допомогою повзунка контрасту або за допомогою елементів\n"
-"керування нижньою/верхньою частинами кривої."
+"Автоматично налаштовує гамму, намагаючись зробити так, щоб\n"
+"крива завжди залишалася S-подібною (за умови, що контрастність\n"
+"достатньо висока), щоб елементи керування нижньою та верхньою\n"
+"частинами кривої залишалися ефективними."
 
 #: ../src/iop/agx.c:2201
+msgid ""
+"shifts the representation (but not the output power) of the pivot\n"
+"along the y axis of the curve.\n"
+"immediate contrast around the pivot is not affected,\n"
+"but shadows and highlights are; you may have to counteract it\n"
+"with the contrast slider or with toe / shoulder controls."
+msgstr ""
+"Зміщує представлення (але не показник степеня виходу) опорної\n"
+"точки вздовж осі Y кривої.\n"
+"Контраст безпосередньо навколо опорної точки не змінюється, але\n"
+"змінюється в тінях і світлих ділянках; можливо, вам доведеться\n"
+"протидіяти цьому за допомогою повзунка контрасту або за допомогою\n"
+"елементів керування нижньою/верхньою частинами кривої."
+
+#: ../src/iop/agx.c:2216
 msgctxt "section"
 msgid "input exposure range"
 msgstr "Вхідний діапазон експозиції"
 
-#: ../src/iop/agx.c:2210
+#: ../src/iop/agx.c:2225
 msgid "relative exposure above mid-gray (white point)"
 msgstr "Відносна експозиція вище середнього сірого (точка білого)"
 
-#: ../src/iop/agx.c:2218
+#: ../src/iop/agx.c:2233
 msgid "relative exposure below mid-gray (black point)"
 msgstr "Відносна експозиція нижче середнього сірого (точка чорного)"
 
-#: ../src/iop/agx.c:2226 ../src/iop/filmicrgb.c:4421
+#: ../src/iop/agx.c:2241 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16042,26 +16060,26 @@ msgstr ""
 "Симетрично збільшити або зменшити обчислений динамічний діапазон.\n"
 "Корисно для створення запасу безпеки для екстремальних яскравостей."
 
-#: ../src/iop/agx.c:2231 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
+#: ../src/iop/agx.c:2246 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
 #: ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "Автоналаштування рівнів"
 
-#: ../src/iop/agx.c:2233
+#: ../src/iop/agx.c:2248
 msgid "pick image area to automatically set black and white exposure"
 msgstr ""
 "Виберіть область зображення для автоматичного встановлення експозиції "
 "чорного та білого"
 
-#: ../src/iop/agx.c:2257
+#: ../src/iop/agx.c:2272
 msgid "blender-like"
 msgstr "Blender-like"
 
-#: ../src/iop/agx.c:2267
+#: ../src/iop/agx.c:2282
 msgid "unmodified"
 msgstr "Незмінені"
 
-#: ../src/iop/agx.c:2340
+#: ../src/iop/agx.c:2357
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -16075,15 +16093,15 @@ msgstr ""
 "насиченим освітленням (наприклад, світлодіодами).\n"
 "Це в основному призначено для експериментів."
 
-#: ../src/iop/agx.c:2350
+#: ../src/iop/agx.c:2367
 msgid "reset primaries"
 msgstr "Скинути основні кольори"
 
-#: ../src/iop/agx.c:2352
+#: ../src/iop/agx.c:2369
 msgid "reset primaries to a predefined configuration"
 msgstr "Скинути основні кольори до попередньо визначеної конфігурації"
 
-#: ../src/iop/agx.c:2360
+#: ../src/iop/agx.c:2377
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -16093,49 +16111,59 @@ msgstr ""
 "'Профіль експорту' використовує профіль, встановлений у модулі 'Вихідний "
 "колірний профіль'"
 
-#: ../src/iop/agx.c:2363
+#: ../src/iop/agx.c:2380
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "До тонального відображення"
 
-#: ../src/iop/agx.c:2384 ../src/iop/sigmoid.c:950
-msgid "attenuate the purity of the red primary"
-msgstr "Послабити чистоту основного червоного"
+#: ../src/iop/agx.c:2401
+msgid "increase to desaturate reds in highlights faster"
+msgstr ""
+"Збільшення призведе до швидшого знебарвлення червоних відтінків у світлих "
+"тонах"
 
-#: ../src/iop/agx.c:2386 ../src/iop/sigmoid.c:951
-msgid "rotate the red primary"
-msgstr "Обертати основний червоний"
+#: ../src/iop/agx.c:2403
+msgid "shift the red primary towards yellow (+) or magenta (-)"
+msgstr "Зміщення червоного в бік жовтого (+) або мадженти (-)"
 
-#: ../src/iop/agx.c:2388 ../src/iop/sigmoid.c:952
-msgid "attenuate the purity of the green primary"
-msgstr "Послабити чистоту основного зеленого"
+#: ../src/iop/agx.c:2405
+msgid "increase to desaturate greens in highlights faster"
+msgstr ""
+"Збільшення призведе до швидшого знебарвлення зелених відтінків у світлих "
+"тонах"
 
-#: ../src/iop/agx.c:2390 ../src/iop/sigmoid.c:953
-msgid "rotate the green primary"
-msgstr "Обертати основний зелений"
+#: ../src/iop/agx.c:2407
+msgid "shift the green primary towards cyan (+) or yellow (-)"
+msgstr "Зміщення зеленого в бік ціану (+) або жовтого (-)"
 
-#: ../src/iop/agx.c:2392 ../src/iop/sigmoid.c:954
-msgid "attenuate the purity of the blue primary"
-msgstr "Послабити чистоту основного синього"
+#: ../src/iop/agx.c:2409
+msgid "increase to desaturate blues in highlights faster"
+msgstr ""
+"Збільшення призведе до швидшого знебарвлення синіх відтінків у світлих тонах"
 
-#: ../src/iop/agx.c:2394 ../src/iop/sigmoid.c:955
-msgid "rotate the blue primary"
-msgstr "Обертати основний синій"
+#: ../src/iop/agx.c:2411
+msgid "shift the blue primary towards magenta (+) or cyan (-)"
+msgstr "Зміщення синього в бік мадженти (+) або ціану (-)"
 
-#: ../src/iop/agx.c:2396
+#: ../src/iop/agx.c:2413
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "Після тонального відображення"
 
-#: ../src/iop/agx.c:2407
-msgid "completely restore purity and undo all rotations"
-msgstr "Повністю відновити чистоту та скасувати всі обертання"
+#: ../src/iop/agx.c:2424
+msgid ""
+"completely restore purity, undo all rotations, and hide\n"
+"the controls below. uncheck to restore the previous state."
+msgstr ""
+"Повністю відновити чистоту, скасувати всі обертання та\n"
+"приховати елементи керування нижче.\n"
+"Зніміть прапорець, щоб відновити попередній стан."
 
-#: ../src/iop/agx.c:2409
+#: ../src/iop/agx.c:2427
 msgid "set from above"
 msgstr "Встановити зі значень вище"
 
-#: ../src/iop/agx.c:2411
+#: ../src/iop/agx.c:2429
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
@@ -16143,80 +16171,80 @@ msgstr ""
 "Встановити параметри для повного скасування модифікацій\n"
 "основних кольорів, але дозволити подальше редагування"
 
-#: ../src/iop/agx.c:2424
+#: ../src/iop/agx.c:2442
 msgid "overall purity boost"
 msgstr "Загальне підсилення чистоти"
 
-#: ../src/iop/agx.c:2430
+#: ../src/iop/agx.c:2448
 msgid "overall unrotation ratio"
 msgstr "Загальний коефіцієнт зворотного обертання"
 
-#: ../src/iop/agx.c:2433
-msgid "boost the purity of the red primary"
-msgstr "Підсилити чистоту основного червоного"
+#: ../src/iop/agx.c:2451
+msgid "restore the purity of red, mostly in midtones and shadows"
+msgstr "Відновити чистоту червоного, переважно в середніх тонах і тінях"
 
-#: ../src/iop/agx.c:2435
-msgid "unrotate the red primary"
-msgstr "Обертати назад основний червоний"
+#: ../src/iop/agx.c:2453
+msgid "reverse the color shift in reds"
+msgstr "Скасувати колірний зсув у червоних тонах"
 
-#: ../src/iop/agx.c:2437
-msgid "boost the purity of the green primary"
-msgstr "Підсилити чистоту основного зеленого"
+#: ../src/iop/agx.c:2455
+msgid "restore the purity of green, mostly in midtones and shadows"
+msgstr "Відновити чистоту зеленого, переважно в середніх тонах і тінях"
 
-#: ../src/iop/agx.c:2439
-msgid "unrotate the green primary"
-msgstr "Обертати назад основний зелений"
+#: ../src/iop/agx.c:2457
+msgid "reverse the color shift in greens"
+msgstr "Скасувати колірний зсув у зелених тонах"
 
-#: ../src/iop/agx.c:2441
-msgid "boost the purity of the blue primary"
-msgstr "Підсилити чистоту основного синього"
+#: ../src/iop/agx.c:2459
+msgid "restore the purity of blue, mostly in midtones and shadows"
+msgstr "Відновити чистоту синього, переважно в середніх тонах і тінях"
 
-#: ../src/iop/agx.c:2443
-msgid "unrotate the blue primary"
-msgstr "Обертати назад основний синій"
+#: ../src/iop/agx.c:2461
+msgid "reverse the color shift in blues"
+msgstr "Скасувати колірний зсув у синіх тонах"
 
-#: ../src/iop/agx.c:2506 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+#: ../src/iop/agx.c:2524 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "Основні кольори"
 
-#: ../src/iop/agx.c:2506
+#: ../src/iop/agx.c:2524
 msgid "color primaries adjustments"
 msgstr "Коригування основних кольорів"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2529 ../src/iop/agx.c:2552 ../src/iop/temperature.c:2091
+#: ../src/iop/agx.c:2547 ../src/iop/agx.c:2570 ../src/iop/temperature.c:2091
 #: ../src/iop/temperature.c:2104 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2117 ../src/iop/temperature.c:2125
 #: ../src/iop/temperature.c:2144
 msgid "settings"
 msgstr "Налаштування"
 
-#: ../src/iop/agx.c:2530 ../src/iop/agx.c:2553
+#: ../src/iop/agx.c:2548 ../src/iop/agx.c:2571
 msgid "main look and curve settings"
 msgstr "Основні налаштування вигляду та кривої"
 
-#: ../src/iop/agx.c:2538
+#: ../src/iop/agx.c:2556
 msgid "detailed curve settings"
 msgstr "Детальні налаштування кривої"
 
-#: ../src/iop/agx.c:2634
+#: ../src/iop/agx.c:2652
 msgid "unmodified base primaries"
 msgstr "Немодифіковані основні кольори"
 
-#: ../src/iop/agx.c:2645
+#: ../src/iop/agx.c:2663
 msgid "blender-like|base"
 msgstr "Blender-like|Base"
 
-#: ../src/iop/agx.c:2654
+#: ../src/iop/agx.c:2672
 msgid "blender-like|punchy"
 msgstr "Blender-like|Punchy"
 
-#: ../src/iop/agx.c:2685
+#: ../src/iop/agx.c:2703
 msgid "smooth|base"
 msgstr "Smooth|Base"
 
-#: ../src/iop/agx.c:2692
+#: ../src/iop/agx.c:2710
 msgid "smooth|punchy"
 msgstr "Smooth|Punchy"
 
@@ -19582,26 +19610,26 @@ msgstr "Метод візуалізації"
 
 #: ../src/iop/colorout.c:840 ../src/libs/export.c:1618
 #: ../src/libs/print_settings.c:2553 ../src/libs/print_settings.c:2902
-#: ../src/views/darkroom.c:2722 ../src/views/lighttable.c:1249
+#: ../src/views/darkroom.c:2722 ../src/views/lighttable.c:1254
 msgid "perceptual"
 msgstr "Перцепційний"
 
 #: ../src/iop/colorout.c:841 ../src/libs/export.c:1619
 #: ../src/libs/print_settings.c:2554 ../src/libs/print_settings.c:2903
-#: ../src/views/darkroom.c:2723 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2723 ../src/views/lighttable.c:1255
 msgid "relative colorimetric"
 msgstr "Відносний колориметричний"
 
 #: ../src/iop/colorout.c:842 ../src/libs/export.c:1620
 #: ../src/libs/print_settings.c:2555 ../src/libs/print_settings.c:2904
-#: ../src/views/darkroom.c:2724 ../src/views/lighttable.c:1251
+#: ../src/views/darkroom.c:2724 ../src/views/lighttable.c:1256
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насиченість"
 
 #: ../src/iop/colorout.c:843 ../src/libs/export.c:1621
 #: ../src/libs/print_settings.c:2556 ../src/libs/print_settings.c:2905
-#: ../src/views/darkroom.c:2725 ../src/views/lighttable.c:1252
+#: ../src/views/darkroom.c:2725 ../src/views/lighttable.c:1257
 msgid "absolute colorimetric"
 msgstr "Абсолютний колориметричний"
 
@@ -21018,7 +21046,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1566 ../src/libs/export.c:1599
 #: ../src/libs/print_settings.c:2551 ../src/libs/print_settings.c:2898
-#: ../src/views/darkroom.c:2730 ../src/views/lighttable.c:1255
+#: ../src/views/darkroom.c:2730 ../src/views/lighttable.c:1260
 msgid "intent"
 msgstr "Метод"
 
@@ -23895,6 +23923,30 @@ msgstr ""
 "Основні кольори для використання як основи для наведених нижче коригувань\n"
 "'Робочий профіль' використовує профіль, встановлений у модулі 'Вхідний "
 "колірний профіль'"
+
+#: ../src/iop/sigmoid.c:950
+msgid "attenuate the purity of the red primary"
+msgstr "Послабити чистоту основного червоного"
+
+#: ../src/iop/sigmoid.c:951
+msgid "rotate the red primary"
+msgstr "Обертати основний червоний"
+
+#: ../src/iop/sigmoid.c:952
+msgid "attenuate the purity of the green primary"
+msgstr "Послабити чистоту основного зеленого"
+
+#: ../src/iop/sigmoid.c:953
+msgid "rotate the green primary"
+msgstr "Обертати основний зелений"
+
+#: ../src/iop/sigmoid.c:954
+msgid "attenuate the purity of the blue primary"
+msgstr "Послабити чистоту основного синього"
+
+#: ../src/iop/sigmoid.c:955
+msgid "rotate the blue primary"
+msgstr "Обертати основний синій"
 
 #: ../src/iop/sigmoid.c:962
 msgid "recover some of the original purity after the inset"
@@ -29948,19 +30000,19 @@ msgstr ""
 #: ../src/views/darkroom.c:2729 ../src/views/darkroom.c:2736
 #: ../src/views/darkroom.c:2755 ../src/views/darkroom.c:2757
 #: ../src/views/darkroom.c:2759 ../src/views/darkroom.c:2761
-#: ../src/views/lighttable.c:1255 ../src/views/lighttable.c:1257
+#: ../src/views/lighttable.c:1260 ../src/views/lighttable.c:1262
 msgid "profiles"
 msgstr "Профілі"
 
-#: ../src/views/darkroom.c:2737 ../src/views/lighttable.c:1257
+#: ../src/views/darkroom.c:2737 ../src/views/lighttable.c:1262
 msgid "preview intent"
 msgstr "Метод попереднього перегляду"
 
-#: ../src/views/darkroom.c:2755 ../src/views/lighttable.c:1261
+#: ../src/views/darkroom.c:2755 ../src/views/lighttable.c:1266
 msgid "display profile"
 msgstr "Профіль відображення"
 
-#: ../src/views/darkroom.c:2757 ../src/views/lighttable.c:1264
+#: ../src/views/darkroom.c:2757 ../src/views/lighttable.c:1269
 msgid "preview display profile"
 msgstr "Профіль попереднього перегляду"
 
@@ -29976,11 +30028,11 @@ msgstr "Умови оцінки кольорів для другого вікн�
 msgid "color assessment second preview"
 msgstr "Оцінка кольору для другого вікна"
 
-#: ../src/views/darkroom.c:2819 ../src/views/lighttable.c:1298
+#: ../src/views/darkroom.c:2819 ../src/views/lighttable.c:1303
 msgid "display ICC profiles"
 msgstr "ICC профілі дисплея"
 
-#: ../src/views/darkroom.c:2823 ../src/views/lighttable.c:1302
+#: ../src/views/darkroom.c:2823 ../src/views/lighttable.c:1307
 msgid "preview display ICC profiles"
 msgstr "ICC профілі попереднього перегляду"
 
@@ -30018,11 +30070,11 @@ msgstr "Масштабування: масштаб 100% (і 200%)"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2924 ../src/views/lighttable.c:1354
+#: ../src/views/darkroom.c:2924 ../src/views/lighttable.c:1359
 msgid "zoom in"
 msgstr "Масштабування: збільшити"
 
-#: ../src/views/darkroom.c:2926 ../src/views/lighttable.c:1356
+#: ../src/views/darkroom.c:2926 ../src/views/lighttable.c:1361
 msgid "zoom out"
 msgstr "Масштабування: зменшити"
 
@@ -30073,12 +30125,12 @@ msgid "decrease brush opacity"
 msgstr "Зменшити непрозорість пензля"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2962 ../src/views/lighttable.c:1346
+#: ../src/views/darkroom.c:2962 ../src/views/lighttable.c:1351
 #: ../src/views/map.c:2400
 msgid "undo"
 msgstr "Скасувати"
 
-#: ../src/views/darkroom.c:2964 ../src/views/lighttable.c:1347
+#: ../src/views/darkroom.c:2964 ../src/views/lighttable.c:1352
 #: ../src/views/map.c:2402
 msgid "redo"
 msgstr "Повторити"
@@ -30141,7 +30193,7 @@ msgid "[modules] change module position in pipe"
 msgstr "[модулі] змінити положення модуля в конвеєрі"
 
 #. Show infos key
-#: ../src/views/lighttable.c:728 ../src/views/lighttable.c:1337
+#: ../src/views/lighttable.c:728 ../src/views/lighttable.c:1342
 msgid "show infos"
 msgstr "Показати інфоблок"
 
@@ -30215,48 +30267,48 @@ msgstr "Масштабувати головне вікно"
 msgid "pan inside the main view"
 msgstr "Панорамувати всередині головного вікна"
 
-#: ../src/views/lighttable.c:1233
+#: ../src/views/lighttable.c:1237
 msgid "set display profile"
 msgstr "Встановити профіль відображення"
 
-#: ../src/views/lighttable.c:1317
+#: ../src/views/lighttable.c:1322
 msgid "whole"
 msgstr "Цілком"
 
-#: ../src/views/lighttable.c:1333
+#: ../src/views/lighttable.c:1338
 msgid "leave"
 msgstr "Залишити"
 
-#: ../src/views/lighttable.c:1340
+#: ../src/views/lighttable.c:1345
 msgid "align images to grid"
 msgstr "Вирівняти зображення за сіткою"
 
-#: ../src/views/lighttable.c:1341
+#: ../src/views/lighttable.c:1346
 msgid "reset first image offset"
 msgstr "Скинути зміщення першого зображення"
 
-#: ../src/views/lighttable.c:1342
+#: ../src/views/lighttable.c:1347
 msgid "select toggle image"
 msgstr "Додати чи прибрати зображення з вибірки"
 
-#: ../src/views/lighttable.c:1343
+#: ../src/views/lighttable.c:1348
 msgid "select single image"
 msgstr "Вибрати одне зображення"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:1350
+#: ../src/views/lighttable.c:1355
 msgid "preview zoom 100%"
 msgstr "Попередній перегляд в масштабі 100%"
 
-#: ../src/views/lighttable.c:1351
+#: ../src/views/lighttable.c:1356
 msgid "preview zoom fit"
 msgstr "Попередній перегляд, заповнити область перегляду"
 
-#: ../src/views/lighttable.c:1355
+#: ../src/views/lighttable.c:1360
 msgid "zoom max"
 msgstr "Масштабування: максимум"
 
-#: ../src/views/lighttable.c:1357
+#: ../src/views/lighttable.c:1362
 msgid "zoom min"
 msgstr "Масштабування: мінімум"
 
@@ -30427,6 +30479,30 @@ msgstr ""
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "max output brightness"
+#~ msgstr "Максимальна вихідна яскравість"
+
+#~ msgid "completely restore purity and undo all rotations"
+#~ msgstr "Повністю відновити чистоту та скасувати всі обертання"
+
+#~ msgid "boost the purity of the red primary"
+#~ msgstr "Підсилити чистоту основного червоного"
+
+#~ msgid "unrotate the red primary"
+#~ msgstr "Обертати назад основний червоний"
+
+#~ msgid "boost the purity of the green primary"
+#~ msgstr "Підсилити чистоту основного зеленого"
+
+#~ msgid "unrotate the green primary"
+#~ msgstr "Обертати назад основний зелений"
+
+#~ msgid "boost the purity of the blue primary"
+#~ msgstr "Підсилити чистоту основного синього"
+
+#~ msgid "unrotate the blue primary"
+#~ msgstr "Обертати назад основний синій"
 
 #~ msgid "contrast around the pivot"
 #~ msgstr "Контраст навколо точки опори"
