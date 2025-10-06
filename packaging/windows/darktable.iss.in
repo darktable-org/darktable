@@ -51,7 +51,12 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DefaultGroupName={#MyAppName}{code:SuffixIfNotRelease}
 AllowNoIcons=yes
-LicenseFile=share\doc\darktable\LICENSE
+
+; For potential future contributors:
+; Please do not set the LicenseFile directive, as it effectively sets a step
+; to accept the EULA. The darktable license is GPL, and GPL is not an EULA.
+; Users are not required to agree to anything to merely use GPLed software.
+; LicenseFile=share\doc\darktable\LICENSE
 
 ; Uncomment the following line to run in non administrative install mode
 ; (install for current user only).
