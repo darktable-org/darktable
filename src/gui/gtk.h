@@ -520,6 +520,12 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                                     const char *label,
                                     GtkBox *parent,
                                     struct dt_action_t *module);
+void dt_gui_new_collapsible_toggle_section(dt_gui_collapsible_section_t *cs,
+                                                 const char *confname,
+                                                 const char *label,
+                                                 GtkBox *parent,
+                                                 struct dt_action_t *module,
+                                                 GtkWidget *enabler);
 // update the collapsible section's label text
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
                                           const char *label);

@@ -28,6 +28,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param);
 
+GtkWidget *dt_bauhaus_plain_toggle_from_params(dt_iop_module_t *self, const char *param);
+
 typedef struct dt_iop_module_section_t
 {
   dt_action_type_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)

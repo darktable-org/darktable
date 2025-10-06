@@ -280,6 +280,39 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   return button;
 }
 
+GtkWidget *dt_bauhaus_plain_toggle_from_params(dt_iop_module_t *self, const char *param)
+{
+  gchar *section = _section_from_package(&self);
+
+  dt_iop_params_t *p = self->params;
+  dt_introspection_field_t *f = self->so->get_f(param);
+
+  GtkWidget *button = gtk_check_button_new();
+  gchar *str = NULL;
+
+  if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
+  {
+    // we do not want to support a context as it break all translations see #5498
+    // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
+    str = *f->header.description
+        ? g_strdup(f->header.description)
+        : dt_util_str_replace(param, "_", " ");
+
+    dt_module_param_t *module_param = g_malloc(sizeof(dt_module_param_t));
+    module_param->module = self;
+    module_param->param = (uint8_t *)p + f->header.offset;
+    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+
+    _store_intro_section(f, section);
+    dt_action_define_iop(self, section, str, button, &dt_action_def_toggle);
+  }
+  else
+    dt_print(DT_DEBUG_PARAMS, "'%s' is not a bool/togglebutton parameter", param);
+
+  g_free(str);
+  return button;
+}
+
 GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,
                                    GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)

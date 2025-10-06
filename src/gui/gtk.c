@@ -4379,6 +4379,54 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                    G_CALLBACK(_collapse_expander_click), cs);
 }
 
+void dt_gui_new_collapsible_toggle_section(dt_gui_collapsible_section_t *cs,
+                                           const char *confname,
+                                           const char *label,
+                                           GtkBox *parent,
+                                           dt_action_t *module,
+                                           GtkWidget *enable)
+{
+  const gboolean expanded = dt_conf_get_bool(confname);
+
+  cs->confname = g_strdup(confname);
+  cs->parent = parent;
+  cs->module = module;
+
+  // collapsible section header
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *destdisp = dt_ui_section_label_new(label);
+  cs->label = destdisp;
+  dt_gui_add_class(destdisp_head, "dt_section_expander"); // toggle button has left margin
+  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+
+  cs->toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,
+                                      (expanded
+                                       ? CPF_DIRECTION_DOWN
+                                       : CPF_DIRECTION_LEFT),
+                                      NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
+  dt_gui_add_class(cs->toggle, "dt_ignore_fg_state");
+  dt_gui_add_class(cs->toggle, "dt_transparent_background");
+
+  cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");
+  gtk_box_pack_start(GTK_BOX(destdisp_head), enable, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), cs->toggle, FALSE, FALSE, 0);
+
+  cs->expander = dtgtk_expander_new(destdisp_head, GTK_WIDGET(cs->container));
+  gtk_box_pack_end(cs->parent, cs->expander, FALSE, FALSE, 0);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), expanded);
+  gtk_widget_set_name(cs->expander, "collapse-block");
+
+  g_signal_connect(G_OBJECT(cs->toggle), "toggled",
+                   G_CALLBACK(_collapse_button_changed), cs);
+
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
+                   G_CALLBACK(_collapse_expander_click), cs);
+}
+
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
                                           const char *label)
 {

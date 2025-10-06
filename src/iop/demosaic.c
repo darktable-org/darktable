@@ -1538,8 +1538,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->cs_iter, do_capture);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cs_enabled), p->cs_enabled);
-  gtk_widget_set_visible(g->cs_enabled, capture_support);
-  gtk_widget_set_visible(GTK_WIDGET(g->capture.expander), do_capture);
+  gtk_widget_set_visible(GTK_WIDGET(g->capture.expander), capture_support);
 
   // we might have a wrong method due to xtrans/bayer - mode mismatch
   const gboolean method_mismatch = use_method != p->demosaicing_method;
@@ -1749,13 +1748,13 @@ void gui_init(dt_iop_module_t *self)
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
   gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
 
-  g->cs_enabled = dt_bauhaus_toggle_from_params(self, "cs_enabled");
+  g->cs_enabled = dt_bauhaus_plain_toggle_from_params(self, "cs_enabled");
   gtk_widget_set_tooltip_text(g->cs_enabled, _("capture sharpen recovers details lost due to in-camera blurring\n"
                                             "which can be caused by diffraction, the anti-aliasing filter or other\n"
                                             "sources of gaussian-type blur"));
 
-  dt_gui_new_collapsible_section(&g->capture, "plugins/darkroom/demosaic/expand_capture",
-                                 _("capture sharpen controls"), GTK_BOX(box_raw), DT_ACTION(self));
+  dt_gui_new_collapsible_toggle_section(&g->capture, "plugins/darkroom/demosaic/expand_capture",
+                                 _("capture sharpen"), GTK_BOX(box_raw), DT_ACTION(self), g->cs_enabled);
   self->widget = GTK_WIDGET(g->capture.container);
 
   g->cs_iter = dt_bauhaus_slider_from_params(self, "cs_iter");
