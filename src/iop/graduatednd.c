@@ -1072,6 +1072,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "°");
+  dt_bauhaus_slider_set_factor(g->rotation, -1.f);
   gtk_widget_set_tooltip_text(g->rotation, _("rotation of filter -180 to 180 degrees"));
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
