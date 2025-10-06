@@ -38,13 +38,13 @@ DT_MODULE_INTROSPECTION(1, dt_iop_primaries_params_t)
 
 typedef struct dt_iop_primaries_params_t
 {
-  float achromatic_tint_hue;    // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0.0 $DESCRIPTION: "tint hue"
+  float achromatic_tint_hue;    // $MIN: -M_PI $MAX: M_PI $DEFAULT: 0.0 $DESCRIPTION: "tint hue"
   float achromatic_tint_purity; // $MIN: 0.0 $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "tint purity"
-  float red_hue;                // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0.0 $DESCRIPTION: "red hue"
+  float red_hue;                // $MIN: -M_PI $MAX: M_PI $DEFAULT: 0.0 $DESCRIPTION: "red hue"
   float red_purity;             // $MIN: 0.01 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "red purity"
-  float green_hue;              // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0.0 $DESCRIPTION: "green hue"
+  float green_hue;              // $MIN: -M_PI $MAX: M_PI $DEFAULT: 0.0 $DESCRIPTION: "green hue"
   float green_purity;           // $MIN: 0.01 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "green purity"
-  float blue_hue;               // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0.0 $DESCRIPTION: "blue hue"
+  float blue_hue;               // $MIN: -M_PI $MAX: M_PI $DEFAULT: 0.0 $DESCRIPTION: "blue hue"
   float blue_purity;            // $MIN: 0.01 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "blue purity"
 } dt_iop_primaries_params_t;
 
