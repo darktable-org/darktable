@@ -125,6 +125,8 @@ jobs:
             -DWITH_AOM_DECODER=ON \
             -DWITH_AOM_ENCODER=ON \
             -DWITH_OpenH264_DECODER=ON \
+            -DWITH_JPEG_DECODER=ON \
+            -DWITH_OpenJPEG_DECODER=ON \
             -DWITH_LIBSHARPYUV=ON \
             -DCMAKE_INSTALL_PREFIX=/usr
           ninja -C build
