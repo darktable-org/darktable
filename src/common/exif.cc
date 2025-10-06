@@ -1227,8 +1227,8 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
       // if set to On, the camera underexposed by one stop
 #if EXIV2_TEST_VERSION(0, 28, 0)
       Exiv2::DataBuf buf = pos->dataArea();
-      const int value0 = *buf.c_data(0);    // 0=off, 1=on
-      //const int value1 = *buf.c_data(1);    // 0=0, 1=enabled, 2=auto
+      const int value0 = buf.c_data(0) ? *buf.c_data(0) : 0;    // 0=off, 1=on
+      //const int value1 = buf.c_data(1) ? *buf.c_data(1) : 0;    // 0=0, 1=enabled, 2=auto
       //  alternative:
       //const int value0 = buf.read_uint8(0);    // 0=off, 1=on
       //const int value1 = buf.read_uint8(1);    // 0=0, 1=enabled, 2=auto

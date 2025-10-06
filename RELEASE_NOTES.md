@@ -77,6 +77,7 @@ changes (where available).
 
 - Added the standard "Window" menu to the application menu bar on
   macOS.
+- Moved controls for mask exposure and contrast compensation to the advanced tab.
 
 - In the navigation windows, the zoom is now better behaving. After a
   free zoom over the darkroom, using the scroll over the zoom level
@@ -151,6 +152,10 @@ changes (where available).
 
 - Check added to ensure view has changed before processing GUI events
   preventing hang on start.
+
+- return an empty table (nil) for a non-existent tag accessed by index
+
+- return an empty table (nil) when a tag contains no images with the tag
 
 ### Add action support for Lua
 
