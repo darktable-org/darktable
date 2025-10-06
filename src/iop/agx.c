@@ -552,9 +552,9 @@ static void _set_smooth_primaries(dt_iop_agx_params_t *p)
   // sigmoid: "Don't restore purity - try to avoid posterization."
   p->master_outset_ratio = 0.f;
   // but allow the user to do so simply by dragging the master control
-  p->red_outset = 0.1f;
-  p->green_outset = 0.1f;
-  p->blue_outset = 0.15f;
+  p->red_outset = p->red_inset;
+  p->green_outset = p->green_inset;
+  p->blue_outset = p->blue_inset;
 
   // sigmoid always reverses rotations
   p->master_unrotation_ratio = 1.f;
@@ -1861,6 +1861,17 @@ static void _update_curve_warnings(dt_iop_module_t *self)
                            params.need_concave_shoulder && warnings_enabled);
 }
 
+static void _update_gamma_slider_sensitivity(const dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(g && g->curve_gamma)
+  {
+    gtk_widget_set_sensitive(g->curve_gamma, !p->auto_gamma);
+  }
+}
+
 static void _update_post_curve_primaries_visibility(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1914,6 +1925,7 @@ void gui_changed(dt_iop_module_t *self,
     darktable.gui->reset--;
   }
 
+  _update_gamma_slider_sensitivity(self);
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
   _update_post_curve_primaries_visibility(self);
@@ -1957,7 +1969,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
-  gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (output)"));
+  gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
 
   // curve_contrast_around_pivot
   slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
@@ -1977,7 +1989,9 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_gui_box_add(self->widget, toe_hbox);
 
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
+  gtk_widget_set_tooltip_text(slider, _("contrast in shadows\n"
+                                        "higher values keep the slope nearly constant for longer,\n"
+                                        "at the cost of a more sudden drop near black"));
   controls->toe_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->toe_warning_icon,
@@ -2001,7 +2015,9 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_gui_box_add(self->widget, shoulder_hbox);
 
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
+  gtk_widget_set_tooltip_text(slider, _("contrast in highlights\n"
+                                        "higher values keep the slope nearly constant for longer,\n"
+                                        "at the cost of a more sudden drop near white"));
   controls->shoulder_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->shoulder_warning_icon,
@@ -2140,7 +2156,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider,
-                              _("length to keep curve linear below pivot.\n"
+                              _("length to keep curve linear below the pivot.\n"
                                   "may crush shadows"));
 
   // Toe intersection point
@@ -2158,7 +2174,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider,
-                              _("length to keep curve linear above pivot.\n"
+                              _("length to keep curve linear above the pivot.\n"
                                   "may clip highlights"));
 
   // Shoulder intersection point
@@ -2167,27 +2183,26 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider, _("max output brightness"));
+  gtk_widget_set_tooltip_text(slider, _("max linear output power"));
 
   // curve_gamma
   g->auto_gamma = dt_bauhaus_toggle_from_params(section, "auto_gamma");
   gtk_widget_set_tooltip_text
     (g->auto_gamma,
-     _("tries to make sure the curve always remains S-shaped,\n"
-       "given that contrast is high enough, so toe and shoulder\n"
-       "controls remain effective.\n"
-       "affects overall contrast, you may have to counteract it with the contrast slider, "
-       "or with toe / shoulder controls."));
+     _("adjusts the gamma automatically, trying to make sure\n"
+       "the curve always remains S-shaped (given that contrast\n"
+       "is high enough), so toe and shoulder controls remain effective."));
 
   slider = dt_bauhaus_slider_from_params(section, "curve_gamma");
   g->curve_gamma = slider;
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text
     (slider,
-     _("shifts representation (but not output brightness) of pivot\n"
+     _("shifts the representation (but not the output power) of the pivot\n"
        "along the y axis of the curve.\n"
-       "affects overall contrast, you may have to counteract it with the contrast slider, "
-       "or with toe / shoulder controls."));
+       "immediate contrast around the pivot is not affected,\n"
+       "but shadows and highlights are; you may have to counteract it\n"
+       "with the contrast slider or with toe / shoulder controls."));
 
   self->widget = parent;
 
@@ -2291,6 +2306,7 @@ static void _set_post_curve_primaries_from_pre_callback(GtkWidget *widget, dt_io
   dt_iop_gui_update(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
 // GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
@@ -2314,6 +2330,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
 
+  _update_gamma_slider_sensitivity(self);
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
   _update_post_curve_primaries_visibility(self);
@@ -2381,17 +2398,17 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
   SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_inset",
-                    _("attenuate the purity of the red primary"),
+                    _("increase to desaturate reds in highlights faster"),
                     "_rotation",
-                    _("rotate the red primary"));
+                    _("shift the red primary towards yellow (+) or magenta (-)"));
   SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_inset",
-                    _("attenuate the purity of the green primary"),
+                    _("increase to desaturate greens in highlights faster"),
                     "_rotation",
-                    _("rotate the green primary"));
+                    _("shift the green primary towards cyan (+) or yellow (-)"));
   SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_inset",
-                    _("attenuate the purity of the blue primary"),
+                    _("increase to desaturate blues in highlights faster"),
                     "_rotation",
-                    _("rotate the blue primary"));
+                    _("shift the blue primary towards magenta (+) or cyan (-)"));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "after tone mapping")));
 
@@ -2404,7 +2421,8 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   g->completely_reverse_primaries = dt_bauhaus_toggle_from_params(self, "completely_reverse_primaries");
   self->widget = parent_vbox;
 
-  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
+  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity, undo all rotations, and hide\n"
+                                                                 "the controls below. uncheck to restore the previous state."));
 
   g->set_post_curve_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
   gtk_widget_set_tooltip_text(g->set_post_curve_primaries_from_pre_button,
@@ -2430,17 +2448,17 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, _("overall unrotation ratio"));
 
   SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_outset",
-                    _("boost the purity of the red primary"),
+                    _("restore the purity of red, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the red primary"));
+                    _("reverse the color shift in reds"));
   SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_outset",
-                    _("boost the purity of the green primary"),
+                    _("restore the purity of green, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the green primary"));
+                    _("reverse the color shift in greens"));
   SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_outset",
-                    _("boost the purity of the blue primary"),
+                    _("restore the purity of blue, mostly in midtones and shadows"),
                     "_unrotation",
-                    _("unrotate the blue primary"));
+                    _("reverse the color shift in blues"));
 #undef SETUP_COLOR_COMBO
 
   self->widget = main_box;
