@@ -140,6 +140,20 @@
     <shortdescription>scale slider step with min/max</shortdescription>
     <longdescription>vary slider step size with min/max range</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface" restart="true">
+    <name>bauhaus/marker_shape</name>
+    <type>
+      <enum>
+      <option>triangle</option>
+      <option>circle</option>
+      <option>diamond</option>
+      <option>bar</option>
+      </enum>
+    </type>
+    <default>triangle</default>
+    <shortdescription>marker shape</shortdescription>
+    <longdescription>the shape of the slider marker</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database</name>
     <type>string</type>

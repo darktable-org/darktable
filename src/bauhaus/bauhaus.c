@@ -861,6 +861,12 @@ void dt_bauhaus_load_theme()
   bh->baseline_size = bh->line_height / 2.5f;
   bh->border_width = 2.0f; // absolute size in Cairo unit
   bh->marker_size = (bh->baseline_size + bh->border_width) * 0.9f;
+
+  const char *shape = dt_conf_get_string_const("bauhaus/marker_shape");
+  bh->marker_shape = !g_strcmp0(shape, "circle") ? DT_BAUHAUS_MARKER_CIRCLE
+                   : !g_strcmp0(shape, "diamond") ? DT_BAUHAUS_MARKER_DIAMOND
+                   : !g_strcmp0(shape, "bar") ? DT_BAUHAUS_MARKER_BAR
+                   : DT_BAUHAUS_MARKER_TRIANGLE;
 }
 
 void dt_bauhaus_init()
@@ -1333,7 +1339,7 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
     w->quad_paint_flags |= CPF_ACTIVE;
   gtk_widget_queue_draw(GTK_WIDGET(w));
 
-  g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+  g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_QUAD_PRESSED_SIGNAL], 0);
 }
 
 void dt_bauhaus_widget_release_quad(GtkWidget *widget)
@@ -1476,7 +1482,9 @@ GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action,
   dt_bauhaus_combobox_set(combo, pos);
   gtk_widget_set_tooltip_text(combo, tip ? tip : _(label));
   if(callback)
-    g_signal_connect(G_OBJECT(combo), "value-changed", G_CALLBACK(callback), data);
+    g_signal_connect_closure_by_id(G_OBJECT(combo),
+                                   darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0,
+                                   g_cclosure_new(G_CALLBACK(callback), data, NULL), FALSE);
 
   return combo;
 }
@@ -1829,7 +1837,7 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
     }
     _highlight_changed_notebook_tab(GTK_WIDGET(w),
                                     GINT_TO_POINTER(d->active != d->defpos));
-    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+    g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
   }
 }
 
@@ -1965,14 +1973,36 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget,
   }
 }
 
-static void _draw_equilateral_triangle(cairo_t *cr, float radius)
+static void _draw_indicator_shape(cairo_t *cr, float radius)
 {
-  const float sin = 0.866025404 * radius;
-  const float cos = 0.5f * radius;
-  cairo_move_to(cr, 0.0, radius);
-  cairo_line_to(cr, -sin, -cos);
-  cairo_line_to(cr, sin, -cos);
-  cairo_line_to(cr, 0.0, radius);
+  if(darktable.bauhaus->marker_shape == DT_BAUHAUS_MARKER_CIRCLE)
+  {
+    cairo_arc(cr, 0.0, 0.0, radius, 0.0, 2.0 * M_PI);
+  }
+  else if(darktable.bauhaus->marker_shape == DT_BAUHAUS_MARKER_DIAMOND)
+  {
+    cairo_move_to(cr, 0.0,  radius);
+    cairo_line_to(cr, -radius, 0.0);
+    cairo_line_to(cr, 0.0, -radius);
+    cairo_line_to(cr, radius,  0.0);
+  }
+  else if(darktable.bauhaus->marker_shape == DT_BAUHAUS_MARKER_BAR)
+  {
+    cairo_move_to(cr, -radius*.2,  radius);
+    cairo_line_to(cr, -radius*.2, -radius);
+    cairo_line_to(cr,  radius*.2, -radius);
+    cairo_line_to(cr,  radius*.2,  radius);
+  }
+  else
+  {
+    // default is triangle
+    const float sin = 0.866025404 * radius;
+    const float cos = 0.5f * radius;
+    cairo_move_to(cr, 0.0, radius);
+    cairo_line_to(cr, -sin, -cos);
+    cairo_line_to(cr, sin, -cos);
+  }
+  cairo_close_path(cr);
 }
 
 static void _draw_indicator(dt_bauhaus_widget_t *w,
@@ -1997,16 +2027,16 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   // draw the outer triangle
-  _draw_equilateral_triangle(cr, size);
+  _draw_indicator_shape(cr, size);
   cairo_set_line_width(cr, border_width);
   set_color(cr, border_color);
   cairo_stroke(cr);
 
-  _draw_equilateral_triangle(cr, size - border_width);
+  _draw_indicator_shape(cr, size - border_width);
   cairo_clip(cr);
 
   // draw the inner triangle
-  _draw_equilateral_triangle(cr, size - border_width);
+  _draw_indicator_shape(cr, size - border_width);
   set_color(cr, fg_color);
   cairo_set_line_width(cr, border_width);
 
@@ -2845,7 +2875,7 @@ static void _popup_hide()
     if(w->type == DT_BAUHAUS_COMBOBOX
        && w->data.combobox.mute_scrolling
        && bh->change_active)
-      g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+      g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
 
     gtk_grab_remove(pop->area);
     gtk_widget_hide(pop->window);
@@ -3373,7 +3403,7 @@ static void _slider_value_change(dt_bauhaus_widget_t *w)
     }
 
     _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
-    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+    g_signal_emit(G_OBJECT(w), darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL], 0);
     d->is_changed = 0;
 
     if(d->is_dragging)
