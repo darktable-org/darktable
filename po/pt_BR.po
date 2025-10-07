@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-06 13:50-0300\n"
-"PO-Revision-Date: 2025-10-06 13:49-0300\n"
+"POT-Creation-Date: 2025-10-07 14:19-0300\n"
+"PO-Revision-Date: 2025-10-07 14:19-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -9703,8 +9703,8 @@ msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3600 ../src/develop/blend_gui.c:3609
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3148
-#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1766
-#: ../src/iop/demosaic.c:1785 ../src/iop/diffuse.c:1782
+#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1778
+#: ../src/iop/demosaic.c:1797 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2677
 msgid " px"
 msgstr " px"
@@ -14695,15 +14695,15 @@ msgstr "atualizar predefinição?"
 msgid "do you really want to update the preset `%s'?"
 msgstr "você realmente deseja atualizar a predefinição `%s'?"
 
-#: ../src/gui/presets.c:1126
+#: ../src/gui/presets.c:1128
 msgid "(first)"
 msgstr "(primeira)"
 
-#: ../src/gui/presets.c:1126
+#: ../src/gui/presets.c:1128
 msgid "(last)"
 msgstr "(última)"
 
-#: ../src/gui/presets.c:1158
+#: ../src/gui/presets.c:1160
 #, c-format
 msgid ""
 "preset %s\n"
@@ -14712,50 +14712,50 @@ msgstr ""
 "predefinição %s\n"
 "%s"
 
-#: ../src/gui/presets.c:1159
+#: ../src/gui/presets.c:1161
 msgid "no presets"
 msgstr "nenhuma predefinição"
 
-#: ../src/gui/presets.c:1194 ../src/iop/basecurve.c:553
+#: ../src/gui/presets.c:1196 ../src/iop/basecurve.c:553
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2687
+#: ../src/gui/presets.c:1198 ../src/iop/agx.c:2687
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "padrão relativo à cena"
 
-#: ../src/gui/presets.c:1414 ../src/libs/modulegroups.c:3960
+#: ../src/gui/presets.c:1416 ../src/libs/modulegroups.c:3960
 #: ../src/libs/modulegroups.c:3968
 msgid "manage module layouts"
 msgstr "gerenciar disposição dos módulos"
 
-#: ../src/gui/presets.c:1423
+#: ../src/gui/presets.c:1425
 msgid "manage quick presets"
 msgstr "gerenciar predefinições rápidas"
 
-#: ../src/gui/presets.c:1600
+#: ../src/gui/presets.c:1602
 msgid "manage quick presets list..."
 msgstr "gerenciar lista de predefinições..."
 
-#: ../src/gui/presets.c:1765
+#: ../src/gui/presets.c:1767
 msgid "disabled: wrong module version"
 msgstr "desabilitado: versão do módulo incorreta"
 
-#: ../src/gui/presets.c:1784 ../src/libs/lib.c:547
+#: ../src/gui/presets.c:1786 ../src/libs/lib.c:547
 msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
-#: ../src/gui/presets.c:1789 ../src/libs/lib.c:551
+#: ../src/gui/presets.c:1791 ../src/libs/lib.c:551
 msgid "delete this preset"
 msgstr "excluir esta predefinição"
 
-#: ../src/gui/presets.c:1796 ../src/libs/lib.c:559
+#: ../src/gui/presets.c:1798 ../src/libs/lib.c:559
 msgid "store new preset.."
 msgstr "armazenar nova predefinição..."
 
-#: ../src/gui/presets.c:1805 ../src/libs/lib.c:573
+#: ../src/gui/presets.c:1807 ../src/libs/lib.c:573
 msgid "update preset"
 msgstr "atualizar predefinição"
 
@@ -15753,7 +15753,7 @@ msgstr "corretivo e criativo"
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:216
-#: ../src/iop/colorin.c:131 ../src/iop/crop.c:135 ../src/iop/crop.c:137
+#: ../src/iop/colorin.c:131 ../src/iop/crop.c:137 ../src/iop/crop.c:139
 #: ../src/iop/demosaic.c:325 ../src/iop/denoiseprofile.c:777
 #: ../src/iop/denoiseprofile.c:779 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
@@ -15800,9 +15800,8 @@ msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "deslocar o pivô de entrada para preto (-) ou branco (+)"
 
 #: ../src/iop/agx.c:1972
-#, fuzzy
 msgid "darken or brighten the pivot (linear output power)"
-msgstr "escurecer ou clarear o pivô de saída"
+msgstr "escurecer ou clarear o pivô (potência de saída linear)"
 
 #: ../src/iop/agx.c:1978
 msgid "slope of the linear section around the pivot"
@@ -15928,7 +15927,6 @@ msgid "advanced curve parameters"
 msgstr "parâmetros avançados da curva"
 
 #: ../src/iop/agx.c:2159
-#, fuzzy
 msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
@@ -15941,7 +15939,6 @@ msgid "raise for a faded look"
 msgstr "aumente para um visual desbotado"
 
 #: ../src/iop/agx.c:2177
-#, fuzzy
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
@@ -15951,23 +15948,20 @@ msgstr ""
 
 #: ../src/iop/agx.c:2186
 msgid "max linear output power"
-msgstr ""
+msgstr "máxima potência de saída linear"
 
 #: ../src/iop/agx.c:2192
-#, fuzzy
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
 "is high enough), so toe and shoulder controls remain effective."
 msgstr ""
-"tenta conseguir que a curva sempre fique em forma de S,\n"
-"dado que o contraste é alto o suficiente, de forma que os\n"
-"controles de base e ombro permanecam eficazes.\n"
-"afeta o contraste global, mas você pode ter que compensar com o deslizador "
-"de contraste, ou com controles de base/ombro"
+"ajusta o cama automaticamente, tentando certificar que\n"
+"a curva sempre permaneça em forma de S (dado que o contranste\n"
+"esteja alto o suficiente), de forma que conteols de pé e ombro\n"
+"permaneçam eficazes."
 
 #: ../src/iop/agx.c:2201
-#, fuzzy
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
 "along the y axis of the curve.\n"
@@ -15977,8 +15971,9 @@ msgid ""
 msgstr ""
 "desloca a representação (mas não o brilho de saída) do pivô\n"
 "pelo eixo y da curva.\n"
-"afeta o contraste global, mas você pode ter que compensar com o deslizador "
-"de contraste, ou com controles de base/ombro."
+"o contraste imadiatamente ao redor do pivô nào é afetado,\n"
+"mas sombras e realces sào; você pode ter que compensar com o\n"
+"deslizador de contraste, ou com controles de base / ombro."
 
 #: ../src/iop/agx.c:2216
 msgctxt "section"
@@ -16056,37 +16051,28 @@ msgid "before tone mapping"
 msgstr "antes do mapeamento de tons"
 
 #: ../src/iop/agx.c:2401
-#, fuzzy
 msgid "increase to desaturate reds in highlights faster"
-msgstr ""
-"aumenta a riqueza de cores na mesma luminância principalmente nos realces"
+msgstr "aumente para desaturar mais rapidamente os vermelhos em realces"
 
 #: ../src/iop/agx.c:2403
-#, fuzzy
 msgid "shift the red primary towards yellow (+) or magenta (-)"
-msgstr "deslocar vermelho na direção do amarelo ou magenta"
+msgstr "deslocar vermelho na direção do amarelo (+) ou magenta (-)"
 
 #: ../src/iop/agx.c:2405
-#, fuzzy
 msgid "increase to desaturate greens in highlights faster"
-msgstr ""
-"aumenta a riqueza de cores na mesma luminância principalmente nos realces"
+msgstr "aumente para desaturar mais rapidamente os verdes em realces"
 
 #: ../src/iop/agx.c:2407
-#, fuzzy
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "deslocar verde na direção do ciano ou amarelo"
+msgstr "deslocar verde na direção do ciano (+) ou amarelo (-)"
 
 #: ../src/iop/agx.c:2409
-#, fuzzy
 msgid "increase to desaturate blues in highlights faster"
-msgstr ""
-"aumenta a riqueza de cores na mesma luminância principalmente nos realces"
+msgstr "aumente para desaturar mais rapidamente os azuis em realces"
 
 #: ../src/iop/agx.c:2411
-#, fuzzy
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
-msgstr "deslocar o azul na direção do magenta ou ciano"
+msgstr "deslocar o azul na direção do magenta (+) ou ciano (-)"
 
 #: ../src/iop/agx.c:2413
 msgctxt "section"
@@ -16206,13 +16192,13 @@ msgstr "rotaciona ou distorce a perspectiva automaticamente"
 #: ../src/iop/channelmixerrgb.c:238 ../src/iop/clipping.c:356
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:181
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
-#: ../src/iop/crop.c:134 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:73
+#: ../src/iop/crop.c:136 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:73
 #: ../src/iop/rasterfile.c:100
 msgid "corrective or creative"
 msgstr "corretivo ou criativo"
 
 #: ../src/iop/ashift.c:126 ../src/iop/borders.c:319 ../src/iop/clipping.c:358
-#: ../src/iop/crop.c:136 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
+#: ../src/iop/crop.c:138 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
 msgid "geometric, RGB"
 msgstr "geométrico, RGB"
 
@@ -17088,7 +17074,7 @@ msgstr "que dimensão usar para o cálculo do tamanho"
 msgid "size of the border in percent of the chosen basis"
 msgstr "tamanho da borda em percentagem da base escolhida"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1260
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1262
 msgid "aspect"
 msgstr "proporção"
 
@@ -17128,7 +17114,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1162
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1164
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -17164,7 +17150,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1151
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1153
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:120
 msgid "square"
@@ -18230,16 +18216,16 @@ msgstr "reenquadrar|perspectiva|distorção de perspectiva|distorção"
 msgid "change the framing and correct the perspective"
 msgstr "muda o enquadramento e corrige a perspectiva"
 
-#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:611
-#: ../src/iop/crop.c:1150
+#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:613
+#: ../src/iop/crop.c:1152
 msgid "original image"
 msgstr "imagem original"
 
-#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:836
+#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:838
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "formato da proporção inválido. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:852
+#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:854
 msgid "invalid ratio format. it should be a positive number"
 msgstr "formato da proporção inválido. deveria ser um número positivo"
 
@@ -18280,51 +18266,51 @@ msgstr "distorção de perspectiva"
 msgid "set perspective correction for your image"
 msgstr "define a correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1149
+#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1151
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1154
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1153
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1155
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1154
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1156
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1156
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1158
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1157
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1159
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1158
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1160
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1159
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1161
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1160
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1162
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1161
+#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1163
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1163
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1165
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1164
+#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1166
 msgid "widescreen"
 msgstr "widescreen"
 
@@ -18336,25 +18322,25 @@ msgstr "2:1, univisium"
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1167
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1169
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1168
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1170
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1170
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1172
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1206
-#: ../src/iop/crop.c:1223
+#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1208
+#: ../src/iop/crop.c:1225
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1274
+#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1276
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -18366,23 +18352,23 @@ msgstr ""
 "para entrar uma proporção personalizada, abra o o menu\n"
 "suspenso e digite a proporção como x:y ou em formato decimal"
 
-#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1286
+#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1288
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1296
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1298
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1304
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1306
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1310
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1312
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1318
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1320
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
@@ -19606,7 +19592,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1799
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1811
 #: ../src/iop/highlights.c:1359
 msgid "not applicable"
 msgstr "não aplicável"
@@ -19722,31 +19708,31 @@ msgstr ""
 "- monotônica é melhor para acurácia de funções puramente analíticas (log, "
 "gama, exp)"
 
-#: ../src/iop/crop.c:122
+#: ../src/iop/crop.c:124
 msgid "crop"
 msgstr "cortar"
 
-#: ../src/iop/crop.c:127
+#: ../src/iop/crop.c:129
 msgid "reframe|distortion"
 msgstr "reenquadramento|distorção"
 
-#: ../src/iop/crop.c:133
+#: ../src/iop/crop.c:135
 msgid "change the framing"
 msgstr "muda o enquadramento"
 
-#: ../src/iop/crop.c:1155
+#: ../src/iop/crop.c:1157
 msgid "45x35, portrait"
 msgstr "45x35, retrato"
 
-#: ../src/iop/crop.c:1165
+#: ../src/iop/crop.c:1167
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1166
+#: ../src/iop/crop.c:1168
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1169
+#: ../src/iop/crop.c:1171
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
@@ -19819,20 +19805,20 @@ msgstr ""
 "reconstrói pixels RGB completamente a partir de uma leitura da\n"
 "matriz de filtro de cor do sensor da câmera"
 
-#: ../src/iop/demosaic.c:759 ../src/iop/demosaic.c:806
+#: ../src/iop/demosaic.c:762 ../src/iop/demosaic.c:809
 msgid "can't allocate demosaic buffer"
 msgstr "não foi possível alocar buffer para interpolação cromática"
 
-#: ../src/iop/demosaic.c:796
+#: ../src/iop/demosaic.c:799
 msgid "can't equilibrate greens"
 msgstr "não é possível equilibrar os verdes"
 
-#: ../src/iop/demosaic.c:1448
+#: ../src/iop/demosaic.c:1451
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1720
+#: ../src/iop/demosaic.c:1732
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19846,7 +19832,7 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1724
+#: ../src/iop/demosaic.c:1736
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19858,11 +19844,11 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1730
+#: ../src/iop/demosaic.c:1742
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1734
+#: ../src/iop/demosaic.c:1746
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19872,11 +19858,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência\n"
 "defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1737
+#: ../src/iop/demosaic.c:1749
 msgid "toggle mask visualization"
 msgstr "alterna visualização da máscara"
 
-#: ../src/iop/demosaic.c:1741
+#: ../src/iop/demosaic.c:1753
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19886,7 +19872,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1744
+#: ../src/iop/demosaic.c:1756
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19894,15 +19880,15 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1747
+#: ../src/iop/demosaic.c:1759
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1750
+#: ../src/iop/demosaic.c:1762
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:1753
+#: ../src/iop/demosaic.c:1765
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -19912,15 +19898,15 @@ msgstr ""
 "devido ao desfoque da câmera, que pode ser causado por difração, filtros\n"
 "anti-aliasing e outras fontes de desfoque do tipo gaussiano"
 
-#: ../src/iop/demosaic.c:1758
+#: ../src/iop/demosaic.c:1770
 msgid "capture sharpen controls"
 msgstr "controles de captura de nitidez"
 
-#: ../src/iop/demosaic.c:1762
+#: ../src/iop/demosaic.c:1774
 msgid "set effect strength by iterations"
 msgstr "determinar a força do efeito por iterações"
 
-#: ../src/iop/demosaic.c:1767
+#: ../src/iop/demosaic.c:1779
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -19938,7 +19924,7 @@ msgstr ""
 "Nota: o raio definido em zero será recalculado automaticamente na próxim "
 "vez. use para predefinições"
 
-#: ../src/iop/demosaic.c:1773
+#: ../src/iop/demosaic.c:1785
 msgid ""
 "calculate the capture sharpen radius from sensor data.\n"
 "this should be done in zoomed out darkroom"
@@ -19946,7 +19932,7 @@ msgstr ""
 "calcular o raio de ajuste de nitidez a partir dos dados do sensor.\n"
 "deve ser feito durante o zoom na câmara escura"
 
-#: ../src/iop/demosaic.c:1777
+#: ../src/iop/demosaic.c:1789
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -19962,11 +19948,11 @@ msgstr ""
 "Nota: o limiar em zero reinicializará aos defaults na próxima vez. use para "
 "predefinições"
 
-#: ../src/iop/demosaic.c:1781
+#: ../src/iop/demosaic.c:1793
 msgid "visualize sharpened areas"
 msgstr "visualizar áreas com nitidez ajustada"
 
-#: ../src/iop/demosaic.c:1786
+#: ../src/iop/demosaic.c:1798
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -19974,17 +19960,23 @@ msgstr ""
 "aumenta o raio de nitidez dos cantos da imagem,\n"
 "o centro da imagem não é afetado"
 
-#: ../src/iop/demosaic.c:1788
+#: ../src/iop/demosaic.c:1800
 msgid "visualize the overall radius"
 msgstr "visualizar o raio geral"
 
-#: ../src/iop/demosaic.c:1793
+#: ../src/iop/demosaic.c:1805
 msgid "adjust to the sharp image center"
 msgstr "ajusta a nitidez no centro da imagem"
 
-#: ../src/iop/demosaic.c:1800
+#: ../src/iop/demosaic.c:1812
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
+
+#: ../src/iop/demosaicing/capture.c:652
+msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+msgstr ""
+"nào é possível calcular um caio de captura confiável porque você está em "
+"zoom demais"
 
 #: ../src/iop/denoiseprofile.c:763
 msgid "wavelets: chroma only"
@@ -30215,15 +30207,15 @@ msgstr "rolar para baixo"
 msgid "scroll down wide"
 msgstr "rolar para baixo (amplo)"
 
-#: ../src/views/map.c:3200
+#: ../src/views/map.c:3206
 msgid "[on image] open in darkroom"
 msgstr "abrir imagem na sala escura"
 
-#: ../src/views/map.c:3202
+#: ../src/views/map.c:3208
 msgid "[on map] zoom map"
 msgstr "zoom no mapa"
 
-#: ../src/views/map.c:3204
+#: ../src/views/map.c:3210
 msgid "move image location"
 msgstr "mover localização da imagem"
 
