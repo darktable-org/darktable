@@ -127,11 +127,11 @@
     <shortdescription>don't show advice in shortcuts dialog</shortdescription>
   </dtconfig>
   <dtconfig>
-    <name>bauhaus/scale</name>
-    <type>float</type>
-    <default>1.4</default>
-    <shortdescription>widget scale</shortdescription>
-    <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
+    <name>bauhaus/color_wheel</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>slider color wheel</shortdescription>
+    <longdescription>use color wheel for 360 sliders with gradients</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>bauhaus/zoom_step</name>
@@ -139,6 +139,20 @@
     <default>true</default>
     <shortdescription>scale slider step with min/max</shortdescription>
     <longdescription>vary slider step size with min/max range</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface" restart="true">
+    <name>bauhaus/marker_shape</name>
+    <type>
+      <enum>
+      <option>triangle</option>
+      <option>circle</option>
+      <option>diamond</option>
+      <option>bar</option>
+      </enum>
+    </type>
+    <default>triangle</default>
+    <shortdescription>marker shape</shortdescription>
+    <longdescription>the shape of the slider marker</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database</name>
