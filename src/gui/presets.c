@@ -1100,6 +1100,8 @@ void dt_gui_presets_apply_preset(const gchar* name,
       dt_iop_commit_blend_params(module, module->default_blendop_params);
     }
 
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);
+
     if(!writeprotect) dt_gui_store_last_preset(name);
   }
   else
