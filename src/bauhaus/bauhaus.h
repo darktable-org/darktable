@@ -188,6 +188,14 @@ enum
   DT_BAUHAUS_LAST_SIGNAL
 };
 
+typedef enum dt_bauhaus_marker_shape_t
+{
+  DT_BAUHAUS_MARKER_TRIANGLE,
+  DT_BAUHAUS_MARKER_CIRCLE,
+  DT_BAUHAUS_MARKER_DIAMOND,
+  DT_BAUHAUS_MARKER_BAR,
+} dt_bauhaus_marker_shape_t;
+
 typedef struct dt_bauhaus_popup_t
 {
   GtkWidget *window;
@@ -228,6 +236,7 @@ typedef struct dt_bauhaus_t
   // sizes and fonts:
   float line_height;                     // height of a line of text
   float marker_size;                     // height of the slider indicator
+  dt_bauhaus_marker_shape_t marker_shape;// shape of the slider indicator
   float baseline_size;                   // height of the slider bar
   float border_width;                    // width of the border of the slider marker
   float quad_width;                      // width of the quad area to paint icons
