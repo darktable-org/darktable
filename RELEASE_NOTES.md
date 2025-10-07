@@ -147,6 +147,9 @@ changes (where available).
 - Make sure image changed_timestamp is updated when a sidecar file
   is applied.
 
+- Fixed drag and drop of images on the map gives wrong location
+  assignment on macOS.
+
 ## Lua
 
 ### API Version
