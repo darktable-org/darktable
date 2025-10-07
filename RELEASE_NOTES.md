@@ -86,6 +86,20 @@ changes (where available).
   direction). This is better as previous behavior where the zoom level
   was always set to "small".
 
+- The popup (that you get when right-clicking) for sliders with a 360°
+  range now shows a color wheel or compass. If the slider is
+  soft-limited to a smaller range (for example in rotate&perspective)
+  you can toggle zooming out to the full range by
+  middle-clicking. Another middle click will restore the soft range
+  (and the normal fine-tuning mechanism).
+
+- To make the rotation in the wheel match the rotation effect in the
+  image, most slider directions for angles have been reversed. You may
+  want to add a "-1" speed to any shortcuts you have gotten used to.
+
+- Different shapes for the indicator on sliders can now be selected in
+  preferences/misc/interface (triangle, circle, diamond, bar).
+
 ## Performance Improvements
 
 - Tune performance for the Lut3D module (5% to 20% speed-up).
