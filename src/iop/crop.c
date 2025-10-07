@@ -43,6 +43,8 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_crop_params_t)
 
+#define MIN_CROP_SIZE 0.01f /* minimum crop width/height as fraction of image size */
+
 /** flip guides H/V */
 typedef enum dt_iop_crop_flip_t
 {
@@ -283,10 +285,10 @@ static void _commit_box(dt_iop_module_t *self,
       }
 
       // use possibly aspect corrected data and verify that the crop area stays in the image area
-      p->cx = CLAMPF(points[0] / (float)piece->buf_out.width,   0.0f, 0.9f);
-      p->cy = CLAMPF(points[1] / (float)piece->buf_out.height,  0.0f, 0.9f);
-      p->cw = CLAMPF(points[2] / (float)piece->buf_out.width,   0.1f, 1.0f);
-      p->ch = CLAMPF(points[3] / (float)piece->buf_out.height,  0.1f, 1.0f);
+      p->cx = CLAMPF(points[0] / (float)piece->buf_out.width,   0.0f, 1.0f - MIN_CROP_SIZE);
+      p->cy = CLAMPF(points[1] / (float)piece->buf_out.height,  0.0f, 1.0f - MIN_CROP_SIZE);
+      p->cw = CLAMPF(points[2] / (float)piece->buf_out.width,   MIN_CROP_SIZE, 1.0f);
+      p->ch = CLAMPF(points[3] / (float)piece->buf_out.height,  MIN_CROP_SIZE, 1.0f);
 
       if(enforce_history
          || !feqf(p->cx, old[0], eps)
@@ -513,10 +515,10 @@ void commit_params(dt_iop_module_t *self,
   }
   else
   {
-    d->cx = CLAMPF(p->cx, 0.0f, 0.9f);
-    d->cy = CLAMPF(p->cy, 0.0f, 0.9f);
-    d->cw = CLAMPF(p->cw, 0.1f, 1.0f);
-    d->ch = CLAMPF(p->ch, 0.1f, 1.0f);
+    d->cx = CLAMPF(p->cx, 0.0f, 1.f - MIN_CROP_SIZE);
+    d->cy = CLAMPF(p->cy, 0.0f, 1.f - MIN_CROP_SIZE);
+    d->cw = CLAMPF(p->cw, MIN_CROP_SIZE, 1.0f);
+    d->ch = CLAMPF(p->ch, MIN_CROP_SIZE, 1.0f);
 
     const int rd = p->ratio_d;
     const int rn = p->ratio_n;
@@ -562,10 +564,10 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     {
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
-      g->clip_x = CLAMPF(p->cx, 0.0f, 0.9f);
-      g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
-      g->clip_w = CLAMPF(p->cw - p->cx, 0.1f, 1.0f - g->clip_x);
-      g->clip_h = CLAMPF(p->ch - p->cy, 0.1f, 1.0f - g->clip_y);
+      g->clip_x = CLAMPF(p->cx, 0.0f, 1.f - MIN_CROP_SIZE);
+      g->clip_y = CLAMPF(p->cy, 0.0f, 1.f - MIN_CROP_SIZE);
+      g->clip_w = CLAMPF(p->cw - p->cx, MIN_CROP_SIZE, 1.0f - g->clip_x);
+      g->clip_h = CLAMPF(p->ch - p->cy, MIN_CROP_SIZE, 1.0f - g->clip_y);
       g->preview_ready = FALSE;
     }
     else if(g->preview_ready)
@@ -958,10 +960,10 @@ static void _update_sliders_and_limit(dt_iop_crop_gui_data_t *g)
   dt_bauhaus_slider_set(g->cy, g->clip_y);
   dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
   dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.1f);
-  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.1f);
-  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.1f);
-  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.1f);
+  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - MIN_CROP_SIZE);
+  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - MIN_CROP_SIZE);
+  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + MIN_CROP_SIZE);
+  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + MIN_CROP_SIZE);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1361,16 +1363,14 @@ static _grab_region_t _gui_get_grab(float pzx,
     if(!(g->clip_x || g->clip_y || g->clip_w != 1.0f || g->clip_h != 1.0f))
       h_border = v_border = 0.45;
 
-    if(pzx >= g->clip_x && pzx < g->clip_x + h_border)
+    if(pzx >= g->clip_x && pzx < g->clip_x + h_border && pzx - g->clip_x < 0.5 * g->clip_w)
       grab |= GRAB_LEFT; // left border
-
-    if(pzy >= g->clip_y && pzy < g->clip_y + v_border)
-      grab |= GRAB_TOP;  // top border
-
-    if(pzx <= g->clip_x + g->clip_w && pzx > (g->clip_w + g->clip_x) - h_border)
+    else if(pzx <= g->clip_x + g->clip_w && pzx > (g->clip_w + g->clip_x) - h_border)
       grab |= GRAB_RIGHT; // right border
 
-    if(pzy <= g->clip_y + g->clip_h && pzy > (g->clip_h + g->clip_y) - v_border)
+    if(pzy >= g->clip_y && pzy < g->clip_y + v_border && pzy - g->clip_y < 0.5 * g->clip_h)
+      grab |= GRAB_TOP;  // top border
+    else if(pzy <= g->clip_y + g->clip_h && pzy > (g->clip_h + g->clip_y) - v_border)
       grab |= GRAB_BOTTOM; // bottom border
   }
   return grab;
@@ -1596,10 +1596,10 @@ int mouse_moved(dt_iop_module_t *self,
         }
 
         // ensure we don't get too small crop size
-        if(g->prev_clip_w * ratio < 0.1f)
-          ratio = 0.1f / g->prev_clip_w;
-        if(g->prev_clip_h * ratio < 0.1f)
-          ratio = 0.1f / g->prev_clip_h;
+        if(g->prev_clip_w * ratio < MIN_CROP_SIZE)
+          ratio = MIN_CROP_SIZE / g->prev_clip_w;
+        if(g->prev_clip_h * ratio < MIN_CROP_SIZE)
+          ratio = MIN_CROP_SIZE / g->prev_clip_h;
 
         // ensure we don't have too big crop size
         if(g->prev_clip_w * ratio > g->clip_max_w)
@@ -1633,21 +1633,21 @@ int mouse_moved(dt_iop_module_t *self,
         {
           const float old_clip_x = g->clip_x;
           g->clip_x = MIN(MAX(g->clip_max_x, pzx - g->handle_x),
-                            g->clip_x + g->clip_w - 0.1f);
+                            g->clip_x + g->clip_w - MIN_CROP_SIZE);
           g->clip_w = old_clip_x + g->clip_w - g->clip_x;
         }
         if(g->cropping & GRAB_TOP)
         {
           const float old_clip_y = g->clip_y;
           g->clip_y = MIN(MAX(g->clip_max_y, pzy - g->handle_y),
-                            g->clip_y + g->clip_h - 0.1f);
+                            g->clip_y + g->clip_h - MIN_CROP_SIZE);
           g->clip_h = old_clip_y + g->clip_h - g->clip_y;
         }
         if(g->cropping & GRAB_RIGHT)
-          g->clip_w = MAX(0.1f, MIN(g->clip_max_w + g->clip_max_x,
+          g->clip_w = MAX(MIN_CROP_SIZE, MIN(g->clip_max_w + g->clip_max_x,
                                         pzx - g->clip_x - g->handle_x));
         if(g->cropping & GRAB_BOTTOM)
-          g->clip_h = MAX(0.1f, MIN(g->clip_max_h + g->clip_max_y,
+          g->clip_h = MAX(MIN_CROP_SIZE, MIN(g->clip_max_h + g->clip_max_y,
                                         pzy - g->clip_y - g->handle_y));
       }
 
