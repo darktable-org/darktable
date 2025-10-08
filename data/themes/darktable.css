@@ -509,6 +509,12 @@ separator
 {
   min-height: 1.7em;
   min-width: 1.7em;
+  border: 0.08em solid transparent;
+}
+
+#footer-toolbar button:checked
+{
+   border: 0.08em solid shade(@button_border, 1.6);
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
