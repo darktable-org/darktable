@@ -4396,6 +4396,40 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
+                                         GCallback pressed,
+                                         GCallback released,
+                                         gpointer data)
+{
+  GtkGesture *gesture = gtk_gesture_multi_press_new(widget);
+  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
+  // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
+  //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
+
+  if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
+  if(released) g_signal_connect(gesture, "released", released, data);
+
+  return (GtkGestureSingle *)gesture;
+}
+
+GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
+                                            GCallback motion,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data)
+{
+  GtkEventController *controller = gtk_event_controller_motion_new(widget);
+  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+
+  if(motion) g_signal_connect(controller, "motion", motion, data);
+  if(enter) g_signal_connect(controller, "enter", enter, data);
+  if(leave) g_signal_connect(controller, "leave", leave, data);
+
+  return controller;
+}
+
+
 static int busy_nest_count = 0;
 static GdkCursor* busy_prev_cursor = NULL;
 
@@ -4498,7 +4532,7 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
     else if(gtk_widget_get_parent(*list))
       dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widget that already has a parent to box (#%d)", file, line, function, i);
     else
-      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
+      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list)); // GTK4 gtk_box_append
   }
 
   return GTK_WIDGET(box);
