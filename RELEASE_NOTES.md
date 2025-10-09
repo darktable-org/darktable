@@ -190,6 +190,13 @@ changes (where available).
 
 - Fixed auto applied presets for sraws and true monochromes.
 
+- Fixed a bug in details threshold mask for monochrome raw files
+  leading to crashes.
+
+- Fixed an issue when positioning the main darkroom windows due to
+  precision in computation. The precision is now to the pixel and
+  avoid a displacement in rare cases.
+
 ## Lua
 
 ### API Version
