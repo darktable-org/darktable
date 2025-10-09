@@ -53,7 +53,7 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
 void dt_control_mouse_leave(void);
 void dt_control_mouse_enter(void);
-gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
+gboolean dt_control_configure(GtkWidget *da, gint width, gint height, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));

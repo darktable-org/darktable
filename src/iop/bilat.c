@@ -491,11 +491,11 @@ void gui_init(dt_iop_module_t *self)
        " increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:
-  g_object_set(G_OBJECT(g->highlights), "no-show-all", TRUE, NULL);
-  g_object_set(G_OBJECT(g->shadows), "no-show-all", TRUE, NULL);
-  g_object_set(G_OBJECT(g->midtone), "no-show-all", TRUE, NULL);
-  g_object_set(G_OBJECT(g->range), "no-show-all", TRUE, NULL);
-  g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
+  gtk_widget_set_no_show_all(g->highlights, TRUE);
+  gtk_widget_set_no_show_all(g->shadows, TRUE);
+  gtk_widget_set_no_show_all(g->midtone, TRUE);
+  gtk_widget_set_no_show_all(g->range, TRUE);
+  gtk_widget_set_no_show_all(g->spatial, TRUE);
 
 }
 

@@ -420,16 +420,16 @@ static void _fill_metadata_grid(dt_import_metadata_t *metadata)
     const char *str = dt_conf_get_string_const(setting);
     _set_up_entry(metadata_entry, str, metadata_name, i + DT_META_META_VALUE, metadata);
     g_free(setting);
-    g_signal_connect(GTK_ENTRY(metadata_entry), "changed",
+    g_signal_connect(metadata_entry, "changed",
                      G_CALLBACK(_import_metadata_changed), metadata);
-    g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
+    g_signal_connect(labelev, "button-press-event",
                      G_CALLBACK(_import_metadata_reset), metadata_entry);
 
     GtkWidget *metadata_imported = gtk_check_button_new();
     g_object_set_data(G_OBJECT(metadata_imported), "tagname", md->tagname);
     _set_up_toggle_button(metadata_imported, flag & DT_METADATA_FLAG_IMPORTED,
                           metadata_name, i + DT_META_META_VALUE, metadata);
-    g_signal_connect(GTK_TOGGLE_BUTTON(metadata_imported), "toggled",
+    g_signal_connect(metadata_imported, "toggled",
                      G_CALLBACK(_import_metadata_toggled), metadata);
     i++;
   }
@@ -459,7 +459,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
                                                    "\ndouble-click on a label to clear the corresponding entry"
                                                    "\ndouble-click on 'preset' to clear all entries"));
-  g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
+  g_signal_connect(labelev, "button-press-event",
                    G_CALLBACK(_import_metadata_reset_all), metadata);
 
 
@@ -495,15 +495,15 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   const char *str = dt_conf_get_string_const("ui_last/import_last_tags");
   _set_up_entry(entry, str, "tags", metadata->num_grid_rows + DT_META_TAGS_HEADER, metadata);
   gtk_widget_set_tooltip_text(entry, _("comma separated list of tags"));
-  g_signal_connect(GTK_ENTRY(entry), "changed",
+  g_signal_connect(entry, "changed",
                    G_CALLBACK(_import_tags_changed), metadata);
-  g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
+  g_signal_connect(labelev, "button-press-event",
                    G_CALLBACK(_import_metadata_reset), entry);
 
   GtkWidget *tags_imported = gtk_check_button_new();
   _set_up_toggle_button(tags_imported, dt_conf_get_bool("ui_last/import_last_tags_imported"),
                         "tags", metadata->num_grid_rows + DT_META_TAGS_HEADER, metadata);
-  g_signal_connect(GTK_TOGGLE_BUTTON(tags_imported), "toggled",
+  g_signal_connect(tags_imported, "toggled",
                    G_CALLBACK(_import_metadata_toggled), metadata);
 
   // overall

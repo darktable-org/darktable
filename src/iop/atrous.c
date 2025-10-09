@@ -1552,10 +1552,10 @@ static void _atrous_button_press(GtkGestureSingle *gesture,
 }
 
 static void _atrous_button_release(GtkGestureSingle *gesture,
-                                       int n_press,
-                                       double x,
-                                       double y,
-                                       dt_iop_module_t *self)
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   g->dragging = 0;

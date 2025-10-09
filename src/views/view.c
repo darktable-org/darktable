@@ -340,7 +340,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
         if(plugin->widget)
           gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(plugin->widget)), plugin->widget);
         if(plugin->expander)
-          gtk_widget_destroy(plugin->expander);
+          gtk_box_remove(GTK_BOX(gtk_widget_get_parent(plugin->expander)), plugin->expander);
       }
       plugin->expander = NULL;
     }

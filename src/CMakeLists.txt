@@ -293,11 +293,11 @@ include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.24.15 REQUIRED)
-add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_24")
-#add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
-include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
-list(APPEND LIBS ${GTK3_LIBRARIES})
+find_package(GTK4 4.8.3 REQUIRED)
+add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_4_0")
+add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_4_18")
+include_directories(SYSTEM ${GTK4_INCLUDE_DIRS})
+list(APPEND LIBS ${GTK4_LIBRARIES})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
