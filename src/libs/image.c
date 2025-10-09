@@ -614,7 +614,7 @@ void gui_init(dt_lib_module_t *self)
     dt_conf_get_bool("plugins/lighttable/copy_metadata/" #item)); \
   dt_action_define(DT_ACTION(meta), N_("flags"),                  \
                    label, flag, &dt_action_def_toggle);           \
-  g_signal_connect(G_OBJECT(flag), "clicked",                     \
+  g_signal_connect(G_OBJECT(flag), "toggled",                     \
                    G_CALLBACK(_##item##_flag_callback), self); }
 
   META_FLAG_BUTTON(N_("ratings"),  rating,   0, _("select ratings metadata"));

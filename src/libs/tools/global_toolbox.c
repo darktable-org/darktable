@@ -402,7 +402,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
   d->over_popup = gtk_popover_new(d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
-  g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
+  // GTK4 g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
   g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_overlays_show_popup), self);
   // we register size of overlay icon to keep in sync thumbtable overlays
   g_signal_connect(G_OBJECT(d->overlays_button), "size-allocate", G_CALLBACK(_main_icons_register_size), NULL);
@@ -411,10 +411,10 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_container_add(GTK_CONTAINER(d->over_popup), vbox);
 
-#define NEW_RADIO(widget, box, callback, label)                                               \
-  rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb), _(label)); \
+#define NEW_RADIO(widget, box, callback, label)                                     \
+  rb = gtk_check_button_new_with_label(_(label));                                   \
   dt_action_define(ac, NULL, label, rb, &dt_action_def_button);                     \
-  g_signal_connect(G_OBJECT(rb), "clicked", G_CALLBACK(callback), self);            \
+  g_signal_connect(G_OBJECT(rb), "toggled", G_CALLBACK(callback), self);            \
   gtk_box_pack_start(GTK_BOX(box), rb, TRUE, TRUE, 0);                              \
   widget = rb;
 

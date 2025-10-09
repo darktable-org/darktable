@@ -1318,7 +1318,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   if(module->widget)
   {
     dt_gui_add_class(module->widget, "dt_plugin_ui_main");
-    gtk_widget_set_hexpand(module->widget, FALSE);
+    // gtk_widget_set_hexpand(module->widget, FALSE); // GTK4
     gtk_widget_set_vexpand(module->widget, FALSE);
   }
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");

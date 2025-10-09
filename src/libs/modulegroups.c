@@ -841,6 +841,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
      */
     dt_iop_module_t *module = modules->data;
     GtkWidget *w = module->expander;
+if(w) gtk_widget_show(w); continue; // GTK4 show all modules for testing purposes
 
     if(module->enabled)
     dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
@@ -2916,8 +2917,8 @@ void gui_init(dt_lib_module_t *self)
   /* search box */
   d->text_entry = gtk_search_entry_new();
   dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, N_("search modules"), d->text_entry, &dt_action_def_entry);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry),
-                                 _("search modules by name or tag"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(d->text_entry),
+                                        _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed",
                    G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search",
@@ -2931,8 +2932,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), visibility_wrapper, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->text_entry), 35);
-  gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry),
-                                  GTK_ENTRY_ICON_SECONDARY, _("clear text"));
+  // GTK4 gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry),
+  //                                 GTK_ENTRY_ICON_SECONDARY, _("clear text"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);

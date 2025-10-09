@@ -3016,7 +3016,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_connect_motion(g->area, _colorequal_motion, NULL, NULL, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "size_allocate",
+  g_signal_connect(G_OBJECT(g->area), "size-allocate",
                    G_CALLBACK(_area_size_callback), self);
 
   GtkWidget *box = self->widget = dt_gui_vbox(g->notebook, g->area);
