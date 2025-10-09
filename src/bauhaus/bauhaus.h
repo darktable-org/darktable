@@ -255,6 +255,12 @@ typedef struct dt_bauhaus_t
   GdkRGBA graph_bg, graph_exterior, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
   GdkRGBA graph_colors[3];               // primaries
   GdkRGBA colorlabels[DT_COLORLABELS_LAST];
+
+  // for use by histogram -> exposure proxy
+  void (*press)(GtkGestureSingle*, int, double, double, GtkWidget*);
+  void (*release)(GtkGestureSingle*, int, double, double, GtkWidget*);
+  void (*motion)(GtkEventControllerMotion*, double, double, GtkWidget*);
+  gboolean (*scroll)(GtkWidget*, GdkEventScroll*);
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0

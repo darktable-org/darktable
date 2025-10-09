@@ -1635,24 +1635,25 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
-                                                 GdkEventMotion *event,
-                                                 dt_lib_histogram_t *d)
+static void _drawable_motion(GtkEventControllerMotion *controller,
+                             double x,
+                             double y,
+                             dt_lib_histogram_t *d)
 {
-  if(event->state & GDK_BUTTON1_MASK)
+  if(gtk_get_current_event()->motion.state & GDK_BUTTON1_MASK)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
-      event->x = -event->y;
+      x = -y;
 
-    dt_dev_exposure_handle_event((GdkEvent *)event, FALSE);
+    dt_dev_exposure_handle_event(controller, 1, x, FALSE);
   }
   else
   {
     GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const float posx = event->x / (float)(allocation.width);
-    const float posy = event->y / (float)(allocation.height);
+    gtk_widget_get_allocation(d->scope_draw, &allocation);
+    const float posx = x / (float)(allocation.width);
+    const float posy = y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
 
     // FIXME: make just one tooltip for the widget depending on
@@ -1695,12 +1696,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
                               _("double-click resets"));
       }
     }
-    gtk_widget_set_tooltip_text(widget, tip);
+    gtk_widget_set_tooltip_text(d->scope_draw, tip);
     g_free(tip);
 
     if(prior_highlight != d->highlight)
     {
-      gtk_widget_queue_draw(widget);
+      gtk_widget_queue_draw(d->scope_draw);
       if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
       {
         // FIXME: should really use named cursors, and differentiate
@@ -1709,25 +1710,22 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
       }
     }
   }
-
-  //bubble event to eventbox to update the button tooltip
-  return FALSE;
 }
 
-static gboolean _drawable_button_press_callback(GtkWidget *widget,
-                                                GdkEventButton *event,
-                                                const dt_lib_histogram_t *d)
+static void _drawable_button_press(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_lib_histogram_t *d)
 {
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
-      event->x = -event->y;
+      x = -y;
 
-    dt_dev_exposure_handle_event((GdkEvent *)event, d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
+    dt_dev_exposure_handle_event(gesture, n_press, x, d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
   }
-
-  return TRUE;
 }
 
 static void _color_harmony_button_on(const dt_lib_histogram_t *d)
@@ -1760,7 +1758,7 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
   {
     const gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
     if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-    dt_dev_exposure_handle_event((GdkEvent *)event, black);
+    dt_dev_exposure_handle_event(event, 0, 0, black);
   }
   // note we are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
@@ -1805,29 +1803,28 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _drawable_button_release_callback(GtkWidget *widget,
-                                                  GdkEventButton *event,
-                                                  dt_lib_histogram_t *d)
+static void _drawable_button_release(GtkGestureSingle *gesture,
+                                     int n_press,
+                                     double x,
+                                     double y,
+                                     dt_lib_histogram_t *d)
 {
-  dt_dev_exposure_handle_event((GdkEvent *)event, FALSE);
-  return TRUE;
+  dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
 }
 
-static gboolean _drawable_leave_notify_callback(GtkWidget *widget,
-                                                const GdkEventCrossing *event,
-                                                dt_lib_histogram_t *d)
+static void _drawable_leave(GtkEventControllerMotion *controller,
+                            dt_lib_histogram_t *d)
 {
   // if dragging, gtk keeps up motion notifications until mouse button
   // is released, at which point we'll get another leave event for
   // drawable if pointer is still outside of the widget
-  if(!(event->state & GDK_BUTTON1_MASK) && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+  if(!(gtk_get_current_event()->motion.state & GDK_BUTTON1_MASK)
+     && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
     dt_control_change_cursor(GDK_LEFT_PTR);
-    gtk_widget_queue_draw(widget);
+    gtk_widget_queue_draw(d->scope_draw);
   }
-  // event should bubble up to the eventbox
-  return FALSE;
 }
 
 static void _histogram_scale_update(const dt_lib_histogram_t *d)
@@ -2720,14 +2717,10 @@ void gui_init(dt_lib_module_t *self)
                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
-                   G_CALLBACK(_drawable_leave_notify_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
-                   G_CALLBACK(_drawable_button_press_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "button-release-event",
-                   G_CALLBACK(_drawable_button_release_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
-                   G_CALLBACK(_drawable_motion_notify_callback), d);
+  dt_gui_connect_click_all(d->scope_draw, _drawable_button_press,
+                                          _drawable_button_release, d);
+  dt_gui_connect_motion(d->scope_draw, _drawable_motion, NULL,
+                                       _drawable_leave, d);
 
   gtk_widget_add_events
     (eventbox,
