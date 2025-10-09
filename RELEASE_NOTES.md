@@ -77,7 +77,9 @@ changes (where available).
 
 - Added the standard "Window" menu to the application menu bar on
   macOS.
-- Moved controls for mask exposure and contrast compensation to the advanced tab.
+
+- Moved controls for mask exposure and contrast compensation to the
+  advanced tab.
 
 - In the navigation windows, the zoom is now better behaving. After a
   free zoom over the darkroom, using the scroll over the zoom level
@@ -85,6 +87,18 @@ changes (where available).
   closest match (above or below depending on the scroll
   direction). This is better as previous behavior where the zoom level
   was always set to "small".
+
+- When moving around in a (zoomed) center view in the darkroom, we now
+  pre-calculate a slightly larger area so that it might not always be
+  necessary to immediately recalculate after further moves. The
+  initial 1px mouse move is generally not final, after all. This does
+  mean longer calculation times, so you can switch this off by setting
+  darkroom/ui/anticipate_move in darktablerc to 1.0. If you use cursor
+  keys to move around, you might want to increase it to >1.4 to
+  anticipate at least one further 20% move on either side. When the
+  recalculation is triggered by a module parameter change, say
+  exposure increase, only the exact area shown is calculated as
+  before, for optimal responsiveness.
 
 - The popup (that you get when right-clicking) for sliders with a 360°
   range now shows a color wheel or compass. If the slider is
@@ -97,8 +111,28 @@ changes (where available).
   image, most slider directions for angles have been reversed. You may
   want to add a "-1" speed to any shortcuts you have gotten used to.
 
+
+- Added new default shortcut keys. These will take effect only if the
+  keys do not yet have user-defined assignments.
+
+  - <kbd>c</kbd> - toggle crop box.
+
+  - <kbd>e</kbd> - set exposure compensation (equivalent to
+    right-clicking on the exposure slider).
+
+  - <kbd>alt-r</kbd> - set image rotation (equivalent to
+    right-clicking on the rotation slider).
+
+  - <kbd>alt-[ and alt- ]</kbd> - fine rotation adjustment.
+
 - Different shapes for the indicator on sliders can now be selected in
   preferences/misc/interface (triangle, circle, diamond, bar).
+
+- All toolbar buttons on the lighttable and darkroom have their
+  enabled state recovered across sessions. The visibility of the
+  enabled buttons has been improved to avoid confusions when
+  restarting Darktable and seeing artifacts due to some tools being
+  activate like Gamut check.
 
 ## Performance Improvements
 
@@ -120,6 +154,10 @@ changes (where available).
   Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
   modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
   and Fujifilm DR200/DR400 modes.
+
+- Add a RGB percent display in the color picker module.
+
+- Allow far smaller crop to be created (up to 99% of the image size).
 
 ## Bug Fixes
 
@@ -149,6 +187,8 @@ changes (where available).
 
 - Fixed drag and drop of images on the map gives wrong location
   assignment on macOS.
+
+- Fixed auto applied presets for sraws and true monochromes.
 
 ## Lua
 
