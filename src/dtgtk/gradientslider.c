@@ -38,7 +38,7 @@ G_DEFINE_TYPE(GtkDarktableGradientSlider, _gradient_slider, GTK_TYPE_DRAWING_ARE
 // Class overrides
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *min_height, gint *nat_height);
 static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *min_width, gint *nat_width);
-static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
+static void _gradient_slider_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 static void _gradient_slider_destroy(GtkWidget *widget);
 
 // Events
@@ -442,24 +442,25 @@ static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+  widget_class->snapshot = _gradient_slider_snapshot;
+  // widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
+  // widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
+  // widget_class->draw = _gradient_slider_draw;
+  // widget_class->destroy = _gradient_slider_destroy;
 
-  widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
-  widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
-  widget_class->draw = _gradient_slider_draw;
-  widget_class->destroy = _gradient_slider_destroy;
-
-  widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
-  widget_class->leave_notify_event = _gradient_slider_leave_notify_event;
-  widget_class->button_press_event = _gradient_slider_button_press;
-  widget_class->button_release_event = _gradient_slider_button_release;
-  widget_class->motion_notify_event = _gradient_slider_motion_notify;
-  widget_class->scroll_event = _gradient_slider_scroll_event;
-  widget_class->key_press_event = _gradient_slider_key_press_event;
+  // widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
+  // widget_class->leave_notify_event = _gradient_slider_leave_notify_event;
+  // widget_class->button_press_event = _gradient_slider_button_press;
+  // widget_class->button_release_event = _gradient_slider_button_release;
+  // widget_class->motion_notify_event = _gradient_slider_motion_notify;
+  // widget_class->scroll_event = _gradient_slider_scroll_event;
+  // widget_class->key_press_event = _gradient_slider_key_press_event;
 
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
                                          NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
   _signals[VALUE_RESET] = g_signal_new("value-reset", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
                                        NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  dt_add_legacy_signals(widget_class);
 }
 
 static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
@@ -533,13 +534,17 @@ static void _gradient_slider_destroy(GtkWidget *widget)
 
   gslider->colors = NULL;
 
-  GTK_WIDGET_CLASS(parent_class)->destroy(widget);
+  // GTK_WIDGET_CLASS(parent_class)->destroy(widget);
 }
 
-static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
+static void _gradient_slider_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 {
-  g_return_val_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget), FALSE);
+  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+
+  graphene_rect_t bounds;
+  graphene_rect_init(&bounds, 0, 0, gtk_widget_get_width(widget), gtk_widget_get_height(widget));
+  cairo_t* cr = gtk_snapshot_append_cairo(snapshot, &bounds);
 
   assert(gslider->position > 0);
 
@@ -650,7 +655,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     }
   }
 
-  return FALSE;
+  cairo_destroy(cr);
 }
 
 gint _list_find_by_position(gconstpointer a, gconstpointer b)

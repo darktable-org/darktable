@@ -1236,8 +1236,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
     gtk_drag_source_set(header_evb, GDK_BUTTON1_MASK, target_list, 1, GDK_ACTION_COPY);
     gtk_drag_dest_set(expander, GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_HIGHLIGHT, target_list, 1, GDK_ACTION_COPY);
+if(0) { // GTK4
     g_signal_connect(expander, "drag-motion", G_CALLBACK(_on_drag_motion), module);
     g_signal_connect(expander, "drag-drop", G_CALLBACK(_on_drag_drop), module);
+}
   }
 
   /* setup the header box */
@@ -1318,7 +1320,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   if(module->widget)
   {
     dt_gui_add_class(module->widget, "dt_plugin_ui_main");
-    gtk_widget_set_hexpand(module->widget, FALSE);
+    // gtk_widget_set_hexpand(module->widget, FALSE); // GTK4
     gtk_widget_set_vexpand(module->widget, FALSE);
   }
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");

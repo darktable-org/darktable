@@ -45,10 +45,13 @@ struct _GtkDarktableDrawingArea
 
 GType dtgtk_drawing_area_get_type(void);
 
+GtkWidget *dtgtk_drawing_area_new(void);
 GtkWidget *dtgtk_drawing_area_new_with_aspect_ratio(double aspect);
 GtkWidget *dtgtk_drawing_area_new_with_height(int height);
 void dtgtk_drawing_area_set_aspect_ratio(GtkWidget *w, double aspect);
 void dtgtk_drawing_area_set_height(GtkWidget *w, int height);
+
+#define gtk_drawing_area_new dtgtk_drawing_area_new
 
 G_END_DECLS
 
