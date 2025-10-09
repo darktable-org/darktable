@@ -195,7 +195,7 @@ changes (where available).
 
 - Fixed an issue when positioning the main darkroom windows due to
   precision in computation. The precision is now to the pixel and
-  avoid a displacement in rare cases.
+  avoid a displacement in some cases.
 
 ## Lua
 
