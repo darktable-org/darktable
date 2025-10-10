@@ -31,7 +31,10 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
+
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
 
 ; This file is not in the source tree, it is expected to be created in
 ; the installer build environment before compiling this script as:
