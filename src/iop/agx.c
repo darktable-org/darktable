@@ -37,7 +37,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(5, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -95,7 +95,7 @@ typedef struct dt_iop_agx_params_t
 {
   float look_lift;                   // $MIN: -1.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "lift"
   float look_slope;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "slope"
-  float look_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "power"
+  float look_brightness;             // $MIN: 0.f $MAX: 100.f $DEFAULT: 1.f $DESCRIPTION: "brightness"
   float look_saturation;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "saturation"
   float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "preserve hue"
 
@@ -239,7 +239,7 @@ typedef struct tone_mapping_params_t
   // look
   float look_lift;
   float look_slope;
-  float look_power;
+  float look_brightness;
   float look_saturation;
   float look_original_hue_mix_ratio;
   gboolean look_tuned;
@@ -316,6 +316,50 @@ int legacy_params(dt_iop_module_t *self,
     float blue_unrotation;
   } dt_iop_agx_params_v2_3_4_t;
 
+  typedef struct dt_iop_agx_params_v5_t
+  {
+    float look_offset; // renamed to look_lift in v6, but no conversion is needed
+    float look_slope;
+    float look_power; // is replaced by look_brightness in v6
+    float look_saturation;
+    float look_original_hue_mix_ratio;
+
+    float range_black_relative_exposure;
+    float range_white_relative_exposure;
+    float dynamic_range_scaling;
+
+    float curve_pivot_x_shift_ratio;
+    float curve_pivot_y_linear_output;
+    float curve_contrast_around_pivot;
+    float curve_linear_ratio_below_pivot;
+    float curve_linear_ratio_above_pivot;
+    float curve_toe_power;
+    float curve_shoulder_power;
+    float curve_gamma;
+    gboolean auto_gamma;
+    float curve_target_display_black_ratio;
+    float curve_target_display_white_ratio;
+
+    dt_iop_agx_base_primaries_t base_primaries;
+    gboolean disable_primaries_adjustments;
+    float red_inset;
+    float red_rotation;
+    float green_inset;
+    float green_rotation;
+    float blue_inset;
+    float blue_rotation;
+
+    float master_outset_ratio;
+    float master_unrotation_ratio;
+    float red_outset;
+    float red_unrotation;
+    float green_outset;
+    float green_unrotation;
+    float blue_outset;
+    float blue_unrotation;
+
+    gboolean completely_reverse_primaries; // added in v5
+  } dt_iop_agx_params_v5_t;
 
   if(old_version == 1)
   {
@@ -450,7 +494,7 @@ int legacy_params(dt_iop_module_t *self,
   {
     // v5 adds 'completely_reverse_primaries' at the end of the struct
     const dt_iop_agx_params_v2_3_4_t *op = old_params;
-    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    dt_iop_agx_params_v5_t *np = calloc(1, sizeof(dt_iop_agx_params_v5_t));
 
     memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
 
@@ -459,6 +503,25 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = 5;
+
+    return 0; // success
+  }
+  if(old_version == 5)
+  {
+    // v6 replaces look -> power with look -> brightness
+    const dt_iop_agx_params_v5_t *op = old_params;
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+
+    // v5 and v6 are compatible at the binary level
+    memcpy(np, op, sizeof(dt_iop_agx_params_v5_t));
+
+    const float look_power_v5 = op->look_power;
+    np->look_brightness = look_power_v5 > 1 ?
+                                     1.f / (look_power_v5 * look_power_v5)
+                                     : 1.f / fmaxf(look_power_v5, 0.01f); // max allowed brightness is 100
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_version = 6;
 
     return 0; // success
   }
@@ -491,6 +554,7 @@ static void _set_blenderlike_primaries(dt_iop_agx_params_t *p)
 
   // AgX primaries settings that produce the same matrices under D50
   // as those used in the Blender OCIO config.
+  // https://discuss.pixls.us/t/blender-agx-in-darktable-proof-of-concept/48697/1018
   // https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
   p->red_inset = 0.29462451f;
   p->green_inset = 0.25861925f;
@@ -500,14 +564,16 @@ static void _set_blenderlike_primaries(dt_iop_agx_params_t *p)
   p->blue_rotation = -0.06305724f;
 
   p->master_outset_ratio = 1.f;
-  p->master_unrotation_ratio = 1.f;
+  // Blender doesn't reverse rotations; we set up an exact unrotation below,
+  // but let the user turn it on gradually
+  p->master_unrotation_ratio = 0.f;
 
   p->red_outset = 0.290776401758f;
   p->green_outset = 0.263155400753f;
   p->blue_outset = 0.045810721815f;
-  p->red_unrotation = 0.f;
-  p->green_unrotation = 0.f;
-  p->blue_unrotation = 0.f;
+  p->red_unrotation = p->red_rotation;
+  p->green_unrotation = p->green_rotation;
+  p->blue_unrotation = p->blue_rotation;
 }
 
 static void _set_unmodified_primaries(dt_iop_agx_params_t *p)
@@ -821,7 +887,7 @@ static inline void _agx_look(dt_aligned_pixel_t pixel_in_out,
 {
   const float slope = params->look_slope;
   const float lift = params->look_lift;
-  const float power = params->look_power;
+  const float power = params->look_brightness < 1 ? 1.f / sqrtf(fmaxf(params->look_brightness, _epsilon)) : 1.f / params->look_brightness;
   const float sat = params->look_saturation;
 
   for_three_channels(k, aligned(pixel_in_out : 16))
@@ -994,34 +1060,11 @@ static void _set_log_mapping_params(const dt_iop_agx_params_t *p,
   curve_and_look_params->range_in_ev = curve_and_look_params->max_ev - curve_and_look_params->min_ev;
 }
 
-static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_params_t *p)
+static inline float _calculate_slope_gamma_compensation(const float gamma,
+                                                        const float pivot_y,
+                                                        const dt_iop_agx_params_t *p)
 {
-  tone_mapping_params_t tone_mapping_params;
-
-  // look
-  tone_mapping_params.look_lift = p->look_lift;
-  tone_mapping_params.look_slope = p->look_slope;
-  tone_mapping_params.look_saturation = p->look_saturation;
-  tone_mapping_params.look_power = p->look_power;
-  tone_mapping_params.look_original_hue_mix_ratio = p->look_original_hue_mix_ratio;
-  tone_mapping_params.look_tuned = p -> look_slope != 1.f
-                                   || p->look_power != 1.f
-                                   || p -> look_lift != 0.f
-                                   || p -> look_saturation != 1.f;
-  tone_mapping_params.restore_hue = p->look_original_hue_mix_ratio != 0.f;
-
-  // log mapping
-  _set_log_mapping_params(p, &tone_mapping_params);
-
-  _adjust_pivot(p, &tone_mapping_params);
-
-  // avoid range altering slope - 16.5 EV is the default AgX range; keep the meaning of slope
-  const float range_adjusted_slope =
-    p->curve_contrast_around_pivot * (tone_mapping_params.range_in_ev / 16.5f);
-
   // compensate contrast relative to gamma 2.2 to keep contrast around the pivot constant
-  const float gamma = tone_mapping_params.curve_gamma;
-  const float pivot_y = tone_mapping_params.pivot_y;
 
   const float pivot_y_at_default_gamma = _calculate_pivot_y_at_gamma(p, _default_gamma);
 
@@ -1040,7 +1083,35 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   const float derivative_at_current_gamma = gamma * powf(fmaxf(_epsilon, pivot_y), gamma - 1.0f);
   const float derivative_at_default_gamma =
     _default_gamma * powf(fmaxf(_epsilon, pivot_y_at_default_gamma), _default_gamma - 1.0f);
-  const float compensation_factor = derivative_at_current_gamma / derivative_at_default_gamma;
+  return derivative_at_current_gamma / derivative_at_default_gamma;
+}
+
+static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_params_t *p)
+{
+  tone_mapping_params_t tone_mapping_params;
+
+  // look
+  tone_mapping_params.look_lift = p->look_lift;
+  tone_mapping_params.look_slope = p->look_slope;
+  tone_mapping_params.look_saturation = p->look_saturation;
+  tone_mapping_params.look_brightness = p->look_brightness;
+  tone_mapping_params.look_original_hue_mix_ratio = p->look_original_hue_mix_ratio;
+  tone_mapping_params.look_tuned = p -> look_slope != 1.f
+                                   || p->look_brightness != 1.f
+                                   || p -> look_lift != 0.f
+                                   || p -> look_saturation != 1.f;
+  tone_mapping_params.restore_hue = p->look_original_hue_mix_ratio != 0.f;
+
+  // log mapping
+  _set_log_mapping_params(p, &tone_mapping_params);
+
+  _adjust_pivot(p, &tone_mapping_params);
+
+  // avoid range altering slope - 16.5 EV is the default AgX range; keep the meaning of slope
+  const float range_adjusted_slope =
+    p->curve_contrast_around_pivot * (tone_mapping_params.range_in_ev / 16.5f);
+
+  const float compensation_factor = _calculate_slope_gamma_compensation(tone_mapping_params.curve_gamma, tone_mapping_params.pivot_y, p);
 
   tone_mapping_params.slope = range_adjusted_slope / compensation_factor;
 
@@ -1482,7 +1553,7 @@ void process(dt_iop_module_t *self,
   if(!base_profile)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[agx commit_params] Failed to obtain a valid base profile. Module will not run correctly.");
+             "[agx process] Failed to obtain a valid base profile. Module will not run correctly.");
     return;
   }
 
@@ -2065,8 +2136,8 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget, g
   dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
   gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
 
-  slider = dt_bauhaus_slider_from_params(section, "look_power");
-  dt_bauhaus_slider_set_soft_range(slider, 0.5f, 2.f);
+  slider = dt_bauhaus_slider_from_params(section, "look_brightness");
+  dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("increase or decrease brightness"));
 
   slider = dt_bauhaus_slider_from_params(section, "look_saturation");
@@ -2252,7 +2323,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   self->widget = parent;
 }
 
-static void _apply_primaries_from_menu_cb(GtkMenuItem *menuitem, dt_iop_module_t *self)
+static void _apply_primaries_from_menu_callback(GtkMenuItem *menuitem, dt_iop_module_t *self)
 {
   const char *preset_id = gtk_widget_get_name(GTK_WIDGET(menuitem));
   dt_iop_agx_params_t *p = self->params;
@@ -2271,17 +2342,17 @@ static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *se
 
   GtkWidget *blender_item = gtk_menu_item_new_with_mnemonic(_("blender-like"));
   gtk_widget_set_name(blender_item, "blender");
-  g_signal_connect(blender_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  g_signal_connect(blender_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), blender_item);
 
   GtkWidget *smooth_item = gtk_menu_item_new_with_mnemonic(_("smooth"));
   gtk_widget_set_name(smooth_item, "smooth");
-  g_signal_connect(smooth_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  g_signal_connect(smooth_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), smooth_item);
 
   GtkWidget *unmodified_item = gtk_menu_item_new_with_mnemonic(_("unmodified"));
   gtk_widget_set_name(unmodified_item, "unmodified");
-  g_signal_connect(unmodified_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  g_signal_connect(unmodified_item, "activate", G_CALLBACK(_apply_primaries_from_menu_callback), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), unmodified_item);
 
   gtk_widget_show_all(menu);
@@ -2586,7 +2657,7 @@ void gui_init(dt_iop_module_t *self)
 static void _set_shared_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;
-  p->look_power = 1.f;
+  p->look_brightness = 1.f;
   p->look_lift = 0.f;
   p->look_saturation = 1.f;
   // In Blender, a related param is set to 40%, but is actually used as 1 - param,
@@ -2629,15 +2700,32 @@ static void _set_blenderlike_params(dt_iop_agx_params_t *p)
   _set_blenderlike_primaries(p);
 
   // restore the original Blender settings
-  p->curve_contrast_around_pivot = 2.4f;
   p->curve_shoulder_power = 1.5f;
   p->curve_toe_power = 1.5f;
+  p->curve_gamma = 2.4;
+  // our default gamma is 2.2, and the gamma compensation logic will be applied
+  // later to scale the contrast calculated here, to finally arrive at
+  // blender's default contrast, which is 2.4. If we simply set 2.4 here, the compensation
+  // would yield another number.
+
+  const float compensation_factor = _calculate_slope_gamma_compensation(p->curve_gamma, powf(0.18f, 1.f/p->curve_gamma), p);
+
+  // we multiply by the factor instead of dividing, which will be reversed when compensating relative to gamma 2.2
+  p->curve_contrast_around_pivot = 2.4f * compensation_factor;
 }
 
 static void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
 {
   _set_shared_params(p);
   _set_blenderlike_primaries(p);
+}
+
+static void _make_punchy(dt_iop_agx_params_t * p)
+{
+  // from Blender; 'power' is 1.35
+  p->look_brightness = 1.f / (1.35f * 1.35f);
+  p->look_lift = 0.f;
+  p->look_saturation = 1.4f;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -2656,8 +2744,6 @@ void init_presets(dt_iop_module_so_t *self)
   ///////////////////////
   // Blender-like presets
 
-  // AgX primaries settings from Eary_Chow
-  // https://discuss.pixls.us/t/blender-agx-in-darktable-proof-of-concept/48697/1018
   _set_blenderlike_params(&p);
 
   dt_gui_presets_add_generic(_("blender-like|base"),
@@ -2665,10 +2751,7 @@ void init_presets(dt_iop_module_so_t *self)
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
 
-  // Punchy preset
-  p.look_power = 1.35f;
-  p.look_lift = 0.f;
-  p.look_saturation = 1.4f;
+  _make_punchy(&p);
   dt_gui_presets_add_generic(_("blender-like|punchy"),
                              self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
@@ -2703,10 +2786,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  // 'Punchy' look
-  p.look_power = 1.35f;
-  p.look_lift = 0.f;
-  p.look_saturation = 1.4f;
+  _make_punchy(&p);
   dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
