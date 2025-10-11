@@ -93,7 +93,7 @@ typedef enum dt_iop_agx_base_primaries_t
 // Params exposed on the UI
 typedef struct dt_iop_agx_params_t
 {
-  float look_offset;                 // $MIN: -1.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "offset"
+  float look_lift;                   // $MIN: -1.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "lift"
   float look_slope;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "slope"
   float look_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "power"
   float look_saturation;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "saturation"
@@ -237,7 +237,7 @@ typedef struct tone_mapping_params_t
   float shoulder_fallback_power;
 
   // look
-  float look_offset;
+  float look_lift;
   float look_slope;
   float look_power;
   float look_saturation;
@@ -803,13 +803,13 @@ static inline float _lerp_hue(const float original_hue,
   return mixed_hue - floorf(mixed_hue);
 }
 
-static inline float _apply_slope_offset(const float x,
+static inline float _apply_slope_lift(const float x,
                                         const float slope,
-                                        const float offset)
+                                        const float lift)
 {
   // https://www.desmos.com/calculator/8a26bc7eb8
-  const float m = slope / (1.f + offset);
-  const float b = offset * m;
+  const float m = slope / (1.f + lift);
+  const float b = lift * m;
   // m * x + b
   return DT_FMA(m, x, b);
 }
@@ -820,17 +820,17 @@ static inline void _agx_look(dt_aligned_pixel_t pixel_in_out,
                              const dt_colormatrix_t rendering_to_xyz_transposed)
 {
   const float slope = params->look_slope;
-  const float offset = params->look_offset;
+  const float lift = params->look_lift;
   const float power = params->look_power;
   const float sat = params->look_saturation;
 
   for_three_channels(k, aligned(pixel_in_out : 16))
   {
-    const float slope_and_offset_val = _apply_slope_offset(pixel_in_out[k], slope, offset);
+    const float value_with_slope_and_lift = _apply_slope_lift(pixel_in_out[k], slope, lift);
     pixel_in_out[k] =
-      slope_and_offset_val > 0.f
-      ? powf(slope_and_offset_val, power)
-      : slope_and_offset_val;
+      value_with_slope_and_lift > 0.f
+      ? powf(value_with_slope_and_lift, power)
+      : value_with_slope_and_lift;
   }
 
   const float luma = _luminance_from_matrix(pixel_in_out, rendering_to_xyz_transposed);
@@ -999,14 +999,14 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   tone_mapping_params_t tone_mapping_params;
 
   // look
-  tone_mapping_params.look_offset = p->look_offset;
+  tone_mapping_params.look_lift = p->look_lift;
   tone_mapping_params.look_slope = p->look_slope;
   tone_mapping_params.look_saturation = p->look_saturation;
   tone_mapping_params.look_power = p->look_power;
   tone_mapping_params.look_original_hue_mix_ratio = p->look_original_hue_mix_ratio;
   tone_mapping_params.look_tuned = p -> look_slope != 1.f
                                    || p->look_power != 1.f
-                                   || p -> look_offset != 0.f
+                                   || p -> look_lift != 0.f
                                    || p -> look_saturation != 1.f;
   tone_mapping_params.restore_hue = p->look_original_hue_mix_ratio != 0.f;
 
@@ -2060,7 +2060,7 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget, g
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase contrast and brightness"));
 
-  slider = dt_bauhaus_slider_from_params(section, "look_offset");
+  slider = dt_bauhaus_slider_from_params(section, "look_lift");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
   gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
@@ -2587,7 +2587,7 @@ static void _set_shared_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;
   p->look_power = 1.f;
-  p->look_offset = 0.f;
+  p->look_lift = 0.f;
   p->look_saturation = 1.f;
   // In Blender, a related param is set to 40%, but is actually used as 1 - param,
   // so 60% would give almost identical results; however, Eary_Chow suggested
@@ -2667,7 +2667,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Punchy preset
   p.look_power = 1.35f;
-  p.look_offset = 0.f;
+  p.look_lift = 0.f;
   p.look_saturation = 1.4f;
   dt_gui_presets_add_generic(_("blender-like|punchy"),
                              self->op, self->version(), &p, sizeof(p),
@@ -2705,7 +2705,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // 'Punchy' look
   p.look_power = 1.35f;
-  p.look_offset = 0.f;
+  p.look_lift = 0.f;
   p.look_saturation = 1.4f;
   dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
