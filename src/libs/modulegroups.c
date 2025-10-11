@@ -1484,6 +1484,17 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
         AM("sigmoid/contrast");											  \
         AM("sigmoid/skew");											  \
       } 													  \
+      else if(wf_agx)												  \
+      {														  \
+        /*AM("agx/white relative exposure");*/						                          \
+        /*AM("agx/black relative exposure");*/						                          \
+        AM("agx/auto tune levels");                                                                               \
+        AM("agx/curve/contrast");                                                                                 \
+        AM("agx/curve/shoulder power");                                                                           \
+        AM("agx/curve/toe power");	                                                                          \
+        AM("agx/look/saturation");	                                                                          \
+        AM("agx/look/preserve hue");	                                                                          \
+      }														  \
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
