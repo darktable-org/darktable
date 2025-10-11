@@ -297,11 +297,10 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
     item->module_op = g_strdup(elems[0]);
     if(item->widget && DT_IS_BAUHAUS_WIDGET(item->widget))
     {
-      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
       if(g_strv_length(elems) > 2)
-        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), bw->label);
+        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), dt_bauhaus_widget_get_label(item->widget));
       else if(g_strv_length(elems) > 1)
-        item->widget_name = g_strdup(bw->label);
+        item->widget_name = g_strdup(dt_bauhaus_widget_get_label(item->widget));
       else
       {
         item->widget_name = g_strdup(_("on-off"));
@@ -369,10 +368,7 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
     // put back label
     if(DT_IS_BAUHAUS_WIDGET(item->widget))
-    {
-      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
-      bw->show_extended_label = FALSE;
-    }
+      dt_bauhaus_widget_set_show_extended_label(item->widget, FALSE);
   }
   // cleanup item
   item->widget = NULL;
@@ -546,9 +542,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // change the widget label to integrate section name
     if(DT_IS_BAUHAUS_WIDGET(w))
     {
-      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(w);
-      bw->show_extended_label = TRUE;
-      item->module = (dt_iop_module_t *)bw->module;
+      dt_bauhaus_widget_set_show_extended_label(item->widget, TRUE);
+      item->module = dt_bauhaus_widget_get_module(item->widget);
     }
 
     // we put the temporary widget at the place of the real widget in the module
