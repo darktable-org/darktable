@@ -1348,13 +1348,41 @@ static char *_expand_source(dt_variables_params_t *params,
   return result;
 }
 
+static gchar *_legacy_aliases(const gchar *source)
+{
+  // create aliases for legacy variable names to avoid breaking old edits
+  gchar *result, *result_old;
+  result = dt_util_str_replace(source, "$(TITLE)", "$(Xmp.dc.title)");
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(DESCRIPTION)", "$(Xmp.dc.description)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(PUBLISHER)", "$(Xmp.dc.publisher)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(CREATOR)", "$(Xmp.dc.creator)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(RIGHTS)", "$(Xmp.dc.rights)");
+  g_free(result_old);
+
+  return result;
+}
+
 char *dt_variables_expand(dt_variables_params_t *params,
                           gchar *source,
                           const gboolean iterate)
 {
   _init_expansion(params, iterate);
 
-  char *result = _expand_source(params, &source, '\0');
+  gchar *aliased_source = _legacy_aliases(source);
+  gchar *nsource = aliased_source;
+  char *result = _expand_source(params, &nsource, '\0');
+  g_free(aliased_source);
 
   _cleanup_expansion(params);
   return result;
