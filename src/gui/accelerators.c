@@ -2803,6 +2803,66 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   dt_shortcuts_save(NULL, FALSE);
 }
 
+static void _import_extended_clicked(GtkButton *button, gpointer user_data)
+{
+  GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+  GtkWidget *dialog = gtk_dialog_new_with_buttons
+    (_("import sample shortcuts"),
+     win, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     _("_cancel"), GTK_RESPONSE_REJECT,
+     _("_ok"), GTK_RESPONSE_OK,
+     NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
+  GtkWidget *label = gtk_label_new(_("add darktable sample shortcuts?\n"
+                                     "\n"
+                                     "this will overwrite any existing shortcuts\n"
+                                     "using the same key+mouse combinations!\n"
+                                     "you will be able to undo this action during\n"
+                                     "the current session by clicking 'restore...'\n"
+                                     "and opting to clear all newer shortcuts.\n"
+                                     "\n"
+                                     "it is recommended to export your current\n"
+                                     "shortcuts before adding these.\n"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label);
+  gtk_widget_show_all(dialog);
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+
+  if(resp == GTK_RESPONSE_OK)
+  {
+    // user asked to import the darktable system shortcuts file (localized, if available)
+    char sharedir[PATH_MAX] = { 0 };
+    dt_loc_get_sharedir(sharedir, sizeof(sharedir));
+
+    const char *langcode = g_getenv("LANGUAGE");
+    gboolean loaded = FALSE;
+    if(langcode && *langcode)
+    {
+      const char *underscore = strchr(langcode,'_');
+      const int lang_len = underscore ? underscore - langcode : strlen(langcode);
+      gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%.*s", lang_len, langcode);
+      gchar *shortcuts_file = g_build_filename(sharedir, localized_file, NULL);
+      if(g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
+      {
+        dt_print(DT_DEBUG_PARAMS,"load localized shortcuts from %s", shortcuts_file);
+        dt_shortcuts_load(shortcuts_file, FALSE);
+        loaded = TRUE;
+      }
+      g_free(shortcuts_file);
+    }
+    if(!loaded)
+    {
+      gchar *shortcuts_file = g_build_filename(sharedir, "darktable/shortcutsrc", NULL);
+      dt_print(DT_DEBUG_PARAMS, "load default shortcuts from %s", shortcuts_file);
+      dt_shortcuts_load(shortcuts_file, FALSE);
+      g_free(shortcuts_file);
+    }
+    dt_shortcuts_save(NULL, FALSE);
+  }
+}
+
 static void _notice_clicked(GtkWidget *button,
                             gpointer user_data)
 {
@@ -3028,6 +3088,10 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_tooltip_text(btn_restore, _("restore default shortcuts or previous state"));
   g_signal_connect(btn_restore, "clicked", G_CALLBACK(_restore_clicked), NULL);
 
+  GtkWidget *btn_importx = gtk_button_new_with_label(_("import extras"));
+  gtk_widget_set_tooltip_text(btn_importx, _("import extended default shortcuts"));
+  g_signal_connect(btn_importx, "clicked", G_CALLBACK(_import_extended_clicked), NULL);
+
   GtkWidget *btn_import = gtk_button_new_with_label(_("import..."));
   gtk_widget_set_tooltip_text(btn_import, _("fully or partially import shortcuts from file"));
   g_signal_connect(btn_import, "clicked", G_CALLBACK(_import_clicked), NULL);
@@ -3037,7 +3101,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(btn_export, "clicked", G_CALLBACK(_export_clicked), NULL);
 
   GtkWidget *button_bar = dt_gui_hbox(search_actions, search_shortcuts, btn_fallbacks,
-                                      dt_gui_align_right(btn_help), btn_export, btn_import, btn_restore);
+                                      dt_gui_align_right(btn_help), btn_export, btn_importx,
+                                      btn_import, btn_restore);
   gtk_widget_set_name(button_bar, "shortcut-controls");
 
   GtkWidget *top_level = dt_gui_vbox();
@@ -3460,8 +3525,11 @@ void dt_shortcuts_load(const gchar *ext,
                        const gboolean clear)
 {
   char shortcuts_file[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(shortcuts_file, sizeof(shortcuts_file));
-  g_strlcat(shortcuts_file, "/shortcutsrc", PATH_MAX);
+  if(!ext || (strchr(ext,'/') == NULL && strchr(ext, G_SEARCHPATH_SEPARATOR) == NULL))
+  {
+    dt_loc_get_user_config_dir(shortcuts_file, sizeof(shortcuts_file));
+    g_strlcat(shortcuts_file, "/shortcutsrc", PATH_MAX);
+  }
   if(ext) g_strlcat(shortcuts_file, ext, PATH_MAX);
   if(!g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
     return;
