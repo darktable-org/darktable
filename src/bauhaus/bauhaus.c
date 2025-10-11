@@ -37,6 +37,107 @@
 
 #include <pango/pangocairo.h>
 
+// data portion for a slider
+typedef struct dt_bauhaus_slider_data_t
+{
+  float pos;      // normalized slider value
+  float oldpos;   // slider value before entering finetune mode (normalized)
+  float step;     // step width (not normalized)
+  float defpos;   // default value (not normalized)
+  float min, max; // min and max range
+  float soft_min, soft_max;
+  float hard_min, hard_max;
+  int digits;  // how many decimals to round to
+
+  float (*grad_col)[3]; // colors for gradient slider
+  int grad_cnt;         // how many stops
+  float *grad_pos;      // and position of these.
+
+  int fill_feedback : 1; // fill the slider with brighter part up to the handle?
+
+  const char *format;   // numeric value is printed with this format
+  float factor;         // multiplication factor before printing
+  float offset;         // addition before printing
+
+  int is_dragging : 1;  // indicates is mouse is dragging slider
+  int is_changed : 1;   // indicates new data
+  guint timeout_handle; // used to store id of timeout routine
+  float (*curve)(float, dt_bauhaus_curve_t); // callback function
+} dt_bauhaus_slider_data_t;
+
+typedef struct dt_bauhaus_combobox_entry_t
+{
+  char *label;
+  dt_bauhaus_combobox_alignment_t alignment;
+  gboolean sensitive;
+  gpointer data;
+  void (*free_func)(gpointer); // callback to free data elements
+} dt_bauhaus_combobox_entry_t;
+
+typedef struct dt_bauhaus_combobox_data_t
+{
+  int active;           // currently active element
+  int defpos;           // default position
+  int editable;         // 1 if arbitrary text may be typed
+  dt_bauhaus_combobox_alignment_t text_align; // if selected text in combo should be aligned to the left/right
+  char *text;           // to hold arbitrary text if editable
+  PangoEllipsizeMode entries_ellipsis;
+  GPtrArray *entries;
+  gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
+  dt_bauhaus_combobox_populate_fct populate; // function to populate the combo list on the fly
+  dt_bauhaus_combobox_entry_select_fct entry_select; // function to select an entry based on context
+} dt_bauhaus_combobox_data_t;
+
+typedef union dt_bauhaus_data_t
+{
+  // this is the placeholder for the data portions
+  // associated with the implementations such as
+  // sliders, combo boxes, ..
+  dt_bauhaus_slider_data_t slider;
+  dt_bauhaus_combobox_data_t combobox;
+} dt_bauhaus_data_t;
+
+struct _DtBauhausWidget
+{
+  // gtk base widget
+  GtkDrawingArea parent;
+  // which type of control
+  dt_bauhaus_type_t type;
+  // associated image operation module (to handle focus and such)
+  dt_action_t *module;
+  // pointer to iop field linked to widget
+  gpointer field;
+  // type of field
+  dt_introspection_type_t field_type;
+
+  // label text, short
+  char label[256];
+  gboolean show_label;
+  // section, short
+  gchar *section;
+  gboolean show_extended_label;
+  // callback function to draw the quad icon
+  dt_bauhaus_quad_paint_f quad_paint;
+  // tooltip to show when mouse is over the quad section
+  gchar *tooltip;
+  // minimal modifiers for paint function.
+  int quad_paint_flags;
+  // data for the paint callback
+  void *quad_paint_data;
+  // quad is a toggle button?
+  gboolean quad_toggle;
+  // show quad icon or space
+  gboolean show_quad;
+
+  // margin and padding structure, defined in css, retrieve on each draw
+  GtkBorder margin, padding;
+  // gap to add to the top padding due to the vertical centering
+  int top_gap;
+
+  // goes last, might extend past the end:
+  dt_bauhaus_data_t data;
+};
+
 G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
 enum
@@ -984,6 +1085,14 @@ float dt_bauhaus_slider_get_default(GtkWidget *widget)
   return d->defpos;
 }
 
+dt_bauhaus_type_t dt_bauhaus_widget_get_type(GtkWidget *widget)
+{
+  if(!DT_IS_BAUHAUS_WIDGET(widget)) return DT_BAUHAUS_INVALID;
+
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->type;
+}
+
 dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
                                          const char *section,
                                          const char *label)
@@ -1050,6 +1159,26 @@ void dt_bauhaus_widget_hide_label(GtkWidget *widget)
   w->show_label = FALSE;
 }
 
+void dt_bauhaus_widget_set_show_extended_label(GtkWidget *widget,
+                                               gboolean show)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->show_extended_label = show;
+}
+
+void dt_bauhaus_widget_set_module(GtkWidget *widget,
+                                  dt_action_t *module)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->module  = module;
+}
+
+gpointer dt_bauhaus_widget_get_module(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->module;
+}
+
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget,
                                       dt_bauhaus_quad_paint_f f,
                                       const int paint_flags,
@@ -1074,13 +1203,12 @@ void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
                                             dt_action_element_t element)
 {
-  gchar *tooltip = DT_IS_BAUHAUS_WIDGET(widget)
-                   && element == DT_ACTION_ELEMENT_BUTTON
-                 ? DT_BAUHAUS_WIDGET(widget)->tooltip : NULL;
-  if(!(tooltip))
+  if(element == DT_ACTION_ELEMENT_BUTTON
+     && DT_IS_BAUHAUS_WIDGET(widget)
+     && DT_BAUHAUS_WIDGET(widget)->tooltip)
+    return g_markup_escape_text(DT_BAUHAUS_WIDGET(widget)->tooltip, -1);
+  else
     return gtk_widget_get_tooltip_markup(widget);
-
-  return g_markup_escape_text(tooltip, -1);
 }
 
 void dt_bauhaus_widget_set_field(GtkWidget *widget,
@@ -1095,6 +1223,12 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
              w->label);
   w->field = field;
   w->field_type = field_type;
+}
+
+gpointer dt_bauhaus_widget_get_field(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->field;
 }
 
 static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
@@ -1225,14 +1359,14 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
 
 // make this quad a toggle button:
 void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget,
-                                       const int toggle)
+                                       const gboolean toggle)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   w->quad_toggle = toggle;
 }
 
 void dt_bauhaus_widget_set_quad_active(GtkWidget *widget,
-                                       const int active)
+                                       const gboolean active)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(active)

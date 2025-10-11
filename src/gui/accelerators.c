@@ -919,7 +919,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
 
   if(DT_IS_BAUHAUS_WIDGET(widget) && s->element == DT_ACTION_ELEMENT_DEFAULT)
   {
-    if(DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_COMBOBOX)
+    if(dt_bauhaus_widget_get_type(widget) == DT_BAUHAUS_COMBOBOX)
     {
       int value = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
       dt_introspection_type_enum_tuple_t *values
@@ -1129,8 +1129,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                             _("scroll to change default speed"),
                                             _("right-click to exit mapping mode"));
     }
-    else if(DT_IS_BAUHAUS_WIDGET(widget)
-            && DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_SLIDER
+    else if(dt_bauhaus_widget_get_type(widget) == DT_BAUHAUS_SLIDER
             && darktable.control->element == 2) // DT_ACTION_ELEMENT_FORCE
     {
       float hard_min = dt_bauhaus_slider_get_hard_min(widget);
