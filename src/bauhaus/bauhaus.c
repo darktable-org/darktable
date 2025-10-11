@@ -188,12 +188,6 @@ static void _margins_retrieve(dt_bauhaus_widget_t *w)
   gtk_style_context_get_padding(context, state, &w->padding);
 }
 
-void dt_bauhaus_widget_set_section(GtkWidget *widget, const gboolean is_section)
-{
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  w->is_section = is_section;
-}
-
 static int _show_pango_text(dt_bauhaus_widget_t *w,
                             GtkStyleContext *context,
                             cairo_t *cr,
@@ -773,17 +767,6 @@ void dt_bauhaus_load_theme()
   bh->pango_font_desc = NULL;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font",
                         &bh->pango_font_desc, NULL);
-
-  if(bh->pango_sec_font_desc)
-    pango_font_description_free(bh->pango_sec_font_desc);
-  bh->pango_sec_font_desc = NULL;
-
-  // now get the font for the section labels
-  gtk_widget_path_iter_add_class(path, pos, "dt_section_label");
-  gtk_style_context_set_path(ctx, path);
-  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font",
-                        &bh->pango_sec_font_desc, NULL);
-  gtk_widget_path_free(path);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);

@@ -168,8 +168,6 @@ typedef struct _DtBauhausWidget
   int quad_toggle;
   // show quad icon or space
   gboolean show_quad;
-  // if a section label
-  gboolean is_section;
 
   // margin and padding structure, defined in css, retrieve on each draw
   GtkBorder margin, padding;
@@ -241,7 +239,6 @@ typedef struct dt_bauhaus_t
   float border_width;                    // width of the border of the slider marker
   float quad_width;                      // width of the quad area to paint icons
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
-  PangoFontDescription *pango_sec_font_desc; // as above but for section labels
 
   // the slider popup has a blinking cursor
   guint cursor_timeout;
@@ -270,11 +267,6 @@ void dt_bauhaus_cleanup();
 
 // load theme colors, fonts, etc
 void dt_bauhaus_load_theme();
-
-// set the bauhaus widget as a module section and in this case the font used will be the one
-// from the CSS section_label.
-void dt_bauhaus_widget_set_section(GtkWidget *w,
-                                   const gboolean is_section);
 
 // common functions:
 // set the label text:
