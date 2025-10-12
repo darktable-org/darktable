@@ -239,7 +239,7 @@ typedef struct tone_mapping_params_t
   // look
   float look_lift;
   float look_slope;
-  float look_brightness;
+  float look_power;
   float look_saturation;
   float look_original_hue_mix_ratio;
   gboolean look_tuned;
@@ -887,7 +887,7 @@ static inline void _agx_look(dt_aligned_pixel_t pixel_in_out,
 {
   const float slope = params->look_slope;
   const float lift = params->look_lift;
-  const float power = params->look_brightness < 1 ? 1.f / sqrtf(fmaxf(params->look_brightness, _epsilon)) : 1.f / params->look_brightness;
+  const float power = params->look_power;
   const float sat = params->look_saturation;
 
   for_three_channels(k, aligned(pixel_in_out : 16))
@@ -1094,7 +1094,8 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   tone_mapping_params.look_lift = p->look_lift;
   tone_mapping_params.look_slope = p->look_slope;
   tone_mapping_params.look_saturation = p->look_saturation;
-  tone_mapping_params.look_brightness = p->look_brightness;
+  const float brightness = p->look_brightness;
+  tone_mapping_params.look_power = brightness < 1 ? 1.f / sqrtf(fmaxf(brightness, _epsilon)) : 1.f / brightness;
   tone_mapping_params.look_original_hue_mix_ratio = p->look_original_hue_mix_ratio;
   tone_mapping_params.look_tuned = p -> look_slope != 1.f
                                    || p->look_brightness != 1.f
