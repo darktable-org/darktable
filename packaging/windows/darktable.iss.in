@@ -90,6 +90,11 @@ LZMANumBlockThreads=2
 
 WizardStyle=modern
 
+; We allow users who install the program to add darktable to their Quick Launch
+; list (on supported Windows versions), even when installing for all users.
+; This is intentional, don't warn.
+UsedUserAreasWarning=no
+
 ; These parameters must be set to "no" if the AppId contains constants. We use
 ; scripted constant to have different AppIds for release and nightly snapshot.
 ; However, the behavior for "no" values seems logical, so these values are what
@@ -108,6 +113,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVer
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AUTHORS";  DestDir: "{app}"; Flags: ignoreversion
+Source: "LICENSE";  DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
