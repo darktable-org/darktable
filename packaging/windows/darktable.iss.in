@@ -67,8 +67,7 @@ AllowNoIcons=yes
 
 PrivilegesRequiredOverridesAllowed=dialog
 
-; Make this name different while we build nightly with both this and the NSIS installer
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experimental
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.

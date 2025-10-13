@@ -71,6 +71,7 @@ if(WIN32)
     set(CPACK_GENERATOR "ZIP")
   else()
     set(CPACK_GENERATOR "NSIS")
+    set(CPACK_SYSTEM_NAME win64-NSIS-deprecated)
     set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
     # There is a bug in NSIS that does not handle full unix paths properly. Make
