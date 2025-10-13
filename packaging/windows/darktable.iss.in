@@ -108,6 +108,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVer
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AUTHORS";  DestDir: "{app}"; Flags: ignoreversion
+Source: "LICENSE";  DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
