@@ -31,7 +31,10 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
+
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
 
 ; This file is not in the source tree, it is expected to be created in
 ; the installer build environment before compiling this script as:
@@ -72,7 +75,19 @@ OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experiment
 ; May be useful for debugging, not needed for production builds.
 ; OutputManifestFile=darktable-manifest.txt
 
+; See https://github.com/teeks99/inno-test/ for which compression parameters
+; should be set and to what values, and which are better not to touch.
+Compression=lzma2/ultra64
 SolidCompression=yes
+LZMAUseSeparateProcess=yes
+
+; Setting this parameter to 2 (default is 1) only slightly (by a few fractions
+; of a percent) increases file size, but significantly speeds up compression.
+; OTOH, saving a minute of nightly job is not that important (if at all). But
+; neither is an extra couple of hundred KB of installer file. So, really,
+; there is no strong justification for choosing the value of this parameter...
+LZMANumBlockThreads=2
+
 WizardStyle=modern
 
 ; These parameters must be set to "no" if the AppId contains constants. We use
