@@ -90,6 +90,11 @@ LZMANumBlockThreads=2
 
 WizardStyle=modern
 
+; We allow users who install the program to add darktable to their Quick Launch
+; list (on supported Windows versions), even when installing for all users.
+; This is intentional, don't warn.
+UsedUserAreasWarning=no
+
 ; These parameters must be set to "no" if the AppId contains constants. We use
 ; scripted constant to have different AppIds for release and nightly snapshot.
 ; However, the behavior for "no" values seems logical, so these values are what
