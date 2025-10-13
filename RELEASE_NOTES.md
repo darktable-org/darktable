@@ -223,6 +223,9 @@ changes (where available).
 
 - return an empty table (nil) when a tag contains no images with the tag
 
+- Ensure translations are displayed in UTF-8 under Windows
+
+
 ### Add action support for Lua
 
 ### Other Lua changes
