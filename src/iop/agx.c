@@ -2703,7 +2703,7 @@ static void _set_blenderlike_params(dt_iop_agx_params_t *p)
   // restore the original Blender settings
   p->curve_shoulder_power = 1.5f;
   p->curve_toe_power = 1.5f;
-  p->curve_gamma = 2.4;
+  p->curve_gamma = 2.4f;
   // our default gamma is 2.2, and the gamma compensation logic will be applied
   // later to scale the contrast calculated here, to finally arrive at
   // blender's default contrast, which is 2.4. If we simply set 2.4 here, the compensation
@@ -2723,7 +2723,8 @@ static void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
 
 static void _make_punchy(dt_iop_agx_params_t * p)
 {
-  // from Blender; 'power' is 1.35
+  // from Blender; 'power' is 1.35; darkening brightness adjustments (value < 1)
+  // are dampened using sqrt in UI 'brightness' param -> algorithmic 'power' param conversion
   p->look_brightness = 1.f / (1.35f * 1.35f);
   p->look_lift = 0.f;
   p->look_saturation = 1.4f;
