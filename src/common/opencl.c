@@ -781,11 +781,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
      &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < (uint64_t)800ul * 1024ul * 1024ul)
+  if(cl->dev[dev].max_global_mem < (uint64_t)800ul * DT_MEGA)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
                  "   *** insufficient global memory (%" PRIu64 "MB) ***\n",
-                 cl->dev[dev].max_global_mem / 1024 / 1024);
+                 cl->dev[dev].max_global_mem / DT_MEGA);
     res = TRUE;
     cl->dev[dev].disabled |= TRUE;
     goto end;
@@ -807,10 +807,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL,
                "   GLOBAL MEM SIZE:          %.0f MB\n",
-               (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+               (double)cl->dev[dev].max_global_mem / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX MEM ALLOC:            %.0f MB\n",
-               (double)cl->dev[dev].max_mem_alloc / 1024.0 / 1024.0);
+               (double)cl->dev[dev].max_mem_alloc / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX IMAGE SIZE:           %zd x %zd\n",
                cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
@@ -3575,16 +3575,16 @@ void dt_opencl_check_tuning(const int devid)
 
   if(level < 0)
   {
-    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * DT_MEGA;
   }
   else
   {
     const size_t allmem = cl->dev[devid].max_global_mem;
-    const size_t lowmem = 256ul * 1024ul * 1024ul;
-    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
+    const size_t lowmem = 256ul * DT_MEGA;
+    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * DT_MEGA;
     if(cl->dev[devid].tunehead)
     {
-      const size_t headroom = (cl->dev[devid].headroom ? 1024ul * 1024ul * cl->dev[devid].headroom : dhead)
+      const size_t headroom = (cl->dev[devid].headroom ? DT_MEGA * cl->dev[devid].headroom : dhead)
                             + (cl->dev[devid].clmem_error ? dhead : 0);
       cl->dev[devid].used_available = allmem > headroom ? allmem - headroom : lowmem;
     }
