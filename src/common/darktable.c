@@ -546,7 +546,7 @@ static size_t _get_mipmap_size()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1) + 2] * DT_MEGA;
   const int fraction = res->fractions[4*level + 2];
   return res->total_memory / 1024lu * fraction;
 }
@@ -1694,7 +1694,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_sys_resources_t *res = &darktable.dtresources;
   res->fractions = fractions;
   res->refresource = ref_resources;
-  res->total_memory = _get_total_memory() * 1024lu;
+  size_t total_mb = _get_total_memory() / 1024lu;
+  if(total_mb < 8192) total_mb -= 1024;
+  res->total_memory = total_mb * DT_MEGA;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
@@ -1706,7 +1708,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_get_sysresource_level();
   res->mipmap_memory = _get_mipmap_size();
   dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-    "  mipmap cache:    %luMB", res->mipmap_memory / 1024lu / 1024lu);
+    "  mipmap cache:    %luMB", res->mipmap_memory / DT_MEGA);
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -2007,11 +2009,11 @@ void dt_get_sysresource_level()
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
              "[dt_get_sysresource_level] switched to `%s'", config);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  total mem:       %luMB", res->total_memory / 1024lu / 1024lu);
+             "  total mem:       %luMB", res->total_memory / DT_MEGA);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  available mem:   %luMB", dt_get_available_mem() / 1024lu / 1024lu);
+             "  available mem:   %luMB", dt_get_available_mem() / DT_MEGA);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / DT_MEGA);
   }
 }
 
@@ -2340,10 +2342,10 @@ size_t dt_get_available_mem()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1)] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1)] * DT_MEGA;
 
   const int fraction = res->fractions[4*level];
-  return MAX(512lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
+  return MAX(512lu * DT_MEGA, res->total_memory / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
@@ -2351,16 +2353,16 @@ size_t dt_get_singlebuffer_mem()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1) + 1] * DT_MEGA;
 
   const int fraction = res->fractions[4*level + 1];
-  return MAX(2lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
+  return MAX(2lu * DT_MEGA, res->total_memory / 1024lu * fraction);
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
 {
   const size_t threads = dt_get_num_procs();
-  const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
+  const size_t mem = darktable.dtresources.total_memory / DT_MEGA;
   const size_t bits = CHAR_BIT * sizeof(void *);
   const gboolean sufficient = mem >= 4096 && threads >= 2;
 
