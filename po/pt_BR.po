@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-08 16:27-0300\n"
-"PO-Revision-Date: 2025-10-08 16:27-0300\n"
+"POT-Creation-Date: 2025-10-14 20:18-0300\n"
+"PO-Revision-Date: 2025-10-14 20:15-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -883,9 +883,9 @@ msgstr "esta predefinição foi modificada"
 #: ../build/bin/preferences_gen.h:4360 ../build/bin/preferences_gen.h:4538
 #: ../build/bin/preferences_gen.h:5206 ../build/bin/preferences_gen.h:5906
 #: ../build/bin/preferences_gen.h:6744 ../build/bin/preferences_gen.h:7266
-#: ../build/bin/preferences_gen.h:7527 ../src/gui/accelerators.c:3022
+#: ../build/bin/preferences_gen.h:7527 ../src/gui/accelerators.c:3082
 #: ../src/gui/gtk.c:3200 ../src/gui/preferences.c:516
-#: ../src/gui/preferences.c:1001 ../src/libs/modulegroups.c:4081
+#: ../src/gui/preferences.c:1001 ../src/libs/modulegroups.c:4092
 msgid "?"
 msgstr "?"
 
@@ -2733,13 +2733,9 @@ msgstr "contribuidores do lua-scripts"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:247
 #: ../build/lib/darktable/plugins/introspection_agx.c:500
-#: ../build/lib/darktable/plugins/introspection_blurs.c:131
-#: ../build/lib/darktable/plugins/introspection_blurs.c:206
-#: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
-#: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:1878
-msgid "offset"
-msgstr "deslocamento"
+#: ../src/iop/colorbalancergb.c:1899
+msgid "lift"
+msgstr "elevação"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:253
 #: ../build/lib/darktable/plugins/introspection_agx.c:504
@@ -2748,9 +2744,14 @@ msgstr "inclinação"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:259
 #: ../build/lib/darktable/plugins/introspection_agx.c:508
-#: ../src/iop/colorbalancergb.c:1941
-msgid "power"
-msgstr "potência"
+#: ../build/lib/darktable/plugins/introspection_retouch.c:285
+#: ../build/lib/darktable/plugins/introspection_retouch.c:426
+#: ../src/iop/basicadj.c:644 ../src/iop/channelmixerrgb.c:4619
+#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3102
+#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:389 ../src/iop/vignette.c:1045
+#: ../src/libs/history.c:967
+msgid "brightness"
+msgstr "brilho"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:265
 #: ../build/lib/darktable/plugins/introspection_agx.c:512
@@ -3275,6 +3276,14 @@ msgstr "direção"
 #: ../src/libs/masks.c:111
 msgid "curvature"
 msgstr "curvatura"
+
+#: ../build/lib/darktable/plugins/introspection_blurs.c:131
+#: ../build/lib/darktable/plugins/introspection_blurs.c:206
+#: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
+#: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
+#: ../src/iop/colorbalancergb.c:1878
+msgid "offset"
+msgstr "deslocamento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
 #: ../src/common/collection.c:623 ../src/gui/preferences.c:938
@@ -4043,7 +4052,7 @@ msgid "lightness"
 msgstr "luminosidade"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2277 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2349 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3494 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -4495,7 +4504,7 @@ msgstr "percentil abaixo"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1354
 #: ../src/libs/colorpicker.c:396 ../src/libs/image.c:663
-#: ../src/libs/modulegroups.c:2354
+#: ../src/libs/modulegroups.c:2365
 msgid "color"
 msgstr "cor"
 
@@ -5094,7 +5103,7 @@ msgid "only vignetting"
 msgstr "apenas vinheta"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:544
-#: ../src/libs/modulegroups.c:2356
+#: ../src/libs/modulegroups.c:2367
 msgid "correct"
 msgstr "corrigir"
 
@@ -5153,7 +5162,7 @@ msgid "line"
 msgstr "linha"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2123 ../src/iop/agx.c:2555 ../src/iop/basecurve.c:2127
+#: ../src/iop/agx.c:2195 ../src/iop/agx.c:2627 ../src/iop/basecurve.c:2127
 #: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "curva"
@@ -5509,15 +5518,6 @@ msgstr "exposição"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
 msgid "fill mode"
 msgstr "modo de preenchimento"
-
-#: ../build/lib/darktable/plugins/introspection_retouch.c:285
-#: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:644 ../src/iop/channelmixerrgb.c:4619
-#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3102
-#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:389 ../src/iop/vignette.c:1045
-#: ../src/libs/history.c:967
-msgid "brightness"
-msgstr "brilho"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
@@ -5929,23 +5929,24 @@ msgstr "menu flutuante"
 #: ../src/control/jobs/control_jobs.c:2202 ../src/gui/accelerators.c:2552
 #: ../src/gui/accelerators.c:2631 ../src/gui/accelerators.c:2674
 #: ../src/gui/accelerators.c:2703 ../src/gui/accelerators.c:2760
-#: ../src/gui/hist_dialog.c:225 ../src/gui/preferences.c:1194
-#: ../src/gui/preferences.c:1234 ../src/gui/presets.c:425
-#: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
-#: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
-#: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1570
-#: ../src/iop/rasterfile.c:262 ../src/libs/collect.c:433
-#: ../src/libs/collect.c:3381 ../src/libs/copy_history.c:122
-#: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:951
-#: ../src/libs/import.c:1846 ../src/libs/import.c:1958
-#: ../src/libs/import.c:2057 ../src/libs/metadata.c:843
-#: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3637
-#: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:454
-#: ../src/libs/styles.c:500 ../src/libs/styles.c:592 ../src/libs/styles.c:653
-#: ../src/libs/tagging.c:1532 ../src/libs/tagging.c:1615
-#: ../src/libs/tagging.c:1698 ../src/libs/tagging.c:1816
-#: ../src/libs/tagging.c:2083 ../src/libs/tagging.c:2532
-#: ../src/libs/tagging.c:2568 ../src/libs/tagging.c:3522
+#: ../src/gui/accelerators.c:2812 ../src/gui/hist_dialog.c:225
+#: ../src/gui/preferences.c:1194 ../src/gui/preferences.c:1234
+#: ../src/gui/presets.c:425 ../src/gui/presets.c:568
+#: ../src/gui/styles_dialog.c:552 ../src/imageio/storage/disk.c:198
+#: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
+#: ../src/iop/lut3d.c:1570 ../src/iop/rasterfile.c:262
+#: ../src/libs/collect.c:433 ../src/libs/collect.c:3381
+#: ../src/libs/copy_history.c:122 ../src/libs/export_metadata.c:166
+#: ../src/libs/geotagging.c:951 ../src/libs/import.c:1846
+#: ../src/libs/import.c:1958 ../src/libs/import.c:2057
+#: ../src/libs/metadata.c:843 ../src/libs/metadata_view.c:1435
+#: ../src/libs/modulegroups.c:3648 ../src/libs/recentcollect.c:232
+#: ../src/libs/styles.c:454 ../src/libs/styles.c:500 ../src/libs/styles.c:592
+#: ../src/libs/styles.c:653 ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1615 ../src/libs/tagging.c:1698
+#: ../src/libs/tagging.c:1816 ../src/libs/tagging.c:2083
+#: ../src/libs/tagging.c:2532 ../src/libs/tagging.c:2568
+#: ../src/libs/tagging.c:3522
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -7206,7 +7207,8 @@ msgstr ""
 
 #: ../src/common/database.c:3882 ../src/common/database.c:3889
 #: ../src/gui/accelerators.c:2632 ../src/gui/accelerators.c:2704
-#: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:569
+#: ../src/gui/accelerators.c:2813 ../src/gui/hist_dialog.c:226
+#: ../src/gui/presets.c:569
 msgid "_ok"
 msgstr "_ok"
 
@@ -9461,7 +9463,7 @@ msgstr ""
 "pressione 'm' para alternar visualização de máscara."
 
 #: ../src/develop/blend_gui.c:2674 ../src/develop/blend_gui.c:3552
-#: ../src/iop/agx.c:2223 ../src/iop/agx.c:2231 ../src/iop/basicadj.c:624
+#: ../src/iop/agx.c:2295 ../src/iop/agx.c:2303 ../src/iop/basicadj.c:624
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
 #: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
@@ -9824,7 +9826,7 @@ msgid "delete"
 msgstr "excluir"
 
 #: ../src/develop/imageop.c:1038 ../src/develop/imageop.c:4043
-#: ../src/libs/modulegroups.c:3996
+#: ../src/libs/modulegroups.c:4007
 msgid "rename"
 msgstr "renomear"
 
@@ -9922,14 +9924,14 @@ msgstr ""
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:4041 ../src/libs/modulegroups.c:3478
-#: ../src/libs/modulegroups.c:3609 ../src/libs/modulegroups.c:4000
+#: ../src/develop/imageop.c:4041 ../src/libs/modulegroups.c:3489
+#: ../src/libs/modulegroups.c:3620 ../src/libs/modulegroups.c:4011
 #: ../src/libs/tagging.c:3305
 msgid "new"
 msgstr "novo"
 
 #: ../src/develop/imageop.c:4044 ../src/libs/duplicate.c:402
-#: ../src/libs/image.c:541 ../src/libs/modulegroups.c:3992
+#: ../src/libs/image.c:541 ../src/libs/modulegroups.c:4003
 msgid "duplicate"
 msgstr "duplicar"
 
@@ -9939,7 +9941,7 @@ msgstr "duplicar"
 #: ../src/gui/gtk.c:3647 ../src/gui/gtk.c:3702 ../src/gui/hist_dialog.c:263
 #: ../src/gui/styles_dialog.c:627 ../src/gui/styles_dialog.c:649
 #: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1581
-#: ../src/libs/modulegroups.c:4076
+#: ../src/libs/modulegroups.c:4087
 msgid "reset"
 msgstr "redefinir"
 
@@ -9956,7 +9958,7 @@ msgstr "ativar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:4053 ../src/gui/accelerators.c:2912
+#: ../src/develop/imageop.c:4053 ../src/gui/accelerators.c:2972
 msgid "instance"
 msgstr "instância"
 
@@ -12853,7 +12855,7 @@ msgstr "selecione a pasta do script"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2537 ../src/iop/channelmixerrgb.c:4420
+#: ../src/iop/agx.c:2609 ../src/iop/channelmixerrgb.c:4420
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3005 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
@@ -12881,7 +12883,7 @@ msgstr "configuração"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1545
-#: ../src/gui/accelerators.c:2877 ../src/gui/accelerators.c:2977
+#: ../src/gui/accelerators.c:2937 ../src/gui/accelerators.c:3037
 #: ../src/views/view.c:1611
 msgid "action"
 msgstr "ação"
@@ -13253,8 +13255,8 @@ msgstr "última instância"
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:818 ../src/gui/accelerators.c:2902
-#: ../src/gui/accelerators.c:3829
+#: ../src/gui/accelerators.c:818 ../src/gui/accelerators.c:2962
+#: ../src/gui/accelerators.c:3897
 msgid "speed"
 msgstr "velocidade"
 
@@ -13599,11 +13601,39 @@ msgstr "selecione arquivo para importar"
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:2852
+#: ../src/gui/accelerators.c:2810
+msgid "import sample shortcuts"
+msgstr "importar atalhos de exemplo"
+
+#: ../src/gui/accelerators.c:2816
+msgid ""
+"add darktable sample shortcuts?\n"
+"\n"
+"this will overwrite any existing shortcuts\n"
+"using the same key+mouse combinations!\n"
+"you will be able to undo this action during\n"
+"the current session by clicking 'restore...'\n"
+"and opting to clear all newer shortcuts.\n"
+"\n"
+"it is recommended to export your current\n"
+"shortcuts before adding these.\n"
+msgstr ""
+"Adicionando Atalhos de Exemplo?\n"
+"\n"
+"Isso substituirá todos os atalhos existentes\n"
+"usando a mesma combinação de teclas e mouse.\n"
+"Esta ação pode ser desfeita durante a\n"
+"sessão atual clicando em << Restaurar... >>\n"
+"e escolhendo excluir os novos atalhos.\n"
+"\n"
+"É recomendável exportar os atalhos atuais\n"
+"antes de adicioná-los.\n"
+
+#: ../src/gui/accelerators.c:2912
 msgid "search shortcuts list"
 msgstr "buscar na lista de atalhos"
 
-#: ../src/gui/accelerators.c:2854
+#: ../src/gui/accelerators.c:2914
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -13612,23 +13642,23 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2874 ../src/views/view.c:1609
+#: ../src/gui/accelerators.c:2934 ../src/views/view.c:1609
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:2887
+#: ../src/gui/accelerators.c:2947
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:2895
+#: ../src/gui/accelerators.c:2955
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:2953
+#: ../src/gui/accelerators.c:3013
 msgid "search actions list"
 msgstr "buscar na lista de ações"
 
-#: ../src/gui/accelerators.c:2955
+#: ../src/gui/accelerators.c:3015
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -13637,16 +13667,16 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2985 ../src/gui/guides.c:840
+#: ../src/gui/accelerators.c:3045 ../src/gui/guides.c:840
 #: ../src/gui/metadata_tags.c:117
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:3015
+#: ../src/gui/accelerators.c:3075
 msgid "enable fallbacks"
 msgstr "ativar alternativos"
 
-#: ../src/gui/accelerators.c:3016
+#: ../src/gui/accelerators.c:3076
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -13655,37 +13685,45 @@ msgstr ""
 "adicionais,\n"
 "quando usados em combinação com um atalho base"
 
-#: ../src/gui/accelerators.c:3023
+#: ../src/gui/accelerators.c:3083
 msgid "open help page for shortcuts"
 msgstr "abrir página de ajuda para atalhos"
 
-#: ../src/gui/accelerators.c:3027
+#: ../src/gui/accelerators.c:3087
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:3028
+#: ../src/gui/accelerators.c:3088
 msgid "restore default shortcuts or previous state"
 msgstr "restaurar atalhos padrão ou estado anterior"
 
-#: ../src/gui/accelerators.c:3031 ../src/libs/styles.c:898
+#: ../src/gui/accelerators.c:3091
+msgid "import extras"
+msgstr "importar extras"
+
+#: ../src/gui/accelerators.c:3092
+msgid "import extended default shortcuts"
+msgstr "importar atalhos default extendidos"
+
+#: ../src/gui/accelerators.c:3095 ../src/libs/styles.c:898
 #: ../src/libs/tagging.c:3308
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/accelerators.c:3032
+#: ../src/gui/accelerators.c:3096
 msgid "fully or partially import shortcuts from file"
 msgstr "importar atalhos completamente ou parcialmente de um arquivo"
 
-#: ../src/gui/accelerators.c:3035 ../src/libs/styles.c:904
+#: ../src/gui/accelerators.c:3099 ../src/libs/styles.c:904
 #: ../src/libs/tagging.c:3311
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:3036
+#: ../src/gui/accelerators.c:3100
 msgid "fully or partially export shortcuts to file"
 msgstr "exportar atalhos completamente ou parcialmente para um arquivo"
 
-#: ../src/gui/accelerators.c:3047
+#: ../src/gui/accelerators.c:3112
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -13719,23 +13757,23 @@ msgstr ""
 "<i>clique <b> três vezes </b> para desabilitar esta mensagem "
 "permanentemente</i>"
 
-#: ../src/gui/accelerators.c:3474
+#: ../src/gui/accelerators.c:3542
 msgid "reinitialising input devices"
 msgstr "reiniciando os dispositivos de entrada"
 
-#: ../src/gui/accelerators.c:3616
+#: ../src/gui/accelerators.c:3684
 msgid "down move"
 msgstr "movimento para baixo"
 
-#: ../src/gui/accelerators.c:3616
+#: ../src/gui/accelerators.c:3684
 msgid "flip top/bottom first/last"
 msgstr "espelhar topo/base primeiro/último"
 
-#: ../src/gui/accelerators.c:3697
+#: ../src/gui/accelerators.c:3765
 msgid "fallback to move"
 msgstr "alternativo para mover"
 
-#: ../src/gui/accelerators.c:3798
+#: ../src/gui/accelerators.c:3866
 #, c-format
 msgid ""
 "\n"
@@ -13744,17 +13782,17 @@ msgstr ""
 "\n"
 "aplicando predefinição '%s'"
 
-#: ../src/gui/accelerators.c:3948
+#: ../src/gui/accelerators.c:4016
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:4127
+#: ../src/gui/accelerators.c:4195
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
 
-#: ../src/gui/accelerators.c:4346
+#: ../src/gui/accelerators.c:4414
 msgid "short key press resets stuck keys"
 msgstr "pressionamento curto de tecla reinicializa teclas bloqueadas"
 
@@ -14537,12 +14575,12 @@ msgstr ""
 "predefinição `%s' está protegida contra gravação, não é possível remover!"
 
 #: ../src/gui/presets.c:160 ../src/gui/presets.c:466 ../src/libs/lib.c:236
-#: ../src/libs/modulegroups.c:3884
+#: ../src/libs/modulegroups.c:3895
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
 #: ../src/gui/presets.c:161 ../src/gui/presets.c:467 ../src/libs/lib.c:237
-#: ../src/libs/modulegroups.c:3885
+#: ../src/libs/modulegroups.c:3896
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
@@ -14749,14 +14787,14 @@ msgstr "nenhuma predefinição"
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1198 ../src/iop/agx.c:2687
+#: ../src/gui/presets.c:1198 ../src/iop/agx.c:2772
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "padrão relativo à cena"
 
-#: ../src/gui/presets.c:1416 ../src/libs/modulegroups.c:3960
-#: ../src/libs/modulegroups.c:3968
+#: ../src/gui/presets.c:1416 ../src/libs/modulegroups.c:3971
+#: ../src/libs/modulegroups.c:3979
 msgid "manage module layouts"
 msgstr "gerenciar disposição dos módulos"
 
@@ -15819,24 +15857,24 @@ msgstr "não-linear, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
-#: ../src/iop/agx.c:1953 ../src/iop/agx.c:2147
+#: ../src/iop/agx.c:2025 ../src/iop/agx.c:2219
 msgctxt "section"
 msgid "curve"
 msgstr "curva"
 
-#: ../src/iop/agx.c:1963
+#: ../src/iop/agx.c:2035
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "deslocar o pivô de entrada para preto (-) ou branco (+)"
 
-#: ../src/iop/agx.c:1972
+#: ../src/iop/agx.c:2044
 msgid "darken or brighten the pivot (linear output power)"
 msgstr "escurecer ou clarear o pivô (potência de saída linear)"
 
-#: ../src/iop/agx.c:1978
+#: ../src/iop/agx.c:2050
 msgid "slope of the linear section around the pivot"
 msgstr "inclinação da seção linear ao redor do pivô"
 
-#: ../src/iop/agx.c:1992
+#: ../src/iop/agx.c:2064
 msgid ""
 "contrast in shadows\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15846,7 +15884,7 @@ msgstr ""
 "valores mais altos mantém a inclinação quase constante por mais tempo,\n"
 "com o custo de uma queda mais brusca perto do preto"
 
-#: ../src/iop/agx.c:1998
+#: ../src/iop/agx.c:2070
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
 "target black cannot be reached with the selected contrast and pivot "
@@ -15870,7 +15908,7 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de branco)."
 
-#: ../src/iop/agx.c:2018
+#: ../src/iop/agx.c:2090
 msgid ""
 "contrast in highlights\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15880,7 +15918,7 @@ msgstr ""
 "valores mais altos mantém inclinação quase constante por mais tempo,\n"
 "com o custo de uma queda mais brusca perto do branco"
 
-#: ../src/iop/agx.c:2024
+#: ../src/iop/agx.c:2096
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "target white cannot be reached with the selected contrast and pivot "
@@ -15904,41 +15942,41 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de preto)."
 
-#: ../src/iop/agx.c:2040
+#: ../src/iop/agx.c:2112
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "parâmetros básicos da curva"
 
-#: ../src/iop/agx.c:2061
+#: ../src/iop/agx.c:2133
 msgid "decrease or increase contrast and brightness"
 msgstr "aumentar ou diminuir contraste e brilho"
 
-#: ../src/iop/agx.c:2066
+#: ../src/iop/agx.c:2138
 msgid "deepen or lift shadows"
 msgstr "aprofundar ou tirar profundidade de sombras"
 
-#: ../src/iop/agx.c:2070
+#: ../src/iop/agx.c:2142
 msgid "increase or decrease brightness"
 msgstr "aumentar ou diminuir brilho"
 
-#: ../src/iop/agx.c:2077
+#: ../src/iop/agx.c:2149
 msgid "decrease or increase saturation"
 msgstr "aumentar ou diminuir saturação"
 
-#: ../src/iop/agx.c:2084
+#: ../src/iop/agx.c:2156
 msgid "increase to bring hues closer to the original"
 msgstr "aumente para trazer as matizes mais próximas do original"
 
-#: ../src/iop/agx.c:2096
+#: ../src/iop/agx.c:2168
 msgctxt "section"
 msgid "look"
 msgstr "aparência"
 
-#: ../src/iop/agx.c:2119
+#: ../src/iop/agx.c:2191
 msgid "show curve"
 msgstr "mostrar a curva"
 
-#: ../src/iop/agx.c:2123 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:2195 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -15946,16 +15984,16 @@ msgstr "mostrar a curva"
 msgid "graph"
 msgstr "gráfico"
 
-#: ../src/iop/agx.c:2126
+#: ../src/iop/agx.c:2198
 msgid "tone mapping curve"
 msgstr "curva de mapeamento de tons"
 
-#: ../src/iop/agx.c:2141
+#: ../src/iop/agx.c:2213
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "parâmetros avançados da curva"
 
-#: ../src/iop/agx.c:2159
+#: ../src/iop/agx.c:2231
 msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
@@ -15963,11 +16001,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear abaixo do pivô.\n"
 "pode cortar sombras"
 
-#: ../src/iop/agx.c:2168
+#: ../src/iop/agx.c:2240
 msgid "raise for a faded look"
 msgstr "aumente para um visual desbotado"
 
-#: ../src/iop/agx.c:2177
+#: ../src/iop/agx.c:2249
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
@@ -15975,11 +16013,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear aima do o pivô.\n"
 "pode cortar realces"
 
-#: ../src/iop/agx.c:2186
+#: ../src/iop/agx.c:2258
 msgid "max linear output power"
 msgstr "máxima potência de saída linear"
 
-#: ../src/iop/agx.c:2192
+#: ../src/iop/agx.c:2264
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
@@ -15990,7 +16028,7 @@ msgstr ""
 "esteja alto o suficiente), de forma que conteols de pé e ombro\n"
 "permaneçam eficazes."
 
-#: ../src/iop/agx.c:2201
+#: ../src/iop/agx.c:2273
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
 "along the y axis of the curve.\n"
@@ -16004,20 +16042,20 @@ msgstr ""
 "mas sombras e realces sào; você pode ter que compensar com o\n"
 "deslizador de contraste, ou com controles de base / ombro."
 
-#: ../src/iop/agx.c:2216
+#: ../src/iop/agx.c:2288
 msgctxt "section"
 msgid "input exposure range"
 msgstr "extensão da exposição de entrada"
 
-#: ../src/iop/agx.c:2225
+#: ../src/iop/agx.c:2297
 msgid "relative exposure above mid-gray (white point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de branco)"
 
-#: ../src/iop/agx.c:2233
+#: ../src/iop/agx.c:2305
 msgid "relative exposure below mid-gray (black point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de preto)"
 
-#: ../src/iop/agx.c:2241 ../src/iop/filmicrgb.c:4421
+#: ../src/iop/agx.c:2313 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16025,26 +16063,26 @@ msgstr ""
 "simetricamente aumenta ou diminui o alcance dinâmico calculado.\n"
 "útil para dar margem de segurança em luminâncias extremas."
 
-#: ../src/iop/agx.c:2246 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
+#: ../src/iop/agx.c:2318 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
 #: ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
 
-#: ../src/iop/agx.c:2248
+#: ../src/iop/agx.c:2320
 msgid "pick image area to automatically set black and white exposure"
 msgstr ""
 "selecione área da imagem para automaticamente determinar exposição de preto "
 "e de branco"
 
-#: ../src/iop/agx.c:2272
+#: ../src/iop/agx.c:2344
 msgid "blender-like"
 msgstr "como-blender"
 
-#: ../src/iop/agx.c:2282
+#: ../src/iop/agx.c:2354
 msgid "unmodified"
 msgstr "não modificado"
 
-#: ../src/iop/agx.c:2357
+#: ../src/iop/agx.c:2429
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -16058,15 +16096,15 @@ msgstr ""
 "especialmente com luzes com muito brilho e saturadas (p. ex. LEDs).\n"
 "a intenção é principalmente ser uma ferramenta para experimentação."
 
-#: ../src/iop/agx.c:2367
+#: ../src/iop/agx.c:2439
 msgid "reset primaries"
 msgstr "reinicializar primárias"
 
-#: ../src/iop/agx.c:2369
+#: ../src/iop/agx.c:2441
 msgid "reset primaries to a predefined configuration"
 msgstr "reinicializar primárias para a configuração predefinida"
 
-#: ../src/iop/agx.c:2377
+#: ../src/iop/agx.c:2449
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -16074,41 +16112,41 @@ msgstr ""
 "primárias do espaço de cores para usar como base para os ajustes abaixo\n"
 "'perfil de exportação' usa o perfil definido em 'perfil de cor de saída'"
 
-#: ../src/iop/agx.c:2380
+#: ../src/iop/agx.c:2452
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "antes do mapeamento de tons"
 
-#: ../src/iop/agx.c:2401
+#: ../src/iop/agx.c:2473
 msgid "increase to desaturate reds in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os vermelhos em realces"
 
-#: ../src/iop/agx.c:2403
+#: ../src/iop/agx.c:2475
 msgid "shift the red primary towards yellow (+) or magenta (-)"
 msgstr "deslocar vermelho na direção do amarelo (+) ou magenta (-)"
 
-#: ../src/iop/agx.c:2405
+#: ../src/iop/agx.c:2477
 msgid "increase to desaturate greens in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os verdes em realces"
 
-#: ../src/iop/agx.c:2407
+#: ../src/iop/agx.c:2479
 msgid "shift the green primary towards cyan (+) or yellow (-)"
 msgstr "deslocar verde na direção do ciano (+) ou amarelo (-)"
 
-#: ../src/iop/agx.c:2409
+#: ../src/iop/agx.c:2481
 msgid "increase to desaturate blues in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os azuis em realces"
 
-#: ../src/iop/agx.c:2411
+#: ../src/iop/agx.c:2483
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
 msgstr "deslocar o azul na direção do magenta (+) ou ciano (-)"
 
-#: ../src/iop/agx.c:2413
+#: ../src/iop/agx.c:2485
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "depois do mapeamento de tons"
 
-#: ../src/iop/agx.c:2424
+#: ../src/iop/agx.c:2496
 msgid ""
 "completely restore purity, undo all rotations, and hide\n"
 "the controls below. uncheck to restore the previous state."
@@ -16116,11 +16154,11 @@ msgstr ""
 "restaurar completamente pureza, desfazer todas as rotações, e esconder\n"
 "os controles abaixo. desclique para restaurar ao estado anterior."
 
-#: ../src/iop/agx.c:2427
+#: ../src/iop/agx.c:2499
 msgid "set from above"
 msgstr "determinar a partir de acima"
 
-#: ../src/iop/agx.c:2429
+#: ../src/iop/agx.c:2501
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
@@ -16128,80 +16166,80 @@ msgstr ""
 "determinar parâmetros para revertercompletamente as modificações\n"
 "nas primárias, mas permitindo edições subsequentes"
 
-#: ../src/iop/agx.c:2442
+#: ../src/iop/agx.c:2514
 msgid "overall purity boost"
 msgstr "incremento geral de pureza"
 
-#: ../src/iop/agx.c:2448
+#: ../src/iop/agx.c:2520
 msgid "overall unrotation ratio"
 msgstr "razão de des-rotação global"
 
-#: ../src/iop/agx.c:2451
+#: ../src/iop/agx.c:2523
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr "restaurar a pureza do vermelho, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2453
+#: ../src/iop/agx.c:2525
 msgid "reverse the color shift in reds"
 msgstr "reverter o deslocamento de cor nos vermelhos"
 
-#: ../src/iop/agx.c:2455
+#: ../src/iop/agx.c:2527
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr "restaurar a pureza do verde, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2457
+#: ../src/iop/agx.c:2529
 msgid "reverse the color shift in greens"
 msgstr "reverter o deslocamento de cor nos verdes"
 
-#: ../src/iop/agx.c:2459
+#: ../src/iop/agx.c:2531
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr "restaurar a pureza do azul, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2461
+#: ../src/iop/agx.c:2533
 msgid "reverse the color shift in blues"
 msgstr "reverter o deslocamento de cor nos azuis"
 
-#: ../src/iop/agx.c:2524 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+#: ../src/iop/agx.c:2596 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "primárias"
 
-#: ../src/iop/agx.c:2524
+#: ../src/iop/agx.c:2596
 msgid "color primaries adjustments"
 msgstr "ajustes de cores primárias"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2547 ../src/iop/agx.c:2570 ../src/iop/temperature.c:2091
+#: ../src/iop/agx.c:2619 ../src/iop/agx.c:2642 ../src/iop/temperature.c:2091
 #: ../src/iop/temperature.c:2104 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2117 ../src/iop/temperature.c:2125
 #: ../src/iop/temperature.c:2144
 msgid "settings"
 msgstr "configurações"
 
-#: ../src/iop/agx.c:2548 ../src/iop/agx.c:2571
+#: ../src/iop/agx.c:2620 ../src/iop/agx.c:2643
 msgid "main look and curve settings"
 msgstr "parâmetros principais do visual e da curva"
 
-#: ../src/iop/agx.c:2556
+#: ../src/iop/agx.c:2628
 msgid "detailed curve settings"
 msgstr "configurações detalhadas da curva"
 
-#: ../src/iop/agx.c:2652
+#: ../src/iop/agx.c:2742
 msgid "unmodified base primaries"
 msgstr "primárias base não modificadas"
 
-#: ../src/iop/agx.c:2663
+#: ../src/iop/agx.c:2751
 msgid "blender-like|base"
 msgstr "como-blender|base"
 
-#: ../src/iop/agx.c:2672
+#: ../src/iop/agx.c:2757
 msgid "blender-like|punchy"
 msgstr "como-blender|reforçado"
 
-#: ../src/iop/agx.c:2703
+#: ../src/iop/agx.c:2788
 msgid "smooth|base"
 msgstr "suave|base"
 
-#: ../src/iop/agx.c:2710
+#: ../src/iop/agx.c:2792
 msgid "smooth|punchy"
 msgstr "suavização|reforçado"
 
@@ -18855,10 +18893,6 @@ msgctxt "section"
 msgid "shadows lift"
 msgstr "elevação nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1899
-msgid "lift"
-msgstr "elevação"
-
 #: ../src/iop/colorbalancergb.c:1905
 msgid "luminance gain in shadows"
 msgstr "ganho de luminância nas sombras"
@@ -18894,6 +18928,10 @@ msgstr "ganho de croma de cor nos realces"
 
 #: ../src/iop/colorbalancergb.c:1940
 msgctxt "section"
+msgid "power"
+msgstr "potência"
+
+#: ../src/iop/colorbalancergb.c:1941
 msgid "power"
 msgstr "potência"
 
@@ -26701,7 +26739,7 @@ msgstr "exclui fisicamente do disco (usando a lixeira se possível)"
 msgid "physically delete from disk immediately"
 msgstr "excluir fisicamente do disco imediatamente"
 
-#: ../src/libs/image.c:513 ../src/libs/modulegroups.c:3988
+#: ../src/libs/image.c:513 ../src/libs/modulegroups.c:3999
 #: ../src/libs/styles.c:892
 msgid "remove"
 msgstr "remover"
@@ -27704,7 +27742,7 @@ msgstr ""
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
 
-#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1783
+#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1794
 msgid "workflow: scene-referred"
 msgstr "fluxo de trabalho: relativo à cena"
 
@@ -27724,7 +27762,7 @@ msgstr "grupos de módulos"
 #. depends on image (reload_defaults) respond later to image
 #. changed signal
 #: ../src/libs/modulegroups.c:307 ../src/libs/modulegroups.c:319
-#: ../src/libs/modulegroups.c:2475 ../src/libs/modulegroups.c:2477
+#: ../src/libs/modulegroups.c:2486 ../src/libs/modulegroups.c:2488
 msgid "on-off"
 msgstr "liga-desliga"
 
@@ -27746,147 +27784,147 @@ msgstr ""
 msgid "go to the full version of the %s module"
 msgstr "ir para versão completa do módulo %s"
 
-#: ../src/libs/modulegroups.c:1552 ../src/libs/modulegroups.c:1644
-#: ../src/libs/modulegroups.c:1681 ../src/libs/modulegroups.c:1735
-#: ../src/libs/modulegroups.c:1849
+#: ../src/libs/modulegroups.c:1563 ../src/libs/modulegroups.c:1655
+#: ../src/libs/modulegroups.c:1692 ../src/libs/modulegroups.c:1746
+#: ../src/libs/modulegroups.c:1860
 msgctxt "modulegroup"
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:1571
+#: ../src/libs/modulegroups.c:1582
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:1581 ../src/libs/modulegroups.c:1695
-#: ../src/libs/modulegroups.c:1751
+#: ../src/libs/modulegroups.c:1592 ../src/libs/modulegroups.c:1706
+#: ../src/libs/modulegroups.c:1762
 msgctxt "modulegroup"
 msgid "color"
 msgstr "cor"
 
-#: ../src/libs/modulegroups.c:1598 ../src/libs/modulegroups.c:1703
-#: ../src/libs/modulegroups.c:1757
+#: ../src/libs/modulegroups.c:1609 ../src/libs/modulegroups.c:1714
+#: ../src/libs/modulegroups.c:1768
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "correção"
 
-#: ../src/libs/modulegroups.c:1617 ../src/libs/modulegroups.c:1716
-#: ../src/libs/modulegroups.c:1770 ../src/libs/modulegroups.c:2360
+#: ../src/libs/modulegroups.c:1628 ../src/libs/modulegroups.c:1727
+#: ../src/libs/modulegroups.c:1781 ../src/libs/modulegroups.c:2371
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/libs/modulegroups.c:1637
+#: ../src/libs/modulegroups.c:1648
 msgid "modules: all"
 msgstr "módulos: todos"
 
-#: ../src/libs/modulegroups.c:1659
+#: ../src/libs/modulegroups.c:1670
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "gradação de cores"
 
-#: ../src/libs/modulegroups.c:1667 ../src/libs/modulegroups.c:2366
+#: ../src/libs/modulegroups.c:1678 ../src/libs/modulegroups.c:2377
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "efeitos"
 
-#: ../src/libs/modulegroups.c:1675
+#: ../src/libs/modulegroups.c:1686
 msgid "workflow: beginner"
 msgstr "fluxo de trabalho: iniciante"
 
-#: ../src/libs/modulegroups.c:1728
+#: ../src/libs/modulegroups.c:1739
 msgid "workflow: display-referred"
 msgstr "fluxo de trabalho: relativo à exibição"
 
-#: ../src/libs/modulegroups.c:1788
+#: ../src/libs/modulegroups.c:1799
 msgid "search only"
 msgstr "buscar apenas"
 
-#: ../src/libs/modulegroups.c:1802 ../src/libs/modulegroups.c:2105
-#: ../src/libs/modulegroups.c:2670
+#: ../src/libs/modulegroups.c:1813 ../src/libs/modulegroups.c:2116
+#: ../src/libs/modulegroups.c:2681
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "descontinuados/obsoletos"
 
-#: ../src/libs/modulegroups.c:1817
+#: ../src/libs/modulegroups.c:1828
 msgid "previous config"
 msgstr "configuração anterior"
 
-#: ../src/libs/modulegroups.c:1819
+#: ../src/libs/modulegroups.c:1830
 msgid "previous layout"
 msgstr "disposição anterior"
 
-#: ../src/libs/modulegroups.c:1823
+#: ../src/libs/modulegroups.c:1834
 msgid "previous config with new layout"
 msgstr "configuração anterior com nova disposição"
 
-#: ../src/libs/modulegroups.c:2001 ../src/libs/modulegroups.c:2529
-#: ../src/libs/modulegroups.c:2542
+#: ../src/libs/modulegroups.c:2012 ../src/libs/modulegroups.c:2540
+#: ../src/libs/modulegroups.c:2553
 msgid "remove this widget"
 msgstr "remover esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2124 ../src/libs/modulegroups.c:2388
+#: ../src/libs/modulegroups.c:2135 ../src/libs/modulegroups.c:2399
 msgid "remove this module"
 msgstr "remover este módulo"
 
-#: ../src/libs/modulegroups.c:2352
+#: ../src/libs/modulegroups.c:2363
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:2358
+#: ../src/libs/modulegroups.c:2369
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:2362
+#: ../src/libs/modulegroups.c:2373
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:2364
+#: ../src/libs/modulegroups.c:2375
 msgid "grading"
 msgstr "gradação de cores"
 
-#: ../src/libs/modulegroups.c:2370 ../src/libs/modulegroups.c:2378
+#: ../src/libs/modulegroups.c:2381 ../src/libs/modulegroups.c:2389
 msgid "add this module"
 msgstr "adicionar este módulo"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2400 ../src/libs/modulegroups.c:2621
+#: ../src/libs/modulegroups.c:2411 ../src/libs/modulegroups.c:2632
 msgid "all available modules"
 msgstr "todos os módulos disponíveis"
 
-#: ../src/libs/modulegroups.c:2408
+#: ../src/libs/modulegroups.c:2419
 msgid "add module"
 msgstr "adicionar módulo"
 
-#: ../src/libs/modulegroups.c:2413
+#: ../src/libs/modulegroups.c:2424
 msgid "remove module"
 msgstr "remover módulo"
 
-#: ../src/libs/modulegroups.c:2536
+#: ../src/libs/modulegroups.c:2547
 msgid "header needed for other widgets"
 msgstr "cabeçalho necessário para outras ferramentas"
 
-#: ../src/libs/modulegroups.c:2552 ../src/libs/modulegroups.c:2559
+#: ../src/libs/modulegroups.c:2563 ../src/libs/modulegroups.c:2570
 msgid "add this widget"
 msgstr "adicionar esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2572
+#: ../src/libs/modulegroups.c:2583
 msgid "currently invisible"
 msgstr "autalmente invisível"
 
-#: ../src/libs/modulegroups.c:2605
+#: ../src/libs/modulegroups.c:2616
 msgid "add widget"
 msgstr "adicionar ferramenta"
 
-#: ../src/libs/modulegroups.c:2610
+#: ../src/libs/modulegroups.c:2621
 msgid "remove widget"
 msgstr "remover ferramenta"
 
-#: ../src/libs/modulegroups.c:2733
+#: ../src/libs/modulegroups.c:2744
 msgid "show all history modules"
 msgstr "mostrar todos os módulos do histórico"
 
-#: ../src/libs/modulegroups.c:2736 ../src/libs/modulegroups.c:4022
+#: ../src/libs/modulegroups.c:2747 ../src/libs/modulegroups.c:4033
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -27894,7 +27932,7 @@ msgstr ""
 "mostrar módulos presenta na pilha do histórico, independente de estarem "
 "habilitados"
 
-#: ../src/libs/modulegroups.c:2831 ../src/libs/modulegroups.c:2937
+#: ../src/libs/modulegroups.c:2842 ../src/libs/modulegroups.c:2948
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
@@ -27905,7 +27943,7 @@ msgstr ""
 "esses problemas.\n"
 "eles serão removidos para novas edições na próxima versão."
 
-#: ../src/libs/modulegroups.c:2884
+#: ../src/libs/modulegroups.c:2895
 msgid ""
 "quick access panel\n"
 "right-click tab icon to add/remove widgets"
@@ -27913,19 +27951,19 @@ msgstr ""
 "painel de acesso rápido\n"
 "clique direito no ícone de aba para adicionar/remover ferramentas"
 
-#: ../src/libs/modulegroups.c:2887
+#: ../src/libs/modulegroups.c:2898
 msgid "quick access panel"
 msgstr "painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:2899
+#: ../src/libs/modulegroups.c:2910
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
-#: ../src/libs/modulegroups.c:2900
+#: ../src/libs/modulegroups.c:2911
 msgid "active modules"
 msgstr "módulos ativos"
 
-#: ../src/libs/modulegroups.c:2906
+#: ../src/libs/modulegroups.c:2917
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -27933,147 +27971,147 @@ msgstr ""
 "predefinições\n"
 "ctrl+clique para gerenciar"
 
-#: ../src/libs/modulegroups.c:2913
+#: ../src/libs/modulegroups.c:2924
 msgid "search modules"
 msgstr "busca módulos"
 
-#: ../src/libs/modulegroups.c:2915
+#: ../src/libs/modulegroups.c:2926
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:2930
+#: ../src/libs/modulegroups.c:2941
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulegroups.c:3194
+#: ../src/libs/modulegroups.c:3205
 msgid "basic icon"
 msgstr "ícone de básico"
 
-#: ../src/libs/modulegroups.c:3205
+#: ../src/libs/modulegroups.c:3216
 msgid "active icon"
 msgstr "ícone ativo"
 
-#: ../src/libs/modulegroups.c:3216
+#: ../src/libs/modulegroups.c:3227
 msgid "color icon"
 msgstr "ícone de cor"
 
-#: ../src/libs/modulegroups.c:3227
+#: ../src/libs/modulegroups.c:3238
 msgid "correct icon"
 msgstr "ícone de correções"
 
-#: ../src/libs/modulegroups.c:3238
+#: ../src/libs/modulegroups.c:3249
 msgid "effect icon"
 msgstr "ícone de efeitos"
 
-#: ../src/libs/modulegroups.c:3249
+#: ../src/libs/modulegroups.c:3260
 msgid "favorites icon"
 msgstr "ícone de favoritos"
 
-#: ../src/libs/modulegroups.c:3260
+#: ../src/libs/modulegroups.c:3271
 msgid "tone icon"
 msgstr "ícone de tom"
 
-#: ../src/libs/modulegroups.c:3271
+#: ../src/libs/modulegroups.c:3282
 msgid "grading icon"
 msgstr "ícone de gradação"
 
-#: ../src/libs/modulegroups.c:3282
+#: ../src/libs/modulegroups.c:3293
 msgid "technical icon"
 msgstr "ícone de técnico"
 
-#: ../src/libs/modulegroups.c:3316
+#: ../src/libs/modulegroups.c:3327
 msgid "quick access panel widgets"
 msgstr "ferramentas do painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:3318
+#: ../src/libs/modulegroups.c:3329
 msgid "quick access"
 msgstr "acesso rápido"
 
-#: ../src/libs/modulegroups.c:3340
+#: ../src/libs/modulegroups.c:3351
 msgid "add widget to the quick access panel"
 msgstr "adicionar ferramenta ao painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:3373
+#: ../src/libs/modulegroups.c:3384
 msgid "group icon"
 msgstr "ícone de grupo"
 
-#: ../src/libs/modulegroups.c:3383
+#: ../src/libs/modulegroups.c:3394
 msgid "group name"
 msgstr "nome do grupo"
 
-#: ../src/libs/modulegroups.c:3395
+#: ../src/libs/modulegroups.c:3406
 msgid "remove group"
 msgstr "remover grupo"
 
-#: ../src/libs/modulegroups.c:3423
+#: ../src/libs/modulegroups.c:3434
 msgid "move group to the left"
 msgstr "mover grupo para a esquerda"
 
-#: ../src/libs/modulegroups.c:3433
+#: ../src/libs/modulegroups.c:3444
 msgid "add module to the group"
 msgstr "adicionar módulo ao grupo"
 
-#: ../src/libs/modulegroups.c:3445
+#: ../src/libs/modulegroups.c:3456
 msgid "move group to the right"
 msgstr "mover grupo para a direita"
 
-#: ../src/libs/modulegroups.c:3635
+#: ../src/libs/modulegroups.c:3646
 msgid "rename preset"
 msgstr "renomear predefinição"
 
-#: ../src/libs/modulegroups.c:3638
+#: ../src/libs/modulegroups.c:3649
 msgid "_rename"
 msgstr "_renomear"
 
-#: ../src/libs/modulegroups.c:3643
+#: ../src/libs/modulegroups.c:3654
 msgid "a preset with this name already exists!"
 msgstr "uma predefinição com este nome já existe!"
 
-#: ../src/libs/modulegroups.c:3652
+#: ../src/libs/modulegroups.c:3663
 msgid "new preset name:"
 msgstr "novo nome da predefinição: "
 
-#: ../src/libs/modulegroups.c:3980
+#: ../src/libs/modulegroups.c:3991
 msgid "preset: "
 msgstr "predefinição: "
 
-#: ../src/libs/modulegroups.c:3990
+#: ../src/libs/modulegroups.c:4001
 msgid "remove the preset"
 msgstr "remover a predefinição"
 
-#: ../src/libs/modulegroups.c:3994
+#: ../src/libs/modulegroups.c:4005
 msgid "duplicate the preset"
 msgstr "duplicar a predefinição"
 
-#: ../src/libs/modulegroups.c:3998
+#: ../src/libs/modulegroups.c:4009
 msgid "rename the preset"
 msgstr "renomear a predefinição"
 
-#: ../src/libs/modulegroups.c:4002
+#: ../src/libs/modulegroups.c:4013
 msgid "create a new empty preset"
 msgstr "criar nova predefinição vazia"
 
-#: ../src/libs/modulegroups.c:4010
+#: ../src/libs/modulegroups.c:4021
 msgid "show search line"
 msgstr "mostrar linha de busca"
 
-#: ../src/libs/modulegroups.c:4014
+#: ../src/libs/modulegroups.c:4025
 msgid "show quick access panel"
 msgstr "mostrar painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:4019
+#: ../src/libs/modulegroups.c:4030
 msgid "show all history modules in active group"
 msgstr "mostrar todos os módulos do histórico no grupo atual"
 
-#: ../src/libs/modulegroups.c:4033
+#: ../src/libs/modulegroups.c:4044
 msgid "auto-apply this preset"
 msgstr "auto-aplicar esta predefinição"
 
-#: ../src/libs/modulegroups.c:4049
+#: ../src/libs/modulegroups.c:4060
 msgid "module groups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:4068
+#: ../src/libs/modulegroups.c:4079
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
