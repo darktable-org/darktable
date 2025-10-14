@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,11 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
 void dt_shortcuts_save(const gchar *ext, const gboolean backup);
 
+// load the contents of a shortcutsrc file
+// if 'ext' points at a string containing a directory separator, it is taken
+//   to be the path of the file to load
+// otherwise, a shortcuts file will be loaded from the user configuration directory,
+//  and the contents of 'ext' (if non-NULL) wlil be appended to the default name.
 void dt_shortcuts_load(const gchar *ext, const gboolean clear);
 
 void dt_shortcuts_reinitialise(dt_action_t *action);
