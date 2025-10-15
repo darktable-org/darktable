@@ -3737,7 +3737,7 @@ static gboolean _notebook_button_press_callback(GtkNotebook *notebook,
                                                 const GdkEventButton *event,
                                                 gpointer user_data)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(event->type == GDK_2BUTTON_PRESS && gtk_get_event_widget((GdkEvent*)event) == GTK_WIDGET(notebook))
     _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
 
   return FALSE;
