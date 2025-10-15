@@ -282,9 +282,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
 
 size_t dt_get_available_pipe_mem(const dt_dev_pixelpipe_t *pipe)
 {
-  size_t allmem = dt_get_available_mem();
-  return MAX(1lu * 1024lu * 1024lu,
-             allmem / (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL ? 3 : 1));
+  const size_t allmem = dt_get_available_mem();
+  return MAX(DT_MEGA, allmem / (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL ? 3 : 1));
 }
 
 static void get_output_format(dt_iop_module_t *module,
@@ -3056,7 +3055,7 @@ restart:
                   pipe, NULL, pipe->devid, &roi, &roi, "ID=%i, %s %luMB%s%s",
                   pipe->image.id,
                   darktable.opencl->dev[pipe->devid].cname,
-                  darktable.opencl->dev[pipe->devid].used_available / 1024lu / 1024lu,
+                  darktable.opencl->dev[pipe->devid].used_available / DT_MEGA,
                   darktable.opencl->dev[pipe->devid].tunehead ? ", tuned" : "",
                   darktable.opencl->dev[pipe->devid].pinned_memory ? ", pinned": "");
   else
