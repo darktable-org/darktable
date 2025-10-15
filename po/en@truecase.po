@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-14 17:45+0200\n"
-"PO-Revision-Date: 2025-10-14 21:38+0300\n"
+"POT-Creation-Date: 2025-10-15 08:21+0200\n"
+"PO-Revision-Date: 2025-10-15 23:53+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -19831,11 +19831,11 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
-"calculate the capture sharpen radius from sensor data.\n"
-"this should be done in zoomed out darkroom"
+"calculate the capture sharpen radius from available raw sensor data.\n"
+"for best results avoid cropping or darkroom zooming in"
 msgstr ""
-"Calculate the capture sharpen radius from sensor data.\n"
-"This should be done in zoomed out darkroom"
+"Calculate the capture sharpen radius from available raw sensor data.\n"
+"For best results avoid cropping or darkroom zooming in"
 
 #: ../src/iop/demosaic.c:1789
 msgid ""
@@ -19877,10 +19877,13 @@ msgstr "Adjust to the sharp image center"
 msgid "demosaicing is only used for color raw images"
 msgstr "Demosaicing is only used for color raw images"
 
-#: ../src/iop/demosaicing/capture.c:652
-msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+#: ../src/iop/demosaicing/capture.c:651
+msgid ""
+"imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 msgstr ""
-"Can't calculate a reliable capture radius as you are zoomed in too much"
+"Imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 
 #: ../src/iop/denoiseprofile.c:763
 msgid "wavelets: chroma only"
