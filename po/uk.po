@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-14 17:45+0200\n"
-"PO-Revision-Date: 2025-10-14 21:46+0300\n"
+"POT-Creation-Date: 2025-10-15 08:21+0200\n"
+"PO-Revision-Date: 2025-10-16 00:00+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -20096,11 +20096,11 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
-"calculate the capture sharpen radius from sensor data.\n"
-"this should be done in zoomed out darkroom"
+"calculate the capture sharpen radius from available raw sensor data.\n"
+"for best results avoid cropping or darkroom zooming in"
 msgstr ""
-"Розрахувати радіус збільшенні різкості на основі даних сенсора.\n"
-"Це слід робити у зменшеному масштабі темної кімнати"
+"Розрахувати радіус збільшенні різкості на основі доступних даних сенсора.\n"
+"Для найкращих результатів уникайте обрізання або збільшення масштабу"
 
 #: ../src/iop/demosaic.c:1789
 msgid ""
@@ -20147,11 +20147,12 @@ msgstr "Регулювання вигляду зображення"
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
-#: ../src/iop/demosaicing/capture.c:652
-msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+#: ../src/iop/demosaicing/capture.c:651
+msgid ""
+"imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 msgstr ""
-"Не вдається надійно розрахувати радіус збільшення різкості, ви занадто "
-"збільшили масштаб"
+"Неточний розрахунок радіуса через обрізання або надмірне збільшення масштабу"
 
 #: ../src/iop/denoiseprofile.c:763
 msgid "wavelets: chroma only"
@@ -25824,9 +25825,6 @@ msgid "export the selected images with multiple presets"
 msgstr "Експортувати вибрані зображення з кількома пресетами"
 
 #: ../src/libs/export.c:1711
-#, fuzzy
-#| msgctxt "actionbutton"
-#| msgid "start export"
 msgctxt "actionbutton"
 msgid "start batch export"
 msgstr "Запустити експорт"
