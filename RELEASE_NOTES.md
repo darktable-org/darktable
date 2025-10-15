@@ -111,7 +111,6 @@ changes (where available).
   image, most slider directions for angles have been reversed. You may
   want to add a "-1" speed to any shortcuts you have gotten used to.
 
-
 - Added new default shortcut keys. These will take effect only if the
   keys do not yet have user-defined assignments.
 
@@ -196,8 +195,11 @@ changes (where available).
 - Fixed an issue when positioning the main darkroom windows due to
   precision in computation. The precision is now to the pixel and
   avoid a displacement in some cases.
-  
+
 - Fixed issue in darktable-cli that prevented input files from being detected.
+
+- Fixed out of memory issue which could kill Darktable on small
+  systems when processing large images.
 
 ## Lua
 
