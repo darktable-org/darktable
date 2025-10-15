@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-14 17:45+0200\n"
-"PO-Revision-Date: 2025-10-14 17:51+0200\n"
+"POT-Creation-Date: 2025-10-15 08:22+0200\n"
+"PO-Revision-Date: 2025-10-15 08:24+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -20158,11 +20158,11 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
-"calculate the capture sharpen radius from sensor data.\n"
-"this should be done in zoomed out darkroom"
+"calculate the capture sharpen radius from available raw sensor data.\n"
+"for best results avoid cropping or darkroom zooming in"
 msgstr ""
 "Calculer le rayon de l’ajustement de netteté depuis les données du capteur.\n"
-"A faire en zoomant dans la chambre noire."
+"Pour un meilleur résultat ne pas rogner ou zoomer dans la chambre noire."
 
 #: ../src/iop/demosaic.c:1789
 msgid ""
@@ -20205,11 +20205,12 @@ msgstr "Ajuste l’accentuation du centre de l’image"
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
-#: ../src/iop/demosaicing/capture.c:652
-msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+#: ../src/iop/demosaicing/capture.c:651
+msgid ""
+"imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 msgstr ""
-"Impossible de calculer un rayon de capture fiable car le zoom est trop "
-"important"
+"Rayon de capture non précis à cause d’un rognage ou d’un zoom trop important"
 
 #: ../src/iop/denoiseprofile.c:763
 msgid "wavelets: chroma only"
