@@ -1169,6 +1169,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         CHKSIGDBG(DT_SIGNAL_CONTROL_TOAST_REDRAW);
         CHKSIGDBG(DT_SIGNAL_CONTROL_PICKERDATA_READY);
         CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
+        CHKSIGDBG(DT_SIGNAL_PRESET_APPLIED);
         else
         {
           dt_print(DT_DEBUG_SIGNAL,
