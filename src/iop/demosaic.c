@@ -1782,8 +1782,8 @@ void gui_init(dt_iop_module_t *self)
                                               "ringing especially when used with a large 'iterations' setting.\n\n"
                                               "Note: a radius set to zero will be recalculated automatically the next run. use for presets"));
   dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_radius_callback,
-    _("calculate the capture sharpen radius from sensor data.\n"
-      "this should be done in zoomed out darkroom"));
+                                            _("calculate the capture sharpen radius from available raw sensor data.\n"
+                                              "for best results avoid cropping or darkroom zooming in"));
 
   g->cs_thrs = dt_bauhaus_slider_from_params(self, "cs_thrs");
   gtk_widget_set_tooltip_text(g->cs_thrs, _("restrict capture sharpening to areas with high local contrast,\n"
