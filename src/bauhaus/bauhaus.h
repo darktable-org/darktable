@@ -103,6 +103,7 @@ typedef struct dt_bauhaus_popup_t
   GdkRectangle position;
   int offset;
   int offcut;
+  float oldpos;   // slider value before entering finetune mode (normalized)
 } dt_bauhaus_popup_t;
 
 typedef struct dt_bauhaus_t
@@ -216,7 +217,8 @@ static inline void dt_bauhaus_widget_set_quad(GtkWidget *widget,
 }
 // get the tooltip for widget or quad button:
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
-                                            dt_action_element_t element);
+                                            const int x,
+                                            const int y);
 // set pointer to iop params field:
 void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  gpointer field,
