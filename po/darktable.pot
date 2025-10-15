@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-14 17:45+0200\n"
+"POT-Creation-Date: 2025-10-15 08:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18659,8 +18659,8 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
-"calculate the capture sharpen radius from sensor data.\n"
-"this should be done in zoomed out darkroom"
+"calculate the capture sharpen radius from available raw sensor data.\n"
+"for best results avoid cropping or darkroom zooming in"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1789
@@ -18695,8 +18695,10 @@ msgstr ""
 msgid "demosaicing is only used for color raw images"
 msgstr ""
 
-#: ../src/iop/demosaicing/capture.c:652
-msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+#: ../src/iop/demosaicing/capture.c:651
+msgid ""
+"imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:763
