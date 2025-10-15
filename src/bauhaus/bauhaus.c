@@ -750,7 +750,8 @@ static void _widget_finalize(GObject *widget)
   if(w->type == DT_BAUHAUS_SLIDER)
   {
     dt_bauhaus_slider_data_t *d = &w->data.slider;
-    if(d->timeout_handle) g_source_remove(d->timeout_handle);
+    if(d->timeout_handle && d->timeout_handle != G_MAXUINT)
+      g_source_remove(d->timeout_handle);
     free(d->grad_col);
     free(d->grad_pos);
   }
@@ -3630,6 +3631,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
     else if(pos <= 1.0f && y > .5 * bh->line_height + w->margin.top + w->padding.top)
     {
       bh->mouse_x = NAN;
+      w->data.slider.timeout_handle = G_MAXUINT;
       _slider_set_normalized(w, pos);
     }
   }
@@ -3646,24 +3648,19 @@ static void _widget_button_release(GtkGestureSingle *gesture,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_widget_release_quad(widget);
 
+  dt_gui_claim(gesture);
   if(w->type != DT_BAUHAUS_SLIDER) return;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY
-     && d->is_dragging)
-  {
+  if(gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY)
     d->is_dragging = 0;
-
-    // FIXME _slider_value_change_dragging
-    if(d->timeout_handle) g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-    _slider_set_normalized(w, d->pos);
-  }
 }
 
 static void _widget_button_stopped(GtkGestureSingle *gesture,
                                    dt_bauhaus_widget_t *w)
 {
+  if(w->data.slider.timeout_handle == G_MAXUINT)
+    _slider_value_change_dragging(w);
 }
 
 static void _widget_motion(GtkEventControllerMotion *controller,
