@@ -1509,6 +1509,7 @@ static int32_t _control_local_copy_images_job_run(dt_job_t *job)
 
 static int32_t _control_refresh_exif_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   GList *imgs = g_list_copy(t);
@@ -1553,6 +1554,8 @@ static int32_t _control_refresh_exif_run(dt_job_t *job)
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   dt_control_queue_redraw_center();
+
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
@@ -1569,6 +1572,7 @@ static inline gboolean _safe_history_job_on_imgid(dt_job_t *job, const dt_imgid_
 
 static int32_t _control_paste_history_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->data;
@@ -1623,6 +1627,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
     dt_image_synch_xmps(to_synch);
     g_list_free(to_synch);
   }
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
@@ -1667,6 +1672,7 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
 
 static int32_t _control_discard_history_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->data;
@@ -1696,6 +1702,7 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)params->data); // frees list of images
   params->data = NULL;
+  dt_start_backthumbs_crawler();
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1707,6 +1714,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
   _apply_styles_data_t *style_data = params->data;
   if(!style_data)
     return 0;
+
+  dt_stop_backthumbs_crawler(FALSE);
   GList *imgs = style_data->imgs;
   GList *styles = style_data->styles;
   gboolean duplicate = style_data->duplicate;
@@ -1758,11 +1767,13 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
   g_free(params->data);
   params->data = NULL;
   dt_control_queue_redraw_center();
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
 static int32_t _control_export_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_export_t *settings = params->data;
   dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_index(settings->format_index);
@@ -1923,6 +1934,7 @@ end:
   dt_ui_notify_user();
 
   if(tag_change) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
