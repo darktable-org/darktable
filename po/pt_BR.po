@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-14 20:18-0300\n"
-"PO-Revision-Date: 2025-10-14 20:15-0300\n"
+"POT-Creation-Date: 2025-10-16 11:33-0300\n"
+"PO-Revision-Date: 2025-10-16 11:33-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -6810,7 +6810,7 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1527
+#: ../src/common/darktable.c:1528
 #, c-format
 msgid ""
 "you do not have write access to create one of the user directories:\n"
@@ -6825,112 +6825,112 @@ msgstr ""
 "\n"
 "por favor resolva isto e abra o darktable novamente"
 
-#: ../src/common/darktable.c:1532
+#: ../src/common/darktable.c:1533
 msgid "darktable - unable to create directories"
 msgstr "darktable - não foi possível criar diretórios"
 
-#: ../src/common/darktable.c:1534 ../src/common/database.c:4098
+#: ../src/common/darktable.c:1535 ../src/common/database.c:4098
 #: ../src/common/database.c:4292
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
 #. initialize the database
-#: ../src/common/darktable.c:1556
+#: ../src/common/darktable.c:1557
 msgid "opening image library"
 msgstr "abrindo boblioteca de imagens"
 
-#: ../src/common/darktable.c:1569
+#: ../src/common/darktable.c:1570
 msgid "forwarding image(s) to running instance"
 msgstr "enviando imagem(s) para a instância em execução"
 
-#: ../src/common/darktable.c:1600
+#: ../src/common/darktable.c:1601
 msgid "preparing database"
 msgstr "preparando base de dados"
 
 #. init darktable tags table
-#: ../src/common/darktable.c:1604
+#: ../src/common/darktable.c:1605
 msgid "setting up tags table"
 msgstr "preparando tabela de etiquetas"
 
 #. Initialize the signal system
-#: ../src/common/darktable.c:1608
+#: ../src/common/darktable.c:1609
 msgid "initializing signals and control"
 msgstr "inicializando sinais e controle"
 
-#: ../src/common/darktable.c:1627
+#: ../src/common/darktable.c:1628
 msgid "importing default styles"
 msgstr "importando estilos default"
 
-#: ../src/common/darktable.c:1725
+#: ../src/common/darktable.c:1728
 msgid "initializing GraphicsMagick"
 msgstr "inicializando GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1737
+#: ../src/common/darktable.c:1740
 msgid "initializing ImageMagick"
 msgstr "inicializando ImageMagick"
 
-#: ../src/common/darktable.c:1742
+#: ../src/common/darktable.c:1745
 msgid "initializing libheif"
 msgstr "inicializando libheif"
 
-#: ../src/common/darktable.c:1746
+#: ../src/common/darktable.c:1749
 msgid "starting OpenCL"
 msgstr "iniciando OpenCL"
 
-#: ../src/common/darktable.c:1758
+#: ../src/common/darktable.c:1761
 msgid "loading noise profiles"
 msgstr "carregando perfis de ruído"
 
-#: ../src/common/darktable.c:1775
+#: ../src/common/darktable.c:1778
 msgid "synchronizing local copies"
 msgstr "sincronizando cópias locais"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1782
+#: ../src/common/darktable.c:1785
 msgid "initializing camera control"
 msgstr "inicializando controle da câmera"
 
-#: ../src/common/darktable.c:1792
+#: ../src/common/darktable.c:1795
 msgid "initializing GUI"
 msgstr "inicializando interface gráfica"
 
-#: ../src/common/darktable.c:1816
+#: ../src/common/darktable.c:1819
 msgid "loading processing modules"
 msgstr "carregando módulos de processamento"
 
-#: ../src/common/darktable.c:1851
+#: ../src/common/darktable.c:1854
 msgid "loading utility modules"
 msgstr "carregando módulos utilitários"
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1856
+#: ../src/common/darktable.c:1859
 msgid "loading views"
 msgstr "carregando isualizações"
 
-#: ../src/common/darktable.c:1862
+#: ../src/common/darktable.c:1865
 msgid "initializing Lua"
 msgstr "inicializando lua"
 
-#: ../src/common/darktable.c:1894
+#: ../src/common/darktable.c:1897
 msgid "importing image"
 msgstr "importando imagem"
 
-#: ../src/common/darktable.c:1914
+#: ../src/common/darktable.c:1917
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:1916
+#: ../src/common/darktable.c:1919
 msgid "_show this message again"
 msgstr "_mostrar esta mensagem novamente"
 
-#: ../src/common/darktable.c:1916
+#: ../src/common/darktable.c:1919
 msgid "_dismiss"
 msgstr "_remover"
 
-#: ../src/common/darktable.c:2424
+#: ../src/common/darktable.c:2427
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6938,12 +6938,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:2426
+#: ../src/common/darktable.c:2429
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:2432
+#: ../src/common/darktable.c:2435
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6951,7 +6951,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram."
 
-#: ../src/common/darktable.c:2434
+#: ../src/common/darktable.c:2437
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6959,15 +6959,15 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:2436
+#: ../src/common/darktable.c:2439
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:2438
+#: ../src/common/darktable.c:2441
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho do OpenCL"
 
-#: ../src/common/darktable.c:2445
+#: ../src/common/darktable.c:2448
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6975,7 +6975,7 @@ msgstr ""
 "alguns valores de configuração globais relevantes para o desempenho de "
 "OpenCL não são mais usados."
 
-#: ../src/common/darktable.c:2447
+#: ../src/common/darktable.c:2450
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6983,8 +6983,8 @@ msgstr ""
 "ao invés disso você encontrará dados 'por dispositivo' em "
 "'cldevice_v5_canonical-name'. o conteúdo é:"
 
-#: ../src/common/darktable.c:2449 ../src/common/darktable.c:2468
-#: ../src/common/darktable.c:2483
+#: ../src/common/darktable.c:2452 ../src/common/darktable.c:2471
+#: ../src/common/darktable.c:2486
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6992,18 +6992,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2451 ../src/common/darktable.c:2470
+#: ../src/common/darktable.c:2454 ../src/common/darktable.c:2473
 msgid "you may tune as before except 'magic'"
 msgstr "você pode ajustar como antes exceto por 'magic'"
 
-#: ../src/common/darktable.c:2457
+#: ../src/common/darktable.c:2460
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Suas configurações de compilador OpenCL para todos os dispositivos foram "
 "redefinidas para o padrão."
 
-#: ../src/common/darktable.c:2464
+#: ../src/common/darktable.c:2467
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -7011,14 +7011,14 @@ msgstr ""
 "Os dados de parâmetros globais OpenCL 'por dispositivo' foram recriados com "
 "nome atualizado."
 
-#: ../src/common/darktable.c:2466 ../src/common/darktable.c:2481
+#: ../src/common/darktable.c:2469 ../src/common/darktable.c:2484
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cldevice_v5_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2472
+#: ../src/common/darktable.c:2475
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -7026,7 +7026,7 @@ msgstr ""
 "Se você está usando nomes de dispositivo como 'opencl_device_priority' você "
 "deveria atualizá-los para os novos nomes."
 
-#: ../src/common/darktable.c:2479
+#: ../src/common/darktable.c:2482
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -7034,7 +7034,7 @@ msgstr ""
 "dados de configuração OpenCL 'por dispositivo' foram estendidos "
 "automaticamente por 'unified-fraction'."
 
-#: ../src/common/darktable.c:2490
+#: ../src/common/darktable.c:2493
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -7042,7 +7042,7 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' podem ter sido atualizadas.\n"
 "\n"
 
-#: ../src/common/darktable.c:2495
+#: ../src/common/darktable.c:2498
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -9734,8 +9734,8 @@ msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3600 ../src/develop/blend_gui.c:3609
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3148
-#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1778
-#: ../src/iop/demosaic.c:1797 ../src/iop/diffuse.c:1782
+#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1777
+#: ../src/iop/demosaic.c:1796 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2677
 msgid " px"
 msgstr " px"
@@ -10319,11 +10319,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar, <b>adicionar nó</b>:ctrl+clique\n"
 "<b>remover caminho</b>: clique-direito"
 
-#: ../src/develop/pixelpipe_hb.c:518
+#: ../src/develop/pixelpipe_hb.c:517
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:519
+#: ../src/develop/pixelpipe_hb.c:518
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10333,11 +10333,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:526
+#: ../src/develop/pixelpipe_hb.c:525
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:527
+#: ../src/develop/pixelpipe_hb.c:526
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10347,7 +10347,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1254
+#: ../src/develop/pixelpipe_hb.c:1253
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10357,11 +10357,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1736
+#: ../src/develop/pixelpipe_hb.c:1735
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3111
+#: ../src/develop/pixelpipe_hb.c:3110
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10382,7 +10382,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3303
+#: ../src/develop/pixelpipe_hb.c:3302
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -15821,7 +15821,7 @@ msgstr "corretivo e criativo"
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:216
 #: ../src/iop/colorin.c:131 ../src/iop/crop.c:137 ../src/iop/crop.c:139
-#: ../src/iop/demosaic.c:325 ../src/iop/denoiseprofile.c:777
+#: ../src/iop/demosaic.c:324 ../src/iop/denoiseprofile.c:777
 #: ../src/iop/denoiseprofile.c:779 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:130
@@ -17338,7 +17338,7 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:323 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:322 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:101
@@ -17349,7 +17349,7 @@ msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:324 ../src/iop/invert.c:133
+#: ../src/iop/demosaic.c:323 ../src/iop/invert.c:133
 #: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:102
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -19394,7 +19394,7 @@ msgstr ""
 "converte qualquer entrada RGB para a referência RGB do\n"
 "pipeline usando perfis de cor para remapear valores RGB"
 
-#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:322
+#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:321
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "obrigatório"
@@ -19659,7 +19659,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1811
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1810
 #: ../src/iop/highlights.c:1359
 msgid "not applicable"
 msgstr "não aplicável"
@@ -19862,30 +19862,30 @@ msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "limite para mesclagem de borda, valores altos significam menos mesclagem"
 
-#: ../src/iop/demosaic.c:316
+#: ../src/iop/demosaic.c:315
 msgid "demosaic"
 msgstr "interpolação cromática"
 
-#: ../src/iop/demosaic.c:321
+#: ../src/iop/demosaic.c:320
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "reconstrói pixels RGB completamente a partir de uma leitura da\n"
 "matriz de filtro de cor do sensor da câmera"
 
-#: ../src/iop/demosaic.c:762 ../src/iop/demosaic.c:809
+#: ../src/iop/demosaic.c:761 ../src/iop/demosaic.c:808
 msgid "can't allocate demosaic buffer"
 msgstr "não foi possível alocar buffer para interpolação cromática"
 
-#: ../src/iop/demosaic.c:799
+#: ../src/iop/demosaic.c:798
 msgid "can't equilibrate greens"
 msgstr "não é possível equilibrar os verdes"
 
-#: ../src/iop/demosaic.c:1451
+#: ../src/iop/demosaic.c:1450
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1732
+#: ../src/iop/demosaic.c:1731
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19899,7 +19899,7 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1736
+#: ../src/iop/demosaic.c:1735
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19911,11 +19911,11 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1742
+#: ../src/iop/demosaic.c:1741
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1746
+#: ../src/iop/demosaic.c:1745
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19925,11 +19925,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência\n"
 "defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1749
+#: ../src/iop/demosaic.c:1748
 msgid "toggle mask visualization"
 msgstr "alterna visualização da máscara"
 
-#: ../src/iop/demosaic.c:1753
+#: ../src/iop/demosaic.c:1752
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19939,7 +19939,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1756
+#: ../src/iop/demosaic.c:1755
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19947,15 +19947,15 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1759
+#: ../src/iop/demosaic.c:1758
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1762
+#: ../src/iop/demosaic.c:1761
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:1765
+#: ../src/iop/demosaic.c:1764
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -19965,15 +19965,15 @@ msgstr ""
 "devido ao desfoque da câmera, que pode ser causado por difração, filtros\n"
 "anti-aliasing e outras fontes de desfoque do tipo gaussiano"
 
-#: ../src/iop/demosaic.c:1770
+#: ../src/iop/demosaic.c:1769
 msgid "capture sharpen controls"
 msgstr "controles de captura de nitidez"
 
-#: ../src/iop/demosaic.c:1774
+#: ../src/iop/demosaic.c:1773
 msgid "set effect strength by iterations"
 msgstr "determinar a força do efeito por iterações"
 
-#: ../src/iop/demosaic.c:1779
+#: ../src/iop/demosaic.c:1778
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -19991,15 +19991,15 @@ msgstr ""
 "Nota: o raio definido em zero será recalculado automaticamente na próxim "
 "vez. use para predefinições"
 
-#: ../src/iop/demosaic.c:1785
+#: ../src/iop/demosaic.c:1784
 msgid ""
-"calculate the capture sharpen radius from sensor data.\n"
-"this should be done in zoomed out darkroom"
+"calculate the capture sharpen radius from available raw sensor data.\n"
+"for best results avoid cropping or darkroom zooming in"
 msgstr ""
 "calcular o raio de ajuste de nitidez a partir dos dados do sensor.\n"
-"deve ser feito durante o zoom na câmara escura"
+"para melhores resultados evite cortar o fazer zoom"
 
-#: ../src/iop/demosaic.c:1789
+#: ../src/iop/demosaic.c:1788
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -20015,11 +20015,11 @@ msgstr ""
 "Nota: o limiar em zero reinicializará aos defaults na próxima vez. use para "
 "predefinições"
 
-#: ../src/iop/demosaic.c:1793
+#: ../src/iop/demosaic.c:1792
 msgid "visualize sharpened areas"
 msgstr "visualizar áreas com nitidez ajustada"
 
-#: ../src/iop/demosaic.c:1798
+#: ../src/iop/demosaic.c:1797
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -20027,23 +20027,24 @@ msgstr ""
 "aumenta o raio de nitidez dos cantos da imagem,\n"
 "o centro da imagem não é afetado"
 
-#: ../src/iop/demosaic.c:1800
+#: ../src/iop/demosaic.c:1799
 msgid "visualize the overall radius"
 msgstr "visualizar o raio geral"
 
-#: ../src/iop/demosaic.c:1805
+#: ../src/iop/demosaic.c:1804
 msgid "adjust to the sharp image center"
 msgstr "ajusta a nitidez no centro da imagem"
 
-#: ../src/iop/demosaic.c:1812
+#: ../src/iop/demosaic.c:1811
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
-#: ../src/iop/demosaicing/capture.c:652
-msgid "can't calculate a reliable capture radius as you are zoomed in too much"
+#: ../src/iop/demosaicing/capture.c:651
+msgid ""
+"imprecise radius calculation due to cropping or because you are zoomed in "
+"too much"
 msgstr ""
-"nào é possível calcular um caio de captura confiável porque você está em "
-"zoom demais"
+"cálculo de caio impreciso devido a corte, ou porque você está em zoom demais"
 
 #: ../src/iop/denoiseprofile.c:763
 msgid "wavelets: chroma only"
