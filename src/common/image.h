@@ -409,6 +409,8 @@ void dt_image_full_path(const dt_imgid_t imgid,
 void dt_image_film_roll_directory(const dt_image_t *img,
                                   char *pathname,
                                   const size_t pathname_len);
+/** returns the portion of the path used for the film roll name, at given levels */
+const char *dt_image_film_roll_name_levels(const char *path, int levels);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */

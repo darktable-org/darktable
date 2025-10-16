@@ -269,10 +269,9 @@ int dt_image_monochrome_flags(const dt_image_t *img)
              | DT_IMAGE_MONOCHROME_BAYER));
 }
 
-const char *dt_image_film_roll_name(const char *path)
+const char *dt_image_film_roll_name_levels(const char *path, int levels)
 {
   const char *folder = path + strlen(path);
-  const int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
   int count = 0;
   while(folder > path)
   {
@@ -284,7 +283,7 @@ const char *dt_image_film_roll_name(const char *path)
     if(*folder == G_DIR_SEPARATOR)
 #endif
 
-      if(++count >= numparts)
+      if(++count >= levels)
       {
         ++folder;
         break;
@@ -292,6 +291,13 @@ const char *dt_image_film_roll_name(const char *path)
     --folder;
   }
   return folder;
+}
+
+const char *dt_image_film_roll_name(const char *path)
+{
+  const int levels = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+
+  return dt_image_film_roll_name_levels(path, levels);
 }
 
 void dt_image_film_roll_directory(const dt_image_t *img,

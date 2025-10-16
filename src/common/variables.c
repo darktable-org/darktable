@@ -647,7 +647,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
     {
       gchar *dirname = g_path_get_dirname(params->filename);
-      result = g_path_get_basename(dirname);
+      uint8_t levels = _get_var_parameter(variable, 1);
+      result = g_strdup(dt_image_film_roll_name_levels(dirname, CLAMPS(levels, 1, 5)));
       g_free(dirname);
     }
   }
