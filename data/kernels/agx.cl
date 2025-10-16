@@ -80,7 +80,10 @@ static inline void _agx_compress_into_gamut(float4 *pixel)
   float y_new = rgb_offset.x * luminance_coeffs[0] + rgb_offset.y * luminance_coeffs[1] + rgb_offset.z * luminance_coeffs[2];
   y_new = max_inverse_rgb_offset - y_inverse_rgb_offset + y_new;
 
-  const float luminance_ratio = (y_new > y_compensate_negative) ? y_compensate_negative / y_new : 1.0f;
+    const float luminance_ratio =
+      (y_new > y_compensate_negative && y_new > _epsilon)
+      ? y_compensate_negative / y_new
+      : 1.f;
   *pixel = luminance_ratio * rgb_offset;
 }
 
@@ -88,7 +91,7 @@ static inline float _agx_apply_log_encoding(const float x, const float range_in_
 {
   const float x_relative = fmax(_epsilon, x / 0.18f);
   const float mapped = (log2(fmax(x_relative, 0.0f)) - min_ev) / range_in_ev;
-  return clamp(mapped, 0.0f, 1.0f);
+  return clipf(mapped);
 }
 
 static inline float _agx_sigmoid(const float x, const float power)

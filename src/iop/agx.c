@@ -990,9 +990,9 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
               + rgb_offset[2] * luminance_coeffs[2];
   y_new = max_inverse_rgb_offset - y_inverse_rgb_offset + y_new;
 
-  // Compensate the intensity to match the original luminance
+  // Compensate the intensity to match the original luminance; avoid div by 0 or tiny number
   const float luminance_ratio =
-    y_new > y_compensate_negative
+    (y_new > y_compensate_negative && y_new > _epsilon)
     ? y_compensate_negative / y_new
     : 1.f;
 
@@ -1119,7 +1119,7 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   // toe
   tone_mapping_params.target_black =
     powf(p->curve_target_display_black_ratio, 1.f / tone_mapping_params.curve_gamma);
-  tone_mapping_params.toe_power = p->curve_toe_power;
+  tone_mapping_params.toe_power = fmaxf(0.01f, p->curve_toe_power);
 
   const float remaining_y_below_pivot = tone_mapping_params.pivot_y - tone_mapping_params.target_black;
   const float toe_length_y = remaining_y_below_pivot * p->curve_linear_ratio_below_pivot;
@@ -1181,7 +1181,7 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
 
   const float shoulder_dy_above_pivot = tone_mapping_params.slope * dx_linear_above_pivot;
   tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_dy_above_pivot;
-  tone_mapping_params.shoulder_power = p->curve_shoulder_power;
+  tone_mapping_params.shoulder_power = fmaxf(0.01f, p->curve_shoulder_power);
 
   const float shoulder_limit_x = 1.f;
   tone_mapping_params.shoulder_scale = _scale(shoulder_limit_x,
@@ -2885,7 +2885,7 @@ int process_cl(dt_iop_module_t *self,
 {
   if(!dt_iop_have_required_input_format(4, self, piece->colors, (void*)dev_in, (void*)dev_out, roi_in, roi_out))
   {
-    return CL_INVALID_IMAGE_FORMAT_DESCRIPTOR;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   const dt_iop_agx_global_data_t *gd = self->global_data;
@@ -2906,7 +2906,7 @@ int process_cl(dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[agx process_cl] Failed to obtain a valid base profile. Module will not run correctly.");
-    return CL_INVALID_CONTEXT;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   dt_colormatrix_t pipe_to_base;
