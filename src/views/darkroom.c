@@ -867,6 +867,9 @@ gboolean try_enter(dt_view_t *self)
     return TRUE;
   }
 
+  // we want to wait for terminated backthumbs crawler for pipeline memory
+  dt_stop_backthumbs_crawler(TRUE);
+
   // this loads the image from db if needed:
   const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   // get image and check if it has been deleted from disk first!

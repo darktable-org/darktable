@@ -336,10 +336,8 @@ typedef struct dt_backthumb_t
 {
   double time;
   double idle;
-  gboolean service;
-  gboolean running;
+  int32_t state;
   gboolean capable;
-  int32_t mipsize;
 } dt_backthumb_t;
 
 typedef struct dt_gimp_t
@@ -882,8 +880,9 @@ static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
 // checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage(char *info);
 
-// try to start the backthumbs crawler
-void dt_start_backtumbs_crawler();
+// start/stop the backthumbs crawler
+void dt_start_backthumbs_crawler(void);
+void dt_stop_backthumbs_crawler(const gboolean wait);
 
 void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:

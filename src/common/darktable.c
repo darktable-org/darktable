@@ -716,11 +716,40 @@ static dt_job_t *_backthumbs_job_create(void)
   return job;
 }
 
-void dt_start_backtumbs_crawler(void)
+static void _wait_backthumbs_crawler(void)
 {
-  // don't write thumbs if using memory database or on a non-sufficient system
-  if(!darktable.backthumbs.running && darktable.backthumbs.capable)
-    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
+  dt_backthumb_t *bt = &darktable.backthumbs;
+  for(int i = 0; i < 1000 && bt->state == DT_JOB_STATE_CANCELLED; i++)
+    g_usleep(10000);
+}
+
+void dt_start_backthumbs_crawler(void)
+{
+  const gboolean possible =
+      // only in lighttable mode
+      dt_view_get_current() == DT_VIEW_LIGHTTABLE
+      // not in gimp mode or if using a memory database or on very simple CPUs
+      && darktable.backthumbs.capable
+      // allow on 8GB systems with default memory preferences
+      && (dt_get_available_mem() / DT_MEGA) > 3000lu;
+  if(!possible || darktable.backthumbs.state == DT_JOB_STATE_RUNNING)
+    return;
+
+  // in case it's cancelled and wants to be restarted
+  _wait_backthumbs_crawler();
+
+  dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
+}
+
+void dt_stop_backthumbs_crawler(const gboolean wait)
+{
+  if(darktable.backthumbs.state == DT_JOB_STATE_RUNNING
+    && darktable.backthumbs.capable)
+  {
+    darktable.backthumbs.state = DT_JOB_STATE_CANCELLED;
+    if(wait)
+      _wait_backthumbs_crawler();
+  }
 }
 
 static char *_get_version_string(void)
@@ -1800,6 +1829,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       return 1;
     }
     dt_bauhaus_init();
+
+    darktable.backthumbs.state = DT_JOB_STATE_FINISHED;
+    darktable.backthumbs.capable =
+        !dt_gimpmode()
+        && dt_get_num_threads() >= 4
+        && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   }
   else
     darktable.gui = NULL;
@@ -1928,21 +1963,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   free(config_info);
 
-  darktable.backthumbs.running = FALSE;
-  darktable.backthumbs.capable =
-      (dt_worker_threads() > 4)
-      && !dt_gimpmode()
-      && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
-
   if(init_gui)
   {
     // construct the popup that asks the user how to handle images whose xmp
     // files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
-
-    if(!dt_gimpmode())
-     dt_start_backtumbs_crawler();
   }
 
   // fire up a background job to perform sidecar writes
@@ -2025,13 +2051,8 @@ void dt_cleanup()
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
 
-  if(darktable.backthumbs.running)
-  {
-    // if the backthumbs crawler is running, stop it now and wait for it being terminated.
-    darktable.backthumbs.running = FALSE;
-    for(int i = 0; i < 1000 && darktable.backthumbs.capable; i++)
-      g_usleep(10000);
-  }
+  dt_stop_backthumbs_crawler(TRUE);
+
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
