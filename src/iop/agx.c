@@ -1581,17 +1581,24 @@ void process(dt_iop_module_t *self,
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
+    dt_aligned_pixel_t sanitised_in = { 0.f };
+    for_each_channel(c)
+    {
+      const float component = pix_in[c];
+      // allow about 22.5 EV above mid-grey, including out-of-gamut pixels, getting rid of NaNs
+      sanitised_in[c] = isnan(component) ? 0.f : CLAMPF(component, -1e6f, 1e6f);
+    }
     float *const restrict pix_out = out + k;
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
     if(base_working_same_profile)
     {
-      copy_pixel(base_rgb, pix_in);
+      copy_pixel(base_rgb, sanitised_in);
     }
     else
     {
-      dt_apply_transposed_color_matrix(pix_in, pipe_to_base_transposed, base_rgb);
+      dt_apply_transposed_color_matrix(sanitised_in, pipe_to_base_transposed, base_rgb);
     }
 
     _compress_into_gamut(base_rgb);
@@ -1607,7 +1614,7 @@ void process(dt_iop_module_t *self,
     dt_apply_transposed_color_matrix(rendering_rgb, rendering_to_pipe_transposed, pix_out);
 
     // Copy over the alpha channel
-    pix_out[3] = pix_in[3];
+    pix_out[3] = sanitised_in[3];
   }
 }
 

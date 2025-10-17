@@ -233,6 +233,9 @@ __kernel void kernel_agx(
     const int2 pos = (int2)(i, j);
     float4 in_pixel = read_imagef(input, sampleri, pos);
 
+    // sanitize input range and get rid of NaNs
+    in_pixel = select(clamp(in_pixel, -1e6f, 1e6f), (float4)(0.0f), isnan(in_pixel));
+
     float4 base_rgb;
     if(base_working_same_profile)
     {
