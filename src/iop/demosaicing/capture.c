@@ -43,6 +43,7 @@
 #define CAPTURE_GAUSS_FRACTION 0.01f
 #define CAPTURE_YMIN 0.001f
 #define CAPTURE_CFACLIP 0.9f
+#define CAPTURE_SMALL 0.66f
 
 static float _get_variance_threshold(const dt_iop_module_t *self)
 {
@@ -74,7 +75,7 @@ static float _get_variance_threshold(const dt_iop_module_t *self)
 static inline void _calc_9x9_gauss_coeffs(float *coeffs, const float sigma)
 {
   float kernel[9][9];
-  const float range = 4.5f * 4.5f;
+  const float range = sigma < CAPTURE_SMALL ? sqrf(2.5f) : sqrf(4.5f);
   const float temp = -2.0f * sigma * sigma;
   float sum = 0.0;
   for(int k = -4; k < 5; k++)
@@ -404,6 +405,7 @@ static inline void _blur_mul(const float *const in,
   const int w2 = 2 * w1;
   const int w3 = 3 * w1;
   const int w4 = 4 * w1;
+  const uint8_t idx_small = _sigma_to_index(CAPTURE_SMALL);
 
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -414,11 +416,24 @@ static inline void _blur_mul(const float *const in,
       if(blend[i] > 0.0f)
       {
         const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
+        const gboolean small = table[i] < idx_small;
+        const int bd = small ? 2 : 4;
         float val = 0.0f;
-        if(col >= 4 && row >= 4 && col < w1 - 4 && row < height - 4)
+        if(col >= bd && row >= bd && col < w1 - bd && row < height - bd)
         {
           const float *d = in + i;
-          val =
+          if(small)
+          {
+            val =
+              kern[ 5+2] * (d[-w2-1] + d[-w2+1] + d[-w1-2] + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+              kern[   2] * (d[-w2  ] + d[   -2] + d[    2] + d[ w2  ]) +
+              kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
+              kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
+              kern[   0] * (d[0]);
+          }
+          else
+          {
+            val =
               kern[10+4] * (d[-w4-2] + d[-w4+2] + d[-w2-4] + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
               kern[5 +4] * (d[-w4-1] + d[-w4+1] + d[-w1-4] + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
               kern[4]    * (d[-w4  ] + d[   -4] + d[    4] + d[ w4  ]) +
@@ -432,15 +447,16 @@ static inline void _blur_mul(const float *const in,
               kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
               kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
               kern[   0] * (d[0]);
+            }
         }
         else
         {
-          for(int ir = -4; ir <= 4; ir++)
+          for(int ir = -bd; ir <= bd; ir++)
           {
             const int irow = row+ir;
             if(irow >= 0 && irow < height)
             {
-              for(int ic = -4; ic <= 4; ic++)
+              for(int ic = -bd; ic <= bd; ic++)
               {
                 const int icol = col+ic;
                 if(icol >=0 && icol < w1)
@@ -470,6 +486,7 @@ static inline void _blur_div(const float *const in,
   const int w2 = 2 * w1;
   const int w3 = 3 * w1;
   const int w4 = 4 * w1;
+  const uint8_t idx_small = _sigma_to_index(CAPTURE_SMALL);
 
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -480,11 +497,24 @@ static inline void _blur_div(const float *const in,
       if(blend[i] > 0.0f)
       {
         const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
+        const gboolean small = table[i] < idx_small;
+        const int bd = small ? 2 : 4;
         float val = 0.0f;
-        if(col >= 4 && row >= 4 && col < w1 - 4 && row < height - 4)
+        if(col >= bd && row >= bd && col < w1 - bd && row < height - bd)
         {
           const float *d = in + i;
-          val =
+          if(small)
+          {
+            val =
+              kern[ 5+2] * (d[-w2-1] + d[-w2+1] + d[-w1-2] + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+              kern[   2] * (d[-w2  ] + d[   -2] + d[    2] + d[ w2  ]) +
+              kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
+              kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
+              kern[   0] * (d[0]);
+          }
+          else
+          {
+            val =
               kern[10+4] * (d[-w4-2] + d[-w4+2] + d[-w2-4] + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
               kern[5 +4] * (d[-w4-1] + d[-w4+1] + d[-w1-4] + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
               kern[4]    * (d[-w4  ] + d[   -4] + d[    4] + d[ w4  ]) +
@@ -498,15 +528,16 @@ static inline void _blur_div(const float *const in,
               kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
               kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
               kern[   0] * (d[0]);
+            }
         }
         else
         {
-          for(int ir = -4; ir <= 4; ir++)
+          for(int ir = -bd; ir <= bd; ir++)
           {
             const int irow = row+ir;
             if(irow >= 0 && irow < height)
             {
-              for(int ic = -4; ic <= 4; ic++)
+              for(int ic = -bd; ic <= bd; ic++)
               {
                 const int icol = col+ic;
                 if(icol >=0 && icol < w1)
