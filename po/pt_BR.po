@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-16 11:33-0300\n"
-"PO-Revision-Date: 2025-10-16 11:33-0300\n"
+"POT-Creation-Date: 2025-10-18 08:36-0300\n"
+"PO-Revision-Date: 2025-10-18 08:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -7894,7 +7894,7 @@ msgstr "rejeitar"
 msgid "style with name '%s' already exists"
 msgstr "estilo com nome '%s' já existente"
 
-#: ../src/common/styles.c:277 ../src/common/styles.c:1711
+#: ../src/common/styles.c:277 ../src/common/styles.c:1718
 #: ../src/libs/styles.c:53
 msgid "styles"
 msgstr "estilos"
@@ -7928,13 +7928,17 @@ msgstr "falha o sobrescrever arquivo de estilo para %s"
 msgid "style file for %s exists"
 msgstr "arquivo de estilo para  %s existente"
 
-#: ../src/common/styles.c:1601
+#: ../src/common/styles.c:1475 ../src/common/styles.c:1799
+msgid "imported-style"
+msgstr "estilo-importado"
+
+#: ../src/common/styles.c:1608
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado com sucesso"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1646
+#: ../src/common/styles.c:1653
 #, c-format
 msgid "could not read file `%s'"
 msgstr "não foi possível abrir o arquivo de entrada `%s'"
