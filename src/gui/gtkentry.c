@@ -34,7 +34,7 @@ typedef enum
 
 
 static dt_gtkentry_completion_spec _default_path_compl_list[]
-  = { { "ROLL.NAME", N_("$(ROLL.NAME) - roll of the input image") },
+  = { { "ROLL.NAME[1]", N_("$(ROLL.NAME[n]) - roll of the input image, n: levels used") },
       { "FILE.FOLDER", N_("$(FILE.FOLDER) - folder containing the input image") },
       { "FILE.NAME", N_("$(FILE.NAME) - basename of the input image") },
       { "FILE.EXTENSION", N_("$(FILE.EXTENSION) - extension of the input image") },
