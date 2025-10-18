@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/database.h"
 #include "common/debug.h"
@@ -53,12 +54,20 @@ typedef enum dt_control_crawler_cols_t
   DT_CONTROL_CRAWLER_NUM_COLS
 } dt_control_crawler_cols_t;
 
+typedef enum xmp_condition
+{
+  DT_XMP_CONDITION_MISSING = 0,
+  DT_XMP_CONDITION_CHANGED,
+  DT_XMP_CONDITION_NEW
+} xmp_condition;
+
 typedef struct dt_control_crawler_result_t
 {
-  dt_imgid_t id;
+  dt_imgid_t id, version, count;
   time_t timestamp_xmp;
   time_t timestamp_db;
   char *image_path, *xmp_path;
+  xmp_condition condition;
 } dt_control_crawler_result_t;
 
 static void _free_crawler_result(dt_control_crawler_result_t *entry)
@@ -110,6 +119,16 @@ static void _set_modification_time(char *filename,
 #define FAST_UPDATE 0.2
 #define SLOW_UPDATE 1.0
 
+GList *_get_list_dir(void);
+GList *_get_list_xmp(void);
+
+typedef struct _dir_
+{
+  dt_filmid_t id;
+  char *dir_path;
+} _dir_;
+
+
 GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
@@ -127,22 +146,6 @@ GList *dt_control_crawler_run(void)
     sqlite3_finalize(stmt);
   }
 
-  // clang-format off
-  sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "SELECT i.id, write_timestamp, version,"
-                     "       folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
-                     " FROM main.images i, main.film_rolls f"
-                     " ON i.film_id = f.id"
-                     " ORDER BY f.id, filename",
-                     -1, &stmt, NULL);
-  sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
-                     &inner_stmt, NULL);
-  // clang-format on
-
-  // let's wrap this into a transaction, it might make it a little faster.
-  dt_database_start_transaction(darktable.db);
-
   int image_count = 0;
   const double start_time = dt_get_wtime();
   // set the "previous update" time to 10ms after a notional previous
@@ -150,151 +153,312 @@ GList *dt_control_crawler_run(void)
   // appear when done with zero delay) while minimizing the delay
   double last_time = start_time - (FAST_UPDATE-0.01);
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  typedef struct _xmp0_
   {
-    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
-    const time_t timestamp = sqlite3_column_int64(stmt, 1);
-    const int version = sqlite3_column_int(stmt, 2);
-    const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
-    int flags = sqlite3_column_int(stmt, 4);
-    ++image_count;
+    dt_imgid_t id;
+    char *image_path;
+  } _xmp0_;
 
-    // update the progress message - five times per second for first four seconds, then once per second
-    const double curr_time = dt_get_wtime();
-    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
+  GList *_xmp_list = _get_list_xmp(); // get xmp files list
+  GList *_not_edited_list = NULL; // list for images w/o xmp file vers.0
+
+  GList *_dir_list = _get_list_dir();
+
+  if(_dir_list)
+  {
+    for(GList *_dir_iter = _dir_list; _dir_iter; _dir_iter = g_list_next(_dir_iter))
     {
-      const double fraction = image_count / (double)total_images;
-      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
-                                                   fraction,
-                                                   curr_time - start_time);
-      last_time = curr_time;
-    }
+      // clang-format off
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                 "SELECT i.id, write_timestamp, version,"
+                                 " folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
+                                 " FROM main.images i, main.film_rolls f"
+                                 " ON i.film_id = f.id"
+                                 " WHERE f.id = ?1"
+                                 " ORDER BY f.id, filename",
+                                 -1, &stmt, 0);
+      sqlite3_prepare_v2(dt_database_get(darktable.db),
+                         "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
+                         &inner_stmt, NULL);
+      // clang-format on
 
-    // if the image is missing we ignore it.
-    if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
-    {
-      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing", image_path, id);
-      continue;
-    }
+      _dir_ *dir_path = _dir_iter->data;
+      sqlite3_bind_int(stmt, 1, dir_path->id);
 
-    // no need to look for xmp files if none get written anyway.
-    if(look_for_xmp)
-    {
-      // construct the xmp filename for this image
-      gchar xmp_path[PATH_MAX] = { 0 };
-      g_strlcpy(xmp_path, image_path, sizeof(xmp_path));
-      dt_image_path_append_version_no_db(version, xmp_path, sizeof(xmp_path));
-      size_t len = strlen(xmp_path);
-      if(len + 4 >= PATH_MAX) continue;
-      xmp_path[len++] = '.';
-      xmp_path[len++] = 'x';
-      xmp_path[len++] = 'm';
-      xmp_path[len++] = 'p';
-      xmp_path[len] = '\0';
+      // let's wrap this into a transaction, it might make it a little faster.
+      dt_database_start_transaction(darktable.db);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+        const time_t timestamp = sqlite3_column_int64(stmt, 1);
+        const int version = sqlite3_column_int(stmt, 2);
+        const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
+        int flags = sqlite3_column_int(stmt, 4);
+        ++image_count;
 
-      // on Windows the encoding might not be UTF8
-      gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
-      int stat_res = -1;
+        // update the progress message - five times per second for first four seconds, then once per second
+        const double curr_time = dt_get_wtime();
+        if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
+        {
+          const double fraction = image_count / (double)total_images;
+          darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                                       fraction,
+                                                       curr_time - start_time);
+          last_time = curr_time;
+        }
+
+        // if the image is missing we suggest removing it.
+        if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
+        {
+          dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
+          item->id = id;
+          item->timestamp_xmp = 0;
+          item->timestamp_db = timestamp;
+          item->image_path = g_strdup(image_path);
+          item->xmp_path = g_strdup("");
+          item->condition = DT_XMP_CONDITION_MISSING;
+          item->version = version;
+          result = g_list_prepend(result, item);
+
+          dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing", image_path, id);
+          continue;
+        }
+
+        // no need to look for xmp files if none get written anyway.
+        if(look_for_xmp)
+        {
+          // construct the xmp filename for this image
+          gchar xmp_path[PATH_MAX] = { 0 };
+          g_strlcpy(xmp_path, image_path, sizeof(xmp_path));
+          dt_image_path_append_version_no_db(version, xmp_path, sizeof(xmp_path));
+          size_t len = strlen(xmp_path);
+          if(len + 4 >= PATH_MAX) continue;
+          xmp_path[len++] = '.';
+          xmp_path[len++] = 'x';
+          xmp_path[len++] = 'm';
+          xmp_path[len++] = 'p';
+          xmp_path[len] = '\0';
+
+          // elements existing in the db are removed from the list.
+          // only new elements will remain in the list.
+          for(GList *list_rec = _xmp_list; list_rec; list_rec = g_list_next(list_rec))
+          {
+            char *_xmp_file = list_rec->data;
+            if(strcmp(_xmp_file, xmp_path) == 0 ? TRUE : FALSE)
+            {
+              _xmp_list = g_list_delete_link(_xmp_list, list_rec);
+              break;
+            }
+          }
+
+          // on Windows the encoding might not be UTF8
+          gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
+          int stat_res = -1;
 #ifdef _WIN32
-      // UTF8 paths fail in this context, but converting to UTF16 works
-      struct _stati64 statbuf;
-      if(xmp_path_locale) // in Windows dt_util_normalize_path returns
-                          // NULL if file does not exist
-      {
-        wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
-        stat_res = _wstati64(wfilename, &statbuf);
-        g_free(wfilename);
-      }
- #else
-      struct stat statbuf;
-      stat_res = stat(xmp_path_locale, &statbuf);
+          // UTF8 paths fail in this context, but converting to UTF16 works
+          struct _stati64 statbuf;
+          if(xmp_path_locale) // in Windows dt_util_normalize_path returns
+            // NULL if file does not exist
+          {
+            wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
+            stat_res = _wstati64(wfilename, &statbuf);
+            g_free(wfilename);
+          }
+#else
+          struct stat statbuf;
+          stat_res = stat(xmp_path_locale, &statbuf);
 #endif
-      g_free(xmp_path_locale);
-      if(stat_res) continue; // TODO: shall we report these?
+          g_free(xmp_path_locale);
+          if(stat_res)
+          {
+            if(version)
+            {
+              dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
+              item->id = id;
+              item->timestamp_xmp = 0;
+              item->timestamp_db = timestamp;
+              item->image_path = g_strdup(image_path);
+              item->xmp_path = g_strdup("");
+              item->condition = DT_XMP_CONDITION_MISSING;
+              item->version = version;
+              result = g_list_prepend(result, item);
 
-      // step 1: check if the xmp is newer than our db entry
-      if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
-      {
-        dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
-        item->id = id;
-        item->timestamp_xmp = statbuf.st_mtime;
-        item->timestamp_db = timestamp;
-        item->image_path = g_strdup(image_path);
-        item->xmp_path = g_strdup(xmp_path);
+              dt_print(DT_DEBUG_CONTROL,
+                       "[crawler] duplicate of `%s' (id: %d) removed from storage", image_path, id);
+            }
+            else
+            {
+              _xmp0_ *_item = malloc(sizeof(_xmp0_));
+              _item->id = id;
+              _item->image_path = g_strdup(image_path);
+              _not_edited_list = g_list_append(_not_edited_list, _item); // put image in "black" list
+            }
+            continue;
+          }
 
-        result = g_list_prepend(result, item);
-        dt_print(DT_DEBUG_CONTROL,
-                 "[crawler] `%s' (id: %d) is a newer XMP file", xmp_path, id);
+          // maybe it's duplicate of image from "black" list
+          for(GList *list_rec = _not_edited_list; list_rec; list_rec = g_list_next(list_rec))
+          {
+            _xmp0_ *_item = list_rec->data;
+            if(strcmp(_item->image_path, image_path) == 0 ? TRUE : FALSE)
+            {
+              _not_edited_list = g_list_delete_link(_not_edited_list, list_rec); // remove image from "black" list
+              // and mark [version=0] for delete from db
+              dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
+              item->id = _item->id;
+              item->timestamp_xmp = 0;
+              item->timestamp_db = timestamp;
+              item->image_path = g_strdup(_item->image_path);
+              item->xmp_path = g_strdup("");
+              item->condition = DT_XMP_CONDITION_MISSING;
+              item->version = 0;
+              result = g_list_prepend(result, item);
+
+              dt_print(DT_DEBUG_CONTROL,
+                       "[crawler] duplicate of `%s' (id: %d) removed from storage", image_path, version);
+              break;
+            }
+          }
+
+          // step 1: check if the xmp is newer than our db entry
+          if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
+          {
+            dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
+            item->id = id;
+            item->timestamp_xmp = statbuf.st_mtime;
+            item->timestamp_db = timestamp;
+            item->image_path = g_strdup(image_path);
+            item->xmp_path = g_strdup(xmp_path);
+            item->condition = DT_XMP_CONDITION_CHANGED;
+            item->version = version;
+            result = g_list_prepend(result, item);
+            dt_print(DT_DEBUG_CONTROL,
+                     "[crawler] `%s' (id: %d) is a newer XMP file", xmp_path, id);
+          }
+          // older timestamps are the case for all images after the db
+          // upgrade. better not report these
+        }
+
+        // step 2: check if the image has associated files (.txt, .wav)
+        size_t len = strlen(image_path);
+        const char *c = image_path + len;
+        while((c > image_path) && (*c != '.')) c--;
+        len = c - image_path + 1;
+
+        char *extra_path = calloc(len + 3 + 1, sizeof(char));
+        if(extra_path)
+        {
+          g_strlcpy(extra_path, image_path, len + 1);
+
+          extra_path[len]     = 't';
+          extra_path[len + 1] = 'x';
+          extra_path[len + 2] = 't';
+          gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+          if(!has_txt)
+          {
+            extra_path[len]     = 'T';
+            extra_path[len + 1] = 'X';
+            extra_path[len + 2] = 'T';
+            has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+          }
+
+          extra_path[len]     = 'w';
+          extra_path[len + 1] = 'a';
+          extra_path[len + 2] = 'v';
+          gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+          if(!has_wav)
+          {
+            extra_path[len]     = 'W';
+            extra_path[len + 1] = 'A';
+            extra_path[len + 2] = 'V';
+            has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+          }
+
+          // TODO: decide if we want to remove the flag for images that lost
+          // their extra file. currently we do (the else cases)
+          int new_flags = flags;
+          if(has_txt)
+            new_flags |= DT_IMAGE_HAS_TXT;
+          else
+            new_flags &= ~DT_IMAGE_HAS_TXT;
+          if(has_wav)
+            new_flags |= DT_IMAGE_HAS_WAV;
+          else
+            new_flags &= ~DT_IMAGE_HAS_WAV;
+          if(flags != new_flags)
+          {
+            sqlite3_bind_int(inner_stmt, 1, new_flags);
+            sqlite3_bind_int(inner_stmt, 2, id);
+            sqlite3_step(inner_stmt);
+            sqlite3_reset(inner_stmt);
+            sqlite3_clear_bindings(inner_stmt);
+          }
+
+          free(extra_path);
+        }
       }
-      // older timestamps are the case for all images after the db
-      // upgrade. better not report these
-    }
+      dt_database_release_transaction(darktable.db);
 
-    // step 2: check if the image has associated files (.txt, .wav)
-    size_t len = strlen(image_path);
-    const char *c = image_path + len;
-    while((c > image_path) && (*c != '.')) c--;
-    len = c - image_path + 1;
+      sqlite3_finalize(stmt);
+      sqlite3_finalize(inner_stmt);
 
-    char *extra_path = calloc(len + 3 + 1, sizeof(char));
-    if(extra_path)
-    {
-      g_strlcpy(extra_path, image_path, len + 1);
-
-      extra_path[len] = 't';
-      extra_path[len + 1] = 'x';
-      extra_path[len + 2] = 't';
-      gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-      if(!has_txt)
-      {
-        extra_path[len] = 'T';
-        extra_path[len + 1] = 'X';
-        extra_path[len + 2] = 'T';
-        has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-      }
-
-      extra_path[len] = 'w';
-      extra_path[len + 1] = 'a';
-      extra_path[len + 2] = 'v';
-      gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-      if(!has_wav)
-      {
-        extra_path[len] = 'W';
-        extra_path[len + 1] = 'A';
-        extra_path[len + 2] = 'V';
-        has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-      }
-
-      // TODO: decide if we want to remove the flag for images that lost
-      // their extra file. currently we do (the else cases)
-      int new_flags = flags;
-      if(has_txt)
-        new_flags |= DT_IMAGE_HAS_TXT;
-      else
-        new_flags &= ~DT_IMAGE_HAS_TXT;
-      if(has_wav)
-        new_flags |= DT_IMAGE_HAS_WAV;
-      else
-        new_flags &= ~DT_IMAGE_HAS_WAV;
-      if(flags != new_flags)
-      {
-        sqlite3_bind_int(inner_stmt, 1, new_flags);
-        sqlite3_bind_int(inner_stmt, 2, id);
-        sqlite3_step(inner_stmt);
-        sqlite3_reset(inner_stmt);
-        sqlite3_clear_bindings(inner_stmt);
-      }
-
-      free(extra_path);
     }
   }
 
-  dt_database_release_transaction(darktable.db);
+  for(GList *list_rec = _xmp_list; list_rec; list_rec = g_list_next(list_rec))
+  {
+    char *xmp_item = (char *)list_rec->data;
+    gboolean img_exists = FALSE;
 
-  sqlite3_finalize(stmt);
-  sqlite3_finalize(inner_stmt);
+    // check original image
+    size_t len = strlen(xmp_item);
+    const char *c = xmp_item + len;
+    while((c > xmp_item) && (*c != '.')) c--;
+    len = c - xmp_item;
+    char *img_path = calloc(len, sizeof(char));
+    if(img_path)
+    {
+      g_strlcpy(img_path, xmp_item, len + 1);
+      img_exists = g_file_test((const gchar *)img_path, G_FILE_TEST_EXISTS);
+    }
+
+    if(!img_exists) // maybe xmp is a duplicate
+    {
+      c = img_path + len;
+      while((c > img_path) && (*c != '.')) c--;
+      size_t len_c = strlen(c);
+
+      len = c - img_path;
+      while((c > img_path) && (*c != '_')) c--;
+      size_t vers_len = c - img_path;
+      char *img_vers_path = calloc(vers_len + len_c, sizeof(char));
+      g_strlcpy(img_vers_path, img_path, vers_len + 1);
+      while(len_c)
+      {
+        img_vers_path[vers_len++] =  img_path[len++];
+        len_c--;
+      }
+      img_path = g_strdup(img_vers_path);
+      img_exists = g_file_test(img_path, G_FILE_TEST_EXISTS);
+    }
+
+    if(img_exists)
+    {
+      dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
+      item->id = 0;
+      item->timestamp_xmp = 0;
+      item->timestamp_db = 0;
+      item->image_path = g_strdup(img_path);
+      item->xmp_path = g_strdup(xmp_item);
+      item->condition = DT_XMP_CONDITION_NEW;
+      item->version = 0;
+      result = g_list_prepend(result, item);
+
+      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' found on storage but not in image library", xmp_item);
+    }
+  }
 
   return g_list_reverse(result); // list was built in reverse order, so un-reverse it
 }
@@ -309,7 +473,15 @@ typedef struct dt_control_crawler_gui_t
   GtkWidget *log;
   GtkWidget *spinner;
   GList *rows_to_remove;
+  GtkTreeView *missing_tree;
+  GtkTreeModel *missing_model;
+  GList *missing_rows_to_remove;
+  GtkTreeView *new_dups_tree;
+  GtkTreeModel *new_dups_model;
+  GList *new_dups_rows_to_remove;
+  GtkNotebook *nb;
 } dt_control_crawler_gui_t;
+
 
 // close the window and clean up
 static void dt_control_crawler_response_callback(GtkWidget *dialog,
@@ -317,17 +489,29 @@ static void dt_control_crawler_response_callback(GtkWidget *dialog,
                                                  gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  int _number = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gui->missing_model), NULL);
+  _number = _number + gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gui->model), NULL);
+  _number = _number + gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gui->new_dups_model), NULL);
+
+  if(_number == 0) // db is synchronized
+  {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    time_t __time = time.tv_sec;
+    dt_conf_set_int64("db_synchronized", __time);
+  }
+
   g_object_unref(G_OBJECT(gui->model));
+  g_object_unref(G_OBJECT(gui->missing_model));
+  g_object_unref(G_OBJECT(gui->new_dups_model));
   gtk_widget_destroy(dialog);
   free(gui);
 }
 
 
-static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
+static void _delete_selected_rows(GList *rr_list,
+                                  GtkTreeModel *model)
 {
-  GList *rr_list = gui->rows_to_remove;
-  GtkTreeModel *model = gui->model;
-
   // Remove TreeView rows from rr_list. It needs to be populated before
   for(GList *node = rr_list; node != NULL; node = g_list_next(node))
   {
@@ -351,7 +535,18 @@ static void _select_all_callback(GtkButton *button,
                                  gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GtkTreeSelection *selection = NULL;
+  switch (gtk_notebook_get_current_page(gui->nb))
+  {
+    case 0:
+      selection = gtk_tree_view_get_selection(gui->missing_tree);
+      break;
+    case 1:
+     selection = gtk_tree_view_get_selection(gui->tree);
+      break;
+    case 2:
+      selection = gtk_tree_view_get_selection(gui->new_dups_tree);
+  }
   gtk_tree_selection_select_all(selection);
 }
 
@@ -359,7 +554,18 @@ static void _select_all_callback(GtkButton *button,
 static void _select_none_callback(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GtkTreeSelection *selection = NULL;
+  switch (gtk_notebook_get_current_page(gui->nb))
+  {
+    case 0:
+      selection = gtk_tree_view_get_selection(gui->missing_tree);
+      break;
+    case 1:
+      selection = gtk_tree_view_get_selection(gui->tree);
+      break;
+    case 2:
+      selection = gtk_tree_view_get_selection(gui->new_dups_tree);
+  }
   gtk_tree_selection_unselect_all(selection);
 }
 
@@ -367,10 +573,26 @@ static void _select_none_callback(GtkButton *button, gpointer user_data)
 static void _select_invert_callback(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *selection = NULL;
   GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(gui->model, &iter);
+  gboolean valid = FALSE;
+  switch (gtk_notebook_get_current_page(gui->nb))
+  {
+    case 0:
+      selection = gtk_tree_view_get_selection(gui->missing_tree);
+      model = gui->missing_model;
+      break;
+    case 1:
+      selection = gtk_tree_view_get_selection(gui->tree);
+      model = gui->model;
+      break;
+    case 2:
+      selection = gtk_tree_view_get_selection(gui->new_dups_tree);
+      model = gui->new_dups_model;
+  }
+
+  valid = gtk_tree_model_get_iter_first(model, &iter);
   while(valid)
   {
     if(gtk_tree_selection_iter_is_selected(selection, &iter))
@@ -378,7 +600,7 @@ static void _select_invert_callback(GtkButton *button, gpointer user_data)
     else
       gtk_tree_selection_select_iter(selection, &iter);
 
-    valid = gtk_tree_model_iter_next(gui->model, &iter);
+    valid = gtk_tree_model_iter_next(model, &iter);
   }
 }
 
@@ -435,6 +657,77 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui,
   g_free(message);
 }
 
+static void _set_remove_flag(char *imgs)
+{
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_REMOVE);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static void _remove_from_db(GtkTreeModel *model,
+                           GtkTreePath *path,
+                           GtkTreeIter *iter,
+                           gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  dt_control_crawler_result_t entry = { NO_IMGID };
+  gtk_tree_model_get(model, iter,
+                     0, &entry.id,
+                     1, &entry.image_path,
+                     2, &entry.version,
+                     -1);
+
+  dt_image_remove(entry.id);
+
+  // update remove status
+  _set_remove_flag(g_strdup_printf("%i", entry.id));
+
+  dt_collection_update(darktable.collection);
+
+  dt_image_synch_all_xmp(entry.image_path);
+
+  dt_film_remove_empty();
+
+  GList *l = NULL;
+  l = g_list_append(l, g_strdup_printf("%i", entry.id));
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(l));
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_queue_redraw_center();
+
+  _append_row_to_remove(model, path, &gui->missing_rows_to_remove);
+  _log_synchronization(gui, _("SUCCESS: %s removed from DB"), entry.image_path);
+
+  _free_crawler_result(&entry);
+}
+
+static void _add_to_db(GtkTreeModel *model,
+                           GtkTreePath *path,
+                           GtkTreeIter *iter,
+                           gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  dt_control_crawler_result_t entry = { NO_IMGID };
+  gtk_tree_model_get(model, iter,
+                     0, &entry.xmp_path,
+                     1, &entry.image_path,
+                     -1);
+
+  while(gtk_events_pending()) gtk_main_iteration(); // TODO hook for dialog refresh: make it better
+
+  dt_load_from_string(entry.image_path, FALSE, NULL);
+
+  _append_row_to_remove(model, path, &gui->new_dups_rows_to_remove);
+  _log_synchronization(gui, _("SUCCESS: %s added to DB"), entry.xmp_path);
+
+  _free_crawler_result(&entry);
+}
 
 static void sync_xmp_to_db(GtkTreeModel *model,
                            GtkTreePath *path,
@@ -445,6 +738,8 @@ static void sync_xmp_to_db(GtkTreeModel *model,
   dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
+
+  while(gtk_events_pending()) gtk_main_iteration(); // TODO hook for dialog refresh: make it better
 
   const gboolean error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
 
@@ -473,6 +768,8 @@ static void sync_db_to_xmp(GtkTreeModel *model,
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
+
+  while(gtk_events_pending()) gtk_main_iteration(); // TODO hook for dialog refresh: make it better
 
   // write the XMP and make sure it get the last modified timestamp of the db
   const gboolean error = dt_image_write_sidecar_file(entry.id);
@@ -504,6 +801,8 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
   _get_crawler_entry_from_model(model, iter, &entry);
 
   gboolean error = FALSE;
+
+  while(gtk_events_pending()) gtk_main_iteration(); // TODO hook for dialog refresh: make it better
 
   if(entry.timestamp_xmp > entry.timestamp_db)
   {
@@ -575,6 +874,8 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   _get_crawler_entry_from_model(model, iter, &entry);
   gboolean error = FALSE;
 
+  while(gtk_events_pending()) gtk_main_iteration(); // TODO hook for dialog refresh: make it better
+
   if(entry.timestamp_xmp < entry.timestamp_db)
   {
     // WRITE XMP in DB
@@ -585,7 +886,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
       _log_synchronization(gui,
                            _("ERROR: %s NOT synced old (XMP) → new (DB)"),
                            entry.image_path);
-    _log_synchronization(gui,
+      _log_synchronization(gui,
                          _("ERROR: cannot write the database."
                            " the destination may be full, offline or read-only."), NULL);
     }
@@ -633,6 +934,28 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   _free_crawler_result(&entry);
 }
 
+static void _add_dups_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->new_dups_tree);
+  gui->new_dups_rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, _add_to_db, gui);
+  _delete_selected_rows(gui->new_dups_rows_to_remove, gui->new_dups_model);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
+}
+
+static void _remove_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->missing_tree);
+  gui->missing_rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, _remove_from_db, gui);
+  _delete_selected_rows(gui->missing_rows_to_remove, gui->missing_model);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
+}
+
 // overwrite database with xmp
 static void _reload_button_clicked(GtkButton *button, gpointer user_data)
 {
@@ -641,7 +964,7 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
   gtk_tree_selection_selected_foreach(selection, sync_xmp_to_db, gui);
-  _delete_selected_rows(gui);
+  _delete_selected_rows(gui->rows_to_remove, gui->model);
   gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
@@ -653,7 +976,7 @@ void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
   gtk_tree_selection_selected_foreach(selection, sync_db_to_xmp, gui);
-  _delete_selected_rows(gui);
+  _delete_selected_rows(gui->rows_to_remove, gui->model);
   gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
@@ -665,7 +988,7 @@ static void _newest_button_clicked(GtkButton *button, gpointer user_data)
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
   gtk_tree_selection_selected_foreach(selection, sync_newest_to_oldest, gui);
-  _delete_selected_rows(gui);
+  _delete_selected_rows(gui->rows_to_remove, gui->model);
   gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
@@ -677,7 +1000,7 @@ static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
   gtk_tree_selection_selected_foreach(selection, sync_oldest_to_newest, gui);
-  _delete_selected_rows(gui);
+  _delete_selected_rows(gui->rows_to_remove, gui->model);
   gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
@@ -698,12 +1021,103 @@ static gchar* str_time_delta(const int time_delta)
   return g_strdup_printf(_("%id %02dh %02dm %02ds"), days, hours, minutes, seconds);
 }
 
+
+GList *_get_list_dir(void)
+{
+  GList *_list = NULL;
+
+  sqlite3_stmt *stmt;
+  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+  time_t _db_synch = dt_conf_get_int64("db_synchronized");
+
+  if(look_for_xmp)
+  {
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT id, folder || '" G_DIR_SEPARATOR_S "'"
+                                " FROM main.film_rolls"
+                                " ORDER BY folder ASC",
+                                -1, &stmt, NULL);
+    // clang-format on
+
+    dt_database_start_transaction(darktable.db);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      _dir_ *_item = malloc(sizeof(_dir_));
+      _item->id = sqlite3_column_int(stmt, 0);
+      _item->dir_path = g_strdup((char *)sqlite3_column_text(stmt, 1));
+
+      time_t dir_time_mark = dt_diratime_action(_item->dir_path, "create");
+
+      if(_item->dir_path && _db_synch <= dir_time_mark)
+      {
+        _list = g_list_append(_list, _item);
+      }
+    }
+    dt_database_release_transaction(darktable.db);
+    sqlite3_finalize(stmt);
+  }
+  return _list;
+}
+
+GList *_get_list_xmp(void)
+{
+  GList *_list = NULL;
+  GList *_dir = NULL;
+  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+
+  _dir = _get_list_dir();
+
+  if(look_for_xmp)
+  {
+    for(GList *_dir_iter = _dir; _dir_iter; _dir_iter = g_list_next(_dir_iter))
+    {
+      _dir_ *_item = _dir_iter->data;
+      GError *error = NULL;
+      GFile *gfolder = g_file_new_for_path(_item->dir_path);
+      GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
+                                                             G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                                                             G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                                             G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+                                                             NULL, &error);
+      if(dir_files)
+      {
+        GFileInfo *info = NULL;
+        while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
+        {
+          const char *filename = g_file_info_get_display_name(info);
+          if(!filename) continue;
+          const GFileType filetype = g_file_info_get_attribute_uint32(info, G_FILE_ATTRIBUTE_STANDARD_TYPE);
+          if(filetype == G_FILE_TYPE_REGULAR)
+          {
+            size_t name_len = strlen(filename);
+            const char *ext = filename + name_len - 4;
+            if ((strcmp(ext, ".xmp") == 0 || strcmp(ext, ".XMP") == 0) && name_len > 4)
+            {
+              _list = g_list_append(_list, g_strconcat(_item->dir_path, filename, NULL));
+            }
+          }
+        }
+      }
+    }
+  }
+  return _list;
+}
+
 // show a popup window with a list of updated images/xmp files and allow the user to tell dt what to do about them
 void dt_control_crawler_show_image_list(GList *images)
 {
   if(!images) return;
 
   dt_control_crawler_gui_t *gui = malloc(sizeof(dt_control_crawler_gui_t));
+
+  GtkNotebook *nb = GTK_NOTEBOOK(gtk_notebook_new());
+  GtkWidget *page1 = dt_ui_notebook_page(nb, N_("missing"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(nb, N_("changed"), NULL);
+  GtkWidget *page3 = dt_ui_notebook_page(nb, N_("new"), NULL);
+  gtk_widget_show(gtk_notebook_get_nth_page(nb, 1));
+  gtk_notebook_set_current_page(nb, 1);
+  gui->nb = GTK_NOTEBOOK(nb);
 
   // a list with all the images
   GtkTreeViewColumn *column;
@@ -717,11 +1131,26 @@ void dt_control_crawler_show_image_list(GList *images)
                                            G_TYPE_INT,
                                            G_TYPE_STRING, // report: newer version
                                            G_TYPE_STRING);// time delta
-
   gui->model = GTK_TREE_MODEL(store);
+
+  GtkWidget *missing_scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(missing_scroll, TRUE);
+  GtkListStore *missing_store = gtk_list_store_new(3,
+                                           G_TYPE_INT,     // id
+                                           G_TYPE_STRING,  // image path
+                                           G_TYPE_INT);    // version
+  gui->missing_model = GTK_TREE_MODEL(missing_store);
+
+  GtkWidget *new_dups_scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(new_dups_scroll, TRUE);
+  GtkListStore *new_dups_store = gtk_list_store_new(2,
+                                           G_TYPE_STRING,  // xmp path
+                                           G_TYPE_STRING); // image path
+  gui->new_dups_model = GTK_TREE_MODEL(new_dups_store);
 
   for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
+    GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
     struct tm tm_stamp;
@@ -733,23 +1162,85 @@ void dt_control_crawler_show_image_list(GList *images)
     const time_t time_delta = llabs(item->timestamp_db - item->timestamp_xmp);
     gchar *timestamp_delta = str_time_delta(time_delta);
 
-    gtk_list_store_insert_with_values(store, NULL, -1,
-       DT_CONTROL_CRAWLER_COL_ID, item->id,
-       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
-       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
-       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
-       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
-       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
-       DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
-       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db)
-                                      ? _("XMP")
-                                      : _("database"),
-       DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
-       -1);
+    if(item->condition == DT_XMP_CONDITION_CHANGED)
+    {
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set
+          (store, &iter,
+           DT_CONTROL_CRAWLER_COL_ID, item->id,
+           DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
+           DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
+           DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
+           DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
+           DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
+           DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
+           DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db)
+           ? _("XMP")
+           : _("database"),
+           DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
+           -1);
+    }
+    else if(item->condition == DT_XMP_CONDITION_MISSING)
+    {
+      gtk_list_store_append(missing_store, &iter);
+      gtk_list_store_set
+          (missing_store, &iter,
+           0, item->id,
+           1, item->image_path,
+           2, item->version,
+           -1);
+    }
+    else if(item->condition == DT_XMP_CONDITION_NEW)
+    {
+      gtk_list_store_append(new_dups_store, &iter);
+      gtk_list_store_set
+          (new_dups_store, &iter,
+           0, item->xmp_path,
+           1, item->image_path,
+           -1);
+    }
     _free_crawler_result(item);
     g_free(timestamp_delta);
   }
   g_list_free_full(images, g_free);
+
+  GtkWidget *new_dups_tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(new_dups_store));
+  GtkTreeSelection *new_dups_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(new_dups_tree));
+  gtk_tree_selection_set_mode(new_dups_selection, GTK_SELECTION_MULTIPLE);
+  gui->new_dups_tree = GTK_TREE_VIEW(new_dups_tree); // FIXME: do we need to free that later ?
+  GtkCellRenderer *new_dups_renderer_text = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes
+    (_("new images"), new_dups_renderer_text, "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(new_dups_tree), column);
+  gtk_tree_view_column_set_expand(column, TRUE);
+  gtk_tree_view_column_set_resizable(column, TRUE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
+  g_object_set(new_dups_renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+
+  gtk_container_add(GTK_CONTAINER(new_dups_scroll), new_dups_tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(new_dups_scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+  GtkWidget *missing_tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(missing_store));
+  GtkTreeSelection *missing_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(missing_tree));
+  gtk_tree_selection_set_mode(missing_selection, GTK_SELECTION_MULTIPLE);
+  gui->missing_tree = GTK_TREE_VIEW(missing_tree); // FIXME: do we need to free that later ?
+  GtkCellRenderer *missing_renderer_text = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes
+    (_("missing images"), missing_renderer_text, "text", 1, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(missing_tree), column);
+  gtk_tree_view_column_set_expand(column, TRUE);
+  gtk_tree_view_column_set_resizable(column, TRUE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
+  g_object_set(missing_renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+
+  column = gtk_tree_view_column_new_with_attributes
+    (_("version (duplicate)"), gtk_cell_renderer_text_new(), "text", 2, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(missing_tree), column);
+
+  gtk_container_add(GTK_CONTAINER(missing_scroll), missing_tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(missing_scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
@@ -796,7 +1287,7 @@ void dt_control_crawler_show_image_list(GList *images)
   // build a dialog window that contains the list of images
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons
-    (_("updated XMP sidecar files found"), GTK_WINDOW(win),
+    (_("manage XMP sidecar files"), GTK_WINDOW(win),
      GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
      GTK_RESPONSE_CLOSE, NULL);
 
@@ -806,29 +1297,70 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
 
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), content_box);
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), 10);
   GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
   GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
   GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
+  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), select_invert, FALSE, FALSE, 0);
   g_signal_connect(select_all, "clicked", G_CALLBACK(_select_all_callback), gui);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_select_none_callback), gui);
   g_signal_connect(select_invert, "clicked", G_CALLBACK(_select_invert_callback), gui);
 
+  gtk_box_pack_start(GTK_BOX(content_box), GTK_WIDGET(nb), TRUE, TRUE, 0);
+
+  gtk_container_add(GTK_CONTAINER(page1), missing_scroll);
+  GtkWidget *missing_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  missing_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(page1), missing_box, FALSE, FALSE, 1);
+  GtkWidget *remove_button = gtk_button_new_with_label(
+        _("remove selected entries from image library"));
+  gtk_box_pack_start(GTK_BOX(missing_box), remove_button, FALSE, FALSE, 0);
+  g_signal_connect(remove_button, "clicked", G_CALLBACK(_remove_button_clicked), gui);
+
+  gtk_container_add(GTK_CONTAINER(page2), scroll);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(page2), box, FALSE, FALSE, 1);
   GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
   GtkWidget *reload_button = gtk_button_new_with_label(_("keep the XMP edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
   GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
+  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), newest_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), oldest_button, FALSE, FALSE, 0);
   g_signal_connect(reload_button, "clicked", G_CALLBACK(_reload_button_clicked), gui);
   g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
   g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
   g_signal_connect(oldest_button, "clicked", G_CALLBACK(_oldest_button_clicked), gui);
 
-  /* Feedback spinner in case synch happens over network and stales */
-  gui->spinner = gtk_spinner_new();
+  gtk_container_add(GTK_CONTAINER(page3), new_dups_scroll);
+  GtkWidget *new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(page3), new_box, FALSE, FALSE, 1);
+  GtkWidget *add_dups_button = gtk_button_new_with_label(
+        _("add selected entries to image library"));
+  gtk_box_pack_start(GTK_BOX(new_box), add_dups_button, FALSE, FALSE, 0);
+  g_signal_connect(add_dups_button, "clicked", G_CALLBACK(_add_dups_button_clicked), gui);
 
   /* Log report */
   gui->log = gtk_tree_view_new();
+  scroll = dt_gui_scroll_wrap(gui->log);
+  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+  /* Feedback spinner in case synch happens over network and stales */
+  gui->spinner = gtk_spinner_new();
+  gtk_box_pack_start(GTK_BOX(content_box), GTK_WIDGET(gui->spinner), FALSE, FALSE, 0);
 
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(gui->log), -1,
@@ -840,11 +1372,13 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_set_model(GTK_TREE_VIEW(gui->log), model_log);
   g_object_unref(model_log);
 
-  dt_gui_dialog_add(GTK_DIALOG(dialog),
-    dt_gui_hbox(select_all, select_none, select_invert),
-    scroll,
-    dt_gui_hbox(label, reload_button, overwrite_button, newest_button, oldest_button, gui->spinner),
-    dt_gui_scroll_wrap(gui->log));
+  GdkRectangle workarea;
+  GdkDisplay *display = gtk_widget_get_display(dt_ui_main_window(darktable.gui->ui));
+  GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(win));
+  gdk_monitor_get_workarea(mon, &workarea);
+  gtk_window_resize(GTK_WINDOW(dialog),
+                    workarea.width*3/4, workarea.height*3/4); //TODO save and restore
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
   gtk_widget_show_all(dialog);
 
   g_signal_connect(dialog, "response",
