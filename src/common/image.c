@@ -269,7 +269,7 @@ int dt_image_monochrome_flags(const dt_image_t *img)
              | DT_IMAGE_MONOCHROME_BAYER));
 }
 
-const char *dt_image_film_roll_name_levels(const char *path, int levels)
+const char *dt_image_film_roll_name_levels(const char *path, const int levels)
 {
   const char *folder = path + strlen(path);
   int count = 0;
