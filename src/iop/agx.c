@@ -990,9 +990,9 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
               + rgb_offset[2] * luminance_coeffs[2];
   y_new = max_inverse_rgb_offset - y_inverse_rgb_offset + y_new;
 
-  // Compensate the intensity to match the original luminance
+  // Compensate the intensity to match the original luminance; avoid div by 0 or tiny number
   const float luminance_ratio =
-    y_new > y_compensate_negative
+    (y_new > y_compensate_negative && y_new > _epsilon)
     ? y_compensate_negative / y_new
     : 1.f;
 
@@ -1119,7 +1119,7 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   // toe
   tone_mapping_params.target_black =
     powf(p->curve_target_display_black_ratio, 1.f / tone_mapping_params.curve_gamma);
-  tone_mapping_params.toe_power = p->curve_toe_power;
+  tone_mapping_params.toe_power = fmaxf(0.01f, p->curve_toe_power);
 
   const float remaining_y_below_pivot = tone_mapping_params.pivot_y - tone_mapping_params.target_black;
   const float toe_length_y = remaining_y_below_pivot * p->curve_linear_ratio_below_pivot;
@@ -1181,7 +1181,7 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
 
   const float shoulder_dy_above_pivot = tone_mapping_params.slope * dx_linear_above_pivot;
   tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_dy_above_pivot;
-  tone_mapping_params.shoulder_power = p->curve_shoulder_power;
+  tone_mapping_params.shoulder_power = fmaxf(0.01f, p->curve_shoulder_power);
 
   const float shoulder_limit_x = 1.f;
   tone_mapping_params.shoulder_scale = _scale(shoulder_limit_x,
@@ -1581,17 +1581,24 @@ void process(dt_iop_module_t *self,
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
+    dt_aligned_pixel_t sanitised_in = { 0.f };
+    for_each_channel(c)
+    {
+      const float component = pix_in[c];
+      // allow about 22.5 EV above mid-grey, including out-of-gamut pixels, getting rid of NaNs
+      sanitised_in[c] = isnan(component) ? 0.f : CLAMPF(component, -1e6f, 1e6f);
+    }
     float *const restrict pix_out = out + k;
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
     if(base_working_same_profile)
     {
-      copy_pixel(base_rgb, pix_in);
+      copy_pixel(base_rgb, sanitised_in);
     }
     else
     {
-      dt_apply_transposed_color_matrix(pix_in, pipe_to_base_transposed, base_rgb);
+      dt_apply_transposed_color_matrix(sanitised_in, pipe_to_base_transposed, base_rgb);
     }
 
     _compress_into_gamut(base_rgb);
@@ -1607,7 +1614,7 @@ void process(dt_iop_module_t *self,
     dt_apply_transposed_color_matrix(rendering_rgb, rendering_to_pipe_transposed, pix_out);
 
     // Copy over the alpha channel
-    pix_out[3] = pix_in[3];
+    pix_out[3] = sanitised_in[3];
   }
 }
 
@@ -2849,6 +2856,126 @@ void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
+
+#ifdef HAVE_OPENCL
+
+typedef struct dt_iop_agx_global_data_t
+{
+  int kernel_agx;
+} dt_iop_agx_global_data_t;
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 39; // agx.cl, from programs.conf
+  dt_iop_agx_global_data_t *gd = malloc(sizeof(dt_iop_agx_global_data_t));
+  self->data = gd;
+  gd->kernel_agx = dt_opencl_create_kernel(program, "kernel_agx");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_agx_global_data_t *gd = self->data;
+  if (gd)
+  {
+    dt_opencl_free_kernel(gd->kernel_agx);
+    free(self->data);
+    self->data = NULL;
+  }
+}
+
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, (void*)dev_in, (void*)dev_out, roi_in, roi_out))
+  {
+    return DT_OPENCL_PROCESS_CL;
+  }
+
+  const dt_iop_agx_global_data_t *gd = self->global_data;
+  const dt_iop_agx_data_t *d = piece->data;
+  cl_int err = CL_SUCCESS;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  // Get profiles and create matrices
+  const dt_iop_order_iccprofile_info_t *const pipe_work_profile =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const base_profile =
+    _agx_get_base_profile(self->dev, pipe_work_profile, d->primaries_params.base_primaries);
+
+  if(!base_profile)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[agx process_cl] Failed to obtain a valid base profile. Module will not run correctly.");
+    return DT_OPENCL_PROCESS_CL;
+  }
+
+  dt_colormatrix_t pipe_to_base;
+  dt_colormatrix_t base_to_rendering;
+  dt_colormatrix_t rendering_to_pipe;
+  dt_colormatrix_t rendering_to_xyz;
+
+  dt_colormatrix_t pipe_to_base_transposed;
+  dt_colormatrix_t base_to_rendering_transposed;
+  dt_colormatrix_t rendering_to_pipe_transposed;
+  dt_colormatrix_t rendering_to_xyz_transposed;
+
+  _create_matrices(&d->primaries_params,
+                   pipe_work_profile,
+                   base_profile,
+                   rendering_to_xyz_transposed,
+                   pipe_to_base_transposed,
+                   base_to_rendering_transposed,
+                   rendering_to_pipe_transposed);
+
+  dt_colormatrix_transpose(pipe_to_base, pipe_to_base_transposed);
+  dt_colormatrix_transpose(base_to_rendering, base_to_rendering_transposed);
+  dt_colormatrix_transpose(rendering_to_pipe, rendering_to_pipe_transposed);
+  dt_colormatrix_transpose(rendering_to_xyz, rendering_to_xyz_transposed);
+
+  const cl_mem dev_pipe_to_base =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe_to_base), pipe_to_base);
+  const cl_mem dev_base_to_rendering =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(base_to_rendering), base_to_rendering);
+  const cl_mem dev_rendering_to_pipe =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
+  const cl_mem dev_rendering_to_xyz =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_xyz), rendering_to_xyz);
+
+  if(!dev_pipe_to_base || !dev_base_to_rendering || !dev_rendering_to_pipe || !dev_rendering_to_xyz)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto cleanup;
+  }
+
+  const int base_working_same_profile = pipe_work_profile == base_profile;
+
+  err = dt_opencl_enqueue_kernel_2d_args(
+    devid, gd->kernel_agx, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+    CLARG(d->tone_mapping_params),
+    CLARG(dev_pipe_to_base),
+    CLARG(dev_base_to_rendering),
+    CLARG(dev_rendering_to_pipe),
+    CLARG(dev_rendering_to_xyz),
+    CLARG(base_working_same_profile)
+  );
+
+cleanup:
+  dt_opencl_release_mem_object(dev_pipe_to_base);
+  dt_opencl_release_mem_object(dev_base_to_rendering);
+  dt_opencl_release_mem_object(dev_rendering_to_pipe);
+  dt_opencl_release_mem_object(dev_rendering_to_xyz);
+
+  return err;
+}
+#endif // HAVE_OPENCL
 
 
 // clang-format off
