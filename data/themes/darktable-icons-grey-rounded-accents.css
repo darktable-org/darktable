@@ -1,0 +1,75 @@
+/*
+    This file is part of darktable.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+    A variant of darktable-icons-grey which improves module separation
+    and active module visibility by:
+
+    - Making the header background a bit darker
+    - Rounding the top-inner corner of module headers
+    - Adding a pastel green tint to the indicator of active modules
+
+    This was initially implemented as a users.css override here:
+    https://discuss.pixls.us/t/simple-users-css-hack-to-improve-module-separation/53368/1
+*/
+
+@import url("darktable-icons-grey.css");
+
+/* Edit this to change the color of headers. */
+@define-color header_color shade(@plugin_bg_color, 0.7);
+
+/* Edit this to change the color of active module inditicators. */
+@define-color active_module_icon_fg #9FE2BF;
+
+/* Shape and border of module headers. */
+#left #module-header,
+#right #module-header,
+#right #basics-header-box {
+  background-color: @header_color;
+  border-radius: 0px;
+  margin: 0px; 
+  padding: 4px;
+}
+#left #module-header {
+  border-top-right-radius: 10px;
+}
+#right #module-header,
+#right #basics-header-box {
+  border-top-left-radius: 10px;
+}
+
+/* Remove the 1px light gray border between widgets in the quick settings. */
+#basics-box-labels widget {
+  border: 0px;
+}
+
+/* Make active modules stand out a bit more. */
+#right #module-header > button:first-child:checked,
+#right #basics-header-box > button:first-child:checked {
+  color: @active_module_icon_fg;
+}
+#right #module-header > button:first-child:hover,
+#right #basics-header-box > button:first-child:hover {
+  background-color: black;
+}
+
+/* Special handling for "module order". */
+#right > box:last-child #module-header {
+ background-color: @bg_color;
+ border-radius: 0px;
+ margin-right: 0.9em;
+}
