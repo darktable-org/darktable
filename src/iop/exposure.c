@@ -814,25 +814,37 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
 }
 
 
-static void _exposure_proxy_handle_event(GdkEvent *event, const gboolean blackwhite)
+static void _exposure_proxy_handle_event(gpointer controller,
+                                         int n_press,
+                                         double x,
+                                         const gboolean blackwhite)
 {
   dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
   if(self && self->gui_data)
   {
     static gboolean black = FALSE;
-    if(event->type == GDK_BUTTON_PRESS || event->type == GDK_SCROLL)
+    if((n_press > 0 && GTK_IS_GESTURE_SINGLE(controller)) // button press
+       || !n_press) // scroll event
       black = blackwhite;
 
     if(black)
-      event->button.x *= -1;
+      x *= -1;
 
     const dt_iop_exposure_params_t *p = self->params;
     dt_iop_exposure_gui_data_t *g = self->gui_data;
     GtkWidget *widget = black ? g->black :
                         p->mode == EXPOSURE_MODE_DEFLICKER
-                        ? g->deflicker_target_level : g->exposure;
-    gtk_widget_realize(widget);
-    gtk_widget_event(widget, event);
+                      ? g->deflicker_target_level : g->exposure;
+    if(!n_press)
+      darktable.bauhaus->scroll(widget, controller);
+    else
+      if(GTK_IS_GESTURE_SINGLE(controller))
+        if(n_press > 0)
+          darktable.bauhaus->press(controller, n_press, x, 0, widget);
+        else
+          darktable.bauhaus->release(controller, -n_press, x, 0, widget);
+      else
+        darktable.bauhaus->motion(controller, x, 0, widget);
 
     gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
     dt_action_widget_toast(DT_ACTION(self), widget, "%s", text);

@@ -1246,7 +1246,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
     // operator type
     rule->w_operator = dt_bauhaus_combobox_new(NULL);
-    DT_BAUHAUS_WIDGET(rule->w_operator)->show_quad = FALSE;
+    dt_bauhaus_widget_set_quad_visibility(rule->w_operator, FALSE);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("or"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and not"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
@@ -1264,7 +1264,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   {
     rule->w_prop = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_combobox_set_selected_text_align(rule->w_prop, DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE);
-    DT_BAUHAUS_WIDGET(rule->w_prop)->show_quad = FALSE;
+    dt_bauhaus_widget_set_quad_visibility(rule->w_prop, FALSE);
     _rule_populate_prop_combo(rule);
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
     dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
