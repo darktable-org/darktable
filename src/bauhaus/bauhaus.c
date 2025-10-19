@@ -1458,6 +1458,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
                                          const int feedback)
 {
   w->type = DT_BAUHAUS_SLIDER;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(self);
   w->module = DT_ACTION(self);
   dt_bauhaus_slider_data_t *d = &w->slider;
   d->min = d->soft_min = d->hard_min = min;
@@ -1524,6 +1525,7 @@ GtkWidget *dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,
                                            dt_iop_module_t *self)
 {
   w->type = DT_BAUHAUS_COMBOBOX;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(self);
   w->module = DT_ACTION(self);
   dt_bauhaus_combobox_data_t *d = &w->combobox;
   d->entries = g_ptr_array_new_full(4, _free_combobox_entry);

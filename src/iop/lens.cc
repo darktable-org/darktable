@@ -4510,12 +4510,9 @@ void gui_init(dt_iop_module_t *self)
      GTK_BOX(self->widget),
      DT_ACTION(self));
   self->widget = GTK_WIDGET(g->fine_tune.container);
-  // DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so create section
-  // module manually
-  dt_iop_module_section_t sect_mod = {DT_ACTION_TYPE_IOP_SECTION,
-                                      self,
-                                      (gchar *)N_("fine-tune")};
-  dt_iop_module_t *sect = (dt_iop_module_t *)&sect_mod;
+  // DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so declare local first
+  dt_iop_module_t sect_mod = DT_IOP_SECTION_FOR_PARAMS_DECL(self, N_("fine-tune"));
+  dt_iop_module_t *sect = &sect_mod;
 
   g->cor_dist_ft = dt_bauhaus_slider_from_params(sect, "cor_dist_ft");
   dt_bauhaus_slider_set_digits(g->cor_dist_ft, 3);
@@ -4591,7 +4588,7 @@ void gui_init(dt_iop_module_t *self)
       _("additional manually controlled optical vignetting correction"));
 
   self->widget = GTK_WIDGET(g->vignette.container);
-  sect_mod.section = (gchar *)N_("vignette");
+  sect_mod.data = (gpointer)N_("vignette");
 
   g->v_strength = dt_bauhaus_slider_from_params(sect, "v_strength");
   gtk_widget_set_tooltip_text(g->v_strength,
