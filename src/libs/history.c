@@ -696,7 +696,7 @@ static gchar *_lib_history_bauhaus_text(gpointer bhfield,
   for(GSList *w = module->widget_list_bh; w; w = g_slist_next(w))
   {
     GtkWidget *widget = ((dt_action_target_t *)w->data)->target;
-    if(DT_BAUHAUS_WIDGET(widget)->field == bhfield)
+    if(dt_bauhaus_widget_get_field(widget) == bhfield)
     {
       gchar *old_text = dt_bauhaus_slider_get_text(widget, oval);
       gchar *new_text = dt_bauhaus_slider_get_text(widget, pval);
