@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-18 08:36-0300\n"
-"PO-Revision-Date: 2025-10-18 08:36-0300\n"
+"POT-Creation-Date: 2025-10-19 14:48-0300\n"
+"PO-Revision-Date: 2025-10-19 14:48-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4052,7 +4052,7 @@ msgid "lightness"
 msgstr "luminosidade"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2349 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2356 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3494 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -4675,7 +4675,7 @@ msgstr "habilitar reconstrução de realces"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
-#: ../src/common/variables.c:197 ../src/common/variables.c:821
+#: ../src/common/variables.c:197 ../src/common/variables.c:822
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
@@ -5162,7 +5162,7 @@ msgid "line"
 msgstr "linha"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2195 ../src/iop/agx.c:2627 ../src/iop/basecurve.c:2127
+#: ../src/iop/agx.c:2202 ../src/iop/agx.c:2634 ../src/iop/basecurve.c:2127
 #: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "curva"
@@ -7447,95 +7447,95 @@ msgstr "falha ao analisar arquivo GPX"
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
-#: ../src/common/image.c:333
+#: ../src/common/image.c:339
 msgid "orphaned image"
 msgstr "imagem órfã"
 
-#: ../src/common/image.c:657
+#: ../src/common/image.c:663
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
 msgstr[0] "geolocalização desfeita para %d imagem"
 msgstr[1] "geolocalização desfeita para %d imagens"
 
-#: ../src/common/image.c:659
+#: ../src/common/image.c:665
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
 msgstr[0] "geolocalização re-aplicada a %d imagem"
 msgstr[1] "geolocalização re-aplicada a %d imagens"
 
-#: ../src/common/image.c:681
+#: ../src/common/image.c:687
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
 msgstr[0] "definição de data/hora desfeita em %d imagem"
 msgstr[1] "definição de data/hora desfeita em %d imagens"
 
-#: ../src/common/image.c:683
+#: ../src/common/image.c:689
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2363
+#: ../src/common/image.c:2369
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2370
+#: ../src/common/image.c:2376
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2377
+#: ../src/common/image.c:2383
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2422
+#: ../src/common/image.c:2428
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2432
+#: ../src/common/image.c:2438
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2436 ../src/common/image.c:2445
+#: ../src/common/image.c:2442 ../src/common/image.c:2451
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2747
+#: ../src/common/image.c:2753
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2761
+#: ../src/common/image.c:2767
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2840 ../src/control/jobs/control_jobs.c:921
+#: ../src/common/image.c:2846 ../src/control/jobs/control_jobs.c:921
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:3016
+#: ../src/common/image.c:3022
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3214
+#: ../src/common/image.c:3220
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3215
+#: ../src/common/image.c:3221
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7543,7 +7543,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3216
+#: ../src/common/image.c:3222
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7552,7 +7552,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3219
+#: ../src/common/image.c:3225
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -7959,7 +7959,7 @@ msgstr "m"
 msgid "no info"
 msgstr "sem informação"
 
-#: ../src/common/variables.c:197 ../src/common/variables.c:819
+#: ../src/common/variables.c:197 ../src/common/variables.c:820
 #: ../src/develop/imageop_gui.c:211 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
@@ -9467,7 +9467,7 @@ msgstr ""
 "pressione 'm' para alternar visualização de máscara."
 
 #: ../src/develop/blend_gui.c:2674 ../src/develop/blend_gui.c:3552
-#: ../src/iop/agx.c:2295 ../src/iop/agx.c:2303 ../src/iop/basicadj.c:624
+#: ../src/iop/agx.c:2302 ../src/iop/agx.c:2310 ../src/iop/basicadj.c:624
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
 #: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
@@ -11071,7 +11071,6 @@ msgstr "selecionar não modificadas"
 #. populate the substitution list
 #. do category substitutions separately
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:870
-#: ../src/gui/gtkentry.c:37
 msgid "$(ROLL.NAME) - roll of the input image"
 msgstr "$(ROLL.NAME) - rolo da imagem de entrada"
 
@@ -12859,7 +12858,7 @@ msgstr "selecione a pasta do script"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2609 ../src/iop/channelmixerrgb.c:4420
+#: ../src/iop/agx.c:2616 ../src/iop/channelmixerrgb.c:4420
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3005 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
@@ -14044,6 +14043,10 @@ msgstr "não contém páginas"
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
 
+#: ../src/gui/gtkentry.c:37
+msgid "$(ROLL.NAME[n]) - roll of the input image, n: levels used"
+msgstr "$(ROLL.NAME[n]) - rolo da imagem de entrada, n: níveis usados"
+
 #: ../src/gui/gtkentry.c:44
 msgid "$(JOBCODE) - job code for import"
 msgstr "$(JOBCODE) - código da tarefa para importação"
@@ -14791,7 +14794,7 @@ msgstr "nenhuma predefinição"
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1198 ../src/iop/agx.c:2772
+#: ../src/gui/presets.c:1198 ../src/iop/agx.c:2779
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
@@ -15861,24 +15864,24 @@ msgstr "não-linear, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
-#: ../src/iop/agx.c:2025 ../src/iop/agx.c:2219
+#: ../src/iop/agx.c:2032 ../src/iop/agx.c:2226
 msgctxt "section"
 msgid "curve"
 msgstr "curva"
 
-#: ../src/iop/agx.c:2035
+#: ../src/iop/agx.c:2042
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "deslocar o pivô de entrada para preto (-) ou branco (+)"
 
-#: ../src/iop/agx.c:2044
+#: ../src/iop/agx.c:2051
 msgid "darken or brighten the pivot (linear output power)"
 msgstr "escurecer ou clarear o pivô (potência de saída linear)"
 
-#: ../src/iop/agx.c:2050
+#: ../src/iop/agx.c:2057
 msgid "slope of the linear section around the pivot"
 msgstr "inclinação da seção linear ao redor do pivô"
 
-#: ../src/iop/agx.c:2064
+#: ../src/iop/agx.c:2071
 msgid ""
 "contrast in shadows\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15888,7 +15891,7 @@ msgstr ""
 "valores mais altos mantém a inclinação quase constante por mais tempo,\n"
 "com o custo de uma queda mais brusca perto do preto"
 
-#: ../src/iop/agx.c:2070
+#: ../src/iop/agx.c:2077
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
 "target black cannot be reached with the selected contrast and pivot "
@@ -15912,7 +15915,7 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de branco)."
 
-#: ../src/iop/agx.c:2090
+#: ../src/iop/agx.c:2097
 msgid ""
 "contrast in highlights\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15922,7 +15925,7 @@ msgstr ""
 "valores mais altos mantém inclinação quase constante por mais tempo,\n"
 "com o custo de uma queda mais brusca perto do branco"
 
-#: ../src/iop/agx.c:2096
+#: ../src/iop/agx.c:2103
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "target white cannot be reached with the selected contrast and pivot "
@@ -15946,41 +15949,41 @@ msgstr ""
 "diminuindo\n"
 "a exposição relativa de preto)."
 
-#: ../src/iop/agx.c:2112
+#: ../src/iop/agx.c:2119
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "parâmetros básicos da curva"
 
-#: ../src/iop/agx.c:2133
+#: ../src/iop/agx.c:2140
 msgid "decrease or increase contrast and brightness"
 msgstr "aumentar ou diminuir contraste e brilho"
 
-#: ../src/iop/agx.c:2138
+#: ../src/iop/agx.c:2145
 msgid "deepen or lift shadows"
 msgstr "aprofundar ou tirar profundidade de sombras"
 
-#: ../src/iop/agx.c:2142
+#: ../src/iop/agx.c:2149
 msgid "increase or decrease brightness"
 msgstr "aumentar ou diminuir brilho"
 
-#: ../src/iop/agx.c:2149
+#: ../src/iop/agx.c:2156
 msgid "decrease or increase saturation"
 msgstr "aumentar ou diminuir saturação"
 
-#: ../src/iop/agx.c:2156
+#: ../src/iop/agx.c:2163
 msgid "increase to bring hues closer to the original"
 msgstr "aumente para trazer as matizes mais próximas do original"
 
-#: ../src/iop/agx.c:2168
+#: ../src/iop/agx.c:2175
 msgctxt "section"
 msgid "look"
 msgstr "aparência"
 
-#: ../src/iop/agx.c:2191
+#: ../src/iop/agx.c:2198
 msgid "show curve"
 msgstr "mostrar a curva"
 
-#: ../src/iop/agx.c:2195 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:2202 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -15988,16 +15991,16 @@ msgstr "mostrar a curva"
 msgid "graph"
 msgstr "gráfico"
 
-#: ../src/iop/agx.c:2198
+#: ../src/iop/agx.c:2205
 msgid "tone mapping curve"
 msgstr "curva de mapeamento de tons"
 
-#: ../src/iop/agx.c:2213
+#: ../src/iop/agx.c:2220
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "parâmetros avançados da curva"
 
-#: ../src/iop/agx.c:2231
+#: ../src/iop/agx.c:2238
 msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
@@ -16005,11 +16008,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear abaixo do pivô.\n"
 "pode cortar sombras"
 
-#: ../src/iop/agx.c:2240
+#: ../src/iop/agx.c:2247
 msgid "raise for a faded look"
 msgstr "aumente para um visual desbotado"
 
-#: ../src/iop/agx.c:2249
+#: ../src/iop/agx.c:2256
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
@@ -16017,11 +16020,11 @@ msgstr ""
 "comprimento da curva a ser mantido linear aima do o pivô.\n"
 "pode cortar realces"
 
-#: ../src/iop/agx.c:2258
+#: ../src/iop/agx.c:2265
 msgid "max linear output power"
 msgstr "máxima potência de saída linear"
 
-#: ../src/iop/agx.c:2264
+#: ../src/iop/agx.c:2271
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
@@ -16032,7 +16035,7 @@ msgstr ""
 "esteja alto o suficiente), de forma que conteols de pé e ombro\n"
 "permaneçam eficazes."
 
-#: ../src/iop/agx.c:2273
+#: ../src/iop/agx.c:2280
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
 "along the y axis of the curve.\n"
@@ -16046,20 +16049,20 @@ msgstr ""
 "mas sombras e realces sào; você pode ter que compensar com o\n"
 "deslizador de contraste, ou com controles de base / ombro."
 
-#: ../src/iop/agx.c:2288
+#: ../src/iop/agx.c:2295
 msgctxt "section"
 msgid "input exposure range"
 msgstr "extensão da exposição de entrada"
 
-#: ../src/iop/agx.c:2297
+#: ../src/iop/agx.c:2304
 msgid "relative exposure above mid-gray (white point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de branco)"
 
-#: ../src/iop/agx.c:2305
+#: ../src/iop/agx.c:2312
 msgid "relative exposure below mid-gray (black point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de preto)"
 
-#: ../src/iop/agx.c:2313 ../src/iop/filmicrgb.c:4421
+#: ../src/iop/agx.c:2320 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16067,26 +16070,26 @@ msgstr ""
 "simetricamente aumenta ou diminui o alcance dinâmico calculado.\n"
 "útil para dar margem de segurança em luminâncias extremas."
 
-#: ../src/iop/agx.c:2318 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
+#: ../src/iop/agx.c:2325 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
 #: ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
 
-#: ../src/iop/agx.c:2320
+#: ../src/iop/agx.c:2327
 msgid "pick image area to automatically set black and white exposure"
 msgstr ""
 "selecione área da imagem para automaticamente determinar exposição de preto "
 "e de branco"
 
-#: ../src/iop/agx.c:2344
+#: ../src/iop/agx.c:2351
 msgid "blender-like"
 msgstr "como-blender"
 
-#: ../src/iop/agx.c:2354
+#: ../src/iop/agx.c:2361
 msgid "unmodified"
 msgstr "não modificado"
 
-#: ../src/iop/agx.c:2429
+#: ../src/iop/agx.c:2436
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -16100,15 +16103,15 @@ msgstr ""
 "especialmente com luzes com muito brilho e saturadas (p. ex. LEDs).\n"
 "a intenção é principalmente ser uma ferramenta para experimentação."
 
-#: ../src/iop/agx.c:2439
+#: ../src/iop/agx.c:2446
 msgid "reset primaries"
 msgstr "reinicializar primárias"
 
-#: ../src/iop/agx.c:2441
+#: ../src/iop/agx.c:2448
 msgid "reset primaries to a predefined configuration"
 msgstr "reinicializar primárias para a configuração predefinida"
 
-#: ../src/iop/agx.c:2449
+#: ../src/iop/agx.c:2456
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -16116,41 +16119,41 @@ msgstr ""
 "primárias do espaço de cores para usar como base para os ajustes abaixo\n"
 "'perfil de exportação' usa o perfil definido em 'perfil de cor de saída'"
 
-#: ../src/iop/agx.c:2452
+#: ../src/iop/agx.c:2459
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "antes do mapeamento de tons"
 
-#: ../src/iop/agx.c:2473
+#: ../src/iop/agx.c:2480
 msgid "increase to desaturate reds in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os vermelhos em realces"
 
-#: ../src/iop/agx.c:2475
+#: ../src/iop/agx.c:2482
 msgid "shift the red primary towards yellow (+) or magenta (-)"
 msgstr "deslocar vermelho na direção do amarelo (+) ou magenta (-)"
 
-#: ../src/iop/agx.c:2477
+#: ../src/iop/agx.c:2484
 msgid "increase to desaturate greens in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os verdes em realces"
 
-#: ../src/iop/agx.c:2479
+#: ../src/iop/agx.c:2486
 msgid "shift the green primary towards cyan (+) or yellow (-)"
 msgstr "deslocar verde na direção do ciano (+) ou amarelo (-)"
 
-#: ../src/iop/agx.c:2481
+#: ../src/iop/agx.c:2488
 msgid "increase to desaturate blues in highlights faster"
 msgstr "aumente para desaturar mais rapidamente os azuis em realces"
 
-#: ../src/iop/agx.c:2483
+#: ../src/iop/agx.c:2490
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
 msgstr "deslocar o azul na direção do magenta (+) ou ciano (-)"
 
-#: ../src/iop/agx.c:2485
+#: ../src/iop/agx.c:2492
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "depois do mapeamento de tons"
 
-#: ../src/iop/agx.c:2496
+#: ../src/iop/agx.c:2503
 msgid ""
 "completely restore purity, undo all rotations, and hide\n"
 "the controls below. uncheck to restore the previous state."
@@ -16158,11 +16161,11 @@ msgstr ""
 "restaurar completamente pureza, desfazer todas as rotações, e esconder\n"
 "os controles abaixo. desclique para restaurar ao estado anterior."
 
-#: ../src/iop/agx.c:2499
+#: ../src/iop/agx.c:2506
 msgid "set from above"
 msgstr "determinar a partir de acima"
 
-#: ../src/iop/agx.c:2501
+#: ../src/iop/agx.c:2508
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
@@ -16170,80 +16173,80 @@ msgstr ""
 "determinar parâmetros para revertercompletamente as modificações\n"
 "nas primárias, mas permitindo edições subsequentes"
 
-#: ../src/iop/agx.c:2514
+#: ../src/iop/agx.c:2521
 msgid "overall purity boost"
 msgstr "incremento geral de pureza"
 
-#: ../src/iop/agx.c:2520
+#: ../src/iop/agx.c:2527
 msgid "overall unrotation ratio"
 msgstr "razão de des-rotação global"
 
-#: ../src/iop/agx.c:2523
+#: ../src/iop/agx.c:2530
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr "restaurar a pureza do vermelho, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2525
+#: ../src/iop/agx.c:2532
 msgid "reverse the color shift in reds"
 msgstr "reverter o deslocamento de cor nos vermelhos"
 
-#: ../src/iop/agx.c:2527
+#: ../src/iop/agx.c:2534
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr "restaurar a pureza do verde, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2529
+#: ../src/iop/agx.c:2536
 msgid "reverse the color shift in greens"
 msgstr "reverter o deslocamento de cor nos verdes"
 
-#: ../src/iop/agx.c:2531
+#: ../src/iop/agx.c:2538
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr "restaurar a pureza do azul, principalmente em meios-tons e sombras"
 
-#: ../src/iop/agx.c:2533
+#: ../src/iop/agx.c:2540
 msgid "reverse the color shift in blues"
 msgstr "reverter o deslocamento de cor nos azuis"
 
-#: ../src/iop/agx.c:2596 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+#: ../src/iop/agx.c:2603 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "primárias"
 
-#: ../src/iop/agx.c:2596
+#: ../src/iop/agx.c:2603
 msgid "color primaries adjustments"
 msgstr "ajustes de cores primárias"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2619 ../src/iop/agx.c:2642 ../src/iop/temperature.c:2091
+#: ../src/iop/agx.c:2626 ../src/iop/agx.c:2649 ../src/iop/temperature.c:2091
 #: ../src/iop/temperature.c:2104 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2117 ../src/iop/temperature.c:2125
 #: ../src/iop/temperature.c:2144
 msgid "settings"
 msgstr "configurações"
 
-#: ../src/iop/agx.c:2620 ../src/iop/agx.c:2643
+#: ../src/iop/agx.c:2627 ../src/iop/agx.c:2650
 msgid "main look and curve settings"
 msgstr "parâmetros principais do visual e da curva"
 
-#: ../src/iop/agx.c:2628
+#: ../src/iop/agx.c:2635
 msgid "detailed curve settings"
 msgstr "configurações detalhadas da curva"
 
-#: ../src/iop/agx.c:2742
+#: ../src/iop/agx.c:2749
 msgid "unmodified base primaries"
 msgstr "primárias base não modificadas"
 
-#: ../src/iop/agx.c:2751
+#: ../src/iop/agx.c:2758
 msgid "blender-like|base"
 msgstr "como-blender|base"
 
-#: ../src/iop/agx.c:2757
+#: ../src/iop/agx.c:2764
 msgid "blender-like|punchy"
 msgstr "como-blender|reforçado"
 
-#: ../src/iop/agx.c:2788
+#: ../src/iop/agx.c:2795
 msgid "smooth|base"
 msgstr "suave|base"
 
-#: ../src/iop/agx.c:2792
+#: ../src/iop/agx.c:2799
 msgid "smooth|punchy"
 msgstr "suavização|reforçado"
 
@@ -20043,7 +20046,7 @@ msgstr "ajusta a nitidez no centro da imagem"
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
-#: ../src/iop/demosaicing/capture.c:651
+#: ../src/iop/demosaicing/capture.c:682
 msgid ""
 "imprecise radius calculation due to cropping or because you are zoomed in "
 "too much"
