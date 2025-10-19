@@ -185,8 +185,8 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
 void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a modified light bulb */
 void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** paint a gamut check icon */
-void dtgtk_cairo_paint_gamut_check(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a warning triangle */
+void dtgtk_cairo_paint_warning(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a soft proofing icon */
 void dtgtk_cairo_paint_softproof(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a display icon */

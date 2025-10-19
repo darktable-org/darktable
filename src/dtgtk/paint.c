@@ -2386,7 +2386,7 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, const gint x, const gint y, c
   FINISH
 }
 
-void dtgtk_cairo_paint_gamut_check(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+void dtgtk_cairo_paint_warning(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.15, 1, 0, -0.05)
 

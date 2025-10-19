@@ -2705,7 +2705,7 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, "softproof");
 
     // the gamut check button
-    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
+    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_warning, 0, NULL);
     ac = dt_action_define(sa, NULL, N_("gamut check"),
                           dev->profile.gamut_button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);

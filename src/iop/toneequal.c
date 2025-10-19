@@ -2812,7 +2812,7 @@ static gboolean area_draw(GtkWidget *widget,
       // histogram overflows controls in highlights : display warning
       cairo_save(g->cr);
       cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
-      dtgtk_cairo_paint_gamut_check
+      dtgtk_cairo_paint_warning
         (g->cr,
          g->graph_width - 2.5 * g->line_height, 0.5 * g->line_height,
          2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
@@ -2824,7 +2824,7 @@ static gboolean area_draw(GtkWidget *widget,
       // histogram overflows controls in lowlights : display warning
       cairo_save(g->cr);
       cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
-      dtgtk_cairo_paint_gamut_check
+      dtgtk_cairo_paint_warning
         (g->cr,
          0.5 * g->line_height, 0.5 * g->line_height,
          2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
