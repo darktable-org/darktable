@@ -919,7 +919,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
 
   if(DT_IS_BAUHAUS_WIDGET(widget) && s->element == DT_ACTION_ELEMENT_DEFAULT)
   {
-    if(DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_COMBOBOX)
+    if(dt_bauhaus_widget_get_type(widget) == DT_BAUHAUS_COMBOBOX)
     {
       int value = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
       dt_introspection_type_enum_tuple_t *values
@@ -1034,8 +1034,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   int show_element = 0;
   dt_shortcut_t lua_shortcut = { .speed = 1.0 };
 
-  gchar *original_markup =
-    dt_bauhaus_widget_get_tooltip_markup(widget, darktable.control->element);
+  gchar *original_markup = dt_bauhaus_widget_get_tooltip_markup(widget, x, y);
   const gchar *widget_name = gtk_widget_get_name(widget);
 
   if(!strcmp(widget_name, "actions_view") || !strcmp(widget_name, "shortcuts_view"))
@@ -1128,23 +1127,6 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                             add_remove_qap == CPF_DIRECTION_DOWN ? _("ctrl+click to remove from quick access panel\n")  : "",
                                             _("scroll to change default speed"),
                                             _("right-click to exit mapping mode"));
-    }
-    else if(DT_IS_BAUHAUS_WIDGET(widget)
-            && DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_SLIDER
-            && darktable.control->element == 2) // DT_ACTION_ELEMENT_FORCE
-    {
-      float hard_min = dt_bauhaus_slider_get_hard_min(widget);
-      float hard_max = dt_bauhaus_slider_get_hard_max(widget);
-      if(dt_bauhaus_slider_get_soft_min(widget) != hard_min ||
-         dt_bauhaus_slider_get_soft_max(widget) != hard_max)
-      {
-        dt_util_str_cat(&original_markup,
-           _("%sright-click to type a specific value between <b>%s</b> and <b>%s</b>"
-             "\nor hold ctrl+shift while dragging to ignore soft limits."),
-           original_markup ? "\n\n" : "",
-           dt_bauhaus_slider_get_text(widget, hard_min),
-           dt_bauhaus_slider_get_text(widget, hard_max));
-      }
     }
   }
 

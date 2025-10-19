@@ -3595,28 +3595,26 @@ static void _notebook_size_callback(GtkNotebook *notebook,
 // GTK_STATE_FLAG_PRELIGHT does not seem to get set on the label on
 // hover so state-flags-changed cannot update
 // darktable.control->element for shortcut mapping
-static gboolean _notebook_motion_notify_callback(GtkWidget *widget,
-                                                 const GdkEventMotion *event,
-                                                 gpointer user_data)
+static void _notebook_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             double x,
+                                             double y,
+                                             GtkNotebook *notebook)
 {
   GtkAllocation notebook_alloc, label_alloc;
-  gtk_widget_get_allocation(widget, &notebook_alloc);
+  gtk_widget_get_allocation(GTK_WIDGET(notebook), &notebook_alloc);
 
-  GtkNotebook *notebook = GTK_NOTEBOOK(widget);
   const int n = gtk_notebook_get_n_pages(notebook);
   for(int i = 0; i < n; i++)
   {
     gtk_widget_get_allocation(gtk_notebook_get_tab_label
                               (notebook, gtk_notebook_get_nth_page(notebook, i)),
                               &label_alloc);
-    if(event->x + notebook_alloc.x < label_alloc.x + label_alloc.width)
+    if(x + notebook_alloc.x < label_alloc.x + label_alloc.width)
     {
       darktable.control->element = i;
       break;
     }
   }
-
-  return FALSE;
 }
 
 static float _action_process_tabs(const gpointer target,
@@ -3739,7 +3737,7 @@ static gboolean _notebook_button_press_callback(GtkNotebook *notebook,
                                                 const GdkEventButton *event,
                                                 gpointer user_data)
 {
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(event->type == GDK_2BUTTON_PRESS && gtk_get_event_widget((GdkEvent*)event) == GTK_WIDGET(notebook))
     _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
 
   return FALSE;
@@ -3770,8 +3768,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate",
                      G_CALLBACK(_notebook_size_callback), NULL);
-    g_signal_connect(G_OBJECT(notebook), "motion-notify-event",
-                     G_CALLBACK(_notebook_motion_notify_callback), NULL);
+    dt_gui_connect_motion(notebook, _notebook_motion_notify_callback, NULL, NULL, notebook);
     g_signal_connect(G_OBJECT(notebook), "scroll-event",
                      G_CALLBACK(_notebook_scroll_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "button-press-event",
@@ -4396,6 +4393,43 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
+                                         GCallback pressed,
+                                         GCallback released,
+                                         gpointer data)
+{
+  GtkGesture *gesture = gtk_gesture_multi_press_new(widget);
+  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
+  // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
+  //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
+
+  if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
+  if(released) g_signal_connect(gesture, "released", released, data);
+
+  return (GtkGestureSingle *)gesture;
+}
+
+GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
+                                            GCallback motion,
+                                            GCallback enter,
+                                            GCallback leave,
+                                            gpointer data)
+{
+  GtkEventController *controller = gtk_event_controller_motion_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+
+  gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
+
+  if(motion) g_signal_connect(controller, "motion", motion, data);
+  if(enter) g_signal_connect(controller, "enter", enter, data);
+  if(leave) g_signal_connect(controller, "leave", leave, data);
+
+  return controller;
+}
+
+
 static int busy_nest_count = 0;
 static GdkCursor* busy_prev_cursor = NULL;
 
@@ -4498,7 +4532,7 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
     else if(gtk_widget_get_parent(*list))
       dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widget that already has a parent to box (#%d)", file, line, function, i);
     else
-      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
+      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list)); // GTK4 gtk_box_append
   }
 
   return GTK_WIDGET(box);
