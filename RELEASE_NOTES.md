@@ -201,6 +201,10 @@ changes (where available).
 - Fixed out of memory issue which could kill Darktable on small
   systems when processing large images.
 
+- Allow the variable `$(ROLL.NAME)` to have optional levels, `$(ROLL.NAME[n])`,
+  where 1 <= n <= 5, the levels follow the same rules as film roll, the default
+  value `n=1`, this keep the previous behavior of `$(ROLL.NAME)`.
+
 ## Lua
 
 ### API Version
