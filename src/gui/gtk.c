@@ -56,7 +56,7 @@
 #ifdef MAC_INTEGRATION
 #include <gtkosxapplication.h>
 #endif
-#ifdef GDK_WINDOWING_QUARTZ
+#ifdef __APPLE__
 #include "osx/osx.h"
 #endif
 #ifdef X_WIN32

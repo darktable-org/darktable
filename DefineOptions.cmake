@@ -45,7 +45,7 @@ else ()
 endif ()
 
 if(APPLE)
-    option(USE_MAC_INTEGRATION "Enable macOS integration" ON)
+  option(USE_MAC_INTEGRATION "Enable macOS integration" OFF)
 else(APPLE)
     set(USE_MAC_INTEGRATION OFF)
 endif(APPLE)
