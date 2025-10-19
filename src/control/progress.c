@@ -23,9 +23,6 @@
 #ifdef HAVE_UNITY
 #include <unity/unity/unity.h>
 #endif
-#ifdef MAC_INTEGRATION
-#include <gtkosxapplication.h>
-#endif
 
 #ifdef _WIN32
 #include <gdk/gdkwin32.h>
