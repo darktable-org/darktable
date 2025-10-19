@@ -1427,7 +1427,6 @@ typedef union GdkEventOld
 #define gtk_layout_new(...) NULL
 #define gtk_layout_put(...)
 #define gtk_main_do_event(...)
-#define gtk_menu_bar_new(...) NULL
 #define gtk_menu_item_get_label(...) NULL
 #define gtk_menu_item_get_submenu(...) NULL
 #define gtk_menu_item_new_with_label(...) NULL

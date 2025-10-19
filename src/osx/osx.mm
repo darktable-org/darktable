@@ -31,9 +31,9 @@
 #include <string.h>
 #include <string>
 #include <vector>
-/* #ifdef MAC_INTEGRATION */
-/* #include <gtkosxapplication.h> */
-/* #endif */
+#ifdef MAC_INTEGRATION
+#include <gtkosxapplication.h>
+#endif
 #ifdef HAVE_P11KIT
 #define P11_KIT_FUTURE_UNSTABLE_API
 #include <p11-kit/p11-kit.h>
@@ -118,15 +118,15 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
 char* dt_osx_get_bundle_res_path()
 {
   char *result = NULL;
-/* #ifdef MAC_INTEGRATION */
-/*   gchar *bundle_id; */
-/**/
-/*   bundle_id = gtkosx_application_get_bundle_id(); */
-/*   if(bundle_id) */
-/*     result = gtkosx_application_get_resource_path(); */
-/*   g_free(bundle_id); */
-/**/
-/* #endif */
+#ifdef MAC_INTEGRATION
+  gchar *bundle_id;
+
+  bundle_id = gtkosx_application_get_bundle_id();
+  if(bundle_id)
+    result = gtkosx_application_get_resource_path();
+  g_free(bundle_id);
+
+#endif
 
   return result;
 }
