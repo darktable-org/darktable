@@ -225,6 +225,13 @@ changes (where available).
 
 - return an empty table (nil) when a tag contains no images with the tag
 
+- return a nil value instead of throwing a Lua error if the indexed element of
+  the following Lua tables does not exist or if the table is empty:
+
+  - `dt_lua_film_t.#`
+
+  - `dt_style_t.#`
+
 - Ensure translations are displayed in UTF-8 under Windows
 
 
