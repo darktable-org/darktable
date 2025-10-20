@@ -130,6 +130,10 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
     case GTK_RESPONSE_OK:
       g->selops = _gui_hist_get_active_items(g);
       g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
+      if(g->overwrite)
+      {
+        g->is_overwrite_set = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->overwrite));
+      }
       break;
   }
 }
@@ -207,6 +211,13 @@ void tree_on_row_activated(GtkTreeView       *treeview,
     // and finally close the dialog
     g_signal_emit_by_name(dialog, "response", GTK_RESPONSE_OK, NULL);
   }
+}
+
+static void _overwrite_mode_clicked_callback(GtkWidget *widget,
+                                             dt_history_copy_item_t *d)
+{
+  const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->overwrite));
+  dt_conf_set_bool("ui_last/history_overwrite", flag);
 }
 
 int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
@@ -346,6 +357,24 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     dt_control_log(_("can't copy history out of unaltered image"));
     return GTK_RESPONSE_CANCEL;
   }
+
+  /* overwrite/append mode */
+
+  if(!iscopy)
+  {
+    d->overwrite = gtk_check_button_new_with_label(_("overwrite mode"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite),
+                                 dt_conf_get_bool("ui_last/history_overwrite"));
+    gtk_widget_set_tooltip_text(d->overwrite,
+                                _("clear history stack before pasting the copied history.\n"
+                                  "required modules will be added with default values."));
+    g_signal_connect(G_OBJECT(d->overwrite), "clicked",                 \
+                     G_CALLBACK(_overwrite_mode_clicked_callback), d);
+
+    dt_gui_dialog_add(GTK_DIALOG(dialog), d->overwrite);
+  }
+  else
+    d->overwrite = NULL;
 
   g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated",
                    (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
