@@ -221,12 +221,10 @@ changes (where available).
 - Check added to ensure view has changed before processing GUI events
   preventing hang on start.
 
-- return an empty table (nil) for a non-existent tag accessed by index
-
-- return an empty table (nil) when a tag contains no images with the tag
-
 - return a nil value instead of throwing a Lua error if the indexed element of
   the following Lua tables does not exist or if the table is empty:
+
+  - `dt_lua_tag_t.#`
 
   - `dt_lua_film_t.#`
 
