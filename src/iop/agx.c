@@ -2012,22 +2012,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_soft_range(slider, 0.1f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("slope of the linear section around the pivot"));
 
-  // curve_toe_power
-  slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
-  controls->curve_toe_power = slider;
-  dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("contrast in shadows\n"
-                                        "higher values keep the slope nearly constant for longer,\n"
-                                        "at the cost of a more sudden drop near black"));
-  dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
-                                "target black cannot be reached with the selected contrast and pivot position.\n"
-                                "increase contrast, move the pivot lower (reduce the pivot target output or\n"
-                                "curve y gamma), or increase the distance between the pivot and the left edge\n"
-                                "(increase the pivot shift, move the black point farther from the pivot by raising\n"
-                                "the relative black exposure or move the white point closer to the pivot\n"
-                                "by decreasing relative white exposure)."));
-
   // curve_shoulder_power
   slider = dt_bauhaus_slider_from_params(section, "curve_shoulder_power");
   controls->curve_shoulder_power = slider;
@@ -2043,6 +2027,22 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
                                 "increasing relative white exposure or move the black point closer to the pivot\n"
                                 "by lowering relative black exposure)."));
+
+  // curve_toe_power
+  slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
+  controls->curve_toe_power = slider;
+  dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
+  gtk_widget_set_tooltip_text(slider, _("contrast in shadows\n"
+                                        "higher values keep the slope nearly constant for longer,\n"
+                                        "at the cost of a more sudden drop near black"));
+  dt_bauhaus_widget_set_quad_tooltip(slider,
+                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
+                                "target black cannot be reached with the selected contrast and pivot position.\n"
+                                "increase contrast, move the pivot lower (reduce the pivot target output or\n"
+                                "curve y gamma), or increase the distance between the pivot and the left edge\n"
+                                "(increase the pivot shift, move the black point farther from the pivot by raising\n"
+                                "the relative black exposure or move the white point closer to the pivot\n"
+                                "by decreasing relative white exposure)."));
 
   return box;
 }
@@ -2141,24 +2141,6 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   // Reuse the slider variable for all sliders
   GtkWidget *slider = NULL;
 
-  // Toe length
-  slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  gtk_widget_set_tooltip_text(slider,
-                              _("length to keep curve linear below the pivot.\n"
-                                  "may crush shadows"));
-
-  // Toe intersection point
-  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_black_ratio");
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 0.025f);
-  gtk_widget_set_tooltip_text(slider, _("raise for a faded look"));
-
   // Shoulder length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_above_pivot");
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
@@ -2176,6 +2158,24 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider, _("max linear output power"));
+
+  // Toe length
+  slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
+  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_digits(slider, 2);
+  dt_bauhaus_slider_set_factor(slider, 100.f);
+  gtk_widget_set_tooltip_text(slider,
+                              _("length to keep curve linear below the pivot.\n"
+                                  "may crush shadows"));
+
+  // Toe intersection point
+  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_black_ratio");
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_digits(slider, 2);
+  dt_bauhaus_slider_set_factor(slider, 100.f);
+  dt_bauhaus_slider_set_soft_range(slider, 0.f, 0.025f);
+  gtk_widget_set_tooltip_text(slider, _("raise for a faded look"));
 
   // curve_gamma
   g->auto_gamma = dt_bauhaus_toggle_from_params(section, "auto_gamma");
