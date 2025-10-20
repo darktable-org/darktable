@@ -25,5 +25,6 @@ output*png
 Brewfile.lock.json
 CMakeLists.txt.user
 workspace/
+.idea
 cmake-build-debug/
 .idea/
