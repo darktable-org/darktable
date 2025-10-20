@@ -2453,7 +2453,7 @@ static gboolean _popup_draw(GtkWidget *widget,
       const dt_bauhaus_combobox_data_t *d = &w->combobox;
       cairo_save(cr);
       float first_label_width = 0.0;
-      gboolean first_label = *w->label;
+      gboolean first_label = w->label != NULL;
       gboolean show_box_label = TRUE;
       const int ht = bh->line_height;
       const int hovered = (bh->mouse_y - w->top_gap) / ht;
