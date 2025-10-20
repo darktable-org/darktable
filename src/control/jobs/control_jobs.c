@@ -1576,11 +1576,13 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  GList *t = params->data;
+  _images_job_data_t *paste_data = params->data;
+  GList *t = paste_data->imgs;
+
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  const gboolean merge = (mode == 0) ? TRUE : FALSE;
+  const int mode = paste_data->overwrite;
+  const gboolean merge = (mode == DT_HISTORY_COPY_APPEND) ? TRUE : FALSE;
 
   dt_control_job_set_progress_message(job,
                                       ngettext("pasting history to %d image",
@@ -2303,15 +2305,17 @@ static void _add_history_job(GList *imgs,
     // remove the image in darkroom center view from the list of
     // images to be processed, and run it synchronously by itself
     imgs = g_list_remove_link(imgs, link);
-    if(images_job_data && images_job_data->styles)
+
+    if(images_job_data)
       images_job_data->imgs = link;
+
     dt_control_add_job(DT_JOB_QUEUE_SYNCHRONOUS,
                        _control_generic_images_job_create(execute, title, 0,
                                                           images_job_data
                                                           ? (gpointer)images_job_data
                                                           : (gpointer)link,
                                                           PROGRESS_BLOCKING, FALSE));
-    if(images_job_data && images_job_data->styles)
+    if(images_job_data)
       images_job_data->imgs = imgs;
   }
   // if there are any images left in the list after removing the
@@ -2335,7 +2339,18 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+
+  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  if(images_job_data)
+  {
+    images_job_data->imgs = imgs;
+    images_job_data->styles = NULL;
+    images_job_data->duplicate = FALSE;
+    images_job_data->overwrite = FALSE;
+  }
+
+  _add_history_job(imgs, N_("paste history"),
+                   &_control_paste_history_job_run, images_job_data);
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2353,7 +2368,17 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    if(images_job_data)
+    {
+      images_job_data->imgs = imgs;
+      images_job_data->styles = NULL;
+      images_job_data->duplicate = FALSE;
+      images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
+    }
+
+    _add_history_job(imgs, N_("paste history"),
+                     &_control_paste_history_job_run, images_job_data);
   }
   else
     g_list_free(imgs);
