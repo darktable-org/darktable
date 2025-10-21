@@ -158,6 +158,11 @@ changes (where available).
 
 - Allow far smaller crop to be created (up to 99% of the image size).
 
+- Allow the variable `$(ROLL.NAME)` to have optional levels,
+  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
+  rules as film roll, the default value `n=1`, this keep the previous
+  behavior of `$(ROLL.NAME)`.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -201,9 +206,8 @@ changes (where available).
 - Fixed out of memory issue which could kill Darktable on small
   systems when processing large images.
 
-- Allow the variable `$(ROLL.NAME)` to have optional levels, `$(ROLL.NAME[n])`,
-  where 1 <= n <= 5, the levels follow the same rules as film roll, the default
-  value `n=1`, this keep the previous behavior of `$(ROLL.NAME)`.
+- Fixed toast message translation displayed when scrolling over the
+  module's preset buttons.
 
 ## Lua
 
