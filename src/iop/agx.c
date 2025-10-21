@@ -79,6 +79,9 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static const float _epsilon = 1E-6f;
 static const float _default_gamma = 2.2f;
+static const int _red_index = 0;
+static const int _green_index = 1;
+static const int _blue_index = 2;
 
 typedef enum dt_iop_agx_base_primaries_t
 {
@@ -129,20 +132,20 @@ typedef struct dt_iop_agx_params_t
   // custom primaries; rotation limits below: +/- 0.5236 radian => +/- 30 degrees
   dt_iop_agx_base_primaries_t base_primaries; // $DEFAULT: DT_AGX_REC2020 $DESCRIPTION: "base primaries"
   gboolean disable_primaries_adjustments; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "disable adjustments"
-  float red_inset;        // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "red attenuation"
+  float red_inset;        // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "red attenuation"
   float red_rotation;     // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red rotation"
-  float green_inset;      // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "green attenuation"
+  float green_inset;      // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "green attenuation"
   float green_rotation;   // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "green rotation"
-  float blue_inset;       // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "blue attenuation"
+  float blue_inset;       // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "blue attenuation"
   float blue_rotation;    // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue rotation"
 
   float master_outset_ratio;     // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master purity boost"
   float master_unrotation_ratio; // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master rotation reversal"
-  float red_outset;              // $MIN:  0.f  $MAX: 2.f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
+  float red_outset;              // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
   float red_unrotation;          // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red reverse rotation"
-  float green_outset;            // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "green purity boost"
+  float green_outset;            // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "green purity boost"
   float green_unrotation;        // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "green reverse rotation"
-  float blue_outset;             // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "blue purity boost"
+  float blue_outset;             // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "blue purity boost"
   float blue_unrotation;         // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue reverse rotation"
 
   // v5
@@ -1360,6 +1363,27 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   --darktable.gui->reset;
 }
 
+static void _read_exposure_params_callback(GtkToggleButton *btn,
+                                        const GdkEventButton *event,
+                                        dt_iop_module_t *self)
+{
+  dt_iop_agx_gui_data_t *g = self->gui_data;
+  dt_iop_agx_params_t *p = self->params;
+  if (g && p)
+  {
+    // Exposure calculated by the exposure module, including all compensations (EXIF bias, highlight preservation, etc.).
+    const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
+
+    p->range_black_relative_exposure = -8.f + 0.5f * exposure;
+    p->range_white_relative_exposure = 4.f + 0.8 * exposure;
+
+    // Update the GUI sliders to reflect the new values.
+    dt_iop_gui_update(self);
+    // Add a history item for this change.
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
 // Apply logic for pivot x picker
 static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
@@ -2236,6 +2260,15 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
                               _("pick image area to automatically set black and white exposure"));
   dt_gui_box_add(self->widget, g->range_exposure_picker);
 
+  dt_iop_module_t *real_self = self;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(real_self);
+
+  GtkWidget* btn_read_exposure = dt_iop_togglebutton_new(real_self, NULL, N_("read exposure parameters"), NULL,
+                                                         G_CALLBACK(_read_exposure_params_callback), FALSE, 0, 0,
+                                                         dtgtk_cairo_paint_camera, NULL);
+  gtk_widget_set_tooltip_text(btn_read_exposure, _("read exposure from metadata and exposure module"));
+
+  dt_gui_box_add(self->widget, btn_read_exposure);
 }
 
 static void _apply_primaries_from_menu_callback(GtkMenuItem *menuitem, dt_iop_module_t *self)
@@ -2293,6 +2326,96 @@ static void _set_post_curve_primaries_from_pre_callback(GtkWidget *widget, dt_io
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+typedef void (*hsv_updater_t)(dt_aligned_pixel_t hsv_out, float position_on_slider, float hue_deg, gboolean reverse_or_attenuate);
+
+static void _update_hsv_for_hue(dt_aligned_pixel_t hsv_out, const float position_on_slider, const float hue_deg, const gboolean reverse)
+{
+  const float hue_range_deg = 60.0f;
+  float hue_offset_deg = -hue_range_deg + position_on_slider * (2.0f * hue_range_deg);
+  if (reverse) hue_offset_deg = -hue_offset_deg;
+
+  hsv_out[0] = fmodf(hue_deg + hue_offset_deg + 360.0f, 360.0f) / 360.0f;
+  hsv_out[1] = 0.7f;
+  hsv_out[2] = 1.0f;
+}
+
+static void _update_hsv_for_purity(dt_aligned_pixel_t hsv_out, const float position_on_slider, const float hue_deg, const gboolean attenuate)
+{
+  hsv_out[0] = hue_deg / 360.0f;
+  hsv_out[1] = attenuate ? 1.0f - position_on_slider : position_on_slider;
+  hsv_out[2] = 1.0f;
+}
+
+static void _paint_slider_gradient(GtkWidget *slider, const float hue_deg, const hsv_updater_t update_hsv, const gboolean attenuate_or_reverse)
+{
+  const float soft_min = dt_bauhaus_slider_get_soft_min(slider);
+  const float soft_max = dt_bauhaus_slider_get_soft_max(slider);
+  const float hard_min = dt_bauhaus_slider_get_hard_min(slider);
+  const float hard_max = dt_bauhaus_slider_get_hard_max(slider);
+
+  dt_aligned_pixel_t hsv;
+  dt_aligned_pixel_t rgb;
+
+  for (int stop = 0; stop < DT_BAUHAUS_SLIDER_MAX_STOPS; stop++)
+  {
+    const float position_on_slider = (float)stop / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1);
+
+    // In order to have the desired, fixed visual clues, we must do some scaling, because bauhaus would
+    // paint according to the soft limits, so we rescale according to the hard ones.
+    const float value_in_soft_range = soft_min + position_on_slider * (soft_max - soft_min);
+    const float value_in_hard_range = (value_in_soft_range - hard_min) / (hard_max - hard_min);
+
+    update_hsv(hsv, position_on_slider, hue_deg, attenuate_or_reverse);
+
+    dt_HSV_2_RGB(hsv, rgb);
+
+    dt_bauhaus_slider_set_stop(slider, value_in_hard_range, rgb[0], rgb[1], rgb[2]);
+  }
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
+}
+
+static void _paint_hue_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean reverse)
+{
+  // if (hue_deg == 1e5f)
+  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_hue, reverse);
+}
+
+static void _paint_purity_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean attenuate)
+{
+  // if (hue_deg == 1e5f)
+  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_purity, attenuate);
+}
+
+static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
+                                       const char *param_name,
+                                       const char *tooltip,
+                                       const int primary_index)
+{
+  const float target_primary_value = 0.8f;
+  const float other_primaries_value = 0.2;
+  GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_digits(slider, 2);
+  dt_bauhaus_slider_set_factor(slider, 100.f);
+
+  const float r = primary_index == _red_index ? target_primary_value : other_primaries_value;
+  const float g = primary_index == _green_index ? target_primary_value : other_primaries_value;
+  const float b = primary_index == _blue_index ? target_primary_value : other_primaries_value;
+
+  dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);
+  gtk_widget_set_tooltip_text(slider, tooltip);
+  return slider;
+}
+
+static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
+{ GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
+  dt_bauhaus_slider_set_format(slider, "°");
+  dt_bauhaus_slider_set_digits(slider, 1);
+  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
+  gtk_widget_set_tooltip_text(slider, tooltip);
+  return slider;
+}
+
 // GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
@@ -2347,35 +2470,37 @@ static void _create_primaries_page(dt_iop_module_t *main,
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "before tone mapping")));
 
   GtkWidget *slider = NULL;
-  const float desaturation = 0.2f;
-#define SETUP_COLOR_COMBO(color, r, g, b, attenuation_suffix, inset_tooltip, rotation_suffix, rotation_tooltip)   \
-  slider = dt_bauhaus_slider_from_params(self, #color attenuation_suffix);                                        \
-  dt_bauhaus_slider_set_format(slider, "%");                                                                      \
-  dt_bauhaus_slider_set_digits(slider, 2);                                                                        \
-  dt_bauhaus_slider_set_factor(slider, 100.f);                                                                    \
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 0.5f);                                                            \
-  dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
-  gtk_widget_set_tooltip_text(slider, inset_tooltip);                                                             \
-                                                                                                                  \
-  slider = dt_bauhaus_slider_from_params(self, #color rotation_suffix);                                           \
-  dt_bauhaus_slider_set_format(slider, "°");                                                                      \
-  dt_bauhaus_slider_set_digits(slider, 1);                                                                        \
-  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);                                                                \
-  dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
-  gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
-  SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_inset",
-                    _("increase to desaturate reds in highlights faster"),
-                    "_rotation",
-                    _("shift the red primary towards yellow (+) or magenta (-)"));
-  SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_inset",
-                    _("increase to desaturate greens in highlights faster"),
-                    "_rotation",
-                    _("shift the green primary towards cyan (+) or yellow (-)"));
-  SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_inset",
-                    _("increase to desaturate blues in highlights faster"),
-                    "_rotation",
-                    _("shift the blue primary towards magenta (+) or cyan (-)"));
+  const float red_hue = 0.0f;
+  const float green_hue = 120.0f;
+  const float blue_hue = 240.0f;
+
+  slider = _setup_purity_slider(self,
+                                "red_inset",
+                                _("increase to desaturate reds in highlights faster"),
+                                _red_index);
+  _paint_purity_slider_hsv(slider, red_hue, TRUE);
+
+  slider = _setup_hue_slider(self, "red_rotation", _("shift the red primary towards yellow (+) or magenta (-)"));
+  _paint_hue_slider_hsv(slider, red_hue, FALSE);
+
+  slider = _setup_purity_slider(self,
+                                "green_inset",
+                                _("increase to desaturate greens in highlights faster"),
+                                _green_index);
+  _paint_purity_slider_hsv(slider, green_hue, TRUE);
+
+  slider = _setup_hue_slider(self, "green_rotation", _("shift the green primary towards cyan (+) or yellow (-)"));
+  _paint_hue_slider_hsv(slider, green_hue, FALSE);
+
+  slider = _setup_purity_slider(self,
+                                "blue_inset",
+                                _("increase to desaturate blues in highlights faster"),
+                                _blue_index);
+  _paint_purity_slider_hsv(slider, blue_hue, TRUE);
+
+  slider = _setup_hue_slider(self, "blue_rotation", _("shift the blue primary towards magenta (+) or cyan (-)"));
+  _paint_hue_slider_hsv(slider, blue_hue, FALSE);
 
   GtkWidget *reversal_hbox = dt_gui_hbox();
   g->post_curve_primaries_controls_vbox = dt_gui_vbox();
@@ -2400,27 +2525,46 @@ static void _create_primaries_page(dt_iop_module_t *main,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
+  // make sure a double-click sets it to 100%, overriding preset defaults
+  dt_bauhaus_slider_set_default(slider, 1.f);
   gtk_widget_set_tooltip_text(slider, _("overall purity boost"));
 
   slider = dt_bauhaus_slider_from_params(self, "master_unrotation_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
+  // make sure a double-click sets it to 100%, overriding preset defaults
+  dt_bauhaus_slider_set_default(slider, 1.f);
   gtk_widget_set_tooltip_text(slider, _("overall unrotation ratio"));
 
-  SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, "_outset",
-                    _("restore the purity of red, mostly in midtones and shadows"),
-                    "_unrotation",
-                    _("reverse the color shift in reds"));
-  SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, "_outset",
-                    _("restore the purity of green, mostly in midtones and shadows"),
-                    "_unrotation",
-                    _("reverse the color shift in greens"));
-  SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, "_outset",
-                    _("restore the purity of blue, mostly in midtones and shadows"),
-                    "_unrotation",
-                    _("reverse the color shift in blues"));
-#undef SETUP_COLOR_COMBO
+  const gboolean reverse_unrotation_hue = dt_conf_get_bool("plugins/darkroom/agx/reverse_hue_for_unrotation");
+
+  slider = _setup_purity_slider(self,
+                                "red_outset",
+                                _("restore the purity of red, mostly in midtones and shadows"),
+                                _red_index);
+  _paint_purity_slider_hsv(slider, red_hue, FALSE);
+
+  slider = _setup_hue_slider(self, "red_unrotation", _("reverse the color shift in reds"));
+  _paint_hue_slider_hsv(slider, red_hue, reverse_unrotation_hue);
+
+  slider = _setup_purity_slider(self,
+                                "green_outset",
+                                _("restore the purity of green, mostly in midtones and shadows"),
+                                _green_index);
+  _paint_purity_slider_hsv(slider, green_hue, FALSE);
+
+  slider = _setup_hue_slider(self, "green_unrotation", _("reverse the color shift in greens"));
+  _paint_hue_slider_hsv(slider, green_hue, reverse_unrotation_hue);
+
+  slider = _setup_purity_slider(self,
+                                "blue_outset",
+                                _("restore the purity of blue, mostly in midtones and shadows"),
+                                _blue_index);
+  _paint_purity_slider_hsv(slider, blue_hue, FALSE);
+
+  slider = _setup_hue_slider(self, "blue_unrotation", _("reverse the color shift in blues"));
+  _paint_hue_slider_hsv(slider, blue_hue, reverse_unrotation_hue);
 }
 
 static void _notebook_page_changed(GtkNotebook *notebook,
@@ -2491,7 +2635,6 @@ void gui_init(dt_iop_module_t *self)
 
   gui_update(self);
 }
-
 static void _set_shared_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;

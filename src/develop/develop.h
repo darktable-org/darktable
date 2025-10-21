@@ -101,6 +101,7 @@ typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
   float (*get_exposure)(struct dt_iop_module_t *exp);
+  float (*get_effective_exposure)(struct dt_iop_module_t *exp);
   float (*get_black)(struct dt_iop_module_t *exp);
   void (*handle_event)(gpointer, int, gdouble, const gboolean);
 } dt_dev_proxy_exposure_t;
@@ -468,6 +469,8 @@ void dt_dev_configure(dt_dev_viewport_t *port);
 
 /** get exposure level */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
+/** get final effective exposure level including compensations */
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 

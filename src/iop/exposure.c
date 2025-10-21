@@ -87,6 +87,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
+  volatile float effective_exposure; // Caches the final computed exposure
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -627,6 +628,12 @@ void commit_params(dt_iop_module_t *self,
 
   d->deflicker = 0;
 
+  // Cache the final effective exposure value for proxy access.
+  if (self->gui_data)
+  {
+    ((dt_iop_exposure_gui_data_t *)self->gui_data)->effective_exposure = d->params.exposure;
+  }
+
   if(p->mode == EXPOSURE_MODE_DEFLICKER
      && dt_image_is_raw(&self->dev->image_storage)
      && self->dev->image_storage.buf_dsc.channels == 1
@@ -813,6 +820,18 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
   return p->black;
 }
 
+static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
+{
+  dt_iop_exposure_gui_data_t *g = self->gui_data;
+  if (g)
+  {
+    return g->effective_exposure;
+  }
+  // Fallback for headless mode: recalculate. This won't be perfect if deflicker is on,
+  // but it's the best we can do without a GUI struct.
+  const dt_iop_exposure_params_t *p = self->params;
+  return p->exposure - (p->compensate_exposure_bias ? _get_exposure_bias(self) : 0.0f) + (p->compensate_hilite_pres ? _get_highlight_bias(self) : 0.0f);
+}
 
 static void _exposure_proxy_handle_event(gpointer controller,
                                          int n_press,
@@ -1320,6 +1339,7 @@ void gui_init(dt_iop_module_t *self)
   dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
   instance->module = self;
   instance->get_exposure = _exposure_proxy_get_exposure;
+  instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;
   instance->get_black = _exposure_proxy_get_black;
   instance->handle_event = _exposure_proxy_handle_event;
 }

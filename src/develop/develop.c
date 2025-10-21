@@ -2951,6 +2951,12 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
   return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
 }
 
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
+{
+  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
+  return instance && instance->get_effective_exposure && instance->module->enabled ? instance->get_effective_exposure(instance->module) : 0.0f;
+}
+
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
   const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
