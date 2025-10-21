@@ -1157,8 +1157,13 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
   if(!*extreme)
     dt_gui_presets_apply_preset(name, module);
 
-  dt_action_widget_toast(DT_ACTION(module), NULL, _("preset %s\n%s"),
-                         extreme, name ? name : _("no presets"));
+  gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+
+  dt_action_widget_toast(DT_ACTION(module), NULL,
+                         _("preset '%s' %s"),
+                         name ? local_name : _("no presets"),
+                         *extreme ? extreme : "");
+  g_free(local_name);
   g_free(name);
 }
 
