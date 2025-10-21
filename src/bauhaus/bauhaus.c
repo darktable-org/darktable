@@ -1053,33 +1053,6 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
         w->module = ac;
     }
 
-    // if new bauhaus widget added to front of widget_list; move it to the back
-    dt_iop_module_t *m = (dt_iop_module_t *)w->module;
-    if(w->module->type == DT_ACTION_TYPE_IOP_INSTANCE
-       && w->field
-       && m->widget_list
-       && ((dt_action_target_t *)m->widget_list->data)->target == (gpointer)widget)
-    {
-      if(!m->widget_list_bh)
-      {
-        m->widget_list_bh = m->widget_list;
-        if(m->widget_list->next)
-        {
-          GSList *last = g_slist_last(m->widget_list);
-          last->next = m->widget_list;
-          m->widget_list = m->widget_list->next;
-          last->next->next = NULL;
-        }
-      }
-      else
-      {
-        GSList *first = m->widget_list->next;
-        m->widget_list->next = m->widget_list_bh->next;
-        m->widget_list_bh->next = m->widget_list;
-        m->widget_list = first;
-      }
-    }
-
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
   return ac;
