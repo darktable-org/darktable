@@ -3768,8 +3768,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate",
                      G_CALLBACK(_notebook_size_callback), NULL);
-    // ??? temporary fix to avoid a crash, see #19543
-    if(0) dt_gui_connect_motion(notebook, _notebook_motion_notify_callback, NULL, NULL, notebook);
+    dt_gui_connect_motion(notebook, _notebook_motion_notify_callback, NULL, NULL, notebook);
     g_signal_connect(G_OBJECT(notebook), "scroll-event",
                      G_CALLBACK(_notebook_scroll_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "button-press-event",
