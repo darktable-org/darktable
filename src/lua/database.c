@@ -205,7 +205,8 @@ static int database_numindex(lua_State *L)
   int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
+    return 1;
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
@@ -259,7 +260,8 @@ static int collection_numindex(lua_State *L)
   int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
+    return 1;
   }
   dt_imgid_t imgid = dt_collection_get_nth(darktable.collection,index-1);
   if(imgid >0)
