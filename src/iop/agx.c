@@ -181,6 +181,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *black_exposure_picker;
   GtkWidget *white_exposure_picker;
   GtkWidget *security_factor;
+  GtkWidget *range_exposure_picker_group;
+  GtkWidget *btn_read_exposure;
 
   // basic curve controls for 'settings' and 'curve' page (if enabled)
   dt_iop_basic_curve_controls_t basic_curve_controls;
@@ -1363,9 +1365,9 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   --darktable.gui->reset;
 }
 
-static void _read_exposure_params_callback(GtkToggleButton *btn,
-                                        const GdkEventButton *event,
-                                        dt_iop_module_t *self)
+static void _read_exposure_params_callback(GtkWidget *widget,
+                                     GdkEventButton *event,
+                                     dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
   dt_iop_agx_params_t *p = self->params;
@@ -1960,6 +1962,9 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
                                     params.need_concave_shoulder && warnings_enabled
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->basic_curve_controls.curve_toe_power));
+  gtk_widget_queue_draw(GTK_WIDGET(g->basic_curve_controls.curve_shoulder_power));
 }
 
 void gui_changed(dt_iop_module_t *self,
@@ -2223,28 +2228,32 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   return advanced_box;
 }
 
-static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
+static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, dt_iop_module_t *real_self)
 {
   gchar *section_name = NC_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section_name)));
 
-  g->white_exposure_picker =
-      dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "range_white_relative_exposure"));
+  // WHITE EXPOSURE
+  GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_exposure");
+  dt_bauhaus_widget_set_module(white_slider, DT_ACTION(real_self));
+  g->white_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
   dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
                               _("relative exposure above mid-gray (white point)"));
 
-  g->black_exposure_picker =
-      dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "range_black_relative_exposure"));
+  // BLACK EXPOSURE
+  GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_exposure");
+  dt_bauhaus_widget_set_module(black_slider, DT_ACTION(real_self));
+  g->black_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, black_slider);
   dt_bauhaus_slider_set_soft_range(g->black_exposure_picker, -20.f, -1.f);
   dt_bauhaus_slider_set_format(g->black_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
                               _("relative exposure below mid-gray (black point)"));
 
+  // DYNAMIC RANGE SCALING
   g->security_factor = dt_bauhaus_slider_from_params(self, "dynamic_range_scaling");
+  dt_bauhaus_widget_set_module(g->security_factor, DT_ACTION(real_self));
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
   dt_bauhaus_slider_set_digits(g->security_factor, 2);
@@ -2253,22 +2262,23 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
                               _("symmetrically increase or decrease the computed dynamic range.\n"
                                 "useful to give a safety margin to extreme luminances."));
 
-  g->range_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                                                 dt_bauhaus_combobox_new(self));
+  // AUTO TUNE AND READ EXPOSURE GROUP
+  g->range_exposure_picker_group = dt_gui_hbox();
+
+  GtkWidget *auto_tune_combo = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_module(auto_tune_combo, DT_ACTION(real_self));
+  g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, auto_tune_combo);
   dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
                               _("pick image area to automatically set black and white exposure"));
-  dt_gui_box_add(self->widget, g->range_exposure_picker);
+  dt_gui_box_add(g->range_exposure_picker_group, dt_gui_expand(g->range_exposure_picker));
 
-  dt_iop_module_t *real_self = self;
-  DT_IOP_SECTION_FOR_PARAMS_UNWIND(real_self);
+  g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
+  gtk_widget_set_tooltip_text(g->btn_read_exposure, _("read exposure from metadata and exposure module"));
+  g_signal_connect(G_OBJECT(g->btn_read_exposure), "button-press-event", G_CALLBACK(_read_exposure_params_callback), real_self);
+  dt_gui_box_add(g->range_exposure_picker_group, g->btn_read_exposure);
 
-  GtkWidget* btn_read_exposure = dt_iop_togglebutton_new(real_self, NULL, N_("read exposure parameters"), NULL,
-                                                         G_CALLBACK(_read_exposure_params_callback), FALSE, 0, 0,
-                                                         dtgtk_cairo_paint_camera, NULL);
-  gtk_widget_set_tooltip_text(btn_read_exposure, _("read exposure from metadata and exposure module"));
-
-  dt_gui_box_add(self->widget, btn_read_exposure);
+  dt_gui_box_add(self->widget, g->range_exposure_picker_group);
 }
 
 static void _apply_primaries_from_menu_callback(GtkMenuItem *menuitem, dt_iop_module_t *self)
@@ -2574,29 +2584,29 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
   GtkWidget *basics = g->curve_basic_controls_box;
+  GtkWidget *current_parent = gtk_widget_get_parent(basics);
 
   // 'settings' or 'curve' page only
-  if(page_num <= 1)
+  if(page_num <= 1 && current_parent)
   {
-    // prevent the widget from being destroyed when removed from its parent
-    g_object_ref(basics);
+    GtkWidget *target_container = (page_num == 0) ? gtk_widget_get_parent(g->range_exposure_picker_group) : page;
 
-    // remove from the page it was on
-    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(basics)), basics);
-
-    // pack to the now showing notebook page
-    dt_gui_box_add(page, basics);
+    if (current_parent != target_container)
+    {
+      g_object_ref(basics);
+      gtk_container_remove(GTK_CONTAINER(current_parent), basics);
+      dt_gui_box_add(target_container, basics);
+      g_object_unref(basics);
+    }
 
     int position = -1;
     if(page_num == 0)
     {
-      // on settings page, place after "auto tune levels" picker
-      gtk_container_child_get(GTK_CONTAINER(page), g->range_exposure_picker,
-                            "position", &position, NULL);
+      // on settings page, place after "auto tune levels" picker group
+      gtk_container_child_get(GTK_CONTAINER(target_container), g->range_exposure_picker_group,
+                              "position", &position, NULL);
     }
-    gtk_box_reorder_child(GTK_BOX(page), basics, ++position);
-
-    g_object_unref(basics);
+    gtk_box_reorder_child(GTK_BOX(target_container), basics, ++position);
   }
 }
 
@@ -2613,28 +2623,31 @@ void gui_init(dt_iop_module_t *self)
   g->curve_graph_box = _create_curve_graph_box(self, g);
   g->curve_advanced_controls_box = _create_advanced_box(self, g);
 
-  GtkWidget *current_page = dt_ui_notebook_page(g->notebook,
+  GtkWidget *settings_page = dt_ui_notebook_page(g->notebook,
                                                 N_("settings"),
                                                 _("main look and curve settings"));
-  dt_iop_module_t *settings_section = DT_IOP_SECTION_FOR_PARAMS(self, NULL, current_page);
-  _add_exposure_box(settings_section, g);
+  dt_iop_module_t *settings_section = DT_IOP_SECTION_FOR_PARAMS(self, NULL, settings_page);
+  _add_exposure_box(settings_section, g, self);
   dt_gui_box_add(settings_section->widget, g->curve_basic_controls_box);
+  GtkWidget *curve_page_parent = settings_page;
   if(dt_conf_get_bool("plugins/darkroom/agx/enable_curve_tab"))
   {
-    current_page = dt_ui_notebook_page(g->notebook,
-                                       N_("curve"),
-                                       _("detailed curve settings"));
+    curve_page_parent = dt_ui_notebook_page(g->notebook,
+                                            N_("curve"),
+                                            _("detailed curve settings"));
     // reparent on tab switch
     g_signal_connect(g->notebook, "switch-page", G_CALLBACK(_notebook_page_changed), self);
   }
-  dt_gui_box_add(current_page, g->curve_graph_box,
-                               g->curve_advanced_controls_box);
+  dt_gui_box_add(curve_page_parent, g->curve_graph_box,
+                                    g->curve_advanced_controls_box);
 
+  // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
 
   gui_update(self);
 }
+
 static void _set_shared_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;
