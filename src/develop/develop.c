@@ -2953,8 +2953,22 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
 
 float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
 {
-  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
-  return instance && instance->get_effective_exposure && instance->module->enabled ? instance->get_effective_exposure(instance->module) : 0.0f;
+  if (dt_view_get_current() != DT_VIEW_DARKROOM) return 0.0f;
+
+  // The proxy function pointers are only set if an exposure module has been initialized.
+  if (!dev->proxy.exposure.get_effective_exposure) return 0.0f;
+
+  for (GList *l = dev->iop; l; l = g_list_next(l))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)l->data;
+
+    if (module->enabled && dt_iop_module_is(module->so, "exposure"))
+    {
+      return dev->proxy.exposure.get_effective_exposure(module);
+    }
+  }
+
+  return 0.0f;
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
