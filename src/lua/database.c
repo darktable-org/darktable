@@ -230,7 +230,8 @@ static int database_get_image(lua_State *L)
   const int img_id = luaL_checkinteger(L, -1);
   if(img_id < 1)
   {
-    return luaL_error(L, "incorrect image id in database");
+    lua_pushnil(L);
+    return 1;
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];

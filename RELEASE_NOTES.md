@@ -238,6 +238,9 @@ changes (where available).
 
   - `darktable.collection.#`
 
+- Ensure `darktable.database.get_image()` returns a nil, in all conditions,
+  for an image that doesn't exist.
+
 - Ensure translations are displayed in UTF-8 under Windows
 
 
