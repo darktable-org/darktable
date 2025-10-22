@@ -1099,6 +1099,7 @@ void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget,
   w->quad_paint = f;
   w->quad_paint_flags = paint_flags;
   w->quad_paint_data = paint_data;
+  gtk_widget_queue_draw(widget);
 }
 
 void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
@@ -2242,6 +2243,17 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
   }
 
   cairo_fill(cr);
+
+  if(d->min != d->soft_min || d->max != d->soft_max)
+  {
+    set_color(cr, bh->color_fg_insensitive);
+    const double scale = slider_width / (d->max - d->min);
+    cairo_rectangle(cr, 0, htm, scale * MAX(0, d->soft_min - d->min), htM);
+    cairo_fill(cr);
+    const double upper = scale * (MIN(d->soft_max, d->max) - d->min);
+    cairo_rectangle(cr, upper, htm, slider_width - upper,htM);
+    cairo_fill(cr);
+  }
 
   // get the reference of the slider aka the position of the 0 value
   const float origin =
