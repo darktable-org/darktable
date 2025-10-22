@@ -537,7 +537,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   dt_colorspaces_color_profile_type_t type_work = DT_COLORSPACE_NONE;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   for(const GList *prof = darktable.color_profiles->profiles;
       prof;
       prof = g_list_next(prof))
