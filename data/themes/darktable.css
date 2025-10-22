@@ -2345,6 +2345,38 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/* multiple db selection dialog */
+#multiple-db
+{
+    background-color: @grey_20;
+}
+
+#multiple-db label
+{
+    font-size: 120%;
+    padding: .2em;
+    padding-top: 1em;
+}
+
+#multiple-db button label
+{
+    font-size: 100%;
+    padding: 0.3em;
+    margin: 0em;
+}
+
+#multiple-db *
+{
+    padding: 0.2em;
+    margin: 0.2em;
+}
+
+#multiple-db box
+{
+    padding: 1em;
+    margin: 1em;
+}
+
 /* splash screen */
 #splashscreen
 {
