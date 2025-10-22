@@ -63,6 +63,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
+#include "gui/dbsession.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -1569,6 +1570,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       g_free(user_dirs_failure_text);
       exit(EXIT_FAILURE);
     }
+
+    // select database
+    dt_dbsession_create(datadir);
 
     darktable_splash_screen_create(NULL, FALSE);
   }
