@@ -165,6 +165,9 @@ char *dt_copy_filename_extension(const char *filename1,
 char *dt_filename_change_extension(const char *filename,
                                    const char *ext);
 
+//  returns a list of filenames read from dir_path and matching pattern_str
+GList *dt_read_file_pattern(const char *dir_path, const char *pattern_str);
+
 // replaces all occurences of a substring in a string
 gchar *dt_str_replace(const char *string,
                       const char *search,
