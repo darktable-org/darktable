@@ -107,6 +107,9 @@ changes (where available).
   middle-clicking. Another middle click will restore the soft range
   (and the normal fine-tuning mechanism).
 
+- When the slider range has been zoomed out beyond soft limits, the
+  now visible "extreme" areas have a slightly different color.
+
 - To make the rotation in the wheel match the rotation effect in the
   image, most slider directions for angles have been reversed. You may
   want to add a "-1" speed to any shortcuts you have gotten used to.
