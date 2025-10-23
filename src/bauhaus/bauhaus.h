@@ -420,6 +420,9 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
 
+#define DT_IOP_SECTION_FOR_PARAMS_UNWIND(self) \
+  while(self && self->actions==DT_ACTION_TYPE_IOP_SECTION) self = (dt_iop_module_t *)self->module
+
 G_END_DECLS
 
 // clang-format off

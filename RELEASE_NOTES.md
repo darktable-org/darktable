@@ -107,6 +107,9 @@ changes (where available).
   middle-clicking. Another middle click will restore the soft range
   (and the normal fine-tuning mechanism).
 
+- When the slider range has been zoomed out beyond soft limits, the
+  now visible "extreme" areas have a slightly different color.
+
 - To make the rotation in the wheel match the rotation effect in the
   image, most slider directions for angles have been reversed. You may
   want to add a "-1" speed to any shortcuts you have gotten used to.
@@ -158,6 +161,11 @@ changes (where available).
 
 - Allow far smaller crop to be created (up to 99% of the image size).
 
+- Allow the variable `$(ROLL.NAME)` to have optional levels,
+  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
+  rules as film roll, the default value `n=1`, this keep the previous
+  behavior of `$(ROLL.NAME)`.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -201,9 +209,8 @@ changes (where available).
 - Fixed out of memory issue which could kill Darktable on small
   systems when processing large images.
 
-- Allow the variable `$(ROLL.NAME)` to have optional levels, `$(ROLL.NAME[n])`,
-  where 1 <= n <= 5, the levels follow the same rules as film roll, the default
-  value `n=1`, this keep the previous behavior of `$(ROLL.NAME)`.
+- Fixed toast message translation displayed when scrolling over the
+  module's preset buttons.
 
 ## Lua
 

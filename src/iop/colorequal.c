@@ -3057,11 +3057,10 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
-#define GROUP_SLIDERS(num, page, tooltip)                  \
-  dt_ui_notebook_page(g->notebook, page, tooltip);         \
-  self->widget = dt_gui_vbox();                            \
-  gtk_stack_add_named(g->stack, self->widget, num);        \
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, page);
+#define GROUP_SLIDERS(num, page, tooltip)                      \
+  dt_ui_notebook_page(g->notebook, page, tooltip);             \
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
+  gtk_stack_add_named(g->stack, sect->widget, num);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =

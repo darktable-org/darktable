@@ -485,31 +485,29 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
-  GtkWidget *shadows_box = self->widget = dt_gui_vbox();
-  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(sect, "shadow_hue");
+  dt_iop_module_t *shad = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(shad, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
-  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(sect, "shadow_saturation");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(shad, "shadow_saturation");
 
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
-  GtkWidget *highlights_box = self->widget = dt_gui_vbox();
-  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(sect, "highlight_hue");
+  dt_iop_module_t *high = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(high, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
-  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(sect, "highlight_saturation");
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(high, "highlight_saturation");
 
   // start building top level widget
   self->widget = dt_gui_vbox();
 
   gui_init_section(self, NC_("section", "shadows"),
-                   shadows_box,
+                   shad->widget,
                    g->shadow_hue_gslider,
                    g->shadow_sat_gslider,
                    &g->shadow_colorpick, TRUE);
 
   gui_init_section(self, NC_("section", "highlights"),
-                   highlights_box,
+                   high->widget,
                    g->highlight_hue_gslider,
                    g->highlight_sat_gslider,
                    &g->highlight_colorpick, FALSE);
