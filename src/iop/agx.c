@@ -2261,12 +2261,13 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
 
   g->range_exposure_picker_group = dt_gui_hbox();
 
-  GtkWidget *auto_tune_combo = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_module(auto_tune_combo, DT_ACTION(real_self));
-  g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, auto_tune_combo);
-  dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
-  dt_bauhaus_widget_set_quad_tooltip(g->range_exposure_picker, _("set back and white relative exposure using the selected area"));
-  dt_gui_box_add(g->range_exposure_picker_group, dt_gui_expand(g->range_exposure_picker));
+  GtkWidget *auto_tune_box = dt_gui_hbox();
+  GtkWidget *auto_tune_label = dt_ui_label_new(_("auto tune levels"));
+  g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, NULL);
+  gtk_widget_set_tooltip_text(g->range_exposure_picker, _("set back and white relative exposure using the selected area"));
+  dt_action_define_iop(real_self, N_("exposure range"), N_("auto tune levels"), g->range_exposure_picker, &dt_action_def_toggle);
+  dt_gui_box_add(auto_tune_box, dt_gui_expand(auto_tune_label), g->range_exposure_picker);
+  dt_gui_box_add(g->range_exposure_picker_group, auto_tune_box);
 
   g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
   gtk_widget_set_tooltip_text(g->btn_read_exposure, _("read exposure from metadata and exposure module"));
