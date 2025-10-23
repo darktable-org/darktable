@@ -274,7 +274,7 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
 {
   if(!_completion_model)
     _init_completion_model();
- 
+
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_text_column(completion, COMPL_DESCRIPTION);
   gtk_entry_set_completion(entry, completion);
@@ -300,7 +300,7 @@ void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata)
 void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata)
 {
   GtkTreeIter iter;
-  
+
   gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(_completion_model), &iter);
   while(valid)
   {
@@ -308,7 +308,7 @@ void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata)
     gtk_tree_model_get(GTK_TREE_MODEL(_completion_model), &iter,
                        COMPL_ID, &id,
                        -1);
-    
+
     if(id == metadata->key)
     {
       gtk_list_store_remove(_completion_model, &iter);
