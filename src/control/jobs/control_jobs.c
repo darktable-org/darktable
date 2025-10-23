@@ -1581,8 +1581,10 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   const gboolean merge = (mode == 0) ? TRUE : FALSE;
 
-  dt_control_job_set_progress_message(job, ngettext("pasting history to %d image",
-                                                    "pasting history to %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("pasting history to %d image",
+                                               "pasting history to %d images", total),
+                                      total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   double prev_time = 0;
   GList *to_synch = NULL;
@@ -1590,13 +1592,14 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     if(!dt_is_valid_imgid(imgid)) continue;
-    // paste the copied history onto the current image, unless it's the one being edited in darkroom
+    // paste the copied history onto the current image, unless it's
+    // the one being edited in darkroom
     if(_safe_history_job_on_imgid(job, imgid))
     {
       if(dt_history_paste(imgid, merge, FALSE))
       {
-        // remember that this image's history was updated, so we'll need to synch its sidecar
-        // before we finish
+        // remember that this image's history was updated, so we'll
+        // need to synch its sidecar before we finish
         to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(t->data));
       }
     }
@@ -1639,8 +1642,11 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0;
   int missing = 0;
-  dt_control_job_set_progress_message(job, ngettext("compressing history for %d image",
-                                                    "compressing history for %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("compressing history for %d image",
+                                               "compressing history for %d images",
+                                               total),
+                                      total);
   double prev_time = 0;
   for( ; t && !_job_cancelled(job); t = g_list_next(t))
   {
@@ -1721,8 +1727,10 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
   gboolean duplicate = style_data->duplicate;
   const guint total = g_list_length(imgs);
   double fraction = 0.0;
-  dt_control_job_set_progress_message(job, ngettext("applying style(s) for %d image",
-                                                    "applying style(s) for %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("applying style(s) for %d image",
+                                               "applying style(s) for %d images", total),
+                                      total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
@@ -1739,7 +1747,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
     {
       hist = dt_history_snapshot_item_init();
       hist->imgid = imgid;
-      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+      dt_history_snapshot_undo_create(hist->imgid, &hist->before,
+                                      &hist->before_history_end);
       dt_undo_disable_next(darktable.undo);
     }
     if(is_overwrite && !duplicate)
@@ -1754,7 +1763,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
     {
       dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
       dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
-                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+                     dt_history_snapshot_undo_pop,
+                     dt_history_snapshot_undo_lt_history_data_free);
     }
     fraction += 1.0 / total;
     _update_progress(job, fraction, &prev_time);
@@ -1776,9 +1786,11 @@ static int32_t _control_export_job_run(dt_job_t *job)
   dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_export_t *settings = params->data;
-  dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_index(settings->format_index);
+  dt_imageio_module_format_t *mformat =
+    dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
+  dt_imageio_module_storage_t *mstorage =
+    dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = settings->sdata;
 
@@ -1790,7 +1802,8 @@ static int32_t _control_export_job_run(dt_job_t *job)
   if(mstorage->initialize_store)
   {
     if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata,
-                                  &params->index, settings->high_quality, settings->upscale))
+                                  &params->index,
+                                  settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
       goto end;
@@ -2279,11 +2292,14 @@ static void _add_history_job(GList *imgs, const char *title, dt_job_execute_call
 {
   if(!imgs || !execute)
     return;
-  GList *link = darktable.develop ? g_list_find(imgs,GINT_TO_POINTER(darktable.develop->image_storage.id)) : NULL;
+  GList *link = darktable.develop
+    ? g_list_find(imgs, GINT_TO_POINTER(darktable.develop->image_storage.id))
+    : NULL;
+
   if(link)
   {
-    // remove the image in darkroom center view from the list of images to be processed, and
-    // run it synchronously by itself
+    // remove the image in darkroom center view from the list of
+    // images to be processed, and run it synchronously by itself
     imgs = g_list_remove_link(imgs, link);
     if(styles_data)
       styles_data->imgs = link;
@@ -2294,8 +2310,9 @@ static void _add_history_job(GList *imgs, const char *title, dt_job_execute_call
     if(styles_data)
       styles_data->imgs = imgs;
   }
-  // if there are any images left in the list after removing the darkroom image, process them asynchronously
-  // but block user interactions other than cancellation
+  // if there are any images left in the list after removing the
+  // darkroom image, process them asynchronously but block user
+  // interactions other than cancellation
   if(imgs)
   {
     dt_control_add_job(DT_JOB_QUEUE_USER_FG,
@@ -2430,9 +2447,9 @@ void dt_control_export(GList *imgid_list,
                        const gboolean export_masks,
                        char *style,
                        const gboolean style_append,
-                       dt_colorspaces_color_profile_type_t icc_type,
+                       const dt_colorspaces_color_profile_type_t icc_type,
                        const gchar *icc_filename,
-                       dt_iop_color_intent_t icc_intent,
+                       const dt_iop_color_intent_t icc_intent,
                        const gchar *metadata_export)
 {
   dt_job_t *job = dt_control_job_create(&_control_export_job_run, "export");

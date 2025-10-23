@@ -4909,7 +4909,20 @@ dt_action_t *dt_action_define_iop(dt_iop_module_t *self,
   dt_action_target_t *referral = g_malloc0(sizeof(dt_action_target_t));
   referral->action = ac;
   referral->target = widget;
-  self->widget_list = g_slist_prepend(self->widget_list, referral);
+  if(DT_IS_BAUHAUS_WIDGET(widget)
+     && dt_bauhaus_widget_get_field(widget))
+  {
+    if(self->widget_list_bh)
+      self->widget_list_bh = g_slist_append(self->widget_list_bh, referral);
+    else
+    {
+      self->widget_list_bh = g_slist_alloc();
+      self->widget_list_bh->data = referral;
+      self->widget_list = g_slist_concat(self->widget_list, self->widget_list_bh);
+    }
+  }
+  else
+    self->widget_list = g_slist_prepend(self->widget_list, referral);
 
   return ac;
 }

@@ -1053,33 +1053,6 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget,
         w->module = ac;
     }
 
-    // if new bauhaus widget added to front of widget_list; move it to the back
-    dt_iop_module_t *m = (dt_iop_module_t *)w->module;
-    if(w->module->type == DT_ACTION_TYPE_IOP_INSTANCE
-       && w->field
-       && m->widget_list
-       && ((dt_action_target_t *)m->widget_list->data)->target == (gpointer)widget)
-    {
-      if(!m->widget_list_bh)
-      {
-        m->widget_list_bh = m->widget_list;
-        if(m->widget_list->next)
-        {
-          GSList *last = g_slist_last(m->widget_list);
-          last->next = m->widget_list;
-          m->widget_list = m->widget_list->next;
-          last->next->next = NULL;
-        }
-      }
-      else
-      {
-        GSList *first = m->widget_list->next;
-        m->widget_list->next = m->widget_list_bh->next;
-        m->widget_list_bh->next = m->widget_list;
-        m->widget_list = first;
-      }
-    }
-
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
   return ac;
@@ -1126,6 +1099,7 @@ void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget,
   w->quad_paint = f;
   w->quad_paint_flags = paint_flags;
   w->quad_paint_data = paint_data;
+  gtk_widget_queue_draw(widget);
 }
 
 void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
@@ -1458,6 +1432,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
                                          const int feedback)
 {
   w->type = DT_BAUHAUS_SLIDER;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(self);
   w->module = DT_ACTION(self);
   dt_bauhaus_slider_data_t *d = &w->slider;
   d->min = d->soft_min = d->hard_min = min;
@@ -1524,6 +1499,7 @@ GtkWidget *dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,
                                            dt_iop_module_t *self)
 {
   w->type = DT_BAUHAUS_COMBOBOX;
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(self);
   w->module = DT_ACTION(self);
   dt_bauhaus_combobox_data_t *d = &w->combobox;
   d->entries = g_ptr_array_new_full(4, _free_combobox_entry);
@@ -2268,6 +2244,17 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
 
   cairo_fill(cr);
 
+  if(d->min != d->soft_min || d->max != d->soft_max)
+  {
+    set_color(cr, bh->color_fg_insensitive);
+    const double scale = slider_width / (d->max - d->min);
+    cairo_rectangle(cr, 0, htm, scale * MAX(0, d->soft_min - d->min), htM);
+    cairo_fill(cr);
+    const double upper = scale * (MIN(d->soft_max, d->max) - d->min);
+    cairo_rectangle(cr, upper, htm, slider_width - upper,htM);
+    cairo_fill(cr);
+  }
+
   // get the reference of the slider aka the position of the 0 value
   const float origin =
     fmaxf(fminf((d->factor > 0 ? -d->min - d->offset/d->factor
@@ -2453,7 +2440,7 @@ static gboolean _popup_draw(GtkWidget *widget,
       const dt_bauhaus_combobox_data_t *d = &w->combobox;
       cairo_save(cr);
       float first_label_width = 0.0;
-      gboolean first_label = *w->label;
+      gboolean first_label = w->label != NULL;
       gboolean show_box_label = TRUE;
       const int ht = bh->line_height;
       const int hovered = (bh->mouse_y - w->top_gap) / ht;

@@ -3598,11 +3598,12 @@ static void _notebook_size_callback(GtkNotebook *notebook,
 // GTK_STATE_FLAG_PRELIGHT does not seem to get set on the label on
 // hover so state-flags-changed cannot update
 // darktable.control->element for shortcut mapping
-static void _notebook_motion_notify_callback(GtkEventControllerMotion *controller,
-                                             double x,
-                                             double y,
-                                             GtkNotebook *notebook)
+static gboolean _notebook_motion_notify_callback(GtkNotebook *notebook,
+                                                 const GdkEventMotion *event,
+                                                 gpointer user_data)
 {
+  if(gtk_get_event_widget((GdkEvent*)event) != GTK_WIDGET(notebook)) return FALSE;
+
   GtkAllocation notebook_alloc, label_alloc;
   gtk_widget_get_allocation(GTK_WIDGET(notebook), &notebook_alloc);
 
@@ -3612,12 +3613,14 @@ static void _notebook_motion_notify_callback(GtkEventControllerMotion *controlle
     gtk_widget_get_allocation(gtk_notebook_get_tab_label
                               (notebook, gtk_notebook_get_nth_page(notebook, i)),
                               &label_alloc);
-    if(x + notebook_alloc.x < label_alloc.x + label_alloc.width)
+    if(event->x + notebook_alloc.x < label_alloc.x + label_alloc.width)
     {
       darktable.control->element = i;
       break;
     }
   }
+
+  return FALSE;
 }
 
 static float _action_process_tabs(const gpointer target,
@@ -3771,7 +3774,8 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate",
                      G_CALLBACK(_notebook_size_callback), NULL);
-    dt_gui_connect_motion(notebook, _notebook_motion_notify_callback, NULL, NULL, notebook);
+    g_signal_connect(G_OBJECT(notebook), "motion-notify-event",
+                     G_CALLBACK(_notebook_motion_notify_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "scroll-event",
                      G_CALLBACK(_notebook_scroll_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "button-press-event",
@@ -4419,7 +4423,6 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             gpointer data)
 {
   GtkEventController *controller = gtk_event_controller_motion_new(widget);
-  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
   g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 

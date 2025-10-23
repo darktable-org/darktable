@@ -402,8 +402,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   }
 }
 
-static void copy_metadata_callback(GtkWidget *widget,
-                                   dt_lib_module_t *self)
+static void _copy_metadata_callback(GtkWidget *widget,
+                                    dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
 
@@ -412,66 +412,65 @@ static void copy_metadata_callback(GtkWidget *widget,
   dt_lib_gui_queue_update(self);
 }
 
-static void paste_metadata_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _paste_metadata_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
   const int mode = dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode");
   _execute_metadata(self, mode == 0 ? DT_MA_MERGE : DT_MA_REPLACE);
 }
 
-static void clear_metadata_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _clear_metadata_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
   _execute_metadata(self, DT_MA_CLEAR);
 }
 
-static void set_monochrome_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _set_monochrome_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
-
   dt_control_monochrome_images(2);
 }
 
-static void set_color_callback(GtkWidget *widget,
-                               dt_lib_module_t *self)
+static void _set_color_callback(GtkWidget *widget,
+                                dt_lib_module_t *self)
 {
   dt_control_monochrome_images(0);
 }
 
-static void rating_flag_callback(GtkWidget *widget,
-                                 dt_lib_module_t *self)
+static void _rating_flag_callback(GtkWidget *widget,
+                                  dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->rating_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/rating", flag);
 }
 
-static void colors_flag_callback(GtkWidget *widget,
-                                 dt_lib_module_t *self)
+static void _colors_flag_callback(GtkWidget *widget,
+                                  dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->colors_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/colors", flag);
 }
 
-static void metadata_flag_callback(GtkWidget *widget,
-                                   dt_lib_module_t *self)
+static void _metadata_flag_callback(GtkWidget *widget,
+                                    dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->metadata_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/metadata", flag);
 }
 
-static void geotags_flag_callback(GtkWidget *widget,
-                                  dt_lib_module_t *self)
+static void _geotags_flag_callback(GtkWidget *widget,
+                                   dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->geotags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/geotags", flag);
 }
 
-static void tags_flag_callback(GtkWidget *widget,
-                               dt_lib_module_t *self)
+static void _tags_flag_callback(GtkWidget *widget,
+                                dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->tags_flag));
@@ -613,7 +612,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(meta), N_("flags"),                  \
                    label, flag, &dt_action_def_toggle);           \
   g_signal_connect(G_OBJECT(flag), "clicked",                     \
-                   G_CALLBACK(item##_flag_callback), self); }
+                   G_CALLBACK(_##item##_flag_callback), self); }
 
   META_FLAG_BUTTON(N_("ratings"),  rating,   0, _("select ratings metadata"));
   META_FLAG_BUTTON(N_("colors"),   colors,   3, _("select colors metadata"));
@@ -623,19 +622,19 @@ void gui_init(dt_lib_module_t *self)
 
   d->copy_metadata_button = dt_action_button_new
     (meta, N_("copy"),
-     copy_metadata_callback, self,
+     _copy_metadata_callback, self,
      _("set the selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked",
-                   G_CALLBACK(copy_metadata_callback), self);
+                   G_CALLBACK(_copy_metadata_callback), self);
 
   d->paste_metadata_button = dt_action_button_new
-    (meta, N_("paste"), paste_metadata_callback, self,
+    (meta, N_("paste"), _paste_metadata_callback, self,
      _("paste selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->paste_metadata_button, 2, line, 2, 1);
 
   d->clear_metadata_button = dt_action_button_new
-    (meta, N_("clear"), clear_metadata_callback, self,
+    (meta, N_("clear"), _clear_metadata_callback, self,
      _("clear selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
 
@@ -656,11 +655,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
   d->set_monochrome_button = dt_action_button_new
-    (meta, N_("monochrome"), set_monochrome_callback, self,
+    (meta, N_("monochrome"), _set_monochrome_callback, self,
      _("set selection as monochrome images and activate monochrome workflow"), 0, 0);
   gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
 
-  d->set_color_button = dt_action_button_new(meta, N_("color"), set_color_callback, self,
+  d->set_color_button = dt_action_button_new(meta, N_("color"), _set_color_callback, self,
                                              _("set selection as color images"), 0, 0);
   gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
 
