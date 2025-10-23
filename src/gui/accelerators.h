@@ -144,6 +144,17 @@ typedef struct dt_action_element_def_t
     { N_("7th"), dt_action_effect_##effect }, \
     { N_("8th"), dt_action_effect_##effect }, \
     { N_("9th"), dt_action_effect_##effect }, \
+    { N_("10th"), dt_action_effect_##effect }, \
+    { N_("11th"), dt_action_effect_##effect }, \
+    { N_("12th"), dt_action_effect_##effect }, \
+    { N_("13th"), dt_action_effect_##effect }, \
+    { N_("14th"), dt_action_effect_##effect }, \
+    { N_("15th"), dt_action_effect_##effect }, \
+    { N_("16th"), dt_action_effect_##effect }, \
+    { N_("17th"), dt_action_effect_##effect }, \
+    { N_("18th"), dt_action_effect_##effect }, \
+    { N_("19th"), dt_action_effect_##effect }, \
+    { N_("20th"), dt_action_effect_##effect }, \
     {} }
 
 extern const dt_action_element_def_t dt_action_elements_hold[];
