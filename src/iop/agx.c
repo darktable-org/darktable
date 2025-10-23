@@ -1366,7 +1366,6 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
 }
 
 static void _read_exposure_params_callback(GtkWidget *widget,
-                                     GdkEventButton *event,
                                      dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -2262,13 +2261,13 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_bauhaus_widget_set_module(auto_tune_combo, DT_ACTION(real_self));
   g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, auto_tune_combo);
   dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
-  gtk_widget_set_tooltip_text(g->range_exposure_picker,
-                              _("set black and white exposure from area or exposure settings"));
+  dt_bauhaus_widget_set_quad_tooltip(g->range_exposure_picker, _("set back and white relative exposure using the selected area"));
   dt_gui_box_add(g->range_exposure_picker_group, dt_gui_expand(g->range_exposure_picker));
 
   g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
   gtk_widget_set_tooltip_text(g->btn_read_exposure, _("read exposure from metadata and exposure module"));
-  g_signal_connect(G_OBJECT(g->btn_read_exposure), "button-press-event", G_CALLBACK(_read_exposure_params_callback), real_self);
+  g_signal_connect(G_OBJECT(g->btn_read_exposure), "clicked", G_CALLBACK(_read_exposure_params_callback), real_self);
+  dt_action_define_iop(real_self, N_("exposure range"), N_("read exposure"), g->btn_read_exposure, &dt_action_def_button);
   dt_gui_box_add(g->range_exposure_picker_group, g->btn_read_exposure);
 
   dt_gui_box_add(self->widget, g->range_exposure_picker_group);
