@@ -1588,10 +1588,12 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
+
   if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
-    gtk_main();
+    //gtk_main();
+    gtk_window_present(GTK_WINDOW(darktable.gui));
     g_atomic_int_set(&darktable.gui_running, 0);
   }
   if(darktable.gui->surface)
@@ -3351,9 +3353,10 @@ void dt_gui_load_theme(const char *theme)
   if(!dt_conf_key_exists("use_system_font"))
     dt_conf_set_bool("use_system_font", TRUE);
 
+  GtkSettings *settings = gtk_settings_get_default();
   //set font size
   if(dt_conf_get_bool("use_system_font"))
-    gtk_settings_reset_property(gtk_settings_get_default(), "gtk-font-name");
+    gtk_settings_reset_property(settings, "gtk-font-name");
   else
   {
     //font name can only use period as decimal separator

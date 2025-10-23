@@ -182,6 +182,7 @@ static int image_position_member(lua_State *L)
   {
     luaA_to(L, dt_lua_position_type_t, &image_position, 3);
     // check for image before trying to ellipsize it
+    // I think this can't be removed when preparation because we can't find alternatives in GTK3.
     if(gtk_button_get_image(GTK_BUTTON(button->widget)))
       gtk_button_set_image_position(GTK_BUTTON(button->widget), image_position);
     else

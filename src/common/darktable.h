@@ -981,7 +981,23 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
 {
   return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
+struct configs_from_command
+{
+  // database
+  char *dbfilename_from_command;
+  char *datadir_from_command;
+  char *moduledir_from_command;
+  char *localedir_from_command;
+  char *tmpdir_from_command;
+  char *configdir_from_command;
+  char *cachedir_from_command;
+  GSList *config_override;
+  char *noiseprofiles_from_command;
+  char *lua_command;
+  int exclude_opencl;
 
+};
+extern struct configs_from_command configs_from_command;
 G_END_DECLS
 
 // clang-format off

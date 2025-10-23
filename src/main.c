@@ -20,7 +20,7 @@
 #include "common/image.h"
 #include "develop/develop.h"
 #include "common/gimp.h"
-#include "common/image_cache.h"
+#include "common/darktable_application.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 
@@ -36,6 +36,74 @@
 #ifdef __APPLE__
 int apple_main(int argc, char *argv[])
 #else
+int g_argc;
+char **g_argv;
+int exitcode;
+
+int activate()
+{
+  if(dt_init(g_argc, g_argv, TRUE, TRUE, NULL))
+  {
+    if(dt_gimpmode())
+      printf("\n<<<gimp\nerror\ngimp>>>\n");
+    exit(1);
+  }
+  if(dt_check_gimpmode_ok("version"))
+  {
+    printf("\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
+    exit(0);
+  }
+
+  if(dt_check_gimpmode("version")
+    || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
+    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
+    || darktable.gimp.error)
+  {
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
+    exit(1);
+  }
+
+  if(dt_check_gimpmode_ok("file"))
+  {
+    const dt_imgid_t id = dt_gimp_load_darkroom(darktable.gimp.path);
+    if(!dt_is_valid_imgid(id))
+      darktable.gimp.error = TRUE;
+  }
+
+  if(dt_check_gimpmode_ok("thumb"))
+  {
+    const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
+    if(dt_is_valid_imgid(id))
+      darktable.gimp.error = !dt_export_gimp_file(id);
+    else
+      darktable.gimp.error = TRUE;
+
+    return darktable.gimp.error ? 1 : 0;
+  }
+  int status = 0;
+  if(!dt_gimpmode() || dt_check_gimpmode_ok("file"))
+  {
+    dt_gui_gtk_run(darktable.gui);
+  }
+
+  dt_cleanup();
+
+  if(dt_gimpmode() && darktable.gimp.error)
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
+
+#ifdef _WIN32
+  if(redirect_output)
+  {
+    printf("\n");
+    printf("end:   %s\n", datetime);
+    printf("========================================\n");
+    printf("\n");
+  }
+#endif
+
+  exitcode =  status?(dt_gimpmode() ? (darktable.gimp.error ? 1 : 0) : 0) : 0;
+  return exitcode;
+}
 int main(int argc, char *argv[])
 #endif
 {
@@ -113,67 +181,17 @@ int main(int argc, char *argv[])
   // otherwise windows resizing issues can be observed.
   g_setenv("GTK_CSD", "0", TRUE);
 #endif
+    DarkTableApplication *app=g_application_new("org.darktable",
+    G_APPLICATION_SEND_ENVIRONMENT
+    );
+  g_argc=argc;
+  g_argv=argv;
+  g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+  g_application_run(app, argc, argv);
 
-  if(dt_init(argc, argv, TRUE, TRUE, NULL))
-  {
-    if(dt_gimpmode())
-      printf("\n<<<gimp\nerror\ngimp>>>\n");
-    exit(1);
-  }
+  g_object_unref (app);
+  return exitcode;
 
-  if(dt_check_gimpmode_ok("version"))
-  {
-    printf("\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
-    exit(0);
-  }
-
-  if(dt_check_gimpmode("version")
-    || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
-    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
-    || darktable.gimp.error)
-  {
-    printf("\n<<<gimp\nerror\ngimp>>>\n");
-    exit(1);
-  }
-
-  if(dt_check_gimpmode_ok("file"))
-  {
-    const dt_imgid_t id = dt_gimp_load_darkroom(darktable.gimp.path);
-    if(!dt_is_valid_imgid(id))
-      darktable.gimp.error = TRUE;
-  }
-
-  if(dt_check_gimpmode_ok("thumb"))
-  {
-    const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
-    if(dt_is_valid_imgid(id))
-      darktable.gimp.error = !dt_export_gimp_file(id);
-    else
-      darktable.gimp.error = TRUE;
-
-    return darktable.gimp.error ? 1 : 0;
-  }
-
-  if(!dt_gimpmode() || dt_check_gimpmode_ok("file"))
-    dt_gui_gtk_run(darktable.gui);
-
-  dt_cleanup();
-
-  if(dt_gimpmode() && darktable.gimp.error)
-    printf("\n<<<gimp\nerror\ngimp>>>\n");
-
-#ifdef _WIN32
-  if(redirect_output)
-  {
-    printf("\n");
-    printf("end:   %s\n", datetime);
-    printf("========================================\n");
-    printf("\n");
-  }
-#endif
-
-  const int exitcode = dt_gimpmode() ? (darktable.gimp.error ? 1 : 0) : 0;
-  exit(exitcode);
 }
 
 // clang-format off

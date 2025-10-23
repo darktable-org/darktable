@@ -124,7 +124,7 @@
 
 darktable_t darktable;
 
-static int usage(const char *argv0)
+int usage(const char *argv0)
 {
 #ifdef _WIN32
   char *logfile = g_build_filename(g_get_home_dir(), "Documents", "Darktable", "darktable-log.txt", NULL);
@@ -752,7 +752,7 @@ void dt_stop_backthumbs_crawler(const gboolean wait)
   }
 }
 
-static char *_get_version_string(void)
+char *_get_version_string(void)
 {
   const char *exiv2_version = EXV_PACKAGE_VERSION "\n";
 
@@ -946,15 +946,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&darktable.metadata_threadsafe, NULL);
   darktable.control = calloc(1, sizeof(dt_control_t));
 
-  // database
-  char *dbfilename_from_command = NULL;
-  char *noiseprofiles_from_command = NULL;
-  char *datadir_from_command = NULL;
-  char *moduledir_from_command = NULL;
-  char *localedir_from_command = NULL;
-  char *tmpdir_from_command = NULL;
-  char *configdir_from_command = NULL;
-  char *cachedir_from_command = NULL;
+
 
   darktable.dump_pfm_module = NULL;
   darktable.dump_pfm_pipe = NULL;
@@ -976,11 +968,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.num_openmp_threads = dt_get_num_procs();
   darktable.pipe_cache = TRUE;
   darktable.unmuted = 0;
-  GSList *config_override = NULL;
 
   // keep a copy of argv array for possibly reporting later
   gchar **myoptions = init_gui && argc > 1 ? g_strdupv(argv) : NULL;
 
+  /*
   for(int k = 1; k < argc; k++)
   {
 #ifdef _WIN32
@@ -1361,6 +1353,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       argc -= k;
     }
   }
+  */
 
   /* We now have all command line options ready and check for gimp API questions.
       Return right now if we
@@ -1407,12 +1400,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Set directories as requested or default.
   // Set a result flag so if we can't create certain directories, we can
   // later, after initializing the GUI, show the user a message and exit.
-  const uint8_t user_dir_failed = dt_loc_init(datadir_from_command,
-                                              moduledir_from_command,
-                                              localedir_from_command,
-                                              configdir_from_command,
-                                              cachedir_from_command,
-                                              tmpdir_from_command);
+  const uint8_t user_dir_failed = dt_loc_init(configs_from_command.datadir_from_command,
+                                              configs_from_command.moduledir_from_command,
+                                              configs_from_command.localedir_from_command,
+                                              configs_from_command.configdir_from_command,
+                                              configs_from_command.cachedir_from_command,
+                                              configs_from_command.tmpdir_from_command);
 
   dt_print_mem_usage("at startup");
 
@@ -1515,9 +1508,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_confgen_init();
 
   // read actual configuration, needs confgen above for sanitizing values
-  dt_conf_init(darktable.conf, darktablerc, config_override);
+  dt_conf_init(darktable.conf, darktablerc, configs_from_command.config_override);
 
-  g_slist_free_full(config_override, g_free);
+  g_slist_free_full(configs_from_command.config_override, g_free);
 
   const int last_configure_version =
     dt_conf_get_int("performance_configuration_version_completed");
@@ -1584,7 +1577,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // initialize the database
   darktable_splash_screen_set_progress(_("opening image library"));
-  darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
+  darktable.db = dt_database_init(configs_from_command.dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database");
@@ -1645,7 +1638,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   else
   {
-    if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
+    if(configs_from_command.dbfilename_from_command && !strcmp(configs_from_command.dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
   }
 
@@ -1788,7 +1781,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_wb_presets_init(NULL);
 
   darktable_splash_screen_set_progress(_("loading noise profiles"));
-  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
+  darktable.noiseprofile_parser = dt_noiseprofile_init(configs_from_command.noiseprofiles_from_command);
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:
@@ -1834,7 +1827,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.backthumbs.capable =
         !dt_gimpmode()
         && dt_get_num_threads() >= 4
-        && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
+        && !(configs_from_command.dbfilename_from_command && !strcmp(configs_from_command.dbfilename_from_command, ":memory:"));
   }
   else
     darktable.gui = NULL;

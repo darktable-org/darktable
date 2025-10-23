@@ -26,6 +26,7 @@ FILE(GLOB SOURCE_FILES
   "common/curve_tools.c"
   "common/custom_primaries.c"
   "common/darktable.c"
+  "common/darktable_application.c"
   "common/database.c"
   "common/datetime.c"
   "common/dbus.c"
