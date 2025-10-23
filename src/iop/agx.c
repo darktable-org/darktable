@@ -132,20 +132,20 @@ typedef struct dt_iop_agx_params_t
   // custom primaries; rotation limits below: +/- 0.5236 radian => +/- 30 degrees
   dt_iop_agx_base_primaries_t base_primaries; // $DEFAULT: DT_AGX_REC2020 $DESCRIPTION: "base primaries"
   gboolean disable_primaries_adjustments; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "disable adjustments"
-  float red_inset;        // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "red attenuation"
+  float red_inset;        // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "red attenuation"
   float red_rotation;     // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red rotation"
-  float green_inset;      // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "green attenuation"
+  float green_inset;      // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "green attenuation"
   float green_rotation;   // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "green rotation"
-  float blue_inset;       // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "blue attenuation"
+  float blue_inset;       // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "blue attenuation"
   float blue_rotation;    // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue rotation"
 
   float master_outset_ratio;     // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master purity boost"
   float master_unrotation_ratio; // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master rotation reversal"
-  float red_outset;              // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
+  float red_outset;              // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
   float red_unrotation;          // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red reverse rotation"
-  float green_outset;            // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "green purity boost"
+  float green_outset;            // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "green purity boost"
   float green_unrotation;        // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "green reverse rotation"
-  float blue_outset;             // $MIN:  0.f  $MAX: 0.5f $DEFAULT: 0.f $DESCRIPTION: "blue purity boost"
+  float blue_outset;             // $MIN:  0.f  $MAX: 0.99f $DEFAULT: 0.f $DESCRIPTION: "blue purity boost"
   float blue_unrotation;         // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue reverse rotation"
 
   // v5
@@ -2230,7 +2230,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   gchar *section_name = NC_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section_name)));
 
-  // WHITE EXPOSURE
   GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_exposure");
   dt_bauhaus_widget_set_module(white_slider, DT_ACTION(real_self));
   g->white_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
@@ -2239,7 +2238,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
                               _("relative exposure above mid-gray (white point)"));
 
-  // BLACK EXPOSURE
   GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_exposure");
   dt_bauhaus_widget_set_module(black_slider, DT_ACTION(real_self));
   g->black_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, black_slider);
@@ -2248,7 +2246,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
                               _("relative exposure below mid-gray (black point)"));
 
-  // DYNAMIC RANGE SCALING
   g->security_factor = dt_bauhaus_slider_from_params(self, "dynamic_range_scaling");
   dt_bauhaus_widget_set_module(g->security_factor, DT_ACTION(real_self));
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
@@ -2259,7 +2256,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
                               _("symmetrically increase or decrease the computed dynamic range.\n"
                                 "useful to give a safety margin to extreme luminances."));
 
-  // AUTO TUNE AND READ EXPOSURE GROUP
   g->range_exposure_picker_group = dt_gui_hbox();
 
   GtkWidget *auto_tune_combo = dt_bauhaus_combobox_new(self);
@@ -2267,7 +2263,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, auto_tune_combo);
   dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
-                              _("pick image area to automatically set black and white exposure"));
+                              _("set black and white exposure from area or exposure settings"));
   dt_gui_box_add(g->range_exposure_picker_group, dt_gui_expand(g->range_exposure_picker));
 
   g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
@@ -2383,13 +2379,11 @@ static void _paint_slider_gradient(GtkWidget *slider, const float hue_deg, const
 
 static void _paint_hue_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean reverse)
 {
-  // if (hue_deg == 1e5f)
   _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_hue, reverse);
 }
 
 static void _paint_purity_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean attenuate)
 {
-  // if (hue_deg == 1e5f)
   _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_purity, attenuate);
 }
 
@@ -2404,6 +2398,7 @@ static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
+  dt_bauhaus_slider_set_default(slider, 0.f);
 
   const float r = primary_index == _red_index ? target_primary_value : other_primaries_value;
   const float g = primary_index == _green_index ? target_primary_value : other_primaries_value;
@@ -2420,6 +2415,7 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_nam
   dt_bauhaus_slider_set_digits(slider, 1);
   dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
   gtk_widget_set_tooltip_text(slider, tooltip);
+  dt_bauhaus_slider_set_default(slider, 0.f);
   return slider;
 }
 
