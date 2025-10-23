@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2018-2020 darktable developers.
+ *    Copyright (C) 2018-2025 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ typedef struct dt_l10n_t
   int sys_default;
 } dt_l10n_t;
 
-dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list);
+dt_l10n_t *dt_l10n_init(const gboolean init_list);
 
 const char *dt_l10n_get_name(const dt_l10n_language_t *language);
 // clang-format off
