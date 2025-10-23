@@ -2013,14 +2013,15 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_iop_basic_curve_controls_t *controls = &g->basic_curve_controls;
 
   // curve_pivot_x_shift with picker
-  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                               dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio"));
+  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio");
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, slider);
   controls->curve_pivot_x_shift = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
   gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
+  dt_bauhaus_widget_set_quad_tooltip(slider, _("pick the pivot point (input shift and target output)"));
 
   // curve_pivot_y_linear
   slider = dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output");
@@ -2236,6 +2237,8 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
                               _("relative exposure above mid-gray (white point)"));
+  dt_bauhaus_widget_set_quad_tooltip(g->white_exposure_picker, _("pick the white point"));
+
 
   GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_exposure");
   dt_bauhaus_widget_set_module(black_slider, DT_ACTION(real_self));
@@ -2244,6 +2247,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_bauhaus_slider_set_format(g->black_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
                               _("relative exposure below mid-gray (black point)"));
+  dt_bauhaus_widget_set_quad_tooltip(g->black_exposure_picker, _("pick the black point"));
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "dynamic_range_scaling");
   dt_bauhaus_widget_set_module(g->security_factor, DT_ACTION(real_self));
