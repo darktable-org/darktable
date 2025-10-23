@@ -447,10 +447,8 @@ gchar *dt_conf_read_values(const char *filename,
 
   char line[LINE_SIZE + 1];
 
-  FILE *f = NULL;
-
   // check for user config
-  f = g_fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   // if file has been found, parse it
 
