@@ -48,11 +48,13 @@ static void _dbsession_select_db(GtkWidget *button, dt_dbsession_t *session)
   if(strcmp(label, _("default")) == 0)
   {
     dt_conf_set_string("database", "library.db");
+    dt_conf_set_string("database/label", "");
   }
   else
   {
     char *dbname = g_strdup_printf("library-%s.db", label);
     dt_conf_set_string("database", dbname);
+    dt_conf_set_string("database/label", label);
     g_free(dbname);
   }
 
@@ -65,6 +67,7 @@ static void _dbsession_new_db(GtkWidget *button, dt_dbsession_t *session)
 
   char *dbname = g_strdup_printf("library-%s.db", label);
   dt_conf_set_string("database", dbname);
+  dt_conf_set_string("database/label", label);
   g_free(dbname);
 
   _dbsession_screen_destroy(session);

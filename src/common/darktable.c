@@ -1503,20 +1503,29 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_exif_init();
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-  char darktablerc[PATH_MAX] = { 0 };
-  snprintf(darktablerc, sizeof(darktablerc), "%s/darktablerc", datadir);
+
+  char darktablerc_common[PATH_MAX] = { 0 };
+  snprintf(darktablerc_common, sizeof(darktablerc_common),
+           "%s/darktablerc-common", datadir);
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
 
-  // set the interface language and prepare selection for prefs & confgen
-  darktable.l10n = dt_l10n_init(darktablerc, init_gui);
-
   // initialize the configuration default/min/max
   dt_confgen_init();
 
-  // read actual configuration, needs confgen above for sanitizing values
-  dt_conf_init(darktable.conf, darktablerc, config_override);
+  // Read common configuration, needs confgen above for sanitizing
+  // values. This first step read only the darktablerc-common
+  // settings. The settings in this file are those needed to
+  // initialize the GUI (UI language / default fonts, tooltips state)
+  // and l10n.
+  //
+  // This files contains all preferences with the attribute common="true" in
+  // darktableconfig.xml.in.
+  dt_conf_init(darktable.conf, darktablerc_common, TRUE, config_override);
+
+  // set the interface language and prepare selection for prefs & confgen
+  darktable.l10n = dt_l10n_init(init_gui);
 
   g_slist_free_full(config_override, g_free);
 
@@ -1573,6 +1582,32 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // select database
     dt_dbsession_create(datadir);
+
+    // now load darktablerc for the given library. Either darktablerc
+    // for the default library or darktablerc-<label> for the other
+    // libraries.
+    const char *dbname = dt_conf_get_string("database");
+    const char *dblabel = dt_conf_get_string("database/label");
+    const gboolean multiple_db = dt_conf_get_bool("database/multiple_db");
+
+    const gboolean default_dbname = strcmp(dblabel, "") == 0;
+
+    char darktablerc[PATH_MAX] = { 0 };
+    snprintf(darktablerc, sizeof(darktablerc),
+             "%s/darktablerc%s%s", datadir,
+             default_dbname ? "" : "-",
+             default_dbname ? "" : dblabel);
+
+    dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
+
+    // restore dbname & label (as set in call dt_dbsession_create) to
+    // the one selected on the dialog ensuring that if the
+    // darktablerc-* is not yet preset we won't store the default
+    // values from confgen.
+
+    dt_conf_set_string("database", dbname);
+    dt_conf_set_string("database/label", dblabel);
+    dt_conf_set_bool("database/multiple_db", multiple_db);
 
     darktable_splash_screen_create(NULL, FALSE);
   }
