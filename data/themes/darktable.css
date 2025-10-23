@@ -2349,83 +2349,86 @@ Details :
 #splashscreen
 {
     background-color: @grey_20;
-    border: 1px solid;
-    border-radius: 25px;
+    border: none;
+    border-radius: 0;
+    min-width: 720px;
 }
+
 #splashscreen-header
 {
     padding: 0;
     margin: 0;
 }
-/* make the (nonexistent) title text very small to avoid an obvious bar at top */
+
 #splashscreen-header label
 {
     font-size: 1%;
     padding: 0;
     margin: 0;
 }
-/* style the darktable logo */
+
 #splashscreen-logo
 {
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 30px;
+    margin-top: 30px;
+    margin-right: 25px;
+    min-width: 120px;
+    min-height: 120px;
 }
-/* position the darktable version number next to the logo */
-#splashscreen-version
-{
-    margin-top: -35pt;
-    margin-right: -110pt;
-    font-size: 15pt;
+
+/* darktable wordmark */
+#splashscreen-program {
+  font-size: 50pt;
+  margin-top: 25pt;
+  margin-bottom: 0;
 }
-/* style the darktable program name */
-#splashscreen-program
-{
-    font-size: 48pt;
-    margin: 2pt;
-    margin-top: 20px;
-    margin-right: 20px;
+
+/* version number */
+#splashscreen-version {
+  color: @grey_50;
+  font-size: 22pt;
+  margin-top: 0;
 }
-/* style the darktable program description */
-#splashscreen-description
-{
-    color: @grey_60;
-    font-size: 16pt;
-    font-family: Inter, DejaVu Serif, serif;
-    padding: 1em;
-    margin: 1em;
+
+/* tagline below logo */
+#splashscreen-description {
+  color: @grey_60;
+  font-size: 18pt;
+  font-family: Inter, sans-serif;
+  margin-top: 30pt;
+  margin-bottom: 30pt;
+  margin-left: 30pt;
 }
-/* style the "get ready" message */
-#splashscreen-prepare
-{
-    font-size: 12pt;
-    font-family: Inter, DejaVu Serif, serif;
-    margin-top: -5pt;
-    margin-left: -150pt;
-}
-/* style the separating bar - without a style, it won't appear or take space! */
+
+/* horizontal line */
 #splashscreen-separator
 {
-    border: 0px;
-    margin-top: 1pt;
-    margin-bottom: 3pt;
+    background-color: @grey_40;
+    min-height: 1px;
+    border: none;
+    margin-top: 10pt;
+    margin-bottom: 10pt;
+    margin-left:10px;
+    margin-right:10px;
 }
-/* style the progress message */
+
+/* progress label */
 #splashscreen-progress
 {
-    border-radius: 15px;
-    background-color: alpha(@grey_10, 0.8);
-    min-width: 1em;
-    min-height: 4em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    margin-left: 8em;
-    margin-right: 8em;
+    color: @grey_70;
+    font-size: 12pt;
+    font-family: Inter, sans-serif;
+    background-color: transparent;
+    margin-left: 30pt;
+    margin-top: 10pt;
+    margin-bottom: 5pt;
 }
-/* style the time remaining */
+
+/* time remaining */
 #splashscreen-remaining
 {
-    color: yellow;
-    font-size: 150%;
+    color: @grey_60;
+    font-size: 10pt;
 }
 
 /* style the message on the exit screen */
