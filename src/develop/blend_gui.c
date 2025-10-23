@@ -709,11 +709,8 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 
-  if(dt_conf_get_bool("accel/prefer_unmasked"))
-  {
-    // rebuild the accelerators
-    dt_iop_connect_accels_multi(data->module->so);
-  }
+  // rebuild the accelerators
+  dt_iop_connect_accels_multi(data->module->so);
 }
 
 static void _blendop_blend_mode_callback(GtkWidget *combo,
