@@ -46,6 +46,7 @@ typedef struct dt_confgen_value_t
   char *enum_values;
   char *shortdesc;
   char *longdesc;
+  gboolean is_common;
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
@@ -111,6 +112,7 @@ void dt_conf_string_entry_free(gpointer data);
 // conf generated from darktable config XML
 
 gboolean dt_confgen_exists(const char *name);
+gboolean dt_confgen_is_common(const char *name);
 dt_confgen_type_t dt_confgen_type(const char *name);
 
 gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind);

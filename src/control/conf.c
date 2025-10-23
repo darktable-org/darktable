@@ -643,6 +643,18 @@ const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
   return "";
 }
 
+gboolean dt_confgen_is_common(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->is_common;
+  }
+
+  return FALSE;
+}
+
 const char *dt_confgen_get_label(const char *name)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
