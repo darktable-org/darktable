@@ -1962,9 +1962,6 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
                                     params.need_concave_shoulder && warnings_enabled
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->basic_curve_controls.curve_toe_power));
-  gtk_widget_queue_draw(GTK_WIDGET(g->basic_curve_controls.curve_shoulder_power));
 }
 
 void gui_changed(dt_iop_module_t *self,
