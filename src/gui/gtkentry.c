@@ -119,6 +119,7 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { "DARKTABLE.NAME", N_("$(DARKTABLE.NAME) - darktable name") },
       { "DARKTABLE.VERSION", N_("$(DARKTABLE.VERSION) - current darktable version") },
       { "SIDECAR_TXT", N_("$(SIDECAR_TXT) - contents of .txt sidecar file, if present") },
+      { "WORKSPACE.LABEL", N_("$(WORKSPACE.LABEL) - label of the current workspace") },
       { NULL, NULL } };
 
 
