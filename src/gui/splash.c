@@ -24,10 +24,16 @@
 #include "osx/osx.h"
 #endif
 
+// override window manager's title bar?
 #define USE_HEADER_BAR
+
+
+// include a featured image on the splash screen?
 
 // #define USE_FEATURED_IMAGE
 
+// number of featured images from which to randomly select when
+// USE_SPLASHSCREEN_IMAGE not defined
 #define MAX_IMAGES 4
 
 #define ICON_SIZE 150
@@ -48,6 +54,9 @@ static GtkWidget *exit_screen = NULL;
 
 static void _process_all_gui_events()
 {
+  // give Gtk a chance to update the screen; we need to let the event
+  // processing run several times for the splash window to actually be
+  // fully displayed/updated
   for(int i = 0; i < 5; i++)
   {
     g_usleep(1000);
@@ -57,6 +66,8 @@ static void _process_all_gui_events()
 
 static GtkWidget *_get_logo()
 {
+  // get the darktable logo, including seasonal variants as
+  // appropriate.
   const dt_logo_season_t season = dt_util_get_logo_season();
 
   GtkWidget *logo = NULL;
@@ -82,6 +93,7 @@ static GtkWidget *_get_logo()
 
 static GtkWidget *_get_program_name()
 {
+  // get the darktable name in special font
   GtkWidget *program_name = NULL;
   gchar *image_file = g_strdup_printf("%s/pixmaps/darktable.svg", darktable.datadir);
   GdkPixbuf *prog_name_image = gdk_pixbuf_new_from_file_at_size(image_file, PROGNAME_SIZE, -1, NULL);
@@ -115,12 +127,19 @@ void darktable_splash_screen_create(
     GtkWindow *parent_window,
     const gboolean force)
 {
+  // no-op if the splash has already been created; if not, only run if
+  // the splash screen is enabled in the config or we are told to
+  // create it regardless.
   if(splash_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
   }
 
+  // a simple gtk_dialog_new() leaves us unable to setup the header
+  // bar, so use .._with_buttons and just specify a NULL strings to
+  // have no buttons.  We need to pretend to actually have one button,
+  // though, to keep the compiler happy
 #ifdef USE_HEADER_BAR
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR;
 #else
@@ -151,7 +170,10 @@ void darktable_splash_screen_create(
   GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(splash_screen)));
 
 #ifdef USE_FEATURED_IMAGE
+  // make a random selection of featured image based on the current
+  // time
   const int imgnum = (int)(1 + (clock() % MAX_IMAGES));
+  // FIXME: if user overrides --datadir, we won't find the image...
   gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg", darktable.datadir, imgnum);
   GtkWidget *image = gtk_image_new_from_file(image_file);
   g_free(image_file);
@@ -239,6 +261,7 @@ void darktable_splash_screen_set_progress_percent(
     if(elapsed >= 2.0 || fraction > 0.01)
     {
       const double total = elapsed / fraction;
+      // round to full seconds rather than truncating
       const double remain = (total - elapsed) + 0.5;
       const int minutes = remain / 60;
       const int seconds = remain - (60 * minutes);
@@ -272,12 +295,19 @@ void darktable_exit_screen_create(
     GtkWindow *parent_window,
     const gboolean force)
 {
+  // no-op if the exit screen has already been created; if not, only
+  // run if the splash screen is enabled in the config or we are told
+  // to create it regardless
   if(exit_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
   }
 
+  // a simple gtk_dialog_new() leaves us unable to setup the header
+  // bar, so use .._with_buttons and just specify a NULL strings to
+  // have no buttons.  We need to pretend to actually have one button,
+  // though, to keep the compiler happy.
 #ifdef USE_HEADER_BAR
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR;
 #else
@@ -302,6 +332,8 @@ void darktable_exit_screen_create(
   dt_gui_dialog_add(GTK_DIALOG(exit_screen), GTK_WIDGET(header_box), message1, message2);
   gtk_widget_show_all(exit_screen);
   _process_all_gui_events();
+
+  // allow it to be hidden by other windows:
   gtk_window_set_keep_above(GTK_WINDOW(exit_screen), FALSE);
   dt_gui_process_events();
 }
