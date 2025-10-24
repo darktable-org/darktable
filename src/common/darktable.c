@@ -63,7 +63,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
-#include "gui/dbsession.h"
+#include "gui/workspace.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -1581,14 +1581,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
 
     // select database
-    dt_dbsession_create(datadir);
+    dt_workspace_create(datadir);
 
     // now load darktablerc for the given library. Either darktablerc
     // for the default library or darktablerc-<label> for the other
     // libraries.
     const char *dbname = dt_conf_get_string("database");
-    const char *dblabel = dt_conf_get_string("database/label");
-    const gboolean multiple_db = dt_conf_get_bool("database/multiple_db");
+    const char *dblabel = dt_conf_get_string("workspace/label");
+    const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
     const gboolean default_dbname = strcmp(dblabel, "") == 0;
 
@@ -1606,8 +1606,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // values from confgen.
 
     dt_conf_set_string("database", dbname);
-    dt_conf_set_string("database/label", dblabel);
-    dt_conf_set_bool("database/multiple_db", multiple_db);
+    dt_conf_set_string("workspace/label", dblabel);
+    dt_conf_set_bool("database/multiple_workspace", multiple_db);
 
     darktable_splash_screen_create(NULL, FALSE);
   }

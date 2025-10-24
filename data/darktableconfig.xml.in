@@ -183,11 +183,11 @@
     <longdescription>fragmentation ratio above which to ask or carry out automatically database maintenance</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database" common="yes">
-    <name>database/multiple_db</name>
+    <name>database/multiple_workspace</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>allow multiple databases</shortdescription>
-    <longdescription>allow multiple databases which can be selected at startup</longdescription>
+    <shortdescription>allow multiple workspaces</shortdescription>
+    <longdescription>allow multiple workspaces which can be selected at startup</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/create_snapshot</name>

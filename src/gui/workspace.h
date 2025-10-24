@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void dt_dbsession_create(const char *datadir);
+void dt_workspace_create(const char *datadir);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
