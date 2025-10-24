@@ -349,7 +349,8 @@ static void _export_with_current_settings(dt_lib_module_t *self)
   if(confirm_message)
   {
 
-    gboolean res = dt_gui_show_yes_no_dialog(_("export to disk"),  "%s", confirm_message);
+    gboolean res = dt_gui_show_yes_no_dialog
+      (_("export to disk"),  "", "%s", confirm_message);
     g_free(confirm_message);
     confirm_message = NULL;
 

@@ -156,7 +156,7 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
   }
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+     || dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                   _("do you really want to delete the preset `%s'?"), name))
   {
     dt_action_rename_preset(&module->so->actions, name, NULL);
@@ -240,7 +240,7 @@ static void _edit_preset_response(GtkDialog *dialog,
         // if result is BUTTON_NO or ESCAPE keypress exit without
         // destroying dialog, to permit other name
         if(dt_gui_show_yes_no_dialog
-           (_("overwrite preset?"),
+           (_("overwrite preset?"), "",
             _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
           // we remove the preset that will be overwrite
@@ -462,7 +462,7 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name,
 {
   if(!module_name) return FALSE;
 
-  if(dt_gui_show_yes_no_dialog(_("delete preset?"),
+  if(dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                _("do you really want to delete the preset `%s'?"), name))
   {
     // deregistering accel...
@@ -990,7 +990,7 @@ static void _menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("update preset?"),
+     || dt_gui_show_yes_no_dialog(_("update preset?"), "",
                                   _("do you really want to update the preset `%s'?"),
                                   name))
   {

@@ -153,7 +153,7 @@ static void menuitem_update_preset(GtkMenuItem *menuitem,
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("update preset?"),
+     || dt_gui_show_yes_no_dialog(_("update preset?"), "",
                                   _("do you really want to update the preset `%s'?"),
                                   name))
   {
@@ -233,7 +233,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem,
   if(name == NULL) return;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+     || dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                   _("do you really want to delete the preset `%s'?"),
                                   name))
   {

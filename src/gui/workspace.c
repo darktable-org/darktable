@@ -46,7 +46,7 @@ static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
   GtkWidget *b = g_object_get_data(G_OBJECT(button), "db");
   const gchar *label = gtk_button_get_label(GTK_BUTTON(b));
 
-  if(dt_gui_show_yes_no_dialog(_("delete workspace"),
+  if(dt_gui_show_yes_no_dialog(_("delete workspace"), "wpdialog",
                                _("WARNING\n\ndo you really want to delete the '%s' workspace?"
                                  "\n\nif XMP writing is not activated, the editing work will be lost."),
                                label))
