@@ -301,7 +301,7 @@ static gboolean _remove_panel_config(gpointer key,
 static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
 {
   if(!dt_gui_show_yes_no_dialog
-     (_("reset panels in all views"),
+     (_("reset panels in all views"), "",
       _("are you sure?\n\n"
         "you will not be able to restore your current panel layout and module selection.")))
     return;

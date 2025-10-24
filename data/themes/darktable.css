@@ -2353,6 +2353,11 @@ Details :
     margin: 0.5em;
 }
 
+#wpdialog
+{
+    background-color: #852A2A;
+}
+
 #workspace .dt_module_btn
 {
     background-color: #852A2A;

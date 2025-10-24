@@ -1339,7 +1339,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog
-          (_("delete image's history?"),
+          (_("delete image's history?"), "",
            _("do you really want to clear history of current image?")))
   {
     dt_dev_undo_start_record(darktable.develop);

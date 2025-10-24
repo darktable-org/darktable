@@ -240,7 +240,7 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   const int number = g_list_length((GList *)imgs);
 
   if(!dt_conf_get_bool("ask_before_discard")
-     || dt_gui_show_yes_no_dialog(_("delete images' history?"),
+     || dt_gui_show_yes_no_dialog(_("delete images' history?"), "",
           ngettext("do you really want to clear history of %d selected image?",
                    "do you really want to clear history of %d selected images?", number),
                                   number))
