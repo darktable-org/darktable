@@ -111,7 +111,9 @@ static void _set_header_bar(GtkWidget *dialog)
 #endif
 }
 
-void darktable_splash_screen_create(GtkWindow *parent_window, const gboolean force)
+void darktable_splash_screen_create(
+    GtkWindow *parent_window,
+    const gboolean force)
 {
   if(splash_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
@@ -206,7 +208,8 @@ void darktable_splash_screen_create(GtkWindow *parent_window, const gboolean for
   _process_all_gui_events();
 }
 
-void darktable_splash_screen_set_progress(const char *msg)
+void darktable_splash_screen_set_progress(
+    const char *msg)
 {
   if(splash_screen)
   {
@@ -221,7 +224,10 @@ void darktable_splash_screen_set_progress(const char *msg)
   }
 }
 
-void darktable_splash_screen_set_progress_percent(const char *msg, const double fraction, const double elapsed)
+void darktable_splash_screen_set_progress_percent(
+    const char *msg,
+    const double fraction,
+    const double elapsed)
 {
   if(splash_screen)
   {
@@ -262,7 +268,9 @@ void darktable_splash_screen_destroy()
   }
 }
 
-void darktable_exit_screen_create(GtkWindow *parent_window, const gboolean force)
+void darktable_exit_screen_create(
+    GtkWindow *parent_window,
+    const gboolean force)
 {
   if(exit_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
