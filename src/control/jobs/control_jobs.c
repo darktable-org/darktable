@@ -115,12 +115,13 @@ typedef struct dt_control_image_enumerator_t
   gboolean blocking;
 } dt_control_image_enumerator_t;
 
-typedef struct _apply_styles_data_t
+typedef struct _images_job_data_t
 {
   GList *imgs;
   GList *styles;
   gboolean duplicate;
-} _apply_styles_data_t;
+  gboolean overwrite;
+} _images_job_data_t;
 
 static inline gboolean _job_cancelled(dt_job_t *job)
 {
@@ -1575,11 +1576,13 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  GList *t = params->data;
+  _images_job_data_t *paste_data = params->data;
+  GList *t = paste_data->imgs;
+
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  const gboolean merge = (mode == 0) ? TRUE : FALSE;
+  const int mode = paste_data->overwrite;
+  const gboolean merge = (mode == DT_HISTORY_COPY_APPEND) ? TRUE : FALSE;
 
   dt_control_job_set_progress_message(job,
                                       ngettext("pasting history to %d image",
@@ -1717,7 +1720,7 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  _apply_styles_data_t *style_data = params->data;
+  _images_job_data_t *style_data = params->data;
   if(!style_data)
     return 0;
 
@@ -1733,8 +1736,7 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
                                       total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
-  const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
+  const gboolean is_overwrite = style_data->overwrite;
 
   double prev_time = 0;
   for(GList *t = imgs ; t && !_job_cancelled(job); t = g_list_next(t))
@@ -2287,8 +2289,10 @@ void dt_control_refresh_exif()
                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
-static void _add_history_job(GList *imgs, const char *title, dt_job_execute_callback execute,
-                             _apply_styles_data_t *styles_data)
+static void _add_history_job(GList *imgs,
+                             const char *title,
+                             dt_job_execute_callback execute,
+                             _images_job_data_t *images_job_data)
 {
   if(!imgs || !execute)
     return;
@@ -2301,14 +2305,18 @@ static void _add_history_job(GList *imgs, const char *title, dt_job_execute_call
     // remove the image in darkroom center view from the list of
     // images to be processed, and run it synchronously by itself
     imgs = g_list_remove_link(imgs, link);
-    if(styles_data)
-      styles_data->imgs = link;
+
+    if(images_job_data)
+      images_job_data->imgs = link;
+
     dt_control_add_job(DT_JOB_QUEUE_SYNCHRONOUS,
                        _control_generic_images_job_create(execute, title, 0,
-                                                            styles_data ? (gpointer)styles_data : (gpointer)link,
-                                                            PROGRESS_BLOCKING, FALSE));
-    if(styles_data)
-      styles_data->imgs = imgs;
+                                                          images_job_data
+                                                          ? (gpointer)images_job_data
+                                                          : (gpointer)link,
+                                                          PROGRESS_BLOCKING, FALSE));
+    if(images_job_data)
+      images_job_data->imgs = imgs;
   }
   // if there are any images left in the list after removing the
   // darkroom image, process them asynchronously but block user
@@ -2317,8 +2325,10 @@ static void _add_history_job(GList *imgs, const char *title, dt_job_execute_call
   {
     dt_control_add_job(DT_JOB_QUEUE_USER_FG,
                        _control_generic_images_job_create(execute, title, 0,
-                                                            styles_data ? (gpointer)styles_data : (gpointer)imgs,
-                                                            PROGRESS_BLOCKING, FALSE));
+                                                          images_job_data
+                                                          ? (gpointer)images_job_data
+                                                          : (gpointer)imgs,
+                                                          PROGRESS_BLOCKING, FALSE));
   }
 }
 
@@ -2329,7 +2339,18 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+
+  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  if(images_job_data)
+  {
+    images_job_data->imgs = imgs;
+    images_job_data->styles = NULL;
+    images_job_data->duplicate = FALSE;
+    images_job_data->overwrite = FALSE;
+  }
+
+  _add_history_job(imgs, N_("paste history"),
+                   &_control_paste_history_job_run, images_job_data);
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2347,7 +2368,17 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    if(images_job_data)
+    {
+      images_job_data->imgs = imgs;
+      images_job_data->styles = NULL;
+      images_job_data->duplicate = FALSE;
+      images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
+    }
+
+    _add_history_job(imgs, N_("paste history"),
+                     &_control_paste_history_job_run, images_job_data);
   }
   else
     g_list_free(imgs);
@@ -2393,13 +2424,16 @@ void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicat
     return;
   }
 
-  _apply_styles_data_t *styles_data = g_malloc(sizeof(_apply_styles_data_t));
-  if(styles_data)
+  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  if(images_job_data)
   {
-    styles_data->imgs = imgs;
-    styles_data->styles = styles;
-    styles_data->duplicate = duplicate;
-    _add_history_job(imgs, N_("apply style(s)"), &_control_apply_styles_job_run, styles_data);
+    const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+    images_job_data->imgs = imgs;
+    images_job_data->styles = styles;
+    images_job_data->duplicate = duplicate;
+    images_job_data->overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
+    _add_history_job(imgs, N_("apply style(s)"),
+                     &_control_apply_styles_job_run, images_job_data);
   }
 }
 
