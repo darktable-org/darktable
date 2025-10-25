@@ -63,6 +63,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
+#include "gui/workspace.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -546,7 +547,7 @@ static size_t _get_mipmap_size()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1) + 2] * DT_MEGA;
   const int fraction = res->fractions[4*level + 2];
   return res->total_memory / 1024lu * fraction;
 }
@@ -716,11 +717,40 @@ static dt_job_t *_backthumbs_job_create(void)
   return job;
 }
 
-void dt_start_backtumbs_crawler(void)
+static void _wait_backthumbs_crawler(void)
 {
-  // don't write thumbs if using memory database or on a non-sufficient system
-  if(!darktable.backthumbs.running && darktable.backthumbs.capable)
-    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
+  dt_backthumb_t *bt = &darktable.backthumbs;
+  for(int i = 0; i < 1000 && bt->state == DT_JOB_STATE_CANCELLED; i++)
+    g_usleep(10000);
+}
+
+void dt_start_backthumbs_crawler(void)
+{
+  const gboolean possible =
+      // only in lighttable mode
+      dt_view_get_current() == DT_VIEW_LIGHTTABLE
+      // not in gimp mode or if using a memory database or on very simple CPUs
+      && darktable.backthumbs.capable
+      // allow on 8GB systems with default memory preferences
+      && (dt_get_available_mem() / DT_MEGA) > 3000lu;
+  if(!possible || darktable.backthumbs.state == DT_JOB_STATE_RUNNING)
+    return;
+
+  // in case it's cancelled and wants to be restarted
+  _wait_backthumbs_crawler();
+
+  dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
+}
+
+void dt_stop_backthumbs_crawler(const gboolean wait)
+{
+  if(darktable.backthumbs.state == DT_JOB_STATE_RUNNING
+    && darktable.backthumbs.capable)
+  {
+    darktable.backthumbs.state = DT_JOB_STATE_CANCELLED;
+    if(wait)
+      _wait_backthumbs_crawler();
+  }
 }
 
 static char *_get_version_string(void)
@@ -1169,6 +1199,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         CHKSIGDBG(DT_SIGNAL_CONTROL_TOAST_REDRAW);
         CHKSIGDBG(DT_SIGNAL_CONTROL_PICKERDATA_READY);
         CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
+        CHKSIGDBG(DT_SIGNAL_PRESET_APPLIED);
         else
         {
           dt_print(DT_DEBUG_SIGNAL,
@@ -1472,20 +1503,29 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_exif_init();
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-  char darktablerc[PATH_MAX] = { 0 };
-  snprintf(darktablerc, sizeof(darktablerc), "%s/darktablerc", datadir);
+
+  char darktablerc_common[PATH_MAX] = { 0 };
+  snprintf(darktablerc_common, sizeof(darktablerc_common),
+           "%s/darktablerc-common", datadir);
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
 
-  // set the interface language and prepare selection for prefs & confgen
-  darktable.l10n = dt_l10n_init(darktablerc, init_gui);
-
   // initialize the configuration default/min/max
   dt_confgen_init();
 
-  // read actual configuration, needs confgen above for sanitizing values
-  dt_conf_init(darktable.conf, darktablerc, config_override);
+  // Read common configuration, needs confgen above for sanitizing
+  // values. This first step read only the darktablerc-common
+  // settings. The settings in this file are those needed to
+  // initialize the GUI (UI language / default fonts, tooltips state)
+  // and l10n.
+  //
+  // This files contains all preferences with the attribute common="true" in
+  // darktableconfig.xml.in.
+  dt_conf_init(darktable.conf, darktablerc_common, TRUE, config_override);
+
+  // set the interface language and prepare selection for prefs & confgen
+  darktable.l10n = dt_l10n_init(init_gui);
 
   g_slist_free_full(config_override, g_free);
 
@@ -1539,6 +1579,35 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       g_free(user_dirs_failure_text);
       exit(EXIT_FAILURE);
     }
+
+    // select database
+    dt_workspace_create(datadir);
+
+    // now load darktablerc for the given library. Either darktablerc
+    // for the default library or darktablerc-<label> for the other
+    // libraries.
+    const char *dbname = dt_conf_get_string("database");
+    const char *dblabel = dt_conf_get_string("workspace/label");
+    const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
+
+    const gboolean default_dbname = strcmp(dblabel, "") == 0;
+
+    char darktablerc[PATH_MAX] = { 0 };
+    snprintf(darktablerc, sizeof(darktablerc),
+             "%s/darktablerc%s%s", datadir,
+             default_dbname ? "" : "-",
+             default_dbname ? "" : dblabel);
+
+    dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
+
+    // restore dbname & label (as set in call dt_dbsession_create) to
+    // the one selected on the dialog ensuring that if the
+    // darktablerc-* is not yet preset we won't store the default
+    // values from confgen.
+
+    dt_conf_set_string("database", dbname);
+    dt_conf_set_string("workspace/label", dblabel);
+    dt_conf_set_bool("database/multiple_workspace", multiple_db);
 
     darktable_splash_screen_create(NULL, FALSE);
   }
@@ -1694,7 +1763,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_sys_resources_t *res = &darktable.dtresources;
   res->fractions = fractions;
   res->refresource = ref_resources;
-  res->total_memory = _get_total_memory() * 1024lu;
+  size_t total_mb = _get_total_memory() / 1024lu;
+  if(total_mb < 8192) total_mb -= 1024;
+  res->total_memory = total_mb * DT_MEGA;
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
@@ -1706,7 +1777,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_get_sysresource_level();
   res->mipmap_memory = _get_mipmap_size();
   dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-    "  mipmap cache:    %luMB", res->mipmap_memory / 1024lu / 1024lu);
+    "  mipmap cache:    %luMB", res->mipmap_memory / DT_MEGA);
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1797,6 +1868,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       return 1;
     }
     dt_bauhaus_init();
+
+    darktable.backthumbs.state = DT_JOB_STATE_FINISHED;
+    darktable.backthumbs.capable =
+        !dt_gimpmode()
+        && dt_get_num_threads() >= 4
+        && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   }
   else
     darktable.gui = NULL;
@@ -1925,21 +2002,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   free(config_info);
 
-  darktable.backthumbs.running = FALSE;
-  darktable.backthumbs.capable =
-      (dt_worker_threads() > 4)
-      && !dt_gimpmode()
-      && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
-
   if(init_gui)
   {
     // construct the popup that asks the user how to handle images whose xmp
     // files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
-
-    if(!dt_gimpmode())
-     dt_start_backtumbs_crawler();
   }
 
   // fire up a background job to perform sidecar writes
@@ -2007,11 +2075,11 @@ void dt_get_sysresource_level()
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
              "[dt_get_sysresource_level] switched to `%s'", config);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  total mem:       %luMB", res->total_memory / 1024lu / 1024lu);
+             "  total mem:       %luMB", res->total_memory / DT_MEGA);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  available mem:   %luMB", dt_get_available_mem() / 1024lu / 1024lu);
+             "  available mem:   %luMB", dt_get_available_mem() / DT_MEGA);
     dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
-             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / DT_MEGA);
   }
 }
 
@@ -2022,13 +2090,8 @@ void dt_cleanup()
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
 
-  if(darktable.backthumbs.running)
-  {
-    // if the backthumbs crawler is running, stop it now and wait for it being terminated.
-    darktable.backthumbs.running = FALSE;
-    for(int i = 0; i < 1000 && darktable.backthumbs.capable; i++)
-      g_usleep(10000);
-  }
+  dt_stop_backthumbs_crawler(TRUE);
+
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
@@ -2340,10 +2403,10 @@ size_t dt_get_available_mem()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1)] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1)] * DT_MEGA;
 
   const int fraction = res->fractions[4*level];
-  return MAX(512lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
+  return MAX(512lu * DT_MEGA, res->total_memory / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
@@ -2351,16 +2414,16 @@ size_t dt_get_singlebuffer_mem()
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
   if(level < 0)
-    return res->refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
+    return res->refresource[4*(-level-1) + 1] * DT_MEGA;
 
   const int fraction = res->fractions[4*level + 1];
-  return MAX(2lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
+  return MAX(2lu * DT_MEGA, res->total_memory / 1024lu * fraction);
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
 {
   const size_t threads = dt_get_num_procs();
-  const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
+  const size_t mem = darktable.dtresources.total_memory / DT_MEGA;
   const size_t bits = CHAR_BIT * sizeof(void *);
   const gboolean sufficient = mem >= 4096 && threads >= 2;
 

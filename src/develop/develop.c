@@ -129,6 +129,8 @@ void dt_dev_init(dt_develop_t *dev,
 
   dt_dev_init_chroma(dev);
 
+  dev->late_scaling.enabled = FALSE;
+
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode =
     dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
@@ -2955,10 +2957,10 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
-void dt_dev_exposure_handle_event(GdkEvent *event, const gboolean blackwhite)
+void dt_dev_exposure_handle_event(gpointer controller, int n_press, gdouble x, const gboolean blackwhite)
 {
   if(darktable.develop->proxy.exposure.handle_event)
-    darktable.develop->proxy.exposure.handle_event(event, blackwhite);
+    darktable.develop->proxy.exposure.handle_event(controller, n_press, x, blackwhite);
 }
 
 void dt_dev_modulegroups_set(dt_develop_t *dev,

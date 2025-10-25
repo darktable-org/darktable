@@ -1,17 +1,22 @@
 
 #define MyAppName "darktable"
 #define MyAppVersion "${PROJECT_VERSION}"
-#define MyAppCopyright "Copyright © 2009-2025 darktable developers"
+#define MyAppVersionLength Len(MyAppVersion)
+
+#define CurrentYear GetDateTimeString('yyyy', '', '')
+#define MyAppCopyright "Copyright © 2009-" + CurrentYear + " darktable developers"
+
 #define MyAppPublisher "darktable team"
 #define MyAppURL "https://darktable.org/"
 #define MyAppExeName "darktable.exe"
 #define MyAppCliExeName "darktable-cli.exe"
 
 [Setup]
-; The value of AppId uniquely identifies the application. We also realize that
-; some users install more than one darktable version (e.g. stable and nightly
-; snapshot), so having the app name plus version as the AppId makes sense.
-AppId={#MyAppName}{#MyAppVersion}
+; The value of AppId uniquely identifies the application. Some users install
+; both a darktable release and a development snapshot (as a daily driver and
+; for testing, respectively), so it makes sense to use the application name
+; along with the release/non-release discriminator as the AppId.
+AppId={#MyAppName}{code:SuffixIfNotRelease}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 
@@ -25,8 +30,16 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
+
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
+
+; This file is not in the source tree, it is expected to be created in
+; the installer build environment before compiling this script as:
+;   magick data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
+SetupIconFile=dt_logo_multiresolution.ico
 
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
@@ -39,9 +52,14 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 ChangesAssociations=yes
-DefaultGroupName={#MyAppName}
+DefaultGroupName={#MyAppName}{code:SuffixIfNotRelease}
 AllowNoIcons=yes
-LicenseFile=share\doc\darktable\LICENSE
+
+; For potential future contributors:
+; Please do not set the LicenseFile directive, as it effectively sets a step
+; to accept the EULA. The darktable license is GPL, and GPL is not an EULA.
+; Users are not required to agree to anything to merely use GPLed software.
+; LicenseFile=share\doc\darktable\LICENSE
 
 ; Uncomment the following line to run in non administrative install mode
 ; (install for current user only).
@@ -49,16 +67,40 @@ LicenseFile=share\doc\darktable\LICENSE
 
 PrivilegesRequiredOverridesAllowed=dialog
 
-; Make this name different while we build nightly with both this and the NSIS installer
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experimental
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.
 ; May be useful for debugging, not needed for production builds.
 ; OutputManifestFile=darktable-manifest.txt
 
+; See https://github.com/teeks99/inno-test/ for which compression parameters
+; should be set and to what values, and which are better not to touch.
+Compression=lzma2/ultra64
 SolidCompression=yes
+LZMAUseSeparateProcess=yes
+
+; Setting this parameter to 2 (default is 1) only slightly (by a few fractions
+; of a percent) increases file size, but significantly speeds up compression.
+; OTOH, saving a minute of nightly job is not that important (if at all). But
+; neither is an extra couple of hundred KB of installer file. So, really,
+; there is no strong justification for choosing the value of this parameter...
+LZMANumBlockThreads=2
+
 WizardStyle=modern
+
+; We allow users who install the program to add darktable to their Quick Launch
+; list (on supported Windows versions), even when installing for all users.
+; This is intentional, don't warn.
+UsedUserAreasWarning=no
+
+; These parameters must be set to "no" if the AppId contains constants. We use
+; scripted constant to have different AppIds for release and nightly snapshot.
+; However, the behavior for "no" values seems logical, so these values are what
+; would make sense to set even if we weren't forced to.
+UsePreviousLanguage=no
+UsePreviousPrivileges=no
+
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -70,6 +112,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVer
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignoreversion
+Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Registry]
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
@@ -109,6 +153,10 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
 [Run]
+Filename: "https://docs.darktable.org/usermanual/development/"; \
+  Description: "Open darktable user manual"; \
+  Flags: postinstall shellexec runasoriginaluser
+
 Filename: "{app}\bin\{#MyAppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
   Flags: nowait postinstall skipifsilent
@@ -120,4 +168,17 @@ begin
     Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
   else
     Result := 'Environment'
+end;
+
+function SuffixIfNotRelease(Param: String): String;
+begin
+  (*
+  The length of the release version string is 5, but let's add some safety
+  margin (the major and minor numbers may become double digits someday),
+  the git snapshot version is _much_ longer anyway.
+  *)
+  if {#MyAppVersionLength} > 7 then
+    Result := '-dev'
+  else
+    Result := ''
 end;

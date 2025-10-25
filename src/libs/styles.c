@@ -305,6 +305,7 @@ static void _apply_clicked(GtkWidget *w, dt_lib_styles_t *d)
   }
   else
   {
+    dt_stop_backthumbs_crawler(FALSE);
     GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
     if(!g_list_is_empty(imgs))
     {
@@ -314,6 +315,8 @@ static void _apply_clicked(GtkWidget *w, dt_lib_styles_t *d)
     }
     else
       g_list_free_full(style_names, g_free);
+
+    dt_start_backthumbs_crawler();
   }
 }
 
@@ -395,7 +398,7 @@ gboolean _ask_before_delete_style(const gint style_cnt)
 {
   return !dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style")
     || dt_gui_show_yes_no_dialog(
-      ngettext("remove style?", "remove styles?", style_cnt),
+      ngettext("remove style?", "remove styles?", style_cnt), "",
       ngettext("do you really want to remove %d style?",
                "do you really want to remove %d styles?", style_cnt),
       style_cnt);

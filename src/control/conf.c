@@ -447,10 +447,8 @@ gchar *dt_conf_read_values(const char *filename,
 
   char line[LINE_SIZE + 1];
 
-  FILE *f = NULL;
-
   // check for user config
-  f = g_fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   // if file has been found, parse it
 
@@ -512,14 +510,28 @@ static gchar *_conf_insert_value(const gchar *key, const gchar *value)
   return NULL;
 }
 
-void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
+void dt_conf_init(dt_conf_t *cf,
+                  const char *filename,
+                  const gboolean is_common,
+                  GSList *override_entries)
 {
-  cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+  // should we initialize the storage
+  if(!cf->table)
+  {
+    cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+  }
 
   // init conf filename
-  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
+  if(is_common)
+  {
+    g_strlcpy(cf->filename_common, filename, sizeof(cf->filename_common));
+  }
+  else
+  {
+    g_strlcpy(cf->filename, filename, sizeof(cf->filename));
+  }
 
   dt_conf_read_values(filename, _conf_insert_value);
 
@@ -643,6 +655,18 @@ const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
   }
 
   return "";
+}
+
+gboolean dt_confgen_is_common(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->is_common;
+  }
+
+  return FALSE;
 }
 
 const char *dt_confgen_get_label(const char *name)
@@ -856,8 +880,10 @@ static void _conf_print(const gchar *key, const gchar *val, FILE *f)
 
 void dt_conf_save(dt_conf_t *cf)
 {
-  FILE *f = g_fopen(cf->filename, "wb");
-  if(f)
+  FILE *fc = g_fopen(cf->filename_common, "wb");
+  FILE *fs = g_fopen(cf->filename, "wb");
+
+  if(fs && fc)
   {
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
@@ -866,11 +892,14 @@ void dt_conf_save(dt_conf_t *cf)
     {
       const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+
+      FILE *f = dt_confgen_is_common(key) ? fc : fs;
       _conf_print(key, val, f);
     }
 
     g_list_free(sorted);
-    fclose(f);
+    fclose(fs);
+    fclose(fc);
   }
 }
 void dt_conf_cleanup(dt_conf_t *cf)

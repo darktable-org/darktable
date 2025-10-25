@@ -695,14 +695,19 @@ static gchar *_lib_history_bauhaus_text(gpointer bhfield,
 {
   for(GSList *w = module->widget_list_bh; w; w = g_slist_next(w))
   {
-    GtkWidget *widget = ((dt_action_target_t *)w->data)->target;
-    if(DT_BAUHAUS_WIDGET(widget)->field == bhfield)
+    dt_action_target_t *at = w->data;
+    GtkWidget *widget = at->target;
+    if(dt_bauhaus_widget_get_field(widget) == bhfield)
     {
+      dt_action_t *as = at->action->owner;
+      gchar *s = as && as->type == DT_ACTION_TYPE_SECTION
+                 ? g_strdup_printf("%s/%s", as->label, d) : NULL;
       gchar *old_text = dt_bauhaus_slider_get_text(widget, oval);
       gchar *new_text = dt_bauhaus_slider_get_text(widget, pval);
-      gchar *ret_text = CHG_STR(%s, d, old_text, new_text);
+      gchar *ret_text = CHG_STR(%s, s ? s : d, old_text, new_text);
       g_free(old_text);
       g_free(new_text);
+      g_free(s);
       return ret_text;
     }
   }
@@ -741,21 +746,8 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
 
         if(d) description = g_strdup_printf("%s.%s", d, description);
 
-        gchar *part, *sect = NULL;
-        if((part = _lib_history_change_text(entry, description, module, params, oldpar)))
-        {
-          GHashTable *sections = field->header.so->get_introspection()->sections;
-          if(sections
-             && (sect = g_hash_table_lookup(sections,
-                                            GINT_TO_POINTER(entry->header.offset))))
-          {
-            sect = g_strdup_printf("%s/%s", Q_(sect), part);
-            g_free(part);
-            part = sect;
-          }
-
-          change_parts[num_parts++] = part;
-        }
+        gchar *part = _lib_history_change_text(entry, description, module, params, oldpar);
+        if(part) change_parts[num_parts++] = part;
 
         if(d) g_free(description);
       }
@@ -1347,7 +1339,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog
-          (_("delete image's history?"),
+          (_("delete image's history?"), "",
            _("do you really want to clear history of current image?")))
   {
     dt_dev_undo_start_record(darktable.develop);

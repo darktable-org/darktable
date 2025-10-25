@@ -664,7 +664,7 @@ int dt_control_jobs_pending()
   if(!control) return 0;
 
   int pending = dt_atomic_get_int(&control->pending_jobs);
-  if(darktable.backthumbs.running)
+  if(darktable.backthumbs.state == DT_JOB_STATE_RUNNING)
     pending--;
   return pending;
 }

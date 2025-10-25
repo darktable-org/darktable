@@ -982,7 +982,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       if(count > 0)
       {
         confirm_delete = dt_gui_show_yes_no_dialog(
-          _("delete metadata"),
+          _("delete metadata"), "",
           _("you are about to delete metadata which is currently assigned to images.\n"
             "the assignments will be removed."));
       }

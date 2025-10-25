@@ -115,12 +115,13 @@ typedef struct dt_control_image_enumerator_t
   gboolean blocking;
 } dt_control_image_enumerator_t;
 
-typedef struct _apply_styles_data_t
+typedef struct _images_job_data_t
 {
   GList *imgs;
   GList *styles;
   gboolean duplicate;
-} _apply_styles_data_t;
+  gboolean overwrite;
+} _images_job_data_t;
 
 static inline gboolean _job_cancelled(dt_job_t *job)
 {
@@ -1509,6 +1510,7 @@ static int32_t _control_local_copy_images_job_run(dt_job_t *job)
 
 static int32_t _control_refresh_exif_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   GList *imgs = g_list_copy(t);
@@ -1553,6 +1555,8 @@ static int32_t _control_refresh_exif_run(dt_job_t *job)
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   dt_control_queue_redraw_center();
+
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
@@ -1569,16 +1573,24 @@ static inline gboolean _safe_history_job_on_imgid(dt_job_t *job, const dt_imgid_
 
 static int32_t _control_paste_history_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  GList *t = params->data;
+  _images_job_data_t *paste_data = params->data;
+  if(!paste_data)
+    return 0;
+
+  GList *t = paste_data->imgs;
+
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  const gboolean merge = (mode == 0) ? TRUE : FALSE;
+  const int mode = paste_data->overwrite;
+  const gboolean merge = (mode == DT_HISTORY_COPY_APPEND) ? TRUE : FALSE;
 
-  dt_control_job_set_progress_message(job, ngettext("pasting history to %d image",
-                                                    "pasting history to %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("pasting history to %d image",
+                                               "pasting history to %d images", total),
+                                      total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   double prev_time = 0;
   GList *to_synch = NULL;
@@ -1586,14 +1598,15 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     if(!dt_is_valid_imgid(imgid)) continue;
-    // paste the copied history onto the current image, unless it's the one being edited in darkroom
+    // paste the copied history onto the current image, unless it's
+    // the one being edited in darkroom
     if(_safe_history_job_on_imgid(job, imgid))
     {
       if(dt_history_paste(imgid, merge, FALSE))
       {
-        // remember that this image's history was updated, so we'll need to synch its sidecar
-        // before we finish
-        to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(t->data));
+        // remember that this image's history was updated, so we'll
+        // need to synch its sidecar before we finish
+        to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(imgid));
       }
     }
     else
@@ -1607,6 +1620,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)params->data); // frees list of images
+  g_free(params->data);
   params->data = NULL;
 
   // In darkroom and if there is a copy of the iop-order we need to
@@ -1623,6 +1637,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
     dt_image_synch_xmps(to_synch);
     g_list_free(to_synch);
   }
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
@@ -1634,8 +1649,11 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0;
   int missing = 0;
-  dt_control_job_set_progress_message(job, ngettext("compressing history for %d image",
-                                                    "compressing history for %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("compressing history for %d image",
+                                               "compressing history for %d images",
+                                               total),
+                                      total);
   double prev_time = 0;
   for( ; t && !_job_cancelled(job); t = g_list_next(t))
   {
@@ -1667,6 +1685,7 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
 
 static int32_t _control_discard_history_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->data;
@@ -1696,6 +1715,8 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)params->data); // frees list of images
   params->data = NULL;
+
+  dt_start_backthumbs_crawler();
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1704,20 +1725,23 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  _apply_styles_data_t *style_data = params->data;
+  _images_job_data_t *style_data = params->data;
   if(!style_data)
     return 0;
+
+  dt_stop_backthumbs_crawler(FALSE);
   GList *imgs = style_data->imgs;
   GList *styles = style_data->styles;
   gboolean duplicate = style_data->duplicate;
   const guint total = g_list_length(imgs);
   double fraction = 0.0;
-  dt_control_job_set_progress_message(job, ngettext("applying style(s) for %d image",
-                                                    "applying style(s) for %d images", total), total);
+  dt_control_job_set_progress_message(job,
+                                      ngettext("applying style(s) for %d image",
+                                               "applying style(s) for %d images", total),
+                                      total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
-  const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
+  const gboolean is_overwrite = style_data->overwrite;
 
   double prev_time = 0;
   for(GList *t = imgs ; t && !_job_cancelled(job); t = g_list_next(t))
@@ -1730,7 +1754,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
     {
       hist = dt_history_snapshot_item_init();
       hist->imgid = imgid;
-      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+      dt_history_snapshot_undo_create(hist->imgid, &hist->before,
+                                      &hist->before_history_end);
       dt_undo_disable_next(darktable.undo);
     }
     if(is_overwrite && !duplicate)
@@ -1745,7 +1770,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
     {
       dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
       dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
-                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+                     dt_history_snapshot_undo_pop,
+                     dt_history_snapshot_undo_lt_history_data_free);
     }
     fraction += 1.0 / total;
     _update_progress(job, fraction, &prev_time);
@@ -1758,16 +1784,20 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
   g_free(params->data);
   params->data = NULL;
   dt_control_queue_redraw_center();
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
 static int32_t _control_export_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_export_t *settings = params->data;
-  dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_index(settings->format_index);
+  dt_imageio_module_format_t *mformat =
+    dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
+  dt_imageio_module_storage_t *mstorage =
+    dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = settings->sdata;
 
@@ -1779,7 +1809,8 @@ static int32_t _control_export_job_run(dt_job_t *job)
   if(mstorage->initialize_store)
   {
     if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata,
-                                  &params->index, settings->high_quality, settings->upscale))
+                                  &params->index,
+                                  settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
       goto end;
@@ -1923,6 +1954,7 @@ end:
   dt_ui_notify_user();
 
   if(tag_change) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
@@ -2041,7 +2073,7 @@ gboolean dt_control_remove_images()
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          ngettext(_("remove image?"), _("remove images?"), number),
+          ngettext(_("remove image?"), _("remove images?"), number), "",
           ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
                    "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
           number))
@@ -2074,7 +2106,7 @@ void dt_control_delete_images()
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          ngettext(_("delete image?"), _("delete images?"), number),
+          ngettext(_("delete image?"), _("delete images?"), number), "",
           send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
                                    "do you really want to physically delete %d images\n(using trash if possible)?", number)
                         : ngettext("do you really want to physically delete %d image from disk?",
@@ -2111,7 +2143,7 @@ void dt_control_delete_duplicate(const dt_imgid_t imgid)
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          _("delete duplicate?"),
+          _("delete duplicate?"), "",
           _("do you really want to delete the duplicate "
             "(without deleting the source image file on disk)?")))
     {
@@ -2161,7 +2193,7 @@ void dt_control_move_images()
   if(dt_conf_get_bool("ask_before_move"))
   {
     if(!dt_gui_show_yes_no_dialog(
-          ngettext("move image?", "move images?", number),
+          ngettext("move image?", "move images?", number), "",
           ngettext("do you really want to physically move %d image to %s?\n"
                    "(all duplicates will be moved along)",
                    "do you really want to physically move %d images to %s?\n"
@@ -2221,7 +2253,7 @@ void dt_control_copy_images()
   if(dt_conf_get_bool("ask_before_copy"))
   {
     if(!dt_gui_show_yes_no_dialog(
-          ngettext("copy image?", "copy images?", number),
+          ngettext("copy image?", "copy images?", number), "",
           ngettext("do you really want to physically copy %d image to %s?",
                    "do you really want to physically copy %d images to %s?", number),
           number, dir))
@@ -2262,34 +2294,46 @@ void dt_control_refresh_exif()
                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
-static void _add_history_job(GList *imgs, const char *title, dt_job_execute_callback execute,
-                             _apply_styles_data_t *styles_data)
+static void _add_history_job(GList *imgs,
+                             const char *title,
+                             dt_job_execute_callback execute,
+                             _images_job_data_t *images_job_data)
 {
   if(!imgs || !execute)
     return;
-  GList *link = darktable.develop ? g_list_find(imgs,GINT_TO_POINTER(darktable.develop->image_storage.id)) : NULL;
+  GList *link = darktable.develop
+    ? g_list_find(imgs, GINT_TO_POINTER(darktable.develop->image_storage.id))
+    : NULL;
+
   if(link)
   {
-    // remove the image in darkroom center view from the list of images to be processed, and
-    // run it synchronously by itself
+    // remove the image in darkroom center view from the list of
+    // images to be processed, and run it synchronously by itself
     imgs = g_list_remove_link(imgs, link);
-    if(styles_data)
-      styles_data->imgs = link;
+
+    if(images_job_data)
+      images_job_data->imgs = link;
+
     dt_control_add_job(DT_JOB_QUEUE_SYNCHRONOUS,
                        _control_generic_images_job_create(execute, title, 0,
-                                                            styles_data ? (gpointer)styles_data : (gpointer)link,
-                                                            PROGRESS_BLOCKING, FALSE));
-    if(styles_data)
-      styles_data->imgs = imgs;
+                                                          images_job_data
+                                                          ? (gpointer)images_job_data
+                                                          : (gpointer)link,
+                                                          PROGRESS_BLOCKING, FALSE));
+    if(images_job_data)
+      images_job_data->imgs = imgs;
   }
-  // if there are any images left in the list after removing the darkroom image, process them asynchronously
-  // but block user interactions other than cancellation
+  // if there are any images left in the list after removing the
+  // darkroom image, process them asynchronously but block user
+  // interactions other than cancellation
   if(imgs)
   {
     dt_control_add_job(DT_JOB_QUEUE_USER_FG,
                        _control_generic_images_job_create(execute, title, 0,
-                                                            styles_data ? (gpointer)styles_data : (gpointer)imgs,
-                                                            PROGRESS_BLOCKING, FALSE));
+                                                          images_job_data
+                                                          ? (gpointer)images_job_data
+                                                          : (gpointer)imgs,
+                                                          PROGRESS_BLOCKING, FALSE));
   }
 }
 
@@ -2300,7 +2344,18 @@ void dt_control_paste_history(GList *imgs)
     g_list_free(imgs);
     return;
   }
-  _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+
+  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  if(images_job_data)
+  {
+    images_job_data->imgs = imgs;
+    images_job_data->styles = NULL;
+    images_job_data->duplicate = FALSE;
+    images_job_data->overwrite = FALSE;
+
+    _add_history_job(imgs, N_("paste history"),
+                     &_control_paste_history_job_run, images_job_data);
+  }
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2318,7 +2373,17 @@ void dt_control_paste_parts_history(GList *imgs)
 
   if(res == GTK_RESPONSE_OK)
   {
-    _add_history_job(imgs, N_("paste history"), &_control_paste_history_job_run, NULL);
+    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    if(images_job_data)
+    {
+      images_job_data->imgs = imgs;
+      images_job_data->styles = NULL;
+      images_job_data->duplicate = FALSE;
+      images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
+
+      _add_history_job(imgs, N_("paste history"),
+                       &_control_paste_history_job_run, images_job_data);
+    }
   }
   else
     g_list_free(imgs);
@@ -2364,13 +2429,16 @@ void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicat
     return;
   }
 
-  _apply_styles_data_t *styles_data = g_malloc(sizeof(_apply_styles_data_t));
-  if(styles_data)
+  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+  if(images_job_data)
   {
-    styles_data->imgs = imgs;
-    styles_data->styles = styles;
-    styles_data->duplicate = duplicate;
-    _add_history_job(imgs, N_("apply style(s)"), &_control_apply_styles_job_run, styles_data);
+    const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+    images_job_data->imgs = imgs;
+    images_job_data->styles = styles;
+    images_job_data->duplicate = duplicate;
+    images_job_data->overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
+    _add_history_job(imgs, N_("apply style(s)"),
+                     &_control_apply_styles_job_run, images_job_data);
   }
 }
 
@@ -2418,9 +2486,9 @@ void dt_control_export(GList *imgid_list,
                        const gboolean export_masks,
                        char *style,
                        const gboolean style_append,
-                       dt_colorspaces_color_profile_type_t icc_type,
+                       const dt_colorspaces_color_profile_type_t icc_type,
                        const gchar *icc_filename,
-                       dt_iop_color_intent_t icc_intent,
+                       const dt_iop_color_intent_t icc_intent,
                        const gchar *metadata_export)
 {
   dt_job_t *job = dt_control_job_create(&_control_export_job_run, "export");

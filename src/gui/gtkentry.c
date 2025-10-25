@@ -34,7 +34,7 @@ typedef enum
 
 
 static dt_gtkentry_completion_spec _default_path_compl_list[]
-  = { { "ROLL.NAME", N_("$(ROLL.NAME) - roll of the input image") },
+  = { { "ROLL.NAME[]", N_("$(ROLL.NAME[n]) - roll of the input image, n: levels used") },
       { "FILE.FOLDER", N_("$(FILE.FOLDER) - folder containing the input image") },
       { "FILE.NAME", N_("$(FILE.NAME) - basename of the input image") },
       { "FILE.EXTENSION", N_("$(FILE.EXTENSION) - extension of the input image") },
@@ -119,6 +119,7 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { "DARKTABLE.NAME", N_("$(DARKTABLE.NAME) - darktable name") },
       { "DARKTABLE.VERSION", N_("$(DARKTABLE.VERSION) - current darktable version") },
       { "SIDECAR_TXT", N_("$(SIDECAR_TXT) - contents of .txt sidecar file, if present") },
+      { "WORKSPACE.LABEL", N_("$(WORKSPACE.LABEL) - label of the current workspace") },
       { NULL, NULL } };
 
 
@@ -274,7 +275,7 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
 {
   if(!_completion_model)
     _init_completion_model();
- 
+
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_text_column(completion, COMPL_DESCRIPTION);
   gtk_entry_set_completion(entry, completion);
@@ -300,7 +301,7 @@ void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata)
 void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata)
 {
   GtkTreeIter iter;
-  
+
   gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(_completion_model), &iter);
   while(valid)
   {
@@ -308,7 +309,7 @@ void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata)
     gtk_tree_model_get(GTK_TREE_MODEL(_completion_model), &iter,
                        COMPL_ID, &id,
                        -1);
-    
+
     if(id == metadata->key)
     {
       gtk_list_store_remove(_completion_model, &iter);

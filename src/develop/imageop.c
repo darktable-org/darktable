@@ -2331,6 +2331,8 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
                                          GdkEventScroll *event,
                                          dt_iop_module_t *module)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   int delta_y = 0;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     dt_gui_presets_apply_adjacent_preset(module, delta_y);

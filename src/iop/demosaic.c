@@ -52,7 +52,6 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 #define DT_REDUCESIZE_MIN 64
-#define DT_MEGA 1048576l
 
 // these are highly depending on CPU architecture (cache size)
 #define DT_RCD_TILESIZE 112
@@ -605,7 +604,7 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
   }
 
   const int per_row = perpix * sizeof(float) * width;
-  int max_rows = avail / per_row / (gpu ? 5 : 4);
+  const int max_rows = avail / per_row / (gpu ? 5 : 4);
   const int untiled_max_rows = untiled_avail / per_row;
 
   dt_print(DT_DEBUG_PIPE | DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
@@ -733,8 +732,17 @@ void process(dt_iop_module_t *self,
   const gboolean tiling = _tiling_requirements(self, piece, roi_in, roi_out, dual, greens, direct, do_capture, FALSE, method,
                           &overlap, &valid_rows, &tile_height, &num_tiles);
 
+  const gboolean bad_tiling = tiling && (valid_rows < 30);
+  if(bad_tiling)
+  {
+    valid_rows = 30;
+    tile_height = valid_rows + 2* overlap;
+    num_tiles = (height + valid_rows - 1) / valid_rows;
+    dt_print(DT_DEBUG_ALWAYS, "high demosaicing memory load");
+  }
+
   if(tiling || (darktable.unmuted & DT_DEBUG_VERBOSE))
-    dt_print(DT_DEBUG_PIPE, "CPU %s%s %s demosaic %s%s%s%s%s. tiles=%d tileheight=%d overlap=%d",
+    dt_print(DT_DEBUG_PIPE, "CPU %s%s %s demosaic %s%s%s%s%s%s. tiles=%d tileheight=%d overlap=%d",
       tiling ? "tiled " : "",
       direct ? "direct" : "scaled",
       is_xtrans ? "xtrans" : is_bayer ? "bayer" : "bayer4",
@@ -743,14 +751,8 @@ void process(dt_iop_module_t *self,
       do_capture ? " capture" : "",
       greens ? " greens" : "",
       no_masking ? "" : " showmask",
+      bad_tiling ? ", high memory" : "",
       num_tiles, tile_height, overlap);
-
-  if(tiling && (valid_rows < 1))
-  {
-    valid_rows = 16;
-    tile_height = valid_rows + 2* overlap;
-    dt_print(DT_DEBUG_ALWAYS, "high demosaicing memory load");
-  }
 
   float *out = direct ? (float *)o : dt_iop_image_alloc(width, height, 4);
   if(!out)
@@ -1597,10 +1599,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_widget_set_quad_active(g->cs_thrs, FALSE);
     g->cs_mask = FALSE;
   }
-
-  // as the dual modes change behaviour for previous pipeline modules we do a reprocess
-  if(isdual && (w == g->demosaic_method_bayer || w == g->demosaic_method_xtrans))
-    dt_dev_reprocess_center(self->dev);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -1674,19 +1672,32 @@ static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
   const gboolean new_radius = g->new_radius > 0.0f;
   const gboolean new_thrs = g->new_thrs > 0.0f;
   if(new_radius)
-  {
-    dt_bauhaus_slider_set_val(g->cs_radius, g->new_radius);
-    g->new_radius = 0.0f;
-  }
+     dt_bauhaus_slider_set_val(g->cs_radius, g->new_radius);
+
   if(new_thrs)
-  {
     dt_bauhaus_slider_set_val(g->cs_thrs, g->new_thrs);
-    g->new_thrs = 0.0f;
-  }
+
   --darktable.gui->reset;
 
   if(new_radius || new_thrs)
+  {
+    dt_print(DT_DEBUG_PIPE, "demosaic UI pipe sets radius=%.3f thrs=%.3f",
+      g->new_radius, g->new_thrs);
+    g->new_radius = g->new_thrs = 0.0f;
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
+static void _preset_applied_callback(gpointer instance, dt_iop_module_t *self)
+{
+  const dt_iop_demosaic_params_t *p = self->params;
+  if(p->cs_enabled && (p->cs_radius <= 0.0f || p->cs_thrs <= 0.0f))
+  {
+    dt_print(DT_DEBUG_PIPE, "demosaic auto preset applied, radius=%.3f thrs=%.3f",
+      p->cs_radius, p->cs_thrs);
+    dt_dev_reprocess_center(self->dev);
+  }
 }
 
 void gui_focus(dt_iop_module_t *self, const gboolean in)
@@ -1770,8 +1781,8 @@ void gui_init(dt_iop_module_t *self)
                                               "ringing especially when used with a large 'iterations' setting.\n\n"
                                               "Note: a radius set to zero will be recalculated automatically the next run. use for presets"));
   dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_radius_callback,
-    _("calculate the capture sharpen radius from sensor data.\n"
-      "this should be done in zoomed out darkroom"));
+                                            _("calculate the capture sharpen radius from available raw sensor data.\n"
+                                              "for best results avoid cropping or darkroom zooming in"));
 
   g->cs_thrs = dt_bauhaus_slider_from_params(self, "cs_thrs");
   gtk_widget_set_tooltip_text(g->cs_thrs, _("restrict capture sharpening to areas with high local contrast,\n"
@@ -1804,6 +1815,8 @@ void gui_init(dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
   g->new_radius = 0.0f;
   g->new_thrs = 0.0f;
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PRESET_APPLIED, _preset_applied_callback);
 }
 
 // clang-format off

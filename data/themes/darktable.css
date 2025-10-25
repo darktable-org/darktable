@@ -366,7 +366,7 @@ spinbutton button,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  margin: 0.07em;
+  margin: 0.07em 0.4em 0.07em 0.07em;
 }
 
 .combo,
@@ -509,6 +509,12 @@ separator
 {
   min-height: 1.7em;
   min-width: 1.7em;
+  border: 0.08em solid transparent;
+}
+
+#footer-toolbar button:checked
+{
+   border: 0.08em solid shade(@button_border, 1.6);
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
@@ -584,7 +590,7 @@ dialog .sidebar row:selected:hover label,
 /* Set modules name header */
 #module-header
 {
-  border-bottom: 1px solid @plugin_bg_color;
+  border-bottom: 1px solid shade(@plugin_bg_color, 1.05);
   padding: 0.5em;
 }
 
@@ -2339,12 +2345,44 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/* workspace selection dialog */
+#workspace
+{
+    background-color: @grey_20;
+    padding: 0.8em;
+    margin: 0.5em;
+}
+
+#wpdialog
+{
+    background-color: #852A2A;
+}
+
+#workspace .dt_module_btn
+{
+    background-color: #852A2A;
+}
+
+#workspace label
+{
+    font-size: 120%;
+    padding: .2em;
+    padding-top: 1em;
+}
+
+#workspace button label
+{
+    font-size: 100%;
+    padding: 0.3em;
+    margin: 0em;
+}
+
 /* splash screen */
 #splashscreen
 {
     background-color: @grey_20;
     border: 1px solid;
-    border-radius: 25px; 
+    border-radius: 25px;
 }
 #splashscreen-header
 {
