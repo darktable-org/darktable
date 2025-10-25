@@ -194,6 +194,7 @@ src/external/lua-scripts/tools/script_manager.lua
 src/generate-cache/main.c
 src/gui/about.c
 src/gui/accelerators.c
+src/gui/workspace.c
 src/gui/gtk.c
 src/gui/gtkentry.c
 src/gui/guides.c

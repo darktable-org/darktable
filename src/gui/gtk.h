@@ -444,6 +444,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
 
 // returns TRUE if YES was answered, FALSE otherwise
 gboolean dt_gui_show_yes_no_dialog(const char *title,
+                                   const char *wname,
                                    const char *format, ...);
 
 void dt_gui_add_help_link(GtkWidget *widget,

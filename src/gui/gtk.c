@@ -1975,7 +1975,7 @@ void dt_ui_toggle_panels_visibility(const struct dt_ui_t *ui)
   else
   {
     if(!dt_conf_get_bool("collapse_help_shown") &&
-       !dt_gui_show_yes_no_dialog(_("collapsing panels"),
+       !dt_gui_show_yes_no_dialog(_("collapsing panels"), "",
                                   _("this is the first time you pressed the shortcut\n"
                                     "to collapse all side and top/bottom panels.\n"
                                     "by default this is the TAB key.\n"
@@ -3125,6 +3125,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
 }
 
 gboolean dt_gui_show_yes_no_dialog(const char *title,
+                                   const char *wname,
                                    const char *format, ...)
 {
   va_list ap;
@@ -3146,6 +3147,8 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
                                              GTK_MESSAGE_QUESTION,
                                              GTK_BUTTONS_NONE,
                                              "%s", question);
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  gtk_widget_set_name(content, wname);
   gtk_dialog_add_buttons(GTK_DIALOG(dialog),
                          _("_yes"), GTK_RESPONSE_YES,
                          _("_no"), GTK_RESPONSE_NO,
@@ -3264,7 +3267,7 @@ void dt_gui_show_help(GtkWidget *widget)
       last_base_url = base_url;
 
       // ask the user if darktable.org may be accessed
-      if(dt_gui_show_yes_no_dialog(_("access the online user manual?"),
+      if(dt_gui_show_yes_no_dialog(_("access the online user manual?"), "",
                                     _("do you want to access `%s'?"), last_base_url))
       {
         dt_conf_set_string("context_help/last_url", last_base_url);

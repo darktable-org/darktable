@@ -34,7 +34,7 @@
     <section name="slideshow" title="slideshow view"/>
   </dttab>
 
-  <dtconfig>
+  <dtconfig common="yes">
     <name>themes/usercss</name>
     <type>bool</type>
     <default>false</default>
@@ -181,6 +181,13 @@
     <default>25</default>
     <shortdescription>database fragmentation ratio threshold</shortdescription>
     <longdescription>fragmentation ratio above which to ask or carry out automatically database maintenance</longdescription>
+  </dtconfig>
+  <dtconfig prefs="storage" section="database" common="yes">
+    <name>database/multiple_workspace</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>allow multiple workspaces</shortdescription>
+    <longdescription>allow multiple workspaces which can be selected at startup</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/create_snapshot</name>
@@ -741,6 +748,12 @@
     <default>import time</default>
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
+  </dtconfig>
+  <dtconfig common="yes">
+    <name>ui_last/gui_language</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>language for the GUI</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_model</name>
@@ -2160,6 +2173,18 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>ui/hide_tooltips</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>hiding tooltip</shortdescription>
+  </dtconfig>
+  <dtconfig common="yes">
+    <name>use_system_font</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>using system font or not</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
@@ -3486,7 +3511,7 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
+  <dtconfig common="yes">
     <name>ui_last/theme</name>
     <type>string</type>
     <default>darktable-elegant-grey</default>

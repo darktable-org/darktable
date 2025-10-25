@@ -1857,7 +1857,7 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
   {
     if(wf_filmic)
       AM("filmicrgb");
-    else if(wf_sigmoid) 
+    else if(wf_sigmoid)
       AM("sigmoid");
     else if(wf_agx)
       AM("agx");
@@ -3887,7 +3887,7 @@ static void _manage_preset_delete(GtkWidget *widget,
   dt_lib_modulegroups_t *d = self->data;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+     || dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                   _("do you really want to delete the preset `%s'?"),
                                   d->edit_preset))
   {

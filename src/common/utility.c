@@ -1124,6 +1124,40 @@ char *dt_filename_change_extension(const char *filename,
   return output;
 }
 
+GList *dt_read_file_pattern(const char *dir_path, const char *pattern_str)
+{
+  GList *files = NULL;
+  GError *error = NULL;
+
+  // Open the directory
+  GDir *dir = g_dir_open(dir_path, 0, &error);
+
+  if(dir == NULL)
+  {
+    g_error_free(error);
+    return NULL;
+  }
+
+  // Compile the pattern
+  GPatternSpec *pattern = g_pattern_spec_new(pattern_str);
+
+  // Iterate over directory contents
+  const gchar *filename;
+  while((filename = g_dir_read_name(dir)) != NULL)
+  {
+    if(g_pattern_match_string(pattern, filename))
+    {
+      files = g_list_append(files, g_strdup(filename));
+    }
+  }
+
+  // Cleanup
+  g_dir_close(dir);
+  g_pattern_spec_free(pattern);
+
+  return files;
+}
+
 // replaces all occurences of a substring in a string
 gchar *dt_str_replace(const char *string,
                       const char *search,

@@ -1458,6 +1458,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
              && (!confirm ||
                  dt_gui_show_yes_no_dialog
                    (_("shortcut for move exists with single effect"),
+                    "",
                     _("%s\n\n(assign %s to %s)"),
                     _("create separate shortcuts for up and down move?"),
                     _action_description(e, 2),
@@ -1503,8 +1504,9 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
                     e->instance != s->instance )
             {
               if(!confirm ||
-                 dt_gui_show_yes_no_dialog(_("shortcut exists with different settings"),
-                                           _("reset the settings of the shortcut?")))
+                 dt_gui_show_yes_no_dialog
+                 (_("shortcut exists with different settings"), "",
+                  _("reset the settings of the shortcut?")))
               {
                 *e = *s;
               }
@@ -1513,7 +1515,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
             {
               // there should be no other clashes because same mapping already existed
               if(confirm &&
-                 dt_gui_show_yes_no_dialog(_("shortcut already exists"),
+                 dt_gui_show_yes_no_dialog(_("shortcut already exists"), "",
                                            e->is_default ?
                                            _("disable this default shortcut?") :
                                            _("remove the shortcut?")))
@@ -1556,9 +1558,9 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
 
     if(existing_labels)
     {
-      remove_existing = dt_gui_show_yes_no_dialog(_("clashing shortcuts exist"), "%s\n%s",
+      remove_existing = dt_gui_show_yes_no_dialog(_("clashing shortcuts exist"), "%s\n%s", "",
                                                   _("remove these existing shortcuts?"),
-                                                  existing_labels);
+         existing_labels);
       g_free(existing_labels);
 
       if(!remove_existing)
@@ -2024,7 +2026,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
         // GDK_KEY_BackSpace moves to parent in tree
         if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
         {
-          if(dt_gui_show_yes_no_dialog(_("removing shortcut"),
+          if(dt_gui_show_yes_no_dialog(_("removing shortcut"), "",
                                        s->is_default ? s->views ?
                                        _("disable the selected default shortcut?") :
                                        _("restore the selected default shortcut?") :
