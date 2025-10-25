@@ -440,7 +440,8 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
+  const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
+  if(color_sraw && piece->pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
@@ -556,7 +557,8 @@ finish:
       _adjust_xtrans_filters(piece->pipe, csx, csy);
     }
     for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-    if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
+    const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
+    if(color_sraw && piece->pipe->want_detail_mask)
       err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_out, FALSE);
   }
 
