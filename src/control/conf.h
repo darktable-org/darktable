@@ -46,12 +46,14 @@ typedef struct dt_confgen_value_t
   char *enum_values;
   char *shortdesc;
   char *longdesc;
+  gboolean is_common;
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
 {
   dt_pthread_mutex_t mutex;
   char filename[PATH_MAX];
+  char filename_common[PATH_MAX];
   GHashTable *table;
   GHashTable *x_confgen;
   GHashTable *override_entries;
@@ -95,7 +97,10 @@ gchar *dt_conf_get_string(const char *name);
 gchar *dt_conf_get_path(const char *name);
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
-void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
+void dt_conf_init(dt_conf_t *cf,
+                  const char *filename,
+                  const gboolean is_common,
+                  GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
 void dt_conf_save(dt_conf_t *cf);
 gboolean dt_conf_key_exists(const char *key);
@@ -111,6 +116,7 @@ void dt_conf_string_entry_free(gpointer data);
 // conf generated from darktable config XML
 
 gboolean dt_confgen_exists(const char *name);
+gboolean dt_confgen_is_common(const char *name);
 dt_confgen_type_t dt_confgen_type(const char *name);
 
 gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind);

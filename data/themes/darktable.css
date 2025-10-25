@@ -2345,6 +2345,38 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/* workspace selection dialog */
+#workspace
+{
+    background-color: @grey_20;
+    padding: 0.8em;
+    margin: 0.5em;
+}
+
+#wpdialog
+{
+    background-color: #852A2A;
+}
+
+#workspace .dt_module_btn
+{
+    background-color: #852A2A;
+}
+
+#workspace label
+{
+    font-size: 120%;
+    padding: .2em;
+    padding-top: 1em;
+}
+
+#workspace button label
+{
+    font-size: 100%;
+    padding: 0.3em;
+    margin: 0em;
+}
+
 /* splash screen */
 #splashscreen
 {

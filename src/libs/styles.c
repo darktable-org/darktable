@@ -398,7 +398,7 @@ gboolean _ask_before_delete_style(const gint style_cnt)
 {
   return !dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style")
     || dt_gui_show_yes_no_dialog(
-      ngettext("remove style?", "remove styles?", style_cnt),
+      ngettext("remove style?", "remove styles?", style_cnt), "",
       ngettext("do you really want to remove %d style?",
                "do you really want to remove %d styles?", style_cnt),
       style_cnt);

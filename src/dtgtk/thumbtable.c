@@ -1714,7 +1714,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
     dt_util_str_cat(&txt, _("do you want to do that now?"));
 
-    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
+    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"), "",
                                  "%s", txt))
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

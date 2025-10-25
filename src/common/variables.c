@@ -821,6 +821,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     else
       result = g_strdup(_("no"));
   }
+  else if(_has_prefix(variable, "WORKSPACE.LABEL"))
+  {
+    result = g_strdup(dt_conf_get_string("workspace/label"));
+  }
   else if(_has_prefix(variable, "WIDTH.MAX")
           || _has_prefix(variable, "MAX_WIDTH"))
     result = g_strdup_printf("%d", params->data->max_width);

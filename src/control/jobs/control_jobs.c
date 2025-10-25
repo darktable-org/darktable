@@ -2068,7 +2068,7 @@ gboolean dt_control_remove_images()
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          ngettext(_("remove image?"), _("remove images?"), number),
+          ngettext(_("remove image?"), _("remove images?"), number), "",
           ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
                    "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
           number))
@@ -2101,7 +2101,7 @@ void dt_control_delete_images()
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          ngettext(_("delete image?"), _("delete images?"), number),
+          ngettext(_("delete image?"), _("delete images?"), number), "",
           send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
                                    "do you really want to physically delete %d images\n(using trash if possible)?", number)
                         : ngettext("do you really want to physically delete %d image from disk?",
@@ -2138,7 +2138,7 @@ void dt_control_delete_duplicate(const dt_imgid_t imgid)
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          _("delete duplicate?"),
+          _("delete duplicate?"), "",
           _("do you really want to delete the duplicate "
             "(without deleting the source image file on disk)?")))
     {
@@ -2188,7 +2188,7 @@ void dt_control_move_images()
   if(dt_conf_get_bool("ask_before_move"))
   {
     if(!dt_gui_show_yes_no_dialog(
-          ngettext("move image?", "move images?", number),
+          ngettext("move image?", "move images?", number), "",
           ngettext("do you really want to physically move %d image to %s?\n"
                    "(all duplicates will be moved along)",
                    "do you really want to physically move %d images to %s?\n"
@@ -2248,7 +2248,7 @@ void dt_control_copy_images()
   if(dt_conf_get_bool("ask_before_copy"))
   {
     if(!dt_gui_show_yes_no_dialog(
-          ngettext("copy image?", "copy images?", number),
+          ngettext("copy image?", "copy images?", number), "",
           ngettext("do you really want to physically copy %d image to %s?",
                    "do you really want to physically copy %d images to %s?", number),
           number, dir))
