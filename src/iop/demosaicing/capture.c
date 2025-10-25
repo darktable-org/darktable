@@ -207,6 +207,69 @@ static float _calcRadiusBayer(const float *in,
   return sqrtf(1.0f / logf(maxRatio));
 }
 
+static float _calcRadiusMono(const float *in,
+                             const int width,
+                             const int height)
+{
+  float maxRatio = 1.0f;
+  DT_OMP_FOR(reduction(max: maxRatio))
+  for(int row = 4; row < height - 4; ++row)
+  {
+    for(int col = 5; col < width - 4; col += 2)
+    {
+      const float *cfa = in + 4*(row*width + col);
+      const float val00 = cfa[0];
+      if(val00 > RAWEPS)
+      {
+        const float val1m1 = cfa[4*(width-1)];
+        const float val1p1 = cfa[4*(width+1)];
+        const float maxVal0 = MAX(val00, val1m1);
+        if(val1m1 > RAWEPS && maxVal0 > lowerLimit)
+        {
+          const float minVal = MIN(val00, val1m1);
+          if(maxVal0 > maxRatio * minVal)
+          {
+            gboolean clipped = FALSE;
+            if(maxVal0 == val00)
+            {
+              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+                clipped = TRUE;
+            }
+            else
+            {
+              if(MAX(MAX(MAX(cfa[-8], val00), cfa[8*width-8]), cfa[8*width]) >= upperLimit)
+                clipped = TRUE;
+            }
+            if(!clipped)
+              maxRatio = maxVal0 / minVal;
+          }
+        }
+
+        const float maxVal1 = MAX(val00, val1p1);
+        if(val1p1 > RAWEPS && maxVal1 > lowerLimit)
+        {
+          const float minVal = MIN(val00, val1p1);
+          if(maxVal1 > maxRatio * minVal)
+          {
+            if(maxVal1 == val00)
+            { // check for influence by clipped green in neighborhood
+              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+                continue;
+            }
+            else
+            {
+              if(MAX(MAX(MAX(val00, cfa[8]), cfa[8*width]), cfa[8*width+8]) >= upperLimit)
+                continue;
+            }
+            maxRatio = maxVal1 / minVal;
+          }
+        }
+      }
+    }
+  }
+  return sqrtf(1.0f / logf(maxRatio));
+}
+
 static float _calcRadiusXtrans(const float *in,
                                const int width,
                                const int height,
@@ -380,9 +443,11 @@ static float _calc_auto_radius(float *const in,
     }
   }
 
-  const float radius = filters != 9u
-              ? _calcRadiusBayer(input, width, height, filters)
-              : _calcRadiusXtrans(input, width, height, xtrans);
+  const float radius =
+              !filters  ? _calcRadiusMono(input, width, height)
+                        : filters != 9u
+                          ? _calcRadiusBayer(input, width, height, filters)
+                          : _calcRadiusXtrans(input, width, height, xtrans);
 
   if(in != input) dt_free_align(input);
   return CLAMP(radius, 0.0f, 1.5f);
@@ -578,7 +643,8 @@ static void _prepare_blend(const float *cfa,
       if(row > 1 && col > 1 && row < height-2 && col < w1-2)
       {
         const int color = (filters == 9u) ? FCNxtrans(row, col, xtrans) : FC(row, col, filters);
-        if(cfa[k] > whites[color] || Yold[k] < CAPTURE_YMIN)
+        const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
+        if(heat || Yold[k] < CAPTURE_YMIN)
         {
           mask[k-w2-1] = mask[k-w2]   = mask[k-w2+1] =
           mask[k-w1-2] = mask[k-w1-1] = mask[k-w1]   = mask[k-w1+1] = mask[k-w1+2] =

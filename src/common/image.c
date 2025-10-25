@@ -176,6 +176,12 @@ gboolean dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
 
+gboolean dt_image_is_mono_sraw(const dt_image_t *img)
+{
+  const uint32_t test = DT_IMAGE_MONOCHROME | DT_IMAGE_S_RAW;
+  return ((img->flags & test) == test);
+}
+
 gboolean dt_image_is_bayerRGB(const dt_image_t *img)
 {
   return dt_image_is_raw(img)
@@ -2216,8 +2222,8 @@ gboolean _move_extra_file(const gchar *oldFilePath, const gchar *newFolder, cons
   g_free(oldFilename);
   g_free(oldExtension);
   g_object_unref(oldFile);
-  g_object_unref(newFile);      
-  return moveSuccess;    
+  g_object_unref(newFile);
+  return moveSuccess;
 }
 
 gboolean dt_image_rename(const dt_imgid_t imgid,
@@ -2410,9 +2416,9 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         }
         if(oldAudioFilePath != NULL)
         {
-          _move_extra_file(oldAudioFilePath, newFolder, newBasename);       
-        }    
-        g_free(newPath);    
+          _move_extra_file(oldAudioFilePath, newFolder, newBasename);
+        }
+        g_free(newPath);
         g_free(newImgBasename);
         g_free(newBasename);
       }

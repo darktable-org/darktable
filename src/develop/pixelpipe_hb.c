@@ -3548,7 +3548,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
 
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   gboolean valid = FALSE;
-  const gboolean raw_img = dt_image_is_raw(&pipe->image);
+  const gboolean raw_img = dt_image_is_raw(&pipe->image) || dt_image_is_mono_sraw(&pipe->image);
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
