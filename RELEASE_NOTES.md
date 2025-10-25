@@ -232,9 +232,25 @@ changes (where available).
 - Check added to ensure view has changed before processing GUI events
   preventing hang on start.
 
-- return an empty table (nil) for a non-existent tag accessed by index
+- return a nil value instead of throwing a Lua error if the indexed element of
+  the following Lua tables does not exist or if the table is empty:
 
-- return an empty table (nil) when a tag contains no images with the tag
+  - `dt_lua_tag_t.#`
+
+  - `dt_lua_film_t.#`
+
+  - `dt_style_t.#`
+
+  - `darktable.films.#`
+
+  - `darktable.styles.#`
+
+  - `darktable.database.#`
+
+  - `darktable.collection.#`
+
+- Ensure `darktable.database.get_image()` returns a nil, in all conditions,
+  for an image that doesn't exist.
 
 - Ensure translations are displayed in UTF-8 under Windows
 
