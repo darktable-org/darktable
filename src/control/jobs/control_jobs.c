@@ -1577,6 +1577,9 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   _images_job_data_t *paste_data = params->data;
+  if(!paste_data)
+    return 0;
+
   GList *t = paste_data->imgs;
 
   const guint total = g_list_length(t);
@@ -1603,7 +1606,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
       {
         // remember that this image's history was updated, so we'll
         // need to synch its sidecar before we finish
-        to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(t->data));
+        to_synch = g_list_prepend(to_synch, GINT_TO_POINTER(imgid));
       }
     }
     else
@@ -1617,6 +1620,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)params->data); // frees list of images
+  g_free(params->data);
   params->data = NULL;
 
   // In darkroom and if there is a copy of the iop-order we need to
@@ -1711,6 +1715,7 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)params->data); // frees list of images
   params->data = NULL;
+
   dt_start_backthumbs_crawler();
   dt_control_queue_redraw_center();
   return 0;
@@ -2347,10 +2352,10 @@ void dt_control_paste_history(GList *imgs)
     images_job_data->styles = NULL;
     images_job_data->duplicate = FALSE;
     images_job_data->overwrite = FALSE;
-  }
 
-  _add_history_job(imgs, N_("paste history"),
-                   &_control_paste_history_job_run, images_job_data);
+    _add_history_job(imgs, N_("paste history"),
+                     &_control_paste_history_job_run, images_job_data);
+  }
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2375,10 +2380,10 @@ void dt_control_paste_parts_history(GList *imgs)
       images_job_data->styles = NULL;
       images_job_data->duplicate = FALSE;
       images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
-    }
 
-    _add_history_job(imgs, N_("paste history"),
-                     &_control_paste_history_job_run, images_job_data);
+      _add_history_job(imgs, N_("paste history"),
+                       &_control_paste_history_job_run, images_job_data);
+    }
   }
   else
     g_list_free(imgs);
