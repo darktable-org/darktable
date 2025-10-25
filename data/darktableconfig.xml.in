@@ -186,7 +186,7 @@
     <name>database/multiple_workspace</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>allows for multiple workspaces</shortdescription>
+    <shortdescription>allow for multiple workspaces</shortdescription>
     <longdescription>allow multiple workspaces which can be selected at startup</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
