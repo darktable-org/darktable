@@ -91,7 +91,6 @@ typedef struct dt_iop_colorin_global_data_t
 {
   int kernel_colorin_unbound;
   int kernel_colorin_clipping;
-  int kernel_colorin_correction;
 } dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
@@ -479,7 +478,6 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_colorin_unbound = dt_opencl_create_kernel(program, "colorin_unbound");
   gd->kernel_colorin_clipping = dt_opencl_create_kernel(program, "colorin_clipping");
-  gd->kernel_colorin_correction =  dt_opencl_create_kernel(program, "colorin_correct");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -487,7 +485,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_colorin_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorin_unbound);
   dt_opencl_free_kernel(gd->kernel_colorin_clipping);
-  dt_opencl_free_kernel(gd->kernel_colorin_correction);
   free(self->data);
   self->data = NULL;
 }
@@ -640,7 +637,19 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorin_data_t *d = piece->data;
-  dt_iop_colorin_global_data_t *gd = self->global_data;
+  const dt_iop_colorin_global_data_t *gd = self->global_data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+
+  const int devid = pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  }
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
@@ -652,21 +661,22 @@ int process_cl(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
-      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
   }
+  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
+      corrected ? "coeff correction" : "coeff report",
+      pipe, self, devid, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
+      dt_colorspaces_get_name(d->type, NULL),
+      pipe->dsc.temperature.coeffs[0], coeffs[0],
+      pipe->dsc.temperature.coeffs[1], coeffs[1],
+      pipe->dsc.temperature.coeffs[2], coeffs[2]);
 
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
   cl_mem dev_corr = NULL;
 
-  dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion",
-    piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
-    dt_colorspaces_get_name(d->type, NULL),
-    corrected ? "corrected by" : "",
-    coeffs[0], coeffs[1], coeffs[2]);
   int kernel;
   float cmat[9], lmat[9];
 
@@ -683,34 +693,12 @@ int process_cl(dt_iop_module_t *self,
     pack_3xSSE_to_3x3(d->lmatrix, lmat);
   }
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const gboolean blue_mapping = d->blue_mapping
-                           && dt_image_is_matrix_correction_supported(&piece->pipe->image);
-  const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+                           && dt_image_is_matrix_correction_supported(&pipe->image);
 
   dev_corr = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, coeffs);
   if(dev_corr == NULL) goto error;
-
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    if(corrected)
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorin_correction, width, height,
-                                         CLARG(dev_in), CLARG(dev_out),
-                                         CLARG(width), CLARG(height), CLARG(dev_corr));
-    }
-    else
-    {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { roi_in->width, roi_in->height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    }
-    if(err != CL_SUCCESS) goto error;
-    return CL_SUCCESS;
-  }
-
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmat);
   if(dev_m == NULL) goto error;
   dev_l = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, lmat);
@@ -1209,45 +1197,37 @@ void process(dt_iop_module_t *self,
     return;
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
+  const dt_iop_colorin_data_t *const d = piece->data;
+  const gboolean corrected = dt_dev_is_D65_chroma(self->dev)
+    && chr->late_correction
+    && d->type != DT_COLORSPACE_LAB;
   const dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
                                       corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
                                       corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
                                       corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   if(corrected)
   {
     for_four_channels(k)
     {
-      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
-      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
   }
-
-  const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean blue_mapping =
-    d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
-
-  dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion",
-    piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
+  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
+      corrected ? "coeff correction" : "coeff report",
+      pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
-      corrected ? "corrected by" : "",
-      coeffs[0], coeffs[1], coeffs[2]);
+      pipe->dsc.temperature.coeffs[0], coeffs[0],
+      pipe->dsc.temperature.coeffs[1], coeffs[1],
+      pipe->dsc.temperature.coeffs[2], coeffs[2]);
+
+  const gboolean blue_mapping =
+    d->blue_mapping && dt_image_is_matrix_correction_supported(&pipe->image);
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    if(corrected)
-    {
-      const size_t pix = roi_in->height * roi_in->width * 4;
-      const float *const restrict in = (float*)ivoid;
-      float *const restrict  out = (float*)ovoid;
-
-      DT_OMP_FOR()
-      for(size_t idx = 0; idx < pix; idx += 4)
-        dt_vector_mul(&out[idx], &in[idx], coeffs);
-    }
-    else
-      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
@@ -1342,7 +1322,7 @@ void commit_params(dt_iop_module_t *self,
   piece->process_cl_ready = TRUE;
 
   dt_colorspaces_color_profile_type_t type = p->type;
-  if(type == DT_COLORSPACE_LAB)
+  if(type == DT_COLORSPACE_LAB) // we keep the runtime in process for safety
   {
     piece->enabled = FALSE;
     return;
