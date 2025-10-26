@@ -16,10 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "splash.h"
 #include "control/conf.h"
-#include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
+#include "splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -27,10 +27,9 @@
 // override window manager's title bar?
 #define USE_HEADER_BAR
 
-
 // include a featured image on the splash screen?
 
-// #define USE_FEATURED_IMAGE
+//#define USE_FEATURED_IMAGE
 
 // number of featured images from which to randomly select when
 // USE_SPLASHSCREEN_IMAGE not defined
@@ -72,10 +71,12 @@ static GtkWidget *_get_logo()
 
   GtkWidget *logo = NULL;
 
-  gchar *image_file = season == DT_LOGO_SEASON_NONE
-                          ? g_strdup_printf("%s/pixmaps/idbutton.svg", darktable.datadir)
-                          : g_strdup_printf("%s/pixmaps/idbutton-%d.svg", darktable.datadir, season);
-  GdkPixbuf *logo_image = gdk_pixbuf_new_from_file_at_size(image_file, ICON_SIZE, -1, NULL);
+  gchar *image_file =
+    season == DT_LOGO_SEASON_NONE
+    ? g_strdup_printf("%s/pixmaps/idbutton.svg", darktable.datadir)
+    : g_strdup_printf("%s/pixmaps/idbutton-%d.svg", darktable.datadir, season);
+  GdkPixbuf *logo_image =
+    gdk_pixbuf_new_from_file_at_size(image_file, ICON_SIZE, -1, NULL);
   g_free(image_file);
 
   if(logo_image)
@@ -95,8 +96,10 @@ static GtkWidget *_get_program_name()
 {
   // get the darktable name in special font
   GtkWidget *program_name = NULL;
-  gchar *image_file = g_strdup_printf("%s/pixmaps/darktable.svg", darktable.datadir);
-  GdkPixbuf *prog_name_image = gdk_pixbuf_new_from_file_at_size(image_file, PROGNAME_SIZE, -1, NULL);
+  gchar *image_file =
+    g_strdup_printf("%s/pixmaps/darktable.svg", darktable.datadir);
+  GdkPixbuf *prog_name_image =
+    gdk_pixbuf_new_from_file_at_size(image_file, PROGNAME_SIZE, -1, NULL);
   g_free(image_file);
 
   if(prog_name_image)
@@ -123,14 +126,15 @@ static void _set_header_bar(GtkWidget *dialog)
 #endif
 }
 
-void darktable_splash_screen_create(
-    GtkWindow *parent_window,
-    const gboolean force)
+void darktable_splash_screen_create(GtkWindow *parent_window,
+                                    const gboolean force)
 {
   // no-op if the splash has already been created; if not, only run if
   // the splash screen is enabled in the config or we are told to
   // create it regardless.
-  if(splash_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
+  if(splash_screen
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
@@ -145,8 +149,12 @@ void darktable_splash_screen_create(
 #else
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
 #endif
-  splash_screen
-      = gtk_dialog_new_with_buttons(_("darktable starting"), parent_window, flags, NULL, GTK_RESPONSE_NONE, NULL);
+  splash_screen =
+    gtk_dialog_new_with_buttons(_("darktable starting"),
+                                parent_window, flags,
+                                NULL,
+                                GTK_RESPONSE_NONE, // <-- fake button list for compiler
+                                NULL);
   gtk_window_set_position(GTK_WINDOW(splash_screen), GTK_WIN_POS_CENTER);
   gtk_widget_set_name(splash_screen, "splashscreen");
   progress_text = gtk_label_new(_("initializing"));
@@ -156,7 +164,8 @@ void darktable_splash_screen_create(
   _set_header_bar(splash_screen);
   int version_len = strlen(darktable_package_version);
   char *delim = strchr(darktable_package_version, '~');
-  if(delim) version_len = delim - darktable_package_version;
+  if(delim)
+    version_len = delim - darktable_package_version;
   gchar *version_str = g_strdup_printf("%.*s", version_len, darktable_package_version);
   GtkWidget *version = GTK_WIDGET(gtk_label_new(version_str));
   g_free(version_str);
@@ -172,16 +181,19 @@ void darktable_splash_screen_create(
 #ifdef USE_FEATURED_IMAGE
   // make a random selection of featured image based on the current
   // time
-  const int imgnum = (int)(1 + (clock() % MAX_IMAGES));
-  // FIXME: if user overrides --datadir, we won't find the image...
-  gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg", darktable.datadir, imgnum);
+  const int imgnum = (int)(1 + (clock()%MAX_IMAGES));
+  //FIXME: if user overrides --datadir, we won't find the image...
+  gchar *image_file = g_strdup_printf("%s/pixmaps/splashscreen-%02d.jpg",
+                                      darktable.datadir, imgnum);
   GtkWidget *image = gtk_image_new_from_file(image_file);
   g_free(image_file);
   gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
-  GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("photography workflow application\nand RAW developer")));
+  GtkWidget *program_desc =
+    GTK_WIDGET(gtk_label_new(_("photography workflow application\nand RAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(program_desc, "splashscreen-description");
+
   dt_gui_box_add(content, dt_gui_hbox(dt_gui_vbox(logo, version, program_name, program_desc), image));
 #else
   gtk_image_set_pixel_size(GTK_IMAGE(logo), ICON_SIZE);
@@ -230,8 +242,7 @@ void darktable_splash_screen_create(
   _process_all_gui_events();
 }
 
-void darktable_splash_screen_set_progress(
-    const char *msg)
+void darktable_splash_screen_set_progress(const char *msg)
 {
   if(splash_screen)
   {
@@ -246,10 +257,9 @@ void darktable_splash_screen_set_progress(
   }
 }
 
-void darktable_splash_screen_set_progress_percent(
-    const char *msg,
-    const double fraction,
-    const double elapsed)
+void darktable_splash_screen_set_progress_percent(const char *msg,
+                                                  const double fraction,
+                                                  const double elapsed)
 {
   if(splash_screen)
   {
@@ -261,8 +271,7 @@ void darktable_splash_screen_set_progress_percent(
     if(elapsed >= 2.0 || fraction > 0.01)
     {
       const double total = elapsed / fraction;
-      // round to full seconds rather than truncating
-      const double remain = (total - elapsed) + 0.5;
+      const double remain = (total - elapsed) + 0.5;  // round to full seconds rather than truncating
       const int minutes = remain / 60;
       const int seconds = remain - (60 * minutes);
       char *rem_text = g_strdup_printf(" %4d:%02d", minutes, seconds);
@@ -291,14 +300,15 @@ void darktable_splash_screen_destroy()
   }
 }
 
-void darktable_exit_screen_create(
-    GtkWindow *parent_window,
-    const gboolean force)
+void darktable_exit_screen_create(GtkWindow *parent_window,
+                                  const gboolean force)
 {
   // no-op if the exit screen has already been created; if not, only
   // run if the splash screen is enabled in the config or we are told
   // to create it regardless
-  if(exit_screen || dt_check_gimpmode("file") || dt_check_gimpmode("thumb")
+  if(exit_screen
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
@@ -308,14 +318,18 @@ void darktable_exit_screen_create(
   // bar, so use .._with_buttons and just specify a NULL strings to
   // have no buttons.  We need to pretend to actually have one button,
   // though, to keep the compiler happy.
+
 #ifdef USE_HEADER_BAR
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR;
 #else
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
 #endif
 
-  exit_screen
-      = gtk_dialog_new_with_buttons(_("darktable shutdown"), parent_window, flags, NULL, GTK_RESPONSE_NONE, NULL);
+  exit_screen =
+    gtk_dialog_new_with_buttons(_("darktable shutdown"), parent_window, flags,
+                                NULL,
+                                GTK_RESPONSE_NONE,  // <-- fake button list for compiler
+                                NULL);
   gtk_window_set_position(GTK_WINDOW(exit_screen), GTK_WIN_POS_CENTER);
   gtk_widget_set_name(exit_screen, "splashscreen");
   _set_header_bar(exit_screen);
