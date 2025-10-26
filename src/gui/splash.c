@@ -190,7 +190,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_widget_set_name(GTK_WIDGET(image), "splashscreen-image");
   gtk_image_set_pixel_size(GTK_IMAGE(logo), 180);
   GtkWidget *program_desc =
-    GTK_WIDGET(gtk_label_new(_("photography workflow application\nand RAW developer")));
+    GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(program_desc, "splashscreen-description");
 
@@ -199,7 +199,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_image_set_pixel_size(GTK_IMAGE(logo), ICON_SIZE);
   gtk_label_set_justify(GTK_LABEL(version), GTK_JUSTIFY_LEFT);
 
-  GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("photography workflow application\nand RAW developer")));
+  GtkWidget *program_desc = GTK_WIDGET(gtk_label_new(_("Photography workflow application\nand RAW developer")));
   gtk_label_set_justify(GTK_LABEL(program_desc), GTK_JUSTIFY_LEFT);
   gtk_widget_set_halign(program_desc, GTK_ALIGN_START);
   gtk_widget_set_name(program_desc, "splashscreen-description");
