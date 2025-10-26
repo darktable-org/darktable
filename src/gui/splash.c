@@ -208,10 +208,9 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_widget_set_name(sep, "splashscreen-separator");
   gtk_widget_set_hexpand(sep, TRUE);
 
-  GtkWidget *title_col = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *title_col = dt_gui_vbox(program_name);
   gtk_box_set_spacing(GTK_BOX(title_col), 4);
-  gtk_box_pack_start(GTK_BOX(title_col), program_name, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(title_col), version, FALSE, FALSE, 0);
+  dt_gui_box_add(GTK_BOX(title_col), version);
   gtk_widget_set_halign(program_name, GTK_ALIGN_START);
   gtk_widget_set_halign(version, GTK_ALIGN_START);
   gtk_label_set_xalign(GTK_LABEL(version), 0.0);
