@@ -51,6 +51,14 @@ enum avif_tiling_e
   AVIF_TILING_OFF
 };
 
+enum avif_subsample_e
+{
+  AVIF_SUBSAMPLE_AUTO = 0,
+  AVIF_SUBSAMPLE_444,
+  AVIF_SUBSAMPLE_422,
+  AVIF_SUBSAMPLE_420
+};
+
 enum avif_color_mode_e
 {
   AVIF_COLOR_MODE_RGB = 0,
@@ -65,6 +73,7 @@ typedef struct dt_imageio_avif_t
   uint32_t compression_type;
   uint32_t quality;
   uint32_t tiling;
+  uint32_t subsample;
 } dt_imageio_avif_t;
 
 typedef struct dt_imageio_avif_gui_t
@@ -74,6 +83,7 @@ typedef struct dt_imageio_avif_gui_t
   GtkWidget *compression_type;
   GtkWidget *quality;
   GtkWidget *tiling;
+  GtkWidget *subsample;
 } dt_imageio_avif_gui_t;
 
 static const struct
@@ -207,6 +217,28 @@ void init(dt_imageio_module_format_t *self)
                                 dt_imageio_avif_t,
                                 quality,
                                 int);
+
+  /* subsample */
+  luaA_enum(darktable.lua_state.state,
+            enum avif_subsample_e);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_subsample_e,
+                  AVIF_SUBSAMPLE_AUTO);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_subsample_e,
+                  AVIF_SUBSAMPLE_444);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_subsample_e,
+                  AVIF_SUBSAMPLE_422);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_subsample_e,
+                  AVIF_SUBSAMPLE_420);
+
+  dt_lua_register_module_member(darktable.lua_state.state,
+                                self,
+                                dt_imageio_avif_t,
+                                subsample,
+                                enum avif_subsample_e);
 #endif
 }
 
@@ -250,17 +282,33 @@ int write_image(struct dt_imageio_module_data_t *data,
           format = AVIF_PIXEL_FORMAT_YUV444;
           break;
         case AVIF_COMP_LOSSY:
-          if(d->quality > 90)
+          // Determine pixel format based on subsample setting
+          switch(d->subsample)
           {
+            case AVIF_SUBSAMPLE_AUTO:
+              // Auto mode: use quality thresholds
+              if(d->quality > 90)
+              {
+                format = AVIF_PIXEL_FORMAT_YUV444;
+              }
+              else if(d->quality > 80)
+              {
+                format = AVIF_PIXEL_FORMAT_YUV422;
+              }
+              else
+              {
+                format = AVIF_PIXEL_FORMAT_YUV420;
+              }
+              break;
+            case AVIF_SUBSAMPLE_444:
               format = AVIF_PIXEL_FORMAT_YUV444;
-          }
-          else if(d->quality > 80)
-          {
+              break;
+            case AVIF_SUBSAMPLE_422:
               format = AVIF_PIXEL_FORMAT_YUV422;
-          }
-          else
-          {
-            format = AVIF_PIXEL_FORMAT_YUV420;
+              break;
+            case AVIF_SUBSAMPLE_420:
+              format = AVIF_PIXEL_FORMAT_YUV420;
+              break;
           }
           break;
       }
@@ -703,6 +751,7 @@ void *get_params(dt_imageio_module_format_t *self)
   }
 
   d->tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
+  d->subsample = dt_conf_get_int("plugins/imageio/format/avif/subsample");
 
   return d;
 }
@@ -721,6 +770,7 @@ int set_params(dt_imageio_module_format_t *self,
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
   dt_bauhaus_combobox_set(g->compression_type, d->compression_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
+  dt_bauhaus_combobox_set(g->subsample, d->subsample);
 
   return 0;
 }
@@ -818,6 +868,12 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/avif/quality", quality);
 }
 
+static void subsample_changed(GtkWidget *widget, gpointer user_data)
+{
+  const enum avif_subsample_e subsample = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/imageio/format/avif/subsample", subsample);
+}
+
 void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui = malloc(sizeof(dt_imageio_avif_gui_t));
@@ -904,16 +960,30 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
 
   gtk_widget_set_tooltip_text(gui->quality,
-          _("the quality of an image, less quality means fewer details.\n"
-            "\n"
-            "pixel format is controlled by quality:\n"
-            "\n"
-            "5-80: YUV420, 81-90: YUV422, 91-100: YUV444"));
+          _("the quality of an image, less quality means fewer details"));
 
   dt_bauhaus_slider_set(gui->quality, quality);
 
   gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
   gtk_widget_set_no_show_all(gui->quality, TRUE);
+
+  /*
+   * Chroma subsampling combo box
+   */
+  const enum avif_subsample_e subsample = dt_conf_get_int("plugins/imageio/format/avif/subsample");
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->subsample, self, NULL, N_("chroma subsampling"),
+                               _("chroma subsampling setting for AVIF encoder.\n"
+                                 "auto - use subsampling determined by the quality value\n"
+                                 "      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\n"
+                                 "4:4:4 - no chroma subsampling\n"
+                                 "4:2:2 - color sampling rate halved horizontally\n"
+                                 "4:2:0 - color sampling rate halved horizontally and vertically"),
+                               subsample, subsample_changed, self,
+                               N_("auto"), N_("4:4:4"), N_("4:2:2"), N_("4:2:0"));
+
+  dt_bauhaus_combobox_set_default(gui->subsample,
+                                  dt_confgen_get_int("plugins/imageio/format/avif/subsample", DT_DEFAULT));
 
   g_signal_connect(G_OBJECT(gui->bit_depth),
                    "value-changed",
@@ -929,7 +999,7 @@ void gui_init(dt_imageio_module_format_t *self)
                    NULL);
 
   self->widget = dt_gui_vbox(gui->bit_depth, gui->color_mode, gui->tiling,
-                             gui->compression_type, gui->quality);
+                             gui->compression_type, gui->quality, gui->subsample);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
@@ -946,6 +1016,7 @@ void gui_reset(dt_imageio_module_format_t *self)
   const enum avif_tiling_e tiling = !dt_confgen_get_bool("plugins/imageio/format/avif/tiling", DT_DEFAULT);
   const enum avif_compression_type_e compression_type = dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT);
   const uint32_t quality = dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT);
+  const enum avif_subsample_e subsample = dt_confgen_get_int("plugins/imageio/format/avif/subsample", DT_DEFAULT);
 
   size_t idx = 0;
   for(size_t i = 0; avif_bit_depth[i].name != NULL; ++i)
@@ -961,6 +1032,7 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->tiling, tiling);
   dt_bauhaus_combobox_set(gui->compression_type, compression_type);
   dt_bauhaus_slider_set(gui->quality, quality);
+  dt_bauhaus_combobox_set(gui->subsample, subsample);
 }
 
 // clang-format off
