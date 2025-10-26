@@ -2377,21 +2377,24 @@ Details :
 }
 
 /* darktable wordmark */
-#splashscreen-program {
+#splashscreen-program
+{
   font-size: 50pt;
   margin-top: 25pt;
   margin-bottom: 0;
 }
 
 /* version number */
-#splashscreen-version {
+#splashscreen-version
+{
   color: @grey_50;
   font-size: 22pt;
   margin-top: 0;
 }
 
 /* tagline below logo */
-#splashscreen-description {
+#splashscreen-description
+{
   color: @grey_60;
   font-size: 18pt;
   font-family: Inter, sans-serif;
