@@ -1619,7 +1619,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
 
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                             (GList*)params->data); // frees list of images
+                             (GList*)paste_data->imgs); // frees list of images
   g_free(params->data);
   params->data = NULL;
 
