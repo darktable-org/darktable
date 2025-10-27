@@ -395,7 +395,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
