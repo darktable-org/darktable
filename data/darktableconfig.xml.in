@@ -2185,6 +2185,12 @@
     <default>false</default>
     <shortdescription>using system font or not</shortdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>font_size</name>
+    <type>float</type>
+    <default>12.0</default>
+    <shortdescription>font size</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
