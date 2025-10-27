@@ -166,7 +166,7 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage-${{ runner.arch }}
@@ -306,7 +306,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
@@ -381,7 +381,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
