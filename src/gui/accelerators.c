@@ -3780,18 +3780,19 @@ static float _process_action(dt_action_t *action,
   {
     // find module instance
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
+    dt_iop_module_t *mod = NULL;
 
     if(owner == &darktable.control->actions_focus)
     {
-      action_target = dt_dev_gui_module();
+      action_target = dt_dev_modulegroups_test_activated(darktable.develop)
+                    ? (mod = dt_dev_gui_module()) ? (gpointer)mod->widget : NULL
+                    : dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
       if(!action_target)
         return return_value;
     }
     else if(instance)
     {
       int current_instance = abs(instance);
-
-      dt_iop_module_t *mod = NULL;
 
       for(GList *iop_mods = instance >= 0
                           ? darktable.develop->iop
