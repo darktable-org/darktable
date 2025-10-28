@@ -68,6 +68,13 @@ changes (where available).
   highlights, similar to film, and a natural-looking color
   representation in mid-tones and highlights.
 
+- Added support for multiple workspace. When the corresponding option
+  is activated on the preferences, Darktable opens a dialog when
+  starting. From this dialog one can select the default workspace (the
+  one created the first time and currently used by everyone by
+  default) or to create a new one. Each workspace has it's own
+  database and configuration file (collection, last UI defaults...).
+
 ## UI/UX Improvements
 
 - Show a busy cursor when changing views. This provides immediate
@@ -166,6 +173,13 @@ changes (where available).
   rules as film roll, the default value `n=1`, this keep the previous
   behavior of `$(ROLL.NAME)`.
 
+- Remove the "overwrite" option from the lighttable history stack
+  module. This option is used when pasting history to delete the
+  current history stack before pasting the new one. It is rarely used
+  and was confusing people when working copying/pasting on darkroom
+  from the filmstrip as this option was only visible on
+  lighttable. The option has been moved into the paste parts dialog.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -204,13 +218,17 @@ changes (where available).
   precision in computation. The precision is now to the pixel and
   avoid a displacement in some cases.
 
-- Fixed issue in darktable-cli that prevented input files from being detected.
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
 
 - Fixed out of memory issue which could kill Darktable on small
   systems when processing large images.
 
 - Fixed toast message translation displayed when scrolling over the
   module's preset buttons.
+
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
 
 ## Lua
 
