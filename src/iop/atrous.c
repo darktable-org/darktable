@@ -1639,6 +1639,8 @@ static float _action_process_equalizer(gpointer target,
                                        const dt_action_effect_t effect,
                                        float move_size)
 {
+  if(element > BANDS) return DT_ACTION_NOT_VALID;
+
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t *p = self->params;
