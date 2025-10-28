@@ -3591,6 +3591,33 @@ gboolean dt_action_widget_invisible(GtkWidget *w)
 #define ADD_EXPLANATION(cause, effect, extra, ...) if(*fb_log) \
       dt_util_str_cat(&*fb_log, "\n%s \u2192 %s" extra, cause, effect, ##__VA_ARGS__)
 
+static gboolean _unmatched_move(dt_shortcut_t *c,
+                                dt_shortcut_t *s,
+                                const dt_action_element_def_t **elements,
+                                char **fb_log)
+{
+  if(c->move == s->move) return FALSE;
+  if(!darktable.control->enable_fallbacks ||
+     !c->move_device || c->move > s->move) return TRUE; // don't try to match mouse moves
+  *elements = _action_find_elements(c->action);
+  if(!*elements) return TRUE;
+  int skipped = s->move - c->move;
+  if((*elements)[c->element].effects == (*elements)[c->element+1].effects)
+    s->element = c->element + skipped;
+  else
+  {
+    s->action = c->action;
+    dt_action_type_t tp = s->action->type;
+    while(skipped && (s->action = s->action->next))
+      if(s->action->type == tp) --skipped;
+    if(skipped) return TRUE;
+  }
+  ADD_EXPLANATION(_("move not assigned"), _("fallback to earlier move"), " %d -> %d", s->move, c->move);
+
+  s->move = c->move;
+  return FALSE;
+}
+
 static gboolean _shortcut_closest_match(GSequenceIter **current,
                                         dt_shortcut_t *s,
                                         gboolean *fully_matched,
@@ -3608,7 +3635,8 @@ static gboolean _shortcut_closest_match(GSequenceIter **current,
        c->key != s->key ||
        c->press < (s->press & ~DT_SHORTCUT_LONG) ||
        ((c->move_device || c->move) &&
-        (c->move_device != s->move_device || c->move != s->move)) ||
+        (c->move_device != s->move_device ||
+         _unmatched_move(c, s, elements, fb_log))) ||
        (s->action &&
         s->action->type == DT_ACTION_TYPE_FALLBACK &&
         s->action->target != c->action->target))
@@ -3622,7 +3650,6 @@ static gboolean _shortcut_closest_match(GSequenceIter **current,
           (c->button != s->button || c->click != s->click)) ||
          (c->mods       && c->mods != s->mods) ||
          (c->direction  & ~s->direction      ) ||
-         (c->element    && s->element        ) ||
          (c->effect > 0 && s->effect > 0     ) ||
          (c->instance   && s->instance       ) ||
          (c->element && s->effect > 0 && *elements &&
@@ -3645,10 +3672,10 @@ static gboolean _shortcut_closest_match(GSequenceIter **current,
   }
   if(!s->action || c->effect != DT_ACTION_EFFECT_DEFAULT_KEY)
     s->effect = c->effect;
-  if(c->element) s->element = c->element;
+  if(!s->element) s->element = c->element;
   if(c->instance) s->instance = c->instance;
 
-  s->action = c->action;
+  if(!s->action) s->action = c->action;
   if(!*elements) *elements = _action_find_elements(s->action);
 
   if(ELEMENT_IS(value, s, *elements) && c->effect == DT_ACTION_EFFECT_SET)

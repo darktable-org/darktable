@@ -220,7 +220,7 @@ static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event,
 
 static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!target) return DT_ACTION_NOT_VALID;
+  if(!target || element >= DT_COLORLABELS_LAST + 2) return DT_ACTION_NOT_VALID;
 
   _widgets_colors_t *colors = g_object_get_data(G_OBJECT(target), "colors_self");
   GtkWidget *w = element ? colors->colors[element - 1] : colors->operator;
