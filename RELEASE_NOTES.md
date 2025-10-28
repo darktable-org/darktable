@@ -173,6 +173,11 @@ changes (where available).
   rules as film roll, the default value `n=1`, this keep the previous
   behavior of `$(ROLL.NAME)`.
 
+- Added optional collection of shortcut assignments using
+  keyboard+mouse combinations to control image processing
+  modules. Install these by clicking on the new "import extras" button
+  on the Shortcuts tab under Preferences.
+
 - Remove the "overwrite" option from the lighttable history stack
   module. This option is used when pasting history to delete the
   current history stack before pasting the new one. It is rarely used
