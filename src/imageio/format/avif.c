@@ -860,6 +860,7 @@ static void compression_type_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/avif/compression_type", compression_type);
 
   gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
+  gtk_widget_set_visible(gui->subsample, compression_type != AVIF_COMP_LOSSLESS);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -984,6 +985,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   dt_bauhaus_combobox_set_default(gui->subsample,
                                   dt_confgen_get_int("plugins/imageio/format/avif/subsample", DT_DEFAULT));
+
+  gtk_widget_set_visible(gui->subsample, compression_type != AVIF_COMP_LOSSLESS);
+  gtk_widget_set_no_show_all(gui->subsample, TRUE);
 
   g_signal_connect(G_OBJECT(gui->bit_depth),
                    "value-changed",
