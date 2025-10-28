@@ -307,8 +307,9 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s, hash=%" PRIx64,
-          dt_iop_colorspace_to_name(cdsc->cst), hash);
+          "%s %.3f %.3f %.3f, hash=%" PRIx64,
+          dt_iop_colorspace_to_name(cdsc->cst), cdsc->temperature.coeffs[0], cdsc->temperature.coeffs[1], cdsc->temperature.coeffs[2],
+          hash);
     return FALSE;
   }
   // We need a fresh buffer as there was no hit.
