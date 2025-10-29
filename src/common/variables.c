@@ -578,14 +578,14 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     sqlite3_finalize(stmt);
     // determine how many zero-padded digits to use with an optional
     // parameter: $(IMAGE.ID.NEXT[n]), default n=1
-    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    const uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, highest_id + 1);
   }
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
   {
     // determine how many zero-padded digits to use with an optional
     // parameter: $(IMAGE.ID[n]), default n=1
-    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    const uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, params->imgid);
   }
   else if(_has_prefix(variable, "IMAGE.EXIF"))
@@ -647,7 +647,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
     {
       gchar *dirname = g_path_get_dirname(params->filename);
-      result = g_path_get_basename(dirname);
+      const uint8_t levels = _get_var_parameter(variable, 1);
+      result = g_strdup(dt_image_film_roll_name_levels(dirname, CLAMPS(levels, 1, 5)));
       g_free(dirname);
     }
   }
@@ -704,13 +705,13 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
 
       if(nb_digit_s)
       {
-        int nb = g_ascii_strtoll(nb_digit_s, NULL, 10);
+        const int nb = g_ascii_strtoll(nb_digit_s, NULL, 10);
         if(nb > 0) nb_digit = nb;
       }
 
       if(shift_s)
       {
-        int nb = g_ascii_strtoll(shift_s, NULL, 10);
+        const int nb = g_ascii_strtoll(shift_s, NULL, 10);
         if(nb > 0) shift = nb;
       }
 
@@ -820,6 +821,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     else
       result = g_strdup(_("no"));
   }
+  else if(_has_prefix(variable, "WORKSPACE.LABEL"))
+  {
+    result = g_strdup(dt_conf_get_string("workspace/label"));
+  }
   else if(_has_prefix(variable, "WIDTH.MAX")
           || _has_prefix(variable, "MAX_WIDTH"))
     result = g_strdup_printf("%d", params->data->max_width);
@@ -924,7 +929,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(tags);
     g_free(tags);
   }
-  else if(_has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
+  else if(_has_prefix(variable, "SIDECAR_TXT")
+          && g_strcmp0(params->jobcode, "infos") == 0
           && (params->data->flags & DT_IMAGE_HAS_TXT))
   {
     char *path = dt_image_get_text_path(params->imgid);
@@ -966,7 +972,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     }
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
-  
+
   if(!result)
   {
     // go past what looks like an invalid variable. we only expect to
@@ -1108,7 +1114,9 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
       {
         char *pattern = _expand_source(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
-        if(!strncmp(base_value + base_value_length - pattern_length, pattern, pattern_length))
+        if(!strncmp(base_value + base_value_length - pattern_length,
+                    pattern,
+                    pattern_length))
           base_value[base_value_length - pattern_length] = '\0';
         g_free(pattern);
       }
@@ -1244,7 +1252,7 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
             ? g_unichar_toupper(changed)
             : g_unichar_tolower(changed);
 
-          int utf8_length = g_unichar_to_utf8(changed, NULL);
+          const int utf8_length = g_unichar_to_utf8(changed, NULL);
           char *next = g_utf8_next_char(base_value);
           _base_value =
             g_malloc0(base_value_length - (next - base_value) + utf8_length + 1);
@@ -1348,13 +1356,41 @@ static char *_expand_source(dt_variables_params_t *params,
   return result;
 }
 
+static gchar *_legacy_aliases(const gchar *source)
+{
+  // create aliases for legacy variable names to avoid breaking old edits
+  gchar *result, *result_old;
+  result = dt_util_str_replace(source, "$(TITLE)", "$(Xmp.dc.title)");
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(DESCRIPTION)", "$(Xmp.dc.description)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(PUBLISHER)", "$(Xmp.dc.publisher)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(CREATOR)", "$(Xmp.dc.creator)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(RIGHTS)", "$(Xmp.dc.rights)");
+  g_free(result_old);
+
+  return result;
+}
+
 char *dt_variables_expand(dt_variables_params_t *params,
                           gchar *source,
                           const gboolean iterate)
 {
   _init_expansion(params, iterate);
 
-  char *result = _expand_source(params, &source, '\0');
+  gchar *aliased_source = _legacy_aliases(source);
+  gchar *nsource = aliased_source;
+  char *result = _expand_source(params, &nsource, '\0');
+  g_free(aliased_source);
 
   _cleanup_expansion(params);
   return result;

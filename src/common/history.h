@@ -53,13 +53,21 @@ typedef struct dt_history_hash_values_t
   int current_len;
 } dt_history_hash_values_t;
 
+typedef enum dt_history_copy_mode_t
+{
+  DT_HISTORY_COPY_APPEND    = 0,
+  DT_HISTORY_COPY_OVERWRITE = 1
+} dt_history_copy_mode_t;
+
 typedef struct dt_history_copy_item_t
 {
   GList *selops;
   GtkTreeView *items;
+  GtkWidget *overwrite;
   dt_imgid_t copied_imageid;
   gboolean full_copy;
   gboolean copy_iop_order;
+  gboolean is_overwrite_set;
 } dt_history_copy_item_t;
 
 /** helper function to free a GList of dt_history_item_t */

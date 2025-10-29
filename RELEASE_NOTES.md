@@ -68,6 +68,13 @@ changes (where available).
   highlights, similar to film, and a natural-looking color
   representation in mid-tones and highlights.
 
+- Added support for multiple workspace. When the corresponding option
+  is activated on the preferences, Darktable opens a dialog when
+  starting. From this dialog one can select the default workspace (the
+  one created the first time and currently used by everyone by
+  default) or to create a new one. Each workspace has it's own
+  database and configuration file (collection, last UI defaults...).
+
 ## UI/UX Improvements
 
 - Show a busy cursor when changing views. This provides immediate
@@ -77,7 +84,9 @@ changes (where available).
 
 - Added the standard "Window" menu to the application menu bar on
   macOS.
-- Moved controls for mask exposure and contrast compensation to the advanced tab.
+
+- Moved controls for mask exposure and contrast compensation to the
+  advanced tab.
 
 - In the navigation windows, the zoom is now better behaving. After a
   free zoom over the darkroom, using the scroll over the zoom level
@@ -85,6 +94,54 @@ changes (where available).
   closest match (above or below depending on the scroll
   direction). This is better as previous behavior where the zoom level
   was always set to "small".
+
+- When moving around in a (zoomed) center view in the darkroom, we now
+  pre-calculate a slightly larger area so that it might not always be
+  necessary to immediately recalculate after further moves. The
+  initial 1px mouse move is generally not final, after all. This does
+  mean longer calculation times, so you can switch this off by setting
+  darkroom/ui/anticipate_move in darktablerc to 1.0. If you use cursor
+  keys to move around, you might want to increase it to >1.4 to
+  anticipate at least one further 20% move on either side. When the
+  recalculation is triggered by a module parameter change, say
+  exposure increase, only the exact area shown is calculated as
+  before, for optimal responsiveness.
+
+- The popup (that you get when right-clicking) for sliders with a 360°
+  range now shows a color wheel or compass. If the slider is
+  soft-limited to a smaller range (for example in rotate&perspective)
+  you can toggle zooming out to the full range by
+  middle-clicking. Another middle click will restore the soft range
+  (and the normal fine-tuning mechanism).
+
+- When the slider range has been zoomed out beyond soft limits, the
+  now visible "extreme" areas have a slightly different color.
+
+- To make the rotation in the wheel match the rotation effect in the
+  image, most slider directions for angles have been reversed. You may
+  want to add a "-1" speed to any shortcuts you have gotten used to.
+
+- Added new default shortcut keys. These will take effect only if the
+  keys do not yet have user-defined assignments.
+
+  - <kbd>c</kbd> - toggle crop box.
+
+  - <kbd>e</kbd> - set exposure compensation (equivalent to
+    right-clicking on the exposure slider).
+
+  - <kbd>alt-r</kbd> - set image rotation (equivalent to
+    right-clicking on the rotation slider).
+
+  - <kbd>alt-[ and alt- ]</kbd> - fine rotation adjustment.
+
+- Different shapes for the indicator on sliders can now be selected in
+  preferences/misc/interface (triangle, circle, diamond, bar).
+
+- All toolbar buttons on the lighttable and darkroom have their
+  enabled state recovered across sessions. The visibility of the
+  enabled buttons has been improved to avoid confusions when
+  restarting Darktable and seeing artifacts due to some tools being
+  activate like Gamut check.
 
 ## Performance Improvements
 
@@ -106,6 +163,32 @@ changes (where available).
   Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
   modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
   and Fujifilm DR200/DR400 modes.
+
+- Add a RGB percent display in the color picker module.
+
+- Allow far smaller crop to be created (up to 99% of the image size).
+
+- Allow the variable `$(ROLL.NAME)` to have optional levels,
+  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
+  rules as film roll, the default value `n=1`, this keep the previous
+  behavior of `$(ROLL.NAME)`.
+
+- Added optional collection of shortcut assignments using
+  keyboard+mouse combinations to control image processing
+  modules. Install these by clicking on the new "import extras" button
+  on the Shortcuts tab under Preferences.
+
+- Remove the "overwrite" option from the lighttable history stack
+  module. This option is used when pasting history to delete the
+  current history stack before pasting the new one. It is rarely used
+  and was confusing people when working copying/pasting on darkroom
+  from the filmstrip as this option was only visible on
+  lighttable. The option has been moved into the paste parts dialog.
+
+- Added manual chroma subsampling control for AVIF export. Users can now
+  choose between auto, 4:4:4, 4:2:2, and 4:2:0 chroma subsampling modes
+  independently of the quality setting, allowing better optimization of the
+  quality-vs-size tradeoff for AVIF files.
 
 ## Bug Fixes
 
@@ -133,6 +216,30 @@ changes (where available).
 - Make sure image changed_timestamp is updated when a sidecar file
   is applied.
 
+- Fixed drag and drop of images on the map gives wrong location
+  assignment on macOS.
+
+- Fixed auto applied presets for sraws and true monochromes.
+
+- Fixed a bug in details threshold mask for monochrome raw files
+  leading to crashes.
+
+- Fixed an issue when positioning the main darkroom windows due to
+  precision in computation. The precision is now to the pixel and
+  avoid a displacement in some cases.
+
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
+
+- Fixed out of memory issue which could kill Darktable on small
+  systems when processing large images.
+
+- Fixed toast message translation displayed when scrolling over the
+  module's preset buttons.
+
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
+
 ## Lua
 
 ### API Version
@@ -153,9 +260,28 @@ changes (where available).
 - Check added to ensure view has changed before processing GUI events
   preventing hang on start.
 
-- return an empty table (nil) for a non-existent tag accessed by index
+- return a nil value instead of throwing a Lua error if the indexed element of
+  the following Lua tables does not exist or if the table is empty:
 
-- return an empty table (nil) when a tag contains no images with the tag
+  - `dt_lua_tag_t.#`
+
+  - `dt_lua_film_t.#`
+
+  - `dt_style_t.#`
+
+  - `darktable.films.#`
+
+  - `darktable.styles.#`
+
+  - `darktable.database.#`
+
+  - `darktable.collection.#`
+
+- Ensure `darktable.database.get_image()` returns a nil, in all conditions,
+  for an image that doesn't exist.
+
+- Ensure translations are displayed in UTF-8 under Windows
+
 
 ### Add action support for Lua
 

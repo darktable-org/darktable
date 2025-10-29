@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,15 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <gtk/gtk.h>
-
-void darktable_splash_screen_create(GtkWindow *parent, gboolean force);
-void darktable_splash_screen_set_progress(const char *msg);
-void darktable_splash_screen_set_progress_percent(const char *msg, double fraction, double elapsed);
-void darktable_splash_screen_destroy();
-
-void darktable_exit_screen_create(GtkWindow *parent, gboolean force);
-void darktable_exit_screen_destroy();
+void dt_workspace_create(const char *datadir);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

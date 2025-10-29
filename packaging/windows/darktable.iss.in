@@ -31,7 +31,15 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
+
 UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
+
+; This file is not in the source tree, it is expected to be created in
+; the installer build environment before compiling this script as:
+;   magick data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
+SetupIconFile=dt_logo_multiresolution.ico
 
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
@@ -46,7 +54,12 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DefaultGroupName={#MyAppName}{code:SuffixIfNotRelease}
 AllowNoIcons=yes
-LicenseFile=share\doc\darktable\LICENSE
+
+; For potential future contributors:
+; Please do not set the LicenseFile directive, as it effectively sets a step
+; to accept the EULA. The darktable license is GPL, and GPL is not an EULA.
+; Users are not required to agree to anything to merely use GPLed software.
+; LicenseFile=share\doc\darktable\LICENSE
 
 ; Uncomment the following line to run in non administrative install mode
 ; (install for current user only).
@@ -54,16 +67,32 @@ LicenseFile=share\doc\darktable\LICENSE
 
 PrivilegesRequiredOverridesAllowed=dialog
 
-; Make this name different while we build nightly with both this and the NSIS installer
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experimental
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.
 ; May be useful for debugging, not needed for production builds.
 ; OutputManifestFile=darktable-manifest.txt
 
+; See https://github.com/teeks99/inno-test/ for which compression parameters
+; should be set and to what values, and which are better not to touch.
+Compression=lzma2/ultra64
 SolidCompression=yes
+LZMAUseSeparateProcess=yes
+
+; Setting this parameter to 2 (default is 1) only slightly (by a few fractions
+; of a percent) increases file size, but significantly speeds up compression.
+; OTOH, saving a minute of nightly job is not that important (if at all). But
+; neither is an extra couple of hundred KB of installer file. So, really,
+; there is no strong justification for choosing the value of this parameter...
+LZMANumBlockThreads=2
+
 WizardStyle=modern
+
+; We allow users who install the program to add darktable to their Quick Launch
+; list (on supported Windows versions), even when installing for all users.
+; This is intentional, don't warn.
+UsedUserAreasWarning=no
 
 ; These parameters must be set to "no" if the AppId contains constants. We use
 ; scripted constant to have different AppIds for release and nightly snapshot.
@@ -83,6 +112,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVer
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignoreversion
+Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Registry]
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute

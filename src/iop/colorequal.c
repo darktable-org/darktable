@@ -2941,6 +2941,8 @@ static float _action_process_colorequal(const gpointer target,
                                         const dt_action_effect_t effect,
                                         const float move_size)
 {
+  if(element >= NODES) return DT_ACTION_NOT_VALID;
+
   const dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
@@ -3057,11 +3059,10 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
-#define GROUP_SLIDERS(num, page, tooltip)                  \
-  dt_ui_notebook_page(g->notebook, page, tooltip);         \
-  self->widget = dt_gui_vbox();                            \
-  gtk_stack_add_named(g->stack, self->widget, num);        \
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, page);
+#define GROUP_SLIDERS(num, page, tooltip)                      \
+  dt_ui_notebook_page(g->notebook, page, tooltip);             \
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
+  gtk_stack_add_named(g->stack, sect->widget, num);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =

@@ -342,7 +342,8 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   return TRUE;
 }
 
-gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect)
+gchar *dt_get_active_preset_name(dt_iop_module_t *module,
+                                 gboolean *writeprotect)
 {
   sqlite3_stmt *stmt;
   // if we sort by writeprotect DESC then in case user copied the writeprotected preset
@@ -453,7 +454,9 @@ char *dt_presets_get_multi_name(const char *name,
     return g_strdup(strlen(multi_name) > 0 ? multi_name : "");
 }
 
-static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, const gchar *name)
+static void _menu_shell_insert_sorted(GtkWidget *menu_shell,
+                                      GtkWidget *item,
+                                      const gchar *name)
 {
   GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
   int num = g_list_length(items);
@@ -507,7 +510,7 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
   {
     mi = gtk_check_menu_item_new_with_label(*s);
     _menu_shell_insert_sorted(*submenu, mi, *s);
-  }    
+  }
   dt_gui_add_class(mi, "dt_transparent_background");
   return mi;
 }

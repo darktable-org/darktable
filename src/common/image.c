@@ -176,6 +176,12 @@ gboolean dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
 
+gboolean dt_image_is_mono_sraw(const dt_image_t *img)
+{
+  const uint32_t test = DT_IMAGE_MONOCHROME | DT_IMAGE_S_RAW;
+  return ((img->flags & test) == test);
+}
+
 gboolean dt_image_is_bayerRGB(const dt_image_t *img)
 {
   return dt_image_is_raw(img)
@@ -269,10 +275,9 @@ int dt_image_monochrome_flags(const dt_image_t *img)
              | DT_IMAGE_MONOCHROME_BAYER));
 }
 
-const char *dt_image_film_roll_name(const char *path)
+const char *dt_image_film_roll_name_levels(const char *path, const int levels)
 {
   const char *folder = path + strlen(path);
-  const int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
   int count = 0;
   while(folder > path)
   {
@@ -284,7 +289,7 @@ const char *dt_image_film_roll_name(const char *path)
     if(*folder == G_DIR_SEPARATOR)
 #endif
 
-      if(++count >= numparts)
+      if(++count >= levels)
       {
         ++folder;
         break;
@@ -292,6 +297,13 @@ const char *dt_image_film_roll_name(const char *path)
     --folder;
   }
   return folder;
+}
+
+const char *dt_image_film_roll_name(const char *path)
+{
+  const int levels = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+
+  return dt_image_film_roll_name_levels(path, levels);
 }
 
 void dt_image_film_roll_directory(const dt_image_t *img,
@@ -2210,8 +2222,8 @@ gboolean _move_extra_file(const gchar *oldFilePath, const gchar *newFolder, cons
   g_free(oldFilename);
   g_free(oldExtension);
   g_object_unref(oldFile);
-  g_object_unref(newFile);      
-  return moveSuccess;    
+  g_object_unref(newFile);
+  return moveSuccess;
 }
 
 gboolean dt_image_rename(const dt_imgid_t imgid,
@@ -2404,9 +2416,9 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         }
         if(oldAudioFilePath != NULL)
         {
-          _move_extra_file(oldAudioFilePath, newFolder, newBasename);       
-        }    
-        g_free(newPath);    
+          _move_extra_file(oldAudioFilePath, newFolder, newBasename);
+        }
+        g_free(newPath);
         g_free(newImgBasename);
         g_free(newBasename);
       }

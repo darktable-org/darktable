@@ -217,6 +217,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 gboolean dt_history_load_and_apply_on_list(gchar *filename,
                                            const GList *list)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   gboolean res = FALSE;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
@@ -226,6 +227,7 @@ gboolean dt_history_load_and_apply_on_list(gchar *filename,
       res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
+  dt_start_backthumbs_crawler();
   return res;
 }
 

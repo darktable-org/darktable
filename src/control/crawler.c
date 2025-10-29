@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -855,13 +855,8 @@ void dt_control_crawler_show_image_list(GList *images)
 
 static inline gboolean _lighttable_silent(void)
 {
-  const dt_view_t *cv = darktable.view_manager
-                        ? dt_view_manager_get_current_view(darktable.view_manager)
-                        : NULL;
-  return cv
-        && cv->view
-        && cv->view(cv) == DT_VIEW_LIGHTTABLE
-        && dt_get_wtime() > darktable.backthumbs.time;
+  return dt_view_get_current() == DT_VIEW_LIGHTTABLE
+          && dt_get_wtime() > darktable.backthumbs.time;
 }
 
 static inline gboolean _valid_mip(dt_mipmap_size_t mip)
@@ -871,23 +866,30 @@ static inline gboolean _valid_mip(dt_mipmap_size_t mip)
 
 static inline gboolean _still_thumbing(void)
 {
-  return darktable.backthumbs.running
-      && _lighttable_silent()
-      && _valid_mip(darktable.backthumbs.mipsize);
+  return darktable.backthumbs.state == DT_JOB_STATE_RUNNING
+      && _lighttable_silent();
 }
 
-static void _update_img_thumbs(const dt_imgid_t imgid,
-                               const dt_mipmap_size_t max_mip,
-                               const int64_t stamp)
+static int _update_img_thumbs(const dt_imgid_t imgid,
+                              const dt_mipmap_size_t max_mip,
+                              const int64_t stamp)
 {
-  for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
+  dt_backthumb_t *bt = &darktable.backthumbs;
+
+  /* as generating the thumb might take some time watch out for a non-running state
+      and possibly return asap without updating the database.
+  */
+  for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1 && bt->state == DT_JOB_STATE_RUNNING; k--)
   {
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
     dt_mipmap_cache_release(&buf);
   }
 
-  // we have written all thumbs now so it's safe to write timestamp, hash and mipsize
+  if(bt->state != DT_JOB_STATE_RUNNING)
+    return 0;
+
+  // we have written all thumbs and are in running state so it's safe to write timestamp, hash and mipsize
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
@@ -902,6 +904,7 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
 
   dt_mipmap_cache_evict(imgid);
   dt_history_hash_set_mipmap(imgid);
+  return 1;
 }
 
 static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
@@ -929,10 +932,7 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     const gboolean available = dt_util_test_image_file(path);
 
     if(available)
-    {
-      _update_img_thumbs(imgid, max_mip, stamp);
-      updated++;
-    }
+      updated += _update_img_thumbs(imgid, max_mip, stamp);
     else
     {
       missed++;
@@ -952,19 +952,13 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
 
 static void _reinitialize_thumbs_database(void)
 {
-  dt_conf_set_bool("backthumbs_initialize", FALSE);
-
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database");
-
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),                              "UPDATE main.images"
                               " SET thumb_maxmip = 0, thumb_timestamp = -1",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  darktable.backthumbs.service = FALSE;
-  dt_set_backthumb_time(5.0);
 }
 
 /* public */
@@ -980,22 +974,20 @@ void dt_set_backthumb_time(const double next)
 void dt_update_thumbs_thread(void *p)
 {
   dt_pthread_setname("thumbs_update");
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
   dt_backthumb_t *bt = &darktable.backthumbs;
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
+  const dt_mipmap_size_t mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
   const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
-  bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
-  bt->service = FALSE;
-  if(!dwriting || !_valid_mip(bt->mipsize) || !darktable.view_manager)
+  const gboolean service = dt_conf_get_bool("backthumbs_initialize");
+
+  bt->state = DT_JOB_STATE_FINISHED;
+
+  if(!dwriting || !_valid_mip(mipsize))
   {
-    bt->running = FALSE;
     dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting");
     return;
   }
-  bt->running = TRUE;
-
-  int updated = 0;
 
   // return if any thumbcache dir is not writable
   for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_7; k++)
@@ -1009,26 +1001,31 @@ void dt_update_thumbs_thread(void *p)
     }
   }
 
-  dt_set_backthumb_time(5.0);
-  while(bt->running)
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
+  bt->state = DT_JOB_STATE_RUNNING;
+  int updated = 0;
+
+  if(service)
   {
-    for(int i = 0; i < 12 && bt->running && !bt->service; i++)
+    _reinitialize_thumbs_database();
+    dt_conf_set_bool("backthumbs_initialize", FALSE);
+  }
+
+  dt_set_backthumb_time(1.0);
+  while(bt->state == DT_JOB_STATE_RUNNING)
+  {
+    for(int i = 0; i < 12 && bt->state == DT_JOB_STATE_RUNNING; i++)
       g_usleep(250000);
 
-    if(!bt->running)
+    if(bt->state != DT_JOB_STATE_RUNNING)
       break;
 
-    if(bt->service)
-      _reinitialize_thumbs_database();
-
-    if(_lighttable_silent() && _valid_mip(bt->mipsize))
-      updated += _update_all_thumbs(bt->mipsize);
-
-    if(!_valid_mip(bt->mipsize))
-      bt->running = FALSE;
+    if(_lighttable_silent())
+      updated += _update_all_thumbs(mipsize);
   }
+
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
-  bt->capable = FALSE;
+  bt->state = DT_JOB_STATE_FINISHED;
 }
 
 // clang-format off

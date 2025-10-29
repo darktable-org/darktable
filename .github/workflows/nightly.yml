@@ -125,6 +125,8 @@ jobs:
             -DWITH_AOM_DECODER=ON \
             -DWITH_AOM_ENCODER=ON \
             -DWITH_OpenH264_DECODER=ON \
+            -DWITH_JPEG_DECODER=ON \
+            -DWITH_OpenJPEG_DECODER=ON \
             -DWITH_LIBSHARPYUV=ON \
             -DCMAKE_INSTALL_PREFIX=/usr
           ninja -C build
@@ -164,7 +166,7 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage-${{ runner.arch }}
@@ -287,9 +289,11 @@ jobs:
       - name: Create Inno Setup installer
         shell: pwsh
         run: |
-          choco upgrade innosetup
+          choco upgrade innosetup --no-progress
           cd ${{ env.INSTALL_PREFIX }}
           cp ${{ env.BUILD_DIR }}/darktable.iss ./
+          # Create multi-resolution .ico file expected by the .iss script for use as setup file icon.
+          magick ${{ env.SRC_DIR }}/data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
           iscc "darktable.iss"
           mv Output/*.exe ${{ env.BUILD_DIR }}/
       - name: Create NSIS installer
@@ -302,7 +306,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
@@ -377,7 +381,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
@@ -391,7 +395,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -413,8 +417,6 @@ jobs:
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
             The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
-
-            __If you are on Windows and using nightly for development testing, we encourage you to try the Inno Setup installer build. It is planned that after a while, it will replace the one with the NSIS installer.__
 
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma).
 

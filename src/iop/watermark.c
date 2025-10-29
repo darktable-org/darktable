@@ -1375,6 +1375,7 @@ void gui_init(dt_iop_module_t *self)
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
   dt_bauhaus_slider_set_format(g->rotate, "°");
+  dt_bauhaus_slider_set_factor(g->rotate, -1.f);
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));

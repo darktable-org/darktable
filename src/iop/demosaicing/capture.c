@@ -43,6 +43,7 @@
 #define CAPTURE_GAUSS_FRACTION 0.01f
 #define CAPTURE_YMIN 0.001f
 #define CAPTURE_CFACLIP 0.9f
+#define CAPTURE_SMALL 0.66f
 
 static float _get_variance_threshold(const dt_iop_module_t *self)
 {
@@ -74,7 +75,7 @@ static float _get_variance_threshold(const dt_iop_module_t *self)
 static inline void _calc_9x9_gauss_coeffs(float *coeffs, const float sigma)
 {
   float kernel[9][9];
-  const float range = 4.5f * 4.5f;
+  const float range = sigma < CAPTURE_SMALL ? sqrf(2.5f) : sqrf(4.5f);
   const float temp = -2.0f * sigma * sigma;
   float sum = 0.0;
   for(int k = -4; k < 5; k++)
@@ -195,6 +196,69 @@ static float _calcRadiusBayer(const float *in,
             else
             { // check for influence by clipped green in neighborhood
               if(MAX(MAX(MAX(val00, cfa[2]), cfa[2*width]), cfa[2*width+2]) >= upperLimit)
+                continue;
+            }
+            maxRatio = maxVal1 / minVal;
+          }
+        }
+      }
+    }
+  }
+  return sqrtf(1.0f / logf(maxRatio));
+}
+
+static float _calcRadiusMono(const float *in,
+                             const int width,
+                             const int height)
+{
+  float maxRatio = 1.0f;
+  DT_OMP_FOR(reduction(max: maxRatio))
+  for(int row = 4; row < height - 4; ++row)
+  {
+    for(int col = 5; col < width - 4; col += 2)
+    {
+      const float *cfa = in + 4*(row*width + col);
+      const float val00 = cfa[0];
+      if(val00 > RAWEPS)
+      {
+        const float val1m1 = cfa[4*(width-1)];
+        const float val1p1 = cfa[4*(width+1)];
+        const float maxVal0 = MAX(val00, val1m1);
+        if(val1m1 > RAWEPS && maxVal0 > lowerLimit)
+        {
+          const float minVal = MIN(val00, val1m1);
+          if(maxVal0 > maxRatio * minVal)
+          {
+            gboolean clipped = FALSE;
+            if(maxVal0 == val00)
+            {
+              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+                clipped = TRUE;
+            }
+            else
+            {
+              if(MAX(MAX(MAX(cfa[-8], val00), cfa[8*width-8]), cfa[8*width]) >= upperLimit)
+                clipped = TRUE;
+            }
+            if(!clipped)
+              maxRatio = maxVal0 / minVal;
+          }
+        }
+
+        const float maxVal1 = MAX(val00, val1p1);
+        if(val1p1 > RAWEPS && maxVal1 > lowerLimit)
+        {
+          const float minVal = MIN(val00, val1p1);
+          if(maxVal1 > maxRatio * minVal)
+          {
+            if(maxVal1 == val00)
+            { // check for influence by clipped green in neighborhood
+              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+                continue;
+            }
+            else
+            {
+              if(MAX(MAX(MAX(val00, cfa[8]), cfa[8*width]), cfa[8*width+8]) >= upperLimit)
                 continue;
             }
             maxRatio = maxVal1 / minVal;
@@ -350,12 +414,6 @@ static float _calc_auto_radius(float *const in,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[1]) : 1.0f,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[2]) : 1.0f, 1.0f };
 
-  if(width < 500 || height < 500)
-  {
-    dt_print(DT_DEBUG_PIPE, "capture sharpen calculating radius failed due to small input area %dx%d", width, height);
-    return 0.1f;
-  }
-
   float *input = wbon ? dt_iop_image_alloc(width, height, 1) : in;
   if(wbon)
   {
@@ -385,12 +443,14 @@ static float _calc_auto_radius(float *const in,
     }
   }
 
-  const float radius = filters != 9u
-              ? _calcRadiusBayer(input, width, height, filters)
-              : _calcRadiusXtrans(input, width, height, xtrans);
+  const float radius =
+              !filters  ? _calcRadiusMono(input, width, height)
+                        : filters != 9u
+                          ? _calcRadiusBayer(input, width, height, filters)
+                          : _calcRadiusXtrans(input, width, height, xtrans);
 
   if(in != input) dt_free_align(input);
-  return radius;
+  return CLAMP(radius, 0.0f, 1.5f);
 }
 
 
@@ -410,6 +470,7 @@ static inline void _blur_mul(const float *const in,
   const int w2 = 2 * w1;
   const int w3 = 3 * w1;
   const int w4 = 4 * w1;
+  const uint8_t idx_small = _sigma_to_index(CAPTURE_SMALL);
 
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -420,11 +481,24 @@ static inline void _blur_mul(const float *const in,
       if(blend[i] > 0.0f)
       {
         const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
+        const gboolean small = table[i] < idx_small;
+        const int bd = small ? 2 : 4;
         float val = 0.0f;
-        if(col >= 4 && row >= 4 && col < w1 - 4 && row < height - 4)
+        if(col >= bd && row >= bd && col < w1 - bd && row < height - bd)
         {
           const float *d = in + i;
-          val =
+          if(small)
+          {
+            val =
+              kern[ 5+2] * (d[-w2-1] + d[-w2+1] + d[-w1-2] + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+              kern[   2] * (d[-w2  ] + d[   -2] + d[    2] + d[ w2  ]) +
+              kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
+              kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
+              kern[   0] * (d[0]);
+          }
+          else
+          {
+            val =
               kern[10+4] * (d[-w4-2] + d[-w4+2] + d[-w2-4] + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
               kern[5 +4] * (d[-w4-1] + d[-w4+1] + d[-w1-4] + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
               kern[4]    * (d[-w4  ] + d[   -4] + d[    4] + d[ w4  ]) +
@@ -438,15 +512,16 @@ static inline void _blur_mul(const float *const in,
               kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
               kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
               kern[   0] * (d[0]);
+            }
         }
         else
         {
-          for(int ir = -4; ir <= 4; ir++)
+          for(int ir = -bd; ir <= bd; ir++)
           {
             const int irow = row+ir;
             if(irow >= 0 && irow < height)
             {
-              for(int ic = -4; ic <= 4; ic++)
+              for(int ic = -bd; ic <= bd; ic++)
               {
                 const int icol = col+ic;
                 if(icol >=0 && icol < w1)
@@ -476,6 +551,7 @@ static inline void _blur_div(const float *const in,
   const int w2 = 2 * w1;
   const int w3 = 3 * w1;
   const int w4 = 4 * w1;
+  const uint8_t idx_small = _sigma_to_index(CAPTURE_SMALL);
 
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -486,11 +562,24 @@ static inline void _blur_div(const float *const in,
       if(blend[i] > 0.0f)
       {
         const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
+        const gboolean small = table[i] < idx_small;
+        const int bd = small ? 2 : 4;
         float val = 0.0f;
-        if(col >= 4 && row >= 4 && col < w1 - 4 && row < height - 4)
+        if(col >= bd && row >= bd && col < w1 - bd && row < height - bd)
         {
           const float *d = in + i;
-          val =
+          if(small)
+          {
+            val =
+              kern[ 5+2] * (d[-w2-1] + d[-w2+1] + d[-w1-2] + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+              kern[   2] * (d[-w2  ] + d[   -2] + d[    2] + d[ w2  ]) +
+              kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
+              kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
+              kern[   0] * (d[0]);
+          }
+          else
+          {
+            val =
               kern[10+4] * (d[-w4-2] + d[-w4+2] + d[-w2-4] + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
               kern[5 +4] * (d[-w4-1] + d[-w4+1] + d[-w1-4] + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
               kern[4]    * (d[-w4  ] + d[   -4] + d[    4] + d[ w4  ]) +
@@ -504,15 +593,16 @@ static inline void _blur_div(const float *const in,
               kern[ 5+1] * (d[-w1-1] + d[-w1+1] + d[ w1-1] + d[ w1+1]) +
               kern[   1] * (d[-w1  ] + d[   -1] + d[    1] + d[ w1  ]) +
               kern[   0] * (d[0]);
+            }
         }
         else
         {
-          for(int ir = -4; ir <= 4; ir++)
+          for(int ir = -bd; ir <= bd; ir++)
           {
             const int irow = row+ir;
             if(irow >= 0 && irow < height)
             {
-              for(int ic = -4; ic <= 4; ic++)
+              for(int ic = -bd; ic <= bd; ic++)
               {
                 const int icol = col+ic;
                 if(icol >=0 && icol < w1)
@@ -553,7 +643,8 @@ static void _prepare_blend(const float *cfa,
       if(row > 1 && col > 1 && row < height-2 && col < w1-2)
       {
         const int color = (filters == 9u) ? FCNxtrans(row, col, xtrans) : FC(row, col, filters);
-        if(cfa[k] > whites[color] || Yold[k] < CAPTURE_YMIN)
+        const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
+        if(heat || Yold[k] < CAPTURE_YMIN)
         {
           mask[k-w2-1] = mask[k-w2]   = mask[k-w2+1] =
           mask[k-w1-2] = mask[k-w1-1] = mask[k-w1]   = mask[k-w1+1] = mask[k-w1+2] =
@@ -624,29 +715,39 @@ static void _capture_radius(dt_iop_module_t *self,
                             const uint8_t (*const xtrans)[6],
                             const uint32_t filters)
 {
+  dt_iop_demosaic_params_t *p = self->params;
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean reliable = ((float)width / (float)img->p_width) > 0.5f
+                      &&  ((float)height / (float)img->p_height) > 0.5f;
+  const gboolean enough = width > 200 && height > 200;
+
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
-  const float radius = _calc_auto_radius(in, width, height, filters, xtrans, dsc);
-  const gboolean valid = radius > 0.1f && radius < 1.5f;
+  const float radius = 0.01f * (int)(enough ? 100.0f * _calc_auto_radius(in, width, height, filters, xtrans, dsc) : 50);
+  const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_GAUSS_FRACTION);
 
   dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-      pipe, self, DT_DEVICE_NONE, NULL, NULL, "radius=%.2f %svalid",
-      radius, valid ? "" : "not ");
+      pipe, self, DT_DEVICE_NONE, NULL, NULL,
+      "%sradius=%.2f from %s image data is %s reliable",
+      same_radius ? "unchanged" : "", radius,
+      enough ? "enough" : "small",
+      reliable ? "" : "not ");
 
-  if(fullpipe && valid)
+  if(fullpipe && g)
   {
-    dt_iop_demosaic_params_t *p = self->params;
-    p->cs_radius = radius;
-    if(g)
+    g->autoradius = TRUE;
+    if(!same_radius || g->new_radius < 0.0f)
     {
+      p->cs_radius = radius;
       g->new_radius = radius;
-      g->autoradius = TRUE;
     }
+    if(!reliable)
+      dt_control_log(_("imprecise radius calculation due to cropping or because you are zoomed in too much"));
   }
-  d->cs_radius = valid ? radius : 0.5f;
+  d->cs_radius = radius;
 }
 
 static void _capture_noise(dt_iop_module_t *self,
@@ -654,21 +755,22 @@ static void _capture_noise(dt_iop_module_t *self,
 {
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  dt_iop_demosaic_params_t *p = self->params;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const float thrs = _get_variance_threshold(self);
+  const float thrs = 0.01f * (int)(100.0f * _get_variance_threshold(self));
+  const gboolean same_thrs = feqf(p->cs_thrs, thrs, 0.01f);
 
   dt_print_pipe(DT_DEBUG_PIPE, "capture threshold",
       pipe, self, DT_DEVICE_NONE, NULL, NULL, "threshold=%.2f", thrs);
 
-  if(fullpipe)
+  if(fullpipe && g)
   {
-    dt_iop_demosaic_params_t *p = self->params;
-    p->cs_thrs = thrs;
-    if(g)
+    g->autothrs = TRUE;
+    if(!same_thrs)
     {
+      p->cs_thrs = thrs;
       g->new_thrs = thrs;
-      g->autothrs = TRUE;
     }
   }
   d->cs_thrs = thrs;
@@ -677,14 +779,15 @@ static void _capture_noise(dt_iop_module_t *self,
 static inline gboolean _noise_requested(dt_iop_module_t *self,
                                         dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_thrs = d->cs_thrs <= 0.0f;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   // do we require a calculation of the noise threshold?
 
   // if running in gui the first fullpipe for this image and there is an invalid threshold
-  if(g && !g->autothrs && invalid_thrs) return TRUE;
+  if(g && fullpipe && !g->autothrs && invalid_thrs) return TRUE;
 
   // if with no gui and we have an invalid thrshold
   if(!g && invalid_thrs) return TRUE;
@@ -695,20 +798,21 @@ static inline gboolean _noise_requested(dt_iop_module_t *self,
 static inline gboolean _radius_requested(dt_iop_module_t *self,
                                          dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
-  const gboolean invalid_thrs = d->cs_radius <= 0.0f;
+  const gboolean invalid_radius = d->cs_radius <= 0.0f;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   // do we require a calculation of the capture radius?
 
   // if the calc-radius button in UI has been clicked
-  if(g && (g->new_radius < 0.0f)) return TRUE;
+  if(g && fullpipe && (g->new_radius < 0.0f)) return TRUE;
 
   // if running in gui the first fullpipe for this image and there is an invalid radius
-  if(g && !g->autoradius && invalid_thrs) return TRUE;
+  if(g && fullpipe && !g->autoradius && invalid_radius) return TRUE;
 
-  // if with no gui and we have a radius <= 0
-  if(!g && invalid_thrs) return TRUE;
+  // if with no gui and we have an invalid radius
+  if(!g && invalid_radius) return TRUE;
 
   return FALSE;
 }
@@ -843,7 +947,7 @@ static void _capture_radius_cl(dt_iop_module_t *self,
                               const uint8_t (*const xtrans)[6],
                               const uint32_t filters)
 {
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   float *in = dt_iop_image_alloc(width, height, 1);
   if(!in) goto finish;

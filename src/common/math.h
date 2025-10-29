@@ -25,6 +25,8 @@
 
 #define LUT_ELEM 512 // gamut LUT number of elements:
 
+#define DT_MEGA 1048576lu
+
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
 // select speed vs accuracy tradeoff

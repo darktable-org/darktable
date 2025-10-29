@@ -99,9 +99,8 @@ void (dt_gui_presets_add_generic)(const char *name,
   dt_develop_blend_params_t default_blendop_params;
   dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
   gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
-  dt_gui_presets_add_with_blendop(
-      prefixed_name, op, version, params, params_size,
-      &default_blendop_params, enabled);
+  dt_gui_presets_add_with_blendop(prefixed_name, op, version, params, params_size,
+                                  &default_blendop_params, enabled);
   g_free(prefixed_name);
 }
 
@@ -157,7 +156,7 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
   }
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+     || dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                   _("do you really want to delete the preset `%s'?"), name))
   {
     dt_action_rename_preset(&module->so->actions, name, NULL);
@@ -241,7 +240,7 @@ static void _edit_preset_response(GtkDialog *dialog,
         // if result is BUTTON_NO or ESCAPE keypress exit without
         // destroying dialog, to permit other name
         if(dt_gui_show_yes_no_dialog
-           (_("overwrite preset?"),
+           (_("overwrite preset?"), "",
             _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
           // we remove the preset that will be overwrite
@@ -463,7 +462,7 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name,
 {
   if(!module_name) return FALSE;
 
-  if(dt_gui_show_yes_no_dialog(_("delete preset?"),
+  if(dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                _("do you really want to delete the preset `%s'?"), name))
   {
     // deregistering accel...
@@ -891,7 +890,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     if(w) gtk_widget_grab_focus(w);
   }
 
-  dt_gui_dialog_add(GTK_DIALOG(dialog), g->name, g->description, g->autoinit, g->autoapply, g->filter, g->details);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), g->name, g->description,
+                    g->autoinit, g->autoapply, g->filter, g->details);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_edit_preset_response), g);
   gtk_widget_show_all(dialog);
@@ -990,7 +990,7 @@ static void _menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("update preset?"),
+     || dt_gui_show_yes_no_dialog(_("update preset?"), "",
                                   _("do you really want to update the preset `%s'?"),
                                   name))
   {
@@ -1100,6 +1100,8 @@ void dt_gui_presets_apply_preset(const gchar* name,
       dt_iop_commit_blend_params(module, module->default_blendop_params);
     }
 
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESET_APPLIED, module);
+
     if(!writeprotect) dt_gui_store_last_preset(name);
   }
   else
@@ -1155,8 +1157,13 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
   if(!*extreme)
     dt_gui_presets_apply_preset(name, module);
 
-  dt_action_widget_toast(DT_ACTION(module), NULL, _("preset %s\n%s"),
-                         extreme, name ? name : _("no presets"));
+  gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+
+  dt_action_widget_toast(DT_ACTION(module), NULL,
+                         _("preset '%s' %s"),
+                         name ? local_name : _("no presets"),
+                         *extreme ? extreme : "");
+  g_free(local_name);
   g_free(name);
 }
 
@@ -1282,7 +1289,9 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && event->type == GDK_BUTTON_RELEASE && _click_time)
+  else if(event->button == GDK_BUTTON_SECONDARY
+          && event->type == GDK_BUTTON_RELEASE
+          && _click_time)
   {
     if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);
@@ -1296,7 +1305,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
     }
   }
 
-  if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
+  if(dt_conf_get_bool("accel/prefer_enabled")
+     || dt_conf_get_bool("accel/prefer_unmasked"))
   {
     // rebuild the accelerators
     dt_iop_connect_accels_multi(module->so);
@@ -1468,7 +1478,8 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
     {
       // create top entry
       gchar *iopname = g_markup_escape_text(iop->name(), -1);
-      gtk_tree_store_insert_with_values(treestore, &toplevel, NULL, -1, 0, iopname, 1, FALSE, 2, FALSE, -1);
+      gtk_tree_store_insert_with_values(treestore, &toplevel, NULL,
+                                        -1, 0, iopname, 1, FALSE, 2, FALSE, -1);
       g_free(iopname);
 
       /* query presets for module */
@@ -1736,7 +1747,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
 
-    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, isdefault);
+    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu,
+                                            &submenu, &prev_split, isdefault);
 
     if(module
        && ((op_params_size == 0
@@ -1754,7 +1766,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       dt_gui_add_class(mi, "active_menu_item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
       g_set_weak_pointer(&_active_menu_item, mi);
-      // walk back up the menu hierarchy and highlight the entire path down to the current leaf
+      // walk back up the menu hierarchy and highlight the entire path
+      // down to the current leaf.
       for(const GSList *mp = menu_path; mp; mp = g_slist_next(mp))
         dt_gui_add_class(gtk_bin_get_child(GTK_BIN(mp->data)), "active_menu_item");
     }
@@ -1800,7 +1813,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 
       if(darktable.gui->last_preset && found)
       {
-        char *local_last_name = dt_util_localize_segmented_name(darktable.gui->last_preset, TRUE);
+        char *local_last_name = dt_util_localize_segmented_name(darktable.gui->last_preset,
+                                                                TRUE);
         char *markup = g_markup_printf_escaped("%s <b>%s</b>",
                                                _("update preset"),
                                                local_last_name);

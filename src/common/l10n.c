@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -308,31 +308,13 @@ end:
 #endif // HAVE_ISO_CODES
 }
 
-gchar *_l10n_get_value(const gchar *key, const gchar *value)
-{
-  const gchar *search_key = "ui_last/gui_language";
-  if(!g_strcmp0(key, search_key))
-    return g_strdup(value);
-  else
-    return NULL;
-}
-
-gchar *_l10n_get_language(const gchar *filename)
-{
-  gchar *lang = dt_conf_read_values(filename, _l10n_get_value);
-  if(lang)
-    return lang;
-  else
-    return g_strdup("");
-}
-
-dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
+dt_l10n_t *dt_l10n_init(const gboolean init_list)
 {
   dt_l10n_t *result = calloc(1, sizeof(dt_l10n_t));
   result->selected = -1;
   result->sys_default = -1;
 
-  gchar *ui_lang = _l10n_get_language(filename);
+  gchar *ui_lang = g_strdup(dt_conf_get_string("ui_last/gui_language"));
 
   const char *old_env = g_getenv("LANGUAGE");
 

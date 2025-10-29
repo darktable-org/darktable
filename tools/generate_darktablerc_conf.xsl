@@ -22,6 +22,7 @@
 
 typedef struct {
    const char *name;		// configuration variable's name (path)
+   const char *is_common;       // wether the config is to be stored in darktablerc-common
    const char *type;		// variable's type (int, string, enum, etc.)
    const char *def;		// default value
    const char *enum_values;	// listing of possible values for an enum, in format "[A][B][C]...[Z]"
@@ -66,6 +67,8 @@ static _default_config_t _config_variables[] =
   <xsl:for-each select="./dtconfiglist/dtconfig">
     <xsl:text>  {&#xA;    "</xsl:text>
     <xsl:value-of select="name" />
+    <xsl:text>",&#xA;    "</xsl:text>
+    <xsl:value-of select="./@common" />
     <xsl:text>",&#xA;    "</xsl:text>
     <xsl:apply-templates select="type"/>
     <xsl:text>    "</xsl:text>
@@ -113,6 +116,7 @@ void dt_confgen_init()
      item->enum_values = _copy_string(var->enum_values);
      item->shortdesc = _copy_string(var->shortdesc);
      item->longdesc = _copy_string(var->longdesc);
+     item->is_common = *var->is_common == 'y';
    }
 }
 

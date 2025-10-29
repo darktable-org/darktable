@@ -3015,8 +3015,14 @@ static void _drag_and_drop_received(GtkWidget *widget,
         }
         float longitude, latitude;
         OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
+#ifdef __APPLE__
+        // on macOS, setting a thumb icon for dragging is not supported, so
+        // we don't use the offset here.
+        osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
+#else
         osm_gps_map_convert_screen_to_geographic(lib->map, x - lib->start_drag_offset_x,
                                                  y - lib->start_drag_offset_y, pt);
+#endif
         osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
         osm_gps_map_point_free(pt);
         // TODO redraw the image group/. it seems that at this time

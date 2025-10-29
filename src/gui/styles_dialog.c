@@ -226,7 +226,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       {
         /* on button yes delete style name for overwriting */
         if(dt_gui_show_yes_no_dialog
-           (_("overwrite style?"),
+           (_("overwrite style?"), "",
             _("style `%s' already exists.\ndo you want to overwrite?"), newname))
         {
           dt_styles_delete_by_name(newname);

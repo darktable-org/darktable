@@ -485,6 +485,7 @@ void enter(dt_view_t *self)
   const dt_lighttable_layout_t layout =
     dt_view_lighttable_get_layout(darktable.view_manager);
 
+  dt_start_backthumbs_crawler();
   // enable culling proxy
   darktable.view_manager->proxy.lighttable.culling_preview_refresh =
     _culling_preview_refresh;
@@ -635,6 +636,7 @@ void init(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_library_t *lib = self->data;
 
   // disable culling proxy
