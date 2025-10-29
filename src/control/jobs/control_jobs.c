@@ -123,6 +123,15 @@ typedef struct _images_job_data_t
   gboolean overwrite;
 } _images_job_data_t;
 
+static _images_job_data_t* _dup_images_job_data_t(_images_job_data_t *data)
+{
+  _images_job_data_t*d = g_malloc(sizeof(_images_job_data_t));
+  memcpy(d, data, sizeof(_images_job_data_t));
+  d->imgs = g_list_copy(d->imgs);
+  d->styles = g_list_copy(d->styles);
+  return d;
+}
+
 static inline gboolean _job_cancelled(dt_job_t *job)
 {
   return dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED;
@@ -248,9 +257,13 @@ static void _control_image_enumerator_cleanup(void *p)
 
   g_list_free(params->index);
   params->index = NULL;
-  //FIXME: we need to free params->data to avoid a memory leak, but
-  //doing so here causes memory corruption....
-//  g_free(params->data);
+
+  // we cannot free params->data as this is either a Glist * or an
+  // allocated struct (_images_job_data_t). It is the responsibility
+  // of the runner to free the data if needed. Furthermore, note that
+  // some jobs are passing the images list to a signal which is turns
+  // will free the list.
+  params->data = NULL;
 
   if(params->blocking)
     g_main_context_invoke(NULL, _cursor_clear_busy, NULL);
@@ -1620,6 +1633,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              (GList*)paste_data->imgs); // frees list of images
+
   g_free(params->data);
   params->data = NULL;
 
@@ -2296,11 +2310,11 @@ void dt_control_refresh_exif()
 
 static void _add_history_job(GList *imgs,
                              const char *title,
-                             dt_job_execute_callback execute,
-                             _images_job_data_t *images_job_data)
+                             dt_job_execute_callback execute)
 {
   if(!imgs || !execute)
     return;
+
   GList *link = darktable.develop
     ? g_list_find(imgs, GINT_TO_POINTER(darktable.develop->image_storage.id))
     : NULL;
@@ -2311,17 +2325,10 @@ static void _add_history_job(GList *imgs,
     // images to be processed, and run it synchronously by itself
     imgs = g_list_remove_link(imgs, link);
 
-    if(images_job_data)
-      images_job_data->imgs = link;
-
     dt_control_add_job(DT_JOB_QUEUE_SYNCHRONOUS,
                        _control_generic_images_job_create(execute, title, 0,
-                                                          images_job_data
-                                                          ? (gpointer)images_job_data
-                                                          : (gpointer)link,
+                                                          (gpointer)link,
                                                           PROGRESS_BLOCKING, FALSE));
-    if(images_job_data)
-      images_job_data->imgs = imgs;
   }
   // if there are any images left in the list after removing the
   // darkroom image, process them asynchronously but block user
@@ -2330,9 +2337,46 @@ static void _add_history_job(GList *imgs,
   {
     dt_control_add_job(DT_JOB_QUEUE_USER_FG,
                        _control_generic_images_job_create(execute, title, 0,
-                                                          images_job_data
-                                                          ? (gpointer)images_job_data
-                                                          : (gpointer)imgs,
+                                                          (gpointer)imgs,
+                                                          PROGRESS_BLOCKING, FALSE));
+  }
+}
+
+static void _add_history_job_data(const char *title,
+                                  dt_job_execute_callback execute,
+                                  _images_job_data_t *images_job_data)
+{
+  if(!images_job_data->imgs || !execute)
+    return;
+
+  GList *link = darktable.develop
+    ? g_list_find(images_job_data->imgs,
+                  GINT_TO_POINTER(darktable.develop->image_storage.id))
+    : NULL;
+
+  if(link)
+  {
+    // remove the image in darkroom center view from the list of
+    // images to be processed, and run it synchronously by itself
+    _images_job_data_t *d = _dup_images_job_data_t(images_job_data);
+    g_list_free(d->imgs);
+    d->imgs = link;
+
+    images_job_data->imgs = g_list_remove_link(images_job_data->imgs, link);
+
+    dt_control_add_job(DT_JOB_QUEUE_SYNCHRONOUS,
+                       _control_generic_images_job_create(execute, title, 0,
+                                                          (gpointer)d,
+                                                          PROGRESS_BLOCKING, FALSE));
+  }
+  // if there are any images left in the list after removing the
+  // darkroom image, process them asynchronously but block user
+  // interactions other than cancellation
+  if(images_job_data->imgs)
+  {
+    dt_control_add_job(DT_JOB_QUEUE_USER_FG,
+                       _control_generic_images_job_create(execute, title, 0,
+                                                          (gpointer)images_job_data,
                                                           PROGRESS_BLOCKING, FALSE));
   }
 }
@@ -2353,9 +2397,11 @@ void dt_control_paste_history(GList *imgs)
     images_job_data->duplicate = FALSE;
     images_job_data->overwrite = FALSE;
 
-    _add_history_job(imgs, N_("paste history"),
-                     &_control_paste_history_job_run, images_job_data);
+    _add_history_job_data(N_("paste history"),
+                          &_control_paste_history_job_run, images_job_data);
   }
+  else
+    g_list_free(imgs);
 }
 
 void dt_control_paste_parts_history(GList *imgs)
@@ -2381,8 +2427,8 @@ void dt_control_paste_parts_history(GList *imgs)
       images_job_data->duplicate = FALSE;
       images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
 
-      _add_history_job(imgs, N_("paste history"),
-                       &_control_paste_history_job_run, images_job_data);
+      _add_history_job_data(N_("paste history"),
+                            &_control_paste_history_job_run, images_job_data);
     }
   }
   else
@@ -2395,9 +2441,10 @@ void dt_control_compress_history(GList *imgs)
   {
     (void)dt_history_compress(GPOINTER_TO_INT(imgs->data));
     g_list_free(imgs);
-    return;
   }
-  _add_history_job(imgs, N_("compress history"), &_control_compress_history_job_run, NULL);
+  else
+    _add_history_job(imgs, N_("compress history"),
+                     &_control_compress_history_job_run);
 }
 
 void dt_control_discard_history(GList *imgs)
@@ -2406,9 +2453,10 @@ void dt_control_discard_history(GList *imgs)
   {
     dt_history_delete(GPOINTER_TO_INT(imgs->data), TRUE);
     g_list_free(imgs);
-    return;
   }
-  _add_history_job(imgs, N_("discard history"), &_control_discard_history_job_run, NULL);
+  else
+    _add_history_job(imgs, N_("discard history"),
+                     &_control_discard_history_job_run);
 }
 
 void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicate)
