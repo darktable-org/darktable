@@ -2416,29 +2416,29 @@ void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicat
   if(g_list_is_empty(styles) && g_list_is_empty(imgs))
   {
     dt_control_log(_("no images nor styles selected!"));
-    return;
   }
   else if(g_list_is_empty(styles))
   {
     dt_control_log(_("no styles selected!"));
-    return;
   }
   else if(g_list_is_empty(imgs))
   {
     dt_control_log(_("no images selected!"));
-    return;
   }
-
-  _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
-  if(images_job_data)
+  else
   {
-    const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
-    images_job_data->imgs = imgs;
-    images_job_data->styles = styles;
-    images_job_data->duplicate = duplicate;
-    images_job_data->overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
-    _add_history_job(imgs, N_("apply style(s)"),
-                     &_control_apply_styles_job_run, images_job_data);
+    _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
+    if(images_job_data)
+    {
+      const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+      images_job_data->imgs = imgs;
+      images_job_data->styles = styles;
+      images_job_data->duplicate = duplicate;
+      images_job_data->overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
+
+      _add_history_job_data(N_("apply style(s)"),
+                            &_control_apply_styles_job_run, images_job_data);
+    }
   }
 }
 
