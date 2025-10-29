@@ -2914,6 +2914,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/avif/subsample</name>
+    <type min="0" max="3">int</type>
+    <default>0</default>
+    <shortdescription>AVIF chroma subsampling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/xcf/bpp</name>
     <type>
       <enum>
