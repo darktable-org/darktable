@@ -1385,8 +1385,8 @@ static void _read_exposure_params_callback(GtkWidget *widget,
   }
 }
 
-// Apply logic for pivot x picker
-static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
+// Apply logic for pivot y picker, modifying both x and y
+static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
   if(darktable.gui->reset) return;
 
@@ -1444,6 +1444,53 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
                         p->curve_pivot_x_shift_ratio);
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
                         p->curve_pivot_y_linear_output);
+  --darktable.gui->reset;
+}
+
+// Apply logic for pivot x picker, modifying only x and y
+static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_agx_params_t *p = self->params;
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+
+  // Calculate norm and EV of the picked color
+  const float norm = _luminance_from_profile(self->picked_color, profile);
+  const float picked_ev = log2f(fmaxf(_epsilon, norm) / 0.18f);
+
+  // Calculate the target pivot_x based on the picked EV and the current EV range
+  const float min_ev = p->range_black_relative_exposure;
+  const float max_ev = p->range_white_relative_exposure;
+  const float range_in_ev = fmaxf(_epsilon, max_ev - min_ev);
+  const float target_pivot_x = CLAMPF((picked_ev - min_ev) / range_in_ev, 0.f, 1.f);
+
+  // Calculate the required pivot_x_shift to achieve the target_pivot_x
+  const float base_pivot_x = fabsf(min_ev / range_in_ev); // Pivot representing 0 EV (mid-gray)
+
+  float shift;
+  if(fabsf(target_pivot_x - base_pivot_x) < _epsilon)
+  {
+    shift = 0.f;
+  }
+  else if(base_pivot_x > target_pivot_x)
+  {
+    // Solve 'target_pivot_x = (1 + shift) * base_pivot_x' for shift
+    shift = (base_pivot_x > _epsilon) ? (target_pivot_x / base_pivot_x) - 1.f : -1.f;
+  }
+  else // target_pivot_x > base_pivot_x
+  {
+    // Solve 'target_pivot_x = base_pivot_x * (1 - shift) + shift' for shift
+    const float denominator = 1.f - base_pivot_x;
+    shift = (denominator > _epsilon) ? (target_pivot_x - base_pivot_x) / denominator : 1.f;
+  }
+
+  p->curve_pivot_x_shift_ratio = CLAMPF(shift, -1.f, 1.f);
+
+  // Update the slider visually
+  ++darktable.gui->reset;
+  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_shift,
+                        p->curve_pivot_x_shift_ratio);
   --darktable.gui->reset;
 }
 
@@ -1608,7 +1655,7 @@ void process(dt_iop_module_t *self,
     for_each_channel(c)
     {
       const float component = pix_in[c];
-      // allow about 22.5 EV above mid-grey, including out-of-gamut pixels, getting rid of NaNs
+      // allow about 22.5 EV above mid-gray, including out-of-gamut pixels, getting rid of NaNs
       sanitised_in[c] = isnan(component) ? 0.f : CLAMPF(component, -1e6f, 1e6f);
     }
     float *const restrict pix_out = out + k;
@@ -2013,24 +2060,25 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_iop_basic_curve_controls_t *controls = &g->basic_curve_controls;
 
   // curve_pivot_x_shift with picker
-  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio");
-  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, slider);
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio"));
   controls->curve_pivot_x_shift = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
   gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
-  dt_bauhaus_widget_set_quad_tooltip(slider, _("pick the pivot point (input shift and target output)"));
+  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be used to set the pivot input shift"));
 
   // curve_pivot_y_linear
-  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output");
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output"));
   controls->curve_pivot_y_linear = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
+  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be used to set the pivot input shift,\n"
+                                               "and the output will be adjusted based on the default mid-gray to mid-gray mapping"));
 
   // curve_contrast_around_pivot
   slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
@@ -2793,10 +2841,8 @@ void color_picker_apply(dt_iop_module_t *self,
   if(picker == g->black_exposure_picker) _apply_auto_black_exposure(self);
   else if(picker == g->white_exposure_picker) _apply_auto_white_exposure(self);
   else if(picker == g->range_exposure_picker) _apply_auto_tune_exposure(self);
-  else if(picker == g->basic_curve_controls.curve_pivot_x_shift)
-  {
-    _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
-  }
+  else if(picker == g->basic_curve_controls.curve_pivot_x_shift) _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
+  else if(picker == g->basic_curve_controls.curve_pivot_y_linear) _apply_auto_pivot_xy(self, dt_ioppr_get_pipe_work_profile_info(pipe));
 
   const dt_iop_agx_params_t *p = self->params;
   if(p->auto_gamma)
