@@ -185,6 +185,11 @@ changes (where available).
   from the filmstrip as this option was only visible on
   lighttable. The option has been moved into the paste parts dialog.
 
+- Added manual chroma subsampling control for AVIF export. Users can now
+  choose between auto, 4:4:4, 4:2:2, and 4:2:0 chroma subsampling modes
+  independently of the quality setting, allowing better optimization of the
+  quality-vs-size tradeoff for AVIF files.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
