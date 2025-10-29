@@ -3676,7 +3676,7 @@ static float _action_process_tabs(const gpointer target,
 static void _find_notebook(GtkWidget *widget,
                            GtkWidget **p)
 {
-  if(*p) return;
+  if(*p || !gtk_widget_get_visible(widget)) return;
   if(GTK_IS_NOTEBOOK(widget))
     *p = widget;
   else if(GTK_IS_CONTAINER(widget))
@@ -3688,14 +3688,14 @@ static float _action_process_focus_tabs(const gpointer target,
                                         const dt_action_effect_t effect,
                                         const float move_size)
 {
-  GtkWidget *widget = ((dt_iop_module_t *)target)->widget, *notebook = NULL;
-  _find_notebook(widget, &notebook);
+  GtkWidget *notebook = NULL;
+  _find_notebook(target, &notebook);
 
   if(notebook)
     return _action_process_tabs(notebook, element, effect, move_size);
 
   if(DT_PERFORM_ACTION(move_size))
-    dt_action_widget_toast(target, NULL, _("does not contain pages"));
+    dt_action_widget_toast(&darktable.control->actions_focus, NULL, _("does not contain pages"));
   return NAN;
 }
 
