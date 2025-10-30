@@ -190,6 +190,16 @@ changes (where available).
   independently of the quality setting, allowing better optimization of the
   quality-vs-size tradeoff for AVIF files.
 
+- The processing modules/<focused> shortcuts also work if the quick
+  access panel is "focused", addressing the first 20 sliders or
+  dropdowns.
+
+- If only the first rotor on a midi controller is assigned, the higher
+  numbered ones automatically address increasing elements of the same
+  action or subsequent actions. This allows quick (re) assignment to
+  the <focused> action or to the mimics set up with for example the
+  x-touch Lua script.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -239,6 +249,12 @@ changes (where available).
 
 - Fixed issue in darktable-cli that prevented input files from being
   detected.
+
+- Fixed an issue with reading TIFF files that (incorrectly) contain
+  metadata specific to the raw files they were made from.
+
+- Fixed an issue where imported styles that didn't have a name could
+  cause darktable to crash when starting.
 
 ## Lua
 
