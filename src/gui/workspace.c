@@ -31,6 +31,7 @@
 typedef struct _workspace_t {
   GtkWidget *db_screen;
   GtkWidget *entry;
+  GtkWidget *create;
   const char *datadir;
 } dt_workspace_t;
 
@@ -39,6 +40,15 @@ static void _workspace_screen_destroy(dt_workspace_t *session)
   if(session->db_screen)
     gtk_widget_destroy(session->db_screen);
   session->db_screen = NULL;
+}
+
+static void _workspace_entry_changed(GtkWidget *button, dt_workspace_t *session)
+{
+  const gchar *label = gtk_entry_get_text(GTK_ENTRY(session->entry));
+
+  const gboolean status = strlen(label) != 0;
+
+  gtk_widget_set_sensitive(session->create, status);
 }
 
 static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
@@ -208,10 +218,15 @@ void dt_workspace_create(const char *datadir)
 
   GtkBox *box = GTK_BOX(dt_gui_hbox());
   session->entry = gtk_entry_new();
-  GtkWidget *create = gtk_button_new_with_label(_("create"));
-  g_signal_connect(G_OBJECT(create), "clicked",
+  g_signal_connect(G_OBJECT(session->entry),
+                   "changed", G_CALLBACK(_workspace_entry_changed), session);
+
+  session->create = gtk_button_new_with_label(_("create"));
+  gtk_widget_set_sensitive(session->create, FALSE);
+
+  g_signal_connect(G_OBJECT(session->create), "clicked",
                    G_CALLBACK(_workspace_new_db), session);
-  dt_gui_box_add(box, session->entry, create);
+  dt_gui_box_add(box, session->entry, session->create);
 
   dt_gui_dialog_add(session->db_screen, l2, box);
 
