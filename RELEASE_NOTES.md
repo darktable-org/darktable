@@ -253,6 +253,9 @@ changes (where available).
 - Fixed an issue with reading TIFF files that (incorrectly) contain
   metadata specific to the raw files they were made from.
 
+- Fixed an issue where imported styles that didn't have a name could
+  cause darktable to crash when starting.
+
 ## Lua
 
 ### API Version
