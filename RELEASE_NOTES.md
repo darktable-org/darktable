@@ -75,6 +75,10 @@ changes (where available).
   default) or to create a new one. Each workspace has it's own
   database and configuration file (collection, last UI defaults...).
 
+  An in memory workspace can also be selected in the dialog. In this
+  case there is no database created in disk, a configuration file is
+  created though.
+
 ## UI/UX Improvements
 
 - Show a busy cursor when changing views. This provides immediate
