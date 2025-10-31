@@ -814,7 +814,8 @@ int main(int argc, char *arg[])
     {
       metadata.flags = dt_lib_export_metadata_get_conf_flags();
       metadata.list = dt_util_str_to_glist("\1", dt_lib_export_metadata_get_conf());
-      metadata.list = g_list_remove(metadata.list, metadata.list->data);
+      if(metadata.list)
+        metadata.list = g_list_remove(metadata.list, metadata.list->data);
     }
     else
     {
