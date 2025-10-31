@@ -2335,6 +2335,21 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     };
 
+    if(FIND_EXIF_TAG("Exif.Fujifilm.FilmMode"))
+    {
+      const int value = pos->toLong();
+      _exif_value_str(value, img->exif_film_mode, sizeof(img->exif_film_mode), pos, exifData);
+    }
+    else if(FIND_EXIF_TAG("Exif.Fujifilm.Color"))
+    {
+      // Exif.Fujifilm.Color contains the monochrome mode (sepia, normal b&w,
+      // color filters, acros) if FilmMode is not set.
+      // In the camera UI, those are all in the same menu, so it makes sense to
+      // merge them into the same tag in darktable.
+      const int value = pos->toLong();
+      _exif_value_str(value, img->exif_film_mode, sizeof(img->exif_film_mode), pos, exifData);
+    }
+
     img->exif_inited = TRUE;
     return true;
   }

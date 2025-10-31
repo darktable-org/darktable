@@ -271,6 +271,7 @@ typedef struct dt_image_t
   char exif_flash[64];
   char exif_exposure_program[64];
   char exif_metering_mode[64];
+  char exif_film_mode[64];
   GTimeSpan exif_datetime_taken;
 
   dt_image_correction_type_t exif_correction_type;
@@ -636,6 +637,7 @@ int32_t dt_image_get_whitebalance_id(const char *name);
 int32_t dt_image_get_flash_id(const char *name);
 int32_t dt_image_get_exposure_program_id(const char *name);
 int32_t dt_image_get_metering_mode_id(const char *name);
+int32_t dt_image_get_film_mode_id(const char *name);
 int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
 G_END_DECLS

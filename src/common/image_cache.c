@@ -49,7 +49,7 @@ static void _image_cache_allocate(void *data,
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
       "       output_width, output_height, cm.maker, cm.model, cm.alias,"
-      "       wb.name, fl.name, ep.name, mm.name, flash_tagvalue"
+      "       wb.name, fl.name, ep.name, mm.name, flash_tagvalue, fm.name"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
       "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
@@ -59,6 +59,7 @@ static void _image_cache_allocate(void *data,
       "       LEFT JOIN main.flash AS fl ON fl.id = mi.flash_id"
       "       LEFT JOIN main.exposure_program AS ep ON ep.id = mi.exposure_program_id"
       "       LEFT JOIN main.metering_mode AS mm ON mm.id = mi.metering_mode_id"
+      "       LEFT JOIN main.film_mode AS fm ON fm.id = mi.film_mode_id"
       "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
@@ -155,6 +156,8 @@ static void _image_cache_allocate(void *data,
     if(str) g_strlcpy(img->exif_metering_mode, str, sizeof(img->exif_metering_mode));
 
     img->exif_flash_tagvalue = sqlite3_column_int(stmt, 42);
+    str = (char *)sqlite3_column_text(stmt, 43);
+    if(str) g_strlcpy(img->exif_film_mode, str, sizeof(img->exif_film_mode));
 
     dt_color_harmony_get(entry->key, &img->color_harmony_guide);
 
@@ -345,7 +348,8 @@ void dt_image_cache_write_release_info(dt_image_t *img,
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
      "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
      "     whitebalance_id = ?36, flash_id = ?37,"
-     "     exposure_program_id = ?38, metering_mode_id = ?39, flash_tagvalue = ?41"
+     "     exposure_program_id = ?38, metering_mode_id = ?39, flash_tagvalue = ?41,"
+     "     film_mode_id = ?42"
      " WHERE id = ?40",
      -1, &stmt, NULL);
 
@@ -356,6 +360,7 @@ void dt_image_cache_write_release_info(dt_image_t *img,
   const int32_t flash_id = dt_image_get_flash_id(img->exif_flash);
   const int32_t exposure_program_id = dt_image_get_exposure_program_id(img->exif_exposure_program);
   const int32_t metering_mode_id = dt_image_get_metering_mode_id(img->exif_metering_mode);
+  const int32_t film_mode_id = dt_image_get_film_mode_id(img->exif_film_mode);
 
   // also make sure we update the camera_id and possibly the associated data
   // in cameras table.
@@ -412,6 +417,7 @@ void dt_image_cache_write_release_info(dt_image_t *img,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 39, metering_mode_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 40, img->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 41, img->exif_flash_tagvalue);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 42, film_mode_id);
 
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)

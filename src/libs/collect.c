@@ -2104,6 +2104,19 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_FILM_MODE: // lens
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT fm.name AS film_mode, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.film_mode AS fm"
+                   "  WHERE mi.film_mode_id = fm.id"
+                   "    AND %s"
+                   "  GROUP BY LOWER(film_mode)"
+                   "  ORDER BY LOWER(film_mode) %s", where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_FILENAME: // filename
         // clang-format off
         g_snprintf(query, sizeof(query),
@@ -2375,17 +2388,12 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
   // if needed, we restrict the tree to matching entries
   if(dr->typing
-     && (property == DT_COLLECTION_PROP_CAMERA
-         || property == DT_COLLECTION_PROP_FILENAME
-         || property == DT_COLLECTION_PROP_FILMROLL
-         || property == DT_COLLECTION_PROP_LENS
-         || property == DT_COLLECTION_PROP_APERTURE
-         || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-         || property == DT_COLLECTION_PROP_ISO
-         || property == DT_COLLECTION_PROP_MODULE
-         || property == DT_COLLECTION_PROP_ORDER
-         || property == DT_COLLECTION_PROP_RATING
-         || property >= DT_COLLECTION_PROP_METADATA_OFFSET))
+     && (property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_FILENAME
+         || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
+         || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+         || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_MODULE
+         || property == DT_COLLECTION_PROP_ORDER || property == DT_COLLECTION_PROP_RATING
+         || property >= DT_COLLECTION_PROP_METADATA_OFFSET || property == DT_COLLECTION_PROP_FILM_MODE))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3360,6 +3368,7 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FLASH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILM_MODE);
 
     dt_bauhaus_combobox_add_section(w, _("darktable"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUP_ID);
@@ -4004,6 +4013,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ASPECT_RATIO);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE_BIAS);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILM_MODE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);

@@ -659,6 +659,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("exposure program");
     case DT_COLLECTION_PROP_METERING_MODE:
       return N_("metering mode");
+    case DT_COLLECTION_PROP_FILM_MODE:
+      return N_("film mode");
     case DT_COLLECTION_PROP_LAST:
       return NULL;
     default:
@@ -1828,6 +1830,30 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       dt_util_str_cat(&query, ")");
       break;
 
+    case DT_COLLECTION_PROP_FILM_MODE: // film mode
+      query = g_strdup("(");
+      // handle the possibility of multiple values
+      elems = _strsplit_quotes(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
+      {
+        if(!g_strcmp0(elems[i], _("unnamed")))
+        {
+          dt_util_str_cat(&query,
+                          "%sfilm_mode_id IN (SELECT id FROM main.film_mode WHERE name IS NULL OR TRIM(name)='')",
+                          i > 0 ? " OR " : "");
+        }
+        else
+        {
+          gchar *film_mode = _add_wildcards(elems[i]);
+          dt_util_str_cat(&query, "%sfilm_mode_id IN (SELECT id FROM main.film_mode WHERE name LIKE '%s')",
+                          i > 0 ? " OR " : "", film_mode);
+          g_free(film_mode);
+        }
+      }
+      g_strfreev(elems);
+      dt_util_str_cat(&query, ")");
+      break;
+
     case DT_COLLECTION_PROP_GROUP_ID: // group id
       query = g_strdup("(");
       // handle the possibility of multiple values
@@ -2605,15 +2631,11 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    if(*text
-       && g_strcmp0(text, _("unnamed")) != 0
-       && (property == DT_COLLECTION_PROP_CAMERA
-           || property == DT_COLLECTION_PROP_LENS
-           || property == DT_COLLECTION_PROP_WHITEBALANCE
-           || property == DT_COLLECTION_PROP_FLASH
-           || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM
-           || property == DT_COLLECTION_PROP_METERING_MODE
-           || property == DT_COLLECTION_PROP_GROUP_ID))
+    if(*text && g_strcmp0(text, _("unnamed")) != 0
+       && (property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_LENS
+           || property == DT_COLLECTION_PROP_WHITEBALANCE || property == DT_COLLECTION_PROP_FLASH
+           || property == DT_COLLECTION_PROP_EXPOSURE_PROGRAM || property == DT_COLLECTION_PROP_METERING_MODE
+           || property == DT_COLLECTION_PROP_FILM_MODE || property == DT_COLLECTION_PROP_GROUP_ID))
     {
       gchar *text_quoted = g_strdup_printf("\"%s\"", text);
       g_free(text);
