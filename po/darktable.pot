@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-29 09:05+0100\n"
+"POT-Creation-Date: 2025-10-31 12:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -871,7 +871,7 @@ msgstr ""
 msgid "?"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4406 ../src/control/jobs/control_jobs.c:3035
+#: ../build/bin/preferences_gen.h:4406 ../src/control/jobs/control_jobs.c:3083
 #: ../src/libs/import.c:188
 msgid "import"
 msgstr ""
@@ -1433,8 +1433,8 @@ msgid "LUT 3D root folder"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6083 ../build/bin/preferences_gen.h:6124
-#: ../src/control/jobs/control_jobs.c:2175
-#: ../src/control/jobs/control_jobs.c:2231 ../src/gui/preferences.c:1233
+#: ../src/control/jobs/control_jobs.c:2189
+#: ../src/control/jobs/control_jobs.c:2245 ../src/gui/preferences.c:1233
 #: ../src/gui/presets.c:423 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:283 ../src/imageio/storage/gallery.c:148
 #: ../src/imageio/storage/gallery.c:207 ../src/imageio/storage/latex.c:144
@@ -2192,7 +2192,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2440 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3806 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
-#: ../src/iop/channelmixerrgb.c:4611 ../src/iop/colorequal.c:2960
+#: ../src/iop/channelmixerrgb.c:4611 ../src/iop/colorequal.c:2962
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:2000
 #: ../src/iop/temperature.c:2184 ../src/libs/collect.c:1964
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2611
@@ -2233,7 +2233,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:855
-#: ../src/iop/colorequal.c:2959 ../src/iop/temperature.c:1984
+#: ../src/iop/colorequal.c:2961 ../src/iop/temperature.c:1984
 msgid "cyan"
 msgstr ""
 
@@ -2314,7 +2314,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2434 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3805 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:611 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixerrgb.c:4610 ../src/iop/colorequal.c:2958
+#: ../src/iop/channelmixerrgb.c:4610 ../src/iop/colorequal.c:2960
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1980
 #: ../src/iop/temperature.c:1998 ../src/iop/temperature.c:2183
 #: ../src/libs/collect.c:1964 ../src/libs/filters/colors.c:262
@@ -2330,7 +2330,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:856
-#: ../src/iop/colorequal.c:2962 ../src/iop/colorzones.c:2492
+#: ../src/iop/colorequal.c:2964 ../src/iop/colorzones.c:2492
 #: ../src/iop/temperature.c:1982
 msgid "magenta"
 msgstr ""
@@ -2356,7 +2356,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2956 ../src/iop/colorzones.c:2486
+#: ../src/iop/colorequal.c:2958 ../src/iop/colorzones.c:2486
 msgid "orange"
 msgstr ""
 
@@ -2385,7 +2385,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2428 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3804 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
-#: ../src/iop/channelmixerrgb.c:4609 ../src/iop/colorequal.c:2955
+#: ../src/iop/channelmixerrgb.c:4609 ../src/iop/colorequal.c:2957
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:1996
 #: ../src/iop/temperature.c:2182 ../src/libs/collect.c:1964
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2629
@@ -2421,7 +2421,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1462 ../src/common/colorlabels.c:381
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:854
-#: ../src/iop/colorequal.c:2957 ../src/iop/colorzones.c:2487
+#: ../src/iop/colorequal.c:2959 ../src/iop/colorzones.c:2487
 #: ../src/iop/temperature.c:1986 ../src/libs/collect.c:1964
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -2463,7 +2463,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:644 ../src/iop/channelmixerrgb.c:4617
-#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3101
+#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3103
 #: ../src/iop/lowpass.c:577 ../src/iop/soften.c:389 ../src/iop/vignette.c:1045
 #: ../src/libs/history.c:959
 msgid "brightness"
@@ -2481,7 +2481,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:608 ../src/iop/colisa.c:279
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
-#: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3083
+#: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3085
 #: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:385
 #: ../src/iop/velvia.c:73 ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
@@ -3083,7 +3083,7 @@ msgstr ""
 #: ../src/gui/preferences.c:969 ../src/imageio/format/avif.c:984
 #: ../src/imageio/format/jpeg.c:597 ../src/iop/ashift.c:6145
 #: ../src/iop/basicadj.c:654 ../src/iop/flip.c:448 ../src/iop/levels.c:645
-#: ../src/iop/rgblevels.c:1079
+#: ../src/iop/rgblevels.c:1081
 msgid "auto"
 msgstr ""
 
@@ -3496,9 +3496,9 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2406 ../src/develop/blend_gui.c:2454
-#: ../src/iop/atrous.c:1791 ../src/iop/channelmixerrgb.c:4477
+#: ../src/iop/atrous.c:1793 ../src/iop/channelmixerrgb.c:4477
 #: ../src/iop/channelmixerrgb.c:4565 ../src/iop/colorbalancergb.c:1803
-#: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:465
+#: ../src/iop/colorzones.c:2626 ../src/iop/nlmeans.c:465
 msgid "chroma"
 msgstr ""
 
@@ -3521,9 +3521,9 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2365 ../src/develop/blend_gui.c:2399
 #: ../src/develop/blend_gui.c:2461 ../src/iop/channelmixer.c:607
 #: ../src/iop/channelmixerrgb.c:4471 ../src/iop/channelmixerrgb.c:4558
-#: ../src/iop/colorbalance.c:1937 ../src/iop/colorequal.c:3065
+#: ../src/iop/colorbalance.c:1937 ../src/iop/colorequal.c:3067
 #: ../src/iop/colorize.c:334 ../src/iop/colorreconstruction.c:1233
-#: ../src/iop/colorzones.c:2625
+#: ../src/iop/colorzones.c:2627
 msgid "hue"
 msgstr ""
 
@@ -3677,7 +3677,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2961
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2963
 msgid "lavender"
 msgstr ""
 
@@ -3751,7 +3751,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:233
 #: ../build/lib/darktable/plugins/introspection_soften.c:66
 #: ../build/lib/darktable/plugins/introspection_soften.c:121
-#: ../src/iop/atrous.c:1827
+#: ../src/iop/atrous.c:1829
 msgid "mix"
 msgstr ""
 
@@ -3763,7 +3763,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2344 ../src/iop/channelmixer.c:609
 #: ../src/iop/channelmixerrgb.c:4550 ../src/iop/colorchecker.c:1567
-#: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2623
+#: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2625
 #: ../src/iop/exposure.c:1304
 msgid "lightness"
 msgstr ""
@@ -3788,7 +3788,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:230
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:435
-#: ../src/iop/atrous.c:1687 ../src/iop/bloom.c:418
+#: ../src/iop/atrous.c:1689 ../src/iop/bloom.c:418
 #: ../src/iop/colorreconstruction.c:1229 ../src/iop/hotpixels.c:442
 #: ../src/iop/sharpen.c:436
 msgid "threshold"
@@ -4059,7 +4059,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:123
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:248
-#: ../src/iop/atrous.c:1677 ../src/iop/highpass.c:365
+#: ../src/iop/atrous.c:1679 ../src/iop/highpass.c:365
 msgid "sharpness"
 msgstr ""
 
@@ -4231,13 +4231,13 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:162
 #: ../src/iop/levels.c:671 ../src/iop/rgblevels.c:962
-#: ../src/iop/rgblevels.c:1075
+#: ../src/iop/rgblevels.c:1077
 msgid "black"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:163
 #: ../src/iop/levels.c:679 ../src/iop/rgblevels.c:964
-#: ../src/iop/rgblevels.c:1077
+#: ../src/iop/rgblevels.c:1079
 msgid "white"
 msgstr ""
 
@@ -5570,16 +5570,16 @@ msgstr ""
 msgid "Print your images"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:910 ../src/bauhaus/bauhaus.c:4069
-#: ../src/iop/colorequal.c:3051
+#: ../src/bauhaus/bauhaus.c:910 ../src/bauhaus/bauhaus.c:4066
+#: ../src/iop/colorequal.c:3053
 msgid "sliders"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:912 ../src/bauhaus/bauhaus.c:4074
+#: ../src/bauhaus/bauhaus.c:912 ../src/bauhaus/bauhaus.c:4071
 msgid "dropdowns"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:914 ../src/bauhaus/bauhaus.c:4079
+#: ../src/bauhaus/bauhaus.c:914 ../src/bauhaus/bauhaus.c:4076
 msgid "buttons"
 msgstr ""
 
@@ -5602,51 +5602,51 @@ msgstr ""
 msgid "button pressed"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3974
+#: ../src/bauhaus/bauhaus.c:3973
 msgid "not that many sliders"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3988
+#: ../src/bauhaus/bauhaus.c:3986
 msgid "not that many dropdowns"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4007
+#: ../src/bauhaus/bauhaus.c:4004
 msgid "not that many buttons"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4012 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:4009 ../src/gui/accelerators.c:392
 msgid "value"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4013 ../src/bauhaus/bauhaus.c:4019
+#: ../src/bauhaus/bauhaus.c:4010 ../src/bauhaus/bauhaus.c:4016
 #: ../src/gui/accelerators.c:371
 msgid "button"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4014
+#: ../src/bauhaus/bauhaus.c:4011
 msgid "force"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4015 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:4012 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4018 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:4015 ../src/libs/select.c:40
 msgid "selection"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4058
+#: ../src/bauhaus/bauhaus.c:4055
 msgid "slider"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:4063
+#: ../src/bauhaus/bauhaus.c:4060
 msgid "dropdown"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3875
-#: ../src/control/jobs/control_jobs.c:2176
-#: ../src/control/jobs/control_jobs.c:2234 ../src/gui/accelerators.c:2536
+#: ../src/control/jobs/control_jobs.c:2190
+#: ../src/control/jobs/control_jobs.c:2248 ../src/gui/accelerators.c:2536
 #: ../src/gui/accelerators.c:2615 ../src/gui/accelerators.c:2658
 #: ../src/gui/accelerators.c:2687 ../src/gui/accelerators.c:2744
 #: ../src/gui/accelerators.c:2796 ../src/gui/hist_dialog.c:236
@@ -6053,7 +6053,7 @@ msgstr[1] ""
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2374
 #: ../src/develop/blend_gui.c:2422 ../src/gui/guides.c:851
 #: ../src/iop/channelmixerrgb.c:4620 ../src/iop/levels.c:675
-#: ../src/iop/rgblevels.c:963 ../src/iop/rgblevels.c:1076
+#: ../src/iop/rgblevels.c:963 ../src/iop/rgblevels.c:1078
 msgid "gray"
 msgstr ""
 
@@ -6503,8 +6503,8 @@ msgstr ""
 msgid "file `%s' has unknown format!"
 msgstr ""
 
-#: ../src/common/darktable.c:479 ../src/control/jobs/control_jobs.c:2794
-#: ../src/control/jobs/control_jobs.c:2849
+#: ../src/common/darktable.c:479 ../src/control/jobs/control_jobs.c:2842
+#: ../src/control/jobs/control_jobs.c:2897
 #, c-format
 msgid "error loading file `%s'"
 msgstr ""
@@ -7017,7 +7017,7 @@ msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
 
-#: ../src/common/gpx.c:259 ../src/control/jobs/control_jobs.c:1370
+#: ../src/common/gpx.c:259 ../src/control/jobs/control_jobs.c:1383
 #, c-format
 msgid "failed to parse GPX file"
 msgstr ""
@@ -7096,7 +7096,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr ""
 
-#: ../src/common/image.c:2852 ../src/control/jobs/control_jobs.c:922
+#: ../src/common/image.c:2852 ../src/control/jobs/control_jobs.c:935
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 
@@ -7922,84 +7922,84 @@ msgstr[1] ""
 msgid "import images from camera"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:202
+#: ../src/control/jobs/control_jobs.c:211
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:330
+#: ../src/control/jobs/control_jobs.c:343
 #, c-format
 msgid "writing sidecar file"
 msgid_plural "writing %zu sidecar files"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:497
+#: ../src/control/jobs/control_jobs.c:510
 msgid "unable to allocate memory for HDR merge"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:506
+#: ../src/control/jobs/control_jobs.c:519
 msgid "exposure bracketing only works on raw images."
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:514
+#: ../src/control/jobs/control_jobs.c:527
 msgid "images have to be of same size and orientation!"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:607
+#: ../src/control/jobs/control_jobs.c:620
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:679
+#: ../src/control/jobs/control_jobs.c:692
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:711
+#: ../src/control/jobs/control_jobs.c:724
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:753
+#: ../src/control/jobs/control_jobs.c:766
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:785
+#: ../src/control/jobs/control_jobs.c:798
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:787
+#: ../src/control/jobs/control_jobs.c:800
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:895
+#: ../src/control/jobs/control_jobs.c:908
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:939
+#: ../src/control/jobs/control_jobs.c:952
 #, c-format
 msgid "not removing image '%s' used as overlay in %d image"
 msgid_plural "not removing image '%s' used as overlay in %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1022
+#: ../src/control/jobs/control_jobs.c:1035
 #, c-format
 msgid ""
 "could not send %s to trash%s\n"
@@ -8008,219 +8008,219 @@ msgid ""
 " do you want to delete the file from disk without using trash?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1024
+#: ../src/control/jobs/control_jobs.c:1037
 #, c-format
 msgid ""
 "could not delete from disk %s%s\n"
 "%s"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1032
+#: ../src/control/jobs/control_jobs.c:1045
 msgid "_apply to all"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1040
+#: ../src/control/jobs/control_jobs.c:1053
 msgid "_delete permanently"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1042
-#: ../src/control/jobs/control_jobs.c:1047
+#: ../src/control/jobs/control_jobs.c:1055
+#: ../src/control/jobs/control_jobs.c:1060
 msgid "_remove from library"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1050 ../src/libs/styles.c:504
+#: ../src/control/jobs/control_jobs.c:1063 ../src/libs/styles.c:504
 #: ../src/libs/styles.c:657
 msgid "_skip"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1051
+#: ../src/control/jobs/control_jobs.c:1064
 msgid "abort"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1057
+#: ../src/control/jobs/control_jobs.c:1070
 msgid "trashing error"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1058
+#: ../src/control/jobs/control_jobs.c:1071
 msgid "deletion error"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1210
+#: ../src/control/jobs/control_jobs.c:1223
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1212
+#: ../src/control/jobs/control_jobs.c:1225
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1246
+#: ../src/control/jobs/control_jobs.c:1259
 #, c-format
 msgid "not deleting image '%s' used as overlay in %d image"
 msgid_plural "not deleting image '%s' used as overlay in %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1380
+#: ../src/control/jobs/control_jobs.c:1393
 #, c-format
 msgid "setting GPS information"
 msgid_plural "setting GPS information for %u images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1438
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1456
 #, c-format
 msgid "moving %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1444
+#: ../src/control/jobs/control_jobs.c:1457
 #, c-format
 msgid "moving %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1450
+#: ../src/control/jobs/control_jobs.c:1463
 #, c-format
 msgid "copying %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1464
 #, c-format
 msgid "copying %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1466
+#: ../src/control/jobs/control_jobs.c:1479
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1470
+#: ../src/control/jobs/control_jobs.c:1483
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1519
+#: ../src/control/jobs/control_jobs.c:1532
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1591
+#: ../src/control/jobs/control_jobs.c:1604
 #, c-format
 msgid "pasting history to %d image"
 msgid_plural "pasting history to %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1613
+#: ../src/control/jobs/control_jobs.c:1626
 msgid "skipped pasting history into image being edited"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1653
+#: ../src/control/jobs/control_jobs.c:1667
 #, c-format
 msgid "compressing history for %d image"
 msgid_plural "compressing history for %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1670
+#: ../src/control/jobs/control_jobs.c:1684
 msgid "skipped compressing history for image being edited"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1681
+#: ../src/control/jobs/control_jobs.c:1695
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1694
+#: ../src/control/jobs/control_jobs.c:1708
 #, c-format
 msgid "discarding history for %d image"
 msgid_plural "discarding history for %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1707
+#: ../src/control/jobs/control_jobs.c:1721
 msgid "skipped discarding history for image being edited"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1739
+#: ../src/control/jobs/control_jobs.c:1753
 #, c-format
 msgid "applying style(s) for %d image"
 msgid_plural "applying style(s) for %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1840
+#: ../src/control/jobs/control_jobs.c:1854
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:1842
+#: ../src/control/jobs/control_jobs.c:1856
 msgid "no image to export"
 msgstr ""
 
 #. progress message
 #. update the message. initialize_store() might have changed the number of images
-#: ../src/control/jobs/control_jobs.c:1901
+#: ../src/control/jobs/control_jobs.c:1915
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:1913 ../src/views/darkroom.c:882
+#: ../src/control/jobs/control_jobs.c:1927 ../src/views/darkroom.c:882
 #: ../src/views/print.c:331
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2022
+#: ../src/control/jobs/control_jobs.c:2036
 msgid "merge HDR image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2038
+#: ../src/control/jobs/control_jobs.c:2052
 msgid "duplicate images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2047
+#: ../src/control/jobs/control_jobs.c:2061
 msgid "flip images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2055
+#: ../src/control/jobs/control_jobs.c:2069
 msgid "set monochrome images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2063
+#: ../src/control/jobs/control_jobs.c:2077
 msgid "remove images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2076
+#: ../src/control/jobs/control_jobs.c:2090
 msgid "remove image?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2076
+#: ../src/control/jobs/control_jobs.c:2090
 msgid "remove images?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2077
+#: ../src/control/jobs/control_jobs.c:2091
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -8231,19 +8231,19 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2093
+#: ../src/control/jobs/control_jobs.c:2107
 msgid "delete images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2109
+#: ../src/control/jobs/control_jobs.c:2123
 msgid "delete image?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2109
+#: ../src/control/jobs/control_jobs.c:2123
 msgid "delete images?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2110
+#: ../src/control/jobs/control_jobs.c:2124
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -8254,43 +8254,43 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2112
+#: ../src/control/jobs/control_jobs.c:2126
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2130
+#: ../src/control/jobs/control_jobs.c:2144
 msgid "delete duplicate"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2146
+#: ../src/control/jobs/control_jobs.c:2160
 msgid "delete duplicate?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2147
+#: ../src/control/jobs/control_jobs.c:2161
 msgid ""
 "do you really want to delete the duplicate (without deleting the source "
 "image file on disk)?"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2164
+#: ../src/control/jobs/control_jobs.c:2178
 msgid "move images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2176
-#: ../src/control/jobs/control_jobs.c:2233
+#: ../src/control/jobs/control_jobs.c:2190
+#: ../src/control/jobs/control_jobs.c:2247
 msgid "_select as destination"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2196
+#: ../src/control/jobs/control_jobs.c:2210
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2197
+#: ../src/control/jobs/control_jobs.c:2211
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -8301,134 +8301,134 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2220
+#: ../src/control/jobs/control_jobs.c:2234
 msgid "copy images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2256
+#: ../src/control/jobs/control_jobs.c:2270
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2257
+#: ../src/control/jobs/control_jobs.c:2271
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2275
-#: ../src/control/jobs/control_jobs.c:2284
+#: ../src/control/jobs/control_jobs.c:2289
+#: ../src/control/jobs/control_jobs.c:2298
 msgid "local copy images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2293 ../src/libs/image.c:651
+#: ../src/control/jobs/control_jobs.c:2307 ../src/libs/image.c:651
 msgid "refresh EXIF"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2356
-#: ../src/control/jobs/control_jobs.c:2384 ../src/dtgtk/thumbtable.c:2957
+#: ../src/control/jobs/control_jobs.c:2400
+#: ../src/control/jobs/control_jobs.c:2430 ../src/dtgtk/thumbtable.c:2957
 msgid "paste history"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2400 ../src/libs/copy_history.c:324
+#: ../src/control/jobs/control_jobs.c:2446 ../src/libs/copy_history.c:324
 msgid "compress history"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2411 ../src/dtgtk/thumbtable.c:2961
+#: ../src/control/jobs/control_jobs.c:2458 ../src/dtgtk/thumbtable.c:2961
 #: ../src/libs/copy_history.c:329
 msgid "discard history"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2418
+#: ../src/control/jobs/control_jobs.c:2466
 msgid "no images nor styles selected!"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2423
+#: ../src/control/jobs/control_jobs.c:2470
 msgid "no styles selected!"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2428
+#: ../src/control/jobs/control_jobs.c:2474
 msgid "no images selected!"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2440
+#: ../src/control/jobs/control_jobs.c:2487
 msgid "apply style(s)"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2517
+#: ../src/control/jobs/control_jobs.c:2565
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2534
+#: ../src/control/jobs/control_jobs.c:2582
 msgid "export images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2587
+#: ../src/control/jobs/control_jobs.c:2635
 #, c-format
 msgid "adding time offset to %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2588
+#: ../src/control/jobs/control_jobs.c:2636
 #, c-format
 msgid "setting date/time of %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2590
+#: ../src/control/jobs/control_jobs.c:2638
 #, c-format
 msgid "adding time offset to %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2591
+#: ../src/control/jobs/control_jobs.c:2639
 #, c-format
 msgid "setting date/time of %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2637
+#: ../src/control/jobs/control_jobs.c:2685
 #, c-format
 msgid "added time offset to %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2638
+#: ../src/control/jobs/control_jobs.c:2686
 #, c-format
 msgid "set date/time of %d image"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2640
+#: ../src/control/jobs/control_jobs.c:2688
 #, c-format
 msgid "added time offset to %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2641
+#: ../src/control/jobs/control_jobs.c:2689
 #, c-format
 msgid "set date/time of %d images"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2684
+#: ../src/control/jobs/control_jobs.c:2732
 msgid "time offset"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2714 ../src/libs/copy_history.c:339
+#: ../src/control/jobs/control_jobs.c:2762 ../src/libs/copy_history.c:339
 msgid "write sidecar files"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2927 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2975 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2978
+#: ../src/control/jobs/control_jobs.c:3026
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2986
+#: ../src/control/jobs/control_jobs.c:3034
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8661,8 +8661,8 @@ msgctxt "blendoperation"
 msgid "reverse"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:88
-#: ../src/gui/workspace.c:162 ../src/imageio/format/webp.c:435
+#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
+#: ../src/gui/workspace.c:190 ../src/imageio/format/webp.c:435
 msgid "default"
 msgstr ""
 
@@ -8830,7 +8830,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2375 ../src/develop/blend_gui.c:2423
 #: ../src/iop/channelmixerrgb.c:4609 ../src/iop/denoiseprofile.c:3671
 #: ../src/iop/rawdenoise.c:883 ../src/iop/rgbcurve.c:1489
-#: ../src/iop/rgblevels.c:1037 ../src/libs/filters/colors.c:137
+#: ../src/iop/rgblevels.c:1039 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr ""
 
@@ -8841,7 +8841,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2381 ../src/develop/blend_gui.c:2429
 #: ../src/iop/channelmixerrgb.c:4610 ../src/iop/denoiseprofile.c:3672
 #: ../src/iop/rawdenoise.c:884 ../src/iop/rgbcurve.c:1490
-#: ../src/iop/rgblevels.c:1038 ../src/libs/filters/colors.c:143
+#: ../src/iop/rgblevels.c:1040 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr ""
 
@@ -8852,7 +8852,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2387 ../src/develop/blend_gui.c:2435
 #: ../src/iop/channelmixerrgb.c:4611 ../src/iop/denoiseprofile.c:3673
 #: ../src/iop/rawdenoise.c:885 ../src/iop/rgbcurve.c:1491
-#: ../src/iop/rgblevels.c:1039 ../src/libs/filters/colors.c:146
+#: ../src/iop/rgblevels.c:1041 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr ""
 
@@ -8924,21 +8924,21 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1787
-#: ../src/iop/colorzones.c:2620 ../src/iop/denoiseprofile.c:3668
+#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1789
+#: ../src/iop/colorzones.c:2622 ../src/iop/denoiseprofile.c:3668
 #: ../src/iop/rawdenoise.c:880 ../src/iop/rgbcurve.c:1487
-#: ../src/iop/rgblevels.c:1035 ../src/iop/tonecurve.c:1268
+#: ../src/iop/rgblevels.c:1037 ../src/iop/tonecurve.c:1268
 msgid "channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2582 ../src/iop/colorzones.c:2637
+#: ../src/develop/blend_gui.c:2582 ../src/iop/colorzones.c:2639
 #: ../src/iop/rgbcurve.c:1500 ../src/iop/tonecurve.c:1280
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2585 ../src/iop/colorzones.c:2639
+#: ../src/develop/blend_gui.c:2585 ../src/iop/colorzones.c:2641
 #: ../src/iop/rgbcurve.c:1503
 msgid "show color"
 msgstr ""
@@ -8972,7 +8972,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2671 ../src/develop/blend_gui.c:3548
 #: ../src/iop/agx.c:2211 ../src/iop/agx.c:2219 ../src/iop/basicadj.c:624
-#: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3132
+#: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3134
 #: ../src/iop/exposure.c:1204 ../src/iop/exposure.c:1220
 #: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
 #: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4411
@@ -9224,8 +9224,8 @@ msgid "feathering radius"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:3596 ../src/develop/blend_gui.c:3605
-#: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3147
-#: ../src/iop/colorequal.c:3174 ../src/iop/demosaic.c:1817
+#: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3149
+#: ../src/iop/colorequal.c:3176 ../src/iop/demosaic.c:1817
 #: ../src/iop/demosaic.c:1836 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2677
 msgid " px"
@@ -12214,7 +12214,7 @@ msgstr ""
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
 #: ../src/iop/agx.c:2466 ../src/iop/channelmixerrgb.c:4418
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
-#: ../src/iop/colorequal.c:3005 ../src/iop/filmicrgb.c:4379
+#: ../src/iop/colorequal.c:3007 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
 #: ../src/libs/image.c:496 ../src/views/lighttable.c:1336
 msgid "page"
@@ -12600,7 +12600,7 @@ msgid "relative instance"
 msgstr ""
 
 #: ../src/gui/accelerators.c:818 ../src/gui/accelerators.c:2946
-#: ../src/gui/accelerators.c:3881
+#: ../src/gui/accelerators.c:3909
 msgid "speed"
 msgstr ""
 
@@ -13020,44 +13020,52 @@ msgstr ""
 msgid "reinitialising input devices"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3668
+#: ../src/gui/accelerators.c:3615
+msgid "move not assigned"
+msgstr ""
+
+#: ../src/gui/accelerators.c:3615
+msgid "fallback to earlier move"
+msgstr ""
+
+#: ../src/gui/accelerators.c:3695
 msgid "down move"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3668
+#: ../src/gui/accelerators.c:3695
 msgid "flip top/bottom first/last"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3749
+#: ../src/gui/accelerators.c:3776
 msgid "fallback to move"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3850
+#: ../src/gui/accelerators.c:3878
 #, c-format
 msgid ""
 "\n"
 "applying preset '%s'"
 msgstr ""
 
-#: ../src/gui/accelerators.c:4000
+#: ../src/gui/accelerators.c:4028
 #, c-format
 msgid "%s not assigned"
 msgstr ""
 
-#: ../src/gui/accelerators.c:4179
+#: ../src/gui/accelerators.c:4207
 #, c-format
 msgid "%s assigned to %s"
 msgstr ""
 
-#: ../src/gui/accelerators.c:4398
+#: ../src/gui/accelerators.c:4426
 msgid "short key press resets stuck keys"
 msgstr ""
 
-#: ../src/gui/workspace.c:49
+#: ../src/gui/workspace.c:59
 msgid "delete workspace"
 msgstr ""
 
-#: ../src/gui/workspace.c:50
+#: ../src/gui/workspace.c:60
 #, c-format
 msgid ""
 "WARNING\n"
@@ -13067,19 +13075,24 @@ msgid ""
 "if XMP writing is not activated, the editing work will be lost."
 msgstr ""
 
-#: ../src/gui/workspace.c:138
+#. add a memory workspace just after default one
+#: ../src/gui/workspace.c:103 ../src/gui/workspace.c:210
+msgid "memory"
+msgstr ""
+
+#: ../src/gui/workspace.c:165
 msgid "darktable - select a workspace"
 msgstr ""
 
-#: ../src/gui/workspace.c:148
+#: ../src/gui/workspace.c:175
 msgid "select an existing workspace"
 msgstr ""
 
-#: ../src/gui/workspace.c:207
+#: ../src/gui/workspace.c:231
 msgid "or create a new one"
 msgstr ""
 
-#: ../src/gui/workspace.c:211 ../src/libs/session.c:104
+#: ../src/gui/workspace.c:238 ../src/libs/session.c:104
 msgid "create"
 msgstr ""
 
@@ -15103,9 +15116,9 @@ msgstr ""
 msgid "show curve"
 msgstr ""
 
-#: ../src/iop/agx.c:2117 ../src/iop/atrous.c:1808
-#: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
-#: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
+#: ../src/iop/agx.c:2117 ../src/iop/atrous.c:1810
+#: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
+#: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
 #: ../src/iop/rawdenoise.c:908 ../src/iop/toneequal.c:3280
 msgid "graph"
@@ -15549,7 +15562,7 @@ msgstr ""
 msgid "[%s] unselect all segments from zone"
 msgstr ""
 
-#: ../src/iop/atrous.c:122 ../src/iop/atrous.c:1762
+#: ../src/iop/atrous.c:122 ../src/iop/atrous.c:1764
 msgid "contrast equalizer"
 msgstr ""
 
@@ -15665,7 +15678,7 @@ msgstr ""
 msgid "dull"
 msgstr ""
 
-#: ../src/iop/atrous.c:1619 ../src/iop/atrous.c:1677
+#: ../src/iop/atrous.c:1619 ../src/iop/atrous.c:1679
 msgid "boost"
 msgstr ""
 
@@ -15697,33 +15710,33 @@ msgstr ""
 msgid "finest"
 msgstr ""
 
-#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1515 ../src/libs/export.c:1531
+#: ../src/iop/atrous.c:1704 ../src/libs/export.c:1515 ../src/libs/export.c:1531
 msgid "x"
 msgstr ""
 
-#: ../src/iop/atrous.c:1789 ../src/iop/nlmeans.c:462
+#: ../src/iop/atrous.c:1791 ../src/iop/nlmeans.c:462
 msgid "luma"
 msgstr ""
 
-#: ../src/iop/atrous.c:1790
+#: ../src/iop/atrous.c:1792
 msgid "change lightness at each feature size"
 msgstr ""
 
-#: ../src/iop/atrous.c:1792
+#: ../src/iop/atrous.c:1794
 msgid "change color saturation at each feature size"
 msgstr ""
 
-#: ../src/iop/atrous.c:1794
+#: ../src/iop/atrous.c:1796
 msgid "edges"
 msgstr ""
 
-#: ../src/iop/atrous.c:1795
+#: ../src/iop/atrous.c:1797
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
 msgstr ""
 
-#: ../src/iop/atrous.c:1828 ../src/iop/colorzones.c:2703
+#: ../src/iop/atrous.c:1830 ../src/iop/colorzones.c:2705
 msgid "make effect stronger or weaker"
 msgstr ""
 
@@ -15831,7 +15844,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2132 ../src/iop/basicadj.c:636
-#: ../src/iop/rgbcurve.c:1569 ../src/iop/rgblevels.c:1104
+#: ../src/iop/rgbcurve.c:1569 ../src/iop/rgblevels.c:1106
 #: ../src/iop/tonecurve.c:1323
 msgid "method to preserve colors when applying contrast"
 msgstr ""
@@ -16334,10 +16347,10 @@ msgid "pick border color from image"
 msgstr ""
 
 #: ../src/iop/borders.c:1021 ../src/iop/borders.c:1035
-#: ../src/iop/colorzones.c:2639 ../src/iop/colorzones.c:2654
+#: ../src/iop/colorzones.c:2641 ../src/iop/colorzones.c:2656
 #: ../src/iop/negadoctor.c:850 ../src/iop/negadoctor.c:912
 #: ../src/iop/negadoctor.c:946 ../src/iop/rgbcurve.c:1503
-#: ../src/iop/rgbcurve.c:1518 ../src/iop/rgblevels.c:1068
+#: ../src/iop/rgbcurve.c:1518 ../src/iop/rgblevels.c:1070
 msgid "pickers"
 msgstr ""
 
@@ -18056,7 +18069,7 @@ msgstr ""
 msgid "set the global saturation"
 msgstr ""
 
-#: ../src/iop/colorequal.c:201 ../src/iop/colorequal.c:2966
+#: ../src/iop/colorequal.c:201 ../src/iop/colorequal.c:2968
 msgid "color equalizer"
 msgstr ""
 
@@ -18095,68 +18108,68 @@ msgid "teal & orange"
 msgstr ""
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2921 ../src/iop/colorequal.c:3124
+#: ../src/iop/colorequal.c:2921 ../src/iop/colorequal.c:3126
 #: ../src/iop/filmicrgb.c:4567
 msgid "options"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3017
+#: ../src/iop/colorequal.c:3019
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle sliders visibility\n"
 "alt+scroll to change page"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3043
+#: ../src/iop/colorequal.c:3045
 msgid "shift nodes to lower or higher hue"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3046
+#: ../src/iop/colorequal.c:3048
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3065
+#: ../src/iop/colorequal.c:3067
 msgid "change hue hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3083
+#: ../src/iop/colorequal.c:3085
 msgid "change saturation hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3101
+#: ../src/iop/colorequal.c:3103
 msgid "change brightness hue-wise"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3134
+#: ../src/iop/colorequal.c:3136
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
 "to stay below the defined level. the default is fine for most images."
 msgstr ""
 
-#: ../src/iop/colorequal.c:3139
+#: ../src/iop/colorequal.c:3141
 msgid "change for sharper or softer hue curve"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3143
+#: ../src/iop/colorequal.c:3145
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3149
+#: ../src/iop/colorequal.c:3151
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
 
-#: ../src/iop/colorequal.c:3156
+#: ../src/iop/colorequal.c:3158
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 
-#: ../src/iop/colorequal.c:3160
+#: ../src/iop/colorequal.c:3162
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -18164,7 +18177,7 @@ msgid ""
 "   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3168
+#: ../src/iop/colorequal.c:3170
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -18172,11 +18185,11 @@ msgid ""
 " - decrease for smoother transitions"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3175
+#: ../src/iop/colorequal.c:3177
 msgid "set radius of applied parameters for the guided filter"
 msgstr ""
 
-#: ../src/iop/colorequal.c:3178
+#: ../src/iop/colorequal.c:3180
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased values, blue decreased."
@@ -18462,7 +18475,7 @@ msgid ""
 "and move to the new color mapping module."
 msgstr ""
 
-#: ../src/iop/colorzones.c:135 ../src/iop/colorzones.c:2559
+#: ../src/iop/colorzones.c:135 ../src/iop/colorzones.c:2561
 msgid "color zones"
 msgstr ""
 
@@ -18494,7 +18507,7 @@ msgstr ""
 msgid "HSL base setting"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2650 ../src/iop/rgbcurve.c:1514
+#: ../src/iop/colorzones.c:2652 ../src/iop/rgbcurve.c:1514
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -18502,32 +18515,32 @@ msgid ""
 "shift+drag to create a negative curve"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2654 ../src/iop/rgbcurve.c:1518
+#: ../src/iop/colorzones.c:2656 ../src/iop/rgbcurve.c:1518
 msgid "create curve"
 msgstr ""
 
 #. edit by area
-#: ../src/iop/colorzones.c:2668
+#: ../src/iop/colorzones.c:2670
 msgid "edit by area"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2674
+#: ../src/iop/colorzones.c:2676
 msgid "edit the curve nodes by area"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2681
+#: ../src/iop/colorzones.c:2683
 msgid "display selection"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2696
+#: ../src/iop/colorzones.c:2698
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2699
+#: ../src/iop/colorzones.c:2701
 msgid "choose between a smoother or stronger effect"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2733 ../src/iop/rgbcurve.c:1550
+#: ../src/iop/colorzones.c:2735 ../src/iop/rgbcurve.c:1550
 #: ../src/iop/tonecurve.c:1312
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -20541,8 +20554,8 @@ msgstr ""
 msgid "this module is deprecated. please use the RGB levels module instead."
 msgstr ""
 
-#: ../src/iop/levels.c:114 ../src/iop/levels.c:636 ../src/iop/rgblevels.c:1016
-#: ../src/iop/rgblevels.c:1048
+#: ../src/iop/levels.c:114 ../src/iop/levels.c:636 ../src/iop/rgblevels.c:1018
+#: ../src/iop/rgblevels.c:1050
 msgid "levels"
 msgstr ""
 
@@ -20550,24 +20563,24 @@ msgstr ""
 msgid "adjust black, white and mid-gray points"
 msgstr ""
 
-#: ../src/iop/levels.c:634 ../src/iop/rgblevels.c:1051
+#: ../src/iop/levels.c:634 ../src/iop/rgblevels.c:1053
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 
-#: ../src/iop/levels.c:646 ../src/iop/rgblevels.c:1082
+#: ../src/iop/levels.c:646 ../src/iop/rgblevels.c:1084
 msgid "apply auto levels"
 msgstr ""
 
-#: ../src/iop/levels.c:650 ../src/iop/rgblevels.c:1075
+#: ../src/iop/levels.c:650 ../src/iop/rgblevels.c:1077
 msgid "pick black point from image"
 msgstr ""
 
-#: ../src/iop/levels.c:654 ../src/iop/rgblevels.c:1076
+#: ../src/iop/levels.c:654 ../src/iop/rgblevels.c:1078
 msgid "pick medium gray point from image"
 msgstr ""
 
-#: ../src/iop/levels.c:658 ../src/iop/rgblevels.c:1077
+#: ../src/iop/levels.c:658 ../src/iop/rgblevels.c:1079
 msgid "pick white point from image"
 msgstr ""
 
@@ -21734,7 +21747,7 @@ msgstr ""
 msgid "adjust preview levels"
 msgstr ""
 
-#: ../src/iop/retouch.c:2614 ../src/iop/rgblevels.c:1080
+#: ../src/iop/retouch.c:2614 ../src/iop/rgblevels.c:1082
 msgid "auto levels"
 msgstr ""
 
@@ -21858,19 +21871,19 @@ msgstr ""
 msgid "non-contrast curve | exponential (base 2)"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1484 ../src/iop/rgblevels.c:1032
+#: ../src/iop/rgbcurve.c:1484 ../src/iop/rgblevels.c:1034
 msgid "choose between linked and independent channels."
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1037
+#: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1039
 msgid "curve nodes for r channel"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1490 ../src/iop/rgblevels.c:1038
+#: ../src/iop/rgbcurve.c:1490 ../src/iop/rgblevels.c:1040
 msgid "curve nodes for g channel"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1491 ../src/iop/rgblevels.c:1039
+#: ../src/iop/rgbcurve.c:1491 ../src/iop/rgblevels.c:1041
 msgid "curve nodes for b channel"
 msgstr ""
 
@@ -21882,11 +21895,11 @@ msgstr ""
 msgid "adjust black, white and mid-gray points in RGB color space"
 msgstr ""
 
-#: ../src/iop/rgblevels.c:1086
+#: ../src/iop/rgblevels.c:1088
 msgid "auto region"
 msgstr ""
 
-#: ../src/iop/rgblevels.c:1089
+#: ../src/iop/rgblevels.c:1091
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
