@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-30 11:38-0300\n"
-"PO-Revision-Date: 2025-10-30 11:38-0300\n"
+"POT-Creation-Date: 2025-10-31 09:07-0300\n"
+"PO-Revision-Date: 2025-10-31 09:06-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -9163,7 +9163,7 @@ msgid "reverse"
 msgstr "reverter"
 
 #: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:172 ../src/imageio/format/webp.c:435
+#: ../src/gui/workspace.c:190 ../src/imageio/format/webp.c:435
 msgid "default"
 msgstr "padrão"
 
@@ -13841,19 +13841,24 @@ msgstr ""
 "\n"
 "se a escrita de XMP não estiver ativada, o trabalho de edição será perdido."
 
-#: ../src/gui/workspace.c:148
+#. add a memory workspace just after default one
+#: ../src/gui/workspace.c:103 ../src/gui/workspace.c:210
+msgid "memory"
+msgstr "memória"
+
+#: ../src/gui/workspace.c:165
 msgid "darktable - select a workspace"
 msgstr "darktable - selecionar uma área de trabalho"
 
-#: ../src/gui/workspace.c:158
+#: ../src/gui/workspace.c:175
 msgid "select an existing workspace"
 msgstr "selecionar uma área de trabalho existente"
 
-#: ../src/gui/workspace.c:217
+#: ../src/gui/workspace.c:231
 msgid "or create a new one"
 msgstr "ou criar uma nova"
 
-#: ../src/gui/workspace.c:224 ../src/libs/session.c:104
+#: ../src/gui/workspace.c:238 ../src/libs/session.c:104
 msgid "create"
 msgstr "criar"
 
