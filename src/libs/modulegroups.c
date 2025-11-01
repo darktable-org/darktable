@@ -1614,6 +1614,7 @@ void init_presets(dt_lib_module_t *self)
   AM("liquify");
   AM("nlmeans");
   AM("rasterfile");
+  AM("rastermaps");
   AM("rawdenoise");
   AM("retouch");
   AM("rotatepixels");
@@ -1716,6 +1717,7 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("liquify");
   AM("rasterfile");
+  AM("rastermaps");
   AM("sharpen");
   AM("nlmeans");
 
@@ -1770,6 +1772,7 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("liquify");
   AM("rasterfile");
+  AM("rastermaps");
   AM("sharpen");
   AM("nlmeans");
 
