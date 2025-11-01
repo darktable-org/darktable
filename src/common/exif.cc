@@ -3997,7 +3997,7 @@ static gboolean _image_altered_deprecated(const dt_imgid_t imgid)
 // Need a write lock on *img (non-const) to write stars (and soon color labels).
 gboolean dt_exif_xmp_read(dt_image_t *img,
                           const char *filename,
-                          const int history_only)
+                          const gboolean history_only)
 {
   if(!img)
   {

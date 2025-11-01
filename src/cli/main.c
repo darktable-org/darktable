@@ -634,7 +634,7 @@ int main(int argc, char *arg[])
     {
       int id = GPOINTER_TO_INT(iter->data);
       dt_image_t *image = dt_image_cache_get(id, 'w');
-      if(dt_exif_xmp_read(image, xmp_filename, 0))
+      if(dt_exif_xmp_read(image, xmp_filename, FALSE))
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");
