@@ -387,6 +387,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
+  gtk_widget_set_hexpand(label, TRUE); // GTK4
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_label_set_xalign (GTK_LABEL(label), 0.5f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels

@@ -37,7 +37,7 @@
 G_BEGIN_DECLS
 
 #define DTGTK_TYPE_RANGE_SELECT dtgtk_range_select_get_type()
-G_DECLARE_FINAL_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, DTGTK, RANGE_SELECT, GtkEventBox)
+G_DECLARE_FINAL_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, DTGTK, RANGE_SELECT, GtkBox)
 
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
@@ -63,7 +63,7 @@ typedef enum dt_range_type_t
 
 struct _GtkDarktableRangeSelect
 {
-  GtkEventBox widget;
+  GtkBox widget;
 
   dt_range_type_t type;
 

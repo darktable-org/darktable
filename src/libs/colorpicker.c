@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"

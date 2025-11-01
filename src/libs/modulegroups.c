@@ -25,7 +25,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -842,6 +841,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
      */
     dt_iop_module_t *module = modules->data;
     GtkWidget *w = module->expander;
+gtk_widget_show(w); continue; // GTK4 show all modules for testing purposes
 
     if(module->enabled)
     dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
