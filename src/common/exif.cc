@@ -1563,6 +1563,20 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
     }
 
+    if(img->exif_crop == 0.0f && FIND_EXIF_TAG("Exif.OlympusEq.FocalPlaneDiagonal"))
+    {
+      const Exiv2::Rational r = pos->toRational();
+
+      // Check that this data is not invalid, so we can safely perform the division
+      if(r.first != 0 && r.second != 0)
+      {
+        const double olympus_diagonal = static_cast<double>(r.first) / r.second;
+        img->exif_crop = dt_fast_hypotf(36.0f, 24.0f) / olympus_diagonal;
+      }
+      else
+        img->exif_crop = 0.0f;
+    }
+
     // Override crop factors for models for which we can't calculate the correct value
     for (size_t i = 0; i < sizeof(dt_cropfactors)/sizeof(dt_cropfactors[0]); i++)
     {
