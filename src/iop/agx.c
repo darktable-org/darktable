@@ -1345,14 +1345,12 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  // Black point
   const float black_norm = min3f(self->picked_color_min);
   p->range_black_relative_exposure =
     CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            -20.f,
            -0.1f);
 
-  // White point
   const float white_norm = max3f(self->picked_color_max);
   p->range_white_relative_exposure =
     CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
@@ -2877,8 +2875,12 @@ void reload_defaults(dt_iop_module_t *self)
 {
   if(dt_is_scene_referred())
   {
-    dt_iop_agx_params_t *const d = self->default_params;
-    _set_scene_referred_default_params(d);
+    dt_iop_agx_params_t *const p = self->default_params;
+    _set_scene_referred_default_params(p);
+    const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
+
+    p->range_black_relative_exposure = -8.f + 0.5f * exposure;
+    p->range_white_relative_exposure = 4.f + 0.8 * exposure;
   }
 }
 
