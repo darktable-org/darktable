@@ -37,7 +37,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(6, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -103,13 +103,14 @@ typedef struct dt_iop_agx_params_t
   float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "preserve hue"
 
   // log mapping
-  float range_black_relative_exposure;  // $MIN: -20.f $MAX: -0.1f  $DEFAULT: -10.f $DESCRIPTION: "black relative exposure"
-  float range_white_relative_exposure;  // $MIN: 0.1f $MAX: 20.f $DEFAULT: 6.5f $DESCRIPTION: "white relative exposure"
-  float dynamic_range_scaling;          // $MIN: -0.5f $MAX: 2.f $DEFAULT: 0.1f $DESCRIPTION: "dynamic range scaling"
+  float range_black_relative_ev;  // $MIN: -20.f $MAX: -0.1f  $DEFAULT: -10.f $DESCRIPTION: "black relative exposure"
+  float range_white_relative_ev;  // $MIN: 0.1f $MAX: 20.f $DEFAULT: 6.5f $DESCRIPTION: "white relative exposure"
+  float dynamic_range_scaling;    // $MIN: -0.5f $MAX: 2.f $DEFAULT: 0.1f $DESCRIPTION: "dynamic range scaling"
 
   // curve params - comments indicate the original variables from https://www.desmos.com/calculator/yrysofmx8h
   // Corresponds to p_x, but not directly -- allows shifting the default 0.18 towards black or white relative exposure
-  float curve_pivot_x_shift_ratio;        // $MIN: -1.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "pivot input shift"
+  // min, max are nominal, as they are adjusted dynamically based on range_black/white_relative_ev
+  float curve_pivot_x_relative_ev;        // $MIN: -20.f $MAX: 20.f $DEFAULT: 0.f $DESCRIPTION: "pivot relative exposure"
   // Corresponds to p_y, but not directly -- needs application of gamma
   float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
   // P_slope
@@ -154,7 +155,7 @@ typedef struct dt_iop_agx_params_t
 
 typedef struct dt_iop_basic_curve_controls_t
 {
-  GtkWidget *curve_pivot_x_shift;
+  GtkWidget *curve_pivot_x_relative_ev;
   GtkWidget *curve_pivot_y_linear;
   GtkWidget *curve_contrast_around_pivot;
   GtkWidget *curve_toe_power;
@@ -201,8 +202,8 @@ typedef struct dt_iop_agx_gui_data_t
 
 typedef struct tone_mapping_params_t
 {
-  float min_ev;
-  float max_ev;
+  float black_relative_ev;
+  float white_relative_ev;
   float range_in_ev;
   float curve_gamma;
 
@@ -364,6 +365,97 @@ int legacy_params(dt_iop_module_t *self,
     gboolean completely_reverse_primaries; // added in v5
   } dt_iop_agx_params_v5_t;
 
+  typedef struct dt_iop_agx_params_v6_t
+  {
+    float look_lift;       // replaces look_offset in v5->v6
+    float look_slope;
+    float look_brightness; // replaces look_power in v5->v6
+    float look_saturation;
+    float look_original_hue_mix_ratio;
+
+    float range_black_relative_exposure;
+    float range_white_relative_exposure;
+    float dynamic_range_scaling;
+
+    float curve_pivot_x_shift_ratio;
+    float curve_pivot_y_linear_output;
+    float curve_contrast_around_pivot;
+    float curve_linear_ratio_below_pivot;
+    float curve_linear_ratio_above_pivot;
+    float curve_toe_power;
+    float curve_shoulder_power;
+    float curve_gamma;
+    gboolean auto_gamma;
+    float curve_target_display_black_ratio;
+    float curve_target_display_white_ratio;
+
+    dt_iop_agx_base_primaries_t base_primaries;
+    gboolean disable_primaries_adjustments;
+    float red_inset;
+    float red_rotation;
+    float green_inset;
+    float green_rotation;
+    float blue_inset;
+    float blue_rotation;
+
+    float master_outset_ratio;
+    float master_unrotation_ratio;
+    float red_outset;
+    float red_unrotation;
+    float green_outset;
+    float green_unrotation;
+    float blue_outset;
+    float blue_unrotation;
+
+    gboolean completely_reverse_primaries; // added in v5
+  } dt_iop_agx_params_v6_t;
+
+
+  typedef struct dt_iop_agx_params_v7_t
+  {
+    float look_lift;
+    float look_slope;
+    float look_brightness;
+    float look_saturation;
+    float look_original_hue_mix_ratio;
+
+    float range_black_relative_ev;
+    float range_white_relative_ev;
+    float dynamic_range_scaling;
+
+    float curve_pivot_x_relative_ev; // replaces curve_pivot_x_shift_ratio in v6 -> v7
+    float curve_pivot_y_linear_output;
+    float curve_contrast_around_pivot;
+    float curve_linear_ratio_below_pivot;
+    float curve_linear_ratio_above_pivot;
+    float curve_toe_power;
+    float curve_shoulder_power;
+    float curve_gamma;
+    gboolean auto_gamma;
+    float curve_target_display_black_ratio;
+    float curve_target_display_white_ratio;
+
+    dt_iop_agx_base_primaries_t base_primaries;
+    gboolean disable_primaries_adjustments;
+    float red_inset;
+    float red_rotation;
+    float green_inset;
+    float green_rotation;
+    float blue_inset;
+    float blue_rotation;
+
+    float master_outset_ratio;
+    float master_unrotation_ratio;
+    float red_outset;
+    float red_unrotation;
+    float green_outset;
+    float green_unrotation;
+    float blue_outset;
+    float blue_unrotation;
+
+    gboolean completely_reverse_primaries;
+  } dt_iop_agx_params_v7_t;
+
   if(old_version == 1)
   {
     typedef struct dt_iop_agx_params_v1_t
@@ -439,6 +531,7 @@ int legacy_params(dt_iop_module_t *self,
 
     return 0; // success
   }
+
   if(old_version == 2)
   {
     // v2 and v3 have the same layout, but some v2 parameters are converted to percentages.
@@ -463,6 +556,7 @@ int legacy_params(dt_iop_module_t *self,
 
     return 0; // success
   }
+
   if(old_version == 3)
   {
     // v3 and v4 have the same layout, so we convert in place, but now the GUI will take
@@ -493,6 +587,7 @@ int legacy_params(dt_iop_module_t *self,
 
     return 0; // success
   }
+
   if(old_version == 4)
   {
     // v5 adds 'completely_reverse_primaries' at the end of the struct
@@ -504,16 +599,17 @@ int legacy_params(dt_iop_module_t *self,
     np->completely_reverse_primaries = FALSE;
 
     *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_params_size = sizeof(dt_iop_agx_params_v5_t);
     *new_version = 5;
 
     return 0; // success
   }
+
   if(old_version == 5)
   {
     // v6 replaces look -> power with look -> brightness
     const dt_iop_agx_params_v5_t *op = old_params;
-    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    dt_iop_agx_params_v6_t *np = calloc(1, sizeof(dt_iop_agx_params_v6_t));
 
     // v5 and v6 are compatible at the binary level
     memcpy(np, op, sizeof(dt_iop_agx_params_v5_t));
@@ -523,8 +619,32 @@ int legacy_params(dt_iop_module_t *self,
                                      1.f / (look_power_v5 * look_power_v5)
                                      : 1.f / fmaxf(look_power_v5, 0.01f); // max allowed brightness is 100
     *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_params_size = sizeof(dt_iop_agx_params_v6_t);
     *new_version = 6;
+
+    return 0; // success
+  }
+
+  if(old_version == 6)
+  {
+    // v6 replaces look -> power with look -> brightness
+    const dt_iop_agx_params_v6_t *op = old_params;
+    dt_iop_agx_params_v7_t *np = calloc(1, sizeof(dt_iop_agx_params_v7_t));
+
+    // v6 and v7 are compatible at the binary level
+    memcpy(np, op, sizeof(dt_iop_agx_params_v6_t));
+
+    const float pivot_relative_ev = op->curve_pivot_x_shift_ratio > 0 ?
+                                            op->range_white_relative_exposure * op->curve_pivot_x_shift_ratio :
+                                            - (op->range_black_relative_exposure * op->curve_pivot_x_shift_ratio);
+
+    np->curve_pivot_x_relative_ev = CLAMPF(pivot_relative_ev,
+                                                 op->range_black_relative_exposure,
+                                                 op->range_white_relative_exposure);
+
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_v7_t);
+    *new_version = 7;
 
     return 0; // success
   }
@@ -913,15 +1033,15 @@ static inline void _agx_look(dt_aligned_pixel_t pixel_in_out,
 
 static inline float _apply_log_encoding(const float x,
                                         const float range_in_ev,
-                                        const float min_ev)
+                                        const float black_relative_ev)
 {
   // Assume input is linear RGB relative to 0.18 mid-gray
   // Ensure value > 0 before log
   const float x_relative = fmaxf(_epsilon, x / 0.18f);
-  // normalise to [0, 1] based on min_ev and range_in_ev
-  const float mapped = (log2f(fmaxf(x_relative, 0.f)) - min_ev) / range_in_ev;
+  // normalise to [0, 1] based on black_relative_ev and range_in_ev
+  const float mapped = (log2f(fmaxf(x_relative, 0.f)) - black_relative_ev) / range_in_ev;
   // Clamp result to [0, 1] - this is the input domain for the curve
-  return CLAMPF(mapped, 0.f, 1.f);
+  return CLIP(mapped);
 }
 
 // see https://www.desmos.com/calculator/gijzff3wlv
@@ -1017,28 +1137,10 @@ static inline float _calculate_pivot_y_at_gamma(const dt_iop_agx_params_t * p,
 static void _adjust_pivot(const dt_iop_agx_params_t *p,
                           tone_mapping_params_t *tone_mapping_params)
 {
-  const float mid_gray_in_log_range =
-    fabsf(tone_mapping_params->min_ev / tone_mapping_params->range_in_ev);
-
-  if(p->curve_pivot_x_shift_ratio < 0.f)
-  {
-    const float black_ratio = -p->curve_pivot_x_shift_ratio;
-    const float gray_ratio = 1.f - black_ratio;
-    tone_mapping_params->pivot_x = gray_ratio * mid_gray_in_log_range;
-  }
-  else if(p->curve_pivot_x_shift_ratio > 0.f)
-  {
-    const float white_ratio = p->curve_pivot_x_shift_ratio;
-    const float gray_ratio = 1.f - white_ratio;
-    tone_mapping_params->pivot_x = mid_gray_in_log_range * gray_ratio + white_ratio;
-  }
-  else
-  {
-    tone_mapping_params->pivot_x = mid_gray_in_log_range;
-  }
+  const float pivot_x = (p->curve_pivot_x_relative_ev - p->range_black_relative_ev) / tone_mapping_params->range_in_ev;
 
   // don't allow pivot_x to touch the endpoints
-  tone_mapping_params->pivot_x = CLAMPF(tone_mapping_params->pivot_x, _epsilon, 1.f - _epsilon);
+  tone_mapping_params->pivot_x = CLAMPF(pivot_x, _epsilon, 1.f - _epsilon);
 
   if(p->auto_gamma)
   {
@@ -1058,9 +1160,9 @@ static void _adjust_pivot(const dt_iop_agx_params_t *p,
 static void _set_log_mapping_params(const dt_iop_agx_params_t *p,
                                     tone_mapping_params_t *curve_and_look_params)
 {
-  curve_and_look_params->max_ev = p->range_white_relative_exposure;
-  curve_and_look_params->min_ev = p->range_black_relative_exposure;
-  curve_and_look_params->range_in_ev = curve_and_look_params->max_ev - curve_and_look_params->min_ev;
+  curve_and_look_params->white_relative_ev = p->range_white_relative_ev;
+  curve_and_look_params->black_relative_ev = p->range_black_relative_ev;
+  curve_and_look_params->range_in_ev = curve_and_look_params->white_relative_ev - curve_and_look_params->black_relative_ev;
 }
 
 static inline float _calculate_slope_gamma_compensation(const float gamma,
@@ -1270,7 +1372,7 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
 
   for_three_channels(k, aligned(rgb_in_out, transformed_pixel : 16))
   {
-    const float log_value = _apply_log_encoding(rgb_in_out[k], params->range_in_ev, params->min_ev);
+    const float log_value = _apply_log_encoding(rgb_in_out[k], params->range_in_ev, params->black_relative_ev);
     transformed_pixel[k] = _apply_curve(log_value, params);
   }
 
@@ -1302,6 +1404,20 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
   }
 }
 
+static void _update_pivot_exposure_slider_range(const dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(g && p)
+  {
+    dt_bauhaus_slider_set_hard_min(g->basic_curve_controls.curve_pivot_x_relative_ev, p->range_black_relative_ev);
+    dt_bauhaus_slider_set_soft_min(g->basic_curve_controls.curve_pivot_x_relative_ev, p->range_black_relative_ev);
+    dt_bauhaus_slider_set_hard_max(g->basic_curve_controls.curve_pivot_x_relative_ev, p->range_white_relative_ev);
+    dt_bauhaus_slider_set_soft_max(g->basic_curve_controls.curve_pivot_x_relative_ev, p->range_white_relative_ev);
+  }
+}
+
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -1310,13 +1426,14 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float black_norm = min3f(self->picked_color_min);
-  p->range_black_relative_exposure =
+  p->range_black_relative_ev =
     CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            -20.f,
            -0.1f);
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
+  dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
+  _update_pivot_exposure_slider_range(self);
   --darktable.gui->reset;
 }
 
@@ -1328,13 +1445,14 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float white_norm = max3f(self->picked_color_max);
-  p->range_white_relative_exposure =
+  p->range_white_relative_ev =
     CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            0.1f,
            20.f);
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_exposure);
+  dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
+  _update_pivot_exposure_slider_range(self);
   --darktable.gui->reset;
 }
 
@@ -1346,20 +1464,21 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float black_norm = min3f(self->picked_color_min);
-  p->range_black_relative_exposure =
+  p->range_black_relative_ev =
     CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            -20.f,
            -0.1f);
 
   const float white_norm = max3f(self->picked_color_max);
-  p->range_white_relative_exposure =
+  p->range_white_relative_ev =
     CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            0.1f,
            20.f);
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
-  dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_exposure);
+  dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
+  dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
+  _update_pivot_exposure_slider_range(self);
   --darktable.gui->reset;
 }
 
@@ -1370,20 +1489,20 @@ static void _read_exposure_params_callback(GtkWidget *widget,
   dt_iop_agx_params_t *p = self->params;
   if (g && p)
   {
-    // Exposure calculated by the exposure module, including all compensations (EXIF bias, highlight preservation, etc.).
+    // exposure calculated by the exposure module, including all compensations (EXIF bias, highlight preservation, etc.).
     const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
-    p->range_black_relative_exposure = -8.f + 0.5f * exposure;
-    p->range_white_relative_exposure = 4.f + 0.8 * exposure;
+    p->range_black_relative_ev = -8.f + 0.5f * exposure;
+    p->range_white_relative_ev = 4.f + 0.8 * exposure;
 
-    // Update the GUI sliders to reflect the new values.
     dt_iop_gui_update(self);
-    // Add a history item for this change.
+    //_update_pivot_exposure_slider_range(self);
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
 
-// Apply logic for pivot y picker, modifying both x and y
+// move only the pivot's relative (input) exposure, and recalculate its output based on mid-gray
 static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
   if(darktable.gui->reset) return;
@@ -1395,57 +1514,35 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   const float norm = _luminance_from_profile(self->picked_color, profile);
   const float picked_ev = log2f(fmaxf(_epsilon, norm) / 0.18f);
 
-  // Calculate the target pivot_x based on the picked EV and the current EV range
-  const float min_ev = p->range_black_relative_exposure;
-  const float max_ev = p->range_white_relative_exposure;
-  const float range_in_ev = fmaxf(_epsilon, max_ev - min_ev);
-  const float target_pivot_x = CLAMPF((picked_ev - min_ev) / range_in_ev, 0.f, 1.f);
-
-  // Calculate the required pivot_x_shift to achieve the target_pivot_x
-  const float base_pivot_x = fabsf(min_ev / range_in_ev); // Pivot representing 0 EV (mid-gray)
-
   dt_iop_agx_params_t params_with_mid_gray = *p;
   params_with_mid_gray.curve_pivot_y_linear_output = 0.18f;
-  params_with_mid_gray.curve_pivot_x_shift_ratio = 0.f;
+  params_with_mid_gray.curve_pivot_x_relative_ev = 0.f;
 
-  const tone_mapping_params_t tone_mapping_params =
+  const tone_mapping_params_t tone_mapping_params_with_mid_gray =
     _calculate_tone_mapping_params(&params_with_mid_gray);
 
+  // Calculate pivot_x based on the picked EV and the current EV range
+  const float pivot_ev_from_black = picked_ev - tone_mapping_params_with_mid_gray.black_relative_ev;
+  const float target_pivot_x = CLIP(pivot_ev_from_black / tone_mapping_params_with_mid_gray.range_in_ev);
+
   // see where the target_pivot would be mapped with defaults of mid-gray to mid-gray mapped
-  const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params);
+  const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params_with_mid_gray);
   // try to avoid changing the brightness of the pivot
-  const float target_y_linearised = powf(target_y, tone_mapping_params.curve_gamma);
+  const float target_y_linearised = powf(target_y, tone_mapping_params_with_mid_gray.curve_gamma);
   p->curve_pivot_y_linear_output = target_y_linearised;
 
-  float shift;
-  if(fabsf(target_pivot_x - base_pivot_x) < _epsilon)
-  {
-    shift = 0.f;
-  }
-  else if(base_pivot_x > target_pivot_x)
-  {
-    // Solve target_pivot_x = (1 + s) * base_pivot_x for s
-    shift = (base_pivot_x > _epsilon) ? (target_pivot_x / base_pivot_x) - 1.f : -1.f;
-  }
-  else // target_pivot_x > base_pivot_x
-  {
-    // Solve target_pivot_x = base_pivot_x * (1 - s) + s for s
-    const float denominator = 1.f - base_pivot_x;
-    shift = (denominator > _epsilon) ? (target_pivot_x - base_pivot_x) / denominator : 1.f;
-  }
-
-  p->curve_pivot_x_shift_ratio = CLAMPF(shift, -1.f, 1.f);
+  p->curve_pivot_x_relative_ev = CLAMPF(picked_ev, p->range_black_relative_ev, p->range_white_relative_ev);
 
   // Update the slider visually
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_shift,
-                        p->curve_pivot_x_shift_ratio);
+  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_relative_ev,
+                        p->curve_pivot_x_relative_ev);
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
                         p->curve_pivot_y_linear_output);
   --darktable.gui->reset;
 }
 
-// Apply logic for pivot x picker, modifying only x and y
+// move only the pivot's relative (input) exposure, but don't change its output
 static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
   if(darktable.gui->reset) return;
@@ -1457,38 +1554,12 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   const float norm = _luminance_from_profile(self->picked_color, profile);
   const float picked_ev = log2f(fmaxf(_epsilon, norm) / 0.18f);
 
-  // Calculate the target pivot_x based on the picked EV and the current EV range
-  const float min_ev = p->range_black_relative_exposure;
-  const float max_ev = p->range_white_relative_exposure;
-  const float range_in_ev = fmaxf(_epsilon, max_ev - min_ev);
-  const float target_pivot_x = CLAMPF((picked_ev - min_ev) / range_in_ev, 0.f, 1.f);
-
-  // Calculate the required pivot_x_shift to achieve the target_pivot_x
-  const float base_pivot_x = fabsf(min_ev / range_in_ev); // Pivot representing 0 EV (mid-gray)
-
-  float shift;
-  if(fabsf(target_pivot_x - base_pivot_x) < _epsilon)
-  {
-    shift = 0.f;
-  }
-  else if(base_pivot_x > target_pivot_x)
-  {
-    // Solve 'target_pivot_x = (1 + shift) * base_pivot_x' for shift
-    shift = (base_pivot_x > _epsilon) ? (target_pivot_x / base_pivot_x) - 1.f : -1.f;
-  }
-  else // target_pivot_x > base_pivot_x
-  {
-    // Solve 'target_pivot_x = base_pivot_x * (1 - shift) + shift' for shift
-    const float denominator = 1.f - base_pivot_x;
-    shift = (denominator > _epsilon) ? (target_pivot_x - base_pivot_x) / denominator : 1.f;
-  }
-
-  p->curve_pivot_x_shift_ratio = CLAMPF(shift, -1.f, 1.f);
+  p->curve_pivot_x_relative_ev = CLAMPF(picked_ev, p->range_black_relative_ev, p->range_white_relative_ev);
 
   // Update the slider visually
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_shift,
-                        p->curve_pivot_x_shift_ratio);
+  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_relative_ev,
+                        p->curve_pivot_x_relative_ev);
   --darktable.gui->reset;
 }
 
@@ -1830,17 +1901,17 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   cairo_set_dash(cr, dashes, 2, 0); // Use the same dash pattern
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
 
-  const float min_ev = tone_mapping_params.min_ev;
-  const float max_ev = tone_mapping_params.max_ev;
+  const float black_relative_ev = tone_mapping_params.black_relative_ev;
+  const float white_relative_ev = tone_mapping_params.white_relative_ev;
   const float range_in_ev = tone_mapping_params.range_in_ev;
 
   if(range_in_ev > _epsilon) // avoid division by zero or tiny ranges
   {
-    for(int ev = ceilf(min_ev); ev <= floorf(max_ev); ++ev)
+    for(int ev = ceilf(black_relative_ev); ev <= floorf(white_relative_ev); ++ev)
     {
-      float x_norm = (ev - min_ev) / range_in_ev;
+      float x_norm = (ev - black_relative_ev) / range_in_ev;
       // stays within the graph bounds
-      x_norm = CLAMPF(x_norm, 0.f, 1.f);
+      x_norm = CLIP(x_norm);
       const float x_graph = x_norm * graph_width;
 
       cairo_move_to(cr, x_graph, 0);
@@ -1848,7 +1919,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
       cairo_stroke(cr);
 
       // label
-      if(ev % 5 == 0 || ev == ceilf(min_ev) || ev == floorf(max_ev))
+      if(ev % 5 == 0 || ev == ceilf(black_relative_ev) || ev == floorf(white_relative_ev))
       {
         cairo_save(cr);
         cairo_identity_matrix(cr); // reset transformations for text
@@ -2021,12 +2092,17 @@ void gui_changed(dt_iop_module_t *self,
     const float prev = *(float *)previous;
     const float ratio = (p->dynamic_range_scaling - prev) / (prev + 1.f);
 
-    p->range_black_relative_exposure *= (1.f + ratio);
-    p->range_white_relative_exposure *= (1.f + ratio);
+    p->range_black_relative_ev *= (1.f + ratio);
+    p->range_white_relative_ev *= (1.f + ratio);
 
-    dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
-    dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_exposure);
+    dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
+    dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
     darktable.gui->reset--;
+  }
+
+  if(widget == g->black_exposure_picker || widget == g->white_exposure_picker || widget == g->security_factor)
+  {
+    _update_pivot_exposure_slider_range(self);
   }
 
   gtk_widget_set_visible(g->curve_gamma, !p->auto_gamma);
@@ -2057,15 +2133,13 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, NC_("section", "curve"), box);
   dt_iop_basic_curve_controls_t *controls = &g->basic_curve_controls;
 
-  // curve_pivot_x_shift with picker
-  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio"));
-  controls->curve_pivot_x_shift = slider;
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
-  gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
-  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be used to set the pivot input shift"));
+  // curve_pivot_x_relative_ev with picker
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_x_relative_ev"));
+  controls->curve_pivot_x_relative_ev = slider;
+  dt_bauhaus_slider_set_format(slider, _(" EV"));
+  gtk_widget_set_tooltip_text(slider, _("set the pivot's input exposure in EV relative to mid-gray"));
+  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
+                                               "used to set the pivot relative to mid-gray"));
 
   // curve_pivot_y_linear
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output"));
@@ -2075,7 +2149,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
-  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be used to set the pivot input shift,\n"
+  dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
+                                               "used to set the pivot relative to mid-gray,\n"
                                                "and the output will be adjusted based on the default mid-gray to mid-gray mapping"));
 
   // curve_contrast_around_pivot
@@ -2276,7 +2351,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   gchar *section_name = NC_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section_name)));
 
-  GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_exposure");
+  GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_ev");
   dt_bauhaus_widget_set_module(white_slider, DT_ACTION(real_self));
   g->white_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
   dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
@@ -2286,7 +2361,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_bauhaus_widget_set_quad_tooltip(g->white_exposure_picker, _("pick the white point"));
 
 
-  GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_exposure");
+  GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_ev");
   dt_bauhaus_widget_set_module(black_slider, DT_ACTION(real_self));
   g->black_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, black_slider);
   dt_bauhaus_slider_set_soft_range(g->black_exposure_picker, -20.f, -1.f);
@@ -2472,7 +2547,6 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_nam
   return slider;
 }
 
-// GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -2484,6 +2558,8 @@ void gui_update(dt_iop_module_t *self)
                                p->disable_primaries_adjustments);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
+
+  _update_pivot_exposure_slider_range(self);
 
   gui_changed(self, NULL, NULL);
 }
@@ -2703,8 +2779,8 @@ static void _set_shared_params(dt_iop_agx_params_t *p)
   // that we leave this as 0, based on feedback he had received
   p->look_original_hue_mix_ratio = 0.f;
 
-  p->range_black_relative_exposure = -10.f;
-  p->range_white_relative_exposure = 6.5f;
+  p->range_black_relative_ev = -10.f;
+  p->range_white_relative_ev = 6.5f;
   p->dynamic_range_scaling = 0.1f;
 
   p->curve_contrast_around_pivot = 2.8f;
@@ -2716,7 +2792,7 @@ static void _set_shared_params(dt_iop_agx_params_t *p)
   p->curve_target_display_white_ratio = 1.f;
   p->auto_gamma = FALSE;
   p->curve_gamma = _default_gamma;
-  p->curve_pivot_x_shift_ratio = 0.f;
+  p->curve_pivot_x_relative_ev = 0.f;
   p->curve_pivot_y_linear_output = 0.18f;
 }
 
@@ -2840,7 +2916,7 @@ void color_picker_apply(dt_iop_module_t *self,
   if(picker == g->black_exposure_picker) _apply_auto_black_exposure(self);
   else if(picker == g->white_exposure_picker) _apply_auto_white_exposure(self);
   else if(picker == g->range_exposure_picker) _apply_auto_tune_exposure(self);
-  else if(picker == g->basic_curve_controls.curve_pivot_x_shift) _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
+  else if(picker == g->basic_curve_controls.curve_pivot_x_relative_ev) _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
   else if(picker == g->basic_curve_controls.curve_pivot_y_linear) _apply_auto_pivot_xy(self, dt_ioppr_get_pipe_work_profile_info(pipe));
 
   const dt_iop_agx_params_t *p = self->params;
@@ -2853,8 +2929,8 @@ void color_picker_apply(dt_iop_module_t *self,
     dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
     --darktable.gui->reset;
   }
-  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
   _update_curve_warnings(self);
+  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2879,8 +2955,8 @@ void reload_defaults(dt_iop_module_t *self)
     _set_scene_referred_default_params(p);
     const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
-    p->range_black_relative_exposure = -8.f + 0.5f * exposure;
-    p->range_white_relative_exposure = 4.f + 0.8 * exposure;
+    p->range_black_relative_ev = -8.f + 0.5f * exposure;
+    p->range_white_relative_ev = 4.f + 0.8 * exposure;
   }
 }
 
