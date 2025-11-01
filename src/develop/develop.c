@@ -3527,21 +3527,9 @@ void dt_dev_image(const dt_imgid_t imgid,
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d)
 {
-  return feqf(f[0], (float)d[0], 0.00001)
-      && feqf(f[1], (float)d[1], 0.00001)
-      && feqf(f[2], (float)d[2], 0.00001);
-}
-
-gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev)
-{
-  const dt_dev_chroma_t *chr = &dev->chroma;
-  const float wb_coeffs[4] = { chr->wb_coeffs[0],
-                               chr->wb_coeffs[1],
-                               chr->wb_coeffs[2],
-                               chr->wb_coeffs[3] };
-  return chr->late_correction
-    ? dt_dev_equal_chroma(wb_coeffs, chr->as_shot)
-    : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
+  return feqf(f[0], (float)d[0], 0.00001f)
+      && feqf(f[1], (float)d[1], 0.00001f)
+      && feqf(f[2], (float)d[2], 0.00001f);
 }
 
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
@@ -3565,7 +3553,7 @@ void dt_dev_reset_chroma(dt_develop_t *dev)
   chr->adaptation = NULL;
   chr->temperature = NULL;
   for_four_channels(c)
-    chr->wb_coeffs[c] = 1.0;
+    chr->wb_coeffs[c] = 1.0f;
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)
