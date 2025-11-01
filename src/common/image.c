@@ -1724,7 +1724,7 @@ static int _image_read_duplicates(const uint32_t id,
     dt_image_t *img = dt_image_cache_get(newid, 'w');
     if(img)
     {
-      dt_exif_xmp_read(img, xmpfilename, 0);
+      dt_exif_xmp_read(img, xmpfilename, FALSE);
       img->version = version;
     }
     dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
@@ -1980,7 +1980,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
     g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
-    res = dt_exif_xmp_read(img, dtfilename, 0);
+    res = dt_exif_xmp_read(img, dtfilename, FALSE);
   }
   // write through to db, but not to xmp.
   dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
