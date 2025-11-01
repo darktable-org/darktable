@@ -2951,6 +2951,42 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
   return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
 }
 
+static dt_iop_module_t *_find_preferred_enabled_instance(const dt_iop_module_so_t *module,
+                                          const gboolean prefer_expanded,
+                                          const gboolean prefer_unmasked,
+                                          const gboolean prefer_first)
+{
+  dt_iop_module_t *best_mod = NULL;
+  int best_score = -1;
+
+  for(GList *iop_mods = g_list_last(darktable.develop->iop);
+      iop_mods;
+      iop_mods = g_list_previous(iop_mods))
+  {
+    dt_iop_module_t *mod = iop_mods->data;
+
+    if(mod->so == module && mod->iop_order != INT_MAX)
+    {
+      if (!mod->enabled)
+        continue;
+
+      const gboolean no_mask = mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                            || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED;
+
+      const int score = (mod->expanded && prefer_expanded ? 8 : 0)
+                      + (no_mask       && prefer_unmasked ? 2 : 0);
+
+      if(score + (prefer_first ? 1 : 0) > best_score)
+      {
+        best_score = score;
+        best_mod = mod;
+      }
+    }
+  }
+
+  return best_mod;
+}
+
 float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
 {
   if (dt_view_get_current() != DT_VIEW_DARKROOM) return 0.0f;
@@ -2958,14 +2994,23 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
   // The proxy function pointers are only set if an exposure module has been initialized.
   if (!dev->proxy.exposure.get_effective_exposure) return 0.0f;
 
-  for (GList *l = dev->iop; l; l = g_list_next(l))
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)l->data;
+  const dt_iop_module_so_t *exposure_so = NULL;
 
-    if (module->enabled && dt_iop_module_is(module->so, "exposure"))
+  for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
+  {
+    const dt_iop_module_so_t *module_so = modules->data;
+    if(dt_iop_module_is(module_so, "exposure"))
     {
-      return dev->proxy.exposure.get_effective_exposure(module);
+      exposure_so = module_so;
+      break;
     }
+  }
+
+  if (exposure_so)
+  {
+    dt_iop_module_t *preferred_exposure_instance = _find_preferred_enabled_instance(exposure_so, FALSE, TRUE, TRUE);
+    if (preferred_exposure_instance)
+      return dev->proxy.exposure.get_effective_exposure(preferred_exposure_instance);
   }
 
   return 0.0f;
