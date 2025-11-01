@@ -2447,6 +2447,7 @@ static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
   const float target_primary_value = 0.8f;
   const float other_primaries_value = 0.2;
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
+  dt_bauhaus_slider_set_feedback(slider, 0);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2462,7 +2463,9 @@ static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
 }
 
 static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
-{ GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
+{
+  GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
+  dt_bauhaus_slider_set_feedback(slider, 0);
   dt_bauhaus_slider_set_format(slider, "°");
   dt_bauhaus_slider_set_digits(slider, 1);
   dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
