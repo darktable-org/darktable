@@ -2595,8 +2595,6 @@ static void _create_primaries_page(dt_iop_module_t *main,
   dt_bauhaus_slider_set_default(slider, 1.f);
   gtk_widget_set_tooltip_text(slider, _("overall unrotation ratio"));
 
-  const gboolean reverse_unrotation_hue = dt_conf_get_bool("plugins/darkroom/agx/reverse_hue_for_unrotation");
-
   slider = _setup_purity_slider(self,
                                 "red_outset",
                                 _("restore the purity of red, mostly in midtones and shadows"),
@@ -2604,7 +2602,7 @@ static void _create_primaries_page(dt_iop_module_t *main,
   _paint_purity_slider_hsv(slider, red_hue, FALSE);
 
   slider = _setup_hue_slider(self, "red_unrotation", _("reverse the color shift in reds"));
-  _paint_hue_slider_hsv(slider, red_hue, reverse_unrotation_hue);
+  _paint_hue_slider_hsv(slider, red_hue, TRUE);
 
   slider = _setup_purity_slider(self,
                                 "green_outset",
@@ -2613,7 +2611,7 @@ static void _create_primaries_page(dt_iop_module_t *main,
   _paint_purity_slider_hsv(slider, green_hue, FALSE);
 
   slider = _setup_hue_slider(self, "green_unrotation", _("reverse the color shift in greens"));
-  _paint_hue_slider_hsv(slider, green_hue, reverse_unrotation_hue);
+  _paint_hue_slider_hsv(slider, green_hue, TRUE);
 
   slider = _setup_purity_slider(self,
                                 "blue_outset",
@@ -2622,7 +2620,7 @@ static void _create_primaries_page(dt_iop_module_t *main,
   _paint_purity_slider_hsv(slider, blue_hue, FALSE);
 
   slider = _setup_hue_slider(self, "blue_unrotation", _("reverse the color shift in blues"));
-  _paint_hue_slider_hsv(slider, blue_hue, reverse_unrotation_hue);
+  _paint_hue_slider_hsv(slider, blue_hue, TRUE);
 }
 
 static void _notebook_page_changed(GtkNotebook *notebook,
