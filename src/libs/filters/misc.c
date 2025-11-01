@@ -113,6 +113,11 @@ void _misc_tree_update(_widgets_misc_t *misc)
     table = g_strdup("metering_mode");
     tooltip = g_strdup(_("no metering mode defined"));
   }
+  else if(misc->prop == DT_COLLECTION_PROP_FILM_MODE)
+  {
+    table = g_strdup("film_mode");
+    tooltip = g_strdup(_("no film mode defined"));
+  }
 
   // SQL
   if(misc->prop == DT_COLLECTION_PROP_CAMERA)

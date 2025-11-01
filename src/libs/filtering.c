@@ -248,7 +248,8 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_WHITEBALANCE, _misc_widget_init, _misc_update },
         { DT_COLLECTION_PROP_FLASH, _misc_widget_init, _misc_update },
         { DT_COLLECTION_PROP_EXPOSURE_PROGRAM, _misc_widget_init, _misc_update },
-        { DT_COLLECTION_PROP_METERING_MODE, _misc_widget_init, _misc_update } };
+        { DT_COLLECTION_PROP_METERING_MODE, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_FILM_MODE, _misc_widget_init, _misc_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {

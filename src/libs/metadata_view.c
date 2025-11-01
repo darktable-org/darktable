@@ -106,6 +106,7 @@ enum
   md_exif_datetime,
   md_exif_width,
   md_exif_height,
+  md_exif_film_mode,
 
   /* size of final image */
   md_width,
@@ -121,7 +122,7 @@ enum
   md_categories,
 
   /* xmp */
-  md_xmp_metadata   // keep this at last position!
+  md_xmp_metadata // keep this at last position!
 };
 
 // We have to maintain the correspondence between the displayed metadata list
@@ -162,6 +163,7 @@ static const char *_labels[] = {
   N_("datetime"),
   N_("width"),
   N_("height"),
+  N_("film mode"),
   N_("export width"),
   N_("export height"),
 
@@ -594,6 +596,7 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT datetime_taken), "
                                          "COUNT(DISTINCT width), "
                                          "COUNT(DISTINCT height), "
+                                         "COUNT(DISTINCT IFNULL(film_mode_id, '')), "
                                          "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
                                          "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
                                          "COUNT(DISTINCT IFNULL(latitude, '')), "
@@ -899,6 +902,11 @@ void gui_update(dt_lib_module_t *self)
           (void)g_snprintf(text, sizeof(text), "%d", img->height);
           _metadata_update_value(md_exif_height, text, self);
         }
+        break;
+
+      case md_exif_film_mode:
+        (void)g_snprintf(text, sizeof(text), "%s", img->exif_film_mode);
+        _metadata_update_value(md_exif_film_mode, text, self);
         break;
 
       case md_width:
