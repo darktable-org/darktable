@@ -260,6 +260,10 @@ changes (where available).
 - Fixed an issue where imported styles that didn't have a name could
   cause darktable to crash when starting.
 
+- Fixed a bug leading to wrong colors in main darkroom window (mostly
+  after using a module picker) due to bad color coeffs in colorin
+  module.
+
 ## Lua
 
 ### API Version
