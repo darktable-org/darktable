@@ -87,7 +87,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
-  volatile float effective_exposure; // Caches the final computed exposure
+  volatile float effective_exposure; // used to cache the final computed exposure
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -628,7 +628,6 @@ void commit_params(dt_iop_module_t *self,
 
   d->deflicker = 0;
 
-  // Cache the final effective exposure value for proxy access.
   if (self->gui_data)
   {
     ((dt_iop_exposure_gui_data_t *)self->gui_data)->effective_exposure = d->params.exposure;
@@ -823,14 +822,8 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
 static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
-  if (g)
-  {
-    return g->effective_exposure;
-  }
-  // Fallback for headless mode: recalculate. This won't be perfect if deflicker is on,
-  // but it's the best we can do without a GUI struct.
-  const dt_iop_exposure_params_t *p = self->params;
-  return p->exposure - (p->compensate_exposure_bias ? _get_exposure_bias(self) : 0.0f) + (p->compensate_hilite_pres ? _get_highlight_bias(self) : 0.0f);
+  // should not be invoked when not in GUI mode
+  return g ? g->effective_exposure : 0.f;
 }
 
 static void _exposure_proxy_handle_event(gpointer controller,
