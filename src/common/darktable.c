@@ -1538,13 +1538,6 @@ int dt_init(int argc,
   // however after gtk_disable_setlocale
   if(init_gui)
   {
-#ifdef GDK_WINDOWING_WAYLAND
-    // There are currently bad interactions with Wayland (drop-downs
-    // are very narrow, scroll events lost). Until this is fixed, give
-    // priority to the XWayland backend for Wayland users.
-    // See also https://github.com/darktable-org/darktable/issues/13180
-    gdk_set_allowed_backends("x11,*");
-#endif
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
