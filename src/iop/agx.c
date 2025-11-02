@@ -1515,24 +1515,20 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   // Calculate norm and EV of the picked color
-  const float norm = _luminance_from_profile(self->picked_color, profile);
-  const float picked_ev = log2f(fmaxf(_epsilon, norm) / 0.18f);
+  const float luminance_in = _luminance_from_profile(self->picked_color, profile);
+  const float picked_ev = log2f(fmaxf(_epsilon, luminance_in) / 0.18f);
 
-  dt_iop_agx_params_t params_with_mid_gray = *p;
-  params_with_mid_gray.curve_pivot_y_linear_output = 0.18f;
-  params_with_mid_gray.curve_pivot_x_relative_ev = 0.f;
-
-  const tone_mapping_params_t tone_mapping_params_with_mid_gray =
-    _calculate_tone_mapping_params(&params_with_mid_gray);
+  const tone_mapping_params_t tone_mapping_params =
+     _calculate_tone_mapping_params(p);
 
   // Calculate pivot_x based on the picked EV and the current EV range
-  const float pivot_ev_from_black = picked_ev - tone_mapping_params_with_mid_gray.black_relative_ev;
-  const float target_pivot_x = CLIP(pivot_ev_from_black / tone_mapping_params_with_mid_gray.range_in_ev);
+  const float pivot_ev_from_black = picked_ev - p->range_black_relative_ev;
+  const float target_pivot_x = CLIP(pivot_ev_from_black / (p->range_white_relative_ev - p->range_black_relative_ev));
 
-  // see where the target_pivot would be mapped with defaults of mid-gray to mid-gray mapped
-  const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params_with_mid_gray);
+  // see where the target_pivot is currently mapped
+  const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params);
   // try to avoid changing the brightness of the pivot
-  const float target_y_linearised = powf(target_y, tone_mapping_params_with_mid_gray.curve_gamma);
+  const float target_y_linearised = powf(target_y, p->curve_gamma);
   p->curve_pivot_y_linear_output = target_y_linearised;
 
   p->curve_pivot_x_relative_ev = CLAMPF(picked_ev, p->range_black_relative_ev, p->range_white_relative_ev);
