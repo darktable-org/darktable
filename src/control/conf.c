@@ -540,7 +540,9 @@ void dt_conf_init(dt_conf_t *cf,
     for(GSList *p = override_entries; p; p = g_slist_next(p))
     {
       dt_conf_string_entry_t *entry = p->data;
-      g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
+      g_hash_table_insert(darktable.conf->override_entries,
+                          g_strdup(entry->key),
+                          g_strdup(entry->value));
     }
   }
 
