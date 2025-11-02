@@ -1531,8 +1531,6 @@ int dt_init(int argc,
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
 
-  g_slist_free_full(config_override, g_free);
-
   const int last_configure_version =
     dt_conf_get_int("performance_configuration_version_completed");
 
@@ -1604,6 +1602,8 @@ int dt_init(int argc,
            default_dbname ? "" : dblabel);
 
   dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
+
+  g_slist_free_full(config_override, g_free);
 
   // restore dbname & label (as set in call dt_dbsession_create) to
   // the one selected on the dialog ensuring that if the
