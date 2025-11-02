@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,10 @@ typedef struct dt_timer_t
   GTimer *timer;
 } dt_timer_t;
 
-dt_timer_t *dt_timer_start_with_name(const char *file, const char *function, const char *description);
+dt_timer_t *dt_timer_start_with_name(const char *file,
+                                     const char *function,
+                                     const char *description);
+
 void dt_timer_stop_with_name(dt_timer_t *);
 #endif
 
@@ -56,4 +59,3 @@ void dt_timer_stop_with_name(dt_timer_t *);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
