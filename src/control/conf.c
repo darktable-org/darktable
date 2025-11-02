@@ -87,26 +87,26 @@ static int _conf_set_if_not_overridden(const char *name, char *str)
   return is_overridden;
 }
 
-void dt_conf_set_int(const char *name, int val)
+void dt_conf_set_int(const char *name, const int val)
 {
   char *str = g_strdup_printf("%d", val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_int64(const char *name, int64_t val)
+void dt_conf_set_int64(const char *name, const int64_t val)
 {
   char *str = g_strdup_printf("%" PRId64, val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_float(const char *name, float val)
+void dt_conf_set_float(const char *name, const float val)
 {
   char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
   g_ascii_dtostr(str, G_ASCII_DTOSTR_BUF_SIZE, val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_bool(const char *name, int val)
+void dt_conf_set_bool(const char *name, const int val)
 {
   char *str = g_strdup(val ? "TRUE" : "FALSE");
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
@@ -141,7 +141,7 @@ void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *choo
   if(_conf_set_if_not_overridden(name, folder)) g_free(folder);
 }
 
-static inline gboolean _conf_isnan(double val)
+static inline gboolean _conf_isnan(const double val)
 {
   return val != val;
 }
@@ -269,7 +269,9 @@ float dt_conf_get_float(const char *name)
   return ret;
 }
 
-int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
+int dt_conf_get_and_sanitize_int(const char *name,
+                                 const int min,
+                                 const int max)
 {
   const int cmin = dt_confgen_get_int(name, DT_MIN);
   const int cmax = dt_confgen_get_int(name, DT_MAX);
@@ -279,7 +281,9 @@ int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
   return ret;
 }
 
-int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max)
+int64_t dt_conf_get_and_sanitize_int64(const char *name,
+                                       const int64_t min,
+                                       const int64_t max)
 {
   const int64_t cmin = dt_confgen_get_int64(name, DT_MIN);
   const int64_t cmax = dt_confgen_get_int64(name, DT_MAX);
@@ -289,7 +293,9 @@ int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t ma
   return ret;
 }
 
-float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
+float dt_conf_get_and_sanitize_float(const char *name,
+                                     const float min,
+                                     const float max)
 {
   const float cmin = dt_confgen_get_float(name, DT_MIN);
   const float cmax = dt_confgen_get_float(name, DT_MAX);
@@ -390,10 +396,16 @@ static char *_sanitize_confgen(const char *name, const char *value)
     {
       double v = dt_calculator_solve(1, value);
 
-      const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
-      const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
+      const int64_t min = item->min
+        ? (int64_t)dt_calculator_solve(1, item->min)
+        : INT64_MIN;
+      const int64_t max = item->max
+        ? (int64_t)dt_calculator_solve(1, item->max)
+        : INT64_MAX;
       // if garbage, use default
-      const int64_t val = _conf_isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
+      const int64_t val = _conf_isnan(v)
+        ? dt_confgen_get_int64(name, DT_DEFAULT)
+        : (int64_t)v;
       result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
     break;
@@ -404,7 +416,9 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
       // if garbage, use default
-      const float val = _conf_isnan(v) ? (float)dt_confgen_get_float(name, DT_DEFAULT) : (float)v;
+      const float val = _conf_isnan(v)
+        ? (float)dt_confgen_get_float(name, DT_DEFAULT)
+        : (float)v;
       result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
     break;
@@ -441,7 +455,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
 gchar *dt_conf_read_values(const char *filename,
                           gchar* (*callback)(const gchar *key,
-                          const gchar *value))
+                                             const gchar *value))
 {
 #define LINE_SIZE 1023
 
@@ -617,7 +631,8 @@ dt_confgen_type_t dt_confgen_type(const char *name)
     return DT_STRING;
 }
 
-gboolean dt_confgen_value_exists(const char *name, const dt_confgen_value_kind_t kind)
+gboolean dt_confgen_value_exists(const char *name,
+                                 const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
   if(item == NULL)
@@ -637,7 +652,8 @@ gboolean dt_confgen_value_exists(const char *name, const dt_confgen_value_kind_t
   return FALSE;
 }
 
-const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
+const char *dt_confgen_get(const char *name,
+                           const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
@@ -695,7 +711,8 @@ const char *dt_confgen_get_tooltip(const char *name)
   return "";
 }
 
-int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
+int dt_confgen_get_int(const char *name,
+                       const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -733,7 +750,8 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   return (int)value;
 }
 
-int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
+int64_t dt_confgen_get_int64(const char *name,
+                             const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -771,13 +789,15 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   return (int64_t)value;
 }
 
-gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind)
+gboolean dt_confgen_get_bool(const char *name,
+                             const dt_confgen_value_kind_t kind)
 {
   const char *str = dt_confgen_get(name, kind);
   return !strcmp(str, "true");
 }
 
-float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
+float dt_confgen_get_float(const char *name,
+                           const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -804,7 +824,8 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   switch(kind)
   {
   case DT_MIN:
-    // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
+    // to anyone askig FLT_MIN is superclose to 0, not furthest value
+    // from 0 possible in float
     return _conf_isnan(value) ? -FLT_MAX : (float)value;
     break;
   case DT_MAX:

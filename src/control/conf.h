@@ -73,18 +73,22 @@ typedef enum dt_confgen_value_kind_t
   DT_VALUES
 } dt_confgen_value_kind_t;
 
-void dt_conf_set_int(const char *name, int val);
-void dt_conf_set_int64(const char *name, int64_t val);
-void dt_conf_set_float(const char *name, float val);
-void dt_conf_set_bool(const char *name, int val);
+void dt_conf_set_int(const char *name, const int val);
+void dt_conf_set_int64(const char *name, const int64_t val);
+void dt_conf_set_float(const char *name, const float val);
+void dt_conf_set_bool(const char *name, const int val);
 void dt_conf_set_string(const char *name, const char *val);
 void dt_conf_set_path(const char *name, const char *val);
 void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *chooser);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64(const char *name);
 float dt_conf_get_float(const char *name);
-int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
-int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
+int dt_conf_get_and_sanitize_int(const char *name,
+                                 const int min,
+                                 const int max);
+int64_t dt_conf_get_and_sanitize_int64(const char *name,
+                                       const int64_t min,
+                                       const int64_t max);
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
 gboolean dt_conf_get_bool(const char *name);
 // get the configuration string without duplicating it; the returned
@@ -119,13 +123,19 @@ gboolean dt_confgen_exists(const char *name);
 gboolean dt_confgen_is_common(const char *name);
 dt_confgen_type_t dt_confgen_type(const char *name);
 
-gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind);
+gboolean dt_confgen_value_exists(const char *name,
+                                 const dt_confgen_value_kind_t kind);
 
-int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind);
-int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind);
-gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind);
-float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind);
-const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind);
+int dt_confgen_get_int(const char *name,
+                       const dt_confgen_value_kind_t kind);
+int64_t dt_confgen_get_int64(const char *name,
+                             const dt_confgen_value_kind_t kind);
+gboolean dt_confgen_get_bool(const char *name,
+                             const dt_confgen_value_kind_t kind);
+float dt_confgen_get_float(const char *name,
+                           const dt_confgen_value_kind_t kind);
+const char *dt_confgen_get(const char *name,
+                           const dt_confgen_value_kind_t kind);
 
 const char *dt_confgen_get_label(const char *name);
 const char *dt_confgen_get_tooltip(const char *name);
@@ -137,7 +147,8 @@ gchar* dt_conf_expand_default_dir(const char *dir);
     NULL, the value is returned by dt_conf_read_values. This may be used to look for a
     a specific value in filename */
 gchar *dt_conf_read_values(const char *filename,
-                           gchar* (*callback)(const gchar *key, const gchar *value));
+                           gchar* (*callback)(const gchar *key,
+                                              const gchar *value));
 
 G_END_DECLS
 
