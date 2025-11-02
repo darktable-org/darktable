@@ -902,9 +902,13 @@ char *version = g_strdup_printf(
   return version;
 }
 
-int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
+int dt_init(int argc,
+            char *argv[],
+            const gboolean init_gui,
+            const gboolean load_data,
+            lua_State *L)
 {
-  double start_wtime = dt_get_wtime();
+  const double start_wtime = dt_get_wtime();
 
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
