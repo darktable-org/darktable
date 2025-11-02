@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/custom_primaries.h"
+#include "common/image.h"
 #include "common/iop_profile.h"
 #include "common/math.h"
 #include "common/matrices.h"
@@ -1358,6 +1359,16 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
   return primaries_params;
 }
 
+static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self, dt_iop_agx_params_t *p)
+{
+  if (!self || !p) return;
+
+  const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
+
+  p->range_black_relative_ev = -8.f + 0.5f * exposure;
+  p->range_white_relative_ev = 4.f + 0.8 * exposure;
+}
+
 static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
                               const tone_mapping_params_t *params,
                               const dt_colormatrix_t rendering_to_xyz_transposed)
@@ -1489,15 +1500,8 @@ static void _read_exposure_params_callback(GtkWidget *widget,
   dt_iop_agx_params_t *p = self->params;
   if (g && p)
   {
-    // exposure calculated by the exposure module, including all compensations (EXIF bias, highlight preservation, etc.).
-    const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
-
-    p->range_black_relative_ev = -8.f + 0.5f * exposure;
-    p->range_white_relative_ev = 4.f + 0.8 * exposure;
-
+    _adjust_relative_exposure_from_exposure_params(self, p);
     dt_iop_gui_update(self);
-    //_update_pivot_exposure_slider_range(self);
-
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
@@ -2151,7 +2155,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
   dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
                                                "used to set the pivot relative to mid-gray,\n"
-                                               "and the output will be adjusted based on the default mid-gray to mid-gray mapping"));
+                                               "and the output will be adjusted based on the default\n"
+                                               "mid-gray to mid-gray mapping"));
 
   // curve_contrast_around_pivot
   slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
@@ -2953,10 +2958,12 @@ void reload_defaults(dt_iop_module_t *self)
   {
     dt_iop_agx_params_t *const p = self->default_params;
     _set_scene_referred_default_params(p);
-    const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
-    p->range_black_relative_ev = -8.f + 0.5f * exposure;
-    p->range_white_relative_ev = 4.f + 0.8 * exposure;
+    // HDR is unbounded, no point in setting sensor-based relative exposure bounds
+    if (!dt_image_is_hdr(&self->dev->image_storage))
+    {
+      _adjust_relative_exposure_from_exposure_params(self, p);
+    }
   }
 }
 
