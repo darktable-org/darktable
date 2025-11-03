@@ -1563,7 +1563,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
     }
 
-    if(img->exif_crop == 0.0f && FIND_EXIF_TAG("Exif.OlympusEq.FocalPlaneDiagonal"))
+    if(img->exif_crop == 0.0f
+       && (FIND_EXIF_TAG("Exif.OlympusEq.FocalPlaneDiagonal")
+           || FIND_EXIF_TAG("Exif.Olympus.FocalPlaneDiagonal"))
+       )
     {
       const Exiv2::Rational r = pos->toRational();
 
