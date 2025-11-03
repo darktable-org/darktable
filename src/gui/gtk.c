@@ -1011,7 +1011,12 @@ static gboolean _window_configure(GtkWidget *da,
 {
   static int oldx = 0;
   static int oldy = 0;
-  if(oldx != event->configure.x || oldy != event->configure.y)
+
+  // FIXME: On Wayland we always configure as the even->configure x, y
+  // are always 0.
+  if(oldx != event->configure.x
+     || oldy != event->configure.y
+     || dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
     // maybe we are on another screen now with > 50% of the area
     dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
