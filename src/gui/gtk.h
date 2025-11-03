@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ G_BEGIN_DECLS
 
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
 
-/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
- * DPI */
+/* helper macro that applies the DPI transformation to fixed pixel
+ * values. input should be defaulting to 96 DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
 #define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
