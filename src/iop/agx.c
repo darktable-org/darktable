@@ -2503,20 +2503,12 @@ static void _paint_slider_gradient(GtkWidget *slider, const float hue_deg, const
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
-static void _paint_hue_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean reverse)
-{
-  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_hue, reverse);
-}
-
-static void _paint_purity_slider_hsv(GtkWidget *slider, const float hue_deg, const gboolean attenuate)
-{
-  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_purity, attenuate);
-}
-
 static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
                                        const char *param_name,
                                        const char *tooltip,
-                                       const int primary_index)
+                                       const int primary_index,
+                                       const float hue_deg,
+                                       const gboolean attenuate)
 {
   const float target_primary_value = 0.8f;
   const float other_primaries_value = 0.2;
@@ -2533,10 +2525,17 @@ static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
 
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);
   gtk_widget_set_tooltip_text(slider, tooltip);
+
+  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_purity, attenuate);
+
   return slider;
 }
 
-static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
+static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
+                                    const char *param_name,
+                                    const char *tooltip,
+                                    const float hue_deg,
+                                    const gboolean reverse)
 {
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
   dt_bauhaus_slider_set_feedback(slider, 0);
@@ -2545,6 +2544,9 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_nam
   dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
   gtk_widget_set_tooltip_text(slider, tooltip);
   dt_bauhaus_slider_set_default(slider, 0.f);
+
+  _paint_slider_gradient(slider, hue_deg, &_update_hsv_for_hue, reverse);
+
   return slider;
 }
 
@@ -2611,29 +2613,41 @@ static void _create_primaries_page(dt_iop_module_t *main,
   slider = _setup_purity_slider(self,
                                 "red_inset",
                                 _("increase to desaturate reds in highlights faster"),
-                                _red_index);
-  _paint_purity_slider_hsv(slider, red_hue, TRUE);
+                                _red_index,
+                                red_hue,
+                                TRUE);
 
-  slider = _setup_hue_slider(self, "red_rotation", _("shift the red primary towards yellow (+) or magenta (-)"));
-  _paint_hue_slider_hsv(slider, red_hue, FALSE);
+  slider = _setup_hue_slider(self,
+                             "red_rotation",
+                             _("shift the red primary towards yellow (+) or magenta (-)"),
+                             red_hue,
+                             FALSE);
 
   slider = _setup_purity_slider(self,
                                 "green_inset",
                                 _("increase to desaturate greens in highlights faster"),
-                                _green_index);
-  _paint_purity_slider_hsv(slider, green_hue, TRUE);
+                                _green_index,
+                                green_hue,
+                                TRUE);
 
-  slider = _setup_hue_slider(self, "green_rotation", _("shift the green primary towards cyan (+) or yellow (-)"));
-  _paint_hue_slider_hsv(slider, green_hue, FALSE);
+  slider = _setup_hue_slider(self,
+                             "green_rotation",
+                             _("shift the green primary towards cyan (+) or yellow (-)"),
+                             green_hue,
+                             FALSE);
 
   slider = _setup_purity_slider(self,
                                 "blue_inset",
                                 _("increase to desaturate blues in highlights faster"),
-                                _blue_index);
-  _paint_purity_slider_hsv(slider, blue_hue, TRUE);
+                                _blue_index,
+                                blue_hue,
+                                TRUE);
 
-  slider = _setup_hue_slider(self, "blue_rotation", _("shift the blue primary towards magenta (+) or cyan (-)"));
-  _paint_hue_slider_hsv(slider, blue_hue, FALSE);
+  slider = _setup_hue_slider(self,
+                             "blue_rotation",
+                             _("shift the blue primary towards magenta (+) or cyan (-)"),
+                             blue_hue,
+                             FALSE);
 
   GtkWidget *reversal_hbox = dt_gui_hbox();
   g->post_curve_primaries_controls_vbox = dt_gui_vbox();
@@ -2673,29 +2687,41 @@ static void _create_primaries_page(dt_iop_module_t *main,
   slider = _setup_purity_slider(self,
                                 "red_outset",
                                 _("restore the purity of red, mostly in midtones and shadows"),
-                                _red_index);
-  _paint_purity_slider_hsv(slider, red_hue, FALSE);
+                                _red_index,
+                                red_hue,
+                                FALSE);
 
-  slider = _setup_hue_slider(self, "red_unrotation", _("reverse the color shift in reds"));
-  _paint_hue_slider_hsv(slider, red_hue, TRUE);
+  slider = _setup_hue_slider(self,
+                             "red_unrotation",
+                             _("reverse the color shift in reds"),
+                             red_hue,
+                             TRUE);
 
   slider = _setup_purity_slider(self,
                                 "green_outset",
                                 _("restore the purity of green, mostly in midtones and shadows"),
-                                _green_index);
-  _paint_purity_slider_hsv(slider, green_hue, FALSE);
+                                _green_index,
+                                green_hue,
+                                FALSE);
 
-  slider = _setup_hue_slider(self, "green_unrotation", _("reverse the color shift in greens"));
-  _paint_hue_slider_hsv(slider, green_hue, TRUE);
+  slider = _setup_hue_slider(self,
+                             "green_unrotation",
+                             _("reverse the color shift in greens"),
+                             green_hue,
+                             TRUE);
 
   slider = _setup_purity_slider(self,
                                 "blue_outset",
                                 _("restore the purity of blue, mostly in midtones and shadows"),
-                                _blue_index);
-  _paint_purity_slider_hsv(slider, blue_hue, FALSE);
+                                _blue_index,
+                                blue_hue,
+                                FALSE);
 
-  slider = _setup_hue_slider(self, "blue_unrotation", _("reverse the color shift in blues"));
-  _paint_hue_slider_hsv(slider, blue_hue, TRUE);
+  slider = _setup_hue_slider(self,
+                             "blue_unrotation",
+                             _("reverse the color shift in blues"),
+                             blue_hue,
+                             TRUE);
 }
 
 static void _notebook_page_changed(GtkNotebook *notebook,
