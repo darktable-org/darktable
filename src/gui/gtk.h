@@ -100,6 +100,14 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
+typedef enum dt_gui_session_type_t
+{
+  DT_GUI_SESSION_UNKNOWN,
+  DT_GUI_SESSION_X11,
+  DT_GUI_SESSION_QUARTZ,
+  DT_GUI_SESSION_WAYLAND,
+} dt_gui_session_type_t;
+
 typedef struct dt_gui_gtk_t
 {
   struct dt_ui_t *ui;
@@ -626,6 +634,9 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
 
 // restore dialog size from config file
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
+
+// returns the session type at runtime
+dt_gui_session_type_t dt_gui_get_session_type(void);
 
 G_END_DECLS
 
