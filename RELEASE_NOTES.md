@@ -204,6 +204,8 @@ changes (where available).
   the <focused> action or to the mimics set up with for example the
   x-touch Lua script.
 
+- Added the ability to calculate crop factor for Olympus cameras.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
