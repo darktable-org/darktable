@@ -2353,8 +2353,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section_name)));
 
   GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_ev");
-  dt_bauhaus_widget_set_module(white_slider, DT_ACTION(real_self));
-  g->white_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
+  g->white_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
   dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
@@ -2363,8 +2362,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
 
 
   GtkWidget *black_slider = dt_bauhaus_slider_from_params(self, "range_black_relative_ev");
-  dt_bauhaus_widget_set_module(black_slider, DT_ACTION(real_self));
-  g->black_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, black_slider);
+  g->black_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, black_slider);
   dt_bauhaus_slider_set_soft_range(g->black_exposure_picker, -20.f, -1.f);
   dt_bauhaus_slider_set_format(g->black_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
@@ -2372,7 +2370,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
   dt_bauhaus_widget_set_quad_tooltip(g->black_exposure_picker, _("pick the black point"));
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "dynamic_range_scaling");
-  dt_bauhaus_widget_set_module(g->security_factor, DT_ACTION(real_self));
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
   dt_bauhaus_slider_set_digits(g->security_factor, 2);
@@ -2385,7 +2382,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
 
   GtkWidget *auto_tune_box = dt_gui_hbox();
   GtkWidget *auto_tune_label = dt_ui_label_new(_("auto tune levels"));
-  g->range_exposure_picker = dt_color_picker_new(real_self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, NULL);
+  g->range_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, NULL);
   gtk_widget_set_tooltip_text(g->range_exposure_picker, _("set back and white relative exposure using the selected area"));
   dt_action_define_iop(real_self, N_("exposure range"), N_("auto tune levels"), g->range_exposure_picker, &dt_action_def_toggle);
   dt_gui_box_add(auto_tune_box, dt_gui_expand(auto_tune_label), g->range_exposure_picker);
