@@ -273,7 +273,6 @@ const model_map_t modelMap[] = {
     .clean_model = "EOS R1",
     .clean_alias = "EOS R1"
   },
-
 #endif
 };
 
