@@ -211,7 +211,11 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_reduce_second;
 } dt_iop_denoiseprofile_global_data_t;
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected);
 
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
                            const char *const namespec,
@@ -405,7 +409,7 @@ int legacy_params_to11(dt_iop_module_t *self,
       // used or not
       return 0;
     }
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL);
     // if the profile in old_version is an autodetected one (this
     // would mean a+b params match the interpolated one, AND the
     // profile is actually the first selected one - however we can
@@ -2800,39 +2804,14 @@ void reload_defaults(dt_iop_module_t *self)
   d->wavelet_color_mode = MODE_Y0U0V0;
 
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
-  const int iso = self->dev->image_storage.exif_iso;
-
-  // default to generic poissonian
-  dt_noiseprofile_t interpolated = dt_noiseprofile_generic;
-
   char name[512];
-
-  g_strlcpy(name, _(interpolated.name), sizeof(name));
-
-  dt_noiseprofile_t *last = NULL;
-  for(GList *iter = profiles; iter; iter = g_list_next(iter))
+  gboolean autodetected = FALSE;
+  dt_noiseprofile_t interpolated =
+      dt_iop_denoiseprofile_get_auto_profile(self, profiles, name, sizeof(name), &autodetected);
+  if(autodetected)
   {
-    dt_noiseprofile_t *current = iter->data;
-
-    if(current->iso == iso)
-    {
-      interpolated = *current;
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
-      break;
-    }
-    if(last && last->iso < iso && current->iso > iso)
-    {
-      interpolated.iso = iso;
-      dt_noiseprofile_interpolate(last, current, &interpolated);
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"),
-               last->iso, current->iso);
-      break;
-    }
-    last = current;
+    // signal later autodetection in commit_params.
+    interpolated.a[0] = 1.0f;
   }
 
   const float a = interpolated.a[1];
@@ -2934,10 +2913,28 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected)
 {
-  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  gboolean profiles_allocated = FALSE;
+  if(profiles == NULL)
+  {
+    profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+    profiles_allocated = TRUE;
+  }
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
+
+  if(autodetected != NULL)
+  {
+    *autodetected = FALSE;
+  }
+  if(name != NULL)
+  {
+    g_strlcpy(name, _(interpolated.name), namelen);
+  }
 
   const int iso = self->dev->image_storage.exif_iso;
   dt_noiseprofile_t *last = NULL;
@@ -2947,17 +2944,36 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     if(current->iso == iso)
     {
       interpolated = *current;
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        snprintf(name, namelen, _("found match for ISO %d"), iso);
+      }
       break;
     }
     if(last && last->iso < iso && current->iso > iso)
     {
       interpolated.iso = iso;
       dt_noiseprofile_interpolate(last, current, &interpolated);
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        snprintf(name, namelen, _("interpolated from ISO %d and %d"), last->iso, current->iso);
+      }
       break;
     }
     last = current;
   }
-  g_list_free_full(profiles, dt_noiseprofile_free);
+  if(profiles_allocated)
+  {
+    g_list_free_full(profiles, dt_noiseprofile_free);
+  }
   return interpolated;
 }
 
@@ -2987,9 +3003,8 @@ void commit_params(dt_iop_module_t *self,
   if(p->a[0] == -1.0)
   {
     // autodetect matching profile again, the same way as detecting their names,
-    // this is partially duplicated code and data because we are not allowed to access
-    // gui_data here ..
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    // because we are not allowed to access gui_data here ..
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL);
     for(int k = 0; k < 3; k++)
     {
       d->a[k] = interpolated.a[k];
@@ -3141,7 +3156,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       dt_bauhaus_combobox_set(g->profile, 0);
 
-      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL);
       a = interpolated.a[1];
     }
 
