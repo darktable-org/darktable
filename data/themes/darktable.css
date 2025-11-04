@@ -853,6 +853,13 @@ menuitem check:selected
   padding-right: 0.42em;
 }
 
+/* ??? workaround a wayland issue where the sub-menu in the presets
+   closing when close to the right border of the screen. */
+menuitem *
+{
+    padding: .05em;
+}
+
 /* fix for menuitem in bottom toolbar mainly */
 menuitem > arrow
 {
