@@ -89,12 +89,12 @@ void dt_gui_presets_init()
 }
 
 void (dt_gui_presets_add_generic)(const char *name,
-                                const dt_dev_operation_t op,
-                                const int32_t version,
-                                const void *params,
-                                const int32_t params_size,
-                                const gboolean enabled,
-                                const dt_develop_blend_colorspace_t blend_cst)
+                                  const dt_dev_operation_t op,
+                                  const int32_t version,
+                                  const void *params,
+                                  const int32_t params_size,
+                                  const gboolean enabled,
+                                  const dt_develop_blend_colorspace_t blend_cst)
 {
   dt_develop_blend_params_t default_blendop_params;
   dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
