@@ -162,13 +162,34 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
     dt_action_rename_preset(&module->so->actions, name, NULL);
 
     dt_lib_presets_remove(name, module->op, module->version());
+
+    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+    if(auto_module
+       && !module->multi_name_hand_edited)
+      {
+        g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+        dt_iop_gui_update_header(module);
+      }
   }
   g_free(name);
 }
 
 static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 {
-  dt_gui_store_last_preset(gtk_entry_get_text(g->name));
+  const char *name = gtk_entry_get_text(g->name);
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+  dt_iop_module_t *module = g->iop;
+
+  if(auto_module
+     && !module->multi_name_hand_edited
+     && (strlen(name) == 0 || name[0] != ' '))
+  {
+    g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+    dt_iop_gui_update_header(module);
+  }
+
+  dt_gui_store_last_preset(name);
 }
 
 static void _edit_preset_response(GtkDialog *dialog,
