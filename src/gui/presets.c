@@ -403,7 +403,10 @@ static void _edit_preset_response(GtkDialog *dialog,
                                    is_auto_init ?    0 : g->iop->params_size,
                                    SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name_hand_edited
+                                   ? g->iop->multi_name
+                                   : name,
+                                   -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
       }
     }
