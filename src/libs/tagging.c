@@ -3999,15 +3999,18 @@ static void _size_recent_tags_list()
   }
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem,
-                           dt_lib_module_t *self)
+static void _menuitem_preferences(GSimpleAction *action,
+                                  GVariant *parameter,
+                                  gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("tagging settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
-  dt_gui_connect_key(dialog, dt_handle_dialog_enter, NULL);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_tagging(dialog);
 
@@ -4027,11 +4030,12 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
   }
 }
 
-void set_preferences(void *menu, dt_lib_module_t *self)
+void set_preferences(GMenu *menu, GActionGroup *action_group, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  GSimpleAction *action = g_simple_action_new("preferences", NULL);
+  g_signal_connect(action, "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(action));
+  g_menu_append(menu, _("preferences..."), "presets.preferences");
 }
 
 static void _save_last_tag_used(const char *tagnames,
