@@ -266,6 +266,9 @@ changes (where available).
   after using a module picker) due to bad color coeffs in colorin
   module.
 
+- Fix support for Wayland. The UI is now working as expected and
+  Darktable will handle ICC profile from colord.
+
 ## Lua
 
 ### API Version
