@@ -25,6 +25,8 @@
 #include "develop/imageop.h"
 #include "libs/lib.h"
 
+#include <glib-2.0/gio/gmenu.h>
+#include <glib-2.0/gio/gmenumodel.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
@@ -546,6 +548,84 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
   }
   dt_gui_add_class(mi, "dt_transparent_background");
   return mi;
+}
+
+static void _menu_shell_insert_sorted2(GMenu *menu,
+                                       GMenuItem *item,
+                                       const gchar *name)
+{
+  GMenuModel *model = G_MENU_MODEL(menu);
+
+  int num = g_menu_model_get_n_items(model);
+  gboolean found = FALSE;
+  int i;
+  for(i = 0; i < num; i++)
+  {
+    gchar *item_label = NULL;
+    GVariant *attr = g_menu_model_get_item_attribute_value(model, i, "label", G_VARIANT_TYPE_STRING);
+    if(attr)
+    {
+      item_label = g_variant_dup_string(attr, NULL);
+      g_variant_unref(attr);
+      if(g_utf8_collate(item_label, name) > 0) found = TRUE;
+      g_free(item_label);
+      if(found) break;
+    }
+  }
+
+  g_menu_insert_item(menu, i, item);
+}
+
+void dt_insert_preset_in_menu_hierarchy2(const char *name,
+                                         const char *action,
+                                         GSList **menu_path,
+                                         GMenu *mainmenu,
+                                         GMenu **submenu,
+                                         gchar ***prev_split,
+                                         gboolean isdefault)
+{
+  gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+  gchar **split = g_strsplit(local_name, "|", -1);
+  gchar **s = split;
+  gchar **p = *prev_split;
+  GSList *mpath = *menu_path;
+  GMenuItem *mi;
+  g_free(local_name);
+
+  for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
+    ;
+
+  for(; p && *(p+1); p++)
+  {
+    mpath = g_slist_delete_link(mpath, mpath); // pop
+    *submenu = mpath ? mpath->data : mainmenu;
+  }
+
+  for(; *(s+1); s++)
+  {
+    GMenu *sm = g_menu_new();
+    GMenuItem *smi = g_menu_item_new_submenu(*s, G_MENU_MODEL(sm));
+    _menu_shell_insert_sorted2(*submenu, smi, *s);
+    *submenu = sm;
+    mpath = g_slist_prepend(mpath, sm); // push
+  }
+
+  *menu_path = mpath;
+  g_strfreev(*prev_split);
+  *prev_split = split;
+
+  if(isdefault)
+  {
+    gchar *label = g_strdup_printf("%s %s", *s, _("(default)"));
+    mi = g_menu_item_new(label, action);
+    _menu_shell_insert_sorted2(*submenu, mi, label);
+    g_free(label);
+  }
+  else
+  {
+    mi = g_menu_item_new(*s, action);
+    _menu_shell_insert_sorted2(*submenu, mi, *s);
+  }
 }
 
 // clang-format off
