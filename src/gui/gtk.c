@@ -6338,6 +6338,22 @@ PangoFontDescription *dt_gui_get_font(void)
   return pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 }
 
+GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
+{
+  GtkWidget *popover_menu;
+
+#if GTK_CHECK_VERSION(4, 0, 0)
+  popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
+                                                      GTK_POPOVER_MENU_NESTED);
+  gtk_widget_set_parent(popover_menu, parent);
+#else
+  popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));
+#endif
+
+  return popover_menu;
+}
+
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
