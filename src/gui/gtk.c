@@ -770,11 +770,11 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   return TRUE;
 }
 
-gboolean _valid_window_placement( const gint saved_x,
-                                  const gint saved_y,
-                                  const gint window_width,
-                                  const gint window_height,
-                                  const gint border)
+gboolean _valid_window_placement(const gint saved_x,
+                                 const gint saved_y,
+                                 const gint window_width,
+                                 const gint window_height,
+                                 const gint border)
 {
   GdkDisplay *display = gdk_display_get_default();
   const gint n_monitors = gdk_display_get_n_monitors(display);
@@ -975,6 +975,25 @@ static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
 }
 #endif
 
+dt_gui_session_type_t dt_gui_get_session_type(void)
+{
+#ifdef GDK_WINDOWING_QUARTZ
+  return DT_GUI_SESSION_QUARTZ;
+#elif defined(GDK_WINDOWING_WAYLAND)
+  GdkDisplay* disp = gdk_display_get_default();
+  return G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_WAYLAND_DISPLAY)
+    ? DT_GUI_SESSION_WAYLAND
+    : DT_GUI_SESSION_X11;
+#elif defined(GDK_WINDOWING_X11)
+  GdkDisplay* disp = gdk_display_get_default();
+  retun G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
+    ? DT_GUI_SESSION_X11
+    : DT_GUI_SESSION_WAYLAND;
+#else
+  return DT_GUI_SESSION_UNKNOWN;
+#endif
+}
+
 static gboolean _configure(GtkWidget *da,
                            GdkEventConfigure *event,
                            const gpointer user_data)
@@ -992,13 +1011,19 @@ static gboolean _window_configure(GtkWidget *da,
 {
   static int oldx = 0;
   static int oldy = 0;
-  if(oldx != event->configure.x || oldy != event->configure.y)
+
+  // FIXME: On Wayland we always configure as the even->configure x, y
+  // are always 0.
+  if(oldx != event->configure.x
+     || oldy != event->configure.y
+     || dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
-    dt_colorspaces_set_display_profile(
-        DT_COLORSPACE_DISPLAY); // maybe we are on another screen now with > 50% of the area
+    // maybe we are on another screen now with > 50% of the area
+    dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
     oldx = event->configure.x;
     oldy = event->configure.y;
   }
+
   return FALSE;
 }
 
@@ -1154,7 +1179,7 @@ static void _osx_add_view_menu_item(GtkWidget* menu,
                                     gpointer mode)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(label);
-  gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   gtk_widget_show(mi);
   g_signal_connect(G_OBJECT(mi), "activate",
                    G_CALLBACK(_osx_ctl_switch_mode_to), mode);
@@ -1490,8 +1515,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_init_styles_actions();
 
   // register ctrl-q to quit:
-  dt_action_register(&darktable.control->actions_global, N_("quit"), _quit_callback
-                     , GDK_KEY_q, GDK_CONTROL_MASK);
+  dt_action_register(&darktable.control->actions_global, N_("quit"),
+                     _quit_callback, GDK_KEY_q, GDK_CONTROL_MASK);
 
   // Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
   dt_action_register(&darktable.control->actions_global, N_("fullscreen"),

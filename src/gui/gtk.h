@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ G_BEGIN_DECLS
 
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
 
-/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
- * DPI */
+/* helper macro that applies the DPI transformation to fixed pixel
+ * values. input should be defaulting to 96 DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
 #define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
@@ -99,6 +99,14 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_COLOR_ASSESSMENT_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
+
+typedef enum dt_gui_session_type_t
+{
+  DT_GUI_SESSION_UNKNOWN,
+  DT_GUI_SESSION_X11,
+  DT_GUI_SESSION_QUARTZ,
+  DT_GUI_SESSION_WAYLAND,
+} dt_gui_session_type_t;
 
 typedef struct dt_gui_gtk_t
 {
@@ -626,6 +634,9 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
 
 // restore dialog size from config file
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
+
+// returns the session type at runtime
+dt_gui_session_type_t dt_gui_get_session_type(void);
 
 G_END_DECLS
 
