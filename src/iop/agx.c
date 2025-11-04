@@ -2599,7 +2599,7 @@ void init_presets(dt_iop_module_so_t *self)
   // Scene-referred preset
 
   const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
-  const gboolean auto_apply_agx = strcmp(workflow, "scene-referred (agx)") == 0;
+  const gboolean auto_apply_agx = strcmp(workflow, "scene-referred (AgX)") == 0;
 
   if(auto_apply_agx)
   {

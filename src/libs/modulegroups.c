@@ -1546,7 +1546,7 @@ void init_presets(dt_lib_module_t *self)
   const gboolean wf_sigmoid =
     dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
   const gboolean wf_agx =
-    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (agx)");
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (AgX)");
   const gboolean wf_none =
     dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
@@ -1843,7 +1843,7 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
   const gboolean wf_sigmoid = dt_conf_is_equal("plugins/darkroom/workflow",
                                                "scene-referred (sigmoid)");
   const gboolean wf_agx = dt_conf_is_equal("plugins/darkroom/workflow",
-                                               "scene-referred (agx)");
+                                               "scene-referred (AgX)");
 
   // all modules
   gchar *tx = NULL;
