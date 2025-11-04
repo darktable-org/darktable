@@ -637,6 +637,9 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
 
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
+// Popover menu
+GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu);
+
 
 G_END_DECLS
 

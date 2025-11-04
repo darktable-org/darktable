@@ -894,6 +894,22 @@ menuitem label,
   margin: 0;
 }
 
+/*------------------------------------------------
+  - Popup menu                                   -
+  ----------------------------------------------*/
+popover.menu {
+  padding: 0;
+}
+
+popover.menu modelbutton {
+  padding: 0.1em 0.5em;
+}
+
+popover.menu modelbutton:hover {
+  background-color: @selected_bg_color;
+}
+
+
 tooltip,
 #range-current
 {

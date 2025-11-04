@@ -96,6 +96,8 @@ typedef struct dt_lib_collect_t
   gboolean inited;
 
   GtkWidget *history_box;
+
+  GSimpleActionGroup *action_group;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -2926,9 +2928,41 @@ static gboolean entry_focus_in_callback(GtkWidget *w,
   return FALSE;
 }
 
-static void menuitem_mode(GtkMenuItem *menuitem,
-                          dt_lib_collect_rule_t *d)
+static gboolean _process_variant_params(GVariant *parameter,
+                                        gpointer userdata,
+                                        dt_lib_collect_mode_t *mode,
+                                        dt_lib_collect_rule_t **d)
 {
+  const gsize nb = g_variant_n_children(parameter);
+
+  if(nb != 2)
+    return FALSE;
+
+  dt_lib_collect_t *m = (dt_lib_collect_t *)userdata;
+
+  GVariant *v = g_variant_get_child_value(parameter, 0);
+  *mode = g_variant_get_int32(v);
+  g_variant_unref(v);
+  
+  v = g_variant_get_child_value(parameter, 1);
+  const int rule_index = g_variant_get_int32(v);
+  g_variant_unref(v);
+
+  *d = &m->rule[rule_index];
+
+  return TRUE;
+}
+
+static void _menuitem_mode(GSimpleAction *action,
+                           GVariant *parameter,
+                           gpointer userdata)
+{
+  dt_lib_collect_mode_t mode;
+  dt_lib_collect_rule_t *d = NULL;
+
+  if(!_process_variant_params(parameter, userdata, &mode, &d))
+    return;
+
   // add next row with and operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
@@ -2937,8 +2971,6 @@ static void menuitem_mode(GtkMenuItem *menuitem,
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
-    const dt_lib_collect_mode_t mode =
-      GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "menuitem_mode"));
 
     dt_conf_set_int(confname, mode);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
@@ -2953,17 +2985,22 @@ static void menuitem_mode(GtkMenuItem *menuitem,
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static void menuitem_mode_change(GtkMenuItem *menuitem,
-                                 dt_lib_collect_rule_t *d)
+static void _menuitem_mode_change(GSimpleAction *action,
+                                  GVariant *parameter,
+                                  gpointer userdata)
 {
+  dt_lib_collect_mode_t mode;
+  dt_lib_collect_rule_t *d = NULL;
+
+  if(!_process_variant_params(parameter, userdata, &mode, &d))
+    return;
+
   // add next row with and operator
   const int num = d->num + 1;
   if(num < MAX_RULES && num > 0)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
-    const dt_lib_collect_mode_t mode =
-      GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "menuitem_mode"));
     dt_conf_set_int(confname, mode);
   }
   dt_lib_collect_t *c = get_collect(d);
@@ -3186,9 +3223,15 @@ static void _metadata_changed(gpointer instance,
   }
 }
 
-static void menuitem_clear(GtkMenuItem *menuitem,
-                           dt_lib_collect_rule_t *d)
+static void _menuitem_clear(GSimpleAction *simple,
+                            GVariant *parameter,
+                            gpointer userdata)
 {
+  dt_lib_collect_t *m = (dt_lib_collect_t*) userdata;
+
+  const int index = g_variant_get_int32(parameter);
+  dt_lib_collect_rule_t *d = &m->rule[index];
+
   // remove this row, or if 1st, clear text entry box
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
@@ -3233,72 +3276,58 @@ static void menuitem_clear(GtkMenuItem *menuitem,
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static gboolean popup_button_callback(GtkWidget *widget,
+static gboolean popup_button_callback(GtkWidget *button,
                                       GdkEventButton *event,
                                       dt_lib_collect_rule_t *d)
 {
   if(event->button != 1)
     return FALSE;
 
-  GtkWidget *menu = gtk_menu_new();
-  GtkWidget *mi;
+  GMenu *menu = g_menu_new();
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
 
-  mi = gtk_menu_item_new_with_label(_("clear this rule"));
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_clear), d);
-
+  gchar *action;
+  
+  action = g_strdup_printf("collect.clear(%d)", d->num);
+  g_menu_append(menu, _("clear this rule"), action);
+  g_free(action);
+  
   if(d->num == active - 1)
   {
-    mi = gtk_menu_item_new_with_label(_("narrow down search"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode), d);
+    const char *fmt = "collect.mode((%d,%d))";
 
-    mi = gtk_menu_item_new_with_label(_("add more images"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode), d);
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_AND, d->num);
+    g_menu_append(menu, _("narrow down search"), action);
+    g_free(action);
 
-    mi = gtk_menu_item_new_with_label(_("exclude images"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode), d);
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_OR, d->num);
+    g_menu_append(menu, _("add more images"), action);
+    g_free(action);
+
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_AND_NOT, d->num);
+    g_menu_append(menu, _("exclude images"), action);
+    g_free(action);
   }
   else if(d->num < active - 1)
   {
-    mi = gtk_menu_item_new_with_label(_("change to: and"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode_change), d);
+    const char *fmt = "collect.modechange((%d,%d))";
 
-    mi = gtk_menu_item_new_with_label(_("change to: or"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode_change), d);
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_AND, d->num);
+    g_menu_append(menu, _("change to: and"), action);
+    g_free(action);
 
-    mi = gtk_menu_item_new_with_label(_("change to: except"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode",
-                      GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
-                     G_CALLBACK(menuitem_mode_change), d);
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_OR, d->num);
+    g_menu_append(menu, _("change to: or"), action);
+    g_free(action);
+
+    action = g_strdup_printf(fmt, DT_LIB_COLLECT_MODE_AND_NOT, d->num);
+    g_menu_append(menu, _("change to: except"), action);
+    g_free(action);
   }
 
-  gtk_widget_show_all(GTK_WIDGET(menu));
-
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+  GtkWidget *popover_menu = dt_gui_popover_menu_from_model(button, menu);
+  gtk_popover_popup(GTK_POPOVER(popover_menu));
 
   return TRUE;
 }
@@ -3656,6 +3685,17 @@ void gui_init(dt_lib_module_t *self)
   self->widget = dt_gui_vbox();
   dt_gui_add_class(self->widget, "dt_spacing_sw");
 
+  // setup the actions for this module
+  const GActionEntry entries[] = {
+    { "clear",       _menuitem_clear,       "i"    },
+    { "mode",        _menuitem_mode,        "(ii)" },
+    { "modechange",  _menuitem_mode_change, "(ii)" }
+  };
+
+  d->action_group = g_simple_action_group_new();
+  g_action_map_add_action_entries(G_ACTION_MAP(d->action_group), entries, G_N_ELEMENTS(entries), d);
+  gtk_widget_insert_action_group(self->widget, "collect", G_ACTION_GROUP(d->action_group));
+
   d->active_rule = 0;
   d->nb_rules = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
@@ -3809,6 +3849,8 @@ void gui_cleanup(dt_lib_module_t *self)
   g_object_unref(d->treefilter);
   g_object_unref(d->listfilter);
   g_object_unref(d->vmonitor);
+
+  g_object_unref(d->action_group);
 
   /* TODO: Make sure we are cleaning up all allocations */
 
