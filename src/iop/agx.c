@@ -41,7 +41,7 @@ DT_MODULE_INTROSPECTION(6, dt_iop_agx_params_t)
 
 const char *name()
 {
-  return _("agx");
+  return _("AgX");
 }
 
 const char *aliases()
