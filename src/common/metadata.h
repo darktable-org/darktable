@@ -98,6 +98,8 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
     if clear_on TRUE the image metadata are cleared before attaching the new ones*/
 void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
                              const gboolean undo_on);
+/** Unset a specific metadata key for a specific image. Noop if the key isn't set. */
+void dt_metadata_unset(const dt_imgid_t imgid, const char *key, const gboolean undo_on);
 /** Get metadata (named keys) for a specific image, or all selected for an invalid imgid
     For keys which return a string, the caller has to make sure that it
     is freed after usage. With mutex lock. */

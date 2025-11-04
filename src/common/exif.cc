@@ -610,7 +610,6 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     if(version == -1 || version > 0)
     {
       dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      if(!exif_read) dt_metadata_clear(imgs, FALSE);
 
       for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
@@ -628,6 +627,12 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
           }
           dt_metadata_set_import(img->id, metadata->tagname, value);
           free(adr);
+        }
+        else if(!exif_read && strstr(metadata->tagname, "Xmp.") == metadata->tagname)
+        {
+          // Only remove Xmp. metadata fields, do not touch metadata from other
+          // sources (e.g. Exif.*).
+          dt_metadata_unset(img->id, metadata->tagname, FALSE);
         }
       }
       dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
