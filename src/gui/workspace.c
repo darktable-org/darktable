@@ -181,7 +181,6 @@ void dt_workspace_create(const char *datadir)
   for(GList *l = g_list_first(dbs); l; l = g_list_next(l))
   {
     char *name = (char *)l->data;
-    GtkWidget *b = NULL;
     const gboolean is_default = strcmp(name, "library.db") == 0;
     GtkBox *box = NULL;
 
@@ -211,6 +210,10 @@ void dt_workspace_create(const char *datadir)
     }
     else if(!is_default)
     {
+      GList *bc = gtk_container_get_children(GTK_CONTAINER(box));
+      GtkWidget *b = (GtkWidget *)g_list_first(bc)->data;
+      g_list_free(bc);
+
       GtkWidget *del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
       g_signal_connect(G_OBJECT(del), "clicked",
                        G_CALLBACK(_workspace_delete_db), session);
