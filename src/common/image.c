@@ -219,7 +219,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
     if(changed)
     {
       const int mask = dt_image_monochrome_flags(img);
-      dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_RELAXED, "monochrome flags");
       dt_imageio_update_monochrome_workflow_tag(imgid, mask);
 
       if(undo_on)
@@ -866,7 +866,7 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       const gboolean changed = (ww != imgtmp->final_width) || (hh != imgtmp->final_height);
       imgtmp->final_width = ww;
       imgtmp->final_height = hh;
-      dt_image_cache_write_release(imgtmp, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(imgtmp, DT_IMAGE_CACHE_RELAXED, "update final size");
       if(changed)
       {
         dt_print(DT_DEBUG_PIPE, "updated final size for ID=%i, updated to %ix%i", imgid, ww, hh);
@@ -942,7 +942,7 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   {
     imgwr->final_width = *width = wd;
     imgwr->final_height = *height = ht;
-    dt_image_cache_write_release(imgwr, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release_info(imgwr, DT_IMAGE_CACHE_RELAXED, "get final size");
   }
   return res;
 }
@@ -1110,16 +1110,55 @@ float dt_image_get_sensor_ratio(const dt_image_t *img)
   return sw > sh ? sw / sh : sh / sw;
 }
 
-void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
+static inline gboolean _range(const float aspect, const int d, const int n)
 {
-  dt_image_t *image = dt_image_cache_get(imgid, 'w');
-  if(image)
+  const float prec = 0.5f * 0.01f; // 0.5%
+  const float rmin = (1.0f - prec) * (float)d / (float)n;
+  const float rmax = (1.0f + prec) * (float)d / (float)n;
+  return aspect > rmin && aspect < rmax;
+}
+
+float dt_usable_aspect(const float img_aspect)
+{
+  const gboolean inv = img_aspect < 1.0f;
+  float aspect =  inv ? 1.0f / fmaxf(img_aspect, 1e-4) : img_aspect;
+
+  /* We have a number of defined aspects either for sensor dimension or for predefined
+     crop ratios and make sure they later fit into seperable/usable values.
+     To avoid rounding errors and raw cropping we always test for an aspect range.
+     Code is done for easy maintenance.
+  */
+  if(_range(aspect, 1, 1))                    aspect = 1.0f;
+  else if(_range(aspect, 14, 11))             aspect = 14.0f / 11.0f;
+  else if(_range(aspect, 45, 35))             aspect = 45.0f / 35.0f;
+  else if(_range(aspect, 110, 85))            aspect = 110.0f / 85.0f; // letter
+  else if(_range(aspect, 4, 3))               aspect = 4.0f / 3.0f;
+  else if(_range(aspect, 7, 5))               aspect = 1.4f;
+  else if(_range(aspect, 14142136, 10000000)) aspect = 1.4142136f; // A4
+  else if(_range(aspect, 3, 2))               aspect = 1.5f;
+  else if(_range(aspect, 8, 5))               aspect = 1.6f;
+  else if(_range(aspect, 1618034, 1000000))   aspect = 1.618034f; // golden cut
+  else if(_range(aspect, 16, 9))              aspect = 16.0f / 9.0f;
+  else if(_range(aspect, 185, 100))           aspect = 1.85f; // widescreen
+  else if(_range(aspect, 2, 1))               aspect = 2.0f;
+  else if(_range(aspect, 235, 100))           aspect = 2.35f; // cinemascope
+  else if(_range(aspect, 239, 100))           aspect = 2.39f; // anamorphic
+  else if(_range(aspect, 65, 24))             aspect = 65.0f / 24.0f; // xpan
+  else if(_range(aspect, 3, 1))               aspect = 3.0f; // pano
+  else
   {
-    /* set image aspect ratio */
-    const int side = image->orientation < ORIENTATION_SWAP_XY ? image->p_height : image->p_width;
-    image->aspect_ratio = (float )image->p_height / (float )(MAX(1, side));
-    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
+    // we didn't find a predefined aspect so let's reduce the number of discrete aspects
+    if(inv)   // 0.05f steps
+      return 0.05f * (roundf(20.0f / aspect));
+    else      // 0.10 steps
+      return 0.1f * (roundf(10.0f * aspect));
   }
+
+  if(inv)
+    aspect = 1.0f / aspect;
+
+  // For predefined aspects use 0.01 steps
+  return 0.01f * (roundf(100.0f * aspect));
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1133,10 +1172,10 @@ void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
 
     /* set image aspect ratio */
     if(image)
-      image->aspect_ratio = aspect_ratio;
+      image->aspect_ratio = dt_usable_aspect(aspect_ratio);
 
     /* store but don't save xmp*/
-    dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_RELAXED, "dt_image_set_aspect_ratio_to");
 
     if(image
        && raise
@@ -1158,7 +1197,8 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
   {
     /* fetch image from cache */
     dt_image_t *image = dt_image_cache_get(imgid, 'r');
-    const gboolean new_aspect = image && !feqf(image->aspect_ratio, aspect_ratio, 0.02f);
+    const float new_aspect_ratio = dt_usable_aspect(aspect_ratio);
+    const gboolean new_aspect = image && !feqf(image->aspect_ratio, new_aspect_ratio, 0.001f);
     dt_image_cache_read_release(image);
 
     /* set image aspect ratio */
@@ -1166,9 +1206,9 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
     {
       dt_image_t *wimage = dt_image_cache_get(imgid, 'w');
       if(wimage)
-        wimage->aspect_ratio = aspect_ratio;
+        wimage->aspect_ratio = dt_usable_aspect(new_aspect_ratio);
 
-      dt_image_cache_write_release(wimage, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(wimage, DT_IMAGE_CACHE_RELAXED, "dt_image_set_aspect_ratio_if_different");
 
       if(raise
          && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
@@ -1200,7 +1240,8 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
     if(raise
        && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
     }
@@ -1211,15 +1252,15 @@ float dt_image_set_aspect_ratio(const dt_imgid_t imgid,
                                 const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
-  float aspect_ratio = 0.0;
+  float aspect_ratio = 0.0f;
 
   dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
   if(buf.buf && buf.height && buf.width)
-  {
-    aspect_ratio = (float)buf.width / (float)buf.height;
-    dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
-  }
+    aspect_ratio = dt_usable_aspect((float)buf.width / (float)buf.height);
   dt_mipmap_cache_release(&buf);
+
+  if(aspect_ratio != 0.0f)
+    dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
 
   return aspect_ratio;
 }
