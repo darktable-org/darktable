@@ -163,14 +163,7 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
 
     dt_lib_presets_remove(name, module->op, module->version());
 
-    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
-
-    if(auto_module
-       && !module->multi_name_hand_edited)
-      {
-        g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
-        dt_iop_gui_update_header(module);
-      }
+    dt_iop_update_multi_name(module, "", module->multi_name_hand_edited, FALSE, FALSE);
   }
   g_free(name);
 }
@@ -178,16 +171,8 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
 static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 {
   const char *name = gtk_entry_get_text(g->name);
-  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
-  dt_iop_module_t *module = g->iop;
 
-  if(auto_module
-     && !module->multi_name_hand_edited
-     && (strlen(name) == 0 || name[0] != ' '))
-  {
-    g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-    dt_iop_gui_update_header(module);
-  }
+  dt_iop_update_multi_name(g->iop, name, g->iop->multi_name_hand_edited, FALSE, FALSE);
 
   dt_gui_store_last_preset(name);
 }
@@ -1091,17 +1076,9 @@ void dt_gui_presets_apply_preset(const gchar* name,
     // if module name has not been hand edited, use preset multi_name
     // or name as module label.
 
-    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
-
-    if(auto_module
-       && !module->multi_name_hand_edited
-       && (strlen(multi_name) == 0 || multi_name[0] != ' '))
-    {
-      g_strlcpy(module->multi_name,
-                strlen(multi_name) > 0 ? multi_name : name,
-                sizeof(module->multi_name));
-      module->multi_name_hand_edited = multi_name_hand_edited;
-    }
+    dt_iop_update_multi_name(module,
+                             strlen(multi_name) > 0 ? multi_name : name,
+                             multi_name_hand_edited, FALSE, FALSE);
 
     if(blendop_params
        && (blendop_version == dt_develop_blend_version())
