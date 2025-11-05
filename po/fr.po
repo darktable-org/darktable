@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-05 18:53+0100\n"
-"PO-Revision-Date: 2025-11-05 18:59+0100\n"
+"POT-Creation-Date: 2025-11-05 20:30+0100\n"
+"PO-Revision-Date: 2025-11-05 20:30+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2488,7 +2488,7 @@ msgstr "Automne"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:527
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
-#: ../src/common/collection.c:1466 ../src/common/color_vocabulary.c:324
+#: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2392
 #: ../src/develop/blend_gui.c:2440 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3842 ../src/iop/bilateral.cc:382
@@ -2616,7 +2616,7 @@ msgstr "Générique"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:519
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
-#: ../src/common/collection.c:1464 ../src/common/color_vocabulary.c:277
+#: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:382 ../src/develop/blend_gui.c:2386
 #: ../src/develop/blend_gui.c:2434 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3841 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:377
@@ -2675,7 +2675,7 @@ msgstr "Orange"
 msgid "pastels"
 msgstr "Pastel"
 
-#: ../build/bin/styles_string.h:34 ../src/common/collection.c:1468
+#: ../build/bin/styles_string.h:34 ../src/common/collection.c:1481
 #: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:384
 #: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:1964
 #: ../src/libs/filters/colors.c:264
@@ -2691,7 +2691,7 @@ msgstr "Violet"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:507
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
-#: ../src/common/collection.c:1460 ../src/common/color_vocabulary.c:232
+#: ../src/common/collection.c:1473 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:380 ../src/develop/blend_gui.c:2380
 #: ../src/develop/blend_gui.c:2428 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3840 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:372
@@ -2732,7 +2732,7 @@ msgstr "Couleur cible"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:483
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:515
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
-#: ../src/common/collection.c:1462 ../src/common/colorlabels.c:381
+#: ../src/common/collection.c:1475 ../src/common/colorlabels.c:381
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:854
 #: ../src/iop/colorequal.c:2959 ../src/iop/colorzones.c:2487
 #: ../src/iop/temperature.c:1986 ../src/libs/collect.c:1964
@@ -3058,7 +3058,7 @@ msgstr "Cisaillement"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:625 ../src/gui/preferences.c:962
+#: ../src/common/collection.c:638 ../src/gui/preferences.c:962
 #: ../src/gui/presets.c:729 ../src/iop/lens.cc:4409 ../src/libs/camera.c:574
 #: ../src/libs/metadata_view.c:157
 msgid "focal length"
@@ -3131,7 +3131,7 @@ msgstr "Décalage d’exposition"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:146
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:239
-#: ../src/common/collection.c:633 ../src/libs/metadata_view.c:152
+#: ../src/common/collection.c:646 ../src/libs/metadata_view.c:152
 msgid "exposure bias"
 msgstr "Biais d’exposition"
 
@@ -3315,7 +3315,7 @@ msgid "offset"
 msgstr "Décalage"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:623 ../src/gui/preferences.c:938
+#: ../src/common/collection.c:636 ../src/gui/preferences.c:938
 #: ../src/gui/presets.c:671 ../src/libs/metadata_view.c:149
 msgid "lens"
 msgstr "Objectif"
@@ -3342,7 +3342,7 @@ msgstr "Couleur de la bordure"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:124
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
-#: ../src/common/collection.c:635 ../src/libs/filtering.c:50
+#: ../src/common/collection.c:648 ../src/libs/filtering.c:50
 msgid "aspect ratio"
 msgstr "Ratio d’aspect"
 
@@ -4264,7 +4264,7 @@ msgstr "Monochrome"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:329
-#: ../src/common/collection.c:1480 ../src/libs/collect.c:1905
+#: ../src/common/collection.c:1493 ../src/libs/collect.c:1905
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "Basique"
@@ -5546,7 +5546,7 @@ msgstr "GainMap intégré"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:631 ../src/gui/preferences.c:950
+#: ../src/common/collection.c:644 ../src/gui/preferences.c:950
 #: ../src/gui/presets.c:695 ../src/iop/basicadj.c:622 ../src/iop/exposure.c:120
 #: ../src/iop/exposure.c:1201 ../src/libs/metadata_view.c:151
 msgid "exposure"
@@ -6204,60 +6204,60 @@ msgstr ""
 "L’appareil photo « %s » sur le port « %s » doit être remonté,\n"
 "s’assurer qu’il autorise l’accès et qu’il n’est pas monté par ailleurs."
 
-#: ../src/common/collection.c:584
+#: ../src/common/collection.c:597
 msgid "too much time to update aspect ratio for the collection"
 msgstr "Trop de temps pour mettre à jour l’aspect pour la collection"
 
-#: ../src/common/collection.c:599
+#: ../src/common/collection.c:612
 msgid "film roll"
 msgstr "Pellicule"
 
 #. manage the scripts
-#: ../src/common/collection.c:601
+#: ../src/common/collection.c:614
 #: ../src/external/lua-scripts/tools/script_manager.lua:1429
 msgid "folder"
 msgstr "Dossier"
 
-#: ../src/common/collection.c:603
+#: ../src/common/collection.c:616
 msgid "camera"
 msgstr "Boîtier"
 
-#: ../src/common/collection.c:605 ../src/gui/metadata_tags.c:114
+#: ../src/common/collection.c:618 ../src/gui/metadata_tags.c:114
 #: ../src/libs/tagging.c:3334
 msgid "tag"
 msgstr "Mot-clé"
 
-#: ../src/common/collection.c:607
+#: ../src/common/collection.c:620
 msgid "capture date"
 msgstr "Date de capture"
 
-#: ../src/common/collection.c:609 ../src/libs/filtering.c:52
+#: ../src/common/collection.c:622 ../src/libs/filtering.c:52
 msgid "capture time"
 msgstr "Heure de capture"
 
-#: ../src/common/collection.c:611 ../src/libs/filtering.c:53
+#: ../src/common/collection.c:624 ../src/libs/filtering.c:53
 msgid "import time"
 msgstr "Heure d’importation"
 
-#: ../src/common/collection.c:613 ../src/libs/filtering.c:54
+#: ../src/common/collection.c:626 ../src/libs/filtering.c:54
 msgid "modification time"
 msgstr "Heure de modification"
 
-#: ../src/common/collection.c:615 ../src/libs/filtering.c:55
+#: ../src/common/collection.c:628 ../src/libs/filtering.c:55
 msgid "export time"
 msgstr "Heure d’export"
 
-#: ../src/common/collection.c:617 ../src/libs/filtering.c:56
+#: ../src/common/collection.c:630 ../src/libs/filtering.c:56
 msgid "print time"
 msgstr "Heure d’impression"
 
-#: ../src/common/collection.c:619 ../src/libs/collect.c:3737
+#: ../src/common/collection.c:632 ../src/libs/collect.c:3737
 #: ../src/libs/filtering.c:2213 ../src/libs/filtering.c:2233
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:98
 msgid "history"
 msgstr "Historique"
 
-#: ../src/common/collection.c:621 ../src/common/colorlabels.c:388
+#: ../src/common/collection.c:634 ../src/common/colorlabels.c:388
 #: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1567
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:143
@@ -6265,136 +6265,136 @@ msgid "color label"
 msgstr "Label couleur"
 
 #. iso
-#: ../src/common/collection.c:627 ../src/gui/preferences.c:944
+#: ../src/common/collection.c:640 ../src/gui/preferences.c:944
 #: ../src/gui/presets.c:677 ../src/libs/camera.c:582
 #: ../src/libs/metadata_view.c:161
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:629 ../src/gui/preferences.c:956
+#: ../src/common/collection.c:642 ../src/gui/preferences.c:956
 #: ../src/gui/presets.c:712 ../src/iop/lens.cc:4416 ../src/libs/camera.c:569
 #: ../src/libs/camera.c:571 ../src/libs/metadata_view.c:150
 msgid "aperture"
 msgstr "Ouverture"
 
-#: ../src/common/collection.c:637 ../src/libs/filtering.c:48
+#: ../src/common/collection.c:650 ../src/libs/filtering.c:48
 #: ../src/libs/filters/filename.c:367 ../src/libs/metadata_view.c:136
 msgid "filename"
 msgstr "Nom de fichier"
 
-#: ../src/common/collection.c:639 ../src/develop/lightroom.c:1598
+#: ../src/common/collection.c:652 ../src/develop/lightroom.c:1598
 #: ../src/libs/geotagging.c:142
 msgid "geotagging"
 msgstr "Géolocalisation"
 
-#: ../src/common/collection.c:641 ../src/libs/filtering.c:63
+#: ../src/common/collection.c:654 ../src/libs/filtering.c:63
 msgid "group"
 msgstr "Grouper"
 
-#: ../src/common/collection.c:643 ../src/dtgtk/thumbnail.c:1582
+#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1582
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:365
 msgid "local copy"
 msgstr "Copie locale"
 
-#: ../src/common/collection.c:645 ../src/gui/preferences.c:908
+#: ../src/common/collection.c:658 ../src/gui/preferences.c:908
 msgid "module"
 msgstr "Module"
 
-#: ../src/common/collection.c:647 ../src/gui/hist_dialog.c:344
+#: ../src/common/collection.c:660 ../src/gui/hist_dialog.c:344
 #: ../src/gui/styles_dialog.c:744 ../src/gui/styles_dialog.c:791
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "Ordre des modules"
 
-#: ../src/common/collection.c:649
+#: ../src/common/collection.c:662
 msgid "range rating"
 msgstr "Intervalle de notation"
 
-#: ../src/common/collection.c:651 ../src/common/ratings.c:337
+#: ../src/common/collection.c:664 ../src/common/ratings.c:337
 #: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:58
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
 msgstr "Étoile"
 
-#: ../src/common/collection.c:653
+#: ../src/common/collection.c:666
 msgid "search"
 msgstr "Rechercher"
 
-#: ../src/common/collection.c:655 ../src/libs/metadata_view.c:154
+#: ../src/common/collection.c:668 ../src/libs/metadata_view.c:154
 msgid "white balance"
 msgstr "Balance des blancs"
 
-#: ../src/common/collection.c:657 ../src/common/wb_presets.c:83
+#: ../src/common/collection.c:670 ../src/common/wb_presets.c:83
 #: ../src/libs/metadata_view.c:155
 msgid "flash"
 msgstr "Flash"
 
-#: ../src/common/collection.c:659 ../src/libs/metadata_view.c:153
+#: ../src/common/collection.c:672 ../src/libs/metadata_view.c:153
 msgid "exposure program"
 msgstr "Mode d’exposition"
 
-#: ../src/common/collection.c:661 ../src/libs/metadata_view.c:156
+#: ../src/common/collection.c:674 ../src/libs/metadata_view.c:156
 msgid "metering mode"
 msgstr "Mode de mesure"
 
-#: ../src/common/collection.c:1486 ../src/libs/collect.c:1905
+#: ../src/common/collection.c:1499 ../src/libs/collect.c:1905
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "Appliqué automatiquement"
 
-#: ../src/common/collection.c:1492 ../src/libs/collect.c:1905
+#: ../src/common/collection.c:1505 ../src/libs/collect.c:1905
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "Développées"
 
-#: ../src/common/collection.c:1510 ../src/common/collection.c:1621
+#: ../src/common/collection.c:1523 ../src/common/collection.c:1634
 #: ../src/libs/collect.c:1272 ../src/libs/collect.c:1460
 #: ../src/libs/collect.c:1486 ../src/libs/collect.c:1630
 #: ../src/libs/collect.c:2793
 msgid "not tagged"
 msgstr "Non positionnée"
 
-#: ../src/common/collection.c:1511 ../src/libs/collect.c:1486
+#: ../src/common/collection.c:1524 ../src/libs/collect.c:1486
 #: ../src/libs/map_locations.c:740
 msgid "tagged"
 msgstr "Positionnée"
 
-#: ../src/common/collection.c:1512
+#: ../src/common/collection.c:1525
 msgid "tagged*"
 msgstr "Positionnée*"
 
 #. local copy
-#: ../src/common/collection.c:1546 ../src/libs/collect.c:1927
+#: ../src/common/collection.c:1559 ../src/libs/collect.c:1927
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "Non copiée localement"
 
-#: ../src/common/collection.c:1551 ../src/libs/collect.c:1926
+#: ../src/common/collection.c:1564 ../src/libs/collect.c:1926
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "Copiée localement"
 
 #. if its undefined
-#: ../src/common/collection.c:1593 ../src/common/collection.c:1705
-#: ../src/common/collection.c:1732 ../src/common/collection.c:1759
-#: ../src/common/collection.c:1785 ../src/common/collection.c:1811
-#: ../src/common/collection.c:2609 ../src/libs/collect.c:2320
+#: ../src/common/collection.c:1606 ../src/common/collection.c:1718
+#: ../src/common/collection.c:1745 ../src/common/collection.c:1772
+#: ../src/common/collection.c:1798 ../src/common/collection.c:1824
+#: ../src/common/collection.c:2622 ../src/libs/collect.c:2320
 #: ../src/libs/collect.c:2321
 msgid "unnamed"
 msgstr "Sans nom"
 
-#: ../src/common/collection.c:2260 ../src/libs/collect.c:2211
+#: ../src/common/collection.c:2273 ../src/libs/collect.c:2211
 msgid "not defined"
 msgstr "Non défini"
 
-#: ../src/common/collection.c:2759
+#: ../src/common/collection.c:2772
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> image (#<b>%d</b>) sélectionnée parmi <b>%d</b>"
 
-#: ../src/common/collection.c:2766
+#: ../src/common/collection.c:2779
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -7493,8 +7493,7 @@ msgid "name"
 msgstr "Nom"
 
 #: ../src/common/film.c:469
-msgid ""
-"cannot remove film roll having local copies with non accessible originals"
+msgid "cannot remove film roll having local copies with inaccessible originals"
 msgstr ""
 "Impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
@@ -7542,65 +7541,65 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "Data/heure réappliquée à %d image"
 msgstr[1] "Data/heure réappliquée à %d images"
 
-#: ../src/common/image.c:2375
+#: ../src/common/image.c:2416
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Accès à la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2382
+#: ../src/common/image.c:2423
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Création de la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2389
+#: ../src/common/image.c:2430
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de la copie locale de « %s » vers « %s »"
 
-#: ../src/common/image.c:2434
+#: ../src/common/image.c:2475
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Erreur de déplacement « %s » : le fichier n’existe pas"
 
-#: ../src/common/image.c:2444
+#: ../src/common/image.c:2485
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Erreur de déplacement de « %s » vers « %s » : le fichier existe"
 
-#: ../src/common/image.c:2448 ../src/common/image.c:2457
+#: ../src/common/image.c:2489 ../src/common/image.c:2498
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de « %s » vers « %s »"
 
-#: ../src/common/image.c:2759
+#: ../src/common/image.c:2800
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "Impossible de créer une copie locale lorsque l’original n’est pas accessible."
 
-#: ../src/common/image.c:2773
+#: ../src/common/image.c:2814
 msgid "cannot create local copy."
 msgstr "Copie locale impossible."
 
-#: ../src/common/image.c:2852 ../src/control/jobs/control_jobs.c:935
+#: ../src/common/image.c:2893 ../src/control/jobs/control_jobs.c:935
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "Impossible de supprimer une copie locale lorsque l’original n’est pas "
 "accessible."
 
-#: ../src/common/image.c:3028
+#: ../src/common/image.c:3069
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/image.c:3226
+#: ../src/common/image.c:3267
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>Attention</b>, échantillons manquants pour le boîtier."
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale
-#: ../src/common/image.c:3227
+#: ../src/common/image.c:3268
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7610,7 +7609,7 @@ msgstr ""
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale et virgule finale
-#: ../src/common/image.c:3228
+#: ../src/common/image.c:3269
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7621,7 +7620,7 @@ msgstr ""
 
 # semble être la suite et fin de la phrase précédente,
 # minuscule initiale et point final
-#: ../src/common/image.c:3231
+#: ../src/common/image.c:3272
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "sinon le fichier RAW <b>ne sera plus lisible</b> dans la prochaine version."
