@@ -3538,6 +3538,29 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   module->multi_priority = new_priority;
 }
 
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  char *l_name = g_strstrip(g_strdup(name));
+
+  if(force
+     || (auto_module
+         && !module->multi_name_hand_edited))
+  {
+    g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
+    module->multi_name_hand_edited = hand_edited;
+    dt_iop_gui_update_header(module);
+    dt_dev_add_history_item(module->dev, module, enable);
+  }
+
+  g_free(l_name);
+}
+
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id)
 {
   GHashTableIter iter;

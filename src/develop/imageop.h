@@ -475,6 +475,13 @@ const gchar *dt_iop_get_localized_aliases(const gchar *op);
 /** set multi_priority and update raster mask links */
 void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priority);
 
+/** set multi_name and update module label */
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force);
+
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
 /** checks dt_iop_is_raster_mask_used() or writing for exports */
