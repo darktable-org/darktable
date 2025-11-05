@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2024 darktable developers.
+   Copyright (C) 2009-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -467,7 +467,7 @@ void dt_film_remove(const dt_filmid_t id)
   if(!remove_ok)
   {
     dt_control_log(_("cannot remove film roll having local copies with"
-                     " non accessible originals"));
+                     " inaccessible originals"));
     return;
   }
 
