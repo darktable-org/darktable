@@ -37,10 +37,10 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   char query[1024] = { 0 };
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
+             "SELECT ROUND(aspect_ratio,2), COUNT(*) AS count"
              " FROM main.images AS mi"
              " WHERE %s"
-             " GROUP BY ROUND(aspect_ratio,3)",
+             " GROUP BY ROUND(aspect_ratio,2)",
              d->last_where_ext);
   // clang-format on
   sqlite3_stmt *stmt;

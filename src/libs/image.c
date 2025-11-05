@@ -477,8 +477,8 @@ static void _tags_flag_callback(GtkWidget *widget,
   dt_conf_set_bool("plugins/lighttable/copy_metadata/tags", flag);
 }
 
-static void pastemode_combobox_changed(GtkWidget *widget,
-                                       gpointer user_data)
+static void _pastemode_combobox_changed(GtkWidget *widget,
+                                        gpointer user_data)
 {
   const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_metadata/pastemode", mode);
@@ -643,7 +643,7 @@ void gui_init(dt_lib_module_t *self)
     (pastemode, meta, NULL, N_("mode"),
      _("how to handle existing metadata"),
      dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"),
-     pastemode_combobox_changed, self,
+     _pastemode_combobox_changed, self,
      N_("merge"), N_("overwrite"));
   gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
 
