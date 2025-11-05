@@ -89,11 +89,10 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
+      DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Update base packages
         timeout-minutes: 1
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
           sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
           set -xe
