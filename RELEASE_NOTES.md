@@ -81,6 +81,11 @@ changes (where available).
 
 ## UI/UX Improvements
 
+- Many GNU/Linux distributions have dropped support for X11 leaving
+  only Wayland. Darktable has received many fixes to work properly on
+  Wayland including display ICC profiles. This version 5.4 should work
+  on Wayland as good as it was on X11.
+
 - Show a busy cursor when changing views. This provides immediate
   feedback when, for example, double-clicking an image in the
   lighttable instead of simply freezing the UI until the darkroom has
@@ -268,6 +273,9 @@ changes (where available).
 
 - Fix support for Wayland. The UI is now working as expected and
   Darktable will handle ICC profile from colord.
+
+- Fixed processing module naming based on the presets when the used
+  preset is renamed or deleted.
 
 ## Lua
 
