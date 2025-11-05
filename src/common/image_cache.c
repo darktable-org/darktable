@@ -329,6 +329,8 @@ void dt_image_cache_write_release_info(dt_image_t *img,
       img->aspect_ratio = (float )img->height / (float )(MAX(1, img->width));
   }
 
+  img->aspect_ratio = dt_usable_aspect(img->aspect_ratio);
+
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -341,7 +343,7 @@ void dt_image_cache_write_release_info(dt_image_t *img,
      "     crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18,"
      "     longitude = ?19, latitude = ?20, altitude = ?21, color_matrix = ?22,"
      "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
-     "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
+     "     aspect_ratio = ?26, exposure_bias = ?27,"
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
      "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
      "     whitebalance_id = ?36, flash_id = ?37,"
@@ -424,17 +426,17 @@ void dt_image_cache_write_release_info(dt_image_t *img,
   sqlite3_finalize(stmt);
 
   if(mode == DT_IMAGE_CACHE_SAFE)
-  {
     dt_image_synch_xmp(img->id);
-    if(info)
-    {
-      const double spent = dt_get_debug_wtime() - start;
-      dt_print(DT_DEBUG_CACHE,
+
+  dt_cache_release(&cache->cache, img->cache_entry);
+
+  if(info)
+  {
+    const double spent = dt_get_debug_wtime() - start;
+    dt_print(DT_DEBUG_CACHE,
                "[image_cache_write_release] from `%s', imgid=%i took %.3fs",
                info, img->id, spent);
-    }
   }
-  dt_cache_release(&cache->cache, img->cache_entry);
 }
 
 void dt_image_cache_write_release(dt_image_t *img, const dt_image_cache_write_mode_t mode)

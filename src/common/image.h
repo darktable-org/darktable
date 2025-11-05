@@ -492,8 +492,8 @@ gboolean dt_image_altered(const dt_imgid_t imgid);
 gboolean dt_image_basic(const dt_imgid_t imgid);
 /** set the image final/cropped aspect ratio */
 float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise);
-/** set the image raw aspect ratio */
-void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid);
+/** calculate a more meaningful aspect ratio from a given aspect */
+float dt_usable_aspect(const float aspect);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
                                   const float aspect_ratio,

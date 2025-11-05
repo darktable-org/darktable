@@ -1933,11 +1933,11 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio, 3 hardcoded alternatives
         // clang-format off
         g_snprintf(query, sizeof(query),
-                   "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count"
+                   "SELECT ROUND(aspect_ratio,2), 1, COUNT(*) AS count"
                    " FROM main.images AS mi "
                    " WHERE %s"
-                   " GROUP BY ROUND(aspect_ratio,1)"
-                   " ORDER BY ROUND(aspect_ratio,1) %s",
+                   " GROUP BY ROUND(aspect_ratio,2)"
+                   " ORDER BY ROUND(aspect_ratio,2) %s",
                    where_ext,
                    sort_descending ? "DESC" : "ASC");
         // clang-format on
