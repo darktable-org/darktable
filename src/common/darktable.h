@@ -1518,7 +1518,7 @@ typedef union GdkEventOld
 static void gtk_widget_destroyed(){};
 static void gtk_main_quit(){};
 static void gtk_main(){};
-static void gtk_widget_show_all(GtkWidget*w){};
+static void gtk_widget_show_all(GtkWidget*w){gtk_widget_show(w);};
 typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
 #define GDK_NONE NULL
 #define GDK_2BUTTON_PRESS	0123
