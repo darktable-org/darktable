@@ -572,7 +572,7 @@ static int lua_query_event(lua_State *L)
       if(lua_isnoneornil(L, -1))
       {
         // not found, return false
-        lua_pop(L, 5);
+        lua_pop(L, 6);
         lua_pushboolean(L, false);
       }
       else
@@ -591,7 +591,7 @@ static int lua_query_event(lua_State *L)
         if(strcmp(luaL_checkstring(L, -1), luaL_checkstring(L, 1)) == 0)
         {
           // found the index name
-          lua_pop(L, 6);
+          lua_pop(L, lua_gettop(L));
           lua_pushboolean(L, true);
           break;
         }
