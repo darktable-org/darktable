@@ -792,6 +792,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.a[0] = -1.0f; // autodetect profile
   p.central_pixel_weight = 0.1f;
   p.overshooting = 1.0f;
+  p.compensate_hilite_pres = FALSE;
   p.fix_anscombe_and_nlmeans_norm = TRUE;
   for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
   {
@@ -803,7 +804,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 11, &p,
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 12, &p,
                              sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
