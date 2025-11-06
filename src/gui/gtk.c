@@ -1740,7 +1740,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
     GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), dt_check_gimpmode("file") ? "darktable (GIMP)" : "darktable");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
     gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
     gtk_widget_show(header_bar);
@@ -1753,7 +1753,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
                               DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
-  gtk_window_set_title(GTK_WINDOW(widget), "darktable");
+  gtk_window_set_title(GTK_WINDOW(widget), dt_check_gimpmode("file") ? "darktable (GIMP)" : "darktable");
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
                    G_CALLBACK(_gui_quit_callback), NULL);

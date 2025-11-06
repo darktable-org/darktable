@@ -179,7 +179,9 @@ const char *description(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  if(dt_conf_get_bool("plugins/darkroom/export/visible"))
+  if(dt_check_gimpmode("file"))
+    return DT_VIEW_NONE;
+  else if(dt_conf_get_bool("plugins/darkroom/export/visible"))
     return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
   else
     return DT_VIEW_LIGHTTABLE;

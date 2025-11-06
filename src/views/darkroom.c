@@ -953,6 +953,7 @@ static void _dev_change_image(dt_develop_t *dev,
 {
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
+  if(dt_check_gimpmode("file")) return;
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
