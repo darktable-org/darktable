@@ -277,6 +277,13 @@ changes (where available).
 - Fixed processing module naming based on the presets when the used
   preset is renamed or deleted.
 
+- Fixed a bug in darktable-cli where exporting a duplicate version of
+  an image would use the tags attached to the base version instead of
+  the tags attached to it.
+
+- Fixed a bug in darktable-cli where synonyms for tags attached to an
+  image were ignored when exporting it.
+
 ## Lua
 
 ### API Version
