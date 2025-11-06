@@ -1536,6 +1536,16 @@ typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
 
 
 
+#undef g_signal_connect
+#define g_signal_connect(instance, detailed_signal, c_handler, data) \
+do { \
+  if(!(instance)) \
+    dt_print(DT_DEBUG_ALWAYS, "warning: %s is NULL in %s at %s:%d", #instance, __FUNCTION__, __FILE__, __LINE__); \
+  else if(g_signal_lookup(detailed_signal, G_OBJECT_TYPE(instance))) \
+    g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags) 0); \
+  else \
+    dt_print(DT_DEBUG_ALWAYS, "warning: no signal '%s' for %s %s in %s at %s:%d", detailed_signal, g_type_name(G_OBJECT_TYPE(instance)), #instance, __FUNCTION__, __FILE__, __LINE__); \
+} while(0)
 
 void dt_add_legacy_signals(GtkWidgetClass *widget_class);
 
