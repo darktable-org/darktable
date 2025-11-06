@@ -2493,3 +2493,30 @@ label#pb_label
 {
   padding-left: .5em;
 }
+
+/* the following line are for the Wayland headerbar, this does nothing on non
+   wayland were we let the WM decorate the window by himself. */
+window headerbar
+{
+    background-color: @border_color;
+    color: #ffffff;             /* Text color */
+    min-height: 0;              /* Minimum height */
+    padding: 0;                 /* Padding around content */
+}
+
+window headerbar.title
+{
+    font-weight: bold;
+    font-size: 16px;
+}
+
+dialog headerbar button,
+window headerbar button.titlebutton
+{
+    border-radius: 999px;           /* Makes the button round */
+    padding: 3px;                   /* Size of the button */
+    background-color: shade(@border_color, 1.1);
+    color: white;
+    border: none;
+    margin: 8px;                    /* Spaces around button */
+}
