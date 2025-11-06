@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@
 /** returns NULL if the contents are not valid XML or do not name the style */
 gchar *dt_get_style_name(const char *filename);
 
-/** import styles stored in the shared directory if they are not already in our database */
+/** import styles stored in the shared directory if they are not
+ * already in our database */
 void dt_import_default_styles(const char *sharedir);
 
-/** shows a dialog for creating a new style */
-void dt_gui_styles_dialog_new(const dt_imgid_t imgid);
+/** shows a dialog for creating a new style, return FALSE if cancel
+ * button clicked */
+gboolean dt_gui_styles_dialog_new(const dt_imgid_t imgid);
 
 /** shows a dialog for editing existing style */
 void dt_gui_styles_dialog_edit(const char *name, char **new_name);
