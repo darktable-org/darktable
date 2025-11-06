@@ -2833,13 +2833,13 @@ static void _ui_init_panel_center_top(dt_ui_t *ui,
   gtk_box_pack_start(GTK_BOX(widget),
                      ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], TRUE, FALSE,
                      DT_UI_PANEL_MODULE_SPACING);
+  gtk_widget_set_halign(dt_gui_expand(ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER]),
+                        GTK_ALIGN_CENTER);
 
   /* add container for center top right */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT] =
     gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_end(GTK_BOX(widget),
-                   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], FALSE, FALSE,
-                   DT_UI_PANEL_MODULE_SPACING);
+  gtk_box_append(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT]);
 }
 
 static void _ui_init_panel_center_bottom(dt_ui_t *ui,
@@ -2869,6 +2869,8 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui,
                      ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER],
                      FALSE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
+  gtk_widget_set_halign(dt_gui_expand(ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER]),
+                        GTK_ALIGN_CENTER);
 
   /* adding the right toolbox */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] =
@@ -4286,8 +4288,14 @@ static void _delete_child(GtkWidget *widget,
 
 void dt_gui_container_destroy_children(GtkContainer *container)
 {
-  g_return_if_fail(GTK_IS_CONTAINER(container));
-  gtk_container_foreach(container, _delete_child, NULL);
+  GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(container));
+  while(child)
+  {
+    GtkWidget *next = gtk_widget_get_next_sibling(child);
+    gtk_widget_unparent(child);
+    // g_object_unref(child);
+    child = next;
+  }
 }
 
 void dt_gui_menu_popup(GtkMenu *menu,

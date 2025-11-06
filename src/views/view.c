@@ -338,9 +338,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
           so remove the child before that
           */
         if(plugin->widget)
-          gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(plugin->widget)), plugin->widget);
+          gtk_widget_unparent(plugin->widget);
         if(plugin->expander)
-          gtk_box_remove(GTK_BOX(gtk_widget_get_parent(plugin->expander)), plugin->expander);
+          gtk_widget_unparent(plugin->expander);
       }
       plugin->expander = NULL;
     }
