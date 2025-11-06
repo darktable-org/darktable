@@ -4622,13 +4622,13 @@ static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *c
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
 {
   char buf[256];
-  int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
-  int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
-  double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
+  const int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
+  const int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
+  const double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
   gtk_window_resize(GTK_WINDOW(dialog), factor * width, factor * height);
 
-  int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
-  int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
+  const int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
+  const int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
   if(x && y)
     gtk_window_move(GTK_WINDOW(dialog), x, y);
   else
