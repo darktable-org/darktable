@@ -39,7 +39,7 @@ void dt_curl_init(CURL *curl, gboolean verbose)
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
   if(verbose)
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 }
 
 // clang-format off
