@@ -406,7 +406,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx,
   dt_curl_init(ctx->curl_ctx, piwigo_EXTRA_VERBOSE);
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1L);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
