@@ -31,15 +31,16 @@
 #endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
-static void _gui_styles_dialog_run(gboolean edit,
-                                   const char *name,
-                                   const dt_imgid_t imgid,
-                                   char **new_name);
+static gboolean _gui_styles_dialog_run(const gboolean edit,
+                                       const char *name,
+                                       const dt_imgid_t imgid,
+                                       char **new_name);
 
 typedef struct dt_gui_styles_dialog_t
 {
   gboolean edit;
   dt_imgid_t imgid;
+  gboolean cancelled;
   gchar *nameorig;
   gchar **newname;
   GtkWidget *name, *description, *duplicate;
@@ -197,6 +198,9 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
                                            const gint response_id,
                                            dt_gui_styles_dialog_t *g)
 {
+  g->cancelled = (response_id == GTK_RESPONSE_DELETE_EVENT)
+              || (response_id == GTK_RESPONSE_REJECT);
+
   if(response_id == GTK_RESPONSE_YES)
   {
     _gui_styles_select_all_items(g, TRUE);
@@ -269,7 +273,6 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
 
   // finalize the dialog
   g_free(g->nameorig);
-  g_free(g);
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
@@ -278,6 +281,9 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
                                             const gint response_id,
                                             dt_gui_styles_dialog_t *g)
 {
+  g->cancelled = (response_id == GTK_RESPONSE_DELETE_EVENT)
+              || (response_id == GTK_RESPONSE_REJECT);
+
   if(response_id == GTK_RESPONSE_YES)
   {
     _gui_styles_select_all_items(g, TRUE);
@@ -288,14 +294,13 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
     _gui_styles_select_all_items(g, FALSE);
     return;
   }
-
-  char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
-
-  if(g->newname)
-    *g->newname = newname;
-
-  if(response_id == GTK_RESPONSE_ACCEPT)
+  else if(response_id == GTK_RESPONSE_ACCEPT)
   {
+    char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
+
+    if(g->newname)
+      *g->newname = newname;
+
     /* get the filtered list from dialog */
     GList *result = NULL, *update = NULL;
 
@@ -349,7 +354,6 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
 
   // finalize the dialog
   g_free(g->nameorig);
-  g_free(g);
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
@@ -492,9 +496,9 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_path_free(path);
 }
 
-void dt_gui_styles_dialog_new(const dt_imgid_t imgid)
+gboolean dt_gui_styles_dialog_new(const dt_imgid_t imgid)
 {
-  _gui_styles_dialog_run(FALSE, NULL, imgid, NULL);
+  return _gui_styles_dialog_run(FALSE, NULL, imgid, NULL);
 }
 
 void dt_gui_styles_dialog_edit(const char *name, char **new_name)
@@ -514,15 +518,15 @@ static void _name_changed(GtkEntry *entry,
   gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_ACCEPT, name && *name);
 }
 
-static void _gui_styles_dialog_run(gboolean edit,
-                                   const char *name,
-                                   const dt_imgid_t imgid,
-                                   char **new_name)
+static gboolean _gui_styles_dialog_run(const gboolean edit,
+                                       const char *name,
+                                       const dt_imgid_t imgid,
+                                       char **new_name)
 {
   char title[512];
 
   /* check if style exists */
-  if(name && (dt_styles_exists(name)) == 0) return;
+  if(name && (dt_styles_exists(name)) == 0) return TRUE;
 
   /* initialize the dialog */
   dt_gui_styles_dialog_t *sd = g_malloc0(sizeof(dt_gui_styles_dialog_t));
@@ -530,6 +534,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
   sd->newname = new_name;
+  sd->cancelled = FALSE;
 
   if(edit)
   {
@@ -835,7 +840,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     else
     {
       dt_control_log(_("can't create style out of unaltered image"));
-      return;
+      return TRUE;
     }
   }
 
@@ -860,8 +865,13 @@ static void _gui_styles_dialog_run(gboolean edit,
   gtk_widget_show_all(GTK_WIDGET(dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
 
+  const gboolean res = !sd->cancelled;
+
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
+  g_free(sd);
+
+  return res;
 }
 
 // style preview
