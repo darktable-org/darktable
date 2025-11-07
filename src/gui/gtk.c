@@ -4609,13 +4609,19 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
 static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
 {
   char buf[256];
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gtk_window_get_position(GTK_WINDOW(widget), &allocation.x, &allocation.y);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), allocation.width);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+  int width, height, x, y;
+
+  // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
+  // the content size without window decorations. This is especially important
+  // on Wayland where CSD (Client-Side Decorations) are included in allocation
+  // but not in the size set by gtk_window_resize().
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
+  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
+
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), width);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), height);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), x);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), y);
   return FALSE;
 }
 
