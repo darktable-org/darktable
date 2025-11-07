@@ -3418,17 +3418,17 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   }
 
   d->floating_tag_imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-  gint x, y;
-  gint px, py, w, h;
+  gint px = 0, py =0;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
   gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
 
-  w = gdk_window_get_width(gtk_widget_get_window(center));
-  h = gdk_window_get_height(gtk_widget_get_window(center));
+  const gint w = gdk_window_get_width(gtk_widget_get_window(center));
+  const gint h = gdk_window_get_height(gtk_widget_get_window(center));
 
-  x = px + 0.5 * (w - FLOATING_ENTRY_WIDTH);
-  y = py + h - 50;
+  const gint x = px + 0.5 * (w - FLOATING_ENTRY_WIDTH);
+  const gint y = py + h - 50;
+
 
   /* put the floating box at the mouse pointer */
   //   gint pointerx, pointery;
