@@ -237,6 +237,7 @@ void dt_workspace_create(const char *datadir)
   session->entry = gtk_entry_new();
   g_signal_connect(G_OBJECT(session->entry),
                    "changed", G_CALLBACK(_workspace_entry_changed), session);
+  gtk_widget_set_hexpand(session->entry, TRUE);
 
   session->create = gtk_button_new_with_label(_("create"));
   gtk_widget_set_sensitive(session->create, FALSE);
@@ -244,6 +245,7 @@ void dt_workspace_create(const char *datadir)
   g_signal_connect(G_OBJECT(session->create), "clicked",
                    G_CALLBACK(_workspace_new_db), session);
   dt_gui_box_add(box, session->entry, session->create);
+  gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
 
   dt_gui_dialog_add(session->db_screen, l2, box);
 
