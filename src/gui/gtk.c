@@ -1707,19 +1707,39 @@ static gboolean _ui_toast_button_press_event(GtkWidget *widget,
 #ifdef GDK_WINDOWING_WAYLAND
 static gboolean _top_panel_drag_button_press(GtkWidget *w, GdkEventButton *e, gpointer data)
 {
-  if(e->type != GDK_BUTTON_PRESS || e->button != GDK_BUTTON_PRIMARY)
+  if(e->button != GDK_BUTTON_PRIMARY)
     return FALSE;
 
   GtkWidget *target = gtk_get_event_widget((GdkEvent*)e);
 
-  // Don't drag on interactive widgets
+  // Don't process on interactive widgets
   if(GTK_IS_BUTTON(target) || GTK_IS_ENTRY(target) || GTK_IS_COMBO_BOX(target) ||
      (GTK_IS_EVENT_BOX(target) && g_object_get_data(G_OBJECT(target), "view-label")))
     return FALSE;
 
-  gtk_window_begin_move_drag(GTK_WINDOW(darktable.gui->ui->main_window),
-                             e->button, e->x_root, e->y_root, e->time);
-  return TRUE;
+  // Double-click to maximize/restore window
+  if(e->type == GDK_2BUTTON_PRESS)
+  {
+    GtkWindow *win = GTK_WINDOW(darktable.gui->ui->main_window);
+    GdkWindow *gdk_win = gtk_widget_get_window(GTK_WIDGET(win));
+
+    if(gdk_win && (gdk_window_get_state(gdk_win) & GDK_WINDOW_STATE_MAXIMIZED))
+      gtk_window_unmaximize(win);
+    else
+      gtk_window_maximize(win);
+
+    return TRUE;
+  }
+
+  // Single click to drag window
+  if(e->type == GDK_BUTTON_PRESS)
+  {
+    gtk_window_begin_move_drag(GTK_WINDOW(darktable.gui->ui->main_window),
+                               e->button, e->x_root, e->y_root, e->time);
+    return TRUE;
+  }
+
+  return FALSE;
 }
 #endif
 

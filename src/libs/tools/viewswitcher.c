@@ -178,40 +178,85 @@ void gui_init(dt_lib_module_t *self)
                       gtk_separator_new(GTK_ORIENTATION_VERTICAL),
                       FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
 
-    // Create buttons
+    // Create button container
     d->window_controls_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    d->minimize_btn = gtk_button_new_from_icon_name("window-minimize-symbolic", GTK_ICON_SIZE_MENU);
-    d->maximize_btn = gtk_button_new_from_icon_name("window-maximize-symbolic", GTK_ICON_SIZE_MENU);
-    d->close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_MENU);
 
-    // Apply GTK theme classes and override darktable styles
-    const gchar *css = "button.titlebutton { background-image: none; background-color: transparent; "
-                       "border: none; box-shadow: none; text-shadow: none; }";
+    // Read gtk-decoration-layout to respect user's button preferences
+    GtkSettings *settings = gtk_settings_get_default();
+    gchar *layout = NULL;
+    g_object_get(settings, "gtk-decoration-layout", &layout, NULL);
+
+    // Parse layout (format: "close,minimize,maximize:menu" or ":close")
+    // We only care about the right side (after colon)
+    gchar *right_layout = layout ? g_strrstr(layout, ":") : NULL;
+    if(right_layout) right_layout++; // Skip the colon
+
+    // Default to "minimize,maximize,close" if no layout found
+    if(!right_layout || !*right_layout)
+      right_layout = "minimize,maximize,close";
+
+    // Apply GTK theme classes with hover effects
+    const gchar *css = "button.titlebutton { "
+                       "background-image: none; background-color: transparent; "
+                       "border: none; box-shadow: none; text-shadow: none; "
+                       "} "
+                       "button.titlebutton:hover { "
+                       "background-color: alpha(currentColor, 0.1); "
+                       "} "
+                       "button.titlebutton:active { "
+                       "background-color: alpha(currentColor, 0.2); "
+                       "}";
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_data(provider, css, -1, NULL);
 
-    GtkWidget *buttons[] = {d->minimize_btn, d->maximize_btn, d->close_btn};
-    const gchar *classes[] = {"minimize", "maximize", "close"};
-
-    for(int i = 0; i < 3; i++)
+    // Parse and create buttons in order specified by layout
+    gchar **button_names = g_strsplit(right_layout, ",", -1);
+    for(int i = 0; button_names[i] != NULL; i++)
     {
-      GtkStyleContext *ctx = gtk_widget_get_style_context(buttons[i]);
-      gtk_style_context_add_class(ctx, "titlebutton");
-      gtk_style_context_add_class(ctx, classes[i]);
-      gtk_style_context_add_provider(ctx, GTK_STYLE_PROVIDER(provider),
-                                     GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
-      gtk_widget_set_name(buttons[i], "");
-      gtk_widget_set_can_focus(buttons[i], FALSE);
-      gtk_box_pack_start(GTK_BOX(d->window_controls_box), buttons[i], FALSE, FALSE, 0);
+      gchar *btn_name = g_strstrip(button_names[i]);
+      GtkWidget *button = NULL;
+      GCallback callback = NULL;
+
+      if(g_strcmp0(btn_name, "minimize") == 0)
+      {
+        button = d->minimize_btn = gtk_button_new_from_icon_name("window-minimize-symbolic", GTK_ICON_SIZE_MENU);
+        callback = G_CALLBACK(_minimize_window);
+      }
+      else if(g_strcmp0(btn_name, "maximize") == 0)
+      {
+        button = d->maximize_btn = gtk_button_new_from_icon_name("window-maximize-symbolic", GTK_ICON_SIZE_MENU);
+        callback = G_CALLBACK(_maximize_window);
+      }
+      else if(g_strcmp0(btn_name, "close") == 0)
+      {
+        button = d->close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_MENU);
+        callback = G_CALLBACK(_close_window);
+      }
+
+      if(button)
+      {
+        GtkStyleContext *ctx = gtk_widget_get_style_context(button);
+        gtk_style_context_add_class(ctx, "titlebutton");
+        gtk_style_context_add_class(ctx, btn_name);
+        gtk_style_context_add_provider(ctx, GTK_STYLE_PROVIDER(provider),
+                                       GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+        gtk_widget_set_name(button, "");
+        gtk_widget_set_can_focus(button, FALSE);
+        gtk_box_pack_start(GTK_BOX(d->window_controls_box), button, FALSE, FALSE, 0);
+
+        if(callback)
+          g_signal_connect(button, "clicked", callback, self);
+      }
     }
+
+    g_strfreev(button_names);
+    g_free(layout);
     g_object_unref(provider);
 
-    // Connect callbacks
-    g_signal_connect(d->minimize_btn, "clicked", G_CALLBACK(_minimize_window), self);
-    g_signal_connect(d->maximize_btn, "clicked", G_CALLBACK(_maximize_window), self);
-    g_signal_connect(d->close_btn, "clicked", G_CALLBACK(_close_window), self);
-    g_signal_connect(dt_ui_main_window(darktable.gui->ui), "window-state-event",
-                     G_CALLBACK(_window_state_changed), self);
+    // Connect window state change handler
+    if(d->maximize_btn)
+      g_signal_connect(dt_ui_main_window(darktable.gui->ui), "window-state-event",
+                       G_CALLBACK(_window_state_changed), self);
 
     gtk_box_pack_start(GTK_BOX(self->widget), d->window_controls_box, FALSE, FALSE, 0);
   }
