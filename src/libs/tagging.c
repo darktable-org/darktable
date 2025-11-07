@@ -34,6 +34,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -1834,7 +1837,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
   g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
   gtk_entry_set_text(GTK_ENTRY(entry), subtag ? subtag : tagname);
-  
+
   dt_gui_dialog_add(GTK_DIALOG(dialog), label1,
                                         dt_gui_hbox(label2, gtk_label_new("  "), label3),
                                         dt_gui_hbox(gtk_label_new(_("name: ")), dt_gui_expand(entry)));
@@ -3418,25 +3421,8 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   }
 
   d->floating_tag_imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-  gint px = 0, py =0;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
-  gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
-
-  const gint w = gdk_window_get_width(gtk_widget_get_window(center));
-  const gint h = gdk_window_get_height(gtk_widget_get_window(center));
-
-  const gint x = px + 0.5 * (w - FLOATING_ENTRY_WIDTH);
-  const gint y = py + h - 50;
-
-
-  /* put the floating box at the mouse pointer */
-  //   gint pointerx, pointery;
-  //   GdkDevice *device =
-  //   gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
-  //   gdk_window_get_device_position (gtk_widget_get_window (widget), device, &pointerx, &pointery, NULL);
-  //   x = px + pointerx + 1;
-  //   y = py + pointery + 1;
 
   d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -3444,11 +3430,33 @@ static void _lib_tagging_tag_show(dt_action_t *action)
 #endif
   /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
   gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(d->floating_tag_window, 0.8);
-  gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
+  // Use GtkPopover on Wayland for reliable popup behavior; GtkWindow on other backends
+  const gboolean on_wayland =
+#ifdef GDK_WINDOWING_WAYLAND
+    GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window));
+#else
+    FALSE;
+#endif
+
+  if(on_wayland)
+  {
+    d->floating_tag_window = gtk_popover_new(center);
+    gtk_popover_set_modal(GTK_POPOVER(d->floating_tag_window), TRUE);
+    // Place the popover above the anchor so it visually expands upward
+    gtk_popover_set_position(GTK_POPOVER(d->floating_tag_window), GTK_POS_TOP);
+  }
+  else
+  {
+    d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(d->floating_tag_window);
+#endif
+    gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
+    gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+    gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
+    gtk_widget_set_opacity(d->floating_tag_window, 0.8);
+  }
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
@@ -3469,8 +3477,32 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_tagging_tag_key_press), self);
 
   gtk_widget_show_all(d->floating_tag_window);
+
+  if(on_wayland)
+  {
+    // Anchor the popover to bottom center of the center widget
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(center, &alloc);
+    GdkRectangle rect = { alloc.x + alloc.width / 2 - FLOATING_ENTRY_WIDTH / 2,
+                          alloc.y + alloc.height - 50,
+                          FLOATING_ENTRY_WIDTH,
+                          1 };
+    gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_tag_window), &rect);
+    // Popover is not a GtkWindow; don't call gtk_window_present()
+  }
+  else
+  {
+    gint px, py, w, h;
+    gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
+    w = gdk_window_get_width(gtk_widget_get_window(center));
+    h = gdk_window_get_height(gtk_widget_get_window(center));
+    const gint x = px + 0.5 * (w - FLOATING_ENTRY_WIDTH);
+    const gint y = py + h - 50;
+    gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
+    gtk_window_present(GTK_WINDOW(d->floating_tag_window));
+  }
+
   gtk_widget_grab_focus(entry);
-  gtk_window_present(GTK_WINDOW(d->floating_tag_window));
 }
 
 static int _get_recent_tags_list_length()
