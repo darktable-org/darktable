@@ -3424,25 +3424,17 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
 
-  d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(d->floating_tag_window);
-#endif
-  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
-  gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
-  // Use GtkPopover on Wayland for reliable popup behavior; GtkWindow on other backends
-  const gboolean on_wayland =
 #ifdef GDK_WINDOWING_WAYLAND
-    GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window));
+  const gboolean on_wayland = GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window));
 #else
-    FALSE;
+  const gboolean on_wayland = FALSE;
 #endif
 
+  // On Wayland we use a GtkPopover (proper xdg_popup implementation); elsewhere a GtkWindow.
   if(on_wayland)
   {
     d->floating_tag_window = gtk_popover_new(center);
     gtk_popover_set_modal(GTK_POPOVER(d->floating_tag_window), TRUE);
-    // Place the popover above the anchor so it visually expands upward
     gtk_popover_set_position(GTK_POPOVER(d->floating_tag_window), GTK_POS_TOP);
   }
   else
@@ -3451,10 +3443,13 @@ static void _lib_tagging_tag_show(dt_action_t *action)
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(d->floating_tag_window);
 #endif
+    /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
     gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-    gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
+    // Set transient parent for X11/other backends
+    GtkWidget *toplevel_widget = gtk_widget_get_toplevel(window);
+    if(GTK_IS_WINDOW(toplevel_widget)) gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(toplevel_widget));
     gtk_widget_set_opacity(d->floating_tag_window, 0.8);
   }
 
@@ -3476,22 +3471,28 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   g_signal_connect(entry, "focus-out-event", G_CALLBACK(_lib_tagging_tag_destroy), d->floating_tag_window);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_tagging_tag_key_press), self);
 
-  gtk_widget_show_all(d->floating_tag_window);
-
+  // Show and position
   if(on_wayland)
   {
-    // Anchor the popover to bottom center of the center widget
-    GtkAllocation alloc;
-    gtk_widget_get_allocation(center, &alloc);
-    GdkRectangle rect = { alloc.x + alloc.width / 2 - FLOATING_ENTRY_WIDTH / 2,
-                          alloc.y + alloc.height - 50,
-                          FLOATING_ENTRY_WIDTH,
-                          1 };
+  // On Wayland we position via GtkPopover: anchor to the lower part of the center widget
+    GtkAllocation a;
+    gtk_widget_get_allocation(center, &a);
+
+    GdkRectangle rect;
+    rect.x = MAX(0, (a.width - FLOATING_ENTRY_WIDTH) / 2);
+  rect.y = MAX(0, a.height - 1 - 50); // small bottom offset, consistent with previous behavior
+    rect.width = FLOATING_ENTRY_WIDTH;
+    rect.height = 1;
+
     gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_tag_window), &rect);
-    // Popover is not a GtkWindow; don't call gtk_window_present()
+    gtk_widget_show_all(d->floating_tag_window);
+    gtk_widget_grab_focus(entry);
+  // Popover is not a GtkWindow; do not call gtk_window_present() on it
   }
   else
   {
+    gtk_widget_show_all(d->floating_tag_window);
+  // For X11 keep previous positioning using gtk_window_move()
     gint px, py, w, h;
     gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
     w = gdk_window_get_width(gtk_widget_get_window(center));
@@ -3499,10 +3500,9 @@ static void _lib_tagging_tag_show(dt_action_t *action)
     const gint x = px + 0.5 * (w - FLOATING_ENTRY_WIDTH);
     const gint y = py + h - 50;
     gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
+    gtk_widget_grab_focus(entry);
     gtk_window_present(GTK_WINDOW(d->floating_tag_window));
   }
-
-  gtk_widget_grab_focus(entry);
 }
 
 static int _get_recent_tags_list_length()
