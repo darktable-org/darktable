@@ -3498,7 +3498,46 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   }
 }
 
-static int _get_recent_tags_list_length(); // forward decl kept consistent
+static int _get_recent_tags_list_length()
+{
+  const int length = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
+  if(length == -1) return length;
+  else if(length >= 10/2) return length * 2;
+  else return 10;
+}
+
+static void _size_recent_tags_list()
+{
+  const char *list = dt_conf_get_string_const("plugins/lighttable/tagging/recent_tags");
+  if(!list[0])
+    return;
+  const int length = _get_recent_tags_list_length();
+  if(length == -1)
+  {
+    dt_conf_set_string("plugins/lighttable/tagging/recent_tags", "");
+    return;
+  }
+
+  char *p = (char *)list;
+  int nb = 1;
+  for(; *p != '\0'; p++)
+  {
+    if(*p == ',') nb++;
+  }
+
+  if(nb > length)
+  {
+    nb -= length;
+    char *list2 = g_strdup(list);
+    for(; nb > 0; nb--)
+    {
+      p = g_strrstr(list2, "','");
+      if(p) *p = '\0';
+    }
+    dt_conf_set_string("plugins/lighttable/tagging/recent_tags", list2);
+    g_free(list2);
+  }
+}
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
