@@ -46,6 +46,9 @@ typedef struct dt_gui_widgets_t
   /* resize of left/right panels */
   gboolean panel_handle_dragging;
   int panel_handle_x, panel_handle_y;
+
+  // Wayland CSD headerbar
+  GtkWidget *header_bar;
 } dt_gui_widgets_t;
 
 typedef struct dt_gui_scrollbars_t

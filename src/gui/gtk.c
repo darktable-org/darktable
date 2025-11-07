@@ -1704,6 +1704,25 @@ static gboolean _ui_toast_button_press_event(GtkWidget *widget,
   return TRUE;
 }
 
+#ifdef GDK_WINDOWING_WAYLAND
+static gboolean _top_panel_drag_button_press(GtkWidget *w, GdkEventButton *e, gpointer data)
+{
+  if(e->type != GDK_BUTTON_PRESS || e->button != GDK_BUTTON_PRIMARY)
+    return FALSE;
+
+  GtkWidget *target = gtk_get_event_widget((GdkEvent*)e);
+
+  // Don't drag on interactive widgets
+  if(GTK_IS_BUTTON(target) || GTK_IS_ENTRY(target) || GTK_IS_COMBO_BOX(target) ||
+     (GTK_IS_EVENT_BOX(target) && g_object_get_data(G_OBJECT(target), "view-label")))
+    return FALSE;
+
+  gtk_window_begin_move_drag(GTK_WINDOW(darktable.gui->ui->main_window),
+                             e->button, e->x_root, e->y_root, e->time);
+  return TRUE;
+}
+#endif
+
 static GtkWidget *_init_outer_border(const gint width,
                                      const gint height,
                                      const gint which)
@@ -1736,14 +1755,23 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
+  // Initialize headerbar pointer
+  gui->widgets.header_bar = NULL;
+
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
+    // Create an empty headerbar for CSD (Client-Side Decorations)
+    // Window control buttons are integrated into viewswitcher module
     GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), FALSE);
     gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
-    gtk_widget_show(header_bar);
+
+    // Hide the headerbar completely - we use darktable's own top panel
+    gtk_widget_set_visible(header_bar, FALSE);
+    gtk_widget_set_no_show_all(header_bar, TRUE);
+
+    gui->widgets.header_bar = header_bar;
   }
 #endif
 
@@ -2712,8 +2740,25 @@ static void _ui_init_panel_top(dt_ui_t *ui,
   /* create the panel box */
   ui->panels[DT_UI_PANEL_TOP] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_hexpand(GTK_WIDGET(widget), TRUE);
-  gtk_grid_attach(GTK_GRID(container), widget, 1, 0, 3, 1);
   gtk_widget_set_name(widget, "top-hinter");
+
+#ifdef GDK_WINDOWING_WAYLAND
+  // On Wayland, wrap TOP panel in event box to enable window dragging
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    GtkWidget *event_box = gtk_event_box_new();
+    gtk_widget_set_name(event_box, "top-panel-eventbox");
+    gtk_container_add(GTK_CONTAINER(event_box), widget);
+    gtk_widget_add_events(event_box, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(G_OBJECT(event_box), "button-press-event",
+                     G_CALLBACK(_top_panel_drag_button_press), NULL);
+    gtk_grid_attach(GTK_GRID(container), event_box, 1, 0, 3, 1);
+  }
+  else
+#endif
+  {
+    gtk_grid_attach(GTK_GRID(container), widget, 1, 0, 3, 1);
+  }
 
   /* add container for top left */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT] =

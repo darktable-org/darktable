@@ -42,6 +42,12 @@ typedef struct dt_lib_viewswitcher_t
 {
   GList *labels;
   GtkWidget *dropdown;
+#ifdef GDK_WINDOWING_WAYLAND
+  GtkWidget *window_controls_box;
+  GtkWidget *minimize_btn;
+  GtkWidget *maximize_btn;
+  GtkWidget *close_btn;
+#endif
 } dt_lib_viewswitcher_t;
 
 /* callback when a view label is pressed */
@@ -54,6 +60,14 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,
                                                           dt_view_t *new_view, dt_lib_module_t *self);
 static void _switch_view(const dt_view_t *view);
+
+#ifdef GDK_WINDOWING_WAYLAND
+/* window control button callbacks */
+static void _minimize_window(GtkWidget *widget, dt_lib_module_t *self);
+static void _maximize_window(GtkWidget *widget, dt_lib_module_t *self);
+static void _close_window(GtkWidget *widget, dt_lib_module_t *self);
+static gboolean _window_state_changed(GtkWidget *widget, GdkEventWindowState *event, dt_lib_module_t *self);
+#endif
 
 const char *name(dt_lib_module_t *self)
 {
@@ -155,6 +169,53 @@ void gui_init(dt_lib_module_t *self)
   }
 
   if(model) g_object_unref(model);
+
+#ifdef GDK_WINDOWING_WAYLAND
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    // Separator
+    gtk_box_pack_start(GTK_BOX(self->widget),
+                      gtk_separator_new(GTK_ORIENTATION_VERTICAL),
+                      FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
+
+    // Create buttons
+    d->window_controls_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    d->minimize_btn = gtk_button_new_from_icon_name("window-minimize-symbolic", GTK_ICON_SIZE_MENU);
+    d->maximize_btn = gtk_button_new_from_icon_name("window-maximize-symbolic", GTK_ICON_SIZE_MENU);
+    d->close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_MENU);
+
+    // Apply GTK theme classes and override darktable styles
+    const gchar *css = "button.titlebutton { background-image: none; background-color: transparent; "
+                       "border: none; box-shadow: none; text-shadow: none; }";
+    GtkCssProvider *provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(provider, css, -1, NULL);
+
+    GtkWidget *buttons[] = {d->minimize_btn, d->maximize_btn, d->close_btn};
+    const gchar *classes[] = {"minimize", "maximize", "close"};
+
+    for(int i = 0; i < 3; i++)
+    {
+      GtkStyleContext *ctx = gtk_widget_get_style_context(buttons[i]);
+      gtk_style_context_add_class(ctx, "titlebutton");
+      gtk_style_context_add_class(ctx, classes[i]);
+      gtk_style_context_add_provider(ctx, GTK_STYLE_PROVIDER(provider),
+                                     GTK_STYLE_PROVIDER_PRIORITY_USER + 2);
+      gtk_widget_set_name(buttons[i], "");
+      gtk_widget_set_can_focus(buttons[i], FALSE);
+      gtk_box_pack_start(GTK_BOX(d->window_controls_box), buttons[i], FALSE, FALSE, 0);
+    }
+    g_object_unref(provider);
+
+    // Connect callbacks
+    g_signal_connect(d->minimize_btn, "clicked", G_CALLBACK(_minimize_window), self);
+    g_signal_connect(d->maximize_btn, "clicked", G_CALLBACK(_maximize_window), self);
+    g_signal_connect(d->close_btn, "clicked", G_CALLBACK(_close_window), self);
+    g_signal_connect(dt_ui_main_window(darktable.gui->ui), "window-state-event",
+                     G_CALLBACK(_window_state_changed), self);
+
+    gtk_box_pack_start(GTK_BOX(self->widget), d->window_controls_box, FALSE, FALSE, 0);
+  }
+#endif
 
   /* connect callback to view change signal */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _lib_viewswitcher_view_changed_callback);
@@ -279,6 +340,44 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventBu
   }
   return FALSE;
 }
+
+#ifdef GDK_WINDOWING_WAYLAND
+static void _minimize_window(GtkWidget *w, dt_lib_module_t *self)
+{
+  gtk_window_iconify(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+}
+
+static void _maximize_window(GtkWidget *w, dt_lib_module_t *self)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  GdkWindow *gdk_win = gtk_widget_get_window(GTK_WIDGET(win));
+
+  if(gdk_win && (gdk_window_get_state(gdk_win) & GDK_WINDOW_STATE_MAXIMIZED))
+    gtk_window_unmaximize(win);
+  else
+    gtk_window_maximize(win);
+}
+
+static void _close_window(GtkWidget *w, dt_lib_module_t *self)
+{
+  dt_control_quit();
+}
+
+static gboolean _window_state_changed(GtkWidget *w, GdkEventWindowState *event, dt_lib_module_t *self)
+{
+  dt_lib_viewswitcher_t *d = self->data;
+
+  if(d->maximize_btn && (event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED))
+  {
+    const gboolean maximized = event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED;
+    gtk_button_set_image(GTK_BUTTON(d->maximize_btn),
+                        gtk_image_new_from_icon_name(maximized ? "window-restore-symbolic"
+                                                               : "window-maximize-symbolic",
+                                                     GTK_ICON_SIZE_MENU));
+  }
+  return FALSE;
+}
+#endif
 
 
 // clang-format off
