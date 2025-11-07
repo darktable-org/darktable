@@ -2038,7 +2038,7 @@ int dt_init(int argc,
   if(init_gui)
   {
     // show the main window and restore its geometry to that saved in the config file
-    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
     dt_gui_gtk_load_config();
     darktable_splash_screen_destroy();
 

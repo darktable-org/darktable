@@ -1712,9 +1712,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_present(GTK_WINDOW(widget));
   gtk_widget_set_name(widget, "main_window");
-  gui->ui->main_window = widget;
+  g_set_weak_pointer(&gui->ui->main_window, widget);
 
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
@@ -1852,7 +1851,7 @@ static void _init_main_table(GtkWidget *container)
   gtk_overlay_add_overlay(GTK_OVERLAY(ocda), sidebyside);
 
   gtk_grid_attach(GTK_GRID(centergrid), ocda, 0, 0, 1, 1);
-  darktable.gui->ui->center = cda;
+  g_set_weak_pointer(&darktable.gui->ui->center, cda);
   darktable.gui->ui->center_base = ocda;
 
   /* initialize the thumb panel */
