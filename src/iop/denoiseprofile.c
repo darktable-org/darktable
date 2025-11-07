@@ -2856,7 +2856,9 @@ void reload_defaults(dt_iop_module_t *self)
   d->fix_anscombe_and_nlmeans_norm = TRUE;
   d->use_new_vst = TRUE;
   d->wavelet_color_mode = MODE_Y0U0V0;
-  d->compensate_hilite_pres = TRUE;
+
+  const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+  d->compensate_hilite_pres = iso_shift > 0;
 
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
   char name[512];
