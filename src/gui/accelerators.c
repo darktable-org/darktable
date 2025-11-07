@@ -3811,9 +3811,13 @@ static float _process_action(dt_action_t *action,
 
     if(owner == &darktable.control->actions_focus)
     {
-      action_target = dt_dev_modulegroups_test_activated(darktable.develop)
-                    ? (mod = dt_dev_gui_module()) ? (gpointer)mod->widget : NULL
-                    : dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+      action_target = mod = dt_dev_gui_module();
+      if(action->type != DT_ACTION_TYPE_IOP)
+      {
+        action_target = dt_dev_modulegroups_test_activated(darktable.develop)
+                      ? mod ? (gpointer)mod->widget : NULL
+                      : dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+      }
       if(!action_target)
         return return_value;
     }
