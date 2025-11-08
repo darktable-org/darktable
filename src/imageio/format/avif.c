@@ -37,7 +37,7 @@
 #define AVIF_MAX_TILE_SIZE 3072
 #define AVIF_DEFAULT_TILE_SIZE AVIF_MIN_TILE_SIZE * 2
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 enum avif_compression_type_e
 {
@@ -722,6 +722,44 @@ out:
 size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_avif_t);
+}
+
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1)
+  {
+    typedef struct dt_imageio_avif_v1_t
+    {
+      dt_imageio_module_data_t global;
+      uint32_t bit_depth;
+      uint32_t color_mode;
+      uint32_t compression_type;
+      uint32_t quality;
+      uint32_t tiling;
+    } dt_imageio_avif_v1_t;
+
+    const dt_imageio_avif_v1_t *o = (dt_imageio_avif_v1_t *)old_params;
+    dt_imageio_avif_t *n = (dt_imageio_avif_t *)malloc(sizeof(dt_imageio_avif_t));
+
+    n->global = o->global;
+    n->bit_depth = o->bit_depth;
+    n->color_mode = o->color_mode;
+    n->compression_type = o->compression_type;
+    n->quality = o->quality;
+    n->tiling = o->tiling;
+    n->subsample = AVIF_SUBSAMPLE_AUTO; // Default to auto mode for old presets
+
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_avif_t);
+    return n;
+  }
+
+  return NULL;
 }
 
 void *get_params(dt_imageio_module_format_t *self)
