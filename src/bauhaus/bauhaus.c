@@ -3320,6 +3320,18 @@ void dt_bauhaus_slider_set_format(GtkWidget *widget,
   }
 }
 
+float dt_bauhaus_slider_get_factor(GtkWidget *widget)
+{
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->slider.factor;
+}
+
+float dt_bauhaus_slider_get_offset(GtkWidget *widget)
+{
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->slider.offset;
+}
+
 void dt_bauhaus_slider_set_factor(GtkWidget *widget,
                                   const float factor)
 {
