@@ -2185,6 +2185,12 @@
     <default>false</default>
     <shortdescription>using system font or not</shortdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>font_size</name>
+    <type>float</type>
+    <default>12.0</default>
+    <shortdescription>font size</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
@@ -2908,6 +2914,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/avif/subsample</name>
+    <type min="0" max="3">int</type>
+    <default>0</default>
+    <shortdescription>AVIF chroma subsampling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/xcf/bpp</name>
     <type>
       <enum>
@@ -3601,7 +3614,7 @@
       <enum>
         <option>scene-referred (sigmoid)</option>
         <option>scene-referred (filmic)</option>
-        <option>scene-referred (agx)</option>
+        <option>scene-referred (AgX)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>

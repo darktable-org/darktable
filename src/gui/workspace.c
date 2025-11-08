@@ -31,6 +31,7 @@
 typedef struct _workspace_t {
   GtkWidget *db_screen;
   GtkWidget *entry;
+  GtkWidget *create;
   const char *datadir;
 } dt_workspace_t;
 
@@ -39,6 +40,15 @@ static void _workspace_screen_destroy(dt_workspace_t *session)
   if(session->db_screen)
     gtk_widget_destroy(session->db_screen);
   session->db_screen = NULL;
+}
+
+static void _workspace_entry_changed(GtkWidget *button, dt_workspace_t *session)
+{
+  const gchar *label = gtk_entry_get_text(GTK_ENTRY(session->entry));
+
+  const gboolean status = strlen(label) != 0;
+
+  gtk_widget_set_sensitive(session->create, status);
 }
 
 static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
@@ -90,6 +100,11 @@ static void _workspace_select_db(GtkWidget *button, dt_workspace_t *session)
     dt_conf_set_string("database", "library.db");
     dt_conf_set_string("workspace/label", "");
   }
+  else if(strcmp(label, _("memory")) == 0)
+  {
+    dt_conf_set_string("database", ":memory:");
+    dt_conf_set_string("workspace/label", "memory");
+  }
   else
   {
     char *dbname = g_strdup_printf("library-%s.db", label);
@@ -111,6 +126,18 @@ static void _workspace_new_db(GtkWidget *button, dt_workspace_t *session)
   g_free(dbname);
 
   _workspace_screen_destroy(session);
+}
+
+static GtkBox *_insert_button(dt_workspace_t *session, const char *label)
+{
+  GtkBox *box = GTK_BOX(dt_gui_hbox());
+  GtkWidget *b = gtk_button_new_with_label(label);
+  gtk_widget_set_hexpand(GTK_WIDGET(b), TRUE);
+  dt_gui_box_add(box, b);
+  g_signal_connect(G_OBJECT(b), "clicked",
+                   G_CALLBACK(_workspace_select_db), session);
+  dt_gui_dialog_add(session->db_screen, box);
+  return box;
 }
 
 void dt_workspace_create(const char *datadir)
@@ -154,12 +181,12 @@ void dt_workspace_create(const char *datadir)
   for(GList *l = g_list_first(dbs); l; l = g_list_next(l))
   {
     char *name = (char *)l->data;
-    GtkWidget *b = NULL;
     const gboolean is_default = strcmp(name, "library.db") == 0;
+    GtkBox *box = NULL;
 
     if(is_default)
     {
-      b = gtk_button_new_with_label(_("default"));
+      box = _insert_button(session, _("default"));
     }
     else if(g_str_has_prefix(name, "library-"))
     {
@@ -170,31 +197,31 @@ void dt_workspace_create(const char *datadir)
       while(*e != '.') e++;
       *e = '\0';
 
-      b = gtk_button_new_with_label(f);
+      box = _insert_button(session, f);
     }
-
-    gtk_widget_set_hexpand(GTK_WIDGET(b), TRUE);
 
     if(strcmp(name, current_db) == 0)
       current_db_found = TRUE;
 
-    g_signal_connect(G_OBJECT(b), "clicked",
-                     G_CALLBACK(_workspace_select_db), session);
-
-    GtkBox *box = GTK_BOX(dt_gui_hbox());
-    dt_gui_box_add(box, b);
-
-    if(!is_default)
+    if(is_default)
     {
+      // add a memory workspace just after default one
+      box = _insert_button(session, _("memory"));
+    }
+    else if(!is_default)
+    {
+      GList *bc = gtk_container_get_children(GTK_CONTAINER(box));
+      GtkWidget *b = (GtkWidget *)g_list_first(bc)->data;
+      g_list_free(bc);
+
       GtkWidget *del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
       g_signal_connect(G_OBJECT(del), "clicked",
                        G_CALLBACK(_workspace_delete_db), session);
       g_object_set_data(G_OBJECT(del), "db", b);
       dt_gui_box_add(box, del);
     }
-
-    dt_gui_dialog_add(session->db_screen, box);
   }
+
   g_list_free_full(dbs, g_free);
 
   //  if the current registerred db is not found reset to
@@ -208,10 +235,17 @@ void dt_workspace_create(const char *datadir)
 
   GtkBox *box = GTK_BOX(dt_gui_hbox());
   session->entry = gtk_entry_new();
-  GtkWidget *create = gtk_button_new_with_label(_("create"));
-  g_signal_connect(G_OBJECT(create), "clicked",
+  g_signal_connect(G_OBJECT(session->entry),
+                   "changed", G_CALLBACK(_workspace_entry_changed), session);
+  gtk_widget_set_hexpand(session->entry, TRUE);
+
+  session->create = gtk_button_new_with_label(_("create"));
+  gtk_widget_set_sensitive(session->create, FALSE);
+
+  g_signal_connect(G_OBJECT(session->create), "clicked",
                    G_CALLBACK(_workspace_new_db), session);
-  dt_gui_box_add(box, session->entry, create);
+  dt_gui_box_add(box, session->entry, session->create);
+  gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
 
   dt_gui_dialog_add(session->db_screen, l2, box);
 

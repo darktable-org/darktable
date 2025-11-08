@@ -1362,21 +1362,6 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
   else return x;
 }
 
-/* kernel for the plugin colorin: plain correction */
-kernel void
-colorin_correct (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                 global const float *corr)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * read_imagef(in, sampleri, (int2)(x, y));
-  write_imagef (out, (int2)(x, y), pixel);
-}
-
 /* kernel for the plugin colorin: unbound processing */
 kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,

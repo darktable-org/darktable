@@ -835,19 +835,12 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
 
       if(g_strcmp0(module->multi_name, name) != 0)
       {
-        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-        // this has been hand edited, the name should not be changed when
-        // applying a preset or a style.
-        module->multi_name_hand_edited = TRUE;
-        dt_dev_add_history_item(module->dev, module, TRUE);
+        dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
       }
     }
     else
     {
-      // clear out multi-name (set 1st char to 0)
-      module->multi_name[0] = 0;
-      module->multi_name_hand_edited = FALSE;
-      dt_dev_add_history_item(module->dev, module, FALSE);
+      dt_iop_update_multi_name(module, "", FALSE, FALSE, TRUE);
     }
 
     // make sure we write history & xmp to ensure that the new module name
@@ -3538,6 +3531,29 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   module->multi_priority = new_priority;
 }
 
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  char *l_name = g_strstrip(g_strdup(name));
+
+  if(force
+     || (auto_module
+         && !module->multi_name_hand_edited))
+  {
+    g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
+    module->multi_name_hand_edited = hand_edited;
+    dt_iop_gui_update_header(module);
+    dt_dev_add_history_item(module->dev, module, enable);
+  }
+
+  g_free(l_name);
+}
+
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id)
 {
   GHashTableIter iter;
@@ -3620,6 +3636,40 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
   return mod_ret;
 }
 
+dt_iop_module_t *_find_preferred_instance(const dt_iop_module_so_t *module,
+                                          const gboolean prefer_expanded,
+                                          const gboolean prefer_enabled,
+                                          const gboolean prefer_unmasked,
+                                          const gboolean prefer_first)
+{
+  dt_iop_module_t *best_mod = NULL;
+  int best_score = -1;
+
+  for(GList *iop_mods = g_list_last(darktable.develop->iop);
+      iop_mods;
+      iop_mods = g_list_previous(iop_mods))
+  {
+    dt_iop_module_t *mod = iop_mods->data;
+
+    if(mod->so == module && mod->iop_order != INT_MAX)
+    {
+      const gboolean no_mask = mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                            || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED;
+      const int score = (mod->expanded && prefer_expanded ? 8 : 0)
+                      + (mod->enabled  && prefer_enabled  ? 4 : 0)
+                      + (no_mask       && prefer_unmasked ? 2 : 0);
+
+      if(score + (prefer_first ? 1 : 0) > best_score)
+      {
+        best_score = score;
+        best_mod = mod;
+      }
+    }
+  }
+
+  return best_mod;
+}
+
 dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module)
 {
   /*
@@ -3644,68 +3694,36 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *
     - selection order (after applying the above rules, apply the
       shortcut to the first or last instance remaining)
   */
-  const gboolean prefer_focused = dt_conf_get_bool("accel/prefer_focused");
-  const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
-  const int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
-  const int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
-  const int prefer_first = dt_conf_is_equal("accel/select_order", "first instance") ? 1 : 0;
-
-  dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
   dt_iop_module_t *gui_module = dt_dev_gui_module();
-  if(prefer_focused
-      && gui_module
-      && (gui_module->so == module
-         || DT_ACTION(module) == &darktable.control->actions_focus))
-    accel_mod = gui_module;
+  if(DT_ACTION(module) == &darktable.control->actions_focus
+     || (gui_module && gui_module->so == module
+         && dt_conf_get_bool("accel/prefer_focused")))
+    return gui_module;
   else
-  {
-    int best_score = -1;
-
-    for(GList *iop_mods = g_list_last(darktable.develop->iop);
-        iop_mods;
-        iop_mods = g_list_previous(iop_mods))
-    {
-      dt_iop_module_t *mod = iop_mods->data;
-
-      if(mod->so == module && mod->iop_order != INT_MAX)
-      {
-        const int score = (mod->expanded ? prefer_expanded : 0)
-                        + (mod->enabled ? prefer_enabled : 0)
-                        + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
-                           || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
-                                ? prefer_unmasked : 0);
-
-        if(score + prefer_first > best_score)
-        {
-          best_score = score;
-          accel_mod = mod;
-        }
-      }
-    }
-  }
-
-  return accel_mod;
+    return _find_preferred_instance(module,
+                                    dt_conf_get_bool("accel/prefer_expanded"),
+                                    dt_conf_get_bool("accel/prefer_enabled"),
+                                    dt_conf_get_bool("accel/prefer_unmasked"),
+                                    dt_conf_is_equal("accel/select_order", "first instance"));
 }
 
 /** adds keyboard accels to the first module in the pipe to handle
  * where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
-  if(darktable.develop->gui_attached)
-  {
-    dt_iop_module_t *accel_mod_new = dt_iop_get_module_preferred_instance(module);
+  if(!darktable.develop->gui_attached) return;
 
-    // switch accelerators to new module
-    if(accel_mod_new)
-    {
-      dt_accel_connect_instance_iop(accel_mod_new);
+  dt_iop_module_t *accel_mod_new = dt_iop_get_module_preferred_instance(module);
 
-      if(!strcmp(accel_mod_new->op, "exposure"))
-        darktable.develop->proxy.exposure.module = accel_mod_new;
-    }
-  }
+  // switch accelerators to new module
+  if(accel_mod_new)
+    dt_accel_connect_instance_iop(accel_mod_new);
+
+  if(!strcmp(module->op, "exposure"))
+    darktable.develop->proxy.exposure.module =
+      _find_preferred_instance(module, FALSE, TRUE, TRUE, TRUE);
 }
 
 void dt_iop_connect_accels_all(void)

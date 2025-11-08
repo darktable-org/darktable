@@ -590,6 +590,14 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
+static gboolean _dev_is_D65_chroma(const dt_develop_t *dev)
+{
+  const dt_dev_chroma_t *chr = &dev->chroma;
+  return chr->late_correction
+    ? dt_dev_equal_chroma(chr->wb_coeffs, chr->as_shot)
+    : dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
+}
+
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
 {
   return g  && g->spot_mode
@@ -616,21 +624,21 @@ static gboolean _get_white_balance_coeff(const dt_iop_module_t *self,
     return TRUE;
 
   // If we use D65 there are unchanged corrections
-  if(dt_dev_is_D65_chroma(self->dev))
+  if(_dev_is_D65_chroma(self->dev))
     return FALSE;
 
   const gboolean valid_chroma =
     chr->D65coeffs[0] > 0.0 && chr->D65coeffs[1] > 0.0 && chr->D65coeffs[2] > 0.0;
 
   const gboolean changed_chroma =
-    chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0;
+    chr->wb_coeffs[0] > 1.0f || chr->wb_coeffs[1] > 1.0f || chr->wb_coeffs[2] > 1.0f;
 
   // Otherwise - for example because the user made a correct preset, find the
   // WB adaptation ratio
   if(valid_chroma && changed_chroma)
   {
     for_four_channels(k)
-      custom_wb[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+      custom_wb[k] = (float)chr->D65coeffs[k] / chr->wb_coeffs[k];
   }
   return FALSE;
 }
@@ -2008,7 +2016,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   const gboolean problem1 = valid
                             && chr->adaptation == self
                             && temperature_enabled
-                            && !dt_dev_is_D65_chroma(dev);
+                            && !_dev_is_D65_chroma(dev);
 
   // our second biggest problem : another channelmixerrgb instance is doing CAT
   // earlier in the pipe and we don't use masking here.
@@ -2030,16 +2038,14 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   const dt_image_t *img = &dev->image_storage;
   dt_print_pipe(DT_DEBUG_PIPE, anyproblem ? "chroma trouble" : "chroma data",
       NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i",
+      "%s%s%sD65=%s.  D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i",
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
-      dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
-      chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
+      _dev_is_D65_chroma(dev) ? "YES" : "NO",
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
       chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
-      img->filename,
-      img->id);
+      img->filename, img->id);
 
   if(problem2)
   {

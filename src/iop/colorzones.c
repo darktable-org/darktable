@@ -2497,6 +2497,8 @@ static float _action_process_zones(gpointer target,
                                    dt_action_effect_t effect,
                                    float move_size)
 {
+  if(element >= DT_IOP_COLORZONES_BANDS) return DT_ACTION_NOT_VALID;
+
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
@@ -2504,7 +2506,7 @@ static float _action_process_zones(gpointer target,
   const int ch = g->channel;
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
-  const float x = (float)element / 8.0;
+  const float x = (float)element / DT_IOP_COLORZONES_BANDS;
 
   gboolean close_enough = FALSE;
   int node = 0;

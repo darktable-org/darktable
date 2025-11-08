@@ -3928,7 +3928,7 @@ static float _action_process_combo(gpointer target,
        ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
-static gboolean _find_nth_bauhaus(GtkWidget **w,
+static gboolean _find_nth_bauhaus(gpointer *w,
                                   int *num,
                                   const dt_bauhaus_type_t type)
 {
@@ -3961,40 +3961,37 @@ static gboolean _find_nth_bauhaus(GtkWidget **w,
   return *num < 0;
 }
 
-static float _action_process_focus_slider(gpointer target,
+static float _action_process_focus_slider(gpointer widget,
                                           dt_action_element_t element,
                                           const dt_action_effect_t effect,
                                           const float move_size)
 {
-  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_SLIDER))
     return _action_process_slider(widget, DT_ACTION_ELEMENT_VALUE, effect, move_size);
 
   if(DT_PERFORM_ACTION(move_size))
-    dt_action_widget_toast(target, NULL, _("not that many sliders"));
+    dt_action_widget_toast(&darktable.control->actions_focus, NULL, _("not that many sliders"));
   return DT_ACTION_NOT_VALID;
 }
 
-static float _action_process_focus_combo(gpointer target,
+static float _action_process_focus_combo(gpointer widget,
                                          dt_action_element_t element,
                                          const dt_action_effect_t effect,
                                          const float move_size)
 {
-  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_COMBOBOX))
     return _action_process_combo(widget, DT_ACTION_ELEMENT_SELECTION, effect, move_size);
 
   if(DT_PERFORM_ACTION(move_size))
-    dt_action_widget_toast(target, NULL, _("not that many dropdowns"));
+    dt_action_widget_toast(&darktable.control->actions_focus, NULL, _("not that many dropdowns"));
   return DT_ACTION_NOT_VALID;
 }
 
-static float _action_process_focus_button(gpointer target,
+static float _action_process_focus_button(gpointer widget,
                                           dt_action_element_t element,
                                           const dt_action_effect_t effect,
                                           const float move_size)
 {
-  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_BUTTON))
   {
     if(DT_PERFORM_ACTION(move_size))
@@ -4004,7 +4001,7 @@ static float _action_process_focus_button(gpointer target,
   }
 
   if(DT_PERFORM_ACTION(move_size))
-    dt_action_widget_toast(target, NULL, _("not that many buttons"));
+    dt_action_widget_toast(&darktable.control->actions_focus, NULL, _("not that many buttons"));
   return DT_ACTION_NOT_VALID;
 }
 

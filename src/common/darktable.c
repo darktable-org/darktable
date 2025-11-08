@@ -902,9 +902,13 @@ char *version = g_strdup_printf(
   return version;
 }
 
-int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
+int dt_init(int argc,
+            char *argv[],
+            const gboolean init_gui,
+            const gboolean load_data,
+            lua_State *L)
 {
-  double start_wtime = dt_get_wtime();
+  const double start_wtime = dt_get_wtime();
 
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
@@ -1527,8 +1531,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
 
-  g_slist_free_full(config_override, g_free);
-
   const int last_configure_version =
     dt_conf_get_int("performance_configuration_version_completed");
 
@@ -1536,13 +1538,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // however after gtk_disable_setlocale
   if(init_gui)
   {
-#ifdef GDK_WINDOWING_WAYLAND
-    // There are currently bad interactions with Wayland (drop-downs
-    // are very narrow, scroll events lost). Until this is fixed, give
-    // priority to the XWayland backend for Wayland users.
-    // See also https://github.com/darktable-org/darktable/issues/13180
-    gdk_set_allowed_backends("x11,*");
-#endif
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
@@ -1582,33 +1577,38 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // select database
     dt_workspace_create(datadir);
+  }
 
-    // now load darktablerc for the given library. Either darktablerc
-    // for the default library or darktablerc-<label> for the other
-    // libraries.
-    const char *dbname = dt_conf_get_string("database");
-    const char *dblabel = dt_conf_get_string("workspace/label");
-    const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
+  // now load darktablerc for the given library. Either darktablerc
+  // for the default library or darktablerc-<label> for the other
+  // libraries.
+  const char *dbname = dt_conf_get_string("database");
+  const char *dblabel = dt_conf_get_string("workspace/label");
+  const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
-    const gboolean default_dbname = strcmp(dblabel, "") == 0;
+  const gboolean default_dbname = strcmp(dblabel, "") == 0;
 
-    char darktablerc[PATH_MAX] = { 0 };
-    snprintf(darktablerc, sizeof(darktablerc),
-             "%s/darktablerc%s%s", datadir,
-             default_dbname ? "" : "-",
-             default_dbname ? "" : dblabel);
+  char darktablerc[PATH_MAX] = { 0 };
+  snprintf(darktablerc, sizeof(darktablerc),
+           "%s/darktablerc%s%s", datadir,
+           default_dbname ? "" : "-",
+           default_dbname ? "" : dblabel);
 
-    dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
+  dt_conf_init(darktable.conf, darktablerc, FALSE, config_override);
 
-    // restore dbname & label (as set in call dt_dbsession_create) to
-    // the one selected on the dialog ensuring that if the
-    // darktablerc-* is not yet preset we won't store the default
-    // values from confgen.
+  g_slist_free_full(config_override, g_free);
 
-    dt_conf_set_string("database", dbname);
-    dt_conf_set_string("workspace/label", dblabel);
-    dt_conf_set_bool("database/multiple_workspace", multiple_db);
+  // restore dbname & label (as set in call dt_dbsession_create) to
+  // the one selected on the dialog ensuring that if the
+  // darktablerc-* is not yet preset we won't store the default
+  // values from confgen.
 
+  dt_conf_set_string("database", dbname);
+  dt_conf_set_string("workspace/label", dblabel);
+  dt_conf_set_bool("database/multiple_workspace", multiple_db);
+
+  if(init_gui)
+  {
     darktable_splash_screen_create(NULL, FALSE);
   }
 

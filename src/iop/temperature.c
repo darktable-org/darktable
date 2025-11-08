@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -647,47 +647,33 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_temperature_data_t *d = piece->data;
-  dt_iop_temperature_global_data_t *gd = self->global_data;
+  const dt_iop_temperature_global_data_t *gd = self->global_data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
 
-  const int devid = piece->pipe->devid;
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const int devid = pipe->devid;
+  const uint32_t filters = pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
   cl_mem dev_xtrans = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   int kernel = -1;
+  if(filters == 9u) kernel = gd->kernel_whitebalance_1f_xtrans;
+  else if(filters)  kernel = gd->kernel_whitebalance_1f;
+  else              kernel = gd->kernel_whitebalance_4f;
 
   if(filters == 9u)
   {
-    kernel = gd->kernel_whitebalance_1f_xtrans;
-  }
-  else if(filters)
-  {
-    kernel = gd->kernel_whitebalance_1f;
-  }
-  else
-  {
-    kernel = gd->kernel_whitebalance_4f;
-  }
-
-  if(filters == 9u)
-  {
-    dev_xtrans
-        = dt_opencl_copy_host_to_device_constant
-      (devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->coeffs);
   if(dev_coeffs == NULL) goto error;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_in->width, roi_in->height,
                                          CLARG(dev_in), CLARG(dev_out),
-                                         CLARG(width), CLARG(height),
+                                         CLARG(roi_in->width), CLARG(roi_in->height),
                                          CLARG(dev_coeffs), CLARG(filters),
-    CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
+                                         CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
   _publish_chroma(piece);
@@ -716,14 +702,14 @@ void commit_params(dt_iop_module_t *self,
   if(self->hide_enable_button)
   {
     for_four_channels(k)
-      chr->wb_coeffs[k] = 1.0;
+      chr->wb_coeffs[k] = 1.0f;
     return;
   }
 
   for_four_channels(k)
   {
     d->coeffs[k] = tcoeffs[k];
-    chr->wb_coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0;
+    chr->wb_coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
   }
 
   // 4Bayer images not implemented in OpenCL yet
@@ -736,7 +722,7 @@ void commit_params(dt_iop_module_t *self,
      If piece is disabled we always clear the trouble message and
      make sure chroma does know there is no temperature module.
   */
-  chr->late_correction = (p->preset == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE;
   chr->temperature = piece->enabled ? self : NULL;
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW && !piece->enabled)
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
@@ -1180,7 +1166,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   p->preset = mode;
-  chr->late_correction = (mode == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = mode == DT_IOP_TEMP_D65_LATE;
 }
 
 void gui_update(dt_iop_module_t *self)

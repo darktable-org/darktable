@@ -68,7 +68,23 @@ changes (where available).
   highlights, similar to film, and a natural-looking color
   representation in mid-tones and highlights.
 
+- Added support for multiple workspace. When the corresponding option
+  is activated on the preferences, Darktable opens a dialog when
+  starting. From this dialog one can select the default workspace (the
+  one created the first time and currently used by everyone by
+  default) or to create a new one. Each workspace has it's own
+  database and configuration file (collection, last UI defaults...).
+
+  An in memory workspace can also be selected in the dialog. In this
+  case there is no database created in disk, a configuration file is
+  created though.
+
 ## UI/UX Improvements
+
+- Many GNU/Linux distributions have dropped support for X11 leaving
+  only Wayland. Darktable has received many fixes to work properly on
+  Wayland including display ICC profiles. This version 5.4 should work
+  on Wayland as good as it was on X11.
 
 - Show a busy cursor when changing views. This provides immediate
   feedback when, for example, double-clicking an image in the
@@ -166,6 +182,35 @@ changes (where available).
   rules as film roll, the default value `n=1`, this keep the previous
   behavior of `$(ROLL.NAME)`.
 
+- Added optional collection of shortcut assignments using
+  keyboard+mouse combinations to control image processing
+  modules. Install these by clicking on the new "import extras" button
+  on the Shortcuts tab under Preferences.
+
+- Remove the "overwrite" option from the lighttable history stack
+  module. This option is used when pasting history to delete the
+  current history stack before pasting the new one. It is rarely used
+  and was confusing people when working copying/pasting on darkroom
+  from the filmstrip as this option was only visible on
+  lighttable. The option has been moved into the paste parts dialog.
+
+- Added manual chroma subsampling control for AVIF export. Users can now
+  choose between auto, 4:4:4, 4:2:2, and 4:2:0 chroma subsampling modes
+  independently of the quality setting, allowing better optimization of the
+  quality-vs-size tradeoff for AVIF files.
+
+- The processing modules/<focused> shortcuts also work if the quick
+  access panel is "focused", addressing the first 20 sliders or
+  dropdowns.
+
+- If only the first rotor on a midi controller is assigned, the higher
+  numbered ones automatically address increasing elements of the same
+  action or subsequent actions. This allows quick (re) assignment to
+  the <focused> action or to the mimics set up with for example the
+  x-touch Lua script.
+
+- Added the ability to calculate crop factor for Olympus cameras.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -204,13 +249,40 @@ changes (where available).
   precision in computation. The precision is now to the pixel and
   avoid a displacement in some cases.
 
-- Fixed issue in darktable-cli that prevented input files from being detected.
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
 
 - Fixed out of memory issue which could kill Darktable on small
   systems when processing large images.
 
 - Fixed toast message translation displayed when scrolling over the
   module's preset buttons.
+
+- Fixed issue in darktable-cli that prevented input files from being
+  detected.
+
+- Fixed an issue with reading TIFF files that (incorrectly) contain
+  metadata specific to the raw files they were made from.
+
+- Fixed an issue where imported styles that didn't have a name could
+  cause darktable to crash when starting.
+
+- Fixed a bug leading to wrong colors in main darkroom window (mostly
+  after using a module picker) due to bad color coeffs in colorin
+  module.
+
+- Fix support for Wayland. The UI is now working as expected and
+  Darktable will handle ICC profile from colord.
+
+- Fixed processing module naming based on the presets when the used
+  preset is renamed or deleted.
+
+- Fixed a bug in darktable-cli where exporting a duplicate version of
+  an image would use the tags attached to the base version instead of
+  the tags attached to it.
+
+- Fixed a bug in darktable-cli where synonyms for tags attached to an
+  image were ignored when exporting it.
 
 ## Lua
 
