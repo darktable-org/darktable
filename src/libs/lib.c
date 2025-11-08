@@ -65,6 +65,10 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
   }
 
   gboolean ret = module->views(module) & view->view(view);
+  // if we are in gimp plugin mode we keep provided visibility
+  if(dt_check_gimpmode("file"))
+    return ret;
+
   gchar *key = _get_lib_view_path(module, view, "_visible");
   if(key && dt_conf_key_exists(key))
     ret = dt_conf_get_bool(key);
