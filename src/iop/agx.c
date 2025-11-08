@@ -1407,7 +1407,7 @@ static void _update_pivot_x(const float old_black_ev, const float old_white_ev, 
   {
     darktable.gui->reset++;
     GtkWidget *slider = g->basic_curve_controls.curve_pivot_x;
-
+    dt_bauhaus_slider_set(slider, p->curve_pivot_x);
     dt_bauhaus_slider_set_factor(slider, new_range);
     dt_bauhaus_slider_set_offset(slider, new_black_ev);
     darktable.gui->reset--;
@@ -1415,7 +1415,7 @@ static void _update_pivot_x(const float old_black_ev, const float old_white_ev, 
   {
     printf("@@@ kofa _update_pivot_x, g is NULL\n");
   }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  // dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("@@@ kofa _update_pivot_x end\n");
 }
 
@@ -1494,7 +1494,6 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 {
   printf("@@@ kofa _apply_auto_black_exposure start\n");
-  // if(darktable.gui->reset) return;
 
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1517,7 +1516,7 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 static void _apply_auto_white_exposure(const dt_iop_module_t *self)
 {
   printf("@@@ kofa _apply_auto_white_exposure start\n");
- // if(darktable.gui->reset) return;
+ if(darktable.gui->reset) return;
 
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1540,7 +1539,6 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
 static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
 {
   printf("@@@ kofa _apply_auto_tune_exposure start\n");
-  // if(darktable.gui->reset) return;
 
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1587,8 +1585,6 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
 {
   printf("@@@ kofa _apply_auto_pivot_xy start\n");
 
-  // if(darktable.gui->reset) return;
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
@@ -1597,17 +1593,18 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   const float picked_ev = CLAMPF(log2f(fmaxf(_epsilon, picked_input_luminance) / 0.18f),
                                   p->range_black_relative_ev,
                                   p->range_white_relative_ev);
+  const float range = p->range_white_relative_ev - p->range_black_relative_ev;
+  const float picked_pivot_x = (picked_ev - p->range_black_relative_ev) / range;
 
   const tone_mapping_params_t tone_mapping_params =
      _calculate_tone_mapping_params(p);
 
   // see where the target_pivot is currently mapped
-  const float target_y = _apply_curve(p->curve_pivot_x, &tone_mapping_params);
+  const float target_y = _apply_curve(picked_pivot_x, &tone_mapping_params);
   // try to avoid changing the brightness of the pivot
   const float target_y_linearised = powf(target_y, p->curve_gamma);
   p->curve_pivot_y_linear_output = target_y_linearised;
-  const float range = p->range_white_relative_ev - p->range_black_relative_ev;
-  p->curve_pivot_x = (picked_ev - p->range_black_relative_ev) / range;
+  p->curve_pivot_x = picked_pivot_x;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x,
@@ -1622,8 +1619,6 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
 static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
   printf("@@@ kofa _apply_auto_pivot_x start\n");
-
-  // if(darktable.gui->reset) return;
 
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -3077,6 +3072,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
+  if(darktable.gui->reset) return;
+
   printf("@@@ kofa color_picker_apply start\n");
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -3090,6 +3087,8 @@ void color_picker_apply(dt_iop_module_t *self,
   else if(picker == g->basic_curve_controls.curve_pivot_x) _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
   else if(picker == g->basic_curve_controls.curve_pivot_y_linear) _apply_auto_pivot_xy(self, dt_ioppr_get_pipe_work_profile_info(pipe));
 
+  _update_pivot_x(old_black_ev, old_white_ev, self, p);
+
   if(p->auto_gamma)
   {
     ++darktable.gui->reset;
@@ -3099,11 +3098,9 @@ void color_picker_apply(dt_iop_module_t *self,
     dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
     --darktable.gui->reset;
   }
-  _update_pivot_x(old_black_ev, old_white_ev, self, p);
 
   _update_curve_warnings(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
-  dt_iop_gui_update(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("@@@ kofa color_picker_apply end\n");
 }
