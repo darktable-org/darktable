@@ -1409,13 +1409,13 @@ static void _update_pivot_x(const float old_black_ev, const float old_white_ev, 
     GtkWidget *slider = g->basic_curve_controls.curve_pivot_x;
 
     dt_bauhaus_slider_set_factor(slider, new_range);
-    dt_bauhaus_slider_set_offset(slider, p->range_black_relative_ev);
+    dt_bauhaus_slider_set_offset(slider, new_black_ev);
     darktable.gui->reset--;
   } else
   {
     printf("@@@ kofa _update_pivot_x, g is NULL\n");
   }
-  // dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("@@@ kofa _update_pivot_x end\n");
 }
 
@@ -3103,6 +3103,7 @@ void color_picker_apply(dt_iop_module_t *self,
 
   _update_curve_warnings(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+  dt_iop_gui_update(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("@@@ kofa color_picker_apply end\n");
 }
@@ -3135,12 +3136,6 @@ void reload_defaults(dt_iop_module_t *self)
   {
     dt_iop_agx_params_t *const p = self->default_params;
     _set_scene_referred_default_params(p);
-
-    // HDR is unbounded, no point in setting sensor-based relative exposure bounds
-    if (!dt_image_is_hdr(&self->dev->image_storage))
-    {
-      _adjust_relative_exposure_from_exposure_params(self, p);
-    }
   }
   printf("@@@ kofa reload_defaults end\n");
 }
