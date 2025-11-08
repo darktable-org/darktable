@@ -743,8 +743,12 @@ void *legacy_params(dt_imageio_module_format_t *self,
       uint32_t tiling;
     } dt_imageio_avif_v1_t;
 
+    if(old_params_size != sizeof(dt_imageio_avif_v1_t)) return NULL;
+
     const dt_imageio_avif_v1_t *o = (dt_imageio_avif_v1_t *)old_params;
     dt_imageio_avif_t *n = (dt_imageio_avif_t *)malloc(sizeof(dt_imageio_avif_t));
+    
+    if(!n) return NULL;
 
     n->global = o->global;
     n->bit_depth = o->bit_depth;
