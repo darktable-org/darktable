@@ -34,9 +34,6 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
-#ifdef GDK_WINDOWING_WAYLAND
-#include <gdk/gdkwayland.h>
-#endif
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -3423,11 +3420,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   d->floating_tag_imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
-#ifdef GDK_WINDOWING_WAYLAND
-  const gboolean on_wayland = GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window));
-#else
-  const gboolean on_wayland = FALSE;
-#endif
+  const gboolean on_wayland = dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND;
 
   if(on_wayland)
   {
@@ -3475,7 +3468,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
     gtk_widget_get_allocation(center, &a);
     GdkRectangle rect;
     rect.x = MAX(0, (a.width - FLOATING_ENTRY_WIDTH) / 2);
-    rect.y = MAX(0, a.height - 1 - 50); // small bottom offset
+    rect.y = MAX(0, a.height - 1);
     rect.width = FLOATING_ENTRY_WIDTH;
     rect.height = 1;
     gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_tag_window), &rect);

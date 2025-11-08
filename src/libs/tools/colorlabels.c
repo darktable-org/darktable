@@ -31,13 +31,7 @@
 #include "osx/osx.h"
 #endif
 
-#ifdef GDK_WINDOWING_WAYLAND
-#include <gdk/gdkwayland.h>
-#endif
-
-#ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#endif
+/* Wayland/X11 specifics accessed via dt_gui_get_session_type(), no need for direct gdk backends here */
 
 DT_MODULE(1)
 
@@ -221,27 +215,9 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
-  // On Wayland, manual positioning via gtk_window_move() is unreliable and can trigger protocol warnings.
-  // We instead create a GtkPopover anchored to the clicked color label button. On other backends keep
-  // the existing lightweight undecorated GtkWindow approach.
-  gboolean use_popover = FALSE;
-#ifdef GDK_WINDOWING_WAYLAND
-  use_popover = GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window));
-#endif
-
-  // Debug: backend and basic context
-  const char *backend = "unknown";
-#ifdef GDK_WINDOWING_WAYLAND
-  if(GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(window))) backend = "wayland";
-#endif
-#ifdef GDK_WINDOWING_X11
-  if(GDK_IS_X11_DISPLAY(gtk_widget_get_display(window))) backend = "x11";
-#endif
-  dt_print(DT_DEBUG_ALWAYS,
-           "[colorlabels] edit popup: backend=%s use_popover=%d colorlabel=%d event=(type=%d btn=%d x_root=%d y_root=%d)",
-           backend, use_popover, d->colorlabel,
-           event ? event->type : -1, event ? event->button : -1,
-           event ? (int)event->x_root : -1, event ? (int)event->y_root : -1);
+  // Wayland: use a GtkPopover anchored to the clicked color label button (native xdg_popup semantics).
+  // Other session types: keep the lightweight undecorated GtkWindow (manual positioning via gtk_window_move()).
+  const gboolean use_popover = (dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
@@ -255,25 +231,13 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   {
     // Wayland path: use GtkPopover anchored to the clicked color label button for proper xdg_popup semantics
     GtkWidget *button = d->buttons[d->colorlabel];
-    // Debug: anchor widget info
     GtkAllocation alloc = {0};
     gtk_widget_get_allocation(button, &alloc);
-    // Try to translate button coords to toplevel
-    gint rx = -1, ry = -1;
-    if(gtk_widget_get_toplevel(button))
-      gtk_widget_translate_coordinates(button, window, 0, 0, &rx, &ry);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[colorlabels] popover anchor: button=%p name=%s alloc=(%d,%d %dx%d) toplevel_xy=(%d,%d)",
-             (void*)button, gtk_widget_get_name(button),
-             alloc.x, alloc.y, alloc.width, alloc.height, rx, ry);
     d->floating_window = gtk_popover_new(button);
     // Be explicit about relative_to and pointing rect to avoid GTK quirks in some environments
     gtk_popover_set_relative_to(GTK_POPOVER(d->floating_window), button);
     GdkRectangle r = { 0, 0, alloc.width, alloc.height };
     gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_window), &r);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[colorlabels] popover pointing_to: rel_rect=(%d,%d %dx%d)",
-             r.x, r.y, r.width, r.height);
     gtk_popover_set_modal(GTK_POPOVER(d->floating_window), TRUE);
     gtk_popover_set_position(GTK_POPOVER(d->floating_window), GTK_POS_TOP);
     gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
@@ -285,9 +249,6 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
     // Legacy/X11 path: keep undecorated popup GtkWindow
     const gint x = event->x_root;
     const gint y = event->y_root - DT_PIXEL_APPLY_DPI(50);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[colorlabels] x11 popup window move: target=(%d,%d) entry_width=%d",
-             (int)x, (int)y, (int)FLOATING_ENTRY_WIDTH);
 
     d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
