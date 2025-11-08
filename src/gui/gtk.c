@@ -986,7 +986,7 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
     : DT_GUI_SESSION_X11;
 #elif defined(GDK_WINDOWING_X11)
   GdkDisplay* disp = gdk_display_get_default();
-  retun G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
+  return G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
     ? DT_GUI_SESSION_X11
     : DT_GUI_SESSION_WAYLAND;
 #else
@@ -1736,14 +1736,55 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
+  /* Hint the WM to hide server-side titlebar when maximized and properly
+   * recompute the client area. This does not hide a client-side HeaderBar,
+   * but helps extensions (e.g. Unite) avoid the top gap. */
+  gtk_window_set_hide_titlebar_when_maximized(GTK_WINDOW(widget), TRUE);
+
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
-    GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
-    gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
-    gtk_widget_show(header_bar);
+    /*
+     * Wayland + GNOME: by default DO NOT use GtkHeaderBar so the window manager
+     * and extensions (Unite, etc.) can fully control server-side decorations and
+     * hide the titlebar. You can explicitly enable HeaderBar via:
+     *   - env:  DARKTABLE_ENABLE_HEADERBAR=1
+     *   - conf: ui/enable_wayland_headerbar=true
+     * Backward compatible disable toggles are still honored:
+     *   - env:  DARKTABLE_DISABLE_HEADERBAR=1
+     *   - conf: ui/disable_wayland_headerbar=true
+     */
+    gboolean headerbar_enabled = FALSE;
+    /* explicit disable has priority */
+    const char *env_disable = g_getenv("DARKTABLE_DISABLE_HEADERBAR");
+    if(env_disable && (*env_disable == '1' || g_ascii_strcasecmp(env_disable, "true") == 0))
+      headerbar_enabled = FALSE;
+    else if(dt_conf_key_exists("ui/disable_wayland_headerbar")
+            && dt_conf_get_bool("ui/disable_wayland_headerbar"))
+      headerbar_enabled = FALSE;
+    else
+    {
+      const char *env_enable = g_getenv("DARKTABLE_ENABLE_HEADERBAR");
+      if(env_enable && (*env_enable == '1' || g_ascii_strcasecmp(env_enable, "true") == 0))
+        headerbar_enabled = TRUE;
+      else if(dt_conf_key_exists("ui/enable_wayland_headerbar")
+              && dt_conf_get_bool("ui/enable_wayland_headerbar"))
+        headerbar_enabled = TRUE;
+    }
+
+    if(headerbar_enabled)
+    {
+      GtkWidget *header_bar = gtk_header_bar_new();
+      gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+      gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+      gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+      gtk_widget_show(header_bar);
+    }
+    else
+    {
+      /* Use server-side decorations if available */
+      gtk_window_set_decorated(GTK_WINDOW(widget), TRUE);
+    }
   }
 #endif
 
