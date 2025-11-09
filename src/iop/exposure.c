@@ -87,7 +87,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
-  volatile float effective_exposure; // used to cache the final computed exposure
+  float effective_exposure; // used to cache the final computed exposure
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -821,9 +821,8 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
 
 static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 {
-  dt_iop_exposure_gui_data_t *g = self->gui_data;
-  // should not be invoked when not in GUI mode
-  return g ? g->effective_exposure : 0.f;
+  const dt_iop_exposure_gui_data_t* const g = self->gui_data;
+  return g->effective_exposure;
 }
 
 static void _exposure_proxy_handle_event(gpointer controller,
