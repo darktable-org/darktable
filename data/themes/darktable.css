@@ -915,6 +915,17 @@ popover separator
   background-color: @selected_bg_color;
 }
 
+/* the tag completion popover */
+popover box
+{
+  border : 1px solid @button_border;
+}
+
+popover *
+{
+  background-color: @bg_color;
+}
+
 combobox separator
 {
   min-height: 0.07em;
