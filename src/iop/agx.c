@@ -1391,6 +1391,8 @@ static void _update_pivot_x(const float old_black_ev, const float old_white_ev, 
   GtkWidget* const slider = g->basic_curve_controls.curve_pivot_x;
   dt_bauhaus_slider_set_factor(slider, new_range);
   dt_bauhaus_slider_set_offset(slider, new_black_ev);
+  // 0 EV default with the new exposure params
+  dt_bauhaus_slider_set_default(slider, -new_black_ev / new_range);
   dt_bauhaus_slider_set(slider, p->curve_pivot_x);
   darktable.gui->reset--;
 }
@@ -2164,12 +2166,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   controls->curve_pivot_x = slider;
   dt_bauhaus_slider_set_format(slider, _(" EV"));
   dt_bauhaus_slider_set_digits(slider, 2);
-  // by default, mid-gray is 10 EV from black with a total exposure range of 16.5 EV, and we want displayed values:
-  // black = 0 -> -10 EV
-  // mid-gray = 10/16.5 -> 0 EV
-  // white = 1 -> 6.5 EV
-  // dt_bauhaus_slider_set_offset(slider, -10.f);
-  // dt_bauhaus_slider_set_factor(slider, 16.5f);
   gtk_widget_set_tooltip_text(slider, _("set the pivot's input exposure in EV relative to mid-gray"));
   dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
                                                "used to set the pivot relative to mid-gray"));
