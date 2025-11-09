@@ -639,14 +639,14 @@ int legacy_params(dt_iop_module_t *self,
                                             - (op->range_black_relative_exposure * op->curve_pivot_x_shift_ratio);
     const float pivot_distance_in_ev_from_black = pivot_relative_ev - op->range_black_relative_exposure;
 
-    if (pivot_distance_in_ev_from_black < _epsilon)
+    if(pivot_distance_in_ev_from_black < _epsilon)
     {
       np->curve_pivot_x = _epsilon;
     }
     else
     {
       const float exposure_range_in_ev = op->range_white_relative_exposure - op->range_black_relative_exposure;
-      if (exposure_range_in_ev < _epsilon)
+      if(exposure_range_in_ev < _epsilon)
       {
         // should never happen, because of hard limits on the sliders
         np->curve_pivot_x = 0.5f;
@@ -1419,7 +1419,7 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
 {
   // record current chromaticity angle
   dt_aligned_pixel_t hsv_pixel = { 0.f };
-  if (params->restore_hue)
+  if(params->restore_hue)
     dt_RGB_2_HSV(rgb_in_out, hsv_pixel);
   const float h_before = hsv_pixel[0];
 
@@ -1431,7 +1431,7 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
     transformed_pixel[k] = _apply_curve(log_value, params);
   }
 
-  if (params->look_tuned)
+  if(params->look_tuned)
     _agx_look(transformed_pixel, params, rendering_to_xyz_transposed);
 
   // Linearize
@@ -1441,7 +1441,7 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
   }
 
   // get post-curve chroma angle
-  if (params->restore_hue)
+  if(params->restore_hue)
   {
     dt_RGB_2_HSV(transformed_pixel, hsv_pixel);
 
@@ -1518,7 +1518,7 @@ static void _read_exposure_params_callback(GtkWidget *widget,
                                      dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
-  if (g)
+  if(g)
   {
     _adjust_relative_exposure_from_exposure_params(self);
     dt_iop_gui_update(self);
@@ -2489,7 +2489,7 @@ static void _update_hsv_for_hue(dt_aligned_pixel_t hsv_out, const float position
 {
   const float hue_range_deg = 60.0f;
   float hue_offset_deg = -hue_range_deg + position_on_slider * (2.0f * hue_range_deg);
-  if (reverse) hue_offset_deg = -hue_offset_deg;
+  if(reverse) hue_offset_deg = -hue_offset_deg;
 
   hsv_out[0] = fmodf(hue_deg + hue_offset_deg + 360.0f, 360.0f) / 360.0f;
   hsv_out[1] = 0.7f;
@@ -2513,7 +2513,7 @@ static void _paint_slider_gradient(GtkWidget *slider, const float hue_deg, const
   dt_aligned_pixel_t hsv;
   dt_aligned_pixel_t rgb;
 
-  for (int stop = 0; stop < DT_BAUHAUS_SLIDER_MAX_STOPS; stop++)
+  for(int stop = 0; stop < DT_BAUHAUS_SLIDER_MAX_STOPS; stop++)
   {
     const float position_on_slider = (float)stop / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1);
 
@@ -2769,7 +2769,7 @@ static void _notebook_page_changed(GtkNotebook *notebook,
   {
     GtkWidget *target_container = (page_num == 0) ? gtk_widget_get_parent(g->range_exposure_picker_group) : page;
 
-    if (current_parent != target_container)
+    if(current_parent != target_container)
     {
       g_object_ref(basics);
       gtk_container_remove(GTK_CONTAINER(current_parent), basics);
@@ -3044,7 +3044,7 @@ void init_global(dt_iop_module_so_t *self)
 void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_agx_global_data_t *gd = self->data;
-  if (gd)
+  if(gd)
   {
     dt_opencl_free_kernel(gd->kernel_agx);
     free(self->data);
