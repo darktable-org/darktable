@@ -302,8 +302,6 @@ int dt_bauhaus_slider_get_feedback(GtkWidget *widget);
 
 void dt_bauhaus_slider_set_format(GtkWidget *widget,
                                   const char *format);
-float dt_bauhaus_slider_get_factor(GtkWidget *widget);
-float dt_bauhaus_slider_get_offset(GtkWidget *widget);
 void dt_bauhaus_slider_set_factor(GtkWidget *widget,
                                   float factor);
 void dt_bauhaus_slider_set_offset(GtkWidget *widget,

@@ -1371,78 +1371,42 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
 
 static void _update_pivot_x(const float old_black_ev, const float old_white_ev, dt_iop_module_t *self, dt_iop_agx_params_t *const p)
 {
-  printf("@@@ kofa _update_pivot_x start\n");
-
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float new_black_ev = p->range_black_relative_ev;
   const float new_white_ev = p->range_white_relative_ev;
   const float new_range = new_white_ev - new_black_ev;
+
   const float old_pivot_x = p->curve_pivot_x;
-
   const float old_range = old_white_ev - old_black_ev;
+
+  // this is what we want to preserve
   const float pivot_ev = old_black_ev + (old_pivot_x * old_range);
+  const float clamped_pivot_ev = CLAMPF(pivot_ev, new_black_ev, new_white_ev);
 
-  printf("@@@ kofa _update_pivot_x, old black_ev = %f\n", old_black_ev);
-  printf("@@@ kofa _update_pivot_x, old white_ev = %f\n", old_white_ev);
-  printf("@@@ kofa _update_pivot_x, old range = factor = %f\n", old_range);
-  printf("@@@ kofa _update_pivot_x, offset = range_black_relative_ev = %f\n", p->range_black_relative_ev);
-  printf("@@@ kofa _update_pivot_x, new black_ev = %f\n", new_black_ev);
-  printf("@@@ kofa _update_pivot_x, new white_ev = %f\n", new_white_ev);
-  printf("@@@ kofa _update_pivot_x, pivot_ev = %f\n", pivot_ev);
-  printf("@@@ kofa _update_pivot_x, old curve_pivot_x = %f\n", p->curve_pivot_x);
-
-  float clamped_pivot_ev = CLAMPF(pivot_ev, new_black_ev, new_white_ev);
-  if (fabsf(clamped_pivot_ev) < _epsilon)
-  {
-    // avoid annoying -0 on UI
-    clamped_pivot_ev = 0.f;
-  }
-
-  // range is ensured to be > 0 due to hard limits on sliders
+  // new_range is ensured to be > 0 due to hard limits on sliders
   p->curve_pivot_x = (clamped_pivot_ev - new_black_ev) / new_range;
-  printf("@@@ kofa _update_pivot_x, new curve_pivot_x = %f\n", p->curve_pivot_x);
 
-  if (g)
-  {
-    darktable.gui->reset++;
-    GtkWidget *slider = g->basic_curve_controls.curve_pivot_x;
-    dt_bauhaus_slider_set(slider, p->curve_pivot_x);
-    dt_bauhaus_slider_set_factor(slider, new_range);
-    dt_bauhaus_slider_set_offset(slider, new_black_ev);
-    darktable.gui->reset--;
-  } else
-  {
-    printf("@@@ kofa _update_pivot_x, g is NULL\n");
-  }
-  // dt_dev_add_history_item(darktable.develop, self, TRUE);
-  printf("@@@ kofa _update_pivot_x end\n");
+  darktable.gui->reset++;
+  GtkWidget* const slider = g->basic_curve_controls.curve_pivot_x;
+  dt_bauhaus_slider_set_factor(slider, new_range);
+  dt_bauhaus_slider_set_offset(slider, new_black_ev);
+  dt_bauhaus_slider_set(slider, p->curve_pivot_x);
+  darktable.gui->reset--;
 }
 
-static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self, dt_iop_agx_params_t *const p)
+static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self)
 {
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params start\n");
-  if (!p)
-  {
-    printf("@@@ kofa _adjust_relative_exposure_from_exposure_params early end\n");
-    return;
-  }
+  dt_iop_agx_params_t *p = self->params;
 
   const float old_black_ev = p->range_black_relative_ev;
   const float old_white_ev = p->range_white_relative_ev;
-
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params, old_black_ev = %f\n", old_black_ev);
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params, old_white_ev = %f\n", old_white_ev);
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params, old_curve_pivot_x = %f\n", p->curve_pivot_x);
 
   const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
   p->range_black_relative_ev = -8.f + 0.5f * exposure;
   p->range_white_relative_ev = 4.f + 0.8 * exposure;
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params, new_black_ev = %f\n", p->range_black_relative_ev);
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params, new_white_ev = %f\n", p->range_white_relative_ev);
   _update_pivot_x(old_black_ev, old_white_ev, self, p);
-  printf("@@@ kofa _adjust_relative_exposure_from_exposure_params end\n");
 }
 
 static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
@@ -1493,12 +1457,8 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
 
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 {
-  printf("@@@ kofa _apply_auto_black_exposure start\n");
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
-
-  printf("@@@ kofa _apply_auto_black_exposure old_black_ev = %f\n", p->range_black_relative_ev);
 
   const float black_norm = min3f(self->picked_color_min);
   p->range_black_relative_ev =
@@ -1506,44 +1466,31 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
            -20.f,
            -0.1f);
 
-  printf("@@@ kofa _apply_auto_black_exposure new_black_ev = %f\n", p->range_black_relative_ev);
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
   --darktable.gui->reset;
-  printf("@@@ kofa _apply_auto_black_exposure end\n");
 }
 
 static void _apply_auto_white_exposure(const dt_iop_module_t *self)
 {
-  printf("@@@ kofa _apply_auto_white_exposure start\n");
- if(darktable.gui->reset) return;
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
-
-  printf("@@@ kofa _apply_auto_white_exposure old_white_ev = %f\n", p->range_white_relative_ev);
 
   const float white_norm = max3f(self->picked_color_max);
   p->range_white_relative_ev =
     CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling),
            0.1f,
            20.f);
-  printf("@@@ kofa _apply_auto_white_exposure new_white_ev = %f\n", p->range_white_relative_ev);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
   --darktable.gui->reset;
-  printf("@@@ kofa _apply_auto_white_exposure end\n");
 }
 
 static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
 {
-  printf("@@@ kofa _apply_auto_tune_exposure start\n");
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
-  printf("@@@ kofa _apply_auto_tune_exposure old_black_ev = %f\n", p->range_black_relative_ev);
-  printf("@@@ kofa _apply_auto_tune_exposure old_white_ev = %f\n", p->range_white_relative_ev);
 
   const float black_norm = min3f(self->picked_color_min);
   p->range_black_relative_ev =
@@ -1557,15 +1504,10 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
            0.1f,
            20.f);
 
-  printf("@@@ kofa _apply_auto_tune_exposure new_black_ev = %f\n", p->range_black_relative_ev);
-  printf("@@@ kofa _apply_auto_tune_exposure new_white_ev = %f\n", p->range_white_relative_ev);
-
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
   --darktable.gui->reset;
-
-  printf("@@@ kofa _apply_auto_tune_exposure end\n");
 }
 
 static void _read_exposure_params_callback(GtkWidget *widget,
@@ -1574,7 +1516,7 @@ static void _read_exposure_params_callback(GtkWidget *widget,
   dt_iop_agx_gui_data_t *g = self->gui_data;
   if (g)
   {
-    _adjust_relative_exposure_from_exposure_params(self, self->params);
+    _adjust_relative_exposure_from_exposure_params(self);
     dt_iop_gui_update(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -1583,8 +1525,6 @@ static void _read_exposure_params_callback(GtkWidget *widget,
 // move only the pivot's relative (input) exposure, and recalculate its output based on mid-gray
 static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
-  printf("@@@ kofa _apply_auto_pivot_xy start\n");
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
@@ -1612,14 +1552,11 @@ static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccpr
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
                         p->curve_pivot_y_linear_output);
   --darktable.gui->reset;
-  printf("@@@ kofa _apply_auto_pivot_xy end\n");
 }
 
 // move only the pivot's relative (input) exposure, but don't change its output
 static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
-  printf("@@@ kofa _apply_auto_pivot_x start\n");
-
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
@@ -1635,7 +1572,6 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   darktable.gui->reset++;
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x, p->curve_pivot_x);
   darktable.gui->reset--;
-  printf("@@@ kofa _apply_auto_pivot_x end\n");
 }
 
 static void _create_matrices(const primaries_params_t *params,
@@ -2138,15 +2074,10 @@ void cleanup_pipe(dt_iop_module_t *self,
 
 static void _update_curve_warnings(dt_iop_module_t *self)
 {
-  printf("@@@ kofa _update_curve_warnings start\n");
   const dt_iop_agx_gui_data_t *g = self->gui_data;
   const dt_iop_agx_params_t *p = self->params;
 
-  if(!g)
-  {
-    printf("@@@ kofa _update_curve_warnings early end\n");
-    return;
-  }
+  if(!g) return;
 
   const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
   const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
@@ -2157,45 +2088,33 @@ static void _update_curve_warnings(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->basic_curve_controls.curve_shoulder_power,
                                     params.need_concave_shoulder && warnings_enabled
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
-  printf("@@@ kofa _update_curve_warnings end\n");
 }
 
 void gui_changed(dt_iop_module_t *self,
                  GtkWidget *widget,
                  void *previous)
 {
-  printf("@@@ kofa gui_changed start\n");
   dt_iop_agx_gui_data_t *g = self->gui_data;
   dt_iop_agx_params_t *p = self->params;
-  printf("@@@ kofa gui_changed, self->gui_data = %p\n", g);
-  printf("@@@ kofa gui_changed, self->params = %p\n", p);
-  printf("@@@ kofa gui_changed, curve_pivot_x = %f\n", p->curve_pivot_x);
 
   if(widget == g->black_exposure_picker)
   {
-    printf("@@@ kofa widget == g->black_exposure_picker\n");
     const float old_black_ev = *(float*)previous;
     const float old_white_ev = p->range_white_relative_ev;
-    printf("@@@ kofa old_black_ev = %f\n", old_black_ev);
-    printf("@@@ kofa new_black_ev = %f\n", p->range_black_relative_ev);
 
     _update_pivot_x(old_black_ev, old_white_ev, self, p);
   }
 
   if(widget == g->white_exposure_picker)
   {
-    printf("@@@ kofa widget == g->white_exposure_picker\n");
     const float old_black_ev = p->range_black_relative_ev;
     const float old_white_ev = *(float*)previous;
-    printf("@@@ kofa old_white_ev = %f\n", old_white_ev);
-    printf("@@@ kofa new_white_ev = %f\n", p->range_white_relative_ev);
 
     _update_pivot_x(old_black_ev, old_white_ev, self, p);
   }
 
   if(widget == g->security_factor)
   {
-    printf("@@@ kofa widget == g->security_factor\n");
     const float prev = *(float *)previous;
     const float ratio = (p->dynamic_range_scaling - prev) / (prev + 1.f);
 
@@ -2204,10 +2123,6 @@ void gui_changed(dt_iop_module_t *self,
 
     p->range_black_relative_ev = old_black_ev * (1.f + ratio);
     p->range_white_relative_ev = old_white_ev * (1.f + ratio);
-    printf("@@@ kofa old_black_ev = %f\n", old_black_ev);
-    printf("@@@ kofa old_white_ev = %f\n", old_white_ev);
-    printf("@@@ kofa new_black_ev = %f\n", p->range_black_relative_ev);
-    printf("@@@ kofa new_white_ev = %f\n", p->range_white_relative_ev);
     _update_pivot_x(old_black_ev, old_white_ev, self, p);
 
     darktable.gui->reset++;
@@ -2234,7 +2149,6 @@ void gui_changed(dt_iop_module_t *self,
     _adjust_pivot(self->params, &tone_mapping_params);
     dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
   }
-    printf("@@@ kofa gui_changed end\n");
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -2668,22 +2582,12 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
-  printf("@@@ kofa gui_update start\n");
   dt_iop_agx_gui_data_t *g = self->gui_data;
   const dt_iop_agx_params_t *p = self->params;
 
   const float range = p->range_white_relative_ev - p->range_black_relative_ev;
   dt_bauhaus_slider_set_factor(g->basic_curve_controls.curve_pivot_x, range);
   dt_bauhaus_slider_set_offset(g->basic_curve_controls.curve_pivot_x, p->range_black_relative_ev);
-
-  printf("@@@ kofa gui_update, self->gui_data = %p\n", g);
-  printf("@@@ kofa gui_update, self->params = %p\n", p);
-  printf("@@@ kofa gui_update, range_black_relative_ev = %f\n", p->range_black_relative_ev);
-  printf("@@@ kofa gui_update, range_white_relative_ev = %f\n", p->range_white_relative_ev);
-  printf("@@@ kofa gui_update, curve_pivot_x = %f\n", p->curve_pivot_x);
-  printf("@@@ kofa gui_update, factor = %f\n", dt_bauhaus_slider_get_factor(g->basic_curve_controls.curve_pivot_x));
-  printf("@@@ kofa gui_update, offset = %f\n", dt_bauhaus_slider_get_offset(g->basic_curve_controls.curve_pivot_x));
-
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_gamma),
                                p->auto_gamma);
@@ -2694,7 +2598,6 @@ void gui_update(dt_iop_module_t *self)
 
 
   gui_changed(self, NULL, NULL);
-  printf("@@@ kofa gui_update end\n");
 }
 
 static void _create_primaries_page(dt_iop_module_t *main,
@@ -2889,10 +2792,6 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 
 void gui_init(dt_iop_module_t *self)
 {
-  printf("@@@ kofa gui_init start\n");
-  printf("@@@ kofa gui_init, self->gui_data = %p\n", self->gui_data);
-  printf("@@@ kofa gui_init, self->params = %p\n", self->params);
-
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
 
   static dt_action_def_t notebook_def = {};
@@ -2926,7 +2825,6 @@ void gui_init(dt_iop_module_t *self)
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
   gui_update(self);
-  printf("@@@ kofa gui_init end\n");
 }
 
 static void _set_shared_params(dt_iop_agx_params_t *p)
@@ -3074,7 +2972,6 @@ void color_picker_apply(dt_iop_module_t *self,
 {
   if(darktable.gui->reset) return;
 
-  printf("@@@ kofa color_picker_apply start\n");
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
@@ -3102,7 +2999,6 @@ void color_picker_apply(dt_iop_module_t *self,
   _update_curve_warnings(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  printf("@@@ kofa color_picker_apply end\n");
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -3120,21 +3016,11 @@ void commit_params(dt_iop_module_t *self,
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  printf("@@@ kofa reload_defaults start\n");
-  if (!self->gui_data)
-  {
-    printf("@@@ kofa reload_defaults, self->gui_data early end\n");
-    return;
-  }
-  printf("@@@ kofa reload_defaults, self->gui_data = %p\n", self->gui_data);
-  printf("@@@ kofa reload_defaults, self->params = %p\n", self->default_params);
-
   if(dt_is_scene_referred())
   {
     dt_iop_agx_params_t *const p = self->default_params;
     _set_scene_referred_default_params(p);
   }
-  printf("@@@ kofa reload_defaults end\n");
 }
 
 void gui_reset(dt_iop_module_t *self)
