@@ -2387,7 +2387,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
 
   GtkWidget *white_slider = dt_bauhaus_slider_from_params(self, "range_white_relative_ev");
   g->white_exposure_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, white_slider);
-  dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
+  dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 10.f);
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
                               _("relative exposure above mid-gray (white point)"));
@@ -3018,8 +3018,8 @@ void reload_defaults(dt_iop_module_t *self)
 {
   if(dt_is_scene_referred())
   {
-    dt_iop_agx_params_t *const p = self->default_params;
-    _set_scene_referred_default_params(p);
+    dt_iop_agx_params_t *const d = self->default_params;
+    _set_scene_referred_default_params(d);
   }
 }
 
