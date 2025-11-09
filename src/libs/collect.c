@@ -2928,40 +2928,18 @@ static gboolean entry_focus_in_callback(GtkWidget *w,
   return FALSE;
 }
 
-static gboolean _process_variant_params(GVariant *parameter,
-                                        gpointer userdata,
-                                        dt_lib_collect_mode_t *mode,
-                                        dt_lib_collect_rule_t **d)
-{
-  const gsize nb = g_variant_n_children(parameter);
-
-  if(nb != 2)
-    return FALSE;
-
-  dt_lib_collect_t *m = (dt_lib_collect_t *)userdata;
-
-  GVariant *v = g_variant_get_child_value(parameter, 0);
-  *mode = g_variant_get_int32(v);
-  g_variant_unref(v);
-  
-  v = g_variant_get_child_value(parameter, 1);
-  const int rule_index = g_variant_get_int32(v);
-  g_variant_unref(v);
-
-  *d = &m->rule[rule_index];
-
-  return TRUE;
-}
-
 static void _menuitem_mode(GSimpleAction *action,
                            GVariant *parameter,
                            gpointer userdata)
 {
-  dt_lib_collect_mode_t mode;
-  dt_lib_collect_rule_t *d = NULL;
+  dt_lib_collect_t *m = (dt_lib_collect_t *)userdata;
 
-  if(!_process_variant_params(parameter, userdata, &mode, &d))
-    return;
+  dt_lib_collect_mode_t mode = 0;
+  int rule_index = 0;
+
+  g_variant_get(parameter, "(ii)", &mode, &rule_index);
+
+  dt_lib_collect_rule_t *d = &m->rule[rule_index];
 
   // add next row with and operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
@@ -2989,11 +2967,14 @@ static void _menuitem_mode_change(GSimpleAction *action,
                                   GVariant *parameter,
                                   gpointer userdata)
 {
-  dt_lib_collect_mode_t mode;
-  dt_lib_collect_rule_t *d = NULL;
+  dt_lib_collect_t *m = (dt_lib_collect_t *)userdata;
 
-  if(!_process_variant_params(parameter, userdata, &mode, &d))
-    return;
+  dt_lib_collect_mode_t mode = 0;
+  int rule_index = 0;
+
+  g_variant_get(parameter, "(ii)", &mode, &rule_index);
+
+  dt_lib_collect_rule_t *d = &m->rule[rule_index];
 
   // add next row with and operator
   const int num = d->num + 1;
