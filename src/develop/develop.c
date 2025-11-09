@@ -2955,14 +2955,12 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
 {
   if (dt_view_get_current() != DT_VIEW_DARKROOM)
   {
-    printf("@@@ kofa dt_dev_exposure_get_effective_exposure NOT DT_VIEW_DARKROOM\n");
     return 0.0f;
   }
 
   // The proxy function pointers are only set if an exposure module has been initialized.
   if (!dev->proxy.exposure.get_effective_exposure)
   {
-    printf("@@@ kofa dt_dev_exposure_get_effective_exposure proxy.exposure.get_effective_exposure is NULL\n");
     return 0.0f;
   }
 
@@ -2983,17 +2981,8 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
     dt_iop_module_t *preferred_exposure_instance = dt_iop_get_module_enabled_preferring_unmasked_first_instance(exposure_so);
     if (preferred_exposure_instance)
     {
-      printf("@@@ kofa dt_dev_exposure_get_effective_exposure found preferred_exposure_instance\n");
       return dev->proxy.exposure.get_effective_exposure(preferred_exposure_instance);
     }
-    else
-    {
-      printf("@@@ kofa dt_dev_exposure_get_effective_exposure preferred_exposure_instance is NULL\n");
-    }
-  }
-  else
-  {
-    printf("@@@ kofa dt_dev_exposure_get_effective_exposure exposure_so is NULL\n");
   }
 
   return 0.0f;
