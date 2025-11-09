@@ -110,7 +110,7 @@ typedef struct dt_iop_agx_params_t
 
   // curve params - comments indicate the original variables from https://www.desmos.com/calculator/yrysofmx8h
   // Corresponds to p_x; is displayed as EV using slider offset and scale.
-  // 0.606060606061f = 10/16.5, mid-gray's position if black relative exposure is -10 EV, white is +65. EV
+  // 0.606060606061f = 10/16.5, mid-gray's position if black relative exposure is -10 EV, white is +6.5 EV
   float curve_pivot_x;                    // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.606060606061f $DESCRIPTION: "pivot relative exposure"
   // Corresponds to p_y, but not directly -- needs application of gamma
   float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
@@ -411,7 +411,6 @@ int legacy_params(dt_iop_module_t *self,
     gboolean completely_reverse_primaries; // added in v5
   } dt_iop_agx_params_v6_t;
 
-
   typedef struct dt_iop_agx_params_v7_t
   {
     float look_lift;
@@ -652,7 +651,10 @@ int legacy_params(dt_iop_module_t *self,
         // should never happen, because of hard limits on the sliders
         np->curve_pivot_x = 0.5f;
       }
-      np->curve_pivot_x = CLIP(pivot_distance_in_ev_from_black / exposure_range_in_ev);
+      else
+      {
+        np->curve_pivot_x = CLIP(pivot_distance_in_ev_from_black / exposure_range_in_ev);
+      }
     }
 
     *new_params = np;
