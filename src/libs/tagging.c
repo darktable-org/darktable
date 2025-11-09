@@ -3427,7 +3427,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
     // Wayland: popover
     d->floating_tag_window = gtk_popover_new(center);
     gtk_popover_set_modal(GTK_POPOVER(d->floating_tag_window), TRUE);
-    gtk_popover_set_position(GTK_POPOVER(d->floating_tag_window), GTK_POS_TOP);
+    gtk_popover_set_position(GTK_POPOVER(d->floating_tag_window), GTK_POS_LEFT);
   }
   else
   {
@@ -3467,8 +3467,8 @@ static void _lib_tagging_tag_show(dt_action_t *action)
     GtkAllocation a;
     gtk_widget_get_allocation(center, &a);
     GdkRectangle rect;
-    rect.x = MAX(0, (a.width - FLOATING_ENTRY_WIDTH) / 2);
-    rect.y = MAX(0, a.height - 1);
+    rect.x = MAX(0, a.width - 1);
+    rect.y = MAX(0, (a.height / 2));
     rect.width = FLOATING_ENTRY_WIDTH;
     rect.height = 1;
     gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_tag_window), &rect);
