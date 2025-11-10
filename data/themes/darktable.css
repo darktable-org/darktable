@@ -409,10 +409,14 @@ header button,
   margin: 0.07em;
 }
 
-.dt_module_btn,
 .dt_ignore_fg_state:checked
 {
   color: @button_fg;
+}
+
+.dt_module_btn:first-child
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 spinbutton > button,
@@ -1642,10 +1646,14 @@ progressbar progress
 }
 
 /* deactivated switch buttons, make them less visible */
-.dt_history_switch_off,
-.dt_history_switch_off:disabled
+.dt_history_switch_off
 {
   color: @disabled_fg_color;
+}
+
+.dt_history_switch_off:disabled
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 #dt-metadata-changed
