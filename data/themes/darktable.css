@@ -369,6 +369,11 @@ textview
   margin: 0.07em 0.4em 0.07em 0.07em;
 }
 
+dialog entry
+{
+  margin: 0.07em 0em 0.07em 0em;
+}
+
 .combo,
 entry,
 #dt-metadata-multi,
