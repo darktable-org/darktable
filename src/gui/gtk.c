@@ -3562,12 +3562,10 @@ void dt_gui_apply_theme()
 
 GdkModifierType dt_key_modifier_state()
 {
-  guint state = 0;
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  gdk_device_get_state
-    (gdk_seat_get_pointer(gdk_display_get_default_seat
-                          (gdk_window_get_display(window))), window, NULL, &state);
-  return state;
+  GdkDisplay *display = gtk_widget_get_display(dt_ui_main_window(darktable.gui->ui));
+  GdkSeat *seat = gdk_display_get_default_seat(display);
+  GdkDevice *device = gdk_seat_get_pointer(seat);
+  return gdk_device_get_modifier_state(device);
 
 /* FIXME double check correct way of doing this (merge conflict with
    Input System NG 20210319)
@@ -3866,14 +3864,11 @@ static const dt_action_def_t _action_def_focus_tabs
       DT_ACTION_ELEMENTS_NUM(tabs),
       NULL, TRUE };
 
-static void _get_height_if_visible(GtkWidget *w,
-                                   gint *height)
-{
-  if(gtk_widget_get_visible(w)) *height = gtk_widget_get_allocated_height(w);
-}
-
 static gint _get_container_row_heigth(GtkWidget *w)
 {
+  if(GTK_IS_VIEWPORT(w))
+    w = gtk_viewport_get_child(GTK_VIEWPORT(w));
+
   gint height = DT_PIXEL_APPLY_DPI(10);
 
   if(GTK_IS_TREE_VIEW(w))
@@ -3883,10 +3878,14 @@ static gint _get_container_row_heigth(GtkWidget *w)
     const gint num_columns = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(w));
     for(int c = 0; c < num_columns; c++)
     {
-      gint cell_height = 0;
-      gtk_tree_view_column_cell_get_size(gtk_tree_view_get_column(GTK_TREE_VIEW(w), c),
-                                        NULL, NULL, NULL, NULL, &cell_height);
-      if(cell_height > row_height) row_height = cell_height;
+      GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(gtk_tree_view_get_column(GTK_TREE_VIEW(w), c)));
+      for(GList *l = renderers; l; l = g_list_delete_link(l, l))
+      {
+        GtkCellRenderer *renderer = l->data;
+        int natural_height;
+        gtk_cell_renderer_get_preferred_height(renderer, w, NULL, &natural_height);
+        if(natural_height > row_height) row_height = natural_height;
+      }
     }
     GValue separation = { G_TYPE_INT };
     gtk_widget_style_get_property(w, "vertical-separator", &separation);
@@ -3900,108 +3899,55 @@ static gint _get_container_row_heigth(GtkWidget *w)
     g_object_unref(layout);
   }
   else
-    gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback)_get_height_if_visible, &height);
+  {
+    GtkWidget *child = gtk_widget_get_first_child(w);
+    while(child && !(height = gtk_widget_get_allocated_height(child)))
+      child = gtk_widget_get_next_sibling(child);
+  }
 
   return height;
 }
 
-static gboolean _resize_wrap_draw(GtkWidget *w,
-                                  void *cr,
-                                  const char *config_str)
+
+
+static gboolean _resize_wrap_scroll(GtkEventControllerScroll* controller,
+                                    gdouble dx,
+                                    gdouble dy,
+                                    char *config_str)
 {
-  GtkWidget *sw = gtk_widget_get_parent(w);
-  if(GTK_IS_VIEWPORT(sw)) sw = gtk_widget_get_parent(sw);
+  GtkWidget *sw = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+
+  GdkModifierType state = gdk_event_get_modifier_state(
+                            gtk_event_controller_get_current_event(
+                              GTK_EVENT_CONTROLLER(controller)));
+  GtkWidget *w = gtk_scrolled_window_get_child(GTK_SCROLLED_WINDOW(sw));
 
   const gint increment = _get_container_row_heigth(w);
 
-  gint height = dt_conf_get_int(config_str);
-
-  const gint max_height = DT_PIXEL_APPLY_DPI(1000);
-
-  height = (height < 1) ? 1 : (height > max_height) ? max_height : height;
-
-  dt_conf_set_int(config_str, height);
-
-  gint content_height;
-  gtk_widget_get_preferred_height(w, NULL, &content_height);
-
-  const gint min_height =
-    -gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(sw));
-
-  if(content_height < min_height) content_height = min_height;
-
-  if(height > content_height) height = content_height;
-
-  height += increment - 1;
-  height -= height % increment;
-
-  GtkBorder padding, margin;
-  gtk_style_context_get_padding(gtk_widget_get_style_context(w),
-                                gtk_widget_get_state_flags(w),
-                                &padding);
-  gtk_style_context_get_margin(gtk_widget_get_style_context(sw),
-                               gtk_widget_get_state_flags(sw),
-                               &margin);
-
-  gint old_height = 0;
-  gtk_widget_get_size_request(sw, NULL, &old_height);
-  const gint new_height =
-    height + padding.top + padding.bottom + margin.top + margin.bottom;
-
-  if(new_height != old_height)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
-    gtk_widget_set_size_request(sw, -1, new_height);
-
-    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-    gint value = gtk_adjustment_get_value(adj);
-    value -= value % increment;
-    gtk_adjustment_set_value(adj, value);
-  }
-
-  return FALSE;
-}
-
-static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw,
-                                    GdkEventScroll *event,
-                                    const char *config_str)
-{
-  // no move needed
-  int delta_y = 0;
-  dt_gui_get_scroll_unit_delta(event, &delta_y);
-
-  if(delta_y == 0 )
-    return FALSE;
-
-  GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
-
-  if(GTK_IS_VIEWPORT(w))
-    w = gtk_bin_get_child(GTK_BIN(w));
-
-  const gint increment = _get_container_row_heigth(w);
-
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
-  {
-    const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
+    const gint new_size = dt_conf_get_int(config_str) + increment*dy;
 
     dt_toast_log(_("never show more than %d lines"), 1 + new_size / increment);
 
     dt_conf_set_int(config_str, new_size);
-    gtk_widget_queue_draw(w);
+    gtk_widget_queue_resize(w);
   }
   else
   {
-    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(sw);
+    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
 
     const gint before = gtk_adjustment_get_value(adj);
 
-    gint value = before + increment*delta_y;
+    gint value = before + increment*dy;
 
     value -= value % increment;
     gtk_adjustment_set_value(adj, value);
     const gint after = gtk_adjustment_get_value(adj);
 
     if(after == before)
-      gtk_propagate_event(gtk_widget_get_parent(GTK_WIDGET(sw)), (GdkEvent*)event);
+      return FALSE;
+      // gtk_propagate_event(gtk_widget_get_parent(GTK_WIDGET(sw)), (GdkEvent*)event);
   }
 
   return TRUE;
@@ -4030,98 +3976,200 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
 static gboolean _resize_wrap_dragging = FALSE;
 static GtkWidget *_resize_wrap_hovered = NULL;
 
-static gboolean _resize_wrap_draw_handle(GtkWidget *w,
-                                         void *cr,
-                                         gpointer user_data)
+void dt_gui_draw_resize_handle(GtkWidget *widget,
+                               GtkSnapshot *snapshot,
+                               graphene_rect_t *bounds)
 {
-  if(w != _resize_wrap_hovered)
-    return FALSE;
+  if(widget != _resize_wrap_hovered)
+    return;
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(w, &allocation);
+  GskPathBuilder *path = gsk_path_builder_new();
+  gsk_path_builder_move_to(path, bounds->size.width / 8 * 3, bounds->size.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
+  gsk_path_builder_line_to(path, bounds->size.width / 8 * 5, bounds->size.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
 
-  set_color(cr, darktable.bauhaus->color_fg_insensitive);
-  cairo_move_to(cr, allocation.width / 8 * 3,
-                allocation.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
-  cairo_line_to(cr, allocation.width / 8 * 5,
-                allocation.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
-  cairo_set_line_width(cr, DT_RESIZE_HANDLE_SIZE / 2);
-  cairo_stroke(cr);
-
-  return FALSE;
+  GskStroke *stroke = gsk_stroke_new(DT_RESIZE_HANDLE_SIZE / 2);
+  gtk_snapshot_push_stroke(snapshot, gsk_path_builder_free_to_path(path), stroke);
+  gtk_snapshot_append_color(snapshot, &darktable.bauhaus->color_fg_insensitive, bounds);
+  gtk_snapshot_pop(snapshot);
+  gsk_stroke_free(stroke);
 }
 
-static gboolean _resize_wrap_motion(GtkWidget *widget,
-                                    const GdkEventMotion *event,
-                                    const char *config_str)
+static void _resize_wrap_motion(GtkEventControllerMotion *controller,
+                                double x,
+                                double y,
+                                char *config_str)
 {
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   if(_resize_wrap_dragging)
   {
+    dt_conf_set_int(config_str, y);
     if(DTGTK_IS_DRAWING_AREA(widget))
     {
       // enforce configuration limits
-      dt_conf_set_int(config_str, event->y);
       const int height = dt_conf_get_int(config_str);
       dtgtk_drawing_area_set_height(widget, height);
     }
     else
-    {
-      dt_conf_set_int(config_str, event->y);
-      gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(widget)))));
-    }
-    return TRUE;
+      gtk_widget_queue_resize(widget);
   }
-  else if(!(event->state & GDK_BUTTON1_MASK)
-          && event->window == gtk_widget_get_window(widget)
-          && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
+  else if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+          && y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
   {
     dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
-    return TRUE;
   }
-
-  dt_control_change_cursor(GDK_LEFT_PTR);
-  return FALSE;
-}
-
-static gboolean _resize_wrap_button(GtkWidget *widget,
-                                    const GdkEventButton *event,
-                                    const char *config_str)
-{
-  if(_resize_wrap_dragging
-     && event->type == GDK_BUTTON_RELEASE)
-  {
-    _resize_wrap_dragging = FALSE;
+  else
     dt_control_change_cursor(GDK_LEFT_PTR);
-    return TRUE;
-  }
-  else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
-          && event->type == GDK_BUTTON_PRESS
-          && event->button == GDK_BUTTON_PRIMARY)
-  {
-    _resize_wrap_dragging = TRUE;
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
-static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
-                                         const GdkEventCrossing *event,
-                                         const char *config_str)
+static void _resize_wrap_enter(GtkEventControllerMotion *controller,
+                               double x,
+                               double y,
+                               char *config_str)
 {
-  _resize_wrap_hovered =
-    event->type == GDK_ENTER_NOTIFY
-    || event->detail == GDK_NOTIFY_INFERIOR
-    || _resize_wrap_dragging ? widget : NULL;
-
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  _resize_wrap_hovered = widget;
   gtk_widget_queue_draw(widget);
+}
 
-  if(event->mode == GDK_CROSSING_GTK_UNGRAB)
-    _resize_wrap_dragging = FALSE;
+static void _resize_wrap_leave(GtkEventControllerMotion *controller,
+                               char *config_str)
+{
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  _resize_wrap_hovered = NULL;
+  gtk_widget_queue_draw(widget);
   if(!_resize_wrap_dragging)
     dt_control_change_cursor(GDK_LEFT_PTR);
+}
 
-  return FALSE;
+static void _resize_wrap_button_press(GtkGestureSingle *gesture,
+                                      int n_press,
+                                      double x,
+                                      double y,
+                                      GtkWidget *widget)
+{
+  if(y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
+  {
+    _resize_wrap_dragging = TRUE;
+    dt_gui_claim(gesture);
+  }
+}
+
+static void _resize_wrap_button_release(GtkGestureSingle *gesture,
+                                        int n_press,
+                                        double x,
+                                        double y,
+                                        GtkWidget *widget)
+{
+  if(_resize_wrap_dragging)
+  {
+    _resize_wrap_dragging = FALSE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_gui_claim(gesture);
+  }
+}
+
+typedef struct _GtkDarktableScrollSizer {
+    GtkBox parent_instance;
+    GtkWidget *scroll;
+    const char *config_str;
+    gint min;
+} GtkDarktableScrollSizer;
+
+G_DECLARE_FINAL_TYPE(GtkDarktableScrollSizer, dtgtk_scroll_sizer, DTGTK, scroll_sizer, GtkWidget)
+G_DEFINE_TYPE(GtkDarktableScrollSizer, dtgtk_scroll_sizer, GTK_TYPE_WIDGET);
+
+static void _scroll_sizer_snapshot(GtkWidget *w,
+                                   GtkSnapshot* snapshot)
+{
+  GtkDarktableScrollSizer *self = (GtkDarktableScrollSizer*)w;
+
+  gtk_widget_snapshot_child(w, self->scroll, snapshot);
+
+  dt_gui_draw_resize_handle(w, snapshot, &GRAPHENE_RECT_INIT(0, 0, 
+                            gtk_widget_get_width(w), gtk_widget_get_height(w)));
+}
+
+static void _scroll_sizer_measure(GtkWidget *widget,
+                                  GtkOrientation orientation,
+                                  int for_size,
+                                  int *minimum,
+                                  int *natural,
+                                  int *baseline_minimum,
+                                  int *baseline_natural)
+{
+  GtkDarktableScrollSizer *self = (GtkDarktableScrollSizer*)widget;
+
+  GtkWidget *child = gtk_scrolled_window_get_child(GTK_SCROLLED_WINDOW(self->scroll));
+
+  gtk_widget_measure(child,
+                     orientation,
+                     for_size,
+                     minimum,
+                     natural,
+                     baseline_minimum,
+                     baseline_natural);
+
+  if(orientation == GTK_ORIENTATION_HORIZONTAL) return;
+
+  gint height = dt_conf_get_int(self->config_str);
+
+  const gint max_height = DT_PIXEL_APPLY_DPI(1000);
+
+  if(height < 1) height = 1;
+  if(height > max_height) height = max_height;
+
+  dt_conf_set_int(self->config_str, height);
+
+  gint content_height = *natural;
+
+  const gint min_height = self->min;
+
+  if(content_height < min_height) content_height = min_height;
+
+  if(height > content_height) height = content_height;
+
+  const gint increment = _get_container_row_heigth(child);
+  if(increment)
+  {
+    height += increment - 1;
+    height -= height % increment;
+
+    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(self->scroll));
+    gint value = gtk_adjustment_get_value(adj);
+    value -= value % increment;
+    gtk_adjustment_set_value(adj, value);
+  }
+
+  GtkBorder padding, margin;
+  gtk_style_context_get_padding(gtk_widget_get_style_context(child),
+                                gtk_widget_get_state_flags(child),
+                                &padding);
+  gtk_style_context_get_margin(gtk_widget_get_style_context(child),
+                               gtk_widget_get_state_flags(child),
+                               &margin);
+  height += padding.top + padding.bottom + margin.top + margin.bottom;
+
+  *natural = *minimum = height + DT_RESIZE_HANDLE_SIZE;
+}
+
+static void _scroll_sizer_size_allocate(GtkWidget *widget,
+                                        int width, int height,
+                                        int baseline)
+{
+  GtkDarktableScrollSizer *self = (GtkDarktableScrollSizer*)widget;
+  gtk_widget_allocate(self->scroll, width, height, baseline, NULL);
+}
+
+static void dtgtk_scroll_sizer_class_init(GtkDarktableScrollSizerClass *klass)
+{
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->measure = _scroll_sizer_measure;
+    widget_class->size_allocate = _scroll_sizer_size_allocate;
+    widget_class->snapshot = _scroll_sizer_snapshot;
+}
+
+static void dtgtk_scroll_sizer_init(GtkDarktableScrollSizer *self)
+{
 }
 
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
@@ -4131,6 +4179,7 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   if(!w)
     w = dtgtk_drawing_area_new_with_height(min_size);
 
+  gtk_widget_set_hexpand(w, TRUE);
   gtk_widget_set_has_tooltip(w, TRUE);
   g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
@@ -4146,36 +4195,25 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   else
   {
     GtkWidget *sw = dt_gui_scroll_wrap(w);
+    GtkDarktableScrollSizer *sizer = g_object_new(dtgtk_scroll_sizer_get_type(), NULL);
+    sizer->min = min_size;
+    sizer->config_str = config_str;
+    sizer->scroll = sw;
+    w = GTK_WIDGET(sizer);
+    gtk_widget_set_parent(sw, w);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_min_content_height
-      (GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
-if(0) { // GTK4
-    g_signal_connect(G_OBJECT(sw), "scroll-event",
-                     G_CALLBACK(_resize_wrap_scroll), config_str);
-    g_signal_connect(G_OBJECT(w), "draw",
-                     G_CALLBACK(_resize_wrap_draw), config_str);
-}
+    GtkEventController *controller = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+    gtk_widget_add_controller(sw, GTK_EVENT_CONTROLLER(controller));
+    g_signal_connect(controller, "scroll", G_CALLBACK(_resize_wrap_scroll), config_str);
     gtk_widget_set_margin_bottom(sw, DT_RESIZE_HANDLE_SIZE);
-    w = gtk_event_box_new();
-    gtk_container_add(GTK_CONTAINER(w), sw);
   }
 
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                          | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(w), "motion-notify-event",
-                   G_CALLBACK(_resize_wrap_motion), config_str);
-  g_signal_connect(G_OBJECT(w), "button-press-event",
-                   G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(w), "button-release-event",
-                   G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(w), "enter-notify-event",
-                   G_CALLBACK(_resize_wrap_enter_leave), config_str);
-  g_signal_connect(G_OBJECT(w), "leave-notify-event",
-                   G_CALLBACK(_resize_wrap_enter_leave), config_str);
-  g_signal_connect_after(G_OBJECT(w), "draw",
-                         G_CALLBACK(_resize_wrap_draw_handle), NULL);
+  dt_gui_connect_click(w, _resize_wrap_button_press, _resize_wrap_button_release, w);
+  dt_gui_connect_motion(w, _resize_wrap_motion, _resize_wrap_enter, _resize_wrap_leave, config_str);
   return w;
 }
 

@@ -625,6 +625,10 @@ static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
   return scrolled_window;
 }
 
+void dt_gui_draw_resize_handle(GtkWidget *widget,
+                               GtkSnapshot *snapshot,
+                               graphene_rect_t *bounds);
+
 // Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
 void dt_gui_simulate_button_event(GtkWidget *widget,
                                   const GdkEventType eventtype,

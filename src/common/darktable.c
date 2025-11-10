@@ -2853,18 +2853,17 @@ static void _widget_button_press(GtkGestureSingle *gesture,
                                  double y,
                                  GtkWidget *widget)
 {
-  GdkEventButton event;
-  memset(&event, 0, sizeof(event));
-  event.type = n_press > 1 ? GDK_DOUBLE_BUTTON_PRESS + n_press - 2 : GDK_BUTTON_PRESS;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.x = x;
-  event.y = y;
-  event.axes = NULL;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
-  event.button = gtk_gesture_single_get_current_button(gesture);
-  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkEventButton event = {
+    .type = n_press > 1 ? GDK_DOUBLE_BUTTON_PRESS + n_press - 2 : GDK_BUTTON_PRESS,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    .x = x,
+    .y = y,
+    .axes = NULL,
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture)),
+    .button = gtk_gesture_single_get_current_button(gesture),
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "button-press-event", &event, &ret);
   if(ret) dt_gui_claim(gesture);
@@ -2876,18 +2875,17 @@ static void _widget_button_release(GtkGestureSingle *gesture,
                                    double y,
                                    GtkWidget *widget)
 {
-  GdkEventButton event;
-  memset(&event, 0, sizeof(event));
-  event.type = GDK_BUTTON_RELEASE;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.x = x;
-  event.y = y;
-  event.axes = NULL;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
-  event.button = gtk_gesture_single_get_current_button(gesture);
-  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkEventButton event = {
+    .type = GDK_BUTTON_RELEASE,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    .x = x,
+    .y = y,
+    .axes = NULL,
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture)),
+    .button = gtk_gesture_single_get_current_button(gesture),
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "button-release-event", &event, &ret);
   if(ret) dt_gui_claim(gesture);
@@ -2898,17 +2896,16 @@ static void _widget_motion(GtkEventControllerMotion *controller,
                            double y,
                            GtkWidget *widget)
 {
-  GdkEventMotion event;
-  memset(&event, 0, sizeof(event));
-  event.type = GDK_MOTION_NOTIFY;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.x = x;
-  event.y = y;
-  event.axes = NULL;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
-  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkEventMotion event = {
+    .type = GDK_MOTION_NOTIFY,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    .x = x,
+    .y = y,
+    .axes = NULL,
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) ,
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "motion-notify-event", &event, &ret);
 }
@@ -2918,15 +2915,14 @@ static void _widget_enter(GtkEventControllerMotion *controller,
                           double y,
                           GtkWidget *widget)
 {
-  GdkEventCrossing event;
-  memset(&event, 0, sizeof(event));
-  event.type = GDK_ENTER_NOTIFY;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.x = x;
-  event.y = y;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  GdkEventCrossing event = {
+    .type = GDK_ENTER_NOTIFY,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    .x = x,
+    .y = y,
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "enter-notify-event", &event, &ret);
 }
@@ -2934,13 +2930,12 @@ static void _widget_enter(GtkEventControllerMotion *controller,
 static void _widget_leave(GtkEventControllerMotion *controller,
                           GtkWidget *widget)
 {
-  GdkEventCrossing event;
-  memset(&event, 0, sizeof(event));
-  event.type = GDK_LEAVE_NOTIFY;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
+  GdkEventCrossing event = {
+    .type = GDK_LEAVE_NOTIFY,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "leave-notify-event", &event, &ret);
 }
@@ -2950,19 +2945,17 @@ static gboolean _widget_scroll(GtkEventControllerScroll* self,
                                gdouble dy,
                                GtkWidget *widget)
 {
-  GdkEventScroll event;
-  memset(&event, 0, sizeof(event));
-  event.type = GDK_SCROLL;
-  event.window = gtk_widget_get_window(widget);
-  event.send_event = TRUE;
-  event.time = GDK_CURRENT_TIME;
-  event.x = 0;
-  event.y = 0;
-  event.state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(self));
-  event.direction = GDK_SCROLL_SMOOTH;
-  event.delta_x = dx;
-  event.delta_y = dy;
-  event.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  GdkEventScroll event = {
+    .type = GDK_SCROLL,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = GDK_CURRENT_TIME,
+    // .state = gtk_event_controller_get_current_event_state(), doesn't work properly with scroll gestures
+    .state = gdk_event_get_modifier_state(gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self))),
+    .direction = GDK_SCROLL_SMOOTH,
+    .delta_x = dx,
+    .delta_y = dy,
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
   gboolean ret = FALSE;
   g_signal_emit_by_name(widget, "scroll-event", &event, &ret);
   return ret;

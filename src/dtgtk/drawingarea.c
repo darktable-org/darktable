@@ -18,6 +18,7 @@
 
 #include "dtgtk/drawingarea.h"
 #include "common/darktable.h"
+#include "gui/gtk.h"
 
 G_DEFINE_TYPE(GtkDarktableDrawingArea, dtgtk_drawing_area, GTK_TYPE_DRAWING_AREA);
 
@@ -67,6 +68,8 @@ static void _widget_snapshot(GtkWidget* widget,
   g_signal_emit(widget, _drawing_area_draw_signal, 0, cr);
 
   cairo_destroy(cr);
+
+  dt_gui_draw_resize_handle(widget, snapshot, &bounds);
 }
 
 static void dtgtk_drawing_area_class_init(GtkDarktableDrawingAreaClass *class)
