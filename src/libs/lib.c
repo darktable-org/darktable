@@ -1275,7 +1275,6 @@ if(0) { // GTK4
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
                     G_CALLBACK(_lib_plugin_arrow_button_press), module);
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
-  gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
   /* add module label */
   GtkWidget *label = gtk_label_new("");
@@ -1292,7 +1291,6 @@ if(0) { // GTK4
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
   dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
-  gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
@@ -1307,7 +1305,6 @@ if(0) { // GTK4
     gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
 
   dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
-  gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
@@ -1318,7 +1315,8 @@ if(0) { // GTK4
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
-  gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
+
+  dt_gui_box_add(header, module->arrow, dt_gui_expand(label_evb), module->reset_button, module->presets_button);
 
   /* add button box - for module's specific action button */
   if(module->gui_tool_box)

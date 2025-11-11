@@ -22,7 +22,7 @@
 
 G_DEFINE_TYPE(GtkDarktableDrawingArea, dtgtk_drawing_area, GTK_TYPE_DRAWING_AREA);
 
-static GtkSizeRequestMode dtgtk_drawing_area_get_request_mode(GtkWidget *widget)
+static GtkSizeRequestMode _widget_get_request_mode(GtkWidget *widget)
 {
   return GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH;
 };
@@ -47,7 +47,7 @@ static void _widget_measure(GtkWidget* widget,
     else if(da->height == -1)
     {
       // initialize with aspect ratio
-      *minimum = *natural = for_size * da->aspect;
+      *minimum = *natural = -1; // for_size * da->aspect;
     }
     else
     {
@@ -76,6 +76,7 @@ static void dtgtk_drawing_area_class_init(GtkDarktableDrawingAreaClass *class)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 
+  widget_class->get_request_mode = _widget_get_request_mode;
   widget_class->measure = _widget_measure;
   widget_class->snapshot = _widget_snapshot;
 

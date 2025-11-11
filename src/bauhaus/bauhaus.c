@@ -304,12 +304,7 @@ static int _show_pango_text(dt_bauhaus_widget_t *w,
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
-  PangoFontDescription *font_desc = 0;
-  gtk_style_context_get(context,
-                        gtk_widget_get_state_flags(GTK_WIDGET(w)), "font",
-                        &font_desc, NULL);
-
-  pango_layout_set_font_description(layout, font_desc);
+  pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
 
   PangoAttrList *attrlist = pango_attr_list_new();
   pango_attr_list_insert(attrlist, pango_attr_font_features_new("tnum"));
@@ -347,7 +342,6 @@ static int _show_pango_text(dt_bauhaus_widget_t *w,
     cairo_move_to(cr, x_pos, y_pos);
     pango_cairo_show_layout(cr, layout);
   }
-  pango_font_description_free(font_desc);
   g_object_unref(layout);
 
   return text_width;
@@ -821,11 +815,10 @@ void dt_bauhaus_load_theme()
                                  &bh->colorlabels[DT_COLORLABELS_PURPLE]);
 
   // make sure we release previously loaded font
+  PangoContext *pango_context = gtk_widget_get_pango_context(root_window);
   if(bh->pango_font_desc)
     pango_font_description_free(bh->pango_font_desc);
-  bh->pango_font_desc = NULL;
-  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font",
-                        &bh->pango_font_desc, NULL);
+  bh->pango_font_desc = pango_font_description_copy_static(pango_context_get_font_description(pango_context));
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);

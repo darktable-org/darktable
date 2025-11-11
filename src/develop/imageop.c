@@ -2993,7 +2993,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
 
     g_signal_connect(button, "toggled", G_CALLBACK(_gui_off_callback), module);
-    gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
   {
@@ -3208,6 +3208,10 @@ if(0) { // GTK4
     gtk_widget_set_tooltip_text(module->presets_button,
                                 _("presets\nright-click to apply on new instance"));
 
+  gtk_box_prepend(GTK_BOX(header), dt_gui_expand(module->instance_name));
+  gtk_box_prepend(GTK_BOX(header), lab);
+  gtk_box_prepend(GTK_BOX(header), icon);
+
   /* add enabled button */
   module->off = dt_iop_gui_header_button(module,
                                          dtgtk_cairo_paint_switch,
@@ -3216,10 +3220,6 @@ if(0) { // GTK4
   dt_gui_add_class(module->off, "dt_transparent_background");
   dt_iop_gui_set_enable_button_icon(module->off, module);
   gtk_widget_set_sensitive(module->off, !module->hide_enable_button);
-
-  gtk_box_pack_start(GTK_BOX(header), icon, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(header), lab, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(header), module->instance_name, FALSE, FALSE, 0);
 
   dt_gui_add_help_link(lab, module->op);
   dt_gui_add_help_link(expander, module->op);
