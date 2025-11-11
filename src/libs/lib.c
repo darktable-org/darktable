@@ -854,7 +854,15 @@ static gboolean _lib_draw_callback(GtkWidget *widget,
 
 void dt_lib_gui_queue_update(dt_lib_module_t *module)
 {
+  // module->gui_uptodate = FALSE;
+
+// GTK4 need to implement class with snapshot override in expander for delayed updating
+if(module->gui_uptodate)
+{
   module->gui_uptodate = FALSE;
+  dt_lib_gui_update(module);
+}
+
   gtk_widget_queue_draw(module->widget);
 }
 
@@ -881,9 +889,10 @@ static void dt_lib_init_module(void *m)
     if(module->widget)
     {
       g_object_ref_sink(module->widget);
-      if(module->gui_update)
-        g_signal_connect(G_OBJECT(module->widget), "draw",
-                         G_CALLBACK(_lib_draw_callback), module);
+module->gui_uptodate = TRUE; // GTK4
+      // if(module->gui_update)
+      //   g_signal_connect(G_OBJECT(module->widget), "draw",
+      //                    G_CALLBACK(_lib_draw_callback), module);
     }
   }
 }
