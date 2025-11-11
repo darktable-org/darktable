@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-09 12:43+0100\n"
-"PO-Revision-Date: 2025-11-09 12:44+0100\n"
+"POT-Creation-Date: 2025-11-11 13:01+0100\n"
+"PO-Revision-Date: 2025-11-11 13:12+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1936,7 +1936,7 @@ msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr ""
 "Demandera une confirmation avant d’exporter des fichiers en mode écrasement"
 
-#: ../build/bin/preferences_gen.h:7171 ../src/libs/tools/viewswitcher.c:147
+#: ../build/bin/preferences_gen.h:7171 ../src/libs/tools/viewswitcher.c:151
 msgid "other"
 msgstr "Autre"
 
@@ -2834,8 +2834,8 @@ msgstr "Échelle de plage dynamique"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:295
 #: ../build/lib/darktable/plugins/introspection_agx.c:532
-msgid "pivot input shift"
-msgstr "Décalage entrée pivot"
+msgid "pivot relative exposure"
+msgstr "Exposition relative du pivot"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:301
 #: ../build/lib/darktable/plugins/introspection_agx.c:536
@@ -4077,12 +4077,12 @@ msgstr "Mode"
 #: ../src/develop/blend_gui.c:2344 ../src/iop/channelmixer.c:609
 #: ../src/iop/channelmixerrgb.c:4558 ../src/iop/colorchecker.c:1567
 #: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2625
-#: ../src/iop/exposure.c:1304
+#: ../src/iop/exposure.c:1315
 msgid "lightness"
 msgstr "Clarté"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2263 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2453 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -5033,7 +5033,7 @@ msgstr "Corrections"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/develop/blend_gui.c:3522 ../src/iop/bilat.c:438
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3856
-#: ../src/iop/exposure.c:1239 ../src/iop/levels.c:688
+#: ../src/iop/exposure.c:1250 ../src/iop/levels.c:688
 #: ../src/iop/profile_gamma.c:654 ../src/libs/export.c:1628
 #: ../src/libs/image.c:643 ../src/libs/print_settings.c:2934
 #: ../src/libs/styles.c:875 ../src/views/darkroom.c:2579
@@ -5200,7 +5200,7 @@ msgid "line"
 msgstr "Ligne"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2117 ../src/iop/agx.c:2481 ../src/iop/basecurve.c:2127
+#: ../src/iop/agx.c:2296 ../src/iop/agx.c:2814 ../src/iop/basecurve.c:2127
 #: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "Courbe"
@@ -5547,8 +5547,8 @@ msgstr "GainMap intégré"
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:644 ../src/gui/preferences.c:950
-#: ../src/gui/presets.c:695 ../src/iop/basicadj.c:622 ../src/iop/exposure.c:120
-#: ../src/iop/exposure.c:1201 ../src/libs/metadata_view.c:151
+#: ../src/gui/presets.c:695 ../src/iop/basicadj.c:622 ../src/iop/exposure.c:121
+#: ../src/iop/exposure.c:1212 ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "Exposition"
 
@@ -5989,11 +5989,11 @@ msgstr "Menu déroulant"
 #: ../src/libs/metadata.c:843 ../src/libs/metadata_view.c:1435
 #: ../src/libs/modulegroups.c:3643 ../src/libs/recentcollect.c:232
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:503 ../src/libs/styles.c:595
-#: ../src/libs/styles.c:656 ../src/libs/tagging.c:1532
-#: ../src/libs/tagging.c:1615 ../src/libs/tagging.c:1698
-#: ../src/libs/tagging.c:1816 ../src/libs/tagging.c:2083
-#: ../src/libs/tagging.c:2532 ../src/libs/tagging.c:2568
-#: ../src/libs/tagging.c:3540
+#: ../src/libs/styles.c:656 ../src/libs/tagging.c:1671
+#: ../src/libs/tagging.c:1760 ../src/libs/tagging.c:1852
+#: ../src/libs/tagging.c:1981 ../src/libs/tagging.c:2290
+#: ../src/libs/tagging.c:2805 ../src/libs/tagging.c:2847
+#: ../src/libs/tagging.c:3944
 msgid "_cancel"
 msgstr "_Annuler"
 
@@ -6001,9 +6001,9 @@ msgstr "_Annuler"
 #: ../src/gui/styles_dialog.c:558 ../src/libs/collect.c:3382
 #: ../src/libs/export_metadata.c:167 ../src/libs/metadata.c:844
 #: ../src/libs/metadata_view.c:1436 ../src/libs/recentcollect.c:233
-#: ../src/libs/styles.c:457 ../src/libs/tagging.c:1699
-#: ../src/libs/tagging.c:1817 ../src/libs/tagging.c:2084
-#: ../src/libs/tagging.c:3541
+#: ../src/libs/styles.c:457 ../src/libs/tagging.c:1853
+#: ../src/libs/tagging.c:1982 ../src/libs/tagging.c:2291
+#: ../src/libs/tagging.c:3945
 msgid "_save"
 msgstr "_Enregistrer"
 
@@ -6223,7 +6223,7 @@ msgid "camera"
 msgstr "Boîtier"
 
 #: ../src/common/collection.c:618 ../src/gui/metadata_tags.c:114
-#: ../src/libs/tagging.c:3334
+#: ../src/libs/tagging.c:3721
 msgid "tag"
 msgstr "Mot-clé"
 
@@ -9552,15 +9552,16 @@ msgstr ""
 " • m – afficher le masque."
 
 #: ../src/develop/blend_gui.c:2671 ../src/develop/blend_gui.c:3548
-#: ../src/iop/agx.c:2211 ../src/iop/agx.c:2219 ../src/iop/basicadj.c:624
-#: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3134
-#: ../src/iop/exposure.c:1204 ../src/iop/exposure.c:1220
-#: ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491 ../src/iop/filmic.c:1528
-#: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4411
-#: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4454
-#: ../src/iop/graduatednd.c:1065 ../src/iop/negadoctor.c:1004
-#: ../src/iop/profile_gamma.c:629 ../src/iop/profile_gamma.c:635
-#: ../src/iop/relight.c:249 ../src/iop/soften.c:390 ../src/iop/toneequal.c:3236
+#: ../src/iop/agx.c:2169 ../src/iop/agx.c:2389 ../src/iop/agx.c:2398
+#: ../src/iop/basicadj.c:624 ../src/iop/colorbalancergb.c:2000
+#: ../src/iop/colorequal.c:3134 ../src/iop/exposure.c:1215
+#: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491
+#: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4400
+#: ../src/iop/filmicrgb.c:4411 ../src/iop/filmicrgb.c:4444
+#: ../src/iop/filmicrgb.c:4454 ../src/iop/graduatednd.c:1065
+#: ../src/iop/negadoctor.c:1004 ../src/iop/profile_gamma.c:629
+#: ../src/iop/profile_gamma.c:635 ../src/iop/relight.c:249
+#: ../src/iop/soften.c:390 ../src/iop/toneequal.c:3236
 #: ../src/iop/toneequal.c:3239 ../src/iop/toneequal.c:3242
 #: ../src/iop/toneequal.c:3245 ../src/iop/toneequal.c:3248
 #: ../src/iop/toneequal.c:3251 ../src/iop/toneequal.c:3254
@@ -9888,7 +9889,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:3137
+#: ../src/develop/develop.c:3174
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
@@ -9904,24 +9905,24 @@ msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4059
+#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4079
 #: ../src/libs/masks.c:1136
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4060
+#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4080
 #: ../src/libs/masks.c:1141
 msgid "move down"
 msgstr "Descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4062
+#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4082
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:304
 #: ../src/libs/image.c:519
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4063
+#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4083
 #: ../src/libs/modulegroups.c:4002
 msgid "rename"
 msgstr "Renommer"
@@ -9999,11 +10000,11 @@ msgstr ""
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3921
+#: ../src/develop/imageop.c:3941
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:3922
+#: ../src/develop/imageop.c:3942
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -10014,24 +10015,24 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas ses prérequis."
 
-#: ../src/develop/imageop.c:4058 ../src/develop/imageop.c:4068
+#: ../src/develop/imageop.c:4078 ../src/develop/imageop.c:4088
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1580
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:4061 ../src/libs/modulegroups.c:3484
+#: ../src/develop/imageop.c:4081 ../src/libs/modulegroups.c:3484
 #: ../src/libs/modulegroups.c:3615 ../src/libs/modulegroups.c:4006
-#: ../src/libs/tagging.c:3305
+#: ../src/libs/tagging.c:3678
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
-#: ../src/develop/imageop.c:4064 ../src/libs/duplicate.c:402
+#: ../src/develop/imageop.c:4084 ../src/libs/duplicate.c:402
 #: ../src/libs/image.c:540 ../src/libs/modulegroups.c:3998
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:4069
+#: ../src/develop/imageop.c:4089
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:140
 #: ../src/gui/gtk.c:3687 ../src/gui/gtk.c:3742 ../src/gui/hist_dialog.c:274
@@ -10041,24 +10042,24 @@ msgstr "Cloner"
 msgid "reset"
 msgstr "Réinitialiser"
 
-#: ../src/develop/imageop.c:4070 ../src/gui/preferences.c:1024
+#: ../src/develop/imageop.c:4090 ../src/gui/preferences.c:1024
 #: ../src/libs/lib.c:1582
 msgid "presets"
 msgstr "Préréglages"
 
-#: ../src/develop/imageop.c:4071
+#: ../src/develop/imageop.c:4091
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:4072 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:4092 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:4073 ../src/gui/accelerators.c:2956
+#: ../src/develop/imageop.c:4093 ../src/gui/accelerators.c:2956
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:4093
+#: ../src/develop/imageop.c:4113
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -12960,7 +12961,7 @@ msgstr "Sélectionner le dossier du script"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2466 ../src/iop/channelmixerrgb.c:4426
+#: ../src/iop/agx.c:2798 ../src/iop/channelmixerrgb.c:4426
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3007 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
@@ -13186,7 +13187,7 @@ msgid "altgr"
 msgstr "AltGr"
 
 #: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:174
-#: ../src/libs/tagging.c:1814
+#: ../src/libs/tagging.c:1979
 msgid "edit"
 msgstr "Modifier"
 
@@ -13228,7 +13229,7 @@ msgstr "Premier"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
 #: ../src/gui/accelerators.c:359 ../src/libs/filters/rating_range.c:295
-#: ../src/libs/tagging.c:3177 ../src/views/darkroom.c:2555
+#: ../src/libs/tagging.c:3521 ../src/views/darkroom.c:2555
 #: ../src/views/darkroom.c:2621 ../src/views/darkroom.c:2897
 msgid "toggle"
 msgstr "Basculer"
@@ -13685,7 +13686,7 @@ msgstr "Id du périphérique"
 msgid "select file to export"
 msgstr "Sélectionne le fichier à exporter"
 
-#: ../src/gui/accelerators.c:2658 ../src/libs/tagging.c:2568
+#: ../src/gui/accelerators.c:2658 ../src/libs/tagging.c:2847
 msgid "_export"
 msgstr "_Exporter"
 
@@ -13717,7 +13718,7 @@ msgstr "Effacer d’abord les raccourcis du périphérique"
 msgid "select file to import"
 msgstr "Sélectionner le fichier à importer"
 
-#: ../src/gui/accelerators.c:2744 ../src/libs/tagging.c:2532
+#: ../src/gui/accelerators.c:2744 ../src/libs/tagging.c:2805
 msgid "_import"
 msgstr "_Importer"
 
@@ -13825,7 +13826,7 @@ msgid "import extended default shortcuts"
 msgstr "Importer des exemples de raccourcis par défaut"
 
 #: ../src/gui/accelerators.c:3079 ../src/libs/styles.c:901
-#: ../src/libs/tagging.c:3308
+#: ../src/libs/tagging.c:3683
 msgid "import..."
 msgstr "Importer…"
 
@@ -13834,7 +13835,7 @@ msgid "fully or partially import shortcuts from file"
 msgstr "Importer tout ou partiellement les raccourcis"
 
 #: ../src/gui/accelerators.c:3083 ../src/libs/styles.c:907
-#: ../src/libs/tagging.c:3311
+#: ../src/libs/tagging.c:3690
 msgid "export..."
 msgstr "Exporter…"
 
@@ -14826,8 +14827,8 @@ msgstr "Éditer « %s » pour le module « %s »"
 msgid "_export..."
 msgstr "_Exporter…"
 
-#: ../src/gui/presets.c:572 ../src/libs/tagging.c:1533
-#: ../src/libs/tagging.c:1616
+#: ../src/gui/presets.c:572 ../src/libs/tagging.c:1672
+#: ../src/libs/tagging.c:1761
 msgid "_delete"
 msgstr "_Supprimer"
 
@@ -14971,8 +14972,8 @@ msgstr "Pas de préréglage"
 msgid "display-referred default"
 msgstr "Relatif à l’affichage"
 
-#: ../src/gui/presets.c:1201 ../src/iop/agx.c:2609
-#: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
+#: ../src/gui/presets.c:1201 ../src/iop/agx.c:2942
+#: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:334
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "Défaut pour « relatif à la scène »"
@@ -15966,15 +15967,15 @@ msgid_plural "%d/%d exported to Piwigo webalbum"
 msgstr[0] "%d/%d est exportée vers Piwigo"
 msgstr[1] "%d/%d sont exportées vers Piwigo"
 
-#: ../src/iop/agx.c:44
+#: ../src/iop/agx.c:45
 msgid "AgX"
 msgstr "AgX"
 
-#: ../src/iop/agx.c:49 ../src/iop/sigmoid.c:197
+#: ../src/iop/agx.c:50 ../src/iop/sigmoid.c:197
 msgid "tone mapping|view transform|display transform"
 msgstr "mappage tonal|transformation affichage"
 
-#: ../src/iop/agx.c:55
+#: ../src/iop/agx.c:56
 msgid ""
 "applies a tone mapping curve.\n"
 "inspired by Blender's AgX tone mapper"
@@ -15982,9 +15983,9 @@ msgstr ""
 "Applique une courbe de tonalité.\n"
 "Inspiré du mappeur de tonalité AgX de Blender"
 
-#: ../src/iop/agx.c:57 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
+#: ../src/iop/agx.c:58 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
-#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:129
+#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:130
 #: ../src/iop/filmicrgb.c:350 ../src/iop/graduatednd.c:143
 #: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:155
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:141
@@ -15993,7 +15994,7 @@ msgstr ""
 msgid "corrective and creative"
 msgstr "Correctif et créatif"
 
-#: ../src/iop/agx.c:58 ../src/iop/ashift.c:125 ../src/iop/ashift.c:127
+#: ../src/iop/agx.c:59 ../src/iop/ashift.c:125 ../src/iop/ashift.c:127
 #: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:104
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:90 ../src/iop/blurs.c:91
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
@@ -16003,8 +16004,8 @@ msgstr "Correctif et créatif"
 #: ../src/iop/demosaic.c:330 ../src/iop/denoiseprofile.c:821
 #: ../src/iop/denoiseprofile.c:823 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
-#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:130
-#: ../src/iop/exposure.c:132 ../src/iop/flip.c:109 ../src/iop/flip.c:110
+#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
+#: ../src/iop/exposure.c:133 ../src/iop/flip.c:109 ../src/iop/flip.c:110
 #: ../src/iop/hazeremoval.c:111 ../src/iop/hazeremoval.c:113
 #: ../src/iop/lens.cc:264 ../src/iop/lens.cc:266 ../src/iop/liquify.c:295
 #: ../src/iop/liquify.c:297 ../src/iop/overlay.c:156 ../src/iop/overlay.c:158
@@ -16017,7 +16018,7 @@ msgstr "Correctif et créatif"
 msgid "linear, RGB, scene-referred"
 msgstr "Relatif à la scène, linéaire, RVB"
 
-#: ../src/iop/agx.c:59 ../src/iop/basecurve.c:374 ../src/iop/basicadj.c:170
+#: ../src/iop/agx.c:60 ../src/iop/basecurve.c:374 ../src/iop/basicadj.c:170
 #: ../src/iop/colorbalance.c:162 ../src/iop/colorbalancergb.c:183
 #: ../src/iop/dither.c:118 ../src/iop/filmicrgb.c:352
 #: ../src/iop/graduatednd.c:145 ../src/iop/negadoctor.c:144
@@ -16027,7 +16028,7 @@ msgstr "Relatif à la scène, linéaire, RVB"
 msgid "non-linear, RGB"
 msgstr "non-linéaire, RVB"
 
-#: ../src/iop/agx.c:60 ../src/iop/basecurve.c:373 ../src/iop/channelmixer.c:137
+#: ../src/iop/agx.c:61 ../src/iop/basecurve.c:373 ../src/iop/channelmixer.c:137
 #: ../src/iop/channelmixer.c:139 ../src/iop/lut3d.c:139
 #: ../src/iop/negadoctor.c:143 ../src/iop/profile_gamma.c:100
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
@@ -16036,67 +16037,49 @@ msgstr "non-linéaire, RVB"
 msgid "linear, RGB, display-referred"
 msgstr "Relatif à l’affichage, linéaire, RVB"
 
-#: ../src/iop/agx.c:1985
+#: ../src/iop/agx.c:2161
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "Paramètres basique de la courbe"
 
-#: ../src/iop/agx.c:1987 ../src/iop/agx.c:2138
+#: ../src/iop/agx.c:2163 ../src/iop/agx.c:2317
 msgctxt "section"
 msgid "curve"
 msgstr "Courbe"
 
-#: ../src/iop/agx.c:1998
-msgid "shift the pivot input towards black(-) or white(+)"
-msgstr "Décale le pivot en entré vers les noirs(-) ou les blancs(+)"
+#: ../src/iop/agx.c:2171
+msgid "set the pivot's input exposure in EV relative to mid-gray"
+msgstr "Défini l’exposition en entrée du pivot en IL relatif au gris moyen"
 
-#: ../src/iop/agx.c:2007
+#: ../src/iop/agx.c:2172
+msgid ""
+"the average luminance of the selected region will be\n"
+"used to set the pivot relative to mid-gray"
+msgstr ""
+"La luminance moyenne du la région sélectionnée sera\n"
+"utilisée pour le positionner le pivot relatif au gris moyen."
+
+#: ../src/iop/agx.c:2182
 msgid "darken or brighten the pivot (linear output power)"
 msgstr "Assombri ou éclairci le pivot (power sortie linéaire)"
 
-#: ../src/iop/agx.c:2013
+#: ../src/iop/agx.c:2183
+msgid ""
+"the average luminance of the selected region will be\n"
+"used to set the pivot relative to mid-gray,\n"
+"and the output will be adjusted based on the default\n"
+"mid-gray to mid-gray mapping"
+msgstr ""
+"La luminance moyenne du la région sélectionnée sera\n"
+"utilisée pour positionner le pivot relatif au gris moyen,\n"
+"et la sortie sera ajustée en fonction du gris moyen par\n"
+"défaut au gris-moyen mappé."
+
+#: ../src/iop/agx.c:2192
 msgid "slope of the linear section around the pivot"
 msgstr "Pente de la section linéaire autour du pivot"
 
-#: ../src/iop/agx.c:2019
-msgid ""
-"contrast in shadows\n"
-"higher values keep the slope nearly constant for longer,\n"
-"at the cost of a more sudden drop near black"
-msgstr ""
-"Contraste dans les ombres\n"
-"Les plus hautes valeurs conserve plus longtemps une pente presque "
-"constante,\n"
-"au risque d'une chute plus abrupte proche du noir"
-
-#: ../src/iop/agx.c:2023
-msgid ""
-"the curve has lost its 'S' shape, toe power cannot be applied.\n"
-"target black cannot be reached with the selected contrast and pivot "
-"position.\n"
-"increase contrast, move the pivot lower (reduce the pivot target output or\n"
-"curve y gamma), or increase the distance between the pivot and the left "
-"edge\n"
-"(increase the pivot shift, move the black point farther from the pivot by "
-"raising\n"
-"the relative black exposure or move the white point closer to the pivot\n"
-"by decreasing relative white exposure)."
-msgstr ""
-"La courbe à perdu sa forme en « S », la puissance du pied ne peut être "
-"appliquée.\n"
-"Le noir cible ne peut être atteint avec le contraste sélectionné et la "
-"position du pivot.\n"
-"Augmenter le contraste, déplacer le pivot plus bas (diminuer la sortie cible "
-"du pivot\n"
-"ou le gamma y de la courbe), ou augmenter la distance entre le pivot et le "
-"bord\n"
-"gauche (augmenter le décalage du pivot, éloigner le point noir du pivot en "
-"augmentant\n"
-"l'exposition relative du noir ou rapprocher le point blanc du pivot en "
-"diminuant\n"
-"l'exposition relative du blanc."
-
-#: ../src/iop/agx.c:2035
+#: ../src/iop/agx.c:2198
 msgid ""
 "contrast in highlights\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -16107,7 +16090,7 @@ msgstr ""
 "constante,\n"
 "au risque d'une chute plus abrupte proche du blanc"
 
-#: ../src/iop/agx.c:2039
+#: ../src/iop/agx.c:2202
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "target white cannot be reached with the selected contrast and pivot "
@@ -16134,36 +16117,74 @@ msgstr ""
 "diminuant\n"
 "l'exposition relative du noir)."
 
-#: ../src/iop/agx.c:2057
+#: ../src/iop/agx.c:2214
+msgid ""
+"contrast in shadows\n"
+"higher values keep the slope nearly constant for longer,\n"
+"at the cost of a more sudden drop near black"
+msgstr ""
+"Contraste dans les ombres\n"
+"Les plus hautes valeurs conserve plus longtemps une pente presque "
+"constante,\n"
+"au risque d'une chute plus abrupte proche du noir"
+
+#: ../src/iop/agx.c:2218
+msgid ""
+"the curve has lost its 'S' shape, toe power cannot be applied.\n"
+"target black cannot be reached with the selected contrast and pivot "
+"position.\n"
+"increase contrast, move the pivot lower (reduce the pivot target output or\n"
+"curve y gamma), or increase the distance between the pivot and the left "
+"edge\n"
+"(increase the pivot shift, move the black point farther from the pivot by "
+"raising\n"
+"the relative black exposure or move the white point closer to the pivot\n"
+"by decreasing relative white exposure)."
+msgstr ""
+"La courbe à perdu sa forme en « S », la puissance du pied ne peut être "
+"appliquée.\n"
+"Le noir cible ne peut être atteint avec le contraste sélectionné et la "
+"position du pivot.\n"
+"Augmenter le contraste, déplacer le pivot plus bas (diminuer la sortie cible "
+"du pivot\n"
+"ou le gamma y de la courbe), ou augmenter la distance entre le pivot et le "
+"bord\n"
+"gauche (augmenter le décalage du pivot, éloigner le point noir du pivot en "
+"augmentant\n"
+"l'exposition relative du noir ou rapprocher le point blanc du pivot en "
+"diminuant\n"
+"l'exposition relative du blanc."
+
+#: ../src/iop/agx.c:2236
 msgid "decrease or increase contrast and brightness"
 msgstr "Diminue ou augmente le contraste et la luminosité"
 
-#: ../src/iop/agx.c:2062
+#: ../src/iop/agx.c:2241
 msgid "deepen or lift shadows"
 msgstr "Renforce ou allège les ombres"
 
-#: ../src/iop/agx.c:2066
+#: ../src/iop/agx.c:2245
 msgid "increase or decrease brightness"
 msgstr "Augmente ou diminue la luminosité"
 
-#: ../src/iop/agx.c:2073
+#: ../src/iop/agx.c:2252
 msgid "decrease or increase saturation"
 msgstr "Augmente ou diminue la saturation"
 
-#: ../src/iop/agx.c:2080
+#: ../src/iop/agx.c:2259
 msgid "increase to bring hues closer to the original"
 msgstr "Augmenter pour conserver les teintes proches de l’original"
 
-#: ../src/iop/agx.c:2090
+#: ../src/iop/agx.c:2269
 msgctxt "section"
 msgid "look"
 msgstr "Look"
 
-#: ../src/iop/agx.c:2113
+#: ../src/iop/agx.c:2292
 msgid "show curve"
 msgstr "Montrer la courbe"
 
-#: ../src/iop/agx.c:2117 ../src/iop/atrous.c:1810
+#: ../src/iop/agx.c:2296 ../src/iop/atrous.c:1810
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3803
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -16171,28 +16192,16 @@ msgstr "Montrer la courbe"
 msgid "graph"
 msgstr "Graphique"
 
-#: ../src/iop/agx.c:2120
+#: ../src/iop/agx.c:2299
 msgid "tone mapping curve"
 msgstr "Courbe de mappage des tonalités"
 
-#: ../src/iop/agx.c:2133
+#: ../src/iop/agx.c:2312
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "Paramètres avancés de la courbe "
 
-#: ../src/iop/agx.c:2151
-msgid ""
-"length to keep curve linear below the pivot.\n"
-"may crush shadows"
-msgstr ""
-"Longueur de la courbe à garder linéaire sous le pivot.\n"
-"Peux tronquer les hautes lumières."
-
-#: ../src/iop/agx.c:2160
-msgid "raise for a faded look"
-msgstr "Augmenter pour un look passé."
-
-#: ../src/iop/agx.c:2169
+#: ../src/iop/agx.c:2330
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
@@ -16200,11 +16209,23 @@ msgstr ""
 "Longueur de la courbe à garder linéaire au dessus du pivot.\n"
 "Peux tronquer les hautes lumières."
 
-#: ../src/iop/agx.c:2178
+#: ../src/iop/agx.c:2339
 msgid "max linear output power"
 msgstr "Power en sortie linéaire maximum"
 
-#: ../src/iop/agx.c:2184
+#: ../src/iop/agx.c:2348
+msgid ""
+"length to keep curve linear below the pivot.\n"
+"may crush shadows"
+msgstr ""
+"Longueur de la courbe à garder linéaire sous le pivot.\n"
+"Peux tronquer les hautes lumières."
+
+#: ../src/iop/agx.c:2357
+msgid "raise for a faded look"
+msgstr "Augmenter pour un look passé."
+
+#: ../src/iop/agx.c:2363
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
@@ -16214,7 +16235,7 @@ msgstr ""
 "la courbe en forme de S (étant donné que le contraste\n"
 "est suffisamment élevé), ainsi le pied et l’épaule reste effectif."
 
-#: ../src/iop/agx.c:2193
+#: ../src/iop/agx.c:2372
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
 "along the y axis of the curve.\n"
@@ -16228,20 +16249,29 @@ msgstr ""
 "mais les ombres et hautes-lumières le sont; vous pouvez contrer l’effet \n"
 "avec le réglage du contraste ou avec les contrôles du pied / épaule."
 
-#: ../src/iop/agx.c:2204
+#: ../src/iop/agx.c:2383
 msgctxt "section"
 msgid "input exposure range"
 msgstr "Étendu de l’exposition en entrée"
 
-#: ../src/iop/agx.c:2213
+#: ../src/iop/agx.c:2391
 msgid "relative exposure above mid-gray (white point)"
 msgstr "Exposition relative au dessus du gris moyen (point blanc)"
 
-#: ../src/iop/agx.c:2221
+#: ../src/iop/agx.c:2392
+msgid "pick the white point"
+msgstr "Sélectionne le point blanc"
+
+#: ../src/iop/agx.c:2400
 msgid "relative exposure below mid-gray (black point)"
 msgstr "Exposition relative sous le gris moyen (point noir)"
 
-#: ../src/iop/agx.c:2229 ../src/iop/filmicrgb.c:4421
+# bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
+#: ../src/iop/agx.c:2401
+msgid "pick the black point"
+msgstr "Sélectionne le point noir"
+
+#: ../src/iop/agx.c:2409 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16249,34 +16279,46 @@ msgstr ""
 "Augmente ou diminue la plage dynamique calculée.\n"
 "Ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
 
-#: ../src/iop/agx.c:2234 ../src/iop/filmic.c:1509 ../src/iop/filmicrgb.c:4427
-#: ../src/iop/profile_gamma.c:645
+#: ../src/iop/agx.c:2415 ../src/iop/agx.c:2418 ../src/iop/filmic.c:1509
+#: ../src/iop/filmicrgb.c:4427 ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "Niveaux automatiques"
 
-#: ../src/iop/agx.c:2236
-msgid "pick image area to automatically set black and white exposure"
+#: ../src/iop/agx.c:2417
+msgid "set back and white relative exposure using the selected area"
 msgstr ""
-"Sélectionne une zone de l’image pour ajuster automatiquement l’exposition "
-"des blancs et des noirs"
+"Fixer l’exposition relative du noir et du blanc en utilisant la zone "
+"sélectionnée"
 
-#: ../src/iop/agx.c:2258
+#: ../src/iop/agx.c:2418 ../src/iop/agx.c:2425
+msgid "exposure range"
+msgstr "Étendu de l’exposition"
+
+#: ../src/iop/agx.c:2423
+msgid "read exposure from metadata and exposure module"
+msgstr "Récupérer l’exposition depuis les métadonnées et le module exposition"
+
+#: ../src/iop/agx.c:2425
+msgid "read exposure"
+msgstr "Récupérer l’exposition"
+
+#: ../src/iop/agx.c:2448
 msgid "blender-like"
 msgstr "Comme-Blender"
 
-#: ../src/iop/agx.c:2268
+#: ../src/iop/agx.c:2458
 msgid "unmodified"
 msgstr "Non-modifiées"
 
-#: ../src/iop/agx.c:2316 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+#: ../src/iop/agx.c:2605 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "Primaires"
 
-#: ../src/iop/agx.c:2316
+#: ../src/iop/agx.c:2605
 msgid "color primaries adjustments"
 msgstr "Ajustements des couleurs primaires"
 
-#: ../src/iop/agx.c:2325
+#: ../src/iop/agx.c:2614
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -16291,15 +16333,15 @@ msgstr ""
 "surtout avec des hautes lumières saturées (e.g. LEDs).\n"
 "Principalement étudié pour des expérimentations."
 
-#: ../src/iop/agx.c:2333
+#: ../src/iop/agx.c:2622
 msgid "reset primaries to a predefined configuration"
 msgstr "Réinitialise les primaires avec une configuration prédéfinie"
 
-#: ../src/iop/agx.c:2336
+#: ../src/iop/agx.c:2625
 msgid "reset primaries"
 msgstr "Réinitialise les primaires"
 
-#: ../src/iop/agx.c:2344
+#: ../src/iop/agx.c:2633
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -16308,44 +16350,44 @@ msgstr ""
 "« Profil d’export » utilise le profil positionné dans le module « Profil de "
 "couleur de sortie »"
 
-#: ../src/iop/agx.c:2347
+#: ../src/iop/agx.c:2636
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "Mappage avant tonalité"
 
-#: ../src/iop/agx.c:2368
+#: ../src/iop/agx.c:2646
 msgid "increase to desaturate reds in highlights faster"
 msgstr ""
 "Augmenter pour désaturer plus rapidement les rouges dans les hautes lumières"
 
-#: ../src/iop/agx.c:2370
+#: ../src/iop/agx.c:2653
 msgid "shift the red primary towards yellow (+) or magenta (-)"
 msgstr "décale le rouge vers le jaune (+) ou le magenta (-)"
 
-#: ../src/iop/agx.c:2372
+#: ../src/iop/agx.c:2659
 msgid "increase to desaturate greens in highlights faster"
 msgstr ""
 "Augmente pour désaturer plus rapidement les verts dans les hautes lumières"
 
-#: ../src/iop/agx.c:2374
+#: ../src/iop/agx.c:2666
 msgid "shift the green primary towards cyan (+) or yellow (-)"
 msgstr "décale le vert vers le cyan (+) ou le jaune (-)"
 
-#: ../src/iop/agx.c:2376
+#: ../src/iop/agx.c:2672
 msgid "increase to desaturate blues in highlights faster"
 msgstr ""
 "Augmente pour désaturer plus rapidement les bleus dans les hautes lumières"
 
-#: ../src/iop/agx.c:2378
+#: ../src/iop/agx.c:2679
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
 msgstr "décale le bleu vers le magenta (+) ou le cyan (-)"
 
-#: ../src/iop/agx.c:2382
+#: ../src/iop/agx.c:2685
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "Mappage après tonalité"
 
-#: ../src/iop/agx.c:2387
+#: ../src/iop/agx.c:2690
 msgid ""
 "completely restore purity, undo all rotations, and hide\n"
 "the controls below. uncheck to restore the previous state."
@@ -16353,11 +16395,11 @@ msgstr ""
 "Restaure complètement la pureté, défait toutes les rotations, et cache\n"
 "les contrôles ci-dessous. Désactiver pour restaurer l'état précédent."
 
-#: ../src/iop/agx.c:2390
+#: ../src/iop/agx.c:2693
 msgid "set from above"
 msgstr "Définit depuis au dessus"
 
-#: ../src/iop/agx.c:2392
+#: ../src/iop/agx.c:2695
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
@@ -16365,76 +16407,76 @@ msgstr ""
 "Définit les paramètres pour annuler les modifications des primaires,\n"
 "mais permet de modifier par la suite."
 
-#: ../src/iop/agx.c:2403
+#: ../src/iop/agx.c:2708
 msgid "overall purity boost"
 msgstr "Renforcer la pureté globale"
 
-#: ../src/iop/agx.c:2409
+#: ../src/iop/agx.c:2716
 msgid "overall unrotation ratio"
 msgstr "Ratio de dérotation globale"
 
-#: ../src/iop/agx.c:2412
+#: ../src/iop/agx.c:2720
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr ""
 "Restaure la pureté du rouge, principalement dans les tons-moyens et les "
 "ombres"
 
-#: ../src/iop/agx.c:2414
+#: ../src/iop/agx.c:2727
 msgid "reverse the color shift in reds"
 msgstr "Inverse le décalage de couleur des rouges"
 
-#: ../src/iop/agx.c:2416
+#: ../src/iop/agx.c:2733
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr ""
 "Restaure la pureté du vert, principalement dans les tons-moyens et les ombres"
 
-#: ../src/iop/agx.c:2418
+#: ../src/iop/agx.c:2740
 msgid "reverse the color shift in greens"
 msgstr "Inverse le décalage de couleur des verts"
 
-#: ../src/iop/agx.c:2420
+#: ../src/iop/agx.c:2746
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr ""
 "Restaure la pureté du bleu, principalement dans les tons-moyens et les ombres"
 
-#: ../src/iop/agx.c:2422
+#: ../src/iop/agx.c:2753
 msgid "reverse the color shift in blues"
 msgstr "Inverse le décalage de couleur des bleus"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2473 ../src/iop/temperature.c:2077
+#: ../src/iop/agx.c:2805 ../src/iop/temperature.c:2077
 #: ../src/iop/temperature.c:2090 ../src/iop/temperature.c:2097
 #: ../src/iop/temperature.c:2103 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2130
 msgid "settings"
 msgstr "Paramètres"
 
-#: ../src/iop/agx.c:2474
+#: ../src/iop/agx.c:2806
 msgid "main look and curve settings"
 msgstr "Paramètres principaux du look et de la courbe"
 
-#: ../src/iop/agx.c:2482
+#: ../src/iop/agx.c:2815
 msgid "detailed curve settings"
 msgstr "Paramètres détaillés de la courbe"
 
-#: ../src/iop/agx.c:2579
+#: ../src/iop/agx.c:2912
 msgid "unmodified base primaries"
 msgstr "Primaires de base non modifiées"
 
-#: ../src/iop/agx.c:2588
+#: ../src/iop/agx.c:2921
 msgid "blender-like|base"
 msgstr "Blender-like|Base"
 
-#: ../src/iop/agx.c:2594
+#: ../src/iop/agx.c:2927
 msgid "blender-like|punchy"
 msgstr "Blender-like|Renforcé"
 
-#: ../src/iop/agx.c:2625
+#: ../src/iop/agx.c:2958
 msgid "smooth|base"
 msgstr "Doux|Base"
 
-#: ../src/iop/agx.c:2629
+#: ../src/iop/agx.c:2962
 msgid "smooth|punchy"
 msgstr "Doux|Renforcé"
 
@@ -17048,7 +17090,7 @@ msgstr ""
 "car si mal ajusté les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/basicadj.c:625 ../src/iop/exposure.c:1202
+#: ../src/iop/basicadj.c:625 ../src/iop/exposure.c:1213
 msgid "adjust the exposure correction"
 msgstr "Ajuste la correction d’exposition"
 
@@ -17197,7 +17239,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:822
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:131 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
+#: ../src/iop/exposure.c:132 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
 #: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
@@ -18199,7 +18241,7 @@ msgstr ""
 msgid "mapping"
 msgstr "Mappage"
 
-#: ../src/iop/channelmixerrgb.c:4516 ../src/iop/exposure.c:1270
+#: ../src/iop/channelmixerrgb.c:4516 ../src/iop/exposure.c:1281
 msgid "area mode"
 msgstr "Mode de la zone"
 
@@ -18216,11 +18258,11 @@ msgstr ""
 "CAT,\n"
 "et peut être utilisée pour échantillonner la cible"
 
-#: ../src/iop/channelmixerrgb.c:4522 ../src/iop/exposure.c:1276
+#: ../src/iop/channelmixerrgb.c:4522 ../src/iop/exposure.c:1287
 msgid "correction"
 msgstr "Correction"
 
-#: ../src/iop/channelmixerrgb.c:4523 ../src/iop/exposure.c:1277
+#: ../src/iop/channelmixerrgb.c:4523 ../src/iop/exposure.c:1288
 msgid "measure"
 msgstr "Mesure"
 
@@ -18236,7 +18278,7 @@ msgstr ""
 "Calcule la cible en utilisant le mixage des canaux en cours.\n"
 "Si désactivé seul le CAT est considéré."
 
-#: ../src/iop/channelmixerrgb.c:4542 ../src/iop/exposure.c:1285
+#: ../src/iop/channelmixerrgb.c:4542 ../src/iop/exposure.c:1296
 msgid "the input color that should be mapped to the target"
 msgstr "La couleur d’entrée à mapper sur la cible"
 
@@ -18250,7 +18292,7 @@ msgstr ""
 "h : \tN/A\n"
 "c : \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4549 ../src/iop/exposure.c:1292
+#: ../src/iop/channelmixerrgb.c:4549 ../src/iop/exposure.c:1303
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
@@ -18258,13 +18300,13 @@ msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 msgid "the desired target color after mapping"
 msgstr "La cible recherchée après le mappage de l’exposition"
 
-#: ../src/iop/channelmixerrgb.c:4581 ../src/iop/exposure.c:1311
+#: ../src/iop/channelmixerrgb.c:4581 ../src/iop/exposure.c:1322
 msgctxt "section"
 msgid "input"
 msgstr "Entrée"
 
 #. spacer
-#: ../src/iop/channelmixerrgb.c:4584 ../src/iop/exposure.c:1314
+#: ../src/iop/channelmixerrgb.c:4584 ../src/iop/exposure.c:1325
 msgctxt "section"
 msgid "target"
 msgstr "Cible"
@@ -20983,7 +21025,7 @@ msgstr ""
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel « Égaliseur de contraste »."
 
-#: ../src/iop/exposure.c:127
+#: ../src/iop/exposure.c:128
 msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
@@ -20992,38 +21034,38 @@ msgstr ""
 "en utilisant un éclaircissement sans danger pour les couleurs.\n"
 "Semblable à une augmentation d’ISO."
 
-#: ../src/iop/exposure.c:314
+#: ../src/iop/exposure.c:315
 msgid "magic lantern defaults"
 msgstr "Défauts de magic lantern"
 
-#: ../src/iop/exposure.c:387 ../src/iop/rawoverexposed.c:133
+#: ../src/iop/exposure.c:388 ../src/iop/rawoverexposed.c:133
 #: ../src/iop/rawoverexposed.c:244
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "Échec de l’allocation de mémoire pour l’image « %s »"
 
-#: ../src/iop/exposure.c:681
+#: ../src/iop/exposure.c:687
 #, c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "Compenser l’exposition du boîtier (%+.1f IL)"
 
-#: ../src/iop/exposure.c:693
+#: ../src/iop/exposure.c:699
 #, no-c-format
 msgid "highlight preservation mode (%.1f EV)"
 msgstr "Méthode de préservation des hautes lumières (%.1f EV)"
 
 #. Write report in GUI
-#: ../src/iop/exposure.c:883
+#: ../src/iop/exposure.c:894
 #, c-format
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:1023 ../src/libs/history.c:949
+#: ../src/iop/exposure.c:1034 ../src/libs/history.c:949
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f IL"
 
-#: ../src/iop/exposure.c:1188
+#: ../src/iop/exposure.c:1199
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -21031,7 +21073,7 @@ msgstr ""
 "Supprime la compensation d’exposition du boîtier automatiquement,\n"
 "utile lors d’une exposition à droite de l’image."
 
-#: ../src/iop/exposure.c:1194
+#: ../src/iop/exposure.c:1205
 msgid ""
 "remove the camera's hidden exposure bias in\n"
 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
@@ -21045,33 +21087,33 @@ msgstr ""
 "Lorsque activé, le mappage de tonalité (e.g. Sigmoïde) doit\n"
 "éviter les hautes lumières tronquées."
 
-#: ../src/iop/exposure.c:1206
+#: ../src/iop/exposure.c:1217
 msgid "set the exposure adjustment using the selected area"
 msgstr "Fixer l’ajustement de l’exposition en utilisant la zone sélectionnée"
 
-#: ../src/iop/exposure.c:1217
+#: ../src/iop/exposure.c:1228
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "Où mesurer dans l’histogramme pour le deflicking, par exemple 50% est la "
 "valeur médiane"
 
-#: ../src/iop/exposure.c:1223
+#: ../src/iop/exposure.c:1234
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "Où placer le niveau d’exposition de l’image développée, IL en dessous de la "
 "surexposition"
 
-#: ../src/iop/exposure.c:1227
+#: ../src/iop/exposure.c:1238
 msgid "what exposure correction has actually been used"
 msgstr "La correction d’exposition réellement utilisée"
 
-#: ../src/iop/exposure.c:1233
+#: ../src/iop/exposure.c:1244
 msgid "computed EC: "
 msgstr "CE calculée : "
 
-#: ../src/iop/exposure.c:1246
+#: ../src/iop/exposure.c:1257
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -21084,11 +21126,11 @@ msgstr ""
 "tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/exposure.c:1256
+#: ../src/iop/exposure.c:1267
 msgid "area exposure mapping"
 msgstr "Mappage zone d’exposition"
 
-#: ../src/iop/exposure.c:1262
+#: ../src/iop/exposure.c:1273
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -21104,7 +21146,7 @@ msgstr ""
 "soit une surface immobile et éclairée de manière constante sur une série "
 "d’images."
 
-#: ../src/iop/exposure.c:1271
+#: ../src/iop/exposure.c:1282
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -21116,11 +21158,11 @@ msgstr ""
 " • Mesure – montre simplement comment une couleur d’entrée est mappée\n"
 "par la compensation d’exposition, et peut être utilisé pour définir la cible."
 
-#: ../src/iop/exposure.c:1289
+#: ../src/iop/exposure.c:1300
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1299
+#: ../src/iop/exposure.c:1310
 msgid "the desired target exposure after mapping"
 msgstr "La cible recherchée après le mappage de l’exposition"
 
@@ -25521,7 +25563,7 @@ msgstr "Préférences des collections"
 
 #: ../src/libs/collect.c:3401 ../src/libs/export.c:1410
 #: ../src/libs/metadata.c:1121 ../src/libs/metadata_view.c:1543
-#: ../src/libs/recentcollect.c:297 ../src/libs/tagging.c:3564
+#: ../src/libs/recentcollect.c:297 ../src/libs/tagging.c:3968
 msgid "preferences..."
 msgstr "Préférences…"
 
@@ -27861,8 +27903,8 @@ msgstr ""
 "collecte et d’importation,\n"
 "et seront également exportées."
 
-#: ../src/libs/metadata.c:920 ../src/libs/tagging.c:1719
-#: ../src/libs/tagging.c:1851
+#: ../src/libs/metadata.c:920 ../src/libs/tagging.c:1873
+#: ../src/libs/tagging.c:2021
 msgid "private"
 msgstr "Privée"
 
@@ -29030,7 +29072,7 @@ msgstr "Créer…"
 msgid "create styles from history stack of selected images"
 msgstr "Créer des styles à partir des images sélectionnées"
 
-#: ../src/libs/styles.c:889 ../src/libs/tagging.c:2289
+#: ../src/libs/styles.c:889 ../src/libs/tagging.c:2531
 msgid "edit..."
 msgstr "Éditer…"
 
@@ -29055,11 +29097,11 @@ msgid "apply the selected styles in list above to selected images"
 msgstr ""
 "Appliquer aux images sélectionnées les styles choisis dans la liste ci-dessus"
 
-#: ../src/libs/tagging.c:109
+#: ../src/libs/tagging.c:110
 msgid "tagging"
 msgstr "Mots-clés"
 
-#: ../src/libs/tagging.c:114
+#: ../src/libs/tagging.c:115
 msgid ""
 "add or remove keywords for\n"
 "the currently selected images"
@@ -29067,35 +29109,35 @@ msgstr ""
 "Ajouter ou supprimer des mots-clés\n"
 "des images sélectionnées"
 
-#: ../src/libs/tagging.c:1295
+#: ../src/libs/tagging.c:1415
 msgid "attach tag to all"
 msgstr ""
 "Attache le mot-clé\n"
 "à toutes les images sélectionnées."
 
-#: ../src/libs/tagging.c:1303 ../src/libs/tagging.c:2262
+#: ../src/libs/tagging.c:1424 ../src/libs/tagging.c:2500
 msgid "detach tag"
 msgstr "Détacher le mot-clé"
 
-#: ../src/libs/tagging.c:1307
+#: ../src/libs/tagging.c:1428
 msgid "find tag"
 msgstr "Chercher le mot-clé"
 
-#: ../src/libs/tagging.c:1311 ../src/libs/tagging.c:2321
+#: ../src/libs/tagging.c:1432 ../src/libs/tagging.c:2567
 msgid "copy to clipboard"
 msgstr "Copier dans le presse-papier"
 
-#: ../src/libs/tagging.c:1530
+#: ../src/libs/tagging.c:1669
 msgid "delete tag?"
 msgstr "Supprimer le mot-clé ?"
 
-#: ../src/libs/tagging.c:1536 ../src/libs/tagging.c:1619
-#: ../src/libs/tagging.c:1820 ../src/libs/tagging.c:2087
+#: ../src/libs/tagging.c:1675 ../src/libs/tagging.c:1764
+#: ../src/libs/tagging.c:1985 ../src/libs/tagging.c:2294
 #, c-format
 msgid "selected: %s"
 msgstr "Sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1540
+#: ../src/libs/tagging.c:1680
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -29111,73 +29153,73 @@ msgstr[1] ""
 "Il est assigné à %d images."
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:1574
+#: ../src/libs/tagging.c:1718
 #, c-format
 msgid "tag %s removed"
 msgstr "Mot-clé « %s » supprimé"
 
-#: ../src/libs/tagging.c:1613
+#: ../src/libs/tagging.c:1758
 msgid "delete node?"
 msgstr "Effacer le nœud ?"
 
-#: ../src/libs/tagging.c:1623
+#: ../src/libs/tagging.c:1768
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> mot-clé sera supprimé"
 msgstr[1] "<u>%d</u> mots-clés seront supprimés"
 
-#: ../src/libs/tagging.c:1628 ../src/libs/tagging.c:1828
-#: ../src/libs/tagging.c:2095
+#: ../src/libs/tagging.c:1775 ../src/libs/tagging.c:1995
+#: ../src/libs/tagging.c:2304
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> image sera mise à jour"
 msgstr[1] "<u>%d</u> images seront mises à jour"
 
-#: ../src/libs/tagging.c:1654
+#: ../src/libs/tagging.c:1806
 #, c-format
 msgid "%d tags removed"
 msgstr "%d mots-clés supprimés"
 
-#: ../src/libs/tagging.c:1696
+#: ../src/libs/tagging.c:1850
 msgid "create tag"
 msgstr "Créer un mot-clé"
 
-#: ../src/libs/tagging.c:1712
+#: ../src/libs/tagging.c:1866
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "Ajouter à « %s » "
 
-#: ../src/libs/tagging.c:1717 ../src/libs/tagging.c:1849
+#: ../src/libs/tagging.c:1871 ../src/libs/tagging.c:2019
 msgid "category"
 msgstr "Catégorie"
 
-#: ../src/libs/tagging.c:1729 ../src/libs/tagging.c:1840
+#: ../src/libs/tagging.c:1884 ../src/libs/tagging.c:2010
 msgid "name: "
 msgstr "Nom : "
 
-#: ../src/libs/tagging.c:1731 ../src/libs/tagging.c:1860
+#: ../src/libs/tagging.c:1887 ../src/libs/tagging.c:2030
 msgid "synonyms: "
 msgstr "Synonymes : "
 
-#: ../src/libs/tagging.c:1739 ../src/libs/tagging.c:1876
-#: ../src/libs/tagging.c:2119
+#: ../src/libs/tagging.c:1895 ../src/libs/tagging.c:2047
+#: ../src/libs/tagging.c:2330
 msgid "empty tag is not allowed, aborting"
 msgstr "Mot-clé vide interdit, annulation."
 
-#: ../src/libs/tagging.c:1750
+#: ../src/libs/tagging.c:1906
 msgid "tag name already exists. aborting."
 msgstr "Le mot-clé existe déjà, annulation."
 
-#: ../src/libs/tagging.c:1824 ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:1989 ../src/libs/tagging.c:2298
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
 msgstr[1] "<u>%d</u> mots-clés seront mis à jour"
 
-#: ../src/libs/tagging.c:1878
+#: ../src/libs/tagging.c:2049
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -29185,101 +29227,101 @@ msgstr ""
 "« | » n’est pas utilisable dans le nom d’un mot-clé,\n"
 "pour modifier une hiérarchie utiliser l’action « Renommer le chemin »."
 
-#: ../src/libs/tagging.c:1917 ../src/libs/tagging.c:2030
+#: ../src/libs/tagging.c:2098 ../src/libs/tagging.c:2232
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Au moins un nouveau mot-clé (%s) existe déjà, annulation."
 
-#: ../src/libs/tagging.c:2081
+#: ../src/libs/tagging.c:2288
 msgid "change path"
 msgstr "Changer le chemin"
 
-#: ../src/libs/tagging.c:2121
+#: ../src/libs/tagging.c:2334
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "« | » mal placé, un mot-clé vide est interdit, annulation"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:2232
+#: ../src/libs/tagging.c:2466
 #, c-format
 msgid "tag %s created"
 msgstr "Mot-clé « %s » créé"
 
-#: ../src/libs/tagging.c:2258
+#: ../src/libs/tagging.c:2495
 msgid "attach tag"
 msgstr "Attacher le mot-clé"
 
-#: ../src/libs/tagging.c:2271
+#: ../src/libs/tagging.c:2510
 msgid "create tag..."
 msgstr "Créer un mot-clé…"
 
-#: ../src/libs/tagging.c:2277
+#: ../src/libs/tagging.c:2517
 msgid "delete tag"
 msgstr "Supprimer un mot-clé"
 
-#: ../src/libs/tagging.c:2284
+#: ../src/libs/tagging.c:2525
 msgid "delete node"
 msgstr "Supprimer le nœud"
 
-#: ../src/libs/tagging.c:2296
+#: ../src/libs/tagging.c:2539
 msgid "change path..."
 msgstr "Changer le chemin…"
 
-#: ../src/libs/tagging.c:2306
+#: ../src/libs/tagging.c:2550
 msgid "set as a tag"
 msgstr "Défini comme mot-clé"
 
-#: ../src/libs/tagging.c:2317
+#: ../src/libs/tagging.c:2562
 msgid "copy to entry"
 msgstr "Copier dans le champ de saisie"
 
-#: ../src/libs/tagging.c:2341
+#: ../src/libs/tagging.c:2588
 msgid "go to tag collection"
 msgstr "Aller à la collection liée au mot-clé"
 
-#: ../src/libs/tagging.c:2347
+#: ../src/libs/tagging.c:2595
 msgid "go back to work"
 msgstr "Retourner au module des mots-clés"
 
-#: ../src/libs/tagging.c:2504
+#: ../src/libs/tagging.c:2771
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2505
+#: ../src/libs/tagging.c:2773
 msgid "(private)"
 msgstr "(privé)"
 
-#: ../src/libs/tagging.c:2531
+#: ../src/libs/tagging.c:2802
 msgid "select a keyword file"
 msgstr "Sélectionner un fichier de mot-clés"
 
-#: ../src/libs/tagging.c:2544
+#: ../src/libs/tagging.c:2817
 msgid "error importing tags"
 msgstr "Erreur lors de l’importation de mots-clés"
 
-#: ../src/libs/tagging.c:2546
+#: ../src/libs/tagging.c:2819
 #, c-format
 msgid "%zd tags imported"
 msgstr "« %zd » mots-clés importés"
 
-#: ../src/libs/tagging.c:2567
+#: ../src/libs/tagging.c:2844
 msgid "select file to export to"
 msgstr "Sélectionne le fichier pour l’export"
 
-#: ../src/libs/tagging.c:2581
+#: ../src/libs/tagging.c:2860
 msgid "error exporting tags"
 msgstr "Erreur lors de l’export de mots-clés"
 
-#: ../src/libs/tagging.c:2583
+#: ../src/libs/tagging.c:2862
 #, c-format
 msgid "%zd tags exported"
 msgstr "« %zd » mots-clés exportés"
 
-#: ../src/libs/tagging.c:3022
+#: ../src/libs/tagging.c:3340
 msgid "drop to root"
 msgstr "Replacer à la racine"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:3497
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -29291,47 +29333,47 @@ msgstr ""
 " • Clic-droit pour afficher le menu des actions du mot-clé sélectionné,\n"
 " • Touche Tab pour donner le focus à la zone d’entrée."
 
-#: ../src/libs/tagging.c:3169
+#: ../src/libs/tagging.c:3511
 msgid "attach"
 msgstr "Attacher"
 
-#: ../src/libs/tagging.c:3170
+#: ../src/libs/tagging.c:3513
 msgid "attach tag to all selected images"
 msgstr "Attacher le mot-clé aux images sélectionnées"
 
-#: ../src/libs/tagging.c:3173
+#: ../src/libs/tagging.c:3516
 msgid "detach"
 msgstr "Détacher"
 
-#: ../src/libs/tagging.c:3174
+#: ../src/libs/tagging.c:3518
 msgid "detach tag from all selected images"
 msgstr "Détacher le mot-clé des images sélectionnées"
 
-#: ../src/libs/tagging.c:3187
+#: ../src/libs/tagging.c:3532
 msgid "toggle list with / without hierarchy"
 msgstr "Basculer la liste hiérarchique"
 
-#: ../src/libs/tagging.c:3187
+#: ../src/libs/tagging.c:3532
 msgid "hide"
 msgstr "Cacher"
 
-#: ../src/libs/tagging.c:3189
+#: ../src/libs/tagging.c:3535
 msgid "toggle sort by name or by count"
 msgstr "Changer le classement par nom ou par nombre"
 
-#: ../src/libs/tagging.c:3189
+#: ../src/libs/tagging.c:3535
 msgid "sort"
 msgstr "Trier"
 
-#: ../src/libs/tagging.c:3191
+#: ../src/libs/tagging.c:3538
 msgid "toggle show or not darktable tags"
 msgstr "Basculer l’affichage des mots-clés spécifiques à Darktable"
 
-#: ../src/libs/tagging.c:3191
+#: ../src/libs/tagging.c:3538
 msgid "dttags"
 msgstr "Dttags"
 
-#: ../src/libs/tagging.c:3206
+#: ../src/libs/tagging.c:3555
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -29343,11 +29385,11 @@ msgstr ""
 " • Touches Tab ou Bas pour aller vers le premier mot-clé affiché,\n"
 " • Maj+Tab pour sélectionner le premier mot-clé utilisateur attaché."
 
-#: ../src/libs/tagging.c:3217 ../src/libs/tagging.c:3223
+#: ../src/libs/tagging.c:3568 ../src/libs/tagging.c:3575
 msgid "clear entry"
 msgstr "Effacer le texte"
 
-#: ../src/libs/tagging.c:3270
+#: ../src/libs/tagging.c:3634
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -29364,48 +29406,48 @@ msgstr ""
 " • Clic-droit pour les autres actions sur le mot-clé sélectionné,\n"
 " • Maj+Tab pour donner le focus à la zone de saisie."
 
-#: ../src/libs/tagging.c:3305
+#: ../src/libs/tagging.c:3680
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "Créer un nouveau mot-clé à partir de la saisie"
 
-#: ../src/libs/tagging.c:3308
+#: ../src/libs/tagging.c:3686
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importer des mots-clés depuis un fichier de mots-clés Lightroom"
 
-#: ../src/libs/tagging.c:3311
+#: ../src/libs/tagging.c:3693
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exporter tous les mots-clés dans un fichier de mots-clés Lightroom"
 
-#: ../src/libs/tagging.c:3315
+#: ../src/libs/tagging.c:3699
 msgid "toggle list / tree view"
 msgstr "Changer la vue liste / arbre"
 
-#: ../src/libs/tagging.c:3315
+#: ../src/libs/tagging.c:3699
 msgid "tree"
 msgstr "Arbre"
 
-#: ../src/libs/tagging.c:3317
+#: ../src/libs/tagging.c:3703
 msgid "toggle list with / without suggestion"
 msgstr "Afficher la liste avec / sans les suggestions"
 
-#: ../src/libs/tagging.c:3317
+#: ../src/libs/tagging.c:3704
 msgid "suggestion"
 msgstr "Suggestion"
 
-#: ../src/libs/tagging.c:3335
+#: ../src/libs/tagging.c:3723
 msgid "redo last tag"
 msgstr "Ré-appliquer le mot-clé"
 
-#: ../src/libs/tagging.c:3416
+#: ../src/libs/tagging.c:3810
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "Le raccourci de mots-clés n’est pas actif lorsque la vue est arborescente, "
 "changer pour la vue en liste."
 
-#: ../src/libs/tagging.c:3538
+#: ../src/libs/tagging.c:3942
 msgid "tagging settings"
 msgstr "Paramètres des mots-clés"
 
@@ -30799,6 +30841,17 @@ msgstr "Créer une fenêtre flottante persistante"
 msgid "mouse actions"
 msgstr "Actions de la souris"
 
+#~ msgid "pivot input shift"
+#~ msgstr "Décalage entrée pivot"
+
+#~ msgid "shift the pivot input towards black(-) or white(+)"
+#~ msgstr "Décale le pivot en entré vers les noirs(-) ou les blancs(+)"
+
+#~ msgid "pick image area to automatically set black and white exposure"
+#~ msgstr ""
+#~ "Sélectionne une zone de l’image pour ajuster automatiquement l’exposition "
+#~ "des blancs et des noirs"
+
 #~ msgid "agx"
 #~ msgstr "AgX"
 
@@ -30901,9 +30954,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "basic curve parameters"
 #~ msgstr "Paramètres basique de la courbe"
-
-#~ msgid "input exposure range"
-#~ msgstr "Étendu de l’exposition en entrée"
 
 #~ msgid "start export"
 #~ msgstr "Lancer l’export"
