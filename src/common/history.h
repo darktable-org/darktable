@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,11 +63,10 @@ typedef struct dt_history_copy_item_t
 {
   GList *selops;
   GtkTreeView *items;
-  GtkWidget *overwrite;
   dt_imgid_t copied_imageid;
   gboolean full_copy;
   gboolean copy_iop_order;
-  gboolean is_overwrite_set;
+  dt_history_copy_mode_t paste_mode;
 } dt_history_copy_item_t;
 
 /** helper function to free a GList of dt_history_item_t */
