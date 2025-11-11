@@ -2417,7 +2417,8 @@ void dt_control_paste_parts_history(GList *imgs)
     (&(darktable.view_manager->copy_paste),
      darktable.view_manager->copy_paste.copied_imageid, FALSE);
 
-  if(res == GTK_RESPONSE_OK)
+  if(res == GTK_RESPONSE_OK
+     || res == GTK_RESPONSE_APPLY)
   {
     _images_job_data_t *images_job_data = g_malloc(sizeof(_images_job_data_t));
     if(images_job_data)
@@ -2425,7 +2426,8 @@ void dt_control_paste_parts_history(GList *imgs)
       images_job_data->imgs = imgs;
       images_job_data->styles = NULL;
       images_job_data->duplicate = FALSE;
-      images_job_data->overwrite = darktable.view_manager->copy_paste.is_overwrite_set;
+      images_job_data->overwrite =
+        darktable.view_manager->copy_paste.paste_mode == DT_HISTORY_COPY_OVERWRITE;
 
       _add_history_job_data(N_("paste history"),
                             &_control_paste_history_job_run, images_job_data);
