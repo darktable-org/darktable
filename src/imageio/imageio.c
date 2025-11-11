@@ -1297,13 +1297,14 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
-           " upscale=%s, hq=%s",
+           " upscale=%s, hq=%s%s",
            size_warning ? "**missing size** " : "",
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
            upscale ? "yes" : "no",
-           high_quality_processing || scale > 1.0f ? "yes" : "no");
+           high_quality_processing || scale > 1.0f ? "yes" : "no",
+           dt_check_gimpmode("file") ? " GIMP" : "");
 
   const int bpp = format->bpp(format_params);
 

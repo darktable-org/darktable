@@ -277,7 +277,7 @@ void gui_init(dt_imageio_module_storage_t *self)
                dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory")));
   dt_gtkentry_setup_variables_completion(d->entry);
   gtk_editable_set_position(GTK_EDITABLE(d->entry), -1);
-  
+
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
@@ -363,31 +363,21 @@ try_again:
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    if(dt_gimpmode())
-    {
-      /* we certainly don't want to use any variable based expansion of the given filename
-         while in gimp mode but just keep it.
-      */
-      g_strlcpy(filename, pattern, sizeof(filename));
-    }
-    else
-    {
-      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
-      g_strlcpy(filename, result_filename, sizeof(filename));
-      g_free(result_filename);
+    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+    g_strlcpy(filename, result_filename, sizeof(filename));
+    g_free(result_filename);
 
-      // if filenamepattern is a directory just add ${FILE_NAME} as
-      // default..  this can happen if the filename component of the
-      // pattern is an empty variable
-      const char last_char = *(filename + strlen(filename) - 1);
-      if(last_char == '/' || last_char == '\\')
-      {
-        // add to the end of the original pattern without caring about a
-        // potentially added "_$(SEQUENCE)"
-        if(snprintf(pattern, sizeof(pattern), "%s"
-                  G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-          goto try_again;
-      }
+    // if filenamepattern is a directory just add ${FILE_NAME} as
+    // default..  this can happen if the filename component of the
+    // pattern is an empty variable
+    const char last_char = *(filename + strlen(filename) - 1);
+    if(last_char == '/' || last_char == '\\')
+    {
+      // add to the end of the original pattern without caring about a
+      // potentially added "_$(SEQUENCE)"
+      if(snprintf(pattern, sizeof(pattern), "%s"
+                G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
+        goto try_again;
     }
 
     // get the directory path of the output file
