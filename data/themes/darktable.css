@@ -409,6 +409,7 @@ header button,
   margin: 0.07em;
 }
 
+.dt_module_btn,
 .dt_ignore_fg_state:checked
 {
   color: @button_fg;
