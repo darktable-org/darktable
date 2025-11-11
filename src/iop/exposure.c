@@ -87,6 +87,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   GtkWidget *compensate_hilite_preserv;
+  float effective_exposure; // used to cache the final computed exposure
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -627,6 +628,11 @@ void commit_params(dt_iop_module_t *self,
 
   d->deflicker = 0;
 
+  if (self->gui_data)
+  {
+    ((dt_iop_exposure_gui_data_t *)self->gui_data)->effective_exposure = d->params.exposure;
+  }
+
   if(p->mode == EXPOSURE_MODE_DEFLICKER
      && dt_image_is_raw(&self->dev->image_storage)
      && self->dev->image_storage.buf_dsc.channels == 1
@@ -813,6 +819,11 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
   return p->black;
 }
 
+static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
+{
+  const dt_iop_exposure_gui_data_t* const g = self->gui_data;
+  return g->effective_exposure;
+}
 
 static void _exposure_proxy_handle_event(gpointer controller,
                                          int n_press,
@@ -1320,6 +1331,7 @@ void gui_init(dt_iop_module_t *self)
   dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
   instance->module = self;
   instance->get_exposure = _exposure_proxy_get_exposure;
+  instance->get_effective_exposure = _exposure_proxy_get_effective_exposure;
   instance->get_black = _exposure_proxy_get_black;
   instance->handle_event = _exposure_proxy_handle_event;
 }

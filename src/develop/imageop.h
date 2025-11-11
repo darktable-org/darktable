@@ -457,6 +457,9 @@ int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
 dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module);
 
+/** return an enabled instance, if any, preferring unmasked instances earlier in the pipe **/
+dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(const dt_iop_module_so_t *module);
+
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, const dt_iop_module_t *module);
 
