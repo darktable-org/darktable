@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,11 @@ Whenever we call 'darktable --gimp' the results are written to 'stdout'. All req
 a start line `\n<<<gimp\n` and
 a final line `\ngimp>>>\n`
 
-for defined interpretation.
+for a defined interpretation.
 
-(This allows darktable to use the debug logs and avoids problems with libraries writing to output in an uncontrolled manner.)
+This allows darktable to use the debug logs and avoids problems with libraries writing to output in an uncontrolled manner.
+If you want to debug a gimp plugin session you can do so from CLI as
+darktable --gimp file any-filename-with-variables -d any-combination-of-debug-signals
 
 In case of an error the <res> is 'error'
 
