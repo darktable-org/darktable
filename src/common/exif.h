@@ -110,7 +110,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
 char *dt_exif_xmp_read_string(const dt_imgid_t imgid);
 
 /** read xmp sidecar file. Returns TRUE in case of any error*/
-gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
+gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean history_only);
 
 /** apply default import metadata */
 void dt_exif_apply_default_metadata(dt_image_t *img);

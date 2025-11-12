@@ -457,6 +457,9 @@ int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
 dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module);
 
+/** return an enabled instance, if any, preferring unmasked instances earlier in the pipe **/
+dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(const dt_iop_module_so_t *module);
+
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, const dt_iop_module_t *module);
 
@@ -473,15 +476,26 @@ const gchar *dt_iop_get_localized_name(const gchar *op);
 const gchar *dt_iop_get_localized_aliases(const gchar *op);
 
 /** set multi_priority and update raster mask links */
-void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
+void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priority);
+
+/** set multi_name and update module label */
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force);
 
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
 /** checks dt_iop_is_raster_mask_used() or writing for exports */
-gboolean dt_iop_piece_is_raster_mask_used(const struct dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id);
+gboolean dt_iop_piece_is_raster_mask_used(const struct dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_mask_id_t id);
 
 /** set and clear the rastermasks, check the pixelpipe cache and report */
-void dt_iop_piece_set_raster(struct dt_dev_pixelpipe_iop_t *piece, float *mask, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+void dt_iop_piece_set_raster(struct dt_dev_pixelpipe_iop_t *piece,
+                             float *mask,
+                             const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out);
 void dt_iop_piece_clear_raster(struct dt_dev_pixelpipe_iop_t *piece, float *mask);
 
 /** returns the previous visible module on the module list */
@@ -534,7 +548,8 @@ const char **dt_iop_set_description(dt_iop_module_t *module,
 /** get a nice printable name. */
 const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type);
 
-static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, const size_t size)
+static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module,
+                                                const size_t size)
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
   module->gui_data = dt_calloc_aligned(size);
@@ -561,9 +576,12 @@ gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev);
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
-void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
+void dt_iop_gui_changed(dt_action_t *action,
+                        GtkWidget *widget,
+                        gpointer data);
 
-gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const dt_iop_module_t *module);
+gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev,
+                                  const dt_iop_module_t *module);
 
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to

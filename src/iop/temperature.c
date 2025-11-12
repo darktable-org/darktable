@@ -702,14 +702,14 @@ void commit_params(dt_iop_module_t *self,
   if(self->hide_enable_button)
   {
     for_four_channels(k)
-      chr->wb_coeffs[k] = 1.0;
+      chr->wb_coeffs[k] = 1.0f;
     return;
   }
 
   for_four_channels(k)
   {
     d->coeffs[k] = tcoeffs[k];
-    chr->wb_coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0;
+    chr->wb_coeffs[k] = piece->enabled ? d->coeffs[k] : 1.0f;
   }
 
   // 4Bayer images not implemented in OpenCL yet

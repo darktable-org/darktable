@@ -369,6 +369,12 @@ textview
   margin: 0.07em 0.4em 0.07em 0.07em;
 }
 
+window entry,
+dialog entry
+{
+  margin: 0.07em;
+}
+
 .combo,
 entry,
 #dt-metadata-multi,
@@ -407,6 +413,12 @@ header button,
 .dt_ignore_fg_state:checked
 {
   color: @button_fg;
+}
+
+/* iop on/off buton */
+.dt_module_btn:first-child
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 spinbutton > button,
@@ -853,6 +865,13 @@ menuitem check:selected
   padding-right: 0.42em;
 }
 
+/* ??? workaround a wayland issue where the sub-menu in the presets
+   closing when close to the right border of the screen. */
+menuitem *
+{
+    padding: .05em;
+}
+
 /* fix for menuitem in bottom toolbar mainly */
 menuitem > arrow
 {
@@ -906,6 +925,17 @@ popover separator
   margin: 0.6em 2em;
   padding-bottom: 0.07em;
   background-color: @selected_bg_color;
+}
+
+/* the tag completion popover */
+popover box
+{
+  border : 1px solid @button_border;
+}
+
+popover *
+{
+  background-color: @bg_color;
 }
 
 combobox separator
@@ -1618,10 +1648,15 @@ progressbar progress
 }
 
 /* deactivated switch buttons, make them less visible */
-.dt_history_switch_off,
-.dt_history_switch_off:disabled
+.dt_history_switch_off
 {
   color: @disabled_fg_color;
+}
+
+/* history on/off button */
+.dt_history_switch_off:disabled
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 #dt-metadata-changed
@@ -2485,4 +2520,31 @@ button#pb_on
 label#pb_label
 {
   padding-left: .5em;
+}
+
+/* the following line are for the Wayland headerbar, this does nothing on non
+   wayland were we let the WM decorate the window by himself. */
+window headerbar
+{
+    background-color: @border_color;
+    color: #ffffff;             /* Text color */
+    min-height: 0;              /* Minimum height */
+    padding: 0;                 /* Padding around content */
+}
+
+window headerbar.title
+{
+    font-weight: bold;
+    font-size: 16px;
+}
+
+dialog headerbar button,
+window headerbar button.titlebutton
+{
+    border-radius: 999px;           /* Makes the button round */
+    padding: 3px;                   /* Size of the button */
+    background-color: shade(@border_color, 1.1);
+    color: white;
+    border: none;
+    margin: 8px;                    /* Spaces around button */
 }

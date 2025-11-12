@@ -951,6 +951,11 @@ static gboolean _dev_load_requested_image(gpointer user_data);
 static void _dev_change_image(dt_develop_t *dev,
                               const dt_imgid_t imgid)
 {
+  if(dt_check_gimpmode("file"))
+  {
+    dt_control_log(_("can't change image in GIMP plugin mode"));
+    return;
+  }
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
 
@@ -996,8 +1001,8 @@ static void _dev_change_image(dt_develop_t *dev,
   if(dev->preview_pipe->backbuf
      && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
-    const double aspect_ratio =
-      (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const float aspect_ratio =
+      (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
@@ -1328,9 +1333,13 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
   }
 }
 
-static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
+static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
-
+  if(dt_check_gimpmode("file"))
+  {
+    dt_control_log(_("can't change image in GIMP plugin mode"));
+    return;
+  }
   const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
@@ -1419,12 +1428,12 @@ static void zoom_out_callback(dt_action_t *action)
 
 static void skip_f_key_accel_callback(dt_action_t *action)
 {
-  dt_dev_jump_image(dt_action_view(action)->data, 1, TRUE);
+  _dev_jump_image(dt_action_view(action)->data, 1, TRUE);
 }
 
 static void skip_b_key_accel_callback(dt_action_t *action)
 {
-  dt_dev_jump_image(dt_action_view(action)->data, -1, TRUE);
+  _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
@@ -3168,8 +3177,8 @@ void leave(dt_view_t *self)
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
-    const double aspect_ratio =
-      (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const float aspect_ratio =
+      (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, FALSE);
   }
   else

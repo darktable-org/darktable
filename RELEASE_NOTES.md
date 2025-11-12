@@ -75,7 +75,16 @@ changes (where available).
   default) or to create a new one. Each workspace has it's own
   database and configuration file (collection, last UI defaults...).
 
+  An in memory workspace can also be selected in the dialog. In this
+  case there is no database created in disk, a configuration file is
+  created though.
+
 ## UI/UX Improvements
+
+- Many GNU/Linux distributions have dropped support for X11 leaving
+  only Wayland. Darktable has received many fixes to work properly on
+  Wayland including display ICC profiles. This version 5.4 should work
+  on Wayland as good as it was on X11.
 
 - Show a busy cursor when changing views. This provides immediate
   feedback when, for example, double-clicking an image in the
@@ -200,6 +209,8 @@ changes (where available).
   the <focused> action or to the mimics set up with for example the
   x-touch Lua script.
 
+- Added the ability to calculate crop factor for Olympus cameras.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -255,6 +266,23 @@ changes (where available).
 
 - Fixed an issue where imported styles that didn't have a name could
   cause darktable to crash when starting.
+
+- Fixed a bug leading to wrong colors in main darkroom window (mostly
+  after using a module picker) due to bad color coeffs in colorin
+  module.
+
+- Fix support for Wayland. The UI is now working as expected and
+  Darktable will handle ICC profile from colord.
+
+- Fixed processing module naming based on the presets when the used
+  preset is renamed or deleted.
+
+- Fixed a bug in darktable-cli where exporting a duplicate version of
+  an image would use the tags attached to the base version instead of
+  the tags attached to it.
+
+- Fixed a bug in darktable-cli where synonyms for tags attached to an
+  image were ignored when exporting it.
 
 ## Lua
 

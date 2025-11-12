@@ -835,19 +835,12 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
 
       if(g_strcmp0(module->multi_name, name) != 0)
       {
-        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-        // this has been hand edited, the name should not be changed when
-        // applying a preset or a style.
-        module->multi_name_hand_edited = TRUE;
-        dt_dev_add_history_item(module->dev, module, TRUE);
+        dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
       }
     }
     else
     {
-      // clear out multi-name (set 1st char to 0)
-      module->multi_name[0] = 0;
-      module->multi_name_hand_edited = FALSE;
-      dt_dev_add_history_item(module->dev, module, FALSE);
+      dt_iop_update_multi_name(module, "", FALSE, FALSE, TRUE);
     }
 
     // make sure we write history & xmp to ensure that the new module name
@@ -3538,6 +3531,29 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   module->multi_priority = new_priority;
 }
 
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  char *l_name = g_strstrip(g_strdup(name));
+
+  if(force
+     || (auto_module
+         && !module->multi_name_hand_edited))
+  {
+    g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
+    module->multi_name_hand_edited = hand_edited;
+    dt_iop_gui_update_header(module);
+    dt_dev_add_history_item(module->dev, module, enable);
+  }
+
+  g_free(l_name);
+}
+
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id)
 {
   GHashTableIter iter;
@@ -3620,9 +3636,16 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
   return mod_ret;
 }
 
+typedef enum instance_filter_mode_t
+{
+  FILTER_NEUTRAL,
+  FILTER_PREFER,
+  FILTER_REQUIRE,
+} instance_filter_mode_t;
+
 dt_iop_module_t *_find_preferred_instance(const dt_iop_module_so_t *module,
                                           const gboolean prefer_expanded,
-                                          const gboolean prefer_enabled,
+                                          const instance_filter_mode_t enabled_mode,
                                           const gboolean prefer_unmasked,
                                           const gboolean prefer_first)
 {
@@ -3637,6 +3660,10 @@ dt_iop_module_t *_find_preferred_instance(const dt_iop_module_so_t *module,
 
     if(mod->so == module && mod->iop_order != INT_MAX)
     {
+      if (enabled_mode == FILTER_REQUIRE && !mod->enabled) continue;
+
+      const gboolean prefer_enabled = enabled_mode == FILTER_PREFER;
+
       const gboolean no_mask = mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
                             || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED;
       const int score = (mod->expanded && prefer_expanded ? 8 : 0)
@@ -3688,9 +3715,18 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *
   else
     return _find_preferred_instance(module,
                                     dt_conf_get_bool("accel/prefer_expanded"),
-                                    dt_conf_get_bool("accel/prefer_enabled"),
+                                    dt_conf_get_bool("accel/prefer_enabled") ? FILTER_PREFER : FILTER_NEUTRAL,
                                     dt_conf_get_bool("accel/prefer_unmasked"),
                                     dt_conf_is_equal("accel/select_order", "first instance"));
+}
+
+dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(const dt_iop_module_so_t *module)
+{
+  return _find_preferred_instance(module,
+                                    FALSE,
+                                    FILTER_REQUIRE,
+                                    TRUE,
+                                    TRUE);
 }
 
 /** adds keyboard accels to the first module in the pipe to handle
@@ -3707,7 +3743,7 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 
   if(!strcmp(module->op, "exposure"))
     darktable.develop->proxy.exposure.module =
-      _find_preferred_instance(module, FALSE, TRUE, TRUE, TRUE);
+      _find_preferred_instance(module, FALSE, FILTER_PREFER, TRUE, TRUE);
 }
 
 void dt_iop_connect_accels_all(void)

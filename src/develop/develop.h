@@ -101,6 +101,7 @@ typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
   float (*get_exposure)(struct dt_iop_module_t *exp);
+  float (*get_effective_exposure)(struct dt_iop_module_t *exp);
   float (*get_black)(struct dt_iop_module_t *exp);
   void (*handle_event)(gpointer, int, gdouble, const gboolean);
 } dt_dev_proxy_exposure_t;
@@ -148,7 +149,7 @@ typedef struct dt_dev_chroma_t
   struct dt_iop_module_t *temperature;  // always available for GUI reports
   struct dt_iop_module_t *adaptation;   // set if one module is processing this without blending
 
-  double wb_coeffs[4];                  // data actually used by the pipe
+  dt_aligned_pixel_t wb_coeffs;         // coeffs actually set by temperature
   double D65coeffs[4];                  // both read from exif data or "best guess"
   double as_shot[4];
   gboolean late_correction;
@@ -468,6 +469,8 @@ void dt_dev_configure(dt_dev_viewport_t *port);
 
 /** get exposure level */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
+/** get final effective exposure level including compensations */
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
@@ -619,7 +622,6 @@ void dt_dev_image(const dt_imgid_t imgid,
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
-gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev);
 void dt_dev_reset_chroma(dt_develop_t *dev);
 void dt_dev_init_chroma(dt_develop_t *dev);
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev);

@@ -634,7 +634,7 @@ int main(int argc, char *arg[])
     {
       int id = GPOINTER_TO_INT(iter->data);
       dt_image_t *image = dt_image_cache_get(id, 'w');
-      if(dt_exif_xmp_read(image, xmp_filename, 1))
+      if(dt_exif_xmp_read(image, xmp_filename, FALSE))
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");
@@ -814,7 +814,8 @@ int main(int argc, char *arg[])
     {
       metadata.flags = dt_lib_export_metadata_get_conf_flags();
       metadata.list = dt_util_str_to_glist("\1", dt_lib_export_metadata_get_conf());
-      metadata.list = g_list_remove(metadata.list, metadata.list->data);
+      if(metadata.list)
+        metadata.list = g_list_remove(metadata.list, metadata.list->data);
     }
     else
     {

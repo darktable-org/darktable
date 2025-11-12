@@ -89,12 +89,12 @@ void dt_gui_presets_init()
 }
 
 void (dt_gui_presets_add_generic)(const char *name,
-                                const dt_dev_operation_t op,
-                                const int32_t version,
-                                const void *params,
-                                const int32_t params_size,
-                                const gboolean enabled,
-                                const dt_develop_blend_colorspace_t blend_cst)
+                                  const dt_dev_operation_t op,
+                                  const int32_t version,
+                                  const void *params,
+                                  const int32_t params_size,
+                                  const gboolean enabled,
+                                  const dt_develop_blend_colorspace_t blend_cst)
 {
   dt_develop_blend_params_t default_blendop_params;
   dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
@@ -162,13 +162,19 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem,
     dt_action_rename_preset(&module->so->actions, name, NULL);
 
     dt_lib_presets_remove(name, module->op, module->version());
+
+    dt_iop_update_multi_name(module, "", module->multi_name_hand_edited, FALSE, FALSE);
   }
   g_free(name);
 }
 
 static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 {
-  dt_gui_store_last_preset(gtk_entry_get_text(g->name));
+  const char *name = gtk_entry_get_text(g->name);
+
+  dt_iop_update_multi_name(g->iop, name, g->iop->multi_name_hand_edited, FALSE, FALSE);
+
+  dt_gui_store_last_preset(name);
 }
 
 static void _edit_preset_response(GtkDialog *dialog,
@@ -370,21 +376,21 @@ static void _edit_preset_response(GtkDialog *dialog,
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
 
     // for a new preset or one that is for an iop module
-    if(g->old_id < 0 || g->iop)
+    if(g->iop)
     {
-      if(g->iop)
-      {
-        // for auto init presets we don't record the params. When applying such preset
-        // the default params will be used and this will trigger the computation of
-        // the actual parameters.
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
-                                   is_auto_init ? NULL : g->iop->params,
-                                   is_auto_init ?    0 : g->iop->params_size,
-                                   SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
-      }
+      // for auto init presets we don't record the params. When applying such preset
+      // the default params will be used and this will trigger the computation of
+      // the actual parameters.
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
+                                 is_auto_init ? NULL : g->iop->params,
+                                 is_auto_init ?    0 : g->iop->params_size,
+                                 SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name_hand_edited
+                                 ? g->iop->multi_name
+                                 : name,
+                                 -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
     }
 
     // commit specific fields in case of newly created preset
@@ -1070,17 +1076,9 @@ void dt_gui_presets_apply_preset(const gchar* name,
     // if module name has not been hand edited, use preset multi_name
     // or name as module label.
 
-    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
-
-    if(auto_module
-       && !module->multi_name_hand_edited
-       && (strlen(multi_name) == 0 || multi_name[0] != ' '))
-    {
-      g_strlcpy(module->multi_name,
-                strlen(multi_name) > 0 ? multi_name : name,
-                sizeof(module->multi_name));
-      module->multi_name_hand_edited = multi_name_hand_edited;
-    }
+    dt_iop_update_multi_name(module,
+                             strlen(multi_name) > 0 ? multi_name : name,
+                             multi_name_hand_edited, FALSE, FALSE);
 
     if(blendop_params
        && (blendop_version == dt_develop_blend_version())
@@ -1169,7 +1167,8 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
 
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget)
 {
-  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE) return FALSE;
+  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE)
+    return FALSE;
 
   dt_image_t *image = &module->dev->image_storage;
 

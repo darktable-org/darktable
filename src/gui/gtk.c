@@ -770,11 +770,11 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   return TRUE;
 }
 
-gboolean _valid_window_placement( const gint saved_x,
-                                  const gint saved_y,
-                                  const gint window_width,
-                                  const gint window_height,
-                                  const gint border)
+gboolean _valid_window_placement(const gint saved_x,
+                                 const gint saved_y,
+                                 const gint window_width,
+                                 const gint window_height,
+                                 const gint border)
 {
   GdkDisplay *display = gdk_display_get_default();
   const gint n_monitors = gdk_display_get_n_monitors(display);
@@ -975,6 +975,25 @@ static gboolean _osx_openfile_callback(GtkosxApplication *OSXapp,
 }
 #endif
 
+dt_gui_session_type_t dt_gui_get_session_type(void)
+{
+#ifdef GDK_WINDOWING_QUARTZ
+  return DT_GUI_SESSION_QUARTZ;
+#elif defined(GDK_WINDOWING_WAYLAND)
+  GdkDisplay* disp = gdk_display_get_default();
+  return G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_WAYLAND_DISPLAY)
+    ? DT_GUI_SESSION_WAYLAND
+    : DT_GUI_SESSION_X11;
+#elif defined(GDK_WINDOWING_X11)
+  GdkDisplay* disp = gdk_display_get_default();
+  retun G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
+    ? DT_GUI_SESSION_X11
+    : DT_GUI_SESSION_WAYLAND;
+#else
+  return DT_GUI_SESSION_UNKNOWN;
+#endif
+}
+
 static gboolean _configure(GtkWidget *da,
                            GdkEventConfigure *event,
                            const gpointer user_data)
@@ -992,13 +1011,19 @@ static gboolean _window_configure(GtkWidget *da,
 {
   static int oldx = 0;
   static int oldy = 0;
-  if(oldx != event->configure.x || oldy != event->configure.y)
+
+  // FIXME: On Wayland we always configure as the even->configure x, y
+  // are always 0.
+  if(oldx != event->configure.x
+     || oldy != event->configure.y
+     || dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
-    dt_colorspaces_set_display_profile(
-        DT_COLORSPACE_DISPLAY); // maybe we are on another screen now with > 50% of the area
+    // maybe we are on another screen now with > 50% of the area
+    dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
     oldx = event->configure.x;
     oldy = event->configure.y;
   }
+
   return FALSE;
 }
 
@@ -1154,7 +1179,7 @@ static void _osx_add_view_menu_item(GtkWidget* menu,
                                     gpointer mode)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(label);
-  gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   gtk_widget_show(mi);
   g_signal_connect(G_OBJECT(mi), "activate",
                    G_CALLBACK(_osx_ctl_switch_mode_to), mode);
@@ -1490,8 +1515,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_init_styles_actions();
 
   // register ctrl-q to quit:
-  dt_action_register(&darktable.control->actions_global, N_("quit"), _quit_callback
-                     , GDK_KEY_q, GDK_CONTROL_MASK);
+  dt_action_register(&darktable.control->actions_global, N_("quit"),
+                     _quit_callback, GDK_KEY_q, GDK_CONTROL_MASK);
 
   // Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
   dt_action_register(&darktable.control->actions_global, N_("fullscreen"),
@@ -1710,6 +1735,17 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
+
+#ifdef GDK_WINDOWING_WAYLAND
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    GtkWidget *header_bar = gtk_header_bar_new();
+    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+    gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+    gtk_widget_show(header_bar);
+  }
+#endif
 
   dt_configure_ppd_dpi(gui);
 
@@ -4573,26 +4609,32 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
 static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
 {
   char buf[256];
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gtk_window_get_position(GTK_WINDOW(widget), &allocation.x, &allocation.y);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), allocation.width);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+  int width, height, x, y;
+
+  // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
+  // the content size without window decorations. This is especially important
+  // on Wayland where CSD (Client-Side Decorations) are included in allocation
+  // but not in the size set by gtk_window_resize().
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
+  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
+
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), width);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), height);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), x);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), y);
   return FALSE;
 }
 
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
 {
   char buf[256];
-  int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
-  int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
-  double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
+  const int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
+  const int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
+  const double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
   gtk_window_resize(GTK_WINDOW(dialog), factor * width, factor * height);
 
-  int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
-  int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
+  const int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
+  const int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
   if(x && y)
     gtk_window_move(GTK_WINDOW(dialog), x, y);
   else

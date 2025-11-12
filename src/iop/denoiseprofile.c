@@ -92,7 +92,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(11, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(12, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
@@ -123,11 +123,13 @@ typedef struct dt_iop_denoiseprofile_params_t
   gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
   dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
                                                               $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+  gboolean compensate_hilite_pres; // $DEFAULT: TRUE $DESCRIPTION: "compensate highlight preservation"
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
 {
   GtkWidget *profile;
+  GtkWidget *compensate_hilite_pres;
   GtkWidget *mode;
   GtkWidget *radius;
   GtkWidget *nbhood;
@@ -211,7 +213,12 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_reduce_second;
 } dt_iop_denoiseprofile_global_data_t;
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected,
+                                                                const gboolean compensate_hilite_pres);
 
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
                            const char *const namespec,
@@ -405,7 +412,7 @@ int legacy_params_to11(dt_iop_module_t *self,
       // used or not
       return 0;
     }
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL, FALSE);
     // if the profile in old_version is an autodetected one (this
     // would mean a+b params match the interpolated one, AND the
     // profile is actually the first selected one - however we can
@@ -706,6 +713,27 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
   } dt_iop_denoiseprofile_params_v11_t;
 
+  typedef struct dt_iop_denoiseprofile_params_v12_t
+  {
+    float radius;
+    float nbhood;
+    float strength;
+    float shadows;
+    float bias;
+    float scattering;
+    float central_pixel_weight;
+    float overshooting;
+    float a[3], b[3];
+    dt_iop_denoiseprofile_mode_t mode;
+    float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    gboolean wb_adaptive_anscombe;
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+    dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
+    gboolean compensate_hilite_pres;
+  } dt_iop_denoiseprofile_params_v12_t;
+
   if(old_version < 11)
   {
     *new_params = (dt_iop_denoiseprofile_params_v11_t *)
@@ -720,6 +748,21 @@ int legacy_params(dt_iop_module_t *self,
     *new_params_size = sizeof(dt_iop_denoiseprofile_params_v11_t);
     *new_version = 11;
     return ret;
+  }
+  if(old_version == 11)
+  {
+    const dt_iop_denoiseprofile_params_v11_t *o = (dt_iop_denoiseprofile_params_v11_t *)old_params;
+    dt_iop_denoiseprofile_params_v12_t *n = malloc(sizeof(dt_iop_denoiseprofile_params_v12_t));
+
+    // layout is the same except for the addition of a new field
+    memset(n, 0, sizeof(dt_iop_denoiseprofile_params_v12_t));
+    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_v11_t));
+    n->compensate_hilite_pres = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_denoiseprofile_params_v12_t);
+    *new_version = 12;
+    return 0;
   }
 
   return 1;
@@ -749,6 +792,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.a[0] = -1.0f; // autodetect profile
   p.central_pixel_weight = 0.1f;
   p.overshooting = 1.0f;
+  p.compensate_hilite_pres = FALSE;
   p.fix_anscombe_and_nlmeans_norm = TRUE;
   for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
   {
@@ -760,7 +804,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 11, &p,
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 12, &p,
                              sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
@@ -2778,6 +2822,20 @@ void init(dt_iop_module_t *self)
   }
 }
 
+static int _get_iso_highlight_preservation_shift(dt_image_t *img)
+{
+  const float hilight_pres = img->exif_highlight_preservation;
+  // Only compensate whole EV steps, as non-whole steps are (based on
+  // experience and discussion in #19624) handled by different means in the
+  // camera.
+  const int shift = floorf(hilight_pres);
+  if(shift <= 0)
+  {
+    return 0;
+  }
+  return shift;
+}
+
 /** this will be called to init new defaults if a new image is loaded
  * from film strip mode. */
 void reload_defaults(dt_iop_module_t *self)
@@ -2799,40 +2857,18 @@ void reload_defaults(dt_iop_module_t *self)
   d->use_new_vst = TRUE;
   d->wavelet_color_mode = MODE_Y0U0V0;
 
+  const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+  d->compensate_hilite_pres = iso_shift > 0;
+
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
-  const int iso = self->dev->image_storage.exif_iso;
-
-  // default to generic poissonian
-  dt_noiseprofile_t interpolated = dt_noiseprofile_generic;
-
   char name[512];
-
-  g_strlcpy(name, _(interpolated.name), sizeof(name));
-
-  dt_noiseprofile_t *last = NULL;
-  for(GList *iter = profiles; iter; iter = g_list_next(iter))
+  gboolean autodetected = FALSE;
+  dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile
+      (self, profiles, name, sizeof(name), &autodetected, d->compensate_hilite_pres);
+  if(autodetected)
   {
-    dt_noiseprofile_t *current = iter->data;
-
-    if(current->iso == iso)
-    {
-      interpolated = *current;
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
-      break;
-    }
-    if(last && last->iso < iso && current->iso > iso)
-    {
-      interpolated.iso = iso;
-      dt_noiseprofile_interpolate(last, current, &interpolated);
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"),
-               last->iso, current->iso);
-      break;
-    }
-    last = current;
+    // signal later autodetection in commit_params.
+    interpolated.a[0] = -1.0f;
   }
 
   const float a = interpolated.a[1];
@@ -2934,12 +2970,38 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected,
+                                                                const gboolean compensate_hilite_pres)
 {
-  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  gboolean profiles_allocated = FALSE;
+  if(profiles == NULL)
+  {
+    profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+    profiles_allocated = TRUE;
+  }
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
 
-  const int iso = self->dev->image_storage.exif_iso;
+  if(autodetected != NULL)
+  {
+    *autodetected = FALSE;
+  }
+  if(name != NULL)
+  {
+    g_strlcpy(name, _(interpolated.name), namelen);
+  }
+
+  const int exif_iso = self->dev->image_storage.exif_iso;
+  int iso = exif_iso;
+  int shift = 0;
+  if(compensate_hilite_pres)
+  {
+    shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+    iso >>= shift;
+  }
   dt_noiseprofile_t *last = NULL;
   for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
@@ -2947,17 +3009,50 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     if(current->iso == iso)
     {
       interpolated = *current;
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        if(iso != exif_iso)
+        {
+          snprintf(name, namelen, _("found ISO %d (ISO %d %+d EV)"), iso, exif_iso, -shift);
+        }
+        else
+        {
+          snprintf(name, namelen, _("found ISO %d"), iso);
+        }
+      }
       break;
     }
     if(last && last->iso < iso && current->iso > iso)
     {
       interpolated.iso = iso;
       dt_noiseprofile_interpolate(last, current, &interpolated);
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        if(iso != exif_iso)
+        {
+          snprintf(name, namelen, _("interpolated ISO %d (ISO %d %+d EV)"), iso, exif_iso, -shift);
+        }
+        else
+        {
+          snprintf(name, namelen, _("interpolated ISO %d"), iso);
+        }
+      }
       break;
     }
     last = current;
   }
-  g_list_free_full(profiles, dt_noiseprofile_free);
+  if(profiles_allocated)
+  {
+    g_list_free_full(profiles, dt_noiseprofile_free);
+  }
   return interpolated;
 }
 
@@ -2987,9 +3082,9 @@ void commit_params(dt_iop_module_t *self,
   if(p->a[0] == -1.0)
   {
     // autodetect matching profile again, the same way as detecting their names,
-    // this is partially duplicated code and data because we are not allowed to access
-    // gui_data here ..
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    // because we are not allowed to access gui_data here ..
+    dt_noiseprofile_t interpolated =
+        dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL, p->compensate_hilite_pres);
     for(int k = 0; k < 3; k++)
     {
       d->a[k] = interpolated.a[k];
@@ -3134,14 +3229,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                             p->wavelet_color_mode == MODE_Y0U0V0);
   }
 
-  if(!w || w == g->overshooting)
+  if(!w || w == g->overshooting || w == g->compensate_hilite_pres)
   {
     float a = p->a[1];
     if(p->a[0] == -1.0)
     {
       dt_bauhaus_combobox_set(g->profile, 0);
 
-      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      char name[512];
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, name, sizeof(name), NULL,
+                                                                              p->compensate_hilite_pres);
+      dt_bauhaus_combobox_set_entry_label(g->profile, 0, name);
       a = interpolated.a[1];
     }
 
@@ -3189,12 +3287,17 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe),
                                p->wb_adaptive_anscombe);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_pres), p->compensate_hilite_pres);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm),
                                p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm,
                          !p->fix_anscombe_and_nlmeans_norm);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
+
+  const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+  gtk_widget_set_visible(g->compensate_hilite_pres, iso_shift > 0);
+
   if((p->wavelet_color_mode == MODE_Y0U0V0) && (g->channel < DT_DENOISE_PROFILE_Y0))
   {
     g->channel = DT_DENOISE_PROFILE_Y0;
@@ -3740,12 +3843,14 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(denoiseprofile_draw_variance), self);
 
   // start building top level widget
+
   g->profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed",
                    G_CALLBACK(profile_callback), self);
   self->widget = dt_gui_vbox(g->profile);
 
+  g->compensate_hilite_pres = dt_bauhaus_toggle_from_params(self, "compensate_hilite_pres");
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
@@ -3780,6 +3885,10 @@ void gui_init(dt_iop_module_t *self)
                                 "for better denoising.\n"
                                 "should be disabled if an earlier instance\n"
                                 "has been used with a color blending mode."));
+  gtk_widget_set_tooltip_text(g->compensate_hilite_pres, _("if enabled, reduces the ISO used for denoise\n"
+                                                           "by the factor of the camera's hidden exposure\n"
+                                                           "bias used in HDR / highlight preservation /\n"
+                                                           "dynamic range / HLG tone modes."));
   gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm,
                               _("fix bugs in Anscombe transform resulting\n"
                                 "in undersmoothing of the green channel in\n"

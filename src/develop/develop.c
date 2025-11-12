@@ -2951,6 +2951,43 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
   return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
 }
 
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
+{
+  if (dt_view_get_current() != DT_VIEW_DARKROOM)
+  {
+    return 0.0f;
+  }
+
+  // The proxy function pointers are only set if an exposure module has been initialized.
+  if (!dev->proxy.exposure.get_effective_exposure)
+  {
+    return 0.0f;
+  }
+
+  const dt_iop_module_so_t *exposure_so = NULL;
+
+  for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
+  {
+    const dt_iop_module_so_t *module_so = modules->data;
+    if(dt_iop_module_is(module_so, "exposure"))
+    {
+      exposure_so = module_so;
+      break;
+    }
+  }
+
+  if (exposure_so)
+  {
+    dt_iop_module_t *preferred_exposure_instance = dt_iop_get_module_enabled_preferring_unmasked_first_instance(exposure_so);
+    if (preferred_exposure_instance)
+    {
+      return dev->proxy.exposure.get_effective_exposure(preferred_exposure_instance);
+    }
+  }
+
+  return 0.0f;
+}
+
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
   const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
@@ -3527,21 +3564,9 @@ void dt_dev_image(const dt_imgid_t imgid,
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d)
 {
-  return feqf(f[0], (float)d[0], 0.00001)
-      && feqf(f[1], (float)d[1], 0.00001)
-      && feqf(f[2], (float)d[2], 0.00001);
-}
-
-gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev)
-{
-  const dt_dev_chroma_t *chr = &dev->chroma;
-  const float wb_coeffs[4] = { chr->wb_coeffs[0],
-                               chr->wb_coeffs[1],
-                               chr->wb_coeffs[2],
-                               chr->wb_coeffs[3] };
-  return chr->late_correction
-    ? dt_dev_equal_chroma(wb_coeffs, chr->as_shot)
-    : dt_dev_equal_chroma(wb_coeffs, chr->D65coeffs);
+  return feqf(f[0], (float)d[0], 0.00001f)
+      && feqf(f[1], (float)d[1], 0.00001f)
+      && feqf(f[2], (float)d[2], 0.00001f);
 }
 
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev)
@@ -3565,7 +3590,7 @@ void dt_dev_reset_chroma(dt_develop_t *dev)
   chr->adaptation = NULL;
   chr->temperature = NULL;
   for_four_channels(c)
-    chr->wb_coeffs[c] = 1.0;
+    chr->wb_coeffs[c] = 1.0f;
 }
 
 void dt_dev_init_chroma(dt_develop_t *dev)

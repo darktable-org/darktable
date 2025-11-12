@@ -58,10 +58,10 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "ubuntu:25.04"
+          - "ubuntu:25.10"
         compiler:
           - { compiler: GNU15,  CC: gcc-15,   CXX: g++-15,     packages: gcc-15 g++-15 }
-          - { compiler: LLVM20, CC: clang-20, CXX: clang++-20, packages: clang-20 libomp-20-dev llvm-20-dev libc++-20-dev libc++abi1-20 lld-20 clang-tools-20 mlir-20-tools libmlir-20-dev}
+          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1-21 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
         btype:
           - Release
         target:
@@ -71,7 +71,7 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "ubuntu:25.04"
+          - distro: "ubuntu:25.10"
             btype: Debug
             compiler: { compiler: GNU15, CC: gcc-15, CXX: g++-15, packages: gcc-15 g++-15 }
             target: skiptest
@@ -89,11 +89,10 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
+      DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Update base packages
         timeout-minutes: 1
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
           sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
           set -xe
@@ -123,7 +122,7 @@ jobs:
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
-            libgdk-pixbuf2.0-dev \
+            libgdk-pixbuf-2.0-dev \
             libglib2.0-dev \
             libgmic-dev \
             libgphoto2-dev \
