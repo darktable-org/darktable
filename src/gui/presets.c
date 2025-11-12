@@ -1167,7 +1167,8 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
 
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget)
 {
-  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE) return FALSE;
+  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE)
+    return FALSE;
 
   dt_image_t *image = &module->dev->image_storage;
 
