@@ -246,7 +246,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
         _("select _all"),  GTK_RESPONSE_YES,
         _("select _none"), GTK_RESPONSE_NONE,
         _("_cancel"),      GTK_RESPONSE_CANCEL,
-        _("_overwite"),    GTK_RESPONSE_APPLY,
+        _("_overwrite"),   GTK_RESPONSE_APPLY,
         _("appen_d"),      GTK_RESPONSE_OK,
         NULL));
   }
