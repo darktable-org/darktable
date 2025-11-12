@@ -89,7 +89,7 @@ uint32_t container(dt_lib_module_t *self)
  * one will be created. */
 static void _group_helper_function(void)
 {
-  dt_imgid_t new_group_id = darktable.gui->expanded_group_id 
+  dt_imgid_t new_group_id = darktable.gui->grouping
   ? darktable.gui->expanded_group_id 
   : NO_IMGID;
 
