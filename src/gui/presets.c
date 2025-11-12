@@ -1176,6 +1176,9 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
+  // Take the first auto-applied preset (autoapply = 1) and select first the
+  // user's presets if they exist (writeprotect = 0) by ordering on writeprotect.
+  // Also make sure we pick the last user's defined preset (ORDER BY rowid DESC).
   char query[2024];
   // clang-format off
   snprintf(query, sizeof(query),
@@ -1191,16 +1194,17 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
      "           AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
      "           AND operation NOT IN"
      "               ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
-     "  OR (name = ?13)) AND op_version = ?14",
+     "  OR (name = ?13)) AND op_version = ?14"
+     " ORDER BY writeprotect ASC, rowid DESC",
      is_display_referred?"":"basecurve");
   // clang-format on
 
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
-                                ? _("display-referred default")
+                                ? BUILTIN_PRESET("display-referred default")
                                 : (has_matrix && is_scene_referred
-                                   ?_("scene-referred default")
-                                   :"\t\n");
+                                   ? BUILTIN_PRESET("scene-referred default")
+                                   : "\t\n");
   int iformat = 0;
   if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
   else iformat |= FOR_LDR;
@@ -1231,8 +1235,9 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, module->version());
 
-  gboolean applied = FALSE;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+
+  if(found)
   {
     if(widget)
     {
@@ -1247,12 +1252,10 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
       const char *name = (const char *)sqlite3_column_text(stmt, 0);
       dt_gui_presets_apply_preset(name, module);
     }
-
-    applied = TRUE;
   }
   sqlite3_finalize(stmt);
 
-  return applied;
+  return found;
 }
 
 static guint _click_time = G_MAXUINT;
