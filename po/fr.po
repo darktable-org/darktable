@@ -13942,7 +13942,7 @@ msgstr ""
 "\n"
 "Voulez-vous réellement supprimer l’espace de travail « %s » ?\n"
 "\n"
-"If l’écriture des XMP n'est pas activé, le travail d'édition sera perdu."
+"Si l’écriture des XMP n'est pas activé, le travail d'édition sera perdu."
 
 #. add a memory workspace just after default one
 #: ../src/gui/workspace.c:103 ../src/gui/workspace.c:209
