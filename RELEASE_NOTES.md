@@ -171,7 +171,8 @@ changes (where available).
 - Added automatic compensation of camera's hidden underexposure for
   Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
   modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
-  and Fujifilm DR200/DR400 modes.
+  and Fujifilm DR200/DR400 modes. This affects both the "exposure" and
+  "denoise (profiled)" modules.
 
 - Add a RGB percent display in the color picker module.
 
