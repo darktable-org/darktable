@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+"""
+This script automatically enables Discord Rich Presence whenever darktable is running and clears it when darktable closes.
+
+How to Run:
+
+Open a terminal where this script is
+
+Install the required python package:
+pip install psutil pypresence
+
+Run the script:
+python darktable_rpc.py
+
+Keep the terminal running when you launch darktable, your Discord status will update automatically.
+"""
 import time
 import psutil
 from pypresence import Presence
