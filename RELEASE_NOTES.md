@@ -211,6 +211,10 @@ changes (where available).
 
 - Added the ability to calculate crop factor for Olympus cameras.
 
+- When creating styles with multiple images selected, clicking Cancel
+  button or typing <kbd>ESC</kbd> on the style dialog now ends the
+  whole process instead of continuing with the next image.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
@@ -283,6 +287,12 @@ changes (where available).
 
 - Fixed a bug in darktable-cli where synonyms for tags attached to an
   image were ignored when exporting it.
+
+- Fixed auto-applied user's presets when <kbd>Ctrl+click</kbd> on a
+  processing module after restarting Dartkable.
+
+- Fixed a bug where adding an image to a group in lighttable could
+  merge multiple group together.
 
 ## Lua
 
