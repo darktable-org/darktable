@@ -914,12 +914,19 @@ static void _quit_callback(dt_action_t *action)
   if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_dev_write_history(darktable.develop);
-    dt_image_write_sidecar_file(darktable.develop->image_storage.id);
+    if(!dt_check_gimpmode("file"))
+      dt_image_write_sidecar_file(darktable.develop->image_storage.id);
   }
 
   if(dt_check_gimpmode_ok("file"))
+  {
+    dt_control_log(_("exporting to GIMP"));
+    dt_gui_cursor_set_busy();
+    g_usleep(10000);
+    dt_gui_process_events();
     darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
-
+    dt_gui_cursor_clear_busy();
+  }
   dt_control_quit();
 }
 
@@ -934,7 +941,6 @@ static gboolean _gui_quit_callback(GtkWidget *widget,
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE, DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO);
   else
     _quit_callback(NULL);
-
   return TRUE;
 }
 
