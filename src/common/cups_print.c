@@ -581,7 +581,13 @@ void dt_print_file(const dt_imgid_t imgid,
     }
 
     // as cups-filter pdftopdf will autorotate the page, there is no
-    // need to set an option in the case of landscape mode images
+    // need to set an option in the case of landscape mode
+    // images. Let's keep this as a conf option as some cups on macOS
+    // seems to require it.
+    if(dt_conf_get_bool("plugins/print/cups/force_landscape"))
+       num_options = cupsAddOption("landscape",
+                                   pinfo->page.landscape ? "true" : "false",
+                                   num_options, &options);
   }
 
   // print lp options
