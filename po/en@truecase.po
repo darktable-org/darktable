@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-11 13:01+0100\n"
-"PO-Revision-Date: 2025-11-11 20:33+0200\n"
+"POT-Creation-Date: 2025-11-12 08:08+0100\n"
+"PO-Revision-Date: 2025-11-13 13:20+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -888,7 +888,7 @@ msgstr "This setting has been modified"
 msgid "?"
 msgstr "?"
 
-#: ../build/bin/preferences_gen.h:4406 ../src/control/jobs/control_jobs.c:3083
+#: ../build/bin/preferences_gen.h:4406 ../src/control/jobs/control_jobs.c:3085
 #: ../src/libs/import.c:188
 msgid "import"
 msgstr "Import"
@@ -5901,23 +5901,23 @@ msgstr "Dropdown"
 #: ../src/gui/accelerators.c:2615 ../src/gui/accelerators.c:2658
 #: ../src/gui/accelerators.c:2687 ../src/gui/accelerators.c:2744
 #: ../src/gui/accelerators.c:2796 ../src/gui/hist_dialog.c:236
-#: ../src/gui/preferences.c:1194 ../src/gui/preferences.c:1234
-#: ../src/gui/presets.c:430 ../src/gui/presets.c:573
-#: ../src/gui/styles_dialog.c:557 ../src/imageio/storage/disk.c:198
-#: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
-#: ../src/iop/lut3d.c:1570 ../src/iop/rasterfile.c:262
-#: ../src/libs/collect.c:433 ../src/libs/collect.c:3381
-#: ../src/libs/copy_history.c:114 ../src/libs/export_metadata.c:166
-#: ../src/libs/geotagging.c:951 ../src/libs/import.c:1846
-#: ../src/libs/import.c:1958 ../src/libs/import.c:2057
-#: ../src/libs/metadata.c:843 ../src/libs/metadata_view.c:1435
-#: ../src/libs/modulegroups.c:3643 ../src/libs/recentcollect.c:232
-#: ../src/libs/styles.c:457 ../src/libs/styles.c:503 ../src/libs/styles.c:595
-#: ../src/libs/styles.c:656 ../src/libs/tagging.c:1671
-#: ../src/libs/tagging.c:1760 ../src/libs/tagging.c:1852
-#: ../src/libs/tagging.c:1981 ../src/libs/tagging.c:2290
-#: ../src/libs/tagging.c:2805 ../src/libs/tagging.c:2847
-#: ../src/libs/tagging.c:3944
+#: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1194
+#: ../src/gui/preferences.c:1234 ../src/gui/presets.c:430
+#: ../src/gui/presets.c:573 ../src/gui/styles_dialog.c:557
+#: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
+#: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1570
+#: ../src/iop/rasterfile.c:262 ../src/libs/collect.c:433
+#: ../src/libs/collect.c:3381 ../src/libs/copy_history.c:114
+#: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:951
+#: ../src/libs/import.c:1846 ../src/libs/import.c:1958
+#: ../src/libs/import.c:2057 ../src/libs/metadata.c:843
+#: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3643
+#: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
+#: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
+#: ../src/libs/tagging.c:1671 ../src/libs/tagging.c:1760
+#: ../src/libs/tagging.c:1852 ../src/libs/tagging.c:1981
+#: ../src/libs/tagging.c:2290 ../src/libs/tagging.c:2805
+#: ../src/libs/tagging.c:2847 ../src/libs/tagging.c:3944
 msgid "_cancel"
 msgstr "_Cancel"
 
@@ -6218,7 +6218,7 @@ msgstr "Local copy"
 msgid "module"
 msgstr "Module"
 
-#: ../src/common/collection.c:660 ../src/gui/hist_dialog.c:344
+#: ../src/common/collection.c:660 ../src/gui/hist_dialog.c:359
 #: ../src/gui/styles_dialog.c:749 ../src/gui/styles_dialog.c:796
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
@@ -6771,8 +6771,8 @@ msgstr "File '%s' has unsupported format!"
 msgid "file `%s' has unknown format!"
 msgstr "File `%s' has unknown format!"
 
-#: ../src/common/darktable.c:479 ../src/control/jobs/control_jobs.c:2842
-#: ../src/control/jobs/control_jobs.c:2897
+#: ../src/common/darktable.c:479 ../src/control/jobs/control_jobs.c:2844
+#: ../src/control/jobs/control_jobs.c:2899
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Error loading file `%s'"
@@ -8757,107 +8757,107 @@ msgid "refresh EXIF"
 msgstr "Refresh EXIF"
 
 #: ../src/control/jobs/control_jobs.c:2400
-#: ../src/control/jobs/control_jobs.c:2430 ../src/dtgtk/thumbtable.c:2957
+#: ../src/control/jobs/control_jobs.c:2432 ../src/dtgtk/thumbtable.c:2957
 msgid "paste history"
 msgstr "Paste history"
 
-#: ../src/control/jobs/control_jobs.c:2446 ../src/libs/copy_history.c:324
+#: ../src/control/jobs/control_jobs.c:2448 ../src/libs/copy_history.c:324
 msgid "compress history"
 msgstr "Compress history"
 
-#: ../src/control/jobs/control_jobs.c:2458 ../src/dtgtk/thumbtable.c:2961
+#: ../src/control/jobs/control_jobs.c:2460 ../src/dtgtk/thumbtable.c:2961
 #: ../src/libs/copy_history.c:329
 msgid "discard history"
 msgstr "Discard history"
 
-#: ../src/control/jobs/control_jobs.c:2466
+#: ../src/control/jobs/control_jobs.c:2468
 msgid "no images nor styles selected!"
 msgstr "No images nor styles selected!"
 
-#: ../src/control/jobs/control_jobs.c:2470
+#: ../src/control/jobs/control_jobs.c:2472
 msgid "no styles selected!"
 msgstr "No styles selected!"
 
-#: ../src/control/jobs/control_jobs.c:2474
+#: ../src/control/jobs/control_jobs.c:2476
 msgid "no images selected!"
 msgstr "No images selected!"
 
-#: ../src/control/jobs/control_jobs.c:2487
+#: ../src/control/jobs/control_jobs.c:2489
 msgid "apply style(s)"
 msgstr "Apply style(s)"
 
-#: ../src/control/jobs/control_jobs.c:2565
+#: ../src/control/jobs/control_jobs.c:2567
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr "Failed to get parameters from storage module `%s', aborting export.."
 
-#: ../src/control/jobs/control_jobs.c:2582
+#: ../src/control/jobs/control_jobs.c:2584
 msgid "export images"
 msgstr "Export images"
 
-#: ../src/control/jobs/control_jobs.c:2635
+#: ../src/control/jobs/control_jobs.c:2637
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "Adding time offset to %d image"
 
-#: ../src/control/jobs/control_jobs.c:2636
+#: ../src/control/jobs/control_jobs.c:2638
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "Setting date/time of %d image"
 
-#: ../src/control/jobs/control_jobs.c:2638
+#: ../src/control/jobs/control_jobs.c:2640
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "Adding time offset to %d images"
 
-#: ../src/control/jobs/control_jobs.c:2639
+#: ../src/control/jobs/control_jobs.c:2641
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "Setting date/time of %d images"
 
-#: ../src/control/jobs/control_jobs.c:2685
+#: ../src/control/jobs/control_jobs.c:2687
 #, c-format
 msgid "added time offset to %d image"
 msgstr "Added time offset to %d image"
 
-#: ../src/control/jobs/control_jobs.c:2686
+#: ../src/control/jobs/control_jobs.c:2688
 #, c-format
 msgid "set date/time of %d image"
 msgstr "Set date/time of %d image"
 
-#: ../src/control/jobs/control_jobs.c:2688
+#: ../src/control/jobs/control_jobs.c:2690
 #, c-format
 msgid "added time offset to %d images"
 msgstr "Added time offset to %d images"
 
-#: ../src/control/jobs/control_jobs.c:2689
+#: ../src/control/jobs/control_jobs.c:2691
 #, c-format
 msgid "set date/time of %d images"
 msgstr "Set date/time of %d images"
 
-#: ../src/control/jobs/control_jobs.c:2732
+#: ../src/control/jobs/control_jobs.c:2734
 msgid "time offset"
 msgstr "Time offset"
 
-#: ../src/control/jobs/control_jobs.c:2762 ../src/libs/copy_history.c:339
+#: ../src/control/jobs/control_jobs.c:2764 ../src/libs/copy_history.c:339
 msgid "write sidecar files"
 msgstr "Write sidecar files"
 
-#: ../src/control/jobs/control_jobs.c:2975 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2977 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "Importing %d image"
 msgstr[1] "Importing %d images"
 
-#: ../src/control/jobs/control_jobs.c:3026
+#: ../src/control/jobs/control_jobs.c:3028
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "Importing %d/%d image"
 msgstr[1] "Importing %d/%d images"
 
-#: ../src/control/jobs/control_jobs.c:3034
+#: ../src/control/jobs/control_jobs.c:3036
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -9888,7 +9888,7 @@ msgstr "Duplicate"
 #: ../src/develop/imageop.c:4089
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:3687 ../src/gui/gtk.c:3742 ../src/gui/hist_dialog.c:274
+#: ../src/gui/gtk.c:3687 ../src/gui/gtk.c:3742 ../src/gui/hist_dialog.c:289
 #: ../src/gui/styles_dialog.c:632 ../src/gui/styles_dialog.c:654
 #: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1581
 #: ../src/libs/modulegroups.c:4082
@@ -14241,48 +14241,47 @@ msgstr ""
 msgid "select parts to copy"
 msgstr "Select parts to copy"
 
-#: ../src/gui/hist_dialog.c:232
-msgid "select parts to paste"
-msgstr "Select parts to paste"
-
-#: ../src/gui/hist_dialog.c:234 ../src/gui/styles_dialog.c:555
+#: ../src/gui/hist_dialog.c:234 ../src/gui/hist_dialog.c:246
+#: ../src/gui/styles_dialog.c:555
 msgid "select _all"
 msgstr "Select _all"
 
-#: ../src/gui/hist_dialog.c:235 ../src/gui/styles_dialog.c:556
+#: ../src/gui/hist_dialog.c:235 ../src/gui/hist_dialog.c:247
+#: ../src/gui/styles_dialog.c:556
 msgid "select _none"
 msgstr "Select _none"
 
-#: ../src/gui/hist_dialog.c:265 ../src/gui/styles_dialog.c:622
+#: ../src/gui/hist_dialog.c:244
+msgid "select parts to paste"
+msgstr "Select parts to paste"
+
+#: ../src/gui/hist_dialog.c:249 ../src/libs/styles.c:505
+#: ../src/libs/styles.c:658
+msgid "_overwrite"
+msgstr "_Overwrite"
+
+#: ../src/gui/hist_dialog.c:250
+msgid "appen_d"
+msgstr "Appen_d"
+
+#: ../src/gui/hist_dialog.c:280 ../src/gui/styles_dialog.c:622
 #: ../src/gui/styles_dialog.c:644
 msgid "include"
 msgstr "Include"
 
-#: ../src/gui/hist_dialog.c:293 ../src/gui/styles_dialog.c:698
+#: ../src/gui/hist_dialog.c:308 ../src/gui/styles_dialog.c:698
 #: ../src/gui/styles_dialog.c:704
 msgid "item"
 msgstr "Item"
 
-#: ../src/gui/hist_dialog.c:299 ../src/gui/styles_dialog.c:711
+#: ../src/gui/hist_dialog.c:314 ../src/gui/styles_dialog.c:711
 #: ../src/gui/styles_dialog.c:720
 msgid "mask"
 msgstr "Mask"
 
-#: ../src/gui/hist_dialog.c:357
+#: ../src/gui/hist_dialog.c:372
 msgid "can't copy history out of unaltered image"
 msgstr "Can't copy history out of unaltered image"
-
-#: ../src/gui/hist_dialog.c:365
-msgid "overwrite mode"
-msgstr "Overwrite mode"
-
-#: ../src/gui/hist_dialog.c:369
-msgid ""
-"clear history stack before pasting the copied history.\n"
-"required modules will be added with default values."
-msgstr ""
-"Clear history stack before pasting the copied history.\n"
-"Required modules will be added with default values."
 
 #. grid headers
 #: ../src/gui/import_metadata.c:456
@@ -16044,7 +16043,7 @@ msgid "auto tune levels"
 msgstr "Auto tune levels"
 
 #: ../src/iop/agx.c:2417
-msgid "set back and white relative exposure using the selected area"
+msgid "set black and white relative exposure using the selected area"
 msgstr "Set black and white relative exposure using the selected area"
 
 #: ../src/iop/agx.c:2418 ../src/iop/agx.c:2425
@@ -28481,10 +28480,6 @@ msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "Do you really want to remove %d style?"
 msgstr[1] "Do you really want to remove %d styles?"
 
-#: ../src/libs/styles.c:505 ../src/libs/styles.c:658
-msgid "_overwrite"
-msgstr "_Overwrite"
-
 #. contents for dialog
 #: ../src/libs/styles.c:510 ../src/libs/styles.c:662
 #, c-format
@@ -30297,6 +30292,16 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#~ msgid "overwrite mode"
+#~ msgstr "Overwrite mode"
+
+#~ msgid ""
+#~ "clear history stack before pasting the copied history.\n"
+#~ "required modules will be added with default values."
+#~ msgstr ""
+#~ "Clear history stack before pasting the copied history.\n"
+#~ "Required modules will be added with default values."
 
 #~ msgid "pivot input shift"
 #~ msgstr "Pivot input shift"
