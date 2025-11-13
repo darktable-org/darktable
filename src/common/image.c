@@ -1320,6 +1320,13 @@ static int32_t _image_get_possible_version(const dt_imgid_t imgid,
 static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
                                                     const int32_t newversion)
 {
+  if(dt_gimpmode())
+  {
+    // FIXME make GIMP handle duplicates
+    dt_control_log(_("can't create a duplicate in GIMP mode"));
+    return NO_IMGID;
+  }
+
   sqlite3_stmt *stmt;
   dt_imgid_t newid = NO_IMGID;
   const int64_t image_position = dt_collection_get_image_position(imgid, 0);

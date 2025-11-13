@@ -408,7 +408,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
   dt_act_on_set_class(self->widget);
   gtk_widget_show_all(self->widget);
-
+  gtk_widget_set_sensitive(self->widget, !dt_check_gimpmode_ok("file"));
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_duplicate_collection_changed);

@@ -2002,12 +2002,11 @@ int dt_init(int argc,
   }
   free(config_info);
 
-  if(init_gui)
+  if(init_gui && !dt_gimpmode() && changed_xmp_files)
   {
     // construct the popup that asks the user how to handle images whose xmp
     // files are newer than the db entry
-    if(changed_xmp_files)
-      dt_control_crawler_show_image_list(changed_xmp_files);
+    dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
   // fire up a background job to perform sidecar writes
