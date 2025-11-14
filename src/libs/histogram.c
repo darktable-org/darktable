@@ -1640,7 +1640,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_lib_histogram_t *d)
 {
-  if(gtk_get_current_event()->motion.state & GDK_BUTTON1_MASK)
+  if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
@@ -1818,7 +1818,7 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   // if dragging, gtk keeps up motion notifications until mouse button
   // is released, at which point we'll get another leave event for
   // drawable if pointer is still outside of the widget
-  if(!(gtk_get_current_event()->motion.state & GDK_BUTTON1_MASK)
+  if(!(dt_key_modifier_state() & GDK_BUTTON1_MASK)
      && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
