@@ -4459,6 +4459,7 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             gpointer data)
 {
   GtkEventController *controller = gtk_event_controller_motion_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
   g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
