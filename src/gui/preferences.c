@@ -1310,12 +1310,6 @@ _gui_preferences_bool_callback(GtkWidget *widget,
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
-void dt_gui_preferences_bool_toggle(GtkWidget *widget)
-{
-  const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
-}
-
 void dt_gui_preferences_bool_reset(GtkWidget *widget)
 {
   const char *key = gtk_widget_get_name(widget);
@@ -1324,13 +1318,14 @@ void dt_gui_preferences_bool_reset(GtkWidget *widget)
 }
 
 static gboolean
-_gui_preferences_bool_reset(GtkWidget *label,
+_gui_preferences_bool_click(GtkWidget *label,
                             GdkEventButton *event,
                             GtkWidget *widget)
 {
   if(event->type == GDK_BUTTON_PRESS)
   {
-    dt_gui_preferences_bool_toggle(widget);
+    const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
     return TRUE;
   }
   if(event->type == GDK_2BUTTON_PRESS)
@@ -1368,7 +1363,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
   g_signal_connect(G_OBJECT(w), "toggled",
                    G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)w);
   return w;
 }
 
