@@ -272,24 +272,25 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   expander->body = body;
 
   expander->header_evb = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(expander->header_evb), expander->header);
+  dt_gui_box_add(expander->header_evb, expander->header);
   expander->body_evb = gtk_event_box_new();
   if(expander->body)
-    gtk_container_add(GTK_CONTAINER(expander->body_evb), expander->body);
+    dt_gui_box_add(expander->body_evb, expander->body);
   GtkWidget *frame = gtk_frame_new(NULL);
-  gtk_container_add(GTK_CONTAINER(frame), expander->body_evb);
+  gtk_frame_set_child(GTK_FRAME(frame), expander->body_evb);
   expander->frame = gtk_revealer_new();
   gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame), 0);
   gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), TRUE);
-  gtk_container_add(GTK_CONTAINER(expander->frame), frame);
+  gtk_revealer_set_child(GTK_REVEALER(expander->frame), frame);
+  gtk_widget_set_hexpand(body, TRUE);
 
   dt_gui_box_add(expander, expander->header_evb, expander->frame);
-
+  if(0) { // GTK4
   g_signal_connect(expander->header_evb, "drag-begin", G_CALLBACK(_expander_drag_begin), NULL);
   g_signal_connect(expander->header_evb, "drag-end", G_CALLBACK(_expander_drag_end), NULL);
   g_signal_connect(expander, "drag-leave", G_CALLBACK(_expander_drag_leave), NULL);
   g_signal_connect(expander, "size-allocate", G_CALLBACK(_expander_resize), frame);
-
+  }
   return GTK_WIDGET(expander);
 }
 

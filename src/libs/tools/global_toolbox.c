@@ -412,7 +412,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->over_popup), vbox);
 
 #define NEW_RADIO(widget, box, callback, label)                                               \
-  rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb), _(label)); \
+  rb = gtk_check_button_new_with_label(_(label));  /* GTK4 */\
   dt_action_define(ac, NULL, label, rb, &dt_action_def_button);                     \
   g_signal_connect(G_OBJECT(rb), "clicked", G_CALLBACK(callback), self);            \
   gtk_box_pack_start(GTK_BOX(box), rb, TRUE, TRUE, 0);                              \
