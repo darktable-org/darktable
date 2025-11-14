@@ -1310,6 +1310,12 @@ _gui_preferences_bool_callback(GtkWidget *widget,
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
+void dt_gui_preferences_bool_toggle(GtkWidget *widget)
+{
+  const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
+}
+
 void dt_gui_preferences_bool_reset(GtkWidget *widget)
 {
   const char *key = gtk_widget_get_name(widget);
@@ -1322,6 +1328,11 @@ _gui_preferences_bool_reset(GtkWidget *label,
                             GdkEventButton *event,
                             GtkWidget *widget)
 {
+  if(event->type == GDK_BUTTON_PRESS)
+  {
+    dt_gui_preferences_bool_toggle(widget);
+    return TRUE;
+  }
   if(event->type == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_bool_reset(widget);
