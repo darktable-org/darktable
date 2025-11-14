@@ -295,6 +295,16 @@ changes (where available).
 - Fixed a bug where adding an image to a group in lighttable could
   merge multiple group together.
 
+- Fixed a print issue which is probably happening only on macOS. When
+  printing in landscape mode, the rotation of the picture is not done
+  on the printer. So only a part of the image is printed at the bottom
+  of the page. This issue is not fully understood at this stage and
+  has only been reported twice. If you encounter this issue then you
+  can set the following variable in your darktablerc to force the
+  landscape CUPS option to be generated:
+
+     plugins/print/cups/force_landscape=TRUE
+
 ## Lua
 
 ### API Version
