@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Ulrich Pegelow.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,20 +18,14 @@
 
 #include "common.h"
 
-int
-fcol(const int row, const int col, const unsigned int filters, global const unsigned char (*const xtrans)[6])
-{
-  if(filters == 9)
-    // There are a few cases in VNG demosaic in which row or col is -1
-    // or -2. The +6 ensures a non-negative array index.
-    return FCxtrans(row + 6, col + 6, xtrans);
-  else
-    return FC(row, col, filters);
-}
-
 kernel void
-vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int border,
-                       const int r_x, const int r_y, const unsigned int filters, global const unsigned char (*const xtrans)[6])
+vng_border_interpolate(read_only image2d_t in,
+                       write_only image2d_t out,
+                       const int width,
+                       const int height,
+                       const int border,
+                       const unsigned int filters,
+                       global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -52,20 +46,19 @@ vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const i
     {
       if(j >= 0 && i >= 0 && j < height && i < width)
       {
-        int f = fcol(j + r_y, i + r_x, filters, xtrans);
-        sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
+        const int f = fcol(j, i, filters, xtrans);
+        sum[f] += fmax(0.0f, read_imagef(in, sampleri, (int2)(i, j)).x);
         count[f]++;
       }
     }
 
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  int f = fcol(y + r_y, x + r_x, filters, xtrans);
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const int f = fcol(y, x, filters, xtrans);
 
   for(int c = 0; c < colors; c++)
   {
     if(c != f && count[c] != 0)
-      o[c] = fmax(sum[c] / count[c], 0.0f);
+      o[c] = sum[c] / count[c];
     else
       o[c] = fmax(i, 0.0f);
   }
@@ -108,7 +101,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
   }
 
   // center buffer around current x,y-Pixel
@@ -141,17 +134,17 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
   // for each interpolated color, load it into the pixel
   for(int i = 0; i < colors - 1; i++, ip += 2)
   {
-    o[ip[0]] = fmax(0.0f, sum[ip[0]] / ip[1]);
+    o[ip[0]] = sum[ip[0]] / ip[1];
   }
 
-  o[ip[0]] = fmax(0.0f, buffer[0]);
+  o[ip[0]] = buffer[0];
 
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int rin_x, const int rin_y, const unsigned int filters,
+                const unsigned int filters,
                 global const unsigned char (*const xtrans)[6], global const int (*const ips),
                 global const int (*const code)[16], local float *buffer)
 {
@@ -203,7 +196,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   int g;
 
   // get byte code
-  global const int *ip = ips + code[(y + rin_y) % prow][(x + rin_x) % pcol];
+  global const int *ip = ips + code[y % prow][x % pcol];
 
   // calculate gradients
   while((g = ip[0]) != INT_MAX)
@@ -248,7 +241,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   float thold = gmin + (gmax * 0.5f);
   float sum[4] = { 0.0f };
-  int color = fcol(y + rin_y, x + rin_x, filters, xtrans);
+  const int color = fcol(y, x, filters, xtrans);
   int num = 0;
 
   // average the neighbors
@@ -315,7 +308,7 @@ vng_green_equilibrate(read_only image2d_t in, write_only image2d_t out, const in
 
 kernel void
 clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                                         const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale,
+                                         const int rin_wd, const int rin_ht, const float r_scale,
                                          global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -350,7 +343,7 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
     {
       for(int j = 0; j < 3; j++)
         for(int i = 0; i < 3; i++)
-          col[FCxtrans(yy + j + r_y, xx + i + r_x, xtrans)] += read_imagef(in, sampleri, (int2)(xx + i, yy + j)).x;
+          col[FCxtrans(yy + j, xx + i, xtrans)] += read_imagef(in, sampleri, (int2)(xx + i, yy + j)).x;
       num++;
     }
 

@@ -23,12 +23,15 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "common/debug.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+
+/* Wayland/X11 specifics accessed via dt_gui_get_session_type(), no need for direct gdk backends here */
 
 DT_MODULE(1)
 
@@ -212,37 +215,56 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
-  const gint x = event->x_root;
-  const gint y = event->y_root - DT_PIXEL_APPLY_DPI(50);
-
-  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(d->floating_window);
-#endif
-  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
-  gtk_widget_set_can_focus(d->floating_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(d->floating_window, 0.8);
-  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+  // Wayland: use a GtkPopover anchored to the clicked color label button (native xdg_popup semantics).
+  // Other session types: keep the lightweight undecorated GtkWindow (manual positioning via gtk_window_move()).
+  const gboolean use_popover = (dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
-
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "focus-out-event",
-                   G_CALLBACK(_lib_colorlabels_destroy), self);
-  g_signal_connect(entry, "key-press-event",
-                   G_CALLBACK(_lib_colorlabels_key_press), self);
-  gtk_widget_set_tooltip_text(entry,
-                              _("enter a description of how you use this color label"));
+  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_lib_colorlabels_destroy), self);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_lib_colorlabels_key_press), self);
+  gtk_widget_set_tooltip_text(entry, _("enter a description of how you use this color label"));
 
-  gtk_widget_show_all(d->floating_window);
-  gtk_widget_grab_focus(entry);
-  gtk_window_present(GTK_WINDOW(d->floating_window));
+  if(use_popover)
+  {
+    // Wayland path: use GtkPopover anchored to the clicked color label button for proper xdg_popup semantics
+    GtkWidget *button = d->buttons[d->colorlabel];
+    GtkAllocation alloc = {0};
+    gtk_widget_get_allocation(button, &alloc);
+    d->floating_window = gtk_popover_new(button);
+    // Be explicit about relative_to and pointing rect to avoid GTK quirks in some environments
+    gtk_popover_set_relative_to(GTK_POPOVER(d->floating_window), button);
+    GdkRectangle r = { 0, 0, alloc.width, alloc.height };
+    gtk_popover_set_pointing_to(GTK_POPOVER(d->floating_window), &r);
+    gtk_popover_set_modal(GTK_POPOVER(d->floating_window), TRUE);
+    gtk_popover_set_position(GTK_POPOVER(d->floating_window), GTK_POS_TOP);
+    gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
+    gtk_widget_show_all(d->floating_window);
+    gtk_widget_grab_focus(entry);
+  }
+  else
+  {
+    // Legacy/X11 path: keep undecorated popup GtkWindow
+    const gint x = event->x_root;
+    const gint y = event->y_root - DT_PIXEL_APPLY_DPI(50);
+
+    d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(d->floating_window);
+#endif
+    gtk_widget_set_can_focus(d->floating_window, TRUE);
+    gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+    gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
+    gtk_widget_set_opacity(d->floating_window, 0.8);
+    gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
+    gtk_widget_show_all(d->floating_window);
+    gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+    gtk_widget_grab_focus(entry);
+    gtk_window_present(GTK_WINDOW(d->floating_window));
+  }
 }
 
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,

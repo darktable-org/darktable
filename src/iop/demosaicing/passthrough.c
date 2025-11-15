@@ -19,11 +19,9 @@
 
 static void passthrough_monochrome(float *out,
                                    const float *const in,
-                                   const dt_iop_roi_t *const roi_in)
+                                   const int width,
+                                   const int height)
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < height; j++)
   {
@@ -39,13 +37,11 @@ static void passthrough_monochrome(float *out,
 
 static void passthrough_color(float *out,
                               const float *const in,
-                              const dt_iop_roi_t *const roi_in,
+                              const int width,
+                              const int height,
                               const uint32_t filters,
                               const uint8_t (*const xtrans)[6])
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   if(filters != 9u)
   {
     DT_OMP_FOR(collapse(2))
@@ -71,7 +67,7 @@ static void passthrough_color(float *out,
       {
         const float val = in[(size_t)col + row * width];
         const size_t offset = (size_t)4 * ((size_t)row * width + col);
-        const size_t ch = FCxtrans(row, col, roi_in, xtrans);
+        const size_t ch = FCNxtrans(row, col, xtrans);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
         out[offset + ch] = val;

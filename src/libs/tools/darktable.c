@@ -243,14 +243,19 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_
     pango_cairo_show_layout(cr, layout);
   }
 
-  /* print version */
+  /* print version & workspace */
+  const char *wp = dt_conf_get_string("workspace/label");
+  char *txt = g_strdup_printf("%s%s%s",
+                              darktable_package_version,
+                              *wp ? " - " : "",
+                              *wp ? wp    : "");
   pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description(layout, font_desc);
-  pango_layout_set_text(layout, darktable_package_version, -1);
+  pango_layout_set_text(layout, txt, -1);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(32.0));
   cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.7);
   pango_cairo_show_layout(cr, layout);
-
+  g_free(txt);
   /* cleanup */
   gdk_rgba_free(tmpcolor);
   g_object_unref(layout);

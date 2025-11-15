@@ -20,6 +20,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
+#include "common/dttypes.h"
 
 typedef enum dt_adaptation_t
 {
@@ -215,7 +216,7 @@ static inline void convert_any_LMS_to_RGB(const dt_aligned_pixel_t LMS, dt_align
   dt_XYZ_to_Rec709_D65(XYZ, RGB);
 
   // Handle gamut clipping
-  float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+  float max_RGB = max3f(RGB);
   for(int c = 0; c < 3; c++) RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
 
 }

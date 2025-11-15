@@ -82,7 +82,7 @@ void (dt_gui_presets_add_generic)(const char *name,
                                 const int32_t version,
                                 const void *params,
                                 const int32_t params_size,
-                                const int32_t enabled,
+                                const gboolean enabled,
                                 const dt_develop_blend_colorspace_t blend_cst);
 #define BUILTIN_PRESET(name) BUILTIN_PREFIX name
 /** same as add_generic but also supply blendop parameters for the presets. */
@@ -92,7 +92,7 @@ void dt_gui_presets_add_with_blendop(const char *name,
                                      const void *params,
                                      const int32_t params_size,
                                      const void *blend_params,
-                                     const int32_t enabled);
+                                     const gboolean enabled);
 
 /** update match strings for maker, model, lens. */
 void dt_gui_presets_update_mml(const char *name,

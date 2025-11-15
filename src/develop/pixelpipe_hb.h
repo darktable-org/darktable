@@ -85,9 +85,9 @@ typedef enum dt_dev_pixelpipe_status_t
 typedef enum dt_dev_pixelpipe_stopper_t
 {
   DT_DEV_PIXELPIPE_STOP_NO = 0,
-  DT_DEV_PIXELPIPE_STOP_NODES = 1,
-  DT_DEV_PIXELPIPE_STOP_HQ = 2,
-  DT_DEV_PIXELPIPE_STOP_LAST = 2,
+  DT_DEV_PIXELPIPE_STOP_NODES,
+  DT_DEV_PIXELPIPE_STOP_HQ,
+  DT_DEV_PIXELPIPE_STOP_LAST,
 } dt_dev_pixelpipe_stopper_t;
 
 typedef struct dt_dev_detail_mask_t
@@ -143,7 +143,7 @@ typedef struct dt_dev_pixelpipe_t
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
   float backbuf_scale;
-  float backbuf_zoom_x, backbuf_zoom_y;
+  dt_dev_zoom_pos_t backbuf_zoom_pos;
   dt_hash_t backbuf_hash;
   dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;

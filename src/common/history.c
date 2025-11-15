@@ -206,6 +206,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
        "dt_history_load_and_apply");
     dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
+    dt_image_cache_set_change_timestamp(imgid);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
@@ -216,6 +217,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 gboolean dt_history_load_and_apply_on_list(gchar *filename,
                                            const GList *list)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   gboolean res = FALSE;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
@@ -225,6 +227,7 @@ gboolean dt_history_load_and_apply_on_list(gchar *filename,
       res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
+  dt_start_backthumbs_crawler();
   return res;
 }
 

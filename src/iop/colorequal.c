@@ -1041,8 +1041,8 @@ void process(dt_iop_module_t *self,
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
     // calc saturation from input data
-    const float dmin = fminf(pix_in[0], fminf(pix_in[1], pix_in[2]));
-    const float dmax = fmaxf(pix_in[0], fmaxf(pix_in[1], pix_in[2]));
+    const float dmin = min3f(pix_in);
+    const float dmax = max3f(pix_in);
     const float delta = dmax - dmin;
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
@@ -2131,7 +2131,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("bleach bypass"), self->op,
                              self->version(), &p1, sizeof(p1),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodachrome 64 like
   dt_iop_colorequal_params_t p2 =
@@ -2175,7 +2175,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("Kodachrome 64 like"), self->op,
                              self->version(), &p2, sizeof(p2),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak Portra 400
   dt_iop_colorequal_params_t p3 =
@@ -2219,7 +2219,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("Kodak Portra 400 like"), self->op,
                              self->version(), &p3, sizeof(p3),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Teal & Orange
   dt_iop_colorequal_params_t p4 =
@@ -2263,7 +2263,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("teal & orange"), self->op,
                              self->version(), &p4, sizeof(p4),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -2941,6 +2941,8 @@ static float _action_process_colorequal(const gpointer target,
                                         const dt_action_effect_t effect,
                                         const float move_size)
 {
+  if(element >= NODES) return DT_ACTION_NOT_VALID;
+
   const dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
@@ -3057,11 +3059,10 @@ void gui_init(dt_iop_module_t *self)
   // not a requirement here
 
   dt_iop_module_t *sect = NULL;
-#define GROUP_SLIDERS(num, page, tooltip)                  \
-  dt_ui_notebook_page(g->notebook, page, tooltip);         \
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
-  gtk_stack_add_named(g->stack, self->widget, num);        \
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, page);
+#define GROUP_SLIDERS(num, page, tooltip)                      \
+  dt_ui_notebook_page(g->notebook, page, tooltip);             \
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, page, dt_gui_vbox()); \
+  gtk_stack_add_named(g->stack, sect->widget, num);
 
   GROUP_SLIDERS("0", N_("hue"), _("change hue hue-wise"))
   g->hue_sliders[0] = g->hue_red =
@@ -3117,7 +3118,7 @@ void gui_init(dt_iop_module_t *self)
   g->bright_sliders[7] = g->bright_magenta =
     dt_bauhaus_slider_from_params(sect, "bright_magenta");
 
-  GtkWidget *options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *options = dt_gui_vbox();
   gtk_stack_add_named(g->stack, options, "3");
   dt_gui_new_collapsible_section
     (&g->cs,

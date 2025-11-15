@@ -1362,21 +1362,6 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
   else return x;
 }
 
-/* kernel for the plugin colorin: plain correction */
-kernel void
-colorin_correct (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                 global const float *corr)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  const float4 corval = (const float4)(corr[0], corr[1], corr[2], corr[3]);
-  float4 pixel = corval * read_imagef(in, sampleri, (int2)(x, y));
-  write_imagef (out, (int2)(x, y), pixel);
-}
-
 /* kernel for the plugin colorin: unbound processing */
 kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -3099,6 +3084,8 @@ flip(read_only image2d_t in,
      write_only image2d_t out,
      const int width,
      const int height,
+     const int owidth,
+     const int oheight,
      const int orientation)
 {
   const int x = get_global_id(0);
@@ -3106,23 +3093,25 @@ flip(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-
   // ORIENTATION_FLIP_X = 2
-  int  nx = (orientation & 2) ? width - x - 1 : x;
+  int ox = (orientation & 2) ? width - x - 1 : x;
 
   // ORIENTATION_FLIP_Y = 1
-  int ny = (orientation & 1) ? height - y - 1 : y;
+  int oy = (orientation & 1) ? height - y - 1 : y;
 
   // ORIENTATION_SWAP_XY = 4
-  if((orientation & 4) == 4)
+  if(orientation & 4)
   {
-     const int tmp = nx;
-     nx = ny;
-     ny = tmp;
-   }
+     const int tmp = ox;
+     ox = oy;
+     oy = tmp;
+  }
 
-  write_imagef (out, (int2)(nx, ny), pixel);
+  if(ox < owidth && oy < oheight)
+  {
+    const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+    write_imagef(out, (int2)(ox, oy), pixel);
+  }
 }
 
 float
@@ -3897,3 +3886,32 @@ interpolation_resample (read_only image2d_t in,
     write_imagef (out, (int2)(x, y), fmax(buffer[ylid], 0.f));
   }
 }
+
+/* kernel for the interpolation copy helper */
+kernel void
+interpolation_copy(read_only image2d_t dev_in,
+                   write_only image2d_t dev_out,
+                   const int owidth,
+                   const int oheight,
+                   const int iwidth,
+                   const int iheight,
+                   const int dx,
+                   const int dy)
+{
+  const int ocol = get_global_id(0);
+  const int orow = get_global_id(1);
+
+  if(ocol >= owidth || orow >= oheight) return;
+
+  float4 pix = (float4)( 0.0f, 0.0f, 0.0f, 0.0f );
+
+  const int irow = orow + dy;
+  const int icol = ocol + dx;
+
+  if(irow < iheight && icol < iwidth)
+  {
+    pix = read_imagef(dev_in, samplerA, (int2)(icol, irow));
+  }
+  write_imagef(dev_out, (int2)(ocol, orow), pix);
+}
+

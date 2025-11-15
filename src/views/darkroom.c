@@ -167,11 +167,6 @@ void init(dt_view_t *self)
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "display_image");
-
-  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
-  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
-  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
-  dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
 }
 
@@ -471,7 +466,7 @@ static void _view_paint_surface(cairo_t *cr,
                         port, window,
                         p->backbuf, p->backbuf_scale,
                         p->backbuf_width, p->backbuf_height,
-                        p->backbuf_zoom_x, p->backbuf_zoom_y);
+                        p->backbuf_zoom_pos);
 
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
 }
@@ -872,6 +867,9 @@ gboolean try_enter(dt_view_t *self)
     return TRUE;
   }
 
+  // we want to wait for terminated backthumbs crawler for pipeline memory
+  dt_stop_backthumbs_crawler(TRUE);
+
   // this loads the image from db if needed:
   const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   // get image and check if it has been deleted from disk first!
@@ -953,6 +951,11 @@ static gboolean _dev_load_requested_image(gpointer user_data);
 static void _dev_change_image(dt_develop_t *dev,
                               const dt_imgid_t imgid)
 {
+  if(dt_check_gimpmode("file"))
+  {
+    dt_control_log(_("can't change image in GIMP plugin mode"));
+    return;
+  }
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
 
@@ -998,8 +1001,8 @@ static void _dev_change_image(dt_develop_t *dev,
   if(dev->preview_pipe->backbuf
      && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
-    const double aspect_ratio =
-      (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const float aspect_ratio =
+      (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
@@ -1330,9 +1333,13 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
   }
 }
 
-static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
+static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
-
+  if(dt_check_gimpmode("file"))
+  {
+    dt_control_log(_("can't change image in GIMP plugin mode"));
+    return;
+  }
   const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
@@ -1421,12 +1428,12 @@ static void zoom_out_callback(dt_action_t *action)
 
 static void skip_f_key_accel_callback(dt_action_t *action)
 {
-  dt_dev_jump_image(dt_action_view(action)->data, 1, TRUE);
+  _dev_jump_image(dt_action_view(action)->data, 1, TRUE);
 }
 
 static void skip_b_key_accel_callback(dt_action_t *action)
 {
-  dt_dev_jump_image(dt_action_view(action)->data, -1, TRUE);
+  _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
@@ -1581,6 +1588,7 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
   if(!dev->gui_attached) return;
 
   dev->late_scaling.enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_conf_set_bool("darkroom/ui/late_scaling/enabled", dev->late_scaling.enabled);
 
   // we just toggled off and had one of HQ pipelines running
   if(!dev->late_scaling.enabled
@@ -1626,6 +1634,7 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w,
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
+  dt_conf_set_bool("darkroom/ui/overexposed/enabled", d->overexposed.enabled);
   dt_dev_reprocess_center(d);
 }
 
@@ -1679,6 +1688,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w,
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.enabled = !d->rawoverexposed.enabled;
+  dt_conf_set_bool("darkroom/ui/rawoverexposed/enabled", d->rawoverexposed.enabled);
   dt_dev_reprocess_center(d);
 }
 
@@ -2160,7 +2170,7 @@ static void _brush_opacity_down_callback(dt_action_t *action)
 static void _overlay_cycle_callback(dt_action_t *action)
 {
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
-  const int nextval = (currentval + 1) % 6; // colors can go from 0 to 5
+  const int nextval = (currentval + 1) % DT_DEV_OVERLAY_LAST; // colors can go from 0 to DT_DEV_OVERLAY_LAST-1
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
   dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();
@@ -2533,6 +2543,8 @@ void gui_init(dt_view_t *self)
                    G_CALLBACK(_latescaling_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      dev->late_scaling.button, DT_VIEW_DARKROOM);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->late_scaling.button),
+                               dt_conf_get_bool("darkroom/ui/late_scaling/enabled"));
 
   GtkWidget *colorscheme, *mode;
 
@@ -2550,6 +2562,8 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->rawoverexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->rawoverexposed.button, "rawoverexposed");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->rawoverexposed.button),
+                                 dt_conf_get_bool("darkroom/ui/rawoverexposed/enabled"));
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
@@ -2615,6 +2629,8 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->overexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->overexposed.button, "overexposed");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->overexposed.button),
+                                 dt_conf_get_bool("darkroom/ui/overexposed/enabled"));
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
@@ -2698,7 +2714,7 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, "softproof");
 
     // the gamut check button
-    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
+    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_warning, 0, NULL);
     ac = dt_action_define(sa, NULL, N_("gamut check"),
                           dev->profile.gamut_button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
@@ -3161,8 +3177,8 @@ void leave(dt_view_t *self)
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_pipe->status == DT_DEV_PIXELPIPE_VALID)
   {
-    const double aspect_ratio =
-      (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const float aspect_ratio =
+      (float)dev->preview_pipe->backbuf_width / (float)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, FALSE);
   }
   else

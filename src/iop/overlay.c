@@ -82,7 +82,7 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
   dt_iop_overlay_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
-  dt_imgid_t imgid; // overlay image id
+  dt_imgid_t imgid; // overlay image id $DESCRIPTION: "image id"
   char filename[1024]; // full overlay's filename
   // keep parameter struct to avoid a version bump
   size_t dummy0;
@@ -318,8 +318,7 @@ static void _setup_overlay(dt_iop_module_t *self,
 
     dt_dev_image(imgid, width, height,
                  -1,
-                 &buf, NULL, &bw, &bh,
-                 NULL, NULL,
+                 &buf, NULL, &bw, &bh, NULL,
                  -1, disabled_modules, piece->pipe->devid, TRUE);
 
     uint8_t *old_buf = *pbuf;
@@ -1077,8 +1076,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_overlay_gui_data_t *g = IOP_GUI_ALLOC(overlay);
   dt_iop_overlay_params_t *p = self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
@@ -1106,18 +1103,18 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(GTK_WIDGET(g->area),
                    "drag-leave", G_CALLBACK(_on_drag_leave), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(grid);
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(C_("section", "placement")), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "placement")));
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
   dt_bauhaus_slider_set_format(g->rotate, "°");
+  dt_bauhaus_slider_set_factor(g->rotate, -1.f);
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
@@ -1162,7 +1159,7 @@ void gui_init(dt_iop_module_t *self)
                      G_CALLBACK(_alignment_callback), self);
   }
 
-  gtk_box_pack_start(GTK_BOX(self->widget), bat, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, bat);
 
   // x/y offset
   g->x_offset = dt_bauhaus_slider_from_params(self, "xoffset");

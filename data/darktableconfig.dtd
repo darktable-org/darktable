@@ -18,6 +18,7 @@
         dialog (collect|recentcollect|import|tagging) #IMPLIED
         ui (yes|no) #IMPLIED
         restart (true|false) #IMPLIED
+        common (yes|no) #IMPLIED
         capability CDATA #IMPLIED
 >
 <!ELEMENT name (#PCDATA)>

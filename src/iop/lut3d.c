@@ -1229,9 +1229,8 @@ void _lut3d_add_lutname_to_list(void *gv, const char *const lutname)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)gv;
   GtkTreeModel *modelf = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
   GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(modelf));
-  GtkTreeIter iter;
-  gtk_list_store_append((GtkListStore *)model, &iter);
-  gtk_list_store_set((GtkListStore *)model, &iter, DT_LUT3D_COL_NAME, lutname, DT_LUT3D_COL_VISIBLE, TRUE, -1);
+  gtk_list_store_insert_with_values((GtkListStore *)model, NULL, -1,
+                                     DT_LUT3D_COL_NAME, lutname, DT_LUT3D_COL_VISIBLE, TRUE, -1);
 }
 
 void _lut3d_clear_lutname_list(void *gv)
@@ -1679,8 +1678,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(g->button, "non-flat");
 #ifdef HAVE_GMIC
@@ -1702,7 +1699,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->filepath,
     _("the file path (relative to LUT folder) is saved with image (and not the LUT data themselves)"));
 #endif // HAVE_GMIC
-  dt_gui_box_add(self->widget, dt_gui_hbox(g->button, dt_gui_expand(g->filepath)));
+  self->widget = dt_gui_vbox(dt_gui_hbox(g->button, dt_gui_expand(g->filepath)));
   g_signal_connect(G_OBJECT(g->button), "clicked", G_CALLBACK(_button_clicked), self);
   g_signal_connect(G_OBJECT(g->filepath), "value-changed", G_CALLBACK(_filepath_callback), self);
 
@@ -1714,8 +1711,6 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->lutentry);
 
   // treeview
-  g->lutwindow = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy((GtkScrolledWindow *)g->lutwindow, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkTreeModel *lutmodel = (GtkTreeModel *)gtk_list_store_new(DT_LUT3D_NUM_COLS, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkTreeModel *lutfilter = gtk_tree_model_filter_new(lutmodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(lutfilter), DT_LUT3D_COL_VISIBLE);
@@ -1726,8 +1721,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_tree_view_set_model((GtkTreeView *)g->lutname, lutfilter);
   gtk_tree_view_set_hover_selection((GtkTreeView *)g->lutname, FALSE);
   gtk_tree_view_set_headers_visible((GtkTreeView *)g->lutname, FALSE);
-  gtk_container_add(GTK_CONTAINER(g->lutwindow), (GtkWidget *)g->lutname);
   gtk_widget_set_tooltip_text(g->lutname, _("select the LUT"));
+  g->lutwindow = dt_gui_scroll_wrap(g->lutname);
+
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes ("lutname", renderer,
                                                    "text", DT_LUT3D_COL_NAME, NULL);

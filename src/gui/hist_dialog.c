@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,6 +130,13 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
     case GTK_RESPONSE_OK:
       g->selops = _gui_hist_get_active_items(g);
       g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
+      g->paste_mode = DT_HISTORY_COPY_APPEND;
+      break;
+
+    case GTK_RESPONSE_APPLY:
+      g->selops = _gui_hist_get_active_items(g);
+      g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
+      g->paste_mode = DT_HISTORY_COPY_OVERWRITE;
       break;
   }
 }
@@ -216,34 +223,47 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
-  GtkDialog *dialog = GTK_DIALOG
-    (gtk_dialog_new_with_buttons(
-      iscopy ? _("select parts to copy") : _("select parts to paste"),
-      GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      _("select _all"),  GTK_RESPONSE_YES,
-      _("select _none"), GTK_RESPONSE_NONE,
-      _("_cancel"),      GTK_RESPONSE_CANCEL,
-      _("_ok"),          GTK_RESPONSE_OK,
-      NULL));
+  GtkDialog *dialog = NULL;
+
+  if(iscopy)
+  {
+    dialog = GTK_DIALOG
+      (gtk_dialog_new_with_buttons(
+        _("select parts to copy"),
+        GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        _("select _all"),  GTK_RESPONSE_YES,
+        _("select _none"), GTK_RESPONSE_NONE,
+        _("_cancel"),      GTK_RESPONSE_CANCEL,
+        _("_ok"),          GTK_RESPONSE_OK,
+        NULL));
+  }
+  else
+  {
+    dialog = GTK_DIALOG
+      (gtk_dialog_new_with_buttons(
+        _("select parts to paste"),
+        GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        _("select _all"),  GTK_RESPONSE_YES,
+        _("select _none"), GTK_RESPONSE_NONE,
+        _("_cancel"),      GTK_RESPONSE_CANCEL,
+        _("_overwrite"),   GTK_RESPONSE_APPLY,
+        _("appen_d"),      GTK_RESPONSE_OK,
+        NULL));
+  }
+
   dt_gui_dialog_add_help(dialog, "copy_history");
+  dt_gui_dialog_restore_size(dialog, "copy_history");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
-                                             DT_PIXEL_APPLY_DPI(450));
-
   /* create the list of items */
   d->items = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(d->items));
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(d->items));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
 
   GtkListStore *liststore
     = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS,
@@ -313,8 +333,6 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
   if(items)
   {
-    GtkTreeIter iter;
-
     for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
       const dt_history_item_t *item = items_iter->data;
@@ -322,9 +340,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set
-          (GTK_LIST_STORE(liststore), &iter,
+        gtk_list_store_insert_with_values(liststore, NULL, -1,
            DT_HIST_ITEMS_COL_ENABLED, iscopy ? FALSE : _gui_is_set(d->selops, item->num),
            DT_HIST_ITEMS_COL_AUTOINIT, FALSE,
            DT_HIST_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
@@ -342,8 +358,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
       const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
       char *label = g_strdup_printf("%s (%s)", _("module order"),
                                     dt_iop_order_string(order));
-      gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+      gtk_list_store_insert_with_values(liststore, NULL, -1,
                          DT_HIST_ITEMS_COL_ENABLED, d->copy_iop_order,
                          DT_HIST_ITEMS_COL_ISACTIVE, is_active_pb,
                          DT_HIST_ITEMS_COL_NAME, label,
@@ -371,13 +386,15 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     if(res == GTK_RESPONSE_CANCEL
        || res == GTK_RESPONSE_DELETE_EVENT
-       || res == GTK_RESPONSE_OK) break;
+       || res == GTK_RESPONSE_OK
+       || res == GTK_RESPONSE_APPLY) break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
 
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
+  g_object_unref(mask);
   return res;
 }
 

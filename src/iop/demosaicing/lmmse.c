@@ -117,16 +117,14 @@ static inline float _calc_gamma(float val, float *table)
 }
 
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
-static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
-                           float *const restrict out,
+static void lmmse_demosaic(float *const restrict out,
                            const float *const restrict in,
-                           const dt_iop_roi_t *const roi_in,
+                           const int width,
+                           const int height,
                            const uint32_t filters,
-                           const dt_iop_demosaic_lmmse_t mode)
+                           const dt_iop_demosaic_lmmse_t mode,
+                           const float scaler)
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   rcd_ppg_border(out, in, width, height, filters, BORDER_AROUND);
   if(width < 2 * BORDER_AROUND || height < 2 * BORDER_AROUND)
     return;
@@ -149,8 +147,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
   const int medians = (mode < DT_LMMSE_REFINE_2) ? mode : 3;
   // refinement steps
   const int refine = (mode > DT_LMMSE_REFINE_2) ? mode - 2 : 0;
-
-  const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;
 
   const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
@@ -306,8 +302,8 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
             p8 -= vdiff[ w3];
             p9 -= vdiff[ w4];
             vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-            float xv = (vdiff[0] * vx + vlp[0] * vn) / (vx + vn);
-            float vv = vx * vn / (vx + vn);
+            const float xv = (vdiff[0] * vx + vlp[0] * vn) / (vx + vn);
+            const float vv = vx * vn / (vx + vn);
             // interpolated G-R(B)
             interp[0] = (xh * vv + xv * vh) / (vh + vv);
           }

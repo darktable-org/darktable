@@ -133,7 +133,7 @@ typedef enum dt_control_state_t
 
 typedef struct dt_control_t
 {
-  gboolean accel_initialising;
+  gboolean accel_initialised;
 
   dt_action_t *actions, actions_global,
                actions_views, actions_thumb,
@@ -141,7 +141,6 @@ typedef struct dt_control_t
                actions_iops, actions_blend, actions_focus,
                actions_lua, actions_fallbacks, *actions_modifiers;
 
-  GHashTable *widgets;
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;

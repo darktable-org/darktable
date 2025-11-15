@@ -88,7 +88,7 @@ DT_OMP_DECLARE_SIMD(aligned(pixel: 16) uniform(norm))
 static void _normalize_color(float *const restrict pixel, const float norm)
 {
   // color may not be black!
-  const float factor = norm / fmaxf(pixel[0], fmaxf(pixel[1], pixel[2]));
+  const float factor = norm / max3f(pixel);
   for_each_channel(x)
     pixel[x] *= factor;
 }

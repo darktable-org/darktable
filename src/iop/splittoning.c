@@ -116,7 +116,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic sepia"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 26.0 / 360.0, 92.0 / 100.0, 40.0 / 360.0, 92.0 / 100.0, 0.63, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+      sizeof(dt_iop_splittoning_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #446CBB
   // highlights: #446CBB
@@ -125,7 +125,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic cyanotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 220.0 / 360.0, 64.0 / 100.0, 220.0 / 360.0, 64.0 / 100.0, 0.0, 5.22 },
-      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+      sizeof(dt_iop_splittoning_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows : #A16C5E
   // highlights : #A16C5E
@@ -134,7 +134,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic platinotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 13.0 / 360.0, 42.0 / 100.0, 13.0 / 360.0, 42.0 / 100.0, 100.0, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+      sizeof(dt_iop_splittoning_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #211A14
   // highlights: #D9D0C7
@@ -143,7 +143,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("chocolate brown"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+      sizeof(dt_iop_splittoning_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -457,10 +457,6 @@ static inline void gui_init_section(dt_iop_module_t *self,
                                     GtkWidget **picker,
                                     gboolean top)
 {
-  GtkWidget *label = dt_ui_section_label_new(Q_(section));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
-
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -481,47 +477,43 @@ static inline void gui_init_section(dt_iop_module_t *self,
   gtk_color_button_set_title(GTK_COLOR_BUTTON(*picker), _("select tone color"));
   g_signal_connect(G_OBJECT(*picker), "color-set", G_CALLBACK(colorpick_callback), self);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), slider_box, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox), *picker, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section)),
+                 dt_gui_hbox(dt_gui_expand(slider_box), *picker));
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
-  GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(sect, "shadow_hue");
+  dt_iop_module_t *shad = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(shad, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
-  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(sect, "shadow_saturation");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(shad, "shadow_saturation");
 
-  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
-  GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(sect, "highlight_hue");
+  dt_iop_module_t *high = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(high, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
-  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(sect, "highlight_saturation");
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(high, "highlight_saturation");
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  self->widget = dt_gui_vbox();
 
   gui_init_section(self, NC_("section", "shadows"),
-                   shadows_box,
+                   shad->widget,
                    g->shadow_hue_gslider,
                    g->shadow_sat_gslider,
                    &g->shadow_colorpick, TRUE);
 
   gui_init_section(self, NC_("section", "highlights"),
-                   highlights_box,
+                   high->widget,
                    g->highlight_hue_gslider,
                    g->highlight_sat_gslider,
                    &g->highlight_colorpick, FALSE);
 
   // Additional parameters
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "properties")), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "properties")));
 
   g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);

@@ -234,7 +234,6 @@ static void _import_metadata_presets_changed(GtkWidget *widget, dt_import_metada
 static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
 {
   gtk_list_store_clear(metadata->m_model);
-  GtkTreeIter iter;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -265,9 +264,7 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
 
     if(op_params_size == pos)
     {
-      gtk_list_store_append(metadata->m_model, &iter);
-      gtk_list_store_set(metadata->m_model,
-                         &iter,
+      gtk_list_store_insert_with_values(metadata->m_model, NULL, -1,
                          0, (char *)sqlite3_column_text(stmt, 0),
                          1, metadata_kv,
                          -1);
@@ -297,7 +294,6 @@ static void _import_tags_presets_changed(GtkWidget *widget, dt_import_metadata_t
 static void _import_tags_presets_update(dt_import_metadata_t *metadata)
 {
   gtk_list_store_clear(metadata->t_model);
-  GtkTreeIter iter;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -328,8 +324,7 @@ static void _import_tags_presets_update(dt_import_metadata_t *metadata)
         if(tags)
           tags[strlen(tags) - 1] = '\0';
         g_strfreev(tokens);
-        gtk_list_store_append(metadata->t_model, &iter);
-        gtk_list_store_set(metadata->t_model, &iter,
+        gtk_list_store_insert_with_values(metadata->t_model, NULL, -1,
                            0, (char *)sqlite3_column_text(stmt, 0),
                            1, tags, -1);
         g_free(tags);

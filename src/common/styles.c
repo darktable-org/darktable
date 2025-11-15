@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -651,8 +651,9 @@ void dt_styles_create_from_list(const GList *list)
   for(const GList *l = list; l; l = g_list_next(l))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
+    if(!dt_gui_styles_dialog_new(imgid))
+      break;
   }
 
   if(!selected) dt_control_log(_("no image selected!"));
@@ -1470,7 +1471,14 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context,
 
   if(g_ascii_strcasecmp(elt, "name") == 0)
   {
-    g_string_append_len(style->info->name, text, text_len);
+    if (text_len == 0)
+    {
+      g_string_append(style->info->name, _("imported-style"));
+    }
+    else
+    {
+      g_string_append_len(style->info->name, text, text_len);
+    }
   }
   else if(g_ascii_strcasecmp(elt, "description") == 0)
   {
@@ -1781,6 +1789,16 @@ gchar *dt_get_style_name(const char *filename)
   if(!bname){
     dt_print(DT_DEBUG_CONTROL,
              "[styles] file %s is a malformed style file", filename);
+  }
+  else
+  {
+    if(strlen(bname) == 0)
+    {
+      dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is a malformed style file (with an empty name)", filename);
+      g_free(bname);
+      bname = g_strdup(_("imported-style"));
+    }
   }
   return bname;
 }

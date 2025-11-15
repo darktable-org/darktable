@@ -20,6 +20,7 @@
 
 #define CAPTURE_KERNEL_ALIGN 32
 #define CAPTURE_YMIN 0.001f
+#define CAPTURE_SMALL_ULIM 66
 
 __kernel void kernel_9x9_mul(global float *in,
                              global float *out,
@@ -41,11 +42,25 @@ __kernel void kernel_9x9_mul(global float *in,
 
   global const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
   global float *d = in + i;
+  const bool small = table[i] < CAPTURE_SMALL_ULIM;
+  const int bd = small ? 2 : 4;
 
   float val = 0.0f;
-  if(col >= 4 && row >= 4 && (col < w1 - 4) && (row < height - 4))
+  if(col >= bd && row >= bd && (col < w1 - bd) && (row < height - bd))
   {
-    val = kern[10+4] * (d[-w4-2]  + d[-w4+2]  + d[-w2-4]  + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
+    if(small)
+    {
+      val =
+          kern[ 5+2] * (d[-w2-1]  + d[-w2+1]  + d[-w1-2]  + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+          kern[   2] * (d[-w2  ]  + d[   -2]  + d[    2]  + d[ w2  ]) +
+          kern[ 5+1] * (d[-w1-1]  + d[-w1+1]  + d[ w1-1]  + d[ w1+1]) +
+          kern[   1] * (d[-w1  ]  + d[   -1]  + d[    1]  + d[ w1  ]) +
+          kern[   0] * (d[0]);
+    }
+    else
+    {
+      val =
+          kern[10+4] * (d[-w4-2]  + d[-w4+2]  + d[-w2-4]  + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
           kern[5 +4] * (d[-w4-1]  + d[-w4+1]  + d[-w1-4]  + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
           kern[4]    * (d[-w4  ]  + d[   -4]  + d[    4]  + d[ w4  ]) +
           kern[15+3] * (d[-w3-3]  + d[-w3+3]  + d[ w3-3]  + d[ w3+3]) +
@@ -58,15 +73,16 @@ __kernel void kernel_9x9_mul(global float *in,
           kern[ 5+1] * (d[-w1-1]  + d[-w1+1]  + d[ w1-1]  + d[ w1+1]) +
           kern[   1] * (d[-w1  ]  + d[   -1]  + d[    1]  + d[ w1  ]) +
           kern[   0] * (d[0]);
+    }
   }
   else
   {
-    for(int ir = -4; ir <= 4; ir++)
+    for(int ir = -bd; ir <= bd; ir++)
     {
       const int irow = row+ir;
       if(irow >= 0 && irow < height)
       {
-        for(int ic = -4; ic <= 4; ic++)
+        for(int ic = -bd; ic <= bd; ic++)
         {
           const int icol = col+ic;
           if(icol >=0 && icol < w1)
@@ -99,11 +115,25 @@ __kernel void kernel_9x9_div(global float *in,
 
   global const float *kern = kernels + CAPTURE_KERNEL_ALIGN * table[i];
   global float *d = in + i;
+  const bool small = table[i] < CAPTURE_SMALL_ULIM;
+  const int bd = small ? 2 : 4;
 
   float val = 0.0f;
-  if(col >= 4 && row >= 4 && (col < w1 - 4) && (row < height - 4))
+  if(col >= bd && row >= bd && (col < w1 - bd) && (row < height - bd))
   {
-    val = kern[10+4] * (d[-w4-2]  + d[-w4+2]  + d[-w2-4]  + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
+    if(small)
+    {
+      val =
+          kern[ 5+2] * (d[-w2-1]  + d[-w2+1]  + d[-w1-2]  + d[-w1+2] + d[w1-2] + d[w1+2] + d[w2-1] + d[w2+1]) +
+          kern[   2] * (d[-w2  ]  + d[   -2]  + d[    2]  + d[ w2  ]) +
+          kern[ 5+1] * (d[-w1-1]  + d[-w1+1]  + d[ w1-1]  + d[ w1+1]) +
+          kern[   1] * (d[-w1  ]  + d[   -1]  + d[    1]  + d[ w1  ]) +
+          kern[   0] * (d[0]);
+    }
+    else
+    {
+      val =
+          kern[10+4] * (d[-w4-2]  + d[-w4+2]  + d[-w2-4]  + d[-w2+4] + d[w2-4] + d[w2+4] + d[w4-2] + d[w4+2]) +
           kern[5 +4] * (d[-w4-1]  + d[-w4+1]  + d[-w1-4]  + d[-w1+4] + d[w1-4] + d[w1+4] + d[w4-1] + d[w4+1]) +
           kern[4]    * (d[-w4  ]  + d[   -4]  + d[    4]  + d[ w4  ]) +
           kern[15+3] * (d[-w3-3]  + d[-w3+3]  + d[ w3-3]  + d[ w3+3]) +
@@ -116,15 +146,16 @@ __kernel void kernel_9x9_div(global float *in,
           kern[ 5+1] * (d[-w1-1]  + d[-w1+1]  + d[ w1-1]  + d[ w1+1]) +
           kern[   1] * (d[-w1  ]  + d[   -1]  + d[    1]  + d[ w1  ]) +
           kern[   0] * (d[0]);
+    }
   }
   else
   {
-    for(int ir = -4; ir <= 4; ir++)
+    for(int ir = -bd; ir <= bd; ir++)
     {
       const int irow = row+ir;
       if(irow >= 0 && irow < height)
       {
-        for(int ic = -4; ic <= 4; ic++)
+        for(int ic = -bd; ic <= bd; ic++)
         {
           const int icol = col+ic;
           if(icol >=0 && icol < w1)

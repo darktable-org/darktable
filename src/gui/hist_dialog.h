@@ -20,7 +20,9 @@
 
 /** shows a dialog for creating a new style, w if not null is a widget to
     change the sensitive state depending on the dialog response.  */
-int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, dt_imgid_t imgid, gboolean iscopy);
+int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
+                           const dt_imgid_t imgid,
+                           const gboolean iscopy);
 
 /** must be called to initialize the structure. */
 void dt_gui_hist_dialog_init(dt_history_copy_item_t *d);
@@ -30,4 +32,3 @@ void dt_gui_hist_dialog_init(dt_history_copy_item_t *d);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

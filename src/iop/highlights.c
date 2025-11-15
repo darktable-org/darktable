@@ -560,7 +560,7 @@ int process_cl(dt_iop_module_t *self,
 
   gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
 
@@ -663,7 +663,7 @@ int process_cl(dt_iop_module_t *self,
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(dt_dev_is_D65_chroma(self->dev) && chr->late_correction)
+    if(chr->late_correction)
     for_each_channel(c)
       clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
     dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
@@ -744,7 +744,7 @@ static void process_clip(dt_iop_module_t *self,
 
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(dt_dev_is_D65_chroma(self->dev) && chr->late_correction)
+    if(chr->late_correction)
     {
       for_each_channel(c) clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
     }
@@ -1296,7 +1296,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = dt_gui_vbox();
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));

@@ -701,15 +701,13 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   int segid = 0;
   const gboolean active = gtk_toggle_button_get_active(
                           GTK_TOGGLE_BUTTON(gtk_tree_view_column_get_widget(d->map.sel_tracks)));
-  GtkTreeIter iter;
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
     gchar *tooltip = _datetime_tooltip(t->start_dt, t->end_dt, d->tz_camera);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
                        DT_GEO_TRACKS_ACTIVE, active,
                        DT_GEO_TRACKS_DATETIME, dts,
                        DT_GEO_TRACKS_POINTS, t->nb_trkpt,
@@ -838,12 +836,6 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   struct dt_gpx_t *gpx = dt_gpx_new(filedir);
   g_free(filedir);
 
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
-
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
   int line = 0;
@@ -898,7 +890,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     gpx = NULL;
   }
 
-  gtk_container_add(GTK_CONTAINER(w), grid);
+  GtkWidget *w = dt_gui_scroll_wrap(grid);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), w);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -1832,7 +1827,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, timezone_box, 2, line++, 2, 1);
 
   GtkCellRenderer *renderer;
-  GtkTreeIter tree_iter;
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING /*display*/, G_TYPE_STRING /*name*/);
   GtkWidget *tz_selection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   renderer = gtk_cell_renderer_text_new();
@@ -1844,8 +1838,7 @@ void gui_init(dt_lib_module_t *self)
   for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
   {
     tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
-    gtk_list_store_append(model, &tree_iter);
-    gtk_list_store_set(model, &tree_iter, 0, tz_tuple->display, 1, tz_tuple->name, -1);
+    gtk_list_store_insert_with_values(model, NULL, -1, 0, tz_tuple->display, 1, tz_tuple->name, -1);
     if(!strcmp(tz_tuple->name, tz))
       gtk_entry_set_text(GTK_ENTRY(d->timezone), tz_tuple->display);
   }

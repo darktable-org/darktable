@@ -262,6 +262,7 @@ typedef struct dt_image_t
   float exif_focal_length;
   float exif_focus_distance;
   float exif_crop;
+  float exif_highlight_preservation;
   int32_t exif_flash_tagvalue;
   char exif_maker[64];
   char exif_model[64];
@@ -376,11 +377,13 @@ void dt_image_refresh_makermodel(dt_image_t *img);
 gboolean dt_image_is_ldr(const dt_image_t *img);
 /** returns TRUE if the image contains mosaic data. */
 gboolean dt_image_is_raw(const dt_image_t *img);
+/** returns TRUE if image contains data from a monochrome SRAW */
+gboolean dt_image_is_mono_sraw(const dt_image_t *img);
 /** returns TRUE if the image contains float data. */
 gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
-/** returns TRUE if this image was taken using a monochrome camera */
+/** returns TRUE if this image was taken using a monochrome camera either by vendor or debayered */
 gboolean dt_image_is_monochrome(const dt_image_t *img);
 /** returns TRUE is image has a raw bayer sensor with RGB data */
 gboolean dt_image_is_bayerRGB(const dt_image_t *img);
@@ -408,6 +411,8 @@ void dt_image_full_path(const dt_imgid_t imgid,
 void dt_image_film_roll_directory(const dt_image_t *img,
                                   char *pathname,
                                   const size_t pathname_len);
+/** returns the portion of the path used for the film roll name, at given levels */
+const char *dt_image_film_roll_name_levels(const char *path, const int levels);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
@@ -487,8 +492,8 @@ gboolean dt_image_altered(const dt_imgid_t imgid);
 gboolean dt_image_basic(const dt_imgid_t imgid);
 /** set the image final/cropped aspect ratio */
 float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise);
-/** set the image raw aspect ratio */
-void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid);
+/** calculate a more meaningful aspect ratio from a given aspect */
+float dt_usable_aspect(const float aspect);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
                                   const float aspect_ratio,

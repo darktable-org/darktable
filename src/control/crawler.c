@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -429,12 +429,8 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui,
   gchar *message = g_markup_printf_escaped(pattern, filepath ? filepath : "");
 
   // add a new line in the log TreeView
-  GtkTreeIter iter_log;
   GtkTreeModel *model_log = gtk_tree_view_get_model(GTK_TREE_VIEW(gui->log));
-  gtk_list_store_append(GTK_LIST_STORE(model_log), &iter_log);
-  gtk_list_store_set(GTK_LIST_STORE(model_log), &iter_log,
-                     0, message,
-                     -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(model_log), NULL, -1, 0, message, -1);
 
   g_free(message);
 }
@@ -711,8 +707,6 @@ void dt_control_crawler_show_image_list(GList *images)
 
   // a list with all the images
   GtkTreeViewColumn *column;
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_vexpand(scroll, TRUE);
   GtkListStore *store = gtk_list_store_new(DT_CONTROL_CRAWLER_NUM_COLS,
                                            G_TYPE_INT,    // id
                                            G_TYPE_STRING, // image path
@@ -728,7 +722,6 @@ void dt_control_crawler_show_image_list(GList *images)
 
   for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
-    GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
     struct tm tm_stamp;
@@ -740,9 +733,7 @@ void dt_control_crawler_show_image_list(GList *images)
     const time_t time_delta = llabs(item->timestamp_db - item->timestamp_xmp);
     gchar *timestamp_delta = str_time_delta(time_delta);
 
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set
-      (store, &iter,
+    gtk_list_store_insert_with_values(store, NULL, -1,
        DT_CONTROL_CRAWLER_COL_ID, item->id,
        DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
        DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
@@ -798,7 +789,7 @@ void dt_control_crawler_show_image_list(GList *images)
   g_object_set(renderer_date, "xalign", 1., NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
@@ -814,37 +805,20 @@ void dt_control_crawler_show_image_list(GList *images)
 #endif
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(content_area), content_box);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
   GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
   GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
-  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), select_invert, FALSE, FALSE, 0);
   g_signal_connect(select_all, "clicked", G_CALLBACK(_select_all_callback), gui);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_select_none_callback), gui);
   g_signal_connect(select_invert, "clicked", G_CALLBACK(_select_invert_callback), gui);
 
-  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
-
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 1);
   GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
   GtkWidget *reload_button = gtk_button_new_with_label(_("keep the XMP edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
   GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), newest_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), oldest_button, FALSE, FALSE, 0);
   g_signal_connect(reload_button, "clicked", G_CALLBACK(_reload_button_clicked), gui);
   g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
   g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
@@ -852,15 +826,9 @@ void dt_control_crawler_show_image_list(GList *images)
 
   /* Feedback spinner in case synch happens over network and stales */
   gui->spinner = gtk_spinner_new();
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(gui->spinner), FALSE, FALSE, 0);
 
   /* Log report */
-  scroll = gtk_scrolled_window_new(NULL, NULL);
   gui->log = gtk_tree_view_new();
-  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(scroll), gui->log);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(gui->log), -1,
@@ -872,6 +840,11 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_set_model(GTK_TREE_VIEW(gui->log), model_log);
   g_object_unref(model_log);
 
+  dt_gui_dialog_add(GTK_DIALOG(dialog),
+    dt_gui_hbox(select_all, select_none, select_invert),
+    scroll,
+    dt_gui_hbox(label, reload_button, overwrite_button, newest_button, oldest_button, gui->spinner),
+    dt_gui_scroll_wrap(gui->log));
   gtk_widget_show_all(dialog);
 
   g_signal_connect(dialog, "response",
@@ -882,13 +855,8 @@ void dt_control_crawler_show_image_list(GList *images)
 
 static inline gboolean _lighttable_silent(void)
 {
-  const dt_view_t *cv = darktable.view_manager
-                        ? dt_view_manager_get_current_view(darktable.view_manager)
-                        : NULL;
-  return cv
-        && cv->view
-        && cv->view(cv) == DT_VIEW_LIGHTTABLE
-        && dt_get_wtime() > darktable.backthumbs.time;
+  return dt_view_get_current() == DT_VIEW_LIGHTTABLE
+          && dt_get_wtime() > darktable.backthumbs.time;
 }
 
 static inline gboolean _valid_mip(dt_mipmap_size_t mip)
@@ -898,23 +866,30 @@ static inline gboolean _valid_mip(dt_mipmap_size_t mip)
 
 static inline gboolean _still_thumbing(void)
 {
-  return darktable.backthumbs.running
-      && _lighttable_silent()
-      && _valid_mip(darktable.backthumbs.mipsize);
+  return darktable.backthumbs.state == DT_JOB_STATE_RUNNING
+      && _lighttable_silent();
 }
 
-static void _update_img_thumbs(const dt_imgid_t imgid,
-                               const dt_mipmap_size_t max_mip,
-                               const int64_t stamp)
+static int _update_img_thumbs(const dt_imgid_t imgid,
+                              const dt_mipmap_size_t max_mip,
+                              const int64_t stamp)
 {
-  for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
+  dt_backthumb_t *bt = &darktable.backthumbs;
+
+  /* as generating the thumb might take some time watch out for a non-running state
+      and possibly return asap without updating the database.
+  */
+  for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1 && bt->state == DT_JOB_STATE_RUNNING; k--)
   {
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
     dt_mipmap_cache_release(&buf);
   }
 
-  // we have written all thumbs now so it's safe to write timestamp, hash and mipsize
+  if(bt->state != DT_JOB_STATE_RUNNING)
+    return 0;
+
+  // we have written all thumbs and are in running state so it's safe to write timestamp, hash and mipsize
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
@@ -929,6 +904,7 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
 
   dt_mipmap_cache_evict(imgid);
   dt_history_hash_set_mipmap(imgid);
+  return 1;
 }
 
 static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
@@ -956,10 +932,7 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     const gboolean available = dt_util_test_image_file(path);
 
     if(available)
-    {
-      _update_img_thumbs(imgid, max_mip, stamp);
-      updated++;
-    }
+      updated += _update_img_thumbs(imgid, max_mip, stamp);
     else
     {
       missed++;
@@ -979,19 +952,13 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
 
 static void _reinitialize_thumbs_database(void)
 {
-  dt_conf_set_bool("backthumbs_initialize", FALSE);
-
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database");
-
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),                              "UPDATE main.images"
                               " SET thumb_maxmip = 0, thumb_timestamp = -1",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  darktable.backthumbs.service = FALSE;
-  dt_set_backthumb_time(5.0);
 }
 
 /* public */
@@ -1007,22 +974,20 @@ void dt_set_backthumb_time(const double next)
 void dt_update_thumbs_thread(void *p)
 {
   dt_pthread_setname("thumbs_update");
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
   dt_backthumb_t *bt = &darktable.backthumbs;
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
+  const dt_mipmap_size_t mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
   const gboolean dwriting = dt_conf_get_bool("cache_disk_backend");
-  bt->mipsize = dt_mipmap_cache_get_min_mip_from_pref(dt_conf_get_string_const("backthumbs_mipsize"));
-  bt->service = FALSE;
-  if(!dwriting || !_valid_mip(bt->mipsize) || !darktable.view_manager)
+  const gboolean service = dt_conf_get_bool("backthumbs_initialize");
+
+  bt->state = DT_JOB_STATE_FINISHED;
+
+  if(!dwriting || !_valid_mip(mipsize))
   {
-    bt->running = FALSE;
     dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting");
     return;
   }
-  bt->running = TRUE;
-
-  int updated = 0;
 
   // return if any thumbcache dir is not writable
   for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_7; k++)
@@ -1036,26 +1001,31 @@ void dt_update_thumbs_thread(void *p)
     }
   }
 
-  dt_set_backthumb_time(5.0);
-  while(bt->running)
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
+  bt->state = DT_JOB_STATE_RUNNING;
+  int updated = 0;
+
+  if(service)
   {
-    for(int i = 0; i < 12 && bt->running && !bt->service; i++)
+    _reinitialize_thumbs_database();
+    dt_conf_set_bool("backthumbs_initialize", FALSE);
+  }
+
+  dt_set_backthumb_time(1.0);
+  while(bt->state == DT_JOB_STATE_RUNNING)
+  {
+    for(int i = 0; i < 12 && bt->state == DT_JOB_STATE_RUNNING; i++)
       g_usleep(250000);
 
-    if(!bt->running)
+    if(bt->state != DT_JOB_STATE_RUNNING)
       break;
 
-    if(bt->service)
-      _reinitialize_thumbs_database();
-
-    if(_lighttable_silent() && _valid_mip(bt->mipsize))
-      updated += _update_all_thumbs(bt->mipsize);
-
-    if(!_valid_mip(bt->mipsize))
-      bt->running = FALSE;
+    if(_lighttable_silent())
+      updated += _update_all_thumbs(mipsize);
   }
+
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
-  bt->capable = FALSE;
+  bt->state = DT_JOB_STATE_FINISHED;
 }
 
 // clang-format off

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/image.h"
+#include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/map_locations.h"
@@ -40,6 +41,11 @@
 #include "win/strptime.h"
 #endif
 
+
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#endif
 
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
@@ -543,6 +549,18 @@ void dt_collection_set_tag_id(dt_collection_t *collection,
   collection->tagid = tagid;
 }
 
+static void _image_set_raw_aspect_ratio(const dt_imgid_t imgid)
+{
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
+  if(image)
+  {
+    /* set image aspect ratio */
+    const int side = image->orientation < ORIENTATION_SWAP_XY ? image->p_height : image->p_width;
+    image->aspect_ratio = dt_usable_aspect((float )image->p_height / (float )(MAX(1, side)));
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
+  }
+}
+
 static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
@@ -572,7 +590,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-      dt_image_set_raw_aspect_ratio(imgid);
+      _image_set_raw_aspect_ratio(imgid);
 
       if(dt_get_wtime() - start > MAX_TIME)
       {
@@ -1568,7 +1586,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       else if(operator && number1)
         query = g_strdup_printf("(aspect_ratio %s %s)", operator, number1);
       else if(number1)
-        query = g_strdup_printf("(aspect_ratio = %s)", number1);
+        query = g_strdup_printf("(ROUND(aspect_ratio,2) = %s)", number1);
       else
         query = g_strdup_printf("(aspect_ratio LIKE '%%%s%%')", escaped_text);
 
@@ -2639,7 +2657,6 @@ void dt_collection_update_query(const dt_collection_t *collection,
     g_free(text);
   }
 
-
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where(collection, query_parts);
   g_strfreev(query_parts);
@@ -2689,7 +2706,31 @@ void dt_collection_update_query(const dt_collection_t *collection,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
                             query_change, changed_property,
                             list, next);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "collection-changed",
+        LUA_ASYNC_DONE);
+#endif
   }
+}
+
+gboolean dt_collection_has_property(const dt_collection_properties_t property)
+{
+  const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int num_rules = CLAMP(_n_r, 1, 10);
+  char confname[200];
+
+  for(int i = 0; i < num_rules; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    const int prop = dt_conf_get_int(confname);
+
+    if(prop == property)
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 gboolean dt_collection_hint_message_internal(void *message)

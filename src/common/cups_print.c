@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,7 +73,8 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   pinfo->num_printers = 0;
 }
 
-void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
+void dt_get_printer_info(const char *printer_name,
+                         dt_printer_info_t *pinfo)
 {
   cups_dest_t *dests;
   const int num_dests = cupsGetDests(&dests);
@@ -146,7 +147,9 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
   cupsFreeDests(num_dests, dests);
 }
 
-static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
+static int _dest_cb(void *user_data,
+                    const unsigned flags,
+                    cups_dest_t *dest)
 {
   const dt_prtctl_t *pctl = (dt_prtctl_t *)user_data;
   const char *psvalue = cupsGetOption("printer-state", dest->num_options, dest->options);
@@ -202,7 +205,8 @@ void dt_printers_abort_discovery(void)
   _cancel = 1;
 }
 
-void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data)
+void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data),
+                           void *user_data)
 {
   // asynchronously checks for available printers
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
@@ -218,7 +222,8 @@ void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), v
   }
 }
 
-static gboolean paper_exists(GList *papers, const char *name)
+static gboolean paper_exists(GList *papers,
+                             const char *name)
 {
   if(strstr(name,"custom_") == name)
     return TRUE;
@@ -232,7 +237,8 @@ static gboolean paper_exists(GList *papers, const char *name)
   return FALSE;
 }
 
-dt_paper_info_t *dt_get_paper(GList *papers, const char *name)
+dt_paper_info_t *dt_get_paper(GList *papers,
+                              const char *name)
 {
   dt_paper_info_t *result = NULL;
 
@@ -279,7 +285,8 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
 
     if(dest)
     {
-      http_t *hcon = cupsConnectDest(dest, 0, 2000, &cancel, resource, sizeof(resource), NULL, (void *)NULL);
+      http_t *hcon = cupsConnectDest(dest, 0, 2000, &cancel,
+                                     resource, sizeof(resource), NULL, (void *)NULL);
 
       if(hcon)
       {
@@ -318,7 +325,9 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         httpClose(hcon);
       }
       else
-        dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)", printer_name, cancel);
+        dt_print(DT_DEBUG_PRINT,
+                 "[print] cannot connect to printer %s (cancel=%d)",
+                 printer_name, cancel);
     }
 
     cupsFreeDests(num_dests, dests);
@@ -385,7 +394,9 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
           g_strlcpy(media->common_name, choice->text, MAX_NAME);
           result = g_list_prepend (result, media);
 
-          dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)", k, media->name, media->common_name);
+          dt_print(DT_DEBUG_PRINT,
+                   "[print] new media %2d (%s) (%s)",
+                   k, media->name, media->common_name);
           choice++;
         }
       }
@@ -397,7 +408,8 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
-dt_medium_info_t *dt_get_medium(GList *media, const char *name)
+dt_medium_info_t *dt_get_medium(GList *media,
+                                const char *name)
 {
   dt_medium_info_t *result = NULL;
 
@@ -413,13 +425,17 @@ dt_medium_info_t *dt_get_medium(GList *media, const char *name)
   return result;
 }
 
-void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo)
+void dt_print_file(const dt_imgid_t imgid,
+                   const char *filename,
+                   const char *job_title,
+                   const dt_print_info_t *pinfo)
 {
   // first for safety check that filename exists and is readable
 
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("file `%s' to print not found for image %d on `%s'"), filename, imgid, pinfo->printer.name);
+    dt_control_log(_("file `%s' to print not found for image %d on `%s'"),
+                   filename, imgid, pinfo->printer.name);
     return;
   }
 
@@ -429,7 +445,10 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
   // for turboprint drived printer, use the turboprint dialog
   if(pinfo->printer.is_turboprint)
   {
-    const char *tp_intent_name[] = { "perception_0", "colorimetric-relative_1", "saturation_1", "colorimetric-absolute_1" };
+    const char *tp_intent_name[] = { "perception_0",
+                                     "colorimetric-relative_1",
+                                     "saturation_1",
+                                     "colorimetric-absolute_1" };
     char tmpfile[PATH_MAX] = { 0 };
 
     dt_loc_get_tmp_dir(tmpfile, sizeof(tmpfile));
@@ -444,7 +463,8 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
     }
     close(fd);
 
-    // ensure that intent is in the range, may happen if at some point we add new intent in the list
+    // ensure that intent is in the range, may happen if at some point
+    // we add new intent in the list
     const int intent = (pinfo->printer.intent < 4) ? pinfo->printer.intent : 0;
 
     // spawn turboprint command
@@ -529,7 +549,9 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
 
     // if we have a profile, disable cm on CUPS, this is important as dt does the cm
 
-    num_options = cupsAddOption("cm-calibration", *pinfo->printer.profile ? "true" : "false", num_options, &options);
+    num_options = cupsAddOption("cm-calibration",
+                                *pinfo->printer.profile ? "true" : "false",
+                                num_options, &options);
 
     // media to print on
 
@@ -559,7 +581,13 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
     }
 
     // as cups-filter pdftopdf will autorotate the page, there is no
-    // need to set an option in the case of landscape mode images
+    // need to set an option in the case of landscape mode
+    // images. Let's keep this as a conf option as some cups on macOS
+    // seems to require it.
+    if(dt_conf_get_bool("plugins/print/cups/force_landscape"))
+       num_options = cupsAddOption("landscape",
+                                   pinfo->page.landscape ? "true" : "false",
+                                   num_options, &options);
   }
 
   // print lp options
@@ -579,13 +607,21 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
 }
 
 void dt_get_print_layout(const dt_print_info_t *prt,
-                         const int32_t area_width, const int32_t area_height,
-                         float *px, float *py, float *pwidth, float *pheight,
-                         float *ax, float *ay, float *awidth, float *aheight,
+                         const int32_t area_width,
+                         const int32_t area_height,
+                         float *px,
+                         float *py,
+                         float *pwidth,
+                         float *pheight,
+                         float *ax,
+                         float *ay,
+                         float *awidth,
+                         float *aheight,
                          gboolean *borderless)
 {
-  /* this is where the layout is done for the display and for the print too. So this routine is one
-     of the most critical for the print circuitry. */
+  /* this is where the layout is done for the display and for the
+     print too. So this routine is one of the most critical for the
+     print circuitry. */
 
   // page w/h
   float pg_width  = prt->paper.width;
@@ -642,16 +678,17 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   *pwidth = p_right - *px;
   *pheight = p_bottom - *py;
 
-  // page margins, note that we do not want to change those values for the landscape mode.
-  // these margins are those set by the user from the GUI, and the top margin is *always*
-  // at the top of the screen.
+  // page margins, note that we do not want to change those values for
+  // the landscape mode.  these margins are those set by the user from
+  // the GUI, and the top margin is *always* at the top of the screen.
 
   const float border_top = prt->page.margin_top;
   const float border_left = prt->page.margin_left;
   const float border_right = prt->page.margin_right;
   const float border_bottom = prt->page.margin_bottom;
 
-  // display picture area, that is removing the non printable areas and user's margins
+  // display picture area, that is removing the non printable areas
+  // and user's margins
 
   const float bx = *px + (border_left / pg_width) * (*pwidth);
   const float by = *py + (border_top / pg_height) * (*pheight);
@@ -676,4 +713,3 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

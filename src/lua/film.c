@@ -119,7 +119,8 @@ static int film_getnum(lua_State *L)
   int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
+    return 1;
   }
   dt_lua_film_t film_id;
   luaA_to(L, dt_lua_film_t, &film_id, -2);
@@ -133,13 +134,12 @@ static int film_getnum(lua_State *L)
   {
     dt_lua_image_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
   }
   else
   {
-    sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
+  sqlite3_finalize(stmt);
   return 1;
 }
 static int films_len(lua_State *L)
@@ -164,7 +164,8 @@ static int films_index(lua_State *L)
   int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
+    return 1;
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];

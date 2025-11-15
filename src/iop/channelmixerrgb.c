@@ -49,6 +49,7 @@
 #include "common/illuminants.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
+#include "common/dttypes.h"
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
@@ -395,7 +396,7 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("scene-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_SCENE);
+       TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_MATRIX);
@@ -458,7 +459,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.f;
 
   dt_gui_presets_add_generic(_("monochrome | luminance-based"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // film emulations
 
@@ -493,7 +494,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.48737156f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD HP5+"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 100
   // https://www.ilfordphoto.com/amfile/file/download/file/3/product/681/
@@ -502,7 +503,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.50081619f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD DELTA 100"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 400 and 3200 - they have the same curve
   // https://www.ilfordphoto.com/amfile/file/download/file/1915/product/685/
@@ -512,7 +513,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.52009729f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD DELTA 400 - 3200"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD FP4+
   // https://www.ilfordphoto.com/amfile/file/download/file/1919/product/690/
@@ -521,7 +522,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.53701643f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD FP4+"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Fuji Acros 100
   // https://dacnard.wordpress.com/2013/02/15/the-real-shades-of-gray-bw-film-is-a-matter-of-heart-pt-1/
@@ -530,7 +531,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.353f;
 
   dt_gui_presets_add_generic(_("monochrome | Fuji Acros 100"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
   // can't find spectral sensitivity curves and the illuminant under which they are produced,
@@ -547,7 +548,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.normalize_grey = FALSE;
   p.clip = FALSE;
   dt_gui_presets_add_generic(_("basic channel mixer"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-B
   p.red[0] = 1.f;
@@ -560,7 +561,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 1.f;
   p.blue[2] = 0.f;
   dt_gui_presets_add_generic(_("channel swap | swap G and B"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-R
   p.red[0] = 0.f;
@@ -573,7 +574,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 0.f;
   p.blue[2] = 1.f;
   dt_gui_presets_add_generic(_("channel swap | swap G and R"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap R-B
   p.red[0] = 0.f;
@@ -586,7 +587,15 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 0.f;
   p.blue[2] = 0.f;
   dt_gui_presets_add_generic(_("channel swap | swap R and B"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+}
+
+static gboolean _dev_is_D65_chroma(const dt_develop_t *dev)
+{
+  const dt_dev_chroma_t *chr = &dev->chroma;
+  return chr->late_correction
+    ? dt_dev_equal_chroma(chr->wb_coeffs, chr->as_shot)
+    : dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
 }
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -615,21 +624,21 @@ static gboolean _get_white_balance_coeff(const dt_iop_module_t *self,
     return TRUE;
 
   // If we use D65 there are unchanged corrections
-  if(dt_dev_is_D65_chroma(self->dev))
+  if(_dev_is_D65_chroma(self->dev))
     return FALSE;
 
   const gboolean valid_chroma =
     chr->D65coeffs[0] > 0.0 && chr->D65coeffs[1] > 0.0 && chr->D65coeffs[2] > 0.0;
 
   const gboolean changed_chroma =
-    chr->wb_coeffs[0] > 1.0 || chr->wb_coeffs[1] > 1.0 || chr->wb_coeffs[2] > 1.0;
+    chr->wb_coeffs[0] > 1.0f || chr->wb_coeffs[1] > 1.0f || chr->wb_coeffs[2] > 1.0f;
 
   // Otherwise - for example because the user made a correct preset, find the
   // WB adaptation ratio
   if(valid_chroma && changed_chroma)
   {
     for_four_channels(k)
-      custom_wb[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+      custom_wb[k] = (float)chr->D65coeffs[k] / chr->wb_coeffs[k];
   }
   return FALSE;
 }
@@ -2007,7 +2016,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   const gboolean problem1 = valid
                             && chr->adaptation == self
                             && temperature_enabled
-                            && !dt_dev_is_D65_chroma(dev);
+                            && !_dev_is_D65_chroma(dev);
 
   // our second biggest problem : another channelmixerrgb instance is doing CAT
   // earlier in the pipe and we don't use masking here.
@@ -2029,16 +2038,14 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   const dt_image_t *img = &dev->image_storage;
   dt_print_pipe(DT_DEBUG_PIPE, anyproblem ? "chroma trouble" : "chroma data",
       NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i",
+      "%s%s%sD65=%s.  D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i",
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
-      dt_dev_is_D65_chroma(dev) ? "YES" : "NO",
-      chr->wb_coeffs[0], chr->wb_coeffs[1], chr->wb_coeffs[2],
+      _dev_is_D65_chroma(dev) ? "YES" : "NO",
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
       chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
-      img->filename,
-      img->id);
+      img->filename, img->id);
 
   if(problem2)
   {
@@ -3398,7 +3405,7 @@ static void _convert_GUI_colors(const dt_iop_channelmixer_rgb_params_t *p,
 
       // normalize with hue-preserving method (sort-of) to prevent
       // gamut-clipping in sRGB
-      const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+      const float max_RGB = max3f(RGB);
       for_three_channels(c)
         RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
     }
@@ -4434,10 +4441,7 @@ void gui_init(dt_iop_module_t *self)
        "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
        "• none disables any adaptation and uses pipeline working RGB."));
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   g->approx_cct = dt_ui_label_new("CCT:");
-  gtk_box_pack_start(GTK_BOX(hbox), g->approx_cct, FALSE, FALSE, 0);
 
   g->illum_color = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request
@@ -4450,14 +4454,13 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw",
                    G_CALLBACK(_illuminant_color_draw), self);
-  gtk_box_pack_start(GTK_BOX(hbox), g->illum_color, TRUE, TRUE, 0);
 
-  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
+  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   dt_action_define_iop(self, NULL, N_("picker"), g->color_picker, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(g->color_picker,
                               _("set white balance to detected from area"));
 
-  dt_gui_box_add(self->widget, hbox);
+  dt_gui_box_add(self->widget, dt_gui_hbox(g->approx_cct, dt_gui_expand(g->illum_color), g->color_picker));
 
   g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
 
@@ -4572,7 +4575,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
-  dt_gui_box_add(g->csspot.container, 
+  dt_gui_box_add(g->csspot.container,
                  g->spot_mode, g->use_mixing,
                  dt_gui_hbox(
                  dt_gui_vbox(dt_ui_section_label_new(C_("section", "input")),

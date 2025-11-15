@@ -129,6 +129,13 @@ FILE(COPY gdb_commands DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
+# Install shortcutsrc with extra key+mouse combinations, and any localized versions of it
+#
+FILE(GLOB LOCALIZED_SHORTCUTS "shortcutsrc.*")
+FILE(COPY shortcutsrc ${LOCALIZED_SHORTCUTS} DESTINATION "${DARKTABLE_DATADIR}")
+install(FILES shortcutsrc ${LOCALIZED_SHORTCUTS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
+#
 # Install noiseprofiles
 #
 if(${VALIDATE_JSON})

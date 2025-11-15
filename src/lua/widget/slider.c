@@ -49,7 +49,7 @@ static int label_member(lua_State *L)
     char tmp[256];
     luaA_to(L,char_256,&tmp,3);
     lua_getglobal(L, "script_manager_running_script");
-    DT_BAUHAUS_WIDGET(slider->widget)->module = &darktable.control->actions_lua;
+    dt_bauhaus_widget_set_module(slider->widget, &darktable.control->actions_lua);
     dt_bauhaus_widget_set_label(slider->widget,lua_tolstring(L,-1,NULL),tmp);
     return 0;
   }
