@@ -2423,7 +2423,6 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
-  darktable.gui->reset++;
 
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
@@ -2456,7 +2455,6 @@ void gui_init(dt_iop_module_t *self)
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
 
-  darktable.gui->reset--;
   gui_update(self);
 }
 
