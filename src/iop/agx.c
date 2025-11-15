@@ -199,7 +199,6 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *completely_reverse_primaries;
   GtkWidget *post_curve_primaries_controls_vbox;
   GtkWidget *set_post_curve_primaries_from_pre_button;
-  gboolean initialized;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -1732,7 +1731,7 @@ void gui_changed(dt_iop_module_t *self,
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  if (!g->initialized) return;
+  if (darktable.gui->reset) return;
 
   dt_iop_agx_params_t *p = self->params;
 
@@ -2424,7 +2423,7 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
-  g->initialized = FALSE;
+  darktable.gui->reset++;
 
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
@@ -2457,7 +2456,7 @@ void gui_init(dt_iop_module_t *self)
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
 
-  g->initialized = TRUE;
+  darktable.gui->reset--;
   gui_update(self);
 }
 
