@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@
 
 #define MAX_NAME 128
 
-typedef enum dt_alignment_t {
+typedef enum dt_alignment_t
+{
   ALIGNMENT_TOP_LEFT,
   ALIGNMENT_TOP,
   ALIGNMENT_TOP_RIGHT,
@@ -71,29 +72,36 @@ typedef struct dt_print_info_t
 } dt_print_info_t;
 
 // Asynchronous printer discovery, cb will be called for each printer found
-void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data);
+void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data),
+                           void *user_data);
 void dt_printers_abort_discovery(void);
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo);
 
 // get printer information for the given printer name
-void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo);
+void dt_get_printer_info(const char *printer_name,
+                         dt_printer_info_t *pinfo);
 
 // get all available papers for the given printer
 GList *dt_get_papers(const dt_printer_info_t *printer);
 
 // get paper information for the given paper name
-dt_paper_info_t *dt_get_paper(GList *papers, const char *name);
+dt_paper_info_t *dt_get_paper(GList *papers,
+                              const char *name);
 
 // get all available media type for the given printer
 GList *dt_get_media_type(const dt_printer_info_t *printer);
 
 // get paper information for the given paper name
-dt_medium_info_t *dt_get_medium(GList *media, const char *name);
+dt_medium_info_t *dt_get_medium(GList *media,
+                                const char *name);
 
 // print filename using the printer and the page size and setup
-void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo);
+void dt_print_file(const dt_imgid_t imgid,
+                   const char *filename,
+                   const char *job_title,
+                   const dt_print_info_t *pinfo);
 
 // given the page settings (media size and border) and the printer (hardware margins) returns the
 // page and printable area layout in the area_width and area_height (the area that dt allocate
@@ -102,9 +110,16 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
 //  - the printable area (ax, ay, awidth and aheight), the area without the borders
 // there is no unit, every returned values are based on the area size.
 void dt_get_print_layout(const dt_print_info_t *prt,
-                         const int32_t area_width, const int32_t area_height,
-                         float *px, float *py, float *pwidth, float *pheight,
-                         float *ax, float *ay, float *awidth, float *aheight,
+                         const int32_t area_width,
+                         const int32_t area_height,
+                         float *px,
+                         float *py,
+                         float *pwidth,
+                         float *pheight,
+                         float *ax,
+                         float *ay,
+                         float *awidth,
+                         float *aheight,
                          gboolean *borderless);
 
 // clang-format off
@@ -112,4 +127,3 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

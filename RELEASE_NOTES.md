@@ -171,7 +171,8 @@ changes (where available).
 - Added automatic compensation of camera's hidden underexposure for
   Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
   modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
-  and Fujifilm DR200/DR400 modes.
+  and Fujifilm DR200/DR400 modes. This affects both the "exposure" and
+  "denoise (profiled)" modules.
 
 - Add a RGB percent display in the color picker module.
 
@@ -210,6 +211,10 @@ changes (where available).
   x-touch Lua script.
 
 - Added the ability to calculate crop factor for Olympus cameras.
+
+- When creating styles with multiple images selected, clicking Cancel
+  button or typing <kbd>ESC</kbd> on the style dialog now ends the
+  whole process instead of continuing with the next image.
 
 ## Bug Fixes
 
@@ -283,6 +288,22 @@ changes (where available).
 
 - Fixed a bug in darktable-cli where synonyms for tags attached to an
   image were ignored when exporting it.
+
+- Fixed auto-applied user's presets when <kbd>Ctrl+click</kbd> on a
+  processing module after restarting Dartkable.
+
+- Fixed a bug where adding an image to a group in lighttable could
+  merge multiple group together.
+
+- Fixed a print issue which is probably happening only on macOS. When
+  printing in landscape mode, the rotation of the picture is not done
+  on the printer. So only a part of the image is printed at the bottom
+  of the page. This issue is not fully understood at this stage and
+  has only been reported twice. If you encounter this issue then you
+  can set the following variable in your darktablerc to force the
+  landscape CUPS option to be generated:
+
+     plugins/print/cups/force_landscape=TRUE
 
 ## Lua
 
