@@ -2225,7 +2225,7 @@ void gui_update(dt_iop_module_t *self)
                                p->disable_primaries_adjustments);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
-
+  _update_curve_warnings(self);
 
   gui_changed(self, NULL, NULL);
 }
@@ -2454,8 +2454,6 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
-
-  gui_update(self);
 }
 
 static void _set_shared_params(dt_iop_agx_params_t *p)
