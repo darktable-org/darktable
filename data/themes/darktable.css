@@ -618,7 +618,8 @@ dialog .sidebar row:selected:hover label,
 }
 
 #snapshot-button entry,
-#iop-module-name
+#iop-module-name,
+#lib-module-name
 {
   font-weight: lighter;
   font-family: sans-serif, "Arial Unicode MS";
