@@ -2099,6 +2099,9 @@ void gui_changed(dt_iop_module_t *self,
                  void *previous)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
+
+  if (darktable.gui->reset) return;
+
   dt_iop_agx_params_t *p = self->params;
 
   if(widget == g->black_exposure_picker)
@@ -2178,7 +2181,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
   dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
                                                "used to set the pivot relative to mid-gray,\n"
@@ -2255,7 +2257,6 @@ static void _add_look_sliders(dt_iop_module_t *section)
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("increase to bring hues closer to the original"));
 }
 
@@ -2322,7 +2323,6 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 
   // Shoulder length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_above_pivot");
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2340,7 +2340,6 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2593,7 +2592,7 @@ void gui_update(dt_iop_module_t *self)
                                p->disable_primaries_adjustments);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
-
+  _update_curve_warnings(self);
 
   gui_changed(self, NULL, NULL);
 }
@@ -2822,7 +2821,6 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
-  gui_update(self);
 }
 
 static void _set_shared_params(dt_iop_agx_params_t *p)
