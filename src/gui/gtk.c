@@ -4442,6 +4442,13 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+static void _gesture_cancel(GtkGestureSingle *gesture,
+                            GdkEventSequence *sequence,
+                            GtkWidget *widget)
+{
+  g_signal_emit_by_name(gesture, "released", 1, .0, .0);
+}
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
@@ -4453,7 +4460,11 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
   if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
-  if(released) g_signal_connect(gesture, "released", released, data);
+  if(released)
+  {
+    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
+  }
 
   return (GtkGestureSingle *)gesture;
 }
