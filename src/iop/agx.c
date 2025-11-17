@@ -293,7 +293,7 @@ int legacy_params(dt_iop_module_t *self,
     *new_params_size = sizeof(dt_iop_agx_params_t);
     *new_version = AGX_VERSION; // SPECIAL CASE: test versions jump directly to latest
 
-    return 1; // SPECIAL CASE for test versions: we're done
+    return 0;
   }
 
   return 1; // no other conversion possible
