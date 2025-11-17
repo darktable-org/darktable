@@ -56,7 +56,10 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   return FALSE;
 }
 
-static void set_widget_label_default(GtkWidget *widget, const char *confstr, GtkWidget *label, const float factor)
+static void set_widget_label_default(GtkWidget *widget,
+                                     const char *confstr,
+                                     GtkWidget *label,
+                                     const float factor)
 {
   gboolean is_default = TRUE;
 
@@ -111,16 +114,139 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
   }
 }
 
+static GtkWidget *create_tab(GtkWidget *stack,
+                             const char *title,
+                             const char *l10n_title)
+{
+  GtkWidget *widget, *box;
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  GtkWidget *tab_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *scroll = dt_gui_scroll_wrap(grid);
+  GtkWidget *help = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_halign(help, GTK_ALIGN_END);
+  gchar *pref = g_strdup_printf("preferences-settings/%s", title);
+  g_object_set_data_full(G_OBJECT(help), "dt-help-url", pref, g_free);
+  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_start(GTK_BOX(tab_box), scroll, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(tab_box), help, FALSE, FALSE, 0);
+  gtk_stack_add_titled(GTK_STACK(stack), tab_box, l10n_title, l10n_title);
+  return grid;
+  }
+
+static GtkWidget *setup_pref(GtkWidget **label,
+                             GtkWidget **labelev,
+                             const gchar *pref,
+                             const gchar *shortdes)
+{
+  const gboolean is_default = dt_conf_is_default(pref);
+  GtkWidget *labdef = NULL;
+  if(is_default)
+  {
+    labdef = gtk_label_new("");
+  }
+  else
+  {
+    labdef = gtk_label_new(NON_DEF_CHAR);
+    gtk_widget_set_tooltip_text(labdef, _("this setting has been modified"));
+  }
+  gtk_widget_set_name(labdef, "preference_non_default");
+  *label = gtk_label_new_with_mnemonic(shortdes);
+  gtk_label_set_xalign(GTK_LABEL(*label), .0);
+  *labelev = gtk_event_box_new();
+  gtk_widget_add_events(*labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(*labelev), *label);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(*labelev), FALSE);
+  return labdef;
+}
+
+static void wrapup_pref(const gchar *name,
+                        GtkWidget *grid,
+                        GtkWidget *labelev,
+                        GtkWidget *labdef,
+                        GtkWidget *label,
+                        GtkWidget *widget,
+                        int *line,
+                        gboolean (*callback)(GtkWidget *, GdkEventButton *, GtkWidget*))
+{
+  gtk_widget_set_name(widget, name);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, *line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labdef, 1, *line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), widget, 2, (*line)++, 1, 1);
+  gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(callback), (gpointer)widget);
+}
+
+static gboolean click_widget_toggle_set(GtkWidget *label,
+                                        GdkEventButton *event,
+                                        GtkWidget *widget,
+                                        const gboolean value)
+{
+  if(event->type == GDK_BUTTON_PRESS && GTK_IS_BUTTON(widget))
+  {
+   gtk_button_clicked(GTK_BUTTON(widget));
+  }
+  else if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), value);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean click_widget_toggle_true(GtkWidget *label,
+                                         GdkEventButton *event,
+                                         GtkWidget *widget)
+{
+  return click_widget_toggle_set(label, event, widget, TRUE);
+}
+
+static gboolean click_widget_toggle_false(GtkWidget *label,
+                                          GdkEventButton *event,
+                                          GtkWidget *widget)
+{
+  return click_widget_toggle_set(label, event, widget, FALSE);
+}
+
+static gboolean click_widget_enum(GtkWidget *label,
+                                  GdkEventButton *event,
+                                  GtkWidget *widget)
+{
+  if(event->type == GDK_BUTTON_PRESS && GTK_IS_BUTTON(widget))
+  {
+   gtk_button_clicked(GTK_BUTTON(widget));
+  }
+  else if(event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_bauhaus_widget_reset(widget);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 gboolean restart_required = FALSE;
+
 ]]></xsl:text>
 
   <!-- reset callbacks -->
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:text>static gboolean&#xA;click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_BUTTON_PRESS)&#xA;  {&#xA;    if(GTK_IS_BUTTON(widget))&#xA;      gtk_button_clicked(GTK_BUTTON(widget));&#xA;  }&#xA;  if(event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
-      <xsl:apply-templates select="." mode="reset"/>
-      <xsl:text>&#xA;    return TRUE;&#xA;  }&#xA;  return FALSE;&#xA;}&#xA;&#xA;</xsl:text>
+      <xsl:choose>
+        <xsl:when test="type = 'bool'">
+          <!-- do not generate CB as using a generic one -->
+        </xsl:when>
+        <xsl:when test="type = 'enum'">
+          <!-- do not generate CB as using a generic one -->
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>static gboolean&#xA;click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_BUTTON_PRESS &amp;&amp; GTK_IS_BUTTON(widget))&#xA;  {&#xA;   gtk_button_clicked(GTK_BUTTON(widget));&#xA;  }&#xA;  else if(event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
+          <xsl:apply-templates select="." mode="reset"/>
+          <xsl:text>&#xA;    return TRUE;&#xA;  }&#xA;  return FALSE;&#xA;}&#xA;&#xA;</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:if>
   </xsl:for-each>
 
@@ -175,24 +301,13 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
 
   <xsl:text>
   {
-    GtkWidget *widget, *label, *labelev, *viewport, *box;
-    GtkWidget *grid = gtk_grid_new();
-    gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
-    gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-    gtk_widget_set_valign(grid, GTK_ALIGN_START);
+    GtkWidget *widget, *label, *viewport, *labelev;
+    GtkWidget *grid = create_tab(stack,
+                                 "</xsl:text><xsl:value-of select="@title"/><xsl:text>",
+                                 _("</xsl:text><xsl:value-of select="@title"/><xsl:text>"));
     int line = 0;
     char tooltip[1024];
-    GtkWidget *tab_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *scroll = dt_gui_scroll_wrap(grid);
-    GtkWidget *help = gtk_button_new_with_label(_("?"));
-    gtk_widget_set_halign(help, GTK_ALIGN_END);
-    g_object_set_data_full(G_OBJECT(help), "dt-help-url",
-                          g_strdup("preferences-settings/</xsl:text><xsl:value-of select="@title"/><xsl:text>/"), g_free);
-    g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-    gtk_box_pack_start(GTK_BOX(tab_box), scroll, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(tab_box), help, FALSE, FALSE, 0);
-    gtk_stack_add_titled(GTK_STACK(stack), tab_box,
-                         _("</xsl:text><xsl:value-of select="@title"/><xsl:text>"), _("</xsl:text><xsl:value-of select="@title"/><xsl:text>"));</xsl:text>
+  </xsl:text>
 
   <xsl:for-each select="./section">
     <xsl:variable name="section" select="@name"/>
@@ -261,27 +376,12 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
 <xsl:template match="dtconfig" mode="tab_block">
   <xsl:text>
   {
-    const gboolean is_default = dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-    GtkWidget *labdef;
-    if(is_default)
-    {
-       labdef = gtk_label_new("");
-    }
-    else
-    {
-       labdef = gtk_label_new(NON_DEF_CHAR);
-       gtk_widget_set_tooltip_text(labdef, _("this setting has been modified"));
-    }
-    gtk_widget_set_name(labdef, "preference_non_default");
-    label = gtk_label_new_with_mnemonic(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
-    gtk_label_set_xalign(GTK_LABEL(label), .0);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
+    GtkWidget *labdef = setup_pref(&amp;label,
+                                   &amp;labelev,
+                                   "</xsl:text><xsl:value-of select="name"/><xsl:text>",
+                                   _("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
 </xsl:text>
   <xsl:apply-templates select="." mode="tab"/>
-  <xsl:text>
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);</xsl:text>
   <xsl:if test="longdescription != ''">
     <xsl:if test="contains(longdescription,'%')">
       <xsl:text>
@@ -304,12 +404,21 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     }</xsl:text>
     </xsl:if>
     <xsl:text>
-    gtk_widget_set_name(widget, "</xsl:text><xsl:value-of select="name"/><xsl:text>");
-    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), labdef, 1, line, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), widget, 2, line++, 1, 1);
-    gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+    wrapup_pref("</xsl:text><xsl:value-of select="name"/><xsl:text>",
+                grid, labelev, labdef, label, widget, &amp;line,
+                </xsl:text>
+   <xsl:choose>
+    <xsl:when test="type = 'bool'">
+      <xsl:text>click_widget_toggle_</xsl:text><xsl:value-of select="default"/>
+    </xsl:when>
+    <xsl:when test="type = 'enum'">
+      <xsl:text>click_widget_enum</xsl:text>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:text>click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/>
+    </xsl:otherwise>
+  </xsl:choose><xsl:text>);</xsl:text>
+  <xsl:text>
   }</xsl:text>
 </xsl:template>
 
@@ -590,7 +699,7 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
 
   <xsl:template match="type" mode="factor"  priority="1">
     <xsl:text>
-    float factor = 1.0f;</xsl:text>
+  float factor = 1.0f;</xsl:text>
   </xsl:template>
 
 
