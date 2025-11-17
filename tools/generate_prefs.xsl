@@ -118,7 +118,7 @@ gboolean restart_required = FALSE;
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:text>static gboolean&#xA;reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
+      <xsl:text>static gboolean&#xA;click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_BUTTON_PRESS)&#xA;  {&#xA;    if(GTK_IS_BUTTON(widget))&#xA;      gtk_button_clicked(GTK_BUTTON(widget));&#xA;  }&#xA;  if(event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
       <xsl:apply-templates select="." mode="reset"/>
       <xsl:text>&#xA;    return TRUE;&#xA;  }&#xA;  return FALSE;&#xA;}&#xA;&#xA;</xsl:text>
     </xsl:if>
@@ -309,7 +309,7 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gtk_grid_attach(GTK_GRID(grid), labdef, 1, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), widget, 2, line++, 1, 1);
     gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
-    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
   }</xsl:text>
 </xsl:template>
 

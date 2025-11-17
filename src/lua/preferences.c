@@ -434,8 +434,13 @@ static gboolean reset_widget_string(GtkWidget *label, GdkEventButton *event, pre
 }
 
 
-static gboolean reset_widget_bool(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
+static gboolean click_widget_bool(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
+  if(event->type == GDK_BUTTON_PRESS)
+  {
+    gtk_button_clicked(GTK_BUTTON(cur_elt->widget));
+    return TRUE;
+  }
   if(event->type == GDK_2BUTTON_PRESS)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget),
@@ -559,7 +564,7 @@ static void update_widget_bool(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(click_widget_bool), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
 }
