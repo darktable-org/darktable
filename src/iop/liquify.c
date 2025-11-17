@@ -1494,7 +1494,7 @@ static cl_int_t _apply_global_distortion_map_cl(const dt_iop_module_t *self,
          k[i] = lanczos(3, (float) i / kdesc.resolution);
        break;
      default:
-       return FALSE;
+       return DT_OPENCL_PROCESS_CL;
   }
 
   const cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant
