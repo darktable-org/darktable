@@ -38,9 +38,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-#define AGX_VERSION 7
-
-DT_MODULE_INTROSPECTION(AGX_VERSION, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -291,12 +289,12 @@ int legacy_params(dt_iop_module_t *self,
     _set_scene_referred_default_params(np);
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_t);
-    *new_version = AGX_VERSION; // SPECIAL CASE: test versions jump directly to latest
+    *new_version = self->so->version(); // SPECIAL CASE: jump directly to latest version
 
     return 0;
   }
 
-  return 1; // no other conversion possible
+  return 1;
 }
 
 static inline dt_colorspaces_color_profile_type_t
