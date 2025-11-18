@@ -1155,7 +1155,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 
 static inline gboolean _is_style_set(const char *name)
 {
-  return name && name[0] && strcmp(name, _("none"));
+  return name && name[0] && strcmp(name, _("none")) && dt_styles_exists(name);
 }
 
 static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
@@ -1167,7 +1167,7 @@ static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
 
   if(ps->style_mode)
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), is_style_set);
+    gtk_widget_set_visible(GTK_WIDGET(ps->style_mode), is_style_set);
   }
 
   // We use the string "none" to indicate that we don't apply any style to the export
@@ -2942,8 +2942,9 @@ void gui_init(dt_lib_module_t *self)
      _("whether the style items are appended to the history or replacing the history"),
      d->v_style_append?1:0, _style_mode_changed, self,
      N_("replace history"), N_("append history"));
+  gtk_widget_set_no_show_all(d->style_mode, TRUE);
   const gboolean is_style_set = _is_style_set(current_style_name);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), is_style_set);
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), is_style_set);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
 
   _update_style_label(d, is_style_set ? current_style_name : "");

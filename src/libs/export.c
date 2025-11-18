@@ -98,6 +98,11 @@ static void _get_max_output_dimension(dt_lib_export_t *d,
 static void _resync_print_dimensions(dt_lib_export_t *self);
 static void _resync_pixel_dimensions(dt_lib_export_t *self);
 
+static inline gboolean _is_style_set(const char *name)
+{
+  return name && name[0] && strcmp(name, _("none")) && dt_styles_exists(name);
+}
+
 #define INCH_TO_CM (2.54f)
 
 static inline float pixels2cm(dt_lib_export_t *self, const uint32_t pix)
@@ -741,7 +746,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->style_mode,
                           dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode),d->style_name[0] != '\0');
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), _is_style_set(d->style_name));
 
   // export metadata presets
   g_free(d->metadata_export);
@@ -1140,7 +1145,7 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void _update_style_label(dt_lib_export_t *d, const char *name)
 {
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), name[0] != '\0');
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), _is_style_set(name));
 
   // We use the string "none" to indicate that we don't apply any style to the export
   char *localized_style = name[0]
@@ -1780,15 +1785,14 @@ void gui_init(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   setting = dt_conf_get_string_const(CONFIG_PREFIX "style");
-  if(setting == NULL || !setting[0] || !dt_styles_exists(setting))
-    setting = "";
+  const gboolean is_style_set = _is_style_set(setting);
 
   g_free(d->style_name);
-  d->style_name = g_strdup(setting);
+  d->style_name = g_strdup(is_style_set ? setting : "");
 
   // style mode to overwrite as it was the initial behavior
   gtk_widget_set_no_show_all(d->style_mode, TRUE);
-  gtk_widget_set_visible(d->style_mode, d->style_name[0] != '\0');
+  gtk_widget_set_visible(d->style_mode, is_style_set);
 
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
