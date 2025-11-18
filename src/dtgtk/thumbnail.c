@@ -885,7 +885,15 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
   gtk_widget_show(thumb->w_ext);
-  gtk_widget_show(thumb->w_cursor);
+
+  // show cursor (filmstrip current-image arrow) only for the active image
+  gboolean show_cursor = thumb->active;
+  if(show_cursor && darktable.view_manager->active_images)
+  {
+    const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    show_cursor = (thumb->imgid == activeid);
+  }
+  gtk_widget_set_visible(thumb->w_cursor, show_cursor);
 
   for(int i = 0; i < MAX_STARS; i++)
     gtk_widget_show(thumb->w_stars[i]);
