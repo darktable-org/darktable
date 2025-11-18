@@ -134,7 +134,7 @@ static GtkWidget *create_tab(GtkWidget *stack,
   gtk_box_pack_end(GTK_BOX(tab_box), help, FALSE, FALSE, 0);
   gtk_stack_add_titled(GTK_STACK(stack), tab_box, l10n_title, l10n_title);
   return grid;
-  }
+}
 
 static GtkWidget *setup_pref(GtkWidget **label,
                              GtkWidget **labelev,
@@ -162,6 +162,18 @@ static GtkWidget *setup_pref(GtkWidget **label,
   return labdef;
 }
 
+static void setup_not_available(GtkWidget **widget,
+                                GtkWidget *labelev)
+{
+  gtk_widget_destroy(*widget);
+  *widget = gtk_label_new(_("not available"));
+  gtk_widget_set_halign(*widget, GTK_ALIGN_START);
+  gtk_widget_set_tooltip_text(labelev, _("not available on this system"));
+  gtk_widget_set_tooltip_text(*widget, _("not available on this system"));
+  gtk_widget_set_sensitive(labelev, FALSE);
+  gtk_widget_set_sensitive(*widget, FALSE);
+}
+
 static void wrapup_pref(const gchar *name,
                         GtkWidget *grid,
                         GtkWidget *labelev,
@@ -179,16 +191,41 @@ static void wrapup_pref(const gchar *name,
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(callback), (gpointer)widget);
 }
 
+static gboolean click_widget_label(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_BUTTON_PRESS && GTK_IS_BUTTON(widget))
+  {
+    gtk_button_clicked(GTK_BUTTON(widget));
+    return TRUE;
+  }
+  else
+    return FALSE;
+}
+
+static gboolean preferences_response_callback(GtkDialog *dialog, gint response_id, GtkWidget *widget)
+{
+  const gint dkind = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "local-dialog"));
+  if(dkind)
+  {
+    if(response_id == GTK_RESPONSE_NONE) return TRUE;
+    if(response_id == GTK_RESPONSE_DELETE_EVENT) return TRUE;
+  }
+  else
+  {
+    if(response_id != GTK_RESPONSE_DELETE_EVENT) return TRUE;
+  }
+  gtk_widget_set_can_focus(GTK_WIDGET(dialog), TRUE);
+  gtk_widget_grab_focus(GTK_WIDGET(dialog));
+  return FALSE;
+}
+
 static gboolean click_widget_toggle_set(GtkWidget *label,
                                         GdkEventButton *event,
                                         GtkWidget *widget,
                                         const gboolean value)
 {
-  if(event->type == GDK_BUTTON_PRESS && GTK_IS_BUTTON(widget))
-  {
-   gtk_button_clicked(GTK_BUTTON(widget));
-  }
-  else if(event->type == GDK_2BUTTON_PRESS)
+  if(!click_widget_label(label, event, widget)
+     && event->type == GDK_2BUTTON_PRESS)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), value);
     return TRUE;
@@ -214,17 +251,14 @@ static gboolean click_widget_enum(GtkWidget *label,
                                   GdkEventButton *event,
                                   GtkWidget *widget)
 {
-  if(event->type == GDK_BUTTON_PRESS && GTK_IS_BUTTON(widget))
-  {
-   gtk_button_clicked(GTK_BUTTON(widget));
-  }
-  else if(event->type == GDK_2BUTTON_PRESS)
+  if(!click_widget_label(label, event, widget)
+     && event->type == GDK_2BUTTON_PRESS)
   {
     dt_bauhaus_widget_reset(widget);
     return TRUE;
   }
   return FALSE;
-}
+  }
 
 gboolean restart_required = FALSE;
 
@@ -238,11 +272,11 @@ gboolean restart_required = FALSE;
         <xsl:when test="type = 'bool'">
           <!-- do not generate CB as using a generic one -->
         </xsl:when>
-        <xsl:when test="type = 'enum'">
+        <xsl:when test="type/enum">
           <!-- do not generate CB as using a generic one -->
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>static gboolean&#xA;click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_BUTTON_PRESS &amp;&amp; GTK_IS_BUTTON(widget))&#xA;  {&#xA;   gtk_button_clicked(GTK_BUTTON(widget));&#xA;  }&#xA;  else if(event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
+          <xsl:text>static gboolean&#xA;click_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(!click_widget_label(label, event, widget)&#xA;     &amp;&amp; event->type == GDK_2BUTTON_PRESS)&#xA;  {</xsl:text>
           <xsl:apply-templates select="." mode="reset"/>
           <xsl:text>&#xA;    return TRUE;&#xA;  }&#xA;  return FALSE;&#xA;}&#xA;&#xA;</xsl:text>
         </xsl:otherwise>
@@ -257,21 +291,11 @@ gboolean restart_required = FALSE;
       <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/>
       <xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;</xsl:text>
       <xsl:text>{&#xA;</xsl:text>
-      <xsl:text>  const gint dkind = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "local-dialog"));&#xA;</xsl:text>
-      <xsl:text>  if(dkind)&#xA;</xsl:text>
-      <xsl:text>  {&#xA;</xsl:text>
-      <xsl:text>    if(response_id == GTK_RESPONSE_NONE) return;&#xA;</xsl:text>
-      <xsl:text>    if(response_id == GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
-      <xsl:text>  }&#xA;</xsl:text>
-      <xsl:text>  else&#xA;</xsl:text>
-      <xsl:text>  {&#xA;</xsl:text>
-      <xsl:text>    if(response_id != GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
-      <xsl:text>  }&#xA;</xsl:text>
-      <xsl:text>  gtk_widget_set_can_focus(GTK_WIDGET(dialog), TRUE);&#xA;</xsl:text>
-      <xsl:text>  gtk_widget_grab_focus(GTK_WIDGET(dialog));&#xA;</xsl:text>
-
+      <xsl:text>  if(!preferences_response_callback(dialog, response_id, widget))</xsl:text>
+      <xsl:text>&#xA;  {</xsl:text>
       <xsl:apply-templates select="." mode="change"/>
-      <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
+      <xsl:text>&#xA;  }&#xA;</xsl:text>
+      <xsl:text>}&#xA;&#xA;</xsl:text>
     </xsl:if>
   </xsl:for-each>
 
@@ -394,13 +418,7 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
       <xsl:text>
     if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))
     {
-      gtk_widget_destroy(widget);
-      widget = gtk_label_new(_("not available"));
-      gtk_widget_set_halign(widget, GTK_ALIGN_START);
-      gtk_widget_set_tooltip_text(labelev, _("not available on this system"));
-      gtk_widget_set_tooltip_text(widget, _("not available on this system"));
-      gtk_widget_set_sensitive(labelev, FALSE);
-      gtk_widget_set_sensitive(widget, FALSE);
+      setup_not_available(&amp;widget, labelev);
     }</xsl:text>
     </xsl:if>
     <xsl:text>
@@ -411,7 +429,7 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     <xsl:when test="type = 'bool'">
       <xsl:text>click_widget_toggle_</xsl:text><xsl:value-of select="default"/>
     </xsl:when>
-    <xsl:when test="type = 'enum'">
+    <xsl:when test="type/enum">
       <xsl:text>click_widget_enum</xsl:text>
     </xsl:when>
     <xsl:otherwise>
@@ -436,19 +454,19 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int']" mode="reset">
-    <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+    <xsl:text>    </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int64']" mode="reset">
-    <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+    <xsl:text>    </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='float']" mode="reset">
-    <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+    <xsl:text>    </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
   </xsl:template>
@@ -478,57 +496,57 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     g_free(path);</xsl:text>
   </xsl:template>
 
-<!-- CALLBACK -->
+<!-- CHANGE -->
   <xsl:template match="dtconfig[type='string']" mode="change">
   <xsl:text>
-  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_entry_get_text(GTK_ENTRY(widget)));</xsl:text>
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_entry_get_text(GTK_ENTRY(widget)));</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='longstring']" mode="change">
   <xsl:text>
-  GtkTextIter start, end;
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-  gtk_text_buffer_get_start_iter(buffer, &amp;start);
-  gtk_text_buffer_get_end_iter(buffer, &amp;end);
-  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_text_buffer_get_text(buffer, &amp;start, &amp;end, FALSE));</xsl:text>
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+    gtk_text_buffer_get_start_iter(buffer, &amp;start);
+    gtk_text_buffer_get_end_iter(buffer, &amp;end);
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_text_buffer_get_text(buffer, &amp;start, &amp;end, FALSE));</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int']" mode="change">
     <xsl:apply-templates select="type" mode="factor"/>
   <xsl:text>
-  dt_conf_set_int("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
+    dt_conf_set_int("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int64']" mode="change">
     <xsl:apply-templates select="type" mode="factor"/>
   <xsl:text>
-  dt_conf_set_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
+    dt_conf_set_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='float']" mode="change">
     <xsl:apply-templates select="type" mode="factor"/>
   <xsl:text>
-  dt_conf_set_float("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
+    dt_conf_set_float("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='bool']" mode="change">
   <xsl:text>
-  dt_conf_set_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));</xsl:text>
+    dt_conf_set_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type/enum]" mode="change">
   <xsl:text>
-  const gchar *index = dt_bauhaus_combobox_get_data(widget);
-  gchar *s = g_strndup(index, strchr(index, ']') - index);
-  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", s);
-  g_free(s);</xsl:text>
+    const gchar *index = dt_bauhaus_combobox_get_data(widget);
+    gchar *s = g_strndup(index, strchr(index, ']') - index);
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", s);
+    g_free(s);</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='dir']" mode="change">
   <xsl:text>
-  gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
-  g_free(folder);</xsl:text>
+    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
+    g_free(folder);</xsl:text>
   </xsl:template>
 
 <!-- TAB -->
@@ -693,13 +711,13 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
 
 <!-- Also look for the factor used in the GUI. -->
   <xsl:template match="type[@factor]" mode="factor" priority="3">
-  <xsl:text>
-  float factor = </xsl:text><xsl:value-of select="@factor"/><xsl:text>;</xsl:text>
+    <xsl:text>
+    const float factor = </xsl:text><xsl:value-of select="@factor"/><xsl:text>;</xsl:text>
   </xsl:template>
 
   <xsl:template match="type" mode="factor"  priority="1">
     <xsl:text>
-  float factor = 1.0f;</xsl:text>
+    const float factor = 1.0f;</xsl:text>
   </xsl:template>
 
 
