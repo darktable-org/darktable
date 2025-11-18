@@ -908,7 +908,7 @@ static void set_storage_by_name(dt_lib_export_t *d,
   else if(module->widget)
   {
     gtk_widget_show_all(d->storage_extra_container);
-    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
+    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container), module->widget);
   }
   else
   {
