@@ -421,10 +421,12 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
   GdkRGBA col;
   gtk_style_context_get_color(context, state, &col);
 
+  const double w_width  = gtk_widget_get_allocated_width(widget);
+  const double w_height = gtk_widget_get_allocated_height(widget);
+
   cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
-  cairo_line_to(cr, gtk_widget_get_allocated_width(widget), 0);
-  cairo_line_to(cr, gtk_widget_get_allocated_width(widget) / 2,
-                gtk_widget_get_allocated_height(widget));
+  cairo_line_to(cr, w_width, 0);
+  cairo_line_to(cr, w_width / 2, w_height);
   cairo_line_to(cr, 0, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
