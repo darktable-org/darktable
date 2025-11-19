@@ -152,6 +152,10 @@ changes (where available).
   restarting Darktable and seeing artifacts due to some tools being
   activate like Gamut check.
 
+- Make the cursor indicating the selected thumbs more visible. It is
+  now bigger and has a border to ensure better visibility on dark
+  thumbs.
+
 ## Performance Improvements
 
 - Tune performance for the Lut3D module (5% to 20% speed-up).
@@ -304,6 +308,10 @@ changes (where available).
   landscape CUPS option to be generated:
 
      plugins/print/cups/force_landscape=TRUE
+
+- Fixed possible display of double thumbs cursor on filmstrip when in
+  darkroom. Also the thumbs background could look as selected on
+  multiple pictures.
 
 ## Lua
 
