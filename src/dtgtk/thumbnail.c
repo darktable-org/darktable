@@ -1250,14 +1250,8 @@ static gboolean _event_box_enter_leave(GtkWidget *widget,
                                        gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
 
-  if(!thumb->mouse_over
-     && event->type == GDK_ENTER_NOTIFY
-     && !thumb->disable_mouseover)
+  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
@@ -1272,9 +1266,7 @@ static gboolean _event_image_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  // we ensure that the image has mouse over
-  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY
-     && !thumb->disable_mouseover)
+  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
@@ -1288,23 +1280,25 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  darktable.control->element =
-    (event->type == GDK_ENTER_NOTIFY && widget == thumb->w_reject)
-    ? DT_VIEW_REJECT
-    : -1;
-
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
-
-  if(thumb->disable_actions)
-    return TRUE;
   if(event->type == GDK_ENTER_NOTIFY)
   {
+    if(widget == thumb->w_reject)
+      darktable.control->element = DT_VIEW_REJECT;
+
+    if(thumb->disable_actions)
+      return TRUE;
+
+    if(!thumb->disable_mouseover)
+      dt_control_set_mouse_over_id(thumb->imgid);
     _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
     _thumb_update_tags_tooltip(thumb);
   }
+  else if(event->type == GDK_LEAVE_NOTIFY)
+  {
+    if(widget == thumb->w_reject)
+      darktable.control->element = -1;
+  }
+
   return FALSE;
 }
 
@@ -1314,7 +1308,8 @@ static gboolean _event_star_enter(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(thumb->disable_actions) return TRUE;
-  if(!thumb->mouse_over && !thumb->disable_mouseover)
+
+  if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
@@ -1339,10 +1334,6 @@ static gboolean _event_star_leave(GtkWidget *widget,
                                   gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
 
   if(thumb->disable_actions) return TRUE;
   for(int i = 0; i < MAX_STARS; i++)
@@ -1351,15 +1342,6 @@ static gboolean _event_star_leave(GtkWidget *widget,
     gtk_widget_queue_draw(thumb->w_stars[i]);
   }
   return TRUE;
-}
-
-static gboolean _event_main_leave(GtkWidget *widget,
-                                  GdkEventCrossing *event,
-                                  gpointer user_data)
-{
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
-  return FALSE;
 }
 
 // we only want to specify that the mouse is hovereing the thumbnail
@@ -1439,8 +1421,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_name(thumb->w_back, "thumb-back");
     g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event",
                      G_CALLBACK(_event_main_motion), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_back), "leave-notify-event",
-                     G_CALLBACK(_event_main_leave), thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
