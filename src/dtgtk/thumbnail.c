@@ -413,8 +413,6 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
                                    cairo_t *cr,
                                    gpointer user_data)
 {
-  if(!widget) return TRUE;
-
   const double w_width  = gtk_widget_get_allocated_width(widget);
   const double w_height = gtk_widget_get_allocated_height(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
