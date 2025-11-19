@@ -413,23 +413,24 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
                                    cairo_t *cr,
                                    gpointer user_data)
 {
-  if(!user_data || !widget) return TRUE;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
-  GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_cursor);
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_cursor);
-  GdkRGBA col;
-  gtk_style_context_get_color(context, state, &col);
+  if(!widget) return TRUE;
 
   const double w_width  = gtk_widget_get_allocated_width(widget);
   const double w_height = gtk_widget_get_allocated_height(widget);
 
-  cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
   cairo_line_to(cr, w_width, 0);
   cairo_line_to(cr, w_width / 2, w_height);
   cairo_line_to(cr, 0, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
+
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BG);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
+  cairo_line_to(cr, w_width, 0);
+  cairo_line_to(cr, w_width / 2, w_height);
+  cairo_line_to(cr, 0, 0);
+  cairo_stroke(cr);
 
   return TRUE;
 }
