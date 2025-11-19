@@ -417,8 +417,11 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
 
   const double w_width  = gtk_widget_get_allocated_width(widget);
   const double w_height = gtk_widget_get_allocated_height(widget);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GdkRGBA col;
+  gtk_style_context_lookup_color(context, "bg_color", &col);
 
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+  cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
   cairo_line_to(cr, w_width, 0);
   cairo_line_to(cr, w_width / 2, w_height);
   cairo_line_to(cr, 0, 0);
