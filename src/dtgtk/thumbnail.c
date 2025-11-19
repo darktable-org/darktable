@@ -901,7 +901,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, show_cursor);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
 
