@@ -7,6 +7,13 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
     Install required dependencies:
+
+     since recent pango 1.55 breaks font dialog access the previous version 1.52.2 needs to be used.
+     $ mkdir -p ~/ports/devel/x11/files
+     $ curl -Lo ~/ports/x11/pango/Portfile https://github.com/macports/macports-ports/raw/26241fac142ac2bbe2a9071918ff20b301c66f4b/x11/pango/Portfile
+     $ curl -Lo ~/ports/x11/pango/files/patch-meson-examples-tests.diff https://github.com/macports/macports-ports/raw/26241fac142ac2bbe2a9071918ff20b301c66f4b/x11/pango/files/patch-meson-examples-tests.diff
+     $ portindex ~/ports
+
      $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif libjxl
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
