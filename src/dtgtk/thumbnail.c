@@ -1908,7 +1908,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 7.5 * r1);
 
     // the filmstrip cursor
-    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 1.5 * r1);
+    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 3.0 * r1);
   }
   else
   {
