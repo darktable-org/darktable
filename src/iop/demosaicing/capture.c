@@ -945,14 +945,16 @@ static void _capture_radius_cl(dt_iop_module_t *self,
                               const int width,
                               const int height,
                               const uint8_t (*const xtrans)[6],
-                              const uint32_t filters)
+                              const uint32_t filters,
+                              const gboolean mono)
 {
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
-  float *in = dt_iop_image_alloc(width, height, 1);
+  const int ch = mono ? 4 : 1;
+  float *in = dt_iop_image_alloc(width, height, ch);
   if(!in) goto finish;
 
-  err = dt_opencl_copy_device_to_host(pipe->devid, in, dev_in, width, height, sizeof(float));
+  err = dt_opencl_copy_device_to_host(pipe->devid, in, dev_in, width, height, sizeof(float) * ch);
   if(err == CL_SUCCESS)
     _capture_radius(self, piece, in, width, height, xtrans, filters);
 

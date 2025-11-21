@@ -439,7 +439,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
                                     late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                     1.0f };
 
-  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_chrominance = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
@@ -448,11 +448,6 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   cl_mem dev_accu = NULL;
   cl_mem dev_correction = NULL;
   float *claccu = NULL;
-
-  const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
-  const int mwidth  = roi_in->width / 3;
-  const int mheight = roi_in->height / 3;
-  const int msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
 
   const dt_hash_t opphash = _opposed_hash(piece);
   const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
@@ -479,11 +474,15 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   else
   {
     // We don't have valid chrominance correction so go the hard way
+    const int mwidth  = roi_in->width / 3;
+    const int mheight = roi_in->height / 3;
+    const int msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 4);
+    const size_t mbufsize = 4 * dt_round_size(msize, DT_CACHELINE_BYTES);
 
-    dev_inmask = dt_opencl_alloc_device_buffer(devid, sizeof(char) * 3 * msize);
+    dev_inmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
     if(dev_inmask == NULL) goto error;
 
-    dev_outmask =  dt_opencl_alloc_device_buffer(devid, sizeof(char) * 3 * msize);
+    dev_outmask =  dt_opencl_alloc_device_buffer(devid, mbufsize);
     if(dev_outmask == NULL) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask, mwidth, mheight,
@@ -498,33 +497,37 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
             CLARG(msize), CLARG(mwidth), CLARG(mheight));
     if(err != CL_SUCCESS) goto error;
 
-    err = DT_OPENCL_SYSMEM_ALLOCATION;
-    const size_t accusize = sizeof(float) * 8 * iheight;
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    const size_t accu_floats = 8 * dt_round_size((size_t)roi_in->height, DT_CACHELINE_BYTES);
+    const size_t accusize = sizeof(float) * accu_floats;
     dev_accu = dt_opencl_alloc_device_buffer(devid, accusize);
     if(dev_accu == NULL) goto error;
 
-    claccu = dt_calloc_align_float(8 * iheight);
-    if(claccu == NULL) goto error;
+    claccu = dt_calloc_align_float(accu_floats);
+    if(claccu == NULL)
+    {
+      err = DT_OPENCL_SYSMEM_ALLOCATION;
+      goto error;
+    }
 
-    err = dt_opencl_write_buffer_to_device(devid, claccu, dev_accu, 0, accusize, TRUE);
+    err = dt_opencl_write_buffer_to_device(devid, claccu, dev_accu, 0, accusize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, iheight,
+    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, roi_in->height,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
             CLARG(roi_in->width), CLARG(roi_in->height),
             CLARG(msize), CLARG(mwidth),
             CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction));
-
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
     // collect row data and accumulate
     dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
     dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
     float clipped = 0.0f;
-    for(int row = 3; row < roi_in->height - 3; row++)
+    for(int row = 3; row < roi_in->height - 4; row++)
     {
       for_three_channels(c)
       {
@@ -552,7 +555,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
         img_oppclipped ? "" : " unclipped");
   }
 
-  err = DT_OPENCL_SYSMEM_ALLOCATION;
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
   if(dev_chrominance == NULL) goto error;
 
