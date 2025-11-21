@@ -114,6 +114,8 @@ typedef struct dt_opencl_device_t
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
+  cl_ulong max_mem_constant;
+  cl_uint alignsize; 
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
   gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
