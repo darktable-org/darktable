@@ -1408,8 +1408,9 @@ static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self
 
   const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
-  p->range_black_relative_ev = -8.f + 0.5f * exposure;
-  p->range_white_relative_ev = 4.f + 0.8 * exposure;
+  p->range_black_relative_ev = CLAMPF((-8.f + 0.5f * exposure) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
+  p->range_white_relative_ev = CLAMPF((4.f + 0.8 * exposure) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
+
   _update_pivot_x(old_black_ev, old_white_ev, self, p);
 }
 
@@ -2200,7 +2201,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "at the cost of a more sudden drop near white"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
                               _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
-                                "target white cannot be reached with the selected contrast and pivot position.\n"
+                                "without inverting the shoulder (forcing it to bend upwards), it would be\n"
+                                "impossible to reach target white with the selected contrast and pivot position.\n"
                                 "increase contrast, move the pivot higher (increase pivot target output\n"
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
@@ -2216,7 +2218,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "at the cost of a more sudden drop near black"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
                               _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
-                                "target black cannot be reached with the selected contrast and pivot position.\n"
+                                "without inverting the toe (forcing it to bend downwards), it would be\n"
+                                "impossible to reach target black with the selected contrast and pivot position.\n"
                                 "increase contrast, move the pivot lower (reduce the pivot target output or\n"
                                 "curve y gamma), or increase the distance between the pivot and the left edge\n"
                                 "(increase the pivot shift, move the black point farther from the pivot by raising\n"
