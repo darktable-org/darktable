@@ -472,6 +472,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].max_mem_constant = 0;
+  cl->dev[dev].alignsize = 0;
   cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].platform = NULL;
