@@ -5,17 +5,37 @@ How to make disk image with darktable application bundle from source (using Home
 1). Install required homebrew packages:
      $ 1_install_hb_dependencies.sh
 
-2). Build and install darktable using either option A or B:
+2). Optional step for GraphicsMagick:
+     darktable can be build with either ImageMagick or GraphicsMagick. If you want to use GraphicsMagick you need to rebuild the homebrew package so it 
+     can be packed into the macOS bundle. Open the terminal and perform the following steps:
+
+     brew edit graphicsmagick
+        This opens the GraphicsMagick homebrew recipe in your editor.
+        Scroll down to find the install options (starting with 'def install').
+        Find the line
+
+        --with-modules
+
+        and replace it with
+
+        --disable-installed
+
+        Save the file and execute the commands:
+
+     export HOMEBREW_NO_INSTALL_FROM_API=1
+     brew reinstall --build-from-source --force graphicsmagick
+
+3). Build and install darktable using either option A or B:
      - Option A: Build using the default build.sh, which should work for most use cases 
      $ 2_build_hb_darktable_default.sh
      - Option B: Build using custom cmake options, edit according to your specific needs/environment
      $ 2_build_hb_darktable_custom.sh
 
-3). Create application bundle from build files. To properly sign the app bundle you can optionally provide your developer certificate email/id by defining CODECERT:
+4). Create application bundle from build files. To properly sign the app bundle you can optionally provide your developer certificate email/id by defining CODECERT:
      $ export CODECERT="your.developer@apple.id" # optional, not required
      $ 3_make_hb_darktable_package.sh
 
-4). Generate DMG image from application bundle:
+5). Generate DMG image from application bundle:
      $ 4_make_hb_darktable_dmg.sh
 
 The final result is a DMG file: darktable-<current version>+<latest commit>-{arm64|x86_64}.dmg

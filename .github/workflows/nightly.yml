@@ -324,7 +324,7 @@ jobs:
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
-        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=ON -DUSE_IMAGEMAGICK=OFF]
         target:
           - skiptest
         generator:
@@ -358,6 +358,14 @@ jobs:
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
+
+          # rebuild graphicsmagick for macOS bundling
+          export HOMEBREW_NO_INSTALL_FROM_API=1
+          gm_formula=`brew edit --print-path graphicsmagick`
+          cat $gm_formula | sed 's/--with-modules/--disable-installed/1' > gm_formula.tmp
+          mv gm_formula.tmp $gm_formula
+          brew reinstall --build-from-source --force graphicsmagick
+
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup
