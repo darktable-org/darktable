@@ -194,6 +194,10 @@ static inline void pack_3xSSE_to_3x3(const dt_colormatrix_t input, float output[
   output[8] = input[2][2];
 }
 
+static const dt_colormatrix_t identity_matrix = { { 1.0f, 0.0f, 0.0f, 0.0f },
+                                                  { 0.0f, 1.0f, 0.0f, 0.0f },
+                                                  { 0.0f, 0.0f, 1.0f, 0.0f } };
+
 static inline void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
 {
   for(size_t i = 0; i < 4; i++)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,7 +215,7 @@ static void _transform_rgb_to_rgb_lcms2
   if(!from_is_rgb)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_rgb_to_rgb_lcms2] *from profile* color space `%c%c%c%c' not supported",
+             "[_transform_rgb_to_rgb_lcms2] *from profile* colorspace=%c%c%c%c not supported",
              (char)(rgb_from_color_space >> 24),
              (char)(rgb_from_color_space >> 16),
              (char)(rgb_from_color_space >> 8),
@@ -226,7 +226,7 @@ static void _transform_rgb_to_rgb_lcms2
   if(!to_is_rgb && !to_is_cmyk)
   {
     dt_print(DT_DEBUG_ALWAYS,
-      "[_transform_rgb_to_rgb_lcms2] *to profile* color space `%c%c%c%c' not supported",
+      "[_transform_rgb_to_rgb_lcms2] *to profile* colorspace=%c%c%c%c not supported",
       (char)(rgb_to_color_space >> 24),
       (char)(rgb_to_color_space >> 16),
       (char)(rgb_to_color_space >> 8),
@@ -698,14 +698,6 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
-  if(filename[0])
-    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'",
-      filename,
-      (char)(rgb_profile_color_space>>24),
-      (char)(rgb_profile_color_space>>16),
-      (char)(rgb_profile_color_space>>8),
-      (char)(rgb_profile_color_space));
-
   // get the matrix
   if(rgb_profile)
   {
@@ -767,6 +759,34 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                            profile_info->unbounded_coeffs_in,
                                                            profile_info->lutsize,
                                                            profile_info->nonlinearlut);
+  }
+
+  if(filename[0])
+  {
+    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': lutsize=%d %slinearlut colorspace=%c%c%c%c",
+      filename,
+      profile_info->lutsize,
+      profile_info->nonlinearlut ? "non-" : "",
+      (char)(rgb_profile_color_space>>24),
+      (char)(rgb_profile_color_space>>16),
+      (char)(rgb_profile_color_space>>8),
+      (char)(rgb_profile_color_space));
+
+    if(rgb_profile && rgb_profile_color_space == cmsSigRgbData)
+    {
+     if(!dt_is_valid_colormatrix(profile_info->matrix_in[0][0]))
+      {
+        dt_colormatrix_copy(profile_info->matrix_in, identity_matrix);
+        transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
+        dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s' misses IN matrix", filename);
+      }
+      if(!dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
+      {
+        dt_colormatrix_copy(profile_info->matrix_out, identity_matrix);
+        transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
+        dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s' misses OUT matrix", filename);
+      }
+    }
   }
 
   return error;
@@ -976,7 +996,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const stru
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
-                                                                       struct dt_dev_pixelpipe_t *pipe)
+                                                                       const struct dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_order_iccprofile_info_t *restrict color_profile;
 
