@@ -1225,6 +1225,28 @@ void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
+void dtgtk_cairo_paint_linear_scale_ignore_border(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // Main line with reduced slope
+  cairo_move_to(cr, 0.0, 0.7);
+  cairo_line_to(cr, 1.0, 0.3);
+  cairo_stroke(cr);
+
+  // Small marks at edges to indicate "ignore border"
+  cairo_save(cr);
+  cairo_set_line_width(cr, 0.15);
+  cairo_move_to(cr, 0.0, 0.85);
+  cairo_line_to(cr, 0.0, 0.55);
+  cairo_move_to(cr, 1.0, 0.45);
+  cairo_line_to(cr, 1.0, 0.15);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)

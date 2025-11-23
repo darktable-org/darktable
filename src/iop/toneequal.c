@@ -234,6 +234,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_toneequalizer_params_t)
 // below 16k entries for cache efficiency.
 #define LUT_RESOLUTION 2047
 
+#define EPSILON 1e-6f
+
 // radial distances used for pixel ops
 static const float centers_ops[NUM_OCTAVES] DT_ALIGNED_ARRAY =
   {-56.0f / 7.0f, // = -8.0f
@@ -255,6 +257,10 @@ static const dt_colormatrix_t gauss_kernel =
     { 0.124401914f, 0.196172249f, 0.124401914f },
     { 0.076555024f, 0.124401914f, 0.076555024f } };
 
+// Hardcoded colors for gamut warnings
+GdkRGBA warning_color = {.red = 0.8f, .green = 0.4f, .blue = 0.0f, .alpha = 1.0f};
+GdkRGBA error_color = {.red = 1.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f};
+
 
 /****************************************************************************
  *
@@ -270,12 +276,6 @@ typedef enum dt_iop_toneequalizer_filter_t
   DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged EIGF"
   DT_TONEEQ_EIGF        // $DESCRIPTION: "EIGF"
 } dt_iop_toneequalizer_filter_t;
-
-typedef enum dt_iop_toneequalizer_version_t
-{
-  DT_TONEEQ_VERSION_2 = 2,      // $DESCRIPTION: "v2"
-  DT_TONEEQ_VERSION_3 = 3,      // $DESCRIPTION: "v3"
-} dt_iop_toneequalizer_version_t;
 
 typedef enum dt_iop_toneequalizer_curve_t
 {
@@ -306,7 +306,6 @@ typedef struct dt_iop_toneequalizer_params_t
   int iterations;          // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
 
   // v3
-  dt_iop_toneequalizer_version_t version;       // $DEFAULT: DT_TONEEQ_VERSION_3 $DESCRIPTION: "module version"
   dt_iop_toneequalizer_curve_t curve_type;      // $DEFAULT: DT_TONEEQ_CURVE_GAUSS $DESCRIPTION: "curve type"
   float post_scale_base;   // $DEFAULT: 0.0f
   float post_shift_base;   // $DEFAULT: 0.0f
@@ -321,7 +320,11 @@ typedef struct dt_iop_toneequalizer_params_t
   float lum_estimator_R;                        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.33333 $DESCRIPTION: "red channel weight"
   float lum_estimator_G;                        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.33333 $DESCRIPTION: "green channel weight"
   float lum_estimator_B;                        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.33333 $DESCRIPTION: "blue channel weight"
-  gboolean lum_estimator_normalize;          // $DEFAULT: TRUE $DESCRIPTION: "normalize RGB weights"
+  gboolean lum_estimator_normalize;             // $DEFAULT: TRUE $DESCRIPTION: "normalize RGB weights"
+
+  gboolean auto_align_enabled;                  // $DEFAULT: FALSE $DESCRIPTION: "auto align enabled"
+  gboolean auto_align_shift_only;               // $DEFAULT: FALSE $DESCRIPTION: "auto align shift only"
+
 } dt_iop_toneequalizer_params_t;
 
 
@@ -337,9 +340,10 @@ typedef struct dt_iop_toneequalizer_data_t
   float scale;
   int radius;
   int iterations;
+  float pre_contrast_width, pre_contrast_strength, pre_contrast_midpoint;
   dt_iop_luminance_mask_method_t lum_estimator;
   float lum_estimator_R, lum_estimator_G, lum_estimator_B;
-  float pre_contrast_width, pre_contrast_strength, pre_contrast_midpoint;
+  gboolean auto_align_enabled, auto_align_shift_only;
   dt_iop_toneequalizer_filter_t filter;
 } dt_iop_toneequalizer_data_t;
 
@@ -377,7 +381,6 @@ typedef struct dt_iop_toneequalizer_ui_histogram_t
 {
   int samples[UI_HISTO_SAMPLES] DT_ALIGNED_ARRAY;
   GdkRGBA curve_colors[UI_HISTO_SAMPLES] DT_ALIGNED_ARRAY;
-  unsigned int num_samples;
   int max_val;
   int max_val_ignore_border_bins;
   float scsh_min_ev; // post scaled- and shifted version of min_ev
@@ -387,9 +390,20 @@ typedef struct dt_iop_toneequalizer_ui_histogram_t
 
 } dt_iop_toneequalizer_ui_histogram_t;
 
+typedef enum dt_iop_toneequalizer_histogram_scale_t {
+  HISTOGRAM_SCALE_LINEAR = 0,
+  HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER,
+  HISTOGRAM_SCALE_LOG
+} dt_iop_toneequalizer_histogram_scale_t;
+
+typedef enum dt_iop_toneequalizer_last_align_button_t {
+  LAST_ALIGN_NONE = 0,
+  LAST_ALIGN_FULLY,
+  LAST_ALIGN_SHIFT
+} dt_iop_toneequalizer_last_align_button_t;
+
 static void _ui_histo_init(dt_iop_toneequalizer_ui_histogram_t *histo)
 {
-  histo->num_samples = UI_HISTO_SAMPLES;
   histo->max_val = 1;
   histo->max_val_ignore_border_bins = 1;
   histo->scsh_min_ev = HDR_MIN_EV; // post scaled- and shifted version of min_ev
@@ -417,7 +431,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
 
   float temp_user_params[NUM_SLIDERS] DT_ALIGNED_ARRAY;
   float cursor_exposure; // store the exposure value at current cursor position
-  float step; // scrolling step
+  //TODO MF: unused float step; // scrolling step
 
   // 14 int to pack - contiguous memory
   gboolean mask_display;
@@ -443,25 +457,37 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float sigma;
 
   // automatic values for post scale/shift
-  float post_scale_value;
-  float post_shift_value;
+  float temp_post_scale_base;
+  float temp_post_shift_base;
+  gboolean post_realign_required;
+  dt_iop_toneequalizer_last_align_button_t last_align_button;     // Last clicked align button
+  gboolean post_realign_possible_false_alert;
 
   // Hash for synchronization between PREVIEW and FULL
-  // dt_hash_t sync_hash;
-
-  // Drawing area flags
-  gboolean area_vscale;
-  gboolean area_ignore_border_bins;
-  gboolean warning_icon_active;
+  dt_hash_t prv_full_sync_hash;
 
   // GTK garbage, nobody cares, no SIMD here
   GtkDrawingArea *area;
+
+  // Histogram control buttons
+  GtkWidget *button_box;                     // Container for buttons
+  GtkWidget *histogram_mode_button_linear;         // Linear scale
+  GtkWidget *histogram_mode_button_ignore;         // Linear-ignore-border scale
+  GtkWidget *histogram_mode_button_log;            // Log scale
+  GtkWidget *histogram_range_button;         // -2..2 / -4..4 EV (v3 only)
+  GtkWidget *histogram_hq_button;            // Preview/HQ toggle
+  GtkWidget *histogram_align_button;         // Quick align
+
+  dt_iop_toneequalizer_histogram_scale_t histogram_scale_mode;         // Current scale mode
+  int histogram_vrange;                      // 2 or 4 EV per side
+  gboolean histogram_show_hq;                // TRUE = show HQ histogram
+
   GtkNotebook *notebook;
 
   // Align Tab
-  GtkWidget *align_button;
+  GtkWidget *align_button, *shift_button;
+
   GtkDrawingArea *warning_icon_area;
-  GtkLabel *label_base_shift, *label_base_scale;
   GtkWidget *post_scale, *post_shift, *post_pivot;  // New main mask alignment controls
   GtkWidget *smoothing; // curve smoothing
 
@@ -485,7 +511,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
 
   dt_gui_collapsible_section_t adv_section;
   GtkWidget *quantization;
-  GtkWidget *version; // module version
 
   GtkWidget *show_luminance_mask;
 
@@ -500,7 +525,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float gradient_top_limit;
   float gradient_width;
   float legend_top_limit;
-  float x_label;
+  float x_label; // TODO: No reason why this needs to be in g
   int inset;
   int inner_padding;
 
@@ -520,8 +545,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int area_active_node;
 
   // Flags for UI events
-  gboolean valid_nodes_x;      // TRUE if x coordinates of graph nodes have been inited
-  gboolean valid_nodes_y;      // TRUE if y coordinates of graph nodes have been inited
   gboolean area_cursor_valid;  // TRUE if mouse cursor is over the graph area
   gboolean area_dragging;      // TRUE if left-button has been pushed
                                // but not released and cursor motion
@@ -534,8 +557,10 @@ typedef struct dt_iop_toneequalizer_gui_data_t
                                 //      HDR_histogram and prv deciles are valid
   gboolean full_luminance_valid;// TRUE if the full luminance cache is ready,
                                 //      full deciles are valid
+  gboolean hq_histogram_valid;  // TRUE if we are in late scaling mode and a HQ histogram was computed
 
   gboolean gui_histogram_valid; // TRUE if the histogram cache and stats are ready
+  gboolean gui_hq_histogram_valid; // TRUE if the HQ histogram cache and stats are ready
   gboolean graph_valid;         // TRUE if the UI graph view is ready
 
   // For the curve interpolation
@@ -613,6 +638,7 @@ int legacy_params(dt_iop_module_t *self,
 
   typedef struct dt_iop_toneequalizer_params_v3_t
   {
+    // v1
     float noise;
     float ultra_deep_blacks;
     float deep_blacks;
@@ -623,15 +649,16 @@ int legacy_params(dt_iop_module_t *self,
     float whites;
     float speculars;
     float blending;
-    float smoothing;
+    float smoothing; //v2
     float feathering;
-    float quantization;
+    float quantization; //v2
     float contrast_boost;
     float exposure_boost;
     dt_iop_toneequalizer_filter_t filter;
     dt_iop_luminance_mask_method_t lum_estimator;
     int iterations;
-    dt_iop_toneequalizer_version_t version;
+
+    // v3
     dt_iop_toneequalizer_curve_t curve_type;
     float post_scale_base;
     float post_shift_base;
@@ -647,6 +674,9 @@ int legacy_params(dt_iop_module_t *self,
     float lum_estimator_G;
     float lum_estimator_B;
     gboolean lum_estimator_normalize;
+
+    gboolean auto_align_enabled;
+    gboolean auto_align_shift_only;
   } dt_iop_toneequalizer_params_v3_t;
 
   if(old_version == 1)
@@ -664,7 +694,7 @@ int legacy_params(dt_iop_module_t *self,
     const dt_iop_toneequalizer_params_v1_t *o = old_params;
     dt_iop_toneequalizer_params_v3_t *n = malloc(sizeof(dt_iop_toneequalizer_params_v3_t));
 
-    // Olds params
+    // Old params
     n->noise = o->noise;
     n->ultra_deep_blacks = o->ultra_deep_blacks;
     n->deep_blacks = o->deep_blacks;
@@ -689,7 +719,6 @@ int legacy_params(dt_iop_module_t *self,
     n->smoothing = 0.0f;
 
     // V3 params
-    n->version = 3;
     n->curve_type = DT_TONEEQ_CURVE_GAUSS;
     n->post_scale_base = 0.0f;
     n->post_shift_base = 0.0f;
@@ -705,6 +734,9 @@ int legacy_params(dt_iop_module_t *self,
     n->lum_estimator_G = 1.0f / 3.0f;
     n->lum_estimator_B = 1.0f / 3.0f;
     n->lum_estimator_normalize = TRUE;
+
+    n->auto_align_enabled = FALSE;
+    n->auto_align_shift_only = FALSE;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v3_t);
@@ -725,9 +757,9 @@ int legacy_params(dt_iop_module_t *self,
       int iterations;
     } dt_iop_toneequalizer_params_v2_t;
 
-    const dt_iop_toneequalizer_params_v2_t *o = old_params;
-    dt_iop_toneequalizer_params_v3_t *n = malloc(sizeof(dt_iop_toneequalizer_params_v3_t));
-    memcpy(n, o, sizeof(dt_iop_toneequalizer_params_v2_t));
+    const dt_iop_toneequalizer_params_v2_t *o = (dt_iop_toneequalizer_params_v2_t *)old_params;
+    dt_iop_toneequalizer_params_v3_t *n =
+      (dt_iop_toneequalizer_params_v3_t *)malloc(sizeof(dt_iop_toneequalizer_params_v3_t));
 
     // changed smoothing
     // old smoothing was sigma with a range of 1...sqrt(2)...2
@@ -735,7 +767,6 @@ int legacy_params(dt_iop_module_t *self,
     n->smoothing = logf(o->smoothing) / logf(sqrtf(2.0f)) - 1.0f;
 
     // V3 params
-    n->version = 3;
     n->curve_type = DT_TONEEQ_CURVE_GAUSS;
     n->post_scale_base = 0.0f;
     n->post_shift_base = 0.0f;
@@ -751,6 +782,8 @@ int legacy_params(dt_iop_module_t *self,
     n->lum_estimator_G = 1.0f / 3.0f;
     n->lum_estimator_B = 1.0f / 3.0f;
     n->lum_estimator_normalize = TRUE;
+    n->auto_align_enabled = FALSE;
+    n->auto_align_shift_only = FALSE;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v3_t);
@@ -770,13 +803,13 @@ int legacy_params(dt_iop_module_t *self,
 // empty marker function to make navigating the function list easier
 __attribute__((unused)) static void PRESETS_MARKER() {}
 
-static void _compress_shadows_highlight_preset_set_exposure_params
-  (dt_iop_toneequalizer_params_t* p,
-   const float step)
+static void _compress_shadows_highlights_preset_set_exposure_params
+  (dt_iop_toneequalizer_params_t* p)
 {
   // this function is used to set the exposure params for the 4 "compress shadows
   // highlights" presets, which use basically the same curve, centered around
   // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  const float step = 0.65f; // old "strong" preset
   p->noise = step;
   p->ultra_deep_blacks = 5.f / 3.f * step;
   p->deep_blacks = 5.f / 3.f * step;
@@ -788,29 +821,61 @@ static void _compress_shadows_highlight_preset_set_exposure_params
   p->speculars = -step;
 }
 
-static void _compress_shadows_highlight_linear_preset_set_exposure_params
-  (dt_iop_toneequalizer_params_t* p,
-   const float step)
+static void _compress_shadows_highlights_v3_preset_set_exposure_params
+  (dt_iop_toneequalizer_params_t* p)
 {
   // this function is used to set the exposure params for the 4 "compress shadows
   // highlights" presets, which use basically the same curve, centered around
   // -4EV with an exposure compensation that puts middle-grey at -4EV.
-  p->noise = step;
-  p->ultra_deep_blacks = 15.f / 9.f * step;
-  p->deep_blacks = 10.f / 9.f * step;
-  p->blacks = 5.f / 9.f * step;
+  p->noise = 1.6f;
+  p->ultra_deep_blacks = 1.49f;
+  p->deep_blacks = 1.16f;
+  p->blacks = 0.66;
   p->shadows = 0.0f;
-  p->midtones = -5.f / 9.f * step;
-  p->highlights = -10.f / 9.f * step;
-  p->whites = -15.f / 9.f * step;
-  p->speculars = -step;
+  p->midtones = -0.66;
+  p->highlights = -1.16f;
+  p->whites = -1.49f;
+  p->speculars = -1.6f;
 }
 
+static void _compress_shadows_v3_preset_set_exposure_params
+  (dt_iop_toneequalizer_params_t* p)
+{
+  // this function is used to set the exposure params for the 4 "compress shadows
+  // highlights" presets, which use basically the same curve, centered around
+  // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  p->noise = 1.6f;
+  p->ultra_deep_blacks = 1.49f;
+  p->deep_blacks = 1.16f;
+  p->blacks = 0.66;
+  p->shadows = 0.21f;
+  p->midtones = 0.0;
+  p->highlights = 0.0f;
+  p->whites = 0.0f;
+  p->speculars = 0.0f;
+}
+
+static void _compress_highlights_v3_preset_set_exposure_params
+  (dt_iop_toneequalizer_params_t* p)
+{
+  // this function is used to set the exposure params for the 4 "compress shadows
+  // highlights" presets, which use basically the same curve, centered around
+  // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  p->noise = 0.0f;
+  p->ultra_deep_blacks = 0.0f;
+  p->deep_blacks = 0.0f;
+  p->blacks = 0.0f;
+  p->shadows = -0.21f;
+  p->midtones = -0.66;
+  p->highlights = -1.16f;
+  p->whites = -1.49f;
+  p->speculars = -1.6f;
+}
 
 static void _dilate_shadows_highlight_preset_set_exposure_params
-  (dt_iop_toneequalizer_params_t* p,
-   const float step)
+  (dt_iop_toneequalizer_params_t* p)
 {
+  float step = 0.65f; // old "strong" preset
   // create a tone curve meant to be used without filter (as a flat,
   // non-local, 1D tone curve) that reverts the local settings above.
   p->noise = -15.f / 9.f * step;
@@ -839,7 +904,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.quantization = 0.0f;
 
   // V3 params
-  p.version = 3;
   p.post_scale_base = 0.0f;
   p.post_shift_base = 0.0f;
   p.post_scale = 0.0f;
@@ -856,6 +920,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.lum_estimator_G = 1.0f / 3.0f;
   p.lum_estimator_B = 1.0f / 3.0f;
   p.lum_estimator_normalize = TRUE;
+
+  p.auto_align_enabled = FALSE;
+  p.auto_align_shift_only = FALSE;
 
   // Init exposure settings
   p.noise = p.ultra_deep_blacks = p.deep_blacks = p.blacks = 0.0f;
@@ -896,90 +963,47 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 5;
   p.quantization = 0.0f;
 
-  // Modified names to gentle / medium / strong, so the alphabetical
-  // sort order matches the order of strengths.
+  // slight modification to give higher compression
+  p.filter = DT_TONEEQ_EIGF;
+  p.feathering = 20.0f;
+  _compress_shadows_highlights_preset_set_exposure_params(&p);
+  dt_gui_presets_add_generic
+    (_("compress shadows/highlights | classic EIGF"), self->op,
+     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  p.filter = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic
+    (_("compress shadows/highlights | classic GF"), self->op,
+     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // slight modification to give higher compression
   p.filter = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
-  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
+  p.curve_type = DT_TONEEQ_CURVE_CATMULL;
+  p.smoothing = 0.5f;
+  _compress_shadows_highlights_v3_preset_set_exposure_params(&p);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic EIGF | strong"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-  p.filter = DT_TONEEQ_GUIDED;
-  p.feathering = 500.0f;
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic GF | strong"), self->op,
+    (_("compress shadows/highlights | v3 EIGF"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.filter = DT_TONEEQ_EIGF;
-  p.blending = 3.0f;
-  p.feathering = 7.0f;
-  p.iterations = 3;
-  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  _compress_shadows_v3_preset_set_exposure_params(&p);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic EIGF | medium"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-  p.filter = DT_TONEEQ_GUIDED;
-  p.feathering = 500.0f;
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic GF | medium"), self->op,
+    (_("compress shadows/highlights | v3 EIGF Raise Shadows"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.filter = DT_TONEEQ_EIGF;
-  p.blending = 5.0f;
-  p.feathering = 1.0f;
-  p.iterations = 1;
-  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
+  _compress_highlights_v3_preset_set_exposure_params(&p);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic EIGF | gentle"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-  p.filter = DT_TONEEQ_GUIDED;
-  p.feathering = 500.0f;
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | classic GF | gentle"), self->op,
+    (_("compress shadows/highlights | v3 EIGF Lower Highlights"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  // New compress shadows & highlights with a more linear curve
-  p.filter = DT_TONEEQ_EIGF;
-  p.feathering = 20.0f;
-  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.65f);
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | v3 EIGF | strong"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  p.blending = 3.0f;
-  p.feathering = 7.0f;
-  p.iterations = 3;
-  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | v3 EIGF | medium"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  p.blending = 5.0f;
-  p.feathering = 1.0f;
-  p.iterations = 1;
-  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.25f);
-  dt_gui_presets_add_generic
-    (_("compress shadows/highlights | v3 EIGF | gentle"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  p.smoothing = 0.0f;
 
   // build the 1D contrast curves that revert the local compression of
   // contrast above
   p.filter = DT_TONEEQ_NONE;
-  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
+  _dilate_shadows_highlight_preset_set_exposure_params(&p);
   dt_gui_presets_add_generic
-    (_("contrast tone curve | gentle"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic
-    (_("contrast tone curve | medium"), self->op,
-     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
-  dt_gui_presets_add_generic
-    (_("contrast tone curve | strong"), self->op,
+    (_("contrast tone curve"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // relight
@@ -1032,8 +1056,8 @@ static inline void _compute_min_max_ev(const float *const restrict luminance,
     max_lum = MAX(max_lum, luminance[k]);
   }
 
-  *min_ev = log2f(min_lum);
-  *max_ev = log2f(max_lum);
+  *min_ev = log2f(MAX(min_lum, MIN_FLOAT));
+  *max_ev = log2f(MAX(max_lum, MIN_FLOAT));
 }
 
 __DT_CLONE_TARGETS__
@@ -1330,6 +1354,7 @@ static inline void _compute_luminance_mask(const float *const restrict in,
 // guided filter.
 // Note: Scaling is stored logarithmically in p for UI, but
 //       this function needs the linear version (i.e. from d)!
+// TODO: base-shift first, then scale? (consistently always shift first?)
  DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
 static inline float _post_scale_shift(const float v,
@@ -1340,10 +1365,10 @@ static inline float _post_scale_shift(const float v,
                                       const float post_pivot)
 {
 
-  // const float scale_exp = exp2f(post_scale);
-  // signifficant range -8..0, centering around the middle
+
   const float base_aligned = (v * post_scale_base) + post_shift_base;
-  return ((base_aligned - post_pivot) * post_scale) + post_pivot + post_shift;
+
+  return ((base_aligned + post_shift - post_pivot) * post_scale) + post_pivot;
 }
 
 DT_OMP_DECLARE_SIMD()
@@ -1355,7 +1380,10 @@ static inline float _inverse_post_scale_shift(const float v,
                                               const float post_shift,
                                               const float post_pivot)
 {
-  const float base_aligned = ((v - post_pivot - post_shift) / post_scale) + post_pivot;
+  // Reverse step 2: undo the scale around pivot and post_shift
+  const float base_aligned = ((v - post_pivot) / post_scale) + post_pivot - post_shift;
+
+  // Reverse step 1: undo base scale and shift
   return (base_aligned - post_shift_base) / post_scale_base;
 }
 
@@ -1463,7 +1491,6 @@ static float _gaussian_func(const float radius,
 // tangents themselves.
 DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
-#pragma omp declare simd
 static inline void catmull_rom_tangents(const float y[NUM_SLIDERS+2], float tangents[NUM_SLIDERS], const float tangent_scale) {
 
     const float scale = fabsf(tangent_scale) * 2.0f;
@@ -1478,7 +1505,7 @@ static inline void catmull_rom_tangents(const float y[NUM_SLIDERS+2], float tang
 // TODO MF: Similar to curve_tools.c catmull_rom_val, but with OpenMP
 DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
-float catmull_rom_val(const int n, const float start_x, const float xval, const float y[NUM_SLIDERS+2], const float tangents[NUM_SLIDERS]) {
+static inline float catmull_rom_val(const int n, const float start_x, const float xval, const float y[NUM_SLIDERS+2], const float tangents[NUM_SLIDERS]) {
     assert(xval >= start_x);
     assert(xval <= start_x + n - 1);
 
@@ -1572,7 +1599,7 @@ static void _compute_correction_lut(dt_iop_toneequalizer_data_t *const d,
       // -8..0 (inclusive)
       const float exposure = normalized * NUM_OCTAVES + DT_TONEEQ_MIN_EV;
 
-      float result = catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, exposure, catmull_y, catmull_tangents);
+      float result = fast_clamp(catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, exposure, catmull_y, catmull_tangents), 0.25f, 4.0f);
 
       // if (j % 1000 == 0)
       // {
@@ -1732,6 +1759,28 @@ float adjust_radius_to_scale(const dt_dev_pixelpipe_iop_t *piece, const dt_iop_r
   return radius;
 }
 
+inline void _auto_alignment_calculation(const dt_iop_toneequalizer_histogram_stats_t *const restrict hdr_histogram,
+                                   const gboolean shift_only,
+                                   float *const restrict out_post_scale_base,
+                                   float *const restrict out_post_shift_base)
+{
+  const float ev_range = hdr_histogram->max_ev - hdr_histogram->min_ev;
+  if (shift_only) // align shift, keep scale neutral
+  {
+    *out_post_scale_base = 0.0f;
+
+    const float midpoint = hdr_histogram->min_ev + (ev_range / 2.0f);
+    *out_post_shift_base = -4.0f - midpoint;
+  }
+  else // align shift and scale
+  {
+    const float post_scale_base_ev = 8.0f / ev_range;
+
+    // We are already in EV here. This is log because we want the scale factor to be in the -2 to 2 range.
+    *out_post_scale_base = log2f(post_scale_base_ev);
+    *out_post_shift_base = -8.0f - (hdr_histogram->min_ev * post_scale_base_ev);
+  }
+}
 
 // empty marker function to make navigating the function list easier
 __attribute__((unused)) static void PROCESS_MARKER() {}
@@ -1844,6 +1893,7 @@ void _toneeq_process(dt_iop_module_t *self,
       g->full_upstream_hash = DT_INVALID_HASH;
       g->preview_upstream_hash = DT_INVALID_HASH;
       g->prv_luminance_valid = FALSE;
+      printf("_toneeq_process: pipe order changed, prv_luminance_valid FALSE\n");
       g->full_luminance_valid = FALSE;
       g->gui_histogram_valid = FALSE;
       dt_iop_gui_leave_critical_section(self);
@@ -1864,6 +1914,7 @@ void _toneeq_process(dt_iop_module_t *self,
         g->preview_buf_width = roi_out->width;
         g->preview_buf_height = roi_out->height;
         g->prv_luminance_valid = FALSE;
+        printf("_toneeq_process: PREVIEW buf size changed, prv_luminance_valid FALSE\n");
         g->gui_histogram_valid = FALSE;
       }
 
@@ -1951,14 +2002,17 @@ void _toneeq_process(dt_iop_module_t *self,
     const gboolean prv_luminance_valid = g->prv_luminance_valid;
     dt_iop_gui_leave_critical_section(self);
 
-#ifdef MF_DEBUG
     printf("_toneeq_process GUI PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" prv_luminance_valid=%d\n",
       current_upstream_hash, saved_upstream_hash, prv_luminance_valid);
-#endif
 
     if(saved_upstream_hash != current_upstream_hash || !prv_luminance_valid)
     {
       /* compute only if upstream pipe state has changed */
+      printf("_toneeq_process PREVIEW: recomputing luminance mask and hdr histogram: hash_changed %d, prv_luminance_valid %d\n",
+             (saved_upstream_hash != current_upstream_hash), prv_luminance_valid);
+
+      // it auto_align is on, the FULL pipe will have to wait for this one
+      dt_hash_t prv_full_sync_hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
 
       dt_iop_gui_enter_critical_section(self);
       g->preview_upstream_hash = current_upstream_hash;
@@ -1980,8 +2034,33 @@ void _toneeq_process(dt_iop_module_t *self,
 
       // GUI can assume that mask, histogram and deciles are valid
       g->prv_luminance_valid = TRUE;
+
+      // if auto-alignment is enable, we will basically "auto-click" an alignment button
+      // PREVIEW computes the necessary base shift/scale valuyes and stores them
+      // temporarily in g.
+      // - FULL can read it there later
+      // = the GUI will also read these values and store them in p
+      if(d->auto_align_enabled)
+      {
+        float post_scale_base, post_shift_base;
+        _auto_alignment_calculation(&g->mask_hdr_histo, d->auto_align_shift_only,
+                                    &post_scale_base, &post_shift_base);
+        g->temp_post_scale_base = post_scale_base;
+        g->temp_post_shift_base = post_shift_base;
+
+        // inform FULL pipe that PREVIEW has updated
+        g->prv_full_sync_hash = prv_full_sync_hash;
+      }
+      else if (!g->post_realign_possible_false_alert)
+        g->post_realign_required = TRUE;
+
       dt_iop_gui_leave_critical_section(self);
     }
+
+    // g->post_realign_required should be current now
+    dt_iop_gui_enter_critical_section(self);
+    g->post_realign_possible_false_alert = FALSE;
+    dt_iop_gui_leave_critical_section(self);
 
     //const dt_hash_t sync_hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     //dt_iop_gui_enter_critical_section(self);
@@ -2047,6 +2126,27 @@ void _toneeq_process(dt_iop_module_t *self,
                               &image_lum_min, &image_lum_max,
                               piece->pipe->type);
       g->full_luminance_valid = TRUE;
+
+      if(d->auto_align_enabled)
+      {
+        // If auto-align is enabled, wait for PREVIEW and get the base shift/scale
+        // values that were left in g.
+        dt_iop_gui_enter_critical_section(self);
+        const dt_hash_t prv_full_sync_hash = g->prv_full_sync_hash;
+        dt_iop_gui_leave_critical_section(self);
+
+        if(prv_full_sync_hash != DT_INVALID_HASH
+           && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
+                                          &self->gui_lock, &g->prv_full_sync_hash))
+        {
+          dt_control_log(_("inconsistent output"));
+        }
+        else
+        {
+          d->post_scale_base = g->temp_post_scale_base;
+          d->post_shift_base = g->temp_post_shift_base;
+        }
+      }
     }
 
     // dt_iop_gui_enter_critical_section(self);
@@ -2071,6 +2171,14 @@ void _toneeq_process(dt_iop_module_t *self,
       hdr_histogram->max_ev = max_ev;
       _compute_hdr_histogram_and_stats(luminance, num_elem,
                                        &g->mask_hq_histo, piece->pipe->type);
+      g->hq_histogram_valid = TRUE;
+      dt_iop_gui_leave_critical_section(self);
+    }
+    else
+    {
+      dt_iop_gui_enter_critical_section(self);
+      g->hq_histogram_valid = FALSE;
+      g->gui_hq_histogram_valid = FALSE;
       dt_iop_gui_leave_critical_section(self);
     }
   }
@@ -2352,6 +2460,7 @@ static void _gui_cache_init(dt_iop_module_t *self)
   dt_iop_gui_enter_critical_section(self);
   g->full_upstream_hash = DT_INVALID_HASH;
   g->preview_upstream_hash = DT_INVALID_HASH;
+  g->prv_full_sync_hash = DT_INVALID_HASH;
 
   _ui_histo_init(&g->ui_histo);
   _ui_histo_init(&g->ui_hq_histo);
@@ -2365,24 +2474,38 @@ static void _gui_cache_init(dt_iop_module_t *self)
   g->image_EV_per_UI_sample = 0.00001; // In case no value is calculated yet, use something small, but not 0
 
   g->interpolation_valid = FALSE;  // TRUE if the gauss_interpolation_matrix is ready
+
+  printf("_gui_cache_init: prv_luminance_valid FALSE\n");
   g->prv_luminance_valid = FALSE;  // TRUE if the luminance cache is ready
   g->full_luminance_valid = FALSE; // TRUE if the luminance cache is ready
+  g->hq_histogram_valid = FALSE;   // TRUE if we are in late scaling mode and a HQ histogram was computed
   g->gui_histogram_valid = FALSE;  // TRUE if the histogram cache and stats are ready
+  g->gui_hq_histogram_valid = FALSE; // TRUE if the HQ histogram is ready
   g->gui_curve_valid = FALSE;      // TRUE if the gui_curve_lut is ready
   g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
-  g->gauss_factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
+  g->gauss_factors_valid = TRUE;   // TRUE if radial-basis coeffs are ready
 
-  g->valid_nodes_x = FALSE;        // TRUE if x coordinates of graph nodes have been inited
-  g->valid_nodes_y = FALSE;        // TRUE if y coordinates of graph nodes have been inited
+  // Initialize catmull arrays with safe default values
+  for(int i = 0; i < NUM_SLIDERS + 2; i++)
+    g->catmull_y[i] = 1.0f;
+  for(int i = 0; i < NUM_SLIDERS; i++)
+    g->catmull_tangents[i] = 0.0f;
+
   g->area_cursor_valid = FALSE;    // TRUE if mouse cursor is over the graph area
   g->area_dragging = FALSE;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
   g->cursor_valid = FALSE;         // TRUE if mouse cursor is over the preview image
   g->has_focus = FALSE;            // TRUE if module has focus from GTK
 
-  g->area_vscale = FALSE;
-  g->area_ignore_border_bins = FALSE;
-  g->warning_icon_active = TRUE;
+  g->temp_post_scale_base = 0.0f;
+  g->temp_post_shift_base = 0.0f;
+  g->post_realign_required = FALSE;
+  g->last_align_button = LAST_ALIGN_NONE;      // Last clicked align button
+  g->post_realign_possible_false_alert = FALSE;
+
+  g->histogram_scale_mode = HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER;
+  g->histogram_vrange = 2;
+  g->histogram_show_hq = FALSE;                // TRUE = show HQ histogram
 
   g->preview_buf = NULL;
   g->preview_buf_width = 0;
@@ -2406,9 +2529,9 @@ static void _gui_cache_init(dt_iop_module_t *self)
 
 static void _invalidate_luminance_cache(dt_iop_module_t *const self)
 {
-#ifdef MF_DEBUG
+
   printf("_invalidate_luminance_cache\n");
-#endif
+
   // Invalidate the private luminance cache and histogram when
   // the luminance mask extraction parameters have changed
   dt_iop_toneequalizer_gui_data_t *const restrict g = self->gui_data;
@@ -2421,6 +2544,7 @@ static void _invalidate_luminance_cache(dt_iop_module_t *const self)
 
   g->gui_curve_valid = FALSE;
   g->gui_histogram_valid = FALSE;
+  g->gui_hq_histogram_valid = FALSE;
   g->ui_histo.max_val = 1;
   g->ui_histo.max_val_ignore_border_bins = 1;
   g->ui_hq_histo.max_val = 1;
@@ -2439,6 +2563,7 @@ static void _invalidate_lut_and_histogram(dt_iop_module_t *const self)
   dt_iop_gui_enter_critical_section(self);
   g->gui_curve_valid = FALSE;
   g->gui_histogram_valid = FALSE;
+  g->gui_hq_histogram_valid = FALSE;
   g->ui_histo.max_val = 1;
   g->ui_histo.max_val_ignore_border_bins = 1;
   g->ui_hq_histo.max_val = 1;
@@ -2512,7 +2637,7 @@ static inline void _compute_gui_curve(dt_iop_toneequalizer_gui_data_t *g, dt_iop
     {
       // build the inset graph curve LUT
       const float x = (8.0f * (((float)k) / ((float)(UI_HISTO_SAMPLES - 1)))) - 8.0f;
-      curve[k] = log2f(catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, x, catmull_y, catmull_tangents));
+      curve[k] = log2f(fast_clamp(catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, x, catmull_y, catmull_tangents), 0.25f, 4.0f));
       // if (k % 25 == 0) {
       //   printf("_compute_gui_curve/CATMULL: k=%d x=%f curve=%f\n", k, x, curve[k]);
       // }
@@ -2661,6 +2786,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->pre_contrast_strength = p->pre_contrast_strength;
   d->pre_contrast_midpoint = p->pre_contrast_midpoint;
 
+  d->auto_align_enabled = p->auto_align_enabled;
+  d->auto_align_shift_only = p->auto_align_shift_only;
+
   /*
    * Perform a radial-based interpolation using a series gaussian functions
    */
@@ -2738,7 +2866,7 @@ static inline void _compute_gui_histogram(dt_iop_toneequalizer_histogram_stats_t
   printf("_compute_gui_histogram: scale=%f shift=%f value from hdr_histogram=%d ui_histogram->samples %d\n", histogram_scale, histogram_shift, hdr_histogram->samples[hdr_histogram->num_samples / 2], ui_histogram->num_samples);
 #endif
   // (Re)init the histogram
-  memset(ui_histogram->samples, 0, sizeof(int) * ui_histogram->num_samples);
+  memset(ui_histogram->samples, 0, sizeof(int) * UI_HISTO_SAMPLES);
 
   const float hdr_ev_range = hdr_histogram->max_ev - hdr_histogram->min_ev;
 
@@ -2759,7 +2887,8 @@ static inline void _compute_gui_histogram(dt_iop_toneequalizer_histogram_stats_t
     const float shift_scaled_EV = fast_clamp(_post_scale_shift(EV, post_scale_base, post_shift_base, post_scale, post_shift, post_pivot), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
 
     // from [-8...0] EV to [0...UI_HISTO_SAMPLES]
-    const int i = (((shift_scaled_EV + 8.0f) / 8.0f) * (float)ui_histogram->num_samples);
+    const int i = CLAMP((int)((shift_scaled_EV + 8.0f) / 8.0f * (float)(UI_HISTO_SAMPLES - 1)),
+                        0, UI_HISTO_SAMPLES - 1);
 
     ui_histogram->samples[i] += hdr_histogram->samples[k];
   }
@@ -2768,15 +2897,15 @@ static inline void _compute_gui_histogram(dt_iop_toneequalizer_histogram_stats_t
   // ignore the first and last value to keep the histogram readable
   int max_val_ignore_border_bins = 1;
   DT_OMP_SIMD(reduction(max: max_val_ignore_border_bins))
-  for (int i = 1; i < ui_histogram->num_samples - 1; i++)
+  for (int i = 1; i < UI_HISTO_SAMPLES - 1; i++)
   {
     max_val_ignore_border_bins = MAX(ui_histogram->samples[i], max_val_ignore_border_bins);
   }
 
   // Compare the fist and last values too, so we have
   // the overall maximum available as well
-  ui_histogram->max_val = MAX(hdr_histogram->samples[0], max_val_ignore_border_bins);
-  ui_histogram->max_val = MAX(hdr_histogram->samples[ui_histogram->num_samples - 1], ui_histogram->max_val);
+  ui_histogram->max_val = MAX(ui_histogram->samples[0], max_val_ignore_border_bins);
+  ui_histogram->max_val = MAX(ui_histogram->samples[UI_HISTO_SAMPLES - 1], ui_histogram->max_val);
   ui_histogram->max_val_ignore_border_bins = max_val_ignore_border_bins;
   // printf("_compute_gui_histogram:  ui_histogram->max_val_ignore_border_bins=%d ui_histogram->max_val=%d\n", ui_histogram->max_val_ignore_border_bins, ui_histogram->max_val);
 
@@ -2790,6 +2919,7 @@ static inline void _update_gui_histogram(dt_iop_module_t *const self)
 
 
   dt_iop_gui_enter_critical_section(self);
+  // TODO: check for the hdr histogram insteam of prv luminance
   if(!g->gui_histogram_valid && g->prv_luminance_valid)
   {
     // TODO MF: Pixelpipe full might not be ready yet, in this case we
@@ -2827,6 +2957,19 @@ static inline void _update_gui_histogram(dt_iop_module_t *const self)
 
     g->gui_histogram_valid = TRUE;
   }
+  // Also update HQ histogram if available
+  if(g->hq_histogram_valid && !g->gui_hq_histogram_valid)
+  {
+    // HQ histogram needs to be converted to UI histogram too
+    _compute_gui_histogram(&g->mask_hq_histo, &g->ui_hq_histo,
+                           p->post_scale_base, p->post_shift_base,
+                           p->post_scale, p->post_shift, p->post_pivot);
+    g->gui_hq_histogram_valid = TRUE;
+  }
+  if (!g->hq_histogram_valid) {
+    g->gui_hq_histogram_valid = FALSE;
+  }
+
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -2894,11 +3037,25 @@ static void _show_guiding_controls(dt_iop_module_t *self)
 // empty marker function to make navigating the function list easier
 __attribute__((unused)) static void GUI_CALLBACKS_MARKER() {}
 
-void update_label_with_float(GtkLabel *label, float value) {
-    char buffer[32];
-    // Format with 2 decimal places
-    snprintf(buffer, sizeof(buffer), "%.2f", value);
-    gtk_label_set_text(label, buffer);
+void fill_button_tooltip(GtkWidget* btn, const float base_scale, const float base_shift, dt_iop_module_t *self)
+{
+    dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+    const char *tooltip_template;
+    char tooltip[256];
+
+    if(btn == g->align_button)
+      tooltip_template = _("auto-align base scale and shift to image histogram.\n"
+                           "ctrl-click to set alignment to 0.\n"
+                           "current base shift: %.1f\n"
+                           "current base scale: %.1f");
+    else
+      tooltip_template = _("auto-align base shift to image histogram.\n"
+                           "ctrl-click to set alignment to 0.\n"
+                           "current base shift: %.1f\n"
+                           "current base scale: %.1f");
+
+    snprintf(tooltip, sizeof(tooltip), tooltip_template, base_shift, base_scale);
+    gtk_widget_set_tooltip_text(btn, tooltip);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -2915,12 +3072,17 @@ void gui_update(dt_iop_module_t *self)
   // TODO MF: not needed any more?
   dt_bauhaus_slider_set(g->smoothing, p->smoothing);
 
-  update_label_with_float(GTK_LABEL(g->label_base_scale), p->post_scale_base);
-  update_label_with_float(GTK_LABEL(g->label_base_shift), p->post_shift_base);
+  fill_button_tooltip(g->align_button, p->post_scale_base, p->post_shift_base, self);
+  fill_button_tooltip(g->shift_button, p->post_scale_base, p->post_shift_base, self);
+
+  // Set button states from params
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align_button), p->auto_align_enabled && !p->auto_align_shift_only);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->shift_button), p->auto_align_enabled && p->auto_align_shift_only);
 
   _show_guiding_controls(self);
 
-  _invalidate_luminance_cache(self);
+  // TODO MF: check if this sufficient or if invalidate_luminance_cache is needed
+  _invalidate_lut_and_histogram(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
 }
@@ -2999,6 +3161,7 @@ void gui_changed(dt_iop_module_t *self,
 static void _smoothing_callback(GtkWidget *slider,
                                 dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return;
   if(darktable.gui->reset) return;
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3024,7 +3187,10 @@ static void _smoothing_callback(GtkWidget *slider,
 
 static gboolean _smoothing_button_press(GtkWidget *slider,
                                         GdkEventButton *event,
-                                        dt_iop_module_t *self) {
+                                        dt_iop_module_t *self)
+{
+  if(!self || !self->gui_data) return FALSE;
+
   // Double-click: reset to correct default value
   if (event->type == GDK_2BUTTON_PRESS) {
     dt_iop_toneequalizer_params_t *p = self->params;
@@ -3076,21 +3242,53 @@ static void _auto_adjust_alignment(GtkWidget *btn,
     return;
   }
 
-  // Leftclick?
-  if (event->type != GDK_BUTTON_PRESS || event->button != 1) {
+  if (event->type != GDK_BUTTON_PRESS) {
     return;
   }
+
+  switch(event->button)
+  {
+    case(1): // left click
+    {
+      p->auto_align_enabled = FALSE;
+      break;
+    }
+    case(3): // right click
+    {
+      p->auto_align_enabled = TRUE;
+      if (btn == g->shift_button)
+        p->auto_align_shift_only = TRUE;
+      else
+        p->auto_align_shift_only = FALSE;
+      break;
+    }
+    default:
+      return;
+  }
+  // Set button states from params
+  ++darktable.gui->reset;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align_button), p->auto_align_enabled && !p->auto_align_shift_only);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->shift_button), p->auto_align_enabled && p->auto_align_shift_only);
+  --darktable.gui->reset;
 
   // Ctrl-click
   if (event->state & GDK_CONTROL_MASK) {
     p->post_scale_base = 0.0f;
     p->post_shift_base = 0.0f;
-    //dt_iop_gui_enter_critical_section(self);
-    update_label_with_float(GTK_LABEL(g->label_base_scale), p->post_scale_base);
-    update_label_with_float(GTK_LABEL(g->label_base_shift), p->post_shift_base);
+
+    dt_iop_gui_enter_critical_section(self);
+    fill_button_tooltip(g->align_button, p->post_scale_base, p->post_shift_base, self);
+    fill_button_tooltip(g->shift_button, p->post_scale_base, p->post_shift_base, self);
+    dt_iop_gui_leave_critical_section(self);
+
     _invalidate_lut_and_histogram(self);
-    //dt_iop_gui_leave_critical_section(self);
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    dt_iop_gui_enter_critical_section(self);
+    // Re-align hash workaround
+    g->post_realign_possible_false_alert = TRUE;
+    dt_iop_gui_leave_critical_section(self);
     return;
   }
 
@@ -3100,31 +3298,108 @@ static void _auto_adjust_alignment(GtkWidget *btn,
     return;
   }
 
+  _auto_alignment_calculation(&g->mask_hdr_histo, (btn == g->shift_button), &p->post_scale_base, &p->post_shift_base);
 
-  const float post_scale_base_lin = 8.0f / (g->mask_hdr_histo.max_ev
-                                  - g->mask_hdr_histo.min_ev);
-  p->post_scale_base = log2f(post_scale_base_lin);
-  p->post_shift_base = -8.0f - (g->mask_hdr_histo.min_ev * post_scale_base_lin);
+  printf("_auto_adjust_alignment: min_used_ev=%f, max_used_ev=%f, post_scale_base=%f, post_shift_base=%f\n", g->mask_hdr_histo.min_ev, g->mask_hdr_histo.max_ev, p->post_scale_base, p->post_shift_base);
 
-  printf("_auto_adjust_alignment: min_used_ev=%f, max_used_ev=%f, post_scale_base_lin=%f, post_shift_base=%f\n", g->mask_hdr_histo.min_ev, g->mask_hdr_histo.max_ev, post_scale_base_lin, p->post_shift_base);
-
-  // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
   dt_iop_gui_enter_critical_section(self);
   g->gui_histogram_valid = FALSE;
+  g->post_realign_required = FALSE;
+  g->last_align_button = (btn == g->shift_button) ? LAST_ALIGN_SHIFT : LAST_ALIGN_FULLY;
+  fill_button_tooltip(g->align_button, p->post_scale_base, p->post_shift_base, self);
+  fill_button_tooltip(g->shift_button, p->post_scale_base, p->post_shift_base, self);
   dt_iop_gui_leave_critical_section(self);
 
-  update_label_with_float(GTK_LABEL(g->label_base_scale), p->post_scale_base);
-  update_label_with_float(GTK_LABEL(g->label_base_shift), p->post_shift_base);
   _invalidate_lut_and_histogram(self);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_iop_gui_enter_critical_section(self);
+  // Re-align hash workaround
+  g->post_realign_possible_false_alert = TRUE;
+  dt_iop_gui_leave_critical_section(self);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+static void _re_adjust_alignment(GtkWidget *btn,
+                                 GdkEventButton *event,
+                                 dt_iop_module_t *self)
+{
+
+  dt_iop_toneequalizer_params_t *p = self->params;
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+
+  if(darktable.gui->reset) return;
+
+  dt_iop_request_focus(self);
+
+  if(!self->enabled)
+  {
+    // activate module and do nothing
+    ++darktable.gui->reset;
+    dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
+    --darktable.gui->reset;
+
+    _invalidate_luminance_cache(self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return;
+  }
+
+  if (event->type != GDK_BUTTON_PRESS) {
+    return;
+  }
+
+  ++darktable.gui->reset;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->histogram_align_button), TRUE); // Keep the button looking active
+
+  // Set button states from params
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align_button), p->auto_align_enabled && !p->auto_align_shift_only);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->shift_button), p->auto_align_enabled && p->auto_align_shift_only);
+  --darktable.gui->reset;
+
+  if(!g->prv_luminance_valid || self->dev->full.pipe->processing || !g->gui_histogram_valid)
+  {
+    dt_control_log(_("wait for the preview to finish recomputing"));
+    return;
+  }
+
+  _auto_alignment_calculation(&g->mask_hdr_histo, (g->last_align_button == LAST_ALIGN_SHIFT), &p->post_scale_base, &p->post_shift_base);
+
+  printf("_re_adjust_alignment: min_used_ev=%f, max_used_ev=%f, post_scale_base=%f, post_shift_base=%f\n", g->mask_hdr_histo.min_ev, g->mask_hdr_histo.max_ev, p->post_scale_base, p->post_shift_base);
+
+  // Hide the align button histogram
+  gtk_widget_hide(g->histogram_align_button);
+
+  dt_iop_gui_enter_critical_section(self);
+  g->post_realign_required = FALSE;
+  g->gui_histogram_valid = FALSE;
+  fill_button_tooltip(g->align_button, p->post_scale_base, p->post_shift_base, self);
+  fill_button_tooltip(g->shift_button, p->post_scale_base, p->post_shift_base, self);
+  dt_iop_gui_leave_critical_section(self);
+
+  _invalidate_lut_and_histogram(self);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_iop_gui_enter_critical_section(self);
+  // Ugly workaround:
+  // Changing the history changes the upstream hash, even though nothing has really
+  // changed upstream. During the next call of _process, we will not
+  // set post_realign_required to true, so the re-align button does not automagically
+  // re-appear when the user has just aligned.
+  g->post_realign_possible_false_alert = TRUE;
+  dt_iop_gui_leave_critical_section(self);
+
+  // Unlock the colour picker so we can display our own custom cursor
+  dt_iop_color_picker_reset(self, TRUE);
+
+}
+
 static void _auto_adjust_exposure_boost(GtkWidget *quad,
                                         dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return;
+
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -3190,6 +3465,8 @@ static void _auto_adjust_exposure_boost(GtkWidget *quad,
 static void _auto_adjust_contrast_boost(GtkWidget *quad,
                                         dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return;
+
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -3269,6 +3546,7 @@ static void _show_luminance_mask_callback(GtkWidget *togglebutton,
                                           GdkEventButton *event,
                                           dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return;
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
 
@@ -3634,6 +3912,11 @@ static inline gboolean _set_new_params_interactive(const float control_exposure,
   // CATMULL
   float gains[NUM_SLIDERS] DT_ALIGNED_ARRAY;
   _compute_channels_gains(g->temp_user_params, gains);
+  // Check if any gain is out of bounds [-2, +2] EV
+  for(int i = 0; i < NUM_SLIDERS; ++i)
+  {
+    gains[i] = fast_clamp(gains[i], -2.0f, 2.0f);
+  }
   _commit_channels_gains(gains, p);
   return TRUE;
 }
@@ -3728,7 +4011,8 @@ __attribute__((unused)) static void GTK_CAIRO_MARKER() {}
 
 static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
                                      GtkWidget *widget,
-                                     dt_iop_toneequalizer_gui_data_t *const restrict g);
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g,
+                                     dt_iop_toneequalizer_params_t *const restrict p);
 
 
 void cairo_draw_hatches(cairo_t *cr,
@@ -3836,8 +4120,8 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_gui_enter_critical_section(self);
 
   const gboolean fail = !g->cursor_valid
-                     || (p->curve_type == DT_TONEEQ_CURVE_GAUSS && !g->interpolation_valid)
-                     || (p->curve_type == DT_TONEEQ_CURVE_CATMULL && !g->gui_curve_valid)
+                     || (p->curve_type == DT_TONEEQ_CURVE_GAUSS && !g->interpolation_valid && !g->gauss_factors_valid)
+                     || (p->curve_type == DT_TONEEQ_CURVE_CATMULL && (!g->gui_curve_valid || !g->user_param_valid))
                      || dev->full.pipe->processing
                      || !g->has_focus;
 
@@ -3846,13 +4130,13 @@ void gui_post_expose(dt_iop_module_t *self,
   if(fail) return;
 
   if(!g->graph_valid)
-    if(!_init_drawing(self, self->widget, g))
+    if(!_init_drawing(self, self->widget, g, p))
       return;
 
   // re-read the exposure in case it has changed
   if(g->prv_luminance_valid && self->enabled) {
     const float lum = log2f(_luminance_from_thumb_preview_buf(self));
-    g->cursor_exposure = _post_scale_shift(lum, exp2f(p->post_scale_base), p->post_shift_base, exp2f(p->post_scale), p->post_shift, p->post_pivot);
+    g->cursor_exposure = fast_clamp(_post_scale_shift(lum, exp2f(p->post_scale_base), p->post_shift_base, exp2f(p->post_scale), p->post_shift, p->post_pivot), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
   }
 
   dt_iop_gui_enter_critical_section(self);
@@ -3876,7 +4160,7 @@ void gui_post_expose(dt_iop_module_t *self,
     if (p->curve_type == DT_TONEEQ_CURVE_GAUSS)
       correction = log2f(_gauss_pixel_correction(exposure_in, g->gauss_factors, g->sigma));
     else // CATMULL
-      correction = log2f(catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, exposure_in, g->catmull_y, g->catmull_tangents));
+      correction = log2f(fast_clamp(catmull_rom_val(NUM_SLIDERS, DT_TONEEQ_MIN_EV, exposure_in, g->catmull_y, g->catmull_tangents), 0.25f, 4.0f));
 
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
@@ -4062,7 +4346,8 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
 
 static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
                                      GtkWidget *widget,
-                                     dt_iop_toneequalizer_gui_data_t *const restrict g)
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g,
+                                     dt_iop_toneequalizer_params_t *const restrict p)
 {
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
@@ -4118,7 +4403,20 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   g->gradient_top_limit = g->graph_height + 2 * g->inner_padding;
   g->gradient_width = g->gradient_right_limit - g->gradient_left_limit;
   g->legend_top_limit = -0.5 * g->line_height - 2.0 * g->inner_padding;
-  g->x_label = g->graph_width + g->sign_width + 3.0 * g->inner_padding;
+  g->x_label = g->graph_width + 1.0 * g->inner_padding;
+
+  // Position button box at the top-right corner of the graph
+  // Only do this if button_box exists (it might not exist during early initialization)
+  if(g->button_box)
+  {
+    // The graph content area starts at (line_height + 2*inner_padding, line_height + 3*inner_padding)
+    const int button_box_width = gtk_widget_get_allocated_width(g->button_box);
+    const int left_margin = (int)(g->line_height + 2 * g->inner_padding + g->graph_width) - button_box_width;
+    const int top_margin = (int)(g->line_height + 3 * g->inner_padding);
+
+    gtk_widget_set_margin_start(g->button_box, left_margin);
+    gtk_widget_set_margin_top(g->button_box, top_margin);
+  }
 
   gtk_render_background(g->context, g->cr, 0, 0, g->allocation.width, g->graph_w_gradients_height);
 
@@ -4147,20 +4445,26 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
     value += 1.0;
   }
 
-  value = 2.0f;
+  // display y-axis legends (EV)
+  // vertical range can be -2...+2 EV or -4...+4 EV
+  const int num_y_labels = 5;
+  const float max_ev = (float)g->histogram_vrange;
+  const float min_ev = -(float)g->histogram_vrange;
+  value = max_ev;
+  float decrement = (max_ev - min_ev) / (float)(num_y_labels - 1);
 
-  for(int k = 0; k < 5; k++)
+  for(int k = 0; k < num_y_labels; k++)
   {
-    const float yn = (k / 4.0f) * g->graph_height;
+    const float yn = (k / (float)(num_y_labels - 1)) * g->graph_height;
     snprintf(text, sizeof(text), "%+.0f", value);
     pango_layout_set_text(g->layout, text, -1);
     pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, g->x_label - 0.5 * g->ink.width - g->ink.x,
-                yn - 0.5 * g->ink.height - g->ink.y);
+    cairo_move_to(g->cr, g->x_label, //  - 0.5 * g->ink.width - g->ink.x,
+                yn - 0.5 * g->line_height - g->ink.y); // );
     pango_cairo_show_layout(g->cr, g->layout);
     cairo_stroke(g->cr);
 
-    value -= 1.0;
+    value -= decrement;
   }
 
   /** x axis **/
@@ -4175,6 +4479,23 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   cairo_set_source(g->cr, grad);
   cairo_fill(g->cr);
   cairo_pattern_destroy(grad);
+
+  /** Draw scale pivot marker **/
+  // TODO MF: clean up hard coded values
+  const float pivot_x = ((p->post_pivot + 8.0f) / 8.0f) * g->gradient_width;
+
+  // Draw a small upward-pointing triangle (^)
+  const float marker_size = 0.75 * g->inner_padding;
+  const float marker_y = g->gradient_top_limit - g->inner_padding;
+
+  cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
+  set_color(g->cr, darktable.bauhaus->graph_fg);
+
+  // Draw triangle
+  cairo_move_to(g->cr, pivot_x - marker_size, marker_y);
+  cairo_line_to(g->cr, pivot_x, marker_y - marker_size);
+  cairo_line_to(g->cr, pivot_x + marker_size, marker_y);
+  cairo_stroke(g->cr);
 
   /** y axis **/
   // Draw the perceptually even gradient
@@ -4208,11 +4529,10 @@ static inline void _init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
-  if(!g->valid_nodes_x && g->graph_width > 0)
+  if(g->graph_width > 0)
   {
     for(int i = 0; i < NUM_SLIDERS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(NUM_SLIDERS - 1))) * g->graph_width;
-    g->valid_nodes_x = TRUE;
   }
 }
 
@@ -4223,10 +4543,10 @@ static inline void _init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
 
   if(g->user_param_valid && g->graph_height > 0)
   {
+    const float plus_minus_range = 2.0f * (float)g->histogram_vrange;
     for(int i = 0; i < NUM_SLIDERS; ++i)
-      g->nodes_y[i] = // assumes factors in [-2 ; 2] EV
-        (0.5 - log2f(g->temp_user_params[i]) / 4.0) * g->graph_height;
-    g->valid_nodes_y = TRUE;
+      g->nodes_y[i] =
+        (0.5 - log2f(g->temp_user_params[i]) / plus_minus_range) * g->graph_height;
   }
 }
 
@@ -4270,41 +4590,44 @@ static inline void _compute_gui_curve_colors(dt_iop_module_t *self)
   colors[0] = standard;
   for(int k = 1; k < UI_HISTO_SAMPLES; k++)
   {
-    float ev_dy = (curve[k] - curve[k - 1]);
+    const float scaled_curve_prev = curve[k - 1] * p->scale_curve;
+    const float scaled_curve_curr = curve[k] * p->scale_curve;
+
+    float ev_dy = (scaled_curve_curr - scaled_curve_prev);
     float steepness = ev_dy / ev_dx;
     colors[k] = standard;
 
-    if(filter_active && k < shadows_limit && curve[k] < 0.0f)
+    if(filter_active && k < shadows_limit && scaled_curve_curr < 0.0f)
     {
       // Lower shadows with filter active, this does not provide the local
       // contrast that the user probably expects.
       const float x_dist = ((float)(shadows_limit - k) / (float)UI_HISTO_SAMPLES) * 8.0f;
-      const float color_dist = fminf(x_dist, -curve[k]);
+      const float color_dist = fminf(x_dist, -scaled_curve_curr);
       _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
-    else if(filter_active && k > highlights_limit && curve[k] > 0.0f)
+    else if(filter_active && k > highlights_limit && scaled_curve_curr > 0.0f)
     {
       // Raise highlights with filter active, this does not provide the local
       // contrast that the user probably expects.
       const float x_dist = ((float)(k - highlights_limit) / (float)UI_HISTO_SAMPLES) * 8.0f;
-      const float color_dist = fminf(x_dist, curve[k]);
+      const float color_dist = fminf(x_dist, scaled_curve_curr);
       _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
-    else if(!filter_active && k < shadows_limit && curve[k] > 0.0f)
+    else if(!filter_active && k < shadows_limit && scaled_curve_curr > 0.0f)
     {
       // Raise shadows without filter, this leads to a loss of contrast.
       const float x_dist = ((float)(shadows_limit - k) / (float)UI_HISTO_SAMPLES) * 8.0f;
-      const float color_dist = fminf(x_dist, curve[k]);
+      const float color_dist = fminf(x_dist, scaled_curve_curr);
       _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
-    else if(!filter_active && k > highlights_limit && curve[k] < 0.0f)
+    else if(!filter_active && k > highlights_limit && scaled_curve_curr < 0.0f)
     {
       // Lower highlights without filter, this leads to a loss of contrast.
       const float x_dist = ((float)(k - highlights_limit) / (float)UI_HISTO_SAMPLES) * 8.0f;
-      const float color_dist = fminf(x_dist, -curve[k]);
+      const float color_dist = fminf(x_dist, -scaled_curve_curr);
       _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
@@ -4327,6 +4650,68 @@ static inline void _compute_gui_curve_colors(dt_iop_module_t *self)
   }
 }
 
+static inline void _draw_histogram(cairo_t *cr, const dt_iop_toneequalizer_ui_histogram_t *histo,
+                                        const float graph_width, const float graph_height,
+                                        const dt_iop_toneequalizer_histogram_scale_t scale_mode)
+{
+  set_color(cr, darktable.bauhaus->inset_histogram);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0));
+  cairo_move_to(cr, 0, graph_height);
+
+  // Determine max value based on scale mode
+  int max_val
+      = (scale_mode == HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER) ? histo->max_val_ignore_border_bins : histo->max_val;
+
+    // printf("Drawing histogram with max_val=%d max_val_ignore_border_bins=%d scale mode=%d bin[0]=%d bin[1]=%d bin[2]=%d bin[%d]=%d bin[%d]=%d bin[%d]=%d\n",
+    //      histo->max_val, histo->max_val_ignore_border_bins, scale_mode,
+    //      histo->samples[0], histo->samples[1], histo->samples[2],
+    //      UI_HISTO_SAMPLES - 3, histo->samples[UI_HISTO_SAMPLES - 3],
+    //      UI_HISTO_SAMPLES - 2, histo->samples[UI_HISTO_SAMPLES - 2],
+    //      UI_HISTO_SAMPLES - 1, histo->samples[UI_HISTO_SAMPLES - 1]);
+
+  if(max_val < 1) max_val = 1; // Avoid division by zero
+
+  for(int k = 0; k < UI_HISTO_SAMPLES; k++)
+  {
+    // x range is [-8;+0] EV
+    const float x_temp = (8.0 * (float)k / (float)(UI_HISTO_SAMPLES - 1)) - 8.0;
+
+    float normalized_value;
+
+    switch(scale_mode)
+    {
+      case HISTOGRAM_SCALE_LINEAR:
+      case HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER:
+        // Linear scale
+        normalized_value = fast_clamp((float)(histo->samples[k]) / (float)max_val, 0.0f, 1.0f);
+        break;
+
+      case HISTOGRAM_SCALE_LOG:
+        // Logarithmic scale: log(1 + value) / log(1 + max_val)
+        if(histo->samples[k] > 0 && max_val > 0)
+        {
+          normalized_value = logf(1.0f + (float)histo->samples[k]) / logf(1.0f + (float)max_val);
+          normalized_value = fast_clamp(normalized_value, 0.0f, 1.0f);
+        }
+        else
+        {
+          normalized_value = 0.0f;
+        }
+        break;
+
+      default:
+        normalized_value = 0.0f;
+    }
+
+    const float y_temp = 1.0f - normalized_value * 0.96f;
+    cairo_line_to(cr, (x_temp + 8.0) * graph_width / 8.0, graph_height * y_temp);
+  }
+
+  cairo_line_to(cr, graph_width, graph_height);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
 static gboolean _area_draw(GtkWidget *widget,
                            cairo_t *cr,
                            dt_iop_module_t *self)
@@ -4342,16 +4727,8 @@ static gboolean _area_draw(GtkWidget *widget,
 
   // this can be cached and drawn just once, but too lazy to debug a
   // cache invalidation for Cairo objects
-  if(!_init_drawing(self, widget, g))
+  if(!_init_drawing(self, widget, g, p))
     return FALSE;
-
-  // since the widget sizes are not cached and invalidated properly
-  // above (yet…)  force the invalidation of the nodes coordinates to
-  // account for possible widget resizing
-  dt_iop_gui_enter_critical_section(self);
-  g->valid_nodes_x = FALSE;
-  g->valid_nodes_y = FALSE;
-  dt_iop_gui_leave_critical_section(self);
 
   // Refresh cached UI elements
   _update_gui_histogram(self);
@@ -4372,15 +4749,14 @@ static gboolean _area_draw(GtkWidget *widget,
     // Histograms are computed from -24 to +8 EV.
     // Draw warnings if parts outside of this area end up in the graph
     // after shift/scale.
-    GdkRGBA warning_color;
-    GdkRGBA red = {1.0, 0.0, 0.0, 1.0};
-    _interpolate_gui_color(darktable.bauhaus->graph_bg, red, 0.1f, &warning_color);
+    GdkRGBA error_color_interpolated;
+    _interpolate_gui_color(darktable.bauhaus->graph_bg, error_color, 0.1f, &error_color_interpolated);
     const float hdr_min_scaled = _post_scale_shift(HDR_MIN_EV, exp2f(p->post_scale_base), p->post_shift_base, exp2f(p->post_scale), p->post_shift, p->post_pivot);
     if (hdr_min_scaled > DT_TONEEQ_MIN_EV)
     {
         const float end_x = fast_clamp((hdr_min_scaled + 8.0f) / 8.0f, 0.0f, 1.0f);
         cairo_rectangle(g->cr, 0, 0, end_x * g->graph_width, g->graph_height);
-        set_color(g->cr, warning_color);
+        set_color(g->cr, error_color_interpolated);
         cairo_fill(g->cr);
     }
     const float hdr_max_scaled = _post_scale_shift(HDR_MAX_EV, exp2f(p->post_scale_base), p->post_shift_base, exp2f(p->post_scale), p->post_shift, p->post_pivot);
@@ -4388,15 +4764,43 @@ static gboolean _area_draw(GtkWidget *widget,
     {
         const float start_x = fast_clamp((hdr_max_scaled + 8.0f) / 8.0f, 0.0f, 1.0f);
         cairo_rectangle(g->cr, start_x * g->graph_width, 0, (1.0f - start_x) * g->graph_width, g->graph_height);
-        set_color(g->cr, warning_color);
+        set_color(g->cr, error_color_interpolated);
         cairo_fill(g->cr);
     }
   }
 
   // draw grid
   cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(0.5));
-  set_color(g->cr, darktable.bauhaus->graph_border);
-  dt_draw_grid(g->cr, 8, 0, 0, g->graph_width, g->graph_height);
+
+  if(g->histogram_vrange == 4)
+  {
+    // For ±4 EV range: draw main grid for -2 to +2 (middle 50% of height)
+    // and lighter extended grids for -4 to -2 and +2 to +4
+
+    // Top extended grid (-4 to -2 EV) - lighter color
+    cairo_save(g->cr);
+    set_color(g->cr, darktable.bauhaus->inset_histogram);
+    dt_draw_grid_xy(g->cr, 8, 4, 0, 0, g->graph_width, 0.25f * g->graph_height, FALSE, FALSE, FALSE, FALSE);
+    cairo_restore(g->cr);
+
+    // Bottom extended grid (+2 to +4 EV) - lighter color
+    cairo_save(g->cr);
+    set_color(g->cr, darktable.bauhaus->inset_histogram);
+    dt_draw_grid_xy(g->cr, 8, 4, 0, 0.75f * g->graph_height, g->graph_width, g->graph_height, FALSE, FALSE, FALSE, FALSE);
+    cairo_restore(g->cr);
+
+    // Main grid (-2 to +2 EV) - normal color
+    cairo_save(g->cr);
+    set_color(g->cr, darktable.bauhaus->graph_border);
+    dt_draw_grid_xy(g->cr, 8, 8, 0, 0.25f * g->graph_height, g->graph_width, 0.75f * g->graph_height, FALSE, TRUE, FALSE, TRUE);
+    cairo_restore(g->cr);
+  }
+  else
+  {
+    // For ±2 EV range: draw normal grid over entire height
+    set_color(g->cr, darktable.bauhaus->graph_border);
+    dt_draw_grid(g->cr, 8, 0, 0, g->graph_width, g->graph_height);
+  }
 
   // draw ground level
   set_color(g->cr, darktable.bauhaus->graph_fg);
@@ -4407,33 +4811,28 @@ static gboolean _area_draw(GtkWidget *widget,
 
   if(g->gui_histogram_valid && self->enabled)
   {
-    dt_iop_toneequalizer_ui_histogram_t *histo = &g->ui_histo;
-    // draw the mask histogram background
-    set_color(g->cr, darktable.bauhaus->inset_histogram);
-    cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(4.0));
-    cairo_move_to(g->cr, 0, g->graph_height);
+    // Determine which histogram to show
+    dt_iop_toneequalizer_ui_histogram_t *histo;
 
-    for(int k = 0; k < histo->num_samples; k++)
-    {
-      // the x range is [-8;+0] EV
-      const float x_temp = (8.0 * (float)k / (float)(UI_HISTO_SAMPLES - 1)) - 8.0;
-      const float y_temp = 1.0f - fast_clamp((float)(histo->samples[k]) / (float)(histo->max_val), 0.0f, 1.0f) * 0.96;
-      cairo_line_to(g->cr, (x_temp + 8.0) * g->graph_width / 8.0,
-                           (g->graph_height * y_temp));
-    }
-    cairo_line_to(g->cr, g->graph_width, g->graph_height);
-    cairo_close_path(g->cr);
-    cairo_fill(g->cr);
+    // If HQ is enabled and we have a valid HQ histogram, show it
+    if(g->histogram_show_hq && g->hq_histogram_valid)
+      histo = &g->ui_hq_histo;
+    else
+      histo = &g->ui_histo;
+
+    // draw the mask histogram background
+    _draw_histogram(g->cr, histo, g->graph_width, g->graph_height, g->histogram_scale_mode);
+
+    const float half_bar_width = DT_PIXEL_APPLY_DPI(1.0f);
 
     if(_post_scale_shift(g->mask_hdr_histo.hi_percentile_ev, exp2f(p->post_scale_base), p->post_shift_base, exp2f(p->post_scale), p->post_shift, p->post_pivot) > -0.1f)
     {
       // histogram overflows controls in highlights : display warning
       cairo_save(g->cr);
-      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
-      dtgtk_cairo_paint_gamut_check
-        (g->cr,
-         g->graph_width - 2.5 * g->line_height, 0.5 * g->line_height,
-         2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_set_source_rgba(g->cr, warning_color.red, warning_color.green, warning_color.blue, warning_color.alpha);
+      // Draw vertical bar at right edge
+      cairo_rectangle(g->cr, g->graph_width - half_bar_width, 0, 2 * half_bar_width, g->graph_height);
+      cairo_fill(g->cr);
       cairo_restore(g->cr);
     }
 
@@ -4441,11 +4840,10 @@ static gboolean _area_draw(GtkWidget *widget,
     {
       // histogram overflows controls in lowlights : display warning
       cairo_save(g->cr);
-      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
-      dtgtk_cairo_paint_gamut_check
-        (g->cr,
-         0.5 * g->line_height, 0.5 * g->line_height,
-         2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_set_source_rgba(g->cr, warning_color.red, warning_color.green, warning_color.blue, warning_color.alpha);
+      // Draw vertical bar at left edge
+      cairo_rectangle(g->cr, -half_bar_width, 0, 2 * half_bar_width, g->graph_height);
+      cairo_fill(g->cr);
       cairo_restore(g->cr);
     }
   }
@@ -4453,6 +4851,8 @@ static gboolean _area_draw(GtkWidget *widget,
   // TODO MF: The order of operations has become a bit complicated here
   //          - The thin (unscaled) curve should be under bullets and bars
   //          - The thick (scaled) curve should be above the bars, but under the bullets
+
+  float plus_minus_range = 2.0f * (float)g->histogram_vrange;
 
   if(g->gui_curve_valid && p->scale_curve != 1.0f)
   {
@@ -4472,14 +4872,14 @@ static gboolean _area_draw(GtkWidget *widget,
       // Map [0;UI_HISTO_SAMPLES] to [0;1] and then to g->graph_width.
       x_draw = ((float)(k - 1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
       // Map [-2;+2] EV to graph_height, with graph pixel 0 at the top
-      y_draw = (0.5f - g->gui_curve[k - 1] / 4.0f) * g->graph_height;
+      y_draw = (0.5f - g->gui_curve[k - 1] / plus_minus_range) * g->graph_height;
 
       cairo_move_to(g->cr, x_draw, y_draw);
 
       // Map [0;UI_HISTO_SAMPLES] to [0;1] and then to g->graph_width.
       x_draw = ((float)(k+1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
       // Map [-2;+2] EV to graph_height, with graph pixel 0 at the top
-      y_draw = (0.5f - g->gui_curve[k+1] / 4.0f) * g->graph_height;
+      y_draw = (0.5f - g->gui_curve[k+1] / plus_minus_range) * g->graph_height;
 
       cairo_line_to(g->cr, x_draw, y_draw);
       cairo_stroke(g->cr);
@@ -4488,9 +4888,6 @@ static gboolean _area_draw(GtkWidget *widget,
 
   dt_iop_gui_enter_critical_section(self);
   _init_nodes_x(g);
-  dt_iop_gui_leave_critical_section(self);
-
-  dt_iop_gui_enter_critical_section(self);
   _init_nodes_y(g);
   dt_iop_gui_leave_critical_section(self);
 
@@ -4514,7 +4911,7 @@ static gboolean _area_draw(GtkWidget *widget,
   {
     // draw the interpolation curve
 
-    float x_draw, y_draw;
+    float x1_draw, y1_draw, x2_draw, y2_draw;
 
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
     for(int k = 1; k < UI_HISTO_SAMPLES - 1; k++)
@@ -4522,18 +4919,47 @@ static gboolean _area_draw(GtkWidget *widget,
       set_color(g->cr, g->gui_curve_colors[k]);
 
       // Map [0;UI_HISTO_SAMPLES] to [0;1] and then to g->graph_width.
-      x_draw = ((float)(k - 1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
+      x1_draw = ((float)(k - 1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
       // Map [-2;+2] EV to graph_height, with graph pixel 0 at the top
-      y_draw = (0.5f - (g->gui_curve[k - 1] * p->scale_curve) / 4.0f) * g->graph_height;
+      y1_draw = (0.5f - (g->gui_curve[k - 1] * p->scale_curve) / plus_minus_range) * g->graph_height;
 
-      cairo_move_to(g->cr, x_draw, y_draw);
+      gboolean first_point_is_outside = FALSE;
+      if (y1_draw < 0.0f - EPSILON)
+      {
+        first_point_is_outside = TRUE;
+        y1_draw = 0.0f;
+      }
+      else if (y1_draw > g->graph_height + EPSILON)
+      {
+        first_point_is_outside = TRUE;
+        y1_draw = g->graph_height;
+      }
+
 
       // Map [0;UI_HISTO_SAMPLES] to [0;1] and then to g->graph_width.
-      x_draw = ((float)(k+1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
+      x2_draw = ((float)(k+1) / (float)(UI_HISTO_SAMPLES - 1)) * g->graph_width;
       // Map [-2;+2] EV to graph_height, with graph pixel 0 at the top
-      y_draw = (0.5f - (g->gui_curve[k + 1] * p->scale_curve) / 4.0f) * g->graph_height;
+      y2_draw = (0.5f - (g->gui_curve[k + 1] * p->scale_curve) / plus_minus_range) * g->graph_height;
 
-      cairo_line_to(g->cr, x_draw, y_draw);
+      if (y2_draw < 0.0f - EPSILON)
+      {
+        if (first_point_is_outside)
+          // both points are outside : skip drawing
+          continue;
+        else
+          y2_draw = 0.0f;
+      }
+      else if (y2_draw > g->graph_height + EPSILON)
+      {
+        if (first_point_is_outside)
+          // both points are outside : skip drawing
+          continue;
+        else
+          y2_draw = g->graph_height;
+      }
+
+      cairo_move_to(g->cr, x1_draw, y1_draw);
+      cairo_line_to(g->cr, x2_draw, y2_draw);
       cairo_stroke(g->cr);
     }
   }
@@ -4575,7 +5001,7 @@ static gboolean _area_draw(GtkWidget *widget,
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
       const float y = 0.5f -
         g->gui_curve[(int)CLAMP(((UI_HISTO_SAMPLES - 1) * g->area_x / g->graph_width),
-                              0, UI_HISTO_SAMPLES - 1)] / 4.0f;
+                              0, UI_HISTO_SAMPLES - 1)] / plus_minus_range;
       cairo_arc(g->cr, g->area_x, y * g->graph_height, radius, 0, 2. * M_PI);
       set_color(g->cr, darktable.bauhaus->graph_fg);
       cairo_stroke(g->cr);
@@ -4617,6 +5043,7 @@ static gboolean _area_enter_leave_notify(GtkWidget *widget,
                                          GdkEventCrossing *event,
                                          dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return FALSE;
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
 
@@ -4650,6 +5077,7 @@ static gboolean _area_button_press(GtkWidget *widget,
                                    GdkEventButton *event,
                                    dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return FALSE;
   if(darktable.gui->reset) return TRUE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -4704,6 +5132,7 @@ static gboolean _area_motion_notify(GtkWidget *widget,
                                     GdkEventMotion *event,
                                     dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return FALSE;
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
 
@@ -4734,19 +5163,18 @@ static gboolean _area_motion_notify(GtkWidget *widget,
   g->area_active_node = -1;
 
   // Search if cursor is close to a node
-  if(g->valid_nodes_x)
+
+  const float radius_threshold = fabsf(g->nodes_x[1] - g->nodes_x[0]) * 0.45f;
+  for(int i = 0; i < NUM_SLIDERS; ++i)
   {
-    const float radius_threshold = fabsf(g->nodes_x[1] - g->nodes_x[0]) * 0.45f;
-    for(int i = 0; i < NUM_SLIDERS; ++i)
+    const float delta_x = fabsf(g->area_x - g->nodes_x[i]);
+    if(delta_x < radius_threshold)
     {
-      const float delta_x = fabsf(g->area_x - g->nodes_x[i]);
-      if(delta_x < radius_threshold)
-      {
-        g->area_active_node = i;
-        g->area_cursor_valid = TRUE;
-      }
+      g->area_active_node = i;
+      g->area_cursor_valid = TRUE;
     }
   }
+
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -4757,6 +5185,7 @@ static gboolean _area_button_release(GtkWidget *widget,
                                      GdkEventButton *event,
                                      dt_iop_module_t *self)
 {
+  if(!self || !self->gui_data) return FALSE;
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
 
@@ -4794,28 +5223,29 @@ static gboolean _area_scroll(GtkWidget *widget,
   return !dt_gui_ignore_scroll(event);
 }
 
-static gboolean _warning_icon_draw(GtkWidget *widget,
-                           cairo_t *cr,
-                           dt_iop_module_t *self)
-{
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+// static gboolean _warning_icon_draw(GtkWidget *widget,
+//                            cairo_t *cr,
+//                            dt_iop_module_t *self)
+// {
+//   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if (g->warning_icon_active)
-  {
-    int h = gtk_widget_get_allocated_height(widget);
-    int s = MIN(gtk_widget_get_allocated_width(widget), h);
-    int v_margin = (h - s) / 2;
+//   if (g->warning_icon_active)
+//   {
+//     int h = gtk_widget_get_allocated_height(widget);
+//     int s = MIN(gtk_widget_get_allocated_width(widget), h);
+//     int v_margin = (h - s) / 2;
 
-    cairo_set_source_rgb(cr, 0.75, 0.50, 0.);
-    dtgtk_cairo_paint_gamut_check(cr, 0.1 * s, v_margin + 0.1 * s, 0.8 * s, 0.8 * s, 0, NULL);
-  }
-  return TRUE;
-}
+//     cairo_set_source_rgb(cr, 0.75, 0.50, 0.);
+//     dtgtk_cairo_paint_gamut_check(cr, 0.1 * s, v_margin + 0.1 * s, 0.8 * s, 0.8 * s, 0, NULL);
+//   }
+//   return TRUE;
+// }
 
 static gboolean _notebook_button_press(GtkWidget *widget,
                                        GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
+  if(!self) return FALSE;
   if(darktable.gui->reset) return TRUE;
 
   // Give focus to module
@@ -4880,11 +5310,35 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
+  dt_iop_toneequalizer_params_t *p = self->params;
+
   // now that the preview pipe is termintated, set back the distort signal to catch
   // any new changes from a module doing distortion. this signal has been disconnected
   // at the time the DT_SIGNAL_DEVELOP_DISTORT has been handled (see ) and a full
   // reprocess of the preview has been scheduled.
   _set_distort_signal(self);
+
+  // If auto-align is enabled and PREVIEW has computed new values, update params
+  dt_iop_gui_enter_critical_section(self);
+
+  if (!g->prv_luminance_valid) {
+    printf("DEBUG: preview pipe finished callback: no valid luminance data\n");
+  }
+
+  if(p->auto_align_enabled && g->prv_luminance_valid)
+  {
+    // Copy the temporary values computed in PREVIEW to params
+    p->post_scale_base = g->temp_post_scale_base;
+    p->post_shift_base = g->temp_post_shift_base;
+
+    // Update button tooltips with the new values
+    fill_button_tooltip(g->align_button, p->post_scale_base, p->post_shift_base, self);
+    fill_button_tooltip(g->shift_button, p->post_scale_base, p->post_shift_base, self);
+
+    // Mark that we need to recompute the histogram/LUT with new alignment
+    g->gui_histogram_valid = FALSE;
+  }
+  dt_iop_gui_leave_critical_section(self);
 
   _switch_cursors(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -4894,9 +5348,9 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
 static void _develop_ui_pipe_finished_callback(gpointer instance,
                                                dt_iop_module_t *self)
 {
-#ifdef MF_DEBUG
+
   printf("ui pipe finished callback\n");
-#endif
+
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
@@ -4916,6 +5370,159 @@ void gui_reset(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+
+static void _histogram_mode_cycle(GtkWidget *button, dt_iop_toneequalizer_gui_data_t *g) {
+  if(!g)
+  {
+    printf("Error: GUI data is NULL in histogram mode cycle\n");
+    return;
+  }
+
+  // Determine which button was clicked and cycle to next
+  ++darktable.gui->reset;
+  if(button == g->histogram_mode_button_linear)
+  {
+    g->histogram_scale_mode = HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER;
+    gtk_widget_hide(g->histogram_mode_button_linear);
+    gtk_widget_show(g->histogram_mode_button_ignore);
+    gtk_widget_hide(g->histogram_mode_button_log);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->histogram_mode_button_ignore), TRUE);
+  }
+  else if(button == g->histogram_mode_button_ignore)
+  {
+    g->histogram_scale_mode = HISTOGRAM_SCALE_LOG;
+    gtk_widget_hide(g->histogram_mode_button_linear);
+    gtk_widget_hide(g->histogram_mode_button_ignore);
+    gtk_widget_show(g->histogram_mode_button_log);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->histogram_mode_button_log), TRUE);
+  }
+  else if(button == g->histogram_mode_button_log)
+  {
+    g->histogram_scale_mode = HISTOGRAM_SCALE_LINEAR;
+    gtk_widget_show(g->histogram_mode_button_linear);
+    gtk_widget_hide(g->histogram_mode_button_ignore);
+    gtk_widget_hide(g->histogram_mode_button_log);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->histogram_mode_button_linear), TRUE);
+  }
+  --darktable.gui->reset;
+}
+
+static void _histogram_mode_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(!self || !self->gui_data) return;
+  if(darktable.gui->reset) return;
+
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  _histogram_mode_cycle(button, g);
+
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+static void _histogram_range_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(!self || !self->gui_data) return;
+  if(darktable.gui->reset) return;
+
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+
+  // Toggle between 2 and 4
+  g->histogram_vrange = (g->histogram_vrange == 2) ? 4 : 2;
+
+  // Update button label
+  char label[8];
+  snprintf(label, sizeof(label), "%d", g->histogram_vrange);
+  gtk_button_set_label(GTK_BUTTON(button), label);
+
+  // Redraw the graph
+  g->graph_valid = FALSE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  printf("Range button clicked\n");
+}
+
+static gboolean _histogram_hq_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(!self || !self->gui_data) return FALSE;
+  if(darktable.gui->reset) return FALSE;
+  if(event->type != GDK_BUTTON_PRESS) return FALSE;
+
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+
+  // Toggle HQ display
+  g->histogram_show_hq = !g->histogram_show_hq;
+
+  // Update button label
+  gtk_button_set_label(GTK_BUTTON(button), g->histogram_show_hq ? "HQ" : "LQ");
+
+  // Redraw graph
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+
+  return TRUE;
+}
+
+static gboolean _histogram_eventbox_enter(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  gtk_widget_show(g->button_box);
+
+  // Show the correct scale button based on g->histogram_scale_mode
+  switch(g->histogram_scale_mode) {
+    case HISTOGRAM_SCALE_LINEAR:
+      gtk_widget_show(g->histogram_mode_button_linear);
+      break;
+    case HISTOGRAM_SCALE_LINEAR_IGNORE_BORDER:
+      gtk_widget_show(g->histogram_mode_button_ignore);
+      break;
+    case HISTOGRAM_SCALE_LOG:
+      gtk_widget_show(g->histogram_mode_button_log);
+      break;
+  }
+
+  gtk_widget_show(g->histogram_range_button);
+
+  // Only show HQ button if in late scaling mode
+  const gboolean hq = darktable.develop->late_scaling.enabled;
+  if(hq)
+  {
+    gtk_widget_show(g->histogram_hq_button);
+    // Update button label based on current state
+    gtk_button_set_label(GTK_BUTTON(g->histogram_hq_button),
+                         g->histogram_show_hq ? "HQ" : "LQ");
+  }
+
+  // Show align button if re-alignment is needed
+  if (g->post_realign_required && g->last_align_button != LAST_ALIGN_NONE)
+    gtk_widget_show(g->histogram_align_button);
+
+  return FALSE;
+}
+
+static gboolean _histogram_eventbox_leave(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+{
+  if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
+  {
+    if(!self || !self->gui_data) return FALSE;
+    dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+    gtk_widget_hide(g->button_box);
+    gtk_widget_hide(g->histogram_mode_button_linear);
+    gtk_widget_hide(g->histogram_mode_button_ignore);
+    gtk_widget_hide(g->histogram_mode_button_log);
+    gtk_widget_hide(g->histogram_range_button);
+    gtk_widget_hide(g->histogram_hq_button);
+    gtk_widget_hide(g->histogram_align_button);
+  }
+  return FALSE;
+}
+
+static void _dtgtk_cairo_paint_refresh_warning_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  // Set the warning color
+  cairo_set_source_rgba(cr, warning_color.red, warning_color.green, warning_color.blue, warning_color.alpha);
+
+  // Call the original refresh paint function with the warning color already set
+  dtgtk_cairo_paint_refresh(cr, x, y, w, h, flags, data);
+}
+
 // empty marker function to make navigating the function list easier
 __attribute__((unused)) static void GUI_INIT_MARKER() {}
 
@@ -4928,13 +5535,6 @@ void gui_init(dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
     0,
     "plugins/darkroom/toneequal/graphheight"));
-
-  // Main Drawing area
-  GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // for CSS size
-  gtk_box_pack_start(GTK_BOX(wrapper), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  g_object_set_data(G_OBJECT(wrapper), "iop-instance", self);
-  gtk_widget_set_name(GTK_WIDGET(wrapper), "toneeqgraph");
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(wrapper), NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
@@ -4956,6 +5556,100 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_area_scroll), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
+  const int button_size = DT_PIXEL_APPLY_DPI(18);
+
+  // Create button box (horizontal box for all buttons)
+  g->button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  gtk_widget_set_valign(g->button_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(g->button_box, GTK_ALIGN_START);
+
+  const int left_margin = DT_PIXEL_APPLY_DPI(0);  // Will be calculated in _init_drawing
+  const int top_margin = DT_PIXEL_APPLY_DPI(0);   // Will be calculated in _init_drawing
+
+  gtk_widget_set_margin_start(g->button_box, left_margin);
+  gtk_widget_set_margin_top(g->button_box, top_margin);
+  dt_gui_add_class(g->button_box, "dt_transparent_background");
+
+  // Align button - leftmost
+  g->histogram_align_button = dtgtk_togglebutton_new(_dtgtk_cairo_paint_refresh_warning_color, CPF_NONE, NULL);
+  gtk_widget_set_size_request(g->histogram_align_button, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_align_button, _("align histogram"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_align_button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_align_button), "button-press-event",
+                   G_CALLBACK(_re_adjust_alignment), self);
+
+  // FIXME: Doing this only to make the button look nice (not transparent)
+  ++darktable.gui->reset;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->histogram_align_button), TRUE);
+  --darktable.gui->reset;
+
+  // HQ button
+  g->histogram_hq_button = gtk_toggle_button_new_with_label("LQ");
+  gtk_widget_set_size_request(g->histogram_hq_button, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_hq_button, _("toggle between preview and high-quality histogram"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_hq_button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_hq_button), "button-press-event",
+                   G_CALLBACK(_histogram_hq_clicked), self);
+
+  // Range button
+  g->histogram_range_button = gtk_button_new_with_label("2");
+  gtk_widget_set_size_request(g->histogram_range_button, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_range_button, _("toggle y-axis range"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_range_button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_range_button), "button-press-event",
+                   G_CALLBACK(_histogram_range_clicked), self);
+
+  // Create 3 scale buttons - packed left to right like other buttons
+  g->histogram_mode_button_linear = dtgtk_togglebutton_new(dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
+  gtk_widget_set_size_request(g->histogram_mode_button_linear, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_mode_button_linear, _("linear histogram"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_mode_button_linear, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_mode_button_linear), "button-press-event",
+                   G_CALLBACK(_histogram_mode_clicked), self);
+
+  g->histogram_mode_button_ignore = dtgtk_togglebutton_new(dtgtk_cairo_paint_linear_scale_ignore_border, CPF_NONE, NULL);
+  gtk_widget_set_size_request(g->histogram_mode_button_ignore, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_mode_button_ignore, _("linear histogram (ignore border bins)"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_mode_button_ignore, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_mode_button_ignore), "button-press-event",
+                   G_CALLBACK(_histogram_mode_clicked), self);
+
+  g->histogram_mode_button_log = dtgtk_togglebutton_new(dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
+  gtk_widget_set_size_request(g->histogram_mode_button_log, button_size, button_size);
+  gtk_widget_set_tooltip_text(g->histogram_mode_button_log, _("logarithmic histogram"));
+  gtk_box_pack_start(GTK_BOX(g->button_box), g->histogram_mode_button_log, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->histogram_mode_button_log), "button-press-event",
+                   G_CALLBACK(_histogram_mode_clicked), self);
+
+  // To get all histogram mode buttons into the correct initial state,
+  // we call the button that is "1 click before" what we want.
+  _histogram_mode_cycle(g->histogram_mode_button_linear, g);
+
+  // Hide button box initially (will show on mouseover)
+  gtk_widget_set_no_show_all(g->button_box, TRUE);
+
+  // Create overlay
+  GtkWidget *histogram_overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(histogram_overlay), GTK_WIDGET(g->area));
+  gtk_overlay_add_overlay(GTK_OVERLAY(histogram_overlay), g->button_box);
+
+  // Event box to capture enter/leave events
+  GtkWidget *histogram_eventbox = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(histogram_eventbox), histogram_overlay);
+  gtk_widget_add_events(histogram_eventbox, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+
+  g_signal_connect(G_OBJECT(histogram_eventbox), "enter-notify-event",
+                  G_CALLBACK(_histogram_eventbox_enter), self);
+  g_signal_connect(G_OBJECT(histogram_eventbox), "leave-notify-event",
+                  G_CALLBACK(_histogram_eventbox_leave), self);
+
+  // Main Drawing area wrapper
+  GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // for CSS size
+  gtk_box_pack_start(GTK_BOX(wrapper), histogram_eventbox, TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(wrapper), "iop-instance", self);
+  gtk_widget_set_name(GTK_WIDGET(wrapper), "toneeqgraph");
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(wrapper), NULL);
+
   // Notebook (tabs)
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
@@ -4967,38 +5661,27 @@ void gui_init(dt_iop_module_t *self)
 
   // Row with align button
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *spacer = gtk_label_new(NULL);
-  GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  g->align_button = gtk_button_new_with_label(N_("align"));
-  gtk_widget_set_tooltip_text
-    (g->align_button,
-    _("ctrl-click to set alignment to 0."));
+  g->align_button = gtk_toggle_button_new_with_label(N_("fully align"));
+  fill_button_tooltip(g->align_button, 0.0f, 0.0f, self);
   g_signal_connect(g->align_button, "button-press-event", G_CALLBACK(_auto_adjust_alignment), self);
 
-  g->warning_icon_area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  // gtk_widget_set_vexpand(GTK_WIDGET(g->warning_icon_area), TRUE);
-  g_signal_connect(G_OBJECT(g->warning_icon_area), "draw", G_CALLBACK(_warning_icon_draw), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->warning_icon_area), 20, -1);
+  g->shift_button = gtk_toggle_button_new_with_label(N_("align exposure/shift"));
+  fill_button_tooltip(g->shift_button, 0.0f, 0.0f, self);
+  g_signal_connect(g->shift_button, "button-press-event", G_CALLBACK(_auto_adjust_alignment), self);
 
-  GtkWidget *shift_label = gtk_label_new(_("base shift:"));
-  g->label_base_shift = GTK_LABEL(gtk_label_new("+0.00"));
+  // Calculate the width of the longer label and set both buttons to that width
+  PangoLayout *layout = gtk_widget_create_pango_layout(g->shift_button, gtk_button_get_label(GTK_BUTTON(g->shift_button)));
+  int w, h;
+  pango_layout_get_pixel_size(layout, &w, &h);
+  g_object_unref(layout);
 
-  GtkWidget *scale_label = gtk_label_new(_(" scale:"));
-  g->label_base_scale = GTK_LABEL(gtk_label_new("+0.00"));
+  w += 20; // Add padding for button borders/margins
+  gtk_widget_set_size_request(g->align_button, w, -1);
+  gtk_widget_set_size_request(g->shift_button, w, -1);
 
-  gtk_box_pack_start(GTK_BOX(lbox), g->align_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(lbox), GTK_WIDGET(g->warning_icon_area), FALSE, FALSE, 2);
-
-  gtk_box_pack_start(GTK_BOX(rbox), shift_label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(g->label_base_shift), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(rbox), scale_label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(g->label_base_scale), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(lbox), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), spacer, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(rbox), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->align_button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->shift_button, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), box, FALSE, FALSE, 0);
 
@@ -5007,7 +5690,7 @@ void gui_init(dt_iop_module_t *self)
   //                    g->pre_processing_label,
   //                    FALSE, FALSE, 0);
 
-  GtkWidget *section_label = dt_ui_section_label_new(C_("section", "manual alignment"));
+  GtkWidget *section_label = dt_ui_section_label_new(C_("section", "custom alignment"));
   gtk_box_pack_start(GTK_BOX(self->widget),
                      section_label,
                      FALSE, FALSE, 0);
@@ -5269,10 +5952,6 @@ void gui_init(dt_iop_module_t *self)
      _("0 disables the quantization.\n"
        "higher values posterize the luminance mask to help the guiding\n"
        "produce piece-wise smooth areas when using high feathering values"));
-
-  // g->version = dt_bauhaus_combobox_from_params(self, "version");
-  // gtk_widget_set_tooltip_text(g->version, _("v2 classic tone equalizer (2018)\n"
-  //                                           "v3 new version from 2025"));
 
 
   // start building top level widget
