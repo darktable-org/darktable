@@ -119,8 +119,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 // B spline filter
 #define FSIZE 5
 
-inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
-                                   const size_t width, const size_t height)
+inline static void _blur_2D_Bspline(const float *const restrict in,
+                                    float *const restrict out,
+                                    const size_t width,
+                                    const size_t height)
 {
   DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
@@ -149,7 +151,9 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
 }
 
 
-static inline void init_kernel(float *const restrict buffer, const size_t width, const size_t height)
+static inline void _init_kernel(float *const restrict buffer,
+                                const size_t width,
+                                const size_t height)
 {
   // init an empty kernel with zeros
   DT_OMP_FOR_SIMD(aligned(buffer:64))
@@ -157,9 +161,13 @@ static inline void init_kernel(float *const restrict buffer, const size_t width,
 }
 
 
-static inline void create_lens_kernel(float *const restrict buffer,
-                                      const size_t width, const size_t height,
-                                      const float n, const float m, const float k, const float rotation)
+static inline void _create_lens_kernel(float *const restrict buffer,
+                                      const size_t width,
+                                      const size_t height,
+                                      const float n,
+                                      const float m,
+                                      const float k,
+                                      const float rotation)
 {
   // n is number of diaphragm blades
   // m is the concavity, aka the number of vertices on straight lines (?)
@@ -191,10 +199,12 @@ static inline void create_lens_kernel(float *const restrict buffer,
     }
 }
 
-
-static inline void create_motion_kernel(float *const restrict buffer,
-                                        const size_t width, const size_t height,
-                                        const float angle, const float curvature, const float offset)
+static inline void _create_motion_kernel(float *const restrict buffer,
+                                         const size_t width,
+                                         const size_t height,
+                                         const float angle,
+                                         const float curvature,
+                                         const float offset)
 {
   // Compute the polynomial params from user params
   const float A = curvature / 2.f;
@@ -251,8 +261,9 @@ static inline void create_motion_kernel(float *const restrict buffer,
 }
 
 
-static inline void create_gauss_kernel(float *const restrict buffer,
-                                       const size_t width, const size_t height)
+static inline void _create_gauss_kernel(float *const restrict buffer,
+                                        const size_t width, 
+                                        const size_t height)
 {
   // This is not optimized. Gauss kernel is separable and can be turned into
   // 2 × 1D convolutions.
@@ -272,9 +283,9 @@ static inline void create_gauss_kernel(float *const restrict buffer,
     }
 }
 
-
-
-static inline void build_gui_kernel(unsigned char *const buffer, const size_t width, const size_t height,
+static inline void _build_gui_kernel(unsigned char *const buffer,
+                                    const size_t width,
+                                    const size_t height,
                                     const dt_iop_blurs_params_t *p)
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
@@ -287,26 +298,26 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
 
   if(p->type == DT_BLUR_LENS)
   {
-    create_lens_kernel(kernel_1, width, height, p->blades, p->concavity, p->linearity, p->rotation);
+    _create_lens_kernel(kernel_1, width, height, p->blades, p->concavity, p->linearity, p->rotation);
 
     // anti-aliasing step
-    blur_2D_Bspline(kernel_1, kernel_2, width, height);
+    _blur_2D_Bspline(kernel_1, kernel_2, width, height);
   }
   else if(p->type == DT_BLUR_MOTION)
   {
-    init_kernel(kernel_1, width, height);
-    create_motion_kernel(kernel_1, width, height, p->angle, p->curvature, p->offset);
+    _init_kernel(kernel_1, width, height);
+    _create_motion_kernel(kernel_1, width, height, p->angle, p->curvature, p->offset);
 
     // anti-aliasing step
-    blur_2D_Bspline(kernel_1, kernel_2, width, height);
+    _blur_2D_Bspline(kernel_1, kernel_2, width, height);
   }
   else if(p->type == DT_BLUR_GAUSSIAN)
   {
-    create_gauss_kernel(kernel_2, width, height);
+    _create_gauss_kernel(kernel_2, width, height);
   }
 
   // Convert to Gtk/Cairo RGBA 8×4 bits
-  DT_OMP_FOR_SIMD(aligned(buffer, kernel_2:64))
+  DT_OMP_FOR()
   for(size_t k = 0; k < height * width; k++)
   {
     buffer[k * 4] = buffer[k * 4 + 1] = buffer[k * 4 + 2] = buffer[k * 4 + 3] = roundf(255.f * kernel_2[k]);
@@ -317,7 +328,7 @@ cleanup:
 }
 
 
-static inline float compute_norm(const float *const buffer, const size_t width, const size_t height)
+static inline float _compute_norm(const float *const buffer, const size_t width, const size_t height)
 {
   float norm = 0.f;
 
@@ -331,7 +342,7 @@ static inline float compute_norm(const float *const buffer, const size_t width, 
 }
 
 
-static inline void normalize(float *const buffer, const size_t width, const size_t height, const float norm)
+static inline void _normalize(float *const buffer, const size_t width, const size_t height, const float norm)
 {
   DT_OMP_FOR_SIMD(aligned(buffer:64))
   for(size_t i = 0; i < width * height; i++)
@@ -341,8 +352,10 @@ static inline void normalize(float *const buffer, const size_t width, const size
 }
 
 
-static inline void build_pixel_kernel(float *const buffer, const size_t width, const size_t height,
-                                      const dt_iop_blurs_params_t *p)
+static inline void _build_pixel_kernel(float *const buffer,
+                                       const size_t width,
+                                       const size_t height,
+                                       const dt_iop_blurs_params_t *p)
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
   if(!kernel_1)
@@ -353,27 +366,27 @@ static inline void build_pixel_kernel(float *const buffer, const size_t width, c
 
   if(p->type == DT_BLUR_LENS)
   {
-    create_lens_kernel(kernel_1, width, height, p->blades, p->concavity, p->linearity, p->rotation + M_PI_F);
+    _create_lens_kernel(kernel_1, width, height, p->blades, p->concavity, p->linearity, p->rotation + M_PI_F);
 
     // anti-aliasing step
-    blur_2D_Bspline(kernel_1, buffer, width, height);
+    _blur_2D_Bspline(kernel_1, buffer, width, height);
   }
   else if(p->type == DT_BLUR_MOTION)
   {
-    init_kernel(kernel_1, width, height);
-    create_motion_kernel(kernel_1, width, height, p->angle + M_PI_F, p->curvature, p->offset);
+    _init_kernel(kernel_1, width, height);
+    _create_motion_kernel(kernel_1, width, height, p->angle + M_PI_F, p->curvature, p->offset);
 
     // anti-aliasing step
-    blur_2D_Bspline(kernel_1, buffer, width, height);
+    _blur_2D_Bspline(kernel_1, buffer, width, height);
   }
   else if(p->type == DT_BLUR_GAUSSIAN)
   {
-    create_gauss_kernel(buffer, width, height);
+    _create_gauss_kernel(buffer, width, height);
   }
 
   // normalize to respect the conservation of energy law
-  const float norm = compute_norm(buffer, width, height);
-  normalize(buffer, width, height, norm);
+  const float norm = _compute_norm(buffer, width, height);
+  _normalize(buffer, width, height, norm);
 
   dt_free_align(kernel_1);
 }
@@ -541,7 +554,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const size_t kernel_width = 2 * radius + 1;
 
   float *const restrict kernel = dt_alloc_align_float(kernel_width * kernel_width);
-  build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+  _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
 
   DT_OMP_FOR(collapse(2))
   for(int i = 0; i < roi_out->height; i++)
@@ -619,7 +632,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   float *const restrict kernel = dt_alloc_align_float(kernel_width * kernel_width);
   if(kernel)
   {
-    build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+    _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
     kernel_cl = dt_opencl_copy_host_to_device(devid, kernel, kernel_width, kernel_width, sizeof(float));
     if(kernel_cl)
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_blurs_convolve, width, height,
@@ -695,12 +708,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // update kernel view
   if(g->img_cached)
   {
-    build_gui_kernel(g->img, g->img_width, g->img_width, p);
+    _build_gui_kernel(g->img, g->img_width, g->img_width, p);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 }
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_iop_module_t *self)
+static gboolean _dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = self->gui_data;
   const dt_iop_blurs_params_t *p = self->params;
@@ -722,7 +735,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_
     g->img = dt_alloc_align_type(unsigned char, 4 * allocation.width * allocation.width);
     g->img_width = allocation.width;
     g->img_cached = TRUE;
-    build_gui_kernel(g->img, g->img_width, g->img_width, p);
+    _build_gui_kernel(g->img, g->img_width, g->img_width, p);
 
     // Note: if params change, we silently recompute the img in the buffer
     // no need to flush the cache. Flush only if buffer size changes,
@@ -758,7 +771,7 @@ void gui_init(dt_iop_module_t *self)
   g->img_width = 0.f;
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_dt_iop_tonecurve_draw), self);
   self->widget = dt_gui_vbox(g->area);
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
