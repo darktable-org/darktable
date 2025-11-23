@@ -1371,6 +1371,23 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
   return primaries_params;
 }
 
+static void _update_pivot_slider_settings(GtkWidget* const slider,
+                                         const dt_iop_agx_params_t* const p)
+{
+  darktable.gui->reset++;
+
+  const float range = p->range_white_relative_ev - p->range_black_relative_ev;
+
+  dt_bauhaus_slider_set_factor(slider, range);
+  dt_bauhaus_slider_set_offset(slider, p->range_black_relative_ev);
+  // 0 EV default with the new exposure params
+  dt_bauhaus_slider_set_default(slider, -p->range_black_relative_ev / range);
+
+  dt_bauhaus_slider_set(slider, p->curve_pivot_x);
+
+  darktable.gui->reset--;
+}
+
 static void _update_pivot_x(const float old_black_ev, const float old_white_ev, dt_iop_module_t *self, dt_iop_agx_params_t *const p)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1389,14 +1406,7 @@ static void _update_pivot_x(const float old_black_ev, const float old_white_ev, 
   // new_range is ensured to be > 0 due to hard limits on sliders
   p->curve_pivot_x = (clamped_pivot_ev - new_black_ev) / new_range;
 
-  darktable.gui->reset++;
-  GtkWidget* const slider = g->basic_curve_controls.curve_pivot_x;
-  dt_bauhaus_slider_set_factor(slider, new_range);
-  dt_bauhaus_slider_set_offset(slider, new_black_ev);
-  // 0 EV default with the new exposure params
-  dt_bauhaus_slider_set_default(slider, -new_black_ev / new_range);
-  dt_bauhaus_slider_set(slider, p->curve_pivot_x);
-  darktable.gui->reset--;
+  _update_pivot_slider_settings(g->basic_curve_controls.curve_pivot_x, p);
 }
 
 static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self)
@@ -2095,11 +2105,30 @@ static void _update_curve_warnings(dt_iop_module_t *self)
                                     ? dtgtk_cairo_paint_warning : NULL, CPF_ACTIVE, NULL);
 }
 
+static void _update_redraw_dynamic_gui(dt_iop_module_t* const self,
+                                       const dt_iop_agx_gui_data_t* const g,
+                                       const dt_iop_agx_params_t* const p)
+{
+  gtk_widget_set_visible(g->curve_gamma, !p->auto_gamma);
+  gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
+  const gboolean post_curve_primaries_available = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
+  gtk_widget_set_visible(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
+  gtk_widget_set_sensitive(g->set_post_curve_primaries_from_pre_button, post_curve_primaries_available);
+
+  _update_curve_warnings(self);
+
+  // Trigger redraw when any parameter changes
+  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+}
+
 void gui_changed(dt_iop_module_t *self,
                  GtkWidget *widget,
                  void *previous)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
+
+  if (darktable.gui->reset) return;
+
   dt_iop_agx_params_t *p = self->params;
 
   if(widget == g->black_exposure_picker)
@@ -2136,17 +2165,6 @@ void gui_changed(dt_iop_module_t *self,
     darktable.gui->reset--;
   }
 
-  gtk_widget_set_visible(g->curve_gamma, !p->auto_gamma);
-  gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
-  const gboolean post_curve_primaries_available = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
-  gtk_widget_set_visible(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
-  gtk_widget_set_sensitive(g->set_post_curve_primaries_from_pre_button, post_curve_primaries_available);
-
-  _update_curve_warnings(self);
-
-  // Trigger redraw when any parameter changes
-  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
-
   if(g && p->auto_gamma)
   {
     tone_mapping_params_t tone_mapping_params;
@@ -2154,6 +2172,8 @@ void gui_changed(dt_iop_module_t *self,
     _adjust_pivot(self->params, &tone_mapping_params);
     dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
   }
+
+  _update_redraw_dynamic_gui(self, g, p);
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -2179,7 +2199,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (linear output power)"));
   dt_bauhaus_widget_set_quad_tooltip(slider, _("the average luminance of the selected region will be\n"
                                                "used to set the pivot relative to mid-gray,\n"
@@ -2258,7 +2277,6 @@ static void _add_look_sliders(dt_iop_module_t *section)
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   gtk_widget_set_tooltip_text(slider, _("increase to bring hues closer to the original"));
 }
 
@@ -2325,7 +2343,6 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 
   // Shoulder length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_above_pivot");
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2343,7 +2360,6 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2583,12 +2599,10 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_agx_gui_data_t *g = self->gui_data;
-  const dt_iop_agx_params_t *p = self->params;
+  const dt_iop_agx_gui_data_t* const g = self->gui_data;
+  const dt_iop_agx_params_t* const p = self->params;
 
-  const float range = p->range_white_relative_ev - p->range_black_relative_ev;
-  dt_bauhaus_slider_set_factor(g->basic_curve_controls.curve_pivot_x, range);
-  dt_bauhaus_slider_set_offset(g->basic_curve_controls.curve_pivot_x, p->range_black_relative_ev);
+  _update_pivot_slider_settings(g->basic_curve_controls.curve_pivot_x, p);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_gamma),
                                p->auto_gamma);
@@ -2597,8 +2611,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
 
-
-  gui_changed(self, NULL, NULL);
+  _update_redraw_dynamic_gui(self, g, p);
 }
 
 static void _create_primaries_page(dt_iop_module_t *main,
@@ -2825,7 +2838,6 @@ void gui_init(dt_iop_module_t *self)
   // Finally, add the remaining sections to the settings page
   _add_look_box(settings_section, g);
   _create_primaries_page(self, g);
-  gui_update(self);
 }
 
 static void _set_shared_params(dt_iop_agx_params_t *p)
