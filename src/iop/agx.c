@@ -1732,7 +1732,7 @@ void process(dt_iop_module_t *self,
 
   const gboolean base_working_same_profile = pipe_work_profile == base_profile;
 
-  DT_OMP_FOR_SIMD()
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
