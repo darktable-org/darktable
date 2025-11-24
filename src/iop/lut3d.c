@@ -581,7 +581,9 @@ static uint16_t _calculate_clut_haldclut(dt_iop_lut3d_params_t *const p,
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png LUT - level %d", buf_size_lut, level);
-  float *lclut = dt_alloc_align_float(buf_size_lut);
+  // as we use for_each_channel() while reading clut data while doing the _correct variants we must over-allocate
+  // by one float for channel=3
+  float *lclut = dt_alloc_align_float(buf_size_lut+1);
   if(!lclut)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - allocating buffer for png LUT");
@@ -601,6 +603,7 @@ static uint16_t _calculate_clut_haldclut(dt_iop_lut3d_params_t *const p,
     for(size_t i = 0; i < buf_size_lut; ++i)
       lclut[i] = (256.0f * (float)buf[2*i] + (float)buf[2*i+1]) * norm;
   }
+  lclut[buf_size_lut] = 0.0f; // see comment about over-allocation
   dt_free_align(buf);
   *clut = lclut;
   return level;
@@ -1024,7 +1027,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(clut && level)
   {
-    clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level, (void *)clut);
+    clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level + 1, (void *)clut);
     if(clut_cl == NULL)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
