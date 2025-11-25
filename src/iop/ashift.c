@@ -5321,9 +5321,9 @@ static void cropmode_callback(GtkWidget *widget, dt_iop_module_t *self)
   _swap_shadow_crop_box(p,g);
 }
 
-static int _event_fit_v_button_clicked(GtkWidget *widget,
-                                       const GdkEventButton *event,
-                                       dt_iop_module_t *self)
+static gboolean _event_fit_v_button_clicked(GtkWidget *widget,
+                                            const GdkEventButton *event,
+                                            dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -5369,9 +5369,9 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
   return FALSE;
 }
 
-static int _event_fit_h_button_clicked(GtkWidget *widget,
-                                       const GdkEventButton *event,
-                                       dt_iop_module_t *self)
+static gboolean _event_fit_h_button_clicked(GtkWidget *widget,
+                                            const GdkEventButton *event,
+                                            dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -5417,9 +5417,9 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
   return FALSE;
 }
 
-static int _event_fit_both_button_clicked(GtkWidget *widget,
-                                          const GdkEventButton *event,
-                                          dt_iop_module_t *self)
+static gboolean _event_fit_both_button_clicked(GtkWidget *widget,
+                                               const GdkEventButton *event,
+                                               dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -5467,9 +5467,9 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
   return FALSE;
 }
 
-static int _event_structure_auto_clicked(GtkWidget *widget,
-                                         const GdkEventButton *event,
-                                         dt_iop_module_t *self)
+static gboolean _event_structure_auto_clicked(GtkWidget *widget,
+                                              const GdkEventButton *event,
+                                              dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -5856,9 +5856,9 @@ static float log2_curve(const float inval, const dt_bauhaus_curve_t dir)
   return outval;
 }
 
-static int _event_structure_quad_clicked(GtkWidget *widget,
-                                         GdkEventButton *event,
-                                         dt_iop_module_t *self)
+static gboolean _event_structure_quad_clicked(GtkWidget *widget,
+                                              GdkEventButton *event,
+                                              dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return FALSE;
@@ -5884,9 +5884,9 @@ static int _event_structure_quad_clicked(GtkWidget *widget,
   return TRUE;
 }
 
-static int _event_structure_lines_clicked(GtkWidget *widget,
-                                          GdkEventButton *event,
-                                          dt_iop_module_t *self)
+static gboolean _event_structure_lines_clicked(GtkWidget *widget,
+                                               GdkEventButton *event,
+                                               dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return FALSE;
@@ -5970,7 +5970,7 @@ void gui_init(dt_iop_module_t *self)
   dt_shortcut_register(ac, 0, 0, GDK_KEY_r, GDK_MOD1_MASK);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
-  g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
+  g_signal_connect(g->cropmode, "value-changed",
                    G_CALLBACK(cropmode_callback), self);
 
   GtkWidget *main_box = self->widget;
@@ -6111,25 +6111,25 @@ void gui_init(dt_iop_module_t *self)
     (g->structure_quad, _("manually define perspective rectangle"));
   gtk_widget_set_tooltip_text(g->structure_lines, _("manually draw structure lines"));
 
-  g_signal_connect(G_OBJECT(g->fit_v), "button-press-event",
+  g_signal_connect(g->fit_v, "button-press-event",
                    G_CALLBACK(_event_fit_v_button_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_h), "button-press-event",
+                   self);
+  g_signal_connect(g->fit_h, "button-press-event",
                    G_CALLBACK(_event_fit_h_button_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_both), "button-press-event",
+                   self);
+  g_signal_connect(g->fit_both, "button-press-event",
                    G_CALLBACK(_event_fit_both_button_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure_quad), "button-press-event",
+                   self);
+  g_signal_connect(g->structure_quad, "button-press-event",
                    G_CALLBACK(_event_structure_quad_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure_lines), "button-press-event",
+                   self);
+  g_signal_connect(g->structure_lines, "button-press-event",
                    G_CALLBACK(_event_structure_lines_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure_auto), "button-press-event",
+                   self);
+  g_signal_connect(g->structure_auto, "button-press-event",
                    G_CALLBACK(_event_structure_auto_clicked),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
+                   self);
+  g_signal_connect(self->widget, "draw", G_CALLBACK(_event_draw), self);
 
   dt_action_define_iop(self, N_("fit"),
                        N_("vertical"), g->fit_v, &dt_action_def_button);

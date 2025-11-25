@@ -124,7 +124,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
-static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
+static void _lib_duplicate_delete(GtkWidget *button, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
   const dt_imgid_t imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
@@ -157,9 +157,9 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
-static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
-                                                GdkEventButton *event,
-                                                dt_lib_module_t *self)
+static gboolean _lib_duplicate_thumb_press_callback(GtkWidget *widget,
+                                                    GdkEventButton *event,
+                                                    dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
@@ -178,16 +178,18 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     }
   }
+  return TRUE;
 }
 
-static void _lib_duplicate_thumb_release_callback(GtkWidget *widget,
-                                                  GdkEventButton *event,
-                                                  dt_lib_module_t *self)
+static gboolean _lib_duplicate_thumb_release_callback(GtkWidget *widget,
+                                                      GdkEventButton *event,
+                                                      dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = self->data;
 
   d->imgid = NO_IMGID;
   dt_control_queue_redraw_center();
+  return TRUE;
 }
 
 void view_leave(struct dt_lib_module_t *self,
@@ -304,9 +306,9 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     if(imgid != dev->image_storage.id)
     {
-      g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
+      g_signal_connect(thumb->w_main, "button-press-event",
                        G_CALLBACK(_lib_duplicate_thumb_press_callback), self);
-      g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event",
+      g_signal_connect(thumb->w_main, "button-release-event",
                        G_CALLBACK(_lib_duplicate_thumb_release_callback), self);
     }
 
@@ -319,7 +321,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_hexpand(tb, TRUE);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_add_events(tb, GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect(G_OBJECT(tb), "focus-out-event",
+    g_signal_connect(tb, "focus-out-event",
                      G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     gtk_widget_set_hexpand(lb, TRUE);
@@ -327,7 +329,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_tooltip_text(bt, _("delete this duplicate"));
     //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
-    g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
+    g_signal_connect(bt, "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
     gtk_grid_attach(GTK_GRID(hb), thumb->w_main, 0, 0, 1, 2);
     gtk_grid_attach(GTK_GRID(hb), bt, 2, 0, 1, 1);

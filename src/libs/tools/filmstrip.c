@@ -91,7 +91,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "draw",
+  g_signal_connect(self->widget, "draw",
                    G_CALLBACK(_lib_filmstrip_draw_callback), self);
 
   /* initialize view manager proxy */

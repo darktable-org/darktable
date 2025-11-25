@@ -1798,7 +1798,7 @@ void gui_init(dt_iop_module_t *self)
        " and chroma tabs"));
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
+  g_signal_connect(g->channel_tabs, "switch-page", G_CALLBACK(tab_switch), self);
 
   // graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
@@ -1809,18 +1809,18 @@ void gui_init(dt_iop_module_t *self)
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"),
                        GTK_WIDGET(g->area), &_action_def_equalizer);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "draw", G_CALLBACK(area_draw), self);
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(g->area, "button-release-event",
                    G_CALLBACK(area_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event",
+  g_signal_connect(g->area, "enter-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(area_scrolled), self);
 
   self->widget = dt_gui_vbox(g->channel_tabs, g->area);
@@ -1828,7 +1828,7 @@ void gui_init(dt_iop_module_t *self)
   // mix slider
   g->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
   gtk_widget_set_tooltip_text(g->mix, _("make effect stronger or weaker"));
-  g_signal_connect(G_OBJECT(g->mix), "value-changed", G_CALLBACK(mix_callback), self);
+  g_signal_connect(g->mix, "value-changed", G_CALLBACK(mix_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

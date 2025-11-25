@@ -1928,7 +1928,7 @@ static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
   g_object_set_data(G_OBJECT(g->graph_drawing_area), "iop-instance", self);
   dt_action_define_iop(self, N_("curve"), N_("graph"), GTK_WIDGET(g->graph_drawing_area), NULL);
   gtk_widget_set_can_focus(GTK_WIDGET(g->graph_drawing_area), TRUE);
-  g_signal_connect(G_OBJECT(g->graph_drawing_area), "draw", G_CALLBACK(_agx_draw_curve), self);
+  g_signal_connect(g->graph_drawing_area, "draw", G_CALLBACK(_agx_draw_curve), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->graph_drawing_area), _("tone mapping curve"));
 
   // Pack drawing area at the top
@@ -2054,7 +2054,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g, d
 
   g->btn_read_exposure = dtgtk_button_new(dtgtk_cairo_paint_camera, 0, NULL);
   gtk_widget_set_tooltip_text(g->btn_read_exposure, _("read exposure from metadata and exposure module"));
-  g_signal_connect(G_OBJECT(g->btn_read_exposure), "clicked", G_CALLBACK(_read_exposure_params_callback), real_self);
+  g_signal_connect(g->btn_read_exposure, "clicked", G_CALLBACK(_read_exposure_params_callback), real_self);
   dt_action_define_iop(real_self, N_("exposure range"), N_("read exposure"), g->btn_read_exposure, &dt_action_def_button);
   dt_gui_box_add(g->range_exposure_picker_group, g->btn_read_exposure);
 

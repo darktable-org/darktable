@@ -1270,7 +1270,7 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("L"), _("tonecurve for L channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("a"), _("tonecurve for a channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("b"), _("tonecurve for b channel"));
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
+  g_signal_connect(g->channel_tabs, "switch-page", G_CALLBACK(tab_switch), self);
 
   g->colorpicker = dt_color_picker_new(self,
                                        DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO,
@@ -1294,16 +1294,16 @@ void gui_init(dt_iop_module_t *self)
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(dt_iop_tonecurve_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(dt_iop_tonecurve_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(_scrolled), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event",
+  g_signal_connect(g->area, "key-press-event",
                    G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
   g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
@@ -1313,7 +1313,7 @@ void gui_init(dt_iop_module_t *self)
        "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
        "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
        "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
-  g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
+  g_signal_connect(g->interpolator, "value-changed",
                    G_CALLBACK(interpolator_callback), self);
 
   dt_gui_box_add(self->widget, g->area, g->interpolator);
@@ -1325,7 +1325,7 @@ void gui_init(dt_iop_module_t *self)
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
   dt_gui_box_add(self->widget, g->logbase);
-  g_signal_connect(G_OBJECT(g->logbase), "value-changed",
+  g_signal_connect(g->logbase, "value-changed",
                    G_CALLBACK(logbase_callback), self);
 
   g->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));

@@ -460,7 +460,7 @@ void dt_gui_add_help_link(GtkWidget *widget,
 char *dt_gui_get_help_url(GtkWidget *widget);
 void dt_gui_dialog_add_help(GtkDialog *dialog,
                             const char *topic);
-void dt_gui_show_help(GtkWidget *widget);
+void dt_gui_show_help(GtkWidget *widget, gpointer user_data);
 
 // load a CSS theme
 void dt_gui_load_theme(const char *theme); // read them and add user tweaks
@@ -521,7 +521,7 @@ gboolean dt_gui_search_start(GtkWidget *widget,
 
 // event handler for "stop-search" of GtkSearchEntry
 void dt_gui_search_stop(GtkSearchEntry *entry,
-                        GtkWidget *widget);
+                        GtkTreeView *widget);
 
 // create a collapsible section, insert in parent, return the container
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,

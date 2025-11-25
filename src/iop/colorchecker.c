@@ -1537,11 +1537,11 @@ void gui_init(dt_iop_module_t *self)
                         GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(g->area), "draw",
+  g_signal_connect(g->area, "draw",
                    G_CALLBACK(checker_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(checker_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(checker_motion_notify), self);
 
   g->patch = 0;
@@ -1615,17 +1615,17 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_gui_vbox(g->area, g->combobox_patch, g->scale_L, g->scale_a,
                                       g->scale_b, g->scale_C, g->combobox_target);
 
-  g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed",
+  g_signal_connect(g->combobox_patch, "value-changed",
                    G_CALLBACK(patch_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_L), "value-changed",
+  g_signal_connect(g->scale_L, "value-changed",
                    G_CALLBACK(target_L_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_a), "value-changed",
+  g_signal_connect(g->scale_a, "value-changed",
                    G_CALLBACK(target_a_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_b), "value-changed",
+  g_signal_connect(g->scale_b, "value-changed",
                    G_CALLBACK(target_b_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_C), "value-changed",
+  g_signal_connect(g->scale_C, "value-changed",
                    G_CALLBACK(target_C_callback), self);
-  g_signal_connect(G_OBJECT(g->combobox_target), "value-changed",
+  g_signal_connect(g->combobox_target, "value-changed",
                    G_CALLBACK(target_callback), self);
 }
 

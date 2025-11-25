@@ -862,7 +862,7 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = dt_gui_vbox(g->output_intent, g->output_profile);
 
-  g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
+  g_signal_connect(g->output_profile, "value-changed",
                    G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!

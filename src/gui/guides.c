@@ -236,7 +236,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self,
   dt_bauhaus_slider_set(grid_horizontal,
                         dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
-  g_signal_connect(G_OBJECT(grid_horizontal), "value-changed",
+  g_signal_connect(grid_horizontal, "value-changed",
                    G_CALLBACK(_grid_horizontal_changed), user_data);
 
   GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(NULL, 0, 12, 1, 3, 0);
@@ -246,7 +246,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self,
   key = _conf_get_path("global", "grid_nbv", NULL);
   dt_bauhaus_slider_set(grid_vertical, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
-  g_signal_connect(G_OBJECT(grid_vertical), "value-changed",
+  g_signal_connect(grid_vertical, "value-changed",
                    G_CALLBACK(_grid_vertical_changed), user_data);
 
   GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(NULL, 0, 10, 1, 3, 0);
@@ -256,7 +256,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self,
   key = _conf_get_path("global", "grid_subdiv", NULL);
   dt_bauhaus_slider_set(grid_subdiv, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
-  g_signal_connect(G_OBJECT(grid_subdiv), "value-changed",
+  g_signal_connect(grid_subdiv, "value-changed",
                    G_CALLBACK(_grid_subdiv_changed), user_data);
 
   return dt_gui_vbox(grid_horizontal, grid_vertical, grid_subdiv);
@@ -802,7 +802,7 @@ static void _settings_colors_changed(GtkWidget *combo,
 }
 
 static void _settings_contrast_changed(GtkWidget *slider,
-                                       _guides_settings_t *gw)
+                                       gpointer user_data)
 {
   dt_conf_set_float("darkroom/ui/overlay_contrast", dt_bauhaus_slider_get(slider));
   dt_guides_set_overlay_colors();
@@ -865,7 +865,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self,
      _("set the contrast between the lightest and darkest part of the guide overlays"));
   dt_bauhaus_slider_set(contrast,
                         dt_conf_get_float("darkroom/ui/overlay_contrast"));
-  g_signal_connect(G_OBJECT(contrast), "value-changed",
+  g_signal_connect(contrast, "value-changed",
                    G_CALLBACK(_settings_contrast_changed), NULL);
 
   GtkWidget *vbox = dt_gui_vbox(lb, gw->g_widgets, gw->g_flip, darktable.view_manager->guides,
@@ -984,7 +984,7 @@ void dt_guides_add_module_menuitem(void *menu,
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_conf_get_bool(key));
   g_free(key);
-  g_signal_connect(G_OBJECT(mi), "activate",
+  g_signal_connect(mi, "activate",
                    G_CALLBACK(_settings_autoshow_change), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
@@ -1036,14 +1036,14 @@ void dt_guides_init_module_widget(GtkWidget *iopw,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb), dt_conf_get_bool(key));
   g_free(key);
 
-  g_signal_connect(G_OBJECT(cb), "toggled",
+  g_signal_connect(cb, "toggled",
                    G_CALLBACK(_settings_autoshow_change2), module);
   gtk_widget_set_tooltip_text(cb, _("show guide overlay when this module has focus"));
   GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, 0, NULL);
   gtk_widget_set_tooltip_text
     (ic, _("change global guide settings\nnote that these settings are applied globally "
            "and will impact any module that shows guide overlays"));
-  g_signal_connect(G_OBJECT(ic), "clicked",
+  g_signal_connect(ic, "clicked",
                    G_CALLBACK(_settings_autoshow_menu), module);
 
   GtkWidget *box = dt_gui_hbox(dt_gui_expand(cb), ic);

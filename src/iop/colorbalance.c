@@ -1814,8 +1814,8 @@ static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_i
 #define HSL_CALLBACK(which)                                                             \
 static void which##_callback(GtkWidget *slider, dt_iop_module_t *self)                  \
 {                                                                                       \
-  dt_iop_colorbalance_params_t *p = self->params;       \
-  dt_iop_colorbalance_gui_data_t *g = self->gui_data; \
+  dt_iop_colorbalance_params_t *p = self->params;                                       \
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;                                   \
                                                                                         \
   if(darktable.gui->reset) return;                                                      \
                                                                                         \
@@ -1861,7 +1861,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->controls, _("both"));
   dt_gui_box_add(self->widget, g->controls);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
-  g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
+  g_signal_connect(g->controls, "value-changed", G_CALLBACK(controls_callback), self);
 
   const char *mode = dt_conf_get_string_const("plugins/darkroom/colorbalance/controls");
   dt_bauhaus_combobox_set(g->controls, !g_strcmp0(mode, "RGBL") ? RGBL :
@@ -1898,7 +1898,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->main_label, _("click to cycle layout"));
   GtkWidget *main_label_box = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(main_label_box), g->main_label);
-  g_signal_connect(G_OBJECT(main_label_box), "button-release-event", G_CALLBACK(_cycle_layout_callback), self);
+  g_signal_connect(main_label_box, "button-release-event", G_CALLBACK(_cycle_layout_callback), self);
 
   g->main_box = gtk_event_box_new(); // is filled in _configure_slider_blocks
 
@@ -1944,7 +1944,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.830f, 1.0f, 0.0f, 1.0f);     \
   dt_bauhaus_slider_set_stop(g->hue_##which, 1.0f,   1.0f, 0.0f, 0.0f);     \
   gtk_widget_set_tooltip_text(g->hue_##which, _("select the hue"));         \
-  g_signal_connect(G_OBJECT(g->hue_##which), "value-changed",               \
+  g_signal_connect(g->hue_##which, "value-changed",                         \
                    G_CALLBACK(which##_callback), self);                     \
                                                                             \
   g->sat_##which = dt_bauhaus_slider_new_with_range_and_feedback(self,      \
@@ -1955,7 +1955,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->sat_##which, 0.0f, 0.2f, 0.2f, 0.2f);       \
   dt_bauhaus_slider_set_stop(g->sat_##which, 1.0f, 1.0f, 1.0f, 1.0f);       \
   gtk_widget_set_tooltip_text(g->sat_##which, _("select the saturation"));  \
-  g_signal_connect(G_OBJECT(g->sat_##which), "value-changed",               \
+  g_signal_connect(g->sat_##which, "value-changed",                         \
                    G_CALLBACK(which##_callback), self);                     \
                                                                             \
   dt_gui_box_add(self->widget, g->hue_##which, g->sat_##which);             \

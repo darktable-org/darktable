@@ -606,7 +606,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->quality,
                               _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
                                 "quality comparable\n100 = lossless"));
-  g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), gui);
+  g_signal_connect(gui->quality, "value-changed", G_CALLBACK(quality_changed), gui);
 
   // encoding color profile combobox
   const int original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1;
@@ -634,7 +634,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->effort,
                               _("the effort used to encode the image, higher efforts will have "
                                 "better results at the expense of longer encoding times"));
-  g_signal_connect(G_OBJECT(gui->effort), "value-changed", G_CALLBACK(effort_changed), NULL);
+  g_signal_connect(gui->effort, "value-changed", G_CALLBACK(effort_changed), NULL);
 
   // decoding speed (tier) slider
   gui->tier = dt_bauhaus_slider_new_with_range(
@@ -645,7 +645,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->tier, NULL, N_("decoding speed"));
   gtk_widget_set_tooltip_text(gui->tier,
                               _("the preferred decoding speed with some sacrifice of quality"));
-  g_signal_connect(G_OBJECT(gui->tier), "value-changed", G_CALLBACK(tier_changed), NULL);
+  g_signal_connect(gui->tier, "value-changed", G_CALLBACK(tier_changed), NULL);
 
   self->widget = dt_gui_vbox(gui->bpp, gui->pixel_type, gui->quality,
                              gui->original, gui->effort, gui->tier);

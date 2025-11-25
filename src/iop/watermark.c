@@ -1124,7 +1124,7 @@ static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
   _refresh_watermarks(self);
 }
 
-static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   int index = -1;
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
@@ -1410,7 +1410,7 @@ void gui_init(dt_iop_module_t *self)
   {
     g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, (CPF_SPECIAL_FLAG << i), NULL);
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), 1 + i%3, i/3, 1, 1);
-    g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(_alignment_callback), self);
+    g_signal_connect(g->align[i], "toggled", G_CALLBACK(_alignment_callback), self);
   }
 
   dt_gui_box_add(self->widget, bat);
@@ -1428,10 +1428,10 @@ void gui_init(dt_iop_module_t *self)
 
   _refresh_watermarks(self);
 
-  g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(_watermark_callback), self);
-  g_signal_connect(G_OBJECT(g->refresh), "clicked", G_CALLBACK(_refresh_callback), self);
-  g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(_colorpick_color_set), self);
-  g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(_fontsel_callback), self);
+  g_signal_connect(g->watermarks, "value-changed", G_CALLBACK(_watermark_callback), self);
+  g_signal_connect(g->refresh, "clicked", G_CALLBACK(_refresh_callback), self);
+  g_signal_connect(g->colorpick, "color-set", G_CALLBACK(_colorpick_color_set), self);
+  g_signal_connect(g->fontsel, "font-set", G_CALLBACK(_fontsel_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

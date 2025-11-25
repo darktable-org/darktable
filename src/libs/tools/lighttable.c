@@ -461,7 +461,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_filemanager, 0, 0);
   dt_gui_add_help_link(d->layout_filemanager, "layout_filemanager");
   gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
-  g_signal_connect(G_OBJECT(d->layout_filemanager), "button-release-event",
+  g_signal_connect(d->layout_filemanager, "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL);
@@ -469,7 +469,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_zoomable, 0, 0);
   dt_gui_add_help_link(d->layout_zoomable, "layout_zoomable");
   gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
-  g_signal_connect(G_OBJECT(d->layout_zoomable), "button-release-event",
+  g_signal_connect(d->layout_zoomable, "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
@@ -477,14 +477,14 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, GDK_SHIFT_MASK);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
-  g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
+  g_signal_connect(d->layout_culling_fix, "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_culling_dynamic = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
   ac = dt_action_define(ltv, NULL, N_("toggle culling dynamic mode"), d->layout_culling_dynamic, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_dynamic_mode, GDK_KEY_x, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_dynamic, "layout_culling");
-  g_signal_connect(G_OBJECT(d->layout_culling_dynamic), "button-release-event",
+  g_signal_connect(d->layout_culling_dynamic, "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
@@ -494,7 +494,7 @@ void gui_init(dt_lib_module_t *self)
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_preview, "layout_preview");
-  g_signal_connect(G_OBJECT(d->layout_preview), "button-release-event",
+  g_signal_connect(d->layout_preview, "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_box = dt_gui_hbox(d->layout_filemanager, d->layout_zoomable,
@@ -516,14 +516,14 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_restricted_mode, GDK_KEY_r, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_restricted, "layout_culling");
   gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);
-  g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
+  g_signal_connect(d->layout_culling_restricted, "button-release-event",
                    G_CALLBACK(_lib_lighttable_restricted_btn_release), self);
 
   self->widget = dt_gui_hbox(d->layout_box, d->zoom, d->layout_culling_restricted);
 
   _lib_lighttable_update_btn(self);
 
-  g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed), self);
+  g_signal_connect(d->zoom, "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed), self);
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;

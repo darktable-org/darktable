@@ -843,7 +843,7 @@ void gui_init(dt_iop_module_t *self)
   g->Dmin_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->Dmin_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->Dmin_picker), _("select color of film material from a swatch"));
-  g_signal_connect(G_OBJECT(g->Dmin_picker), "color-set", G_CALLBACK(Dmin_picker_callback), self);
+  g_signal_connect(g->Dmin_picker, "color-set", G_CALLBACK(Dmin_picker_callback), self);
 
   g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
@@ -905,7 +905,7 @@ void gui_init(dt_iop_module_t *self)
   g->WB_low_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_low_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_low_picker), _("select color of shadows from a swatch"));
-  g_signal_connect(G_OBJECT(g->WB_low_picker), "color-set", G_CALLBACK(WB_low_picker_callback), self);
+  g_signal_connect(g->WB_low_picker, "color-set", G_CALLBACK(WB_low_picker_callback), self);
 
   g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
@@ -939,7 +939,7 @@ void gui_init(dt_iop_module_t *self)
   g->WB_high_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_high_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_high_picker), _("select color of illuminant from a swatch"));
-  g_signal_connect(G_OBJECT(g->WB_high_picker), "color-set", G_CALLBACK(WB_high_picker_callback), self);
+  g_signal_connect(g->WB_high_picker, "color-set", G_CALLBACK(WB_high_picker_callback), self);
 
   g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));

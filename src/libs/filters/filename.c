@@ -369,9 +369,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                 "multiple values can be separated by ','\n"
                                                 "\nright-click to get existing filenames"));
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
-  g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
-  g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
+  g_signal_connect(filename->name, "activate", G_CALLBACK(_filename_changed), filename);
+  g_signal_connect(filename->name, "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
+  g_signal_connect(filename->name, "button-press-event", G_CALLBACK(_filename_press), filename);
 
   filename->ext = dt_ui_entry_new(top ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
@@ -381,9 +381,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                "handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
                                                "\nright-click to get existing extensions"));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
-  g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
-  g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
+  g_signal_connect(filename->ext, "activate", G_CALLBACK(_filename_changed), filename);
+  g_signal_connect(filename->ext, "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
+  g_signal_connect(filename->ext, "button-press-event", G_CALLBACK(_filename_press), filename);
   if(top)
   {
     dt_gui_add_class(hb, "dt_quick_filter");
@@ -392,7 +392,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   // the popup
   filename->pop = gtk_popover_new(filename->name);
   gtk_widget_set_size_request(filename->pop, 250, 400);
-  g_signal_connect(G_OBJECT(filename->pop), "closed", G_CALLBACK(_filename_popup_closed), filename);
+  g_signal_connect(filename->pop, "closed", G_CALLBACK(_filename_popup_closed), filename);
   hb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(filename->pop), hb);
 
@@ -406,9 +406,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->name_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(filename->name_tree), "row-activated", G_CALLBACK(_filename_tree_row_activated),
+  g_signal_connect(filename->name_tree, "row-activated", G_CALLBACK(_filename_tree_row_activated),
                    filename);
-  g_signal_connect(G_OBJECT(sel), "changed", G_CALLBACK(_filename_tree_selection_change), filename);
+  g_signal_connect(sel, "changed", G_CALLBACK(_filename_tree_selection_change), filename);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(filename->name_tree), col);
@@ -432,9 +432,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->ext_tree), FALSE);
   sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->ext_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(filename->name_tree), "row-activated", G_CALLBACK(_filename_tree_row_activated),
+  g_signal_connect(filename->name_tree, "row-activated", G_CALLBACK(_filename_tree_row_activated),
                    filename);
-  g_signal_connect(G_OBJECT(sel), "changed", G_CALLBACK(_filename_tree_selection_change), filename);
+  g_signal_connect(sel, "changed", G_CALLBACK(_filename_tree_selection_change), filename);
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(filename->ext_tree), col);
@@ -451,7 +451,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));
   gtk_box_pack_start(GTK_BOX(hb), btn, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_filename_ok_clicked), filename);
+  g_signal_connect(btn, "clicked", G_CALLBACK(_filename_ok_clicked), filename);
 
   if(top)
     rule->w_specific_top = filename;

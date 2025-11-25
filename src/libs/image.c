@@ -550,7 +550,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->rotate_ccw_button,
                               _("rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, d->rotate_ccw_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->rotate_ccw_button), "clicked",
+  g_signal_connect(d->rotate_ccw_button, "clicked",
                    G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
   dt_action_define(DT_ACTION(self), NULL,
                    N_("rotate selected images 90 degrees CCW"),
@@ -561,7 +561,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->rotate_cw_button,
                               _("rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, d->rotate_cw_button, 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->rotate_cw_button), "clicked",
+  g_signal_connect(d->rotate_cw_button, "clicked",
                    G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
   dt_action_define(DT_ACTION(self), NULL,
                    N_("rotate selected images 90 degrees CW"),
@@ -614,7 +614,7 @@ void gui_init(dt_lib_module_t *self)
     dt_conf_get_bool("plugins/lighttable/copy_metadata/" #item)); \
   dt_action_define(DT_ACTION(meta), N_("flags"),                  \
                    label, flag, &dt_action_def_toggle);           \
-  g_signal_connect(G_OBJECT(flag), "clicked",                     \
+  g_signal_connect(flag, "clicked",                     \
                    G_CALLBACK(_##item##_flag_callback), self); }
 
   META_FLAG_BUTTON(N_("ratings"),  rating,   0, _("select ratings metadata"));
@@ -628,7 +628,7 @@ void gui_init(dt_lib_module_t *self)
      _copy_metadata_callback, self,
      _("set the selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, ++line, 2, 1);
-  g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked",
+  g_signal_connect(d->copy_metadata_button, "clicked",
                    G_CALLBACK(_copy_metadata_callback), self);
 
   d->paste_metadata_button = dt_action_button_new
@@ -762,8 +762,8 @@ static int lua_register_action(lua_State *L)
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
   data->key = strdup(name);
   data->self = self;
-  const gulong s = g_signal_connect(G_OBJECT(button), "clicked",
-                                    G_CALLBACK(lua_button_clicked), data);
+  const gulong s = g_signal_connect_data(button, "clicked",
+                                         G_CALLBACK(lua_button_clicked), data, NULL, 0);
 
   // save the signal connection in case we need to destroy it later
   dt_lua_module_entry_push(L, "lib", self->plugin_name);

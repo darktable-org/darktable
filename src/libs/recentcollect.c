@@ -278,7 +278,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
           d->items = g_list_append(d->items, item);
           item->button = gtk_button_new();
           gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);
-          g_signal_connect(G_OBJECT(item->button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
+          g_signal_connect(item->button, "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
           gtk_widget_set_no_show_all(item->button, TRUE);
           gtk_widget_set_name(GTK_WIDGET(item->button), "recent-collection-button");
           gtk_widget_set_visible(item->button, FALSE);
@@ -295,7 +295,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_signal_connect(mi, "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
@@ -333,7 +333,7 @@ void gui_init(dt_lib_module_t *self)
     d->items = g_list_append(d->items, item);
     item->button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);
-    g_signal_connect(G_OBJECT(item->button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
+    g_signal_connect(GTK_BUTTON(item->button), "clicked", G_CALLBACK(_button_pressed), self);
     gtk_widget_set_no_show_all(item->button, TRUE);
     dt_gui_add_class(GTK_WIDGET(item->button), "dt_transparent_background");
     gtk_widget_set_name(GTK_WIDGET(item->button), "recent-collection-button");

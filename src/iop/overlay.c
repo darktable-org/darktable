@@ -809,7 +809,7 @@ static void _draw_thumb(GtkWidget *area,
   }
 }
 
-static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   const dt_iop_overlay_gui_data_t *g = self->gui_data;
 
@@ -1048,9 +1048,9 @@ static void _drag_and_drop_received(GtkWidget *widget,
 
 static gboolean _on_drag_motion(GtkWidget *widget,
                                 GdkDragContext *dc,
-                                gint x,
-                                gint y,
-                                guint time,
+                                const gint x,
+                                const gint y,
+                                const guint time,
                                 const dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = self->gui_data;
@@ -1082,7 +1082,7 @@ void gui_init(dt_iop_module_t *self)
   int line = 0;
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_draw_thumb), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(_draw_thumb), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->area), 150, 150);
   gtk_grid_attach(grid, GTK_WIDGET(g->area), 0, line++, 1, 2);
 
@@ -1155,7 +1155,7 @@ void gui_init(dt_iop_module_t *self)
     g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment,
                                          (CPF_SPECIAL_FLAG << i), NULL);
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), 1 + i%3, i/3, 1, 1);
-    g_signal_connect(G_OBJECT(g->align[i]), "toggled",
+    g_signal_connect(g->align[i], "toggled",
                      G_CALLBACK(_alignment_callback), self);
   }
 

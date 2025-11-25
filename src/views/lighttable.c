@@ -1243,7 +1243,7 @@ void gui_init(dt_view_t *self)
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
-  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event",
+  g_signal_connect_swapped(profile_button, "button-press-event",
                            G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1310,9 +1310,9 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_markup(display2_profile, tooltip);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(_profile_display_profile_callback), NULL);
+  g_signal_connect(display_profile, "value-changed", G_CALLBACK(_profile_display_profile_callback), NULL);
 
-  g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(_profile_display2_profile_callback),
+  g_signal_connect(display2_profile, "value-changed", G_CALLBACK(_profile_display2_profile_callback),
                    NULL);
 
   // update the gui when profiles change

@@ -501,8 +501,8 @@ static void update_widget_enum(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_enum), cur_elt);
   gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), 0);
   const char *value = dt_conf_get_string_const(pref_name);
   do {
@@ -533,8 +533,8 @@ static void update_widget_dir(pref_element* cur_elt, GtkWidget* dialog, GtkWidge
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
   const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_dir), cur_elt);
 }
 
 
@@ -544,8 +544,8 @@ static void update_widget_file(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
   const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_file), cur_elt);
 }
 
 
@@ -553,8 +553,8 @@ static void update_widget_string(pref_element* cur_elt, GtkWidget* dialog, GtkWi
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_string), cur_elt);
   const char *str = dt_conf_get_string_const(pref_name);
   gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
 }
@@ -564,8 +564,8 @@ static void update_widget_bool(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(click_widget_bool), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(click_widget_bool), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_bool), cur_elt);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
 }
 
@@ -575,8 +575,8 @@ static void update_widget_int(pref_element* cur_elt, GtkWidget* dialog, GtkWidge
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_int), cur_elt);
 }
 
 
@@ -585,8 +585,8 @@ static void update_widget_float(pref_element* cur_elt, GtkWidget* dialog, GtkWid
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_float(pref_name));
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_float), cur_elt);
 }
 
 
@@ -599,8 +599,8 @@ static void update_widget_lua(pref_element* cur_elt, GtkWidget* dialog, GtkWidge
   lua_pushstring(L, "reset");
   lua_call(L, 2, 0);
   dt_lua_unlock();
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_lua), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_lua), cur_elt);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(reset_widget_lua), cur_elt);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback_lua), cur_elt);
 }
 
 

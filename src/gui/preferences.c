@@ -353,8 +353,8 @@ static void init_tab_general(GtkWidget *dialog,
 
   dt_bauhaus_combobox_set(widget, darktable.l10n->selected);
   dt_bauhaus_combobox_set_default(widget, darktable.l10n->sys_default);
-  g_signal_connect(G_OBJECT(widget), "value-changed",
-                   G_CALLBACK(language_callback), 0);
+  g_signal_connect(widget, "value-changed",
+                   G_CALLBACK(language_callback), NULL);
   gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
   gtk_widget_set_tooltip_text(widget,
@@ -363,8 +363,8 @@ static void init_tab_general(GtkWidget *dialog,
                                 "(restart required)"));
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(reset_language_widget), (gpointer)widget);
+  g_signal_connect(labelev, "button-press-event",
+                   G_CALLBACK(reset_language_widget), widget);
 
   // theme
 
@@ -399,7 +399,7 @@ static void init_tab_general(GtkWidget *dialog,
 
   dt_bauhaus_combobox_set(widget, selected);
 
-  g_signal_connect(G_OBJECT(widget), "value-changed",
+  g_signal_connect(widget, "value-changed",
                    G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
@@ -426,10 +426,10 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_set_tooltip_text(usesysfont, _("use system font size"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(usesysfont),
                                dt_conf_get_bool("use_system_font"));
-  g_signal_connect(G_OBJECT(usesysfont), "toggled",
-                   G_CALLBACK(use_sys_font_callback), (gpointer)fontsize);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)usesysfont);
+  g_signal_connect(usesysfont, "toggled",
+                   G_CALLBACK(use_sys_font_callback), fontsize);
+  g_signal_connect(labelev, "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), usesysfont);
 
 
   //font size selector
@@ -448,7 +448,7 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
-  g_signal_connect(G_OBJECT(fontsize), "value_changed",
+  g_signal_connect(fontsize, "value-changed",
                    G_CALLBACK(font_size_changed_callback), 0);
 
   GtkWidget *screen_dpi_overwrite = gtk_spin_button_new_with_range(-1.0f, 360, 1.f);
@@ -469,7 +469,7 @@ static void init_tab_general(GtkWidget *dialog,
        "(restart required)"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite),
                             dt_conf_get_float("screen_dpi_overwrite"));
-  g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed",
+  g_signal_connect(screen_dpi_overwrite, "value-changed",
                    G_CALLBACK(dpi_scaling_changed_callback), 0);
 
   GtkWidget *panel_reset = gtk_button_new_with_label(_("reset view panels"));
@@ -494,10 +494,10 @@ static void init_tab_general(GtkWidget *dialog,
                               _("modify theme with CSS keyed below (saved to user.css)"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle),
                                dt_conf_get_bool("themes/usercss"));
-  g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled",
+  g_signal_connect(tw->apply_toggle, "toggled",
                    G_CALLBACK(usercss_callback), 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)tw->apply_toggle);
+                   G_CALLBACK(_gui_preferences_bool_click), tw->apply_toggle);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -516,9 +516,9 @@ static void init_tab_general(GtkWidget *dialog,
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   tw->save_button = gtk_button_new_with_label(C_("usercss", "save CSS and apply"));
-  g_signal_connect(G_OBJECT(tw->save_button), "clicked",
+  g_signal_connect(tw->save_button, "clicked",
                    G_CALLBACK(save_usercss_callback), tw);
-  g_signal_connect(G_OBJECT(dialog), "response",
+  g_signal_connect(dialog, "response",
                    G_CALLBACK(usercss_dialog_callback), tw);
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
@@ -985,30 +985,30 @@ static void init_tab_presets(GtkWidget *stack)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox, "preset-controls");
 
-  GtkWidget *search_presets = gtk_search_entry_new();
-  gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
+  GtkSearchEntry *search_presets = GTK_SEARCH_ENTRY(gtk_search_entry_new());
+  dt_gui_box_add(hbox, search_presets);
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("search presets list"));
   gtk_widget_set_tooltip_text
     (GTK_WIDGET(search_presets),
      _("incrementally search the list of presets\n"
        "press up or down keys to cycle through matches"));
-  g_signal_connect(G_OBJECT(search_presets), "activate",
+  g_signal_connect(search_presets, "activate",
                    G_CALLBACK(dt_gui_search_stop), tree);
-  g_signal_connect(G_OBJECT(search_presets), "stop-search",
+  g_signal_connect(search_presets, "stop-search",
                    G_CALLBACK(dt_gui_search_stop), tree);
-  g_signal_connect(G_OBJECT(tree), "key-press-event",
+  g_signal_connect(tree, "key-press-event",
                    G_CALLBACK(dt_gui_search_start), search_presets);
   gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked",
-                   G_CALLBACK(import_preset), (gpointer)model);
+  g_signal_connect(button, "clicked",
+                   G_CALLBACK(import_preset), model);
 
   button = gtk_button_new_with_label(C_("preferences", "export..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked",
-                   G_CALLBACK(export_preset), (gpointer)model);
+  g_signal_connect(button, "clicked",
+                   G_CALLBACK(export_preset), model);
 
   button = gtk_button_new_with_label(_("?"));
   dt_gui_add_help_link(button, "presets");
@@ -1018,12 +1018,12 @@ static void init_tab_presets(GtkWidget *stack)
   // Attaching treeview signals
 
   // row-activated either expands/collapses a row or activates editing
-  g_signal_connect(G_OBJECT(tree), "row-activated",
+  g_signal_connect(tree, "row-activated",
                    G_CALLBACK(tree_row_activated_presets), NULL);
 
   // A keypress may delete preset
-  g_signal_connect(G_OBJECT(tree), "key-press-event",
-                   G_CALLBACK(tree_key_press_presets), (gpointer)model);
+  g_signal_connect(tree, "key-press-event",
+                   G_CALLBACK(tree_key_press_presets), model);
 
   // Setting up the search functionality
   gtk_tree_view_set_search_equal_func(tree, _search_func, tree, NULL);
@@ -1372,10 +1372,10 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
 
   gtk_grid_attach(GTK_GRID(grid), labelev, swap ? (col + 1) : col, line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), w, swap ? col : (col + 1), line, 1, 1);
-  g_signal_connect(G_OBJECT(w), "toggled",
+  g_signal_connect(w, "toggled",
                    G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)w);
+  g_signal_connect(labelev, "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), w);
   return w;
 }
 
@@ -1433,10 +1433,10 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid,
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), dt_conf_get_int(key));
   gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(w), "value-changed",
+  g_signal_connect(w, "value-changed",
                    G_CALLBACK(_gui_preferences_int_callback), (gpointer)key);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_int_reset), (gpointer)w);
+  g_signal_connect(labelev, "button-press-event",
+                   G_CALLBACK(_gui_preferences_int_reset), w);
   return w;
 }
 
@@ -1485,7 +1485,7 @@ GtkWidget *dt_gui_preferences_enum(dt_action_t *action,
     i++;
   }
 
-  g_signal_connect(G_OBJECT(w), "value-changed",
+  g_signal_connect(w, "value-changed",
                    G_CALLBACK(_gui_preferences_enum_callback), (gpointer)key);
   return w;
 }
@@ -1544,10 +1544,10 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid,
 
   gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(w), "changed",
+  g_signal_connect(w, "changed",
                    G_CALLBACK(_gui_preferences_string_callback), (gpointer)key);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_string_reset), (gpointer)w);
+  g_signal_connect(labelev, "button-press-event",
+                   G_CALLBACK(_gui_preferences_string_reset), w);
   return w;
 }
 

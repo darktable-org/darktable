@@ -188,7 +188,7 @@ static void wrapup_pref(const gchar *name,
   gtk_grid_attach(GTK_GRID(grid), labdef, 1, *line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), widget, 2, (*line)++, 1, 1);
   gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(callback), (gpointer)widget);
+  g_signal_connect(labelev, "button-press-event", G_CALLBACK(callback), widget);
 }
 
 static gboolean click_widget_label(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
@@ -302,14 +302,14 @@ gboolean restart_required = FALSE;
   <!-- restart callbacks (on change) -->
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
-    <xsl:text>static void&#xA;preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *widget, gpointer user_data)&#xA;{&#xA;</xsl:text>
+    <xsl:text>static void&#xA;preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *widget, GtkWidget *label)&#xA;{&#xA;</xsl:text>
     <xsl:if test="@restart">
       <xsl:text>  restart_required = TRUE;&#xA;</xsl:text>
     </xsl:if>
     <xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>
   set_widget_label_default(widget, "</xsl:text>
-    <xsl:value-of select="name"/><xsl:text>", GTK_WIDGET(user_data), factor);</xsl:text>
+    <xsl:value-of select="name"/><xsl:text>", label, factor);</xsl:text>
     <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
   </xsl:for-each>
 
@@ -561,8 +561,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_text_buffer_set_text(buffer, setting, strlen(setting));
     g_free(setting);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(handle_enter_key), NULL);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "key-press-event", G_CALLBACK(handle_enter_key), NULL);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
   </xsl:template>
@@ -575,8 +575,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gtk_entry_set_text(GTK_ENTRY(widget), setting);
     g_free(setting);
     gtk_label_set_mnemonic_widget(GTK_LABEL(label), widget);
-    g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
     gtk_widget_set_tooltip_text(labelev,  tooltip);</xsl:text>
   </xsl:template>
@@ -590,8 +590,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget), setting);
     g_free(setting);
-    g_signal_connect(G_OBJECT(widget), "selection-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "selection-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     gchar *default_path = dt_conf_expand_default_dir("</xsl:text><xsl:value-of select="default"/><xsl:text>");
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), default_path);
     g_free(default_path);
@@ -613,8 +613,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gtk_size_group_add_widget(widget_group, widget);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%d'"), (int)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
   </xsl:template>
@@ -632,8 +632,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     gtk_size_group_add_widget(widget_group, widget);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     char value[100];
     snprintf(value, 100, "%"G_GINT64_FORMAT"",(gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), value);
@@ -651,8 +651,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     widget = gtk_spin_button_new_with_range(min, max, 0.001f);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%.03f'"), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
   </xsl:template>
@@ -661,8 +661,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     <xsl:text>
     widget = gtk_check_button_new();
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
-    g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "toggled", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>"));
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
   </xsl:template>
@@ -681,8 +681,8 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     <xsl:text>
     gtk_widget_set_halign(widget, GTK_ALIGN_START);
     gtk_size_group_add_widget(widget_group, widget);
-    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
-    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(widget, "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);
+    g_signal_connect(dialog, "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
     gtk_widget_set_tooltip_text(labelev, tooltip);</xsl:text>
   </xsl:template>

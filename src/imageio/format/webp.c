@@ -421,7 +421,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                               "for lossless, 0 is the fastest but gives larger files compared\n"
                                               "to the slowest 100."));
   dt_bauhaus_slider_set(gui->quality, quality);
-  g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
+  g_signal_connect(gui->quality, "value-changed", G_CALLBACK(quality_changed), NULL);
 
   gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
   gtk_widget_set_no_show_all(gui->quality, TRUE);

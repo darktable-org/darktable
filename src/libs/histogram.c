@@ -2151,11 +2151,10 @@ static gboolean _color_harmony_clicked(GtkWidget *button,
   return TRUE;
 }
 
-static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
+static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     const gpointer user_data)
+                                                     dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   // find positions of entered button
 
   d->color_harmony_old = d->harmony_guide.type;
@@ -2173,9 +2172,8 @@ static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
 
 static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     const gpointer user_data)
+                                                     dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->harmony_guide.type = d->color_harmony_old;
   gtk_widget_queue_draw(d->scope_draw);
   return FALSE;
@@ -2584,7 +2582,7 @@ void gui_init(dt_lib_module_t *self)
     dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
                      d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event",
+    g_signal_connect(d->scope_type_button[i], "button-press-event",
                      G_CALLBACK(_scope_histogram_mode_clicked), d);
   }
   gtk_toggle_button_set_active
@@ -2649,11 +2647,11 @@ void gui_init(dt_lib_module_t *self)
                                            &(dt_color_harmonies[i]));
     dt_action_define(dark, N_("color harmonies"),
                      dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
-    g_signal_connect(G_OBJECT(rb), "button-press-event",
+    g_signal_connect(rb, "button-press-event",
                      G_CALLBACK(_color_harmony_clicked), d);
-    g_signal_connect(G_OBJECT(rb), "enter-notify-event",
+    g_signal_connect(rb, "enter-notify-event",
                      G_CALLBACK(_color_harmony_enter_notify_callback), d);
-    g_signal_connect(G_OBJECT(rb), "leave-notify-event",
+    g_signal_connect(rb, "leave-notify-event",
                      G_CALLBACK(_color_harmony_leave_notify_callback), d);
 
     gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
@@ -2701,22 +2699,22 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(d->scope_view_button), "clicked",
+  g_signal_connect(d->scope_view_button, "clicked",
                    G_CALLBACK(_scope_view_clicked), d);
-  g_signal_connect(G_OBJECT(d->colorspace_button), "clicked",
+  g_signal_connect(d->colorspace_button, "clicked",
                    G_CALLBACK(_colorspace_clicked), d);
 
-  g_signal_connect(G_OBJECT(d->red_channel_button), "toggled",
+  g_signal_connect(d->red_channel_button, "toggled",
                    G_CALLBACK(_red_channel_toggle), d);
-  g_signal_connect(G_OBJECT(d->green_channel_button), "toggled",
+  g_signal_connect(d->green_channel_button, "toggled",
                    G_CALLBACK(_green_channel_toggle), d);
-  g_signal_connect(G_OBJECT(d->blue_channel_button), "toggled",
+  g_signal_connect(d->blue_channel_button, "toggled",
                    G_CALLBACK(_blue_channel_toggle), d);
 
   gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
-  g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
+  g_signal_connect(d->scope_draw, "draw", G_CALLBACK(_drawable_draw_callback), d);
   dt_gui_connect_click_all(d->scope_draw, _drawable_button_press,
                                           _drawable_button_release, d);
   dt_gui_connect_motion(d->scope_draw, _drawable_motion, NULL,
@@ -2726,13 +2724,13 @@ void gui_init(dt_lib_module_t *self)
     (eventbox,
      GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
      | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(eventbox), "scroll-event",
+  g_signal_connect(eventbox, "scroll-event",
                    G_CALLBACK(_eventbox_scroll_callback), d);
-  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
+  g_signal_connect(eventbox, "enter-notify-event",
                    G_CALLBACK(_eventbox_enter_notify_callback), d);
-  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
+  g_signal_connect(eventbox, "leave-notify-event",
                    G_CALLBACK(_eventbox_leave_notify_callback), d);
-  g_signal_connect(G_OBJECT(eventbox), "motion-notify-event",
+  g_signal_connect(eventbox, "motion-notify-event",
                    G_CALLBACK(_eventbox_motion_notify_callback), d);
 
   gtk_widget_show_all(self->widget);

@@ -195,7 +195,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
 
   GtkWidget *dttag = gtk_check_button_new_with_label(_("tags"));
   gtk_widget_set_tooltip_text(dttag, _("export tags (to Xmp.dc.Subject)"));
-  g_signal_connect(G_OBJECT(dttag), "clicked", G_CALLBACK(_tags_toggled), (gpointer)d);
+  g_signal_connect(dttag, "clicked", G_CALLBACK(_tags_toggled), (gpointer)d);
 
   d->private = gtk_check_button_new_with_label(_("private tags"));
   gtk_widget_set_tooltip_text(d->private, _("export private tags"));
@@ -220,7 +220,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
-  g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_formula_edited), (gpointer)d);
+  g_signal_connect(renderer, "edited", G_CALLBACK(_formula_edited), (gpointer)d);
   dt_gui_commit_on_focus_loss(renderer, &active_editable);
   col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 2, NULL);
   gtk_tree_view_append_column(view, col);
@@ -232,7 +232,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                 "otherwise the corresponding metadata is calculated and added to exported file\n"
                 "click on formula cell to edit\n"
                 "type '$(' to activate the completion and see the list of variables"));
-  g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(_key_press_on_list), (gpointer)d);
+  g_signal_connect(view, "key-press-event", G_CALLBACK(_key_press_on_list), (gpointer)d);
 
   GtkListStore *liststore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   d->liststore = liststore;
@@ -278,11 +278,11 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
 
   GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(plus, _("add an output metadata tag"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  g_signal_connect(plus, "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
 
   GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  g_signal_connect(minus, "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

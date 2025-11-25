@@ -3284,18 +3284,18 @@ void gui_init(dt_iop_module_t *self)
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_vexpand(GTK_WIDGET(g->area), TRUE);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "draw", G_CALLBACK(area_draw), self);
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(g->area, "button-release-event",
                    G_CALLBACK(area_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event",
+  g_signal_connect(g->area, "enter-notify-event",
                    G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(area_scroll), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
@@ -3308,7 +3308,7 @@ void gui_init(dt_iop_module_t *self)
        "but the curve might become oscillatory in some settings.\n"
        "negative values will avoid oscillations and behave more robustly\n"
        "but may produce brutal tone transitions and damage local contrast."));
-  g_signal_connect(G_OBJECT(g->smoothing), "value-changed",
+  g_signal_connect(g->smoothing, "value-changed",
                    G_CALLBACK(smoothing_callback), self);
   dt_gui_box_add(self->widget, wrapper, g->smoothing);
   
@@ -3396,7 +3396,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
 
-  g_signal_connect(G_OBJECT(g->notebook), "button-press-event",
+  g_signal_connect(g->notebook, "button-press-event",
                    G_CALLBACK(notebook_button_press), self);
 
   g->show_luminance_mask = dt_iop_togglebutton_new

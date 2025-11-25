@@ -104,7 +104,7 @@ void gui_init(dt_lib_module_t *self)
     }
   }
   dt_bauhaus_combobox_set(d->map_source_dropdown, selection);
-  g_signal_connect(G_OBJECT(d->map_source_dropdown), "value-changed", G_CALLBACK(_map_source_changed), NULL);
+  g_signal_connect(d->map_source_dropdown, "value-changed", G_CALLBACK(_map_source_changed), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->map_source_dropdown), FALSE, TRUE, 0);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
@@ -113,25 +113,25 @@ void gui_init(dt_lib_module_t *self)
   int line = 0;
   d->max_outline_nodes = dt_gui_preferences_int(grid, "plugins/map/max_outline_nodes", 0, line++);
   d->show_osd_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/show_map_osd", 0, line++, FALSE);
-  g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
+  g_signal_connect(d->show_osd_checkbutton, "toggled", G_CALLBACK(_show_osd_toggled), NULL);
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
-  g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
+  g_signal_connect(d->filtered_images_checkbutton, "toggled", G_CALLBACK(_parameter_changed), NULL);
   dt_shortcut_register(dt_action_define(DT_ACTION(self), NULL, N_("filtered images"),
                                         d->filtered_images_checkbutton, &dt_action_def_button),
                        0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
   d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
-  g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
+  g_signal_connect(d->max_images_entry, "value-changed", G_CALLBACK(_parameter_changed), self);
   d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor", 0, line++);
-  g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_parameter_changed), self);
+  g_signal_connect(d->epsilon_factor, "value-changed", G_CALLBACK(_parameter_changed), self);
   d->min_images = dt_gui_preferences_int(grid, "plugins/map/min_images_per_group", 0, line++);
-  g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_parameter_changed), self);
+  g_signal_connect(d->min_images, "value-changed", G_CALLBACK(_parameter_changed), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), FALSE, TRUE, 0);
 
   d->images_thumb = dt_gui_preferences_enum(DT_ACTION(self), "plugins/map/images_thumbnail");
   dt_action_t *ac = dt_bauhaus_widget_set_label(d->images_thumb, NULL, dt_confgen_get_label("plugins/map/images_thumbnail"));
   dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_SHIFT_MASK);
-  g_signal_connect(G_OBJECT(d->images_thumb), "value-changed", G_CALLBACK(_parameter_changed), self);
+  g_signal_connect(d->images_thumb, "value-changed", G_CALLBACK(_parameter_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), d->images_thumb, FALSE, TRUE, 0);
 }
 

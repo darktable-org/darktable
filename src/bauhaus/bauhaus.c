@@ -673,7 +673,6 @@ static gboolean _popup_button_release(GtkWidget *widget,
 
   return TRUE;
 }
-
 static gboolean _popup_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
@@ -715,10 +714,10 @@ static gboolean _popup_button_press(GtkWidget *widget,
   return TRUE;
 }
 
-static void _window_show(GtkWidget *w, gpointer user_data)
+static void _window_show(GtkWidget *w, GtkWidget *area)
 {
   // make sure combo popup handles button release
-  gtk_grab_add(GTK_WIDGET(user_data));
+  gtk_grab_add(area);
 }
 
 static void _widget_leave(GtkEventControllerMotion *controller,
@@ -892,20 +891,17 @@ void dt_bauhaus_init()
                         | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
                         | darktable.gui->scroll_mask);
 
-  GObject *window = G_OBJECT(pop->window);
-  GObject *area = G_OBJECT(pop->area);
-
   gtk_widget_realize(pop->window);
   g_signal_connect(gtk_widget_get_window(pop->window),
                    "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
-  g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
-  g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
-  g_signal_connect(area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
-  g_signal_connect(area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
-  g_signal_connect(area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
+  g_signal_connect(pop->window, "show", G_CALLBACK(_window_show), pop->area);
+  g_signal_connect(pop->window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
+  g_signal_connect(pop->area, "draw", G_CALLBACK(_popup_draw), NULL);
+  g_signal_connect(pop->area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
+  g_signal_connect(pop->area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
+  g_signal_connect(pop->area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
+  g_signal_connect(pop->area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
+  g_signal_connect(pop->area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
 
   dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"),
                    NULL, &_action_def_focus_slider);

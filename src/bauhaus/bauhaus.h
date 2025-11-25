@@ -212,7 +212,7 @@ static inline void dt_bauhaus_widget_set_quad(GtkWidget *widget,
 {
   dt_bauhaus_widget_set_quad_paint(widget, paint, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(widget, toggle);
-  g_signal_connect(G_OBJECT(widget), "quad-pressed", G_CALLBACK(callback), self);
+  g_signal_connect(widget, "quad-pressed", G_CALLBACK(callback), self);
   if(tooltip) dt_bauhaus_widget_set_quad_tooltip(widget, tooltip);
 }
 // get the tooltip for widget or quad button:

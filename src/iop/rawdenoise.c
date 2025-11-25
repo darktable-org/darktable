@@ -886,7 +886,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
+  g_signal_connect(g->channel_tabs, "switch-page", G_CALLBACK(rawdenoise_tab_switch), self);
 
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -909,12 +909,12 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *box_raw = self->widget = dt_gui_vbox(g->channel_tabs, g->area);
 
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(rawdenoise_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(rawdenoise_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
+  g_signal_connect(GTK_WIDGET(g->area), "draw", G_CALLBACK(rawdenoise_draw), self);
+  g_signal_connect(GTK_WIDGET(g->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
+  g_signal_connect(GTK_WIDGET(g->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);
+  g_signal_connect(GTK_WIDGET(g->area), "motion-notify-event", G_CALLBACK(rawdenoise_motion_notify), self);
+  g_signal_connect(GTK_WIDGET(g->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
+  g_signal_connect(GTK_WIDGET(g->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_soft_max(g->threshold, 0.1);

@@ -115,10 +115,9 @@ typedef enum _range_signal
 } _range_signal;
 static guint _signals[LAST_SIGNAL] = { 0 };
 
-static void _dt_pref_changed(gpointer instance, gpointer user_data)
+static void _dt_pref_changed(GtkWidget *widget, GtkDarktableRangeSelect *range)
 {
-  if(!user_data) return;
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  if(!range) return;
 
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
   GtkStateFlags state = gtk_widget_get_state_flags(range->band);
@@ -752,7 +751,7 @@ static void _popup_date_tree_row_activated(GtkTreeView *self, GtkTreePath *path,
   gtk_widget_activate(pop->ok_btn);
 }
 
-static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRangeSelect *range)
+static void _popup_date_tree_selection_change(GtkTreeSelection *self, GtkDarktableRangeSelect *range)
 {
   if(!range->date_popup || range->date_popup->internal_change) return;
   _range_date_popup *pop = range->date_popup;
@@ -937,7 +936,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the type of date selection
   pop->type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(pop->type, NULL, _("date type"));
-  g_signal_connect(G_OBJECT(pop->type), "value-changed", G_CALLBACK(_popup_date_type_changed), range);
+  g_signal_connect(pop->type, "value-changed", G_CALLBACK(_popup_date_type_changed), range);
 
   // the label to explain the reference date for relative values
   pop->relative_label = gtk_label_new("");
@@ -953,8 +952,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_no_show_all(pop->calendar, TRUE);
   gtk_widget_set_tooltip_text(pop->calendar, _("click to select date\n"
                                                "double-click to use the date directly"));
-  g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
-  g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
+  g_signal_connect(pop->calendar, "day_selected", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->calendar, "day_selected-double-click",
                    G_CALLBACK(_popup_date_day_selected_2click), range);
 
   // the relative date box
@@ -966,7 +965,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->years = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->years), 3);
   gtk_widget_set_halign(pop->years, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(pop->years), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->years, "changed", G_CALLBACK(_popup_date_changed), range);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), pop->years, 1, 0, 1, 1);
   lb = gtk_label_new(_("months: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
@@ -974,7 +973,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->months = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->months), 3);
   gtk_widget_set_halign(pop->months, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(pop->months), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->months, "changed", G_CALLBACK(_popup_date_changed), range);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), pop->months, 1, 1, 1, 1);
   lb = gtk_label_new(_("days: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
@@ -982,7 +981,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->days = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->days), 3);
   gtk_widget_set_halign(pop->days, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(pop->days), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->days, "changed", G_CALLBACK(_popup_date_changed), range);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), pop->days, 1, 2, 1, 1);
   gtk_widget_show_all(pop->relative_date_box);
   gtk_widget_set_no_show_all(pop->relative_date_box, TRUE);
@@ -993,13 +992,13 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   pop->hours = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->hours), 2);
-  g_signal_connect(G_OBJECT(pop->hours), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->hours, "changed", G_CALLBACK(_popup_date_changed), range);
   pop->minutes = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->minutes), 2);
-  g_signal_connect(G_OBJECT(pop->minutes), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->minutes, "changed", G_CALLBACK(_popup_date_changed), range);
   pop->seconds = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->seconds), 2);
-  g_signal_connect(G_OBJECT(pop->seconds), "changed", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(pop->seconds, "changed", G_CALLBACK(_popup_date_changed), range);
 
   // the treeview
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
@@ -1008,8 +1007,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_tooltip_text(pop->calendar, _("click to select date\n"
                                                "double-click to use the date directly"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
-  g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
-  g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview))), "changed",
+  g_signal_connect(pop->treeview, "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
+  g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview)), "changed",
                    G_CALLBACK(_popup_date_tree_selection_change), range);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
@@ -1025,10 +1024,10 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->now_btn = gtk_button_new_with_label(_("now"));
   gtk_widget_set_no_show_all(pop->now_btn, TRUE);
   gtk_widget_set_tooltip_text(pop->now_btn, _("set the value to always match current datetime"));
-  g_signal_connect(G_OBJECT(pop->now_btn), "clicked", G_CALLBACK(_popup_date_now_clicked), range);
+  g_signal_connect(pop->now_btn, "clicked", G_CALLBACK(_popup_date_now_clicked), range);
   pop->ok_btn = gtk_button_new_with_label(_("apply"));
   gtk_widget_set_tooltip_text(pop->ok_btn, _("set the range bound with this value"));
-  g_signal_connect(G_OBJECT(pop->ok_btn), "clicked", G_CALLBACK(_popup_date_ok_clicked), range);
+  g_signal_connect(pop->ok_btn, "clicked", G_CALLBACK(_popup_date_ok_clicked), range);
 
   GtkWidget *time = dt_gui_hbox(pop->hours, gtk_label_new(" : "), pop->minutes, gtk_label_new(" : "), pop->seconds);
   gtk_widget_set_halign(time, GTK_ALIGN_CENTER);
@@ -1045,9 +1044,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_container_add(GTK_CONTAINER(pop->popup), vbox);
 }
 
-static void _popup_item_activate(GtkWidget *w, gpointer user_data)
+static void _popup_item_activate(GtkWidget *w, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   // retrieve block and source values
   GtkWidget *source = GTK_WIDGET(g_object_get_data(G_OBJECT(w), "source_widget"));
   _range_block *blo = (_range_block *)g_object_get_data(G_OBJECT(w), "range_block");
@@ -1095,7 +1093,7 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
     g_free(txt);
     g_object_set_data(G_OBJECT(smt), "range_block", blo);
     g_object_set_data(G_OBJECT(smt), "source_widget", w);
-    g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_popup_item_activate), range);
+    g_signal_connect(smt, "activate", G_CALLBACK(_popup_item_activate), range);
 
     gtk_menu_shell_append(pop, smt);
     nb++;
@@ -1122,7 +1120,7 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
     g_free(txt);
     g_object_set_data(G_OBJECT(smt), "range_block", blo);
     g_object_set_data(G_OBJECT(smt), "source_widget", w);
-    g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_popup_item_activate), range);
+    g_signal_connect(smt, "activate", G_CALLBACK(_popup_item_activate), range);
 
     gtk_menu_shell_append(pop, smt);
   }
@@ -1160,9 +1158,8 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
   }
 }
 
-static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(e->button == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, w);
@@ -1171,18 +1168,17 @@ static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer use
   return FALSE;
 }
 
-static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
+static void _event_entry_activated(GtkWidget *entry, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   _range_bound bound = BOUND_MIN;
   if(entry == range->entry_max) bound = BOUND_MAX;
 
   _bound_change(range, gtk_entry_get_text(GTK_ENTRY(entry)), bound);
 }
 
-static gboolean _event_entry_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+static gboolean _event_entry_focus_out(GtkWidget *entry, GdkEventFocus *event, GtkDarktableRangeSelect *range)
 {
-  _event_entry_activated(entry, user_data);
+  _event_entry_activated(entry, range);
   return FALSE;
 }
 
@@ -1488,9 +1484,8 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
   gtk_widget_queue_draw(range->band);
 }
 
-static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->current_x_px = event->x - range->alloc_padding.x;
 
   // if we are outside the graph, don't go further
@@ -1538,9 +1533,8 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   return TRUE;
 }
 
-static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->mouse_inside = HOVER_OUTSIDE;
   dt_control_change_cursor(GDK_LEFT_PTR);
   _current_hide_popup(range);
@@ -1549,9 +1543,8 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
   return TRUE;
 }
 
-static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, range->min_r, range->max_r,
@@ -1595,9 +1588,8 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
   }
   return TRUE;
 }
-static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, GtkDarktableRangeSelect *range)
 {
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(!range->set_selection) return TRUE;
   range->select_max_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
   const double min_pos_px = _graph_value_to_pos(range, range->select_min_r);
@@ -1667,12 +1659,12 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->band = gtk_drawing_area_new();
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                          | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
-  g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
-  g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
-  g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
-  g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
-  g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
+  g_signal_connect(range->band, "draw", G_CALLBACK(_event_band_draw), range);
+  g_signal_connect(range->band, "button-press-event", G_CALLBACK(_event_band_press), range);
+  g_signal_connect(range->band, "button-release-event", G_CALLBACK(_event_band_release), range);
+  g_signal_connect(range->band, "motion-notify-event", G_CALLBACK(_event_band_motion), range);
+  g_signal_connect(range->band, "leave-notify-event", G_CALLBACK(_event_band_leave), range);
+  g_signal_connect(range->band, "style-updated", G_CALLBACK(_dt_pref_changed), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
 
@@ -1703,17 +1695,17 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     range->entry_min = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_min, TRUE);
     _entry_set_tooltip(range->entry_min, BOUND_MIN, range->type);
-    g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
-    g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
+    g_signal_connect(range->entry_min, "activate", G_CALLBACK(_event_entry_activated), range);
+    g_signal_connect(range->entry_min, "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
+    g_signal_connect(range->entry_min, "button-press-event", G_CALLBACK(_event_entry_press), range);
 
     range->entry_max = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_max, TRUE);
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
     _entry_set_tooltip(range->entry_max, BOUND_MAX, range->type);
-    g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
-    g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
-    g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
+    g_signal_connect(range->entry_max, "activate", G_CALLBACK(_event_entry_activated), range);
+    g_signal_connect(range->entry_max, "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
+    g_signal_connect(range->entry_max, "button-press-event", G_CALLBACK(_event_entry_press), range);
 
     dt_gui_box_add(vbox, dt_gui_hbox(dt_gui_expand(range->entry_min), dt_gui_expand(range->entry_max)));
   }

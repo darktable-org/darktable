@@ -570,7 +570,7 @@ static gboolean _click_for_entire_track(GtkEntry *spin, GdkEventButton *event, d
   return FALSE;
 }
 
-static void _track_seg_toggled(GtkCellRendererToggle *cell_renderer, gchar *path_str, dt_lib_module_t *self)
+static void _track_seg_toggled(GtkCellRenderer *cell_renderer, gchar *path_str, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = self->data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->map.gpx_view));
@@ -1795,7 +1795,7 @@ void gui_init(dt_lib_module_t *self)
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
   gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
-  g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
+  g_signal_connect(d->lock_offset, "clicked", G_CALLBACK(_toggle_lock_button_callback), self);
 
   box = _gui_init_datetime(_("date/time offset"), &d->of, 2, self, group, d->lock_offset,
                            _("offset or difference ([-]dd hh:mm:ss[.sss])"));
@@ -1853,8 +1853,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_completion_set_minimum_key_length(completion, 0);
   gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
-  g_signal_connect(G_OBJECT(d->timezone), "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
-  g_signal_connect(G_OBJECT(d->timezone), "focus-out-event", G_CALLBACK(_timezone_focus_out), self);
+  g_signal_connect(d->timezone, "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
+  g_signal_connect(d->timezone, "focus-out-event", G_CALLBACK(_timezone_focus_out), self);
 
   // gpx
   d->gpx_button = dt_action_button_new(self, N_("apply GPX track file..."), _choose_gpx_callback, self,
@@ -1878,7 +1878,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->map.gpx_button, "non-flat");
   gtk_widget_set_tooltip_text(d->map.gpx_button, _("select a GPX track file..."));
   gtk_grid_attach(grid, d->map.gpx_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->map.gpx_button), "clicked", G_CALLBACK(_choose_gpx_callback), self);
+  g_signal_connect(d->map.gpx_button, "clicked", G_CALLBACK(_choose_gpx_callback), self);
 
   d->map.gpx_file = dt_ui_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->map.gpx_file ), PANGO_ELLIPSIZE_MIDDLE);
@@ -1919,8 +1919,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->map.gpx_view), column);
 
   g_object_set(G_OBJECT(d->map.gpx_view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(d->map.gpx_view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), self);
-  g_signal_connect(G_OBJECT(d->map.gpx_view), "button-press-event", G_CALLBACK(_click_for_entire_track), self);
+  g_signal_connect(d->map.gpx_view, "query-tooltip", G_CALLBACK(_row_tooltip_setup), self);
+  g_signal_connect(d->map.gpx_view, "button-press-event", G_CALLBACK(_click_for_entire_track), self);
 
   // avoid ugly console pixman messages due to headers
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->map.gpx_view), FALSE);

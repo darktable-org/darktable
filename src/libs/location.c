@@ -140,9 +140,9 @@ void gui_init(dt_lib_module_t *self)
 
   /* add search box */
   lib->search = GTK_ENTRY(dt_ui_entry_new(0));
-  g_signal_connect(G_OBJECT(lib->search), "activate",
+  g_signal_connect(lib->search, "activate",
                    G_CALLBACK(_lib_location_entry_activated),
-                   (gpointer)self);
+                   self);
 
   /* add result vbox */
   lib->result = dt_gui_vbox();
@@ -173,9 +173,9 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
   GtkWidget *eb, *vb, *w;
   eb = gtk_event_box_new();
   gtk_widget_set_name(eb, "dt-map-location");
-  g_signal_connect(G_OBJECT(eb), "enter-notify-event",
+  g_signal_connect(eb, "enter-notify-event",
                    G_CALLBACK(_event_box_enter_leave), NULL);
-  g_signal_connect(G_OBJECT(eb), "leave-notify-event",
+  g_signal_connect(eb, "leave-notify-event",
                    G_CALLBACK(_event_box_enter_leave), NULL);
 
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -211,7 +211,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
     lib->callback_params = g_list_append(lib->callback_params, param);
     param->lib = lib;
     param->result = place;
-    g_signal_connect(G_OBJECT(eb), "button-press-event",
+    g_signal_connect(eb, "button-press-event",
                      G_CALLBACK(_lib_location_result_item_activated),
                      (gpointer)param);
   }
