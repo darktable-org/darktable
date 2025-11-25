@@ -16,4 +16,4 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void darktable_show_about_dialog();
+void darktable_show_about_dialog(void);

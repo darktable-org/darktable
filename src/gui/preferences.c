@@ -567,7 +567,7 @@ static void init_tab_general(GtkWidget *dialog,
 ///////////// end of gui and theme language selection
 
 
-void dt_gui_preferences_show()
+void dt_gui_preferences_show(void)
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog =

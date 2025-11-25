@@ -569,6 +569,142 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(leave, void(*)(GtkEventControllerMotion *, __typeof__(data))), \
   dt_gui_connect_motion(GTK_WIDGET(widget), G_CALLBACK(motion), G_CALLBACK(enter), G_CALLBACK(leave), (data)))
 
+// Enable compile-time checking of signal handler signatures
+// Uncomment the _Static_assert to stop compilation on mismatch
+// Otherwise errors will be printed at runtime, but only when the signal is connected
+// (so all dialogs, menus etc must be opened to see all errors)
+// No code is generated when the test is passed
+#if 1 && !defined(__cplusplus)
+#undef G_CALLBACK
+static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a macro it gets expanded before reaching here
+#define DISABLINGPREFIXG_CALLBACK
+
+#define SIGNAME(num, signal, name) !strcmp((signal), #name) ? 1 << num :
+#define RETURN_HANDLER(num, ret, instance, data, ...) ret(*)(__typeof__(instance), __VA_OPT__(__VA_ARGS__,) __typeof__(data)) : 1 << num,
+#define BOOL_HANDLER(num, instance, data, ...) RETURN_HANDLER(num, gboolean, instance, data, __VA_ARGS__)
+#define VOID_HANDLER(num, instance, data, ...) RETURN_HANDLER(num, void, instance, data, __VA_ARGS__)
+#define EVENT_HANDLER(num, instance, data, event) BOOL_HANDLER(num, instance, data, GdkEvent##event*) \
+                                                  BOOL_HANDLER(num, instance, data, const GdkEvent##event*)
+#undef _Static_assert
+#undef  g_signal_connect
+#define g_signal_connect(instance, signal, c_handler, user_data) do { \
+  const int required_signature = \
+    SIGNAME( 0, signal, pressed) \
+    SIGNAME( 0, signal, released) \
+    SIGNAME( 0, signal, motion) \
+    SIGNAME( 0, signal, enter) \
+    SIGNAME( 0, signal, leave) \
+    SIGNAME( 1, signal, event) \
+    SIGNAME( 1, signal, button-press-event) \
+    SIGNAME( 1, signal, button-release-event) \
+    SIGNAME( 1, signal, motion-notify-event) \
+    SIGNAME( 1, signal, scroll-event) \
+    SIGNAME( 1, signal, enter-notify-event) \
+    SIGNAME( 1, signal, leave-notify-event) \
+    SIGNAME( 1, signal, key-press-event) \
+    SIGNAME( 1, signal, focus-out-event) \
+    SIGNAME( 1, signal, focus-in-event) \
+    SIGNAME( 1, signal, delete-event) \
+    SIGNAME( 1, signal, configure-event) \
+    SIGNAME( 1 | 1 << 2 | 1 << 3 , signal, changed) \
+    SIGNAME( 2 | 1 << 5, signal, toggled) \
+    SIGNAME( 2, signal, clicked) \
+    SIGNAME( 2, signal, value-changed) \
+    SIGNAME( 2, signal, value-reset) \
+    SIGNAME( 2, signal, quad-pressed) \
+    SIGNAME( 2, signal, show) \
+    SIGNAME( 2, signal, closed) \
+    SIGNAME( 2, signal, stopped) \
+    SIGNAME( 2, signal, stop-search) \
+    SIGNAME( 2, signal, day_selected) \
+    SIGNAME( 2, signal, day_selected-double-click) \
+    SIGNAME( 2, signal, selection-changed) \
+    SIGNAME( 2, signal, activate) \
+    SIGNAME( 2, signal, deactivate) \
+    SIGNAME( 2, signal, editing-done) \
+    SIGNAME( 2, signal, style-updated) \
+    SIGNAME( 2, signal, search-changed) \
+    SIGNAME( 2, signal, mounts-changed) \
+    SIGNAME( 2, signal, color-set) \
+    SIGNAME( 2, signal, font-set) \
+    SIGNAME( 2, signal, destroy) \
+    SIGNAME( 4, signal, moved-to-rect) \
+    SIGNAME( 6, signal, query-tooltip) \
+    SIGNAME( 7, signal, draw) \
+    SIGNAME( 8, signal, add) \
+    SIGNAME( 8, signal, remove) \
+    SIGNAME( 8, signal, cancel) \
+    SIGNAME( 8, signal, size-allocate) \
+    SIGNAME( 8, signal, populate-popup) \
+    SIGNAME( 8, signal, drag-begin) \
+    SIGNAME( 8, signal, drag-end) \
+    SIGNAME( 9, signal, drag-leave) \
+    SIGNAME( 9, signal, switch-page) \
+    SIGNAME(10, signal, drag-motion) \
+    SIGNAME(10, signal, drag-drop) \
+    SIGNAME(11, signal, row-activated) \
+    SIGNAME(12, signal, response) \
+    SIGNAME(13, signal, drag-data-received) \
+    SIGNAME(14, signal, drag-data-get) \
+    SIGNAME(15, signal, drag-failed) \
+    SIGNAME(16, signal, editing-started) \
+    SIGNAME(17, signal, edited) \
+    SIGNAME(18, signal, focus) \
+    SIGNAME(19, signal, popup-menu) \
+    SIGNAME(20, signal, insert-text) \
+    SIGNAME(21, signal, row-inserted) \
+    SIGNAME(22, signal, notify::position) \
+    SIGNAME(22, signal, notify::visible) \
+    SIGNAME(23, signal, row-expanded) \
+    SIGNAME(24, signal, match-selected) \
+    0; \
+  const int found_signature = _Generic((DISABLINGPREFIX##c_handler), \
+    GCallback : 1 << 0, \
+    EVENT_HANDLER(1, instance, user_data, ) \
+    EVENT_HANDLER(1, instance, user_data, Button) \
+    EVENT_HANDLER(1, instance, user_data, Motion) \
+    EVENT_HANDLER(1, instance, user_data, Scroll) \
+    EVENT_HANDLER(1, instance, user_data, Key) \
+    EVENT_HANDLER(1, instance, user_data, Focus) \
+    EVENT_HANDLER(1, instance, user_data, Crossing) \
+    EVENT_HANDLER(1, instance, user_data, Configure) \
+    VOID_HANDLER( 2, instance, user_data) \
+    VOID_HANDLER( 3, instance, user_data, char*, GtkTreeIter*) \
+    VOID_HANDLER( 4, instance, user_data, GdkRectangle*, GdkRectangle*, gboolean, gboolean) \
+    VOID_HANDLER( 5, instance, user_data, char*) \
+    BOOL_HANDLER( 6, instance, user_data, gint, gint, gboolean, GtkTooltip*) \
+    BOOL_HANDLER( 7, instance, user_data, cairo_t*) \
+    VOID_HANDLER( 8, instance, user_data, GtkWidget*) \
+    VOID_HANDLER( 8, instance, user_data, GdkRectangle*) \
+    VOID_HANDLER( 8, instance, user_data, GdkEventSequence*) \
+    VOID_HANDLER( 8, instance, user_data, GdkDragContext*) \
+    VOID_HANDLER( 9, instance, user_data, GdkDragContext*, guint) \
+    VOID_HANDLER( 9, instance, user_data, GtkWidget*, guint) \
+    BOOL_HANDLER(10, instance, user_data, GdkDragContext*, const gint, const gint, const guint) \
+    VOID_HANDLER(11, instance, user_data, GtkTreePath*, GtkTreeViewColumn*) \
+    VOID_HANDLER(12, instance, user_data, gint) \
+    VOID_HANDLER(13, instance, user_data, GdkDragContext*, gint, gint, GtkSelectionData*, guint, guint) \
+    VOID_HANDLER(14, instance, user_data, GdkDragContext*, GtkSelectionData*, guint, guint) \
+    BOOL_HANDLER(15, instance, user_data, GdkDragContext*, GtkDragResult) \
+    VOID_HANDLER(16, instance, user_data, GtkCellEditable*, char*) \
+    VOID_HANDLER(17, instance, user_data, const gchar*, const gchar*) \
+    BOOL_HANDLER(18, instance, user_data, GtkDirectionType) \
+    BOOL_HANDLER(19, instance, user_data) \
+    VOID_HANDLER(20, instance, user_data, const gchar*, const gint, gint*) \
+    VOID_HANDLER(21, instance, user_data, GtkTreePath*, GtkTreeIter*) \
+    VOID_HANDLER(22, instance, user_data, GParamSpec*) \
+    VOID_HANDLER(23, instance, user_data, GtkTreeIter*, GtkTreePath*) \
+    BOOL_HANDLER(24, instance, user_data, GtkTreeModel*, GtkTreeIter*) \
+    default : 0); \
+  if(required_signature == 0) \
+    dt_print_nts_ext("%s:%d: connecting unknown signal %s\n", __FILE__, __LINE__, signal); \
+  else if(!(required_signature & found_signature)) \
+    dt_print_nts_ext("%s:%d: connecting signal %s to %s with incorrect signature\n", __FILE__, __LINE__, signal, #c_handler); \
+  _Static_assert(required_signature, "unknown signal encountered: " signal ); \
+  /*_Static_assert(required_signature & found_signature, "incorrect function connected to " signal );*/ \
+  g_signal_connect_data ((instance), (signal), (c_handler), (user_data), NULL, (GConnectFlags) 0); } while(0)
+#endif // __cplusplus
+
 // GTK4 gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 #define dt_modifier_eq(controller, mask)\
   dt_modifier_is(dt_key_modifier_state(), mask)

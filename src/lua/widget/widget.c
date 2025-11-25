@@ -107,7 +107,7 @@ static int get_widget_params(lua_State *L)
   lua_pushnil(L); /* first key */
   while(lua_next(L, -2) != 0)
   {
-    g_signal_connect(widget->widget, lua_tostring(L,-2), G_CALLBACK(lua_touserdata(L,-1)), widget);
+    g_signal_connect_data(widget->widget, lua_tostring(L,-2), G_CALLBACK(lua_touserdata(L,-1)), widget, NULL, 0);
     lua_pop(L,1);
   }
   lua_pop(L,1);
