@@ -371,8 +371,8 @@ if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 fi
 
 
-cmd_config="${ASAN_FLAGS}cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} ${CMAKE_OPTIONS_FROM_CMDLINE} \"$DT_SRC_DIR\""
-cmd_build="cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS"
+cmd_config="${ASAN_FLAGS}cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=\"${INSTALL_PREFIX}\" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} ${CMAKE_OPTIONS_FROM_CMDLINE} \"$DT_SRC_DIR\""
+cmd_build="cmake --build \"$BUILD_DIR\" -- -j$MAKE_TASKS"
 cmd_install="${SUDO}cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
 
 
