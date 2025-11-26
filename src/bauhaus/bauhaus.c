@@ -2608,12 +2608,14 @@ static gboolean _popup_draw(GtkWidget *widget,
 }
 
 static gboolean _widget_draw(GtkWidget *widget,
-                             cairo_t *cr)
+                             cairo_t *crf)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   const int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
   GdkRGBA *fg_color = _default_color_assign();
@@ -2755,7 +2757,11 @@ static gboolean _widget_draw(GtkWidget *widget,
       break;
   }
   cairo_restore(cr);
-  gtk_render_frame(context, cr, w->margin.left, w->margin.top, w2, h2);
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  gtk_render_frame(context, crf, w->margin.left, w->margin.top, w2, h2);
 
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);
