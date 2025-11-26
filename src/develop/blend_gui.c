@@ -2799,6 +2799,14 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
                                              FALSE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, abox);
 
+    bd->masks_type[5] = DT_MASKS_RASTER;
+    bd->masks_shapes[5] = dt_iop_togglebutton_new(module, "blend`shapes",
+                                                  N_("add raster"),
+                                                  N_("add multiple raster mask"),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
+                                                  FALSE, 0, 0,
+                                                  dtgtk_cairo_paint_masks_circle, abox);
+
     bd->masks_type[0] = DT_MASKS_GRADIENT;
     bd->masks_shapes[0] = dt_iop_togglebutton_new(module, "blend`shapes",
                                                   N_("add gradient"),

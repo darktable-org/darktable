@@ -42,7 +42,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_GRADIENT = 1 << 4,
   DT_MASKS_ELLIPSE = 1 << 5,
   DT_MASKS_BRUSH = 1 << 6,
-  DT_MASKS_NON_CLONE = 1 << 7
+  DT_MASKS_NON_CLONE = 1 << 7,
+  DT_MASKS_RASTER = 1 << 8,
 } dt_masks_type_t;
 
 /**masts states */
@@ -195,6 +196,13 @@ typedef struct dt_masks_point_group_t
   int state;
   float opacity;
 } dt_masks_point_group_t;
+
+/** structure used to store information regarding raster mask */
+typedef struct dt_masks_point_raster_t
+{
+  int state;
+  float opacity;
+} dt_masks_point_raster_t;
 
 /** structure used to store pointers to the functions implementing operations on a mask shape */
 /** plus a few per-class descriptive data items */
@@ -440,6 +448,7 @@ extern const dt_masks_functions_t dt_masks_functions_brush;
 extern const dt_masks_functions_t dt_masks_functions_path;
 extern const dt_masks_functions_t dt_masks_functions_gradient;
 extern const dt_masks_functions_t dt_masks_functions_group;
+extern const dt_masks_functions_t dt_masks_functions_raster;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
