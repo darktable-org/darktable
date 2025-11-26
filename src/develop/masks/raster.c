@@ -158,22 +158,22 @@ static int _raster_get_mask(const dt_iop_module_t *const restrict module,
                             int *posx,
                             int *posy)
 {
-    // dt_iop_gui_blend_data_t *bd = module->blend_data;
-    // gboolean free_mask;
-    float *raster_mask = NULL;
+  // dt_iop_gui_blend_data_t *bd = module->blend_data;
+  // gboolean free_mask;
+  float *raster_mask = NULL;
 
-    if(raster_mask)
-    {
-      // Forward raster mask
-      // dt_iop_image_scaled_copy(buffer, raster_mask, 1.0f, width, height, 1);
-      // if(free_mask) dt_free_align(raster_mask);
-    }
-    else
-    {
-      // Fallback when raster mask is not available
-      dt_iop_image_fill(*buffer, 0.0f, *width, *height, 1);  // mask[k] = value;
-    }
-    return 1;
+  if(raster_mask)
+  {
+    // Forward raster mask
+    // dt_iop_image_scaled_copy(buffer, raster_mask, 1.0f, width, height, 1);
+    // if(free_mask) dt_free_align(raster_mask);
+  }
+  else
+  {
+    // Fallback when raster mask is not available
+    dt_iop_image_fill(*buffer, 0.0f, *width, *height, 1);  // mask[k] = value;
+  }
+  return 1;
 }
 
 static int _raster_get_mask_roi(const dt_iop_module_t *const restrict module,
