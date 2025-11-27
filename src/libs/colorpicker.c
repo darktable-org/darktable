@@ -333,7 +333,7 @@ static void _set_sample_box_area(dt_lib_module_t *self,
 }
 
 static void _set_sample_point(dt_lib_module_t *self,
-                              const float pos[2])
+                              const dt_pickerpoint_t pos)
 {
   dt_lib_colorpicker_t *data = self->data;
 
