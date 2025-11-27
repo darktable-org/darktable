@@ -3607,11 +3607,8 @@ int button_pressed(dt_view_t *self,
       }
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        // default is hardcoded this way
-        // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
-        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
         dt_pickerbox_t box;
-        dt_color_picker_backtransform_box(dev, 2, reset, box);
+        dt_lib_colorpicker_reset_box_area(box);
         dt_lib_colorpicker_set_box_area(darktable.lib, box);
         dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
         dt_control_queue_redraw_center();
