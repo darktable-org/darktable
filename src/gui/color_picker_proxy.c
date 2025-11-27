@@ -150,11 +150,11 @@ static void _init_picker(dt_iop_color_picker_t *picker,
   picker->changed    = FALSE;
   picker->fixed_cst  = FALSE;
 
-  // default values
-  picker->pick_box[0] = picker->pick_box[1] = 0.0f;
-  picker->pick_box[2] = picker->pick_box[3] = 1.0f;
-  picker->pick_pos[0] = picker->pick_pos[1] = 0.0f;
   _color_picker_reset(picker);
+
+  // set default positions
+  dt_lib_colorpicker_reset_box_area(picker->pick_box);
+  dt_lib_colorpicker_reset_point(picker->pick_pos);
 }
 
 static gboolean _color_picker_callback_button_press(GtkWidget *button,

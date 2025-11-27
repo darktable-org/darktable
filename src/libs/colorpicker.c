@@ -701,6 +701,9 @@ void gui_init(dt_lib_module_t *self)
   // _update_samples_output() will update the RGB values
   data->primary_sample.swatch.alpha = 1.0;
 
+  dt_lib_colorpicker_reset_box_area(data->primary_sample.box);
+  dt_lib_colorpicker_reset_point(data->primary_sample.point);
+
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
   darktable.lib->proxy.colorpicker.display_samples =
