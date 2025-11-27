@@ -4006,13 +4006,19 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_FOCUS:
-      _request_module_focus_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dt_dev_gui_module() == module))
+        _request_module_focus_callback(module);
       break;
     case DT_ACTION_ELEMENT_ENABLE:
-      _enable_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           module->off && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off))))
+        _enable_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_SHOW:
-      _show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+            module->expanded))
+        _show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_INSTANCE:;
       dt_iop_gui_multi_show_t multi_show;
