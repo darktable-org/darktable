@@ -2376,7 +2376,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
           gtk_widget_set_tooltip_text(GTK_WIDGET(smir), _("add this module"));
           g_object_set_data(G_OBJECT(smir), "module_op", module->op);
           g_object_set_data(G_OBJECT(smir), "group", gr);
-          g_signal_connect(G_OBJECT(smir), "activate", callback, data);
+          g_signal_connect_data(G_OBJECT(smir), "activate", callback, data, NULL, 0);
           gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(smir), nba);
         }
         GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
@@ -2384,7 +2384,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
         gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("add this module"));
         g_object_set_data(G_OBJECT(smi), "module_op", module->op);
         g_object_set_data(G_OBJECT(smi), "group", gr);
-        g_signal_connect(G_OBJECT(smi), "activate", callback, data);
+        g_signal_connect_data(G_OBJECT(smi), "activate", callback, data, NULL, 0);
         gtk_menu_shell_prepend(GTK_MENU_SHELL(sm_all), GTK_WIDGET(smi));
       }
       else if(toggle)
@@ -2394,7 +2394,7 @@ static void _manage_module_add_popup(GtkWidget *widget,
         gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("remove this module"));
         g_object_set_data(G_OBJECT(smi), "module_op", module->op);
         g_object_set_data(G_OBJECT(smi), "group", gr);
-        g_signal_connect(G_OBJECT(smi), "activate", callback, data);
+        g_signal_connect_data(G_OBJECT(smi), "activate", callback, data, NULL, 0);
         gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(smi), 0);
         nba++;
       }
@@ -2548,7 +2548,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions,
             gtk_widget_set_tooltip_text(item_top, _("remove this widget"));
             gtk_widget_set_name(item_top, "modulegroups-popup-item");
             g_object_set_data(G_OBJECT(item_top), "widget_id", action);
-            g_signal_connect(G_OBJECT(item_top), "activate", callback, self);
+            g_signal_connect_data(G_OBJECT(item_top), "activate", callback, self, NULL, 0);
             gtk_menu_shell_insert(GTK_MENU_SHELL(base_menu), item_top, *num_selected);
             ++*num_selected;
           }
@@ -2565,7 +2565,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions,
             gtk_widget_set_tooltip_text(item_top, _("add this widget"));
             gtk_widget_set_name(item_top, "modulegroups-popup-item");
             g_object_set_data(G_OBJECT(item_top), "widget_id", action);
-            g_signal_connect(G_OBJECT(item_top), "activate", callback, self);
+            g_signal_connect_data(G_OBJECT(item_top), "activate", callback, self, NULL, 0);
             gtk_menu_shell_append(GTK_MENU_SHELL(base_menu), item_top);
           }
           g_free(delimited_id);
@@ -2583,7 +2583,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions,
         }
 
         g_object_set_data(G_OBJECT(item), "widget_id", action);
-        g_signal_connect(G_OBJECT(item), "activate", callback, self);
+        g_signal_connect_data(G_OBJECT(item), "activate", callback, self, NULL, 0);
         g_free(action_id);
       }
       g_free(action_label);

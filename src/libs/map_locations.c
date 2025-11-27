@@ -774,10 +774,10 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     const gboolean children = gtk_tree_model_iter_children(model, &child, &parent);
 
     menuitem = gtk_menu_item_new_with_label(_("edit location"));
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_edit_location, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_edit_location), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     menuitem = gtk_menu_item_new_with_label(_("delete location"));
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_delete_location, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_delete_location), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     if(children)
     {
@@ -792,10 +792,10 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     {
       gtk_widget_set_sensitive(menuitem, FALSE);
     }
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_update_filmstrip, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_update_filmstrip), self);
     menuitem = gtk_menu_item_new_with_label(_("go to collection (lighttable)"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_goto_collection, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_goto_collection), self);
     if(!locid)
     {
       gtk_widget_set_sensitive(menuitem, FALSE);

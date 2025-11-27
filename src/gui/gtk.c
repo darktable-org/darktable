@@ -4465,10 +4465,10 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
-  if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
+  if(pressed) g_signal_connect(gesture, "pressed", G_CALLBACK(pressed), data);
   if(released)
   {
-    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "released", G_CALLBACK(released), data);
     g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
   }
 
@@ -4488,9 +4488,9 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 
   gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
 
-  if(motion) g_signal_connect(controller, "motion", motion, data);
-  if(enter) g_signal_connect(controller, "enter", enter, data);
-  if(leave) g_signal_connect(controller, "leave", leave, data);
+  if(motion) g_signal_connect(controller, "motion", G_CALLBACK(motion), data);
+  if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
+  if(leave) g_signal_connect(controller, "leave", G_CALLBACK(leave), data);
 
   return controller;
 }
@@ -4664,6 +4664,24 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
   else
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
+}
+
+gulong dt_signal_connect_data_with_caller(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags,
+                                          gboolean gboolean_return,
+                                          const char *file,
+                                          const int line)
+{
+  GSignalQuery type_query = {};
+  if(!g_str_has_prefix(detailed_signal, "notify::"))
+    g_signal_query(g_signal_lookup(detailed_signal, G_OBJECT_TYPE(instance)), &type_query);
+  if((type_query.return_type  == G_TYPE_BOOLEAN) ^ gboolean_return)
+    dt_print(DT_DEBUG_ALWAYS, "connecting signal %s to handler with wrong return type %s:%d", detailed_signal, file, line);
+  return g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
 }
 
 // clang-format off

@@ -638,6 +638,29 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
 
+#if !defined(__cplusplus)
+gulong dt_signal_connect_data_with_caller(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags,
+                                          gboolean gboolean_return,
+                                          const char *file,
+                                          const int line);
+#undef G_CALLBACK
+static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a macro it gets expanded before reaching here
+#define DISABLINGPREFIXG_CALLBACK
+#undef  g_signal_connect
+#define g_signal_connect(instance, signal, c_handler, user_data) \
+  dt_signal_connect_data_with_caller((instance), (signal), (GCallback)(c_handler), (user_data), NULL, (GConnectFlags) 0, \
+                                     _Generic((DISABLINGPREFIX##c_handler), \
+                                              gboolean(*)() : TRUE, \
+                                              void(*)() : FALSE, \
+                                              gpointer: FALSE), \
+                                     __FILE__, __LINE__)
+#endif // __cplusplus
+
 G_END_DECLS
 
 // clang-format off
