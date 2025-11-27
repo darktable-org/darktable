@@ -182,12 +182,8 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == GDK_BUTTON_SECONDARY);
   dt_iop_color_picker_flags_t flags = self->flags;
 
-  // setup if a new picker or switching between point/area mode
-  if(prior_picker != self
-     || (((flags & DT_COLOR_PICKER_POINT_AREA) == DT_COLOR_PICKER_POINT_AREA)
-         && (to_area_mode !=
-             (darktable.lib->proxy.colorpicker.primary_sample->size ==
-              DT_LIB_COLORPICKER_SIZE_BOX))))
+  // setup if a new picker
+  if(prior_picker != self)
   {
     darktable.lib->proxy.colorpicker.picker_proxy = self;
 
@@ -198,24 +194,14 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     dt_iop_color_picker_flags_t kind = self->flags & DT_COLOR_PICKER_POINT_AREA;
     if(kind == DT_COLOR_PICKER_POINT_AREA)
       kind = to_area_mode ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
+
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
-      if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
-         && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
-      {
-        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
-        dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
-      }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
     else if(kind & DT_COLOR_PICKER_POINT)
     {
-      if(self->pick_pos[0] == 0.0f && self->pick_pos[1] == 0.0f)
-      {
-        dt_boundingbox_t middle = { 0.5f, 0.5f };
-        dt_color_picker_backtransform_box(darktable.develop, 1, middle, self->pick_pos);
-      }
       dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     }
     else

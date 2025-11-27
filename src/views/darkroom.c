@@ -54,6 +54,7 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "libs/colorpicker.h"
+#include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
 
@@ -3519,13 +3520,36 @@ int button_pressed(dt_view_t *self,
     const int procw = dev->preview_pipe->backbuf_width;
     const int proch = dev->preview_pipe->backbuf_height;
 
+    // For a Ctrl+Click we do change the color picker from/to area <-> point
+    if(which == GDK_BUTTON_PRIMARY
+       && dt_modifier_is(state, GDK_CONTROL_MASK))
+    {
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      {
+        // dt_lib_colorpicker_reset_box_area(sample->box);
+        dt_lib_colorpicker_set_box_area(darktable.lib, sample->box);
+      }
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      {
+        dt_lib_colorpicker_set_point(darktable.lib, sample->point);
+      }
+
+      dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+      dt_control_queue_redraw_center();
+
+      return 1;
+    }
+
     if(which == GDK_BUTTON_PRIMARY)
     {
       _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-      sample->point[0] = zoom_x;
-      sample->point[1] = zoom_y;
 
-      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      {
+        sample->point[0] = zoom_x;
+        sample->point[1] = zoom_y;
+      }
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         dt_boundingbox_t sbox;
         dt_color_picker_transform_box(dev, 2, sample->box, sbox, TRUE);
@@ -3541,8 +3565,8 @@ int button_pressed(dt_view_t *self,
 
         if(MIN(dx0, dx1) < hx && MIN(dy0, dy1) < hy)
         {
-          sample->point[0] = sbox[dx0 < dx1 ? 2 : 0];
-          sample->point[1] = sbox[dy0 < dy1 ? 3 : 1];
+          sample->pdrag[0] = sbox[dx0 < dx1 ? 2 : 0];
+          sample->pdrag[1] = sbox[dy0 < dy1 ? 3 : 1];
         }
         else
         {
