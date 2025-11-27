@@ -20,6 +20,7 @@
 #include "common/debug.h"
 #include "common/module.h"
 #include "common/presets.h"
+#include "common/color_picker.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -1518,6 +1519,19 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib,
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, pos);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+}
+
+/* clear color picker pos */
+void dt_lib_colorpicker_reset_box_area(dt_pickerbox_t box)
+{
+  dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
+  dt_color_picker_backtransform_box(darktable.develop, 2, reset, box);
+}
+
+void dt_lib_colorpicker_reset_point(dt_pickerpoint_t pos)
+{
+  dt_boundingbox_t reset = { 0.5f, 0.5f };
+  dt_color_picker_backtransform_box(darktable.develop, 1, reset, pos);
 }
 
 void dt_lib_colorpicker_setup(dt_lib_t *lib,
