@@ -119,6 +119,13 @@ enum
 };
 typedef gint dt_action_effect_t;
 
+#define DT_ACTION_TOGGLE_NEEDED(effect, move_size, value) \
+  DT_PERFORM_ACTION(move_size)                            \
+  && !((effect == DT_ACTION_EFFECT_ON                     \
+     || effect == DT_ACTION_EFFECT_ON_CTRL                \
+     || effect == DT_ACTION_EFFECT_ON_RIGHT) && (value))  \
+  &&   (effect != DT_ACTION_EFFECT_OFF       || (value))
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

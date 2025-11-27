@@ -210,13 +210,8 @@ static float _action_process_toggle(gpointer target,
 {
   float value = gtk_toggle_button_get_active(target);
 
-  if(DT_PERFORM_ACTION(move_size)
-     && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW)
-     && !((effect == DT_ACTION_EFFECT_ON
-        || effect == DT_ACTION_EFFECT_ON_CTRL
-        || effect == DT_ACTION_EFFECT_ON_RIGHT) && value)
-     && (effect != DT_ACTION_EFFECT_OFF
-         || value))
+  if(DT_ACTION_TOGGLE_NEEDED(effect, move_size, value)
+     && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
     GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
     event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
