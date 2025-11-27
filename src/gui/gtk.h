@@ -638,6 +638,28 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);
 
+#if !defined(__cplusplus)
+#undef G_CALLBACK
+static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a macro it gets expanded before reaching here
+#define DISABLINGPREFIXG_CALLBACK
+#define BOOLSIGNAL(s, signal) || !strcmp(s, #signal)
+#undef _Static_assert
+#undef  g_signal_connect
+#define g_signal_connect(instance, signal, c_handler, user_data) do { \
+  _Static_assert(((strlen(signal)>4 && !strcmp("event", &signal[strlen(signal)-5])) \
+    BOOLSIGNAL(signal, drag-motion) \
+    BOOLSIGNAL(signal, drag-failed) \
+    BOOLSIGNAL(signal, drag-drop) \
+    BOOLSIGNAL(signal, focus) \
+    BOOLSIGNAL(signal, draw) \
+    BOOLSIGNAL(signal, popup-menu) \
+    BOOLSIGNAL(signal, query-tooltip) \
+    BOOLSIGNAL(signal, match-selected) \
+    ) == _Generic((DISABLINGPREFIX##c_handler), gboolean(*)(): TRUE, default: FALSE), \
+    "signal " signal " return type does not match specified handler " #c_handler); \
+  g_signal_connect_data((instance), (signal), (GCallback)(c_handler), (user_data), NULL, (GConnectFlags) 0); } while(0)
+#endif // __cplusplus
+
 G_END_DECLS
 
 // clang-format off
