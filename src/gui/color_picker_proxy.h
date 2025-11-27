@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -28,6 +28,7 @@
 */
 
 #include <gtk/gtk.h>
+#include "common/darktable.h"
 #include "develop/imageop.h"
 
 typedef enum _iop_color_picker_flags_t
@@ -71,10 +72,12 @@ typedef struct dt_iop_color_picker_t
 gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev);
 
 //* reset current color picker if not keep-active or not keep */
-void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep);
+void dt_iop_color_picker_reset(dt_iop_module_t *module,
+                               const gboolean keep);
 
 /* sets the picker colorspace */
-void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst);
+void dt_iop_color_picker_set_cst(dt_iop_module_t *module,
+                                 const dt_iop_colorspace_type_t picker_cst);
 
 /* returns the active picker colorspace (if any) */
 dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *module);
@@ -89,7 +92,9 @@ void dt_iop_color_picker_cleanup();
 GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w);
 
 /* link color picker to widget and initialize color picker color space with given value */
-GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w,
+GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
+                                        const dt_iop_color_picker_flags_t flags,
+                                        GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst);
 
 // clang-format off
@@ -97,4 +102,3 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_pi
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

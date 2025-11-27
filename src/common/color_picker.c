@@ -314,7 +314,7 @@ void dt_color_picker_transform_box(dt_develop_t *dev,
                                    const int num,
                                    const float *in,
                                    float *out,
-                                   gboolean scale)
+                                   const gboolean scale)
 {
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ static void _update_sample_label(dt_lib_module_t *self,
       snprintf(text, sizeof(text), "%6d %6d %6d",
                sample->label_rgb[0], sample->label_rgb[1], sample->label_rgb[2]);
       break;
-    case DT_LIB_COLORPICKER_MODEL_RGB_PERCENT:  
+    case DT_LIB_COLORPICKER_MODEL_RGB_PERCENT:
       snprintf(text, sizeof(text), "%6.1f%% %6.1f%% %6.1f%%",
             (sample->scope[statistic][0] * 100.f),
             (sample->scope[statistic][1] * 100.f),
