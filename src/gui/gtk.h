@@ -580,11 +580,52 @@ static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a mac
 #define DISABLINGPREFIXG_CALLBACK
 
 #define SIGNAME(num, signal, name) !strcmp((signal), #name) ? 1 << num :
-#define RETURN_HANDLER(num, ret, instance, data, ...) ret(*)(__typeof__(instance), __VA_OPT__(__VA_ARGS__,) __typeof__(data)) : 1 << num,
+#define RETURN_HANDLER(num, ret, instance, data, ...) ret(*)(instance, __VA_OPT__(__VA_ARGS__,) data) : 1 << num,
 #define BOOL_HANDLER(num, instance, data, ...) RETURN_HANDLER(num, gboolean, instance, data, __VA_ARGS__)
 #define VOID_HANDLER(num, instance, data, ...) RETURN_HANDLER(num, void, instance, data, __VA_ARGS__)
 #define EVENT_HANDLER(num, instance, data, event) BOOL_HANDLER(num, instance, data, GdkEvent##event*) \
                                                   BOOL_HANDLER(num, instance, data, const GdkEvent##event*)
+#define MATCH_HANDLER(c_handler, instance, data) \
+  _Generic((DISABLINGPREFIX##c_handler), \
+    GCallback : 1 << 0, \
+    EVENT_HANDLER(1, instance, data, ) \
+    EVENT_HANDLER(1, instance, data, Button) \
+    EVENT_HANDLER(1, instance, data, Motion) \
+    EVENT_HANDLER(1, instance, data, Scroll) \
+    EVENT_HANDLER(1, instance, data, Key) \
+    EVENT_HANDLER(1, instance, data, Focus) \
+    EVENT_HANDLER(1, instance, data, Crossing) \
+    EVENT_HANDLER(1, instance, data, Configure) \
+    VOID_HANDLER( 2, instance, data) \
+    VOID_HANDLER( 3, instance, data, char*, GtkTreeIter*) \
+    VOID_HANDLER( 4, instance, data, GdkRectangle*, GdkRectangle*, gboolean, gboolean) \
+    VOID_HANDLER( 5, instance, data, char*) \
+    BOOL_HANDLER( 6, instance, data, gint, gint, gboolean, GtkTooltip*) \
+    BOOL_HANDLER( 7, instance, data, cairo_t*) \
+    VOID_HANDLER( 8, instance, data, GtkWidget*) \
+    VOID_HANDLER( 8, instance, data, GdkRectangle*) \
+    VOID_HANDLER( 8, instance, data, GdkEventSequence*) \
+    VOID_HANDLER( 8, instance, data, GdkDragContext*) \
+    VOID_HANDLER( 9, instance, data, GdkDragContext*, guint) \
+    VOID_HANDLER( 9, instance, data, GtkWidget*, guint) \
+    BOOL_HANDLER(10, instance, data, GdkDragContext*, const gint, const gint, const guint) \
+    VOID_HANDLER(11, instance, data, GtkTreePath*, GtkTreeViewColumn*) \
+    VOID_HANDLER(12, instance, data, gint) \
+    VOID_HANDLER(13, instance, data, GdkDragContext*, gint, gint, GtkSelectionData*, guint, guint) \
+    VOID_HANDLER(14, instance, data, GdkDragContext*, GtkSelectionData*, guint, guint) \
+    BOOL_HANDLER(15, instance, data, GdkDragContext*, GtkDragResult) \
+    VOID_HANDLER(16, instance, data, GtkCellEditable*, char*) \
+    VOID_HANDLER(17, instance, data, const gchar*, const gchar*) \
+    BOOL_HANDLER(18, instance, data, GtkDirectionType) \
+    BOOL_HANDLER(19, instance, data) \
+    VOID_HANDLER(20, instance, data, const gchar*, const gint, gint*) \
+    VOID_HANDLER(21, instance, data, GtkTreePath*, GtkTreeIter*) \
+    VOID_HANDLER(22, instance, data, GParamSpec*) \
+    VOID_HANDLER(23, instance, data, GtkTreeIter*, GtkTreePath*) \
+    BOOL_HANDLER(24, instance, data, GtkTreeModel*, GtkTreeIter*) \
+    default : 0)
+#define MATCH_HANDLER_BOTH(c_handler, instance, data) MATCH_HANDLER(c_handler, instance, data) ?: \
+                                                      MATCH_HANDLER(c_handler, instance, gpointer)
 #undef _Static_assert
 #undef  g_signal_connect
 #define g_signal_connect(instance, signal, c_handler, user_data) do { \
@@ -658,50 +699,21 @@ static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a mac
     SIGNAME(23, signal, row-expanded) \
     SIGNAME(24, signal, match-selected) \
     0; \
-  const int found_signature = _Generic((DISABLINGPREFIX##c_handler), \
-    GCallback : 1 << 0, \
-    EVENT_HANDLER(1, instance, user_data, ) \
-    EVENT_HANDLER(1, instance, user_data, Button) \
-    EVENT_HANDLER(1, instance, user_data, Motion) \
-    EVENT_HANDLER(1, instance, user_data, Scroll) \
-    EVENT_HANDLER(1, instance, user_data, Key) \
-    EVENT_HANDLER(1, instance, user_data, Focus) \
-    EVENT_HANDLER(1, instance, user_data, Crossing) \
-    EVENT_HANDLER(1, instance, user_data, Configure) \
-    VOID_HANDLER( 2, instance, user_data) \
-    VOID_HANDLER( 3, instance, user_data, char*, GtkTreeIter*) \
-    VOID_HANDLER( 4, instance, user_data, GdkRectangle*, GdkRectangle*, gboolean, gboolean) \
-    VOID_HANDLER( 5, instance, user_data, char*) \
-    BOOL_HANDLER( 6, instance, user_data, gint, gint, gboolean, GtkTooltip*) \
-    BOOL_HANDLER( 7, instance, user_data, cairo_t*) \
-    VOID_HANDLER( 8, instance, user_data, GtkWidget*) \
-    VOID_HANDLER( 8, instance, user_data, GdkRectangle*) \
-    VOID_HANDLER( 8, instance, user_data, GdkEventSequence*) \
-    VOID_HANDLER( 8, instance, user_data, GdkDragContext*) \
-    VOID_HANDLER( 9, instance, user_data, GdkDragContext*, guint) \
-    VOID_HANDLER( 9, instance, user_data, GtkWidget*, guint) \
-    BOOL_HANDLER(10, instance, user_data, GdkDragContext*, const gint, const gint, const guint) \
-    VOID_HANDLER(11, instance, user_data, GtkTreePath*, GtkTreeViewColumn*) \
-    VOID_HANDLER(12, instance, user_data, gint) \
-    VOID_HANDLER(13, instance, user_data, GdkDragContext*, gint, gint, GtkSelectionData*, guint, guint) \
-    VOID_HANDLER(14, instance, user_data, GdkDragContext*, GtkSelectionData*, guint, guint) \
-    BOOL_HANDLER(15, instance, user_data, GdkDragContext*, GtkDragResult) \
-    VOID_HANDLER(16, instance, user_data, GtkCellEditable*, char*) \
-    VOID_HANDLER(17, instance, user_data, const gchar*, const gchar*) \
-    BOOL_HANDLER(18, instance, user_data, GtkDirectionType) \
-    BOOL_HANDLER(19, instance, user_data) \
-    VOID_HANDLER(20, instance, user_data, const gchar*, const gint, gint*) \
-    VOID_HANDLER(21, instance, user_data, GtkTreePath*, GtkTreeIter*) \
-    VOID_HANDLER(22, instance, user_data, GParamSpec*) \
-    VOID_HANDLER(23, instance, user_data, GtkTreeIter*, GtkTreePath*) \
-    BOOL_HANDLER(24, instance, user_data, GtkTreeModel*, GtkTreeIter*) \
-    default : 0); \
+  const int found_signature = MATCH_HANDLER_BOTH(c_handler, __typeof__(instance), __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkWidget*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkEntry*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkDrawingArea*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkTreeView*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkTextView*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkColorButton*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkToggleButton*, __typeof__(user_data)) ?: \
+                              MATCH_HANDLER_BOTH(c_handler, GtkButton*, __typeof__(user_data)); \
   if(required_signature == 0) \
     dt_print_nts_ext("%s:%d: connecting unknown signal %s\n", __FILE__, __LINE__, signal); \
   else if(!(required_signature & found_signature)) \
-    dt_print_nts_ext("%s:%d: connecting signal %s to %s with incorrect signature\n", __FILE__, __LINE__, signal, #c_handler); \
-  _Static_assert(required_signature, "unknown signal encountered: " signal ); \
-  /*_Static_assert(required_signature & found_signature, "incorrect function connected to " signal );*/ \
+    dt_print_nts_ext("%s:%d: connecting signal %s to %s with incorrect signature %d-%d\n", __FILE__, __LINE__, signal, #c_handler, required_signature, found_signature); \
+  /*_Static_assert(required_signature, "unknown signal encountered: " signal ); */\
+  /*_Static_assert(required_signature & found_signature, "incorrect function connected to " signal ); */\
   g_signal_connect_data ((instance), (signal), (c_handler), (user_data), NULL, (GConnectFlags) 0); } while(0)
 #endif // __cplusplus
 
