@@ -1406,12 +1406,18 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
                      G_CALLBACK(_event_main_drag_motion), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _dt_selection_changed_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _dt_mipmaps_updated_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _dt_preview_updated_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _dt_image_info_changed_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                              _dt_active_images_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED,
+                              _dt_selection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                              _dt_mipmaps_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                              _dt_preview_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED,
+                              _dt_image_info_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
+                              _dt_collection_changed_callback, thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();

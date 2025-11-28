@@ -1230,9 +1230,9 @@ static void _line_to_module(cairo_t *cr,
 
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    const int32_t width,
-                                    const int32_t height,
-                                    dt_thumbtable_t *lighttable)
+                                     const int32_t width,
+                                     const int32_t height,
+                                     dt_thumbtable_t *lighttable)
 {
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
