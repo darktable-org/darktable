@@ -89,7 +89,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
 // update thumbtable class and overlays mode, depending on size category
 static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 {
-  int ns = _thumbs_get_prefs_size(table);
+  const int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
   gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
