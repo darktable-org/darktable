@@ -158,35 +158,10 @@ static int _render_raster_mask(const dt_iop_module_t *const restrict module,
 {
   const size_t obuffsize = (size_t)width * height;
 
-  // Skip if module is not in focus
-  // if(!dt_iop_has_focus((dt_iop_module_t *)module))
-  //   return 0;
-
   // initialize output buffer with zero
   memset(buffer, 0, sizeof(float) * width * height);
 
   dt_masks_point_raster_t *rasterPoint = form->points->data;
-  // if(!rasterPoint)
-  //   return 0;
-
-  // Find module with the same ID as the mask ID
-  // dt_iop_module_t * source = NULL;
-  // GList *source_iter;
-  // for(source_iter = piece->pipe->nodes;
-  //     source_iter;
-  //     source_iter = g_list_next(source_iter))
-  // {
-  //   dt_dev_pixelpipe_iop_t *candidate = source_iter->data;
-  //   if (candidate->module->instance == rasterPoint->sourceInstanceId) {
-  //     source = candidate->module;
-  //     break;
-  //   }
-  // }
-
-  // if (!source) {
-  //   // TODO: Show error, log, or message
-  //   return 0;
-  // }
 
   gboolean free_mask;
   float *raster_mask = dt_dev_get_raster_mask(
@@ -337,6 +312,7 @@ static int _raster_events_button_released(dt_iop_module_t *module,
       return 0;
     }
     raster->sourceInstanceId = sourceMask->instance;
+    raster->maskId = module->raster_mask.sink.id;
 
     gui->form_dragging = FALSE;
 

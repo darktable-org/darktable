@@ -201,6 +201,7 @@ typedef struct dt_masks_point_group_t
 typedef struct dt_masks_point_raster_t
 {
   int32_t sourceInstanceId;
+  dt_mask_id_t maskId;
   int state;
   float opacity;
 } dt_masks_point_raster_t;
