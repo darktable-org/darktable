@@ -4666,24 +4666,6 @@ void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
   g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
 }
 
-gulong dt_signal_connect_data_with_caller(gpointer instance,
-                                          const gchar *detailed_signal,
-                                          GCallback c_handler,
-                                          gpointer data,
-                                          GClosureNotify destroy_data,
-                                          GConnectFlags connect_flags,
-                                          gboolean gboolean_return,
-                                          const char *file,
-                                          const int line)
-{
-  GSignalQuery type_query = {};
-  if(!g_str_has_prefix(detailed_signal, "notify::"))
-    g_signal_query(g_signal_lookup(detailed_signal, G_OBJECT_TYPE(instance)), &type_query);
-  if((type_query.return_type  == G_TYPE_BOOLEAN) ^ gboolean_return)
-    dt_print(DT_DEBUG_ALWAYS, "connecting signal %s to handler with wrong return type %s:%d", detailed_signal, file, line);
-  return g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
-}
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
