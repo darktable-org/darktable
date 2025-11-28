@@ -149,6 +149,72 @@ static int _raster_get_points_border(dt_develop_t *dev,
   return 1;
 }
 
+static int _render_raster_mask(const dt_iop_module_t *const restrict module,
+                               const dt_dev_pixelpipe_iop_t *const restrict piece,
+                               dt_masks_form_t *const restrict form,
+                               float *buffer,
+                               int width,
+                               int height)
+{
+  const size_t obuffsize = (size_t)width * height;
+
+  // Skip if module is not in focus
+  // if(!dt_iop_has_focus((dt_iop_module_t *)module))
+  //   return 0;
+
+  // initialize output buffer with zero
+  memset(buffer, 0, sizeof(float) * width * height);
+
+  dt_masks_point_raster_t *rasterPoint = form->points->data;
+  // if(!rasterPoint)
+  //   return 0;
+
+  // Find module with the same ID as the mask ID
+  // dt_iop_module_t * source = NULL;
+  // GList *source_iter;
+  // for(source_iter = piece->pipe->nodes;
+  //     source_iter;
+  //     source_iter = g_list_next(source_iter))
+  // {
+  //   dt_dev_pixelpipe_iop_t *candidate = source_iter->data;
+  //   if (candidate->module->instance == rasterPoint->sourceInstanceId) {
+  //     source = candidate->module;
+  //     break;
+  //   }
+  // }
+
+  // if (!source) {
+  //   // TODO: Show error, log, or message
+  //   return 0;
+  // }
+
+  gboolean free_mask;
+  float *raster_mask = dt_dev_get_raster_mask(
+    (dt_dev_pixelpipe_iop_t *)piece,
+    module->raster_mask.sink.source,
+    module->raster_mask.sink.id,
+    module,
+    &free_mask
+  );
+
+  if(!raster_mask)
+    return 0;
+
+  // Copy content of mask to prevent modification of the actual mask data
+  float *const restrict mask = dt_alloc_align_float(obuffsize);
+  DT_OMP_FOR_SIMD(aligned(mask, raster_mask:64))
+  for(size_t i = 0; i < obuffsize; i++)
+    mask[i] = raster_mask[i] * rasterPoint->opacity;
+
+  // Forward raster mask
+  dt_iop_image_scaled_copy(buffer, mask, 1.0f, width, height, 1);
+
+  if(free_mask) dt_free_align(raster_mask);
+  dt_free_align(mask); // Don't forget to free our local mask copy
+
+  return 1;
+}
+
 static int _raster_get_mask(const dt_iop_module_t *const restrict module,
                             const dt_dev_pixelpipe_iop_t *const restrict piece,
                             dt_masks_form_t *const restrict form,
@@ -159,21 +225,7 @@ static int _raster_get_mask(const dt_iop_module_t *const restrict module,
                             int *posy)
 {
   // dt_iop_gui_blend_data_t *bd = module->blend_data;
-  // gboolean free_mask;
-  float *raster_mask = NULL;
-
-  if(raster_mask)
-  {
-    // Forward raster mask
-    // dt_iop_image_scaled_copy(buffer, raster_mask, 1.0f, width, height, 1);
-    // if(free_mask) dt_free_align(raster_mask);
-  }
-  else
-  {
-    // Fallback when raster mask is not available
-    dt_iop_image_fill(*buffer, 0.0f, *width, *height, 1);  // mask[k] = value;
-  }
-  return 1;
+  return _render_raster_mask(module, piece, form, *buffer, *width, *height);
 }
 
 static int _raster_get_mask_roi(const dt_iop_module_t *const restrict module,
@@ -184,22 +236,7 @@ static int _raster_get_mask_roi(const dt_iop_module_t *const restrict module,
 {
   const int width = roi->width;
   const int height = roi->height;
-  // dt_iop_gui_blend_data_t *bd = module->blend_data;
-  // gboolean free_mask;
-  float *raster_mask = NULL;
-
-  if(raster_mask)
-  {
-    // Forward raster mask
-    // dt_iop_image_scaled_copy(buffer, raster_mask, 1.0f, width, height, 1);
-    // if(free_mask) dt_free_align(raster_mask);
-  }
-  else
-  {
-    // Fallback when raster mask is not available
-    dt_iop_image_fill(buffer, 0.0f, width, height, 1);  // mask[k] = value;
-  }
-  return 1;
+  return _render_raster_mask(module, piece, form, buffer, width, height);
 }
 
 static int _raster_get_area(const dt_iop_module_t *const restrict module,
@@ -210,6 +247,10 @@ static int _raster_get_area(const dt_iop_module_t *const restrict module,
                             int *posx,
                             int *posy)
 {
+  *posx = 0;
+  *posy = 0;
+  *width = piece->pipe->iwidth;
+  *height = piece->pipe->iheight;
   return 1;
 }
 
@@ -221,6 +262,10 @@ static int _raster_get_source_area(dt_iop_module_t *module,
                                    int *posx,
                                    int *posy)
 {
+  *posx = 0;
+  *posy = 0;
+  *width = piece->pipe->iwidth;
+  *height = piece->pipe->iheight;
   return 1;
 }
 
@@ -284,6 +329,14 @@ static int _raster_events_button_released(dt_iop_module_t *module,
   {
     // Create raster mask
     dt_masks_point_raster_t *raster = malloc(sizeof(dt_masks_point_raster_t));
+    raster->opacity = 1.0f;
+
+    dt_iop_module_t *sourceMask = module->raster_mask.sink.source;
+    if (!sourceMask) {
+      // TODO: Print error
+      return 0;
+    }
+    raster->sourceInstanceId = sourceMask->instance;
 
     gui->form_dragging = FALSE;
 

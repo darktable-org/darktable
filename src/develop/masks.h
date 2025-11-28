@@ -200,6 +200,7 @@ typedef struct dt_masks_point_group_t
 /** structure used to store information regarding raster mask */
 typedef struct dt_masks_point_raster_t
 {
+  int32_t sourceInstanceId;
   int state;
   float opacity;
 } dt_masks_point_raster_t;
