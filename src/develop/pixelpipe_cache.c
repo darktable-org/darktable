@@ -112,14 +112,19 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
           not valid any more.
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-       4) Please note that position is not the iop_order but the position in the pipe
-       5) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
+       4) If we change any color profile they are committed for every history entry so we can't check
+          for them in the piece->hash but must use the final profiles available via pipe->xxx_profile_info
+       5) Please note that position is not the iop_order but the position in the pipe
+       6) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
           for better support of dt_dev_pixelpipe_piece_hash()
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(uint32_t) * (roi ? 3 : 1));
+  hash = dt_hash(hash, &pipe->input_profile_info, sizeof(pipe->input_profile_info));
+  hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
+  hash = dt_hash(hash, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
