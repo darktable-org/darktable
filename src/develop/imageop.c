@@ -2798,8 +2798,6 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
     const uint32_t mm = module->blend_params->mask_mode;
     if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
       type=_("drawn + parametric mask");
-    else if((mm & DEVELOP_MASK_RASTER) && (mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
-      type=_("raster, drawn & parametric mask");
     else if(mm & DEVELOP_MASK_MASK)
       type=_("drawn mask");
     else if(mm & DEVELOP_MASK_CONDITIONAL)

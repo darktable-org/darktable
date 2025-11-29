@@ -162,8 +162,6 @@ const dt_introspection_type_enum_tuple_t dt_develop_mask_mode_names[]
           DEVELOP_MASK_RASTER | DEVELOP_MASK_ENABLED },
         { N_("drawn & parametric mask"),
           DEVELOP_MASK_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
-        { N_("raster, drawn & parametric mask"),
-          DEVELOP_MASK_MASK_RASTER | DEVELOP_MASK_ENABLED },
         { } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[]
@@ -1532,14 +1530,6 @@ static gboolean _blendop_masks_modes_raster_toggled(GtkToggleButton *button,
 {
   return _blendop_masks_modes_toggle(button, module,
                                      DEVELOP_MASK_ENABLED | DEVELOP_MASK_RASTER);
-}
-
-static gboolean _blendop_masks_modes_mask_raster_toggled(GtkToggleButton *button,
-                                                    GdkEventButton *event,
-                                                    dt_iop_module_t *module)
-{
-  return _blendop_masks_modes_toggle(button, module,
-                                     DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_RASTER);
 }
 
 static gboolean _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton,
@@ -3487,15 +3477,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                     FALSE, 0, 0,
                                     dtgtk_cairo_paint_masks_raster, NULL);
       bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_RASTER));
-      bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
-
-      // Raster + parametric
-      but = dt_iop_togglebutton_new(module, "blend`masks",
-                                    N_("raster, drawn & parametric mask"), NULL,
-                                    G_CALLBACK(_blendop_masks_modes_mask_raster_toggled),
-                                    FALSE, 0, 0,
-                                    dtgtk_cairo_paint_masks_raster, NULL);
-      bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_RASTER));
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
     }
 
