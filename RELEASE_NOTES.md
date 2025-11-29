@@ -313,6 +313,8 @@ changes (where available).
   darkroom. Also the thumbs background could look as selected on
   multiple pictures.
 
+- Fixed darkroom processing after changing any of the colour profiles.
+
 ## Lua
 
 ### API Version
