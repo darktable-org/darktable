@@ -131,7 +131,7 @@ dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,
-                                       struct dt_dev_pixelpipe_t *pipe);
+                                       const struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
