@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -976,20 +976,26 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const stru
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
-                                                                       struct dt_dev_pixelpipe_t *pipe)
+                                                                       const struct dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_order_iccprofile_info_t *restrict color_profile;
 
   const int colorin_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorin", 0);
   const int colorout_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorout", 0);
-  const int current_module_order = module->iop_order;
 
-  if(current_module_order < colorin_order)
+  if(module->iop_order < colorin_order)
     color_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
-  else if(current_module_order < colorout_order)
+  else if(module->iop_order < colorout_order)
     color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   else
     color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
+
+  if(color_profile
+      && color_profile->filename[0]
+      && (!dt_is_valid_colormatrix(color_profile->matrix_in[0][0])
+          || !dt_is_valid_colormatrix(color_profile->matrix_out[0][0])))
+    dt_print_pipe(DT_DEBUG_PIPE, "current pipe profile", pipe, module, DT_DEVICE_NONE, NULL, NULL,
+     "no matrix in '%s'", color_profile->filename);
 
   return color_profile;
 }
