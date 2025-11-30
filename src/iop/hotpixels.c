@@ -437,7 +437,7 @@ void gui_init(dt_iop_module_t *self)
   g->pixels_fixed = -1;
 
   GtkWidget *box_raw = self->widget = dt_gui_vbox();
-  g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
+  g_signal_connect(box_raw, "draw", G_CALLBACK(draw), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_digits(g->threshold, 4);

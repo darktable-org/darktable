@@ -1399,15 +1399,15 @@ void gui_init(dt_lib_module_t *self)
                                          | GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask
                                          | GDK_LEAVE_NOTIFY_MASK);
 
-  g_signal_connect(G_OBJECT(d->timeline), "draw", G_CALLBACK(_lib_timeline_draw_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "button-press-event", G_CALLBACK(_lib_timeline_button_press_callback),
+  g_signal_connect(d->timeline, "draw", G_CALLBACK(_lib_timeline_draw_callback), self);
+  g_signal_connect(d->timeline, "button-press-event", G_CALLBACK(_lib_timeline_button_press_callback),
                    self);
-  g_signal_connect(G_OBJECT(d->timeline), "button-release-event",
+  g_signal_connect(d->timeline, "button-release-event",
                    G_CALLBACK(_lib_timeline_button_release_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "scroll-event", G_CALLBACK(_lib_timeline_scroll_callback), self);
-  g_signal_connect(G_OBJECT(d->timeline), "motion-notify-event", G_CALLBACK(_lib_timeline_motion_notify_callback),
+  g_signal_connect(d->timeline, "scroll-event", G_CALLBACK(_lib_timeline_scroll_callback), self);
+  g_signal_connect(d->timeline, "motion-notify-event", G_CALLBACK(_lib_timeline_motion_notify_callback),
                    self);
-  g_signal_connect(G_OBJECT(d->timeline), "leave-notify-event", G_CALLBACK(_lib_timeline_mouse_leave_callback),
+  g_signal_connect(d->timeline, "leave-notify-event", G_CALLBACK(_lib_timeline_mouse_leave_callback),
                    self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, TRUE, TRUE, 0);

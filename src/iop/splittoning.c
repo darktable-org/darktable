@@ -475,7 +475,7 @@ static inline void gui_init_section(dt_iop_module_t *self,
   *picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(*picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(*picker), _("select tone color"));
-  g_signal_connect(G_OBJECT(*picker), "color-set", G_CALLBACK(colorpick_callback), self);
+  g_signal_connect(*picker, "color-set", G_CALLBACK(colorpick_callback), self);
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(Q_(section)),
                  dt_gui_hbox(dt_gui_expand(slider_box), *picker));

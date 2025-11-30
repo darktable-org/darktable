@@ -2156,19 +2156,19 @@ void gui_init(dt_iop_module_t *self)
 
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
-  g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
+  g_signal_connect(g->logbase, "value-changed", G_CALLBACK(logbase_callback), self);
   dt_gui_box_add(self->widget, g->logbase);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_scrolled), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
+  g_signal_connect(g->area, "scroll-event", G_CALLBACK(_scrolled), self);
+  g_signal_connect(g->area, "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

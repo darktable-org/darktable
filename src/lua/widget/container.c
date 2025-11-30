@@ -49,7 +49,7 @@ static int container_reset(lua_State* L)
   return 0;
 }
 
-static void on_child_added(GtkContainer *container,GtkWidget *child,lua_container user_data)
+static void on_child_added(GtkWidget *container,GtkWidget *child,lua_container user_data)
 {
   dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
       0,NULL,NULL,
@@ -59,7 +59,7 @@ static void on_child_added(GtkContainer *container,GtkWidget *child,lua_containe
       LUA_ASYNC_DONE);
 }
 
-static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_container user_data)
+static void on_child_removed(GtkWidget *container,GtkWidget *child,lua_container user_data)
 {
   dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
       0,NULL,NULL,

@@ -2887,11 +2887,11 @@ static void _run_profile_callback(GtkWidget *widget,
   dt_dev_reprocess_preview(self->dev);
 }
 
-static void _run_validation_callback(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    dt_iop_module_t *self)
+static gboolean _run_validation_callback(GtkWidget *widget,
+                                         GdkEventButton *event,
+                                         dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return FALSE;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2899,6 +2899,8 @@ static void _run_validation_callback(GtkWidget *widget,
   dt_iop_gui_leave_critical_section(self);
 
   dt_dev_reprocess_preview(self->dev);
+
+  return TRUE;
 }
 
 static void _commit_profile_callback(GtkWidget *widget,
@@ -3547,7 +3549,7 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
 
 static gboolean _target_color_draw(GtkWidget *widget,
                                   cairo_t *crf,
-                                  const dt_iop_module_t *self)
+                                  dt_iop_module_t *self)
 {
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
@@ -4452,7 +4454,7 @@ void gui_init(dt_iop_module_t *self)
      _("this is the color of the scene illuminant before chromatic adaptation\n"
        "this color will be turned into pure white by the adaptation."));
 
-  g_signal_connect(G_OBJECT(g->illum_color), "draw",
+  g_signal_connect(g->illum_color, "draw",
                    G_CALLBACK(_illuminant_color_draw), self);
 
   g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
@@ -4478,14 +4480,14 @@ void gui_init(dt_iop_module_t *self)
     (self, 0., ILLUM_X_MAX, 0, 0, 1, 0);
   dt_bauhaus_widget_set_label(g->illum_x, NULL, N_("hue"));
   dt_bauhaus_slider_set_format(g->illum_x, "°");
-  g_signal_connect(G_OBJECT(g->illum_x), "value-changed",
+  g_signal_connect(g->illum_x, "value-changed",
                    G_CALLBACK(_illum_xy_callback), self);
 
   g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
   dt_bauhaus_widget_set_label(g->illum_y, NULL, N_("chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%");
   dt_bauhaus_slider_set_hard_max(g->illum_y, ILLUM_Y_MAX);
-  g_signal_connect(G_OBJECT(g->illum_y), "value-changed",
+  g_signal_connect(g->illum_y, "value-changed",
                    G_CALLBACK(_illum_xy_callback), self);
 
   dt_gui_box_add(self->widget, g->illum_x, g->illum_y);
@@ -4521,7 +4523,7 @@ void gui_init(dt_iop_module_t *self)
      0, NULL, self,
      N_("correction"),
      N_("measure"));
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed",
+  g_signal_connect(g->spot_mode, "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   const gchar *label = N_("take channel mixing into account");
@@ -4533,14 +4535,14 @@ void gui_init(dt_iop_module_t *self)
     (g->use_mixing,
      _("compute the target by taking the channel mixing into account.\n"
        "if disabled, only the CAT is considered."));
-  g_signal_connect(G_OBJECT(g->use_mixing), "toggled",
+  g_signal_connect(g->use_mixing, "toggled",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->origin_spot = gtk_drawing_area_new();
   gtk_widget_set_vexpand(g->origin_spot, TRUE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
                               _("the input color that should be mapped to the target"));
-  g_signal_connect(G_OBJECT(g->origin_spot), "draw",
+  g_signal_connect(g->origin_spot, "draw",
                    G_CALLBACK(_origin_color_draw), self);
 
   g->Lch_origin = gtk_label_new(_("L: \tN/A\nh: \tN/A\nc: \tN/A"));
@@ -4552,13 +4554,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(g->target_spot, -1, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
                               _("the desired target color after mapping"));
-  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
+  g_signal_connect(g->target_spot, "draw", G_CALLBACK(_target_color_draw), self);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., LIGHTNESS_MAX, 0, 0, 1);
   dt_bauhaus_widget_set_label(g->lightness_spot, N_("mapping"), N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
-  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed",
+  g_signal_connect(g->lightness_spot, "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->hue_spot = dt_bauhaus_slider_new_with_range_and_feedback
@@ -4566,13 +4568,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->hue_spot, N_("mapping"), N_("hue"));
   dt_bauhaus_slider_set_format(g->hue_spot, "°");
   dt_bauhaus_slider_set_default(g->hue_spot, 0.f);
-  g_signal_connect(G_OBJECT(g->hue_spot), "value-changed",
+  g_signal_connect(g->hue_spot, "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->chroma_spot = dt_bauhaus_slider_new_with_range(self, 0., CHROMA_MAX, 0, 0, 1);
   dt_bauhaus_widget_set_label(g->chroma_spot, N_("mapping"), N_("chroma"));
   dt_bauhaus_slider_set_default(g->chroma_spot, 0.f);
-  g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed",
+  g_signal_connect(g->chroma_spot, "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   dt_gui_box_add(g->csspot.container,
@@ -4644,7 +4646,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->cs.expander,
                               _("use a color checker target to autoset CAT and channels"));
-  g_signal_connect(G_OBJECT(g->cs.toggle), "toggled",
+  g_signal_connect(g->cs.toggle, "toggled",
                    G_CALLBACK(_start_profiling_callback), self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
@@ -4683,7 +4685,7 @@ void gui_init(dt_iop_module_t *self)
      _("reduce the radius of the patches to select the more or less central part.\n"
        "useful when the perspective correction is sloppy or\n"
        "the patches frame cast a shadows on the edges of the patch." ));
-  g_signal_connect(G_OBJECT(g->safety), "value-changed",
+  g_signal_connect(g->safety, "value-changed",
                    G_CALLBACK(_safety_changed_callback), self);
 
   g->label_delta_E = dt_ui_label_new("");
@@ -4693,23 +4695,23 @@ void gui_init(dt_iop_module_t *self)
   g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("accept"),
                        g->button_commit, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_commit), "button-press-event",
-                   G_CALLBACK(_commit_profile_callback), (gpointer)self);
+  g_signal_connect(g->button_commit, "button-press-event",
+                   G_CALLBACK(_commit_profile_callback), self);
   gtk_widget_set_tooltip_text(g->button_commit,
                               _("accept the computed profile and set it in the module"));
 
   g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("recompute"),
                        g->button_profile, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_profile), "button-press-event",
-                   G_CALLBACK(_run_profile_callback), (gpointer)self);
+  g_signal_connect(g->button_profile, "button-press-event",
+                   G_CALLBACK(_run_profile_callback), self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
 
   g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("validate"),
                        g->button_validate, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_validate), "button-press-event",
-                   G_CALLBACK(_run_validation_callback), (gpointer)self);
+  g_signal_connect(g->button_validate, "button-press-event",
+                   G_CALLBACK(_run_validation_callback), self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
 
   dt_gui_box_add(g->cs.container, g->checkers_list, g->optimize, g->safety,

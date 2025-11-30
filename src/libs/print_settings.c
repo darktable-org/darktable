@@ -1021,7 +1021,7 @@ _lock_callback(GtkWidget *button, dt_lib_module_t *self)
 }
 
 static void
-_alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
+_alignment_callback(GtkDarktableToggleButton *tb, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1033,7 +1033,7 @@ _alignment_callback(GtkWidget *tb, dt_lib_module_t *self)
     /* block signal handler */
     g_signal_handlers_block_by_func(ps->dtba[i],_alignment_callback, self);
 
-    if(GTK_WIDGET(ps->dtba[i]) == tb)
+    if(ps->dtba[i] == tb)
     {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[i]), TRUE);
       index=i;
@@ -2484,7 +2484,7 @@ void gui_init(dt_lib_module_t *self)
   d->printers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->printers), "value-changed",
+  g_signal_connect(d->printers, "value-changed",
                    G_CALLBACK(_printer_changed), self);
 
   //// media
@@ -2493,7 +2493,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_widget_set_label(d->media, N_("printer"), N_("media"));
 
-  g_signal_connect(G_OBJECT(d->media), "value-changed",
+  g_signal_connect(d->media, "value-changed",
                    G_CALLBACK(_media_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
 
@@ -2549,8 +2549,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_markup(d->pprofile, tooltip);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(d->pprofile), "value-changed",
-                   G_CALLBACK(_printer_profile_changed), (gpointer)self);
+  g_signal_connect(d->pprofile, "value-changed",
+                   G_CALLBACK(_printer_profile_changed), self);
 
   //  Add printer intent combo
 
@@ -2570,7 +2570,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget),
                      GTK_WIDGET(d->black_point_compensation), TRUE, FALSE, 0);
   g_signal_connect(d->black_point_compensation, "toggled",
-                   G_CALLBACK(_printer_bpc_callback), (gpointer)self);
+                   G_CALLBACK(_printer_bpc_callback), self);
 
   d->v_black_point_compensation =
     dt_conf_get_bool(PRINT_CONFIG_PREFIX "black_point_compensation");
@@ -2594,7 +2594,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_widget_set_label(d->papers, NULL, N_("paper size"));
 
-  g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
+  g_signal_connect(d->papers, "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);
 
   //// portrait / landscape
@@ -2677,15 +2677,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->b_left), left_b);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->b_right), right_b);
 
-  g_signal_connect(G_OBJECT (d->b_top), "value-changed",
+  g_signal_connect(d->b_top, "value-changed",
                    G_CALLBACK (_top_border_callback), self);
-  g_signal_connect(G_OBJECT (d->b_bottom), "value-changed",
+  g_signal_connect(d->b_bottom, "value-changed",
                    G_CALLBACK (_bottom_border_callback), self);
-  g_signal_connect(G_OBJECT (d->b_left), "value-changed",
+  g_signal_connect(d->b_left, "value-changed",
                    G_CALLBACK (_left_border_callback), self);
-  g_signal_connect(G_OBJECT (d->b_right), "value-changed",
+  g_signal_connect(d->b_right, "value-changed",
                    G_CALLBACK (_right_border_callback), self);
-  g_signal_connect(G_OBJECT(d->lock_button), "toggled",
+  g_signal_connect(d->lock_button, "toggled",
                    G_CALLBACK(_lock_callback), self);
 
   gtk_widget_set_halign(GTK_WIDGET(hboxdim), GTK_ALIGN_CENTER);
@@ -2715,12 +2715,12 @@ void gui_init(dt_lib_module_t *self)
 
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
-    g_signal_connect(G_OBJECT(d->grid_size), "value-changed",
+    g_signal_connect(d->grid_size, "value-changed",
                      G_CALLBACK(_grid_size_changed), self);
-    g_signal_connect(G_OBJECT(d->grid), "toggled",
+    g_signal_connect(d->grid, "toggled",
                      G_CALLBACK(_grid_callback), self);
     g_signal_connect(d->snap_grid, "toggled",
-                     G_CALLBACK(_snap_grid_callback), (gpointer)self);
+                     G_CALLBACK(_snap_grid_callback), self);
   }
 
   d->borderless = gtk_check_button_new_with_label(_("borderless mode required"));
@@ -2752,8 +2752,8 @@ void gui_init(dt_lib_module_t *self)
         = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment,
                                                     (CPF_SPECIAL_FLAG << i), NULL));
     gtk_grid_attach (GTK_GRID (bat), GTK_WIDGET (d->dtba[i]), (i%3), i/3, 1, 1);
-    g_signal_connect (G_OBJECT (d->dtba[i]), "toggled",
-                      G_CALLBACK (_alignment_callback), self);
+    g_signal_connect(d->dtba[i], "toggled",
+                     G_CALLBACK (_alignment_callback), self);
   }
 
   GtkWidget *hbox22 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
@@ -2838,14 +2838,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->b_width, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->b_height, GDK_BUTTON_PRESS_MASK);
 
-  g_signal_connect(G_OBJECT(d->b_x), "value-changed",
-                   G_CALLBACK(_x_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->b_y), "value-changed",
-                   G_CALLBACK(_y_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->b_width), "value-changed",
-                   G_CALLBACK(_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->b_height), "value-changed",
-                   G_CALLBACK(_height_changed), (gpointer)d);
+  g_signal_connect(d->b_x, "value-changed",
+                   G_CALLBACK(_x_changed), d);
+  g_signal_connect(d->b_y, "value-changed",
+                   G_CALLBACK(_y_changed), d);
+  g_signal_connect(d->b_width, "value-changed",
+                   G_CALLBACK(_width_changed), d);
+  g_signal_connect(d->b_height, "value-changed",
+                   G_CALLBACK(_height_changed), d);
 
   ////////////////////////// PRINT SETTINGS
 
@@ -2897,8 +2897,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(d->profile), "value-changed",
-                   G_CALLBACK(_profile_changed), (gpointer)self);
+  g_signal_connect(d->profile, "value-changed",
+                   G_CALLBACK(_profile_changed), self);
 
   //  Add export intent combo
 
@@ -2918,7 +2918,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
+  g_signal_connect(styles_button, "clicked", G_CALLBACK(_style_popupmenu_callback), d);
   gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on printing"));
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while printing"));

@@ -2456,7 +2456,7 @@ void gui_init(dt_view_t *self)
   dt_action_define(sa, NULL, N_("quick access to presets"),
                    favorite_presets, &dt_action_def_button);
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
-  g_signal_connect(G_OBJECT(favorite_presets), "clicked",
+  g_signal_connect(favorite_presets, "clicked",
                    G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
   dt_gui_add_help_link(favorite_presets, "favorite_presets");
@@ -2466,7 +2466,7 @@ void gui_init(dt_view_t *self)
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   dt_action_define(sa, NULL, N_("quick access to styles"), styles, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(styles), "clicked",
+  g_signal_connect(styles, "clicked",
                    G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, "bottom_panel_styles");
@@ -2477,7 +2477,7 @@ void gui_init(dt_view_t *self)
   dev->second_wnd_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
   dt_action_define(sa, NULL, N_("second window"),
                    dev->second_wnd_button, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(dev->second_wnd_button), "clicked",
+  g_signal_connect(dev->second_wnd_button, "clicked",
                    G_CALLBACK(_second_window_quickbutton_clicked),dev);
   gtk_widget_set_tooltip_text(dev->second_wnd_button,
                               _("display a second darkroom image window"));
@@ -2492,7 +2492,7 @@ void gui_init(dt_view_t *self)
                           &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->color_assessment.button, _("toggle color assessment conditions\nright-click for options"));
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-    g_signal_connect(G_OBJECT(dev->color_assessment.button), "toggled",
+    g_signal_connect(dev->color_assessment.button, "toggled",
                      G_CALLBACK(_full_color_assessment_callback), dev);
 
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_assessment.button, DT_VIEW_DARKROOM);
@@ -2511,7 +2511,7 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_text(border_width_slider,
                                 _("total border width in relation to the screen size for the assessment mode.\n"
                                   "this includes the outer gray part plus the inner white frame."));
-    g_signal_connect(G_OBJECT(border_width_slider), "value-changed",
+    g_signal_connect(border_width_slider, "value-changed",
                      G_CALLBACK(_color_assessment_border_width_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
 
@@ -2523,7 +2523,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("white border ratio"));
     gtk_widget_set_tooltip_text(border_ratio_slider,
                                 _("the border ratio specifies the fraction of the white part of the border."));
-    g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed",
+    g_signal_connect(border_ratio_slider, "value-changed",
                      G_CALLBACK(_color_assessment_border_white_ratio_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_ratio_slider), TRUE, TRUE, 0);
 
@@ -2539,7 +2539,7 @@ void gui_init(dt_view_t *self)
     (dev->late_scaling.button,
      _("toggle high quality processing."
        " if activated darktable processes image data as it does while exporting"));
-  g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
+  g_signal_connect(dev->late_scaling.button, "clicked",
                    G_CALLBACK(_latescaling_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager,
                                      dev->late_scaling.button, DT_VIEW_DARKROOM);
@@ -2557,7 +2557,7 @@ void gui_init(dt_view_t *self)
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle indication of raw overexposure\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
+    g_signal_connect(dev->rawoverexposed.button, "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->rawoverexposed.button, DT_VIEW_DARKROOM);
@@ -2605,7 +2605,7 @@ void gui_init(dt_view_t *self)
                                 N_("clipping threshold"));
     gtk_widget_set_tooltip_text(
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
-    g_signal_connect(G_OBJECT(threshold), "value-changed",
+    g_signal_connect(threshold, "value-changed",
                      G_CALLBACK(_rawoverexposed_threshold_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(threshold), TRUE, TRUE, 0);
 
@@ -2624,7 +2624,7 @@ void gui_init(dt_view_t *self)
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright-click for options"));
-    g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
+    g_signal_connect(dev->overexposed.button, "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->overexposed.button, DT_VIEW_DARKROOM);
@@ -2680,7 +2680,7 @@ void gui_init(dt_view_t *self)
                                          "typical color glossy prints produce black at -8.00 EV,\n"
                                          "typical B&W glossy prints produce black at -9.00 EV."
                                          ));
-    g_signal_connect(G_OBJECT(lower), "value-changed",
+    g_signal_connect(lower, "value-changed",
                      G_CALLBACK(_lower_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
@@ -2692,7 +2692,7 @@ void gui_init(dt_view_t *self)
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
                                          "100% is peak medium luminance."));
-    g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(_upper_callback), dev);
+    g_signal_connect(upper, "value-changed", G_CALLBACK(_upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
 
     gtk_widget_show_all(vbox);
@@ -2707,7 +2707,7 @@ void gui_init(dt_view_t *self)
     dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
+    g_signal_connect(dev->profile.softproof_button, "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.softproof_button, DT_VIEW_DARKROOM);
@@ -2720,7 +2720,7 @@ void gui_init(dt_view_t *self)
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright-click for profile options"));
-    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
+    g_signal_connect(dev->profile.gamut_button, "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager,
                                        dev->profile.gamut_button, DT_VIEW_DARKROOM);
@@ -2854,15 +2854,15 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 
-    g_signal_connect(G_OBJECT(display_profile), "value-changed",
+    g_signal_connect(display_profile, "value-changed",
                      G_CALLBACK(_display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_profile), "value-changed",
+    g_signal_connect(display2_profile, "value-changed",
                      G_CALLBACK(_display2_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_color_assessment), "toggled",
+    g_signal_connect(display2_color_assessment, "toggled",
                      G_CALLBACK(_display2_color_assessment_callback), dev);
-    g_signal_connect(G_OBJECT(softproof_profile), "value-changed",
+    g_signal_connect(softproof_profile, "value-changed",
                      G_CALLBACK(_softproof_profile_callback), dev);
-    g_signal_connect(G_OBJECT(histogram_profile), "value-changed",
+    g_signal_connect(histogram_profile, "value-changed",
                      G_CALLBACK(_histogram_profile_callback), dev);
 
     _update_softproof_gamut_checking(dev);
@@ -2903,7 +2903,7 @@ void gui_init(dt_view_t *self)
     darktable.view_manager->guides_popover =
       dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_object_ref(darktable.view_manager->guides_popover);
-    g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
+    g_signal_connect(darktable.view_manager->guides_toggle, "clicked",
                      G_CALLBACK(_guides_quickbutton_clicked), dev);
     connect_button_press_release(darktable.view_manager->guides_toggle,
                                  darktable.view_manager->guides_popover);
@@ -4016,24 +4016,24 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                           | darktable.gui->scroll_mask);
 
     /* connect callbacks */
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "draw",
+    g_signal_connect(dev->preview2.widget, "draw",
                      G_CALLBACK(_second_window_draw_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "scroll-event",
+    g_signal_connect(dev->preview2.widget, "scroll-event",
                      G_CALLBACK(_second_window_scrolled_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "button-press-event",
+    g_signal_connect(dev->preview2.widget, "button-press-event",
                      G_CALLBACK(_second_window_button_pressed_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "button-release-event",
+    g_signal_connect(dev->preview2.widget, "button-release-event",
                      G_CALLBACK(_second_window_button_released_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "motion-notify-event",
+    g_signal_connect(dev->preview2.widget, "motion-notify-event",
                      G_CALLBACK(_second_window_mouse_moved_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "leave-notify-event",
+    g_signal_connect(dev->preview2.widget, "leave-notify-event",
                      G_CALLBACK(_second_window_leave_callback), dev);
-    g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",
+    g_signal_connect(dev->preview2.widget, "configure-event",
                      G_CALLBACK(_second_window_configure_callback), dev);
 
-    g_signal_connect(G_OBJECT(dev->second_wnd), "delete-event",
+    g_signal_connect(dev->second_wnd, "delete-event",
                      G_CALLBACK(_second_window_delete_callback), dev);
-    g_signal_connect(G_OBJECT(dev->second_wnd), "event",
+    g_signal_connect(dev->second_wnd, "event",
                      G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
     _darkroom_ui_second_window_init(dev->second_wnd, dev);

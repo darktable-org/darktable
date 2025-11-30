@@ -1479,7 +1479,7 @@ static gboolean _event_button_press(GtkWidget *widget,
     if(event->x < button->x && event->x > button->x - button->width
        && event->y < button->y && event->y > button->y - button->height)
     {
-      dt_gui_show_help(NULL);
+      dt_gui_show_help(NULL, NULL);
     }
 
     return TRUE;
@@ -2461,19 +2461,19 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(table->widget, "drag-data-received",
                    G_CALLBACK(dt_thumbtable_event_dnd_received), table);
 
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
+  g_signal_connect(table->widget, "scroll-event",
                    G_CALLBACK(_event_scroll), table);
-  g_signal_connect(G_OBJECT(table->widget), "draw",
+  g_signal_connect(table->widget, "draw",
                    G_CALLBACK(_event_draw), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event",
+  g_signal_connect(table->widget, "leave-notify-event",
                    G_CALLBACK(_event_leave_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
+  g_signal_connect(table->widget, "enter-notify-event",
                    G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
+  g_signal_connect(table->widget, "button-press-event",
                    G_CALLBACK(_event_button_press), table);
-  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
+  g_signal_connect(table->widget, "motion-notify-event",
                    G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
+  g_signal_connect(table->widget, "button-release-event",
                    G_CALLBACK(_event_button_release), table);
 
   // we register globals signals

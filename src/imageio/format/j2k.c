@@ -706,7 +706,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set(gui->quality, quality_last);
-  g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
+  g_signal_connect(gui->quality, "value-changed", G_CALLBACK(quality_changed), NULL);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->preset, self, NULL, N_("DCP mode"), NULL,
                                preset_last, preset_changed, self,

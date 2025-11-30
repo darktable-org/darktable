@@ -570,9 +570,9 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
   return FALSE;
 }
 
-static void _widht_mdlclick(GtkEntry *spin,
-                            GdkEventButton *event,
-                            gpointer user_data)
+static gboolean _widht_mdlclick(GtkEntry *spin,
+                                GdkEventButton *event,
+                                gpointer user_data)
 {
   if(event->button == GDK_BUTTON_MIDDLE)
   {
@@ -585,11 +585,12 @@ static void _widht_mdlclick(GtkEntry *spin,
   {
     _width_changed(GTK_EDITABLE(spin), user_data);
   }
+  return TRUE;
 }
 
-static void _height_mdlclick(GtkEntry *spin,
-                             GdkEventButton *event,
-                             gpointer user_data)
+static gboolean _height_mdlclick(GtkEntry *spin,
+                                 GdkEventButton *event,
+                                 gpointer user_data)
 {
   if(event->button == GDK_BUTTON_MIDDLE)
   {
@@ -602,6 +603,7 @@ static void _height_mdlclick(GtkEntry *spin,
   {
     _height_changed(GTK_EDITABLE(spin), user_data);
   }
+  return TRUE;
 }
 
 static void _size_in_px_update(dt_lib_export_t *d)
@@ -1298,11 +1300,10 @@ static gboolean _batch_preset_active(dt_lib_module_t *self)
   return batch_preset_active;
 }
 
-static void _batch_export_toggled_callback(GtkCellRendererToggle *cell_renderer,
+static void _batch_export_toggled_callback(GtkCellRenderer *cell_renderer,
                                            gchar *path_str,
-                                           gpointer user_data)
+                                           dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = user_data;
   dt_lib_export_t *d = self->data;
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
@@ -1413,7 +1414,7 @@ static void _export_presets_changed_callback(gpointer instance, gpointer module,
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate",
+  g_signal_connect(mi, "activate",
                    G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
@@ -1447,7 +1448,7 @@ void gui_init(dt_lib_module_t *self)
 
   // postponed so we can do the two steps in one loop
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE, _on_storage_list_changed);
-  g_signal_connect(G_OBJECT(d->storage), "value-changed",
+  g_signal_connect(d->storage, "value-changed",
                    G_CALLBACK(_storage_changed), self);
 
   d->format = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1459,8 +1460,8 @@ void gui_init(dt_lib_module_t *self)
       "for these formats, no metadata fields will be included\n"
       "unless the user selects <b>all</b> of the metadata checkboxes in\n"
       "the export module preferences"));
-  g_signal_connect(G_OBJECT(d->format), "value-changed",
-                   G_CALLBACK(_format_changed), (gpointer)d);
+  g_signal_connect(d->format, "value-changed",
+                   G_CALLBACK(_format_changed), d);
 
   // add all format widgets to the stack widget
   d->format_extra_container = gtk_stack_new();
@@ -1640,7 +1641,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
-  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
+  g_signal_connect(styles_button, "clicked", G_CALLBACK(_style_popupmenu_callback), d);
   gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on export"));
 //  dt_gui_add_help_link(styles, "bottom_panel_styles");
   GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
@@ -1660,8 +1661,8 @@ void gui_init(dt_lib_module_t *self)
   _update_style_label(d, stored_style ? stored_style : "");
 
   //  Set callback signals
-  g_signal_connect(G_OBJECT(d->profile), "value-changed",
-                   G_CALLBACK(_profile_changed), (gpointer)d);
+  g_signal_connect(d->profile, "value-changed",
+                   G_CALLBACK(_profile_changed), d);
 
   // Export button
   d->export_button = GTK_BUTTON(dt_action_button_new
@@ -1729,16 +1730,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->print_height, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
-  g_signal_connect(G_OBJECT(d->width), "button-press-event",
-                   G_CALLBACK(_widht_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->height), "button-press-event",
-                   G_CALLBACK(_height_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_width), "button-press-event",
-                   G_CALLBACK(_widht_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_height), "button-press-event",
-                   G_CALLBACK(_height_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->scale), "button-press-event",
-                   G_CALLBACK(_scale_mdlclick), (gpointer)d);
+  g_signal_connect(d->width, "button-press-event",
+                   G_CALLBACK(_widht_mdlclick), d);
+  g_signal_connect(d->height, "button-press-event",
+                   G_CALLBACK(_height_mdlclick), d);
+  g_signal_connect(d->print_width, "button-press-event",
+                   G_CALLBACK(_widht_mdlclick), d);
+  g_signal_connect(d->print_height, "button-press-event",
+                   G_CALLBACK(_height_mdlclick), d);
+  g_signal_connect(d->scale, "button-press-event",
+                   G_CALLBACK(_scale_mdlclick), d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);

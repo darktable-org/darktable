@@ -430,8 +430,8 @@ void gui_init(dt_iop_module_t *self)
   g->mouse_over_output_zones = FALSE;
 
   g->preview = dtgtk_drawing_area_new_with_height(0);
-  g_signal_connect(G_OBJECT(g->preview), "size-allocate", G_CALLBACK(size_allocate_callback), self);
-  g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
+  g_signal_connect(g->preview, "size-allocate", G_CALLBACK(size_allocate_callback), self);
+  g_signal_connect(g->preview, "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
   gtk_widget_add_events(GTK_WIDGET(g->preview), GDK_POINTER_MOTION_MASK
                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                 | GDK_LEAVE_NOTIFY_MASK);
@@ -441,16 +441,16 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->zones, _("lightness zones\nuse mouse scrollwheel to change the number of zones\n"
                                           "left-click on a border to create a marker\n"
                                           "right-click on a marker to delete it"));
-  g_signal_connect(G_OBJECT(g->zones), "draw", G_CALLBACK(dt_iop_zonesystem_bar_draw), self);
-  g_signal_connect(G_OBJECT(g->zones), "motion-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_motion_notify),
+  g_signal_connect(g->zones, "draw", G_CALLBACK(dt_iop_zonesystem_bar_draw), self);
+  g_signal_connect(g->zones, "motion-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_motion_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->zones), "leave-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_leave_notify),
+  g_signal_connect(g->zones, "leave-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_leave_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->zones), "button-press-event", G_CALLBACK(dt_iop_zonesystem_bar_button_press),
+  g_signal_connect(g->zones, "button-press-event", G_CALLBACK(dt_iop_zonesystem_bar_button_press),
                    self);
-  g_signal_connect(G_OBJECT(g->zones), "button-release-event",
+  g_signal_connect(g->zones, "button-release-event",
                    G_CALLBACK(dt_iop_zonesystem_bar_button_release), self);
-  g_signal_connect(G_OBJECT(g->zones), "scroll-event", G_CALLBACK(dt_iop_zonesystem_bar_scrolled), self);
+  g_signal_connect(g->zones, "scroll-event", G_CALLBACK(dt_iop_zonesystem_bar_scrolled), self);
   gtk_widget_add_events(GTK_WIDGET(g->zones), GDK_POINTER_MOTION_MASK
                                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                               | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);

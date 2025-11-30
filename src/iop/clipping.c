@@ -2105,7 +2105,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->hvflip, _("horizontal"));
   dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
   dt_bauhaus_combobox_add(g->hvflip, _("both"));
-  g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
+  g_signal_connect(g->hvflip, "value-changed", G_CALLBACK(hvflip_callback), self);
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
   dt_gui_box_add(self->widget, g->hvflip);
 
@@ -2121,7 +2121,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
   dt_bauhaus_combobox_add(g->keystone_type, _("full"));
   gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
-  g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
+  g_signal_connect(g->keystone_type, "value-changed", G_CALLBACK(keystone_type_changed), self);
   dt_gui_box_add(self->widget, g->keystone_type);
 
   g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
@@ -2236,12 +2236,12 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
-  g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
+  g_signal_connect(g->aspect_presets, "value-changed", G_CALLBACK(aspect_presets_changed), self);
   gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
                                                    "the list is sorted: from most square to least square\n"
                                                    "to enter custom aspect ratio open the combobox and type ratio in x:y or decimal format"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
-  g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
+  g_signal_connect(g->aspect_presets, "quad-pressed", G_CALLBACK(aspect_flip), self);
   dt_gui_box_add(self->widget, g->aspect_presets);
 
   self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);

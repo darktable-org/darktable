@@ -910,7 +910,7 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT), 0);
   dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
-  g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
+  g_signal_connect(gui->compresslevel, "value-changed", G_CALLBACK(compress_level_changed), NULL);
 
   gtk_widget_set_visible(gui->compresslevel, compress != 0);
   gtk_widget_set_no_show_all(gui->compresslevel, TRUE);

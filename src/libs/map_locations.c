@@ -622,7 +622,7 @@ static void _name_start_editing(GtkCellRenderer *renderer, GtkCellEditable *edit
     }
     gtk_tree_path_free(new_path);
 
-    g_signal_connect(G_OBJECT(editable), "editing-done", G_CALLBACK(_name_editing_done), self);
+    g_signal_connect(editable, "editing-done", G_CALLBACK(_name_editing_done), self);
   }
 }
 
@@ -774,10 +774,10 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     const gboolean children = gtk_tree_model_iter_children(model, &child, &parent);
 
     menuitem = gtk_menu_item_new_with_label(_("edit location"));
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_edit_location, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_edit_location), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     menuitem = gtk_menu_item_new_with_label(_("delete location"));
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_delete_location, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_delete_location), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     if(children)
     {
@@ -792,10 +792,10 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     {
       gtk_widget_set_sensitive(menuitem, FALSE);
     }
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_update_filmstrip, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_update_filmstrip), self);
     menuitem = gtk_menu_item_new_with_label(_("go to collection (lighttable)"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_goto_collection, self);
+    g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_goto_collection), self);
     if(!locid)
     {
       gtk_widget_set_sensitive(menuitem, FALSE);
@@ -912,7 +912,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_MAP_LOCATION_COL_TAG);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_name_show, (gpointer)self, NULL);
 //  g_object_set(renderer, "editable", TRUE, NULL);
-  g_signal_connect(G_OBJECT(renderer), "editing-started", G_CALLBACK(_name_start_editing), self);
+  g_signal_connect(renderer, "editing-started", G_CALLBACK(_name_start_editing), self);
   d->renderer = renderer;
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
@@ -920,7 +920,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
+  g_signal_connect(view, "button-press-event", G_CALLBACK(_click_on_view), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"
@@ -945,8 +945,8 @@ void gui_init(dt_lib_module_t *self)
   }
   d->shape_button = dtgtk_togglebutton_new(location_shapes[shape], 0, NULL);
   gtk_box_pack_start(hbox, d->shape_button, FALSE, TRUE, 0);
-  d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
-                                             G_CALLBACK(_shape_button_clicked), self);
+  d->shape_button_handler = g_signal_connect_data(d->shape_button, "clicked",
+                                                  G_CALLBACK(_shape_button_clicked), self, NULL, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
                               _("select the shape of the location\'s limits on the map, circle or rectangle"
                                 "\nor even polygon if available (select first a polygon place in 'find location' module)"));
@@ -961,14 +961,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->show_all_button,
                               _("show all locations which are on the visible map"));
   gtk_box_pack_end(hbox, d->show_all_button, FALSE, FALSE, 8);
-  g_signal_connect(G_OBJECT(d->show_all_button), "clicked", G_CALLBACK(_show_all_button_clicked), self);
+  g_signal_connect(d->show_all_button, "clicked", G_CALLBACK(_show_all_button_clicked), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   _locations_tree_update(self,0);
   _display_buttons(self);
 
-  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), self);
+  g_signal_connect(selection, "changed", G_CALLBACK(_selection_changed), self);
 
   // connect geotag changed signal
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed);

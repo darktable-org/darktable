@@ -140,12 +140,12 @@ void gui_init(dt_lib_module_t *self)
     (self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
      _("create a minimal history stack which produces the same image\n"
        "ctrl+click to truncate history to the selected item"), 0, 0);
-  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event",
+  g_signal_connect(d->compress_button, "button-press-event",
                    G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_NONE, NULL);
-  g_signal_connect(G_OBJECT(d->create_button), "clicked",
+  g_signal_connect(d->create_button, "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_name(d->create_button, "non-flat");
   gtk_widget_set_tooltip_text(d->create_button,
@@ -236,7 +236,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
-  g_signal_connect(G_OBJECT(widget), "button-press-event",
+  g_signal_connect(widget, "button-press-event",
                    G_CALLBACK(_lib_history_button_clicked_callback), self);
 
   /* associate the history number */
@@ -881,7 +881,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
                                           const gint y,
                                           const gboolean keyboard_mode,
                                           GtkTooltip *tooltip,
-                                          const dt_dev_history_item_t *hitem)
+                                          dt_dev_history_item_t *hitem)
 {
   dt_iop_params_t *old_params = hitem->module->default_params;
   dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
@@ -1039,7 +1039,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
       view = gtk_text_view_new();
       dt_gui_add_class(view, "dt_transparent_background");
       dt_gui_add_class(view, "dt_monospace");
-      g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
+      g_signal_connect(view, "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
     }
 
     // find tabs to align columns and decimals
@@ -1150,7 +1150,7 @@ void gui_update(dt_lib_module_t *self)
       history;
       history = g_list_next(history))
   {
-    const dt_dev_history_item_t *hitem = history->data;
+    dt_dev_history_item_t *hitem = history->data;
     gchar *label = _lib_history_button_label(hitem);
 
     const gboolean selected = (num == darktable.develop->history_end - 1);
@@ -1164,8 +1164,8 @@ void gui_update(dt_lib_module_t *self)
     g_free(label);
 
     gtk_widget_set_has_tooltip(widget, TRUE);
-    g_signal_connect(G_OBJECT(widget), "query-tooltip",
-                     G_CALLBACK(_changes_tooltip_callback), (void *)hitem);
+    g_signal_connect(widget, "query-tooltip",
+                     G_CALLBACK(_changes_tooltip_callback), hitem);
 
     gtk_box_pack_end(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
     num++;

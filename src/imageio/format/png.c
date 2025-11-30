@@ -701,7 +701,7 @@ void gui_init(dt_imageio_module_format_t *self)
      0);
   dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
   dt_bauhaus_slider_set(gui->compression, compression);
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed",
+  g_signal_connect(gui->compression, "value-changed",
                    G_CALLBACK(compression_level_changed), NULL);
 
   self->widget = dt_gui_vbox(gui->bit_depth, gui->compression);

@@ -3774,13 +3774,13 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
+  g_signal_connect(g->channel_tabs, "switch-page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
-  g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
+  g_signal_connect(g->channel_tabs_Y0U0V0, "switch-page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
 
   const int ch = (int)g->channel;
@@ -3802,16 +3802,16 @@ void gui_init(dt_iop_module_t *self)
                                                "plugins/darkroom/denoiseprofile/graphheight"));
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(GTK_WIDGET(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
+  g_signal_connect(GTK_WIDGET(g->area), "button-press-event",
                    G_CALLBACK(denoiseprofile_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(GTK_WIDGET(g->area), "button-release-event",
                    G_CALLBACK(denoiseprofile_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(GTK_WIDGET(g->area), "motion-notify-event",
                    G_CALLBACK(denoiseprofile_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(GTK_WIDGET(g->area), "leave-notify-event",
                    G_CALLBACK(denoiseprofile_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(GTK_WIDGET(g->area), "scroll-event",
                    G_CALLBACK(denoiseprofile_scrolled), self);
 
   dt_gui_box_add(g->box_wavelets, g->channel_tabs, g->channel_tabs_Y0U0V0, g->area);
@@ -3839,14 +3839,14 @@ void gui_init(dt_iop_module_t *self)
                                 dt_gui_hbox(dt_ui_label_new(_("variance green: ")), g->label_var_G),
                                 dt_gui_hbox(dt_ui_label_new(_("variance blue: ")), g->label_var_B));
 
-  g_signal_connect(G_OBJECT(g->box_variance), "draw",
+  g_signal_connect(g->box_variance, "draw",
                    G_CALLBACK(denoiseprofile_draw_variance), self);
 
   // start building top level widget
 
   g->profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
-  g_signal_connect(G_OBJECT(g->profile), "value-changed",
+  g_signal_connect(g->profile, "value-changed",
                    G_CALLBACK(profile_callback), self);
   self->widget = dt_gui_vbox(g->profile);
 

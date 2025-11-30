@@ -560,7 +560,7 @@ static void _populate_popup_multi(GtkTextView *textview,
   for(GList *item = texts; item; item = item->next)
   {
     GtkWidget *new_line = gtk_menu_item_new_with_label(item->data);
-    g_signal_connect(G_OBJECT(new_line), "activate", G_CALLBACK(_menu_line_activated), textview);
+    g_signal_connect(new_line, "activate", G_CALLBACK(_menu_line_activated), textview);
     gtk_menu_shell_append(GTK_MENU_SHELL(popup), new_line);
   }
   gtk_widget_show_all(popup);
@@ -890,7 +890,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     (_("display name"), renderer,
      "text", DT_METADATA_PREF_COL_NAME, NULL);
   g_object_set(renderer, "editable", TRUE, NULL);
-  g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_display_name_edited_callback), store);
+  g_signal_connect(renderer, "edited", G_CALLBACK(_display_name_edited_callback), store);
   dt_gui_commit_on_focus_loss(renderer, &active_editable);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
@@ -908,7 +908,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   // drag & drop
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
-  g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), d);
+  g_signal_connect(model, "row-inserted", G_CALLBACK(_drag_data_inserted), d);
 
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
@@ -932,11 +932,11 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(plus, _("add metadata tags"));
-  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+  g_signal_connect(plus, "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
 
   GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
-  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  g_signal_connect(minus, "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
   d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1119,7 +1119,7 @@ finish:
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_signal_connect(mi, "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 

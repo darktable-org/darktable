@@ -143,10 +143,8 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
 
 static void _gui_hist_item_toggled(GtkCellRendererToggle *cell,
                                    const gchar *path_str,
-                                   gpointer data)
+                                   dt_history_copy_item_t *d)
 {
-  dt_history_copy_item_t *d = (dt_history_copy_item_t *)data;
-
   const _styles_columns_t col =
     GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "column"));
 
@@ -274,7 +272,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_ENABLED);
-  g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
+  g_signal_connect(GTK_CELL_RENDERER_TOGGLE(renderer), "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
 
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
@@ -284,7 +282,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   renderer = gtk_cell_renderer_toggle_new();
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_AUTOINIT);
-  g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
+  g_signal_connect(GTK_CELL_RENDERER_TOGGLE(renderer), "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
 
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("reset"),
                                               renderer, "active",
@@ -374,7 +372,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   }
 
   g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated",
-                   (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
+                   G_CALLBACK(tree_on_row_activated), GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);

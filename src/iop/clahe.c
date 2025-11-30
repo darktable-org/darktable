@@ -326,9 +326,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("size of features to preserve"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("strength of the effect"));
 
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed",
+  g_signal_connect(g->scale1, "value-changed",
                    G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed",
+  g_signal_connect(g->scale2, "value-changed",
                    G_CALLBACK(slope_callback), self);
 
   self->widget = dt_gui_vbox(g->scale1, g->scale2);

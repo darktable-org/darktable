@@ -107,7 +107,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(create_callback), self);
+  g_signal_connect(lib->gui.button1, "clicked", G_CALLBACK(create_callback), self);
 
   const char *str = dt_conf_get_string_const("plugins/session/jobcode");
   gtk_entry_set_text(lib->gui.entry1, str);

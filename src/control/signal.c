@@ -93,6 +93,7 @@ static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, con
     imgs = NULL;
   }
 }
+#define G_CALLBACK(f) ((GCallback) (f))
 
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
@@ -241,7 +242,7 @@ dt_control_signal_t *dt_control_signal_init()
         _signal_description[k].n_params, _signal_description[k].param_types);
     if(_signal_description[k].destructor)
     {
-      g_signal_connect_after(G_OBJECT(ctlsig->sink), _signal_description[k].name,
+      g_signal_connect_after(ctlsig->sink, _signal_description[k].name,
                              _signal_description[k].destructor, NULL);
     }
   }
@@ -394,7 +395,7 @@ void dt_control_signal_connect(const dt_control_signal_t *ctlsig, dt_signal_t si
 {
   _print_trace(signal, DT_DEBUG_SIGNAL_ACT_CONNECT, "connect");
 
-  g_signal_connect(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data);
+  g_signal_connect_data(ctlsig->sink, _signal_description[signal].name, G_CALLBACK(cb), user_data, NULL, 0);
 }
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)

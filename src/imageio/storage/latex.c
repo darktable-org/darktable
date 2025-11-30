@@ -191,7 +191,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
+  g_signal_connect(widget, "clicked", G_CALLBACK(button_clicked), self);
 
   d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(title_changed_callback), self,
                                            _("enter the title of the book"),

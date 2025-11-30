@@ -94,9 +94,9 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "draw",
+  g_signal_connect(self->widget, "draw",
                    G_CALLBACK(_lib_darktable_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
+  g_signal_connect(self->widget, "button-press-event",
                    G_CALLBACK(_lib_darktable_button_press_callback), self);
 
   /* create a cairo surface of dt icon */

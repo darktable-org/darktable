@@ -641,7 +641,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the PDF"));
   gtk_spin_button_set_value(d->dpi, dt_conf_get_float("plugins/imageio/format/pdf/dpi"));
-  g_signal_connect(G_OBJECT(d->dpi), "value-changed", G_CALLBACK(dpi_changed_callback), self);
+  g_signal_connect(d->dpi, "value-changed", G_CALLBACK(dpi_changed_callback), self);
 
   // rotate images yes|no
 
@@ -684,7 +684,7 @@ void gui_init(dt_imageio_module_format_t *self)
     if(_pdf_bpp[i].bpp == bpp) sel = i;
   }
   gtk_grid_attach(grid, GTK_WIDGET(d->bpp), 0, ++line, 2, 1);
-  g_signal_connect(G_OBJECT(d->bpp), "value-changed", G_CALLBACK(bpp_toggle_callback), self);
+  g_signal_connect(d->bpp, "value-changed", G_CALLBACK(bpp_toggle_callback), self);
   gtk_widget_set_tooltip_text(d->bpp, _("bits per channel of the embedded images"));
   dt_bauhaus_combobox_set(d->bpp, sel);
 

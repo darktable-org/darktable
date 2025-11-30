@@ -688,7 +688,7 @@ void gui_init(dt_iop_module_t *self)
   g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, 0, 0, 2);
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   dt_gui_box_add(self->widget, g->extra);
-  g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
+  g_signal_connect(g->extra, "value-changed", G_CALLBACK(extra_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

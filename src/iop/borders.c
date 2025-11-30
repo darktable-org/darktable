@@ -854,8 +854,8 @@ void gui_changed(dt_iop_module_t *self,
   }
 }
 
-static void _colorpick_color_set(GtkColorButton *widget,
-                                dt_iop_module_t *self)
+static void _colorpick_color_set(GtkWidget *widget,
+                                 dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_borders_params_t *p = self->params;
@@ -872,7 +872,8 @@ static void _colorpick_color_set(GtkColorButton *widget,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
+static void _frame_colorpick_color_set(GtkWidget *widget,
+                                       dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_borders_params_t *p = self->params;
@@ -1013,7 +1014,7 @@ void gui_init(dt_iop_module_t *self)
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select border color"));
-  g_signal_connect(G_OBJECT(g->colorpick), "color-set",
+  g_signal_connect(g->colorpick, "color-set",
                    G_CALLBACK(_colorpick_color_set), self);
   g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker),
@@ -1027,7 +1028,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->frame_colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->frame_colorpick),
                              _("select frame line color"));
-  g_signal_connect(G_OBJECT(g->frame_colorpick), "color-set",
+  g_signal_connect(g->frame_colorpick, "color-set",
                    G_CALLBACK(_frame_colorpick_color_set), self);
   g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker),
