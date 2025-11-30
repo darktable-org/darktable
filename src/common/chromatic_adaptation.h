@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ static const dt_colormatrix_t Bradford_LMS_to_XYZ_trans =
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   dt_apply_transposed_color_matrix(XYZ, XYZ_to_Bradford_LMS_trans, LMS);
 }
 
@@ -71,7 +71,7 @@ static inline void make_RGB_to_Bradford_LMS(const dt_colormatrix_t rgb, dt_color
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   dt_apply_transposed_color_matrix(LMS, Bradford_LMS_to_XYZ_trans, XYZ);
 }
 
@@ -110,7 +110,7 @@ static const dt_colormatrix_t CAT16_LMS_to_XYZ_trans =
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   dt_apply_transposed_color_matrix(XYZ, XYZ_to_CAT16_LMS_trans, LMS);
 }
 
@@ -122,7 +122,7 @@ static inline void make_RGB_to_CAT16_LMS(const dt_colormatrix_t rgb, dt_colormat
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_CAT16_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   dt_apply_transposed_color_matrix(LMS, CAT16_LMS_to_XYZ_trans, XYZ);
 }
 
