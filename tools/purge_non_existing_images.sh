@@ -27,7 +27,7 @@ library=""
 commandline="$0 $*"
 
 # handle command line arguments
-while [[ $# -ge 1 ]]; do
+while [[ "$#" -ge 1 ]]; do
     option="$1"
     case "$option" in
     -h | --help)
