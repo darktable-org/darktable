@@ -28,7 +28,7 @@ commandline="$0 $*"
 
 # handle command line arguments
 while [[ $# -ge 1 ]]; do
-    option=$1
+    option="$1"
     case "$option" in
     -h | --help)
         echo "Delete nonexistent images from darktable's database"
@@ -43,11 +43,11 @@ while [[ $# -ge 1 ]]; do
         exit 0
         ;;
     -l | --library)
-        library=$2
+        library="$2"
         shift
         ;;
     -c | --configdir)
-        configdir=$2
+        configdir="$2"
         shift
         ;;
     -p | --purge)
@@ -62,11 +62,11 @@ done
 
 DBFILE="$configdir/library.db"
 
-if [[ -n $library ]]; then
+if [[ -n "$library" ]]; then
     DBFILE="$library"
 fi
 
-if [[ ! -f $DBFILE ]]; then
+if [[ ! -f "$DBFILE" ]]; then
     echo "error: library db '${DBFILE}' doesn't exist"
     exit 1
 fi
@@ -76,13 +76,13 @@ QUERY="SELECT images.id, film_rolls.folder || '/' || images.filename FROM images
 echo "Removing the following non existent file(s):"
 
 while read -r -u 9 id path; do
-    if [[ ! -f $path ]]; then
+    if [[ ! -f "$path" ]]; then
         echo "  ${path} with ID = ${id}"
         ids="${ids+${ids},}${id}"
     fi
 done 9< <(sqlite3 -separator $'\t' "$DBFILE" "$QUERY")
 
-if [[ $dryrun -eq 0 ]]; then
+if [[ "$dryrun" -eq 0 ]]; then
     for table in images meta_data; do
         sqlite3 "$DBFILE" <<< "DELETE FROM ${table} WHERE id IN ($ids)"
     done
