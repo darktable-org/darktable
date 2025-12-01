@@ -840,18 +840,31 @@ dt_masks_form_t *dt_masks_create(const dt_masks_type_t type)
   form->version = dt_masks_version();
   form->formid = time(NULL) + form_id++;
 
-  if(type & DT_MASKS_CIRCLE)
-    form->functions = &dt_masks_functions_circle;
-  else if(type & DT_MASKS_ELLIPSE)
-    form->functions = &dt_masks_functions_ellipse;
-  else if(type & DT_MASKS_BRUSH)
-    form->functions = &dt_masks_functions_brush;
-  else if(type & DT_MASKS_PATH)
-    form->functions = &dt_masks_functions_path;
-  else if(type & DT_MASKS_GRADIENT)
-    form->functions = &dt_masks_functions_gradient;
-  else if(type & DT_MASKS_GROUP)
-    form->functions = &dt_masks_functions_group;
+  switch (type)
+  {
+      case DT_MASKS_CIRCLE:
+        form->functions = &dt_masks_functions_circle;
+        break;
+      case DT_MASKS_ELLIPSE:
+        form->functions = &dt_masks_functions_ellipse;
+        break;
+      case DT_MASKS_BRUSH:
+        form->functions = &dt_masks_functions_brush;
+        break;
+      case DT_MASKS_PATH:
+        form->functions = &dt_masks_functions_path;
+        break;
+      case DT_MASKS_GRADIENT:
+        form->functions = &dt_masks_functions_gradient;
+        break;
+      case DT_MASKS_GROUP:
+        form->functions = &dt_masks_functions_group;
+        break;
+      case DT_MASKS_NONE:
+      case DT_MASKS_CLONE:
+      case DT_MASKS_NON_CLONE:
+        dt_unreachable_codepath();
+  }
 
   if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
