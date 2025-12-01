@@ -1,18 +1,19 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+# Find and remove entries from the library database referencing images that no longer exist in the filesystem. You must 
+# close darktable before running this script.
+#
+# Documentation: https://docs.darktable.org/usermanual/stable/en/special-topics/program-invocation/purge_non_existing_images_sh/
 #
 # Usage: purge_non_existing_images [-p]
 #        -p  do the purge, otherwise only display non existing images
 #
 
-if ! command -v sqlite3 >/dev/null
-then
+if ! command -v sqlite3 >/dev/null; then
     echo "error: please install sqlite3 binary".
     exit 1
 fi
 
-if pgrep -x "darktable" >/dev/null
-then
+if pgrep -x "darktable" >/dev/null; then
     echo "error: darktable is running, please exit first"
     exit 1
 fi
@@ -26,8 +27,7 @@ library=""
 commandline="$0 $*"
 
 # handle command line arguments
-while [ "$#" -ge 1 ]
-do
+while [ "$#" -ge 1 ]; do
     option="$1"
     case "$option" in
     -h | --help)
@@ -62,13 +62,11 @@ done
 
 DBFILE="$configdir/library.db"
 
-if [ "$library" != "" ]
-then
+if [ "$library" != "" ]; then
     DBFILE="$library"
 fi
 
-if [ ! -f "$DBFILE" ]
-then
+if [ ! -f "$DBFILE" ]; then
     echo "error: library db '${DBFILE}' doesn't exist"
     exit 1
 fi
@@ -77,24 +75,19 @@ QUERY="SELECT images.id, film_rolls.folder || '/' || images.filename FROM images
 
 echo "Removing the following non existent file(s):"
 
-while read -r -u 9 id path
-do
-    if ! [ -f "$path" ]
-    then
+while read -r -u 9 id path; do
+    if ! [ -f "$path" ]; then
         echo "  ${path} with ID = ${id}"
         ids="${ids+${ids},}${id}"
     fi
 done 9< <(sqlite3 -separator $'\t' "$DBFILE" "$QUERY")
 
-if [ "$dryrun" -eq 0 ]
-then
-    for table in images meta_data
-    do
+if [ "$dryrun" -eq 0 ]; then
+    for table in images meta_data; do
         sqlite3 "$DBFILE" <<< "DELETE FROM ${table} WHERE id IN ($ids)"
     done
 
-    for table in color_labels history masks_history selected_images tagged_images history_hash module_order
-    do
+    for table in color_labels history masks_history selected_images tagged_images history_hash module_order; do
         sqlite3 "$DBFILE" <<< "DELETE FROM ${table} WHERE imgid in ($ids)"
     done
 
