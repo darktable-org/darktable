@@ -52,6 +52,8 @@ static void dtgtk_drawing_area_class_init(GtkDarktableDrawingAreaClass *class)
 
   widget_class->get_request_mode = dtgtk_drawing_area_get_request_mode;
   widget_class->get_preferred_height_for_width = dtgtk_drawing_area_get_preferred_height_for_width;
+  // GTK4 add signal "draw" like GTK3 so we can pass "snapshot" to it (with cairo surface)
+  //      add dtgtk_drawing_area_new() to further ease porting
 }
 
 static void dtgtk_drawing_area_init(GtkDarktableDrawingArea *da)

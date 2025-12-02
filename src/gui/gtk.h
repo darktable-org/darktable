@@ -573,6 +573,8 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 #define dt_modifier_eq(controller, mask)\
   dt_modifier_is(dt_key_modifier_state(), mask)
 
+#define dt_controller_state(controller) gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller))
+
 // control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
 // the calls may be nested, but must be matched
 void dt_gui_cursor_set_busy();
