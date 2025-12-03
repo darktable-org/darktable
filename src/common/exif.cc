@@ -97,7 +97,8 @@ auto _xmp_serialise(const Exiv2::XmpData &xmpData) -> std::string
   std::string xmpPacket;
 
   using Exiv2::XmpParser;
-  if (0!=XmpParser::encode(xmpPacket, xmpData, XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
+  if (0!=XmpParser::encode(xmpPacket, xmpData,
+                           XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
   {
     throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_serialise] failed to serialize");
   }
@@ -123,7 +124,7 @@ auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
   xmpData["Xmp.darktable.print_timestamp"] = 0;
 
   auto xmpPacket = _xmp_serialise( xmpData );
-  std::sort(xmpPacket.begin(), xmpPacket.end()); // eliminate differences like the interchange of two rows.
+  std::sort(xmpPacket.begin(), xmpPacket.end()); // sort to ignore interchange of two rows.
 
   return xmpPacket;
 }
@@ -156,7 +157,8 @@ auto _xmp_read_from_file(const std::string &filename, bool prepareForComparison)
   using Exiv2::XmpParser;
   if (0!=XmpParser::decode(xmpData, xmpPacket))
   {
-    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_read_from_file] failed to decode");
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage,
+                       "[xmp_read_from_file] failed to decode");
   }
      
   if(prepareForComparison)
