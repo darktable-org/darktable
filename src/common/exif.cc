@@ -86,7 +86,84 @@ using namespace std;
 #define toLong toInt64
 #endif
 
-const char *xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+namespace {
+constexpr auto xml_header{"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"};
+
+//================================================================================
+// Serialize xmpData
+//================================================================================
+auto _xmp_serialise(const Exiv2::XmpData &xmpData) -> std::string
+{
+  std::string xmpPacket;
+
+  using Exiv2::XmpParser;
+  if (0!=XmpParser::encode(xmpPacket, xmpData, XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
+  {
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_prepare_for_comparison] failed to serialize");
+  }
+
+  return xmpPacket;
+}
+
+//================================================================================
+// Prepare an XmpData object for comparison, i.e. zero-out those fields in xmpData
+// that should *not* participate in a comparison.
+// After this, a new serialised string is encoded and returned.
+//
+// @param  xmpData. XmpData data object to prepare. It will be changed on return.
+// @return encoded form
+//================================================================================
+auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
+{
+  xmpData["Xmp.darktable.import_timestamp"] = 0;
+  xmpData["Xmp.darktable.change_timestamp"] = 0;
+  xmpData["Xmp.darktable.export_timestamp"] = 0;
+  xmpData["Xmp.darktable.print_timestamp"] = 0;
+
+  // Serialize xmpData and return
+  return _xmp_serialise( xmpData );
+}
+
+//================================================================================
+// Read an Exiv2::XmlData object from an xmp-file. Returns a tuple with
+//      <0>: - the XmpData object.
+//      <1>: - the serialised (encoded) form of <0>.
+//
+// @param filename The name of an xmp-file. It is assumed to exist.  
+// @param prepareForComparison. When true, the xmpData object is modified such
+//        that it can meaninglfully compared with others xmpDataobjects.
+//        In particular, this can be used to compare generated checksums.
+//
+// @return see above.   
+//================================================================================
+auto _xmp_read_from_file(const std::string &filename, bool prepareForComparison)
+    -> std::tuple<Exiv2::XmpData, std::string>
+{
+  Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
+  Exiv2::XmpData xmpData;
+  std::string xmpPacket;
+
+#if EXIV2_TEST_VERSION(0, 28, 0)
+  xmpPacket.assign(buf.c_str(), buf.size());
+#else
+  xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+#endif
+
+  using Exiv2::XmpParser;
+  if (0!=XmpParser::decode(xmpData, xmpPacket))
+  {
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_read_from_file] failed to decode");
+  }
+     
+  if(prepareForComparison)
+  {
+    xmpPacket = _xmp_prepare_for_comparison(xmpData);
+  }
+
+  return std::make_tuple(xmpData, xmpPacket);
+}
+
+}
 
 
 
@@ -5514,72 +5591,6 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
 }
 
 
-//================================================================================
-// Prepare an XmpData object for comparison, i.e. zero-out those fields in xmpData
-// that should *not* participate in a comparison.
-// After this, a new serialised string is encoded and returned.
-//
-// @param  xmpData. XmpData data object to prepare. It will be changed on return.
-// @return encoded form
-//================================================================================
-auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
-{
-  std::string xmpPacket;
-
-  xmpData["Xmp.darktable.import_timestamp"] = 0;
-  xmpData["Xmp.darktable.change_timestamp"] = 0;
-  xmpData["Xmp.darktable.export_timestamp"] = 0;
-  xmpData["Xmp.darktable.print_timestamp"] = 0;
-
-  // Serialize xmpData1
-  using Exiv2::XmpParser;
-  if (0!=XmpParser::encode(xmpPacket, xmpData, XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
-  {
-    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_prepare_for_comparison] failed to serialize");
-  }
-
-  return xmpPacket;
-}
-
-//================================================================================
-// Read an Exiv2::XmlData object from an xmp-file. Returns a tuple with
-//      <0>: - the XmpData object.
-//      <1>: - the serialised (encoded) form of <0>.
-//
-// @param filename The name of an xmp-file. It is assumed to exist.  
-// @param prepareForComparison. When true, the xmpData object is modified such
-//        that it can meaninglfully compared with others xmpDataobjects.
-//        In particular, this can be used to compare generated checksums.
-//
-// @return see above.   
-//================================================================================
-auto _xmp_read_from_file(const std::string &filename, bool prepareForComparison)
-    -> std::tuple<Exiv2::XmpData, std::string>
-{
-  Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
-  Exiv2::XmpData xmpData;
-  std::string xmpPacket;
-
-#if EXIV2_TEST_VERSION(0, 28, 0)
-  xmpPacket.assign(buf.c_str(), buf.size());
-#else
-  xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
-#endif
-
-  using Exiv2::XmpParser;
-  if (0!=XmpParser::decode(xmpData, xmpPacket))
-  {
-    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_read_from_file] failed to decode");
-  }
-     
-  if(prepareForComparison)
-  {
-    xmpPacket = _xmp_prepare_for_comparison(xmpData);
-  }
-
-  return std::make_tuple(xmpData, xmpPacket);
-}
-
 // Write XMP sidecar file: returns TRUE in case of errors.
 gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const gboolean force_write)
 {
@@ -5593,8 +5604,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
   try
   {
     Lock lock;
-    Exiv2::XmpData xmpData, xmpData1;
-    std::string xmpPacket, xmpPacket1;
+    Exiv2::XmpData xmpData;
 
     char *checksum_old = NULL;
 
@@ -5617,32 +5627,28 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
         checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)sss.c_str(), sss.length());
       }
 
-      // Again read xmp data, now without clearing the timestamps
-      std::tie(xmpData, xmpPacket) = _xmp_read_from_file(filename, false);
+      // Again read xmp data, now with no additional clearings.
+      std::tie(xmpData, std::ignore) = _xmp_read_from_file(filename, false);
 
       // Because XmpSeq or XmpBag are added to the list, we first have to
       // remove these so that we don't end up with a string of duplicates.
       _remove_known_keys(xmpData);
     }
 
-    // Initialize xmpData (from the database):
+    // Initialize xmpData (from the database).
     _exif_xmp_read_data(xmpData, imgid, "dt_exif_xmp_write");
 
-    {
-      Exiv2::XmpParser::encode(xmpPacket, xmpData,
-                               Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
-    }
-
-    // Likewise, initialize xmpData1 (from the database), and prepare it for comparison.
-    _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
-    xmpPacket1 = _xmp_prepare_for_comparison(xmpData1);
-
-    // Hash the new data (i.e. xmpData1 ) and compare it to the old hash (if applicable).
+    // Hash the new data and compare it to the old hash (if applicable).
     gboolean write_sidecar = TRUE;
     if(checksum_old)
     {
       if(GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5); checksum)
       {
+        // Initialize a new XmpData object, xmpData1, from the database, and prepare it for comparison.
+        Exiv2::XmpData xmpData1;
+        _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
+        auto xmpPacket1 = _xmp_prepare_for_comparison(xmpData1);
+
         std::stringstream ss;
         ss << xml_header << xmpPacket1;
         auto sss = ss.str();
@@ -5652,8 +5658,6 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
         g_checksum_update(checksum, (unsigned char *)sss.c_str(), -1);
 
         const char *checksum_new = g_checksum_get_string(checksum);
-        std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum old=" << checksum_old << std::endl;
-        std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum new=" << checksum_new << std::endl;
 
         // Compare checksums to see if there are different
         write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
@@ -5667,12 +5671,14 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
     if(write_sidecar)
     {
       std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": WRITING NEW " << filename << std::endl;
+
       // Using std::ofstream isn't possible here -- on Windows it
       // doesn't support Unicode filenames with mingw.
       errno = 0;
       FILE *fout = g_fopen(filename, "wb");
       if(fout)
       {
+         auto xmpPacket = _xmp_serialise( xmpData );
         fprintf(fout, "%s", xml_header);
         fprintf(fout, "%s", xmpPacket.c_str());
         fclose(fout);
