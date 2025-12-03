@@ -22,11 +22,11 @@ $ sha256sum darktable-5.4.0-arm64-13.5.dmg
 $ sha256sum darktable-5.4.0-win64.exe
 ??? darktable-5.4.0-win64.exe
 
-$ sha256sum darktable-4.8.1-x86_64.AppImage
+$ sha256sum darktable-5.4.0-x86_64.AppImage
 ???  darktable-5.4.0-x86_64.AppImage
 ```
 
-When updating from the stable 5.0 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 5.0.
+When updating from the stable 5.2 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 5.2.
 
 You are strongly advised to take a backup first.
 
@@ -151,6 +151,10 @@ changes (where available).
   enabled buttons has been improved to avoid confusions when
   restarting Darktable and seeing artifacts due to some tools being
   activate like Gamut check.
+
+- Make the cursor indicating the selected thumbs more visible. It is
+  now bigger and has a border to ensure better visibility on dark
+  thumbs.
 
 ## Performance Improvements
 
@@ -304,6 +308,12 @@ changes (where available).
   landscape CUPS option to be generated:
 
      plugins/print/cups/force_landscape=TRUE
+
+- Fixed possible display of double thumbs cursor on filmstrip when in
+  darkroom. Also the thumbs background could look as selected on
+  multiple pictures.
+
+- Fixed darkroom processing after changing any of the colour profiles.
 
 ## Lua
 

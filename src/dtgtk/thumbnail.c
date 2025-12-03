@@ -413,21 +413,25 @@ static gboolean _event_cursor_draw(GtkWidget *widget,
                                    cairo_t *cr,
                                    gpointer user_data)
 {
-  if(!user_data || !widget) return TRUE;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
-  GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_cursor);
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_cursor);
+  const double w_width  = gtk_widget_get_allocated_width(widget);
+  const double w_height = gtk_widget_get_allocated_height(widget);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
   GdkRGBA col;
-  gtk_style_context_get_color(context, state, &col);
+  gtk_style_context_lookup_color(context, "bg_color", &col);
 
   cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
-  cairo_line_to(cr, gtk_widget_get_allocated_width(widget), 0);
-  cairo_line_to(cr, gtk_widget_get_allocated_width(widget) / 2,
-                gtk_widget_get_allocated_height(widget));
+  cairo_line_to(cr, w_width, 0);
+  cairo_line_to(cr, w_width / 2, w_height);
   cairo_line_to(cr, 0, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
+
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BG);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
+  cairo_line_to(cr, w_width, 0);
+  cairo_line_to(cr, w_width / 2, w_height);
+  cairo_line_to(cr, 0, 0);
+  cairo_stroke(cr);
 
   return TRUE;
 }
@@ -885,13 +889,25 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
   gtk_widget_show(thumb->w_ext);
-  gtk_widget_show(thumb->w_cursor);
+
+  // show cursor (filmstrip current-image arrow) only for the active image
+  // and when in darkroom.
+  gboolean show_active = thumb->active;
+  if(show_active && darktable.view_manager->active_images)
+  {
+    const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    show_active = (thumb->imgid == activeid);
+  }
+  const gboolean show_cursor = show_active
+    && !(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
+    && (dt_view_get_current() == DT_VIEW_DARKROOM);
+  gtk_widget_set_visible(thumb->w_cursor, show_cursor);
 
   for(int i = 0; i < MAX_STARS; i++)
     gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, show_active);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
 
@@ -1394,12 +1410,18 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
                      G_CALLBACK(_event_main_drag_motion), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _dt_selection_changed_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _dt_mipmaps_updated_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _dt_preview_updated_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _dt_image_info_changed_callback, thumb);
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                              _dt_active_images_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED,
+                              _dt_selection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                              _dt_mipmaps_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                              _dt_preview_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED,
+                              _dt_image_info_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
+                              _dt_collection_changed_callback, thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
@@ -1898,7 +1920,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 7.5 * r1);
 
     // the filmstrip cursor
-    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 1.5 * r1);
+    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 3.0 * r1);
   }
   else
   {

@@ -1559,7 +1559,9 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander))))
+        show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       if(module->gui_reset)

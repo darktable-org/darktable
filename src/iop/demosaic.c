@@ -1030,7 +1030,7 @@ int process_cl(dt_iop_module_t *self,
     if(_noise_requested(self, piece))
       _capture_noise(self, piece);
     if(_radius_requested(self, piece))
-      _capture_radius_cl(self, piece, dev_in, iwidth, iheight, xtrans, filters);
+      _capture_radius_cl(self, piece, dev_in, iwidth, iheight, xtrans, filters, true_monochrome);
   }
 
   gboolean tiling = FALSE;

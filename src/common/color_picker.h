@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,8 +45,10 @@ gboolean dt_color_picker_box(dt_iop_module_t *module,
                              const dt_colorpicker_sample_t *const sample,
                              dt_pixelpipe_picker_source_t picker_source,
                              int *box);
-void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
-                            const struct dt_iop_roi_t *roi, const int *const box,
+void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc,
+                            const float *const pixel,
+                            const struct dt_iop_roi_t *roi,
+                            const int *const box,
                             const gboolean denoise,
                             lib_colorpicker_stats pick,
                             const enum dt_iop_colorspace_type_t image_cst,
@@ -58,4 +60,3 @@ void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

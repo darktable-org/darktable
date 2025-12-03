@@ -271,6 +271,8 @@ typedef struct dt_iop_agx_data_t
   primaries_params_t primaries_params;
 } dt_iop_agx_data_t;
 
+static void _set_scene_referred_default_params(dt_iop_agx_params_t *p);
+
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -278,393 +280,21 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  typedef struct dt_iop_agx_params_v2_3_4_t
+  if(old_version < 7)
   {
-    float look_offset;
-    float look_slope;
-    float look_power;
-    float look_saturation;
-    float look_original_hue_mix_ratio;
-
-    float range_black_relative_exposure;
-    float range_white_relative_exposure;
-    float security_factor;
-
-    float curve_pivot_x_shift_ratio;
-    float curve_pivot_y_linear_output;
-    float curve_contrast_around_pivot;
-    float curve_linear_ratio_below_pivot;
-    float curve_linear_ratio_above_pivot;
-    float curve_toe_power;
-    float curve_shoulder_power;
-    float curve_gamma;
-    gboolean auto_gamma;
-    float curve_target_display_black_ratio;
-    float curve_target_display_white_ratio;
-
-    dt_iop_agx_base_primaries_t base_primaries;
-    gboolean disable_primaries_adjustments;
-    float red_inset;
-    float red_rotation;
-    float green_inset;
-    float green_rotation;
-    float blue_inset;
-    float blue_rotation;
-
-    float master_outset_ratio;
-    float master_unrotation_ratio;
-    float red_outset;
-    float red_unrotation;
-    float green_outset;
-    float green_unrotation;
-    float blue_outset;
-    float blue_unrotation;
-  } dt_iop_agx_params_v2_3_4_t;
-
-  typedef struct dt_iop_agx_params_v5_t
-  {
-    float look_offset; // renamed to look_lift in v6, but no conversion is needed
-    float look_slope;
-    float look_power; // is replaced by look_brightness in v6
-    float look_saturation;
-    float look_original_hue_mix_ratio;
-
-    float range_black_relative_exposure;
-    float range_white_relative_exposure;
-    float dynamic_range_scaling;
-
-    float curve_pivot_x_shift_ratio;
-    float curve_pivot_y_linear_output;
-    float curve_contrast_around_pivot;
-    float curve_linear_ratio_below_pivot;
-    float curve_linear_ratio_above_pivot;
-    float curve_toe_power;
-    float curve_shoulder_power;
-    float curve_gamma;
-    gboolean auto_gamma;
-    float curve_target_display_black_ratio;
-    float curve_target_display_white_ratio;
-
-    dt_iop_agx_base_primaries_t base_primaries;
-    gboolean disable_primaries_adjustments;
-    float red_inset;
-    float red_rotation;
-    float green_inset;
-    float green_rotation;
-    float blue_inset;
-    float blue_rotation;
-
-    float master_outset_ratio;
-    float master_unrotation_ratio;
-    float red_outset;
-    float red_unrotation;
-    float green_outset;
-    float green_unrotation;
-    float blue_outset;
-    float blue_unrotation;
-
-    gboolean completely_reverse_primaries; // added in v5
-  } dt_iop_agx_params_v5_t;
-
-  typedef struct dt_iop_agx_params_v6_t
-  {
-    float look_lift;       // replaces look_offset in v5->v6
-    float look_slope;
-    float look_brightness; // replaces look_power in v5->v6
-    float look_saturation;
-    float look_original_hue_mix_ratio;
-
-    float range_black_relative_exposure;
-    float range_white_relative_exposure;
-    float dynamic_range_scaling;
-
-    float curve_pivot_x_shift_ratio;
-    float curve_pivot_y_linear_output;
-    float curve_contrast_around_pivot;
-    float curve_linear_ratio_below_pivot;
-    float curve_linear_ratio_above_pivot;
-    float curve_toe_power;
-    float curve_shoulder_power;
-    float curve_gamma;
-    gboolean auto_gamma;
-    float curve_target_display_black_ratio;
-    float curve_target_display_white_ratio;
-
-    dt_iop_agx_base_primaries_t base_primaries;
-    gboolean disable_primaries_adjustments;
-    float red_inset;
-    float red_rotation;
-    float green_inset;
-    float green_rotation;
-    float blue_inset;
-    float blue_rotation;
-
-    float master_outset_ratio;
-    float master_unrotation_ratio;
-    float red_outset;
-    float red_unrotation;
-    float green_outset;
-    float green_unrotation;
-    float blue_outset;
-    float blue_unrotation;
-
-    gboolean completely_reverse_primaries; // added in v5
-  } dt_iop_agx_params_v6_t;
-
-  typedef struct dt_iop_agx_params_v7_t
-  {
-    float look_lift;
-    float look_slope;
-    float look_brightness;
-    float look_saturation;
-    float look_original_hue_mix_ratio;
-
-    float range_black_relative_ev;
-    float range_white_relative_ev;
-    float dynamic_range_scaling;
-
-    float curve_pivot_x; // replaces curve_pivot_x_shift_ratio in v6 -> v7
-    float curve_pivot_y_linear_output;
-    float curve_contrast_around_pivot;
-    float curve_linear_ratio_below_pivot;
-    float curve_linear_ratio_above_pivot;
-    float curve_toe_power;
-    float curve_shoulder_power;
-    float curve_gamma;
-    gboolean auto_gamma;
-    float curve_target_display_black_ratio;
-    float curve_target_display_white_ratio;
-
-    dt_iop_agx_base_primaries_t base_primaries;
-    gboolean disable_primaries_adjustments;
-    float red_inset;
-    float red_rotation;
-    float green_inset;
-    float green_rotation;
-    float blue_inset;
-    float blue_rotation;
-
-    float master_outset_ratio;
-    float master_unrotation_ratio;
-    float red_outset;
-    float red_unrotation;
-    float green_outset;
-    float green_unrotation;
-    float blue_outset;
-    float blue_unrotation;
-
-    gboolean completely_reverse_primaries;
-  } dt_iop_agx_params_v7_t;
-
-  if(old_version == 1)
-  {
-    typedef struct dt_iop_agx_params_v1_t
-    {
-      float look_offset;
-      float look_slope;
-      float look_power;
-      float look_saturation;
-      float look_original_hue_mix_ratio;
-
-      // log mapping
-      float range_black_relative_exposure;
-      float range_white_relative_exposure;
-      float security_factor;
-
-      // curve params
-      float curve_pivot_x_shift;
-      float curve_pivot_y_linear;
-      float curve_contrast_around_pivot;
-      float curve_linear_percent_below_pivot;
-      float curve_linear_percent_above_pivot;
-      float curve_toe_power;
-      float curve_shoulder_power;
-      float curve_gamma;
-      gboolean auto_gamma;
-      float curve_target_display_black_percent;
-      float curve_target_display_white_percent;
-
-      // custom primaries
-      dt_iop_agx_base_primaries_t base_primaries;
-      // 'disable_primaries_adjustments' is missing here in v1
-      float red_inset;
-      float red_rotation;
-      float green_inset;
-      float green_rotation;
-      float blue_inset;
-      float blue_rotation;
-
-      float master_outset_ratio;
-      float master_unrotation_ratio;
-      float red_outset;
-      float red_unrotation;
-      float green_outset;
-      float green_unrotation;
-      float blue_outset;
-      float blue_unrotation;
-    } dt_iop_agx_params_v1_t;
-
-    dt_iop_agx_params_v2_3_4_t *np = calloc(1, sizeof(dt_iop_agx_params_v2_3_4_t));
-    const dt_iop_agx_params_v1_t *op = old_params;
-
-    // Because the new 'disable_primaries_adjustments' field was added
-    // in the middle of the struct, we must copy the data in two
-    // parts, around the new field.
-
-    // fields before 'disable_primaries_adjustments'.
-    const size_t part1_size = offsetof(dt_iop_agx_params_v2_3_4_t, disable_primaries_adjustments);
-    memcpy(np, op, part1_size);
-
-    // the new param
-    np->disable_primaries_adjustments = FALSE;
-
-    // fields after 'disable_primaries_adjustments'.
-    const void *old_part2_start = &op->red_inset;
-    void *new_part2_start = &np->red_inset;
-    const size_t part2_size =
-      sizeof(dt_iop_agx_params_v1_t) - offsetof(dt_iop_agx_params_v1_t, red_inset);
-    memcpy(new_part2_start, old_part2_start, part2_size);
-
+    // SPECIAL CASE: all versions before 7 were unreleased test versions,
+    // and migration is not relevant anymore; they will always be migrated
+    // to the CURRENT LATEST version, without further gradual migration steps
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    _set_scene_referred_default_params(np);
     *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v2_3_4_t);
-    *new_version = 2;
+    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_version = self->so->version(); // SPECIAL CASE: jump directly to latest version
 
-    return 0; // success
+    return 0;
   }
 
-  if(old_version == 2)
-  {
-    // v2 and v3 have the same layout, but some v2 parameters are converted to percentages.
-    // (Later, this turned out to be a mistake, see v4.) Rather than defining the same
-    // struct again, with different names, we convert in place.
-    // Fields names reflect the v4 names, so this is somewhat confusing, but I did not want
-    // to repeat the whole struct, when the layout is identical.
-
-    const dt_iop_agx_params_v2_3_4_t *op = old_params;
-    dt_iop_agx_params_v2_3_4_t *np = calloc(1, sizeof(dt_iop_agx_params_v2_3_4_t));
-
-    memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
-    np->look_offset *= 100.f;
-    np->look_saturation *= 100.f;
-    np->look_original_hue_mix_ratio *= 100.f;
-    np->curve_pivot_x_shift_ratio *= 100.f;
-    np->curve_pivot_y_linear_output *= 100.f;
-
-    *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v2_3_4_t);
-    *new_version = 3;
-
-    return 0; // success
-  }
-
-  if(old_version == 3)
-  {
-    // v3 and v4 have the same layout, so we convert in place, but now the GUI will take
-    // care of all percentage conversions, and it will provide simple ratios
-    // (1 instead of 100%) via dt_bauhaus_slider_set_factor.
-    // This undoes some conversions done in the v2 -> v3 step, and makes all such sliders
-    // consistent.
-
-    const dt_iop_agx_params_v2_3_4_t *op = old_params;
-    dt_iop_agx_params_v2_3_4_t *np = calloc(1, sizeof(dt_iop_agx_params_v2_3_4_t));
-
-    memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
-
-    np->look_offset /= 100.f;
-    np->look_saturation /= 100.f;
-    np->look_original_hue_mix_ratio /= 100.f;
-    np->security_factor /= 100.f;
-    np->curve_pivot_x_shift_ratio /= 100.f;
-    np->curve_pivot_y_linear_output /= 100.f;
-    np->curve_linear_ratio_below_pivot /= 100.f;
-    np->curve_linear_ratio_above_pivot /= 100.f;
-    np->curve_target_display_black_ratio /= 100.f;
-    np->curve_target_display_white_ratio /= 100.f;
-
-    *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v2_3_4_t);
-    *new_version = 4;
-
-    return 0; // success
-  }
-
-  if(old_version == 4)
-  {
-    // v5 adds 'completely_reverse_primaries' at the end of the struct
-    const dt_iop_agx_params_v2_3_4_t *op = old_params;
-    dt_iop_agx_params_v5_t *np = calloc(1, sizeof(dt_iop_agx_params_v5_t));
-
-    memcpy(np, op, sizeof(dt_iop_agx_params_v2_3_4_t));
-
-    np->completely_reverse_primaries = FALSE;
-
-    *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v5_t);
-    *new_version = 5;
-
-    return 0; // success
-  }
-
-  if(old_version == 5)
-  {
-    // v6 replaces look -> power with look -> brightness
-    const dt_iop_agx_params_v5_t *op = old_params;
-    dt_iop_agx_params_v6_t *np = calloc(1, sizeof(dt_iop_agx_params_v6_t));
-
-    // v5 and v6 are compatible at the binary level
-    memcpy(np, op, sizeof(dt_iop_agx_params_v5_t));
-
-    const float look_power_v5 = op->look_power;
-    np->look_brightness = look_power_v5 > 1 ?
-                                     1.f / (look_power_v5 * look_power_v5)
-                                     : 1.f / fmaxf(look_power_v5, 0.01f); // max allowed brightness is 100
-    *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v6_t);
-    *new_version = 6;
-
-    return 0; // success
-  }
-
-  if(old_version == 6)
-  {
-    // v6 replaces look -> power with look -> brightness
-    const dt_iop_agx_params_v6_t *op = old_params;
-    dt_iop_agx_params_v7_t *np = calloc(1, sizeof(dt_iop_agx_params_v7_t));
-
-    // v6 and v7 are compatible at the binary level
-    memcpy(np, op, sizeof(dt_iop_agx_params_v6_t));
-
-    const float pivot_relative_ev = op->curve_pivot_x_shift_ratio > 0 ?
-                                            op->range_white_relative_exposure * op->curve_pivot_x_shift_ratio :
-                                            - (op->range_black_relative_exposure * op->curve_pivot_x_shift_ratio);
-    const float pivot_distance_in_ev_from_black = pivot_relative_ev - op->range_black_relative_exposure;
-
-    if(pivot_distance_in_ev_from_black < _epsilon)
-    {
-      np->curve_pivot_x = _epsilon;
-    }
-    else
-    {
-      const float exposure_range_in_ev = op->range_white_relative_exposure - op->range_black_relative_exposure;
-      if(exposure_range_in_ev < _epsilon)
-      {
-        // should never happen, because of hard limits on the sliders
-        np->curve_pivot_x = 0.5f;
-      }
-      else
-      {
-        np->curve_pivot_x = CLIP(pivot_distance_in_ev_from_black / exposure_range_in_ev);
-      }
-    }
-
-    *new_params = np;
-    *new_params_size = sizeof(dt_iop_agx_params_v7_t);
-    *new_version = 7;
-
-    return 0; // success
-  }
-
-  return 1; // no other conversion possible
+  return 1;
 }
 
 static inline dt_colorspaces_color_profile_type_t
@@ -1408,8 +1038,9 @@ static void _adjust_relative_exposure_from_exposure_params(dt_iop_module_t *self
 
   const float exposure = dt_dev_exposure_get_effective_exposure(self->dev);
 
-  p->range_black_relative_ev = -8.f + 0.5f * exposure;
-  p->range_white_relative_ev = 4.f + 0.8 * exposure;
+  p->range_black_relative_ev = CLAMPF((-8.f + 0.5f * exposure) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
+  p->range_white_relative_ev = CLAMPF((4.f + 0.8 * exposure) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
+
   _update_pivot_x(old_black_ev, old_white_ev, self, p);
 }
 
@@ -1731,7 +1362,7 @@ void process(dt_iop_module_t *self,
 
   const gboolean base_working_same_profile = pipe_work_profile == base_profile;
 
-  DT_OMP_FOR_SIMD()
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
@@ -2200,7 +1831,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "at the cost of a more sudden drop near white"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
                               _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
-                                "target white cannot be reached with the selected contrast and pivot position.\n"
+                                "without inverting the shoulder (forcing it to bend upwards), it would be\n"
+                                "impossible to reach target white with the selected contrast and pivot position.\n"
                                 "increase contrast, move the pivot higher (increase pivot target output\n"
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
@@ -2216,7 +1848,8 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "at the cost of a more sudden drop near black"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
                               _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
-                                "target black cannot be reached with the selected contrast and pivot position.\n"
+                                "without inverting the toe (forcing it to bend downwards), it would be\n"
+                                "impossible to reach target black with the selected contrast and pivot position.\n"
                                 "increase contrast, move the pivot lower (reduce the pivot target output or\n"
                                 "curve y gamma), or increase the distance between the pivot and the left edge\n"
                                 "(increase the pivot shift, move the black point farther from the pivot by raising\n"

@@ -829,14 +829,17 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   {
     if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
     {
-      // name is not empty, set new multi_name
+      // name is not empty, set new multi_name only if changed
+      // ensure we keep the built-in as-is
 
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+       gchar *current_name = dt_util_localize_segmented_name(module->multi_name, FALSE);
 
-      if(g_strcmp0(module->multi_name, name) != 0)
+      if(g_strcmp0(current_name, name) != 0)
       {
         dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
       }
+      g_free(current_name);
     }
     else
     {
@@ -898,12 +901,15 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_set_name(entry, "iop-panel-label");
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
+
+  gchar *name = dt_util_localize_segmented_name(module->multi_name, FALSE);
   gtk_entry_set_text(GTK_ENTRY(entry),
                      strcmp(module->multi_name, "0")
                      || module->multi_priority > 0
                      || module->multi_name_hand_edited
-                       ? module->multi_name
+                       ? name
                        : "");
+  g_free(name);
 
   //  hide module instance name as we need the space for the entry
   gtk_widget_hide(module->instance_name);
@@ -4006,13 +4012,19 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_FOCUS:
-      _request_module_focus_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dt_dev_gui_module() == module))
+        _request_module_focus_callback(module);
       break;
     case DT_ACTION_ELEMENT_ENABLE:
-      _enable_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           module->off && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off))))
+        _enable_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_SHOW:
-      _show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+            module->expanded))
+        _show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_INSTANCE:;
       dt_iop_gui_multi_show_t multi_show;

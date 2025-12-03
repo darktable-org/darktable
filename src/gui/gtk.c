@@ -850,14 +850,17 @@ int dt_gui_gtk_write_config()
   dt_pthread_mutex_lock(&darktable.gui->mutex);
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gint x, y;
+  gint x, y, width, height;
+  // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
+  // the content size without window decorations. This is especially important
+  // on Wayland where CSD (Client-Side Decorations) are included in allocation
+  // but not in the size set by gtk_window_resize().
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int("ui_last/window_x", x);
   dt_conf_set_int("ui_last/window_y", y);
-  dt_conf_set_int("ui_last/window_w", allocation.width);
-  dt_conf_set_int("ui_last/window_h", allocation.height);
+  dt_conf_set_int("ui_last/window_w", width);
+  dt_conf_set_int("ui_last/window_h", height);
   dt_conf_set_bool("ui_last/maximized",
                    (gdk_window_get_state(gtk_widget_get_window(widget))
                     & GDK_WINDOW_STATE_MAXIMIZED));
@@ -1745,6 +1748,9 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
+    // On Wayland, use NORMAL hint to allow proper window resizing
+    gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
+
     GtkWidget *header_bar = gtk_header_bar_new();
     gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
@@ -4442,6 +4448,13 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+static void _gesture_cancel(GtkGestureSingle *gesture,
+                            GdkEventSequence *sequence,
+                            GtkWidget *widget)
+{
+  g_signal_emit_by_name(gesture, "released", 1, .0, .0);
+}
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
@@ -4453,7 +4466,11 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
   if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
-  if(released) g_signal_connect(gesture, "released", released, data);
+  if(released)
+  {
+    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
+  }
 
   return (GtkGestureSingle *)gesture;
 }

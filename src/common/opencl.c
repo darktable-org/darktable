@@ -471,6 +471,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].totallost = 0;
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
+  cl->dev[dev].max_mem_constant = 0;
+  cl->dev[dev].alignsize = 0;
   cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].platform = NULL;
@@ -529,7 +531,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl_bool little_endian = 0;
   cl_platform_id platform_id = 0;
   cl_bool unified_memory = 0;
-
   char *dtcache = calloc(PATH_MAX, sizeof(char));
   char *cachedir = calloc(PATH_MAX, sizeof(char));
   char *alnum_fullname = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
@@ -695,6 +696,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            &(cl->dev[dev].max_mem_alloc), NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE,
                                            sizeof(cl_bool), &little_endian, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
+                                           sizeof(cl_ulong),
+                                           &(cl->dev[dev].max_mem_constant), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MEM_BASE_ADDR_ALIGN,
+                                           sizeof(cl_uint),
+                                           &(cl->dev[dev].alignsize), NULL);
+
   // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
   // we would want to use CL_DEVICE_SVM_CAPABILITIES instead
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_HOST_UNIFIED_MEMORY,
@@ -814,6 +822,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX IMAGE SIZE:           %zd x %zd\n",
                cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   MAX CONSTANT BUFFER:      %.0f KB\n", (double)cl->dev[dev].max_mem_constant / 1024.0);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   ADDRESS ALIGN:            %d\n", cl->dev[dev].alignsize / 8);
+
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -3132,15 +3145,18 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  const gboolean oversize = size > darktable.opencl->dev[devid].max_mem_constant;
+  const int mode = oversize ? CL_MEM_COPY_HOST_PTR : CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
+
   cl_int err = CL_SUCCESS;
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
-    (darktable.opencl->dev[devid].context,
-     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, host, &err);
+    (darktable.opencl->dev[devid].context, mode, size, host, &err);
 
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || oversize)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant]"
-             " could not alloc buffer on device '%s' id=%d: %s",
+             " could not allocate %sbuffer on device '%s' id=%d: %s",
+             oversize ? "oversize " : "",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);

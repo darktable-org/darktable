@@ -1315,6 +1315,8 @@ static void _expand_select_tree_path(GtkTreePath *path1,
   GtkTreePath *p1 =
     gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter),
                                                      path1);
+  if(!p1) return;
+
   GtkTreePath *p2 = path2
     ? gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter),
                                                        path2)
