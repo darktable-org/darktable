@@ -108,7 +108,8 @@ auto _xmp_serialise(const Exiv2::XmpData &xmpData) -> std::string
 //================================================================================
 // Prepare an XmpData object for comparison, i.e. zero-out those fields in xmpData
 // that should *not* participate in a comparison.
-// After this, a new serialised string is encoded and returned.
+// Next, a the changed xmpData object is serialised.
+// Finally, the serialised string is sorted. 
 //
 // @param  xmpData. XmpData data object to prepare. It will be changed on return.
 // @return encoded form
@@ -120,8 +121,14 @@ auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
   xmpData["Xmp.darktable.export_timestamp"] = 0;
   xmpData["Xmp.darktable.print_timestamp"] = 0;
 
-  // Serialize xmpData and return
-  return _xmp_serialise( xmpData );
+  auto xmpPacket = _xmp_serialise( xmpData );
+
+  std::stringstream ss;
+  ss << xml_header << xmpPacket;
+  auto sss = ss.str();
+  std::sort(sss.begin(), sss.end());
+
+  return sss;
 }
 
 //================================================================================
@@ -131,7 +138,7 @@ auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
 //
 // @param filename The name of an xmp-file. It is assumed to exist.  
 // @param prepareForComparison. When true, the xmpData object is modified such
-//        that it can meaninglfully compared with others xmpDataobjects.
+//        that it can be meaningfully compared with other xmpDataobjects.
 //        In particular, this can be used to compare generated checksums.
 //
 // @return see above.   
@@ -5616,7 +5623,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       // using them NOT AT THE SAME TIME and the XMP crawler is used
       // to find changed sidecars.
       auto [xmpData0, xmpPacket0] = _xmp_read_from_file(filename, true);
-
+#if 0
       {
         std::stringstream ss;
         ss << xml_header << xmpPacket0;
@@ -5626,7 +5633,9 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
 
         checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)sss.c_str(), sss.length());
       }
-
+#else
+      checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)xmpPacket0.c_str(), xmpPacket0.length());
+#endif
       // Again read xmp data, now with no additional clearings.
       std::tie(xmpData, std::ignore) = _xmp_read_from_file(filename, false);
 
@@ -5649,17 +5658,11 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
         _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
         auto xmpPacket1 = _xmp_prepare_for_comparison(xmpData1);
 
-        std::stringstream ss;
-        ss << xml_header << xmpPacket1;
-        auto sss = ss.str();
-
-        std::sort(sss.begin(), sss.end());
-
-        g_checksum_update(checksum, (unsigned char *)sss.c_str(), -1);
+        g_checksum_update(checksum, (unsigned char *)xmpPacket1.c_str(), -1);
 
         const char *checksum_new = g_checksum_get_string(checksum);
 
-        // Compare checksums to see if there are different
+        // Compare checksums.
         write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
 
         g_checksum_free(checksum);
