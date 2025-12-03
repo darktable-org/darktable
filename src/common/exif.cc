@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -37,7 +38,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <tuple>
 
 // avoid error reported when including exiv2.hpp on macOS (XCode 15.2)
 #pragma GCC diagnostic push
@@ -85,6 +85,10 @@ using namespace std;
 #define AnyError Error
 #define toLong toInt64
 #endif
+
+const char *xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+
 
 // For these models we can't calculate the correct crop factor or, for some we could, but we
 // prefer to take it from here, rather than complicate the calculation code with exceptions
@@ -3711,6 +3715,7 @@ static gboolean _image_altered_deprecated(const dt_imgid_t imgid)
 // Need a write lock on *img (non-const) to write stars (and soon color labels).
 gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean history_only)
 {
+  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
   if(!img)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_exif_xmp_read] failed as no img was provided for '%s'", filename);
@@ -3721,6 +3726,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean 
   if(c >= filename && !strcmp(c, ".pfm")) return TRUE;
   try
   {
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
+
     // Read XMP sidecar
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
     assert(image.get() != 0);
@@ -4196,6 +4203,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean 
 
   end:
 
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": before _read_xmp_timestamps.../" << std::endl;
     _read_xmp_timestamps(xmpData, img, xmp_version);
 
     _read_xmp_harmony_guide(xmpData, img, xmp_version);
@@ -4494,10 +4502,13 @@ void _read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const int xm
   // Do not read for import_ts. It must be updated at each import.
   if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.change_timestamp"))) != xmpData.end())
   {
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": xmp_version=" << xmp_version << std::endl;
+
     if(xmp_version > 5)
       img->change_timestamp = pos->toLong();
     else if(pos->toLong() >= 1)
       img->change_timestamp = _convert_unix_to_gtimespan(pos->toLong());
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": change_ts=" << img->change_timestamp << std::endl;
   }
   if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.export_timestamp"))) != xmpData.end())
   {
@@ -4912,6 +4923,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
     Lock lock;
     char input_filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << input_filename << std::endl;
 
     // First take over the data from the source image
     Exiv2::XmpData xmpData;
@@ -5508,11 +5520,27 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
   }
 }
 
-//================================================================================
-// Read an Exiv2XmlData object from an xmp-file.
-//================================================================================
-auto _xmp_read_from_file(const std::string &filename) -> std::tuple<Exiv2::XmpData, std::string>
+auto _write_to_file(const std::string &filename, const std::string &s, bool addHeader)
 {
+  std::ofstream txtfile;
+  txtfile.open(filename);
+  if(addHeader)
+  {
+    txtfile << xml_header;
+  }
+  txtfile << s;
+  txtfile.close();
+}
+
+//================================================================================
+// Read an Exiv2XmlData object from an xmp-file. Returns a tuple with
+//      <0>: - an XmpData object.
+//      <1>: - the serialised (encoded) form from which <0> was obtained.
+//================================================================================
+auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
+    -> std::tuple<Exiv2::XmpData, std::string>
+{
+  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << "filename:" << filename << std::endl;
   Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
   Exiv2::XmpData xmpData;
   std::string xmpPacket;
@@ -5524,8 +5552,24 @@ auto _xmp_read_from_file(const std::string &filename) -> std::tuple<Exiv2::XmpDa
 #endif
 
   int err = Exiv2::XmpParser::decode(xmpData, xmpPacket);
+  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": err=" << err << std::endl;
 
-  return err == 0 ? std::make_tuple(xmpData, xmpPacket) : make_tuple(Exiv2::XmpData(), std::string());
+  if(err != 0)
+  {
+    exit(-1);
+  }
+
+  if(clrTimeStamps)
+  {
+    xmpData["Xmp.darktable.import_timestamp"] = 0;
+    xmpData["Xmp.darktable.change_timestamp"] = 0;
+    xmpData["Xmp.darktable.export_timestamp"] = 0;
+    xmpData["Xmp.darktable.print_timestamp"] = 0;
+    Exiv2::XmpParser::encode(xmpPacket, xmpData,
+                             Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
+  }
+
+  return err == 0 ? std::make_tuple(xmpData, xmpPacket) : std::make_tuple(Exiv2::XmpData(), std::string());
 }
 
 // Write XMP sidecar file: returns TRUE in case of errors.
@@ -5538,12 +5582,18 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return TRUE;
 
+  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << imgfname << std::endl;
+  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << ": "
+            << g_file_test(filename, G_FILE_TEST_EXISTS) << std::endl;
+
   try
   {
     Lock lock;
-    Exiv2::XmpData xmpData;
-    std::string xmpPacket;
+    Exiv2::XmpData xmpData, xmpData1;
+    std::string xmpPacket, xmpPacket1;
+
     char *checksum_old = NULL;
+
     if(!force_write && g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // we want to avoid writing the sidecar file if it didn't change
@@ -5551,65 +5601,96 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       // computers. Sample use case: images on NAS, several computers
       // using them NOT AT THE SAME TIME and the XMP crawler is used
       // to find changed sidecars.
-      errno = 0;
-      size_t end;
-      unsigned char *content = (unsigned char *)dt_read_file(filename, &end);
-      if(content)
+      auto [xmpData0, xmpPacket0] = _xmp_read_from_file(filename, true);
+
       {
-        checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
-        free(content);
+        std::stringstream ss;
+        ss << xml_header << xmpPacket0;
+        auto sss = ss.str();
+
+        std::sort(sss.begin(), sss.end());
+
+        checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)sss.c_str(), sss.length());
       }
-      else
-      {
-        dt_print(DT_DEBUG_ALWAYS, "cannot read XMP file '%s': '%s'", filename, strerror(errno));
-        dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
-      }
-#if 0
-      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
-#if EXIV2_TEST_VERSION(0, 28, 0)
-      xmpPacket.assign(buf.c_str(), buf.size());
-#else
-      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
-#endif
-      Exiv2::XmpParser::decode(xmpData, xmpPacket);
-#else
-      std::tie(xmpData, xmpPacket) = _xmp_read_from_file(filename);
-#endif
+
+      // Again read xmp data, now without clearing the timestamps
+      std::tie(xmpData, xmpPacket) = _xmp_read_from_file(filename, false);
+
       // Because XmpSeq or XmpBag are added to the list, we first have to
       // remove these so that we don't end up with a string of duplicates.
       _remove_known_keys(xmpData);
     }
 
-    // Initialize xmp data (from the database):
+    // Initialize xmpData (from the database):
     _exif_xmp_read_data(xmpData, imgid, "dt_exif_xmp_write");
 
-    // Serialize the xmp data and output the xmp packet.
-    if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
+    {
+      Exiv2::XmpParser::encode(xmpPacket, xmpData,
+                               Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
+
+      _write_to_file("xmpData-db.txt", xmpPacket, true);
+    }
+
+    // Initialize xmpData1 (from the database):
+    _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
+
+    // BwvB patch:
+    xmpData1["Xmp.darktable.import_timestamp"] = 0;
+    xmpData1["Xmp.darktable.change_timestamp"] = 0;
+    xmpData1["Xmp.darktable.export_timestamp"] = 0;
+    xmpData1["Xmp.darktable.print_timestamp"] = 0;
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": PATCH APPLIED" << std::endl;
+
+    // Serialize the xmp data
+    if(Exiv2::XmpParser::encode(xmpPacket1, xmpData1,
                                 Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper)
        != 0)
     {
-      throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize xmp data");
+      throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize-1- xmp data");
     }
 
+    _write_to_file("xmpData1.txt", xmpPacket1, true);
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": file xmpData1.txt written" << std::endl;
+
     // Hash the new data and compare it to the old hash (if applicable).
-    const char *xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     gboolean write_sidecar = TRUE;
     if(checksum_old)
     {
+      std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": old checksum exists of  " << filename << std::endl;
       GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+
+
+
       if(checksum)
       {
+        std::stringstream ss;
+        ss << xml_header << xmpPacket1;
+        auto sss = ss.str();
+        _write_to_file("checksum-new-0.txt", sss, false);
+        std::sort(sss.begin(), sss.end());
+        _write_to_file("checksum-new-1.txt", sss, false);
+#if 0        
         g_checksum_update(checksum, (unsigned char *)xml_header, -1);
-        g_checksum_update(checksum, (unsigned char *)xmpPacket.c_str(), -1);
+        g_checksum_update(checksum, (unsigned char *)xmpPacket1.c_str(), -1);
+#else
+        g_checksum_update(checksum, (unsigned char *)sss.c_str(), -1);
+#endif
+        _write_to_file("xmp-new.txt", xmpPacket1, true);
+
         const char *checksum_new = g_checksum_get_string(checksum);
+        std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum old=" << checksum_old << std::endl;
+        std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum new=" << checksum_new << std::endl;
         write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
         g_checksum_free(checksum);
       }
       g_free(checksum_old);
     }
 
+    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
+
     if(write_sidecar)
     {
+      std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": WRITING NEW " << filename << std::endl;
       // Using std::ofstream isn't possible here -- on Windows it
       // doesn't support Unicode filenames with mingw.
       errno = 0;
