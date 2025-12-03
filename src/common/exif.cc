@@ -4498,13 +4498,10 @@ void _read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const int xm
   // Do not read for import_ts. It must be updated at each import.
   if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.change_timestamp"))) != xmpData.end())
   {
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": xmp_version=" << xmp_version << std::endl;
-
     if(xmp_version > 5)
       img->change_timestamp = pos->toLong();
     else if(pos->toLong() >= 1)
       img->change_timestamp = _convert_unix_to_gtimespan(pos->toLong());
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": change_ts=" << img->change_timestamp << std::endl;
   }
   if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.export_timestamp"))) != xmpData.end())
   {
