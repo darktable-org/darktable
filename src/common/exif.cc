@@ -3715,7 +3715,6 @@ static gboolean _image_altered_deprecated(const dt_imgid_t imgid)
 // Need a write lock on *img (non-const) to write stars (and soon color labels).
 gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean history_only)
 {
-  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
   if(!img)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_exif_xmp_read] failed as no img was provided for '%s'", filename);
@@ -3726,8 +3725,6 @@ gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean 
   if(c >= filename && !strcmp(c, ".pfm")) return TRUE;
   try
   {
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
-
     // Read XMP sidecar
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
     assert(image.get() != 0);
@@ -4203,7 +4200,6 @@ gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean 
 
   end:
 
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": before _read_xmp_timestamps.../" << std::endl;
     _read_xmp_timestamps(xmpData, img, xmp_version);
 
     _read_xmp_harmony_guide(xmpData, img, xmp_version);
@@ -5540,7 +5536,6 @@ auto _write_to_file(const std::string &filename, const std::string &s, bool addH
 auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
     -> std::tuple<Exiv2::XmpData, std::string>
 {
-  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << "filename:" << filename << std::endl;
   Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
   Exiv2::XmpData xmpData;
   std::string xmpPacket;
@@ -5552,7 +5547,6 @@ auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
 #endif
 
   int err = Exiv2::XmpParser::decode(xmpData, xmpPacket);
-  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": err=" << err << std::endl;
 
   if(err != 0)
   {
@@ -5581,10 +5575,6 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
 
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return TRUE;
-
-  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << imgfname << std::endl;
-  std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << ": "
-            << g_file_test(filename, G_FILE_TEST_EXISTS) << std::endl;
 
   try
   {
@@ -5627,21 +5617,16 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
     {
       Exiv2::XmpParser::encode(xmpPacket, xmpData,
                                Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
-
-      _write_to_file("xmpData-db.txt", xmpPacket, true);
     }
 
-    // Initialize xmpData1 (from the database):
+    // Likewise, initialize xmpData1 (from the database), followed by clearing the timestamps.
     _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
-
-    // BwvB patch:
     xmpData1["Xmp.darktable.import_timestamp"] = 0;
     xmpData1["Xmp.darktable.change_timestamp"] = 0;
     xmpData1["Xmp.darktable.export_timestamp"] = 0;
     xmpData1["Xmp.darktable.print_timestamp"] = 0;
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": PATCH APPLIED" << std::endl;
 
-    // Serialize the xmp data
+    // Serialize xmpData1
     if(Exiv2::XmpParser::encode(xmpPacket1, xmpData1,
                                 Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper)
        != 0)
@@ -5649,44 +5634,32 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize-1- xmp data");
     }
 
-    _write_to_file("xmpData1.txt", xmpPacket1, true);
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": file xmpData1.txt written" << std::endl;
-
-    // Hash the new data and compare it to the old hash (if applicable).
+    // Hash the new data (i.e. xmpData1 )and compare it to the old hash (if applicable).
     gboolean write_sidecar = TRUE;
     if(checksum_old)
     {
-      std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": old checksum exists of  " << filename << std::endl;
-      GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
-
-
-
-      if(checksum)
+      if(GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5); checksum)
       {
         std::stringstream ss;
         ss << xml_header << xmpPacket1;
         auto sss = ss.str();
-        _write_to_file("checksum-new-0.txt", sss, false);
+
         std::sort(sss.begin(), sss.end());
-        _write_to_file("checksum-new-1.txt", sss, false);
-#if 0        
-        g_checksum_update(checksum, (unsigned char *)xml_header, -1);
-        g_checksum_update(checksum, (unsigned char *)xmpPacket1.c_str(), -1);
-#else
+
         g_checksum_update(checksum, (unsigned char *)sss.c_str(), -1);
-#endif
-        _write_to_file("xmp-new.txt", xmpPacket1, true);
 
         const char *checksum_new = g_checksum_get_string(checksum);
         std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum old=" << checksum_old << std::endl;
         std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ": checksum new=" << checksum_new << std::endl;
+
+        // Compare checksums to see if there are different
         write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
+
         g_checksum_free(checksum);
       }
+
       g_free(checksum_old);
     }
-
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << filename << std::endl;
 
     if(write_sidecar)
     {
