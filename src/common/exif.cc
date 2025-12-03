@@ -5513,12 +5513,47 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
   }
 }
 
+
 //================================================================================
-// Read an Exiv2XmlData object from an xmp-file. Returns a tuple with
-//      <0>: - an XmpData object.
-//      <1>: - the serialised (encoded) form from which <0> was obtained.
+// Prepare an XmpData object for comparison, i.e. zero-out those fields in xmpData
+// that should *not* participate in a comparison.
+// After this, a new serialised string is encoded and returned.
+//
+// @param  xmpData. XmpData data object to prepare. It will be changed on return.
+// @return encoded form
 //================================================================================
-auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
+auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
+{
+  std::string xmpPacket;
+
+  xmpData["Xmp.darktable.import_timestamp"] = 0;
+  xmpData["Xmp.darktable.change_timestamp"] = 0;
+  xmpData["Xmp.darktable.export_timestamp"] = 0;
+  xmpData["Xmp.darktable.print_timestamp"] = 0;
+
+  // Serialize xmpData1
+  using Exiv2::XmpParser;
+  if (0!=XmpParser::encode(xmpPacket, xmpData, XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
+  {
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_prepare_for_comparison] failed to serialize");
+  }
+
+  return xmpPacket;
+}
+
+//================================================================================
+// Read an Exiv2::XmlData object from an xmp-file. Returns a tuple with
+//      <0>: - the XmpData object.
+//      <1>: - the serialised (encoded) form of <0>.
+//
+// @param filename The name of an xmp-file. It is assumed to exist.  
+// @param prepareForComparison. When true, the xmpData object is modified such
+//        that it can meaninglfully compared with others xmpDataobjects.
+//        In particular, this can be used to compare generated checksums.
+//
+// @return see above.   
+//================================================================================
+auto _xmp_read_from_file(const std::string &filename, bool prepareForComparison)
     -> std::tuple<Exiv2::XmpData, std::string>
 {
   Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
@@ -5531,30 +5566,22 @@ auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
   xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
 #endif
 
-  int err = Exiv2::XmpParser::decode(xmpData, xmpPacket);
-
-  if(err != 0)
+  using Exiv2::XmpParser;
+  if (0!=XmpParser::decode(xmpData, xmpPacket))
   {
-    exit(-1);
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_read_from_file] failed to decode");
+  }
+     
+  if(prepareForComparison)
+  {
+    xmpPacket = _xmp_prepare_for_comparison(xmpData);
   }
 
-  if(clrTimeStamps)
-  {
-    xmpData["Xmp.darktable.import_timestamp"] = 0;
-    xmpData["Xmp.darktable.change_timestamp"] = 0;
-    xmpData["Xmp.darktable.export_timestamp"] = 0;
-    xmpData["Xmp.darktable.print_timestamp"] = 0;
-    Exiv2::XmpParser::encode(xmpPacket, xmpData,
-                             Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
-  }
-
-  return err == 0 ? std::make_tuple(xmpData, xmpPacket) : std::make_tuple(Exiv2::XmpData(), std::string());
+  return std::make_tuple(xmpData, xmpPacket);
 }
 
 // Write XMP sidecar file: returns TRUE in case of errors.
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
-                           const char *filename,
-                           const gboolean force_write)
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const gboolean force_write)
 {
   // Refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
@@ -5606,22 +5633,11 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
                                Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper);
     }
 
-    // Likewise, initialize xmpData1 (from the database), followed by clearing the timestamps.
+    // Likewise, initialize xmpData1 (from the database), and prepare it for comparison.
     _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
-    xmpData1["Xmp.darktable.import_timestamp"] = 0;
-    xmpData1["Xmp.darktable.change_timestamp"] = 0;
-    xmpData1["Xmp.darktable.export_timestamp"] = 0;
-    xmpData1["Xmp.darktable.print_timestamp"] = 0;
+    xmpPacket1 = _xmp_prepare_for_comparison(xmpData1);
 
-    // Serialize xmpData1
-    if(Exiv2::XmpParser::encode(xmpPacket1, xmpData1,
-                                Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper)
-       != 0)
-    {
-      throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_write] failed to serialize-1- xmp data");
-    }
-
-    // Hash the new data (i.e. xmpData1 )and compare it to the old hash (if applicable).
+    // Hash the new data (i.e. xmpData1 ) and compare it to the old hash (if applicable).
     gboolean write_sidecar = TRUE;
     if(checksum_old)
     {
@@ -5663,8 +5679,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
       }
       else
       {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "cannot write XMP file '%s': '%s'", filename, strerror(errno));
+        dt_print(DT_DEBUG_ALWAYS, "cannot write XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return TRUE;
       }
@@ -5674,16 +5689,12 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
-             filename,
-             e.what());
+    dt_print(DT_DEBUG_IMAGEIO, "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'", filename, e.what());
     return TRUE;
   }
 }
 
-dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
-                                                            const size_t size)
+dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data, const size_t size)
 {
   try
   {
@@ -5697,8 +5708,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
     // clang-format on
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
-       != exifData.end() && pos->size())
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
     {
       int colorspace = pos->toLong();
       if(colorspace == 0x01)
@@ -5707,8 +5717,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
         return DT_COLORSPACE_ADOBERGB;
       else if(colorspace == 0xffff)
       {
-        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")))
-           != exifData.end()
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
            && pos->size())
         {
           std::string interop_index = pos->toString();
@@ -5724,16 +5733,12 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_color_space] %s",
-             e.what());
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_color_space] %s", e.what());
     return DT_COLORSPACE_DISPLAY;
   }
 }
 
-void dt_exif_get_basic_data(const uint8_t *data,
-                            const size_t size,
-                            dt_image_basic_exif_t *basic_exif)
+void dt_exif_get_basic_data(const uint8_t *data, const size_t size, dt_image_basic_exif_t *basic_exif)
 {
   try
   {
@@ -5747,14 +5752,11 @@ void dt_exif_get_basic_data(const uint8_t *data,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_basic_data] %s",
-             e.what());
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_basic_data] %s", e.what());
   }
 }
 
-static void _exif_log_handler(const int log_level,
-                              const char *message)
+static void _exif_log_handler(const int log_level, const char *message)
 {
   if(log_level >= Exiv2::LogMsg::level())
   {
