@@ -2132,7 +2132,7 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
   if(cv->vscroll_size > cv->vscroll_viewport_size)
   {
     gtk_adjustment_configure
-      (gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar)),
+      (gtk_scrollbar_get_adjustment(GTK_SCROLLBAR(darktable.gui->scrollbars.vscrollbar)),
        cv->vscroll_pos, cv->vscroll_lower, cv->vscroll_size, 0,
        cv->vscroll_viewport_size,
        cv->vscroll_viewport_size);
@@ -2141,7 +2141,7 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
   if(cv->hscroll_size > cv->hscroll_viewport_size)
   {
     gtk_adjustment_configure
-      (gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar)),
+      (gtk_scrollbar_get_adjustment(GTK_SCROLLBAR(darktable.gui->scrollbars.hscrollbar)),
        cv->hscroll_pos, cv->hscroll_lower, cv->hscroll_size, 0,
        cv->hscroll_viewport_size,
        cv->hscroll_viewport_size);

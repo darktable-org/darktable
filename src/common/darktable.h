@@ -1356,10 +1356,9 @@ typedef union GdkEventOld
 #define gdk_window_set_cursor(...)
 #define gdk_window_set_transient_for(...)
 #define gtk_box_query_child_packing(...)
-#define gtk_box_reorder_child(...)
 #define gtk_box_set_center_widget(...)
 #define gtk_button_box_set_child_non_homogeneous(...)
-#define gtk_button_clicked(...)
+#define gtk_button_clicked(button) g_signal_emit_by_name(button, "clicked")
 #define gtk_calendar_get_date(...)
 #define gtk_calendar_mark_day(...)
 #define gtk_calendar_select_month(...)
@@ -1368,10 +1367,7 @@ typedef union GdkEventOld
 #define gtk_check_menu_item_set_active(...)
 #define gtk_check_menu_item_set_inconsistent(...)
 #define gtk_clipboard_set_text(...)
-#define gtk_container_child_get_property(...)
-#define gtk_container_child_get(...)
 #define gtk_container_child_set(...)
-#define gtk_container_foreach(...)
 #define gtk_container_get_focus_child(...) NULL
 #define gtk_container_set_border_width(...)
 #define gtk_container_set_focus_child(...)
@@ -1387,9 +1383,7 @@ typedef union GdkEventOld
 #define gtk_drag_source_set(...)
 #define gtk_drag_source_unset(...)
 #define gtk_entry_get_layout(...) NULL
-#define gtk_entry_get_text(...) "test"
 #define gtk_entry_set_max_width_chars(...)
-#define gtk_entry_set_text(...)
 #define gtk_entry_set_width_chars(...)
 #define gtk_event_box_set_visible_window(...)
 #define gtk_file_chooser_add_filter(...)
@@ -1422,7 +1416,7 @@ typedef union GdkEventOld
 #define gtk_init_check(...)
 #define gtk_init(...) gtk_init()
 #define GTK_IS_CHECK_MENU_ITEM(...) 0
-#define gtk_label_set_line_wrap(...)
+#define gtk_label_set_line_wrap gtk_label_set_wrap
 #define gtk_main_do_event(...)
 #define gtk_menu_item_get_label(...) NULL
 #define gtk_menu_item_get_submenu(...) NULL
@@ -1457,10 +1451,9 @@ typedef union GdkEventOld
 #define gtk_selection_data_set(...)
 #define gtk_separator_menu_item_new(...) NULL
 #define gtk_show_uri_on_window(...) 0
-#define gtk_stack_set_homogeneous(...)
+#define gtk_stack_set_homogeneous gtk_stack_set_vhomogeneous
 #define gtk_style_context_get(...)
 #define gtk_style_context_list_classes(...) NULL
-#define gtk_style_context_new(...) NULL
 #define gtk_style_context_set_path(...)
 #define gtk_style_context_set_screen(...)
 #define gtk_target_list_new(...) NULL
@@ -1475,7 +1468,7 @@ typedef union GdkEventOld
 #define GTK_TYPE_CONTAINER(...) 0
 #define gtk_viewport_set_shadow_type(...)
 #define gtk_widget_add_events(...)
-#define gtk_widget_destroy(...)
+#define gtk_widget_destroy gtk_widget_unparent
 #define gtk_widget_draw(...)
 #define gtk_widget_event(...) 0
 #define gtk_widget_get_preferred_width(...) 0
@@ -1561,6 +1554,25 @@ GtkWidget *gtk_bin_get_child(gpointer bin);
 void gtk_container_add(GtkContainer *container, GtkWidget *child);
 #define gtk_container_remove(container, child) gtk_widget_unparent(child)
 GList *gtk_container_get_children(GtkContainer *container);
+static inline void gtk_container_child_get(GtkContainer *box, GtkWidget *child, const char *property_name, int *value, ...)
+{
+  *value = 0;
+  for(GtkWidget *w = gtk_widget_get_first_child(GTK_WIDGET(box)); w && w != child; w = gtk_widget_get_next_sibling(w))
+    (*value)++;
+}
+static inline void gtk_box_reorder_child(GtkBox *box, GtkWidget *child, int position)
+{
+  GtkWidget *sibling = NULL;
+  for(GtkWidget *w = gtk_widget_get_first_child(GTK_WIDGET(box)); w && position--; w = gtk_widget_get_next_sibling(w))
+    sibling = w;
+  gtk_box_reorder_child_after(box, child, sibling);
+}
+static inline void gtk_container_foreach(GtkContainer *container, GtkCallback callback, gpointer user_data)
+{
+  for(GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(container)); child; child = gtk_widget_get_next_sibling(child))
+    callback(child, user_data);
+}
+
 #define gtk_box_pack_end(box, child, expand, fill, padding) gtk_box_prepend(box, child)
 #define gtk_box_pack_start(box, child, expand, fill, padding) gtk_box_append(box, child)
 #define gtk_paned_pack1(paned, child, resize, shrink) gtk_paned_set_start_child(paned, child)
@@ -1573,8 +1585,13 @@ GList *gtk_container_get_children(GtkContainer *container);
 #define gtk_layout_move gtk_fixed_move
 #define gtk_layout_put gtk_fixed_put
 
+#undef GTK_ENTRY
+#define GTK_ENTRY (gpointer)
+#define gtk_entry_get_text(entry) gtk_editable_get_text(GTK_EDITABLE(entry))
+#define gtk_entry_set_text(entry, text) gtk_editable_set_text(GTK_EDITABLE(entry), text)
+
 #undef GTK_TOGGLE_BUTTON
-#define GTK_TOGGLE_BUTTON(button) (gpointer)button
+#define GTK_TOGGLE_BUTTON (gpointer)
 #define gtk_toggle_button_get_active(button) (GTK_IS_CHECK_BUTTON(button) ? gtk_check_button_get_active(GTK_CHECK_BUTTON(button)) : gtk_toggle_button_get_active((GtkToggleButton *)(button)))
 #define gtk_toggle_button_set_active(button, active) (GTK_IS_CHECK_BUTTON(button) ? gtk_check_button_set_active(GTK_CHECK_BUTTON(button), active) : gtk_toggle_button_set_active((GtkToggleButton *)(button), active))
 

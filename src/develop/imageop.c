@@ -643,16 +643,15 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
   if(!moved) return;
 
   // we move the headers
-  GValue gv = { 0, { { 0 } } };
-  g_value_init(&gv, G_TYPE_INT);
-  gtk_container_child_get_property(
+  int position = 0;
+  gtk_container_child_get(
       GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui,
                                         DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
       prev->expander,
-      "position", &gv);
+      "position", &position, NULL);
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui,
                                             DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv));
+                        module->expander, position);
 
   dt_dev_add_history_item(prev->dev, module, TRUE);
 
@@ -678,17 +677,15 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
   if(!moved) return;
 
   // we move the headers
-  GValue gv = { 0, { { 0 } } };
-  g_value_init(&gv, G_TYPE_INT);
-  gtk_container_child_get_property(
+  int position = 0;
+  gtk_container_child_get(
       GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui,
                                         DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
       next->expander,
-      "position", &gv);
-
+      "position", &position, NULL);
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui,
                                             DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv));
+                        module->expander, position);
 
   dt_dev_add_history_item(next->dev, module, TRUE);
 
@@ -740,16 +737,15 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
 
     /* add module to right panel */
     dt_iop_gui_set_expander(module);
-    GValue gv = { 0, { { 0 } } };
-    g_value_init(&gv, G_TYPE_INT);
-    gtk_container_child_get_property(
+    int position = 0;
+    gtk_container_child_get(
         GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui,
                                           DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-        base->expander, "position", &gv);
+        base->expander, "position", &position, NULL);
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui,
                                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander,
-                          g_value_get_int(&gv) + pos_base - pos_module + 1);
+                          position + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
 
     dt_iop_reload_defaults(module); // some modules like profiled
@@ -2876,12 +2872,11 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
 
     if(child && GTK_IS_DRAWING_AREA(child->data)) // GTK4
     {
-      GValue position = G_VALUE_INIT;
-      g_value_init (&position, G_TYPE_INT);
-      gtk_container_child_get_property(GTK_CONTAINER(module->header),
-                                       child->data ,"position", &position);
+      int position = 0;
+      gtk_container_child_get(GTK_CONTAINER(module->header),
+                              child->data ,"position", &position, NULL);
       gtk_box_reorder_child(GTK_BOX(module->header), module->mask_indicator,
-                            g_value_get_int(&position));
+                            position);
     }
     g_list_free(children);
 

@@ -1720,7 +1720,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   for(int i=0; i<3; i++)
   {
     g_object_ref(G_OBJECT(g->blocks[i]));
-    if(old_container) gtk_container_remove(GTK_CONTAINER(old_container), g->blocks[i]);
+    // GTK4 if(old_container) gtk_container_remove(GTK_CONTAINER(old_container), g->blocks[i]);
   }
 
   if(old_container) gtk_widget_destroy(old_container);
