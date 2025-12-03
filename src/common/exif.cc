@@ -5513,18 +5513,6 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
   }
 }
 
-auto _write_to_file(const std::string &filename, const std::string &s, bool addHeader)
-{
-  std::ofstream txtfile;
-  txtfile.open(filename);
-  if(addHeader)
-  {
-    txtfile << xml_header;
-  }
-  txtfile << s;
-  txtfile.close();
-}
-
 //================================================================================
 // Read an Exiv2XmlData object from an xmp-file. Returns a tuple with
 //      <0>: - an XmpData object.
@@ -5564,7 +5552,9 @@ auto _xmp_read_from_file(const std::string &filename, bool clrTimeStamps)
 }
 
 // Write XMP sidecar file: returns TRUE in case of errors.
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const gboolean force_write)
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
+                           const char *filename,
+                           const gboolean force_write)
 {
   // Refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
@@ -5673,7 +5663,8 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       }
       else
       {
-        dt_print(DT_DEBUG_ALWAYS, "cannot write XMP file '%s': '%s'", filename, strerror(errno));
+        dt_print(DT_DEBUG_ALWAYS,
+                 "cannot write XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return TRUE;
       }
@@ -5683,12 +5674,16 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'", filename, e.what());
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
+             filename,
+             e.what());
     return TRUE;
   }
 }
 
-dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data, const size_t size)
+dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
+                                                            const size_t size)
 {
   try
   {
@@ -5702,7 +5697,8 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
     // clang-format on
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
+       != exifData.end() && pos->size())
     {
       int colorspace = pos->toLong();
       if(colorspace == 0x01)
@@ -5711,7 +5707,8 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
         return DT_COLORSPACE_ADOBERGB;
       else if(colorspace == 0xffff)
       {
-        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")))
+           != exifData.end()
            && pos->size())
         {
           std::string interop_index = pos->toString();
@@ -5727,12 +5724,16 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_color_space] %s", e.what());
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_get_color_space] %s",
+             e.what());
     return DT_COLORSPACE_DISPLAY;
   }
 }
 
-void dt_exif_get_basic_data(const uint8_t *data, const size_t size, dt_image_basic_exif_t *basic_exif)
+void dt_exif_get_basic_data(const uint8_t *data,
+                            const size_t size,
+                            dt_image_basic_exif_t *basic_exif)
 {
   try
   {
@@ -5746,11 +5747,14 @@ void dt_exif_get_basic_data(const uint8_t *data, const size_t size, dt_image_bas
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_basic_data] %s", e.what());
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_get_basic_data] %s",
+             e.what());
   }
 }
 
-static void _exif_log_handler(const int log_level, const char *message)
+static void _exif_log_handler(const int log_level,
+                              const char *message)
 {
   if(log_level >= Exiv2::LogMsg::level())
   {
