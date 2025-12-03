@@ -5622,7 +5622,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5,
                                                  (unsigned char *)xmpPacket0.c_str(), xmpPacket0.length());
 
-      // Again read the xmp-file, but now without any additional preparations.
+      // Read the xmp-file once again, but now without any additional preparations.
       std::tie(xmpData, std::ignore) = _xmp_read_from_file(filename, false);
 
       // Because XmpSeq or XmpBag are added to the list, we first have to
