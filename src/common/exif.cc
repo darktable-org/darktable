@@ -99,7 +99,7 @@ auto _xmp_serialise(const Exiv2::XmpData &xmpData) -> std::string
   using Exiv2::XmpParser;
   if (0!=XmpParser::encode(xmpPacket, xmpData, XmpParser::useCompactFormat | XmpParser::omitPacketWrapper))
   {
-    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_prepare_for_comparison] failed to serialize");
+    throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, "[xmp_serialise] failed to serialize");
   }
 
   return xmpPacket;
@@ -109,7 +109,8 @@ auto _xmp_serialise(const Exiv2::XmpData &xmpData) -> std::string
 // Prepare an XmpData object for comparison, i.e. zero-out those fields in xmpData
 // that should *not* participate in a comparison.
 // Next, a the changed xmpData object is serialised.
-// Finally, the serialised string is sorted. 
+// Finally, the serialised string is sorted. The reason to have this last step is
+// two serialised strings apparently can have two rows interchanged.
 //
 // @param  xmpData. XmpData data object to prepare. It will be changed on return.
 // @return encoded form
@@ -122,13 +123,9 @@ auto _xmp_prepare_for_comparison(Exiv2::XmpData &xmpData) -> std::string
   xmpData["Xmp.darktable.print_timestamp"] = 0;
 
   auto xmpPacket = _xmp_serialise( xmpData );
+  std::sort(xmpPacket.begin(), xmpPacket.end()); // eliminate differences like the interchange of two rows.
 
-  std::stringstream ss;
-  ss << xml_header << xmpPacket;
-  auto sss = ss.str();
-  std::sort(sss.begin(), sss.end());
-
-  return sss;
+  return xmpPacket;
 }
 
 //================================================================================
@@ -5000,7 +4997,6 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
     Lock lock;
     char input_filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
-    std::cerr << __FILE_NAME__ << ' ' << __LINE__ << ':' << input_filename << std::endl;
 
     // First take over the data from the source image
     Exiv2::XmpData xmpData;
@@ -5623,20 +5619,10 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
       // using them NOT AT THE SAME TIME and the XMP crawler is used
       // to find changed sidecars.
       auto [xmpData0, xmpPacket0] = _xmp_read_from_file(filename, true);
-#if 0
-      {
-        std::stringstream ss;
-        ss << xml_header << xmpPacket0;
-        auto sss = ss.str();
+      checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5,
+                                                 (unsigned char *)xmpPacket0.c_str(), xmpPacket0.length());
 
-        std::sort(sss.begin(), sss.end());
-
-        checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)sss.c_str(), sss.length());
-      }
-#else
-      checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, (unsigned char *)xmpPacket0.c_str(), xmpPacket0.length());
-#endif
-      // Again read xmp data, now with no additional clearings.
+      // Again read the xmp-file, but now without any additional preparations.
       std::tie(xmpData, std::ignore) = _xmp_read_from_file(filename, false);
 
       // Because XmpSeq or XmpBag are added to the list, we first have to
@@ -5653,7 +5639,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const g
     {
       if(GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5); checksum)
       {
-        // Initialize a new XmpData object, xmpData1, from the database, and prepare it for comparison.
+        // Initialize a new XmpData object, xmpData1, and prepare it for comparison.
         Exiv2::XmpData xmpData1;
         _exif_xmp_read_data(xmpData1, imgid, "dt_exif_xmp_write");
         auto xmpPacket1 = _xmp_prepare_for_comparison(xmpData1);
