@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void dt_workspace_create(const char *datadir);
+/* returns TRUE if a workspace is active/created and FALSE otherwise */
+gboolean dt_workspace_create(const char *datadir);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

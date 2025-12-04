@@ -140,13 +140,13 @@ static GtkBox *_insert_button(dt_workspace_t *session, const char *label)
   return box;
 }
 
-void dt_workspace_create(const char *datadir)
+gboolean dt_workspace_create(const char *datadir)
 {
   if(dt_check_gimpmode("file")
      || dt_check_gimpmode("thumb")
      || !dt_conf_get_bool("database/multiple_workspace"))
   {
-    return;
+    return FALSE;
   }
 
   dt_workspace_t *session = g_malloc(sizeof(dt_workspace_t));
@@ -257,6 +257,8 @@ void dt_workspace_create(const char *datadir)
 
   _workspace_screen_destroy(session);
   g_free(session);
+
+  return TRUE;
 }
 
 // clang-format off
