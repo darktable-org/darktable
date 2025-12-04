@@ -59,7 +59,7 @@
 #ifdef __APPLE__
 #include "osx/osx.h"
 #endif
-#ifdef _WIN32
+#ifdef X_WIN32
 #include <dwmapi.h>
 #include <gdk/gdkwin32.h>
 #endif

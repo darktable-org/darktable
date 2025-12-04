@@ -1538,7 +1538,7 @@ int dt_init(int argc,
   // however after gtk_disable_setlocale
   if(init_gui)
   {
-    gtk_init(&argc, &argv);
+    gtk_init();
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);

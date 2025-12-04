@@ -997,7 +997,7 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-value"
 #pragma GCC diagnostic ignored "-Wuninitialized"
-// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 // #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #pragma GCC diagnostic ignored "-Wswitch"
@@ -1413,8 +1413,6 @@ typedef union GdkEventOld
 #define gtk_header_bar_set_has_subtitle(...)
 #define gtk_header_bar_set_show_close_button(...)
 #define gtk_icon_theme_append_search_path(...)
-#define gtk_init_check(...)
-#define gtk_init(...) gtk_init()
 #define GTK_IS_CHECK_MENU_ITEM(...) 0
 #define gtk_label_set_line_wrap gtk_label_set_wrap
 #define gtk_main_do_event(...)
@@ -1597,6 +1595,11 @@ static inline void gtk_container_foreach(GtkContainer *container, GtkCallback ca
 
 #define gdk_cursor_new_from_name(display, name) gdk_cursor_new_from_name(name, NULL)
 #define gtk_image_new_from_icon_name(name, size) gtk_image_new_from_icon_name(name)
+
+// WIN32
+#define GDK_WINDOW_HWND(...) NULL
+#define gdk_win32_window_get_handle(...) NULL
+#define DwmSetWindowAttribute(...) 0
 
 G_END_DECLS
 
