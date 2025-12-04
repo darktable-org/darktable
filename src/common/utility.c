@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,10 +91,9 @@ gchar *dt_util_localize_segmented_name(const char *s,
         const char *l_name = dt_util_localize_string(name);
         items = g_list_append(items, (void *)l_name);
       }
+      g_free(localized);
+      localized = dt_util_glist_to_str(sep, items);
     }
-
-    g_free(localized);
-    localized = dt_util_glist_to_str(sep, items);
 
     g_list_free(items);
     g_strfreev(split);
