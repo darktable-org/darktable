@@ -2586,7 +2586,7 @@ gboolean dt_exif_read(dt_image_t *img,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "[exiv2 dt_exif_read] %s: %s",
              path,
              e.what());
