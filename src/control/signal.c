@@ -94,6 +94,7 @@ static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, con
   }
 }
 
+#define	G_CALLBACK(f)			 ((GCallback) (f))
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   [DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE] = { "dt-global-mouse-over-image-change",
