@@ -397,81 +397,26 @@ changes (where available).
 
 ## RawSpeed changes
 
-- OM System 14-bit high-resolution ORFs are now supported.
-- Canon EOS 5D Mark II crop was updated.
-- Fujifilm FinePix X100 crop was updated.
-- Samsung EX1 crop and white level were updated.
+- Canon EOS 2000D/1500D/Rebel T7/Kiss X90 color matrix was updated.
+- Nikon Z 7 color matrix was updated.
+- Nikon Z5_2 color matrix was updated.
 - Sony ILCE-1M2 color matrix was updated.
 
-## Camera support, compared to 5.0
+## Camera support, compared to 5.2
 
 ### Base Support
 
-- Canon EOS R5 C (requires LibRaw 202502 and later)
-- Fujifilm GFX100RF (compressed)
-- Fujifilm GFX100S II (compressed)
-- Nikon 1 J5
-- Nikon 1 V3
-- Nikon COOLPIX P1100 (12bit-uncompressed)
-- Nikon Coolpix P340
-- Nikon D100
-- Nikon D200
-- Nikon D2Hs
-- Nikon D2X
-- Nikon D3300
-- Nikon D3X
-- Nikon D40
-- Nikon D40X
-- Nikon D5
-- Nikon D5000
-- Nikon D5300
-- Nikon D5500
-- Nikon D5600
-- Nikon D60
-- Nikon D80
-- Nikon D800
-- Nikon D800E
-- Nikon D90
-- Nikon Z5_2 (14bit-compressed)
-- OM System OM-3
-- Olympus SP510UZ
-- Panasonic DC-G97 (4:3)
-- Panasonic DC-G9M2 (4:3)
-- Panasonic DC-GH6 (4:3)
-- Panasonic DC-S1RM2 (3:2)
-- Panasonic DC-S5M2 (3:2)
-- Panasonic DC-S5M2X (3:2)
-- Panasonic DC-S9 (3:2)
-- Panasonic DC-TZ99 (4:3)
-- Panasonic DC-ZS99 (4:3)
-- Phase One IQ150
-- Phase One P40+
-- Samsung GX20
-- Sigma BF (DNG)
-- Sigma DP1 (DNG)
-- Sigma DP1 Merrill (DNG)
-- Sinar Hy6 (DNG)
-- Sony DSC-RX100M7A
-- Sony ILCE-6100A
-- Sony ILCE-6400A
-- Sony ILME-FX3A
-- Sony ZV-1A
-- Sony ZV-E10M2
+- Canon EOS R1 (requires LibRaw 0.22-PreRC1 and later)
+- Canon EOS R5 Mark II (requires LibRaw 0.22-PreRC1 and later)
+- ???
 
 ### White Balance Presets
 
-- Fujifilm GFX100 II
-- OM System OM-3
-- Panasonic DC-S9
+- ???
 
 ### Noise Profiles
 
-- Fujifilm GFX 100
-- Leica SL2
-- OM System OM-3
-- Panasonic DC-S1RM2
-- Panasonic DC-S9
-- Sony ILCE-1M2
+- ???
 
 ### Missing Compression Mode Support
 
@@ -481,7 +426,7 @@ changes (where available).
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Phase One other than IIQ L
-- Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
+- Sony HQ and downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
 
