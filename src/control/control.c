@@ -285,7 +285,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 gboolean dt_control_running()
 {
-  return dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
+  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
 }
 
 void dt_control_quit()
@@ -383,8 +383,8 @@ void dt_control_cleanup(const gboolean withgui)
     if(s->shortcuts) g_sequence_free(s->shortcuts);
     if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
   }
-  free(s);
   darktable.control = NULL;
+  free(s);
 }
 
 
