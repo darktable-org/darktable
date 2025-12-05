@@ -356,10 +356,8 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
 
 static void _gui_styles_item_toggled(GtkCellRendererToggle *cell,
                                      gchar *path_str,
-                                     gpointer data)
+                                     dt_gui_styles_dialog_t *sd)
 {
-  dt_gui_styles_dialog_t *sd = (dt_gui_styles_dialog_t *)data;
-
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(sd->items));
   GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
   GtkTreeIter iter;
@@ -571,7 +569,7 @@ static gboolean _gui_styles_dialog_run(const gboolean edit,
   gtk_widget_set_tooltip_text(sd->name, _("enter a name for the new style"));
   gtk_entry_set_activates_default(GTK_ENTRY(sd->name), TRUE);
   gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_ACCEPT, FALSE);
-  g_signal_connect(sd->name, "changed", G_CALLBACK(_name_changed), dialog);
+  g_signal_connect(GTK_ENTRY(sd->name), "changed", G_CALLBACK(_name_changed), dialog);
 
   sd->description = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->description), _("description"));
@@ -613,7 +611,7 @@ static gboolean _gui_styles_dialog_run(const gboolean edit,
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_ENABLED);
-  g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_styles_item_toggled), sd);
+  g_signal_connect(GTK_CELL_RENDERER_TOGGLE(renderer), "toggled", G_CALLBACK(_gui_styles_item_toggled), sd);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1,
                                               edit ? _("keep") : _("include"),
                                               renderer, "active",
@@ -1030,7 +1028,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
     gtk_widget_set_app_paintable(da, TRUE);
     gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
     data.first_draw = TRUE;
-    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
+    g_signal_connect(da, "draw", G_CALLBACK(_preview_draw), &data);
   }
 
   return ht;

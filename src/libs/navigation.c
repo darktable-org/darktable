@@ -214,17 +214,17 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect callbacks */
   gtk_widget_set_app_paintable(thumbnail, TRUE);
-  g_signal_connect(G_OBJECT(thumbnail), "draw",
+  g_signal_connect(thumbnail, "draw",
                    G_CALLBACK(_lib_navigation_draw_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "button-press-event",
+  g_signal_connect(thumbnail, "button-press-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "scroll-event",
+  g_signal_connect(thumbnail, "scroll-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "button-release-event",
+  g_signal_connect(thumbnail, "button-release-event",
                    G_CALLBACK(_lib_navigation_button_release_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "motion-notify-event",
+  g_signal_connect(thumbnail, "motion-notify-event",
                    G_CALLBACK(_lib_navigation_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "leave-notify-event",
+  g_signal_connect(thumbnail, "leave-notify-event",
                    G_CALLBACK(_lib_navigation_leave_notify_callback), self);
 
   /* set size of navigation draw area */

@@ -44,9 +44,9 @@ typedef struct dt_lib_colorlabels_t
 } dt_lib_colorlabels_t;
 
 /* callback when a colorlabel button is clicked */
-static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self);
+static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
+                                                         GdkEventButton *event,
+                                                         dt_lib_module_t *self);
 
 gint _get_colorlabel(dt_lib_module_t *self, GtkWidget *w)
 {
@@ -136,10 +136,10 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_markup(button, tooltip);
     g_free(tooltip);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(button), "button-press-event",
+    g_signal_connect(button, "button-press-event",
                      G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      self);
-    g_signal_connect(G_OBJECT(button), "enter-notify-event",
+    g_signal_connect(button, "enter-notify-event",
                      G_CALLBACK(_lib_colorlabels_enter_notify_callback),
                      self);
     ac = dt_action_define(&darktable.control->actions_thumb, NULL,
@@ -267,9 +267,9 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   }
 }
 
-static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self)
+static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
+                                                         GdkEventButton *event,
+                                                         dt_lib_module_t *self)
 {
   dt_lib_colorlabels_t *d = self->data;
 
@@ -290,6 +290,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                imgs);
   }
+  return TRUE;
 }
 
 // clang-format off

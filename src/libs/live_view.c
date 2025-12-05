@@ -318,7 +318,7 @@ void gui_init(dt_lib_module_t *self)
   button = dtgtk_##type##button_new(paint, direction, NULL);                 \
   gtk_widget_set_tooltip_text(button, action);                               \
   gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);                   \
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), data); \
+  g_signal_connect(button, "clicked", G_CALLBACK(callback), data); \
   dt_action_define(DT_ACTION(self), NULL, action, button, *(#type)?&dt_action_def_toggle:&dt_action_def_button);
 
   lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0,
@@ -370,7 +370,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
   dt_bauhaus_combobox_add(lib->overlay, _("id"));
   gtk_widget_set_tooltip_text(lib->overlay, _("overlay another image over the live view"));
-  g_signal_connect(G_OBJECT(lib->overlay), "value-changed",
+  g_signal_connect(lib->overlay, "value-changed",
                    G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
@@ -381,7 +381,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(lib->overlay_id), 0);
   gtk_widget_set_tooltip_text(lib->overlay_id,
                               _("enter image id of the overlay manually"));
-  g_signal_connect(G_OBJECT(lib->overlay_id), "value-changed",
+  g_signal_connect(lib->overlay_id, "value-changed",
                    G_CALLBACK(_overlay_id_changed), lib);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(lib->overlay_id),
                             dt_conf_get_int("plugins/lighttable/live_view/overlay_imgid"));
@@ -415,7 +415,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(lib->overlay_mode, _("mode of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_mode,
                           dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
-  g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed",
+  g_signal_connect(lib->overlay_mode, "value-changed",
                    G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
@@ -426,7 +426,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(lib->overlay_splitline, _("only draw part of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_splitline,
                           dt_conf_get_int("plugins/lighttable/live_view/splitline"));
-  g_signal_connect(G_OBJECT(lib->overlay_splitline), "value-changed",
+  g_signal_connect(lib->overlay_splitline, "value-changed",
                    G_CALLBACK(_overlay_splitline_changed),
                    lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_splitline, TRUE, TRUE, 0);

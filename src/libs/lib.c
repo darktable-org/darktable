@@ -438,7 +438,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
   const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
 
-  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
+  g_signal_connect(menu, "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0;
@@ -517,9 +517,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
     dt_action_define(&minfo->module->actions, "preset", name, mi, NULL);
 
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(_menuitem_activate_preset), minfo);
-    g_signal_connect(G_OBJECT(mi), "button-release-event",
+    g_signal_connect(GTK_MENU_ITEM(mi), "button-release-event",
                      G_CALLBACK(_menuitem_button_preset), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_widget_set_has_tooltip(mi, TRUE);
@@ -536,7 +536,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
   if(minfo->module->manage_presets)
   {
     mi = gtk_menu_item_new_with_label(_("manage presets..."));
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_manage_presets), minfo);
+    g_signal_connect(mi, "activate", G_CALLBACK(menuitem_manage_presets), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
@@ -545,11 +545,11 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     if(!selected_writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), minfo);
+      g_signal_connect(mi, "activate", G_CALLBACK(menuitem_edit_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), minfo);
+      g_signal_connect(mi, "activate", G_CALLBACK(menuitem_delete_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       cnt++;
     }
@@ -563,7 +563,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
       gtk_widget_set_tooltip_text(mi, _("nothing to save"));
     }
     else
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
+      g_signal_connect(mi, "activate", G_CALLBACK(menuitem_new_preset), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     if(darktable.gui->last_preset && found)
@@ -578,7 +578,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name",
                              g_strdup(darktable.gui->last_preset), g_free);
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(menuitem_update_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
@@ -845,7 +845,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
 }
 
 static gboolean _lib_draw_callback(GtkWidget *widget,
-                                   gpointer cr,
+                                   cairo_t *cr,
                                    dt_lib_module_t *self)
 {
   dt_lib_gui_update(self);
@@ -883,7 +883,7 @@ static void dt_lib_init_module(void *m)
     {
       g_object_ref_sink(module->widget);
       if(module->gui_update)
-        g_signal_connect(G_OBJECT(module->widget), "draw",
+        g_signal_connect(module->widget, "draw",
                          G_CALLBACK(_lib_draw_callback), module);
     }
   }
@@ -895,16 +895,15 @@ void _lib_unload_module(dt_lib_module_t *module)
     g_module_close(module->module);
 }
 
-static gboolean _lib_gui_reset_callback(GtkButton *button,
+static gboolean _lib_gui_reset_callback(GtkWidget *button,
                                         GdkEventButton *e,
-                                        gpointer user_data)
+                                        dt_lib_module_t *module)
 {
-  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
   module->gui_reset(module);
   return TRUE;
 }
 
-static gboolean _presets_popup_callback(GtkButton *button,
+static gboolean _presets_popup_callback(GtkWidget *button,
                                         GdkEventButton *e,
                                         dt_lib_module_t *module)
 {
@@ -921,7 +920,7 @@ static gboolean _presets_popup_callback(GtkButton *button,
     //         mi->params, mi->params_size);
     mi->params_size = 0;
   }
-  dt_lib_presets_popup_menu_show(mi, GTK_WIDGET(button));
+  dt_lib_presets_popup_menu_show(mi, button);
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
@@ -968,11 +967,9 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 
 static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
                                                GdkEventButton *e,
-                                               gpointer user_data)
+                                               dt_lib_module_t *module)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
-
-  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
 
   if(e->button == GDK_BUTTON_PRIMARY)
   {
@@ -1033,10 +1030,10 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
 
 static gboolean _lib_plugin_header_button_release(GtkWidget *w,
                                                   GdkEventButton *e,
-                                                  gpointer user_data)
+                                                  dt_lib_module_t *module)
 {
   if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent*)e))) return FALSE;
-  return _lib_plugin_arrow_button_press(w, e, user_data);
+  return _lib_plugin_arrow_button_press(w, e, module);
 }
 
 static void show_module_callback(dt_lib_module_t *module)
@@ -1086,19 +1083,21 @@ static gboolean _header_enter_notify_callback(GtkWidget *eventbox,
 }
 
 static gboolean _body_enter_leave_callback(GtkWidget *widget,
-                                            GdkEventCrossing *e,
-                                            gpointer user_data)
+                                           GdkEventCrossing *e,
+                                           dt_lib_module_t *module)
 {
   // set or clear focused module when entering or leaving (not when opening popup)
   if(e->detail != GDK_NOTIFY_INFERIOR && e->mode == GDK_CROSSING_NORMAL)
-    darktable.lib->gui_module = e->type == GDK_ENTER_NOTIFY ? user_data : NULL;
+    darktable.lib->gui_module = e->type == GDK_ENTER_NOTIFY ? module : NULL;
 
   return FALSE;
 }
 
 static gboolean _on_drag_motion(GtkWidget *widget,
                                 GdkDragContext *dc,
-                                gint x, gint y, guint time,
+                                const gint x,
+                                const gint y,
+                                const guint time,
                                 dt_lib_module_t *dest)
 {
   dt_lib_module_t *src = NULL;
@@ -1215,7 +1214,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
       // FIXME separately define as darkroom widget shortcut/action,
       // because not automatically registered via lib if presets btn
       // has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "button-press-event",
+      g_signal_connect(module->presets_button, "button-press-event",
                        G_CALLBACK(_presets_popup_callback), module);
     }
     module->expander = NULL;
@@ -1242,17 +1241,17 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+  g_signal_connect(header_evb, "button-release-event",
                    G_CALLBACK(_lib_plugin_header_button_release),
                    module);
-  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
+  g_signal_connect(header_evb, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   /* (un)focus module when entering/leaving body */
-  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event",
+  g_signal_connect(body_evb, "enter-notify-event",
                    G_CALLBACK(_body_enter_leave_callback), module);
-  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event",
+  g_signal_connect(body_evb, "leave-notify-event",
                    G_CALLBACK(_body_enter_leave_callback), module);
 
   /*
@@ -1262,7 +1261,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, 0, NULL);
 
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
-  g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
+  g_signal_connect(module->arrow, "button-press-event",
                     G_CALLBACK(_lib_plugin_arrow_button_press), module);
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
@@ -1287,9 +1286,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
-  g_signal_connect(G_OBJECT(module->presets_button), "button-press-event",
+  g_signal_connect(module->presets_button, "button-press-event",
                    G_CALLBACK(_presets_popup_callback), module);
-  g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event",
+  g_signal_connect(module->presets_button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params
@@ -1301,9 +1300,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
-  g_signal_connect(G_OBJECT(module->reset_button), "button-press-event",
+  g_signal_connect(module->reset_button, "button-press-event",
                    G_CALLBACK(_lib_gui_reset_callback), module);
-  g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event",
+  g_signal_connect(module->reset_button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);

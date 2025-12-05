@@ -1414,7 +1414,7 @@ static void _pop_menu_attached(GtkWidget *treeview,
     {
       menuitem = gtk_menu_item_new_with_label(_("attach tag to all"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_attached_attach_to_all, self);
+                       G_CALLBACK(_pop_menu_attached_attach_to_all), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       menuitem = gtk_separator_menu_item_new();
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1423,15 +1423,15 @@ static void _pop_menu_attached(GtkWidget *treeview,
 
   menuitem = gtk_menu_item_new_with_label(_("detach tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_detach, self);
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_detach), self);
 
   menuitem = gtk_menu_item_new_with_label(_("find tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_find, self);
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_find), self);
 
   menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_clipboard, self);
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_clipboard), self);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
@@ -2494,12 +2494,12 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     {
       menuitem = gtk_menu_item_new_with_label(_("attach tag"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_attach_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_attach_tag), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
       menuitem = gtk_menu_item_new_with_label(_("detach tag"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_detach_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_detach_tag), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
       menuitem = gtk_separator_menu_item_new();
@@ -2510,14 +2510,14 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("create tag..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_create_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_create_tag), self);
 
       if(tagid)
       {
         menuitem = gtk_menu_item_new_with_label(_("delete tag"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_delete_tag, self);
+                         G_CALLBACK(_pop_menu_dictionary_delete_tag), self);
       }
 
       if(gtk_tree_model_iter_children(model, &child, &iter))
@@ -2525,13 +2525,13 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
         menuitem = gtk_menu_item_new_with_label(_("delete node"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_delete_node, self);
+                         G_CALLBACK(_pop_menu_dictionary_delete_node), self);
       }
 
       menuitem = gtk_menu_item_new_with_label(_("edit..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_edit_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_edit_tag), self);
     }
 
     if(d->tree_flag)
@@ -2539,7 +2539,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("change path..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_change_path, self);
+                       G_CALLBACK(_pop_menu_dictionary_change_path), self);
     }
 
     if(d->tree_flag && !tagid)
@@ -2550,7 +2550,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("set as a tag"));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_set_as_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_set_as_tag), self);
     }
 
     if(!d->suggestion_flag)
@@ -2561,13 +2561,13 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
 
     menuitem = gtk_menu_item_new_with_label(_("copy to entry"));
     g_signal_connect(menuitem, "activate",
-                     (GCallback)_pop_menu_dictionary_copy_tag, self);
+                     G_CALLBACK(_pop_menu_dictionary_copy_tag), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     g_signal_connect(menuitem, "activate",
-                     (GCallback)_pop_menu_dictionary_clipboard, self);
+                     G_CALLBACK(_pop_menu_dictionary_clipboard), self);
 
     if(d->collection[0])
     {
@@ -2587,14 +2587,14 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       {
         menuitem = gtk_menu_item_new_with_label(_("go to tag collection"));
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_goto_tag_collection, self);
+                         G_CALLBACK(_pop_menu_dictionary_goto_tag_collection), self);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       }
       if(d->collection[0])
       {
         menuitem = gtk_menu_item_new_with_label(_("go back to work"));
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_goto_collection_back, self);
+                         G_CALLBACK(_pop_menu_dictionary_goto_collection_back), self);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       }
     }
@@ -3470,8 +3470,8 @@ void gui_init(dt_lib_module_t *self)
      DT_TAG_SORT_COUNT_ID, (GtkTreeIterCompareFunc)_sort_tree_count_func, self, NULL);
   d->attached_liststore = liststore;
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(view), "query-tooltip",
-                   G_CALLBACK(_row_tooltip_setup), (gpointer)self);
+  g_signal_connect(view, "query-tooltip",
+                   G_CALLBACK(_row_tooltip_setup), self);
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -3487,7 +3487,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer,
                                           _tree_tagname_show_attached,
-                                          (gpointer)self, NULL);
+                                          self, NULL);
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
@@ -3498,10 +3498,10 @@ void gui_init(dt_lib_module_t *self)
        "\npress Delete or double-click to detach"
        "\nright-click for other actions on attached tag,"
        "\nTab to give the focus to entry"));
-  g_signal_connect(G_OBJECT(view), "button-press-event",
-                   G_CALLBACK(_click_on_view_attached), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "key-press-event",
-                   G_CALLBACK(_attached_key_pressed), (gpointer)self);
+  g_signal_connect(view, "button-press-event",
+                   G_CALLBACK(_click_on_view_attached), self);
+  g_signal_connect(view, "key-press-event",
+                   G_CALLBACK(_attached_key_pressed), self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed",
                    G_CALLBACK(_tree_selection_changed), self);
 
@@ -3524,7 +3524,7 @@ void gui_init(dt_lib_module_t *self)
   button = dtgtk_togglebutton_new(paint, 0, NULL);                           \
   gtk_widget_set_tooltip_text(button, tooltip);                              \
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);                            \
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), self); \
+  g_signal_connect(button, "clicked", G_CALLBACK(callback), self);           \
   dt_action_define(toggle, NULL, action, button, &dt_action_def_toggle);
 
   d->toggle_hide_button = NEW_TOGGLE_BUTTON
@@ -3558,17 +3558,17 @@ void gui_init(dt_lib_module_t *self)
        "\npress shift+Tab to select the first attached user tag"));
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
-  g_signal_connect(G_OBJECT(w), "changed",
-                   G_CALLBACK(_tag_name_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(w), "key-press-event",
-                   G_CALLBACK(_enter_key_pressed), (gpointer)self);
+  g_signal_connect(w, "changed",
+                   G_CALLBACK(_tag_name_changed), self);
+  g_signal_connect(w, "key-press-event",
+                   G_CALLBACK(_enter_key_pressed), self);
   d->entry = GTK_ENTRY(w);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, 0, NULL);
   gtk_widget_set_tooltip_text(button, _("clear entry"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked",
-                   G_CALLBACK(_clear_entry_button_callback), (gpointer)self);
+  g_signal_connect(button, "clicked",
+                   G_CALLBACK(_clear_entry_button_callback), self);
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
   dt_gui_add_class(GTK_WIDGET(box), "dt_spacing_sw");
   d->clear_button = button;
@@ -3625,7 +3625,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer,
-                                          _tree_tagname_show_dictionary, (gpointer)self, NULL);
+                                          _tree_tagname_show_dictionary, self, NULL);
   gtk_tree_view_set_expander_column(view, col);
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
@@ -3638,15 +3638,15 @@ void gui_init(dt_lib_module_t *self)
        "\nright-click for other actions on selected tag"
        "\nshift+Tab to give the focus to entry"));
 
-  g_signal_connect(G_OBJECT(view), "button-press-event",
-                   G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "key-press-event",
-                   G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
+  g_signal_connect(view, "button-press-event",
+                   G_CALLBACK(_click_on_view_dictionary), self);
+  g_signal_connect(view, "key-press-event",
+                   G_CALLBACK(_dictionary_key_pressed), self);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(view), "query-tooltip",
-                   G_CALLBACK(_row_tooltip_setup), (gpointer)self);
+  g_signal_connect(view, "query-tooltip",
+                   G_CALLBACK(_row_tooltip_setup), self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed",
                    G_CALLBACK(_tree_selection_changed), self);
 
@@ -3848,7 +3848,7 @@ static void _lib_tagging_tag_show(dt_action_t *action)
   gtk_entry_completion_set_text_column(completion, DT_LIB_TAGGING_COL_PATH);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
-  g_signal_connect(G_OBJECT(completion), "match-selected",
+  g_signal_connect(completion, "match-selected",
                    G_CALLBACK(_match_selected_func), self);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
@@ -3967,7 +3967,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_signal_connect(mi, "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 

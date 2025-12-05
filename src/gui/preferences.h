@@ -19,7 +19,7 @@
 #pragma once
 
 /** shows the preferences dialog and blocks until it's closed. */
-void dt_gui_preferences_show();
+void dt_gui_preferences_show(void);
 
 // return the widget for a given preference key
 GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const guint col,

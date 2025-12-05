@@ -577,7 +577,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
-  g_signal_connect(G_OBJECT(g->quality), "value-changed",
+  g_signal_connect(g->quality, "value-changed",
                    G_CALLBACK(quality_changed), NULL);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL

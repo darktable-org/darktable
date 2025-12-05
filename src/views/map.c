@@ -777,14 +777,14 @@ void init(dt_view_t *self)
 
     g_signal_connect(GTK_WIDGET(lib->map), "changed",
                      G_CALLBACK(_view_map_changed_callback), self);
-    g_signal_connect_after(G_OBJECT(lib->map), "button-press-event",
+    g_signal_connect_after(lib->map, "button-press-event",
                            G_CALLBACK(_view_map_button_press_callback), self);
-    g_signal_connect_after(G_OBJECT(lib->map), "button-release-event",
+    g_signal_connect_after(lib->map, "button-release-event",
                           G_CALLBACK(_view_map_button_release_callback), self);
-    g_signal_connect(G_OBJECT(lib->map), "motion-notify-event",
+    g_signal_connect(lib->map, "motion-notify-event",
                      G_CALLBACK(_view_map_motion_notify_callback),
                      self);
-    g_signal_connect(G_OBJECT(lib->map), "drag-motion",
+    g_signal_connect(lib->map, "drag-motion",
                      G_CALLBACK(_view_map_drag_motion_callback),
                      self);
   }

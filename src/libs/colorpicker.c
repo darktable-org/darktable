@@ -405,7 +405,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget,
     view = gtk_text_view_new();
     dt_gui_add_class(view, "dt_transparent_background");
     dt_gui_add_class(view, "dt_monospace");
-    g_signal_connect(G_OBJECT(view), "destroy",
+    g_signal_connect(view, "destroy",
                      G_CALLBACK(gtk_widget_destroyed), &view);
   }
 
@@ -617,9 +617,9 @@ static void _add_sample(GtkButton *widget,
   sample->container = gtk_event_box_new();
   gtk_widget_add_events(sample->container,
                         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(sample->container), "enter-notify-event",
+  g_signal_connect(sample->container, "enter-notify-event",
                    G_CALLBACK(_sample_enter_callback), sample);
-  g_signal_connect(G_OBJECT(sample->container), "leave-notify-event",
+  g_signal_connect(sample->container, "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), sample);
 
   sample->color_patch = gtk_drawing_area_new();
@@ -629,9 +629,9 @@ static void _add_sample(GtkButton *widget,
      _("hover to highlight sample on canvas,\n"
        "click to lock sample,\n"
        "right-click to load sample area into active color picker"));
-  g_signal_connect(G_OBJECT(sample->color_patch), "button-press-event",
+  g_signal_connect(sample->color_patch, "button-press-event",
                    G_CALLBACK(_live_sample_button), sample);
-  g_signal_connect(G_OBJECT(sample->color_patch), "draw",
+  g_signal_connect(sample->color_patch, "draw",
                    G_CALLBACK(_sample_draw_callback), sample);
 
   GtkWidget *color_patch_wrapper = dt_gui_hbox(dt_gui_expand(sample->color_patch));
@@ -642,13 +642,13 @@ static void _add_sample(GtkButton *widget,
   gtk_label_set_ellipsize(GTK_LABEL(sample->output_label), PANGO_ELLIPSIZE_START);
   gtk_label_set_selectable(GTK_LABEL(sample->output_label), TRUE);
   gtk_widget_set_has_tooltip(sample->output_label, TRUE);
-  g_signal_connect(G_OBJECT(sample->output_label), "query-tooltip",
+  g_signal_connect(sample->output_label, "query-tooltip",
                    G_CALLBACK(_sample_tooltip_callback), sample);
-  g_signal_connect(G_OBJECT(sample->output_label), "size-allocate",
+  g_signal_connect(sample->output_label, "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), sample);
 
   GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_remove, 0, NULL);
-  g_signal_connect(G_OBJECT(delete_button), "clicked",
+  g_signal_connect(delete_button, "clicked",
                    G_CALLBACK(_remove_sample_cb), sample);
 
   gtk_container_add(GTK_CONTAINER(sample->container),
@@ -734,13 +734,13 @@ void gui_init(dt_lib_module_t *self)
                         GDK_BUTTON_PRESS_MASK
                         | GDK_ENTER_NOTIFY_MASK
                         | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(color_patch), "draw",
+  g_signal_connect(color_patch, "draw",
                    G_CALLBACK(_sample_draw_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(color_patch), "button-press-event",
+  g_signal_connect(color_patch, "button-press-event",
                    G_CALLBACK(_large_patch_toggle), data);
-  g_signal_connect(G_OBJECT(color_patch), "enter-notify-event",
+  g_signal_connect(color_patch, "enter-notify-event",
                    G_CALLBACK(_sample_enter_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(color_patch), "leave-notify-event",
+  g_signal_connect(color_patch, "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), &data->primary_sample);
   GtkWidget *color_patch_wrapper = dt_gui_hbox(dt_gui_expand(color_patch));
   gtk_widget_set_name(GTK_WIDGET(color_patch_wrapper), "color-picker-area");
@@ -774,7 +774,7 @@ void gui_init(dt_lib_module_t *self)
     (data->picker_button,
      _("turn on color picker\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
-  g_signal_connect(G_OBJECT(data->picker_button), "toggled",
+  g_signal_connect(data->picker_button, "toggled",
                    G_CALLBACK(_picker_button_toggled), data);
   dt_action_define(DT_ACTION(self), NULL, N_("pick color"),
                    data->picker_button, &dt_action_def_toggle);
@@ -782,17 +782,17 @@ void gui_init(dt_lib_module_t *self)
   // The small sample, label and add button
   GtkWidget *sample_row_events = gtk_event_box_new();
   gtk_widget_add_events(sample_row_events, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(sample_row_events), "enter-notify-event",
+  g_signal_connect(sample_row_events, "enter-notify-event",
                    G_CALLBACK(_sample_enter_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(sample_row_events), "leave-notify-event",
+  g_signal_connect(sample_row_events, "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), &data->primary_sample);
 
   data->primary_sample.color_patch = color_patch = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(color_patch, _("click to (un)hide large color patch"));
   gtk_widget_set_events(color_patch, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(color_patch), "button-press-event",
+  g_signal_connect(color_patch, "button-press-event",
                    G_CALLBACK(_large_patch_toggle), data);
-  g_signal_connect(G_OBJECT(color_patch), "draw",
+  g_signal_connect(color_patch, "draw",
                    G_CALLBACK(_sample_draw_callback), &data->primary_sample);
 
   GtkWidget *sample_patch_wrapper = dt_gui_hbox(dt_gui_expand(color_patch));
@@ -804,14 +804,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
   dt_gui_add_class(label, "dt_monospace");
   gtk_widget_set_has_tooltip(label, TRUE);
-  g_signal_connect(G_OBJECT(label), "query-tooltip",
+  g_signal_connect(label, "query-tooltip",
                    G_CALLBACK(_sample_tooltip_callback), &data->primary_sample);
-  g_signal_connect(G_OBJECT(label), "size-allocate",
+  g_signal_connect(label, "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
 
   data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
-  g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
+  g_signal_connect(data->add_sample_button, "clicked",
                    G_CALLBACK(_add_sample), self);
   dt_action_define(DT_ACTION(self), NULL, N_("add sample"),
                    data->add_sample_button, &dt_action_def_button);
@@ -832,7 +832,7 @@ void gui_init(dt_lib_module_t *self)
      PANGO_ELLIPSIZE_MIDDLE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box),
                                dt_conf_get_bool("ui_last/colorpicker_display_samples"));
-  g_signal_connect(G_OBJECT(data->display_samples_check_box), "toggled",
+  g_signal_connect(data->display_samples_check_box, "toggled",
                    G_CALLBACK(_display_samples_changed), NULL);
 
   GtkWidget *restrict_button =
@@ -845,7 +845,7 @@ void gui_init(dt_lib_module_t *self)
   gboolean restrict_histogram = dt_conf_get_bool("ui_last/colorpicker_restrict_histogram");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(restrict_button), restrict_histogram);
   darktable.lib->proxy.colorpicker.restrict_histogram = restrict_histogram;
-  g_signal_connect(G_OBJECT(restrict_button), "toggled",
+  g_signal_connect(restrict_button, "toggled",
                    G_CALLBACK(_restrict_histogram_changed), NULL);
 
   // Setting up the GUI

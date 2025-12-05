@@ -102,7 +102,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   gtk_entry_set_text(GTK_ENTRY(sel_entry), "");
   gtk_widget_set_tooltip_text(sel_entry, _("list filter"));
   gtk_entry_set_activates_default(GTK_ENTRY(sel_entry), TRUE);
-  g_signal_connect(G_OBJECT(sel_entry), "changed", G_CALLBACK(_tag_name_changed), NULL);
+  g_signal_connect(sel_entry, "changed", G_CALLBACK(_tag_name_changed), NULL);
 
   sel_view = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkWidget *w = dt_gui_scroll_wrap(GTK_WIDGET(sel_view));
@@ -150,7 +150,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_METADATA_TAGS_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(sel_view, model);
   g_object_unref(model);
-  g_signal_connect(G_OBJECT(sel_view), "row-activated", G_CALLBACK(metadata_activated_callback), user_data);
+  g_signal_connect(sel_view, "row-activated", G_CALLBACK(metadata_activated_callback), user_data);
 
   dt_gui_dialog_add(GTK_DIALOG(dialog), sel_entry, w);
   return dialog;

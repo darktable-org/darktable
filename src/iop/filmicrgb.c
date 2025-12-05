@@ -4367,11 +4367,11 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(area_button_press), self);
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(g->area, "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(area_motion_notify), self);
 
   // Init GTK notebook
   static struct dt_action_def_t notebook_def = { };

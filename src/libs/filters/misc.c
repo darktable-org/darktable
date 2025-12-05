@@ -457,9 +457,9 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   g_free(name);
 
   gtk_box_pack_start(GTK_BOX(hb), misc->name, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(misc->name), "activate", G_CALLBACK(_misc_changed), misc);
-  g_signal_connect(G_OBJECT(misc->name), "focus-out-event", G_CALLBACK(_misc_focus_out), misc);
-  g_signal_connect(G_OBJECT(misc->name), "button-press-event", G_CALLBACK(_misc_press), misc);
+  g_signal_connect(misc->name, "activate", G_CALLBACK(_misc_changed), misc);
+  g_signal_connect(misc->name, "focus-out-event", G_CALLBACK(_misc_focus_out), misc);
+  g_signal_connect(misc->name, "button-press-event", G_CALLBACK(_misc_press), misc);
 
   if(top)
   {
@@ -469,7 +469,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   // the popup
   misc->pop = gtk_popover_new(misc->name);
   gtk_widget_set_size_request(misc->pop, 250, 400);
-  g_signal_connect(G_OBJECT(misc->pop), "closed", G_CALLBACK(_misc_popup_closed), misc);
+  g_signal_connect(misc->pop, "closed", G_CALLBACK(_misc_popup_closed), misc);
   hb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(misc->pop), hb);
 
@@ -483,8 +483,8 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(misc->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(misc->name_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(misc->name_tree), "row-activated", G_CALLBACK(_misc_tree_row_activated), misc);
-  g_signal_connect(G_OBJECT(sel), "changed", G_CALLBACK(_misc_tree_selection_changed), misc);
+  g_signal_connect(misc->name_tree, "row-activated", G_CALLBACK(_misc_tree_row_activated), misc);
+  g_signal_connect(sel, "changed", G_CALLBACK(_misc_tree_selection_changed), misc);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(misc->name_tree), col);
@@ -500,7 +500,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));
   gtk_box_pack_start(GTK_BOX(hb), btn, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_misc_ok_clicked), misc);
+  g_signal_connect(btn, "clicked", G_CALLBACK(_misc_ok_clicked), misc);
 
   if(top)
     rule->w_specific_top = misc;

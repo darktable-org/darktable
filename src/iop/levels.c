@@ -51,7 +51,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self);
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self);
 static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self);
-static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self);
+static void dt_iop_levels_autoadjust_callback(GtkWidget *range, dt_iop_module_t *self);
 //static void dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data);
 //static void dt_iop_levels_percentiles_callback(GtkWidget *slider, gpointer user_data);
 
@@ -635,16 +635,16 @@ void gui_init(dt_iop_module_t *self)
                                                     "operates on L channel."));
   dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(g->area), NULL);
 
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
+  g_signal_connect(g->area, "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
+  g_signal_connect(g->area, "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
-  g_signal_connect(G_OBJECT(autobutton), "clicked", G_CALLBACK(dt_iop_levels_autoadjust_callback), self);
+  g_signal_connect(autobutton, "clicked", G_CALLBACK(dt_iop_levels_autoadjust_callback), self);
 
   g->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(g->blackpick, _("pick black point from image"));
@@ -976,7 +976,7 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, d
   return TRUE; // Ensure that scrolling the widget cannot move side panel
 }
 
-static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)
+static void dt_iop_levels_autoadjust_callback(GtkWidget *range, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_levels_params_t *p = self->params;

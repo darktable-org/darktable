@@ -562,14 +562,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_monochrome_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(_monochrome_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(_monochrome_button_release),
+  g_signal_connect(g->area, "draw", G_CALLBACK(_monochrome_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(_monochrome_button_press), self);
+  g_signal_connect(g->area, "button-release-event", G_CALLBACK(_monochrome_button_release),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(_monochrome_motion_notify),
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(_monochrome_motion_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(_monochrome_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_monochrome_scrolled), self);
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(_monochrome_leave_notify), self);
+  g_signal_connect(g->area, "scroll-event", G_CALLBACK(_monochrome_scrolled), self);
 
   g->highlights
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, N_("highlights")));

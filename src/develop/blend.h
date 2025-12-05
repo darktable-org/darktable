@@ -260,7 +260,7 @@ typedef struct dt_iop_gui_blendif_channel_t
   dt_develop_blendif_channels_t param_channels[2];
   dt_dev_pixelpipe_display_mask_t display_channel;
   void (*scale_print)(float value, float boost_factor, char *string, int n);
-  int (*altdisplay)(GtkWidget *, dt_iop_module_t *, int);
+  int (*altdisplay)(GtkDarktableGradientSlider *, dt_iop_module_t *, int);
   char *name;
 } dt_iop_gui_blendif_channel_t;
 

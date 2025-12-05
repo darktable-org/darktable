@@ -404,7 +404,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
       color_picker->picker_cst = cst;
       color_picker->fixed_cst = TRUE;
     }
-    g_signal_connect_data(G_OBJECT(button), "button-press-event",
+    g_signal_connect_data(button, "button-press-event",
                           G_CALLBACK(_color_picker_callback_button_press),
                           color_picker, (GClosureNotify)g_free, 0);
     if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
@@ -422,7 +422,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
       color_picker->picker_cst = cst;
       color_picker->fixed_cst = TRUE;
     }
-    g_signal_connect_data(G_OBJECT(w), "quad-pressed",
+    g_signal_connect_data(w, "quad-pressed",
                           G_CALLBACK(_color_picker_callback),
                           color_picker, (GClosureNotify)g_free, 0);
 

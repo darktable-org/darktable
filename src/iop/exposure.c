@@ -1295,7 +1295,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
                               _("the input color that should be mapped to the target"));
 
-  g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(_origin_color_draw), self);
+  g_signal_connect(g->origin_spot, "draw", G_CALLBACK(_origin_color_draw), self);
 
   g->Lch_origin = gtk_label_new(_("L : \tN/A"));
   gtk_widget_set_tooltip_text
@@ -1309,12 +1309,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
                               _("the desired target exposure after mapping"));
 
-  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
+  g_signal_connect(g->target_spot, "draw", G_CALLBACK(_target_color_draw), self);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 50.f, 1);
   dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
-  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed",
+  g_signal_connect(g->lightness_spot, "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
   dt_gui_box_add(g->cs.container,

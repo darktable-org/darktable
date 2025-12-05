@@ -2531,17 +2531,17 @@ void gui_init(dt_iop_module_t *self)
        "top line indicates that the scale is visible at current zoom level\n"
        "bottom line indicates that the scale has shapes on it"));
 
-  g_signal_connect(G_OBJECT(g->wd_bar), "draw",
+  g_signal_connect(g->wd_bar, "draw",
                    G_CALLBACK(rt_wdbar_draw), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "motion-notify-event",
+  g_signal_connect(g->wd_bar, "motion-notify-event",
                    G_CALLBACK(rt_wdbar_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "leave-notify-event",
+  g_signal_connect(g->wd_bar, "leave-notify-event",
                    G_CALLBACK(rt_wdbar_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "button-press-event",
+  g_signal_connect(g->wd_bar, "button-press-event",
                    G_CALLBACK(rt_wdbar_button_press), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "button-release-event",
+  g_signal_connect(g->wd_bar, "button-release-event",
                    G_CALLBACK(rt_wdbar_button_release), self);
-  g_signal_connect(G_OBJECT(g->wd_bar), "scroll-event",
+  g_signal_connect(g->wd_bar, "scroll-event",
                    G_CALLBACK(rt_wdbar_scrolled), self);
   gtk_widget_add_events(GTK_WIDGET(g->wd_bar),
                         GDK_POINTER_MOTION_MASK
@@ -2606,7 +2606,7 @@ void gui_init(dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_resetvalues(gslider, vdefault);
   (gslider)->markers_type = PROPORTIONAL_MARKERS;
   (gslider)->min_spacing = 0.05;
-  g_signal_connect(G_OBJECT(gslider), "value-changed",
+  g_signal_connect(gslider, "value-changed",
                    G_CALLBACK(rt_gslider_changed), self);
 
   // auto-levels button
@@ -2645,7 +2645,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
   gtk_widget_set_tooltip_text(g->colorpick, _("select fill color"));
-  g_signal_connect(G_OBJECT(g->colorpick), "color-set",
+  g_signal_connect(g->colorpick, "color-set",
                    G_CALLBACK(rt_colorpick_color_set_callback), self);
 
   g->colorpicker = dt_color_picker_new
@@ -2683,7 +2683,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->sl_mask_opacity, "%");
   gtk_widget_set_tooltip_text(g->sl_mask_opacity,
                               _("set the opacity on the selected shape"));
-  g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed",
+  g_signal_connect(g->sl_mask_opacity, "value-changed",
                    G_CALLBACK(rt_mask_opacity_callback), self);
 
   // start building top level widget

@@ -1031,15 +1031,15 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_visible(gui->subsample, compression_type != AVIF_COMP_LOSSLESS);
   gtk_widget_set_no_show_all(gui->subsample, TRUE);
 
-  g_signal_connect(G_OBJECT(gui->bit_depth),
+  g_signal_connect(gui->bit_depth,
                    "value-changed",
                    G_CALLBACK(bit_depth_changed),
                    NULL);
-  g_signal_connect(G_OBJECT(gui->compression_type),
+  g_signal_connect(gui->compression_type,
                    "value-changed",
                    G_CALLBACK(compression_type_changed),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(gui->quality),
+  g_signal_connect(gui->quality,
                    "value-changed",
                    G_CALLBACK(quality_changed),
                    NULL);

@@ -96,12 +96,12 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   gtk_widget_set_tooltip_text(drawing, _("set star rating for selected images"));
   gtk_widget_set_app_paintable(drawing, TRUE);
-  g_signal_connect(G_OBJECT(drawing), "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "button-release-event", G_CALLBACK(_lib_ratings_button_release_callback),
+  g_signal_connect(drawing, "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
+  g_signal_connect(drawing, "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);
+  g_signal_connect(drawing, "button-release-event", G_CALLBACK(_lib_ratings_button_release_callback),
                    self);
-  g_signal_connect(G_OBJECT(drawing), "motion-notify-event", G_CALLBACK(_lib_ratings_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(drawing), "leave-notify-event", G_CALLBACK(_lib_ratings_leave_notify_callback), self);
+  g_signal_connect(drawing, "motion-notify-event", G_CALLBACK(_lib_ratings_motion_notify_callback), self);
+  g_signal_connect(drawing, "leave-notify-event", G_CALLBACK(_lib_ratings_leave_notify_callback), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), drawing, TRUE, TRUE, 0);
 

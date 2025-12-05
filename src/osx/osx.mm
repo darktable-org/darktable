@@ -86,7 +86,7 @@ void dt_osx_disallow_fullscreen(GtkWidget *widget)
   if(gtk_widget_get_realized(widget))
     dt_osx_disable_fullscreen(widget);
   else
-    g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_disable_fullscreen), NULL);
+    g_signal_connect(widget, "realize", G_CALLBACK(dt_osx_disable_fullscreen), NULL);
 #endif
 #endif
 }

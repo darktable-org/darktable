@@ -299,7 +299,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
                                 PANGO_ELLIPSIZE_END);
         d->import_camera = GTK_BUTTON(ib);
         d->camera = camera;
-        g_signal_connect(G_OBJECT(ib), "clicked",
+        g_signal_connect(ib, "clicked",
                          G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, "import_camera");
@@ -310,7 +310,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
                            (tb = gtk_button_new_with_label(_("tethered shoot"))),
                            FALSE, FALSE, 0);
         d->tethered_shoot = GTK_BUTTON(tb);
-        g_signal_connect(G_OBJECT(tb), "clicked",
+        g_signal_connect(tb, "clicked",
                          G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, "import_camera");
@@ -320,7 +320,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
                          (um = gtk_button_new_with_label(_("unmount camera"))),
                          FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
-      g_signal_connect(G_OBJECT(um), "clicked",
+      g_signal_connect(um, "clicked",
                        G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
       dt_gui_add_help_link(um, "mount_camera");
@@ -357,7 +357,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
                               PANGO_ELLIPSIZE_END);
       d->mount_camera = GTK_BUTTON(im);
 
-      g_signal_connect(G_OBJECT(im), "clicked",
+      g_signal_connect(im, "clicked",
                        G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
       dt_gui_add_help_link(im, "mount_camera");
@@ -1494,7 +1494,7 @@ static void _set_places_list(GtkWidget *places_paned,
   gtk_paned_pack1(GTK_PANED(places_paned), places_top_box, TRUE, TRUE);
 
 
-  g_signal_connect(G_OBJECT(d->placesView), "button-press-event",
+  g_signal_connect(d->placesView, "button-press-event",
                    G_CALLBACK(_places_button_press), self);
 }
 
@@ -1519,7 +1519,7 @@ static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_set_expander_column(d->from.folderview, column);
   g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
-  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event",
+  g_signal_connect(d->from.folderview, "button-press-event",
                    G_CALLBACK(_folders_button_press), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), DT_FOLDER_PATH,
@@ -1930,12 +1930,12 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_clickable(column, TRUE);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(128));
   d->from.pixcol = column;
-  g_signal_connect(G_OBJECT(d->from.treeview), "button-press-event",
+  g_signal_connect(d->from.treeview, "button-press-event",
                    G_CALLBACK(_files_button_press), self);
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(selection), "changed",
+  g_signal_connect(selection, "changed",
                    G_CALLBACK(_import_from_selection_changed), self);
 
   gtk_tree_view_set_model(d->from.treeview, GTK_TREE_MODEL(d->from.store));
@@ -2015,7 +2015,7 @@ static void _set_expander_content(GtkWidget *rbox,
   gtk_widget_set_tooltip_text(browsedir, _("select directory"));
 
   gtk_box_pack_start(GTK_BOX(hbox), browsedir, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(browsedir), "clicked", G_CALLBACK(_browse_basedir_clicked),
+  g_signal_connect(browsedir, "clicked", G_CALLBACK(_browse_basedir_clicked),
                    basedir);
   gtk_grid_attach_next_to(grid, hbox, gtk_grid_get_child_at(grid, 0, line - 1),
                           GTK_POS_RIGHT, 1, 1);
@@ -2105,7 +2105,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++,
                                           line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-  g_signal_connect(G_OBJECT(d->import_new), "toggled",
+  g_signal_connect(d->import_new, "toggled",
                    G_CALLBACK(_import_new_toggled), self);
 
   if(d->import_case != DT_IMPORT_CAMERA)
@@ -2113,13 +2113,13 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++,
                                            line, TRUE);
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-    g_signal_connect(G_OBJECT(d->recursive), "toggled",
+    g_signal_connect(d->recursive, "toggled",
                      G_CALLBACK(_recursive_toggled), self);
   }
   GtkWidget *ignore_nonraws =
     dt_gui_preferences_bool(grid, "ui_last/import_ignore_nonraws", col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
-  g_signal_connect(G_OBJECT(ignore_nonraws), "toggled",
+  g_signal_connect(ignore_nonraws, "toggled",
                    G_CALLBACK(_ignore_nonraws_toggled), self);
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
 

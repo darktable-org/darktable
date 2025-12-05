@@ -3005,7 +3005,7 @@ void gui_init(dt_iop_module_t *self)
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
-  g_signal_connect(G_OBJECT(g->notebook), "switch_page",
+  g_signal_connect(g->notebook, "switch-page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
   // graph
@@ -3024,16 +3024,16 @@ void gui_init(dt_iop_module_t *self)
                         | GDK_BUTTON_RELEASE_MASK
                         | GDK_SCROLL_MASK
                         | GDK_SMOOTH_SCROLL_MASK);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "draw", G_CALLBACK(_iop_colorequalizer_draw), self);
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(g->area, "button-release-event",
                    G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "size_allocate",
+  g_signal_connect(g->area, "size-allocate",
                    G_CALLBACK(_area_size_callback), self);
 
   GtkWidget *box = self->widget = dt_gui_vbox(g->notebook, g->area);

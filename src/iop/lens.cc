@@ -3815,7 +3815,7 @@ static GtkMenu *camera_menu_fill(dt_iop_module_t *self,
     }
     gtk_widget_show(item);
     g_object_set_data(G_OBJECT(item), "lfCamera", (void *)camlist[i]);
-    g_signal_connect(G_OBJECT(item), "activate",
+    g_signal_connect(item, "activate",
                      G_CALLBACK(_camera_menu_select), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
   }
@@ -4145,7 +4145,7 @@ static GtkMenu *_lens_menu_fill(dt_iop_module_t *self,
     item = gtk_menu_item_new_with_label(lf_mlstr_get(lenslist[i]->Model));
     gtk_widget_show(item);
     g_object_set_data(G_OBJECT(item), "lfLens", (void *)lenslist[i]);
-    g_signal_connect(G_OBJECT(item), "activate",
+    g_signal_connect(item, "activate",
                      G_CALLBACK(_lens_menu_select), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
   }
@@ -4408,21 +4408,21 @@ void gui_init(dt_iop_module_t *self)
   g->focal_length = dt_gui_expand(dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->focal_length, NULL, N_("focal length"));
   gtk_widget_set_tooltip_text(g->focal_length, _("focal length (mm)"));
-  g_signal_connect(G_OBJECT(g->focal_length), "value-changed",
+  g_signal_connect(g->focal_length, "value-changed",
                    G_CALLBACK(_lens_comboentry_focal_update), self);
   dt_bauhaus_combobox_set_editable(g->focal_length, 1);
 
   g->aperture = dt_gui_expand(dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->aperture, NULL, N_("aperture"));
   gtk_widget_set_tooltip_text(g->aperture, _("f-number (aperture)"));
-  g_signal_connect(G_OBJECT(g->aperture), "value-changed",
+  g_signal_connect(g->aperture, "value-changed",
                    G_CALLBACK(_lens_comboentry_aperture_update), self);
   dt_bauhaus_combobox_set_editable(g->aperture, 1);
 
   g->distance = dt_gui_expand(dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->distance, NULL, N_("distance"));
   gtk_widget_set_tooltip_text(g->distance, _("distance to subject"));
-  g_signal_connect(G_OBJECT(g->distance), "value-changed",
+  g_signal_connect(g->distance, "value-changed",
                    G_CALLBACK(_lens_comboentry_distance_update), self);
   dt_bauhaus_combobox_set_editable(g->distance, 1);
 
@@ -4492,7 +4492,7 @@ void gui_init(dt_iop_module_t *self)
        "once enabled, you won't be able to\n"
        "return back to old algorithm."));
   GtkWidget *box_md = dt_gui_vbox(g->use_latest_md_algo);
-  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled",
+  g_signal_connect(g->use_latest_md_algo, "toggled",
                    G_CALLBACK(_use_latest_md_algo_callback), self);
 
   // we put fine-tuning values under an expander

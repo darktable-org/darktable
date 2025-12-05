@@ -2052,10 +2052,10 @@ void gui_init(dt_iop_module_t *self)
     g_free(tooltip);
   }
 
-  g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed",
-                   G_CALLBACK(_profile_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->work_combobox), "value-changed",
-                   G_CALLBACK(_workicc_changed), (gpointer)self);
+  g_signal_connect(g->profile_combobox, "value-changed",
+                   G_CALLBACK(_profile_changed), self);
+  g_signal_connect(g->work_combobox, "value-changed",
+                   G_CALLBACK(_workicc_changed), self);
 
   g->clipping_combobox = dt_bauhaus_combobox_from_params(self, "normalize");
   gtk_widget_set_tooltip_text(g->clipping_combobox,

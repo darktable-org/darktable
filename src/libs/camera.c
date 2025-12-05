@@ -144,7 +144,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib,
       lib->gui.properties = g_list_append(lib->gui.properties, prop);
 
       // Does dead lock!!!
-      g_signal_connect(G_OBJECT(prop->values), "value-changed", G_CALLBACK(property_changed_callback),
+      g_signal_connect(prop->values, "value-changed", G_CALLBACK(property_changed_callback),
                        (gpointer)prop);
       return prop;
     }
@@ -263,7 +263,7 @@ static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_came
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
   gtk_grid_insert_row(lib->gui.main_grid, lib->gui.prop_end); // make space for the new row
   gtk_grid_attach(lib->gui.main_grid, GTK_WIDGET(hbox), 0, lib->gui.prop_end, 2, 1);
-  g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  g_signal_connect(prop->osd, "clicked", G_CALLBACK(_osd_button_clicked), prop);
   gtk_widget_show_all(GTK_WIDGET(hbox));
   lib->gui.rows++;
   lib->gui.prop_end++;
@@ -494,9 +494,9 @@ void gui_init(dt_lib_module_t *self)
                _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per "
                  "stop\nwith other words, 3 steps is 1EV exposure step between brackets"));
 
-  g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.toggle_sequence), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.toggle_bracket), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(lib->gui.toggle_timer, "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(lib->gui.toggle_sequence, "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(lib->gui.toggle_bracket, "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
 
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.timer), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.count), FALSE);
@@ -527,7 +527,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("property"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *widget = gtk_button_new_with_label("O");
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
+  g_signal_connect(widget, "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
   lib->gui.pname = dt_ui_entry_new(0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.pname), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(widget), FALSE, FALSE, 0);
@@ -536,7 +536,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   widget = gtk_button_new_with_label(_("add user property"));
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
+  g_signal_connect(widget, "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
 }

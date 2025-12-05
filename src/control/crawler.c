@@ -348,25 +348,24 @@ static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
 
 
 static void _select_all_callback(GtkButton *button,
-                                 gpointer user_data)
+                                 dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gtk_tree_selection_select_all(selection);
 }
 
 
-static void _select_none_callback(GtkButton *button, gpointer user_data)
+static void _select_none_callback(GtkButton *button,
+                                 dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gtk_tree_selection_unselect_all(selection);
 }
 
 
-static void _select_invert_callback(GtkButton *button, gpointer user_data)
+static void _select_invert_callback(GtkButton *button,
+                                    dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
 
   GtkTreeIter iter;
@@ -634,9 +633,8 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
 }
 
 // overwrite database with xmp
-static void _reload_button_clicked(GtkButton *button, gpointer user_data)
+static void _reload_button_clicked(GtkButton *button, dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
@@ -646,9 +644,8 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 // overwrite xmp with database
-void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
+void _overwrite_button_clicked(GtkButton *button, dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
@@ -658,9 +655,8 @@ void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 // overwrite the oldest with the newest
-static void _newest_button_clicked(GtkButton *button, gpointer user_data)
+static void _newest_button_clicked(GtkButton *button, dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
@@ -670,9 +666,8 @@ static void _newest_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 // overwrite the newest with the oldest
-static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
+static void _oldest_button_clicked(GtkButton *button, dt_control_crawler_gui_t *gui)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
   gui->rows_to_remove = NULL;
   gtk_spinner_start(GTK_SPINNER(gui->spinner));
@@ -810,19 +805,19 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
   GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
   GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
-  g_signal_connect(select_all, "clicked", G_CALLBACK(_select_all_callback), gui);
-  g_signal_connect(select_none, "clicked", G_CALLBACK(_select_none_callback), gui);
-  g_signal_connect(select_invert, "clicked", G_CALLBACK(_select_invert_callback), gui);
+  g_signal_connect(GTK_BUTTON(select_all), "clicked", G_CALLBACK(_select_all_callback), gui);
+  g_signal_connect(GTK_BUTTON(select_none), "clicked", G_CALLBACK(_select_none_callback), gui);
+  g_signal_connect(GTK_BUTTON(select_invert), "clicked", G_CALLBACK(_select_invert_callback), gui);
 
   GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
   GtkWidget *reload_button = gtk_button_new_with_label(_("keep the XMP edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
   GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
-  g_signal_connect(reload_button, "clicked", G_CALLBACK(_reload_button_clicked), gui);
-  g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
-  g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
-  g_signal_connect(oldest_button, "clicked", G_CALLBACK(_oldest_button_clicked), gui);
+  g_signal_connect(GTK_BUTTON(reload_button), "clicked", G_CALLBACK(_reload_button_clicked), gui);
+  g_signal_connect(GTK_BUTTON(overwrite_button), "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
+  g_signal_connect(GTK_BUTTON(newest_button), "clicked", G_CALLBACK(_newest_button_clicked), gui);
+  g_signal_connect(GTK_BUTTON(oldest_button), "clicked", G_CALLBACK(_oldest_button_clicked), gui);
 
   /* Feedback spinner in case synch happens over network and stales */
   gui->spinner = gtk_spinner_new();

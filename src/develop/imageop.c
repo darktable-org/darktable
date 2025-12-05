@@ -476,7 +476,7 @@ static void _header_menu_deactivate_callback(GtkMenuShell *menushell,
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
 
-static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_delete_callback(GtkWidget *button, dt_iop_module_t *module)
 {
   dt_develop_t *dev = module->dev;
 
@@ -628,7 +628,7 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(const dt_iop_module_t *modul
   return next;
 }
 
-static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_movedown_callback(GtkWidget *button, dt_iop_module_t *module)
 {
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback begin");
 
@@ -663,7 +663,7 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
-static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
+static void _gui_moveup_callback(GtkWidget *button, dt_iop_module_t *module)
 {
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback begin");
 
@@ -795,7 +795,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
   return module;
 }
 
-static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
+static void _gui_copy_callback(GtkWidget *button, dt_iop_module_t *base)
 {
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, FALSE);
 
@@ -806,7 +806,7 @@ static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
     dt_iop_gui_rename_module(module);
 }
 
-static void _gui_duplicate_callback(GtkButton *button, dt_iop_module_t *base)
+static void _gui_duplicate_callback(GtkWidget *button, dt_iop_module_t *base)
 {
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, TRUE);
 
@@ -920,7 +920,7 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   g_signal_connect(entry, "focus-out-event",
                    G_CALLBACK(_rename_module_key_press), module);
   g_signal_connect(entry, "style-updated",
-                   G_CALLBACK(_rename_module_resize), module);
+                   G_CALLBACK((GtkCallback)_rename_module_resize), (gpointer)module);
   g_signal_connect(entry, "changed",
                    G_CALLBACK(_rename_module_resize), module);
   g_signal_connect(entry, "enter-notify-event",
@@ -933,7 +933,7 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_grab_focus(entry);
 }
 
-static void _gui_rename_callback(GtkButton *button,
+static void _gui_rename_callback(GtkWidget *button,
                                  dt_iop_module_t *module)
 {
   dt_iop_gui_rename_module(module);
@@ -984,7 +984,7 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   if(event && event->button == GDK_BUTTON_SECONDARY)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
-      _gui_copy_callback(button, module);
+      _gui_copy_callback(NULL, module);
     return TRUE;
   }
   else if(event && event->button == GDK_BUTTON_MIDDLE)
@@ -1000,46 +1000,46 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
 
   item = gtk_menu_item_new_with_label(_("new instance"));
   // gtk_widget_set_tooltip_text(item, _("add a new instance of this module to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_copy_callback), module);
   gtk_widget_set_sensitive(item, multi_show.new);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("duplicate instance"));
   // gtk_widget_set_tooltip_text(item, _("add a copy of this instance to the pipe"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_duplicate_callback), module);
   gtk_widget_set_sensitive(item, multi_show.new);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move up"));
   // gtk_widget_set_tooltip_text(item, _("move this instance up"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, multi_show.up);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move down"));
   // gtk_widget_set_tooltip_text(item, _("move this instance down"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, multi_show.down);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("delete"));
   // gtk_widget_set_tooltip_text(item, _("delete this instance"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, multi_show.close);
   gtk_menu_shell_append(menu, item);
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
   item = gtk_menu_item_new_with_label(_("rename"));
-  g_signal_connect(G_OBJECT(item), "activate",
+  g_signal_connect(item, "activate",
                    G_CALLBACK(_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
-  g_signal_connect(G_OBJECT(menu), "deactivate",
+  g_signal_connect(menu, "deactivate",
                    G_CALLBACK(_header_menu_deactivate_callback), module);
 
   dt_gui_menu_popup(GTK_MENU(menu), GTK_WIDGET(button),
@@ -2317,7 +2317,7 @@ static gboolean _presets_popup_callback(GtkButton *button,
 
   GtkMenu *menu = dt_gui_presets_popup_menu_show_for_module(module);
 
-  g_signal_connect(G_OBJECT(menu), "deactivate",
+  g_signal_connect(GTK_MENU_SHELL(menu), "deactivate",
                    G_CALLBACK(_header_menu_deactivate_callback), module);
 
   dt_gui_menu_popup(menu,
@@ -2537,9 +2537,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 
 static gboolean _iop_plugin_body_button_press(GtkWidget *w,
                                               GdkEventButton *e,
-                                              gpointer user_data)
+                                              dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(e->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(module);
@@ -2556,12 +2555,10 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
 
 static gboolean _iop_plugin_header_button_release(GtkWidget *w,
                                                   GdkEventButton *e,
-                                                  gpointer user_data)
+                                                  dt_iop_module_t *module)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
   if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent*)e))) return FALSE;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
   if(e->button == GDK_BUTTON_PRIMARY)
   {
@@ -2754,7 +2751,7 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
       GtkWidget *space = gtk_drawing_area_new();
       gtk_box_pack_end(GTK_BOX(header), space, TRUE, TRUE, 0);
       gtk_widget_show(space);
-      g_signal_connect(G_OBJECT(space), "size-allocate",
+      g_signal_connect(space, "size-allocate",
                        G_CALLBACK(_header_size_callback), header);
     }
   }
@@ -2857,9 +2854,9 @@ void dt_iop_add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   {
     module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
     dt_gui_add_class(module->mask_indicator, "dt_transparent_background");
-    g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
+    g_signal_connect(GTK_TOGGLE_BUTTON(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
-    g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
+    g_signal_connect(module->mask_indicator, "query-tooltip",
                      G_CALLBACK(_mask_indicator_tooltip), module);
     gtk_widget_set_has_tooltip(module->mask_indicator, TRUE);
     gtk_widget_set_sensitive(module->mask_indicator, module->enabled);
@@ -2907,10 +2904,8 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
                                const gint y,
                                const gboolean keyboard_mode,
                                GtkTooltip *tooltip,
-                               gpointer user_data)
+                               dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-
   const char **des = module->description(module);
 
   if(!des) return FALSE;
@@ -2959,7 +2954,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
 
   gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT(vbox), "size-allocate",
+  g_signal_connect(vbox, "size-allocate",
                    G_CALLBACK(_iop_tooltip_reposition), module->header);
 
   return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, vbox);
@@ -2971,7 +2966,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
                                     GtkWidget *header)
 {
   GtkWidget *button;
-  gpointer callback = _gui_multiinstance_callback;
+  gboolean(*callback)(GtkButton*, GdkEventButton*, dt_iop_module_t*) = _gui_multiinstance_callback;
 
   if(element == DT_ACTION_ELEMENT_ENABLE)
   {
@@ -2987,7 +2982,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
     gtk_widget_set_tooltip_text(button, tooltip);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
 
-    g_signal_connect(button, "toggled", G_CALLBACK(_gui_off_callback), module);
+    g_signal_connect(GTK_TOGGLE_BUTTON(button), "toggled", G_CALLBACK(_gui_off_callback), module);
     gtk_box_pack_start(GTK_BOX(header), button, FALSE, FALSE, 0);
   }
   else
@@ -3011,7 +3006,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   g_signal_connect(button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(element));
-  g_signal_connect(button, "button-press-event", G_CALLBACK(callback), module);
+  g_signal_connect(GTK_BUTTON(button), "button-press-event", G_CALLBACK(callback), module);
   dt_action_define(&module->so->actions, NULL, NULL, button, NULL);
   gtk_widget_show(button);
 
@@ -3128,21 +3123,21 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+  g_signal_connect(header_evb, "button-release-event",
                    G_CALLBACK(_iop_plugin_header_button_release), module);
   gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
+  g_signal_connect(header_evb, "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);
-  g_signal_connect(G_OBJECT(header_evb), "leave-notify-event",
+  g_signal_connect(header_evb, "leave-notify-event",
                    G_CALLBACK(_header_motion_notify_hide_callback), module);
 
   /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(body_evb), "button-press-event",
+  g_signal_connect(body_evb, "button-press-event",
                    G_CALLBACK(_iop_plugin_body_button_press), module);
   gtk_widget_add_events(body_evb, GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event",
+  g_signal_connect(body_evb, "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);
-  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event",
+  g_signal_connect(body_evb, "leave-notify-event",
                    G_CALLBACK(_header_motion_notify_hide_callback), module);
 
   /*

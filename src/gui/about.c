@@ -22,7 +22,7 @@
 #include "osx/osx.h"
 #endif
 
-void darktable_show_about_dialog()
+void darktable_show_about_dialog(void)
 {
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_widget_set_name (dialog, "about-dialog");

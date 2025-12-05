@@ -1269,7 +1269,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
-  g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed",
+  g_signal_connect(g->aspect_presets, "value-changed",
                    G_CALLBACK(_event_aspect_presets_changed), self);
   gtk_widget_set_tooltip_text
     (g->aspect_presets,

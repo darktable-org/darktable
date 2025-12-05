@@ -594,12 +594,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_name(g->fbutton, "non-flat");
   gtk_widget_set_tooltip_text(g->fbutton, _("select the PFM file recorded as a raster mask,\n"
       "CAUTION: path must be set in preferences/processing before choosing"));
-  g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(_fbutton_clicked), self);
+  g_signal_connect(g->fbutton, "clicked", G_CALLBACK(_fbutton_clicked), self);
 
   g->file = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->file, PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->file, _("the mask file path is saved with the image history"));
-  g_signal_connect(G_OBJECT(g->file), "value-changed", G_CALLBACK(_file_callback), self);
+  g_signal_connect(g->file, "value-changed", G_CALLBACK(_file_callback), self);
 
   dt_gui_box_add(self->widget, dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)));
 }
