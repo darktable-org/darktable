@@ -94,8 +94,8 @@ changes (where available).
 - Added the standard "Window" menu to the application menu bar on
   macOS.
 
-- Moved controls for mask exposure and contrast compensation to the
-  advanced tab.
+- In Tone Equalizer module move controls for mask exposure and
+  contrast compensation to the advanced tab.
 
 - In the navigation windows, the zoom is now better behaving. After a
   free zoom over the darkroom, using the scroll over the zoom level
@@ -180,12 +180,13 @@ changes (where available).
 
 - Add a RGB percent display in the color picker module.
 
-- Allow far smaller crop to be created (up to 99% of the image size).
+- Allow far smaller crop area to be created (crop up to 99% of the
+  image size).
 
-- Allow the variable `$(ROLL.NAME)` to have optional levels,
-  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
+- Allow the variable $(ROLL.NAME) to have optional levels,
+  $(ROLL.NAME[n]), where 1 <= n <= 5, the levels follow the same
   rules as film roll, the default value `n=1`, this keep the previous
-  behavior of `$(ROLL.NAME)`.
+  behavior of $(ROLL.NAME).
 
 - Added optional collection of shortcut assignments using
   keyboard+mouse combinations to control image processing
