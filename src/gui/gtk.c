@@ -3814,8 +3814,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   gtk_widget_set_has_tooltip(GTK_WIDGET(notebook), FALSE);
 
   const gint page_num = gtk_notebook_append_page(notebook, page, label);
-  gtk_container_child_set(GTK_CONTAINER(notebook), page,
-                          "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+  dt_gui_expand(gtk_notebook_get_tab_label(notebook, page));
   if(page_num == 1 &&
 FALSE && // GTK4
      !g_signal_handler_find(G_OBJECT(notebook),

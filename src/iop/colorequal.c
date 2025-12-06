@@ -2909,10 +2909,12 @@ void gui_update(dt_iop_module_t *self)
   const int nbpage = gtk_notebook_get_n_pages(g->notebook);
   if((nbpage == 4) ^ show_sliders)
   {
+    ++darktable.gui->reset;
     if(show_sliders)
       gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
     else
       gtk_notebook_remove_page(g->notebook, 3);
+    --darktable.gui->reset;
 
     GtkDarktableExpander *exp = DTGTK_EXPANDER(g->cs.expander);
     gtk_widget_set_visible(dtgtk_expander_get_header(exp), !show_sliders);

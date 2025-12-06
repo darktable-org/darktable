@@ -997,7 +997,7 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-value"
 #pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 // #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #pragma GCC diagnostic ignored "-Wswitch"
@@ -1323,7 +1323,7 @@ typedef union GdkEventOld
 #define gdk_event_get_pointer_emulated(...) 0
 #define gdk_event_get_source_device(...) NULL
 #define gdk_event_handler_set(...)
-#define gdk_event_new(...) NULL
+#define gdk_event_new(event_type) g_memdup(&(GdkEvent){.type = event_type}, sizeof(GdkEvent))
 #define GDK_IS_WAYLAND_DISPLAY(...) 0
 #define gdk_keymap_get_entries_for_keyval(...) 0
 #define gdk_keymap_get_for_display(...) NULL
@@ -1367,7 +1367,6 @@ typedef union GdkEventOld
 #define gtk_check_menu_item_set_active(...)
 #define gtk_check_menu_item_set_inconsistent(...)
 #define gtk_clipboard_set_text(...)
-#define gtk_container_child_set(...)
 #define gtk_container_get_focus_child(...) NULL
 #define gtk_container_set_border_width(...)
 #define gtk_container_set_focus_child(...)
@@ -1387,7 +1386,7 @@ typedef union GdkEventOld
 #define gtk_entry_set_width_chars(...)
 #define gtk_event_box_set_visible_window(...)
 #define gtk_file_chooser_add_filter(...)
-#define gtk_file_chooser_button_new(...) NULL
+#define gtk_file_chooser_button_new(...) gtk_button_new()
 #define gtk_file_chooser_button_set_title(...)
 #define gtk_file_chooser_button_set_width_chars(...)
 #define gtk_file_chooser_get_current_folder(...) NULL
@@ -1438,8 +1437,6 @@ typedef union GdkEventOld
 #define gtk_popover_get_relative_to(...) NULL
 #define gtk_popover_new(...) gtk_popover_new()
 #define gtk_popover_set_modal(...)
-#define gtk_popover_set_position(...)
-#define gtk_popover_set_relative_to(...)
 #define gtk_popover_set_relative_to(...)
 #define gtk_propagate_event(...)
 #define gtk_scrolled_window_set_shadow_type(...) NULL

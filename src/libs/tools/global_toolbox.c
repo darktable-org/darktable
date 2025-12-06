@@ -331,21 +331,31 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   {
     GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
 
-    int x, y;
-    GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+    double x, y;
+    GdkSurface *surface = gdk_device_get_surface_at_position(pointer, &x, &y);
     gpointer   pointer_widget = NULL;
-    if(pointer_window)
-      gdk_window_get_user_data(pointer_window, &pointer_widget);
+    if(surface)
+    {
+      GtkNative *native = gtk_native_get_for_surface(surface);
+      pointer_widget = gtk_widget_pick(GTK_WIDGET(native), x, y, GTK_PICK_DEFAULT);
+    }
 
-    GdkRectangle rect = { gtk_widget_get_allocated_width(button) / 2,
-                          gtk_widget_get_allocated_height(button), 1, 1 };
+  // GTK4 FIXME position when called from shortcut
+    graphene_rect_t rect = {};
+    if(gtk_widget_compute_bounds(button, button, &rect))
+    {
+      // rect now contains the bounds of the button relative to itself
+      // For a popover, you typically want it pointing to the entire button
+      GdkRectangle gdk_rect = {
+        .x = rect.origin.x + rect.size.width / 2,
+        .y = rect.origin.y + rect.size.height,
+        .width = 1, .height = 1
+      };
+      gtk_popover_set_pointing_to(GTK_POPOVER(d->over_popup), &gdk_rect);
+      gtk_popover_set_position(GTK_POPOVER(d->over_popup), GTK_POS_BOTTOM);
+    }
 
-    if(pointer_widget && button != pointer_widget)
-      gtk_widget_translate_coordinates(pointer_widget, button, x, y, &rect.x, &rect.y);
-
-    gtk_popover_set_pointing_to(GTK_POPOVER(d->over_popup), &rect);
-
-    gtk_widget_show(d->over_popup);
+    gtk_popover_popup(GTK_POPOVER(d->over_popup));
   }
   else
     dt_control_log(_("overlays not available here..."));
@@ -401,8 +411,8 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(&darktable.control->actions_global, NULL, N_("thumbnail overlays options"), d->overlays_button, &dt_action_def_button);
   gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
   d->over_popup = gtk_popover_new(d->overlays_button);
+  gtk_widget_set_parent(d->over_popup, d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
-  // GTK4 g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
   g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_overlays_show_popup), self);
   // we register size of overlay icon to keep in sync thumbtable overlays
   g_signal_connect(G_OBJECT(d->overlays_button), "size-allocate", G_CALLBACK(_main_icons_register_size), NULL);

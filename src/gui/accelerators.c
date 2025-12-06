@@ -213,27 +213,26 @@ static float _action_process_toggle(gpointer target,
   if(DT_ACTION_TOGGLE_NEEDED(effect, move_size, value)
      && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
-    GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
-                           || effect == DT_ACTION_EFFECT_ON_CTRL)
-                        ? GDK_CONTROL_MASK : 0;
-    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
-                            || effect == DT_ACTION_EFFECT_ON_RIGHT)
-                         ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+    // GTK4 FIXME how to pass right and ctrl clicks to event controllers?
+    // event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+    //                        || effect == DT_ACTION_EFFECT_ON_CTRL)
+    //                     ? GDK_CONTROL_MASK : 0;
+    // event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+    //                         || effect == DT_ACTION_EFFECT_ON_RIGHT)
+    //                      ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
     if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-    event->button.window = gtk_widget_get_window(target);
-    g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
     // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
-    gboolean handled;
-    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
-    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
-    event->type = GDK_BUTTON_RELEASE;
-    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
-
-    gdk_event_free(event);
+    GtkEventController *controller = g_object_get_data(target, "click");
+    if(controller)
+    {
+      g_signal_emit_by_name(G_OBJECT(controller), "pressed", 1, 0, 0);
+      g_signal_emit_by_name(G_OBJECT(controller), "released", 1, 0, 0);
+    }
+    // else
+      gtk_button_clicked(GTK_BUTTON(target));
 
     value = gtk_toggle_button_get_active(target);
 
@@ -2888,8 +2887,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(shortcuts_view, 0); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
   GtkWidget *search_shortcuts = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts),
-                                 _("search shortcuts list"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_shortcuts),
+                                        _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts),
                               _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_shortcuts), "activate",
@@ -2989,8 +2988,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
   GtkWidget *search_actions = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions),
-                                 _("search actions list"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_actions),
+                                        _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions),
                               _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_actions), "activate",
