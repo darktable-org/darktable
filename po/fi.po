@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-28 18:37+0100\n"
-"PO-Revision-Date: 2025-11-30 16:51+0200\n"
+"PO-Revision-Date: 2025-12-06 11:45+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -2167,7 +2167,7 @@ msgid ""
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"XMP-aputiedostoa luotaessa hierarkiset tunnisteet lisätään myös "
+"XMP-aputiedostoa luotaessa hierarkkiset tunnisteet lisätään myös "
 "yksittäisinä,\n"
 "jotta muut ohjelmat tunnistaisivat ne. Kun tämä asetus on valittu,\n"
 "Darktable lisää ainoastaan viimeisen osan hierarkkisista tunnisteista ja\n"
@@ -4222,7 +4222,7 @@ msgstr "Valkotasapainon mukautuva muunnos"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:250
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:391
 msgid "fix various bugs in algorithm"
-msgstr "Korjaa useita virheitä algoritmeissä"
+msgstr "Korjaa useita virheitä algoritmeissa"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:256
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:395
@@ -4417,7 +4417,7 @@ msgstr "Porrasta 8 tasoa per kanava"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:62
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:129
 msgid "percent left"
-msgstr "Prosenttia vasemalle"
+msgstr "Prosenttia vasemmalle"
 
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:68
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:133
@@ -5074,7 +5074,7 @@ msgstr "Thobyn mallintama kalansilmäprojektio"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
 msgid "invalidated"
-msgstr "Mitätätöity"
+msgstr "Mitätöity"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
@@ -5825,11 +5825,11 @@ msgstr "Nappia painettu"
 
 #: ../src/bauhaus/bauhaus.c:3985
 msgid "not that many sliders"
-msgstr "Ei niin monta likusäädintä"
+msgstr "Ei niin monta liukusäädintä"
 
 #: ../src/bauhaus/bauhaus.c:3999
 msgid "not that many dropdowns"
-msgstr "Ei niin monta pudostuvalikkoa"
+msgstr "Ei niin monta pudotusvalikkoa"
 
 #: ../src/bauhaus/bauhaus.c:4018
 msgid "not that many buttons"
@@ -6233,7 +6233,7 @@ msgstr "Mittaustila"
 #: ../src/common/collection.c:1499 ../src/libs/collect.c:1907
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
-msgstr "Automaattisesti käytöönotettu"
+msgstr "Automaattisesti käyttöön otettu"
 
 #: ../src/common/collection.c:1505 ../src/libs/collect.c:1907
 #: ../src/libs/filters/history.c:38
@@ -7145,7 +7145,7 @@ msgid ""
 msgstr ""
 "\n"
 "Poistettiin lukkotiedostot onnistuneesti\n"
-"Voit nyt käynnistää Darktablen uudestaan.\n"
+"Voit nyt käynnistää darktablen uudestaan.\n"
 
 #: ../src/common/database.c:3902 ../src/common/database.c:3909
 #: ../src/gui/accelerators.c:2611 ../src/gui/accelerators.c:2683
@@ -9738,7 +9738,7 @@ msgid ""
 "history or a slow drive being used"
 msgstr ""
 "Historian automaattinen tallentaminen on poistettu käytöstä tälle kuvalle, "
-"koska muokkaushistoria on erittäinsuuri tai käytössä on hidas levy."
+"koska muokkaushistoria on erittäin suuri tai käytössä on hidas levy."
 
 #: ../src/develop/develop.c:2269
 #, c-format
@@ -11534,7 +11534,7 @@ msgstr "Asetetaan kamerakohtaiset tyylit kuville."
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:474
 msgid "apply darktable camera styles to collection"
-msgstr "Aseta Darkatablen kamerakohtaiset tyylit kokoelmalle"
+msgstr "Aseta Darktablen kamerakohtaiset tyylit kokoelmalle"
 
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:480
 msgid "apply darktable camera styles to selection"
@@ -12763,7 +12763,7 @@ msgstr "Päivitä skriptit"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1347
 msgid "update the lua scripts from the repository"
-msgstr "Päivitä LUA-skriptit tietovarastostosta."
+msgstr "Päivitä LUA-skriptit tietovarastosta."
 
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1358
@@ -12948,7 +12948,9 @@ msgstr "ja..."
 
 #: ../src/gui/about.c:59
 msgid "translator-credits"
-msgstr "Marko Vertainen ja Janne Voutilainen"
+msgstr ""
+"Marko Vertainen\n"
+"Janne Voutilainen"
 
 #: ../src/gui/accelerators.c:67
 msgid "in active view"
@@ -13650,7 +13652,7 @@ msgstr "Palauta oletuspikavalinnat tai edellinen tila."
 
 #: ../src/gui/accelerators.c:3070
 msgid "import extras"
-msgstr "Tuo ylimäräiset"
+msgstr "Tuo ylimääräiset"
 
 #: ../src/gui/accelerators.c:3071
 msgid "import extended default shortcuts"
@@ -15344,7 +15346,7 @@ msgstr "Pinnakkaisvedos"
 #. embedded icc profile yes|no
 #: ../src/imageio/format/pdf.c:668
 msgid "embed ICC profiles"
-msgstr "Upotettut ICC-väriprofiilit"
+msgstr "Upotetut ICC-väriprofiilit"
 
 #: ../src/imageio/format/pdf.c:669
 msgid "images can be tagged with their ICC profile"
@@ -16131,7 +16133,7 @@ msgid ""
 "mainly intended to be used for experimenting."
 msgstr ""
 "Poista käytöstä puhtauden säädöt ja kierto ja käytä ainoastaan käyrää.\n"
-"Huomioi, että kyseiset muutokset ovat Agx:n ydintoimintoja ja\n"
+"Huomioi, että kyseiset muutokset ovat AgX:n ydintoimintoja ja\n"
 "ilman niitä tulokset ovat lähes aina huonommat, erityisesti\n"
 "kirkkaita ja värikkäitä valoja sisältävissä kuvissa (esim. LED-valot).\n"
 "Tämän asetuksen käyttö on tarkoitettu lähinnä kokeiluja varten."
@@ -16659,7 +16661,7 @@ msgstr "Karkein"
 
 #: ../src/iop/atrous.c:1630
 msgid "coarser"
-msgstr "Karkeaampi"
+msgstr "Karkeampi"
 
 #: ../src/iop/atrous.c:1633
 msgid "finer"
@@ -22202,7 +22204,7 @@ msgstr "Poikittainen värivirhe sininen."
 
 #: ../src/iop/lens.cc:4488
 msgid "use latest algorithm"
-msgstr "Käytä viimeisintä algoritmiä"
+msgstr "Käytä viimeisintä algoritmia"
 
 #: ../src/iop/lens.cc:4491
 msgid ""
@@ -23592,7 +23594,7 @@ msgid ""
 msgstr ""
 "Ylempi liukusäädin säätää mistä yhdistettävä asteikko alkaa.\n"
 "Alempi liukusäädin muuttaa asteikkojen määrää.\n"
-"Piste näytää nykyisen asteikon.\n"
+"Piste näyttää nykyisen asteikon.\n"
 "Ylempi viiva näyttää, että asteikko näkyy nykyisellä zoomauksen tasolla.\n"
 "Alempi viiva näyttää, että asteikolla on muotoja."
 
@@ -23725,11 +23727,11 @@ msgstr "Kontrasti | Korkea (lineaarinen)"
 
 #: ../src/iop/rgbcurve.c:231
 msgid "contrast | medium (gamma 2.2)"
-msgstr "Kontrasti |Keskimääräinen (gamma 2.2)"
+msgstr "Kontrasti | Keskimääräinen (gamma 2.2)"
 
 #: ../src/iop/rgbcurve.c:247
 msgid "contrast | high (gamma 2.2)"
-msgstr "Kontrasti |Korkea (gamma 2.2)"
+msgstr "Kontrasti | Korkea (gamma 2.2)"
 
 #: ../src/iop/rgbcurve.c:261
 msgid "non-contrast curve | gamma 2.0"
@@ -24732,7 +24734,7 @@ msgid ""
 "balance rgb module instead."
 msgstr ""
 "Tämä moduuli on vanhentunut. Kannattaa käyttää värikirkkauden liukusäädintä "
-"Väritasapaino RGB-modulissa tämän sijaan."
+"Väritasapaino RGB-moduulissa tämän sijaan."
 
 #: ../src/iop/vibrance.c:92
 msgid ""
@@ -25521,7 +25523,7 @@ msgid ""
 "currently selected images\n"
 "which apply your edits"
 msgstr ""
-"Luo uusia valituistakuvista\n"
+"Luo valituista kuvista\n"
 "uusia tiedostoja huomioiden\n"
 "tekemäsi muokkaukset."
 
@@ -25825,7 +25827,7 @@ msgid ""
 "calculated metadata instead"
 msgstr ""
 "Oletuksena liittymä lähettää joitakin (rajattuja) metatietoja varsinaisen "
-"kuvan lisäksi etätalennustilaan.\n"
+"kuvan lisäksi etätallennustilaan.\n"
 "Välttääksesi tämän ja salliaksesi ainoastaan kuvaan liitetyt Darktablen XMP-"
 "metatiedot, valitse tämä.\n"
 "Jos etätallennustila ei ymmärrä Darktable XMP-metatietoja, voit käyttää "
@@ -26025,7 +26027,7 @@ msgid ""
 "click to un-pin"
 msgstr ""
 "Tämä sääntö on kiinnitetty ylälaidan työkalupalkkiin.\n"
-"Napsauta irroitaaksesi."
+"Napsauta irrotaaksesi."
 
 #: ../src/libs/filtering.c:1112
 msgid "you can't disable the rule as it is pinned to the toolbar"
@@ -26355,7 +26357,7 @@ msgstr "Aseta poikkeama ja paikkatieto"
 
 #: ../src/libs/geotagging.c:378 ../src/libs/geotagging.c:1968
 msgid "apply geo-location"
-msgstr "Aseta paikkatietodot"
+msgstr "Aseta paikkatiedot"
 
 #: ../src/libs/geotagging.c:380
 msgid ""
@@ -26787,7 +26789,7 @@ msgstr "Piirretty maski lisättiin"
 #: ../src/libs/history.c:974
 #, c-format
 msgid "the drawn mask was removed"
-msgstr "Piirretty maski poistetiin"
+msgstr "Piirretty maski poistettiin"
 
 #: ../src/libs/history.c:975
 #, c-format
@@ -27208,7 +27210,7 @@ msgstr "Kuvaus näytöllä"
 
 #: ../src/libs/live_view.c:325 ../src/libs/live_view.c:327
 msgid "toggle live view"
-msgstr "Vaihda kuvaus näytöllätilaa"
+msgstr "Vaihda kuvaus näytöllä-tilaa"
 
 #: ../src/libs/live_view.c:330 ../src/libs/live_view.c:332
 msgid "zoom live view"
@@ -28111,7 +28113,7 @@ msgstr "Värimäärittelyn kuvake"
 
 #: ../src/libs/modulegroups.c:3288
 msgid "technical icon"
-msgstr "Tekninenkuvake"
+msgstr "Tekninen kuvake"
 
 #: ../src/libs/modulegroups.c:3322
 msgid "quick access panel widgets"
@@ -28629,7 +28631,7 @@ msgstr "↗ %s '%s'"
 
 #: ../src/libs/snapshots.c:760
 msgid "this snapshot was taken from"
-msgstr "Tämä vedos otetiin"
+msgstr "Tämä vedos otettiin"
 
 #: ../src/libs/snapshots.c:810
 msgid "take snapshot"
@@ -29252,7 +29254,7 @@ msgstr "Vasen liipasin"
 
 #: ../src/libs/tools/gamepad.c:65
 msgid "right trigger"
-msgstr "Oikea liipasin"
+msgstr "Oikea liipaisin"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "invalid gamepad button"
@@ -29777,7 +29779,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:956 ../src/views/darkroom.c:1340
 msgid "can't change image in GIMP plugin mode"
-msgstr "Ei voida muuttaa kuvaa GIMP-liitänänisen tilassa."
+msgstr "Ei voida muuttaa kuvaa GIMP-liitännäisen tilassa."
 
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2458
 msgid "quick access to presets"
