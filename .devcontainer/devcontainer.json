@@ -1,0 +1,33 @@
+{
+  "name": "Darktable Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt=seccomp=unconfined"
+  ],
+    "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "vscode"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "xaver.clang-format",
+        "ms-vscode.cpptools-extension-pack"
+      ],
+      "settings": {
+        "cmake.configureOnOpen": false,
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+      }
+    }
+  },
+  "forwardPorts": [],
+  "postCreateCommand": "git submodule init && git submodule update && echo 'Development environment ready! See .devcontainer/README.md for build instructions.'",
+  "remoteUser": "vscode"
+}
