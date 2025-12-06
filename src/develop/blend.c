@@ -228,9 +228,16 @@ gboolean dt_develop_blendif_init_masking_profile(dt_dev_pixelpipe_iop_t *piece,
       {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
   };
 
-  const dt_iop_order_iccprofile_info_t *const profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
+  dt_iop_order_iccprofile_info_t *profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
       ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
       : dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+  if(!profile) return FALSE;
+
+  if(!dt_is_valid_colormatrix(profile->matrix_in[0][0]))
+  {
+    dt_print(DT_DEBUG_PIPE | DT_DEBUG_MASKS, "blend profile falls back to LIN_REC2020 as there is no matrix");
+    profile = dt_ioppr_get_profile_info_from_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "");
+  }
   if(!profile) return FALSE;
 
   memcpy(blending_profile, profile, sizeof(dt_iop_order_iccprofile_info_t));
