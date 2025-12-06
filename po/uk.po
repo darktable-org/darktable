@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-23 08:26+0100\n"
-"PO-Revision-Date: 2025-11-23 22:19+0200\n"
+"PO-Revision-Date: 2025-12-06 12:14+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -20199,10 +20199,8 @@ msgid "visualize the overall radius"
 msgstr "Візуалізувати значення радіусу"
 
 #: ../src/iop/demosaic.c:1844
-#, fuzzy
-#| msgid "adjust the look of the image"
 msgid "adjust to the sharp image center"
-msgstr "Регулювання вигляду зображення"
+msgstr "Коригування того, що ми вважаємо різким центром зображення"
 
 #: ../src/iop/demosaic.c:1851
 msgid "demosaicing is only used for color raw images"
