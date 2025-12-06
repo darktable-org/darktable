@@ -1022,85 +1022,26 @@ typedef struct {void *dummy;} GtkRadioButton;
 typedef enum
 {
   GDK_X_CURSOR 		  = 0,
-  GDK_ARROW 		  = 2,
-  GDK_BASED_ARROW_DOWN    = 4,
-  GDK_BASED_ARROW_UP 	  = 6,
-  GDK_BOAT 		  = 8,
-  GDK_BOGOSITY 		  = 10,
   GDK_BOTTOM_LEFT_CORNER  = 12,
   GDK_BOTTOM_RIGHT_CORNER = 14,
   GDK_BOTTOM_SIDE 	  = 16,
-  GDK_BOTTOM_TEE 	  = 18,
-  GDK_BOX_SPIRAL 	  = 20,
-  GDK_CENTER_PTR 	  = 22,
-  GDK_CIRCLE 		  = 24,
-  GDK_CLOCK	 	  = 26,
-  GDK_COFFEE_MUG 	  = 28,
   GDK_CROSS 		  = 30,
-  GDK_CROSS_REVERSE 	  = 32,
   GDK_CROSSHAIR 	  = 34,
-  GDK_DIAMOND_CROSS 	  = 36,
-  GDK_DOT 		  = 38,
-  GDK_DOTBOX 		  = 40,
-  GDK_DOUBLE_ARROW 	  = 42,
-  GDK_DRAFT_LARGE 	  = 44,
-  GDK_DRAFT_SMALL 	  = 46,
-  GDK_DRAPED_BOX 	  = 48,
-  GDK_EXCHANGE 		  = 50,
   GDK_FLEUR 		  = 52,
-  GDK_GOBBLER 		  = 54,
-  GDK_GUMBY 		  = 56,
   GDK_HAND1 		  = 58,
-  GDK_HAND2 		  = 60,
-  GDK_HEART 		  = 62,
-  GDK_ICON 		  = 64,
-  GDK_IRON_CROSS 	  = 66,
   GDK_LEFT_PTR 		  = 68,
   GDK_LEFT_SIDE 	  = 70,
-  GDK_LEFT_TEE 		  = 72,
-  GDK_LEFTBUTTON 	  = 74,
-  GDK_LL_ANGLE 		  = 76,
-  GDK_LR_ANGLE 	 	  = 78,
-  GDK_MAN 		  = 80,
-  GDK_MIDDLEBUTTON 	  = 82,
-  GDK_MOUSE 		  = 84,
-  GDK_PENCIL 		  = 86,
   GDK_PIRATE 		  = 88,
   GDK_PLUS 		  = 90,
   GDK_QUESTION_ARROW 	  = 92,
-  GDK_RIGHT_PTR 	  = 94,
   GDK_RIGHT_SIDE 	  = 96,
-  GDK_RIGHT_TEE 	  = 98,
-  GDK_RIGHTBUTTON 	  = 100,
-  GDK_RTL_LOGO 		  = 102,
-  GDK_SAILBOAT 		  = 104,
-  GDK_SB_DOWN_ARROW 	  = 106,
   GDK_SB_H_DOUBLE_ARROW   = 108,
-  GDK_SB_LEFT_ARROW 	  = 110,
-  GDK_SB_RIGHT_ARROW 	  = 112,
-  GDK_SB_UP_ARROW 	  = 114,
   GDK_SB_V_DOUBLE_ARROW   = 116,
-  GDK_SHUTTLE 		  = 118,
-  GDK_SIZING 		  = 120,
-  GDK_SPIDER		  = 122,
-  GDK_SPRAYCAN 		  = 124,
-  GDK_STAR 		  = 126,
-  GDK_TARGET 		  = 128,
-  GDK_TCROSS 		  = 130,
-  GDK_TOP_LEFT_ARROW 	  = 132,
   GDK_TOP_LEFT_CORNER 	  = 134,
   GDK_TOP_RIGHT_CORNER 	  = 136,
   GDK_TOP_SIDE 		  = 138,
-  GDK_TOP_TEE 		  = 140,
-  GDK_TREK 		  = 142,
-  GDK_UL_ANGLE 		  = 144,
-  GDK_UMBRELLA 		  = 146,
-  GDK_UR_ANGLE 		  = 148,
   GDK_WATCH 		  = 150,
-  GDK_XTERM 		  = 152,
-  GDK_LAST_CURSOR,
   GDK_BLANK_CURSOR        = -2,
-  GDK_CURSOR_IS_PIXMAP 	  = -1
 } GdkCursorType;
 typedef struct GtkFileFilterInfo
 {
@@ -1146,23 +1087,9 @@ typedef enum {
 } GtkDestDefaults;
 typedef enum
 {
-  GDK_WINDOW_STATE_WITHDRAWN        = 1 << 0,
-  GDK_WINDOW_STATE_ICONIFIED        = 1 << 1,
   GDK_WINDOW_STATE_MAXIMIZED        = 1 << 2,
-  GDK_WINDOW_STATE_STICKY           = 1 << 3,
   GDK_WINDOW_STATE_FULLSCREEN       = 1 << 4,
-  GDK_WINDOW_STATE_ABOVE            = 1 << 5,
-  GDK_WINDOW_STATE_BELOW            = 1 << 6,
   GDK_WINDOW_STATE_FOCUSED          = 1 << 7,
-  GDK_WINDOW_STATE_TILED            = 1 << 8,
-  GDK_WINDOW_STATE_TOP_TILED        = 1 << 9,
-  GDK_WINDOW_STATE_TOP_RESIZABLE    = 1 << 10,
-  GDK_WINDOW_STATE_RIGHT_TILED      = 1 << 11,
-  GDK_WINDOW_STATE_RIGHT_RESIZABLE  = 1 << 12,
-  GDK_WINDOW_STATE_BOTTOM_TILED     = 1 << 13,
-  GDK_WINDOW_STATE_BOTTOM_RESIZABLE = 1 << 14,
-  GDK_WINDOW_STATE_LEFT_TILED       = 1 << 15,
-  GDK_WINDOW_STATE_LEFT_RESIZABLE   = 1 << 16
 } GdkWindowState;
 
 typedef struct GdkEventCrossing
@@ -1323,7 +1250,6 @@ typedef union GdkEventOld
 #define gdk_event_get_pointer_emulated(...) 0
 #define gdk_event_get_source_device(...) NULL
 #define gdk_event_handler_set(...)
-#define gdk_event_new(event_type) g_memdup(&(GdkEvent){.type = event_type}, sizeof(GdkEvent))
 #define GDK_IS_WAYLAND_DISPLAY(...) 0
 #define gdk_keymap_get_entries_for_keyval(...) 0
 #define gdk_keymap_get_for_display(...) NULL
@@ -1358,7 +1284,6 @@ typedef union GdkEventOld
 #define gtk_box_query_child_packing(...)
 #define gtk_box_set_center_widget(...)
 #define gtk_button_box_set_child_non_homogeneous(...)
-#define gtk_button_clicked(button) g_signal_emit_by_name(button, "clicked")
 #define gtk_calendar_get_date(...)
 #define gtk_calendar_mark_day(...)
 #define gtk_calendar_select_month(...)
@@ -1386,7 +1311,6 @@ typedef union GdkEventOld
 #define gtk_entry_set_width_chars(...)
 #define gtk_event_box_set_visible_window(...)
 #define gtk_file_chooser_add_filter(...)
-#define gtk_file_chooser_button_new(...) gtk_button_new()
 #define gtk_file_chooser_button_set_title(...)
 #define gtk_file_chooser_button_set_width_chars(...)
 #define gtk_file_chooser_get_current_folder(...) NULL
@@ -1413,7 +1337,6 @@ typedef union GdkEventOld
 #define gtk_header_bar_set_show_close_button(...)
 #define gtk_icon_theme_append_search_path(...)
 #define GTK_IS_CHECK_MENU_ITEM(...) 0
-#define gtk_label_set_line_wrap gtk_label_set_wrap
 #define gtk_main_do_event(...)
 #define gtk_menu_item_get_label(...) NULL
 #define gtk_menu_item_get_submenu(...) NULL
@@ -1435,7 +1358,6 @@ typedef union GdkEventOld
 #define gtk_parse_args(...) 0
 #define gtk_popover_get_default_widget(...) NULL
 #define gtk_popover_get_relative_to(...) NULL
-#define gtk_popover_new(...) gtk_popover_new()
 #define gtk_popover_set_modal(...)
 #define gtk_popover_set_relative_to(...)
 #define gtk_propagate_event(...)
@@ -1446,7 +1368,6 @@ typedef union GdkEventOld
 #define gtk_selection_data_set(...)
 #define gtk_separator_menu_item_new(...) NULL
 #define gtk_show_uri_on_window(...) 0
-#define gtk_stack_set_homogeneous gtk_stack_set_vhomogeneous
 #define gtk_style_context_get(...)
 #define gtk_style_context_list_classes(...) NULL
 #define gtk_style_context_set_path(...)
@@ -1463,7 +1384,6 @@ typedef union GdkEventOld
 #define GTK_TYPE_CONTAINER(...) 0
 #define gtk_viewport_set_shadow_type(...)
 #define gtk_widget_add_events(...)
-#define gtk_widget_destroy gtk_widget_unparent
 #define gtk_widget_draw(...)
 #define gtk_widget_event(...) 0
 #define gtk_widget_get_preferred_width(...) 0
@@ -1498,12 +1418,7 @@ typedef union GdkEventOld
 #define gtk_window_set_transient_for(...)
 #define gtk_window_set_type_hint(...)
 #define gtk_window_set_urgency_hint(...)
-#define gtk_get_current_event(...) (GdkEventOld[]){{GDK_KEY_PRESS}}
-static void gtk_widget_destroyed(){};
-static void gtk_main_quit(){};
-static void gtk_main(){};
-static void gtk_widget_show_all(GtkWidget*w){gtk_widget_show(w);};
-typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
+
 #define GDK_NONE NULL
 #define GDK_2BUTTON_PRESS	0123
 #define GDK_3BUTTON_PRESS	0124
@@ -1518,6 +1433,7 @@ typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
 #define GDK_SCROLL_MASK 0
 #define GDK_SMOOTH_SCROLL_MASK 0
 
+typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
 gulong dt_signal_connect_data_with_caller(gpointer instance,
                                           const gchar *detailed_signal,
                                           GCallback c_handler,
@@ -1592,6 +1508,19 @@ static inline void gtk_container_foreach(GtkContainer *container, GtkCallback ca
 
 #define gdk_cursor_new_from_name(display, name) gdk_cursor_new_from_name(name, NULL)
 #define gtk_image_new_from_icon_name(name, size) gtk_image_new_from_icon_name(name)
+
+#define gdk_event_new(event_type) g_memdup(&(GdkEvent){.type = event_type}, sizeof(GdkEvent))
+#define gtk_button_clicked(button) g_signal_emit_by_name(button, "clicked")
+#define gtk_file_chooser_button_new(...) gtk_button_new()
+#define gtk_label_set_line_wrap gtk_label_set_wrap
+#define gtk_popover_new(...) gtk_popover_new()
+#define gtk_stack_set_homogeneous gtk_stack_set_vhomogeneous
+#define gtk_widget_destroy gtk_widget_unparent
+#define gtk_get_current_event(...) (GdkEventOld[]){{GDK_KEY_PRESS}}
+static void gtk_widget_destroyed(){};
+static void gtk_main_quit(){};
+static void gtk_main(){};
+static void gtk_widget_show_all(GtkWidget*w){gtk_widget_show(w);};
 
 // WIN32
 #define GDK_WINDOW_HWND(...) NULL
