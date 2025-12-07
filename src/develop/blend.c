@@ -225,8 +225,7 @@ gboolean dt_develop_blendif_init_masking_profile(dt_dev_pixelpipe_iop_t *piece,
   const dt_colormatrix_t M = {
       {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
       { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
-      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
-  };
+      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f } };
 
   const dt_iop_order_iccprofile_info_t *const profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
       ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
