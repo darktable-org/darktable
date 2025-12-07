@@ -991,7 +991,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_
     color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
 
   if(color_profile
-      && color_profile->filename[0]
+      && color_profile->type == DT_COLORSPACE_FILE
       && (!dt_is_valid_colormatrix(color_profile->matrix_in[0][0])
           || !dt_is_valid_colormatrix(color_profile->matrix_out[0][0])))
     dt_print_pipe(DT_DEBUG_PIPE, "current pipe profile", pipe, module, DT_DEVICE_NONE, NULL, NULL,
