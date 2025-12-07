@@ -294,7 +294,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
                                              imgid,
                                              -1,
                                              DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
-                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                             DT_THUMBNAIL_CONTAINER_DUPLICATE,
                                              TRUE,
                                              DT_THUMBNAIL_SELECTION_UNSELECTED);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -334,7 +334,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
 
-    gtk_widget_show_all(hb);
+    gtk_widget_show(hb);
 
     dt_gui_box_add(d->duplicate_box, hb);
     d->thumbs = g_list_append(d->thumbs, thumb);
