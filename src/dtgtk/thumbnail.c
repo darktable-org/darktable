@@ -899,7 +899,8 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     show_active = (thumb->imgid == activeid);
   }
   const gboolean show_cursor = show_active
-    && !(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
+    && (thumb->container != DT_THUMBNAIL_CONTAINER_CULLING)
+    && (thumb->container != DT_THUMBNAIL_CONTAINER_DUPLICATE)
     && (dt_view_get_current() == DT_VIEW_DARKROOM);
   gtk_widget_set_visible(thumb->w_cursor, show_cursor);
 
