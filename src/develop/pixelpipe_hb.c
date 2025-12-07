@@ -1972,6 +1972,21 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     if(possible_cl)
     {
+      dt_develop_blend_params_t *const bd = piece->blendop_data;
+      if(bd)
+      {
+        if(bd->blend_cst  == DEVELOP_BLEND_CS_RGB_SCENE
+          && bd->mask_mode & DEVELOP_MASK_ENABLED)
+        {
+          const dt_iop_order_iccprofile_info_t *profile = dt_ioppr_get_pipe_current_profile_info(module, pipe);
+          if(profile && !dt_is_valid_colormatrix(profile->matrix_in[0][0]))
+            possible_cl = FALSE;
+        }
+      }
+    }
+
+    if(possible_cl)
+    {
       const int cst_from = input_cst_cl;
       const int cst_to = module->input_colorspace(module, pipe, piece);
       const int cst_out = module->output_colorspace(module, pipe, piece);
