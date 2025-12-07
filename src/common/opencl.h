@@ -114,10 +114,12 @@ typedef struct dt_opencl_device_t
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
+  cl_ulong max_mem_constant;
+  cl_uint alignsize; 
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
-  int program_used[DT_OPENCL_MAX_PROGRAMS];
-  int kernel_used[DT_OPENCL_MAX_KERNELS];
+  gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
+  gboolean kernel_used[DT_OPENCL_MAX_KERNELS];
   cl_event *eventlist;
   dt_opencl_eventtag_t *eventtags;
   int numevents;
@@ -420,13 +422,6 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int width,
                                   const int height,
                                   const int bpp);
-
-int dt_opencl_read_host_from_device(const int devid,
-                                    void *host,
-                                    void *device,
-                                    const int width,
-                                    const int height,
-                                    const int bpp);
 
 int dt_opencl_read_host_from_device_rowpitch(const int devid,
                                              void *host,

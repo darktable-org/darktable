@@ -91,7 +91,7 @@ void dtgtk_drawing_area_set_height(GtkWidget *widget, int height)
 {
   GtkDarktableDrawingArea *da = DTGTK_DRAWING_AREA(widget);
   da->aspect = 1.0f; // not used
-  da->height = height;
+  da->height = height < 0 ? 0 : height;
   gtk_widget_queue_resize(widget);
 }
 

@@ -178,13 +178,9 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_widget_set_tooltip_text(search->text,
                               /* xgettext:no-c-format */
                               _("filter by text from images metadata, camera brand/model, tags, file path and name"
-                                /* xgettext:no-c-format */
                                 "\n`%' is the wildcard character"
-                                /* xgettext:no-c-format */
                                 "\nby default start and end wildcards are auto-applied"
-                                /* xgettext:no-c-format */
                                 "\nstarting or ending with a double quote disables the corresponding wildcard"
-                                /* xgettext:no-c-format */
                                 "\nis dimmed during the search execution"));
   dt_gui_add_class(search->text, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), search->text, TRUE, TRUE, 0);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
+#include "common/dttypes.h"
 
 typedef enum dt_adaptation_t
 {
@@ -58,7 +59,7 @@ static const dt_colormatrix_t Bradford_LMS_to_XYZ_trans =
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   dt_apply_transposed_color_matrix(XYZ, XYZ_to_Bradford_LMS_trans, LMS);
 }
 
@@ -70,7 +71,7 @@ static inline void make_RGB_to_Bradford_LMS(const dt_colormatrix_t rgb, dt_color
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   dt_apply_transposed_color_matrix(LMS, Bradford_LMS_to_XYZ_trans, XYZ);
 }
 
@@ -109,7 +110,7 @@ static const dt_colormatrix_t CAT16_LMS_to_XYZ_trans =
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  // Warning : needs XYZ normalized with Y - you need to downscale before
+  // Warning : needs XYZ normalized with Y - you need to downscale before
   dt_apply_transposed_color_matrix(XYZ, XYZ_to_CAT16_LMS_trans, LMS);
 }
 
@@ -121,7 +122,7 @@ static inline void make_RGB_to_CAT16_LMS(const dt_colormatrix_t rgb, dt_colormat
 DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS:16))
 static inline void convert_CAT16_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  // Warning : output XYZ normalized with Y - you need to upscale later
+  // Warning : output XYZ normalized with Y - you need to upscale later
   dt_apply_transposed_color_matrix(LMS, CAT16_LMS_to_XYZ_trans, XYZ);
 }
 
@@ -215,7 +216,7 @@ static inline void convert_any_LMS_to_RGB(const dt_aligned_pixel_t LMS, dt_align
   dt_XYZ_to_Rec709_D65(XYZ, RGB);
 
   // Handle gamut clipping
-  float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+  float max_RGB = max3f(RGB);
   for(int c = 0; c < 3; c++) RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
 
 }

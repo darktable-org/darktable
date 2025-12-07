@@ -75,7 +75,7 @@ void dt_control_job_set_params_with_size(dt_job_t *job, void *params, size_t par
 void *dt_control_job_get_params(const dt_job_t *job);
 
 void dt_control_job_add_progress(dt_job_t *job, const char *message, const gboolean cancellable);
-void dt_control_job_set_progress_message(dt_job_t *job, const char *message);
+void dt_control_job_set_progress_message(dt_job_t *job, const char *message, ...);
 void dt_control_job_set_progress(dt_job_t *job, const double value);
 double dt_control_job_get_progress(const dt_job_t *job);
 

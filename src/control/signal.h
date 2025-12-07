@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -281,6 +281,9 @@ typedef enum dt_signal_t
     no param, no returned value
   */
   DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
+
+  /* \brief This signal is raised after a preset has been applied */
+  DT_SIGNAL_PRESET_APPLIED,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT

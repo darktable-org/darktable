@@ -47,8 +47,8 @@ typedef enum dt_iop_luminance_mask_method_t
   DT_TONEEQ_NORM_POWER, // $DESCRIPTION: "RGB power norm"
   DT_TONEEQ_GEOMEAN,    // $DESCRIPTION: "RGB geometric mean"
   DT_TONEEQ_REC709W,    // $DESCRIPTION: "Rec. 709 weights"
-  DT_TONEEQ_LAST,
   DT_TONEEQ_CUSTOM,     // $DESCRIPTION: "Custom"
+  DT_TONEEQ_LAST,
 } dt_iop_luminance_mask_method_t;
 
 /**
@@ -93,8 +93,6 @@ static float pixel_rgb_mean(const float *const restrict image,
     lum += image[k + c];
 
   return lum / 3.0f;
-
-  //luminance[k / 4] = linear_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
 }
 
 
@@ -108,8 +106,6 @@ static float pixel_rgb_value(const float *const restrict image,
 
   const float lum = MAX(MAX(image[k], image[k + 1]), image[k + 2]);
   return lum;
-
-  //luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
@@ -124,8 +120,6 @@ static float pixel_rgb_lightness(const float *const restrict image,
   const float max_rgb = MAX(MAX(image[k], image[k + 1]), image[k + 2]);
   const float min_rgb = MIN(MIN(image[k], image[k + 1]), image[k + 2]);
   return (max_rgb + min_rgb) / 2.0f;
-
-  //luminance[k / 4] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
@@ -143,8 +137,6 @@ static float pixel_rgb_norm_1(const float *const restrict image,
     lum += fabsf(image[k + c]);
 
   return lum;
-
-  // luminance[k / 4] = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost);
 }
 
 
@@ -163,8 +155,6 @@ static float pixel_rgb_norm_2(const float *const restrict image,
     result += image[k + c] * image[k + c];
 
   return sqrtf(result);
-
-  // luminance[k / 4] = linear_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
 }
 
 
@@ -190,8 +180,6 @@ static float pixel_rgb_norm_power(const float *const restrict image,
   }
 
   return numerator / denominator;
-
-  // luminance[k / 4] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
@@ -211,8 +199,6 @@ static float pixel_rgb_geomean(const float *const restrict image,
   }
 
   return powf(lum, 1.0f / 3.0f);
-
-  // luminance[k / 4] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
@@ -221,9 +207,10 @@ static float pixel_rgb_r709w(const float *const restrict image,
                             float *const restrict luminance,
                             const size_t k)
 {
+  // Rec. 709 weights. Green has more influence than red and blue.
+
   const float lum = 0.2126 * image[k] + 0.7152 * image[k + 1] + 0.0722 * image[k + 2];
   return lum;
-  // luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
@@ -236,9 +223,10 @@ static float pixel_rgb_custom(const float *const restrict image,
                             const float g_weight,
                             const float b_weight)
 {
+  // User can mix the greyscale image using sliders.
+
   const float lum = MAX(MIN_FLOAT, r_weight * image[k] + g_weight * image[k + 1] + b_weight * image[k + 2]);
   return lum;
-  // luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
@@ -297,9 +285,6 @@ static inline void luminance_mask(const float *const restrict in,
   float min_lum = INFINITY;
   float max_lum = -INFINITY;
 
-  printf("luminance_mask: method=%d, exposure_boost=%f, fulcrum=%f, contrast_boost=%f, r_weight=%f, g_weight=%f, b_weight=%f\n",
-         method, exposure_boost, fulcrum, contrast_boost, r_weight, g_weight, b_weight);
-
   switch(method)
   {
     #define COMPUTE_LUM(fn) fn(in, out, k)
@@ -339,55 +324,6 @@ static inline void luminance_mask(const float *const restrict in,
   *image_min_ev = log2f(min_lum);
   *image_max_ev = log2f(max_lum);
 }
-
-
-
-
-// __DT_CLONE_TARGETS__
-// static inline void luminance_mask2(const float *const restrict in,
-//                                   float *const restrict out,
-//                                   const size_t width,
-//                                   const size_t height,
-//                                   const dt_iop_luminance_mask_method_t method,
-//                                   const float exposure_boost,
-//                                   const float fulcrum,
-//                                   const float contrast_boost
-//                                   const float r_weight,
-//                                   const float g_weight,
-//                                   const float b_weight)
-// {
-
-//   const size_t num_elem = width * height * 4;
-//   switch(method)
-//   {
-//     case DT_TONEEQ_MEAN:
-//       LOOP(pixel_rgb_mean);
-
-//     case DT_TONEEQ_LIGHTNESS:
-//       LOOP(pixel_rgb_lightness);
-
-//     case DT_TONEEQ_VALUE:
-//       LOOP(pixel_rgb_value);
-
-//     case DT_TONEEQ_NORM_1:
-//       LOOP(pixel_rgb_norm_1);
-
-//     case DT_TONEEQ_NORM_2:
-//       LOOP(pixel_rgb_norm_2);
-
-//     case DT_TONEEQ_NORM_POWER:
-//       LOOP(pixel_rgb_norm_power);
-
-//     case DT_TONEEQ_GEOMEAN:
-//       LOOP(pixel_rgb_geomean);
-
-//     case DT_TONEEQ_REC709W:
-//       LOOP(pixel_rgb_r709w);
-
-//     default:
-//       break;
-//   }
-// }
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

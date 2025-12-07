@@ -295,7 +295,6 @@ static void _undo_do_undo_redo(dt_undo_t *self,
 void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter)
 {
   dt_gui_cursor_set_busy();
-  dt_gui_process_events();
   _undo_do_undo_redo(self, filter, DT_ACTION_REDO);
   dt_gui_cursor_clear_busy();
 }
@@ -303,7 +302,6 @@ void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter)
 void dt_undo_do_undo(dt_undo_t *self, const uint32_t filter)
 {
   dt_gui_cursor_set_busy();
-  dt_gui_process_events();
   _undo_do_undo_redo(self, filter, DT_ACTION_UNDO);
   dt_gui_cursor_clear_busy();
 }

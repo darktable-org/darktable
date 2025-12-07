@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -93,7 +94,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("quickly convert an image to black & white using a variable color filter"),
+  return dt_iop_set_description(self, _("quickly convert an image to black & white\n"
+                                        "using a variable color filter"),
                                       _("creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
@@ -147,7 +149,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.b = 64.0f;
   p.highlights = 0.0f;
   dt_gui_presets_add_generic(_("red filter"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // p.a = 64.0f;
   // p.b = -32.0f;
@@ -552,10 +554,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->dragging = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->area);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
   dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
 

@@ -85,8 +85,10 @@ static inline float _half_to_float(uint16_t h)
 }
 #endif
 
-static inline int _read_chunky_8(tiff_t *t)
+static inline int _read_chunky_8(tiff_t *t, uint16_t photometric)
 {
+  const gboolean need_invert = (photometric == PHOTOMETRIC_MINISWHITE);
+
   for(uint32_t row = 0; row < t->height; row++)
   {
     uint8_t *in = ((uint8_t *)t->buf);
@@ -98,7 +100,9 @@ static inline int _read_chunky_8(tiff_t *t)
     for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
       /* set rgb to first sample from scanline */
-      out[0] = ((float)in[0]) * (1.0f / 255.0f);
+      out[0] = need_invert
+               ? 1.0f - ((float)in[0]) * (1.0f / 255.0f)
+               :        ((float)in[0]) * (1.0f / 255.0f);
 
       if(t->spp < 3)  // mono, maybe plus alpha channel
       {
@@ -282,7 +286,7 @@ static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
 
   // For CIELab, the L* is encoded in 16 bits as an integer range [0, 65535]
   // For ICCLab, the L* is encoded in 16 bits as an integer range [0, 65280]
-  // See https://www.alternateff.com/resources/TIFFphotoshop.pdf for reference
+  // See https://www.alternatiff.com/resources/TIFFphotoshop.pdf for reference
   const float range = (photometric == PHOTOMETRIC_CIELAB) ? 65535.0f : 65280.0f;
 
   for(uint32_t row = 0; row < t->height; row++)
@@ -365,8 +369,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
 {
-  // doing this once would be enough, but our imageio reading code is
-  // compiled into dt's core and doesn't have an init routine.
+  // Doing this once would be enough, but our imageio reading code is
+  // compiled into darktable's core and doesn't have an init routine.
   TIFFSetWarningHandler(_warning_handler);
   TIFFSetErrorHandler(_error_handler);
 
@@ -379,10 +383,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   tiff_t t;
   uint16_t config;
   uint16_t photometric;
-
-  // This variable may not be assigned a value in TIFFGetField because
-  // the corresponding tag is optional, so we must initialize this variable.
-  uint16_t inkset = 0;
 
   t.image = img;
 
@@ -403,7 +403,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(TIFFIsTiled(t.tiff))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: tiled TIFF is not supported in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "tiled TIFF is not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -412,11 +413,10 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width);
   TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
   TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
-  TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
-  TIFFGetField(t.tiff, TIFFTAG_INKSET, &inkset);
 
   // Citing the TIFF 6.0 specification for SampleFormat:
   // A reader would typically treat an image with “undefined” data as
@@ -424,10 +424,21 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(t.sampleformat == SAMPLEFORMAT_VOID)
     t.sampleformat = SAMPLEFORMAT_UINT;
 
-  if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
+  if(photometric == PHOTOMETRIC_SEPARATED)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "CMYK colorspace not supported in '%s'",
+             filename);
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
+
+  if(photometric == PHOTOMETRIC_PALETTE)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] hand over to fallback loader: "
+             "indexed color map (palette) not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -450,16 +461,18 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   {
     TIFFClose(t.tiff);
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported bit depth other than 8, 16 or 32 in '%s'",
              filename);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
-  /* don't depend on planar config if spp == 1 */
+  // Planar config is irrelevant if spp == 1
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported non-chunky PlanarConfiguration in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -521,7 +534,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   }
   else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
-    ok = _read_chunky_8(&t);
+    ok = _read_chunky_8(&t, photometric);
   }
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
@@ -538,7 +551,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported TIFF format feature in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported TIFF format feature in '%s'",
              filename);
     ok = 0;
     ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -560,6 +574,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
 
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 {
+  TIFFSetWarningHandler(_warning_handler);
+  TIFFSetErrorHandler(_error_handler);
+
   TIFF *tiff = NULL;
   uint32_t profile_len = 0;
   uint8_t *profile = NULL;

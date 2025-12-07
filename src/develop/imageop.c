@@ -829,25 +829,21 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   {
     if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
     {
-      // name is not empty, set new multi_name
+      // name is not empty, set new multi_name only if changed
+      // ensure we keep the built-in as-is
 
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+       gchar *current_name = dt_util_localize_segmented_name(module->multi_name, FALSE);
 
-      if(g_strcmp0(module->multi_name, name) != 0)
+      if(g_strcmp0(current_name, name) != 0)
       {
-        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-        // this has been hand edited, the name should not be changed when
-        // applying a preset or a style.
-        module->multi_name_hand_edited = TRUE;
-        dt_dev_add_history_item(module->dev, module, TRUE);
+        dt_iop_update_multi_name(module, name, TRUE, TRUE, TRUE);
       }
+      g_free(current_name);
     }
     else
     {
-      // clear out multi-name (set 1st char to 0)
-      module->multi_name[0] = 0;
-      module->multi_name_hand_edited = FALSE;
-      dt_dev_add_history_item(module->dev, module, FALSE);
+      dt_iop_update_multi_name(module, "", FALSE, FALSE, TRUE);
     }
 
     // make sure we write history & xmp to ensure that the new module name
@@ -905,12 +901,15 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_set_name(entry, "iop-panel-label");
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
+
+  gchar *name = dt_util_localize_segmented_name(module->multi_name, FALSE);
   gtk_entry_set_text(GTK_ENTRY(entry),
                      strcmp(module->multi_name, "0")
                      || module->multi_priority > 0
                      || module->multi_name_hand_edited
-                       ? module->multi_name
+                       ? name
                        : "");
+  g_free(name);
 
   //  hide module instance name as we need the space for the entry
   gtk_widget_hide(module->instance_name);
@@ -1198,7 +1197,11 @@ static void _iop_panel_name(dt_iop_module_t *module)
       if(module->multi_name_hand_edited)
         new_label = g_strdup_printf("• %s", module->multi_name);
       else
-        new_label = g_strdup_printf("• %s", dt_util_localize_segmented_name(module->multi_name, FALSE));
+      {
+        char *loc = dt_util_localize_segmented_name(module->multi_name, FALSE);
+        new_label = g_strdup_printf("• %s", loc);
+        g_free(loc);
+      }
       gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
     }
   }
@@ -1681,7 +1684,6 @@ static void _init_module_so(void *m)
     if(module->gui_init
        && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
-      darktable.control->accel_initialising = TRUE;
       dt_iop_gui_init(module_instance);
 
       static gboolean blending_accels_initialized = FALSE;
@@ -1704,8 +1706,6 @@ static void _init_module_so(void *m)
 
       dt_iop_gui_cleanup_module(module_instance);
       dt_iop_cleanup_module(module_instance);
-
-      darktable.control->accel_initialising = FALSE;
     }
 
     free(module_instance);
@@ -1747,10 +1747,19 @@ void dt_iop_load_modules_so(void)
     ("/plugins", sizeof(dt_iop_module_so_t),
      dt_iop_load_module_so, _init_module_so, NULL);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _iop_preferences_changed, darktable.iop);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _iop_preferences_changed, darktable.iop);
 
   // set up memory.darktable_iop_names table
   _iop_set_darktable_iop_table();
+
+  // after loading the iop table we want to refresh the collection if it uses
+  // the module name as part of the query as we have just setup the iop name
+  // table.
+
+  if(dt_collection_has_property(DT_COLLECTION_PROP_MODULE))
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY,
+                               DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 gboolean dt_iop_load_module(dt_iop_module_t *module,
@@ -2321,6 +2330,8 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
                                          GdkEventScroll *event,
                                          dt_iop_module_t *module)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   int delta_y = 0;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
     dt_gui_presets_apply_adjacent_preset(module, delta_y);
@@ -3526,6 +3537,29 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   module->multi_priority = new_priority;
 }
 
+void dt_iop_update_multi_name(dt_iop_module_t *module,
+                              const char *name,
+                              const gboolean hand_edited,
+                              const gboolean enable,
+                              const gboolean force)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  char *l_name = g_strstrip(g_strdup(name));
+
+  if(force
+     || (auto_module
+         && !module->multi_name_hand_edited))
+  {
+    g_strlcpy(module->multi_name, l_name, sizeof(module->multi_name));
+    module->multi_name_hand_edited = hand_edited;
+    dt_iop_gui_update_header(module);
+    dt_dev_add_history_item(module->dev, module, enable);
+  }
+
+  g_free(l_name);
+}
+
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id)
 {
   GHashTableIter iter;
@@ -3608,6 +3642,51 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
   return mod_ret;
 }
 
+typedef enum instance_filter_mode_t
+{
+  FILTER_NEUTRAL,
+  FILTER_PREFER,
+  FILTER_REQUIRE,
+} instance_filter_mode_t;
+
+dt_iop_module_t *_find_preferred_instance(const dt_iop_module_so_t *module,
+                                          const gboolean prefer_expanded,
+                                          const instance_filter_mode_t enabled_mode,
+                                          const gboolean prefer_unmasked,
+                                          const gboolean prefer_first)
+{
+  dt_iop_module_t *best_mod = NULL;
+  int best_score = -1;
+
+  for(GList *iop_mods = g_list_last(darktable.develop->iop);
+      iop_mods;
+      iop_mods = g_list_previous(iop_mods))
+  {
+    dt_iop_module_t *mod = iop_mods->data;
+
+    if(mod->so == module && mod->iop_order != INT_MAX)
+    {
+      if (enabled_mode == FILTER_REQUIRE && !mod->enabled) continue;
+
+      const gboolean prefer_enabled = enabled_mode == FILTER_PREFER;
+
+      const gboolean no_mask = mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                            || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED;
+      const int score = (mod->expanded && prefer_expanded ? 8 : 0)
+                      + (mod->enabled  && prefer_enabled  ? 4 : 0)
+                      + (no_mask       && prefer_unmasked ? 2 : 0);
+
+      if(score + (prefer_first ? 1 : 0) > best_score)
+      {
+        best_score = score;
+        best_mod = mod;
+      }
+    }
+  }
+
+  return best_mod;
+}
+
 dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module)
 {
   /*
@@ -3632,68 +3711,45 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *
     - selection order (after applying the above rules, apply the
       shortcut to the first or last instance remaining)
   */
-  const gboolean prefer_focused = dt_conf_get_bool("accel/prefer_focused");
-  const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
-  const int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
-  const int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
-  const int prefer_first = dt_conf_is_equal("accel/select_order", "first instance") ? 1 : 0;
-
-  dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
   dt_iop_module_t *gui_module = dt_dev_gui_module();
-  if(prefer_focused
-      && gui_module
-      && (gui_module->so == module
-         || DT_ACTION(module) == &darktable.control->actions_focus))
-    accel_mod = gui_module;
+  if(DT_ACTION(module) == &darktable.control->actions_focus
+     || (gui_module && gui_module->so == module
+         && dt_conf_get_bool("accel/prefer_focused")))
+    return gui_module;
   else
-  {
-    int best_score = -1;
+    return _find_preferred_instance(module,
+                                    dt_conf_get_bool("accel/prefer_expanded"),
+                                    dt_conf_get_bool("accel/prefer_enabled") ? FILTER_PREFER : FILTER_NEUTRAL,
+                                    dt_conf_get_bool("accel/prefer_unmasked"),
+                                    dt_conf_is_equal("accel/select_order", "first instance"));
+}
 
-    for(GList *iop_mods = g_list_last(darktable.develop->iop);
-        iop_mods;
-        iop_mods = g_list_previous(iop_mods))
-    {
-      dt_iop_module_t *mod = iop_mods->data;
-
-      if(mod->so == module && mod->iop_order != INT_MAX)
-      {
-        const int score = (mod->expanded ? prefer_expanded : 0)
-                        + (mod->enabled ? prefer_enabled : 0)
-                        + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
-                           || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
-                                ? prefer_unmasked : 0);
-
-        if(score + prefer_first > best_score)
-        {
-          best_score = score;
-          accel_mod = mod;
-        }
-      }
-    }
-  }
-
-  return accel_mod;
+dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(const dt_iop_module_so_t *module)
+{
+  return _find_preferred_instance(module,
+                                    FALSE,
+                                    FILTER_REQUIRE,
+                                    TRUE,
+                                    TRUE);
 }
 
 /** adds keyboard accels to the first module in the pipe to handle
  * where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
-  if(darktable.develop->gui_attached)
-  {
-    dt_iop_module_t *accel_mod_new = dt_iop_get_module_preferred_instance(module);
+  if(!darktable.develop->gui_attached) return;
 
-    // switch accelerators to new module
-    if(accel_mod_new)
-    {
-      dt_accel_connect_instance_iop(accel_mod_new);
+  dt_iop_module_t *accel_mod_new = dt_iop_get_module_preferred_instance(module);
 
-      if(!strcmp(accel_mod_new->op, "exposure"))
-        darktable.develop->proxy.exposure.module = accel_mod_new;
-    }
-  }
+  // switch accelerators to new module
+  if(accel_mod_new)
+    dt_accel_connect_instance_iop(accel_mod_new);
+
+  if(!strcmp(module->op, "exposure"))
+    darktable.develop->proxy.exposure.module =
+      _find_preferred_instance(module, FALSE, FILTER_PREFER, TRUE, TRUE);
 }
 
 void dt_iop_connect_accels_all(void)
@@ -3956,13 +4012,19 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_FOCUS:
-      _request_module_focus_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dt_dev_gui_module() == module))
+        _request_module_focus_callback(module);
       break;
     case DT_ACTION_ELEMENT_ENABLE:
-      _enable_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           module->off && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off))))
+        _enable_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_SHOW:
-      _show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+            module->expanded))
+        _show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_INSTANCE:;
       dt_iop_gui_multi_show_t multi_show;

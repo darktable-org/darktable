@@ -34,7 +34,7 @@
     <section name="slideshow" title="slideshow view"/>
   </dttab>
 
-  <dtconfig>
+  <dtconfig common="yes">
     <name>themes/usercss</name>
     <type>bool</type>
     <default>false</default>
@@ -127,11 +127,11 @@
     <shortdescription>don't show advice in shortcuts dialog</shortdescription>
   </dtconfig>
   <dtconfig>
-    <name>bauhaus/scale</name>
-    <type>float</type>
-    <default>1.4</default>
-    <shortdescription>widget scale</shortdescription>
-    <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
+    <name>bauhaus/color_wheel</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>slider color wheel</shortdescription>
+    <longdescription>use color wheel for 360 sliders with gradients</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>bauhaus/zoom_step</name>
@@ -139,6 +139,20 @@
     <default>true</default>
     <shortdescription>scale slider step with min/max</shortdescription>
     <longdescription>vary slider step size with min/max range</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface" restart="true">
+    <name>bauhaus/marker_shape</name>
+    <type>
+      <enum>
+      <option>triangle</option>
+      <option>circle</option>
+      <option>diamond</option>
+      <option>bar</option>
+      </enum>
+    </type>
+    <default>triangle</default>
+    <shortdescription>marker shape</shortdescription>
+    <longdescription>the shape of the slider marker</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database</name>
@@ -167,6 +181,13 @@
     <default>25</default>
     <shortdescription>database fragmentation ratio threshold</shortdescription>
     <longdescription>fragmentation ratio above which to ask or carry out automatically database maintenance</longdescription>
+  </dtconfig>
+  <dtconfig prefs="storage" section="database" common="yes">
+    <name>database/multiple_workspace</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>allow for multiple workspaces</shortdescription>
+    <longdescription>allow multiple workspaces which can be selected at startup</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/create_snapshot</name>
@@ -398,8 +419,8 @@
     <name>clplatform_rusticl</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>RustiCL (experimental)</shortdescription>
-    <longdescription>RustiCL Mesa OpenCL, still unstable. if you want to use this, you should disable the vendor driver</longdescription>
+    <shortdescription>RustiCL</shortdescription>
+    <longdescription>RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
     <name>clplatform_apple</name>
@@ -728,6 +749,12 @@
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>ui_last/gui_language</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>language for the GUI</shortdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_model</name>
     <type>
@@ -957,6 +984,48 @@
     <name>ui_last/modulegroups_dialog_height</name>
     <type>int</type>
     <default>700</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/copy_history_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/copy_history_dialog_height</name>
+    <type>int</type>
+    <default>450</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_height</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_width</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_height</name>
+    <type>int</type>
+    <default>400</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2104,6 +2173,24 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
+  <dtconfig common="yes">
+    <name>ui/hide_tooltips</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>hiding tooltip</shortdescription>
+  </dtconfig>
+  <dtconfig common="yes">
+    <name>use_system_font</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>using system font or not</shortdescription>
+  </dtconfig>
+  <dtconfig common="yes">
+    <name>font_size</name>
+    <type>float</type>
+    <default>12.0</default>
+    <shortdescription>font size</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
@@ -2443,11 +2530,11 @@
     <longdescription>show gray loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>darkroom/ui/develop_mask</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>show mask in developer mode</shortdescription>
-    <longdescription>if switched on, the mask visualize button will show the 'pure mask' instead of mask and image content.</longdescription>
+    <name>darkroom/ui/develop_mask_mix</name>
+    <type>float</type>
+    <default>0.3</default>
+    <shortdescription>show mask in mixed mode</shortdescription>
+    <longdescription>the mask visualize button will show the mask mixed with image content. 0 shows only content, 1 only the mask. Choose any value between.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/lighttable/export/pixel_interpolator_warp</name>
@@ -2824,6 +2911,13 @@
     <type min="0" max="100">int</type>
     <default>90</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/subsample</name>
+    <type min="0" max="3">int</type>
+    <default>0</default>
+    <shortdescription>AVIF chroma subsampling</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -3437,7 +3531,7 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
+  <dtconfig common="yes">
     <name>ui_last/theme</name>
     <type>string</type>
     <default>darktable-elegant-grey</default>
@@ -3527,6 +3621,7 @@
       <enum>
         <option>scene-referred (sigmoid)</option>
         <option>scene-referred (filmic)</option>
+        <option>scene-referred (AgX)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>
@@ -3757,6 +3852,13 @@
     <shortdescription>automatically update module name</shortdescription>
     <longdescription>if enabled, the module name will be automatically updated to match a preset name or a preset instance name if present.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/anticipate_move</name>
+    <type min="1.0" max="2.0">float</type>
+    <default>1.2</default>
+    <shortdescription>expand calculated area when moving around</shortdescription>
+    <longdescription>expand the calculated area after a move in the darkroom to try to avoid immediate need to recalculate after further moves</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
@@ -3857,6 +3959,48 @@
     <default>0</default>
     <shortdescription>active tab in tone equaliser module</shortdescription>
     <longdescription>which of simple, advanced or masking tabs will show at startup</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/enable_curve_tab</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to enable the curve tab</shortdescription>
+    <longdescription>if enabled, the settings tab will have fewer controls and will occupy less vertical space</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/look_always_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to keep look controls always visible</shortdescription>
+    <longdescription>if enabled, the look controls won't be placed in a collapsible section</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/expand_curve_graph</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to expand the curve graph</shortdescription>
+    <longdescription>this is just to store whether to show the curve graph or not</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/curve_graph_height</name>
+    <type min="100" max="300">int</type>
+    <default>200</default>
+    <shortdescription>height of agx graph in per cent</shortdescription>
+    <longdescription>height of agx graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/expand_curve_advanced</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show advanced curve parameters</shortdescription>
+    <longdescription>this is just to store whether to show advanced curve parameters or not</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/enable_curve_warnings</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>whether to show curve warnings</shortdescription>
+    <longdescription>this is just to store whether to show curve warnings</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/windowheight</name>

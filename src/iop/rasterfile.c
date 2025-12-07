@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -86,7 +85,7 @@ typedef struct dt_rasterfile_cache_t
 
 const char *name()
 {
-  return _("raster mask import");
+  return _("external raster masks");
 }
 
 const char *aliases()
@@ -97,7 +96,7 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-      _("import PFM files to be used as raster masks"),
+      _("read PFM files recorded for use as raster masks"),
       _("corrective or creative"),
       _("linear, raw, scene-referred"),
       _("linear, raw"),
@@ -209,8 +208,13 @@ static void _update_filepath(dt_iop_module_t *self)
   if(!p->path[0] || !p->file[0])
   {
     dt_bauhaus_combobox_clear(g->file);
+    // Making the empty widget insensitive is very important, because
+    // attempts to interact with it trigger a bug in GTK (as of 3.24.49)
+    // that disables the display of tooltips
+    gtk_widget_set_sensitive(g->file, FALSE);
     return;
   }
+  gtk_widget_set_sensitive(g->file, TRUE);
 
   if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
   {
@@ -221,8 +225,10 @@ static void _update_filepath(dt_iop_module_t *self)
     for(int i = 0; i < numentries; i++)
     {
       const char *file = entries[i]->d_name;
-      dt_bauhaus_combobox_add_aligned(g->file, file, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      char *normalized_filename = g_locale_to_utf8(file, -1, NULL, NULL, NULL);
+      dt_bauhaus_combobox_add_aligned(g->file, normalized_filename, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       free(entries[i]);
+      g_free(normalized_filename);
     }
     if(numentries != -1) free(entries);
 
@@ -319,13 +325,12 @@ static inline dt_hash_t _get_cache_hash(dt_iop_module_t *self)
   return hash;
 }
 
-static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece)
+static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
+                                   const dt_iop_roi_t *const roi,
+                                   const dt_iop_roi_t *const roo)
 {
   dt_iop_module_t *self = piece->module;
   dt_iop_rasterfile_data_t *d = piece->data;
-
-  const dt_iop_roi_t *roi = &piece->processed_roi_in;
-  const dt_iop_roi_t *roo = &piece->processed_roi_out;
 
   dt_rasterfile_cache_t *cd = self->data;
   float *res = NULL;
@@ -342,15 +347,14 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece)
   }
   if(cd->mask)
   {
-    float *tmp = dt_iop_image_alloc(roi->width, roi->height, 1);
+    const gboolean scale = cd->width != roi->width || cd->height != roi->height;
+    float *tmp = scale ? dt_iop_image_alloc(roi->width, roi->height, 1) : cd->mask;
     if(tmp)
     {
-      interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
-    dt_print(DT_DEBUG_PIPE, "interpolated");
+      if(scale) interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
       res = dt_iop_image_alloc(roo->width, roo->height, 1);
       if(res) self->distort_mask(self, piece, tmp, res, roi, roo);
-    dt_print(DT_DEBUG_PIPE, "distorted");
-      dt_free_align(tmp);
+      if(scale) dt_free_align(tmp);
     }
   }
   dt_pthread_mutex_unlock(&cd->lock);
@@ -376,7 +380,7 @@ int process_cl(dt_iop_module_t *self,
   if(visual) return err;
 
   if(roi_out->scale != roi_in->scale && ch == 4)
-    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
   {
     size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
@@ -388,7 +392,7 @@ int process_cl(dt_iop_module_t *self,
   if(dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID)
      && (err == CL_SUCCESS))
   {
-    float *mask = _get_rasterfile_mask(piece);
+    float *mask = _get_rasterfile_mask(piece, roi_in, roi_out);
     if(mask)
       dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
     else
@@ -425,7 +429,7 @@ void process(dt_iop_module_t *self,
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean request = dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID);
   const gboolean visual = fullpipe && dt_iop_has_focus(self);
-  float *mask = visual || request ? _get_rasterfile_mask(piece) : NULL;
+  float *mask = visual || request ? _get_rasterfile_mask(piece, roi_in, roi_out) : NULL;
 
   if(visual)
   {
@@ -588,7 +592,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(g->fbutton, "non-flat");
-  gtk_widget_set_tooltip_text(g->fbutton, _("select a PFM file to be advertized as a raster mask,\n"
+  gtk_widget_set_tooltip_text(g->fbutton, _("select the PFM file recorded as a raster mask,\n"
       "CAUTION: path must be set in preferences/processing before choosing"));
   g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(_fbutton_clicked), self);
 

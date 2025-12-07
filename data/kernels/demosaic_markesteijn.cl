@@ -36,16 +36,10 @@ hexidx4(const char2 hex, const int stride)
   return mul24(mad24(hex.y, stride, hex.x), 4);
 }
 
-float
-sqr(const float x)
-{
-  return x * x;
-}
-
 // copy image from image object to buffer.
 kernel void
 markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int width, const int height,
-                         const int rin_x, const int rin_y, global const unsigned char (*const xtrans)[6])
+                         global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -54,9 +48,9 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
   global float *pix = rgb + 4 * mad24(y, width, x);
 
-  const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
+  const int f = FCxtrans(y, x, xtrans);
 
-  float p = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float p = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   for(int c = 0; c < 3; c++)
     pix[c] = (c == f) ? p : 0.0f;
@@ -66,7 +60,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 // find minimum and maximum allowed green values of red/blue pixel pairs
 kernel void
 markesteijn_green_minmax(global float *rgb, global float *gminmax, const int width, const int height, const int border,
-                         const int rin_x, const int rin_y, const char2 sgreen, global const unsigned char (*const xtrans)[6],
+                         const char2 sgreen, global const unsigned char (*const xtrans)[6],
                          global const char2 (*const allhex)[3][8], local float *buffer)
 {
   const int x = get_global_id(0);
@@ -115,7 +109,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // the color of this pixel
-  const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
+  const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
   if(f == 1) return;
@@ -136,7 +130,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   global const char2 *hex2nd = hex;               // initialized here only to prevent compiler warning
   for (int n = 0; n < 4; n++)
   {
-    if(FCxtrans(y + nboff[n].y + rin_y, x + nboff[n].x + rin_x, xtrans) == 1) continue; // this is a green pixel
+    if(FCxtrans(y + nboff[n].y, x + nboff[n].x, xtrans) == 1) continue; // this is a green pixel
     buff2nd = buff + mad24(nboff[n].y, stride, nboff[n].x);
     hex2nd = allhex[(y + nboff[n].y) % 3][(x + nboff[n].x) % 3];
   }
@@ -158,7 +152,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
 kernel void
 markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global float *rgb_2, global float *rgb_3,
                               global float *gminmax, const int width, const int height, const int border,
-                              const int rin_x, const int rin_y, const char2 sgreen, global const unsigned char (*const xtrans)[6],
+                              const char2 sgreen, global const unsigned char (*const xtrans)[6],
                               global const char2 (*const allhex)[3][8], local float *buffer)
 {
   const int x = get_global_id(0);
@@ -208,7 +202,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
   if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // the color of this pixel
-  const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
+  const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
   if(f == 1) return;
@@ -255,7 +249,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
 // interpolate red and blue values for solitary green pixels
 kernel void
 markesteijn_solitary_green(global float *rgb, global float *aux, const int width, const int height, const int border,
-                           const int rin_x, const int rin_y, const int d, const char2 dir, const int hcomp,
+                           const int d, const char2 dir, const int hcomp,
                            const char2 sgreen, global const unsigned char (*const xtrans)[6], local float *buffer)
 {
   const int x = get_global_id(0);
@@ -308,7 +302,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   if((x - sgreen.x) % 3 != 0 || (y - sgreen.y) % 3 != 0) return;
 
   // the color of the pixel right to this one
-  int h = FCxtrans(y + rin_y, x + 1 + rin_x, xtrans);
+  int h = FCxtrans(y, x + 1, xtrans);
 
   // the complement according to this run
   h ^= hcomp;
@@ -331,10 +325,10 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   for(int c = 0; c < 2; c++, h ^= 2)
   {
     const int off = i << c;
-    float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
+    const float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
     color[h] = g + (buff + off)[h] + (buff - off)[h];
-    diff += (d > 1) ? sqr((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h])
-                      + sqr(g)
+    diff += (d > 1) ? fsquare((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h])
+                      + fsquare(g)
                     : 0.0f;
   }
 
@@ -355,7 +349,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
 kernel void
 markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global float *rgb_2, global float *rgb_3,
                               global float *gminmax, const int width, const int height, const int border,
-                              const int rin_x, const int rin_y, const char2 sgreen,
+                              const char2 sgreen,
                               global const unsigned char (*const xtrans)[6], global const char2 (*const allhex)[3][8])
 {
   const int x = get_global_id(0);
@@ -367,7 +361,7 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
   global float *rgb[4] = { rgb_0, rgb_1, rgb_2, rgb_3 };
 
   // the color of this pixel
-  const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
+  const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
   if(f == 1) return;
@@ -398,7 +392,7 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
 // interpolate red for blue pixels and vice versa
 kernel void
 markesteijn_red_and_blue(global float *rgb, const int width, const int height, const int border,
-                         const int rin_x, const int rin_y, const int d, const char2 sgreen,
+                         const int d, const char2 sgreen,
                          global const unsigned char (*const xtrans)[6], local float *buffer)
 {
   const int x = get_global_id(0);
@@ -448,7 +442,7 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // the "other" color relative to this pixel's one
-  const int f = 2 -  FCxtrans(y + rin_y, x + rin_x, xtrans);
+  const int f = 2 -  FCxtrans(y, x, xtrans);
 
   // we don't work on green pixels
   if(f == 1) return;
@@ -471,7 +465,7 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
 // interpolate red and blue for 2x2 blocks of green
 kernel void
 markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int height, const int border,
-                                const int rin_x, const int rin_y, const int d, const char2 sgreen,
+                                const int d, const char2 sgreen,
                                 global const unsigned char (*const xtrans)[6], global const char2 (*const allhex)[3][8],
                                 local float *buffer)
 {
@@ -641,9 +635,9 @@ markesteijn_differentiate(global float *yuv, global float *drv, const int width,
   const char2 p = dir[d & 3];
   const int off = 4 * mad24(p.y, stride, p.x);
 
-  drv[0] = sqr(2.0f * (buff)[0] - (buff + off)[0] - (buff - off)[0])
-           + sqr(2.0f * (buff)[1] - (buff + off)[1] - (buff - off)[1])
-           + sqr(2.0f * (buff)[2] - (buff + off)[2] - (buff - off)[2]);
+  drv[0] = fsquare(2.0f * (buff)[0] - (buff + off)[0] - (buff - off)[0])
+           + fsquare(2.0f * (buff)[1] - (buff + off)[1] - (buff - off)[1])
+           + fsquare(2.0f * (buff)[2] - (buff + off)[2] - (buff - off)[2]);
 }
 
 
@@ -929,6 +923,6 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
   pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
   pixel.w = 0.0f;
 
-  write_imagef(out, (int2)(x, y), pixel);
+  write_imagef(out, (int2)(x, y), fmax(0.0f, pixel));
 }
 

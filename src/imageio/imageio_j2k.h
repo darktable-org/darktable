@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,10 +21,9 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
-
-/** reads the color profile attached to the image */
-int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out);
+dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *buf);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,7 +91,6 @@ typedef struct dt_iop_colorin_global_data_t
 {
   int kernel_colorin_unbound;
   int kernel_colorin_clipping;
-  int kernel_colorin_correction;
 } dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
@@ -479,7 +478,6 @@ void init_global(dt_iop_module_so_t *self)
   self->data = gd;
   gd->kernel_colorin_unbound = dt_opencl_create_kernel(program, "colorin_unbound");
   gd->kernel_colorin_clipping = dt_opencl_create_kernel(program, "colorin_clipping");
-  gd->kernel_colorin_correction =  dt_opencl_create_kernel(program, "colorin_correct");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -487,7 +485,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_colorin_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorin_unbound);
   dt_opencl_free_kernel(gd->kernel_colorin_clipping);
-  dt_opencl_free_kernel(gd->kernel_colorin_correction);
   free(self->data);
   self->data = NULL;
 }
@@ -537,7 +534,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   dt_colorspaces_color_profile_type_t type_work = DT_COLORSPACE_NONE;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   for(const GList *prof = darktable.color_profiles->profiles;
       prof;
       prof = g_list_next(prof))
@@ -640,10 +637,22 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorin_data_t *d = piece->data;
-  dt_iop_colorin_global_data_t *gd = self->global_data;
+  const dt_iop_colorin_global_data_t *gd = self->global_data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+
+  const int devid = pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  }
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
+  const gboolean corrected = chr->late_correction;
   dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
                                 corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
                                 corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
@@ -652,21 +661,22 @@ int process_cl(dt_iop_module_t *self,
   {
     for_four_channels(k)
     {
-      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
-      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
   }
+  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
+      corrected ? "coeff correction" : "coeff report",
+      pipe, self, devid, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
+      dt_colorspaces_get_name(d->type, NULL),
+      pipe->dsc.temperature.coeffs[0], coeffs[0],
+      pipe->dsc.temperature.coeffs[1], coeffs[1],
+      pipe->dsc.temperature.coeffs[2], coeffs[2]);
 
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL;
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
   cl_mem dev_corr = NULL;
 
-  dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion",
-    piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
-    dt_colorspaces_get_name(d->type, NULL),
-    corrected ? "corrected by" : "",
-    coeffs[0], coeffs[1], coeffs[2]);
   int kernel;
   float cmat[9], lmat[9];
 
@@ -683,34 +693,12 @@ int process_cl(dt_iop_module_t *self,
     pack_3xSSE_to_3x3(d->lmatrix, lmat);
   }
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const gboolean blue_mapping = d->blue_mapping
-                           && dt_image_is_matrix_correction_supported(&piece->pipe->image);
-  const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+                           && dt_image_is_matrix_correction_supported(&pipe->image);
 
   dev_corr = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, coeffs);
   if(dev_corr == NULL) goto error;
-
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    if(corrected)
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorin_correction, width, height,
-                                         CLARG(dev_in), CLARG(dev_out),
-                                         CLARG(width), CLARG(height), CLARG(dev_corr));
-    }
-    else
-    {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { roi_in->width, roi_in->height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    }
-    if(err != CL_SUCCESS) goto error;
-    return CL_SUCCESS;
-  }
-
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmat);
   if(dev_m == NULL) goto error;
   dev_l = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, lmat);
@@ -936,7 +924,7 @@ static void process_cmatrix_fastpath(dt_iop_module_t *self,
   DT_OMP_FOR()
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    size_t start = chunksize * dt_get_thread_num();
+    size_t start = chunksize * chunk;
     if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
@@ -1062,7 +1050,7 @@ static void process_cmatrix_proper(dt_iop_module_t *self,
   DT_OMP_FOR()
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    size_t start = chunksize * dt_get_thread_num();
+    size_t start = chunksize * chunk;
     if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
@@ -1209,45 +1197,35 @@ void process(dt_iop_module_t *self,
     return;
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
-  const gboolean corrected = dt_dev_is_D65_chroma(self->dev) && chr->late_correction;
+  const dt_iop_colorin_data_t *const d = piece->data;
+  const gboolean corrected = chr->late_correction && d->type != DT_COLORSPACE_LAB;
   const dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
                                       corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
                                       corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
                                       corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   if(corrected)
   {
     for_four_channels(k)
     {
-      piece->pipe->dsc.temperature.coeffs[k] *= coeffs[k];
-      piece->pipe->dsc.processed_maximum[k] *= coeffs[k];
+      pipe->dsc.temperature.coeffs[k] *= coeffs[k];
+      pipe->dsc.processed_maximum[k] *= coeffs[k];
     }
   }
-
-  const dt_iop_colorin_data_t *const d = piece->data;
-  const gboolean blue_mapping =
-    d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
-
-  dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion",
-    piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
+  dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE,
+      corrected ? "coeff correction" : "coeff report",
+      pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s' %.3f(*%.3f) %.3f(*%.3f) %.3f(*%.3f)",
       dt_colorspaces_get_name(d->type, NULL),
-      corrected ? "corrected by" : "",
-      coeffs[0], coeffs[1], coeffs[2]);
+      pipe->dsc.temperature.coeffs[0], coeffs[0],
+      pipe->dsc.temperature.coeffs[1], coeffs[1],
+      pipe->dsc.temperature.coeffs[2], coeffs[2]);
+
+  const gboolean blue_mapping =
+    d->blue_mapping && dt_image_is_matrix_correction_supported(&pipe->image);
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    if(corrected)
-    {
-      const size_t pix = roi_in->height * roi_in->width * 4;
-      const float *const restrict in = (float*)ivoid;
-      float *const restrict  out = (float*)ovoid;
-
-      DT_OMP_FOR()
-      for(size_t idx = 0; idx < pix; idx += 4)
-        dt_vector_mul(&out[idx], &in[idx], coeffs);
-    }
-    else
-      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
@@ -1342,7 +1320,7 @@ void commit_params(dt_iop_module_t *self,
   piece->process_cl_ready = TRUE;
 
   dt_colorspaces_color_profile_type_t type = p->type;
-  if(type == DT_COLORSPACE_LAB)
+  if(type == DT_COLORSPACE_LAB) // we keep the runtime in process for safety
   {
     piece->enabled = FALSE;
     return;
@@ -1810,6 +1788,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(g)
   {
+    gboolean profile_embedded_but_corrupted = FALSE;
+
     char *tooltip_part_profile_dirs =
       dt_ioppr_get_location_tooltip("in", _("external ICC profiles"));
 
@@ -1818,6 +1798,17 @@ void reload_defaults(dt_iop_module_t *self)
     if(color_profile == DT_COLORSPACE_EMBEDDED_ICC)
     {
       cmsHPROFILE cmsprofile = cmsOpenProfileFromMem(img->profile, img->profile_size);
+
+      // So, exiv2 read the embedded ICC profile from the image file, but it
+      // can be corrupted to the point that lcms2 cannot open it as a profile.
+      // In such a case, we have to bail out of the profile reading code, as
+      // we cannot read the profile properties and change the tooltip.
+      if(!cmsprofile)
+      {
+        profile_embedded_but_corrupted = TRUE;
+        dt_print(DT_DEBUG_ALWAYS, "[colorin] ICC profile is embedded but corrupted");
+        goto corrupted_profile;
+      }
 
       char iccDesc[64]; iccDesc[0] = '\0';
       cmsGetProfileInfoASCII(cmsprofile, cmsInfoDescription, "en", "US", iccDesc, 64);
@@ -1876,10 +1867,12 @@ void reload_defaults(dt_iop_module_t *self)
       if(bufsize)
         free(iccCopyr);
     }
-    else
+
+    // Make a generic tooltip if there is no ICC profile in the current image,
+    // or we jumped here because profile is corrupted.
+corrupted_profile:
+    if((color_profile != DT_COLORSPACE_EMBEDDED_ICC) || profile_embedded_but_corrupted)
     {
-      // If the current image does not have an embedded profile, let's
-      // display a generic tooltip
       gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip_part_profile_dirs);
       g_free(tooltip_part_profile_dirs);
     }
@@ -2040,15 +2033,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->image_profiles = NULL;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->profile_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile_combobox, NULL, N_("input profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
 
   g->work_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->work_combobox, NULL, N_("working profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(g->profile_combobox, g->work_combobox);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
   // We do not set the tooltip for the input profile widget because

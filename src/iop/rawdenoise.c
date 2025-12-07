@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -298,7 +298,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
 static inline float vstransform(const float value)
 {
-  return sqrtf(MAX(0.0f, value));
+  return sqrtf(fmaxf(0.0f, value));
 }
 
 static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
@@ -901,16 +901,13 @@ void gui_init(dt_iop_module_t *self)
   g->x_move = -1;
   g->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/rawdenoise/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  GtkWidget *box_raw = self->widget = dt_gui_vbox(g->channel_tabs, g->area);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(rawdenoise_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);

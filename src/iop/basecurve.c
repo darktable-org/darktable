@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -367,7 +367,7 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("apply a view transform based on personal or camera manufacturer look,\n"
+     _("apply a view transform based on personal or camera maker look,\n"
        "for corrective purposes, to prepare images for display"),
      _("corrective"),
      _("linear, RGB, display-referred"),
@@ -415,7 +415,7 @@ static void set_presets(dt_iop_module_so_t *self,
     // add the preset.
     dt_gui_presets_add_with_blendop(prefixed_name, self->op, self->version(),
                                     &tmp, sizeof(dt_iop_basecurve_params_t),
-                                    &default_blendop_params, 1);
+                                    &default_blendop_params, TRUE);
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(prefixed_name, self->op, self->version(),
                               presets[k].maker, presets[k].model, "");
@@ -552,7 +552,7 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("display-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+       TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("display-referred default"), self->op,
                                  self->version(), FOR_RAW);

@@ -99,7 +99,6 @@ void _filename_tree_update(_widgets_filename_t *filename)
   int nb_ldr = 0;
   int nb_hdr = 0;
 
-  GtkTreeIter iter;
   GtkTreeModel *name_model = gtk_tree_view_get_model(GTK_TREE_VIEW(filename->name_tree));
   gtk_list_store_clear(GTK_LIST_STORE(name_model));
   GtkTreeModel *ext_model = gtk_tree_view_get_model(GTK_TREE_VIEW(filename->ext_tree));
@@ -130,8 +129,8 @@ void _filename_tree_update(_widgets_filename_t *filename)
     if(name == NULL) continue; // safeguard against degenerated db entries
     const int count = sqlite3_column_int(stmt, 1);
 
-    gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
+                       TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
                        TREE_COL_PATH, name, TREE_COL_COUNT, count, -1);
   }
   sqlite3_finalize(stmt);
@@ -154,8 +153,8 @@ void _filename_tree_update(_widgets_filename_t *filename)
     const int count = sqlite3_column_int(stmt, 1);
     const int flags = sqlite3_column_int(stmt, 2);
 
-    gtk_list_store_append(GTK_LIST_STORE(ext_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, -1,
+                       TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
                        TREE_COL_PATH, name, TREE_COL_COUNT, count, -1);
 
     if(flags & DT_IMAGE_RAW)
@@ -168,21 +167,21 @@ void _filename_tree_update(_widgets_filename_t *filename)
   sqlite3_finalize(stmt);
 
   // and we insert the predefined extensions
-  gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
-  gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "", TREE_COL_TOOLTIP, "", TREE_COL_PATH, "",
-                     TREE_COL_COUNT, 0, -1);
-  gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
-  gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "HDR", TREE_COL_TOOLTIP,
-                     "high dynamic range files", TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
-  gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
-  gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "LDR", TREE_COL_TOOLTIP,
-                     "low dynamic range files", TREE_COL_PATH, "LDR", TREE_COL_COUNT, nb_ldr, -1);
-  gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
-  gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "NOT RAW", TREE_COL_TOOLTIP,
-                     "all except RAW files", TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
-  gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
-  gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "RAW", TREE_COL_TOOLTIP, "RAW files",
-                     TREE_COL_PATH, "RAW", TREE_COL_COUNT, nb_raw, -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,
+                                    TREE_COL_TEXT, "", TREE_COL_TOOLTIP, "",
+                                    TREE_COL_PATH, "", TREE_COL_COUNT, 0, -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,
+                                    TREE_COL_TEXT, "HDR", TREE_COL_TOOLTIP, "high dynamic range files",
+                                    TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,
+                                    TREE_COL_TEXT, "LDR", TREE_COL_TOOLTIP, "low dynamic range files",
+                                    TREE_COL_PATH, "LDR", TREE_COL_COUNT, nb_ldr, -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,
+                                    TREE_COL_TEXT, "NOT RAW", TREE_COL_TOOLTIP, "all except RAW files",
+                                    TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(ext_model), NULL, 0,
+                                    TREE_COL_TEXT, "RAW", TREE_COL_TOOLTIP, "RAW files",
+                                    TREE_COL_PATH, "RAW", TREE_COL_COUNT, nb_raw, -1);
 
   filename->tree_ok = TRUE;
 }
@@ -398,9 +397,6 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_container_add(GTK_CONTAINER(filename->pop), hb);
 
   // the name tree
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_no_show_all(sw, TRUE);
-  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
   GtkTreeModel *model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->name_tree = gtk_tree_view_new_with_model(model);
@@ -422,12 +418,11 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(filename->name_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), filename->name_tree);
-
-  // the extension tree
-  sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(filename->name_tree);
   gtk_widget_set_no_show_all(sw, TRUE);
   gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
+
+  // the extension tree
   model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->ext_tree = gtk_tree_view_new_with_model(model);
@@ -449,7 +444,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(filename->ext_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), filename->ext_tree);
+  sw = dt_gui_scroll_wrap(filename->ext_tree);
+  gtk_widget_set_no_show_all(sw, TRUE);
+  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
 
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));

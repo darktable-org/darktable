@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -133,6 +133,7 @@ dt_help_url urls_db[] =
   {"defringe",                   "module-reference/processing-modules/defringe/"},
   {"demosaic",                   "module-reference/processing-modules/demosaic/"},
   {"denoiseprofile",             "module-reference/processing-modules/denoise-profiled/"},
+  {"diffuse",                    "module-reference/processing-modules/diffuse/"},
   {"dither",                     "module-reference/processing-modules/dithering/"},
   {"enlargecanvas",              "module-reference/processing-modules/enlarge-canvas/"},
   {"equalizer",                  NULL}, // deprecated, replaced by atrous

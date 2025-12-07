@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,9 +60,9 @@ G_BEGIN_DECLS
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-#if LF_VERSION == ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
 #define LF_0395
-#error Lensfun 0.3.95 is not supported since its API is not backward compatible with Lensfun stable release.
+#error Lensfun 0.3.95 and later development snapshots are not supported.
 #endif
 
 DT_MODULE_INTROSPECTION(10, dt_iop_lens_params_t)
@@ -171,8 +171,9 @@ typedef struct dt_iop_lens_gui_modifier_t
 
 typedef struct dt_iop_lens_gui_data_t
 {
-  GtkWidget *lens_param_box;
-  GtkWidget *cbe[3];
+  GtkWidget *focal_length;
+  GtkWidget *aperture;
+  GtkWidget *distance;
   GtkWidget *camera_model;
   GtkWidget *lens_model;
   GtkWidget *methods_selector, *methods;
@@ -3927,12 +3928,6 @@ static void _lens_comboentry_distance_update(GtkWidget *widget,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _delete_children(GtkWidget *widget, gpointer data)
-{
-  (void)data;
-  gtk_widget_destroy(widget);
-}
-
 static void _lens_set(dt_iop_module_t *self,
                       const lfLens *lens)
 {
@@ -4029,10 +4024,6 @@ static void _lens_set(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->lens_model), fm);
   g_free(fm);
 
-  /* Create the focal/aperture/distance combo boxes */
-  gtk_container_foreach(GTK_CONTAINER(g->lens_param_box),
-                        _delete_children, NULL);
-
   int ffi = 1, fli = -1;
   for(i = 1; i < sizeof(focal_values) / sizeof(gdouble) - 1; i++)
   {
@@ -4059,9 +4050,9 @@ static void _lens_set(dt_iop_module_t *self,
   char txt[30];
 
   // focal length
-  w = dt_bauhaus_combobox_new(self);
+  w = g->focal_length;
   dt_bauhaus_widget_set_label(w, NULL, N_("mm"));
-  gtk_widget_set_tooltip_text(w, _("focal length (mm)"));
+  dt_bauhaus_combobox_clear(w);
   snprintf(txt, sizeof(txt), "%.*f", _precision(p->focal, 10.0), p->focal);
   dt_bauhaus_combobox_add(w, txt);
   for(int k = 0; k < fli - ffi; k++)
@@ -4070,11 +4061,6 @@ static void _lens_set(dt_iop_module_t *self,
              _precision(focal_values[ffi + k], 10.0), focal_values[ffi + k]);
     dt_bauhaus_combobox_add(w, txt);
   }
-  g_signal_connect(G_OBJECT(w), "value-changed",
-                   G_CALLBACK(_lens_comboentry_focal_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set_editable(w, 1);
-  g->cbe[0] = w;
 
   // f-stop
   ffi = 1, fli = sizeof(aperture_values) / sizeof(gdouble) - 1;
@@ -4086,9 +4072,9 @@ static void _lens_set(dt_iop_module_t *self,
     ffi--;
   }
 
-  w = dt_bauhaus_combobox_new(self);
+  w = g->aperture;
   dt_bauhaus_widget_set_label(w, NULL, N_("f/"));
-  gtk_widget_set_tooltip_text(w, _("f-number (aperture)"));
+  dt_bauhaus_combobox_clear(w);
   snprintf(txt, sizeof(txt), "%.*f",
            _precision(p->aperture, 10.0),
            p->aperture);
@@ -4100,15 +4086,10 @@ static void _lens_set(dt_iop_module_t *self,
              aperture_values[ffi + k]);
     dt_bauhaus_combobox_add(w, txt);
   }
-  g_signal_connect(G_OBJECT(w), "value-changed",
-                   G_CALLBACK(_lens_comboentry_aperture_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set_editable(w, 1);
-  g->cbe[1] = w;
 
-  w = dt_bauhaus_combobox_new(self);
+  w = g->distance;
   dt_bauhaus_widget_set_label(w, NULL, N_("d"));
-  gtk_widget_set_tooltip_text(w, _("distance to subject"));
+  dt_bauhaus_combobox_clear(w);
   snprintf(txt, sizeof(txt), "%.*f",
            _precision(p->distance, 10.0), p->distance);
   dt_bauhaus_combobox_add(w, txt);
@@ -4121,13 +4102,6 @@ static void _lens_set(dt_iop_module_t *self,
     if(val >= 1000.0f) break;
     val *= sqrtf(2.0f);
   }
-  g_signal_connect(G_OBJECT(w), "value-changed",
-                   G_CALLBACK(_lens_comboentry_distance_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set_editable(w, 1);
-  g->cbe[2] = w;
-
-  gtk_widget_show_all(g->lens_param_box);
 }
 
 static void _lens_menu_select(GtkMenuItem *menuitem,
@@ -4405,44 +4379,59 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 
   /* Lensfun widget */
-  // _from_params methods assign widgets to self->widget, so
-  // temporarily set self->widget to our widget
-  GtkWidget *box_lf = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // camera selector
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->camera_model = dt_iop_button_new(self, N_("camera model"),
                                       G_CALLBACK(_camera_menusearch_clicked),
                                       FALSE, 0, (GdkModifierType)0,
-                                      NULL, 0, hbox);
+                                      NULL, 0, NULL);
   g->find_camera_button = dt_iop_button_new
     (self, N_("find camera"),
      G_CALLBACK(_camera_autosearch_clicked),
      FALSE, 0, (GdkModifierType)0,
      dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
-  gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), hbox, TRUE, TRUE, 0);
 
   // lens selector
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->lens_model = dt_iop_button_new(self, N_("lens model"),
                                     G_CALLBACK(_lens_menusearch_clicked),
                                     FALSE, 0, (GdkModifierType)0,
-                                    NULL, 0, hbox);
+                                    NULL, 0, NULL);
   g->find_lens_button = dt_iop_button_new
     (self, N_("find lens"),
      G_CALLBACK(_lens_autosearch_clicked),
      FALSE, 0, (GdkModifierType)0,
      dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
-  gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), hbox, TRUE, TRUE, 0);
 
   // lens properties
-  g->lens_param_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), g->lens_param_box, TRUE, TRUE, 0);
+  g->focal_length = dt_gui_expand(dt_bauhaus_combobox_new(self));
+  dt_bauhaus_widget_set_label(g->focal_length, NULL, N_("focal length"));
+  gtk_widget_set_tooltip_text(g->focal_length, _("focal length (mm)"));
+  g_signal_connect(G_OBJECT(g->focal_length), "value-changed",
+                   G_CALLBACK(_lens_comboentry_focal_update), self);
+  dt_bauhaus_combobox_set_editable(g->focal_length, 1);
+
+  g->aperture = dt_gui_expand(dt_bauhaus_combobox_new(self));
+  dt_bauhaus_widget_set_label(g->aperture, NULL, N_("aperture"));
+  gtk_widget_set_tooltip_text(g->aperture, _("f-number (aperture)"));
+  g_signal_connect(G_OBJECT(g->aperture), "value-changed",
+                   G_CALLBACK(_lens_comboentry_aperture_update), self);
+  dt_bauhaus_combobox_set_editable(g->aperture, 1);
+
+  g->distance = dt_gui_expand(dt_bauhaus_combobox_new(self));
+  dt_bauhaus_widget_set_label(g->distance, NULL, N_("distance"));
+  gtk_widget_set_tooltip_text(g->distance, _("distance to subject"));
+  g_signal_connect(G_OBJECT(g->distance), "value-changed",
+                   G_CALLBACK(_lens_comboentry_distance_update), self);
+  dt_bauhaus_combobox_set_editable(g->distance, 1);
+
+  // _from_params methods assign widgets to self->widget, so
+  // temporarily set self->widget to our widget
+  GtkWidget *box_lf = self->widget = dt_gui_vbox(
+    dt_gui_hbox(dt_gui_expand(g->camera_model), g->find_camera_button),
+    dt_gui_hbox(dt_gui_expand(g->lens_model), g->find_lens_button),
+    dt_gui_hbox(g->focal_length, g->aperture, g->distance));
 
 #if 0
   // if unambiguous info is there, use it.
@@ -4492,13 +4481,9 @@ void gui_init(dt_iop_module_t *self)
                               _("transversal chromatic aberration blue"));
 
   /* empty correction mode widget */
-  GtkWidget *only_vig = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *only_vig = dt_gui_vbox();
 
   /* embedded metadata widgets */
-  GtkWidget *box_md = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->use_latest_md_algo =
     gtk_check_button_new_with_label(_("use latest algorithm"));
   gtk_widget_set_tooltip_text
@@ -4506,7 +4491,7 @@ void gui_init(dt_iop_module_t *self)
      _("you're using an old version of the algorithm.\n"
        "once enabled, you won't be able to\n"
        "return back to old algorithm."));
-  gtk_box_pack_start(GTK_BOX(box_md), g->use_latest_md_algo, TRUE, TRUE, 0);
+  GtkWidget *box_md = dt_gui_vbox(g->use_latest_md_algo);
   g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled",
                    G_CALLBACK(_use_latest_md_algo_callback), self);
 
@@ -4515,15 +4500,12 @@ void gui_init(dt_iop_module_t *self)
     (&g->fine_tune,
      "plugins/darkroom/lens/expand_fine_tune",
      _("fine-tuning"),
-     GTK_BOX(self->widget),
+     GTK_BOX(box_md),
      DT_ACTION(self));
-  self->widget = GTK_WIDGET(g->fine_tune.container);
-  // DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so create section
-  // module manually
-  dt_iop_module_section_t sect_mod = {DT_ACTION_TYPE_IOP_SECTION,
-                                      self,
-                                      (gchar *)N_("fine-tune")};
-  dt_iop_module_t *sect = (dt_iop_module_t *)&sect_mod;
+  // DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so declare local first
+  dt_iop_module_t sect_mod = DT_IOP_SECTION_FOR_PARAMS_DECL(self, N_("fine-tune"),
+                               GTK_WIDGET(g->fine_tune.container));
+  dt_iop_module_t *sect = &sect_mod;
 
   g->cor_dist_ft = dt_bauhaus_slider_from_params(sect, "cor_dist_ft");
   dt_bauhaus_slider_set_digits(g->cor_dist_ft, 3);
@@ -4553,8 +4535,7 @@ void gui_init(dt_iop_module_t *self)
                              _("automatic scale to available image size"));
 
   // main widget
-  GtkWidget *main_box = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = dt_gui_vbox();
   gtk_widget_set_name(self->widget, "lens-module");
 
   // selector for correction method
@@ -4573,20 +4554,17 @@ void gui_init(dt_iop_module_t *self)
   // message box to inform user what corrections have been done. this
   // is useful as depending on Lensfun's profile only some of the lens
   // flaws can be corrected
-  g->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(label,
                               _("which corrections have actually been done"));
-  gtk_box_pack_start(GTK_BOX(g->hbox1), label, FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), TRUE, TRUE, 0);
+  g->hbox1 = GTK_BOX(dt_gui_hbox(label, g->message));
 
   g->methods = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->methods, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->hbox1, g->methods);
 
   gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
   gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
@@ -4597,13 +4575,13 @@ void gui_init(dt_iop_module_t *self)
     (&g->vignette,
      "plugins/darkroom/lens/expand_vignette",
      _("manual vignette correction"),
-     GTK_BOX(main_box),
+     GTK_BOX(self->widget),
      DT_ACTION(self));
   gtk_widget_set_tooltip_text(g->vignette.expander,
       _("additional manually controlled optical vignetting correction"));
 
-  self->widget = GTK_WIDGET(g->vignette.container);
-  sect_mod.section = (gchar *)N_("vignette");
+  sect_mod.widget = GTK_WIDGET(g->vignette.container);
+  sect_mod.data = (gpointer)N_("vignette");
 
   g->v_strength = dt_bauhaus_slider_from_params(sect, "v_strength");
   gtk_widget_set_tooltip_text(g->v_strength,
@@ -4615,7 +4593,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");
   gtk_widget_set_tooltip_text(g->v_radius,
-      _("radius of uncorrected centre"));
+      _("radius of uncorrected center"));
   dt_bauhaus_slider_set_format(g->v_radius, "%");
   dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
@@ -4624,8 +4602,6 @@ void gui_init(dt_iop_module_t *self)
       _("steepness of the correction effect outside of radius"));
   dt_bauhaus_slider_set_format(g->v_steepness, "%");
   dt_bauhaus_slider_set_digits(g->v_steepness, 1);
-
-  self->widget = main_box;
 
   /* add signal handler for preview pipe finish to update message on
      corrections done */

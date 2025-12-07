@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,15 +31,16 @@
 #endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
-static void _gui_styles_dialog_run(gboolean edit,
-                                   const char *name,
-                                   const dt_imgid_t imgid,
-                                   char **new_name);
+static gboolean _gui_styles_dialog_run(const gboolean edit,
+                                       const char *name,
+                                       const dt_imgid_t imgid,
+                                       char **new_name);
 
 typedef struct dt_gui_styles_dialog_t
 {
   gboolean edit;
   dt_imgid_t imgid;
+  gboolean cancelled;
   gchar *nameorig;
   gchar **newname;
   GtkWidget *name, *description, *duplicate;
@@ -197,6 +198,9 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
                                            const gint response_id,
                                            dt_gui_styles_dialog_t *g)
 {
+  g->cancelled = (response_id == GTK_RESPONSE_DELETE_EVENT)
+              || (response_id == GTK_RESPONSE_REJECT);
+
   if(response_id == GTK_RESPONSE_YES)
   {
     _gui_styles_select_all_items(g, TRUE);
@@ -226,7 +230,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       {
         /* on button yes delete style name for overwriting */
         if(dt_gui_show_yes_no_dialog
-           (_("overwrite style?"),
+           (_("overwrite style?"), "",
             _("style `%s' already exists.\ndo you want to overwrite?"), newname))
         {
           dt_styles_delete_by_name(newname);
@@ -269,15 +273,15 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
 
   // finalize the dialog
   g_free(g->nameorig);
-  g_free(g);
-
-  gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
 static void _gui_styles_edit_style_response(GtkDialog *dialog,
                                             const gint response_id,
                                             dt_gui_styles_dialog_t *g)
 {
+  g->cancelled = (response_id == GTK_RESPONSE_DELETE_EVENT)
+              || (response_id == GTK_RESPONSE_REJECT);
+
   if(response_id == GTK_RESPONSE_YES)
   {
     _gui_styles_select_all_items(g, TRUE);
@@ -288,14 +292,13 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
     _gui_styles_select_all_items(g, FALSE);
     return;
   }
-
-  char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
-
-  if(g->newname)
-    *g->newname = newname;
-
-  if(response_id == GTK_RESPONSE_ACCEPT)
+  else if(response_id == GTK_RESPONSE_ACCEPT)
   {
+    char *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(g->name)));
+
+    if(g->newname)
+      *g->newname = newname;
+
     /* get the filtered list from dialog */
     GList *result = NULL, *update = NULL;
 
@@ -349,9 +352,6 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
 
   // finalize the dialog
   g_free(g->nameorig);
-  g_free(g);
-
-  gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
 static void _gui_styles_item_toggled(GtkCellRendererToggle *cell,
@@ -492,9 +492,9 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_path_free(path);
 }
 
-void dt_gui_styles_dialog_new(const dt_imgid_t imgid)
+gboolean dt_gui_styles_dialog_new(const dt_imgid_t imgid)
 {
-  _gui_styles_dialog_run(FALSE, NULL, imgid, NULL);
+  return _gui_styles_dialog_run(FALSE, NULL, imgid, NULL);
 }
 
 void dt_gui_styles_dialog_edit(const char *name, char **new_name)
@@ -514,15 +514,15 @@ static void _name_changed(GtkEntry *entry,
   gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_ACCEPT, name && *name);
 }
 
-static void _gui_styles_dialog_run(gboolean edit,
-                                   const char *name,
-                                   const dt_imgid_t imgid,
-                                   char **new_name)
+static gboolean _gui_styles_dialog_run(const gboolean edit,
+                                       const char *name,
+                                       const dt_imgid_t imgid,
+                                       char **new_name)
 {
   char title[512];
 
   /* check if style exists */
-  if(name && (dt_styles_exists(name)) == 0) return;
+  if(name && (dt_styles_exists(name)) == 0) return TRUE;
 
   /* initialize the dialog */
   dt_gui_styles_dialog_t *sd = g_malloc0(sizeof(dt_gui_styles_dialog_t));
@@ -530,6 +530,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
   sd->newname = new_name;
+  sd->cancelled = FALSE;
 
   if(edit)
   {
@@ -553,31 +554,17 @@ static void _gui_styles_dialog_run(gboolean edit,
                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL));
   dt_gui_dialog_add_help(dialog, "styles");
   gtk_dialog_set_default_response(dialog, GTK_RESPONSE_ACCEPT);
+  dt_gui_dialog_restore_size(dialog, "styles");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-
-  // label box
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
-                                             DT_PIXEL_APPLY_DPI(450));
-//  only available in 3.22, and not making the expected job anyway
-//  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
-//  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
-
   // box in scrollwindow containing the two possible trees
   GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(box), TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(sbox));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   sd->name = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));
@@ -607,9 +594,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     }
   }
 
-  gtk_box_pack_start(box, sd->name, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, sd->description, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, GTK_WIDGET(scroll), TRUE, TRUE, 0);
+  dt_gui_dialog_add(dialog, sd->name, sd->description, scroll);
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -752,11 +737,9 @@ static void _gui_styles_dialog_run(gboolean edit,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
-  GtkTreeIter iter;
   if(edit)
   {
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  dt_styles_has_module_order(name),
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     _("module order"),
@@ -773,8 +756,7 @@ static void _gui_styles_dialog_run(gboolean edit,
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+          gtk_list_store_insert_with_values(liststore, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
@@ -789,8 +771,7 @@ static void _gui_styles_dialog_run(gboolean edit,
         else if(item->num != -1
                 || item->selimg_num != -1) // defined in one or the other, let a way to select it or not
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
+          gtk_list_store_insert_with_values(liststore_new, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
@@ -809,8 +790,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   {
     const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
     char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  TRUE,
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     label,
@@ -840,9 +820,7 @@ static void _gui_styles_dialog_run(gboolean edit,
           }
         }
 
-        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set
-          (GTK_LIST_STORE(liststore), &iter,
+        gtk_list_store_insert_with_values(liststore, NULL, -1,
            DT_STYLE_ITEMS_COL_ENABLED,  enabled,
            DT_STYLE_ITEMS_COL_AUTOINIT, FALSE,
            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
@@ -858,18 +836,18 @@ static void _gui_styles_dialog_run(gboolean edit,
     else
     {
       dt_control_log(_("can't create style out of unaltered image"));
-      return;
+      return TRUE;
     }
   }
 
   if(has_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items);
 
   if(has_new_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items_new);
 
   if(edit)
-    gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
+    dt_gui_dialog_add(dialog, sd->duplicate);
 
   g_object_unref(liststore);
   g_object_unref(liststore_new);
@@ -881,10 +859,21 @@ static void _gui_styles_dialog_run(gboolean edit,
     g_signal_connect(dialog, "response", G_CALLBACK(_gui_styles_new_style_response), sd);
 
   gtk_widget_show_all(GTK_WIDGET(dialog));
-  gtk_dialog_run(GTK_DIALOG(dialog));
 
+  gint dr = GTK_RESPONSE_YES;
+  while(dr == GTK_RESPONSE_YES || dr == GTK_RESPONSE_NONE)
+  {
+    dr = gtk_dialog_run(GTK_DIALOG(dialog));
+  }
+
+  const gboolean res = !sd->cancelled;
+
+  gtk_widget_destroy(GTK_WIDGET(dialog));
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
+  g_free(sd);
+
+  return res;
 }
 
 // style preview
@@ -1003,10 +992,12 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {
-      snprintf(mn, sizeof(mn), "(%s)",
-               i->multi_name_hand_edited
-               ? i->multi_name
-               : dt_util_localize_segmented_name(i->multi_name, TRUE));
+      char *mname = i->multi_name_hand_edited
+        ? g_strdup(i->multi_name)
+        : dt_util_localize_segmented_name(i->multi_name, TRUE);
+
+      snprintf(mn, sizeof(mn), "(%s)", mname);
+      g_free(mname);
     }
     else
     {

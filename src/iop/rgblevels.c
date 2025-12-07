@@ -464,8 +464,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     float hist_max;
 
     if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
-      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_R],
-                       fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_G],self->histogram_max[DT_IOP_RGBLEVELS_B]));
+      hist_max = max3ui(self->histogram_max);
     else
       hist_max = self->histogram_max[ch];
 
@@ -970,6 +969,8 @@ static float _action_process(gpointer target,
                              const dt_action_effect_t effect,
                              float move_size)
 {
+  if(element >= DT_IOP_RGBLEVELS_MAX_CHANNELS) return DT_ACTION_NOT_VALID;
+
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   dt_iop_rgblevels_params_t *p = self->params;

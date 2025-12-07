@@ -366,6 +366,12 @@ spinbutton button,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
+  margin: 0.07em 0.4em 0.07em 0.07em;
+}
+
+window entry,
+dialog entry
+{
   margin: 0.07em;
 }
 
@@ -407,6 +413,12 @@ header button,
 .dt_ignore_fg_state:checked
 {
   color: @button_fg;
+}
+
+/* iop on/off buton */
+.dt_module_btn.dt_transparent_background:first-child
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 spinbutton > button,
@@ -509,6 +521,12 @@ separator
 {
   min-height: 1.7em;
   min-width: 1.7em;
+  border: 0.08em solid transparent;
+}
+
+#footer-toolbar button:checked
+{
+   border: 0.08em solid shade(@button_border, 1.6);
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
@@ -584,7 +602,7 @@ dialog .sidebar row:selected:hover label,
 /* Set modules name header */
 #module-header
 {
-  border-bottom: 1px solid @plugin_bg_color;
+  border-bottom: 1px solid shade(@plugin_bg_color, 1.05);
   padding: 0.5em;
 }
 
@@ -847,6 +865,13 @@ menuitem check:selected
   padding-right: 0.42em;
 }
 
+/* ??? workaround a wayland issue where the sub-menu in the presets
+   closing when close to the right border of the screen. */
+menuitem *
+{
+    padding: .05em;
+}
+
 /* fix for menuitem in bottom toolbar mainly */
 menuitem > arrow
 {
@@ -900,6 +925,22 @@ popover separator
   margin: 0.6em 2em;
   padding-bottom: 0.07em;
   background-color: @selected_bg_color;
+}
+
+popover *
+{
+  background-color: @tooltip_bg_color;
+}
+
+#tag-completion *
+{
+  background-color: @tooltip_bg_color;
+}
+
+#tag-completion box
+{
+  background-color: @tooltip_bg_color;
+  border : 1px solid @button_border;
 }
 
 combobox separator
@@ -1075,8 +1116,8 @@ treeview header label
 /*-------------------------------------
   - Preferences dialog window options -
   -------------------------------------*/
-#preferences-content,
-#preferences-content .dialog-action-box,
+#preferences-box,
+#preferences-box .dialog-action-box,
 #quick-presets-manager box  /* set same setting on quick preset manager dialog window ; accessible to bottom left button on footer bar in darkroom view */
 {
   margin: 0; /* reset default dialog margin to main items. And needed to have an hover and selected effect on all width of categories in sidebar */
@@ -1612,10 +1653,15 @@ progressbar progress
 }
 
 /* deactivated switch buttons, make them less visible */
-.dt_history_switch_off,
-.dt_history_switch_off:disabled
+.dt_history_switch_off
 {
   color: @disabled_fg_color;
+}
+
+/* history on/off button */
+.dt_history_switch_off:disabled
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 #dt-metadata-changed
@@ -2339,71 +2385,125 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/* workspace selection dialog */
+#workspace
+{
+    background-color: @grey_20;
+    padding: 0.8em;
+    margin: 0.5em;
+}
+
+#wpdialog
+{
+    background-color: #852A2A;
+}
+
+#workspace .dt_module_btn
+{
+    background-color: #852A2A;
+}
+
+#workspace label
+{
+    font-size: 120%;
+    padding: .2em;
+    padding-top: 1em;
+}
+
+#workspace button label
+{
+    font-size: 100%;
+    padding: 0.3em;
+    margin: 0em;
+}
+
 /* splash screen */
 #splashscreen
 {
-    background-color: @grey_10;
-    border: 5px solid @grey_60;
+    background-color: @grey_20;
+    border: 1px solid;
+    border-radius: 0;
+    min-width: 720px;
 }
+
 #splashscreen-header
 {
     padding: 0;
     margin: 0;
 }
-/* make the (nonexistent) title text very small to avoid an obvious bar at top */
+
 #splashscreen-header label
 {
     font-size: 1%;
     padding: 0;
     margin: 0;
 }
-/* style the darktable logo */
+
 #splashscreen-logo
 {
+    margin-left: 30px;
+    margin-top: 30px;
+    margin-right: 25px;
+    min-width: 120px;
+    min-height: 120px;
 }
-/* position the darktable version number next to the logo */
-#splashscreen-version
-{
-    margin-top: -35pt;
-    margin-right: -110pt;
-    font-size: 15pt;
-}
-/* style the darktable program name */
+
+/* darktable wordmark */
 #splashscreen-program
 {
-    font-size: 48pt;
-    margin: 2pt;
+  font-size: 50pt;
+  margin-top: 25pt;
+  margin-bottom: 0;
 }
-/* style the darktable program description */
+
+/* version number */
+#splashscreen-version
+{
+  color: @grey_50;
+  font-size: 22pt;
+  margin-top: 0;
+}
+
+/* tagline below logo */
 #splashscreen-description
 {
-    font-size: 16pt;
-    font-family: DejaVu Serif, serif;
-    padding: 1em;
-    margin: 1em;
+  color: @grey_60;
+  font-size: 18pt;
+  font-family: Inter, sans-serif;
+  margin-top: 30pt;
+  margin-bottom: 30pt;
+  margin-left: 30pt;
 }
-/* style the "get ready" message */
-#splashscreen-prepare
-{
-    font-size: 14pt;
-    font-family: DejaVu Serif, serif;
-}
-/* style the separating bar - without a style, it won't appear or take space! */
+
+/* horizontal line */
 #splashscreen-separator
 {
-    border: 2px solid @grey_80;
-    margin-top: 15pt;
-    margin-bottom: 15pt;
+    background-color: @grey_40;
+    min-height: 1px;
+    border: none;
+    margin-top: 10pt;
+    margin-bottom: 10pt;
+    margin-left:10px;
+    margin-right:10px;
 }
-/* style the progress message */
+
+/* progress label */
 #splashscreen-progress
 {
+    color: @grey_70;
+    font-size: 12pt;
+    font-family: Inter, sans-serif;
+    background-color: transparent;
+    margin-left: 30pt;
+    margin-top: 10pt;
+    margin-bottom: 5pt;
 }
-/* style the time remaining */
+
+/* time remaining */
 #splashscreen-remaining
 {
-    color: yellow;
-    font-size: 150%;
+    color: @grey_60;
+    font-size: 10pt;
 }
 
 /* style the message on the exit screen */
@@ -2425,4 +2525,31 @@ button#pb_on
 label#pb_label
 {
   padding-left: .5em;
+}
+
+/* the following line are for the Wayland headerbar, this does nothing on non
+   wayland were we let the WM decorate the window by himself. */
+window headerbar
+{
+    background-color: @border_color;
+    color: #ffffff;             /* Text color */
+    min-height: 0;              /* Minimum height */
+    padding: 0;                 /* Padding around content */
+}
+
+window headerbar.title
+{
+    font-weight: bold;
+    font-size: 16px;
+}
+
+dialog headerbar button,
+window headerbar button.titlebutton
+{
+    border-radius: 999px;           /* Makes the button round */
+    padding: 3px;                   /* Size of the button */
+    background-color: shade(@border_color, 1.1);
+    color: white;
+    border: none;
+    margin: 8px;                    /* Spaces around button */
 }

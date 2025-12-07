@@ -25,26 +25,46 @@
 #include <stdlib.h>
 #include <string.h>
 
-float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, const size_t planes)
+float *dt_read_pfm(const char *filename,
+                   int *err,
+                   int *wd,
+                   int *ht,
+                   int *ch,
+                   const size_t planes)
 {
   if(wd) *wd = 0;
   if(ht) *ht = 0;
   if(ch) *ch = 0;
   if(err) *err = DT_IMAGEIO_OK;
+
   if(!filename || filename[0] == 0)
   {
     if(err) *err = DT_IMAGEIO_FILE_NOT_FOUND;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] no filename provided for 'dt_read_pfm'");
     return NULL;
   }
 
   float *readbuf = NULL;
   float *image = NULL;
-  FILE *f = g_fopen(filename, "rb");
+
+  // The file path is expected to be normalized before dt_read_pfm is called
+  // (for example, a non-normalized file name may simply not be displayed
+  // in the menu widget). Therefore, normalization here is expected to be
+  // redundant (and do nothing) and is added more just in case, as
+  // additional protection against unsanitized input data.
+  char *normalized_filename = dt_util_normalize_path(filename);
+  FILE *f = g_fopen(normalized_filename, "rb");
   if(!f)
   {
+    g_free(normalized_filename);
     if(err) *err = DT_IMAGEIO_FILE_NOT_FOUND;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to open file '%s'",
+             filename);
     return NULL;
   }
+  g_free(normalized_filename);
 
   char head[2] = { 'X', 'X' };
   char scale_factor_string[64] = { 0 };
@@ -56,6 +76,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(ret != 2 || head[0] != 'P')
   {
     if(err) *err = DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] format of data is not Portable Float Map in '%s'",
+             filename);
     goto error;
   }
 
@@ -64,6 +87,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   else
   {
     if(err) *err = DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] format of data is not Portable Float Map in '%s'",
+             filename);
     goto error;
   }
   if(ch) *ch = channels;
@@ -123,7 +149,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(!readbuf || !image)
   {
     if(err) *err = DT_IMAGEIO_IOERROR;
-    dt_print(DT_DEBUG_ALWAYS, "can't allocate memory for pfm file `%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to allocate memory for PFM file `%s'",
+             filename);
     goto error;
   }
 
@@ -131,7 +159,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(ret != npixels)
   {
     if(err) *err = DT_IMAGEIO_IOERROR;
-    dt_print(DT_DEBUG_ALWAYS, "can't read all pfm file contents from '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to read all PFM file contents from '%s'",
+             filename);
     goto error;
   }
 
@@ -188,30 +218,41 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   return NULL;
 }
 
-void dt_write_pfm(const char *filename, const size_t width, const size_t height, const void *data, const size_t bpp)
+void dt_write_pfm(const char *filename,
+                  const size_t width,
+                  const size_t height,
+                  const void *data,
+                  const size_t bpp)
 {
   if(!filename || filename[0] == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "no filename provided for 'dt_write_pfm'");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_write] no filename provided for 'dt_write_pfm'");
     return;
   }
 
   FILE *f = g_fopen(filename, "wb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't write file `%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_write] failed to open file '%s'",
+             filename);
     return;
   }
 
-  if(bpp==2)
+  if(bpp == 2)
     fprintf(f, "P5\n%d %d\n", (int)width, (int)height);
   else
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (bpp == sizeof(float)) ? "f" : "F", (int)width, (int)height);
+    fprintf(f,
+            "P%s\n%d %d\n-1.0\n",
+            (bpp == sizeof(float)) ? "f" : "F",
+            (int)width,
+            (int)height);
 
   void *buf_line = dt_alloc_align_float(width * 4);
   for(size_t row = 0; row < height; row++)
   {
-    // NOTE: pfm has rows in reverse order
+    // NOTE: PFM has rows in reverse order
     const size_t row_in = height - 1 - row;
     if(bpp == 4*sizeof(float))
     {
@@ -254,4 +295,3 @@ void dt_write_pfm(const char *filename, const size_t width, const size_t height,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

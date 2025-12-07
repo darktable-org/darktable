@@ -195,7 +195,6 @@ void dt_control_init(const gboolean withgui)
 
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
-  s->widgets = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
   s->mapping_widget = NULL;
@@ -286,7 +285,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 gboolean dt_control_running()
 {
-  return dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
+  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
 }
 
 void dt_control_quit()
@@ -381,12 +380,11 @@ void dt_control_cleanup(const gboolean withgui)
     dt_pthread_mutex_destroy(&s->log_mutex);
     dt_pthread_mutex_destroy(&s->res_mutex);
     dt_pthread_mutex_destroy(&s->progress_system.mutex);
-    if(s->widgets) g_hash_table_destroy(s->widgets);
     if(s->shortcuts) g_sequence_free(s->shortcuts);
     if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
   }
-  free(s);
   darktable.control = NULL;
+  free(s);
 }
 
 

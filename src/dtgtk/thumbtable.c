@@ -89,7 +89,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
 // update thumbtable class and overlays mode, depending on size category
 static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 {
-  int ns = _thumbs_get_prefs_size(table);
+  const int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
   gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
@@ -1230,9 +1230,9 @@ static void _line_to_module(cairo_t *cr,
 
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    const int32_t width,
-                                    const int32_t height,
-                                    dt_thumbtable_t *lighttable)
+                                     const int32_t width,
+                                     const int32_t height,
+                                     dt_thumbtable_t *lighttable)
 {
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -1714,7 +1714,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
     dt_util_str_cat(&txt, _("do you want to do that now?"));
 
-    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
+    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"), "",
                                  "%s", txt))
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1755,17 +1755,13 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
   if(!table)
     return;
 
+  dt_stop_backthumbs_crawler(FALSE);
   // adjust the act_on algo class if needed
   dt_act_on_set_class(table->widget);
 
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
-
-  /* let's idle the backthumb crawler now to avoid fighting
-      updating vs removal of thumbs
-  */
-  dt_set_backthumb_time(1000.0);
 
   _thumbs_ask_for_discard(table);
 
@@ -1777,15 +1773,7 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
   }
-
-  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
-  darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
-  darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
-  if(darktable.backthumbs.mipsize != DT_MIPMAP_NONE
-        && !darktable.backthumbs.running)
-    dt_start_backtumbs_crawler();
-  else
-    dt_set_backthumb_time(10.0);
+  dt_start_backthumbs_crawler();
 }
 
 static void _dt_profile_change_callback(gpointer instance,

@@ -280,6 +280,7 @@ struct dt_l10n_t;
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
 typedef float dt_pickerbox_t[8];
+typedef float dt_dev_zoom_pos_t[6];
 
 typedef enum dt_debug_thread_t
 {
@@ -335,10 +336,8 @@ typedef struct dt_backthumb_t
 {
   double time;
   double idle;
-  gboolean service;
-  gboolean running;
+  int32_t state;
   gboolean capable;
-  int32_t mipsize;
 } dt_backthumb_t;
 
 typedef struct dt_gimp_t
@@ -881,8 +880,9 @@ static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
 // checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage(char *info);
 
-// try to start the backthumbs crawler
-void dt_start_backtumbs_crawler();
+// start/stop the backthumbs crawler
+void dt_start_backthumbs_crawler(void);
+void dt_stop_backthumbs_crawler(const gboolean wait);
 
 void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:
@@ -964,6 +964,8 @@ static inline const gchar *NQ_(const gchar *String)
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#define dt_buf_printf(buf, fmt, ...) (snprintf((buf), sizeof(buf), (fmt) __VA_OPT__(,) __VA_ARGS__), (buf))
 
 static inline gboolean dt_gimpmode(void)
 {

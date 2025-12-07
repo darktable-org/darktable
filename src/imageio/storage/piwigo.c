@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -406,7 +406,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx,
   dt_curl_init(ctx->curl_ctx, piwigo_EXTRA_VERBOSE);
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1L);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -1271,6 +1271,8 @@ int store(dt_imageio_module_storage_t *self,
           const int total,
           const gboolean high_quality,
           const gboolean upscale,
+          const gboolean is_scaling,
+          const double scale_factor,
           const gboolean export_masks,
           const dt_colorspaces_color_profile_type_t icc_type,
           const gchar *icc_filename,
@@ -1353,8 +1355,8 @@ int store(dt_imageio_module_storage_t *self,
   g_free(filename);
 
   dt_image_cache_read_release(img);
-
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
+                       is_scaling, scale_factor,
                        TRUE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {

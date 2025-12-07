@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2014-2023 darktable developers.
+   Copyright (C) 2014-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -91,6 +91,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
                          const int total,
                          const gboolean high_quality,
                          const gboolean upscale,
+                         const gboolean is_scaling,
+                         const double scale_factor,
                          const gboolean export_masks,
                          dt_colorspaces_color_profile_type_t icc_type,
                          const gchar *icc_filename,
@@ -111,8 +113,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
 
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, TRUE, export_masks,
-                       icc_type, icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, is_scaling, scale_factor,
+                       TRUE, export_masks, icc_type, icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[lua] %s: could not export to file `%s'!", self->name(self), complete_name);

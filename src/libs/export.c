@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,19 +24,14 @@
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "control/signal.h"
 #include "dtgtk/button.h"
 #include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/presets.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
-#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -94,12 +89,19 @@ char *dt_lib_export_metadata_configuration_dialog(char *list,
 static void _update_formats_combobox(dt_lib_export_t *d);
 /** Sets the max dimensions based upon what storage and format supports */
 static void _update_dimensions(dt_lib_export_t *d);
+/** Update the combobox label for the style */
+static void _update_style_label(dt_lib_export_t *d, const char *name);
 /** get the max output dimension supported by combination of storage and format.. */
 static void _get_max_output_dimension(dt_lib_export_t *d,
                                       uint32_t *width,
                                       uint32_t *height);
 static void _resync_print_dimensions(dt_lib_export_t *self);
 static void _resync_pixel_dimensions(dt_lib_export_t *self);
+
+static inline gboolean _is_style_set(const char *name)
+{
+  return name && name[0] && strcmp(name, _("none")) && dt_styles_exists(name);
+}
 
 #define INCH_TO_CM (2.54f)
 
@@ -352,7 +354,8 @@ static void _export_with_current_settings(dt_lib_module_t *self)
   if(confirm_message)
   {
 
-    gboolean res = dt_gui_show_yes_no_dialog(_("export to disk"),  "%s", confirm_message);
+    gboolean res = dt_gui_show_yes_no_dialog
+      (_("export to disk"),  "", "%s", confirm_message);
     g_free(confirm_message);
     confirm_message = NULL;
 
@@ -679,12 +682,25 @@ void gui_reset(dt_lib_module_t *self)
                           dt_confgen_get_int(CONFIG_PREFIX "dimensions_type", DT_DEFAULT));
   _size_update_display(d);
 
-  // Set storage
+  // first reset the selected storage and format modules
+  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
+  if(mformat) mformat->gui_reset(mformat);
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  if(mstorage) mstorage->gui_reset(mstorage);
+
+  // Set default storage
   const int storage_index =
     dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name
                                     (dt_confgen_get(CONFIG_PREFIX "storage_name",
                                                     DT_DEFAULT)));
   dt_bauhaus_combobox_set(d->storage, storage_index);
+
+  // Set default format
+  const int format_index =
+    dt_imageio_get_index_of_format(dt_imageio_get_format_by_name
+                                   (dt_confgen_get(CONFIG_PREFIX "format_name",
+                                                   DT_DEFAULT)));
+  dt_bauhaus_combobox_set(d->format, format_index);
 
   dt_bauhaus_combobox_set(d->upscale,
                           dt_confgen_get_bool(CONFIG_PREFIX "upscale",
@@ -723,28 +739,18 @@ void gui_reset(dt_lib_module_t *self)
 
   g_free(iccfilename);
 
-  // style
-  // set it to none if the var is not set or the style doesn't exist anymore
-  const char *style = dt_conf_get_string_const(CONFIG_PREFIX "style");
-  if(style == NULL || !style[0] || !dt_styles_exists(style))
-    style = "";
-  g_free(d->style_name);
-  d->style_name = g_strdup(style);
+  // set style to 'none'
+  _update_style_label(d, "");
 
-  // style mode to overwrite as it was the initial behavior
+  // reset style mode
   dt_bauhaus_combobox_set(d->style_mode,
                           dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode),d->style_name[0] != '\0');
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), _is_style_set(d->style_name));
 
   // export metadata presets
   g_free(d->metadata_export);
   d->metadata_export = dt_lib_export_metadata_get_conf();
-
-  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
-  if(mformat) mformat->gui_reset(mformat);
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
-  if(mstorage) mstorage->gui_reset(mstorage);
 
   dt_lib_gui_queue_update(self);
 }
@@ -907,7 +913,7 @@ static void set_storage_by_name(dt_lib_export_t *d,
   else if(module->widget)
   {
     gtk_widget_show_all(d->storage_extra_container);
-    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
+    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container), module->widget);
   }
   else
   {
@@ -1139,7 +1145,7 @@ static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void _update_style_label(dt_lib_export_t *d, const char *name)
 {
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), name[0] != '\0');
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), _is_style_set(name));
 
   // We use the string "none" to indicate that we don't apply any style to the export
   char *localized_style = name[0]
@@ -1363,8 +1369,7 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
     gboolean active = dt_conf_get_bool(setting);
     g_free(setting);
 
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
                         DT_EXPORT_BATCH_COL_ACTIVE, active,
                         DT_EXPORT_BATCH_COL_NAME, name,
                         -1);
@@ -1708,9 +1713,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(column, renderer, "text", DT_EXPORT_BATCH_COL_NAME);
 
   // multi-preset export button
-  d->batch_export_button = GTK_BUTTON(gtk_button_new_with_label(_("start export")));
-  g_signal_connect(G_OBJECT(d->batch_export_button), "clicked",
-                   G_CALLBACK(_batch_export_button_clicked), self);
+  d->batch_export_button = GTK_BUTTON(dt_action_button_new
+                                      (self, NC_("actionbutton", "start batch export"),
+                                       _batch_export_button_clicked, self,
+                                       NULL, 0, 0));
 
   d->batch_treeview = view;
   _fill_batch_export_list(self);
@@ -1779,15 +1785,14 @@ void gui_init(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   setting = dt_conf_get_string_const(CONFIG_PREFIX "style");
-  if(setting == NULL || !setting[0] || !dt_styles_exists(setting))
-    setting = "";
+  const gboolean is_style_set = _is_style_set(setting);
 
   g_free(d->style_name);
-  d->style_name = g_strdup(setting);
+  d->style_name = g_strdup(is_style_set ? setting : "");
 
   // style mode to overwrite as it was the initial behavior
   gtk_widget_set_no_show_all(d->style_mode, TRUE);
-  gtk_widget_set_visible(d->style_mode, d->style_name[0] != '\0');
+  gtk_widget_set_visible(d->style_mode, is_style_set);
 
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();

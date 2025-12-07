@@ -34,8 +34,8 @@ soften_overexposed(read_only image2d_t in, write_only image2d_t out, const int w
 
   float4 hsl = RGB_2_HSL(pixel);
 
-  hsl.y = clamp(hsl.y * saturation, 0.0f, 1.0f);
-  hsl.z = clamp(hsl.z * brightness, 0.0f, 1.0f);
+  hsl.y = clipf(hsl.y * saturation);
+  hsl.z = clipf(hsl.z * brightness);
 
   pixel = HSL_2_RGB(hsl);
 
@@ -43,7 +43,7 @@ soften_overexposed(read_only image2d_t in, write_only image2d_t out, const int w
 }
 
 /* horizontal gaussian blur */
-kernel void 
+kernel void
 soften_hblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float4 *buffer)
 {
@@ -65,7 +65,7 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int xx = mad24((int)get_group_id(0), lsz, -l);
     buffer[rad - l] = read_imagef(in, sampleri, (int2)(xx, y));
   }
-    
+
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
@@ -95,7 +95,7 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
 
 
 /* vertical gaussian blur */
-kernel void 
+kernel void
 soften_vblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float4 *buffer)
 {
@@ -117,7 +117,7 @@ soften_vblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int yy = mad24((int)get_group_id(1), lsz, -l);
     buffer[rad - l] = read_imagef(in, sampleri, (int2)(x, yy));
   }
-    
+
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {

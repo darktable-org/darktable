@@ -657,6 +657,8 @@ void process(dt_iop_module_t *self,
     g->distance_max = distance_max;
     g->hash = hash;
     dt_iop_gui_leave_critical_section(self);
+    if(distance_max <= 0.0f)
+      dt_control_log(_("haze removal could not calculate ambient light due to image content"));
   }
 
   // calculate the transition map
@@ -713,7 +715,7 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  cl_int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
+  cl_int err = dt_opencl_copy_device_to_host(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
 
   const const_rgb_image img_in = (const_rgb_image) {in, width, height, element_size / sizeof(float)};
@@ -926,6 +928,8 @@ int process_cl(dt_iop_module_t *self,
     g->distance_max = distance_max;
     g->hash = hash;
     dt_iop_gui_leave_critical_section(self);
+    if(distance_max <= 0.0f)
+      dt_control_log(_("haze removal could not calculate ambient light due to image content"));
   }
 
   cl_mem trans_map = NULL;

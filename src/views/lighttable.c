@@ -485,6 +485,7 @@ void enter(dt_view_t *self)
   const dt_lighttable_layout_t layout =
     dt_view_lighttable_get_layout(darktable.view_manager);
 
+  dt_start_backthumbs_crawler();
   // enable culling proxy
   darktable.view_manager->proxy.lighttable.culling_preview_refresh =
     _culling_preview_refresh;
@@ -635,6 +636,7 @@ void init(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_library_t *lib = self->data;
 
   // disable culling proxy
@@ -1216,13 +1218,17 @@ void gui_init(dt_view_t *self)
   lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
 
   // add culling and preview to the center widget
-  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget);
-  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget);
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                          lib->culling->widget);
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                          lib->preview->widget);
   gtk_widget_set_no_show_all(lib->culling->widget, TRUE);
   gtk_widget_set_no_show_all(lib->preview->widget, TRUE);
   // place behind toast/log messages
-  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget, 1);
-  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget, 1);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              lib->culling->widget, 1);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              lib->preview->widget, 1);
 
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
@@ -1237,7 +1243,8 @@ void gui_init(dt_view_t *self)
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
-  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
+  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event",
+                           G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

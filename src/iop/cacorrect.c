@@ -1302,8 +1302,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_cacorrect_gui_data_t *g = IOP_GUI_ALLOC(cacorrect);
 
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->iterations = dt_bauhaus_combobox_from_params(self, "iterations");
   gtk_widget_set_tooltip_text(g->iterations, _("iteration runs, default is twice"));
 
@@ -1311,6 +1309,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->avoidshift, _("activate colorshift correction for blue & red channels"));
 
   // start building top level widget
+  GtkWidget *box_raw = self->widget;
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "bayer");

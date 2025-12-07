@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -206,6 +206,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
        "dt_history_load_and_apply");
     dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
+    dt_image_cache_set_change_timestamp(imgid);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
@@ -216,6 +217,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 gboolean dt_history_load_and_apply_on_list(gchar *filename,
                                            const GList *list)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   gboolean res = FALSE;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
@@ -225,6 +227,7 @@ gboolean dt_history_load_and_apply_on_list(gchar *filename,
       res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
+  dt_start_backthumbs_crawler();
   return res;
 }
 
@@ -1023,13 +1026,15 @@ char *dt_history_get_name_label(const char *name,
   }
   else
   {
-    const char *l_label = hand_edited
-      ? label
+    char *l_label = hand_edited
+      ? g_strdup (label)
       : dt_util_localize_segmented_name(label, FALSE);
 
     result = markup
       ? g_markup_printf_escaped("%s • <small>%s</small>", name, l_label)
       : g_markup_printf_escaped("%s • %s", name, l_label);
+
+    g_free(l_label);
   }
 
   return result;

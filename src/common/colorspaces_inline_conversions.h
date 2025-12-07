@@ -20,6 +20,7 @@
 
 #include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
 #include "common/colorspaces.h"
+#include "common/dttypes.h"
 
 #ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
@@ -608,9 +609,9 @@ static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max,
     hue = 4.0f + (RGB[0] - RGB[1]) / delta;
 
   hue /= 6.0f;
-  if(hue < 0.0f) hue += 1.0f;
-  if(hue > 1.0f) hue -= 1.0f;
-  return hue;
+
+  // restrict to [0, 1), handling hue < 0 and hue >= 1
+  return hue - floorf(hue);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(RGB: 16))
@@ -666,8 +667,8 @@ static inline void _dt_Hue_2_RGB(dt_aligned_pixel_t RGB, const float H, const fl
 DT_OMP_DECLARE_SIMD(aligned(RGB, HSL: 16))
 static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HSL)
 {
-  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
-  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float min = min3f(RGB);
+  const float max = max3f(RGB);
   const float delta = max - min;
 
   const float L = (max + min) / 2.0f;
@@ -706,8 +707,8 @@ static inline void dt_HSL_2_RGB(const dt_aligned_pixel_t HSL, dt_aligned_pixel_t
 DT_OMP_DECLARE_SIMD(aligned(RGB, HSV: 16))
 static inline void dt_RGB_2_HSV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HSV)
 {
-  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
-  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float min = min3f(RGB);
+  const float max = max3f(RGB);
   const float delta = max - min;
 
   const float V = max;
@@ -742,8 +743,8 @@ static inline void dt_HSV_2_RGB(const dt_aligned_pixel_t HSV, dt_aligned_pixel_t
 DT_OMP_DECLARE_SIMD(aligned(RGB, HCV: 16))
 static inline void dt_RGB_2_HCV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HCV)
 {
-  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
-  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float min = min3f(RGB);
+  const float max = max3f(RGB);
   const float delta = max - min;
 
   const float V = max;

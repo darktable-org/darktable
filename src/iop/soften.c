@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -37,8 +38,6 @@
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-
-#define MAX_RADIUS 32
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
@@ -103,14 +102,20 @@ const char **description(dt_iop_module_t *self)
                                       _("linear, RGB, display-referred"));
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_soften_data_t *const d = (const dt_iop_soften_data_t *const)piece->data;
 
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
+    return; // image has been copied through to output and module's
+            // trouble flag has been updated
 
   const float brightness = 1.0 / exp2f(-d->brightness);
   const float saturation = d->saturation / 100.0;
@@ -119,7 +124,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   float *const restrict out = (float *const)ovoid;
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
-/* create overexpose image and then blur */
+  /* create overexpose image and then blur */
   DT_OMP_FOR()
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
@@ -132,8 +137,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  const int mrad = sqrt(w * w + h * h) * 0.01;
-  const int rad = mrad * (fmin(100.0, d->size + 1) / 100.0);
+  const int mrad = dt_fast_hypotf(w, h) * 0.01f;
+  const int rad = mrad * (fmin(100.0, d->size + 1.0f) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
@@ -144,8 +149,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_soften_data_t *d = piece->data;
   dt_iop_soften_global_data_t *gd = self->global_data;
@@ -163,12 +172,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  const int mrad = sqrt(w * w + h * h) * 0.01f;
+  const int mrad = dt_fast_hypotf(w, h) * 0.01f;
 
-  const int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
+  const int rad = mrad * (fmin(100.0f, d->size + 1.0f) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
+  /* sigma-radius correlation to match opencl
+   * vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
   const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
@@ -179,17 +189,24 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   float weight = 0.0f;
 
   // init gaussian kernel
-  for(int l = -wdh; l <= wdh; l++) weight += m[l] = expf(-(l * l) / (2.f * sigma * sigma));
-  for(int l = -wdh; l <= wdh; l++) m[l] /= weight;
+  for(int l = -wdh; l <= wdh; l++)
+    weight += m[l] = expf(-(l * l) / (2.f * sigma * sigma));
+  for(int l = -wdh; l <= wdh; l++)
+    m[l] /= weight;
 
   // for(int l=-wdh; l<=wdh; l++) printf("%.6f ", (double)m[l]);
   // printf("\n");
 
   int hblocksize;
   dt_opencl_local_buffer_t hlocopt
-    = (dt_opencl_local_buffer_t){ .xoffset = 2 * wdh, .xfactor = 1, .yoffset = 0, .yfactor = 1,
-                                  .cellsize = 4 * sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 16, .sizey = 1 };
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * wdh,
+                                  .xfactor = 1,
+                                  .yoffset = 0,
+                                  .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float),
+                                  .overhead = 0,
+                                  .sizex = 1 << 16,
+                                  .sizey = 1 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_soften_hblur, &hlocopt))
     hblocksize = hlocopt.sizex;
@@ -198,9 +215,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int vblocksize;
   dt_opencl_local_buffer_t vlocopt
-    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * wdh, .yfactor = 1,
-                                  .cellsize = 4 * sizeof(float), .overhead = 0,
-                                  .sizex = 1, .sizey = 1 << 16 };
+    = (dt_opencl_local_buffer_t){ .xoffset = 1,
+                                  .xfactor = 1,
+                                  .yoffset = 2 * wdh,
+                                  .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float),
+                                  .overhead = 0,
+                                  .sizex = 1,
+                                  .sizey = 1 << 16 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_soften_vblur, &vlocopt))
     vblocksize = vlocopt.sizey;
@@ -221,7 +243,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
   if(dev_m == NULL) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_soften_overexposed, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_soften_overexposed,
+                                         width, height,
     CLARG(dev_in), CLARG(dev_tmp),
     CLARG(width), CLARG(height), CLARG(saturation), CLARG(brightness));
   if(err != CL_SUCCESS) goto error;
@@ -235,9 +258,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_soften_hblur, 0, CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m),
-      CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * wdh) * 4 * sizeof(float)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur, sizes, local);
+    dt_opencl_set_kernel_args(devid, gd->kernel_soften_hblur, 0,
+                              CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m),
+                              CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize),
+                              CLLOCAL((hblocksize + 2 * wdh) * 4 * sizeof(float)));
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur,
+                                                 sizes, local);
     if(err != CL_SUCCESS) goto error;
 
 
@@ -266,20 +292,23 @@ error:
 }
 #endif
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
   dt_iop_soften_data_t *d = piece->data;
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  const int mrad = sqrt(w * w + h * h) * 0.01f;
+  const int mrad = dt_fast_hypotf(w, h) * 0.01f;
 
-  const int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
+  const int rad = mrad * (fmin(100.0f, d->size + 1.0f) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
+  /* sigma-radius correlation to match opencl
+   * vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
   const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
@@ -316,7 +345,9 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)p1;
@@ -328,12 +359,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->amount = p->amount;
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_soften_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -365,4 +400,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

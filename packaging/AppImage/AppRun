@@ -14,6 +14,12 @@ HERE="$(dirname "$(readlink -f "${0}")")"
 
 source "$HERE"/apprun-hooks/"linuxdeploy-plugin-gtk.sh"
 
+export CAMLIBS=$HERE/usr/lib/libgphoto2/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2|head -1`
+
+export IOLIBS=$HERE/usr/lib/libgphoto2_port/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2_port|head -1`
+
+export GIO_EXTRA_MODULES=$HERE/usr/lib/gio/modules
+
 if [[ ! -z $APPIMAGE ]] ; then
   BINARY_NAME=$(basename "$ARGV0")
   if [[ ! -z "$1" ]] && [[ -e "$HERE/usr/bin/$1" ]] ; then

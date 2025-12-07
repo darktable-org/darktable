@@ -120,7 +120,7 @@ static inline void interpolate_color_xtrans(const void *const ivoid,
     const float clip1 = clip[f1];
     const float clipl = clip[fl];
     const float clipr = clip[fr];
-    const float clip_max = fmaxf(fmaxf(clip[0], clip[1]), clip[2]);
+    const float clip_max = max3f(clip);
 
     if(i == 0 || i == roi_out->width - 1 || j == 0 || j == roi_out->height - 1)
     {

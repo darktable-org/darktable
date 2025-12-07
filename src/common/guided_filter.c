@@ -597,9 +597,9 @@ static int _guided_filter_cl_fallback(int devid,
   if(!guide_host || !in_host || !out_host)
     goto error;
 
-  err = dt_opencl_read_host_from_device(devid, guide_host, guide, width, height, ch * sizeof(float));
+  err = dt_opencl_copy_device_to_host(devid, guide_host, guide, width, height, ch * sizeof(float));
   if(err != CL_SUCCESS) goto error;
-  err = dt_opencl_read_host_from_device(devid, in_host, in, width, height, sizeof(float));
+  err = dt_opencl_copy_device_to_host(devid, in_host, in, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 
   guided_filter(guide_host, in_host, out_host, width, height, ch, w, sqrt_eps, guide_weight, min, max);

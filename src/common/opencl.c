@@ -59,14 +59,14 @@ static gboolean _opencl_load_program(const int dev,
                                      const char *cachedir,
                                      char *md5sum,
                                      char **includemd5,
-                                     int *loaded_cached);
+                                     gboolean *loaded_cached);
 
 static gboolean _opencl_build_program(const int dev,
                                       const int prog,
                                       const char *binname,
                                       const char *cachedir,
                                       char *md5sum,
-                                      int loaded_cached);
+                                      const gboolean loaded_cached);
 
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
@@ -471,6 +471,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].totallost = 0;
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
+  cl->dev[dev].max_mem_constant = 0;
+  cl->dev[dev].alignsize = 0;
   cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].platform = NULL;
@@ -529,7 +531,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl_bool little_endian = 0;
   cl_platform_id platform_id = 0;
   cl_bool unified_memory = 0;
-
   char *dtcache = calloc(PATH_MAX, sizeof(char));
   char *cachedir = calloc(PATH_MAX, sizeof(char));
   char *alnum_fullname = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
@@ -695,6 +696,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            &(cl->dev[dev].max_mem_alloc), NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE,
                                            sizeof(cl_bool), &little_endian, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
+                                           sizeof(cl_ulong),
+                                           &(cl->dev[dev].max_mem_constant), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MEM_BASE_ADDR_ALIGN,
+                                           sizeof(cl_uint),
+                                           &(cl->dev[dev].alignsize), NULL);
+
   // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
   // we would want to use CL_DEVICE_SVM_CAPABILITIES instead
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_HOST_UNIFIED_MEMORY,
@@ -781,11 +789,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
      &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < (uint64_t)800ul * 1024ul * 1024ul)
+  if(cl->dev[dev].max_global_mem < (uint64_t)800ul * DT_MEGA)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
                  "   *** insufficient global memory (%" PRIu64 "MB) ***\n",
-                 cl->dev[dev].max_global_mem / 1024 / 1024);
+                 cl->dev[dev].max_global_mem / DT_MEGA);
     res = TRUE;
     cl->dev[dev].disabled |= TRUE;
     goto end;
@@ -807,13 +815,18 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL,
                "   GLOBAL MEM SIZE:          %.0f MB\n",
-               (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+               (double)cl->dev[dev].max_global_mem / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX MEM ALLOC:            %.0f MB\n",
-               (double)cl->dev[dev].max_mem_alloc / 1024.0 / 1024.0);
+               (double)cl->dev[dev].max_mem_alloc / (double)DT_MEGA);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX IMAGE SIZE:           %zd x %zd\n",
                cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   MAX CONSTANT BUFFER:      %.0f KB\n", (double)cl->dev[dev].max_mem_constant / 1024.0);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   ADDRESS ALIGN:            %d\n", cl->dev[dev].alignsize / 8);
+
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1050,7 +1063,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "[dt_opencl_device_init] testing program `%s' ..", programname);
-      int loaded_cached;
+      gboolean loaded_cached;
       char md5sum[33];
       if(_opencl_load_program(dev, prog, programname, filename, binname, cachedir,
                               md5sum, includemd5, &loaded_cached)
@@ -1110,10 +1123,9 @@ end:
   return res;
 }
 
-void dt_opencl_init(
-        dt_opencl_t *cl,
-        const gboolean exclude_opencl,
-        const gboolean print_statistics)
+void dt_opencl_init(dt_opencl_t *cl,
+                    const gboolean exclude_opencl,
+                    const gboolean print_statistics)
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = FALSE;
@@ -1217,9 +1229,10 @@ void dt_opencl_init(
            num_platforms, num_platforms > 1 ? "s" : "");
 
   // safety check for platforms; we must not have several versions for the same platform
+  if(num_platforms)
   {
     char *platforms = calloc(num_platforms, sizeof(char) * DT_OPENCL_CBUFFSIZE);
-    for(int n = 0; n < num_platforms; n++)
+    for(int n = 0; n < num_platforms && platforms; n++)
     {
       cl_platform_id platform = all_platforms[n];
       if((cl->dlocl->symbols->dt_clGetPlatformInfo)
@@ -1327,7 +1340,7 @@ void dt_opencl_init(
   for(int n = 0; n < num_platforms; n++) num_devices += all_num_devices[n];
 
   // create the device list
-  cl_device_id *devices = 0;
+  cl_device_id *devices = NULL;
   if(num_devices)
   {
     cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
@@ -1337,6 +1350,7 @@ void dt_opencl_init(
       free(cl->dev);
       cl->dev = NULL;
       free(devices);
+      devices = NULL;
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_init] could not allocate memory for device resources");
       logerror = _("not enough memory for OpenCL devices");
@@ -1373,7 +1387,10 @@ void dt_opencl_init(
   if(num_devices == 0)
   {
     if(devices)
+    {
       free(devices);
+      devices = NULL;
+    }
     logerror = _("no OpenCL devices found");
     goto finally;
   }
@@ -1505,14 +1522,22 @@ finally:
     for(int i = 0; cl->dev && i < cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
+
       for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
+      {
         if(cl->dev[i].kernel_used[k])
           (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
+      }
+
       for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
+      {
         if(cl->dev[i].program_used[k])
           (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
+      }
+
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
+
       if(cl->dev[i].use_events)
       {
         dt_opencl_events_reset(i);
@@ -2151,13 +2176,13 @@ static gboolean _opencl_load_program(const int dev,
                                      const char *cachedir,
                                      char *md5sum,
                                      char **includemd5,
-                                     int *loaded_cached)
+                                     gboolean *loaded_cached)
 {
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
 
   struct stat filestat, cachedstat;
-  *loaded_cached = 0;
+  *loaded_cached = FALSE;
 
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS)
   {
@@ -2287,8 +2312,8 @@ static gboolean _opencl_load_program(const int dev,
           }
           else
           {
-            cl->dev[dev].program_used[prog] = 1;
-            *loaded_cached = 1;
+            cl->dev[dev].program_used[prog] = TRUE;
+            *loaded_cached = TRUE;
           }
         }
         free(cached_content);
@@ -2298,7 +2323,7 @@ static gboolean _opencl_load_program(const int dev,
   }
 
 
-  if(*loaded_cached == 0)
+  if(*loaded_cached == FALSE)
   {
     // if loading cached was unsuccessful for whatever reason,
     // try to remove cached binary & link
@@ -2334,7 +2359,7 @@ static gboolean _opencl_load_program(const int dev,
     }
     else
     {
-      cl->dev[dev].program_used[prog] = 1;
+      cl->dev[dev].program_used[prog] = TRUE;
     }
   }
   else
@@ -2358,7 +2383,7 @@ static gboolean _opencl_build_program(const int dev,
                                       const char *binname,
                                       const char *cachedir,
                                       char *md5sum,
-                                      int loaded_cached)
+                                      const gboolean loaded_cached)
 {
   if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
 
@@ -2564,20 +2589,19 @@ static gboolean _check_kernel(const int dev,
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return FALSE;
   dt_pthread_mutex_lock(&cl->lock);
 
-  cl_int err;
   if(!cl->dev[dev].kernel_used[kernel]
      && cl->name_saved[kernel])
   {
-    cl->dev[dev].kernel_used[kernel] = 1;
-    cl->dev[dev].kernel[kernel] =
-      (cl->dlocl->symbols->dt_clCreateKernel)
-        (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
+    cl->dev[dev].kernel_used[kernel] = TRUE;
+    cl_int err;
+    cl->dev[dev].kernel[kernel] = (cl->dlocl->symbols->dt_clCreateKernel)
+                                  (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_create_kernel] could not create kernel `%s' for '%s' id=%d: (%s)",
                cl->name_saved[kernel], cl->dev[dev].fullname, dev, cl_errstr(err));
-      cl->dev[dev].kernel_used[kernel] = 0;
+      cl->dev[dev].kernel_used[kernel] = FALSE;
       cl->name_saved[kernel] = NULL; // don't try again
       dt_pthread_mutex_unlock(&cl->lock);
       return FALSE;
@@ -2595,7 +2619,7 @@ void dt_opencl_free_kernel(const int kernel)
   dt_pthread_mutex_lock(&cl->lock);
   for(int dev = 0; dev < cl->num_devs; dev++)
   {
-    cl->dev[dev].kernel_used[kernel] = 0;
+    cl->dev[dev].kernel_used[kernel] = FALSE;
     (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
   }
   dt_pthread_mutex_unlock(&cl->lock);
@@ -2810,16 +2834,6 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int width,
                                   const int height,
                                   const int bpp)
-{
-  return dt_opencl_read_host_from_device(devid, host, device, width, height, bpp);
-}
-
-int dt_opencl_read_host_from_device(const int devid,
-                                    void *host,
-                                    void *device,
-                                    const int width,
-                                    const int height,
-                                    const int bpp)
 {
   return dt_opencl_read_host_from_device_rowpitch(devid, host, device,
                                                   width, height, bpp * width);
@@ -3131,15 +3145,18 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
+  const gboolean oversize = size > darktable.opencl->dev[devid].max_mem_constant;
+  const int mode = oversize ? CL_MEM_COPY_HOST_PTR : CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
+
   cl_int err = CL_SUCCESS;
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
-    (darktable.opencl->dev[devid].context,
-     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, host, &err);
+    (darktable.opencl->dev[devid].context, mode, size, host, &err);
 
-  if(err != CL_SUCCESS)
+  if(err != CL_SUCCESS || oversize)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant]"
-             " could not alloc buffer on device '%s' id=%d: %s",
+             " could not allocate %sbuffer on device '%s' id=%d: %s",
+             oversize ? "oversize " : "",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3506,9 +3523,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   float *data = dt_alloc_aligned((size_t)width * height * element_size);
   if(data)
   {
-    const cl_int err =
-      dt_opencl_read_host_from_device(devid, data, img, width, height, element_size);
-    if(err == CL_SUCCESS)
+    if(dt_opencl_copy_device_to_host(devid, data, img, width, height, element_size) == CL_SUCCESS)
       dt_dump_pfm_file(pipe, data, width, height, element_size, mod,
                        "[dt_opencl_dump_pipe_pfm]", input, !input, FALSE);
 
@@ -3576,16 +3591,16 @@ void dt_opencl_check_tuning(const int devid)
 
   if(level < 0)
   {
-    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * DT_MEGA;
   }
   else
   {
     const size_t allmem = cl->dev[devid].max_global_mem;
-    const size_t lowmem = 256ul * 1024ul * 1024ul;
-    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
+    const size_t lowmem = 256ul * DT_MEGA;
+    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * DT_MEGA;
     if(cl->dev[devid].tunehead)
     {
-      const size_t headroom = (cl->dev[devid].headroom ? 1024ul * 1024ul * cl->dev[devid].headroom : dhead)
+      const size_t headroom = (cl->dev[devid].headroom ? DT_MEGA * cl->dev[devid].headroom : dhead)
                             + (cl->dev[devid].clmem_error ? dhead : 0);
       cl->dev[devid].used_available = allmem > headroom ? allmem - headroom : lowmem;
     }

@@ -301,7 +301,7 @@ static gboolean _remove_panel_config(gpointer key,
 static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
 {
   if(!dt_gui_show_yes_no_dialog
-     (_("reset panels in all views"),
+     (_("reset panels in all views"), "",
       _("are you sure?\n\n"
         "you will not be able to restore your current panel layout and module selection.")))
     return;
@@ -310,6 +310,12 @@ static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
   dt_view_manager_switch_by_view(darktable.view_manager,
                                  dt_view_manager_get_current_view(darktable.view_manager));
 }
+
+// forward declaration for use in init_tab_general
+static gboolean
+_gui_preferences_bool_click(GtkWidget *label,
+                            GdkEventButton *event,
+                            GtkWidget *widget);
 
 static void init_tab_general(GtkWidget *dialog,
                              GtkWidget *stack,
@@ -404,6 +410,7 @@ static void init_tab_general(GtkWidget *dialog,
     ? gtk_widget_set_hexpand(fontsize, TRUE), 2 : 0;
 
   //checkbox to use system font size
+  gtk_widget_set_name(usesysfont, "use_system_font");
   if(dt_conf_get_bool("use_system_font"))
     gtk_widget_set_state_flags(fontsize, GTK_STATE_FLAG_INSENSITIVE, TRUE);
   else
@@ -421,6 +428,8 @@ static void init_tab_general(GtkWidget *dialog,
                                dt_conf_get_bool("use_system_font"));
   g_signal_connect(G_OBJECT(usesysfont), "toggled",
                    G_CALLBACK(use_sys_font_callback), (gpointer)fontsize);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)usesysfont);
 
 
   //font size selector
@@ -475,6 +484,7 @@ static void init_tab_general(GtkWidget *dialog,
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   tw->apply_toggle = gtk_check_button_new();
+  gtk_widget_set_name(tw->apply_toggle, "themes/usercss");
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -486,6 +496,8 @@ static void init_tab_general(GtkWidget *dialog,
                                dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled",
                    G_CALLBACK(usercss_callback), 0);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)tw->apply_toggle);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -499,10 +511,7 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_widget_set_hexpand(tw->css_text_view, TRUE);
   gtk_widget_set_halign(tw->css_text_view, GTK_ALIGN_FILL);
 
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(scroll), tw->css_text_view);
+  GtkWidget *scroll = dt_gui_scroll_wrap(tw->css_text_view);
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -558,14 +567,6 @@ static void init_tab_general(GtkWidget *dialog,
 ///////////// end of gui and theme language selection
 
 
-static void _resize_dialog(GtkWidget *widget)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/preferences_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/preferences_dialog_height", allocation.height);
-}
-
 void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -573,35 +574,24 @@ void dt_gui_preferences_show()
     gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                 GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                 NULL, NULL);
+  dt_gui_dialog_restore_size(GTK_DIALOG(_preferences_dialog), "preferences");
 
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog),
-                              dt_conf_get_int("ui_last/preferences_dialog_width"),
-                              dt_conf_get_int("ui_last/preferences_dialog_height"));
-  g_signal_connect(G_OBJECT(_preferences_dialog), "check-resize",
-                   G_CALLBACK(_resize_dialog), NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
-  gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_set_name(_preferences_dialog, "preferences-notebook");
 
   //grab the content area of the dialog
-  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
-  gtk_widget_set_name(content, "preferences-content");
-  gtk_container_set_border_width(GTK_CONTAINER(content), 0);
-
-  //place a box in the content area
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
   gtk_widget_set_name(box, "preferences-box");
   gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-  gtk_box_pack_start(GTK_BOX(content), box, TRUE, TRUE, 0);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(box), GTK_ORIENTATION_HORIZONTAL);
 
   //create stack and sidebar and pack into the box
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
-  gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
+  dt_gui_box_add(box, stacksidebar, dt_gui_expand(stack));
 
   dt_gui_themetweak_widgets_t *tweak_widgets = malloc(sizeof(dt_gui_themetweak_widgets_t));
 
@@ -899,8 +889,6 @@ static gboolean _search_func(GtkTreeModel *model,
 
 static void init_tab_presets(GtkWidget *stack)
 {
-  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkTreeStore *model = gtk_tree_store_new(
       P_N_COLUMNS, G_TYPE_INT /*rowid*/,
@@ -918,9 +906,6 @@ static void init_tab_presets(GtkWidget *stack)
       GDK_TYPE_PIXBUF /*auto*/);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
-
-  // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, _("presets"), _("presets"));
 
   tree_insert_presets(model);
 
@@ -996,10 +981,6 @@ static void init_tab_presets(GtkWidget *stack)
     (_("auto"), renderer, "pixbuf", P_AUTOAPPLY_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
-
   // Adding the import/export buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox, "preset-controls");
@@ -1034,8 +1015,6 @@ static void init_tab_presets(GtkWidget *stack)
   g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
-
   // Attaching treeview signals
 
   // row-activated either expands/collapses a row or activates editing
@@ -1052,10 +1031,9 @@ static void init_tab_presets(GtkWidget *stack)
   // Attaching the model to the treeview
   gtk_tree_view_set_model(tree, GTK_TREE_MODEL(model));
 
-  // Adding the treeview to its containers
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(tree));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(tree));
+  GtkWidget *container = dt_gui_vbox(scroll, hbox);
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("presets"), _("presets"));
 
   g_object_unref(G_OBJECT(model));
 }
@@ -1352,10 +1330,16 @@ void dt_gui_preferences_bool_reset(GtkWidget *widget)
 }
 
 static gboolean
-_gui_preferences_bool_reset(GtkWidget *label,
+_gui_preferences_bool_click(GtkWidget *label,
                             GdkEventButton *event,
                             GtkWidget *widget)
 {
+  if(event->type == GDK_BUTTON_PRESS)
+  {
+    const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
+    return TRUE;
+  }
   if(event->type == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_bool_reset(widget);
@@ -1391,7 +1375,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
   g_signal_connect(G_OBJECT(w), "toggled",
                    G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)w);
   return w;
 }
 

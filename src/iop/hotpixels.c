@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,7 +68,8 @@ const char *name()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbors"),
+  return dt_iop_set_description(self, _("remove abnormally bright pixels\n"
+                                        "by dampening them with neighbors"),
                                       _("corrective"),
                                       _("linear, raw, scene-referred"),
                                       _("reconstruction, raw"),
@@ -435,7 +436,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->pixels_fixed = -1;
 
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = dt_gui_vbox();
   g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
@@ -450,11 +451,11 @@ void gui_init(dt_iop_module_t *self)
   g->permissive = GTK_TOGGLE_BUTTON(dt_bauhaus_toggle_from_params(self, "permissive"));
 
   // mark fixed pixels
-  GtkWidget *hbox = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *hbox = self->widget = dt_gui_hbox();
   g->markfixed = GTK_TOGGLE_BUTTON(dt_bauhaus_toggle_from_params(self, "markfixed"));
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->message), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box_raw), hbox, TRUE, TRUE, 0);
+  dt_gui_box_add(hbox, g->message);
+  dt_gui_box_add(box_raw, hbox);
 
   // start building top level widget
   self->widget = gtk_stack_new();

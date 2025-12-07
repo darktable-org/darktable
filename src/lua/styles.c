@@ -74,20 +74,24 @@ static int style_getnumber(lua_State *L)
   const int index = luaL_checknumber(L, -1);
   if(index <= 0)
   {
-    return luaL_error(L, "incorrect index for style");
+    lua_pushnil(L);
+    return 1;
   }
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -2);
   GList *items = dt_styles_get_item_list(style.name, FALSE, -1, TRUE);
   dt_style_item_t *item = g_list_nth_data(items, index - 1);
-  if(!item)
+  if(item)
   {
-    return luaL_error(L, "incorrect index for style");
+    items = g_list_remove(items, item);
+    luaA_push(L, dt_style_item_t, item);
+    free(item);
   }
-  items = g_list_remove(items, item);
+  else
+  {
+    lua_pushnil(L);
+  }
   g_list_free_full(items, dt_style_item_free);
-  luaA_push(L, dt_style_item_t, item);
-  free(item);
   return 1;
 }
 
@@ -188,7 +192,8 @@ static int style_table_index(lua_State *L)
   const int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
+    return 1;
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];

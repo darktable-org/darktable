@@ -58,10 +58,10 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "ubuntu:25.04"
+          - "ubuntu:25.10"
         compiler:
           - { compiler: GNU15,  CC: gcc-15,   CXX: g++-15,     packages: gcc-15 g++-15 }
-          - { compiler: LLVM19, CC: clang-19, CXX: clang++-19, packages: clang-19 libomp-19-dev llvm-19-dev libc++-19-dev libc++abi1-19 lld-19 clang-tools-19 mlir-19-tools libmlir-19-dev}
+          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1-21 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
         btype:
           - Release
         target:
@@ -71,7 +71,7 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "ubuntu:25.04"
+          - distro: "ubuntu:25.10"
             btype: Debug
             compiler: { compiler: GNU15, CC: gcc-15, CXX: g++-15, packages: gcc-15 g++-15 }
             target: skiptest
@@ -89,12 +89,12 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
+      DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Update base packages
         timeout-minutes: 1
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
+          sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
           set -xe
           rm -rf /var/lib/apt/lists/*
           apt-get --yes update
@@ -122,7 +122,7 @@ jobs:
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
-            libgdk-pixbuf2.0-dev \
+            libgdk-pixbuf-2.0-dev \
             libglib2.0-dev \
             libgmic-dev \
             libgphoto2-dev \
@@ -158,7 +158,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: false
           path: src
@@ -269,7 +269,7 @@ jobs:
           update: false
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: false
           path: src
@@ -309,7 +309,6 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-13,    xcode: 15.2,   deployment: 13.5 } # AppleClang 15, x86_64
           - { os: macos-15,    xcode: 16.3,   deployment: 15.0 } # AppleClang 17, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
@@ -332,7 +331,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: false
           path: src
@@ -352,7 +351,7 @@ jobs:
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
-          brew link --force libsoup@2
+          brew link --force libsoup
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";

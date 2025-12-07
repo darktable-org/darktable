@@ -218,7 +218,7 @@ void _set_ctrl_angle(const float x_ref,
 
   if(!move_p2) // move p1
   {
-    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
     const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
     const float angle1 = angle2 - angle;
 
@@ -227,7 +227,7 @@ void _set_ctrl_angle(const float x_ref,
   }
   else // move p2
 {
-    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
     const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
     const float angle2 = angle1 + angle;
 
@@ -262,8 +262,8 @@ float _get_ctrl_scale(const float x_ref,
   const float x2a = x2 * aspect_ratio;
   const float x_refa = x_ref * aspect_ratio;
 
-  const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
-  const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
+  const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
+  const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
   return length1 / length2;
 }
 
@@ -299,7 +299,7 @@ void _set_ctrl_scale(const float x_ref,
 
   if(!move_p2) // move p1
   {
-    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
     const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
     const float length1 = length2 * scale;
 
@@ -308,7 +308,7 @@ void _set_ctrl_scale(const float x_ref,
   }
   else // move p2
   {
-    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
     const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
     const float length2 = length1 / scale;
 
@@ -2707,7 +2707,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-      const int k = gui->point_edited;
+    const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
        && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
@@ -2749,7 +2749,8 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   for(int k = 0; k < nb; k++)
   {
     // corner ??
-    if(pzx - gpt->points[k * 6 + 2] > -as
+    if(!gui->select_only_border
+       && pzx - gpt->points[k * 6 + 2] > -as
        && pzx - gpt->points[k * 6 + 2] < as
        && pzy - gpt->points[k * 6 + 3] > -as
        && pzy - gpt->points[k * 6 + 3] < as)
@@ -2776,7 +2777,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   int near = 0;
   float dist = 0;
   _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
-  gui->seg_selected = dist < sqf(as) ? near : -1;
+  gui->seg_selected = !gui->select_only_border && dist < sqf(as) ? near : -1;
 
   // no segment selected, set form or source selection
   if(near < 0)
@@ -3562,8 +3563,8 @@ static void _path_falloff_roi(float *buffer,
                               const int bh)
 {
   // segment length
-  const int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0])
-                     + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
+  const int l = sqrtf((p1[0] - p0[0]) * (p1[0] - p0[0])
+                      + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
 
   const float lx = p1[0] - p0[0];
   const float ly = p1[1] - p0[1];

@@ -33,7 +33,7 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const size_t size,
                                      const size_t limit)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   cache->entries = entries;
   cache->allmem = cache->hits = cache->calls = cache->tests = 0;
@@ -112,14 +112,19 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
           not valid any more.
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-       4) Please note that position is not the iop_order but the position in the pipe
-       5) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
+       4) If we change any color profile they are committed for every history entry so we can't check
+          for them in the piece->hash but must use the final profiles available via pipe->xxx_profile_info
+       5) Please note that position is not the iop_order but the position in the pipe
+       6) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
           for better support of dt_dev_pixelpipe_piece_hash()
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(uint32_t) * (roi ? 3 : 1));
+  hash = dt_hash(hash, &pipe->input_profile_info, sizeof(pipe->input_profile_info));
+  hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
+  hash = dt_hash(hash, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
@@ -307,8 +312,9 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s, hash=%" PRIx64,
-          dt_iop_colorspace_to_name(cdsc->cst), hash);
+          "%s %.3f %.3f %.3f, hash=%" PRIx64,
+          dt_iop_colorspace_to_name(cdsc->cst), cdsc->temperature.coeffs[0], cdsc->temperature.coeffs[1], cdsc->temperature.coeffs[2],
+          hash);
     return FALSE;
   }
   // We need a fresh buffer as there was no hit.
@@ -446,7 +452,7 @@ static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
 
 void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   // we have pixelpipes like export & thumbnail that just use
   // alternating buffers so no cleanup
@@ -454,11 +460,11 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   // We always free cachelines marked as not valid
   size_t freed = 0;
-
+  size_t freed_invalid = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->hash[k] == DT_INVALID_HASH) && cache->data)
-      freed += _free_cacheline(cache, k);
+      freed_invalid += _free_cacheline(cache, k);
   }
 
   while(cache->memlimit && (cache->memlimit < cache->allmem))
@@ -471,14 +477,14 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB",
+    "%i lines (important=%i, used=%i). Freed: invalid %iMB used %iMB. Using %iMB, limit=%iMB",
     cache->entries, cache->limportant, cache->lused,
-    _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
+    _to_mb(freed_invalid), _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,

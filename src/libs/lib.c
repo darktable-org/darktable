@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "libs/lib.h"
 #include "common/debug.h"
 #include "common/module.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -45,6 +46,8 @@ typedef struct dt_lib_presets_edit_dialog_t
   dt_lib_module_t *module;
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
+
+static gpointer _active_menu_item = NULL;
 
 static gchar *_get_lib_view_path(const dt_lib_module_t *module,
                                  const dt_view_t *cv,
@@ -150,7 +153,7 @@ static void menuitem_update_preset(GtkMenuItem *menuitem,
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("update preset?"),
+     || dt_gui_show_yes_no_dialog(_("update preset?"), "",
                                   _("do you really want to update the preset `%s'?"),
                                   name))
   {
@@ -230,7 +233,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem,
   if(name == NULL) return;
 
   if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
-     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+     || dt_gui_show_yes_no_dialog(_("delete preset?"), "",
                                   _("do you really want to delete the preset `%s'?"),
                                   name))
   {
@@ -455,8 +458,12 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
   g_free(query);
 
   // collect all presets for op from db
-  int found = 0;
+  gboolean found = FALSE;
   int last_wp = -1;
+  gchar **prev_split = NULL;
+  GtkWidget *submenu = GTK_WIDGET(menu);
+  GtkWidget *mainmenu = submenu;
+  GSList *menu_path = NULL; // stack of menuitems which are the parents of submenus on menu_stack
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // default vs built-in stuff
@@ -474,14 +481,17 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     {
       last_wp = writeprotect;
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+      *prev_split[0] = '\0'; // make first level mismatch so we start over
     }
 
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
 
-    if(darktable.gui->last_preset
-       && strcmp(darktable.gui->last_preset, name) == 0) found = 1;
+    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
+      found = TRUE;
+
+    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, FALSE);
 
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
@@ -496,14 +506,12 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     {
       active_preset = cnt;
       selected_writeprotect = writeprotect;
-      mi = gtk_check_menu_item_new_with_label(name);
-      dt_gui_add_class(mi, "dt_transparent_background");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
       dt_gui_add_class(mi, "active_menu_item");
-    }
-    else
-    {
-      mi = gtk_menu_item_new_with_label((const char *)name);
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
+      g_set_weak_pointer(&_active_menu_item, mi);
+      // walk back up the menu hierarchy and highlight the entire path down to the current leaf
+      for(const GSList *mp = menu_path; mp; mp = g_slist_next(mp))
+        dt_gui_add_class(gtk_bin_get_child(GTK_BIN(mp->data)), "active_menu_item");
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
     g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
@@ -515,7 +523,6 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
                      G_CALLBACK(_menuitem_button_preset), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_widget_set_has_tooltip(mi, TRUE);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
   sqlite3_finalize(stmt);
@@ -561,9 +568,11 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
 
     if(darktable.gui->last_preset && found)
     {
+      char *local_last_name = dt_util_localize_segmented_name(darktable.gui->last_preset, TRUE);
       char *markup = g_markup_printf_escaped("%s <b>%s</b>",
                                              _("update preset"),
-                                             darktable.gui->last_preset);
+                                             local_last_name);
+      g_free(local_last_name);
       mi = gtk_menu_item_new_with_label("");
       gtk_widget_set_sensitive(mi, minfo->params_size > 0);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
@@ -1550,7 +1559,9 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander))))
+        show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       if(module->gui_reset)

@@ -87,26 +87,26 @@ static int _conf_set_if_not_overridden(const char *name, char *str)
   return is_overridden;
 }
 
-void dt_conf_set_int(const char *name, int val)
+void dt_conf_set_int(const char *name, const int val)
 {
   char *str = g_strdup_printf("%d", val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_int64(const char *name, int64_t val)
+void dt_conf_set_int64(const char *name, const int64_t val)
 {
   char *str = g_strdup_printf("%" PRId64, val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_float(const char *name, float val)
+void dt_conf_set_float(const char *name, const float val)
 {
   char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
   g_ascii_dtostr(str, G_ASCII_DTOSTR_BUF_SIZE, val);
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-void dt_conf_set_bool(const char *name, int val)
+void dt_conf_set_bool(const char *name, const int val)
 {
   char *str = g_strdup(val ? "TRUE" : "FALSE");
   if(_conf_set_if_not_overridden(name, str)) g_free(str);
@@ -141,7 +141,7 @@ void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *choo
   if(_conf_set_if_not_overridden(name, folder)) g_free(folder);
 }
 
-static inline gboolean _conf_isnan(double val)
+static inline gboolean _conf_isnan(const double val)
 {
   return val != val;
 }
@@ -269,7 +269,9 @@ float dt_conf_get_float(const char *name)
   return ret;
 }
 
-int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
+int dt_conf_get_and_sanitize_int(const char *name,
+                                 const int min,
+                                 const int max)
 {
   const int cmin = dt_confgen_get_int(name, DT_MIN);
   const int cmax = dt_confgen_get_int(name, DT_MAX);
@@ -279,7 +281,9 @@ int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
   return ret;
 }
 
-int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max)
+int64_t dt_conf_get_and_sanitize_int64(const char *name,
+                                       const int64_t min,
+                                       const int64_t max)
 {
   const int64_t cmin = dt_confgen_get_int64(name, DT_MIN);
   const int64_t cmax = dt_confgen_get_int64(name, DT_MAX);
@@ -289,7 +293,9 @@ int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t ma
   return ret;
 }
 
-float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
+float dt_conf_get_and_sanitize_float(const char *name,
+                                     const float min,
+                                     const float max)
 {
   const float cmin = dt_confgen_get_float(name, DT_MIN);
   const float cmax = dt_confgen_get_float(name, DT_MAX);
@@ -390,10 +396,16 @@ static char *_sanitize_confgen(const char *name, const char *value)
     {
       double v = dt_calculator_solve(1, value);
 
-      const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
-      const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
+      const int64_t min = item->min
+        ? (int64_t)dt_calculator_solve(1, item->min)
+        : INT64_MIN;
+      const int64_t max = item->max
+        ? (int64_t)dt_calculator_solve(1, item->max)
+        : INT64_MAX;
       // if garbage, use default
-      const int64_t val = _conf_isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
+      const int64_t val = _conf_isnan(v)
+        ? dt_confgen_get_int64(name, DT_DEFAULT)
+        : (int64_t)v;
       result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
     break;
@@ -404,7 +416,9 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
       // if garbage, use default
-      const float val = _conf_isnan(v) ? (float)dt_confgen_get_float(name, DT_DEFAULT) : (float)v;
+      const float val = _conf_isnan(v)
+        ? (float)dt_confgen_get_float(name, DT_DEFAULT)
+        : (float)v;
       result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
     break;
@@ -441,16 +455,14 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
 gchar *dt_conf_read_values(const char *filename,
                           gchar* (*callback)(const gchar *key,
-                          const gchar *value))
+                                             const gchar *value))
 {
 #define LINE_SIZE 1023
 
   char line[LINE_SIZE + 1];
 
-  FILE *f = NULL;
-
   // check for user config
-  f = g_fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   // if file has been found, parse it
 
@@ -512,14 +524,28 @@ static gchar *_conf_insert_value(const gchar *key, const gchar *value)
   return NULL;
 }
 
-void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
+void dt_conf_init(dt_conf_t *cf,
+                  const char *filename,
+                  const gboolean is_common,
+                  GSList *override_entries)
 {
-  cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+  // should we initialize the storage
+  if(!cf->table)
+  {
+    cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+  }
 
   // init conf filename
-  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
+  if(is_common)
+  {
+    g_strlcpy(cf->filename_common, filename, sizeof(cf->filename_common));
+  }
+  else
+  {
+    g_strlcpy(cf->filename, filename, sizeof(cf->filename));
+  }
 
   dt_conf_read_values(filename, _conf_insert_value);
 
@@ -528,7 +554,9 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     for(GSList *p = override_entries; p; p = g_slist_next(p))
     {
       dt_conf_string_entry_t *entry = p->data;
-      g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
+      g_hash_table_insert(darktable.conf->override_entries,
+                          g_strdup(entry->key),
+                          g_strdup(entry->value));
     }
   }
 
@@ -603,7 +631,8 @@ dt_confgen_type_t dt_confgen_type(const char *name)
     return DT_STRING;
 }
 
-gboolean dt_confgen_value_exists(const char *name, const dt_confgen_value_kind_t kind)
+gboolean dt_confgen_value_exists(const char *name,
+                                 const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
   if(item == NULL)
@@ -623,7 +652,8 @@ gboolean dt_confgen_value_exists(const char *name, const dt_confgen_value_kind_t
   return FALSE;
 }
 
-const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
+const char *dt_confgen_get(const char *name,
+                           const dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
@@ -643,6 +673,18 @@ const char *dt_confgen_get(const char *name, const dt_confgen_value_kind_t kind)
   }
 
   return "";
+}
+
+gboolean dt_confgen_is_common(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->is_common;
+  }
+
+  return FALSE;
 }
 
 const char *dt_confgen_get_label(const char *name)
@@ -669,7 +711,8 @@ const char *dt_confgen_get_tooltip(const char *name)
   return "";
 }
 
-int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
+int dt_confgen_get_int(const char *name,
+                       const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -707,7 +750,8 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   return (int)value;
 }
 
-int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
+int64_t dt_confgen_get_int64(const char *name,
+                             const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -745,13 +789,15 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   return (int64_t)value;
 }
 
-gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind)
+gboolean dt_confgen_get_bool(const char *name,
+                             const dt_confgen_value_kind_t kind)
 {
   const char *str = dt_confgen_get(name, kind);
   return !strcmp(str, "true");
 }
 
-float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
+float dt_confgen_get_float(const char *name,
+                           const dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))
   {
@@ -778,7 +824,8 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   switch(kind)
   {
   case DT_MIN:
-    // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
+    // to anyone askig FLT_MIN is superclose to 0, not furthest value
+    // from 0 possible in float
     return _conf_isnan(value) ? -FLT_MAX : (float)value;
     break;
   case DT_MAX:
@@ -856,8 +903,10 @@ static void _conf_print(const gchar *key, const gchar *val, FILE *f)
 
 void dt_conf_save(dt_conf_t *cf)
 {
-  FILE *f = g_fopen(cf->filename, "wb");
-  if(f)
+  FILE *fc = g_fopen(cf->filename_common, "wb");
+  FILE *fs = g_fopen(cf->filename, "wb");
+
+  if(fs && fc)
   {
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
@@ -866,11 +915,14 @@ void dt_conf_save(dt_conf_t *cf)
     {
       const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+
+      FILE *f = dt_confgen_is_common(key) ? fc : fs;
       _conf_print(key, val, f);
     }
 
     g_list_free(sorted);
-    fclose(f);
+    fclose(fs);
+    fclose(fc);
   }
 }
 void dt_conf_cleanup(dt_conf_t *cf)

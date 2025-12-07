@@ -134,9 +134,8 @@ const char **description(dt_iop_module_t *self)
   return dt_iop_set_description
     (self,
      _("simulate directional diffusion of light with heat transfer model\n"
-       "to apply an iterative edge-oriented blur,\n"
-       "inpaint damaged parts of the image, "
-       "or to remove blur with blind deconvolution."),
+       "to apply an iterative edge-oriented blur, inpaint damaged parts\n"
+       "of the image, or to remove blur with blind deconvolution"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -259,7 +258,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("lens deblur | medium"), self->op, self->version(),
@@ -284,7 +283,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("lens deblur | hard"), self->op, self->version(),
@@ -310,7 +309,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .threshold = 0.0f
                                },
 
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("dehaze | default"), self->op, self->version(),
@@ -336,7 +335,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .threshold = 0.0f
                                },
 
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("dehaze | extra contrast"), self->op, self->version(),
@@ -362,7 +361,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .threshold = 0.0f
                                },
 
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("denoise | fine"), self->op, self->version(),
@@ -387,7 +386,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("denoise | medium"), self->op, self->version(),
@@ -412,7 +411,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("denoise | coarse"), self->op, self->version(),
@@ -437,7 +436,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(),
@@ -462,7 +461,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("artistic effects | bloom"), self->op, self->version(),
@@ -487,7 +486,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("sharpen demosaicing | no AA filter"), self->op,
@@ -513,7 +512,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("sharpen demosaicing | AA filter"), self->op,
@@ -540,7 +539,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .threshold = 0.0f
                                },
 
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("artistic effects | simulate watercolor"), self->op, self->version(),
@@ -565,7 +564,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("artistic effects | simulate line drawing"), self->op, self->version(),
@@ -590,7 +589,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   // local contrast
@@ -617,7 +616,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("local contrast | fine"), self->op, self->version(),
@@ -642,7 +641,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(),
@@ -667,7 +666,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 1.41f,
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   // fast presets for slow hardware
@@ -694,7 +693,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f,
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   // two more sharpness (standard & strong)
@@ -721,7 +720,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .variance_threshold = 0.0f,
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("sharpness | strong"), self->op, self->version(),
@@ -746,7 +745,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f,
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_gui_presets_add_generic(_("local contrast | fast"), self->op, self->version(),
@@ -771,7 +770,7 @@ void init_presets(dt_iop_module_so_t *self)
 
                                  .threshold = 0.0f,
                                },
-                             sizeof(dt_iop_diffuse_params_t), 1,
+                             sizeof(dt_iop_diffuse_params_t), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 }
 

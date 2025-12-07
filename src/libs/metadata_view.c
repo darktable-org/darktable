@@ -1436,13 +1436,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-  gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(w), FALSE);
-  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN);
@@ -1453,8 +1446,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
+    gtk_list_store_insert_with_values(store, NULL, -1,
                        DT_METADATA_PREF_COL_INDEX, m->index,
                        DT_METADATA_PREF_COL_NAME_L, _(m->name),
                        DT_METADATA_PREF_COL_VISIBLE, m->visible,
@@ -1485,8 +1477,11 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   // drag & drop
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
   g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), NULL);
-
-  gtk_container_add(GTK_CONTAINER(w), view);
+  GtkWidget *w = dt_gui_scroll_wrap(view);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(w), FALSE);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), w);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -1589,13 +1584,10 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_metadata_init_queue(self);
 
-  GtkWidget *child_grid_window = gtk_grid_new();
-  d->grid = child_grid_window;
-  gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
+  d->grid = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(d->grid), DT_PIXEL_APPLY_DPI(5));
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(self->widget),
-                    dt_ui_resize_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight"));
+  self->widget = dt_gui_vbox(dt_ui_resize_wrap(d->grid, 200, "plugins/lighttable/metadata_view/windowheight"));
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);

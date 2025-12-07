@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2016-2020 darktable developers.
+ *    Copyright (C) 2016-2025 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 #include "chart/thinplate.h"
 #include "chart/deltaE.h"
+#include "common/math.h"
 #include "iop/svd.h"
 
 #include <assert.h>
@@ -36,9 +37,9 @@
 // #define EXACT       // use full solve instead of dot in inner loop
 
 // very fast, very approximate
-static inline float __attribute__((__unused__)) fasterlog(float x)
+static inline float __attribute__((__unused__)) fasterlog(const float x)
 {
-  union { float f; uint32_t i; } vx = { x };
+  const union { float f; uint32_t i; } vx = { x };
   float y = vx.i;
   y *= 8.2629582881927490e-8f;
   return y - 87.989971088f;
@@ -47,8 +48,10 @@ static inline float __attribute__((__unused__)) fasterlog(float x)
 // thinplate spline kernel \phi(r)
 static inline double thinplate_kernel(const double *x, const double *y)
 {
-  const double r
-      = sqrt((x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]) + (x[2] - y[2]) * (x[2] - y[2]));
+  const double r =
+      sqrt((x[0] - y[0]) * (x[0] - y[0])
+           + (x[1] - y[1]) * (x[1] - y[1])
+           + (x[2] - y[2]) * (x[2] - y[2]));
   return r * r * logf(MAX(1e-8f, r));
   // even when using both here and in the iop the approximate version,
   // it still doesn't work so well. need to be a bit more precise it seems.
@@ -78,7 +81,9 @@ static inline double compute_error(
     const double localerr = dt_colorspaces_deltaE_2000(Lab0, Lab1);
     err += localerr;
 #else
-    const double localerr = sqrt(residual_L[i] * residual_L[i] + residual_a[i] * residual_a[i] + residual_b[i] * residual_b[i]);
+    const double localerr = sqrt(residual_L[i] * residual_L[i]
+                                 + residual_a[i] * residual_a[i]
+                                 + residual_b[i] * residual_b[i]);
     err += localerr/wd;
 #endif
     merr = MAX(merr, localerr);
@@ -110,7 +115,7 @@ static inline double compute_error(
   return err;
 }
 
-static inline int solve(double *As, double *w, double *v, const double *b, double *coeff, int wd, int s, int S)
+static inline int solve(double *As, double *w, double *v, const double *b, double *coeff, const int wd, const int s, const int S)
 {
   // A'[wd][s+1] = u[wd][s+1] diag(w[s+1]) v[s+1][s+1]^t
   //
@@ -432,12 +437,10 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
 #pragma GCC diagnostic pop
 
-float thinplate_color_pos(float L, float a, float b)
+float thinplate_color_pos(const float L, const float a, const float b)
 {
-  const float pi = 3.14153f; // clearly true.
-  const float h = atan2f(b, a) + pi;
-  // const float C = sqrtf(a*a + b*b);
-  const int sector = 4.0f * h / (2.0f * pi);
+  const float h = atan2f(b, a) + M_PI_F;
+  const int sector = 4.0f * h / (2.0f * M_PI_F);
   return 256.0 * sector + L; // C;
 }
 
@@ -446,4 +449,3 @@ float thinplate_color_pos(float L, float a, float b)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

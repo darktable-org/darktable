@@ -139,6 +139,8 @@ static void _init_picker(dt_iop_color_picker_t *picker,
                          const dt_iop_color_picker_flags_t flags,
                          GtkWidget *button)
 {
+  DT_IOP_SECTION_FOR_PARAMS_UNWIND(module);
+
   // module is NULL if primary colorpicker
   picker->module     = module;
   picker->flags      = flags;

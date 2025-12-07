@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,6 +140,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   [DT_SIGNAL_PRESETS_CHANGED] = { "dt-presets-changed",
     NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
     G_CALLBACK(_presets_changed_destroy_callback), FALSE },
+  [DT_SIGNAL_PRESET_APPLIED] = { "dt-preset-applied",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
   /* Develop related signals */
   [DT_SIGNAL_DEVELOP_INITIALIZE] = { "dt-develop-initialized",

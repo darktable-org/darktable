@@ -88,23 +88,15 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] image '%s' not found",
+             "[GraphicsMagick_open] ReadImage failed for '%s'",
              img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[GraphicsMagick_open] image '%s' loading",
+           "[GraphicsMagick_open] loading image '%s'",
            img->filename);
-
-  if(IsCMYKColorspace(image->colorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error: CMYK images are not supported");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
 
   img->width = image->columns;
   img->height = image->rows;
@@ -122,12 +114,18 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
+  char *colormap;
+  if(IsCMYKColorspace(image->colorspace))
+    colormap = "CMYK";
+  else
+    colormap = "RGBP";
+
   int ret = DispatchImage(image,
                           0,
                           0,
                           img->width,
                           img->height,
-                          "RGBP",
+                          colormap,
                           FloatPixel,
                           mipbuf,
                           &exception);
@@ -138,10 +136,22 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
   if(ret != MagickPass)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error reading image '%s'",
+             "[GraphicsMagick_open] error reading image pixels for '%s'",
              img->filename);
     err = DT_IMAGEIO_LOAD_FAILED;
     goto error;
+  }
+
+  // If the image in CMYK color space convert it to linear RGB
+  if(IsCMYKColorspace(image->colorspace))
+  {
+    for(size_t index = 0; index < img->width * img->height * 4; index += 4)
+    {
+      float black = mipbuf[index + 3];
+      mipbuf[index]     = (1.f - black) * (1.f - mipbuf[index]);
+      mipbuf[index + 1] = (1.f - black) * (1.f - mipbuf[index + 1]);
+      mipbuf[index + 2] = (1.f - black) * (1.f - mipbuf[index + 2]);
+    }
   }
 
   size_t profile_length;

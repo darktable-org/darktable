@@ -220,7 +220,7 @@ static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event,
 
 static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!target) return DT_ACTION_NOT_VALID;
+  if(!target || element >= DT_COLORLABELS_LAST + 2) return DT_ACTION_NOT_VALID;
 
   _widgets_colors_t *colors = g_object_get_data(G_OBJECT(target), "colors_self");
   GtkWidget *w = element ? colors->colors[element - 1] : colors->operator;
@@ -311,14 +311,11 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                    GINT_TO_POINTER(-1));
   dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
 
-  if(darktable.control->accel_initialising)
-  {
-    dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, DT_COLORLABELS_YELLOW + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F2, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, DT_COLORLABELS_GREEN  + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F3, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, DT_COLORLABELS_BLUE   + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F4, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, DT_COLORLABELS_PURPLE + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F5, GDK_SHIFT_MASK);
-  }
+  dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);
+  dt_shortcut_register(ac, DT_COLORLABELS_YELLOW + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F2, GDK_SHIFT_MASK);
+  dt_shortcut_register(ac, DT_COLORLABELS_GREEN  + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F3, GDK_SHIFT_MASK);
+  dt_shortcut_register(ac, DT_COLORLABELS_BLUE   + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F4, GDK_SHIFT_MASK);
+  dt_shortcut_register(ac, DT_COLORLABELS_PURPLE + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F5, GDK_SHIFT_MASK);
 
   if(top)
   {

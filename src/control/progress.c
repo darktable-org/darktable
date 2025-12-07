@@ -59,7 +59,7 @@ typedef struct _dt_progress_t
 
 } _dt_progress_t;
 
-static void global_progress_start(dt_control_t *control, dt_progress_t *progress)
+static void _global_progress_start(dt_control_t *control, dt_progress_t *progress)
 {
   control->progress_system.n_progress_bar++;
 
@@ -105,7 +105,7 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
 #else // _WIN32
 
   // we can't init this in dt_control_progress_init as it's run too early :/
-  if(!control->progress_system.taskbarlist)
+  if(!control->progress_system.taskbarlist && darktable.gui)
   {
     void *taskbarlist;
     if(CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, &IID_ITaskbarList3, (void **)&taskbarlist) == S_OK)
@@ -125,7 +125,7 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
 #endif
 }
 
-static void global_progress_set(dt_control_t *control, dt_progress_t *progress, double value)
+static void _global_progress_set(dt_control_t *control, dt_progress_t *progress, double value)
 {
   control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
 
@@ -174,7 +174,7 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
 #endif
 }
 
-static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
+static void _global_progress_end(dt_control_t *control, dt_progress_t *progress)
 {
   control->progress_system.n_progress_bar--;
 
@@ -303,7 +303,7 @@ dt_progress_t *dt_control_progress_create(const gboolean has_progress_bar,
   if(!control) return NULL;
 
   dt_progress_t *progress = calloc(1, sizeof(dt_progress_t));
-  dt_pthread_mutex_init(&(progress->mutex), NULL);
+  dt_pthread_mutex_init(&progress->mutex, NULL);
 
   // fill it with values
   progress->message = g_strdup(message);
@@ -314,7 +314,7 @@ dt_progress_t *dt_control_progress_create(const gboolean has_progress_bar,
   // add it to the global list
   control->progress_system.list = g_list_append(control->progress_system.list, progress);
   control->progress_system.list_length++;
-  if(has_progress_bar) global_progress_start(control, progress);
+  if(has_progress_bar) _global_progress_start(control, progress);
 
   // tell the gui
   if(control->progress_system.proxy.module != NULL)
@@ -339,7 +339,7 @@ void dt_control_progress_destroy(dt_progress_t *progress)
   // remove the object from the global list
   control->progress_system.list = g_list_remove(control->progress_system.list, progress);
   control->progress_system.list_length--;
-  if(progress->has_progress_bar) global_progress_end(control, progress);
+  if(progress->has_progress_bar) _global_progress_end(control, progress);
 
   dt_pthread_mutex_unlock(&control->progress_system.mutex);
 
@@ -430,7 +430,7 @@ void dt_control_progress_set_progress(dt_progress_t *progress, double value)
   if(control->progress_system.proxy.module != NULL)
     control->progress_system.proxy.updated(control->progress_system.proxy.module, progress->gui_data, value);
 
-  if(progress->has_progress_bar) global_progress_set(control, progress, value);
+  if(progress->has_progress_bar) _global_progress_set(control, progress, value);
 
   dt_pthread_mutex_unlock(&control->progress_system.mutex);
 }

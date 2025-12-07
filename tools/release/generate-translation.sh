@@ -40,6 +40,7 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [hu]=Hungarian
                        [it]=Italian
                        [ja]=Japanese
+                       [ko_KR]=Korean
                        [nb]="Norwegian Bokmål"
                        [nl]=Dutch
                        [pl]=Polish

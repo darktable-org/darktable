@@ -1008,7 +1008,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.dithering = 0;
   p.unbound = TRUE;
   dt_gui_presets_add_generic(_("lomo"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_database_release_transaction(darktable.db);
 }
@@ -1045,9 +1045,7 @@ void gui_init(dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(C_("section", "position / form")),
-                     FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "position / form"))),
 
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");

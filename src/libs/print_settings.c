@@ -372,10 +372,11 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   const gboolean upscale = TRUE;
   const gboolean export_masks = FALSE;
   const gboolean is_scaling = FALSE;
+  const double scale_factor = 1.0;
 
   dt_imageio_export_with_flags
     (img->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
-     high_quality, upscale, is_scaling, FALSE, NULL,
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL,
      FALSE, export_masks, params->buf_icc_type,
      params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL, -1);
 
@@ -1152,18 +1153,25 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   _fill_box_values(ps);
 }
 
+static inline gboolean _is_style_set(const char *name)
+{
+  return name && name[0] && strcmp(name, _("none")) && dt_styles_exists(name);
+}
+
 static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
 {
   if(!ps)
     return;
+
+  const gboolean is_style_set = _is_style_set(name);
+
   if(ps->style_mode)
   {
-    gtk_widget_set_visible(GTK_WIDGET(ps->style_mode), (name && name[0] != '\0'));
-    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), (name && name[0] != '\0'));
+    gtk_widget_set_visible(GTK_WIDGET(ps->style_mode), is_style_set);
   }
 
   // We use the string "none" to indicate that we don't apply any style to the export
-  char *localized_style = (name && name[0])
+  char *localized_style = is_style_set
     ? dt_util_localize_segmented_name(name, TRUE)
     : g_strdup(_("none"));
 
@@ -1177,13 +1185,13 @@ static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
   gtk_widget_set_tooltip_markup(ps->style, tooltip);
   g_free(tooltip);
   g_free(ps->v_style);
-  ps->v_style = g_strdup(name && name[0] ? name : "");
-  dt_conf_set_string(PRINT_CONFIG_PREFIX "style", (name && name[0]) ? name : "");
+  ps->v_style = g_strdup(is_style_set ? name : "");
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "style", is_style_set ? name : "");
 }
 
 static void _update_style(const dt_stylemenu_data_t *menu_data)
 {
-  _update_style_label(menu_data->user_data,menu_data->name);
+  _update_style_label(menu_data->user_data, menu_data->name);
 }
 
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
@@ -2934,11 +2942,12 @@ void gui_init(dt_lib_module_t *self)
      _("whether the style items are appended to the history or replacing the history"),
      d->v_style_append?1:0, _style_mode_changed, self,
      N_("replace history"), N_("append history"));
-  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), current_style_name[0]?FALSE:TRUE);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), current_style_name[0]?FALSE:TRUE);
+  gtk_widget_set_no_show_all(d->style_mode, TRUE);
+  const gboolean is_style_set = _is_style_set(current_style_name);
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), is_style_set);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
 
-  _update_style_label(d, current_style_name ? current_style_name : "");
+  _update_style_label(d, is_style_set ? current_style_name : "");
 
   // Print button
 

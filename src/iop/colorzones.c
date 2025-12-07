@@ -666,7 +666,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = CATMULL_ROM;
   }
   dt_gui_presets_add_generic(_("B&W: with red"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // black white and skin tones
   p.channel = DT_IOP_COLORZONES_h;
@@ -689,7 +689,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = CATMULL_ROM;
   }
   dt_gui_presets_add_generic(_("B&W: with skin tones"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // polarizing filter
   p.channel = DT_IOP_COLORZONES_C;
@@ -714,7 +714,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = CATMULL_ROM;
   }
   dt_gui_presets_add_generic(_("polarizing filter"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // natural skin tone
   p.channel = DT_IOP_COLORZONES_h;
@@ -735,7 +735,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = CATMULL_ROM;
   }
   dt_gui_presets_add_generic(_("natural skin tones"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // black and white film
   p.channel = DT_IOP_COLORZONES_h;
@@ -766,7 +766,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = CATMULL_ROM;
   }
   dt_gui_presets_add_generic(_("B&W: film"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // neutral preset with just a set of nodes uniformly distributed along the hue axis
   const int colorzones_bands_hsl = 8;
@@ -786,7 +786,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_type[c] = MONOTONE_HERMITE;
   }
   dt_gui_presets_add_generic(_("HSL base setting"), self->op,
-                             version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             version, &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -2497,6 +2497,8 @@ static float _action_process_zones(gpointer target,
                                    dt_action_effect_t effect,
                                    float move_size)
 {
+  if(element >= DT_IOP_COLORZONES_BANDS) return DT_ACTION_NOT_VALID;
+
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
@@ -2504,7 +2506,7 @@ static float _action_process_zones(gpointer target,
   const int ch = g->channel;
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
-  const float x = (float)element / 8.0;
+  const float x = (float)element / DT_IOP_COLORZONES_BANDS;
 
   gboolean close_enough = FALSE;
   int node = 0;
@@ -2727,16 +2729,7 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_bottom_area_button_press_callback),
                    self);
 
-  /* From src/common/curve_tools.h :
-    #define CUBIC_SPLINE 0
-    #define CATMULL_ROM 1
-    #define MONOTONE_HERMITE 2
-  */
-  g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, N_("interpolation method"));
-  dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
+  g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
   dt_gui_box_add(self->widget, g->interpolator);
   gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"

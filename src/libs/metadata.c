@@ -717,8 +717,7 @@ static void _add_selected_metadata(gchar *tagname, dt_lib_metadata_t *d)
   GtkTreeIter iter;
   if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_METADATA_PREF_COL_TAGNAME, tagname))
   {
-    gtk_list_store_append(d->liststore, &iter);
-    gtk_list_store_set(d->liststore, &iter,
+    gtk_list_store_insert_with_values(d->liststore, &iter, -1,
                        DT_METADATA_PREF_COL_KEY, -1,  // -1 indicates a new entry
                        DT_METADATA_PREF_COL_TAGNAME, tagname,
                        DT_METADATA_PREF_COL_NAME, dt_metadata_get_tag_subkey(tagname),
@@ -846,19 +845,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   d->dialog = dialog;
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
-  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(400));
+  dt_gui_dialog_restore_size(GTK_DIALOG(dialog), "metadata");
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
-
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT,      // key
@@ -877,8 +865,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     dt_metadata_t *metadata = (dt_metadata_t *)metadata_iter->data;
     if(!metadata->internal)
     {
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter,
+      gtk_list_store_insert_with_values(store, NULL, -1,
                          DT_METADATA_PREF_COL_KEY, metadata->key,
                          DT_METADATA_PREF_COL_TAGNAME, metadata->tagname,
                          DT_METADATA_PREF_COL_NAME, metadata->name,
@@ -938,25 +925,24 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
                 _("tick if you want to keep this information private"
                   " (not exported with images)"));
 
-  gtk_container_add(GTK_CONTAINER(w), view);
+  GtkWidget *w = dt_gui_scroll_wrap(view);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
+  GtkWidget *plus = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text(plus, _("add metadata tags"));
+  g_signal_connect(G_OBJECT(plus), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(button, _("add metadata tags"));
-  gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
-
-  button = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(button, _("delete metadata tag"));
-  gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
-  d->delete_button = button;
+  GtkWidget *minus = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text(minus, _("delete metadata tag"));
+  g_signal_connect(G_OBJECT(minus), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  d->delete_button = minus;
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
+  dt_gui_dialog_add(GTK_DIALOG(dialog), w, dt_gui_hbox(dt_gui_expand(dt_gui_align_right(minus)), plus));
   gtk_widget_show_all(dialog);
 
   d->needs_rebuild = FALSE;
@@ -996,7 +982,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       if(count > 0)
       {
         confirm_delete = dt_gui_show_yes_no_dialog(
-          _("delete metadata"),
+          _("delete metadata"), "",
           _("you are about to delete metadata which is currently assigned to images.\n"
             "the assignments will be removed."));
       }
@@ -1142,8 +1128,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   d->metadata_texts = g_hash_table_new(NULL, NULL);
   d->metadata_counts = g_hash_table_new(NULL, NULL);
   d->metadata_to_delete = NULL;
@@ -1152,15 +1136,14 @@ void gui_init(dt_lib_module_t *self)
   d->grid = grid;
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
-  gtk_container_add(GTK_CONTAINER(self->widget), grid);
-  _fill_grid(self);
 
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
                                          _("write metadata for selected images"), 0, 0);
   d->cancel_button = dt_action_button_new(self, N_("cancel"), _cancel_button_clicked, self,
                                          _("ignore changed metadata"), 0, 0);
   d->button_box = dt_gui_hbox(d->apply_button, d->cancel_button);
-  gtk_container_add(GTK_CONTAINER(self->widget), d->button_box);
+  self->widget = dt_gui_vbox(grid, d->button_box);
+  _fill_grid(self);
 
   /* lets signup for mouse over image change signals */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _image_selection_changed_callback);

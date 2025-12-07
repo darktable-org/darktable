@@ -30,6 +30,12 @@ static int lua_dgettext(lua_State*L)
 {
   const char* domainname = luaL_checkstring(L,1);
   const char* msgid = luaL_checkstring(L,2);
+
+  #ifdef _WIN32
+  // on Windows, ensure UTF-8 output
+  bind_textdomain_codeset(domainname,"UTF-8");
+  #endif
+
   lua_pushstring(L,dgettext(domainname,msgid));
   return 1;
 }

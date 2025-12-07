@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -91,7 +92,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("resaturate giving more weight to blacks, whites and low-saturation pixels"),
+  return dt_iop_set_description(self, _("resaturate giving more weight to blacks,\n"
+                                        "whites and low-saturation pixels"),
                                       _("creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("linear, RGB"),
@@ -163,9 +165,9 @@ void process(dt_iop_module_t *self,
       float *const out = (float *const)ovoid + 4 * k;
 
       // calculate vibrance, and apply boost velvia saturation at least saturated pixels
-      float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
-      float pmin = MIN(in[0], MIN(in[1], in[2])); // min value in RGB set
-      float plum = (pmax + pmin) / 2.0f;          // pixel luminocity
+      float pmax = max3f(in);            // max value in RGB set
+      float pmin = min3f(in);            // min value in RGB set
+      float plum = (pmax + pmin) / 2.0f; // pixel luminocity
       float psat = (plum <= 0.5f) ? (pmax - pmin) / (1e-5f + pmax + pmin)
                                   : (pmax - pmin) / (1e-5f + MAX(0.0f, 2.0f - pmax - pmin));
 

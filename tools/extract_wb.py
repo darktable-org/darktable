@@ -203,7 +203,7 @@ for filename in sys.argv[1:]:
             finetune = int(float(values[0]) * 2.0)
             gm_skew = gm_skew or (float(values[1]) != 0.0)
         elif tag == "White Balance Fine Tune" and maker.startswith("NIKON"): # nikon
-            finetune = 0-(int(values[0]) * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
+            finetune = 0-(int(float(values[0]) * 2)) # older nikons lie about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
             gm_skew = gm_skew or (int(values[1]) != 0)
         elif tag == "White Balance Fine Tune" and maker == "FUJIFILM" and int(values[3]) != 0: # fuji
             eprint("Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)")

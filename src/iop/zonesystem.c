@@ -61,21 +61,6 @@ typedef struct dt_iop_zonesystem_data_t
   float zonemap_scale[MAX_ZONE_SYSTEM_SIZE];
 } dt_iop_zonesystem_data_t;
 
-
-/*
-void init_presets (dt_iop_module_so_t *self)
-{
-//   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
-
-  dt_gui_presets_add_generic(_("Fill-light 0.25EV with 4 zones"), self->op, self->version(),
-&(dt_iop_zonesystem_params_t){0.25,0.25,4.0} , sizeof(dt_iop_zonesystem_params_t), 1);
-  dt_gui_presets_add_generic(_("Fill-shadow -0.25EV with 4 zones"), self->op, self->version(),
-&(dt_iop_zonesystem_params_t){-0.25,0.25,4.0} , sizeof(dt_iop_zonesystem_params_t), 1);
-
-//   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
-}
-*/
-
 typedef struct dt_iop_zonesystem_global_data_t
 {
   int kernel_zonesystem;
@@ -444,8 +429,6 @@ void gui_init(dt_iop_module_t *self)
   g->preview_width = g->preview_height = 0;
   g->mouse_over_output_zones = FALSE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-
   g->preview = dtgtk_drawing_area_new_with_height(0);
   g_signal_connect(G_OBJECT(g->preview), "size-allocate", G_CALLBACK(size_allocate_callback), self);
   g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
@@ -473,12 +456,10 @@ void gui_init(dt_iop_module_t *self)
                                               | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->preview, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->zones, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->preview, g->zones);
 
   /* add signal handler for preview pipe finish to redraw the preview */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _iop_zonesystem_redraw_preview_callback);
-
 
   g->image = NULL;
   g->image_buffer = NULL;

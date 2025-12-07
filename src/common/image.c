@@ -143,22 +143,22 @@ gboolean dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".webp")
-     || !strcasecmp(c, ".ppm"))
-    return TRUE;
-  else
-    return FALSE;
+
+  return ((img->flags & DT_IMAGE_LDR)
+            || !strcasecmp(c, ".jpg")
+            || !strcasecmp(c, ".webp")
+            || !strcasecmp(c, ".ppm"));
 }
 
 gboolean dt_image_is_hdr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_HDR) || !strcasecmp(c, ".exr") || !strcasecmp(c, ".hdr")
-     || !strcasecmp(c, ".pfm"))
-    return TRUE;
-  else
-    return FALSE;
+
+  return ((img->flags & DT_IMAGE_HDR)
+            || !strcasecmp(c, ".exr")
+            || !strcasecmp(c, ".hdr")
+            || !strcasecmp(c, ".pfm"));
 }
 
 // NULL terminated list of supported non-RAW extensions
@@ -174,6 +174,12 @@ gboolean dt_image_is_raw(const dt_image_t *img)
 gboolean dt_image_is_monochrome(const dt_image_t *img)
 {
   return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
+}
+
+gboolean dt_image_is_mono_sraw(const dt_image_t *img)
+{
+  const uint32_t test = DT_IMAGE_MONOCHROME | DT_IMAGE_S_RAW;
+  return ((img->flags & test) == test);
 }
 
 gboolean dt_image_is_bayerRGB(const dt_image_t *img)
@@ -196,7 +202,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
     const int mask_bw = dt_image_monochrome_flags(img);
     dt_image_cache_read_release(img);
 
-    if((!monochrome) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
+    if(!monochrome && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
     {
       // wanting it to be color found preview
       img = dt_image_cache_get(imgid, 'w');
@@ -213,7 +219,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
     if(changed)
     {
       const int mask = dt_image_monochrome_flags(img);
-      dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_RELAXED, "monochrome flags");
       dt_imageio_update_monochrome_workflow_tag(imgid, mask);
 
       if(undo_on)
@@ -245,13 +251,13 @@ static void _pop_undo_execute(const dt_imgid_t imgid,
 
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
-  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW ))
-          && !(img->flags & DT_IMAGE_MONOCHROME)) ? TRUE : FALSE;
+  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW ))
+          && !(img->flags & DT_IMAGE_MONOCHROME);
 }
 
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img)
 {
-  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW)) ? TRUE : FALSE;
+  return img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW) ? TRUE : FALSE;
 }
 
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img)
@@ -269,10 +275,9 @@ int dt_image_monochrome_flags(const dt_image_t *img)
              | DT_IMAGE_MONOCHROME_BAYER));
 }
 
-const char *dt_image_film_roll_name(const char *path)
+const char *dt_image_film_roll_name_levels(const char *path, const int levels)
 {
   const char *folder = path + strlen(path);
-  const int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
   int count = 0;
   while(folder > path)
   {
@@ -284,7 +289,7 @@ const char *dt_image_film_roll_name(const char *path)
     if(*folder == G_DIR_SEPARATOR)
 #endif
 
-      if(++count >= numparts)
+      if(++count >= levels)
       {
         ++folder;
         break;
@@ -292,6 +297,13 @@ const char *dt_image_film_roll_name(const char *path)
     --folder;
   }
   return folder;
+}
+
+const char *dt_image_film_roll_name(const char *path)
+{
+  const int levels = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+
+  return dt_image_film_roll_name_levels(path, levels);
 }
 
 void dt_image_film_roll_directory(const dt_image_t *img,
@@ -854,7 +866,7 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       const gboolean changed = (ww != imgtmp->final_width) || (hh != imgtmp->final_height);
       imgtmp->final_width = ww;
       imgtmp->final_height = hh;
-      dt_image_cache_write_release(imgtmp, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(imgtmp, DT_IMAGE_CACHE_RELAXED, "update final size");
       if(changed)
       {
         dt_print(DT_DEBUG_PIPE, "updated final size for ID=%i, updated to %ix%i", imgid, ww, hh);
@@ -863,12 +875,24 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       }
     }
   }
+  else
+  {
+    // on lighttable, cannot run a pipe, reset to force proper values to be recomputed
+    // later.
+    dt_image_t *imgtmp = dt_image_cache_get(imgid, 'w');
+    if(imgtmp)
+    {
+      imgtmp->final_width = 0;
+      imgtmp->final_height = 0;
+      dt_image_cache_write_release(imgtmp, DT_IMAGE_CACHE_RELAXED);
+    }
+  }
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
 {
   if(!dt_is_valid_imgid(imgid)) return TRUE;
-  // get the img strcut
+  // get the img struct
   dt_image_t *timg = dt_image_cache_get(imgid, 'r');
   if(!timg)
   {
@@ -918,7 +942,7 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   {
     imgwr->final_width = *width = wd;
     imgwr->final_height = *height = ht;
-    dt_image_cache_write_release(imgwr, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release_info(imgwr, DT_IMAGE_CACHE_RELAXED, "get final size");
   }
   return res;
 }
@@ -1086,16 +1110,55 @@ float dt_image_get_sensor_ratio(const dt_image_t *img)
   return sw > sh ? sw / sh : sh / sw;
 }
 
-void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
+static inline gboolean _range(const float aspect, const int d, const int n)
 {
-  dt_image_t *image = dt_image_cache_get(imgid, 'w');
-  if(image)
+  const float prec = 0.5f * 0.01f; // 0.5%
+  const float rmin = (1.0f - prec) * (float)d / (float)n;
+  const float rmax = (1.0f + prec) * (float)d / (float)n;
+  return aspect > rmin && aspect < rmax;
+}
+
+float dt_usable_aspect(const float img_aspect)
+{
+  const gboolean inv = img_aspect < 1.0f;
+  float aspect =  inv ? 1.0f / fmaxf(img_aspect, 1e-4) : img_aspect;
+
+  /* We have a number of defined aspects either for sensor dimension or for predefined
+     crop ratios and make sure they later fit into seperable/usable values.
+     To avoid rounding errors and raw cropping we always test for an aspect range.
+     Code is done for easy maintenance.
+  */
+  if(_range(aspect, 1, 1))                    aspect = 1.0f;
+  else if(_range(aspect, 14, 11))             aspect = 14.0f / 11.0f;
+  else if(_range(aspect, 45, 35))             aspect = 45.0f / 35.0f;
+  else if(_range(aspect, 110, 85))            aspect = 110.0f / 85.0f; // letter
+  else if(_range(aspect, 4, 3))               aspect = 4.0f / 3.0f;
+  else if(_range(aspect, 7, 5))               aspect = 1.4f;
+  else if(_range(aspect, 14142136, 10000000)) aspect = 1.4142136f; // A4
+  else if(_range(aspect, 3, 2))               aspect = 1.5f;
+  else if(_range(aspect, 8, 5))               aspect = 1.6f;
+  else if(_range(aspect, 1618034, 1000000))   aspect = 1.618034f; // golden cut
+  else if(_range(aspect, 16, 9))              aspect = 16.0f / 9.0f;
+  else if(_range(aspect, 185, 100))           aspect = 1.85f; // widescreen
+  else if(_range(aspect, 2, 1))               aspect = 2.0f;
+  else if(_range(aspect, 235, 100))           aspect = 2.35f; // cinemascope
+  else if(_range(aspect, 239, 100))           aspect = 2.39f; // anamorphic
+  else if(_range(aspect, 65, 24))             aspect = 65.0f / 24.0f; // xpan
+  else if(_range(aspect, 3, 1))               aspect = 3.0f; // pano
+  else
   {
-    /* set image aspect ratio */
-    const int side = image->orientation < ORIENTATION_SWAP_XY ? image->p_height : image->p_width;
-    image->aspect_ratio = (float )image->p_height / (float )(MAX(1, side));
-    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
+    // we didn't find a predefined aspect so let's reduce the number of discrete aspects
+    if(inv)   // 0.05f steps
+      return 0.05f * (roundf(20.0f / aspect));
+    else      // 0.10 steps
+      return 0.1f * (roundf(10.0f * aspect));
   }
+
+  if(inv)
+    aspect = 1.0f / aspect;
+
+  // For predefined aspects use 0.01 steps
+  return 0.01f * (roundf(100.0f * aspect));
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1109,10 +1172,10 @@ void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
 
     /* set image aspect ratio */
     if(image)
-      image->aspect_ratio = aspect_ratio;
+      image->aspect_ratio = dt_usable_aspect(aspect_ratio);
 
     /* store but don't save xmp*/
-    dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_RELAXED, "dt_image_set_aspect_ratio_to");
 
     if(image
        && raise
@@ -1134,7 +1197,8 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
   {
     /* fetch image from cache */
     dt_image_t *image = dt_image_cache_get(imgid, 'r');
-    const gboolean new_aspect = image && !feqf(image->aspect_ratio, aspect_ratio, 0.02f);
+    const float new_aspect_ratio = dt_usable_aspect(aspect_ratio);
+    const gboolean new_aspect = image && !feqf(image->aspect_ratio, new_aspect_ratio, 0.001f);
     dt_image_cache_read_release(image);
 
     /* set image aspect ratio */
@@ -1142,9 +1206,9 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
     {
       dt_image_t *wimage = dt_image_cache_get(imgid, 'w');
       if(wimage)
-        wimage->aspect_ratio = aspect_ratio;
+        wimage->aspect_ratio = dt_usable_aspect(new_aspect_ratio);
 
-      dt_image_cache_write_release(wimage, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release_info(wimage, DT_IMAGE_CACHE_RELAXED, "dt_image_set_aspect_ratio_if_different");
 
       if(raise
          && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
@@ -1176,7 +1240,8 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
     if(raise
        && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
     }
@@ -1187,15 +1252,15 @@ float dt_image_set_aspect_ratio(const dt_imgid_t imgid,
                                 const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
-  float aspect_ratio = 0.0;
+  float aspect_ratio = 0.0f;
 
   dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
   if(buf.buf && buf.height && buf.width)
-  {
-    aspect_ratio = (float)buf.width / (float)buf.height;
-    dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
-  }
+    aspect_ratio = dt_usable_aspect((float)buf.width / (float)buf.height);
   dt_mipmap_cache_release(&buf);
+
+  if(aspect_ratio != 0.0f)
+    dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
 
   return aspect_ratio;
 }
@@ -1255,6 +1320,13 @@ static int32_t _image_get_possible_version(const dt_imgid_t imgid,
 static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
                                                     const int32_t newversion)
 {
+  if(dt_gimpmode())
+  {
+    // FIXME make GIMP handle duplicates
+    dt_control_log(_("can't create a duplicate in GIMP mode"));
+    return NO_IMGID;
+  }
+
   sqlite3_stmt *stmt;
   dt_imgid_t newid = NO_IMGID;
   const int64_t image_position = dt_collection_get_image_position(imgid, 0);
@@ -1526,18 +1598,18 @@ void dt_image_remove(const dt_imgid_t imgid)
 
 gboolean dt_image_altered(const dt_imgid_t imgid)
 {
-  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  const dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
 gboolean dt_image_basic(const dt_imgid_t imgid)
 {
-  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  const dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_BASIC;
 }
 
 #ifndef _WIN32
-static int _valid_glob_match(const char *const name, size_t offset)
+static gboolean _valid_glob_match(const char *const name, size_t offset)
 {
   // verify that the name matched by glob() is a valid sidecar name by
   // checking whether we have an underscore followed by a sequence of
@@ -1700,7 +1772,7 @@ static int _image_read_duplicates(const uint32_t id,
     dt_image_t *img = dt_image_cache_get(newid, 'w');
     if(img)
     {
-      dt_exif_xmp_read(img, xmpfilename, 0);
+      dt_exif_xmp_read(img, xmpfilename, FALSE);
       img->version = version;
     }
     dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
@@ -1956,7 +2028,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
     // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
     g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
-    res = dt_exif_xmp_read(img, dtfilename, 0);
+    res = dt_exif_xmp_read(img, dtfilename, FALSE);
   }
   // write through to db, but not to xmp.
   dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
@@ -2183,6 +2255,25 @@ void dt_image_refresh_makermodel(dt_image_t *img)
             sizeof(img->camera_makermodel)-len-1);
 }
 
+gboolean _move_extra_file(const gchar *oldFilePath, const gchar *newFolder, const gchar *newBasename)
+{
+  //get extension of extra files before move (can be upper or lower case)
+  gchar *oldFilename = g_path_get_basename(oldFilePath);
+  gchar *oldExtension =  g_strdup( oldFilename + (strrchr(oldFilename, '.') - oldFilename) );
+  gchar newFilePath[PATH_MAX] = { 0 };
+  g_strlcpy(newFilePath, newFolder, sizeof(newFilePath));
+  g_strlcat(newFilePath, newBasename, sizeof(newFilePath));
+  g_strlcat(newFilePath, oldExtension, sizeof(newFilePath));
+  GFile *oldFile = g_file_new_for_path(oldFilePath);
+  GFile *newFile = g_file_new_for_path(newFilePath);
+  const gboolean moveSuccess = g_file_move(oldFile, newFile, 0, NULL, NULL, NULL, NULL);
+  g_free(oldFilename);
+  g_free(oldExtension);
+  g_object_unref(oldFile);
+  g_object_unref(newFile);
+  return moveSuccess;
+}
+
 gboolean dt_image_rename(const dt_imgid_t imgid,
                          const int32_t filmid,
                          const gchar *newname)
@@ -2353,6 +2444,34 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         g_object_unref(cold);
         g_object_unref(cnew);
       }
+
+      // Now copy extra files like sidecar text file and audio file, if present
+      gchar *oldTxtFilePath = dt_image_get_text_path_from_path(oldimg);
+      gchar *oldAudioFilePath = dt_image_get_audio_path_from_path(oldimg);
+      if(oldTxtFilePath != NULL || oldAudioFilePath != NULL)
+      {
+        gchar newFolder[PATH_MAX] = { 0 };
+        gchar *newPath = g_path_get_dirname(newimg);
+        gchar *newImgBasename = g_path_get_basename(newimg);
+        //if a new image name is provided, this should also be used for the extra files
+        gchar *newBasename = g_strndup(newImgBasename, strrchr(newImgBasename, '.') - newImgBasename);
+        g_strlcpy(newFolder, newPath, sizeof(newFolder));
+        g_strlcat(newFolder, G_DIR_SEPARATOR_S, sizeof(newFolder));
+
+        if(oldTxtFilePath != NULL)
+        {
+          _move_extra_file(oldTxtFilePath, newFolder, newBasename);
+        }
+        if(oldAudioFilePath != NULL)
+        {
+          _move_extra_file(oldAudioFilePath, newFolder, newBasename);
+        }
+        g_free(newPath);
+        g_free(newImgBasename);
+        g_free(newBasename);
+      }
+      g_free(oldTxtFilePath);
+      g_free(oldAudioFilePath);
 
       result = FALSE;
     }
@@ -2756,9 +2875,7 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
   dt_image_t *imgr = dt_image_cache_get(imgid, 'r');
 
   const gboolean local_copy_exists =
-    imgr && ((imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY)
-    ? TRUE
-    : FALSE;
+    imgr && ((imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY);
 
   dt_image_cache_read_release(imgr);
 
@@ -3134,7 +3251,7 @@ char *dt_image_get_text_path(const dt_imgid_t imgid)
   return dt_image_get_text_path_from_path(image_path);
 }
 
-float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
+float dt_image_get_exposure_bias(const dt_image_t *image_storage)
 {
   // just check that pointers exist and are initialized
   if((image_storage) && (image_storage->exif_exposure_bias))
@@ -3151,7 +3268,7 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
     return 0.0f;
 }
 
-char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
+char *dt_image_camera_missing_sample_message(const dt_image_t *img,
                                              const gboolean logmsg)
 {
   const char *T1 = _("<b>WARNING</b>: camera is missing samples!");
@@ -3161,9 +3278,9 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                              img->camera_maker, img->camera_model);
   const char *T4 = _("or the <b>RAW won't be readable</b> in next version.");
 
-  char *NL     = logmsg ? "\n\n" : "\n";
-  char *PREFIX = logmsg ? "<big>" : "";
-  char *SUFFIX = logmsg ? "</big>" : "";
+  const char *NL     = logmsg ? "\n\n" : "\n";
+  const char *PREFIX = logmsg ? "<big>" : "";
+  const char *SUFFIX = logmsg ? "</big>" : "";
 
   char *msg = g_strconcat(PREFIX, T1, NL, T2, NL, T3, NL, T4, SUFFIX, NULL);
 
@@ -3179,7 +3296,7 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
   return msg;
 }
 
-void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
+void dt_image_check_camera_missing_sample(const dt_image_t *img)
 {
   if(img->camera_missing_sample)
   {

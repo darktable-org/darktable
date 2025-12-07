@@ -98,7 +98,7 @@ int32_t dt_database_last_insert_rowid(const dt_database_t *db)
 
 /* migrate from the legacy db format (with the 'settings' blob) to the
    first version this system knows */
-static gboolean _migrate_schema(dt_database_t *db, int version)
+static gboolean _migrate_schema(dt_database_t *db, const int version)
 {
   gboolean all_ok = TRUE;
   const char *failing_query = NULL;
@@ -301,7 +301,10 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
     const int op_version = sqlite3_column_int(stmt, 3);
 
     // is it still the same (name, operation, op_version) triple?
-    if(!last_name || strcmp(last_name, name) || !last_operation || strcmp(last_operation, operation)
+    if(!last_name
+       || strcmp(last_name, name)
+       || !last_operation
+       || strcmp(last_operation, operation)
        || last_op_version != op_version)
     {
       g_free(last_name);
@@ -314,8 +317,11 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
 
     // find the next free amended version of name
     // clang-format off
-    sqlite3_prepare_v2(db->handle, "SELECT name FROM main.presets  WHERE name = ?1 || ' (' || ?2 || ')' AND "
-                                   "operation = ?3 AND op_version = ?4",
+    sqlite3_prepare_v2(db->handle,
+                       "SELECT name"
+                       " FROM main.presets"
+                       " WHERE name = ?1 || ' (' || ?2 || ')'"
+                       "   AND operation = ?3 AND op_version = ?4",
                        -1, &innerstmt, NULL);
     // clang-format on
     while(1)
@@ -333,7 +339,9 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
 
     // rename preset
     // clang-format off
-    const char *query = "UPDATE main.presets SET name = name || ' (' || ?1 || ')' WHERE rowid = ?2";
+    const char *query = "UPDATE main.presets"
+                         " SET name = name || ' (' || ?1 || ')'"
+                         " WHERE rowid = ?2";
     // clang-format on
     sqlite3_prepare_v2(db->handle, query, -1, &innerstmt, NULL);
     sqlite3_bind_int(innerstmt, 1, i);
@@ -448,7 +456,8 @@ end:
 #define FINALIZE
 
 /* do the real migration steps, returns the version the db was converted to */
-static int _upgrade_library_schema_step(dt_database_t *db, int version)
+static int _upgrade_library_schema_step(dt_database_t *db,
+                                        const int version)
 {
   sqlite3_stmt *stmt;
   int new_version = version;
@@ -456,8 +465,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     return version;
   else if(version == 0)
   {
-    // this can't happen, we started with 1, but it's a good example how this function works
-    // <do some magic to the db>
+    // this can't happen, we started with 1, but it's a good example
+    // how this function works <do some magic to the db>
     new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or
                      // add fast paths
   }
@@ -476,8 +485,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 2)
   {
-    // 2 -> 3 reset raw_black and raw_maximum. in theory we should change the columns from REAL to INTEGER,
-    // but sqlite doesn't care about types so whatever
+    // 2 -> 3 reset raw_black and raw_maximum. in theory we should
+    // change the columns from REAL to INTEGER, but sqlite doesn't
+    // care about types so whatever
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
     // clang-format off
     TRY_EXEC("UPDATE main.images SET raw_black = 0, raw_maximum = 16384",
@@ -562,7 +572,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 6)
   {
-    // some ancient tables can have the styleid column of style_items be called style_id. fix that.
+    // some ancient tables can have the styleid column of style_items
+    // be called style_id. fix that.
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
     if(sqlite3_exec(db->handle, "SELECT style_id FROM main.style_items", NULL, NULL, NULL) == SQLITE_OK)
@@ -726,8 +737,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "WHERE p1.writeprotect = 0)",
              "can't delete already migrated presets from database");
 
-    // find all presets that are clashing with something else in presets. that can happen as we introduced an
-    // index on presets in data which wasn't in place in library.
+    // find all presets that are clashing with something else in
+    // presets. that can happen as we introduced an index on presets
+    // in data which wasn't in place in library.
     TRY_PREPARE(select_stmt, "SELECT p.rowid, r FROM main.presets AS p, (SELECT rowid AS r, name, operation, "
                              "op_version FROM main.presets GROUP BY name, operation, op_version HAVING "
                              "COUNT(*) > 1) USING (name, operation, op_version) WHERE p.rowid != r",
@@ -972,7 +984,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // clang-format on
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 13;
-  } else if(version == 13)
+  }
+  else if(version == 13)
   {
     // 12 -> 13 bring back the used tag names to library.db so people can use it independently of data.db
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
@@ -2971,7 +2984,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 }
 
 /* do the real migration steps, returns the version the db was converted to */
-static int _upgrade_data_schema_step(dt_database_t *db, int version)
+static int _upgrade_data_schema_step(dt_database_t *db, const int version)
 {
   sqlite3_stmt *stmt;
   int new_version = version;
@@ -2979,9 +2992,10 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     return version;
   else if(version == 0)
   {
-    // this can't happen, we started with 1, but it's a good example how this function works
-    // <do some magic to the db>
-    new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or
+    // this can't happen, we started with 1, but it's a good example
+    // how this function works <do some magic to the db>
+    new_version = 1; // the version we transformed the db to. this way
+                     // it might be possible to roll back or
     // add fast paths
   }
   else if(version == 1)
@@ -3179,7 +3193,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
              "can't set multi_name_hand_edited column");
 
     new_version = 10;
-  }  
+  }
   else if(version == 10)
   {
     TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable camera styles|%'",
@@ -3232,15 +3246,25 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     const int display_order[] = {2,3,0,1,4,5,6,7,8};
 
+    sqlite3_prepare_v2(
+        db->handle,
+        "INSERT INTO data.meta_data (key, tagname, name, internal, visible, private, display_order) "
+        "VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6)",
+        -1, &stmt, NULL);
+
     for (int i = 0; i < sizeof(metadata_fields) / sizeof(metadata_fields[0]); i++)
     {
-      gchar *query = g_strdup_printf("INSERT INTO data.meta_data VALUES(%d, '%s', '%s', %d, %d, 0, %d)",
-                                     i, metadata_fields[i][0], metadata_fields[i][1], (i == 7) ? 1 : 0,
-                                     metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0,
-                                     display_order[i]);
-      TRY_EXEC(query, "can't insert meta_data_key record");
-      g_free(query);
+      sqlite3_bind_int(stmt, 1, i);
+      sqlite3_bind_text(stmt, 2, metadata_fields[i][0], -1, SQLITE_TRANSIENT);
+      sqlite3_bind_text(stmt, 3, metadata_fields[i][1], -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(stmt, 4, (i == 7)? 1 : 0);
+      sqlite3_bind_int(stmt, 5, metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0);
+      sqlite3_bind_int(stmt, 6, display_order[i]);
+      TRY_STEP(stmt, SQLITE_DONE, "can't insert meta_data_key record");
+      sqlite3_reset(stmt);
+      sqlite3_clear_bindings(stmt);
     }
+    sqlite3_finalize(stmt);
 
     new_version = 13;
   }
@@ -3270,7 +3294,8 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
 /* upgrade library db from 'version' to CURRENT_DATABASE_VERSION_LIBRARY. don't touch this function but
  * _upgrade_library_schema_step() instead. */
-static gboolean _upgrade_library_schema(dt_database_t *db, int version)
+static gboolean _upgrade_library_schema(dt_database_t *db,
+                                        int version)
 {
   while(version < CURRENT_DATABASE_VERSION_LIBRARY)
   {
@@ -3286,7 +3311,8 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
 
 /* upgrade data db from 'version' to CURRENT_DATABASE_VERSION_DATA. don't touch this function but
  * _upgrade_data_schema_step() instead. */
-static gboolean _upgrade_data_schema(dt_database_t *db, int version)
+static gboolean _upgrade_data_schema(dt_database_t *db,
+                                     int version)
 {
   while(version < CURRENT_DATABASE_VERSION_DATA)
   {
@@ -3843,8 +3869,11 @@ void dt_database_show_error(const dt_database_t *db)
       db->error_other_pid);
     // clang-format on
 
-    gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
-                                        label_text, _("_cancel"), _("_delete database lock files"));
+    gboolean delete_lockfiles =
+      dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
+                                           label_text,
+                                           _("_cancel"),
+                                           _("_delete database lock files"));
 
     if(delete_lockfiles)
     {
@@ -3867,9 +3896,10 @@ void dt_database_show_error(const dt_database_t *db)
         g_free(lck_filename);
 
         if(status==0)
-          dt_gui_show_standalone_yes_no_dialog(_("done"),
-                                        _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
-                                        _("_ok"), NULL);
+          dt_gui_show_standalone_yes_no_dialog
+            (_("done"),
+             _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
+             _("_ok"), NULL);
         else
           dt_gui_show_standalone_yes_no_dialog
             (_("error"), g_markup_printf_escaped(
@@ -3938,7 +3968,9 @@ static gboolean pid_is_alive(int pid)
   return pid_is_alive;
 }
 
-static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename, char **lockfile)
+static gboolean _lock_single_database(dt_database_t *db,
+                                      const char *dbfilename,
+                                      char **lockfile)
 {
   gboolean lock_acquired = FALSE;
   mode_t old_mode;
@@ -4071,7 +4103,8 @@ static gboolean _upgrade_camera_table(const dt_database_t *db)
   return res;
 }
 
-static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
+static void _too_new_db_version(const gchar *dbname,
+                                const gboolean has_gui)
 {
   if(!has_gui)
     exit(1);
@@ -4089,7 +4122,8 @@ static void _too_new_db_version(const gchar *dbname, const gboolean has_gui)
   g_free(label_text);
 }
 
-static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
+static void _ask_for_upgrade(const gchar *dbname,
+                             const gboolean has_gui)
 {
   // if there's no gui just leave
   if(!has_gui)
@@ -4151,7 +4185,7 @@ void dt_database_backup(const char *filename)
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
-      const int fd = g_open(backup, O_CREAT, S_IWUSR);
+      const int fd = g_open(backup, O_CREAT, S_IWUSR | S_IRUSR);
       if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
     if(!copy_status)
@@ -4165,7 +4199,8 @@ void dt_database_backup(const char *filename)
   g_free(backup);
 }
 
-int _get_pragma_int_val(sqlite3 *db, const char* pragma)
+int _get_pragma_int_val(sqlite3 *db,
+                        const char* pragma)
 {
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   int val = -1;
@@ -4181,7 +4216,8 @@ int _get_pragma_int_val(sqlite3 *db, const char* pragma)
   return val;
 }
 
-gchar* _get_pragma_string_val(sqlite3 *db, const char* pragma)
+gchar* _get_pragma_string_val(sqlite3 *db,
+                              const char* pragma)
 {
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   sqlite3_stmt *stmt;
@@ -4205,7 +4241,9 @@ gchar* _get_pragma_string_val(sqlite3 *db, const char* pragma)
   return val;
 }
 
-dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
+dt_database_t *dt_database_init(const char *alternative,
+                                const gboolean load_data,
+                                const gboolean has_gui)
 {
   /*  set the threading mode to Serialized */
   sqlite3_config(SQLITE_CONFIG_SERIALIZED);
@@ -4233,11 +4271,13 @@ start:
   {
     dbname = dt_conf_get_string("database");
     if(!dbname)
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%slibrary.db", datadir, G_DIR_SEPARATOR_S);
+      snprintf(dbfilename_library, sizeof(dbfilename_library),
+               "%s%slibrary.db", datadir, G_DIR_SEPARATOR_S);
     else if(!strcmp(dbname, ":memory:"))
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s%s%s", datadir, G_DIR_SEPARATOR_S, dbname);
+      snprintf(dbfilename_library, sizeof(dbfilename_library),
+               "%s%s%s", datadir, G_DIR_SEPARATOR_S, dbname);
     else
       g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
@@ -4253,7 +4293,8 @@ start:
   /* we also need a 2nd db with permanent data like presets, styles and tags */
   char dbfilename_data[PATH_MAX] = { 0 };
   if(load_data)
-    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
+    snprintf(dbfilename_data, sizeof(dbfilename_data),
+             "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
@@ -4498,13 +4539,12 @@ start:
       g_free(quick_check_text);
       g_free(data_status);
 
-      GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
       GtkWidget *label = gtk_label_new(NULL);
       gtk_label_set_markup(GTK_LABEL(label), label_text);
       g_free(label_text);
-      gtk_container_add(GTK_CONTAINER (content_area), label);
+      dt_gui_dialog_add(GTK_DIALOG(dialog), label);
 
-      gtk_widget_show_all(content_area);
+      gtk_widget_show_all(dialog);
 
       const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -4671,13 +4711,12 @@ start:
     g_free(quick_check_text);
     g_free(libdb_status);
 
-    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
     GtkWidget *label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), label_text);
     g_free(label_text);
-    gtk_container_add(GTK_CONTAINER (content_area), label);
+    dt_gui_dialog_add(GTK_DIALOG(dialog), label);
 
-    gtk_widget_show_all(content_area);
+    gtk_widget_show_all(dialog);
 
     const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -4864,7 +4903,7 @@ sqlite3 *dt_database_get(const dt_database_t *db)
   return db ? db->handle : NULL;
 }
 
-const gchar *dt_database_get_path(const struct dt_database_t *db)
+const gchar *dt_database_get_path(const dt_database_t *db)
 {
   return db->dbfilename_library;
 }
@@ -4924,7 +4963,7 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
-void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
+void dt_database_cleanup_busy_statements(const dt_database_t *db)
 {
   sqlite3_stmt *stmt = NULL;
   while( (stmt = sqlite3_next_stmt(db->handle, NULL)) != NULL)
@@ -4944,7 +4983,8 @@ void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
 }
 
 #define ERRCHECK {if(err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'",err); sqlite3_free(err); err=NULL;}}
-void dt_database_perform_maintenance(const struct dt_database_t *db)
+
+void dt_database_perform_maintenance(const dt_database_t *db)
 {
   char* err = NULL;
 
@@ -5002,12 +5042,12 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
 }
 #undef ERRCHECK
 
-static inline gboolean _is_mem_db(const struct dt_database_t *db)
+static inline gboolean _is_mem_db(const dt_database_t *db)
 {
   return !g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:");
 }
 
-gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
+gboolean dt_database_maybe_maintenance(const dt_database_t *db)
 {
   if(_is_mem_db(db))
     return FALSE;
@@ -5053,7 +5093,7 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
   return FALSE;
 }
 
-void dt_database_optimize(const struct dt_database_t *db)
+void dt_database_optimize(const dt_database_t *db)
 {
   if(_is_mem_db(db))
     return;
@@ -5118,7 +5158,7 @@ static int _backup_db(
   return rc;
 }
 
-gboolean dt_database_snapshot(const struct dt_database_t *db)
+gboolean dt_database_snapshot(const dt_database_t *db)
 {
   // backing up memory db is pointelss
   if(_is_mem_db(db))
@@ -5166,7 +5206,7 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   return TRUE;
 }
 
-gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
+gboolean dt_database_maybe_snapshot(const dt_database_t *db)
 {
   if(_is_mem_db(db))
     return FALSE;
@@ -5377,7 +5417,7 @@ static gint _db_snap_sort(gconstpointer a, gconstpointer b, gpointer user_data)
   return ret;
 }
 
-char **dt_database_snaps_to_remove(const struct dt_database_t *db)
+char **dt_database_snaps_to_remove(const dt_database_t *db)
 {
   if(_is_mem_db(db))
     return NULL;
@@ -5782,7 +5822,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
 //       transaction routines. And it has been done to help further implementation for
 //       proper threading and nested transaction support.
 //
-void dt_database_start_transaction(const struct dt_database_t *db)
+void dt_database_start_transaction(const dt_database_t *db)
 {
   const int trxid = dt_atomic_add_int(&_trxid, 1);
 
@@ -5816,7 +5856,7 @@ void dt_database_start_transaction(const struct dt_database_t *db)
              MAX_NESTED_TRANSACTIONS);
 }
 
-void dt_database_release_transaction(const struct dt_database_t *db)
+void dt_database_release_transaction(const dt_database_t *db)
 {
   const int trxid = dt_atomic_sub_int(&_trxid, 1);
 
@@ -5844,7 +5884,7 @@ void dt_database_release_transaction(const struct dt_database_t *db)
 #endif
 }
 
-void dt_database_rollback_transaction(const struct dt_database_t *db)
+void dt_database_rollback_transaction(const dt_database_t *db)
 {
   const int trxid = dt_atomic_sub_int(&_trxid, 1);
 
