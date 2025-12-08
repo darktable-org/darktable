@@ -1733,7 +1733,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_tree_view_append_column((GtkTreeView *)g->lutname, col);
   GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView *)g->lutname);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
-  g->lutname_handler_id = g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_lutname_callback), self);
+  g->lutname_handler_id = g_signal_connect_data(G_OBJECT(selection), "changed", G_CALLBACK(_lutname_callback), self, NULL, 0);
   dt_gui_box_add(self->widget, g->lutwindow);
 
   g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(_entry_callback), self);

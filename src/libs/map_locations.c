@@ -945,8 +945,8 @@ void gui_init(dt_lib_module_t *self)
   }
   d->shape_button = dtgtk_togglebutton_new(location_shapes[shape], 0, NULL);
   gtk_box_pack_start(hbox, d->shape_button, FALSE, TRUE, 0);
-  d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
-                                             G_CALLBACK(_shape_button_clicked), self);
+  d->shape_button_handler = g_signal_connect_data(G_OBJECT(d->shape_button), "clicked",
+                                                  G_CALLBACK(_shape_button_clicked), self, NULL, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
                               _("select the shape of the location\'s limits on the map, circle or rectangle"
                                 "\nor even polygon if available (select first a polygon place in 'find location' module)"));

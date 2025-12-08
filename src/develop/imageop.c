@@ -875,9 +875,8 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   return FALSE; /* event not handled */
 }
 
-static gboolean _rename_module_resize(GtkWidget *entry,
-                                      GdkEventKey *event,
-                                      dt_iop_module_t *module)
+static void _rename_module_resize(GtkWidget *entry,
+                                  gpointer user)
 {
   int width = 0;
   GtkBorder padding;
@@ -887,8 +886,6 @@ static gboolean _rename_module_resize(GtkWidget *entry,
                                 gtk_widget_get_state_flags (entry),
                                 &padding);
   gtk_widget_set_size_request(entry, width + padding.left + padding.right + 1, -1);
-
-  return TRUE;
 }
 
 void dt_iop_gui_rename_module(dt_iop_module_t *module)
@@ -3011,7 +3008,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   g_signal_connect(button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(element));
-  g_signal_connect(button, "button-press-event", G_CALLBACK(callback), module);
+  g_signal_connect_data(button, "button-press-event", G_CALLBACK(callback), module, NULL, 0);
   dt_action_define(&module->so->actions, NULL, NULL, button, NULL);
   gtk_widget_show(button);
 

@@ -2011,9 +2011,9 @@ static void _gui_sliders_update(dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->scale_y), (img->flags & DT_IMAGE_4BAYER));
 }
 
-static void temp_label_click(GtkWidget *label,
-                             GdkEventButton *event,
-                             dt_iop_module_t *self)
+static gboolean temp_label_click(GtkWidget *label,
+                                 GdkEventButton *event,
+                                 dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -2043,6 +2043,7 @@ static void temp_label_click(GtkWidget *label,
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
   _color_finetuning_slider(self);
+  return TRUE;
 }
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)
