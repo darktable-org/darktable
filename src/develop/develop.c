@@ -152,6 +152,15 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full.closeup = dev->preview2.closeup = 0;
   dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
   dev->full.zoom_scale = dev->preview2.zoom_scale = 1.0f;
+  
+  // Initialize pinned image state
+  dev->preview2_pinned = FALSE;
+  dev->preview2_pinned_imgid = -1;
+  dev->preview2_pinned_surface = NULL;
+  dev->preview2_pinned_base_scale = 1.0f;
+  dev->preview2_pinned_scale = 1.0f;
+  dev->preview2_pinned_off_x = 0.0f;
+  dev->preview2_pinned_off_y = 0.0f;
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -201,8 +210,16 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->histogram_pre_tonecurve);
-  free(dev->histogram_pre_levels);
+  if(dev->histogram_pre_tonecurve) free(dev->histogram_pre_tonecurve);
+  if(dev->histogram_pre_levels) free(dev->histogram_pre_levels);
+  dev->histogram_pre_tonecurve = dev->histogram_pre_levels = NULL;
+  
+  // Clean up pinned image surface
+  if(dev->preview2_pinned_surface)
+  {
+    cairo_surface_destroy(dev->preview2_pinned_surface);
+    dev->preview2_pinned_surface = NULL;
+  }
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
@@ -261,6 +278,165 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
   if(dev->preview2.pipe)
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
+}
+
+void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
+{
+  if(!dev) return;
+  
+  dev->preview2_pinned = !dev->preview2_pinned;
+  
+  if(dev->preview2_pinned)
+  {
+    // Pinning the current image
+    dev->preview2_pinned_imgid = dev->image_storage.id;
+    
+    // If we already have a surface, clean it up first
+    if(dev->preview2_pinned_surface)
+    {
+      cairo_surface_destroy(dev->preview2_pinned_surface);
+      dev->preview2_pinned_surface = NULL;
+    }
+    
+    // Get the window dimensions for computing the base scale
+    gint window_width = 800;
+    gint window_height = 600;
+    if(dev->preview2.widget && gtk_widget_get_window(dev->preview2.widget))
+    {
+      GdkWindow *window = gtk_widget_get_window(dev->preview2.widget);
+      window_width = gdk_window_get_width(window);
+      window_height = gdk_window_get_height(window);
+    }
+    
+    // Get the actual final image dimensions after all transformations (crop, rotate, etc.)
+    int final_width = 0;
+    int final_height = 0;
+    if(!dt_image_get_final_size(dev->image_storage.id, &final_width, &final_height))
+    {
+      // Fallback to image storage dimensions if we can't get final size
+      final_width = dev->image_storage.final_width;
+      final_height = dev->image_storage.final_height;
+    }
+    
+    // Use the actual image dimensions for rendering at native resolution
+    const size_t max_width = MAX(final_width, 800);   // Use actual width, minimum 800
+    const size_t max_height = MAX(final_height, 600); // Use actual height, minimum 600
+    
+    // Show toast message while rendering
+    dt_toast_log(_("rendering pinned image..."));
+    
+    uint8_t *buf = NULL;
+    size_t buf_width = 0;
+    size_t buf_height = 0;
+    float scale = 1.0f;
+    
+    // Render the full image with current develop settings up to the current history position
+    dt_dev_image(dev->image_storage.id, 
+                 max_width, max_height,
+                 dev->history_end,  // use current history position
+                 &buf, &scale,
+                 &buf_width, &buf_height,
+                 NULL,  // no zoom position (render whole image)
+                 -1,    // no snapshot
+                 NULL,  // no module filter
+                 DT_DEVICE_NONE,  // CPU processing
+                 FALSE);  // don't use finalscale
+    
+    if(buf && buf_width > 0 && buf_height > 0)
+    {
+      // Create a cairo surface from the rendered buffer
+      // The buffer is BGRA32 format (uint8_t)
+      cairo_surface_t *surface = cairo_image_surface_create(
+        CAIRO_FORMAT_RGB24,
+        buf_width,
+        buf_height);
+      
+      if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+      {
+        unsigned char *surface_data = cairo_image_surface_get_data(surface);
+        const int stride = cairo_image_surface_get_stride(surface);
+        
+        // Copy the rendered buffer to the cairo surface
+        // dt_dev_image returns BGRA data in uint8_t format
+        for(size_t y = 0; y < buf_height; y++)
+        {
+          uint8_t *src = buf + y * buf_width * 4;
+          uint8_t *dst = surface_data + y * stride;
+          memcpy(dst, src, buf_width * 4);
+        }
+        
+        cairo_surface_mark_dirty(surface);
+        
+        dev->preview2_pinned_surface = surface;
+        
+        /* compute base scale to fit the rendered image into window */
+        if(window_width > 0 && window_height > 0)
+        {
+          const float scale_w = (float)window_width / (float)buf_width;
+          const float scale_h = (float)window_height / (float)buf_height;
+            dev->preview2_pinned_base_scale = MIN(scale_w, scale_h);
+        }
+        else
+        {
+          dev->preview2_pinned_base_scale = 1.0f;
+        }
+        
+          // Copy current second-window zoom and position to pinned image for seamless transition
+          dt_dev_zoom_t cur_zoom;
+          int cur_closeup;
+          float cur_zoom_x = 0.0f, cur_zoom_y = 0.0f;
+          dt_dev_get_viewport_params(&dev->preview2, &cur_zoom, &cur_closeup, &cur_zoom_x, &cur_zoom_y);
+          // Current zoom scale without ppd to match cairo logical coordinates
+          const float cur_scale = dt_dev_get_zoom_scale(&dev->preview2, cur_zoom, 1 << cur_closeup, FALSE);
+
+          // User scale relative to base fit scale so that base*user == current scale
+          dev->preview2_pinned_scale = (dev->preview2_pinned_base_scale > 0.0f) 
+                                          ? (cur_scale / dev->preview2_pinned_base_scale)
+                                          : 1.0f;
+
+          // Offsets in window pixels: match original pan exactly.
+          // Window offset equals zoom_x * (scaled image width) and similarly for height.
+          const float total_scale = dev->preview2_pinned_base_scale * dev->preview2_pinned_scale;
+          // Note: positive zoom_x means the image center moves right in viewport;
+          // to match that, the image must translate left. Hence the negative sign.
+          dev->preview2_pinned_off_x = -cur_zoom_x * ((float)buf_width * total_scale);
+          dev->preview2_pinned_off_y = -cur_zoom_y * ((float)buf_height * total_scale);
+        
+          // If image fits entirely, keep centered (ignore offsets)
+          const float scaled_img_w = buf_width * total_scale;
+          const float scaled_img_h = buf_height * total_scale;
+          if(scaled_img_w <= window_width) dev->preview2_pinned_off_x = 0.0f;
+          if(scaled_img_h <= window_height) dev->preview2_pinned_off_y = 0.0f;
+        
+        dt_toast_log(_("pinned image rendered"));
+      }
+      else
+      {
+        dt_toast_log(_("failed to create surface for pinned image"));
+      }
+      
+      // Free the rendered buffer
+      dt_free_align(buf);
+    }
+    else
+    {
+      dt_toast_log(_("failed to render pinned image"));
+    }
+  }
+  else
+  {
+    // Unpinning - clear the pinned image ID and surface
+    dev->preview2_pinned_imgid = -1;
+    if(dev->preview2_pinned_surface)
+    {
+      cairo_surface_destroy(dev->preview2_pinned_surface);
+      dev->preview2_pinned_surface = NULL;
+    }
+  }
+  
+  // Force a redraw of the second window
+  if(dev->preview2.widget)
+    gtk_widget_queue_draw(dev->preview2.widget);
 }
 
 void dt_dev_invalidate_preview(dt_develop_t *dev)

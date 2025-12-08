@@ -517,14 +517,16 @@ separator
 .dt_accels_stick,
 #filter-colors-box .dt_module_btn,
 #header-toolbar .dt_module_btn,
-#footer-toolbar .dt_module_btn
+#footer-toolbar .dt_module_btn,
+#second_window .dt_accels_btn
 {
   min-height: 1.7em;
   min-width: 1.7em;
   border: 0.08em solid transparent;
 }
 
-#footer-toolbar button:checked
+#footer-toolbar button:checked,
+#second_window button:checked
 {
    border: 0.08em solid shade(@button_border, 1.6);
 }
