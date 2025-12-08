@@ -160,6 +160,9 @@ changes (where available).
 
 - Tune performance for the Lut3D module (5% to 20% speed-up).
 
+- Dramatically speed up first startup of a new installation when the
+  library is stored on a hard drive or NAS rather than SSD.
+
 ## Other Changes
 
 - Allow using <kbd>Shift</kbd> modifier to select only the feather
