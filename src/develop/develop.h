@@ -126,6 +126,9 @@ typedef struct dt_dev_viewport_t
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe;
+  
+  // Pin button for the second window
+  GtkWidget *pin_button;
 } dt_dev_viewport_t;
 
 /* keep track on what and where we do chromatic adaptation, used
@@ -352,6 +355,20 @@ typedef struct dt_develop_t
   gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
 
   GList *module_filter_out;
+  
+  // Pinned image for second window
+  gboolean preview2_pinned;           // Whether the second window is pinned to a specific image
+  dt_imgid_t preview2_pinned_imgid;   // The ID of the pinned image
+  cairo_surface_t *preview2_pinned_surface;  // Snapshot of the pinned image
+  /* transform state for pinned surface (independent of preview2 viewport)
+   * base_scale: scale used to fit the image into the window at pin time
+   * scale: user-applied zoom multiplier on top of base_scale
+   * off_x/off_y: pan offsets in image pixels (applied after scaling)
+   */
+  float preview2_pinned_base_scale;
+  float preview2_pinned_scale;
+  float preview2_pinned_off_x;
+  float preview2_pinned_off_y;
 } dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
@@ -413,8 +430,15 @@ void dt_dev_invalidate_history_module(GList *list,
 
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
+void dt_dev_invalidate_preview(dt_develop_t *dev);
 void dt_dev_invalidate_all(dt_develop_t *dev);
-void dt_dev_set_histogram(dt_develop_t *dev);
+
+/**
+ * Toggle the pinned state of the second preview window.
+ * When pinned, the second window will continue to show the current image
+ * even when the user navigates to other images.
+ */
+void dt_dev_toggle_preview2_pinned(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
