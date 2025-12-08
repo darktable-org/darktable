@@ -752,10 +752,10 @@ static gboolean _borders_scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _scrollbar_changed(GtkWidget *widget,
-                                   gpointer user_data)
+static void _scrollbar_changed(GtkWidget *widget,
+                               gpointer user_data)
 {
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset) return;
 
   GtkAdjustment *adjustment_x =
     gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar));
@@ -766,8 +766,6 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   const gdouble value_y = gtk_adjustment_get_value(adjustment_y);
 
   dt_view_manager_scrollbar_changed(darktable.view_manager, value_x, value_y);
-
-  return TRUE;
 }
 
 gboolean _valid_window_placement(const gint saved_x,

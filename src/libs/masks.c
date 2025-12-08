@@ -309,9 +309,9 @@ static void _tree_add_shape(GtkButton *button, gpointer shape)
   dt_control_queue_redraw_center();
 }
 
-static void _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer shape)
+static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer shape)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return FALSE;
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -326,6 +326,7 @@ static void _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer sha
 
     _lib_masks_inactivate_icons(darktable.develop->proxy.masks.module);
   }
+  return TRUE;
 }
 
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)

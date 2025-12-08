@@ -44,9 +44,9 @@ typedef struct dt_lib_colorlabels_t
 } dt_lib_colorlabels_t;
 
 /* callback when a colorlabel button is clicked */
-static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self);
+static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
+                                                         GdkEventButton *event,
+                                                         dt_lib_module_t *self);
 
 gint _get_colorlabel(dt_lib_module_t *self, GtkWidget *w)
 {
@@ -267,9 +267,9 @@ static void _lib_colorlabels_edit(dt_lib_module_t *self,
   }
 }
 
-static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
-                                                     GdkEventButton *event,
-                                                     dt_lib_module_t *self)
+static gboolean _lib_colorlabels_button_clicked_callback(GtkWidget *w,
+                                                         GdkEventButton *event,
+                                                         dt_lib_module_t *self)
 {
   dt_lib_colorlabels_t *d = self->data;
 
@@ -290,6 +290,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,
                                DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                imgs);
   }
+  return TRUE;
 }
 
 // clang-format off
