@@ -1821,6 +1821,9 @@ void dt_import_default_styles(const char *folder)
 {
   struct dirent **entries;
   const int numentries = scandir(folder, &entries, _check_extension, alphasort);
+  if(numentries < 0)
+    return;
+  dt_database_start_transaction(darktable.db);
   for(int i = 0; i < numentries; i++)
   {
     char *filename = g_build_filename(folder, entries[i]->d_name, NULL);
@@ -1836,8 +1839,8 @@ void dt_import_default_styles(const char *folder)
     g_free(filename);
     free(entries[i]);
   }
-  if(numentries != -1)
-    free(entries);
+  dt_database_release_transaction(darktable.db);
+  free(entries);
 }
 
 // clang-format off
