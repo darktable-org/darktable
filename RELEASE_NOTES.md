@@ -319,6 +319,10 @@ changes (where available).
 
 - Fixed darkroom processing after changing any of the colour profiles.
 
+- For module toggle shortcuts (like enable, show and focus) the "on" and
+  "off" effects are now respected (they dont simply always toggle
+  anymore, like they did before).
+
 ## Lua
 
 ### API Version
