@@ -3816,9 +3816,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
   const gint page_num = gtk_notebook_append_page(notebook, page, label);
   dt_gui_expand(gtk_notebook_get_tab_label(notebook, page));
   if(page_num == 1 &&
-FALSE && // GTK4
-     !g_signal_handler_find(G_OBJECT(notebook),
-                            G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _notebook_size_callback, NULL))
+     !g_object_get_data(G_OBJECT(notebook), "click"))
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate",
                      G_CALLBACK(_notebook_size_callback), NULL);

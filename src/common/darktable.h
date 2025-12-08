@@ -1295,7 +1295,6 @@ typedef union GdkEventOld
 #define gtk_container_get_focus_child(...) NULL
 #define gtk_container_set_border_width(...)
 #define gtk_container_set_focus_child(...)
-#define gtk_dialog_run(...) 0
 #define gtk_drag_begin_with_coordinates(...) NULL
 #define gtk_drag_dest_set(...)
 #define gtk_drag_dest_unset(...)
@@ -1352,7 +1351,6 @@ typedef union GdkEventOld
 #define gtk_menu_shell_prepend(...)
 #define GTK_MENU_SHELL(...) NULL
 #define GTK_MENU(...) NULL
-#define gtk_native_dialog_run(...) 0
 #define gtk_overlay_reorder_overlay(...)
 #define gtk_overlay_set_overlay_pass_through(...)
 #define gtk_parse_args(...) 0
@@ -1415,7 +1413,6 @@ typedef union GdkEventOld
 #define gtk_window_set_gravity(...)
 #define gtk_window_set_keep_above(...)
 #define gtk_window_set_position(...)
-#define gtk_window_set_transient_for(...)
 #define gtk_window_set_type_hint(...)
 #define gtk_window_set_urgency_hint(...)
 
@@ -1515,12 +1512,14 @@ static inline void gtk_container_foreach(GtkContainer *container, GtkCallback ca
 #define gtk_label_set_line_wrap gtk_label_set_wrap
 #define gtk_popover_new(...) gtk_popover_new()
 #define gtk_stack_set_homogeneous gtk_stack_set_vhomogeneous
-#define gtk_widget_destroy gtk_widget_unparent
+#define gtk_widget_destroy(widget) GTK_IS_WINDOW(widget) ? gtk_window_destroy(GTK_WINDOW(widget)) : gtk_widget_unparent(widget)
 #define gtk_get_current_event(...) (GdkEventOld[]){{GDK_KEY_PRESS}}
 static void gtk_widget_destroyed(){};
 static void gtk_main_quit(){};
 static void gtk_main(){};
 static void gtk_widget_show_all(GtkWidget*w){gtk_widget_show(w);};
+int gtk_dialog_run(GtkDialog *dialog);
+int gtk_native_dialog_run(GtkNativeDialog *dialog);
 
 // WIN32
 #define GDK_WINDOW_HWND(...) NULL

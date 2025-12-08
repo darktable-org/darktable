@@ -2717,7 +2717,7 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   g_signal_connect(combo_from_id, "changed", G_CALLBACK(_import_id_changed), combo_to_id);
 
   dt_gui_dialog_add(GTK_DIALOG(dialog), label, combo_dev, device_grid, clear);
-  gtk_widget_show_all(dialog);
+  // gtk_widget_show_all(dialog);
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
 

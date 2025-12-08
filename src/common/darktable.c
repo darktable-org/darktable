@@ -2994,6 +2994,41 @@ gulong dt_signal_connect_data_with_caller(gpointer instance,
   return 0;
 }
 
+static void _dialog_response(GtkDialog *dialog,
+                             int        response_id,
+                             int       *response_ptr)
+{
+  *response_ptr = response_id;
+}
+int _wait_for_dialog_response(gpointer dialog)
+{
+  int response_id = G_MAXINT;
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_response), &response_id);
+// FIXME GTK4 doesn't really support reentrent event loops so all calls to dialog_run should be converted to respond to "response" directly.
+  while(response_id == G_MAXINT
+        && g_list_model_get_n_items(gtk_window_get_toplevels()) > 0)
+    g_main_context_iteration(NULL, FALSE);
+  return response_id;
+}
+int gtk_dialog_run(GtkDialog *dialog)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  if(!gtk_window_get_transient_for(GTK_WINDOW(dialog)))
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_present(GTK_WINDOW(dialog));
+  return _wait_for_dialog_response(dialog);
+}
+int gtk_native_dialog_run(GtkNativeDialog *dialog)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  if(!gtk_native_dialog_get_transient_for(GTK_NATIVE_DIALOG(dialog)))
+    gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(dialog), win);
+  gtk_native_dialog_set_modal(GTK_NATIVE_DIALOG(dialog), TRUE);
+  gtk_native_dialog_show(GTK_NATIVE_DIALOG(dialog));
+  return _wait_for_dialog_response(dialog);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
