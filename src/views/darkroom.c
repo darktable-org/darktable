@@ -3805,19 +3805,77 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
                                              cairo_t *cri,
                                              dt_develop_t *dev)
 {
-  cairo_set_source_rgb(cri, 0.2, 0.2, 0.2);
+  // Set background
+  dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+  cairo_paint(cri);
 
-  if(dev->preview2.pipe->backbuf)  // do we have an image?
+  // Check if we should show a pinned image or the current preview
+  if(dev->preview2_pinned && dev->preview2_pinned_surface)
   {
-    // draw image
-    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-    cairo_paint(cri);
+    // Get surface dimensions (already in logical pixels for RGB24 surface)
+    int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
+    int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
+    
+    if (img_width > 0 && img_height > 0)
+    {
+      // Get widget dimensions in logical (widget) pixel space
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      const float width = (float)allocation.width;   // logical pixels
+      const float height = (float)allocation.height; // logical pixels
 
+      // compute total scale and offsets from pinned transform stored in dev
+      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
+      const float user_scale = dev->preview2_pinned_scale > 0.0f ? dev->preview2_pinned_scale : 1.0f;
+      const float total_scale = base * user_scale;
+
+      cairo_save(cri);
+
+      // Step 1: Translate to widget center (in logical pixels)
+      cairo_translate(cri, width * 0.5f, height * 0.5f);
+
+      // Step 2: Apply zoom scale (in logical pixel space)
+      cairo_scale(cri, total_scale, total_scale);
+
+      // Step 3: Apply pan offsets (in logical pixels, scaled by total_scale)
+      // When image is smaller than window (total_scale < 1.0), center it by ignoring offsets
+      const float scaled_img_width = img_width * total_scale;
+      const float scaled_img_height = img_height * total_scale;
+      if(scaled_img_width < width && scaled_img_height < height)
+      {
+        // Image is smaller than window in both dimensions - keep it centered (no offset)
+        // Offsets are ignored to keep the image centered
+      }
+      else
+      {
+        // Image is larger than window - apply pan offsets
+        // Offsets are already in pixels, divide by total_scale to get unscaled coordinates
+        cairo_translate(cri, dev->preview2_pinned_off_x / total_scale,
+                            dev->preview2_pinned_off_y / total_scale);
+      }
+
+      // Step 4: Draw the surface centered at origin
+      cairo_set_source_surface(cri, dev->preview2_pinned_surface, 
+                               -(float)img_width * 0.5f, 
+                               -(float)img_height * 0.5f);
+      cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_BEST);
+      cairo_paint(cri);
+
+      cairo_restore(cri);
+    }
+  }
+  else if(dev->preview2.pipe->backbuf)  // do we have a regular preview image?
+  {
+    // draw the current preview image
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
-                        &dev->preview2, DT_WINDOW_SECOND);
+                       &dev->preview2, DT_WINDOW_SECOND);
   }
 
-  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
+  // Only process preview if not pinned or if we don't have a pinned image yet
+  if(!dev->preview2_pinned || !dev->preview2_pinned_surface)
+  {
+    if(_preview2_request(dev)) dt_dev_process_preview2(dev);
+  }
 
   return TRUE;
 }
@@ -3829,6 +3887,103 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
+    // If pinned, handle zooming/panning on the pinned surface directly
+    if(dev->preview2_pinned && dev->preview2_pinned_surface)
+    {
+      // get widget size in logical pixels
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      const float width = (float)allocation.width;   // logical pixels
+      const float height = (float)allocation.height; // logical pixels
+
+      // get surface dimensions
+      int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
+      int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
+
+      // current total scale
+      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
+      const float total_scale = base * dev->preview2_pinned_scale;
+
+      // simple step scale factor
+      const float step = 1.1f;
+      const float f = (delta_y < 0) ? step : (1.0f / step);
+
+      // event coordinates in logical pixels (as delivered by GTK)
+      const float ex = event->x;
+      const float ey = event->y;
+
+      // Calculate new scale, but don't allow zooming out smaller than fit-to-window
+      float new_scale = dev->preview2_pinned_scale * f;
+      if(new_scale < 1.0f)
+      {
+        new_scale = 1.0f;
+      }
+      
+      const float new_total_scale = base * new_scale;
+      
+      // Convert offsets to normalized coordinates [-0.5, 0.5] like unpinned images
+      float zoom_x = dev->preview2_pinned_off_x / img_width;
+      float zoom_y = dev->preview2_pinned_off_y / img_height;
+      
+      // Only adjust zoom position if scale actually changed
+      if(fabsf(new_scale - dev->preview2_pinned_scale) > 0.001f)
+      {
+        // Adjust zoom position to keep same point under cursor (like unpinned images)
+        const float mouse_off_x = (ex - 0.5f * width) / img_width;
+        const float mouse_off_y = (ey - 0.5f * height) / img_height;
+        zoom_x += mouse_off_x / total_scale - mouse_off_x / new_total_scale;
+        zoom_y += mouse_off_y / total_scale - mouse_off_y / new_total_scale;
+      }
+      
+      // Apply new scale first
+      dev->preview2_pinned_scale = new_scale;
+      
+      // Calculate scaled dimensions with new scale
+      const float scaled_img_width = img_width * new_total_scale;
+      const float scaled_img_height = img_height * new_total_scale;
+      
+      // Convert back to offset system
+      dev->preview2_pinned_off_x = zoom_x * img_width;
+      dev->preview2_pinned_off_y = zoom_y * img_height;
+      
+      // Clamp offsets to ensure image edges never leave the window
+      // The coordinate system: offsets are translations of the image center from window center
+      
+      // For X dimension:
+      if(scaled_img_width <= width)
+      {
+        // Image narrower than window - center it (no offset)
+        dev->preview2_pinned_off_x = 0.0f;
+      }
+      else
+      {
+        // Image wider than window - clamp to keep edges within window
+        // Offsets are in pixels. When offset=0, image is centered.
+        // Max positive offset: left edge touches left window edge
+        // Min negative offset: right edge touches right window edge
+        const float max_offset_x = (scaled_img_width - width) * 0.5f;
+        const float min_offset_x = -max_offset_x;
+        dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, min_offset_x, max_offset_x);
+      }
+      
+      // For Y dimension:
+      if(scaled_img_height <= height)
+      {
+        // Image shorter than window - center it (no offset)
+        dev->preview2_pinned_off_y = 0.0f;
+      }
+      else
+      {
+        // Image taller than window - clamp to keep edges within window
+        const float max_offset_y = (scaled_img_height - height) * 0.5f;
+        const float min_offset_y = -max_offset_y;
+        dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, min_offset_y, max_offset_y);
+      }
+      
+      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
+      return TRUE;
+    }
+
     const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
     dt_dev_zoom_move(&dev->preview2, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
                      event->x, event->y, constrained);
@@ -3841,9 +3996,23 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
                                                        GdkEventButton *event,
                                                        dt_develop_t *dev)
 {
-  if(event->type == GDK_2BUTTON_PRESS) return 0;
+  // Handle double-click on pinned images to reset zoom and center
+  if(event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+  {
+    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
+    {
+      // Reset to fit-to-window scale and center
+      dev->preview2_pinned_scale = 1.0f;
+      dev->preview2_pinned_off_x = 0.0f;
+      dev->preview2_pinned_off_y = 0.0f;
+      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
+      return TRUE;
+    }
+    return FALSE;
+  }
   if(event->button == GDK_BUTTON_PRIMARY)
   {
+    // store coordinates in logical pixels (as delivered by event)
     darktable.control->button_x = event->x;
     darktable.control->button_y = event->y;
     _dt_second_window_change_cursor(dev, "grabbing");
@@ -3851,6 +4020,15 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
   }
   if(event->button == GDK_BUTTON_MIDDLE)
   {
+    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
+    {
+      // reset pinned zoom/position similar to zoom-to-1 behaviour
+      dev->preview2_pinned_scale = 1.0f;
+      dev->preview2_pinned_off_x = 0.0f;
+      dev->preview2_pinned_off_y = 0.0f;
+      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
+      return TRUE;
+    }
     dt_dev_zoom_move(&dev->preview2, DT_ZOOM_1, 0.0f, -2,
                      event->x, event->y, !dt_modifier_is(event->state, GDK_CONTROL_MASK));
     return TRUE;
@@ -3875,6 +4053,81 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
   if(event->state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
+    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
+    {
+      // event coordinates are in logical pixels (as delivered by GTK)
+      const float ex = event->x;
+      const float ey = event->y;
+
+      const float dx = ex - ctl->button_x;
+      const float dy = ey - ctl->button_y;
+
+      // Get widget and image dimensions
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(w, &allocation);
+      const float width = (float)allocation.width;
+      const float height = (float)allocation.height;
+      
+      int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
+      int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
+
+      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
+      const float total_scale = base * dev->preview2_pinned_scale;
+
+      // Calculate scaled image dimensions
+      const float scaled_img_width = img_width * total_scale;
+      const float scaled_img_height = img_height * total_scale;
+
+      // Only allow panning if image is larger than window in at least one dimension
+      if(scaled_img_width >= width || scaled_img_height >= height)
+      {
+        // Only accumulate pan delta in dimensions where image is larger than window
+        if(scaled_img_width >= width)
+          dev->preview2_pinned_off_x += dx;
+        if(scaled_img_height >= height)
+          dev->preview2_pinned_off_y += dy;
+        
+        // Clamp offsets to ensure image edges never leave the window
+        // The coordinate system: offsets are translations of the image center from window center
+        // Positive offset moves image right/down, negative offset moves image left/up
+        
+        // For X dimension:
+        if(scaled_img_width <= width)
+        {
+          // Image narrower than window - center it (no offset)
+          dev->preview2_pinned_off_x = 0.0f;
+        }
+        else
+        {
+          // Image wider than window - clamp to keep edges within window
+          const float max_offset_x = (scaled_img_width - width) * 0.5f;
+          const float min_offset_x = -max_offset_x;
+          dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, min_offset_x, max_offset_x);
+        }
+        
+        // For Y dimension:
+        if(scaled_img_height <= height)
+        {
+          // Image shorter than window - center it (no offset)
+          dev->preview2_pinned_off_y = 0.0f;
+        }
+        else
+        {
+          // Image taller than window - clamp to keep edges within window
+          const float max_offset_y = (scaled_img_height - height) * 0.5f;
+          const float min_offset_y = -max_offset_y;
+          dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, min_offset_y, max_offset_y);
+        }
+      }
+      
+      // Always update button position to prevent delta accumulation
+      ctl->button_x = ex;
+      ctl->button_y = ey;
+
+      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
+      return TRUE;
+    }
+
     dt_dev_zoom_move(&dev->preview2, DT_ZOOM_MOVE, -1.f, 0,
                      event->x - ctl->button_x, event->y - ctl->button_y, TRUE);
     ctl->button_x = event->x;
@@ -3896,8 +4149,10 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
                                                   GdkEventConfigure *event,
                                                   dt_develop_t *dev)
 {
-  if(dev->preview2.orig_width != event->width
-     || dev->preview2.orig_height != event->height)
+  gboolean size_changed = (dev->preview2.orig_width != event->width || 
+                          dev->preview2.orig_height != event->height);
+  
+  if(size_changed)
   {
     dev->preview2.width = event->width;
     dev->preview2.height = event->height;
@@ -3908,6 +4163,53 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
     dev->preview2.pipe->cache_obsolete = TRUE;
+    
+    // If we have a pinned image, update the viewport dimensions
+    if(dev->preview2_pinned)
+    {
+      // Recompute base fit scale for pinned image to follow window size
+      if(dev->preview2_pinned_surface)
+      {
+        const int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
+        const int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
+        if(img_width > 0 && img_height > 0)
+        {
+          const float scale_w = (float)event->width / (float)img_width;
+          const float scale_h = (float)event->height / (float)img_height;
+          dev->preview2_pinned_base_scale = MIN(scale_w, scale_h);
+
+          // If completely zoomed out (user scale == 1), keep image fit to window
+          if(fabsf(dev->preview2_pinned_scale - 1.0f) < 1e-6f)
+          {
+            dev->preview2_pinned_off_x = 0.0f;
+            dev->preview2_pinned_off_y = 0.0f;
+          }
+          else
+          {
+            // Clamp offsets against new window size
+            const float total_scale = dev->preview2_pinned_base_scale * dev->preview2_pinned_scale;
+            const float scaled_img_w = img_width * total_scale;
+            const float scaled_img_h = img_height * total_scale;
+            if(scaled_img_w <= event->width) dev->preview2_pinned_off_x = 0.0f;
+            else
+            {
+              const float max_x = (scaled_img_w - event->width) * 0.5f;
+              dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, -max_x, max_x);
+            }
+            if(scaled_img_h <= event->height) dev->preview2_pinned_off_y = 0.0f;
+            else
+            {
+              const float max_y = (scaled_img_h - event->height) * 0.5f;
+              dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, -max_y, max_y);
+            }
+          }
+        }
+      }
+      
+      // Force a redraw
+      if(dev->preview2.widget)
+        gtk_widget_queue_draw(dev->preview2.widget);
+    }
   }
 
   dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);
@@ -3921,31 +4223,115 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
   return TRUE;
 }
 
-static void _darkroom_ui_second_window_init(GtkWidget *widget,
+// Query tooltip handler for the pin button
+static gboolean _preview2_pin_button_query_tooltip(GtkWidget *widget,
+                                                    gint x, gint y,
+                                                    gboolean keyboard_mode,
+                                                    GtkTooltip *tooltip,
+                                                    gpointer user_data)
+{
+  gboolean is_pinned = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const char *tooltip_text = is_pinned ? _("Unpin image") : _("Pin current image");
+  gtk_tooltip_set_text(tooltip, tooltip_text);
+  return TRUE;
+}
+
+static gboolean _preview2_on_top_button_query_tooltip(GtkWidget *widget,
+                                                        gint x, gint y,
+                                                        gboolean keyboard_mode,
+                                                        GtkTooltip *tooltip,
+                                                        gpointer user_data)
+{
+  gboolean is_on_top = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const char *tooltip_text = is_on_top ? _("Do not keep second window on top") : _("Keep second window on top");
+  gtk_tooltip_set_text(tooltip, tooltip_text);
+  return TRUE;
+}
+
+// Callback for the pin button in the overlay
+static void _preview2_pin_button_clicked(GtkToggleButton *button,
+                                         dt_develop_t *dev)
+{
+  dt_dev_toggle_preview2_pinned(dev);
+}
+
+static void _preview2_on_top_button_clicked(GtkToggleButton *button,
                                             dt_develop_t *dev)
 {
+  gtk_window_set_keep_above(GTK_WINDOW(dev->second_wnd),
+                            gtk_toggle_button_get_active(button));
+}
+
+static void _darkroom_ui_second_window_init(GtkWidget *overlay,
+                                            dt_develop_t *dev)
+{
+  // Get the window that contains this overlay
+  GtkWidget *window = gtk_widget_get_toplevel(overlay);
+  
   const int width = MAX(10, dt_conf_get_int("second_window/window_w"));
   const int height = MAX(10, dt_conf_get_int("second_window/window_h"));
-
-  dev->preview2.border_size = 0;
-
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
-  gtk_window_set_default_size(GTK_WINDOW(widget), width, height);
-  gtk_widget_show_all(widget);
-  gtk_window_move(GTK_WINDOW(widget), x, y);
-  gtk_window_resize(GTK_WINDOW(widget), width, height);
+  
+  // Create the pin button for the overlay
+  GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+  gtk_widget_set_name(pin_button, "dt_window2_pin_button");
+  gtk_widget_set_size_request(pin_button, 24, 24);
+  gtk_widget_set_has_tooltip(pin_button, TRUE);
+  g_signal_connect(G_OBJECT(pin_button), "query-tooltip",
+                   G_CALLBACK(_preview2_pin_button_query_tooltip), dev);
+  g_signal_connect(G_OBJECT(pin_button), "toggled",
+                   G_CALLBACK(_preview2_pin_button_clicked), dev);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), pin_button, TRUE);
+  gtk_widget_set_halign(pin_button, GTK_ALIGN_END);
+  gtk_widget_set_valign(pin_button, GTK_ALIGN_START);
+  gtk_widget_set_margin_top(pin_button, 10);
+  gtk_widget_set_margin_end(pin_button, 10);
+  gtk_widget_show(pin_button);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), pin_button);
+
+  // Create keep-on-top button for the overlay
+  GtkWidget *on_top_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  gtk_widget_set_name(on_top_button, "dt_window2_on_top_button");
+  gtk_widget_set_size_request(on_top_button, 24, 24);
+  gtk_widget_set_has_tooltip(on_top_button, TRUE);
+  g_signal_connect(G_OBJECT(on_top_button), "query-tooltip",
+                   G_CALLBACK(_preview2_on_top_button_query_tooltip), dev);
+  g_signal_connect(G_OBJECT(on_top_button), "toggled",
+                   G_CALLBACK(_preview2_on_top_button_clicked), dev);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), on_top_button, TRUE);
+  gtk_widget_set_halign(on_top_button, GTK_ALIGN_END);
+  gtk_widget_set_valign(on_top_button, GTK_ALIGN_START);
+  gtk_widget_set_margin_top(on_top_button, 10);
+  gtk_widget_set_margin_end(on_top_button, 10 + 24 + 5);
+  gtk_widget_show(on_top_button);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), on_top_button);
+  
+  // Store the button in the dev structure for later access if needed
+  dev->preview2.pin_button = pin_button;
+  
+  // Make sure the button is above other widgets
+  gtk_widget_show(pin_button);
+  
+  dev->preview2.border_size = 0;
+
+  // Set window size and position
+  gtk_window_set_default_size(GTK_WINDOW(window), width, height);
+  gtk_window_move(GTK_WINDOW(window), x, y);
+  gtk_window_resize(GTK_WINDOW(window), width, height);
+  
+  // Handle window state (fullscreen/maximized)
   const int fullscreen = dt_conf_get_bool("second_window/fullscreen");
-  if(fullscreen)
-    gtk_window_fullscreen(GTK_WINDOW(widget));
+  if (fullscreen)
+    gtk_window_fullscreen(GTK_WINDOW(window));
   else
   {
-    gtk_window_unfullscreen(GTK_WINDOW(widget));
+    gtk_window_unfullscreen(GTK_WINDOW(window));
     const int maximized = dt_conf_get_bool("second_window/maximized");
-    if(maximized)
-      gtk_window_maximize(GTK_WINDOW(widget));
+    if (maximized)
+      gtk_window_maximize(GTK_WINDOW(window));
     else
-      gtk_window_unmaximize(GTK_WINDOW(widget));
+      gtk_window_unmaximize(GTK_WINDOW(window));
   }
 }
 
@@ -4000,8 +4386,13 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     gtk_window_set_icon_name(GTK_WINDOW(dev->second_wnd), "darktable");
     gtk_window_set_title(GTK_WINDOW(dev->second_wnd), _("darktable - darkroom preview"));
 
+    // Create the overlay for the window
+    GtkWidget *overlay = gtk_overlay_new();
+    gtk_container_add(GTK_CONTAINER(dev->second_wnd), overlay);
+    
+    // Create the drawing area and add it to the overlay
     dev->preview2.widget = gtk_drawing_area_new();
-    gtk_container_add(GTK_CONTAINER(dev->second_wnd), dev->preview2.widget);
+    gtk_container_add(GTK_CONTAINER(overlay), dev->preview2.widget);
     gtk_widget_set_size_request(dev->preview2.widget, DT_PIXEL_APPLY_DPI_2ND_WND(dev, 50), DT_PIXEL_APPLY_DPI_2ND_WND(dev, 200));
     gtk_widget_set_hexpand(dev->preview2.widget, TRUE);
     gtk_widget_set_vexpand(dev->preview2.widget, TRUE);
@@ -4036,9 +4427,10 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     g_signal_connect(G_OBJECT(dev->second_wnd), "event",
                      G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
-    _darkroom_ui_second_window_init(dev->second_wnd, dev);
+    _darkroom_ui_second_window_init(overlay, dev);
   }
 
+  // Show all widgets in the window
   gtk_widget_show_all(dev->second_wnd);
 }
 
