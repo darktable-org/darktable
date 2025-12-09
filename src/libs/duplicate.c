@@ -335,6 +335,9 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
 
     gtk_widget_show(hb);
+    gtk_widget_show(lb);
+    gtk_widget_show(tb);
+    gtk_widget_show(bt);
 
     dt_gui_box_add(d->duplicate_box, hb);
     d->thumbs = g_list_append(d->thumbs, thumb);
