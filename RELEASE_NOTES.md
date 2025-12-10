@@ -323,6 +323,8 @@ changes (where available).
   "off" effects are now respected (they dont simply always toggle
   anymore, like they did before).
 
+- Fix too strict restriction for filename length in watermark module.
+
 ## Lua
 
 ### API Version
