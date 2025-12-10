@@ -2252,6 +2252,11 @@ static void _create_primaries_page(dt_iop_module_t *main,
 
   dt_iop_module_t *page = DT_IOP_SECTION_FOR_PARAMS(main, NULL, page_primaries);
 
+  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(page, "base_primaries");
+  gtk_widget_set_tooltip_text(base_primaries_combo,
+                              _("color space primaries to use as the base for below adjustments.\n"
+                                "'export profile' uses the profile set in 'output color profile'."));
+
   g->disable_primaries_adjustments =
     dt_bauhaus_toggle_from_params(page, "disable_primaries_adjustments");
 
@@ -2263,7 +2268,6 @@ static void _create_primaries_page(dt_iop_module_t *main,
        "especially with bright, saturated lights (e.g. LEDs).\n"
        "mainly intended to be used for experimenting."));
 
-
   GtkWidget *primaries_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
   g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), main);
@@ -2273,11 +2277,6 @@ static void _create_primaries_page(dt_iop_module_t *main,
   dt_gui_box_add(page_primaries, g->primaries_controls_vbox);
 
   dt_iop_module_t *self = DT_IOP_SECTION_FOR_PARAMS(main, NULL, g->primaries_controls_vbox);
-
-  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(self, "base_primaries");
-  gtk_widget_set_tooltip_text(base_primaries_combo,
-                              _("color space primaries to use as the base for below adjustments.\n"
-                                "'export profile' uses the profile set in 'output color profile'."));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "before tone mapping")));
 
@@ -2513,6 +2512,7 @@ void _set_smooth_params(dt_iop_agx_params_t *p)
 static void _set_blenderlike_params(dt_iop_agx_params_t *p)
 {
   _set_shared_params(p);
+  p->look_original_hue_mix_ratio = 0.6f; // Blender's default
   _set_blenderlike_primaries(p);
 
   // restore the original Blender settings
