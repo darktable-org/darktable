@@ -230,10 +230,12 @@ static int32_t _generic_dt_control_fileop_images_job_run
     dt_collection_deserialize(collect, FALSE);
   }
   dt_film_remove_empty();
+
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy(params->index));
+
   dt_control_queue_redraw_center();
   return 0;
 }

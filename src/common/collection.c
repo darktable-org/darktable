@@ -2397,12 +2397,12 @@ int dt_collection_serialize(char *buf, int bufsize,
                             const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
-  int c;
   snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
   const int num_rules = dt_conf_get_int(confname);
-  c = snprintf(buf, bufsize, "%d:", num_rules);
+  int c = snprintf(buf, bufsize, "%d:", num_rules);
   buf += c;
   bufsize -= c;
   for(int k = 0; k < num_rules; k++)
@@ -2445,7 +2445,8 @@ int dt_collection_serialize(char *buf, int bufsize,
 void dt_collection_deserialize(const char *buf, const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);
