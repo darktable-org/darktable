@@ -51,7 +51,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 
-DT_MODULE_INTROSPECTION(6, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -101,7 +101,7 @@ typedef struct dt_iop_watermark_params_t
   dt_iop_watermark_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
   dt_iop_watermark_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
   dt_iop_watermark_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
-  char filename[64];
+  char filename[DT_MAX_FILENAME_LEN];
   /* simple text */
   char text[512];
   /* text color */
@@ -121,7 +121,7 @@ typedef struct dt_iop_watermark_data_t
   dt_iop_watermark_base_scale_t scale_base;
   dt_iop_watermark_svg_scale_t scale_svg;
   dt_iop_watermark_img_scale_t scale_img;
-  char filename[64];
+  char filename[DT_MAX_FILENAME_LEN];
   char text[512];
   float color[3];
   char font[64];
@@ -159,6 +159,23 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
+  typedef struct dt_iop_watermark_params_v7_t
+  {
+    float opacity;
+    float scale;
+    float xoffset;
+    float yoffset;
+    int alignment;
+    float rotate;
+    dt_iop_watermark_base_scale_t scale_base;
+    dt_iop_watermark_img_scale_t scale_img;
+    dt_iop_watermark_svg_scale_t scale_svg;
+    char filename[DT_MAX_FILENAME_LEN];
+    char text[512];
+    float color[3];
+    char font[64];
+  } dt_iop_watermark_params_v7_t;
+
   typedef struct dt_iop_watermark_params_v6_t
   {
     /** opacity value of rendering watermark */
@@ -328,8 +345,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v4_t;
 
     const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -400,6 +416,32 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 6;
     return 0;
   }
+  else if(old_version == 6)
+  {
+    const dt_iop_watermark_params_v6_t *o = (dt_iop_watermark_params_v6_t *)old_params;
+    dt_iop_watermark_params_v7_t *n = malloc(sizeof(dt_iop_watermark_params_v7_t));
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->scale_base = o->scale_base;
+    // let scale_img and scale_svg at the default values
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, o->text, sizeof(n->text));
+    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->color[0] = o->color[0];
+    n->color[1] = o->color[1];
+    n->color[2] = o->color[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v7_t);
+    *new_version = 7;
+    return 0;
+  }
+
   return 1;
 }
 
