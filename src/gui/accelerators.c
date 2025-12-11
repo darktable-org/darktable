@@ -3988,6 +3988,8 @@ static float _process_shortcut(float move_size)
     if(_sc.key_device == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && _sc.key == GDK_KEY_Escape)
       dt_print(DT_DEBUG_ALWAYS, "this should cancel the running blocking job"); // TODO
 
+    dt_toast_log(_("ignoring shortcuts while blocking jobs running"));
+
     return return_value;
   }
 
