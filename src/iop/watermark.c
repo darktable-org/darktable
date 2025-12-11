@@ -428,7 +428,8 @@ int legacy_params(dt_iop_module_t *self,
     n->alignment = o->alignment;
     n->rotate = o->rotate;
     n->scale_base = o->scale_base;
-    // let scale_img and scale_svg at the default values
+    n->scale_img = o->scale_img;
+    n->scale_svg = o->scale_svg;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, o->text, sizeof(n->text));
     g_strlcpy(n->font, o->font, sizeof(n->font));
