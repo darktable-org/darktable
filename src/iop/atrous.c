@@ -1766,6 +1766,20 @@ const dt_action_def_t _action_def_equalizer
       _action_elements_equalizer,
       _action_fallbacks_equalizer };
 
+static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
+{
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  if(g && !darktable.gui->reset && self->enabled && self->expanded)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+void gui_focus(dt_iop_module_t *self, const gboolean in)
+{
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  if(in && g)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
@@ -1829,6 +1843,7 @@ void gui_init(dt_iop_module_t *self)
   g->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
   gtk_widget_set_tooltip_text(g->mix, _("make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(g->mix), "value-changed", G_CALLBACK(mix_callback), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
