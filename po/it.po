@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-28 18:37+0100\n"
+"POT-Creation-Date: 2025-12-12 17:13+0100\n"
 "PO-Revision-Date: 2025-12-12 16:15+0100\n"
 "Last-Translator: Elia Devito <eliadevito@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -3731,7 +3731,7 @@ msgstr "Lift, gamma, gain (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2406 ../src/develop/blend_gui.c:2454
-#: ../src/iop/atrous.c:1793 ../src/iop/channelmixerrgb.c:4485
+#: ../src/iop/atrous.c:1807 ../src/iop/channelmixerrgb.c:4485
 #: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1803
 #: ../src/iop/colorzones.c:2626 ../src/iop/nlmeans.c:465
 msgid "chroma"
@@ -3986,7 +3986,7 @@ msgstr "Seleziona per"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:233
 #: ../build/lib/darktable/plugins/introspection_soften.c:66
 #: ../build/lib/darktable/plugins/introspection_soften.c:121
-#: ../src/iop/atrous.c:1829
+#: ../src/iop/atrous.c:1843
 msgid "mix"
 msgstr "Fusione"
 
@@ -4465,7 +4465,7 @@ msgstr "Percentuale dal basso"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1354
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1397
 #: ../src/libs/colorpicker.c:396 ../src/libs/image.c:665
 #: ../src/libs/modulegroups.c:2360
 msgid "color"
@@ -6177,7 +6177,7 @@ msgid "history"
 msgstr "Coda di sviluppo"
 
 #: ../src/common/collection.c:634 ../src/common/colorlabels.c:388
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1589
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1590
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:146
 msgid "color label"
@@ -6211,7 +6211,7 @@ msgstr "Geolocalizzazione"
 msgid "group"
 msgstr "Raggruppa"
 
-#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1604
+#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1605
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:365
 msgid "local copy"
@@ -6782,7 +6782,7 @@ msgstr "Il file '%s' ha un formato sconosciuto!"
 msgid "error loading file `%s'"
 msgstr "Errore nel caricamento del file '%s'"
 
-#: ../src/common/darktable.c:1562
+#: ../src/common/darktable.c:1564
 #, c-format
 msgid ""
 "you do not have write access to create one of the user directories:\n"
@@ -6797,112 +6797,112 @@ msgstr ""
 "\n"
 "Correggere e riavviare darktable"
 
-#: ../src/common/darktable.c:1567
+#: ../src/common/darktable.c:1569
 msgid "darktable - unable to create directories"
 msgstr "darktable - impossibile create le cartelle"
 
-#: ../src/common/darktable.c:1569 ../src/common/database.c:4121
+#: ../src/common/darktable.c:1571 ../src/common/database.c:4121
 #: ../src/common/database.c:4323
 msgid "_quit darktable"
 msgstr "_esci da darktable"
 
 #. initialize the database
-#: ../src/common/darktable.c:1625
+#: ../src/common/darktable.c:1630
 msgid "opening image library"
 msgstr "apertura libraria imagini"
 
-#: ../src/common/darktable.c:1638
+#: ../src/common/darktable.c:1643
 msgid "forwarding image(s) to running instance"
 msgstr "Inoltra la/le immagine/i all'istanza in esecuzione"
 
-#: ../src/common/darktable.c:1669
+#: ../src/common/darktable.c:1674
 msgid "preparing database"
 msgstr "preparazione database"
 
 #. init darktable tags table
-#: ../src/common/darktable.c:1673
+#: ../src/common/darktable.c:1678
 msgid "setting up tags table"
 msgstr "Configurazione della tabella dei tag"
 
 #. Initialize the signal system
-#: ../src/common/darktable.c:1677
+#: ../src/common/darktable.c:1682
 msgid "initializing signals and control"
 msgstr "Inizializzazione segnali e controllo"
 
-#: ../src/common/darktable.c:1696
+#: ../src/common/darktable.c:1701
 msgid "importing default styles"
 msgstr "Importazione stili predefiniti"
 
-#: ../src/common/darktable.c:1796
+#: ../src/common/darktable.c:1801
 msgid "initializing GraphicsMagick"
 msgstr "inizializzazione GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1808
+#: ../src/common/darktable.c:1813
 msgid "initializing ImageMagick"
 msgstr "inizializzazione ImageMagick"
 
-#: ../src/common/darktable.c:1813
+#: ../src/common/darktable.c:1818
 msgid "initializing libheif"
 msgstr "inizializzazione libheif"
 
-#: ../src/common/darktable.c:1817
+#: ../src/common/darktable.c:1822
 msgid "starting OpenCL"
 msgstr "Avvia OpenCL"
 
-#: ../src/common/darktable.c:1829
+#: ../src/common/darktable.c:1834
 msgid "loading noise profiles"
 msgstr "caricamento profili rumore"
 
-#: ../src/common/darktable.c:1846
+#: ../src/common/darktable.c:1851
 msgid "synchronizing local copies"
 msgstr "sincronizzazione copie locali"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1853
+#: ../src/common/darktable.c:1858
 msgid "initializing camera control"
 msgstr "Inizializzaione controllo fotocamera"
 
-#: ../src/common/darktable.c:1863
+#: ../src/common/darktable.c:1868
 msgid "initializing GUI"
 msgstr "inizializzazione interfaccia"
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1898
 msgid "loading processing modules"
 msgstr "caricamento moduli di elaborazione"
 
-#: ../src/common/darktable.c:1928
+#: ../src/common/darktable.c:1933
 msgid "loading utility modules"
 msgstr "caricamento moduli utilità"
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1933
+#: ../src/common/darktable.c:1938
 msgid "loading views"
 msgstr "caricamento viste"
 
-#: ../src/common/darktable.c:1939
+#: ../src/common/darktable.c:1944
 msgid "initializing Lua"
 msgstr "inizializzazione Lua"
 
-#: ../src/common/darktable.c:1971
+#: ../src/common/darktable.c:1976
 msgid "importing image"
 msgstr "importazione immagine"
 
-#: ../src/common/darktable.c:1991
+#: ../src/common/darktable.c:1996
 msgid "configuration information"
 msgstr "Informazioni di configurazione"
 
-#: ../src/common/darktable.c:1993
+#: ../src/common/darktable.c:1998
 msgid "_show this message again"
 msgstr "_mostra di nuovo questo messaggio"
 
-#: ../src/common/darktable.c:1993
+#: ../src/common/darktable.c:1998
 msgid "_dismiss"
 msgstr "_ignora"
 
-#: ../src/common/darktable.c:2486
+#: ../src/common/darktable.c:2491
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6910,13 +6910,13 @@ msgstr ""
 "L'algoritmo di demosaicizzazione RCD è stato impostato come predefinito al "
 "posto del PPG in quanto migliore in termini di qualità e prestazioni."
 
-#: ../src/common/darktable.c:2488
+#: ../src/common/darktable.c:2493
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "Vedi Preferenze/Camera Oscura/Demosaicizzazione per le modalità ingrandite "
 "della Camera Oscura"
 
-#: ../src/common/darktable.c:2494
+#: ../src/common/darktable.c:2499
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6924,7 +6924,7 @@ msgstr ""
 "L'interfaccia utente ed i meccanismi interni per regolare le prestazioni di "
 "darktable sono state cambiate."
 
-#: ../src/common/darktable.c:2496
+#: ../src/common/darktable.c:2501
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6932,15 +6932,15 @@ msgstr ""
 "Non troverai più \"headroom\" e parametri simili ma, in preferenze/"
 "elaborazione, usa invece:"
 
-#: ../src/common/darktable.c:2498
+#: ../src/common/darktable.c:2503
 msgid "1) darktable resources"
 msgstr "1) risorse Darktable"
 
-#: ../src/common/darktable.c:2500
+#: ../src/common/darktable.c:2505
 msgid "2) tune OpenCL performance"
 msgstr "2) Ottimizza prestazioni OpenCL"
 
-#: ../src/common/darktable.c:2507
+#: ../src/common/darktable.c:2512
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6948,7 +6948,7 @@ msgstr ""
 "Alcuni dei parametri di configuraazione globale per le prestazioni OpenCL "
 "non sono più usate."
 
-#: ../src/common/darktable.c:2509
+#: ../src/common/darktable.c:2514
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6956,8 +6956,8 @@ msgstr ""
 "Troverai invece dati 'per dispositivo' in 'cl_device_v5_canonical-name'. Il "
 "contenuto è:"
 
-#: ../src/common/darktable.c:2511 ../src/common/darktable.c:2530
-#: ../src/common/darktable.c:2545
+#: ../src/common/darktable.c:2516 ../src/common/darktable.c:2535
+#: ../src/common/darktable.c:2550
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6965,18 +6965,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2513 ../src/common/darktable.c:2532
+#: ../src/common/darktable.c:2518 ../src/common/darktable.c:2537
 msgid "you may tune as before except 'magic'"
 msgstr "Puoi regolare come prima, ad eccezione di 'magic'"
 
-#: ../src/common/darktable.c:2519
+#: ../src/common/darktable.c:2524
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Le tue impostazioni di compilazione OpenCL per tutti i dispositivi sono "
 "state resettate al valore predefinito."
 
-#: ../src/common/darktable.c:2526
+#: ../src/common/darktable.c:2531
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6984,14 +6984,14 @@ msgstr ""
 "I dati dei parametri globali di configurazione OpenCL 'per dispositivo' sono "
 "stati ricreati con un nome aggiornato. "
 
-#: ../src/common/darktable.c:2528 ../src/common/darktable.c:2543
+#: ../src/common/darktable.c:2533 ../src/common/darktable.c:2548
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "Troverai i dati 'per dispositivoì in 'cldevice_v5_canonical-name'. Il "
 "contenuto è:"
 
-#: ../src/common/darktable.c:2534
+#: ../src/common/darktable.c:2539
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6999,7 +6999,7 @@ msgstr ""
 "Se stai usando nomi dispositivo in 'opencl_device_priority' dovresti "
 "aggiornarli al nuovo nome."
 
-#: ../src/common/darktable.c:2541
+#: ../src/common/darktable.c:2546
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -7007,7 +7007,7 @@ msgstr ""
 "I dati di configurazione OpenCL 'per dispositivo' sono stati automaticamente "
 "estesi di una 'frazione indefinita'."
 
-#: ../src/common/darktable.c:2552
+#: ../src/common/darktable.c:2557
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -7016,7 +7016,7 @@ msgstr ""
 "stati aggiornati. \n"
 "\n"
 
-#: ../src/common/darktable.c:2557
+#: ../src/common/darktable.c:2562
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -7663,7 +7663,7 @@ msgstr "v5.0 RAW"
 msgid "v5.0 JPEG"
 msgstr "v5.0 JPEG"
 
-#: ../src/common/iop_profile.c:1137
+#: ../src/common/iop_profile.c:1143
 #, c-format
 msgid ""
 "darktable loads %s from\n"
@@ -8925,11 +8925,11 @@ msgstr "Importa immagine"
 msgid "synchronize sidecars"
 msgstr "sincronizza file collaterali"
 
-#: ../src/develop/blend.c:299
+#: ../src/develop/blend.c:298
 msgid "detail mask blending error"
 msgstr "Dettaglio errore maschera fusione"
 
-#: ../src/develop/blend.c:845
+#: ../src/develop/blend.c:844
 msgid "detail mask CL blending problem"
 msgstr "Dettaglia il problema della maschera CL di fusione"
 
@@ -9153,17 +9153,17 @@ msgid "uniformly"
 msgstr "Uniformità"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2765
-#: ../src/develop/blend_gui.c:3435 ../src/develop/imageop.c:2802
+#: ../src/develop/blend_gui.c:3435 ../src/develop/imageop.c:2808
 msgid "drawn mask"
 msgstr "Maschera disegnata"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2559
-#: ../src/develop/blend_gui.c:3444 ../src/develop/imageop.c:2804
+#: ../src/develop/blend_gui.c:3444 ../src/develop/imageop.c:2810
 msgid "parametric mask"
 msgstr "Maschera parametrica"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2971
-#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2806
+#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2812
 msgid "raster mask"
 msgstr "Maschera raster"
 
@@ -9210,12 +9210,12 @@ msgid "on"
 msgstr "Abilitato"
 
 #: ../src/develop/blend_gui.c:1018 ../src/develop/blend_gui.c:2624
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "input"
 msgstr "Input"
 
 #: ../src/develop/blend_gui.c:1018 ../src/develop/blend_gui.c:2624
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "output"
 msgstr "Output"
 
@@ -9403,7 +9403,7 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr "Ripristina le impostazioni della maschera di fusione"
 
-#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1789
+#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1803
 #: ../src/iop/colorzones.c:2622 ../src/iop/denoiseprofile.c:3771
 #: ../src/iop/rawdenoise.c:880 ../src/iop/rgbcurve.c:1487
 #: ../src/iop/rgblevels.c:1037 ../src/iop/tonecurve.c:1268
@@ -9685,7 +9685,7 @@ msgstr "Regola il fulcro utilizzato da alcuni operatori di fusione"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:3557 ../src/iop/overlay.c:1109
-#: ../src/iop/watermark.c:1370 ../src/libs/masks.c:106
+#: ../src/iop/watermark.c:1413 ../src/libs/masks.c:106
 msgid "opacity"
 msgstr "Opacità"
 
@@ -9802,84 +9802,84 @@ msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "modulo duplicato, non si può muovere la nuova istanza dopo quella di base\n"
 
-#: ../src/develop/imageop.c:995
+#: ../src/develop/imageop.c:1001
 msgid "new instance"
 msgstr "Nuova istanza"
 
-#: ../src/develop/imageop.c:1002
+#: ../src/develop/imageop.c:1008
 msgid "duplicate instance"
 msgstr ""
 "Duplica questa istanza con\n"
 "le stesse impostazioni"
 
-#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4085
+#: ../src/develop/imageop.c:1015 ../src/develop/imageop.c:4091
 #: ../src/libs/masks.c:1136
 msgid "move up"
 msgstr "Sposta su"
 
-#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4086
+#: ../src/develop/imageop.c:1022 ../src/develop/imageop.c:4092
 #: ../src/libs/masks.c:1141
 msgid "move down"
 msgstr "Sposta giù"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4088
+#: ../src/develop/imageop.c:1029 ../src/develop/imageop.c:4094
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:307
 #: ../src/libs/image.c:522
 msgid "delete"
 msgstr "Elimina"
 
-#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4089
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:4095
 #: ../src/libs/modulegroups.c:4002
 msgid "rename"
 msgstr "Rinomina"
 
-#: ../src/develop/imageop.c:1122 ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:1128 ../src/develop/imageop.c:2984
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' è abilitato"
 
-#: ../src/develop/imageop.c:1122 ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:1128 ../src/develop/imageop.c:2984
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' è disabilitato"
 
-#: ../src/develop/imageop.c:2168
+#: ../src/develop/imageop.c:2174
 #, c-format
 msgid "'%s' has an introspection error"
 msgstr "'%s' ha un errore di introspezione"
 
-#: ../src/develop/imageop.c:2796
+#: ../src/develop/imageop.c:2802
 msgid "unknown mask"
 msgstr "Maschera sconosciuta"
 
-#: ../src/develop/imageop.c:2800
+#: ../src/develop/imageop.c:2806
 msgid "drawn + parametric mask"
 msgstr "Maschera parametrica e disegnata"
 
-#: ../src/develop/imageop.c:2809
+#: ../src/develop/imageop.c:2815
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Questo modulo ha un `%s'"
 
-#: ../src/develop/imageop.c:2814
+#: ../src/develop/imageop.c:2820
 #, c-format
 msgid "taken from module %s"
 msgstr "Scattante dal modulo %s"
 
-#: ../src/develop/imageop.c:2819
+#: ../src/develop/imageop.c:2825
 msgid "click to display (module must be activated first)"
 msgstr "Clicca per mostrare (il modulo deve esser attivato prima)"
 
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "purpose"
 msgstr "Scopo"
 
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "process"
 msgstr "Elaborazione"
 
-#: ../src/develop/imageop.c:2994
+#: ../src/develop/imageop.c:3000
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9887,7 +9887,7 @@ msgstr ""
 "azzera i parametri\n"
 "Ctrl+clic per applicare di nuovo qualsiasi preimpostazione automatica"
 
-#: ../src/develop/imageop.c:3201
+#: ../src/develop/imageop.c:3207
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9895,7 +9895,7 @@ msgstr ""
 "Azioni con istanze multiple\n"
 "clic con il pulsante destro crea una nuova istanza"
 
-#: ../src/develop/imageop.c:3205
+#: ../src/develop/imageop.c:3211
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9903,15 +9903,15 @@ msgstr ""
 "Preimpostazioni\n"
 "Clicca col tasto destro del mouse per applicare su una nuova istanza"
 
-#: ../src/develop/imageop.c:3417 ../src/develop/imageop.c:3439
+#: ../src/develop/imageop.c:3423 ../src/develop/imageop.c:3445
 msgid "ERROR"
 msgstr "ERRORE"
 
-#: ../src/develop/imageop.c:3941
+#: ../src/develop/imageop.c:3947
 msgid "unsupported input"
 msgstr "Ingresso non supportato"
 
-#: ../src/develop/imageop.c:3942
+#: ../src/develop/imageop.c:3948
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9923,23 +9923,23 @@ msgstr ""
 "in cui il formato dei dati non corrisponde\n"
 "ai requisiti."
 
-#: ../src/develop/imageop.c:4084 ../src/develop/imageop.c:4094
+#: ../src/develop/imageop.c:4090 ../src/develop/imageop.c:4100
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1582
 msgid "show"
 msgstr "Mostra"
 
-#: ../src/develop/imageop.c:4087 ../src/libs/modulegroups.c:3484
+#: ../src/develop/imageop.c:4093 ../src/libs/modulegroups.c:3484
 #: ../src/libs/modulegroups.c:3615 ../src/libs/modulegroups.c:4006
 #: ../src/libs/tagging.c:3678
 msgid "new"
 msgstr "Nuova"
 
-#: ../src/develop/imageop.c:4090 ../src/libs/duplicate.c:402
+#: ../src/develop/imageop.c:4096 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:543 ../src/libs/modulegroups.c:3998
 msgid "duplicate"
 msgstr "Duplica"
 
-#: ../src/develop/imageop.c:4095
+#: ../src/develop/imageop.c:4101
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:140
 #: ../src/gui/gtk.c:3699 ../src/gui/gtk.c:3754 ../src/gui/hist_dialog.c:289
@@ -9949,24 +9949,24 @@ msgstr "Duplica"
 msgid "reset"
 msgstr "Ripristina"
 
-#: ../src/develop/imageop.c:4096 ../src/gui/preferences.c:1036
+#: ../src/develop/imageop.c:4102 ../src/gui/preferences.c:1036
 #: ../src/libs/lib.c:1584
 msgid "presets"
 msgstr "Preimpostazioni"
 
-#: ../src/develop/imageop.c:4097
+#: ../src/develop/imageop.c:4103
 msgid "enable"
 msgstr "Abilita"
 
-#: ../src/develop/imageop.c:4098 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:4104 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "Messa a fuoco"
 
-#: ../src/develop/imageop.c:4099 ../src/gui/accelerators.c:2951
+#: ../src/develop/imageop.c:4105 ../src/gui/accelerators.c:2951
 msgid "instance"
 msgstr "Istanza"
 
-#: ../src/develop/imageop.c:4119
+#: ../src/develop/imageop.c:4125
 msgid "processing module"
 msgstr "Modulo di elaborazione"
 
@@ -10352,7 +10352,7 @@ msgstr ""
 "Probabile che sia accaduto applicando una preimpostazione, uno  stile o un "
 "copia e incolla della cronologia"
 
-#: ../src/develop/pixelpipe_hb.c:1262
+#: ../src/develop/pixelpipe_hb.c:1261
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10363,12 +10363,12 @@ msgstr ""
 "nel modulo '%s'.\n"
 "Si prega di segnalare su GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1746
+#: ../src/develop/pixelpipe_hb.c:1745
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 "errore fatale di allineamento dell'input, si prega di segnalare su GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3117
+#: ../src/develop/pixelpipe_hb.c:3131
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10389,7 +10389,7 @@ msgstr ""
 "  - impostazioni headroom troppo piccole con l'opzione 'usa tutta la memoria "
 "del dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3309
+#: ../src/develop/pixelpipe_hb.c:3323
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10619,7 +10619,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "Immagini raggruppate"
 
-#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1676
+#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1677
 #: ../src/iop/ashift.c:6047 ../src/iop/ashift.c:6134 ../src/iop/ashift.c:6136
 #: ../src/iop/ashift.c:6138 ../src/libs/navigation.c:112
 #: ../src/libs/navigation.c:249
@@ -13638,8 +13638,8 @@ msgid ""
 "it is recommended to export your current\n"
 "shortcuts before adding these.\n"
 msgstr ""
-"aggiungi scorciatoie di esempio di darktable?\r\n"
-"\r\n"
+"aggiungi scorciatoie di esempio di darktable?\n"
+"\n"
 "questo sovrascriverà qualsiasi scorciatoia\n"
 "esistente che utilizza le stesse\n"
 "combinazioni di tasti + mouse!\n"
@@ -15292,7 +15292,7 @@ msgstr ""
 msgid "internal"
 msgstr "Interno"
 
-#: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:405
+#: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:408
 #: ../src/libs/history.c:1141 ../src/libs/snapshots.c:928
 msgid "original"
 msgstr "Originale"
@@ -15912,7 +15912,7 @@ msgstr "Lineare, RGB, riferito alla scena"
 #: ../src/iop/graduatednd.c:145 ../src/iop/negadoctor.c:144
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rgbcurve.c:144
 #: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:207
-#: ../src/iop/vignette.c:119 ../src/iop/watermark.c:417
+#: ../src/iop/vignette.c:119 ../src/iop/watermark.c:460
 msgid "non-linear, RGB"
 msgstr "Non lineare, RGB"
 
@@ -16075,7 +16075,7 @@ msgstr "Aspetto"
 msgid "show curve"
 msgstr "Mostra curva"
 
-#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1810
+#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1824
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3803
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -16768,23 +16768,23 @@ msgstr "Più bello"
 msgid "x"
 msgstr "x"
 
-#: ../src/iop/atrous.c:1791 ../src/iop/nlmeans.c:462
+#: ../src/iop/atrous.c:1805 ../src/iop/nlmeans.c:462
 msgid "luma"
 msgstr "Luminanza"
 
-#: ../src/iop/atrous.c:1792
+#: ../src/iop/atrous.c:1806
 msgid "change lightness at each feature size"
 msgstr "Cambia la chiarezza ad ogni dimensione caratteristica"
 
-#: ../src/iop/atrous.c:1794
+#: ../src/iop/atrous.c:1808
 msgid "change color saturation at each feature size"
 msgstr "Cambia saturazione ad ogni dimensione caratteristica"
 
-#: ../src/iop/atrous.c:1796
+#: ../src/iop/atrous.c:1810
 msgid "edges"
 msgstr "Margini"
 
-#: ../src/iop/atrous.c:1797
+#: ../src/iop/atrous.c:1811
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -16792,7 +16792,7 @@ msgstr ""
 "Cambia aloni del margine ad ogni dimensione caratteristica\n"
 "Cambia i risultati soltanto per le schede luminanza e cromaticità"
 
-#: ../src/iop/atrous.c:1830 ../src/iop/colorzones.c:2705
+#: ../src/iop/atrous.c:1844 ../src/iop/colorzones.c:2705
 msgid "make effect stronger or weaker"
 msgstr "Rende l'effetto più deciso o più debole"
 
@@ -16894,8 +16894,8 @@ msgstr "Correttivo"
 #: ../src/iop/filmicrgb.c:353 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:145 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgblevels.c:124 ../src/iop/vignette.c:118
-#: ../src/iop/vignette.c:120 ../src/iop/watermark.c:416
-#: ../src/iop/watermark.c:418
+#: ../src/iop/vignette.c:120 ../src/iop/watermark.c:459
+#: ../src/iop/watermark.c:461
 msgid "non-linear, RGB, display-referred"
 msgstr "Non lineare, RGB, riferito allo schermo"
 
@@ -16966,7 +16966,7 @@ msgstr "Applica le regolazioni di base"
 #: ../src/iop/levels.c:137 ../src/iop/liquify.c:294 ../src/iop/lowlight.c:89
 #: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:99
 #: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:97 ../src/iop/vibrance.c:94
-#: ../src/iop/vignette.c:117 ../src/iop/watermark.c:415
+#: ../src/iop/vignette.c:117 ../src/iop/watermark.c:458
 msgid "creative"
 msgstr "Creativo"
 
@@ -22320,7 +22320,7 @@ msgstr "Distanza dal soggetto"
 
 #. scale
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1120 ../src/iop/vignette.c:1043
-#: ../src/iop/watermark.c:1381 ../src/libs/export.c:1545
+#: ../src/iop/watermark.c:1424 ../src/libs/export.c:1545
 msgid "scale"
 msgstr "Scala"
 
@@ -23277,7 +23277,7 @@ msgstr ""
 "l'immagine corrente viene utilizzata come sovrapposizione, direttamente o "
 "indirettamente."
 
-#: ../src/iop/overlay.c:1112 ../src/iop/watermark.c:1373
+#: ../src/iop/overlay.c:1112 ../src/iop/watermark.c:1416
 msgctxt "section"
 msgid "placement"
 msgstr "Posizionamento"
@@ -23311,7 +23311,7 @@ msgstr ""
 msgid "overlay dimension to scale"
 msgstr "Dimensione dell'elemento sovrapposto da ridimensionare"
 
-#: ../src/iop/overlay.c:1147 ../src/iop/watermark.c:1404
+#: ../src/iop/overlay.c:1147 ../src/iop/watermark.c:1447
 #: ../src/libs/print_settings.c:2760
 msgid "alignment"
 msgstr "Allineamento"
@@ -24551,7 +24551,7 @@ msgstr "Curva tono per canale a"
 msgid "tonecurve for b channel"
 msgstr "Curva tono per canale b"
 
-#: ../src/iop/tonecurve.c:1281 ../src/iop/watermark.c:1361
+#: ../src/iop/tonecurve.c:1281 ../src/iop/watermark.c:1404
 #: ../src/libs/colorpicker.c:779
 msgid "pick color"
 msgstr "Seleziona colore"
@@ -24994,29 +24994,29 @@ msgstr ""
 msgid "[%s on center] move vignette"
 msgstr "[%s on center] Sposta vignettatura"
 
-#: ../src/iop/watermark.c:409
+#: ../src/iop/watermark.c:452
 msgid "watermark"
 msgstr "Filigrana"
 
-#: ../src/iop/watermark.c:414
+#: ../src/iop/watermark.c:457
 msgid "overlay an SVG watermark like a signature on the image"
 msgstr "Sovrapponi una filigrana SVG all'immagine"
 
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1355
 msgid "marker"
 msgstr "Marcatore"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1358
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "Filigrane SVG in %s/watermarks o %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1325 ../src/iop/watermark.c:1326
+#: ../src/iop/watermark.c:1368 ../src/iop/watermark.c:1369
 msgid "text"
 msgstr "Testo"
 
-#: ../src/iop/watermark.c:1327
+#: ../src/iop/watermark.c:1370
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
@@ -25024,16 +25024,16 @@ msgstr ""
 "Stringa di testo, tag: $(WATERMARK_TEXT)\n"
 "usa $(NL) per inserire un'interruzione di linea"
 
-#: ../src/iop/watermark.c:1331
+#: ../src/iop/watermark.c:1374
 msgid "content"
 msgstr "Contenuto"
 
 #. Text font
-#: ../src/iop/watermark.c:1336
+#: ../src/iop/watermark.c:1379
 msgid "font"
 msgstr "Font"
 
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1384
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -25045,7 +25045,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1356
+#: ../src/iop/watermark.c:1399
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -25053,15 +25053,15 @@ msgstr ""
 "colore filigrana, tag:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1358
+#: ../src/iop/watermark.c:1401
 msgid "select watermark color"
 msgstr "Selezione colore filigrana"
 
-#: ../src/iop/watermark.c:1360
+#: ../src/iop/watermark.c:1403
 msgid "pick color from image"
 msgstr "Prendi colore dall'immagine"
 
-#: ../src/iop/watermark.c:1387
+#: ../src/iop/watermark.c:1430
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -25082,26 +25082,26 @@ msgstr ""
 "• opzioni avanzate: sceglie indipendentemente le dimensioni della filigrana "
 "e dell'immagine"
 
-#: ../src/iop/watermark.c:1396
+#: ../src/iop/watermark.c:1439
 msgid "reference image dimension against which to scale the watermark"
 msgstr ""
 "dimensione dell'immagine di riferimento rispetto alla quale ridimensionare "
 "la filigrana"
 
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1443
 msgid "watermark dimension to scale"
 msgstr "Dimensiona la filigrana alla scala"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1425
+#: ../src/iop/watermark.c:1468
 msgid "the opacity of the watermark"
 msgstr "Opacità della filigrana"
 
-#: ../src/iop/watermark.c:1426
+#: ../src/iop/watermark.c:1469
 msgid "the scale of the watermark"
 msgstr "Proporzioni della filigrana"
 
-#: ../src/iop/watermark.c:1427
+#: ../src/iop/watermark.c:1470
 msgid "the rotation of the watermark"
 msgstr "Rotazione della filigrana"
 
@@ -25669,11 +25669,11 @@ msgstr "crea/rinomina/rimuovi modifiche multiple dell'immagine corrente"
 msgid "delete this duplicate"
 msgstr "Elimina duplicato"
 
-#: ../src/libs/duplicate.c:403
+#: ../src/libs/duplicate.c:406
 msgid "create a duplicate of the image with same history stack"
 msgstr "Crea duplicato dell'immagine con la medesima coda di sviluppo"
 
-#: ../src/libs/duplicate.c:407
+#: ../src/libs/duplicate.c:410
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Crea duplicato 'vergine' dell'immagine senza alcun sviluppo"
 
