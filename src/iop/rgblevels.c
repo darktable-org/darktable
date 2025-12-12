@@ -1039,7 +1039,7 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("R"), _("curve nodes for r channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("G"), _("curve nodes for g channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("B"), _("curve nodes for b channel"));
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
+  g_signal_connect(g->channel_tabs, "switch-page",
                    G_CALLBACK(_tab_switch_callback), self);
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
@@ -1052,17 +1052,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area),
                               _("drag handles to set black, gray, and white points. "
                                 "operates on L channel."));
-  g_signal_connect(G_OBJECT(g->area), "draw",
+  g_signal_connect(g->area, "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(g->area, "button-release-event",
                    G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(_area_scroll_callback), self);
 
 #define PICKER_SETUP(color, name, tooltip)                                 \
@@ -1096,9 +1096,9 @@ void gui_init(dt_iop_module_t *self)
                  dt_gui_hbox(g->blackpick, g->greypick, g->whitepick),
                  dt_gui_hbox(dt_gui_expand(g->bt_auto_levels), dt_gui_expand(g->bt_select_region)));
 
-  g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked",
+  g_signal_connect(g->bt_auto_levels, "clicked",
                    G_CALLBACK(_auto_levels_callback), self);
-  g_signal_connect(G_OBJECT(g->bt_select_region), "toggled",
+  g_signal_connect(g->bt_select_region, "toggled",
                    G_CALLBACK(_select_region_toggled_callback), self);
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");

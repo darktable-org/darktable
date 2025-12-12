@@ -1703,8 +1703,8 @@ void gui_init(dt_iop_module_t *self)
     _("the file path (relative to LUT folder) is saved with image (and not the LUT data themselves)"));
 #endif // HAVE_GMIC
   self->widget = dt_gui_vbox(dt_gui_hbox(g->button, dt_gui_expand(g->filepath)));
-  g_signal_connect(G_OBJECT(g->button), "clicked", G_CALLBACK(_button_clicked), self);
-  g_signal_connect(G_OBJECT(g->filepath), "value-changed", G_CALLBACK(_filepath_callback), self);
+  g_signal_connect(g->button, "clicked", G_CALLBACK(_button_clicked), self);
+  g_signal_connect(g->filepath, "value-changed", G_CALLBACK(_filepath_callback), self);
 
 #ifdef HAVE_GMIC
   // text entry
@@ -1733,11 +1733,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_tree_view_append_column((GtkTreeView *)g->lutname, col);
   GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView *)g->lutname);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
-  g->lutname_handler_id = g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_lutname_callback), self);
+  g->lutname_handler_id = g_signal_connect_data(selection, "changed", G_CALLBACK(_lutname_callback), self, NULL, 0);
   dt_gui_box_add(self->widget, g->lutwindow);
 
-  g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(_entry_callback), self);
-  g_signal_connect(G_OBJECT((GtkTreeView *)g->lutname), "scroll-event", G_CALLBACK(_mouse_scroll), (gpointer)self);
+  g_signal_connect(g->lutentry, "changed", G_CALLBACK(_entry_callback), self);
+  g_signal_connect(g->lutname, "scroll-event", G_CALLBACK(_mouse_scroll), self);
 #endif // HAVE_GMIC
 
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");

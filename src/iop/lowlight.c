@@ -807,12 +807,12 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   self->widget = dt_gui_vbox(g->area);
 
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(lowlight_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(lowlight_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(lowlight_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(lowlight_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(lowlight_scrolled), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(lowlight_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(lowlight_button_press), self);
+  g_signal_connect(g->area, "button-release-event", G_CALLBACK(lowlight_button_release), self);
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(lowlight_motion_notify), self);
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(lowlight_leave_notify), self);
+  g_signal_connect(g->area, "scroll-event", G_CALLBACK(lowlight_scrolled), self);
 
   g->scale_blueness = dt_bauhaus_slider_from_params(self, "blueness");
   dt_bauhaus_slider_set_format(g->scale_blueness, "%");

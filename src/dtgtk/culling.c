@@ -540,11 +540,9 @@ static void _toggle_zoom_all(dt_culling_t *table,
 }
 
 static gboolean _event_scroll(GtkWidget *widget,
-                              GdkEvent *event,
-                              gpointer user_data)
+                              GdkEventScroll *e,
+                              dt_culling_t *table)
 {
-  GdkEventScroll *e = (GdkEventScroll *)event;
-  dt_culling_t *table = (dt_culling_t *)user_data;
   int delta;
 
   if(dt_gui_get_scroll_unit_delta(e, &delta))
@@ -583,9 +581,8 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
 static gboolean _event_leave_notify(GtkWidget *widget,
                                     GdkEventCrossing *event,
-                                    gpointer user_data)
+                                    dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {
@@ -607,7 +604,7 @@ static gboolean _event_leave_notify(GtkWidget *widget,
 
 static gboolean _event_enter_notify(GtkWidget *widget,
                                     GdkEventCrossing *event,
-                                    gpointer user_data)
+                                    dt_culling_t *table)
 {
   // we only handle the case where we enter thumbtable from an
   // inferior (a thumbnail) this is when the mouse enter an "empty"
@@ -620,10 +617,8 @@ static gboolean _event_enter_notify(GtkWidget *widget,
 
 static gboolean _event_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
-
   if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
@@ -741,9 +736,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
 
 static gboolean _event_button_release(GtkWidget *widget,
                                       GdkEventButton *event,
-                                      gpointer user_data)
+                                      dt_culling_t *table)
 {
-  dt_culling_t *table = (dt_culling_t *)user_data;
   table->panning = FALSE;
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
@@ -965,19 +959,19 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gtk_widget_set_app_paintable(table->widget, TRUE);
   gtk_widget_set_can_focus(table->widget, TRUE);
 
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
+  g_signal_connect(table->widget, "scroll-event",
                    G_CALLBACK(_event_scroll), table);
-  g_signal_connect(G_OBJECT(table->widget), "draw",
+  g_signal_connect(table->widget, "draw",
                    G_CALLBACK(_event_draw), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event",
+  g_signal_connect(table->widget, "leave-notify-event",
                    G_CALLBACK(_event_leave_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
+  g_signal_connect(table->widget, "enter-notify-event",
                    G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
+  g_signal_connect(table->widget, "button-press-event",
                    G_CALLBACK(_event_button_press), table);
-  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
+  g_signal_connect(table->widget, "motion-notify-event",
                    G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
+  g_signal_connect(table->widget, "button-release-event",
                    G_CALLBACK(_event_button_release), table);
 
   // we register globals signals

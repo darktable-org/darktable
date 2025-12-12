@@ -1058,7 +1058,7 @@ void gui_init(dt_imageio_module_storage_t *self)
     index++;
   }
   gtk_widget_set_hexpand(ui->account_list, TRUE);
-  g_signal_connect(G_OBJECT(ui->account_list), "value-changed",
+  g_signal_connect(ui->account_list, "value-changed",
                    G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
 
   // server
@@ -1100,7 +1100,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   // login button
   GtkWidget *login_button = gtk_button_new_with_label(_("login"));
   gtk_widget_set_tooltip_text(login_button, _("Piwigo login"));
-  g_signal_connect(G_OBJECT(login_button), "clicked",
+  g_signal_connect(login_button, "clicked",
                    G_CALLBACK(_piwigo_login_clicked), self);
 
   // status area
@@ -1125,13 +1125,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   ui->album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->album_list), TRUE);
-  g_signal_connect(G_OBJECT(ui->album_list), "value-changed",
+  g_signal_connect(ui->album_list, "value-changed",
                    G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
 
   GtkWidget *refresh_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(refresh_button, _("refresh album list"));
-  g_signal_connect(G_OBJECT(refresh_button), "clicked",
+  g_signal_connect(refresh_button, "clicked",
                    G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
 
   // new album
@@ -1174,7 +1174,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
-  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed",
+  g_signal_connect(ui->conflict_action, "value-changed",
                    G_CALLBACK(_piwigo_conflict_changed), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/conflict"));
 

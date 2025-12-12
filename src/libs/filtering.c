@@ -736,7 +736,7 @@ static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_ra
 
   gtk_box_pack_start(GTK_BOX((top) ? rule->w_special_box_top : rule->w_special_box), special->range_select, TRUE,
                      TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  g_signal_connect(special->range_select, "value-changed", G_CALLBACK(_range_changed), special);
   if(top)
   {
     dt_gui_add_class(gtk_bin_get_child(GTK_BIN(special->range_select)), "dt_quick_filter");
@@ -867,7 +867,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
     g_object_set_data(G_OBJECT(smt), "topbar", GINT_TO_POINTER(0));
     if(data) g_object_set_data(G_OBJECT(smt), "collect_data", data);
-    g_signal_connect(G_OBJECT(smt), "activate", callback, self);
+    g_signal_connect(smt, "activate", G_CALLBACK(callback), self);
   }
   gtk_menu_shell_append(pop, smt);
 }
@@ -1081,7 +1081,7 @@ static void _topbar_update(dt_lib_module_t *self)
         GtkWidget *evtb = gtk_event_box_new();
         GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
         gtk_container_add(GTK_CONTAINER(evtb), label);
-        g_signal_connect(G_OBJECT(evtb), "button-press-event", G_CALLBACK(_topbar_label_press), self);
+        g_signal_connect(evtb, "button-press-event", G_CALLBACK(_topbar_label_press), self);
         gtk_box_pack_start(GTK_BOX(fbox), evtb, TRUE, TRUE, 0);
         gtk_widget_show_all(evtb);
       }
@@ -1253,7 +1253,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     dt_bauhaus_combobox_set_selected_text_align(rule->w_operator, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     gtk_widget_set_tooltip_text(rule->w_operator, _("define how this rule should interact with the previous one"));
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(rule->w_operator), "value-changed", G_CALLBACK(_event_rule_changed), rule);
+    g_signal_connect(rule->w_operator, "value-changed", G_CALLBACK(_event_rule_changed), rule);
   }
 
   dt_bauhaus_combobox_set(rule->w_operator, mode);
@@ -1268,7 +1268,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     _rule_populate_prop_combo(rule);
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
     dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
-    g_signal_connect(G_OBJECT(rule->w_prop), "value-changed", G_CALLBACK(_event_rule_change_type), self);
+    g_signal_connect(rule->w_prop, "value-changed", G_CALLBACK(_event_rule_change_type), self);
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, TRUE, 0);
   }
   else if(newprop)
@@ -1286,14 +1286,14 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     dt_gui_add_class(rule->w_off, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_disable), rule);
+    g_signal_connect(rule->w_off, "toggled", G_CALLBACK(_event_rule_disable), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // pin button
     rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
     dt_gui_add_class(rule->w_pin, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
+    g_signal_connect(rule->w_pin, "toggled", G_CALLBACK(_rule_topbar_toggle), self);
     dt_gui_add_class(rule->w_pin, "dt_dimmed");
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
     gtk_widget_set_no_show_all(rule->w_pin, TRUE);
@@ -1301,7 +1301,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
     g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), self);
+    g_signal_connect(rule->w_close, "button-press-event", G_CALLBACK(_event_rule_close), self);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_close, FALSE, FALSE, 0);
   }
 
@@ -1569,7 +1569,7 @@ static void _event_history_show(GtkWidget *widget, dt_lib_module_t *self)
       GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_history_apply), self);
+      g_signal_connect(smt, "activate", G_CALLBACK(_event_history_apply), self);
       gtk_menu_shell_append(pop, smt);
       g_free(line);
     }
@@ -1687,7 +1687,7 @@ static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_mo
   gtk_box_pack_start(GTK_BOX(hb), lb, TRUE, TRUE, 0);
   GtkWidget *btr = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
   g_object_set_data(G_OBJECT(btr), "rule", rule);
-  g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_rule_remove), self);
+  g_signal_connect(btr, "button-press-event", G_CALLBACK(_topbar_rule_remove), self);
   gtk_box_pack_start(GTK_BOX(hb), btr, FALSE, TRUE, 0);
   return hb;
 }
@@ -1753,7 +1753,7 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   dt_bauhaus_combobox_mute_scrolling(nr);
   dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
   _topbar_populate_rules_combo(nr, d);
-  g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
+  g_signal_connect(nr, "value-changed", G_CALLBACK(_topbar_rule_add), self);
   gtk_box_pack_end(GTK_BOX(vbox2), nr, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), vbox2, TRUE, TRUE, 0);
@@ -1763,7 +1763,7 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
   GtkWidget *btr = gtk_button_new_with_label(_("reset quickfilters"));
   dt_gui_add_class(btr, "dt_transparent_background");
-  g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_reset_press), self);
+  g_signal_connect(btr, "button-press-event", G_CALLBACK(_topbar_reset_press), self);
   gtk_box_pack_start(GTK_BOX(vbox), btr, TRUE, TRUE, 0);
 
   // show the popover
@@ -1938,7 +1938,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     dt_bauhaus_widget_hide_label(sort->sort);
     dt_bauhaus_combobox_mute_scrolling(sort->sort);
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
-    g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
+    g_signal_connect(sort->sort, "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
     dt_bauhaus_combobox_add_section(sort->sort, _("files"));
@@ -1954,7 +1954,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     sort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
     gtk_widget_set_halign(sort->direction, GTK_ALIGN_START);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
-    g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
+    g_signal_connect(DTGTK_TOGGLEBUTTON(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
     dt_gui_add_class(sort->direction, "dt_ignore_fg_state");
     if(num == 0)
       dt_action_define(DT_ACTION(self), NULL, _("sort direction"), sort->direction, &dt_action_def_toggle);
@@ -1963,7 +1963,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     gtk_widget_set_no_show_all(sort->close, TRUE);
     g_object_set_data(G_OBJECT(sort->close), "sort", sort);
     gtk_widget_set_tooltip_text(sort->close, _("remove this sort order"));
-    g_signal_connect(G_OBJECT(sort->close), "button-press-event", G_CALLBACK(_sort_close), self);
+    g_signal_connect(sort->close, "button-press-event", G_CALLBACK(_sort_close), self);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->close, FALSE, FALSE, 0);
   }
 
@@ -2154,7 +2154,7 @@ static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
       gtk_widget_set_tooltip_text(smt, str);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_sort_history_apply), self);
+      g_signal_connect(smt, "activate", G_CALLBACK(_sort_history_apply), self);
       gtk_menu_shell_append(pop, smt);
       g_free(line);
     }

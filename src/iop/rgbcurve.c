@@ -1489,7 +1489,7 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("R"), _("curve nodes for r channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("G"), _("curve nodes for g channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("B"), _("curve nodes for b channel"));
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
+  g_signal_connect(g->channel_tabs, "switch-page",
                    G_CALLBACK(tab_switch_callback), self);
 
   // color pickers
@@ -1532,17 +1532,17 @@ void gui_init(dt_iop_module_t *self)
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw",
+  g_signal_connect(g->area, "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event",
+  g_signal_connect(g->area, "key-press-event",
                    G_CALLBACK(_area_key_press_callback), self);
 
   g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
@@ -1551,7 +1551,7 @@ void gui_init(dt_iop_module_t *self)
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
         "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
-  g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
+  g_signal_connect(g->interpolator, "value-changed",
                    G_CALLBACK(interpolator_callback), self);
 
   dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs),

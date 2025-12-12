@@ -1972,7 +1972,7 @@ void gui_init(dt_iop_module_t *self)
                                                "plugins/darkroom/colorbalancergb/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   dt_gui_box_add(self->widget, GTK_WIDGET(g->area));
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
@@ -2011,17 +2011,17 @@ void gui_init(dt_iop_module_t *self)
   g->checker_color_1_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->checker_color_1_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->checker_color_1_picker), _("select color of the checkerboard from a swatch"));
-  g_signal_connect(G_OBJECT(g->checker_color_1_picker), "color-set", G_CALLBACK(checker_1_picker_callback), self);
+  g_signal_connect(g->checker_color_1_picker, "color-set", G_CALLBACK(checker_1_picker_callback), self);
 
   g->checker_color_2_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->checker_color_2_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->checker_color_2_picker), _("select color of the checkerboard from a swatch"));
-  g_signal_connect(G_OBJECT(g->checker_color_2_picker), "color-set", G_CALLBACK(checker_2_picker_callback), self);
+  g_signal_connect(g->checker_color_2_picker, "color-set", G_CALLBACK(checker_2_picker_callback), self);
 
   g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 0, 8., 0);
   dt_bauhaus_slider_set_format(g->checker_size, _(" px"));
   dt_bauhaus_widget_set_label(g->checker_size,  NULL, _("checkerboard size"));
-  g_signal_connect(G_OBJECT(g->checker_size), "value-changed", G_CALLBACK(checker_size_callback), self);
+  g_signal_connect(g->checker_size, "value-changed", G_CALLBACK(checker_size_callback), self);
 
   dt_gui_box_add(self->widget,
     dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("checkerboard color 1"))), g->checker_color_1_picker),

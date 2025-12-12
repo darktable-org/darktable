@@ -1203,7 +1203,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
       // film roll jump to:
       if(d->filmroll_event && GTK_IS_WIDGET(d->filmroll_event))
         g_signal_handlers_disconnect_by_func(d->filmroll_event, G_CALLBACK(_filmroll_clicked), NULL);
-      g_signal_connect(G_OBJECT(w_value), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(w_value, "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
       d->filmroll_event = G_OBJECT(w_value);
     }
 
@@ -1476,7 +1476,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
   // drag & drop
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
-  g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), NULL);
+  g_signal_connect(model, "row-inserted", G_CALLBACK(_drag_data_inserted), NULL);
   GtkWidget *w = dt_gui_scroll_wrap(view);
   gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
@@ -1541,7 +1541,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_signal_connect(mi, "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 

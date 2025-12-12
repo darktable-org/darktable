@@ -279,7 +279,7 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_text_column(completion, COMPL_DESCRIPTION);
   gtk_entry_set_completion(entry, completion);
-  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_on_match_select), NULL);
+  g_signal_connect(completion, "match-selected", G_CALLBACK(_on_match_select), NULL);
 
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(_completion_model));
   gtk_entry_completion_set_match_func(completion, _on_match_func, NULL, NULL);

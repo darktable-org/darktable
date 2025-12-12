@@ -134,7 +134,7 @@ static GtkBox *_insert_button(dt_workspace_t *session, const char *label)
   GtkWidget *b = gtk_button_new_with_label(label);
   gtk_widget_set_hexpand(GTK_WIDGET(b), TRUE);
   dt_gui_box_add(box, b);
-  g_signal_connect(G_OBJECT(b), "clicked",
+  g_signal_connect(b, "clicked",
                    G_CALLBACK(_workspace_select_db), session);
   dt_gui_dialog_add(session->db_screen, box);
   return box;
@@ -215,7 +215,7 @@ gboolean dt_workspace_create(const char *datadir)
       g_list_free(bc);
 
       GtkWidget *del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-      g_signal_connect(G_OBJECT(del), "clicked",
+      g_signal_connect(del, "clicked",
                        G_CALLBACK(_workspace_delete_db), session);
       g_object_set_data(G_OBJECT(del), "db", b);
       dt_gui_box_add(box, del);
@@ -235,14 +235,14 @@ gboolean dt_workspace_create(const char *datadir)
 
   GtkBox *box = GTK_BOX(dt_gui_hbox());
   session->entry = gtk_entry_new();
-  g_signal_connect(G_OBJECT(session->entry),
+  g_signal_connect(session->entry,
                    "changed", G_CALLBACK(_workspace_entry_changed), session);
   gtk_widget_set_hexpand(session->entry, TRUE);
 
   session->create = gtk_button_new_with_label(_("create"));
   gtk_widget_set_sensitive(session->create, FALSE);
 
-  g_signal_connect(G_OBJECT(session->create), "clicked",
+  g_signal_connect(session->create, "clicked",
                    G_CALLBACK(_workspace_new_db), session);
   dt_gui_box_add(box, session->entry, session->create);
   gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);

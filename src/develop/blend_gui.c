@@ -999,14 +999,13 @@ static float _magnifier_scale_callback(GtkWidget *self,
   return outval;
 }
 
-static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget,
+static int _blendop_blendif_disp_alternative_worker(GtkDarktableGradientSlider *slider,
                                                     dt_iop_module_t *module,
                                                     const int mode,
                                                     float (*scale_callback)(GtkWidget*, float, int),
                                                     const char *label)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
 
   const int in_out = (slider == data->filter[1].slider) ? 1 : 0;
 
@@ -1024,7 +1023,7 @@ static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget,
 }
 
 
-static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget,
+static int _blendop_blendif_disp_alternative_mag(GtkDarktableGradientSlider *widget,
                                                  dt_iop_module_t *module,
                                                  const int mode)
 {
@@ -1032,7 +1031,7 @@ static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget,
     (widget, module, mode, _magnifier_scale_callback, _(" (zoom)"));
 }
 
-static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
+static int _blendop_blendif_disp_alternative_log(GtkDarktableGradientSlider *widget,
                                                  dt_iop_module_t *module,
                                                  const int mode)
 {
@@ -1040,7 +1039,7 @@ static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
     (widget, module, mode, _log10_scale_callback, _(" (log)"));
 }
 
-static void _blendop_blendif_disp_alternative_reset(GtkWidget *widget,
+static void _blendop_blendif_disp_alternative_reset(GtkDarktableGradientSlider *widget,
                                                     dt_iop_module_t *module)
 {
   (void) _blendop_blendif_disp_alternative_worker(widget, module, 0, NULL, "");
@@ -1226,11 +1225,11 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module,
     if(channel->altdisplay)
     {
       data->altmode[tab][in_out] =
-        channel->altdisplay(GTK_WIDGET(sl->slider), module, data->altmode[tab][in_out]);
+        channel->altdisplay(sl->slider, module, data->altmode[tab][in_out]);
     }
     else
     {
-      _blendop_blendif_disp_alternative_reset(GTK_WIDGET(sl->slider), module);
+      _blendop_blendif_disp_alternative_reset(sl->slider, module);
     }
   }
 
@@ -1963,7 +1962,7 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module,
   return FALSE;
 }
 
-static void _blendif_select_colorspace(GtkMenuItem *menuitem,
+static void _blendif_select_colorspace(GtkWidget *menuitem,
                                        dt_iop_module_t *module)
 {
   const dt_develop_blend_colorspace_t cst =
@@ -1974,7 +1973,7 @@ static void _blendif_select_colorspace(GtkMenuItem *menuitem,
   }
 }
 
-static void _blendif_show_output_channels(GtkMenuItem *menuitem,
+static void _blendif_show_output_channels(GtkWidget *menuitem,
                                           dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
@@ -1986,7 +1985,7 @@ static void _blendif_show_output_channels(GtkMenuItem *menuitem,
   }
 }
 
-static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
+static void _blendif_hide_output_channels(GtkWidget *menuitem,
                                           dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
@@ -2006,20 +2005,20 @@ static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
   }
 }
 
-static void _blendif_options_callback(GtkButton *button,
-                                      GdkEventButton *event,
-                                      dt_iop_module_t *module)
+static gboolean _blendif_options_callback(GtkButton *button,
+                                          GdkEventButton *event,
+                                          dt_iop_module_t *module)
 {
   if(event->button != 1
      && event->button != 2)
-    return;
+    return FALSE;
 
   const dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   if(!bd
      || !bd->blendif_support
      || !bd->blendif_inited)
-    return;
+    return FALSE;
 
   GtkWidget *mi;
   GtkMenu *menu = GTK_MENU(gtk_menu_new());
@@ -2038,7 +2037,7 @@ static void _blendif_options_callback(GtkButton *button,
     mi = gtk_menu_item_new_with_label(_("reset to default blend colorspace"));
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
                            GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
@@ -2056,7 +2055,7 @@ static void _blendif_options_callback(GtkButton *button,
       }
       g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
                              GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_blendif_select_colorspace), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
@@ -2070,7 +2069,7 @@ static void _blendif_options_callback(GtkButton *button,
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
                            GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
@@ -2083,7 +2082,7 @@ static void _blendif_options_callback(GtkButton *button,
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst",
                            GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
@@ -2092,14 +2091,14 @@ static void _blendif_options_callback(GtkButton *button,
     if(bd->output_channels_shown)
     {
       mi = gtk_menu_item_new_with_label(_("reset and hide output channels"));
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_blendif_hide_output_channels), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
     else
     {
       mi = gtk_menu_item_new_with_label(_("show output channels"));
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_blendif_show_output_channels), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
@@ -2109,10 +2108,12 @@ static void _blendif_options_callback(GtkButton *button,
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+
+  return TRUE;
 }
 
 // activate channel/mask view
-static void _blendop_blendif_channel_mask_view(GtkWidget *widget,
+static void _blendop_blendif_channel_mask_view(GtkDarktableGradientSlider *widget,
                                                dt_iop_module_t *module,
                                                const dt_dev_pixelpipe_display_mask_t mode)
 {
@@ -2126,7 +2127,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget,
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
 
-    if(widget == GTK_WIDGET(data->filter[1].slider))
+    if(widget == data->filter[1].slider)
       channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
@@ -2143,7 +2144,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget,
 
 // toggle channel/mask view
 static void _blendop_blendif_channel_mask_view_toggle
-  (GtkWidget *widget,
+  (GtkDarktableGradientSlider *widget,
    dt_iop_module_t *module,
    const dt_dev_pixelpipe_display_mask_t mode)
 {
@@ -2172,7 +2173,7 @@ static void _blendop_blendif_channel_mask_view_toggle
   {
     dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
 
-    if(widget == GTK_WIDGET(data->filter[1].slider))
+    if(widget == data->filter[1].slider)
       channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
@@ -2190,7 +2191,7 @@ static void _blendop_blendif_channel_mask_view_toggle
 // magic mode: if mouse cursor enters a gradient slider with shift
 // and/or control pressed we enter channel display and/or mask display
 // mode
-static gboolean _blendop_blendif_enter(GtkWidget *widget,
+static gboolean _blendop_blendif_enter(GtkDarktableGradientSlider *widget,
                                        GdkEventCrossing *event,
                                        dt_iop_module_t *module)
 {
@@ -2232,7 +2233,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget,
 
   _blendop_blendif_channel_mask_view(widget, module, mode);
 
-  gtk_widget_grab_focus(widget);
+  gtk_widget_grab_focus(GTK_WIDGET(widget));
   return FALSE;
 }
 
@@ -2263,7 +2264,7 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
 }
 
 // de-activate magic mode when leaving the gradient slider
-static gboolean _blendop_blendif_leave(GtkWidget *widget,
+static gboolean _blendop_blendif_leave(GtkDarktableGradientSlider *widget,
                                        GdkEventCrossing *event,
                                        dt_iop_module_t *module)
 {
@@ -2286,7 +2287,7 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget,
 }
 
 
-static gboolean _blendop_blendif_key_press(GtkWidget *widget,
+static gboolean _blendop_blendif_key_press(GtkDarktableGradientSlider *widget,
                                            GdkEventKey *event,
                                            dt_iop_module_t *module)
 {
@@ -2296,7 +2297,7 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget,
   gboolean handled = FALSE;
 
   const int tab = data->tab;
-  const int in_out = (widget == GTK_WIDGET(data->filter[1].slider)) ? 1 : 0;
+  const int in_out = (widget == data->filter[1].slider) ? 1 : 0;
 
   switch(event->keyval)
   {
@@ -2650,17 +2651,17 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
            "press 'm' to toggle mask view."));
       gtk_widget_set_tooltip_text(GTK_WIDGET(sl->head), _(slider_tooltip[in_out]));
 
-      g_signal_connect(G_OBJECT(sl->slider), "value-changed",
+      g_signal_connect(sl->slider, "value-changed",
                        G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-      g_signal_connect(G_OBJECT(sl->slider), "value-reset",
+      g_signal_connect(sl->slider, "value-reset",
                        G_CALLBACK(_blendop_blendif_sliders_reset_callback), bd);
-      g_signal_connect(G_OBJECT(sl->slider), "leave-notify-event",
+      g_signal_connect(sl->slider, "leave-notify-event",
                        G_CALLBACK(_blendop_blendif_leave), module);
-      g_signal_connect(G_OBJECT(sl->slider), "enter-notify-event",
+      g_signal_connect(sl->slider, "enter-notify-event",
                        G_CALLBACK(_blendop_blendif_enter), module);
-      g_signal_connect(G_OBJECT(sl->slider), "key-press-event",
+      g_signal_connect(sl->slider, "key-press-event",
                        G_CALLBACK(_blendop_blendif_key_press), module);
-      g_signal_connect(G_OBJECT(sl->polarity), "toggled",
+      g_signal_connect(GTK_TOGGLE_BUTTON(sl->polarity), "toggled",
                        G_CALLBACK(_blendop_blendif_polarity_callback), bd);
 
       sl->box = GTK_BOX(dt_gui_vbox(label_box, dt_gui_hbox(dt_gui_expand(sl->slider), sl->polarity)));
@@ -2676,13 +2677,13 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
                                 _("adjust the boost factor of the channel mask"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
 
-    g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed",
+    g_signal_connect(bd->channel_boost_factor_slider, "value-changed",
                      G_CALLBACK(_blendop_blendif_boost_factor_callback), bd);
-    g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page",
+    g_signal_connect(bd->channel_tabs, "switch-page",
                      G_CALLBACK(_blendop_blendif_tab_switch), bd);
-    g_signal_connect(G_OBJECT(bd->colorpicker), "toggled",
+    g_signal_connect(bd->colorpicker, "toggled",
                      G_CALLBACK(_update_gradient_slider_pickers), module);
-    g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "toggled",
+    g_signal_connect(bd->colorpicker_set_values, "toggled",
                      G_CALLBACK(_update_gradient_slider_pickers), module);
 
     dt_gui_box_add(bd->blendif_box, section, header,
@@ -2765,7 +2766,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->masks_combo, N_("blend"), N_("drawn mask"));
 
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
-    g_signal_connect(G_OBJECT(bd->masks_combo), "value-changed",
+    g_signal_connect(bd->masks_combo, "value-changed",
                      G_CALLBACK(dt_masks_iop_value_changed_callback), module);
     dt_bauhaus_combobox_add_populate_fct(bd->masks_combo, dt_masks_iop_combo_populate);
 
@@ -2978,7 +2979,7 @@ void dt_iop_gui_init_raster(GtkWidget *blendw, dt_iop_module_t *module)
 
     bd->raster_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_combobox_add(bd->raster_combo, _("no mask used"));
-    g_signal_connect(G_OBJECT(bd->raster_combo), "value-changed",
+    g_signal_connect(bd->raster_combo, "value-changed",
                      G_CALLBACK(_raster_value_changed_callback), module);
     dt_bauhaus_combobox_add_populate_fct(bd->raster_combo, _raster_combo_populate);
 
@@ -3476,7 +3477,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_tooltip_text(presets_button, _("blending options"));
     if(bd->blendif_support)
     {
-      g_signal_connect(G_OBJECT(presets_button), "button-press-event",
+      g_signal_connect(GTK_BUTTON(presets_button), "button-press-event",
                        G_CALLBACK(_blendif_options_callback), module);
     }
     else
@@ -3524,7 +3525,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                           dt_develop_blend_mode_names, -1, -1);
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
-    g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
+    g_signal_connect(bd->blend_modes_combo, "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo),
                          "masks_blending_op");
@@ -3565,7 +3566,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
        N_("combine masks"),
        dt_develop_combine_masks_names, NULL,
        _("how to combine individual drawn mask and different channels of parametric mask"));
-    g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
+    g_signal_connect(bd->masks_combine_combo, "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_combine_combo),
                          "masks_combined");
@@ -3578,7 +3579,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
        _("adjust the threshold for the details mask (using raw data),\n"
          "positive values select areas with strong details,\n"
          "negative values select flat areas"));
-    g_signal_connect(G_OBJECT(bd->details_slider), "value-changed",
+    g_signal_connect(bd->details_slider, "value-changed",
                      G_CALLBACK(_blendop_blendif_details_callback), bd);
 
     bd->masks_feathering_guide_combo = _combobox_new_from_list
@@ -3596,7 +3597,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider,
                                 _("spatial radius of feathering"));
-    g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
+    g_signal_connect(bd->feathering_radius_slider, "value-changed",
                      G_CALLBACK(_blendop_blendif_feathering_callback), bd);
 
     bd->blur_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0, 0.0, 1);
@@ -3605,7 +3606,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_bauhaus_slider_set_format(bd->blur_radius_slider, _(" px"));
     gtk_widget_set_tooltip_text(bd->blur_radius_slider,
                                 _("radius for gaussian blur of blend mask"));
-    g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",
+    g_signal_connect(bd->blur_radius_slider, "value-changed",
                      G_CALLBACK(_blendop_blendif_feathering_callback), bd);
 
     bd->brightness_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0, 0.0, 2);

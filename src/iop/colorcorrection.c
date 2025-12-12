@@ -246,15 +246,15 @@ void gui_init(dt_iop_module_t *self)
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_colorcorrection_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_colorcorrection_button_press),
+  g_signal_connect(g->area, "draw", G_CALLBACK(dt_iop_colorcorrection_draw), self);
+  g_signal_connect(g->area, "button-press-event", G_CALLBACK(dt_iop_colorcorrection_button_press),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_colorcorrection_motion_notify),
+  g_signal_connect(g->area, "motion-notify-event", G_CALLBACK(dt_iop_colorcorrection_motion_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_colorcorrection_leave_notify),
+  g_signal_connect(g->area, "leave-notify-event", G_CALLBACK(dt_iop_colorcorrection_leave_notify),
                    self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
+  g_signal_connect(g->area, "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
+  g_signal_connect(g->area, "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
   self->widget = dt_gui_vbox(g->area);
   g->slider = dt_bauhaus_slider_from_params(self, N_("saturation"));

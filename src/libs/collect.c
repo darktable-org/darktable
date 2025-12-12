@@ -136,7 +136,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self);
 
 static void _lib_folders_update_collection(const gchar *filmroll);
 
-static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
+static void entry_changed(GtkWidget *entry, dt_lib_collect_rule_t *dr);
 
 static void collection_updated(gpointer instance,
                                dt_collection_change_t query_change,
@@ -406,9 +406,8 @@ uint32_t container(dt_lib_module_t *self)
 }
 
 static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem,
-                                             gpointer userdata)
+                                             GtkTreeView *treeview)
 {
-  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   GtkTreeSelection *selection;
@@ -588,13 +587,13 @@ static void view_popup_menu(GtkWidget *treeview,
 
   menuitem = gtk_menu_item_new_with_label(_("update path to files..."));
   g_signal_connect(menuitem, "activate",
-                   (GCallback)view_popup_menu_onSearchFilmroll, treeview);
+                   G_CALLBACK(view_popup_menu_onSearchFilmroll), treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   menuitem = gtk_menu_item_new_with_label(_("remove..."));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate",
-                   (GCallback)view_popup_menu_onRemove, treeview);
+                   G_CALLBACK(view_popup_menu_onRemove), treeview);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
@@ -2900,7 +2899,7 @@ static void entry_activated(GtkWidget *entry,
   dt_control_queue_redraw_center();
 }
 
-static void entry_changed(GtkEntry *entry,
+static void entry_changed(GtkWidget *entry,
                           dt_lib_collect_rule_t *dr)
 {
   dr->typing = TRUE;
@@ -3247,7 +3246,7 @@ static gboolean popup_button_callback(GtkWidget *widget,
 
   mi = gtk_menu_item_new_with_label(_("clear this rule"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_clear), d);
+  g_signal_connect(mi, "activate", G_CALLBACK(menuitem_clear), d);
 
   if(d->num == active - 1)
   {
@@ -3255,21 +3254,21 @@ static gboolean popup_button_callback(GtkWidget *widget,
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("add more images"));
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("exclude images"));
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode), d);
   }
   else if(d->num < active - 1)
@@ -3278,21 +3277,21 @@ static gboolean popup_button_callback(GtkWidget *widget,
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: or"));
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: except"));
     g_object_set_data(G_OBJECT(mi), "menuitem_mode",
                       GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate",
+    g_signal_connect(mi, "activate",
                      G_CALLBACK(menuitem_mode_change), d);
   }
 
@@ -3401,7 +3400,7 @@ void set_preferences(void *menu,
                      dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  g_signal_connect(mi, "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
@@ -3590,7 +3589,7 @@ static void _history_show(GtkWidget *widget,
       GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_history_apply), self);
+      g_signal_connect(smt, "activate", G_CALLBACK(_history_apply), self);
       gtk_menu_shell_append(pop, smt);
     }
     else
@@ -3643,7 +3642,7 @@ GtkWidget *gui_tool_box(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(sortb, _("toggle collection sort order ascending/descending"));
   dt_gui_add_class(sortb, "dt_ignore_fg_state");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sortb), sort_descend);
-  g_signal_connect(G_OBJECT(sortb),
+  g_signal_connect(DTGTK_TOGGLEBUTTON(sortb),
                    "toggled",
                    G_CALLBACK(_sort_reverse_changed), self);
   return sortb;
@@ -3674,21 +3673,21 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_mute_scrolling(w);
     if(_combo_get_active_collection(w) == DT_COLLECTION_PROP_MODULE)
       has_iop_name_rule = TRUE;
-    g_signal_connect(G_OBJECT(w), "value-changed",
+    g_signal_connect(w, "value-changed",
                      G_CALLBACK(combo_changed), d->rule + i);
 
     d->rule[i].text = w = dt_ui_entry_new(10);
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "focus-in-event",
+    g_signal_connect(w, "focus-in-event",
                      G_CALLBACK(entry_focus_in_callback), d->rule + i);
-    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
-    g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
+    g_signal_connect(w, "changed", G_CALLBACK(entry_changed), d->rule + i);
+    g_signal_connect(w, "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
 
     d->rule[i].button = w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
     dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "button-press-event",
+    g_signal_connect(w, "button-press-event",
                      G_CALLBACK(popup_button_callback), d->rule + i);
 
     d->rule[i].hbox = dt_gui_hbox(d->rule[i].combo, dt_gui_expand(d->rule[i].text), d->rule[i].button);
@@ -3700,9 +3699,9 @@ void gui_init(dt_lib_module_t *self)
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  g_signal_connect(G_OBJECT(view), "button-press-event",
+  g_signal_connect(view, "button-press-event",
                    G_CALLBACK(view_onButtonPressed), d);
-  g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+  g_signal_connect(view, "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -3765,13 +3764,13 @@ void gui_init(dt_lib_module_t *self)
 
 #ifdef _WIN32
   d->vmonitor = g_volume_monitor_get();
-  g_signal_connect(G_OBJECT(d->vmonitor), "mount-changed",
+  g_signal_connect(d->vmonitor, "mount-changed",
                    G_CALLBACK(_mount_changed), self);
-  g_signal_connect(G_OBJECT(d->vmonitor), "mount-added",
+  g_signal_connect(d->vmonitor, "mount-added",
                    G_CALLBACK(_mount_changed), self);
 #else
   d->vmonitor = g_unix_mount_monitor_get();
-  g_signal_connect(G_OBJECT(d->vmonitor), "mounts-changed",
+  g_signal_connect(d->vmonitor, "mounts-changed",
                    G_CALLBACK(_mount_changed), self);
 #endif
 

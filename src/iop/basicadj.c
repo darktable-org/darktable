@@ -639,7 +639,7 @@ void gui_init(dt_iop_module_t *self)
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
-  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
+  g_signal_connect(g->sl_middle_grey, "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
   g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   dt_bauhaus_slider_set_soft_range(g->sl_brightness, -1.0, 1.0);
@@ -660,7 +660,7 @@ void gui_init(dt_iop_module_t *self)
                               _("apply auto exposure based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
                                 "right-click to cancel"));
-  g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
+  g_signal_connect(g->bt_select_region, "toggled", G_CALLBACK(_select_region_toggled_callback), self);
 
   dt_gui_box_add(self->widget, dt_gui_expand(g->bt_auto_levels), dt_gui_expand(g->bt_select_region));
 

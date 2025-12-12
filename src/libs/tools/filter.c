@@ -102,7 +102,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_filtering_menu, 0, NULL);
   gtk_widget_set_tooltip_text(bt, _("filter preferences"));
-  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_pref_show), self);
+  g_signal_connect(bt, "button-press-event", G_CALLBACK(_pref_show), self);
   gtk_box_pack_start(GTK_BOX(self->widget), bt, FALSE, TRUE, 0);
 
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

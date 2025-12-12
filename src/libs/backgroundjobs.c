@@ -239,7 +239,7 @@ static gboolean _cancellable_gui_thread(gpointer user_data)
 
   GtkBox *hbox = GTK_BOX(params->instance->hbox);
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), params->progress);
+  g_signal_connect(button, "clicked", G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), params->progress);
   gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_widget_show_all(button);
 

@@ -82,7 +82,7 @@ int position(const dt_lib_module_t *self)
 
 #define SHORTCUT_TOOLTIP(v, w) dt_action_define(&darktable.control->actions_global, "switch views", v->module_name, w, NULL);
 
-static void _dropdown_changed(GtkComboBox *widget, dt_lib_viewswitcher_t *d)
+static void _dropdown_changed(GtkWidget *widget, dt_lib_viewswitcher_t *d)
 {
   GtkTreeIter iter;
   if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(d->dropdown), &iter))
@@ -151,7 +151,7 @@ void gui_init(dt_lib_module_t *self)
         gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
 
         gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
-        g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
+        g_signal_connect(d->dropdown, "changed", G_CALLBACK(_dropdown_changed), d);
       }
 
       gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, gimping ? 0 : 1, -1);
@@ -258,13 +258,13 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view)
   gtk_widget_set_state_flags(b, GTK_STATE_FLAG_NORMAL, TRUE);
 
   /* connect button press handler */
-  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), view);
+  g_signal_connect(eb, "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), view);
 
   /* set enter/leave notify events and connect signals */
   gtk_widget_add_events(GTK_WIDGET(eb), GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 
-  g_signal_connect(G_OBJECT(eb), "enter-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
-  g_signal_connect(G_OBJECT(eb), "leave-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
+  g_signal_connect(eb, "enter-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
+  g_signal_connect(eb, "leave-notify-event", G_CALLBACK(_lib_viewswitcher_enter_leave_notify_callback), b);
 
   return eb;
 }

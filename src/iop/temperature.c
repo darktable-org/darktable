@@ -2145,7 +2145,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
   gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
 
-  g_signal_connect(G_OBJECT(temp_label_box), "button-release-event",
+  g_signal_connect(temp_label_box, "button-release-event",
                    G_CALLBACK(temp_label_click), self);
 
   //Match UI order: temp first, then tint (like every other app ever)
@@ -2190,14 +2190,14 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_no_show_all(g->scale_y, TRUE);
 
-  g_signal_connect(G_OBJECT(g->scale_k), "value-changed",
+  g_signal_connect(g->scale_k, "value-changed",
                    G_CALLBACK(_temp_tint_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_tint), "value-changed",
+  g_signal_connect(g->scale_tint, "value-changed",
                    G_CALLBACK(_temp_tint_callback), self);
 
-  g_signal_connect(G_OBJECT(g->presets), "value-changed",
+  g_signal_connect(g->presets, "value-changed",
                    G_CALLBACK(_preset_tune_callback), self);
-  g_signal_connect(G_OBJECT(g->finetune), "value-changed",
+  g_signal_connect(g->finetune, "value-changed",
                    G_CALLBACK(_preset_tune_callback), self);
 
   // update the gui when the preferences changed (i.e. colored sliders stuff)

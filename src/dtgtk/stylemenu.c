@@ -118,7 +118,7 @@ static void _build_style_submenus(GtkMenuShell *menu,
     {
       menu_data->name = g_strdup(style_name);
       menu_data->user_data = user_data;
-      g_signal_connect_data(G_OBJECT(mi), "activate",
+      g_signal_connect_data(mi, "activate",
                             G_CALLBACK(activate_callback),
                             menu_data, (GClosureNotify)_free_menu_data, 0);
     }
@@ -130,7 +130,7 @@ static void _build_style_submenus(GtkMenuShell *menu,
     {
       menu_data->name = g_strdup(style_name);
       menu_data->user_data = user_data;
-      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+      g_signal_connect_data(mi, "button-press-event",
                             G_CALLBACK(button_callback),
                             menu_data, (GClosureNotify)_free_menu_data, 0);
     }

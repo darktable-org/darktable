@@ -295,8 +295,8 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                                      "\nclick to toggle the color label selection"
                                                      "\nctrl+click to exclude the color label"
                                                      "\nthe gray button affects all color labels"));
-    g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked), colors);
-    g_signal_connect(G_OBJECT(colors->colors[k]), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
+    g_signal_connect(colors->colors[k], "button-press-event", G_CALLBACK(_colors_clicked), colors);
+    g_signal_connect(colors->colors[k], "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                      GINT_TO_POINTER(k));
     dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
@@ -306,8 +306,8 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                               _("filter by images color label"
                                 "\nintersection: images having all selected color labels"
                                 "\nunion: images with at least one of the selected color labels"));
-  g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
-  g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
+  g_signal_connect(colors->operator, "clicked", G_CALLBACK(_colors_operator_clicked), colors);
+  g_signal_connect(colors->operator, "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                    GINT_TO_POINTER(-1));
   dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
 

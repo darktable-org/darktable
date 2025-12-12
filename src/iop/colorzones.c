@@ -2628,7 +2628,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
+  g_signal_connect(g->channel_tabs, "switch-page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
 
   // color pickers
@@ -2674,14 +2674,14 @@ void gui_init(dt_iop_module_t *self)
                           PANGO_ELLIPSIZE_START);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_edit_by_area), g->edit_by_area);
   gtk_widget_set_tooltip_text(g->chk_edit_by_area, _("edit the curve nodes by area"));
-  g_signal_connect(G_OBJECT(g->chk_edit_by_area), "toggled",
+  g_signal_connect(g->chk_edit_by_area, "toggled",
                    G_CALLBACK(_edit_by_area_callback), self);
 
   // display selection
   g->bt_showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->bt_showmask, "dt_transparent_background");
   gtk_widget_set_tooltip_text(g->bt_showmask, _("display selection"));
-  g_signal_connect(G_OBJECT(g->bt_showmask), "toggled",
+  g_signal_connect(g->bt_showmask, "toggled",
                    G_CALLBACK(_display_mask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
 
@@ -2707,25 +2707,25 @@ void gui_init(dt_iop_module_t *self)
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_zones);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw",
+  g_signal_connect(g->area, "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
+  g_signal_connect(g->area, "button-press-event",
                    G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
+  g_signal_connect(g->area, "button-release-event",
                    G_CALLBACK(_area_button_release_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
+  g_signal_connect(g->area, "motion-notify-event",
                    G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
+  g_signal_connect(g->area, "leave-notify-event",
                    G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event",
+  g_signal_connect(g->area, "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "key-press-event",
+  g_signal_connect(g->area, "key-press-event",
                    G_CALLBACK(_area_key_press_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(g->bottom_area), GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(g->bottom_area), "draw",
+  g_signal_connect(g->bottom_area, "draw",
                    G_CALLBACK(_bottom_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->bottom_area), "button-press-event",
+  g_signal_connect(g->bottom_area, "button-press-event",
                    G_CALLBACK(_bottom_area_button_press_callback),
                    self);
 
@@ -2736,7 +2736,7 @@ void gui_init(dt_iop_module_t *self)
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
         "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
-  g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
+  g_signal_connect(g->interpolator, "value-changed",
                    G_CALLBACK(_interpolator_callback), self);
 }
 

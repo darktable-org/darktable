@@ -634,9 +634,9 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_widget_set_sensitive(GTK_WIDGET(g->filter), TRUE);
   }
 
-  g_signal_connect(G_OBJECT(g->autoapply), "toggled",
+  g_signal_connect(g->autoapply, "toggled",
                    G_CALLBACK(_check_buttons_activated), g);
-  g_signal_connect(G_OBJECT(g->filter), "toggled",
+  g_signal_connect(g->filter, "toggled",
                    G_CALLBACK(_check_buttons_activated), g);
 
   int line = 0;
@@ -678,13 +678,13 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->iso_min = gtk_entry_new();
   gtk_widget_set_tooltip_text(g->iso_min, _("minimum ISO value"));
-  g_signal_connect(G_OBJECT(g->iso_min), "insert-text",
+  g_signal_connect(g->iso_min, "insert-text",
                    G_CALLBACK(_insert_text_event), NULL);
   g->iso_max = gtk_entry_new();
   gtk_widget_set_tooltip_text
     (g->iso_max,
      _("maximum ISO value\nif left blank, it is equivalent to no upper limit"));
-  g_signal_connect(G_OBJECT(g->iso_max), "insert-text",
+  g_signal_connect(g->iso_max, "insert-text",
                    G_CALLBACK(_insert_text_event), NULL);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_min, label, GTK_POS_RIGHT, 2, 1);
@@ -981,7 +981,7 @@ static void _edit_preset(const char *name_in, dt_iop_module_t *module)
     name = g_strdup(name_in);
 
   dt_gui_presets_show_iop_edit_dialog
-    (name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
+    (name, module, G_CALLBACK(_edit_preset_final_callback), NULL, TRUE, TRUE,
      FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_free(name);
 }
@@ -1336,13 +1336,13 @@ static void _menuitem_connect_preset(GtkWidget *mi,
   g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
   g_object_set_data(G_OBJECT(mi), "dt-preset-module", iop);
   dt_action_define(&iop->so->actions, "preset", name, mi, NULL);
-  g_signal_connect(G_OBJECT(mi), "activate",
+  g_signal_connect(mi, "activate",
                    G_CALLBACK(_menuitem_activate_preset), iop);
-  g_signal_connect(G_OBJECT(mi), "button-press-event",
+  g_signal_connect(mi, "button-press-event",
                    G_CALLBACK(_menuitem_button_preset), iop);
-  g_signal_connect(G_OBJECT(mi), "button-release-event",
+  g_signal_connect(mi, "button-release-event",
                    G_CALLBACK(_menuitem_button_preset), iop);
-  g_signal_connect(G_OBJECT(mi), "motion-notify-event",
+  g_signal_connect(mi, "motion-notify-event",
                    G_CALLBACK(_menuitem_motion_preset), iop);
   gtk_widget_set_has_tooltip(mi, TRUE);
 }
@@ -1611,7 +1611,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
   GtkMenuItem *smi_manage = (GtkMenuItem *)gtk_menu_item_new_with_label
     (_("manage quick presets list..."));
-  g_signal_connect(G_OBJECT(smi_manage), "activate",
+  g_signal_connect(smi_manage, "activate",
                    G_CALLBACK(_menuitem_manage_quick_presets), NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi_manage));
 
@@ -1797,19 +1797,19 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     if(active_preset >= 0 && !writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_menuitem_edit_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_menuitem_delete_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
     else
     {
       mi = gtk_menu_item_new_with_label(_("store new preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate",
+      g_signal_connect(mi, "activate",
                        G_CALLBACK(_menuitem_new_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
@@ -1825,7 +1825,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_object_set_data_full(G_OBJECT(mi), "dt-preset-name",
                                g_strdup(darktable.gui->last_preset), g_free);
-        g_signal_connect(G_OBJECT(mi), "activate",
+        g_signal_connect(mi, "activate",
                          G_CALLBACK(_menuitem_update_preset), module);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
         g_free(markup);

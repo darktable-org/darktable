@@ -577,9 +577,9 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   /* create snapshot button */
   s->button = gtk_toggle_button_new();
   gtk_widget_set_name(s->button, "snapshot-button");
-  g_signal_connect(G_OBJECT(s->button), "toggled",
+  g_signal_connect(s->button, "toggled",
                    G_CALLBACK(_lib_snapshots_toggled_callback), self);
-  g_signal_connect(G_OBJECT(s->button), "button-press-event",
+  g_signal_connect(s->button, "button-press-event",
                    G_CALLBACK(_lib_button_button_pressed_callback), self);
 
   s->num = gtk_label_new("");
@@ -595,14 +595,14 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
 
   s->entry = gtk_entry_new();
   gtk_widget_set_halign(s->entry, GTK_ALIGN_FILL);
-  g_signal_connect(G_OBJECT(s->entry), "activate",
+  g_signal_connect(s->entry, "activate",
                    G_CALLBACK(_entry_activated_callback), self);
 
   s->restore_button = dtgtk_button_new(dtgtk_cairo_paint_snapshots_restore, CPF_NONE, NULL);
   gtk_widget_set_name(s->restore_button, "non-flat");
   gtk_widget_set_tooltip_text(s->restore_button,
                               _("restore snapshot into current history"));
-  g_signal_connect(G_OBJECT(s->restore_button), "clicked",
+  g_signal_connect(s->restore_button, "clicked",
                    G_CALLBACK(_lib_snapshots_restore_callback), self);
 }
 
@@ -865,7 +865,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), d->take_button, TRUE, TRUE, 0);
   d->sidebyside_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->sidebyside_button), "clicked",
+  g_signal_connect(d->sidebyside_button, "clicked",
                    G_CALLBACK(_sidebyside_button_clicked), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->sidebyside_button),
                               _("place the snapshot side-by-side / above-below the current image instead of overlaying"));

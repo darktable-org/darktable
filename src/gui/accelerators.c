@@ -1214,7 +1214,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   gtk_widget_show_all(vbox);
   gtk_tooltip_set_custom(tooltip, vbox);
-  g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
+  g_signal_connect(vbox, "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
 
   return TRUE;
 }
@@ -1774,11 +1774,9 @@ static void _element_editing_started(GtkCellRenderer *renderer,
 static void _element_changed(GtkCellRendererCombo *combo,
                              char *path_string,
                              GtkTreeIter *new_iter,
-                             gpointer data)
+                             GtkTreeModel *model)
 {
-  dt_shortcut_t *s = _find_edited_shortcut(data, path_string);
-
-  GtkTreeModel *model = NULL;
+  dt_shortcut_t *s = _find_edited_shortcut(model, path_string);
   g_object_get(combo, "model", &model, NULL);
   GtkTreePath *path = gtk_tree_model_get_path(model, new_iter);
   const gint new_index = gtk_tree_path_get_indices(path)[0];
@@ -1897,11 +1895,9 @@ static void _effect_editing_started(GtkCellRenderer *renderer,
 static void _effect_changed(GtkCellRendererCombo *combo,
                             char *path_string,
                             GtkTreeIter *new_iter,
-                            gpointer data)
+                            GtkTreeModel *model)
 {
-  dt_shortcut_t *s = _find_edited_shortcut(data, path_string);
-
-  GtkTreeModel *model = NULL;
+  dt_shortcut_t *s = _find_edited_shortcut(model, path_string);
   g_object_get(combo, "model", &model, NULL);
   GtkTreePath *path = gtk_tree_model_get_path(model, new_iter);
   const gint new_index = s->effect = gtk_tree_path_get_indices(path)[0];
@@ -1981,18 +1977,17 @@ static void _shortcut_row_activated(GtkTreeView *tree_view,
   _grab_in_tree_view(tree_view);
 }
 
-static gboolean _view_key_pressed(GtkWidget *widget,
+static gboolean _view_key_pressed(GtkTreeView *view,
                                   GdkEventKey *event,
-                                  gpointer user_data)
+                                  GtkSearchEntry *search)
 {
-  GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
 
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    if(!strcmp(gtk_widget_get_name(widget), "actions_view"))
+    if(!strcmp(gtk_widget_get_name(GTK_WIDGET(view)), "actions_view"))
     {
       // if control key pressed, copy lua command to clipboard (CTRL+C will work)
       if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
@@ -2038,7 +2033,7 @@ static gboolean _view_key_pressed(GtkWidget *widget,
     }
   }
 
-  return dt_gui_search_start(widget, event, user_data);
+  return dt_gui_search_start(GTK_WIDGET(view), event, search);
 }
 
 static void _add_shortcuts_to_tree()
@@ -2206,7 +2201,7 @@ static gboolean _shortcut_selection_function(GtkTreeSelection *selection,
 }
 
 static void _shortcut_selection_changed(GtkTreeSelection *selection,
-                                        gpointer data)
+                                        GtkTreeView *view)
 {
   GtkTreeModel *model = NULL;
   GtkTreeIter iter;
@@ -2220,7 +2215,7 @@ static void _shortcut_selection_changed(GtkTreeSelection *selection,
   else
     _selected_shortcut = NULL;
 
-  gtk_widget_queue_draw(GTK_WIDGET(data));
+  gtk_widget_queue_draw(GTK_WIDGET(view));
 }
 
 static gboolean _action_find_and_expand(GtkTreeModel *model,
@@ -2253,11 +2248,10 @@ static gboolean _action_find_and_expand(GtkTreeModel *model,
   return FALSE;
 }
 
-static gboolean _action_view_click(GtkWidget *widget,
+static gboolean _action_view_click(GtkTreeView *view,
                                    GdkEventButton *event,
-                                   gpointer data)
+                                   gpointer user_data)
 {
-  GtkTreeView *view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(view);
 
   if(event->button == GDK_BUTTON_PRIMARY)
@@ -2284,7 +2278,7 @@ static gboolean _action_view_click(GtkWidget *widget,
         gtk_tree_view_set_cursor(view, path, NULL, FALSE);
       }
 
-      gtk_widget_grab_focus(widget);
+      gtk_widget_grab_focus(GTK_WIDGET(view));
     }
     else
       gtk_tree_selection_unselect_all(selection);
@@ -2315,7 +2309,7 @@ static gboolean _action_view_show(GtkTreeView *view,
 }
 
 static void _action_selection_changed(GtkTreeSelection *selection,
-                                      gpointer data)
+                                      GtkTreeView *shortcuts_view)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
@@ -2332,7 +2326,6 @@ static void _action_selection_changed(GtkTreeSelection *selection,
     gtk_tree_path_free(path);
   }
 
-  GtkTreeView *shortcuts_view = GTK_TREE_VIEW(data);
   gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER
                                  (gtk_tree_view_get_model(shortcuts_view)));
   gtk_tree_view_expand_all(shortcuts_view);
@@ -2502,12 +2495,11 @@ static void _shortcuts_load(const gchar *shortcuts_file,
                             const dt_input_device_t load_dev,
                             const gboolean clear);
 
-static void _fallbacks_toggled(GtkToggleButton *button, gpointer data)
+static void _fallbacks_toggled(GtkWidget *button, GtkTreeView *shortcuts_view)
 {
   dt_conf_set_bool("accel/enable_fallbacks",
                    (darktable.control->enable_fallbacks = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))));
 
-  GtkTreeView *shortcuts_view = GTK_TREE_VIEW(data);
   gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER
                                  (gtk_tree_view_get_model(shortcuts_view)));
 }
@@ -2565,8 +2557,8 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
   dt_shortcuts_save(NULL, FALSE);
 }
 
-static void _import_export_dev_changed(GtkComboBox *widget,
-                                       gpointer user_data)
+static void _import_export_dev_changed(GtkWidget *widget,
+                                       GtkWidget *user_data)
 {
   gint dev = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   g_object_set_data(G_OBJECT(user_data), "device", GINT_TO_POINTER(dev));
@@ -2575,8 +2567,8 @@ static void _import_export_dev_changed(GtkComboBox *widget,
   gtk_widget_set_visible(gtk_widget_get_parent(GTK_WIDGET(user_data)), dev > 1);
 }
 
-static void _export_id_changed(GtkComboBox *widget,
-                               gpointer user_data)
+static void _export_id_changed(GtkWidget *widget,
+                               GtkWidget *user_data)
 {
   gint dev = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "device"));
   gint id = dev <= 1 ? 0 :
@@ -2666,9 +2658,9 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
   g_object_unref(chooser);
 }
 
-static void _import_id_changed(GtkComboBox *widget, gpointer user_data)
+static void _import_id_changed(GtkWidget *widget, GtkWidget *user_data)
 {
-  gint id = gtk_combo_box_get_active(widget);
+  gint id = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), id);
 }
 
@@ -2886,14 +2878,14 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_unref(G_OBJECT(filtered_shortcuts));
   gtk_tree_view_set_search_column(shortcuts_view, 0); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
-  GtkWidget *search_shortcuts = gtk_search_entry_new();
+  GtkSearchEntry *search_shortcuts = GTK_SEARCH_ENTRY(gtk_search_entry_new());
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts),
                                  _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts),
                               _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
-  g_signal_connect(G_OBJECT(search_shortcuts), "activate",
+  g_signal_connect(search_shortcuts, "activate",
                    G_CALLBACK(dt_gui_search_stop), shortcuts_view);
-  g_signal_connect(G_OBJECT(search_shortcuts), "stop-search",
+  g_signal_connect(search_shortcuts, "stop-search",
                    G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
 
@@ -2901,11 +2893,11 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
                                          _shortcut_selection_function, NULL, NULL);
   g_object_set(shortcuts_view, "has-tooltip", TRUE, NULL);
   gtk_widget_set_name(GTK_WIDGET(shortcuts_view), "shortcuts_view");
-  g_signal_connect(G_OBJECT(shortcuts_view), "row-activated",
+  g_signal_connect(shortcuts_view, "row-activated",
                    G_CALLBACK(_shortcut_row_activated), filtered_shortcuts);
-  g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event",
+  g_signal_connect(shortcuts_view, "key-press-event",
                    G_CALLBACK(_view_key_pressed), search_shortcuts);
-  g_signal_connect(G_OBJECT(_shortcuts_store), "row-inserted",
+  g_signal_connect(_shortcuts_store, "row-inserted",
                    G_CALLBACK(_shortcut_row_inserted), shortcuts_view);
 
   // Setting up the cell renderers
@@ -2922,7 +2914,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_set(renderer, "model", elements, "text-column", 0, "has-entry", FALSE, NULL);
   g_signal_connect(renderer, "editing-started" ,
                    G_CALLBACK(_element_editing_started), filtered_shortcuts);
-  g_signal_connect(renderer, "changed", G_CALLBACK(_element_changed), filtered_shortcuts);
+  g_signal_connect(GTK_CELL_RENDERER_COMBO(renderer), "changed",
+                   G_CALLBACK(_element_changed), filtered_shortcuts);
   _add_prefs_column(shortcuts_view, renderer, _("element"), SHORTCUT_VIEW_ELEMENT);
 
   renderer = gtk_cell_renderer_combo_new();
@@ -2930,7 +2923,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_set(renderer, "model", effects, "text-column", 0, "has-entry", FALSE, NULL);
   g_signal_connect(renderer, "editing-started" ,
                    G_CALLBACK(_effect_editing_started), filtered_shortcuts);
-  g_signal_connect(renderer, "changed", G_CALLBACK(_effect_changed), filtered_shortcuts);
+  g_signal_connect(GTK_CELL_RENDERER_COMBO(renderer), "changed",
+                   G_CALLBACK(_effect_changed), filtered_shortcuts);
   _add_prefs_column(shortcuts_view, renderer, _("effect"), SHORTCUT_VIEW_EFFECT);
 
   renderer = gtk_cell_renderer_spin_new();
@@ -2987,29 +2981,29 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_unref(_actions_store);
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
-  GtkWidget *search_actions = gtk_search_entry_new();
+  GtkSearchEntry *search_actions = GTK_SEARCH_ENTRY(gtk_search_entry_new());
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions),
                                  _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions),
                               _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
-  g_signal_connect(G_OBJECT(search_actions), "activate",
+  g_signal_connect(search_actions, "activate",
                    G_CALLBACK(dt_gui_search_stop), actions_view);
-  g_signal_connect(G_OBJECT(search_actions), "stop-search",
+  g_signal_connect(search_actions, "stop-search",
                    G_CALLBACK(dt_gui_search_stop), actions_view);
   gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
 
   g_object_set(actions_view, "has-tooltip", TRUE, NULL);
   gtk_widget_set_name(GTK_WIDGET(actions_view), "actions_view");
-  g_signal_connect(G_OBJECT(actions_view), "row-activated",
+  g_signal_connect(actions_view, "row-activated",
                    G_CALLBACK(_action_row_activated), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "button-press-event",
-                   G_CALLBACK(_action_view_click), _actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "key-press-event",
+  g_signal_connect(actions_view, "button-press-event",
+                   G_CALLBACK(_action_view_click), NULL);
+  g_signal_connect(actions_view, "key-press-event",
                    G_CALLBACK(_view_key_pressed), search_actions);
 
-  g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
+  g_signal_connect(gtk_tree_view_get_selection(actions_view), "changed",
                    G_CALLBACK(_action_selection_changed), shortcuts_view);
-  g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(shortcuts_view)), "changed",
+  g_signal_connect(gtk_tree_view_get_selection(shortcuts_view), "changed",
                    G_CALLBACK(_shortcut_selection_changed), actions_view);
 
   renderer = gtk_cell_renderer_text_new();
@@ -3048,7 +3042,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   const int split_position = dt_conf_get_int("shortcuts/window_split");
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
-  g_signal_connect(G_OBJECT(container), "notify::position",
+  g_signal_connect(container, "notify::position",
                    G_CALLBACK(_resize_shortcuts_view), container);
 
   GtkWidget *btn_fallbacks = gtk_check_button_new_with_label(_("enable fallbacks"));
@@ -3065,20 +3059,19 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   GtkWidget *btn_restore = gtk_button_new_with_label(_("restore..."));
   gtk_widget_set_tooltip_text(btn_restore, _("restore default shortcuts or previous state"));
-  g_signal_connect(btn_restore, "clicked", G_CALLBACK(_restore_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(btn_restore), "clicked", G_CALLBACK(_restore_clicked), NULL);
 
   GtkWidget *btn_importx = gtk_button_new_with_label(_("import extras"));
   gtk_widget_set_tooltip_text(btn_importx, _("import extended default shortcuts"));
-  g_signal_connect(btn_importx, "clicked", G_CALLBACK(_import_extended_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(btn_importx), "clicked", G_CALLBACK(_import_extended_clicked), NULL);
 
   GtkWidget *btn_import = gtk_button_new_with_label(_("import..."));
   gtk_widget_set_tooltip_text(btn_import, _("fully or partially import shortcuts from file"));
-  g_signal_connect(btn_import, "clicked", G_CALLBACK(_import_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(btn_import), "clicked", G_CALLBACK(_import_clicked), NULL);
 
   GtkWidget *btn_export = gtk_button_new_with_label(_("export..."));
   gtk_widget_set_tooltip_text(btn_export, _("fully or partially export shortcuts to file"));
-  g_signal_connect(btn_export, "clicked", G_CALLBACK(_export_clicked), NULL);
-
+  g_signal_connect(GTK_BUTTON(btn_export), "clicked", G_CALLBACK(_export_clicked), NULL);
   GtkWidget *button_bar = dt_gui_hbox(search_actions, search_shortcuts, btn_fallbacks,
                                       dt_gui_align_right(btn_help), btn_export, btn_importx,
                                       btn_import, btn_restore);
@@ -4905,7 +4898,7 @@ dt_action_t *dt_action_define(dt_action_t *owner,
       }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
-      g_signal_connect(G_OBJECT(widget), "leave-notify-event",
+      g_signal_connect(widget, "leave-notify-event",
                        G_CALLBACK(_reset_element_on_leave), NULL);
     }
   }
@@ -5254,7 +5247,7 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self,
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))),
                           PANGO_ELLIPSIZE_END);
   if(tooltip) gtk_widget_set_tooltip_text(button, tooltip);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), data);
+  g_signal_connect(button, "clicked", G_CALLBACK((GtkCallback)callback), data);
 
   if(self)
   {
@@ -5280,7 +5273,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac,
     gtk_entry_set_text (GTK_ENTRY(entry), text);
   if(tooltip)
     gtk_widget_set_tooltip_text(entry, tooltip);
-  g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(callback), data);
+  g_signal_connect(entry, "changed", G_CALLBACK((GtkCallback)callback), data);
 
   dt_action_define(ac, NULL, label, entry, &dt_action_def_entry);
 

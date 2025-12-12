@@ -167,12 +167,12 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
   return G_SOURCE_REMOVE;
 }
 
-static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, GtkWidget *frame)
 {
 
   if(widget == _scroll_widget ||
      _drop_widget ? widget != _drop_widget :
-     ((!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) ||
+     ((!(gtk_widget_get_state_flags(frame) & GTK_STATE_FLAG_SELECTED) ||
        gtk_widget_get_allocated_height(widget) == _start_pos.height) &&
       (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
     return;
@@ -288,7 +288,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   g_signal_connect(expander->header_evb, "drag-begin", G_CALLBACK(_expander_drag_begin), NULL);
   g_signal_connect(expander->header_evb, "drag-end", G_CALLBACK(_expander_drag_end), NULL);
   g_signal_connect(expander, "drag-leave", G_CALLBACK(_expander_drag_leave), NULL);
-  g_signal_connect(expander, "size-allocate", G_CALLBACK(_expander_resize), frame);
+  g_signal_connect(GTK_WIDGET(expander), "size-allocate", G_CALLBACK(_expander_resize), frame);
 
   return GTK_WIDGET(expander);
 }
