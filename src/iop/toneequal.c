@@ -1175,21 +1175,24 @@ static void _alignment_calculation(const dt_iop_toneequalizer_histogram_stats_t 
                                    float *const restrict out_post_scale_base,
                                    float *const restrict out_post_shift_base)
 {
-  const float ev_range = hdr_histogram->max_ev - hdr_histogram->min_ev;
+  const float percentile_range = hdr_histogram->hi_percentile_ev - hdr_histogram->lo_percentile_ev;
+  const float target_range = 6.0f;  // -7 to -1 EV span
+
   if (shift_only) // align shift, keep scale neutral
   {
     *out_post_scale_base = 0.0f;
 
-    const float midpoint = hdr_histogram->min_ev + (ev_range / 2.0f);
-    *out_post_shift_base = -4.0f - midpoint;
+    // Use midpoint of percentiles, target center is -4 EV
+    const float percentile_midpoint = (hdr_histogram->lo_percentile_ev + hdr_histogram->hi_percentile_ev) / 2.0f;
+    *out_post_shift_base = -4.0f - percentile_midpoint;
   }
   else // align shift and scale
   {
-    const float post_scale_base_ev = 8.0f / ev_range;
+    const float post_scale_base_ev = target_range / percentile_range;
 
     // We are already in EV here. This is log because we want the scale factor to be in the -2 to 2 range.
     *out_post_scale_base = log2f(post_scale_base_ev);
-    *out_post_shift_base = -8.0f - (hdr_histogram->min_ev * post_scale_base_ev);
+    *out_post_shift_base = -7.0f - (hdr_histogram->lo_percentile_ev * post_scale_base_ev);
   }
 }
 
