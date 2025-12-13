@@ -525,6 +525,11 @@ separator
   border: 0.08em solid transparent;
 }
 
+#second_window button
+{
+  background-color: @darkroom_bg_color;
+}
+
 #footer-toolbar button:checked,
 #second_window button:checked
 {

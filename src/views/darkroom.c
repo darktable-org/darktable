@@ -85,6 +85,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
+static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev);
 
 const char *name(const dt_view_t *self)
 {
@@ -184,17 +185,19 @@ void cleanup(dt_view_t *self)
 
   if(dev->second_wnd)
   {
-    if(gtk_widget_is_visible(dev->second_wnd))
+    GtkWidget *wnd = dev->second_wnd;
+    
+    if(gtk_widget_is_visible(wnd))
     {
       dt_conf_set_bool("second_window/last_visible", TRUE);
-      _darkroom_ui_second_window_write_config(dev->second_wnd);
+      _darkroom_ui_second_window_write_config(wnd);
     }
     else
       dt_conf_set_bool("second_window/last_visible", FALSE);
 
-    gtk_window_close(GTK_WINDOW(dev->second_wnd)); // Use close so that _second_window_delete_callback can clean up
-    dev->second_wnd = NULL;
-    dev->preview2.widget = NULL;
+    _darkroom_ui_second_window_cleanup(dev);
+    gtk_widget_hide(wnd);
+    gtk_widget_destroy(wnd);
   }
   else
   {
@@ -1502,13 +1505,20 @@ static void _second_window_quickbutton_clicked(GtkWidget *w,
 {
   if(dev->second_wnd && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
   {
-    _darkroom_ui_second_window_write_config(dev->second_wnd);
-
-    gtk_window_close(GTK_WINDOW(dev->second_wnd)); // Use close so that _second_window_delete_callback can clean up
-    dev->second_wnd = NULL;
-    dev->preview2.widget = NULL;
+    GtkWidget *wnd = dev->second_wnd;
+    
+    _darkroom_ui_second_window_write_config(wnd);
+    dt_conf_set_bool("second_window/last_visible", FALSE);
+    _darkroom_ui_second_window_cleanup(dev);
+    gtk_widget_hide(wnd);
+    
+    // Flush pending events to let macOS process the hide before destroy
+    while(gtk_events_pending())
+      gtk_main_iteration_do(FALSE);
+    
+    gtk_widget_destroy(wnd);
   }
-  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+  else if(dev->second_wnd == NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
     _darkroom_display_second_window(dev);
 }
 
@@ -3012,6 +3022,15 @@ void enter(dt_view_t *self)
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
+  
+  // Reset shutdown flags on all pipes - they may still be set from previous session
+  if(dev->full.pipe)
+    dt_atomic_set_int(&dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+  if(dev->preview_pipe)
+    dt_atomic_set_int(&dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+  if(dev->preview2.pipe)
+    dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+  
   if(!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
@@ -3155,6 +3174,23 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = self->data;
+
+  // Close second window when leaving darkroom (save state first)
+  if(dev->second_wnd)
+  {
+    GtkWidget *wnd = dev->second_wnd;
+    
+    if(gtk_widget_is_visible(wnd))
+    {
+      dt_conf_set_bool("second_window/last_visible", TRUE);
+      _darkroom_ui_second_window_write_config(wnd);
+    }
+    
+    _darkroom_ui_second_window_cleanup(dev);
+    gtk_widget_hide(wnd);
+    gtk_widget_destroy(wnd);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), FALSE);
+  }
 
   // reset color assessment mode
   if(dev->full.color_assessment)
@@ -3809,71 +3845,58 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
   cairo_paint(cri);
 
-  // Check if we should show a pinned image or the current preview
-  if(dev->preview2_pinned && dev->preview2_pinned_surface)
+  // Early exit if we're in an inconsistent state
+  if(!dev->preview2.widget || dev->gui_leaving)
+    return TRUE;
+
+  // Determine which develop and viewport to use
+  // Take a local copy of the pointer to avoid race conditions
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  dt_develop_t *render_dev = pinned_dev ? pinned_dev : dev;
+  dt_dev_viewport_t *port = &render_dev->preview2;
+  
+  // Check if pinned dev is being cleaned up
+  if(pinned_dev && pinned_dev->gui_leaving)
   {
-    // Get surface dimensions (already in logical pixels for RGB24 surface)
-    int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
-    int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
-    
-    if (img_width > 0 && img_height > 0)
+    render_dev = dev;
+    port = &dev->preview2;
+    pinned_dev = NULL;
+  }
+  
+  // For pinned images, sync viewport dimensions from main dev
+  if(pinned_dev)
+  {
+    port->width = dev->preview2.width;
+    port->height = dev->preview2.height;
+    port->orig_width = dev->preview2.orig_width;
+    port->orig_height = dev->preview2.orig_height;
+    port->ppd = dev->preview2.ppd;
+    port->dpi = dev->preview2.dpi;
+    port->dpi_factor = dev->preview2.dpi_factor;
+  }
+
+  if(port->pipe && port->pipe->backbuf)  // do we have a preview image?
+  {
+    // draw the preview image using the appropriate viewport
+    _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
+                       port, DT_WINDOW_SECOND);
+  }
+
+  // Request processing if needed
+  if(pinned_dev && !pinned_dev->gui_leaving)
+  {
+    // Process pinned image pipeline - process if no backbuf, pipe dirty, or zoom/pan changed
+    if(!port->pipe->backbuf
+       || port->pipe->status == DT_DEV_PIXELPIPE_DIRTY
+       || port->pipe->status == DT_DEV_PIXELPIPE_INVALID
+       || port->pipe->changed != DT_DEV_PIPE_UNCHANGED)
     {
-      // Get widget dimensions in logical (widget) pixel space
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
-      const float width = (float)allocation.width;   // logical pixels
-      const float height = (float)allocation.height; // logical pixels
-
-      // compute total scale and offsets from pinned transform stored in dev
-      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
-      const float user_scale = dev->preview2_pinned_scale > 0.0f ? dev->preview2_pinned_scale : 1.0f;
-      const float total_scale = base * user_scale;
-
-      cairo_save(cri);
-
-      // Step 1: Translate to widget center (in logical pixels)
-      cairo_translate(cri, width * 0.5f, height * 0.5f);
-
-      // Step 2: Apply zoom scale (in logical pixel space)
-      cairo_scale(cri, total_scale, total_scale);
-
-      // Step 3: Apply pan offsets (in logical pixels, scaled by total_scale)
-      // When image is smaller than window (total_scale < 1.0), center it by ignoring offsets
-      const float scaled_img_width = img_width * total_scale;
-      const float scaled_img_height = img_height * total_scale;
-      if(scaled_img_width < width && scaled_img_height < height)
-      {
-        // Image is smaller than window in both dimensions - keep it centered (no offset)
-        // Offsets are ignored to keep the image centered
-      }
-      else
-      {
-        // Image is larger than window - apply pan offsets
-        // Offsets are already in pixels, divide by total_scale to get unscaled coordinates
-        cairo_translate(cri, dev->preview2_pinned_off_x / total_scale,
-                            dev->preview2_pinned_off_y / total_scale);
-      }
-
-      // Step 4: Draw the surface centered at origin
-      cairo_set_source_surface(cri, dev->preview2_pinned_surface, 
-                               -(float)img_width * 0.5f, 
-                               -(float)img_height * 0.5f);
-      cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_BEST);
-      cairo_paint(cri);
-
-      cairo_restore(cri);
+      dt_dev_process_preview2(pinned_dev);
     }
   }
-  else if(dev->preview2.pipe->backbuf)  // do we have a regular preview image?
+  else if(!pinned_dev)
   {
-    // draw the current preview image
-    _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
-                       &dev->preview2, DT_WINDOW_SECOND);
-  }
-
-  // Only process preview if not pinned or if we don't have a pinned image yet
-  if(!dev->preview2_pinned || !dev->preview2_pinned_surface)
-  {
+    // Process main dev's preview2 pipeline
     if(_preview2_request(dev)) dt_dev_process_preview2(dev);
   }
 
@@ -3884,108 +3907,19 @@ static gboolean _second_window_scrolled_callback(GtkWidget *widget,
                                                  GdkEventScroll *event,
                                                  dt_develop_t *dev)
 {
+  if(dev->gui_leaving) return TRUE;
+  
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    // If pinned, handle zooming/panning on the pinned surface directly
-    if(dev->preview2_pinned && dev->preview2_pinned_surface)
-    {
-      // get widget size in logical pixels
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
-      const float width = (float)allocation.width;   // logical pixels
-      const float height = (float)allocation.height; // logical pixels
-
-      // get surface dimensions
-      int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
-      int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
-
-      // current total scale
-      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
-      const float total_scale = base * dev->preview2_pinned_scale;
-
-      // simple step scale factor
-      const float step = 1.1f;
-      const float f = (delta_y < 0) ? step : (1.0f / step);
-
-      // event coordinates in logical pixels (as delivered by GTK)
-      const float ex = event->x;
-      const float ey = event->y;
-
-      // Calculate new scale, but don't allow zooming out smaller than fit-to-window
-      float new_scale = dev->preview2_pinned_scale * f;
-      if(new_scale < 1.0f)
-      {
-        new_scale = 1.0f;
-      }
-      
-      const float new_total_scale = base * new_scale;
-      
-      // Convert offsets to normalized coordinates [-0.5, 0.5] like unpinned images
-      float zoom_x = dev->preview2_pinned_off_x / img_width;
-      float zoom_y = dev->preview2_pinned_off_y / img_height;
-      
-      // Only adjust zoom position if scale actually changed
-      if(fabsf(new_scale - dev->preview2_pinned_scale) > 0.001f)
-      {
-        // Adjust zoom position to keep same point under cursor (like unpinned images)
-        const float mouse_off_x = (ex - 0.5f * width) / img_width;
-        const float mouse_off_y = (ey - 0.5f * height) / img_height;
-        zoom_x += mouse_off_x / total_scale - mouse_off_x / new_total_scale;
-        zoom_y += mouse_off_y / total_scale - mouse_off_y / new_total_scale;
-      }
-      
-      // Apply new scale first
-      dev->preview2_pinned_scale = new_scale;
-      
-      // Calculate scaled dimensions with new scale
-      const float scaled_img_width = img_width * new_total_scale;
-      const float scaled_img_height = img_height * new_total_scale;
-      
-      // Convert back to offset system
-      dev->preview2_pinned_off_x = zoom_x * img_width;
-      dev->preview2_pinned_off_y = zoom_y * img_height;
-      
-      // Clamp offsets to ensure image edges never leave the window
-      // The coordinate system: offsets are translations of the image center from window center
-      
-      // For X dimension:
-      if(scaled_img_width <= width)
-      {
-        // Image narrower than window - center it (no offset)
-        dev->preview2_pinned_off_x = 0.0f;
-      }
-      else
-      {
-        // Image wider than window - clamp to keep edges within window
-        // Offsets are in pixels. When offset=0, image is centered.
-        // Max positive offset: left edge touches left window edge
-        // Min negative offset: right edge touches right window edge
-        const float max_offset_x = (scaled_img_width - width) * 0.5f;
-        const float min_offset_x = -max_offset_x;
-        dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, min_offset_x, max_offset_x);
-      }
-      
-      // For Y dimension:
-      if(scaled_img_height <= height)
-      {
-        // Image shorter than window - center it (no offset)
-        dev->preview2_pinned_off_y = 0.0f;
-      }
-      else
-      {
-        // Image taller than window - clamp to keep edges within window
-        const float max_offset_y = (scaled_img_height - height) * 0.5f;
-        const float min_offset_y = -max_offset_y;
-        dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, min_offset_y, max_offset_y);
-      }
-      
-      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
-      return TRUE;
-    }
+    // Use pinned viewport if pinned, otherwise main dev's preview2
+    dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+    if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+    
+    dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
     const gboolean constrained = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
-    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
+    dt_dev_zoom_move(port, DT_ZOOM_SCROLL, 0.0f, delta_y < 0,
                      event->x, event->y, constrained);
   }
 
@@ -3996,19 +3930,20 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
                                                        GdkEventButton *event,
                                                        dt_develop_t *dev)
 {
-  // Handle double-click on pinned images to reset zoom and center
+  if(dev->gui_leaving) return FALSE;
+  
+  // Use pinned viewport if pinned, otherwise main dev's preview2
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+  
+  dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
+
+  // Handle double-click to reset zoom and center
   if(event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
   {
-    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
-    {
-      // Reset to fit-to-window scale and center
-      dev->preview2_pinned_scale = 1.0f;
-      dev->preview2_pinned_off_x = 0.0f;
-      dev->preview2_pinned_off_y = 0.0f;
-      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
-      return TRUE;
-    }
-    return FALSE;
+    dt_dev_zoom_move(port, DT_ZOOM_FIT, 0.0f, 0,
+                     event->x, event->y, TRUE);
+    return TRUE;
   }
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -4020,16 +3955,7 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
   }
   if(event->button == GDK_BUTTON_MIDDLE)
   {
-    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
-    {
-      // reset pinned zoom/position similar to zoom-to-1 behaviour
-      dev->preview2_pinned_scale = 1.0f;
-      dev->preview2_pinned_off_x = 0.0f;
-      dev->preview2_pinned_off_y = 0.0f;
-      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
-      return TRUE;
-    }
-    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_1, 0.0f, -2,
+    dt_dev_zoom_move(port, DT_ZOOM_1, 0.0f, -2,
                      event->x, event->y, !dt_modifier_is(event->state, GDK_CONTROL_MASK));
     return TRUE;
   }
@@ -4050,85 +3976,19 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w,
                                                     GdkEventMotion *event,
                                                     dt_develop_t *dev)
 {
+  if(dev->gui_leaving) return FALSE;
+  
   if(event->state & GDK_BUTTON1_MASK)
   {
     dt_control_t *ctl = darktable.control;
-    if(dev->preview2_pinned && dev->preview2_pinned_surface && dev->preview2.widget)
-    {
-      // event coordinates are in logical pixels (as delivered by GTK)
-      const float ex = event->x;
-      const float ey = event->y;
+    
+    // Use pinned viewport if pinned, otherwise main dev's preview2
+    dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+    if(pinned_dev && pinned_dev->gui_leaving) pinned_dev = NULL;
+    
+    dt_dev_viewport_t *port = pinned_dev ? &pinned_dev->preview2 : &dev->preview2;
 
-      const float dx = ex - ctl->button_x;
-      const float dy = ey - ctl->button_y;
-
-      // Get widget and image dimensions
-      GtkAllocation allocation;
-      gtk_widget_get_allocation(w, &allocation);
-      const float width = (float)allocation.width;
-      const float height = (float)allocation.height;
-      
-      int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
-      int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
-
-      const float base = dev->preview2_pinned_base_scale > 0.0f ? dev->preview2_pinned_base_scale : 1.0f;
-      const float total_scale = base * dev->preview2_pinned_scale;
-
-      // Calculate scaled image dimensions
-      const float scaled_img_width = img_width * total_scale;
-      const float scaled_img_height = img_height * total_scale;
-
-      // Only allow panning if image is larger than window in at least one dimension
-      if(scaled_img_width >= width || scaled_img_height >= height)
-      {
-        // Only accumulate pan delta in dimensions where image is larger than window
-        if(scaled_img_width >= width)
-          dev->preview2_pinned_off_x += dx;
-        if(scaled_img_height >= height)
-          dev->preview2_pinned_off_y += dy;
-        
-        // Clamp offsets to ensure image edges never leave the window
-        // The coordinate system: offsets are translations of the image center from window center
-        // Positive offset moves image right/down, negative offset moves image left/up
-        
-        // For X dimension:
-        if(scaled_img_width <= width)
-        {
-          // Image narrower than window - center it (no offset)
-          dev->preview2_pinned_off_x = 0.0f;
-        }
-        else
-        {
-          // Image wider than window - clamp to keep edges within window
-          const float max_offset_x = (scaled_img_width - width) * 0.5f;
-          const float min_offset_x = -max_offset_x;
-          dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, min_offset_x, max_offset_x);
-        }
-        
-        // For Y dimension:
-        if(scaled_img_height <= height)
-        {
-          // Image shorter than window - center it (no offset)
-          dev->preview2_pinned_off_y = 0.0f;
-        }
-        else
-        {
-          // Image taller than window - clamp to keep edges within window
-          const float max_offset_y = (scaled_img_height - height) * 0.5f;
-          const float min_offset_y = -max_offset_y;
-          dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, min_offset_y, max_offset_y);
-        }
-      }
-      
-      // Always update button position to prevent delta accumulation
-      ctl->button_x = ex;
-      ctl->button_y = ey;
-
-      if(dev->preview2.widget) gtk_widget_queue_draw(dev->preview2.widget);
-      return TRUE;
-    }
-
-    dt_dev_zoom_move(&dev->preview2, DT_ZOOM_MOVE, -1.f, 0,
+    dt_dev_zoom_move(port, DT_ZOOM_MOVE, -1.f, 0,
                      event->x - ctl->button_x, event->y - ctl->button_y, TRUE);
     ctl->button_x = event->x;
     ctl->button_y = event->y;
@@ -4149,6 +4009,8 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
                                                   GdkEventConfigure *event,
                                                   dt_develop_t *dev)
 {
+  if(dev->gui_leaving) return TRUE;
+  
   gboolean size_changed = (dev->preview2.orig_width != event->width || 
                           dev->preview2.orig_height != event->height);
   
@@ -4164,51 +4026,18 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     dev->preview2.pipe->changed |= DT_DEV_PIPE_REMOVE;
     dev->preview2.pipe->cache_obsolete = TRUE;
     
-    // If we have a pinned image, update the viewport dimensions
-    if(dev->preview2_pinned)
+    // If we have a pinned image, update its viewport dimensions too
+    dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+    if(pinned_dev && !pinned_dev->gui_leaving)
     {
-      // Recompute base fit scale for pinned image to follow window size
-      if(dev->preview2_pinned_surface)
-      {
-        const int img_width = cairo_image_surface_get_width(dev->preview2_pinned_surface);
-        const int img_height = cairo_image_surface_get_height(dev->preview2_pinned_surface);
-        if(img_width > 0 && img_height > 0)
-        {
-          const float scale_w = (float)event->width / (float)img_width;
-          const float scale_h = (float)event->height / (float)img_height;
-          dev->preview2_pinned_base_scale = MIN(scale_w, scale_h);
-
-          // If completely zoomed out (user scale == 1), keep image fit to window
-          if(fabsf(dev->preview2_pinned_scale - 1.0f) < 1e-6f)
-          {
-            dev->preview2_pinned_off_x = 0.0f;
-            dev->preview2_pinned_off_y = 0.0f;
-          }
-          else
-          {
-            // Clamp offsets against new window size
-            const float total_scale = dev->preview2_pinned_base_scale * dev->preview2_pinned_scale;
-            const float scaled_img_w = img_width * total_scale;
-            const float scaled_img_h = img_height * total_scale;
-            if(scaled_img_w <= event->width) dev->preview2_pinned_off_x = 0.0f;
-            else
-            {
-              const float max_x = (scaled_img_w - event->width) * 0.5f;
-              dev->preview2_pinned_off_x = CLAMP(dev->preview2_pinned_off_x, -max_x, max_x);
-            }
-            if(scaled_img_h <= event->height) dev->preview2_pinned_off_y = 0.0f;
-            else
-            {
-              const float max_y = (scaled_img_h - event->height) * 0.5f;
-              dev->preview2_pinned_off_y = CLAMP(dev->preview2_pinned_off_y, -max_y, max_y);
-            }
-          }
-        }
-      }
-      
-      // Force a redraw
-      if(dev->preview2.widget)
-        gtk_widget_queue_draw(dev->preview2.widget);
+      dt_dev_viewport_t *pinned_port = &pinned_dev->preview2;
+      pinned_port->width = event->width;
+      pinned_port->height = event->height;
+      pinned_port->orig_width = event->width;
+      pinned_port->orig_height = event->height;
+      pinned_port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+      pinned_port->pipe->changed |= DT_DEV_PIPE_REMOVE;
+      pinned_port->pipe->cache_obsolete = TRUE;
     }
   }
 
@@ -4219,47 +4048,40 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
 #endif
 
   dt_dev_configure(&dev->preview2);
+  
+  // Also configure pinned viewport if present
+  dt_develop_t *pinned_dev = dev->preview2_pinned ? dev->preview2_pinned_dev : NULL;
+  if(pinned_dev && !pinned_dev->gui_leaving)
+  {
+    dt_dev_viewport_t *pinned_port = &pinned_dev->preview2;
+    pinned_port->ppd = dev->preview2.ppd;
+    pinned_port->dpi = dev->preview2.dpi;
+    pinned_port->dpi_factor = dev->preview2.dpi_factor;
+    dt_dev_configure(pinned_port);
+  }
 
   return TRUE;
 }
 
 // Query tooltip handler for the pin button
-static gboolean _preview2_pin_button_query_tooltip(GtkWidget *widget,
-                                                    gint x, gint y,
-                                                    gboolean keyboard_mode,
-                                                    GtkTooltip *tooltip,
-                                                    gpointer user_data)
-{
-  gboolean is_pinned = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  const char *tooltip_text = is_pinned ? _("Unpin image") : _("Pin current image");
-  gtk_tooltip_set_text(tooltip, tooltip_text);
-  return TRUE;
-}
-
-static gboolean _preview2_on_top_button_query_tooltip(GtkWidget *widget,
-                                                        gint x, gint y,
-                                                        gboolean keyboard_mode,
-                                                        GtkTooltip *tooltip,
-                                                        gpointer user_data)
-{
-  gboolean is_on_top = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  const char *tooltip_text = is_on_top ? _("Do not keep second window on top") : _("Keep second window on top");
-  gtk_tooltip_set_text(tooltip, tooltip_text);
-  return TRUE;
-}
-
 // Callback for the pin button in the overlay
 static void _preview2_pin_button_clicked(GtkToggleButton *button,
                                          dt_develop_t *dev)
 {
   dt_dev_toggle_preview2_pinned(dev);
+  gboolean is_pinned = gtk_toggle_button_get_active(button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button),
+                              is_pinned ? _("unpin image") : _("pin current image"));
 }
 
 static void _preview2_on_top_button_clicked(GtkToggleButton *button,
                                             dt_develop_t *dev)
 {
-  gtk_window_set_keep_above(GTK_WINDOW(dev->second_wnd),
-                            gtk_toggle_button_get_active(button));
+  gboolean is_on_top = gtk_toggle_button_get_active(button);
+  gtk_window_set_keep_above(GTK_WINDOW(dev->second_wnd), is_on_top);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button),
+                              is_on_top ? _("disable keep second window on top")
+                                        : _("keep second window on top"));
 }
 
 static void _darkroom_ui_second_window_init(GtkWidget *overlay,
@@ -4277,41 +4099,36 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
   GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
   gtk_widget_set_name(pin_button, "dt_window2_pin_button");
   gtk_widget_set_size_request(pin_button, 24, 24);
-  gtk_widget_set_has_tooltip(pin_button, TRUE);
-  g_signal_connect(G_OBJECT(pin_button), "query-tooltip",
-                   G_CALLBACK(_preview2_pin_button_query_tooltip), dev);
+  gtk_widget_set_tooltip_text(pin_button, _("pin current image"));
+  gtk_widget_add_events(pin_button, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK 
+                                    | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(pin_button), "toggled",
                    G_CALLBACK(_preview2_pin_button_clicked), dev);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), pin_button, TRUE);
   gtk_widget_set_halign(pin_button, GTK_ALIGN_END);
   gtk_widget_set_valign(pin_button, GTK_ALIGN_START);
   gtk_widget_set_margin_top(pin_button, 10);
   gtk_widget_set_margin_end(pin_button, 10);
-  gtk_widget_show(pin_button);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), pin_button);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), pin_button, FALSE);
 
   // Create keep-on-top button for the overlay
   GtkWidget *on_top_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
   gtk_widget_set_name(on_top_button, "dt_window2_on_top_button");
   gtk_widget_set_size_request(on_top_button, 24, 24);
-  gtk_widget_set_has_tooltip(on_top_button, TRUE);
-  g_signal_connect(G_OBJECT(on_top_button), "query-tooltip",
-                   G_CALLBACK(_preview2_on_top_button_query_tooltip), dev);
+  gtk_widget_set_tooltip_text(on_top_button, _("keep second window on top"));
+  gtk_widget_add_events(on_top_button, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                                       | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(on_top_button), "toggled",
                    G_CALLBACK(_preview2_on_top_button_clicked), dev);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), on_top_button, TRUE);
   gtk_widget_set_halign(on_top_button, GTK_ALIGN_END);
   gtk_widget_set_valign(on_top_button, GTK_ALIGN_START);
   gtk_widget_set_margin_top(on_top_button, 10);
   gtk_widget_set_margin_end(on_top_button, 10 + 24 + 5);
-  gtk_widget_show(on_top_button);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), on_top_button);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), on_top_button, FALSE);
   
   // Store the button in the dev structure for later access if needed
   dev->preview2.pin_button = pin_button;
-  
-  // Make sure the button is above other widgets
-  gtk_widget_show(pin_button);
   
   dev->preview2.border_size = 0;
 
@@ -4351,20 +4168,64 @@ static void _darkroom_ui_second_window_write_config(GtkWidget *widget)
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
 }
 
+// Helper to clean up second window state - called before destroying window
+static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
+{
+  // Signal main preview2 pipe to stop and wait for any pending jobs
+  if(dev->preview2.pipe)
+  {
+    dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    dt_pthread_mutex_lock(&dev->preview2.pipe->mutex);
+    dt_pthread_mutex_unlock(&dev->preview2.pipe->mutex);
+    dt_pthread_mutex_lock(&dev->preview2.pipe->busy_mutex);
+    dt_pthread_mutex_unlock(&dev->preview2.pipe->busy_mutex);
+  }
+
+  // Clean up pinned develop
+  if(dev->preview2_pinned && dev->preview2_pinned_dev)
+  {
+    dt_develop_t *pinned_dev = dev->preview2_pinned_dev;
+    
+    pinned_dev->gui_leaving = TRUE;
+    pinned_dev->preview2.widget = NULL;
+    
+    if(pinned_dev->preview2.pipe)
+      dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    if(pinned_dev->preview_pipe)
+      dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    if(pinned_dev->full.pipe)
+      dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+    
+    if(pinned_dev->preview2.pipe)
+    {
+      dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->mutex);
+      dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->mutex);
+      dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->busy_mutex);
+      dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->busy_mutex);
+    }
+    
+    dt_dev_cleanup(pinned_dev);
+    free(pinned_dev);
+    dev->preview2_pinned_dev = NULL;
+    dev->preview2_pinned = FALSE;
+  }
+
+  dev->second_wnd = NULL;
+  dev->preview2.widget = NULL;
+}
+
 static gboolean _second_window_delete_callback(GtkWidget *widget,
                                                GdkEvent *event,
                                                dt_develop_t *dev)
 {
-  // We need to be careful when using the second window reference from dev. It could be null at this point
+  // Called when user closes window via window manager (X button)
   _darkroom_ui_second_window_write_config(widget);
+  dt_conf_set_bool("second_window/last_visible", FALSE);
 
   // There's a bug in GTK+3 where fullscreen GTK window on macOS may cause EXC_BAD_ACCESS.
-  // We need to unfullscreen the window and consume all pending events first before
-  // destroying the window
   gtk_window_unfullscreen(GTK_WINDOW(widget));
 
-  dev->second_wnd = NULL;
-  dev->preview2.widget = NULL;
+  _darkroom_ui_second_window_cleanup(dev);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), FALSE);
 
@@ -4373,6 +4234,16 @@ static gboolean _second_window_delete_callback(GtkWidget *widget,
 
 static void _darkroom_display_second_window(dt_develop_t *dev)
 {
+  // Wait for any pending jobs and reset shutdown flag
+  if(dev->preview2.pipe)
+  {
+    dt_pthread_mutex_lock(&dev->preview2.pipe->mutex);
+    dt_pthread_mutex_unlock(&dev->preview2.pipe->mutex);
+    dt_pthread_mutex_lock(&dev->preview2.pipe->busy_mutex);
+    dt_pthread_mutex_unlock(&dev->preview2.pipe->busy_mutex);
+    dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+  }
+    
   if(dev->second_wnd == NULL)
   {
     dev->preview2.width = -1;
@@ -4388,6 +4259,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     // Create the overlay for the window
     GtkWidget *overlay = gtk_overlay_new();
+    gtk_widget_add_events(overlay, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
     gtk_container_add(GTK_CONTAINER(dev->second_wnd), overlay);
     
     // Create the drawing area and add it to the overlay

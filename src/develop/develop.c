@@ -52,6 +52,9 @@
 
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
+// Forward declaration
+static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid);
+
 void dt_dev_init(dt_develop_t *dev,
                  const gboolean gui_attached)
 {
@@ -153,14 +156,40 @@ void dt_dev_init(dt_develop_t *dev,
   dev->full.zoom_x = dev->full.zoom_y = dev->preview2.zoom_x = dev->preview2.zoom_y = 0.0f;
   dev->full.zoom_scale = dev->preview2.zoom_scale = 1.0f;
   
+  // Set back-pointers from viewports to their owning develop
+  dev->full.dev = dev;
+  dev->preview2.dev = dev;
+  
   // Initialize pinned image state
   dev->preview2_pinned = FALSE;
-  dev->preview2_pinned_imgid = -1;
-  dev->preview2_pinned_surface = NULL;
-  dev->preview2_pinned_base_scale = 1.0f;
-  dev->preview2_pinned_scale = 1.0f;
-  dev->preview2_pinned_off_x = 0.0f;
-  dev->preview2_pinned_off_y = 0.0f;
+  dev->preview2_pinned_dev = NULL;
+}
+
+// Shutdown and cleanup a pinned dev, waiting for any in-progress jobs
+static void _cleanup_pinned_dev(dt_develop_t *pinned_dev)
+{
+  if(!pinned_dev) return;
+  
+  pinned_dev->gui_leaving = TRUE;
+  pinned_dev->preview2.widget = NULL;
+  
+  if(pinned_dev->preview2.pipe)
+    dt_atomic_set_int(&pinned_dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+  if(pinned_dev->preview_pipe)
+    dt_atomic_set_int(&pinned_dev->preview_pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+  if(pinned_dev->full.pipe)
+    dt_atomic_set_int(&pinned_dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
+  
+  if(pinned_dev->preview2.pipe)
+  {
+    dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->mutex);
+    dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->mutex);
+    dt_pthread_mutex_lock(&pinned_dev->preview2.pipe->busy_mutex);
+    dt_pthread_mutex_unlock(&pinned_dev->preview2.pipe->busy_mutex);
+  }
+  
+  dt_dev_cleanup(pinned_dev);
+  free(pinned_dev);
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -214,12 +243,14 @@ void dt_dev_cleanup(dt_develop_t *dev)
   if(dev->histogram_pre_levels) free(dev->histogram_pre_levels);
   dev->histogram_pre_tonecurve = dev->histogram_pre_levels = NULL;
   
-  // Clean up pinned image surface
-  if(dev->preview2_pinned_surface)
+  // Clean up pinned develop
+  // Clean up pinned develop
+  if(dev->preview2_pinned_dev)
   {
-    cairo_surface_destroy(dev->preview2_pinned_surface);
-    dev->preview2_pinned_surface = NULL;
+    _cleanup_pinned_dev(dev->preview2_pinned_dev);
+    dev->preview2_pinned_dev = NULL;
   }
+  dev->preview2_pinned = FALSE;
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
@@ -280,160 +311,208 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
   dev->timestamp++;
 }
 
+// Helper to find the cloned module in pinned_dev that corresponds to a module in src_dev
+static dt_iop_module_t *_find_cloned_module(dt_develop_t *dev, dt_iop_module_t *src_mod)
+{
+  if(!src_mod) return NULL;
+  for(GList *iter = dev->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)iter->data;
+    // During cloning we preserve the instance ID and other unique fields
+    if(mod->instance == src_mod->instance && g_strcmp0(mod->op, src_mod->op) == 0 &&
+       mod->multi_priority == src_mod->multi_priority)
+      return mod;
+  }
+  return NULL;
+}
+
+// Helper to clone a module for pinned dev
+static dt_iop_module_t *_clone_module(dt_develop_t *dev, dt_iop_module_t *src_mod)
+{
+  dt_iop_module_t *new_mod = calloc(1, sizeof(dt_iop_module_t));
+  if(dt_iop_load_module_by_so(new_mod, src_mod->so, dev))
+  {
+    free(new_mod);
+    return NULL;
+  }
+  
+  new_mod->instance = src_mod->instance;
+  new_mod->enabled = src_mod->enabled;
+  new_mod->iop_order = src_mod->iop_order;
+  new_mod->multi_priority = src_mod->multi_priority;
+  g_strlcpy(new_mod->multi_name, src_mod->multi_name, sizeof(new_mod->multi_name));
+  new_mod->multi_name_hand_edited = src_mod->multi_name_hand_edited;
+  new_mod->hide_enable_button = src_mod->hide_enable_button;
+
+  if(src_mod->params)
+      memcpy(new_mod->params, src_mod->params, src_mod->params_size);
+      
+  if(new_mod->blend_params && src_mod->blend_params)
+      memcpy(new_mod->blend_params, src_mod->blend_params, sizeof(dt_develop_blend_params_t));
+      
+  return new_mod;
+}
+
+static GList *_duplicate_iop_list(dt_develop_t *pinned_dev, dt_develop_t *main_dev)
+{
+  GList *new_list = NULL;
+  for(GList *iter = main_dev->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *src_mod = (dt_iop_module_t *)iter->data;
+    dt_iop_module_t *new_mod = _clone_module(pinned_dev, src_mod);
+    if(new_mod)
+      new_list = g_list_append(new_list, new_mod);
+  }
+  return new_list;
+}
+
+static GList *_duplicate_history_list(dt_develop_t *pinned_dev, GList *src_history)
+{
+  GList *new_history = dt_history_duplicate(src_history);
+  for(GList *iter = new_history; iter; iter = g_list_next(iter))
+  {
+    dt_dev_history_item_t *item = (dt_dev_history_item_t *)iter->data;
+    item->module = _find_cloned_module(pinned_dev, item->module);
+  }
+  return new_history;
+}
+
+// Helper function to initialize a pinned develop structure
+static void _init_pinned_dev(dt_develop_t *pinned_dev, dt_develop_t *main_dev,
+                             const dt_imgid_t imgid)
+{
+  // Initialize without GUI to avoid GUI callbacks during module loading
+  dt_dev_init(pinned_dev, FALSE);
+  
+  // Copy viewport settings from main dev's preview2
+  pinned_dev->preview2.width = main_dev->preview2.width;
+  pinned_dev->preview2.height = main_dev->preview2.height;
+  pinned_dev->preview2.orig_width = main_dev->preview2.orig_width;
+  pinned_dev->preview2.orig_height = main_dev->preview2.orig_height;
+  pinned_dev->preview2.border_size = main_dev->preview2.border_size;
+  pinned_dev->preview2.dpi = main_dev->preview2.dpi;
+  pinned_dev->preview2.dpi_factor = main_dev->preview2.dpi_factor;
+  pinned_dev->preview2.ppd = main_dev->preview2.ppd;
+  pinned_dev->preview2.color_assessment = main_dev->preview2.color_assessment;
+  pinned_dev->preview2.zoom = main_dev->preview2.zoom;
+  pinned_dev->preview2.closeup = main_dev->preview2.closeup;
+  pinned_dev->preview2.zoom_x = main_dev->preview2.zoom_x;
+  pinned_dev->preview2.zoom_y = main_dev->preview2.zoom_y;
+  pinned_dev->preview2.zoom_scale = main_dev->preview2.zoom_scale;
+  
+  // Share the widget reference for redraw triggers
+  pinned_dev->preview2.widget = main_dev->preview2.widget;
+  pinned_dev->preview2.pin_button = NULL;
+  
+  // Ensure the dev pointer is set to the pinned_dev
+  pinned_dev->preview2.dev = pinned_dev;
+  
+  // Manually create the pipes (since gui_attached=FALSE doesn't create them)
+  pinned_dev->full.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+  pinned_dev->preview_pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+  pinned_dev->preview2.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+  dt_dev_pixelpipe_init(pinned_dev->full.pipe);
+  dt_dev_pixelpipe_init_preview(pinned_dev->preview_pipe);
+  dt_dev_pixelpipe_init_preview2(pinned_dev->preview2.pipe);
+  
+  // Load raw image data
+  dt_lock_image(imgid);
+  _dt_dev_load_raw(pinned_dev, imgid);
+  pinned_dev->full.pipe->loading = FALSE;  // Mark full pipe as not loading to avoid blocking preview2
+  pinned_dev->preview_pipe->loading = FALSE;
+  pinned_dev->preview2.pipe->loading = TRUE;
+  pinned_dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  
+  // Load modules (gui_attached is FALSE so no GUI widgets created)
+  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
+  // Clone modules and forms from the main develop instance directly
+  // This ensures we get exactly what the user sees, including unsaved changes
+  // and specific history state, instead of reloading from database.
+  pinned_dev->iop = _duplicate_iop_list(pinned_dev, main_dev);
+  pinned_dev->forms = dt_masks_dup_forms_deep(main_dev->forms, NULL);
+  pinned_dev->history_end = main_dev->history_end;
+  pinned_dev->iop_instance = main_dev->iop_instance;
+  pinned_dev->history = _duplicate_history_list(pinned_dev, main_dev->history);
+  pinned_dev->history_last_module = _find_cloned_module(pinned_dev, main_dev->history_last_module);
+  
+  // Copy iop order information
+  pinned_dev->iop_order_version = main_dev->iop_order_version;
+  pinned_dev->iop_order_list = dt_ioppr_iop_order_copy_deep(main_dev->iop_order_list);
+  
+  // Copy chroma state and handle module pointers
+  memcpy(&pinned_dev->chroma, &main_dev->chroma, sizeof(dt_dev_chroma_t));
+  pinned_dev->chroma.temperature = _find_cloned_module(pinned_dev, main_dev->chroma.temperature);
+  pinned_dev->chroma.adaptation = _find_cloned_module(pinned_dev, main_dev->chroma.adaptation);
+  
+  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
+  
+  dt_unlock_image(imgid);
+}
+
+void _pin_image(dt_develop_t *dev)
+{
+  const dt_imgid_t pinned_imgid = dev->image_storage.id;
+  if(dev->preview2_pinned_dev)
+  {
+    _cleanup_pinned_dev(dev->preview2_pinned_dev);
+    dev->preview2_pinned_dev = NULL;
+  }
+  
+  dev->preview2_pinned_dev = malloc(sizeof(dt_develop_t));
+  if(!dev->preview2_pinned_dev)
+  {
+    dev->preview2_pinned = FALSE;
+    dt_toast_log(_("failed to create pinned develop"));
+    return;
+  }
+
+  _init_pinned_dev(dev->preview2_pinned_dev, dev, pinned_imgid);
+  dev->preview2_pinned_dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->preview2_pinned_dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_dev_process_preview2(dev->preview2_pinned_dev);
+  dt_toast_log(_("image pinned"));
+}
+
+void _unpin_image(dt_develop_t *dev)
+{
+  if(dev->preview2_pinned_dev)
+  {
+    _cleanup_pinned_dev(dev->preview2_pinned_dev);
+    dev->preview2_pinned_dev = NULL;
+  }
+  // Force main dev's preview2 pipe to update
+  dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_toast_log(_("image unpinned"));
+}
+
 void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
 {
   if(!dev) return;
   
+  // If we're trying to pin, validate the image first
+  if(!dev->preview2_pinned)
+  {
+    if(!dt_is_valid_imgid(dev->image_storage.id))
+    {
+      dt_toast_log(_("no valid image to pin"));
+      return;
+    }
+    
+    if(dev->full.pipe && dev->full.pipe->loading)
+    {
+      dt_toast_log(_("please wait for image to load"));
+      return;
+    }
+  }
+  
   dev->preview2_pinned = !dev->preview2_pinned;
   
   if(dev->preview2_pinned)
-  {
-    // Pinning the current image
-    dev->preview2_pinned_imgid = dev->image_storage.id;
-    
-    // If we already have a surface, clean it up first
-    if(dev->preview2_pinned_surface)
-    {
-      cairo_surface_destroy(dev->preview2_pinned_surface);
-      dev->preview2_pinned_surface = NULL;
-    }
-    
-    // Get the window dimensions for computing the base scale
-    gint window_width = 800;
-    gint window_height = 600;
-    if(dev->preview2.widget && gtk_widget_get_window(dev->preview2.widget))
-    {
-      GdkWindow *window = gtk_widget_get_window(dev->preview2.widget);
-      window_width = gdk_window_get_width(window);
-      window_height = gdk_window_get_height(window);
-    }
-    
-    // Get the actual final image dimensions after all transformations (crop, rotate, etc.)
-    int final_width = 0;
-    int final_height = 0;
-    if(!dt_image_get_final_size(dev->image_storage.id, &final_width, &final_height))
-    {
-      // Fallback to image storage dimensions if we can't get final size
-      final_width = dev->image_storage.final_width;
-      final_height = dev->image_storage.final_height;
-    }
-    
-    // Use the actual image dimensions for rendering at native resolution
-    const size_t max_width = MAX(final_width, 800);   // Use actual width, minimum 800
-    const size_t max_height = MAX(final_height, 600); // Use actual height, minimum 600
-    
-    // Show toast message while rendering
-    dt_toast_log(_("rendering pinned image..."));
-    
-    uint8_t *buf = NULL;
-    size_t buf_width = 0;
-    size_t buf_height = 0;
-    float scale = 1.0f;
-    
-    // Render the full image with current develop settings up to the current history position
-    dt_dev_image(dev->image_storage.id, 
-                 max_width, max_height,
-                 dev->history_end,  // use current history position
-                 &buf, &scale,
-                 &buf_width, &buf_height,
-                 NULL,  // no zoom position (render whole image)
-                 -1,    // no snapshot
-                 NULL,  // no module filter
-                 DT_DEVICE_NONE,  // CPU processing
-                 FALSE);  // don't use finalscale
-    
-    if(buf && buf_width > 0 && buf_height > 0)
-    {
-      // Create a cairo surface from the rendered buffer
-      // The buffer is BGRA32 format (uint8_t)
-      cairo_surface_t *surface = cairo_image_surface_create(
-        CAIRO_FORMAT_RGB24,
-        buf_width,
-        buf_height);
-      
-      if(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
-      {
-        unsigned char *surface_data = cairo_image_surface_get_data(surface);
-        const int stride = cairo_image_surface_get_stride(surface);
-        
-        // Copy the rendered buffer to the cairo surface
-        // dt_dev_image returns BGRA data in uint8_t format
-        for(size_t y = 0; y < buf_height; y++)
-        {
-          uint8_t *src = buf + y * buf_width * 4;
-          uint8_t *dst = surface_data + y * stride;
-          memcpy(dst, src, buf_width * 4);
-        }
-        
-        cairo_surface_mark_dirty(surface);
-        
-        dev->preview2_pinned_surface = surface;
-        
-        /* compute base scale to fit the rendered image into window */
-        if(window_width > 0 && window_height > 0)
-        {
-          const float scale_w = (float)window_width / (float)buf_width;
-          const float scale_h = (float)window_height / (float)buf_height;
-            dev->preview2_pinned_base_scale = MIN(scale_w, scale_h);
-        }
-        else
-        {
-          dev->preview2_pinned_base_scale = 1.0f;
-        }
-        
-          // Copy current second-window zoom and position to pinned image for seamless transition
-          dt_dev_zoom_t cur_zoom;
-          int cur_closeup;
-          float cur_zoom_x = 0.0f, cur_zoom_y = 0.0f;
-          dt_dev_get_viewport_params(&dev->preview2, &cur_zoom, &cur_closeup, &cur_zoom_x, &cur_zoom_y);
-          // Current zoom scale without ppd to match cairo logical coordinates
-          const float cur_scale = dt_dev_get_zoom_scale(&dev->preview2, cur_zoom, 1 << cur_closeup, FALSE);
-
-          // User scale relative to base fit scale so that base*user == current scale
-          dev->preview2_pinned_scale = (dev->preview2_pinned_base_scale > 0.0f) 
-                                          ? (cur_scale / dev->preview2_pinned_base_scale)
-                                          : 1.0f;
-
-          // Offsets in window pixels: match original pan exactly.
-          // Window offset equals zoom_x * (scaled image width) and similarly for height.
-          const float total_scale = dev->preview2_pinned_base_scale * dev->preview2_pinned_scale;
-          // Note: positive zoom_x means the image center moves right in viewport;
-          // to match that, the image must translate left. Hence the negative sign.
-          dev->preview2_pinned_off_x = -cur_zoom_x * ((float)buf_width * total_scale);
-          dev->preview2_pinned_off_y = -cur_zoom_y * ((float)buf_height * total_scale);
-        
-          // If image fits entirely, keep centered (ignore offsets)
-          const float scaled_img_w = buf_width * total_scale;
-          const float scaled_img_h = buf_height * total_scale;
-          if(scaled_img_w <= window_width) dev->preview2_pinned_off_x = 0.0f;
-          if(scaled_img_h <= window_height) dev->preview2_pinned_off_y = 0.0f;
-        
-        dt_toast_log(_("pinned image rendered"));
-      }
-      else
-      {
-        dt_toast_log(_("failed to create surface for pinned image"));
-      }
-      
-      // Free the rendered buffer
-      dt_free_align(buf);
-    }
-    else
-    {
-      dt_toast_log(_("failed to render pinned image"));
-    }
-  }
+    _pin_image(dev);
   else
-  {
-    // Unpinning - clear the pinned image ID and surface
-    dev->preview2_pinned_imgid = -1;
-    if(dev->preview2_pinned_surface)
-    {
-      cairo_surface_destroy(dev->preview2_pinned_surface);
-      dev->preview2_pinned_surface = NULL;
-    }
-  }
-  
+    _unpin_image(dev);
+
   // Force a redraw of the second window
   if(dev->preview2.widget)
     gtk_widget_queue_draw(dev->preview2.widget);
@@ -478,7 +557,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 
   dt_pthread_mutex_lock(&pipe->mutex);
 
-  if(dev->gui_leaving)
+  if(dev->gui_leaving || dt_pipe_shutdown(pipe))
   {
     dt_pthread_mutex_unlock(&pipe->mutex);
     return;
@@ -540,6 +619,17 @@ void dt_dev_process_image_job(dt_develop_t *dev,
         dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
         dev->gui_synch = TRUE; // notify gui thread we want to synch
                                // (call gui_update on the modules)
+      }
+      else
+      {
+        // Explicitly set loading to FALSE to avoid a race condition
+        // where the pipe is still marked as loading when the caller
+        // checks it. Without this, the caller might wait for the
+        // pipe to finish loading, but it never will. This was causing
+        // failure to render composites in overlay.c and watermark.c.
+        pipe->loading = FALSE;
+        if(dev->preview_pipe) dev->preview_pipe->loading = FALSE;
+        if(dev->preview2.pipe) dev->preview2.pipe->loading = FALSE;
       }
       pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
@@ -686,6 +776,9 @@ restart:
   {
     if(signalling && signal != DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED)
       DT_CONTROL_SIGNAL_RAISE(signal);
+    else if(port->widget && !dev->gui_attached)
+      // pinned dev has gui_attached=FALSE, so manually queue redraw
+      dt_control_queue_redraw_widget(port->widget);
     return;
   }
 
@@ -2863,13 +2956,14 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       const float y,
                       const gboolean constrain)
 {
-  dt_develop_t *dev = darktable.develop;
+  // Use the viewport's own develop, or fall back to global
+  dt_develop_t *dev = port->dev ? port->dev : darktable.develop;
 
   dt_pthread_mutex_lock(&darktable.control->global_mutex);
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   float pts[2] = { port->zoom_x, port->zoom_y };
-  _dev_distort_transform_locked(darktable.develop, port->pipe, FALSE, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
+  _dev_distort_transform_locked(dev, port->pipe, FALSE, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
 
   const float old_pts0 = pts[0];
   const float old_pts1 = pts[1];
@@ -3029,6 +3123,9 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
      && old_closeup == port->closeup)
     return;
 
+  // Mark pipe as needing zoom update
+  port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
+  
   if(port->widget)
     dt_control_queue_redraw_widget(port->widget);
   if(port == &dev->full)
@@ -3099,7 +3196,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   if(x && y && port->pipe)
   {
     float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(darktable.develop, port->pipe,
+    dt_dev_distort_transform_plus(port->dev ? port->dev : darktable.develop, port->pipe,
                                   0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
     *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
     *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
@@ -3705,6 +3802,7 @@ void dt_dev_image(const dt_imgid_t imgid,
     dt_dev_pop_history_items_ext(&dev, history_end);
 
   dev.full = darktable.develop->full;
+  dev.full.dev = &dev;
   dev.full.pipe = pipe;
 
   if(!zoom_pos)
