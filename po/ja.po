@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-28 18:37+0100\n"
-"PO-Revision-Date: 2025-12-13 23:59+0900\n"
+"PO-Revision-Date: 2025-12-14 00:10+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -3325,7 +3325,7 @@ msgstr "色ずれ回避"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
 msgid "iterations"
-msgstr "反復"
+msgstr "繰り返し"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:109
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:301
@@ -4555,7 +4555,7 @@ msgstr "カスタム設定のミドルグレー値を使用"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:344
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:511
 msgid "iterations of high-quality reconstruction"
-msgstr "高クオリティな再構成を反復"
+msgstr "高クオリティな再構成の繰り返し適用"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:350
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:515
@@ -17411,7 +17411,7 @@ msgstr "リニア、 RAW"
 #: ../src/iop/cacorrect.c:1306
 msgid "iteration runs, default is twice"
 msgstr ""
-"反復を実行します\n"
+"繰り返し実行します\n"
 "デフォルト設定は2回です"
 
 #: ../src/iop/cacorrect.c:1309
@@ -20026,6 +20026,10 @@ msgid ""
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
 "sources of gaussian-type blur"
 msgstr ""
+"キャプチャシャープ化は、カメラ内で生じたぼかしによって失われた細部を回復しま"
+"す\n"
+"このぼかしは回折やアンチエイリアシングフィルター、またはその他のガウス型ぼか"
+"しが原因で発生することがあります"
 
 #: ../src/iop/demosaic.c:1809
 msgid "capture sharpen controls"
@@ -20033,7 +20037,7 @@ msgstr "キャプチャシャープ化コントロール"
 
 #: ../src/iop/demosaic.c:1813
 msgid "set effect strength by iterations"
-msgstr "反復によってエフェクトの強さを設定します"
+msgstr "繰り返しによってエフェクトの強さを設定します"
 
 #: ../src/iop/demosaic.c:1818
 msgid ""
@@ -20045,6 +20049,15 @@ msgid ""
 "Note: a radius set to zero will be recalculated automatically the next run. "
 "use for presets"
 msgstr ""
+"キャプチャシャープ化の範囲は、カメラセンサー、場合によってはアンチエイリアシ"
+"ングフィルターおよびレンズの全体的なガウス型ぼかしを反映するように設定してく"
+"ださい\n"
+"\n"
+"値を大きくしすぎると、特に '繰り返し' を大きくした場合に、ハロやリンギングな"
+"どのアーティファクトが容易に発生してしまいます\n"
+"\n"
+"注意：範囲を0に設定すると、次回実行時に自動で再計算されます。プリセット用に利"
+"用してください"
 
 #: ../src/iop/demosaic.c:1824
 msgid ""
@@ -20461,10 +20474,10 @@ msgid ""
 "if you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 msgstr ""
-"反復を増やすと、効果が強まりますが、モジュールの動作は遅くなります\n"
+"繰り返し回数を増やすと、効果が強まりますが、モジュールの動作は遅くなります\n"
 "これは拡散の反応により多くの時間を与えるのに似たことです\n"
-"もしシャープ化や修復を行うつもりであれば、反復を増やすと再構成の質が向上しま"
-"す"
+"もしシャープ化や修復を行うつもりであれば、繰り返し回数を増やすと再構成の質が"
+"向上します"
 
 #: ../src/iop/diffuse.c:1784
 msgid ""
@@ -21533,7 +21546,7 @@ msgid ""
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
 "色度（クロマティシティ）の再構成の追加パスを実行します\n"
-"反復を増やすと、周囲からの色の流用が増加します\n"
+"繰り返し回数を増やすと、周囲からの色の流用が増加します\n"
 "これにより処理が遅くなりますが、よりニュートラルなハイライトが生成されます\n"
 "また、マゼンタのハイライトがある難しいケースにおいても有用です"
 
@@ -21936,7 +21949,7 @@ msgid ""
 "each new iteration brings a performance penalty."
 msgstr ""
 "マゼンタのハイライトが十分補正されない場合、値を上げてください\n"
-"反復を増やすたびにパフォーマンスに悪影響があります"
+"繰り返し回数を増やすたびにパフォーマンスに悪影響があります"
 
 #: ../src/iop/highlights.c:1352
 msgid ""
