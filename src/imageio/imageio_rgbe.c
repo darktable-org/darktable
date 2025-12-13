@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/matrices.h"
 #include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_rgbe.h"

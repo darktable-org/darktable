@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -20,10 +20,6 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -32,6 +28,8 @@ struct dt_imageio_module_data_t;
 struct dt_dev_pixelpipe_t;
 
 #include "common/colorspaces.h" // because forward declaring enums doesn't work in C++ :(
+
+G_BEGIN_DECLS
 
 /* early definition of modules to do type checking */
 
@@ -96,9 +94,7 @@ OPTIONAL(int, read_image, struct dt_imageio_module_data_t *data, uint8_t *out);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

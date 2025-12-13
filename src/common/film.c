@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2024 darktable developers.
+   Copyright (C) 2009-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ char *dt_sqlite3_escape_wildcards(const char *s)
   for(const char *t = s; *t; t++)
   {
     count++;
-    if (*t == '%' || *t == '_' || *t == '~')
+    if(*t == '%' || *t == '_' || *t == '~')
       count++;
   }
   char *result = malloc(count+1);
@@ -322,7 +322,7 @@ dt_filmid_t dt_film_import(const char *dirname)
                         "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   // launch import job
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
 
   return filmid;
 }
@@ -348,18 +348,11 @@ static gboolean ask_and_delete(gpointer user_data)
                        ngettext("delete empty directory?",
                                 "delete empty directories?", n_empty_dirs));
 
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_vexpand(scroll, TRUE);
-
   GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
 
   for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
   {
-    GtkTreeIter iter;
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, list_iter->data, -1);
+    gtk_list_store_insert_with_values(store, NULL, -1, 0, list_iter->data, -1);
   }
 
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
@@ -369,11 +362,11 @@ static gboolean ask_and_delete(gpointer user_data)
                                                                        "text", 0, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
 
-  gtk_container_add(GTK_CONTAINER(content_area), scroll);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
 
   gtk_widget_show_all(dialog); // needed for the content area!
 
@@ -474,7 +467,7 @@ void dt_film_remove(const dt_filmid_t id)
   if(!remove_ok)
   {
     dt_control_log(_("cannot remove film roll having local copies with"
-                     " non accessible originals"));
+                     " inaccessible originals"));
     return;
   }
 
@@ -487,8 +480,8 @@ void dt_film_remove(const dt_filmid_t id)
   {
     const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     dt_image_local_copy_reset(imgid);
-    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
-    dt_image_cache_remove(darktable.image_cache, imgid);
+    dt_mipmap_cache_remove(imgid);
+    dt_image_cache_remove(imgid);
   }
   sqlite3_finalize(stmt);
 

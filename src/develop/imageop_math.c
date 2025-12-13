@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "develop/imageop_math.h"
-#include <assert.h> // for assert
-#include <glib.h> // for MIN, MAX, CLAMP, inline
-#include <math.h> // for round, floorf, fmaxf
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
 #include "develop/imageop.h"         // for dt_iop_roi_t
+#include "develop/imageop_math.h"
 #include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
+
+#include <assert.h> // for assert
+#include <glib.h> // for MIN, MAX, CLAMP, inline
+#include <math.h> // for round, floorf, fmaxf
 
 void dt_iop_flip_and_zoom_8(const uint8_t *in,
                             const int32_t iw,
@@ -150,7 +151,7 @@ void dt_iop_clip_and_zoom(float *out,
                           const dt_iop_roi_t *const roi_out,
                           const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, in, roi_in);
 }
 
@@ -161,7 +162,7 @@ void dt_iop_clip_and_zoom_roi(float *out,
                               const dt_iop_roi_t *const roi_out,
                               const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_roi(itor, out, roi_out, in, roi_in);
 }
 
@@ -174,7 +175,7 @@ int dt_iop_clip_and_zoom_cl(int devid,
                             const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
 
@@ -186,7 +187,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
                                 const dt_iop_roi_t *const roi_out,
                                 const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out,
                                                 roi_out, dev_in, roi_in);
   if(err == CL_INVALID_WORK_GROUP_SIZE)
@@ -197,8 +198,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)
     {
-      err = dt_opencl_read_host_from_device
-            (devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(err == CL_SUCCESS)
       {
         dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in);
@@ -699,7 +699,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      const float pix = (num) ? col / num : 0.0f;
+      const float pix = (num) ? fmaxf(0.0f, col) / num : 0.0f;
       outc[0] = pix;
       outc[1] = pix;
       outc[2] = pix;
@@ -877,9 +877,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      outc[0] = col[0] / num;
-      outc[1] = (col[1] / num) / 2.0f;
-      outc[2] = col[2] / num;
+      outc[0] = fmaxf(0.0f, col[0]) / num;
+      outc[1] = fmaxf(0.0f, col[1]) / num / 2.0f;
+      outc[2] = fmaxf(0.0f, col[2]) / num;
       outc[3] = 0.0f;
       outc += 4;
     }
@@ -926,15 +926,15 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
         {
           for(int j = 0; j < 3; ++j)
             for(int i = 0; i < 3; ++i)
-              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)]
+              col[FCxtrans(yy + j, xx + i, NULL, xtrans)]
                 += in[xx + i + in_stride * (yy + j)];
           num++;
         }
 
       // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
-      outc[0] = col[0] / (num * 2);
-      outc[1] = col[1] / (num * 5);
-      outc[2] = col[2] / (num * 2);
+      outc[0] = fmaxf(0.0f, col[0]) / (num * 2);
+      outc[1] = fmaxf(0.0f, col[1]) / (num * 5);
+      outc[2] = fmaxf(0.0f, col[2]) / (num * 2);
     }
   }
 }

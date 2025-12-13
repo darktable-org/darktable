@@ -19,15 +19,11 @@
 DT_OMP_DECLARE_SIMD(aligned(in, out:64))
 static void demosaic_ppg(float *const out,
                          const float *const in,
-                         const dt_iop_roi_t *const roi_in,
+                         const int width,
+                         const int height,
                          const uint32_t filters,
                          const float thrs)
 {
-  // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
-  // we never want to access the input out of bounds though:
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   // border interpolate
   float sum[8];
   for(int j = 0; j < height; j++)
@@ -61,7 +57,7 @@ static void demosaic_ppg(float *const out,
   if(median)
   {
     float *med_in = dt_alloc_align_float((size_t)height * width);
-    pre_median(med_in, in, roi_in, filters, 1, thrs);
+    pre_median(med_in, in, width, height, filters, 1, thrs);
     input = med_in;
   }
 // for all pixels except those in the 3 pixel border:

@@ -434,8 +434,13 @@ static gboolean reset_widget_string(GtkWidget *label, GdkEventButton *event, pre
 }
 
 
-static gboolean reset_widget_bool(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
+static gboolean click_widget_bool(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
+  if(event->type == GDK_BUTTON_PRESS)
+  {
+    gtk_button_clicked(GTK_BUTTON(cur_elt->widget));
+    return TRUE;
+  }
   if(event->type == GDK_2BUTTON_PRESS)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget),
@@ -559,7 +564,7 @@ static void update_widget_bool(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(click_widget_bool), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
 }
@@ -692,6 +697,7 @@ static int register_pref_sub(lua_State *L)
         dt_conf_set_string(pref_name, built_elt->type_data.string_data.default_value);
 
       built_elt->widget = gtk_entry_new();
+      gtk_widget_set_hexpand(built_elt->widget, TRUE);
       built_elt->tooltip_reset= g_strdup_printf( _("double-click to reset to `%s'"),
           built_elt->type_data.string_data.default_value);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
@@ -828,11 +834,10 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
-  gtk_container_add(GTK_CONTAINER(scroll), viewport);
+  GtkWidget *scroll = dt_gui_scroll_wrap(viewport);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Lua options"), _("Lua options"));
 

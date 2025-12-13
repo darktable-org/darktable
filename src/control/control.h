@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,43 +46,40 @@ struct dt_lib_backgroundjob_element_t;
 typedef GdkCursorType dt_cursor_t;
 
 // called from gui
-void *dt_control_expose(void *voidptr);
+void dt_control_expose(GtkWidget *widget, cairo_t *cr);
 gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
-void dt_control_mouse_leave();
-void dt_control_mouse_enter();
-int dt_control_key_pressed_override(guint key, guint state);
+void dt_control_mouse_leave(void);
+void dt_control_mouse_enter(void);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
-void dt_control_log_busy_enter();
-void dt_control_toast_busy_enter();
-void dt_control_log_busy_leave();
-void dt_control_toast_busy_leave();
+void dt_control_busy_enter();
+void dt_control_busy_leave();
 void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 // disable the possibility to change the cursor shape with dt_control_change_cursor
-void dt_control_forbid_change_cursor();
+void dt_control_forbid_change_cursor(void);
 // enable the possibility to change the cursor shape with dt_control_change_cursor
-void dt_control_allow_change_cursor();
+void dt_control_allow_change_cursor(void);
 void dt_control_change_cursor(dt_cursor_t cursor);
-void dt_control_write_sidecar_files();
-void dt_control_delete_images();
+void dt_control_write_sidecar_files(void);
+void dt_control_delete_images(void);
 
 /** \brief request redraw of the workspace.
     This redraws the whole workspace within a gdk critical
     section to prevent several threads to carry out a redraw
     which will end up in crashes.
  */
-void dt_control_queue_redraw();
+void dt_control_queue_redraw(void);
 
 /** \brief request redraw of center window.
     This redraws the center view within a gdk critical section
     to prevent several threads to carry out the redraw.
 */
-void dt_control_queue_redraw_center();
+void dt_control_queue_redraw_center(void);
 
 /** \brief threadsafe request of redraw of specific widget.
     Use this function if you need to redraw a specific widget
@@ -93,26 +90,26 @@ void dt_control_queue_redraw_widget(GtkWidget *widget);
 /** \brief request redraw of the navigation widget.
     This redraws the wiget of the navigation module.
  */
-void dt_control_navigation_redraw();
+void dt_control_navigation_redraw(void);
 
 /** \brief request redraw of the log widget.
     This redraws the message label.
  */
-void dt_control_log_redraw();
+void dt_control_log_redraw(void);
 
 /** \brief request redraw of the toast widget.
     This redraws the message label.
  */
-void dt_control_toast_redraw();
+void dt_control_toast_redraw(void);
 
-void dt_ctl_switch_mode();
+void dt_ctl_switch_mode(void);
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
 
 struct dt_control_t;
 
 /** sets the hinter message */
-void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
+void dt_control_hinter_message(const char *message);
 
 #define DT_CTL_LOG_SIZE 8 // must be power-of-2
 #define DT_CTL_TOAST_SIZE 2
@@ -136,7 +133,7 @@ typedef enum dt_control_state_t
 
 typedef struct dt_control_t
 {
-  gboolean accel_initialising;
+  gboolean accel_initialised;
 
   dt_action_t *actions, actions_global,
                actions_views, actions_thumb,
@@ -144,7 +141,6 @@ typedef struct dt_control_t
                actions_iops, actions_blend, actions_focus,
                actions_lua, actions_fallbacks, *actions_modifiers;
 
-  GHashTable *widgets;
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
@@ -152,9 +148,6 @@ typedef struct dt_control_t
   dt_action_element_t element;
   GPtrArray *widget_definitions;
   GSList *input_drivers;
-
-  char vimkey[256];
-  int vimkey_cnt;
 
   // gui related stuff
   double tabborder;
@@ -167,19 +160,18 @@ typedef struct dt_control_t
   dt_imgid_t last_clicked_filmstrip_id;
   gboolean lock_cursor_shape;
 
+  int busy;
+  dt_pthread_mutex_t log_mutex;
+
   // message log
   int32_t log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
   guint log_message_timeout_id;
-  int log_busy;
-  dt_pthread_mutex_t log_mutex;
 
   // toast log
   int32_t toast_pos, toast_ack;
   char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
   guint toast_message_timeout_id;
-  int toast_busy;
-  dt_pthread_mutex_t toast_mutex;
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
@@ -187,6 +179,8 @@ typedef struct dt_control_t
 
   // job management
   dt_atomic_int running;
+  dt_atomic_int quitting;
+  dt_atomic_int pending_jobs;
   gboolean cups_started;
   gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex;
@@ -244,21 +238,21 @@ typedef struct dt_control_t
 
 } dt_control_t;
 
-void dt_control_init(dt_control_t *s);
+void dt_control_init(gboolean withgui);
 
 // join all worker threads.
-void dt_control_shutdown(dt_control_t *s);
-void dt_control_cleanup(dt_control_t *s);
+void dt_control_shutdown(void);
+void dt_control_cleanup(const gboolean withgui);
 
 // call this to quit dt
-void dt_control_quit();
+void dt_control_quit(void);
 
 /** get threadsafe running state. */
-gboolean dt_control_running();
+gboolean dt_control_running(void);
 
 // thread-safe interface between core and gui.
 // is the locking really needed?
-dt_imgid_t dt_control_get_mouse_over_id();
+dt_imgid_t dt_control_get_mouse_over_id(void);
 void dt_control_set_mouse_over_id(const dt_imgid_t value);
 
 G_END_DECLS

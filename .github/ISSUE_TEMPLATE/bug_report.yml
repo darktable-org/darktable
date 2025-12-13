@@ -6,21 +6,26 @@ labels: [needs-triage]
 #  -
 
 body:
+  - type: checkboxes
+    id: search
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please check in [GitHub Open and Closed Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
+      options:
+        - label: I checked and did not find my issue in the already reported ones
+          required: true
   - type: markdown
     attributes:
       value: |
+        ***
         We appreciate you taking your time to report an issue with darktable. The more details you can provide, the most likely we will be able to assist you.
 
-        Before raising a bug/issue please check that it has not already been reported by searching [GitHub Open or Closed Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
-        Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
-        
   - type: textarea
     id: bug_description
     attributes:
       label: Describe the bug
       description: A clear and concise description of what the bug is. Try to be very factual in the description.
       placeholder: |
-        
         What is the issue? What causes the bug?
     validations:
       required: true
@@ -31,7 +36,6 @@ body:
       label: Steps to reproduce
       description: A clear sequence of steps to recreate the issue.
       placeholder: |
-        
         1. Go to '...'
         2. Click on '...'
         3. Scroll down to '...'
@@ -53,17 +57,16 @@ body:
       description: |
         If you suspect a bug in darktable, it would be nice to have some kind of log file - it's also much more likely that one of the developers will look into your problem soon.
         In most cases '-d common' will be sufficient, '-d opencl' is suggested in case of a suspected problem with OpenCL.
+        If you are on Windows, you can find the log file location [here](https://www.darktable.org/about/faq/#faq-windows-logs).
         In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
         You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
-        
         Drag and drop log file or backtrace file here, if available.
         Copying the contents is okay for short logs (like < 50 lines or so), but please put them in code blocks:
         ```
         log here
         ```
         You can use pastebin.com or similar services for long texts.
-  
   - type: input
     id: commit
     attributes:
@@ -77,13 +80,13 @@ body:
     attributes:
       label: Where did you obtain darktable from?
       options:
-        - 'downloaded from www.darktable.org'
+        - 'darktable.org / GitHub release'
         - 'distro packaging'
-        - 'flatpak'
+        - 'Flatpak'
         - 'GitHub nightly'
-        - 'OBS'
+        - 'OBS build'
         - 'self compiled'
-        - 'an online forum'
+        - 'online forum'
         - 'I dont know'
     validations:
      required: true
@@ -93,12 +96,12 @@ body:
     attributes:
       label: darktable version
       description: |
-        Please fill out the version of darktable (e.g., 4.5.0+1317~gbf3c759f02) that had the issue.
+        Please fill out the version of darktable (e.g., 5.1.0+159~gd4b5da07d0) that had the issue.
         You can get it by clicking on the darktable logo or by running 'darktable --version' on the command line.
-      placeholder: '4.5.0+1317~gbf3c759f02'
+      placeholder: '5.1.0+159~gd4b5da07d0'
     validations:
       required: true
-      
+
   - type: dropdown
     id: OS
     attributes:
@@ -115,14 +118,14 @@ body:
     attributes:
       label: What is the version of your OS?
       description: Please fill out the distro or OS version from the previous dropdown
-      placeholder: Fedora 39, Ubuntu 23.10, Windows 11 Pro, MacOS 14 Sonoma
+      placeholder: "like: Fedora 40, Ubuntu 24.10, Windows 11 Pro, MacOS 14 Sonoma"
     validations:
       required: true
-      
+
   - type: textarea
     id: system
     attributes:
-      label: Describe your system?
+      label: Describe your system
       description: Include any information about your computer system that you think may be relevant to your report (e.g., RAM size, Wayland or X11, the version of GTK+ with which darktable is linked).
 
   - type: dropdown
@@ -145,11 +148,11 @@ body:
     attributes:
       label: Please provide additional context if applicable. You can attach files too, but might need to rename to .txt or .zip
       description: |
-        - Can you reproduce with another darktable version(s)? **yes with version x-y-z / no**
-        - Can you reproduce with a RAW or Jpeg or both? **RAW-file-format/Jpeg/both**
-        - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes/no**
+        - Can you reproduce with another darktable version(s)? **yes with version x.y.z / no**
+        - Can you reproduce with a RAW or JPEG or both? **RAW file format / JPEG / both**
+        - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes / no**
         - If the issue is with the output image, attach an XMP file if (you'll have to change the extension to `.txt`)
-        - Is the issue still present using an empty/new config-dir (e.g. start darktable with --configdir "/tmp")? **yes/no**
+        - Is the issue still present using an empty/new config-dir (e.g. start darktable with --configdir "/tmp")? **yes / no**
         - Do you use lua scripts?
             - What lua scripts start automatically?
             - What lua scripts were running when the bug occurred?

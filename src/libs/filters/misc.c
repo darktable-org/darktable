@@ -75,7 +75,6 @@ void _misc_tree_update(_widgets_misc_t *misc)
 
   char query[1024] = { 0 };
 
-  GtkTreeIter iter;
   GtkTreeModel *name_model = gtk_tree_view_get_model(GTK_TREE_VIEW(misc->name_tree));
   gtk_list_store_clear(GTK_LIST_STORE(name_model));
 
@@ -190,8 +189,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
     else
     {
       gchar *value_path = g_strdup_printf("\"%s\"", name);
-      gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+      gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
                          TREE_COL_TEXT, name,
                          TREE_COL_TOOLTIP, name,
                          TREE_COL_PATH, value_path,
@@ -204,8 +202,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
   // we add the unset entry if any
   if(unset > 0)
   {
-    gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
                        TREE_COL_TEXT, _("unnamed"),
                        TREE_COL_TOOLTIP, tooltip,
                        TREE_COL_PATH, _("unnamed"),
@@ -268,7 +265,7 @@ static gboolean _misc_press(GtkWidget *w,
                             GdkEventButton *e,
                             _widgets_misc_t *misc)
 {
-  if(e->button == 3)
+  if(e->button == GDK_BUTTON_SECONDARY)
   {
     _misc_tree_update_visibility(w, misc);
     gtk_popover_set_default_widget(GTK_POPOVER(misc->pop), w);
@@ -280,7 +277,7 @@ static gboolean _misc_press(GtkWidget *w,
     gtk_widget_show_all(misc->pop);
     return TRUE;
   }
-  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  else if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     gtk_entry_set_text(GTK_ENTRY(misc->name), "");
     _misc_changed(w, misc);
@@ -477,8 +474,6 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   gtk_container_add(GTK_CONTAINER(misc->pop), hb);
 
   // the name tree
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
   GtkTreeModel *model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   misc->name_tree = gtk_tree_view_new_with_model(model);
@@ -499,7 +494,8 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(misc->name_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), misc->name_tree);
+  GtkWidget *sw = dt_gui_scroll_wrap(misc->name_tree);
+  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
 
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));

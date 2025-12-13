@@ -282,7 +282,7 @@ static void _undo_do_undo_redo(dt_undo_t *self,
     for(const GList *img = imgs; img; img = g_list_next(img))
     {
       // udpate xmp is done via set_change_timestamp
-      dt_image_cache_set_change_timestamp(darktable.image_cache, GPOINTER_TO_INT(img->data));
+      dt_image_cache_set_change_timestamp(GPOINTER_TO_INT(img->data));
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
     }
@@ -295,7 +295,6 @@ static void _undo_do_undo_redo(dt_undo_t *self,
 void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter)
 {
   dt_gui_cursor_set_busy();
-  dt_gui_process_events();
   _undo_do_undo_redo(self, filter, DT_ACTION_REDO);
   dt_gui_cursor_clear_busy();
 }
@@ -303,7 +302,6 @@ void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter)
 void dt_undo_do_undo(dt_undo_t *self, const uint32_t filter)
 {
   dt_gui_cursor_set_busy();
-  dt_gui_process_events();
   _undo_do_undo_redo(self, filter, DT_ACTION_UNDO);
   dt_gui_cursor_clear_busy();
 }

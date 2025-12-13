@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/eaw.h"
 #include "common/exif.h"
@@ -95,7 +92,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(11, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(12, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
@@ -126,11 +123,13 @@ typedef struct dt_iop_denoiseprofile_params_t
   gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
   dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
                                                               $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+  gboolean compensate_hilite_pres; // $DEFAULT: TRUE $DESCRIPTION: "compensate highlight preservation"
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
 {
   GtkWidget *profile;
+  GtkWidget *compensate_hilite_pres;
   GtkWidget *mode;
   GtkWidget *radius;
   GtkWidget *nbhood;
@@ -214,7 +213,12 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_reduce_second;
 } dt_iop_denoiseprofile_global_data_t;
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected,
+                                                                const gboolean compensate_hilite_pres);
 
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
                            const char *const namespec,
@@ -408,7 +412,7 @@ int legacy_params_to11(dt_iop_module_t *self,
       // used or not
       return 0;
     }
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL, FALSE);
     // if the profile in old_version is an autodetected one (this
     // would mean a+b params match the interpolated one, AND the
     // profile is actually the first selected one - however we can
@@ -709,6 +713,27 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
   } dt_iop_denoiseprofile_params_v11_t;
 
+  typedef struct dt_iop_denoiseprofile_params_v12_t
+  {
+    float radius;
+    float nbhood;
+    float strength;
+    float shadows;
+    float bias;
+    float scattering;
+    float central_pixel_weight;
+    float overshooting;
+    float a[3], b[3];
+    dt_iop_denoiseprofile_mode_t mode;
+    float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    gboolean wb_adaptive_anscombe;
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+    dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
+    gboolean compensate_hilite_pres;
+  } dt_iop_denoiseprofile_params_v12_t;
+
   if(old_version < 11)
   {
     *new_params = (dt_iop_denoiseprofile_params_v11_t *)
@@ -723,6 +748,21 @@ int legacy_params(dt_iop_module_t *self,
     *new_params_size = sizeof(dt_iop_denoiseprofile_params_v11_t);
     *new_version = 11;
     return ret;
+  }
+  if(old_version == 11)
+  {
+    const dt_iop_denoiseprofile_params_v11_t *o = (dt_iop_denoiseprofile_params_v11_t *)old_params;
+    dt_iop_denoiseprofile_params_v12_t *n = malloc(sizeof(dt_iop_denoiseprofile_params_v12_t));
+
+    // layout is the same except for the addition of a new field
+    memset(n, 0, sizeof(dt_iop_denoiseprofile_params_v12_t));
+    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_v11_t));
+    n->compensate_hilite_pres = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_denoiseprofile_params_v12_t);
+    *new_version = 12;
+    return 0;
   }
 
   return 1;
@@ -752,6 +792,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.a[0] = -1.0f; // autodetect profile
   p.central_pixel_weight = 0.1f;
   p.overshooting = 1.0f;
+  p.compensate_hilite_pres = FALSE;
   p.fix_anscombe_and_nlmeans_norm = TRUE;
   for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
   {
@@ -763,8 +804,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 11, &p,
-                             sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 12, &p,
+                             sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 const char *name()
@@ -1602,18 +1643,18 @@ static float nlmeans_scattering(int *nbhood,
   int K = *nbhood;
   float scattering = d->scattering;
 
+  const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
   if(piece->pipe->type
-     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
+     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_THUMBNAIL))
   {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    // much faster but inaccurate for previews
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  else if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
+          && !darktable.develop->late_scaling.enabled)
   {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    // faster but slightly more inaccurate
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
@@ -2210,7 +2251,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(dt_opencl_micro_nap(devid));
+      dt_opencl_micro_nap(devid);
     }
   }
 
@@ -2483,7 +2524,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -2627,7 +2668,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -2781,6 +2822,20 @@ void init(dt_iop_module_t *self)
   }
 }
 
+static int _get_iso_highlight_preservation_shift(dt_image_t *img)
+{
+  const float hilight_pres = img->exif_highlight_preservation;
+  // Only compensate whole EV steps, as non-whole steps are (based on
+  // experience and discussion in #19624) handled by different means in the
+  // camera.
+  const int shift = floorf(hilight_pres);
+  if(shift <= 0)
+  {
+    return 0;
+  }
+  return shift;
+}
+
 /** this will be called to init new defaults if a new image is loaded
  * from film strip mode. */
 void reload_defaults(dt_iop_module_t *self)
@@ -2802,40 +2857,18 @@ void reload_defaults(dt_iop_module_t *self)
   d->use_new_vst = TRUE;
   d->wavelet_color_mode = MODE_Y0U0V0;
 
+  const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+  d->compensate_hilite_pres = iso_shift > 0;
+
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
-  const int iso = self->dev->image_storage.exif_iso;
-
-  // default to generic poissonian
-  dt_noiseprofile_t interpolated = dt_noiseprofile_generic;
-
   char name[512];
-
-  g_strlcpy(name, _(interpolated.name), sizeof(name));
-
-  dt_noiseprofile_t *last = NULL;
-  for(GList *iter = profiles; iter; iter = g_list_next(iter))
+  gboolean autodetected = FALSE;
+  dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile
+      (self, profiles, name, sizeof(name), &autodetected, d->compensate_hilite_pres);
+  if(autodetected)
   {
-    dt_noiseprofile_t *current = iter->data;
-
-    if(current->iso == iso)
-    {
-      interpolated = *current;
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
-      break;
-    }
-    if(last && last->iso < iso && current->iso > iso)
-    {
-      interpolated.iso = iso;
-      dt_noiseprofile_interpolate(last, current, &interpolated);
-      // signal later autodetection in commit_params:
-      interpolated.a[0] = -1.0f;
-      snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"),
-               last->iso, current->iso);
-      break;
-    }
-    last = current;
+    // signal later autodetection in commit_params.
+    interpolated.a[0] = -1.0f;
   }
 
   const float a = interpolated.a[1];
@@ -2937,12 +2970,38 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self,
+                                                                GList *profiles,
+                                                                char *name,
+                                                                const size_t namelen,
+                                                                gboolean *autodetected,
+                                                                const gboolean compensate_hilite_pres)
 {
-  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  gboolean profiles_allocated = FALSE;
+  if(profiles == NULL)
+  {
+    profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+    profiles_allocated = TRUE;
+  }
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
 
-  const int iso = self->dev->image_storage.exif_iso;
+  if(autodetected != NULL)
+  {
+    *autodetected = FALSE;
+  }
+  if(name != NULL)
+  {
+    g_strlcpy(name, _(interpolated.name), namelen);
+  }
+
+  const int exif_iso = self->dev->image_storage.exif_iso;
+  int iso = exif_iso;
+  int shift = 0;
+  if(compensate_hilite_pres)
+  {
+    shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+    iso >>= shift;
+  }
   dt_noiseprofile_t *last = NULL;
   for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
@@ -2950,17 +3009,50 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     if(current->iso == iso)
     {
       interpolated = *current;
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        if(iso != exif_iso)
+        {
+          snprintf(name, namelen, _("found ISO %d (ISO %d %+d EV)"), iso, exif_iso, -shift);
+        }
+        else
+        {
+          snprintf(name, namelen, _("found ISO %d"), iso);
+        }
+      }
       break;
     }
     if(last && last->iso < iso && current->iso > iso)
     {
       interpolated.iso = iso;
       dt_noiseprofile_interpolate(last, current, &interpolated);
+      if(autodetected != NULL)
+      {
+        *autodetected = TRUE;
+      }
+      if(name != NULL)
+      {
+        if(iso != exif_iso)
+        {
+          snprintf(name, namelen, _("interpolated ISO %d (ISO %d %+d EV)"), iso, exif_iso, -shift);
+        }
+        else
+        {
+          snprintf(name, namelen, _("interpolated ISO %d"), iso);
+        }
+      }
       break;
     }
     last = current;
   }
-  g_list_free_full(profiles, dt_noiseprofile_free);
+  if(profiles_allocated)
+  {
+    g_list_free_full(profiles, dt_noiseprofile_free);
+  }
   return interpolated;
 }
 
@@ -2990,9 +3082,9 @@ void commit_params(dt_iop_module_t *self,
   if(p->a[0] == -1.0)
   {
     // autodetect matching profile again, the same way as detecting their names,
-    // this is partially duplicated code and data because we are not allowed to access
-    // gui_data here ..
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    // because we are not allowed to access gui_data here ..
+    dt_noiseprofile_t interpolated =
+        dt_iop_denoiseprofile_get_auto_profile(self, NULL, NULL, 0, NULL, p->compensate_hilite_pres);
     for(int k = 0; k < 3; k++)
     {
       d->a[k] = interpolated.a[k];
@@ -3137,14 +3229,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                             p->wavelet_color_mode == MODE_Y0U0V0);
   }
 
-  if(!w || w == g->overshooting)
+  if(!w || w == g->overshooting || w == g->compensate_hilite_pres)
   {
     float a = p->a[1];
     if(p->a[0] == -1.0)
     {
       dt_bauhaus_combobox_set(g->profile, 0);
 
-      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      char name[512];
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, NULL, name, sizeof(name), NULL,
+                                                                              p->compensate_hilite_pres);
+      dt_bauhaus_combobox_set_entry_label(g->profile, 0, name);
       a = interpolated.a[1];
     }
 
@@ -3192,12 +3287,17 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe),
                                p->wb_adaptive_anscombe);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_pres), p->compensate_hilite_pres);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm),
                                p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm,
                          !p->fix_anscombe_and_nlmeans_norm);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
+
+  const int iso_shift = _get_iso_highlight_preservation_shift(&self->dev->image_storage);
+  gtk_widget_set_visible(g->compensate_hilite_pres, iso_shift > 0);
+
   if((p->wavelet_color_mode == MODE_Y0U0V0) && (g->channel < DT_DENOISE_PROFILE_Y0))
   {
     g->channel = DT_DENOISE_PROFILE_Y0;
@@ -3477,7 +3577,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("coarse"), -1);
+  pango_layout_set_text(layout, C_("graph", "coarse"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
@@ -3564,7 +3664,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_denoiseprofile_params_t *)self->params;
     const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3585,7 +3685,7 @@ static gboolean denoiseprofile_button_release(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -3651,7 +3751,7 @@ void gui_init(dt_iop_module_t *self)
   g->channel = 0;
 
   // First build sub-level boxes
-  g->box_nlm = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_nlm = self->widget = dt_gui_vbox();
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
@@ -3663,7 +3763,7 @@ void gui_init(dt_iop_module_t *self)
   g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
 
-  g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_wavelets = self->widget = dt_gui_vbox();
 
   g->wavelet_color_mode = dt_bauhaus_combobox_from_params(self, "wavelet_color_mode");
 
@@ -3676,16 +3776,12 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets),
-                     GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
   dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page",
                    G_CALLBACK(denoiseprofile_tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets),
-                     GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
 
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -3717,54 +3813,44 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(denoiseprofile_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(denoiseprofile_scrolled), self);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
-  g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_box_add(g->box_wavelets, g->channel_tabs, g->channel_tabs_Y0U0V0, g->area);
+
 
   g->label_var = GTK_LABEL(dt_ui_label_new(_("use only with a perfectly\n"
                                              "uniform image if you want to\n"
                                              "estimate the noise variance.")));
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
-  GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("variance red: ")));
-  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
   g->label_var_R = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R),
                               _("variance computed on the red channel"));
-  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
 
-  GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("variance green: ")));
-  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
   g->label_var_G = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G),
                               _("variance computed on the green channel"));
-  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
 
-  GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("variance blue: ")));
-  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
+
   g->label_var_B = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B),
                               _("variance computed on the blue channel"));
-  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
+
+  g->box_variance = dt_gui_vbox(g->label_var,
+                                dt_gui_hbox(dt_ui_label_new(_("variance red: ")), g->label_var_R),
+                                dt_gui_hbox(dt_ui_label_new(_("variance green: ")), g->label_var_G),
+                                dt_gui_hbox(dt_ui_label_new(_("variance blue: ")), g->label_var_B));
 
   g_signal_connect(G_OBJECT(g->box_variance), "draw",
                    G_CALLBACK(denoiseprofile_draw_variance), self);
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed",
                    G_CALLBACK(profile_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->profile);
 
+  g->compensate_hilite_pres = dt_bauhaus_toggle_from_params(self, "compensate_hilite_pres");
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
@@ -3774,8 +3860,7 @@ void gui_init(dt_iop_module_t *self)
   if(!compute_variance && pos != -1)
     dt_bauhaus_combobox_remove_at(g->mode, pos);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->box_nlm, g->box_wavelets);
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
@@ -3786,7 +3871,7 @@ void gui_init(dt_iop_module_t *self)
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->box_variance);
 
   g->fix_anscombe_and_nlmeans_norm = dt_bauhaus_toggle_from_params
     (self, "fix_anscombe_and_nlmeans_norm");
@@ -3800,6 +3885,10 @@ void gui_init(dt_iop_module_t *self)
                                 "for better denoising.\n"
                                 "should be disabled if an earlier instance\n"
                                 "has been used with a color blending mode."));
+  gtk_widget_set_tooltip_text(g->compensate_hilite_pres, _("if enabled, reduces the ISO used for denoise\n"
+                                                           "by the factor of the camera's hidden exposure\n"
+                                                           "bias used in HDR / highlight preservation /\n"
+                                                           "dynamic range / HLG tone modes."));
   gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm,
                               _("fix bugs in Anscombe transform resulting\n"
                                 "in undersmoothing of the green channel in\n"
@@ -3870,8 +3959,6 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

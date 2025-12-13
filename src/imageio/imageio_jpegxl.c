@@ -174,6 +174,14 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         return DT_IMAGEIO_FILE_CORRUPTED;
       }
 
+      // Orientation values in JXL basic info match Exif definitions
+      img->orientation = dt_image_orientation_to_flip_bits(basicinfo.orientation);
+
+      // We don't re-orient the data during decoding, this will be done later
+      // by darktable according to the metadata value (this value can be
+      // either the one obtained above or the value read from Exif data)
+      JxlDecoderSetKeepOrientation(decoder, JXL_TRUE);
+
       uint32_t num_threads =
         JxlResizableParallelRunnerSuggestThreads(basicinfo.xsize,
                                                  basicinfo.ysize);
@@ -295,7 +303,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
     // not check and reject the image if it is an animation, but only read
     // the first frame. It hardly makes sense to process such an image, but
     // perhaps the user intends to use darkyable as a DAM for such images.
-    if (status == JXL_DEC_FULL_IMAGE)
+    if(status == JXL_DEC_FULL_IMAGE)
       break;    // Terminate processing
 
   } // end of processing loop

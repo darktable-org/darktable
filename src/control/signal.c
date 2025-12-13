@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,6 +140,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   [DT_SIGNAL_PRESETS_CHANGED] = { "dt-presets-changed",
     NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
     G_CALLBACK(_presets_changed_destroy_callback), FALSE },
+  [DT_SIGNAL_PRESET_APPLIED] = { "dt-preset-applied",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
   /* Develop related signals */
   [DT_SIGNAL_DEVELOP_INITIALIZE] = { "dt-develop-initialized",
@@ -400,6 +402,13 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
   _print_trace(-1, DT_DEBUG_SIGNAL_ACT_DISCONNECT, "disconnect");
   g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0,
                                        0, NULL, cb, user_data);
+}
+
+guint dt_control_signal_disconnect_all(const struct dt_control_signal_t *ctlsig, gpointer user_data)
+{
+  _print_trace(-1, DT_DEBUG_SIGNAL_ACT_DISCONNECT, "disconnect");
+  return g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), G_SIGNAL_MATCH_DATA, 0,
+                                              0, NULL, NULL, user_data);
 }
 
 void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)

@@ -17,10 +17,6 @@
 */
 
 #pragma once
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>           // for cl_mem
 #endif
@@ -167,18 +163,12 @@ static inline int FC(const size_t row, const size_t col, const uint32_t filters)
 
 static inline float dt_iop_get_processed_maximum(dt_dev_pixelpipe_iop_t *piece)
 {
-  return  fmaxf(1.0f,
-          fmaxf(piece->pipe->dsc.processed_maximum[0],
-          fmaxf(piece->pipe->dsc.processed_maximum[1],
-                piece->pipe->dsc.processed_maximum[2])));
+  return  fmaxf(1.0f, max3f(piece->pipe->dsc.processed_maximum));
 }
 
 static inline float dt_iop_get_processed_minimum(dt_dev_pixelpipe_iop_t *piece)
 {
-  return  fmaxf(1.0f,
-          fminf(piece->pipe->dsc.processed_maximum[0],
-          fminf(piece->pipe->dsc.processed_maximum[1],
-                piece->pipe->dsc.processed_maximum[2])));
+  return  fmaxf(1.0f, min3f(piece->pipe->dsc.processed_maximum));
 }
 
 /** Calculate the xtrans pattern color from the row and column **/
@@ -202,12 +192,26 @@ static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *con
   return xtrans[irow % 6][icol % 6];
 }
 
+/** Calculate the xtrans pattern color from the row and column **/
+static inline int FCNxtrans(const int row, const int col, const uint8_t (*const xtrans)[6])
+{
+  // Add +600 (which must be a multiple of CFA width 6) as offset can
+  // be negative and need to ensure a non-negative array index. The
+  // negative offsets in current code come from the demosaic iop:
+  // Markesteijn 1-pass (-12), Markesteijn 3-pass (-17), and VNG (-2).
+  const int irow = row + 600;
+  const int icol = col + 600;
+  assert(irow >= 0 && icol >= 0);
+
+  return xtrans[irow % 6][icol % 6];
+}
+
 
 DT_OMP_DECLARE_SIMD()
 static inline int fcol(const int row, const int col, const uint32_t filters, const uint8_t (*const xtrans)[6])
 {
   if(filters == 9)
-    return FCxtrans(row, col, NULL, xtrans);
+    return FCNxtrans(row, col, xtrans);
   else
     return FC(row, col, filters);
 }

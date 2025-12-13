@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,14 +47,14 @@ void dt_history_item_free(gpointer data)
 
 static void _remove_preset_flag(const dt_imgid_t imgid)
 {
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
 
   // clear flag
   if(image)
     image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
-  dt_image_cache_write_release_info(darktable.image_cache, image,
+  dt_image_cache_write_release_info(image,
                                     DT_IMAGE_CACHE_SAFE,
                                     "_remove_preset_flag");
 }
@@ -129,7 +129,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   }
 
   /* make sure mipmaps are recomputed */
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
   dt_image_update_final_size(imgid);
 
   /* remove darktable|style|* tags */
@@ -139,7 +139,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   /* unset change timestamp */
-  dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
+  dt_image_cache_unset_change_timestamp(imgid);
 
   // signal that the mipmap need to be updated
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
@@ -173,7 +173,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    const gboolean history_only)
 {
   dt_lock_image(imgid);
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *img = dt_image_cache_get(imgid, 'w');
   if(img)
   {
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -182,8 +182,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 
     if(dt_exif_xmp_read(img, filename, history_only))
     {
-      dt_image_cache_write_release_info
-        (darktable.image_cache, img,
+      dt_image_cache_write_release_info(img,
          // ugly but if not history_only => called from crawler - do not write the xmp
          history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
          "dt_history_load_and_apply");
@@ -201,13 +200,13 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
     if(dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items(darktable.develop);
 
-    dt_image_cache_write_release_info
-      (darktable.image_cache, img,
+    dt_image_cache_write_release_info(img,
        // ugly but if not history_only => called from crawler - do not write the xmp
        history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
        "dt_history_load_and_apply");
-    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
+    dt_image_cache_set_change_timestamp(imgid);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
@@ -218,6 +217,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 gboolean dt_history_load_and_apply_on_list(gchar *filename,
                                            const GList *list)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   gboolean res = FALSE;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
@@ -227,6 +227,7 @@ gboolean dt_history_load_and_apply_on_list(gchar *filename,
       res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
+  dt_start_backthumbs_crawler();
   return res;
 }
 
@@ -746,7 +747,6 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
                                                            const gboolean copy_iop_order,
                                                            const gboolean copy_full)
 {
-  gboolean ret_val = FALSE;
   sqlite3_stmt *stmt;
 
   // replace history stack
@@ -893,15 +893,13 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dest_imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    return FALSE;
   }
   else
   {
     // since the history and masks where deleted we can do a merge
-    ret_val = _history_copy_and_paste_on_image_merge
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
+    return _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_iop_order, copy_full);
   }
-
-  return ret_val;
 }
 
 gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
@@ -952,13 +950,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
   }
 
-  gboolean ret_val = FALSE;
-  if(merge)
-    ret_val = _history_copy_and_paste_on_image_merge
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
-  else
-    ret_val = _history_copy_and_paste_on_image_overwrite
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
+  const gboolean ret_val = merge
+    ? _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_iop_order, copy_full)
+    : _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops, copy_iop_order, copy_full);
 
   if(iop_list)
   {
@@ -981,7 +975,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_attach(tagid, dest_imgid, FALSE, FALSE);
   /* set change_timestamp */
-  dt_image_cache_set_change_timestamp(darktable.image_cache, dest_imgid);
+  dt_image_cache_set_change_timestamp(dest_imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))
@@ -990,7 +984,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 
-  dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
+  dt_mipmap_cache_remove(dest_imgid);
   dt_image_update_final_size(imgid);
 
   /* update the aspect ratio. recompute only if really needed for
@@ -1019,7 +1013,8 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
 
 char *dt_history_get_name_label(const char *name,
                                 const char *label,
-                                const gboolean markup)
+                                const gboolean markup,
+                                const gboolean hand_edited)
 {
   char *result = NULL;
 
@@ -1031,8 +1026,15 @@ char *dt_history_get_name_label(const char *name,
   }
   else
   {
-    result = markup ? g_markup_printf_escaped("%s • <small>%s</small>", name, label)
-                    : g_markup_printf_escaped("%s • %s", name, label);
+    char *l_label = hand_edited
+      ? g_strdup (label)
+      : dt_util_localize_segmented_name(label, FALSE);
+
+    result = markup
+      ? g_markup_printf_escaped("%s • <small>%s</small>", name, l_label)
+      : g_markup_printf_escaped("%s • %s", name, l_label);
+
+    g_free(l_label);
   }
 
   return result;
@@ -1047,11 +1049,12 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
   sqlite3_stmt *stmt;
 
   gchar *query = g_strdup_printf
-    ("SELECT num, operation, enabled, multi_name, blendop_params"
+    ("SELECT num, operation, enabled, multi_name, blendop_params,"
+     "       multi_name_hand_edited"
      " FROM main.history"
      " WHERE imgid=?1"
      "   AND enabled in (1, ?2)"
-     " GROUP BY num, operation, multi_priority"
+     " GROUP BY operation || multi_name, multi_priority"
      " ORDER BY %s DESC, %s DESC",
      multi_priority_order ? "multi_priority" : "num",
      multi_priority_order ? "num" : "multi_priority");
@@ -1074,13 +1077,15 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
     // first uint32_t of blend_params is the mode
     const uint32_t *blend_params = (uint32_t *)sqlite3_column_blob(stmt, 4);
     const int blend_params_len = sqlite3_column_bytes(stmt, 4);
+    const int hand_edited = sqlite3_column_int(stmt, 5);
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
     item->mask_mode = blend_params_len > 0 ? blend_params[0] : DEVELOP_MASK_DISABLED;
 
     const char *mname = (char *)sqlite3_column_text(stmt, 3);
 
-    item->name = dt_history_get_name_label(dt_iop_get_localized_name(op), mname, markup);
+    item->name = dt_history_get_name_label(dt_iop_get_localized_name(op),
+                                           mname, markup, hand_edited);
     item->op = g_strdup(op);
     result = g_list_prepend(result, item);
   }

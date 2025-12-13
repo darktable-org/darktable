@@ -85,11 +85,14 @@ uint32_t container(dt_lib_module_t *self)
 }
 
 /** merges all the selected images into a single group.  if there is
- * an expanded group, then they will be joined there, otherwise a new
+ * an expanded group and grouping is on, then they will be joined there, otherwise a new
  * one will be created. */
 static void _group_helper_function(void)
 {
-  dt_imgid_t new_group_id = darktable.gui->expanded_group_id;
+  dt_imgid_t new_group_id = darktable.gui->grouping
+  ? darktable.gui->expanded_group_id 
+  : NO_IMGID;
+
   GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -241,10 +244,10 @@ void gui_update(dt_lib_module_t *self)
     const dt_imgid_t imgid = dt_act_on_get_main_image();
     if(dt_is_valid_imgid(imgid))
     {
-      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      dt_image_t *img = dt_image_cache_get(imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
       const int img_group_id = img->group_id;
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
       sqlite3_stmt *stmt;
@@ -402,8 +405,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   }
 }
 
-static void copy_metadata_callback(GtkWidget *widget,
-                                   dt_lib_module_t *self)
+static void _copy_metadata_callback(GtkWidget *widget,
+                                    dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
 
@@ -412,74 +415,73 @@ static void copy_metadata_callback(GtkWidget *widget,
   dt_lib_gui_queue_update(self);
 }
 
-static void paste_metadata_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _paste_metadata_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
   const int mode = dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode");
   _execute_metadata(self, mode == 0 ? DT_MA_MERGE : DT_MA_REPLACE);
 }
 
-static void clear_metadata_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _clear_metadata_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
   _execute_metadata(self, DT_MA_CLEAR);
 }
 
-static void set_monochrome_callback(GtkWidget *widget,
-                                    dt_lib_module_t *self)
+static void _set_monochrome_callback(GtkWidget *widget,
+                                     dt_lib_module_t *self)
 {
-
   dt_control_monochrome_images(2);
 }
 
-static void set_color_callback(GtkWidget *widget,
-                               dt_lib_module_t *self)
+static void _set_color_callback(GtkWidget *widget,
+                                dt_lib_module_t *self)
 {
   dt_control_monochrome_images(0);
 }
 
-static void rating_flag_callback(GtkWidget *widget,
-                                 dt_lib_module_t *self)
+static void _rating_flag_callback(GtkWidget *widget,
+                                  dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->rating_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/rating", flag);
 }
 
-static void colors_flag_callback(GtkWidget *widget,
-                                 dt_lib_module_t *self)
+static void _colors_flag_callback(GtkWidget *widget,
+                                  dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->colors_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/colors", flag);
 }
 
-static void metadata_flag_callback(GtkWidget *widget,
-                                   dt_lib_module_t *self)
+static void _metadata_flag_callback(GtkWidget *widget,
+                                    dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->metadata_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/metadata", flag);
 }
 
-static void geotags_flag_callback(GtkWidget *widget,
-                                  dt_lib_module_t *self)
+static void _geotags_flag_callback(GtkWidget *widget,
+                                   dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->geotags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/geotags", flag);
 }
 
-static void tags_flag_callback(GtkWidget *widget,
-                               dt_lib_module_t *self)
+static void _tags_flag_callback(GtkWidget *widget,
+                                dt_lib_module_t *self)
 {
   dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->tags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/tags", flag);
 }
 
-static void pastemode_combobox_changed(GtkWidget *widget,
-                                       gpointer user_data)
+static void _pastemode_combobox_changed(GtkWidget *widget,
+                                        gpointer user_data)
 {
   const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_metadata/pastemode", mode);
@@ -613,7 +615,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(meta), N_("flags"),                  \
                    label, flag, &dt_action_def_toggle);           \
   g_signal_connect(G_OBJECT(flag), "clicked",                     \
-                   G_CALLBACK(item##_flag_callback), self); }
+                   G_CALLBACK(_##item##_flag_callback), self); }
 
   META_FLAG_BUTTON(N_("ratings"),  rating,   0, _("select ratings metadata"));
   META_FLAG_BUTTON(N_("colors"),   colors,   3, _("select colors metadata"));
@@ -623,19 +625,19 @@ void gui_init(dt_lib_module_t *self)
 
   d->copy_metadata_button = dt_action_button_new
     (meta, N_("copy"),
-     copy_metadata_callback, self,
+     _copy_metadata_callback, self,
      _("set the selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked",
-                   G_CALLBACK(copy_metadata_callback), self);
+                   G_CALLBACK(_copy_metadata_callback), self);
 
   d->paste_metadata_button = dt_action_button_new
-    (meta, N_("paste"), paste_metadata_callback, self,
+    (meta, N_("paste"), _paste_metadata_callback, self,
      _("paste selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->paste_metadata_button, 2, line, 2, 1);
 
   d->clear_metadata_button = dt_action_button_new
-    (meta, N_("clear"), clear_metadata_callback, self,
+    (meta, N_("clear"), _clear_metadata_callback, self,
      _("clear selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
 
@@ -644,7 +646,7 @@ void gui_init(dt_lib_module_t *self)
     (pastemode, meta, NULL, N_("mode"),
      _("how to handle existing metadata"),
      dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"),
-     pastemode_combobox_changed, self,
+     _pastemode_combobox_changed, self,
      N_("merge"), N_("overwrite"));
   gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
 
@@ -656,18 +658,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
   d->set_monochrome_button = dt_action_button_new
-    (meta, N_("monochrome"), set_monochrome_callback, self,
+    (meta, N_("monochrome"), _set_monochrome_callback, self,
      _("set selection as monochrome images and activate monochrome workflow"), 0, 0);
   gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
 
-  d->set_color_button = dt_action_button_new(meta, N_("color"), set_color_callback, self,
+  d->set_color_button = dt_action_button_new(meta, N_("color"), _set_color_callback, self,
                                              _("set selection as color images"), 0, 0);
   gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _image_preference_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _image_preference_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 
   dt_action_register(DT_ACTION(self), N_("duplicate virgin"),
                      _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -686,11 +688,6 @@ void gui_reset(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_preference_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
-
   free(self->data);
   self->data = NULL;
 }

@@ -200,6 +200,9 @@ static void _lighttable_check_layout(dt_view_t *self)
   {
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
+    dt_lighttable_culling_restriction_t restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
+    if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+      restriction = dt_view_lighttable_culling_initial_restriction(darktable.view_manager);
 
     if(!lib->already_started)
     {
@@ -215,11 +218,10 @@ static void _lighttable_check_layout(dt_view_t *self)
       g_free(query);
       sqlite3_finalize(stmt);
 
-      dt_culling_init(lib->culling, id);
+      dt_culling_init(lib->culling, id, restriction);
     }
     else
-      dt_culling_init(lib->culling, lib->thumbtable_offset);
-
+      dt_culling_init(lib->culling, lib->thumbtable_offset, restriction);
 
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
@@ -227,6 +229,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     gtk_widget_show(lib->culling->widget);
 
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling->navigate_inside_selection;
+    dt_view_lighttable_update_layout_buttons(darktable.view_manager);
   }
 
   lib->already_started = TRUE;
@@ -270,22 +273,18 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, dt_imgid_
   }
 }
 
-static void _culling_reinit(dt_view_t *self)
-{
-  dt_library_t *lib = self->data;
-  dt_culling_init(lib->culling, lib->culling->offset);
-}
-
 static void _culling_preview_reload_overlays(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
 
   // change overlays if needed for culling and preview
-  gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
+  gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d",
+                                DT_CULLING_MODE_CULLING);
   dt_thumbnail_overlay_t over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->culling, over);
   g_free(otxt);
-  otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
+  otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d",
+                         DT_CULLING_MODE_PREVIEW);
   over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->preview, over);
   g_free(otxt);
@@ -316,6 +315,52 @@ static gboolean _preview_get_state(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
   return lib->preview_state;
+}
+
+static dt_imgid_t _culling_get_selection(dt_view_t *self)
+{
+  dt_library_t *lib = self->data;
+
+  // we only return a value in culling layout
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  {
+    return lib->culling->selection;
+  }
+  return NO_IMGID;
+}
+
+static void _culling_restricted_set_state(dt_view_t *self,
+                                          const dt_lighttable_culling_restriction_t state)
+{
+  dt_library_t *lib = self->data;
+  if(lib->preview_state)
+  {
+    lib->preview->navigate_inside_selection = (state == DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION);
+  }
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    lib->culling->navigate_inside_selection = (state == DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION);
+  }
+}
+static dt_lighttable_culling_restriction_t _culling_restricted_get_state(dt_view_t *self)
+{
+  dt_library_t *lib = self->data;
+  gboolean inside = FALSE;
+  if(lib->preview_state)
+  {
+    inside = lib->preview->navigate_inside_selection;
+  }
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    inside = lib->culling->navigate_inside_selection;
+  }
+
+  if(inside)
+    return DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION;
+  else
+    return DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
+
 }
 
 #ifdef USE_LUA
@@ -437,20 +482,30 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 void enter(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
-  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
+  const dt_lighttable_layout_t layout =
+    dt_view_lighttable_get_layout(darktable.view_manager);
+
+  dt_start_backthumbs_crawler();
+  // enable culling proxy
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh =
+    _culling_preview_refresh;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays =
+    _culling_preview_reload_overlays;
 
   // we want to reacquire the thumbtable if needed
   if(!lib->preview_state)
   {
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui),
+                               dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_FILEMANAGER);
       gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui),
+                               dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_ZOOM);
       gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
     }
@@ -464,7 +519,9 @@ void enter(dt_view_t *self)
   dt_collection_hint_message(darktable.collection);
 
   // show/hide filmstrip & timeline when entering the view
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || lib->preview_state)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+     || lib->preview_state)
   {
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
@@ -486,7 +543,10 @@ void enter(dt_view_t *self)
   dt_ui_restore_panels(darktable.gui->ui);
 }
 
-static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
+static void _preview_enter(dt_view_t *self,
+                           const gboolean sticky,
+                           const gboolean focus,
+                           const dt_lighttable_culling_restriction_t restriction)
 {
   dt_library_t *lib = self->data;
 
@@ -499,22 +559,27 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
   lib->preview_sticky = sticky;
   lib->preview->focus = focus;
   lib->preview_state = TRUE;
-  dt_culling_init(lib->preview, lib->thumbtable_offset);
+  dt_culling_init(lib->preview, lib->thumbtable_offset, restriction);
+  dt_view_lighttable_update_layout_buttons(darktable.view_manager);
   gtk_widget_show(lib->preview->widget);
 
-  dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
+  dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection =
+    lib->preview->navigate_inside_selection;
 
   // show/hide filmstrip & timeline when entering the view
-  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui),
+                           dt_ui_center_base(darktable.gui->ui),
                            DT_THUMBTABLE_MODE_NONE);
   dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
   dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                      TRUE); // always on, visibility is driven by panel state
-  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->preview->offset_imgid, TRUE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
+                                 lib->preview->offset_imgid, TRUE);
 
   // set the active image
   g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(lib->preview->offset_imgid));
+  darktable.view_manager->active_images =
+    g_slist_prepend(NULL, GINT_TO_POINTER(lib->preview->offset_imgid));
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // restore panels
@@ -524,10 +589,14 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
 
-static void _preview_set_state(dt_view_t *self, gboolean state, gboolean sticky, gboolean focus)
+static void _preview_set_state(dt_view_t *self,
+                               const gboolean state,
+                               const gboolean sticky,
+                               const gboolean focus,
+                               const dt_lighttable_culling_restriction_t restriction)
 {
   if(state)
-    _preview_enter(self, sticky, focus);
+    _preview_enter(self, sticky, focus, restriction);
   else
     _preview_quit(self);
 }
@@ -538,11 +607,11 @@ void init(dt_view_t *self)
 
   darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.set_preview_state = _preview_set_state;
+  darktable.view_manager->proxy.lighttable.get_culling_restricted_state = _culling_restricted_get_state;
+  darktable.view_manager->proxy.lighttable.set_culling_restricted_state = _culling_restricted_set_state;
+  darktable.view_manager->proxy.lighttable.get_culling_selection = _culling_get_selection;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
-  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
-  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
-  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
@@ -567,7 +636,12 @@ void init(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_library_t *lib = self->data;
+
+  // disable culling proxy
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh = NULL;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = NULL;
 
   // ensure we have no active image remaining
   if(darktable.view_manager->active_images)
@@ -1144,12 +1218,17 @@ void gui_init(dt_view_t *self)
   lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
 
   // add culling and preview to the center widget
-  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget);
-  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget);
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                          lib->culling->widget);
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                          lib->preview->widget);
+  gtk_widget_set_no_show_all(lib->culling->widget, TRUE);
+  gtk_widget_set_no_show_all(lib->preview->widget, TRUE);
+  // place behind toast/log messages
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
-                              gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+                              lib->culling->widget, 1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
-                              gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+                              lib->preview->widget, 1);
 
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
@@ -1164,7 +1243,8 @@ void gui_init(dt_view_t *self)
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
-  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
+  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event",
+                           G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

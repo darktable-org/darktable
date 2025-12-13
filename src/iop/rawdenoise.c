@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -16,9 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/imagebuf.h"
@@ -301,7 +298,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
 static inline float vstransform(const float value)
 {
-  return sqrtf(MAX(0.0f, value));
+  return sqrtf(fmaxf(0.0f, value));
 }
 
 static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
@@ -730,7 +727,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("coarse"), -1);
+  pango_layout_set_text(layout, C_("graph", "coarse"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
@@ -798,7 +795,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
 {
   dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   const int ch = g->channel;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_rawdenoise_params_t *p = self->params;
@@ -811,7 +808,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_rawdenoise_params_t *)self->params;
     const int inset = DT_IOP_RAWDENOISE_INSET;
@@ -829,7 +826,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
 
 static gboolean rawdenoise_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -904,16 +901,13 @@ void gui_init(dt_iop_module_t *self)
   g->x_move = -1;
   g->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/rawdenoise/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  GtkWidget *box_raw = self->widget = dt_gui_vbox(g->channel_tabs, g->area);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(rawdenoise_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
@@ -941,8 +935,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", g->channel);
   dt_draw_curve_destroy(g->transition_curve);
-
-  IOP_GUI_FREE;
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

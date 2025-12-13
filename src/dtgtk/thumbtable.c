@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
 // update thumbtable class and overlays mode, depending on size category
 static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 {
-  int ns = _thumbs_get_prefs_size(table);
+  const int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
   gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
@@ -1046,8 +1046,14 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
 static gboolean _event_scroll_compressed(gpointer user_data)
 {
-  if (!user_data) return FALSE;
+  if(!user_data)
+    return FALSE;
+
   dt_thumbtable_t *table = user_data;
+
+  // Thumbtable is empty, nothing to scroll
+  if(table->thumb_size == 0)
+    return FALSE;
 
   if(table->scroll_value != 0)
   {
@@ -1063,7 +1069,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
     // for fractional scrolling, scroll by a number of pixels proportionate to
     // the delta (which is a float value for most touch pads and some mice)
-    if (dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
       // scale scroll increment for an appropriate scroll speed
       delta *= 50;
@@ -1224,9 +1230,9 @@ static void _line_to_module(cairo_t *cr,
 
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    const int32_t width,
-                                    const int32_t height,
-                                    dt_thumbtable_t *lighttable)
+                                     const int32_t width,
+                                     const int32_t height,
+                                     dt_thumbtable_t *lighttable)
 {
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -1245,6 +1251,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
   pango_layout_set_tabs(layout, tabs);
   pango_tab_array_free(tabs);
 
+  const gboolean hover = (dt_act_on_get_algorithm() == DT_ACT_ON_HOVER);
 #define RGHT "\t   ",
   gchar *here = _("here"), *text = g_strjoin(NULL,
     "<b>", _("there are no images in this collection"), "</b>",
@@ -1262,10 +1269,10 @@ static void _lighttable_expose_empty(cairo_t *cr,
     "\n" ,
          RGHT _("click on the keyboard icon to define shortcuts"),
     "\n" ,
-    "<b>", _("try the 'no-click' workflow"), "</b>",
+    "<b>", hover ? _("try the 'no-click' workflow") : "", "</b>",
          RGHT _("set module-specific preferences through module's menu"),
-    "\n" , _("hover over an image and use keyboard shortcuts"),
-    "\n" , _("to apply ratings, colors, styles, etc."),
+    "\n" , hover ? _("hover over an image and use keyboard shortcuts") : "",
+    "\n" , hover ? _("to apply ratings, colors, styles, etc.") : "",
          RGHT _("make default raw development look more like your"),
     "\n" , _("hover over any button for its description and shortcuts"),
          RGHT _("camera's JPEG by applying a camera-specific style"),
@@ -1404,8 +1411,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id)
-     && event->button == 1)
+  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY)
   {
     //  double-click
     if(event->type == GDK_2BUTTON_PRESS)
@@ -1439,13 +1445,12 @@ static gboolean _event_button_press(GtkWidget *widget,
       }
     }
 
-    if(event->button == 1
-       && event->type == GDK_BUTTON_PRESS
+    if(event->type == GDK_BUTTON_PRESS
        && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       return FALSE;
   }
 
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -1453,7 +1458,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM
      && !dt_is_valid_imgid(id)
-     && event->button == 1
+     && event->button == GDK_BUTTON_PRIMARY
      && event->type == GDK_BUTTON_PRESS)
   {
     const dt_view_type_flags_t cv = dt_view_get_current();
@@ -1480,6 +1485,18 @@ static gboolean _event_button_press(GtkWidget *widget,
     return TRUE;
   }
 
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
+    return TRUE;
+
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
+  {
+    table->dragging = TRUE;
+    table->drag_dx = table->drag_dy = 0;
+    table->drag_initial_imgid = id;
+    table->drag_thumb = _thumbtable_get_thumb(table, id);
+    if(table->drag_thumb)
+      table->drag_thumb->moved = FALSE;
+  }
   return TRUE;
 }
 
@@ -1523,14 +1540,15 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   if(cv != DT_VIEW_DARKROOM
      && cv != DT_VIEW_LIGHTTABLE
-     && cv != DT_VIEW_MAP)
+     && cv != DT_VIEW_MAP
+     && cv != DT_VIEW_PRINT)
     return FALSE;
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
-     && event->button == 1
+     && event->button == GDK_BUTTON_PRIMARY
      && event->type == GDK_BUTTON_RELEASE)
   {
     if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
@@ -1575,7 +1593,12 @@ static gboolean _event_button_release(GtkWidget *widget,
       }
       else
       {
-        dt_selection_select_single(darktable.selection, id);
+        if(table->mode != DT_THUMBTABLE_MODE_ZOOM
+           || !table->drag_thumb->moved)
+        {
+          dt_selection_select_single(darktable.selection, id);
+          DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+        }
       }
     }
   }
@@ -1583,11 +1606,11 @@ static gboolean _event_button_release(GtkWidget *widget,
   //  Left now if not in zoom mode
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return FALSE;
+    return TRUE;
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
-  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid
+  if(dt_control_get_mouse_over_id() != table->drag_initial_imgid
       && table->drag_thumb)
   {
     dt_control_set_mouse_over_id(table->drag_initial_imgid);
@@ -1691,7 +1714,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
     dt_util_str_cat(&txt, _("do you want to do that now?"));
 
-    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
+    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"), "",
                                  "%s", txt))
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1701,7 +1724,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
         const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
         for(int i = max_level - 1; i >= min_level; i--)
         {
-          dt_mipmap_cache_remove_at_size(darktable.mipmap_cache, imgid, i);
+          dt_mipmap_cache_remove_at_size(imgid, i);
         }
       }
       sqlite3_finalize(stmt);
@@ -1725,17 +1748,20 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 // called each time the preference change, to update specific parts
 static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
 {
+  // in all case, we reset the act_on cache as the algorithm may have changed
+  dt_act_on_reset_cache(TRUE);
+  dt_act_on_reset_cache(FALSE);
+
   if(!table)
     return;
+
+  dt_stop_backthumbs_crawler(FALSE);
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
 
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
-
-  /* let's idle the backthumb crawler now to avoid fighting
-      updating vs removal of thumbs
-  */
-  dt_set_backthumb_time(1000.0);
 
   _thumbs_ask_for_discard(table);
 
@@ -1747,15 +1773,7 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
   }
-
-  const char *mipsize = dt_conf_get_string_const("backthumbs_mipsize");
-  darktable.backthumbs.mipsize = dt_mipmap_cache_get_min_mip_from_pref(mipsize);
-  darktable.backthumbs.service = dt_conf_get_bool("backthumbs_initialize");
-  if(darktable.backthumbs.mipsize != DT_MIPMAP_NONE
-        && !darktable.backthumbs.running)
-    dt_start_backtumbs_crawler();
-  else
-    dt_set_backthumb_time(10.0);
+  dt_start_backthumbs_crawler();
 }
 
 static void _dt_profile_change_callback(gpointer instance,
@@ -2275,8 +2293,8 @@ static void _event_dnd_begin(GtkWidget *widget,
       const int id = GPOINTER_TO_INT(table->drag_list->data);
       dt_mipmap_buffer_t buf;
       dt_mipmap_size_t mip =
-        dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
+        dt_mipmap_cache_get_matching_size(ts, ts);
+      dt_mipmap_cache_get(&buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
 
       if(buf.buf)
       {
@@ -2302,7 +2320,7 @@ static void _event_dnd_begin(GtkWidget *widget,
           g_object_unref(scaled);
       }
 
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(&buf);
     }
   }
   // if we can reorder, let's update the thumbtable class accordingly
@@ -2408,6 +2426,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_class(table->widget, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses"))
     dt_gui_add_class(table->widget, "dt_show_overlays");
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
 
   // overlays mode
   table->overlays = DT_THUMBNAIL_OVERLAYS_NONE;
@@ -2709,7 +2729,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     sqlite3_finalize(stmt);
 
     if(darktable.unmuted & DT_DEBUG_CACHE)
-      dt_mipmap_cache_print(darktable.mipmap_cache);
+      dt_mipmap_cache_print();
   }
 }
 
@@ -2889,8 +2909,7 @@ static void _accel_duplicate(dt_action_t *action)
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
   // a duplicate should keep the change time stamp of the original
-  dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,
-                                                 newimgid, sourceid);
+  dt_image_cache_set_change_timestamp_from_image(newimgid, sourceid);
 
   dt_undo_end_group(darktable.undo);
 

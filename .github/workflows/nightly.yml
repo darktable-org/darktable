@@ -30,7 +30,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/AppDir/usr/bin/darktable-cli
       BRANCH: ${{ matrix.branch.code }}
       BUILD_NAME: ${{ matrix.branch.label }}
     steps:
@@ -90,25 +89,52 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev \
-            appstream;
+            appstream
+      - name: Add PPA for newer multimedia libs (x86_64 only)
+        if: runner.arch != 'ARM64'
+        run: |
           sudo add-apt-repository -y ppa:savoury1/graphics
           sudo add-apt-repository -y ppa:savoury1/ffmpeg4
           sudo add-apt-repository -y ppa:savoury1/display
           sudo apt-get update
+      - name: Install extra dependencies
+        run: |
           sudo apt-get -y install \
+            libaom-dev \
             libavif-dev \
             libgphoto2-dev \
-            libheif-dev \
+            libde265-dev \
             libimath-dev \
             libjpeg-turbo8-dev \
             libjxl-dev \
             libopenexr-dev \
+            libopenh264-dev \
             libopenjp2-7-dev \
+            libsharpyuv-dev \
+            libx265-dev \
             x11proto-dev \
-            libxfixes-dev;
+            libxfixes-dev
+      - name: Build and install fresh libheif with built-in decoders
+        run: |
+          git clone --branch v1.20.1 --depth 1 https://github.com/strukturag/libheif src-libheif
+          cd src-libheif
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_PLUGIN_LOADING=OFF \
+            -DWITH_LIBDE265=ON \
+            -DWITH_AOM_DECODER=ON \
+            -DWITH_AOM_ENCODER=ON \
+            -DWITH_OpenH264_DECODER=ON \
+            -DWITH_JPEG_DECODER=ON \
+            -DWITH_OpenJPEG_DECODER=ON \
+            -DWITH_LIBSHARPYUV=ON \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          ninja -C build
+          sudo ninja -C build install
+          cd ..
       - name: Build and install a more recent version of exiv2
         run: |
-          git clone --branch v0.28.3 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          git clone --branch v0.28.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
           cd src-exiv2
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -126,14 +152,13 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the AppImage filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
       - name: Build and Install
@@ -141,11 +166,10 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
-          name: artifact-appimage
+          name: artifact-appimage-${{ runner.arch }}
           retention-days: 1
 
   Windows:
@@ -225,10 +249,20 @@ jobs:
             webp-pixbuf-loader:p
             zlib:p
           update: false
-      - name: Install the latest not yet broken version of exiv2
+      - name: Build and install the latest compatible version of exiv2
         run: |
-          # It's a temporary fix, to be removed when the issue will be resolved
-          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
+          git clone --branch v0.27.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          cd src-exiv2
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DEXIV2_ENABLE_BMFF=ON \
+            -DEXIV2_ENABLE_NLS=ON \
+            -DEXIV2_ENABLE_VIDEO=OFF \
+            -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX}
+          cmake --build build
+          cmake --install build
+          cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
@@ -238,15 +272,13 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the installation package filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           lensfun-update-data
       - name: Build and Install
@@ -254,8 +286,17 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Package
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+      - name: Create Inno Setup installer
+        shell: pwsh
+        run: |
+          choco upgrade innosetup --no-progress
+          cd ${{ env.INSTALL_PREFIX }}
+          cp ${{ env.BUILD_DIR }}/darktable.iss ./
+          # Create multi-resolution .ico file expected by the .iss script for use as setup file icon.
+          magick ${{ env.SRC_DIR }}/data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
+          iscc "darktable.iss"
+          mv Output/*.exe ${{ env.BUILD_DIR }}/
+      - name: Create NSIS installer
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
@@ -265,11 +306,10 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
-          name: artifact-windows
+          path: ${{ env.BUILD_DIR }}/*.exe
+          name: artifact-windows-${{ runner.arch }}
           retention-days: 2
 
   macOS:
@@ -280,12 +320,11 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
-          - { os: macos-14, xcode: 16.1, deployment: 14.0 } # LLVM16, arm64
+          - { os: macos-14, xcode: 16.2, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
-        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=ON -DUSE_IMAGEMAGICK=OFF]
         target:
           - skiptest
         generator:
@@ -307,7 +346,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the disk image filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -316,15 +355,20 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          # brew upgrade || true        # No need for a very time-consuming upgrade of ALL packages
-          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
-          brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
+
+          # rebuild graphicsmagick for macOS bundling
+          export HOMEBREW_NO_INSTALL_FROM_API=1
+          gm_formula=`brew edit --print-path graphicsmagick`
+          cat $gm_formula | sed 's/--with-modules/--disable-installed/1' > gm_formula.tmp
+          mv gm_formula.tmp $gm_formula
+          brew reinstall --build-from-source --force graphicsmagick
+
           # handle keg-only libs
           brew link --force libomp
-          brew link --force libsoup@2
+          brew link --force libsoup
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
@@ -339,19 +383,16 @@ jobs:
       - name: Create DMG file
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
-      - name: Get architecture
-        run: |
-          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Get version info
         run: |
-          cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos-${{ env.ARCHITECTURE }}
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
+          name: artifact-macos-${{ runner.arch }}
           retention-days: 2
 
   upload_to_release:
@@ -362,7 +403,7 @@ jobs:
     needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -385,10 +426,10 @@ jobs:
 
             The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
 
-            The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+            The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
-            artifact-appimage/*
-            artifact-windows/*
+            artifact-appimage-*/*
+            artifact-windows-*/*
             artifact-macos-*/*

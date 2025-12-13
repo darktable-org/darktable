@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
@@ -275,7 +272,7 @@ int legacy_params(dt_iop_module_t *self,
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
 
-    if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
+    if(n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
     {
       // the legacy behaviour is, when a constant border is used and the
       // max_border_size flag is set, the width is always used as basis.
@@ -442,7 +439,7 @@ void modify_roi_out(dt_iop_module_t *self,
   const gboolean is_constant_border = d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
 
   dt_iop_basis_t basis = d->basis;
-  if (basis == DT_IOP_BORDERS_BASIS_AUTO)
+  if(basis == DT_IOP_BORDERS_BASIS_AUTO)
   {
     // automatic/legacy/default behaviour:
     // for a constant border be sure to base the computation on the
@@ -509,19 +506,19 @@ void modify_roi_out(dt_iop_module_t *self,
     float border_width = (float)*basis_in * (1.0f / (1.0f - size) - 1.0f);
 
     // then make sure we add that amount to the shorter side,
-    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
+    if(basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
-    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
+    else if(basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(width);
 
     // but add it to the longer side instead,
     // if the selected aspect ratio would cut off the image.
-    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < aspect)
+    if(basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < aspect)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
-    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > aspect)
+    else if(basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > aspect)
       DT_IOP_BORDERS_ASSIGN_BASIS(width);
 
-    if (basis == DT_IOP_BORDERS_BASIS_HEIGHT)
+    if(basis == DT_IOP_BORDERS_BASIS_HEIGHT)
       aspect = 1.0f / aspect;
 
     *basis_out = roundf((float)*basis_in + border_width);
@@ -716,12 +713,12 @@ void init_presets(dt_iop_module_so_t *self)
                                                          TRUE,
                                                          DT_IOP_BORDERS_BASIS_AUTO };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
   p.frame_color[0] = p.frame_color[1] = p.frame_color[2] = 1.0f;
   dt_gui_presets_add_generic(_("15:10 postcard black"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
@@ -958,7 +955,7 @@ void gui_init(dt_iop_module_t *self)
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->aspect);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio\n"
@@ -974,7 +971,7 @@ void gui_init(dt_iop_module_t *self)
                                0, _position_h_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->pos_h);
 
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
@@ -985,7 +982,7 @@ void gui_init(dt_iop_module_t *self)
                                0, _position_v_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->pos_v);
 
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
@@ -1012,40 +1009,32 @@ void gui_init(dt_iop_module_t *self)
                                   .blue = dp->frame_color[2],
                                   .alpha = 1.0 };
 
-  GtkWidget *label, *box;
-
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  label = dtgtk_reset_label_new(_("border color"), self, &p->color, 3 * sizeof(float));
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("border color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select border color"));
   g_signal_connect(G_OBJECT(g->colorpick), "color-set",
                    G_CALLBACK(_colorpick_color_set), self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
-  g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
+  g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker),
                               _("pick border color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("border color"),
                        g->border_picker, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(label), g->colorpick, g->border_picker));
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   label = dtgtk_reset_label_new(_("frame line color"), self, &p->frame_color, 3 * sizeof(float));
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
   g->frame_colorpick = gtk_color_button_new_with_rgba(&frame_color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->frame_colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->frame_colorpick),
                              _("select frame line color"));
   g_signal_connect(G_OBJECT(g->frame_colorpick), "color-set",
                    G_CALLBACK(_frame_colorpick_color_set), self);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->frame_colorpick), FALSE, TRUE, 0);
-  g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
+  g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker),
                               _("pick frame line color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("frame line color"),
                        g->frame_picker, &dt_action_def_toggle);
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(label), g->frame_colorpick, g->frame_picker));
 }
 
 // clang-format off

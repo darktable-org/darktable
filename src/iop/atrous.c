@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -387,7 +387,7 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_atrous_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmp2 = NULL;
@@ -447,7 +447,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_opencl_micro_nap(devid);
 
     // now immediately run the synthesis for the current scale, accumulating the details into dev_out
     dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0,
@@ -462,7 +462,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_opencl_micro_nap(devid);
 
     // swap scratch buffers
     if(scale == 0) dev_buf1 = dev_tmp2;
@@ -577,7 +577,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
   /* now synthesize again */
@@ -606,7 +606,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
@@ -792,8 +792,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("coarse"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -809,7 +809,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise & sharpen"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -824,8 +824,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("sharpen"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -841,7 +841,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f * k / (float)BANDS) - 0.30f);
   }
   dt_gui_presets_add_generic(_("denoise chroma"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -857,7 +857,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -874,7 +874,7 @@ void init_presets(dt_iop_module_so_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -890,7 +890,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   float sigma = 3.f / (float)(BANDS - 1);
@@ -910,8 +910,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 3"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -928,8 +928,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 3"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -945,8 +945,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 3"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -964,8 +964,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 2"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -982,8 +982,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 2"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -999,8 +999,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 2"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -1018,8 +1018,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 1"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -1036,8 +1036,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 1"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -1053,8 +1053,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 1"), self->op,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
@@ -1382,7 +1382,7 @@ static gboolean area_draw(GtkWidget *widget,
     pango_layout_set_font_description(layout, desc);
     gdk_cairo_set_source_rgba(cr, &graph_bg);
     cairo_set_font_size(cr, .06 * height);
-    pango_layout_set_text(layout, _("coarse"), -1);
+    pango_layout_set_text(layout, C_("graph", "coarse"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, .02 * width - ink.y, .14 * height + ink.width);
     cairo_save(cr);
@@ -1513,7 +1513,7 @@ static gboolean area_button_press(GtkWidget *widget,
                                   GdkEventButton *event,
                                   dt_iop_module_t *self)
 {
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = self->params;
@@ -1527,7 +1527,7 @@ static gboolean area_button_press(GtkWidget *widget,
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     // set active point
     dt_iop_atrous_gui_data_t *g = self->gui_data;
@@ -1551,7 +1551,7 @@ static gboolean area_button_release(GtkWidget *widget,
                                     GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -1628,7 +1628,7 @@ const dt_action_element_def_t _action_elements_equalizer[]
   = { { N_("radius"  ), dt_action_effect_value     },
       { N_("coarsest"), dt_action_effect_equalizer },
       { N_("coarser" ), dt_action_effect_equalizer },
-      { N_("coarse"  ), dt_action_effect_equalizer },
+      { NC_("graph", "coarse"), dt_action_effect_equalizer },
       { N_("fine"    ), dt_action_effect_equalizer },
       { N_("finer"   ), dt_action_effect_equalizer },
       { N_("finest"  ), dt_action_effect_equalizer },
@@ -1639,6 +1639,8 @@ static float _action_process_equalizer(gpointer target,
                                        const dt_action_effect_t effect,
                                        float move_size)
 {
+  if(element > BANDS) return DT_ACTION_NOT_VALID;
+
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t *p = self->params;
@@ -1764,6 +1766,20 @@ const dt_action_def_t _action_def_equalizer
       _action_elements_equalizer,
       _action_fallbacks_equalizer };
 
+static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
+{
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  if(g && !darktable.gui->reset && self->enabled && self->expanded)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+void gui_focus(dt_iop_module_t *self, const gboolean in)
+{
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  if(in && g)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
@@ -1782,8 +1798,6 @@ void gui_init(dt_iop_module_t *self)
   g->mouse_radius = 1.0 / BANDS;
   g->in_curve = FALSE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   static struct dt_action_def_t notebook_def = { };
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
@@ -1799,14 +1813,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_show(gtk_notebook_get_nth_page(g->channel_tabs, g->channel));
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   // graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
                              (NULL,
                               0,
                               "plugins/darkroom/atrous/graphheight"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"),
@@ -1825,10 +1837,13 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(area_scrolled), self);
 
+  self->widget = dt_gui_vbox(g->channel_tabs, g->area);
+
   // mix slider
   g->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
   gtk_widget_set_tooltip_text(g->mix, _("make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(g->mix), "value-changed", G_CALLBACK(mix_callback), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -1836,8 +1851,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", g->channel);
   dt_draw_curve_destroy(g->minmax_curve);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

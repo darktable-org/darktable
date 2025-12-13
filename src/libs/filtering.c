@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,14 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/datetime.h"
-#include "common/debug.h"
-#include "common/film.h"
-#include "common/history.h"
-#include "common/iop_order.h"
-#include "common/map_locations.h"
 #include "common/metadata.h"
-#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -34,7 +27,6 @@
 #include "dtgtk/range.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/preferences_dialogs.h"
 #include "libs/collect.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -43,7 +35,6 @@
 #include <gio/gunixmounts.h>
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
 #endif
 
 #include <locale.h>
@@ -237,6 +228,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
@@ -898,19 +890,6 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
@@ -970,19 +949,6 @@ static void _populate_rules_combo(GtkWidget *w)
 
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
@@ -1078,7 +1044,7 @@ static gboolean _topbar_label_press(GtkWidget *w,
                                     dt_lib_module_t *self)
 {
   //reset on double-click
-  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
     _topbar_reset(self);
   return FALSE;
 }
@@ -1280,7 +1246,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
     // operator type
     rule->w_operator = dt_bauhaus_combobox_new(NULL);
-    DT_BAUHAUS_WIDGET(rule->w_operator)->show_quad = FALSE;
+    dt_bauhaus_widget_set_quad_visibility(rule->w_operator, FALSE);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("or"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and not"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
@@ -1298,7 +1264,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   {
     rule->w_prop = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_combobox_set_selected_text_align(rule->w_prop, DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE);
-    DT_BAUHAUS_WIDGET(rule->w_prop)->show_quad = FALSE;
+    dt_bauhaus_widget_set_quad_visibility(rule->w_prop, FALSE);
     _rule_populate_prop_combo(rule);
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
     dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
@@ -1650,19 +1616,6 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   nb = dt_bauhaus_combobox_length(w);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
@@ -2228,7 +2181,6 @@ void gui_init(dt_lib_module_t *self)
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
 
-  darktable.control->accel_initialising = TRUE;
   const int nb = sizeof(filters) / sizeof(_filter_t);
   for(int i = 0; i < nb; i++)
   {
@@ -2240,7 +2192,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_destroy(temp_rule.w_special_box);
     g_free(temp_rule.w_specific);
   }
-  darktable.control->accel_initialising = FALSE;
 
   for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {
@@ -2296,8 +2247,8 @@ void gui_init(dt_lib_module_t *self)
   // otherwise, the filter toolbar module will do it in it's gui_init()
   if(darktable.view_manager->proxy.filter.module) _filtering_gui_update(self);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_updated, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGES_ORDER_CHANGE, _dt_images_order_change, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_updated);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGES_ORDER_CHANGE, _dt_images_order_change);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -2309,7 +2260,6 @@ void gui_cleanup(dt_lib_module_t *self)
     d->rule[i].cleaning = TRUE;
   }
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_updated, self);
   darktable.view_manager->proxy.module_filtering.module = NULL;
   free(d->params);
 

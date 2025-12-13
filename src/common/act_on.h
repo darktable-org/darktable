@@ -26,12 +26,24 @@ typedef struct dt_act_on_cache_t
   GList *images;
   int images_nb;
   gboolean ok;
-  int image_over;
+  dt_imgid_t image_over;
   gboolean inside_table;
   GSList *active_imgs;
   gboolean image_over_inside_sel;
   gboolean ordered;
 } dt_act_on_cache_t;
+
+typedef enum dt_act_on_algorithm_t
+{
+  DT_ACT_ON_HOVER,
+  DT_ACT_ON_SELECTION
+} dt_act_on_algorithm_t;
+
+// get the algorithm used to get the act_on images
+dt_act_on_algorithm_t dt_act_on_get_algorithm();
+
+// does the algorithm use culling specific selection
+gboolean dt_act_on_use_culling_selection();
 
 // get images to act on for globals change (via libs or accels)
 // The list needs to be freed by the caller
@@ -46,6 +58,9 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force);
 
 // reset the cache
 void dt_act_on_reset_cache(const gboolean only_visible);
+
+// set the right class for the widget
+void dt_act_on_set_class(GtkWidget *widget);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

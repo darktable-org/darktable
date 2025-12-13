@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019-2024 darktable developers.
+    copyright (c) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ kernel void hazeremoval_box_min_x(const int width, const int height, read_only i
     {
       m = INFINITY;
       for(int j = max(i - w + 1, 0), j_end = min(i + w + 2, width); j < j_end; ++j)
-        m = min(read_imagef(in, sampleri, (int2)(j, y)).x, m);
+        m = fmin(read_imagef(in, sampleri, (int2)(j, y)).x, m);
     }
-    if(i + w + 1 < width) m = min(read_imagef(in, sampleri, (int2)(i + w + 1, y)).x, m);
+    if(i + w + 1 < width) m = fmin(read_imagef(in, sampleri, (int2)(i + w + 1, y)).x, m);
   }
 }
 
@@ -48,7 +48,8 @@ kernel void hazeremoval_box_min_y(const int width, const int height, read_only i
   if(x >= width) return;
 
   float m = INFINITY;
-  for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i) m = min(read_imagef(in, sampleri, (int2)(x, i)).x, m);
+  for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i)
+    m = fmin(read_imagef(in, sampleri, (int2)(x, i)).x, m);
   for(int i = 0; i < height; i++)
   {
     write_imagef(out, (int2)(x, i), (float4)(m, 0.f, 0.f, 0.f));
@@ -56,9 +57,9 @@ kernel void hazeremoval_box_min_y(const int width, const int height, read_only i
     {
       m = INFINITY;
       for(int j = max(i - w + 1, 0), j_end = min(i + w + 2, height); j < j_end; ++j)
-        m = min(read_imagef(in, sampleri, (int2)(x, j)).x, m);
+        m = fmin(read_imagef(in, sampleri, (int2)(x, j)).x, m);
     }
-    if(i + w + 1 < height) m = min(read_imagef(in, sampleri, (int2)(x, i + w + 1)).x, m);
+    if(i + w + 1 < height) m = fmin(read_imagef(in, sampleri, (int2)(x, i + w + 1)).x, m);
   }
 }
 
@@ -70,7 +71,8 @@ kernel void hazeremoval_box_max_x(const int width, const int height, read_only i
   if(y >= height) return;
 
   float m = -(INFINITY);
-  for(int i = 0, i_end = min(w + 1, width); i < i_end; ++i) m = max(read_imagef(in, sampleri, (int2)(i, y)).x, m);
+  for(int i = 0, i_end = min(w + 1, width); i < i_end; ++i)
+    m = fmax(read_imagef(in, sampleri, (int2)(i, y)).x, m);
   for(int i = 0; i < width; i++)
   {
     write_imagef(out, (int2)(i, y), (float4)(m, 0.f, 0.f, 0.f));
@@ -78,9 +80,9 @@ kernel void hazeremoval_box_max_x(const int width, const int height, read_only i
     {
       m = -(INFINITY);
       for(int j = max(i - w + 1, 0), j_end = min(i + w + 2, width); j < j_end; ++j)
-        m = max(read_imagef(in, sampleri, (int2)(j, y)).x, m);
+        m = fmax(read_imagef(in, sampleri, (int2)(j, y)).x, m);
     }
-    if(i + w + 1 < width) m = max(read_imagef(in, sampleri, (int2)(i + w + 1, y)).x, m);
+    if(i + w + 1 < width) m = fmax(read_imagef(in, sampleri, (int2)(i + w + 1, y)).x, m);
   }
 }
 
@@ -92,7 +94,8 @@ kernel void hazeremoval_box_max_y(const int width, const int height, read_only i
   if(x >= width) return;
 
   float m = -(INFINITY);
-  for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i) m = max(read_imagef(in, sampleri, (int2)(x, i)).x, m);
+  for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i)
+    m = fmax(read_imagef(in, sampleri, (int2)(x, i)).x, m);
   for(int i = 0; i < height; i++)
   {
     write_imagef(out, (int2)(x, i), (float4)(m, 0.f, 0.f, 0.f));
@@ -100,9 +103,9 @@ kernel void hazeremoval_box_max_y(const int width, const int height, read_only i
     {
       m = -(INFINITY);
       for(int j = max(i - w + 1, 0), j_end = min(i + w + 2, height); j < j_end; ++j)
-        m = max(read_imagef(in, sampleri, (int2)(x, j)).x, m);
+        m = fmax(read_imagef(in, sampleri, (int2)(x, j)).x, m);
     }
-    if(i + w + 1 < height) m = max(read_imagef(in, sampleri, (int2)(x, i + w + 1)).x, m);
+    if(i + w + 1 < height) m = fmax(read_imagef(in, sampleri, (int2)(x, i + w + 1)).x, m);
   }
 }
 
@@ -117,8 +120,8 @@ kernel void hazeremoval_transision_map(const int width, const int height, read_o
 
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float m = pixel.x / A0_r;
-  m = min(pixel.y / A0_g, m);
-  m = min(pixel.z / A0_b, m);
+  m = fmin(pixel.y / A0_g, m);
+  m = fmin(pixel.z / A0_b, m);
   write_imagef(out, (int2)(x, y), (float4)(1.f - m * strength, 0.f, 0.f, 0.f));
 }
 
@@ -132,7 +135,7 @@ kernel void hazeremoval_dehaze(const int width, const int height, read_only imag
   if(x >= width || y >= height) return;
 
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float t = max(read_imagef(trans_map, sampleri, (int2)(x, y)).x, t_min);
+  const float t = fmax(read_imagef(trans_map, sampleri, (int2)(x, y)).x, t_min);
   write_imagef(
       out, (int2)(x, y),
       (float4)((pixel.x - A0_r) / t + A0_r, (pixel.y - A0_g) / t + A0_g, (pixel.z - A0_b) / t + A0_b, pixel.w));

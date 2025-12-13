@@ -18,10 +18,6 @@
 
 #include "common/extra_optimizations.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -717,7 +713,7 @@ void reload_defaults(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_cacorrectrgb_gui_data_t *g = IOP_GUI_ALLOC(cacorrectrgb);
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   g->guide_channel = dt_bauhaus_combobox_from_params(self, "guide_channel");
   gtk_widget_set_tooltip_text(g->guide_channel, _("channel used as a reference to\n"
                                            "correct the other channels.\n"
@@ -733,7 +729,7 @@ void gui_init(dt_iop_module_t *self)
                                              "high values can lead to overshooting\n"
                                              "and edge bleeding."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "advanced parameters")), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "advanced parameters")));
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("correction mode to use.\n"
                                          "can help with multiple\n"

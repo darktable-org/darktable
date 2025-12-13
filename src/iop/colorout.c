@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -277,9 +274,9 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-static void _signal_profile_changed(gpointer instance, gpointer user_data)
+static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_develop_t *dev = (dt_develop_t *)user_data;
+  dt_develop_t *dev = self->dev;
   if(!dev->gui_attached || dev->gui_leaving) return;
   dt_dev_reprocess_center(dev);
 }
@@ -541,7 +538,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    if (!_transform_cmatrix(d, out, (float*)ivoid, npixels))
+    if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
       process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
@@ -837,8 +834,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
                                _("rendering intent"),
                                0, intent_changed, self,
@@ -846,7 +841,6 @@ void gui_init(dt_iop_module_t *self)
                                N_("relative colorimetric"),
                                NC_("rendering intent", "saturation"),
                                N_("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
 
   if(!force_lcms2)
   {
@@ -856,7 +850,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->output_profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = l->data;
@@ -867,21 +860,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_markup(g->output_profile, tooltip);
   g_free(tooltip);
 
+  self->widget = dt_gui_vbox(g->output_intent, g->output_profile);
+
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
                    G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed, self->dev);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed);
   // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_changed, self->dev);
-  DT_CONTROL_SIGNAL_DISCONNECT(_preference_changed, self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
 }
 
 // clang-format off

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "common/overlay.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -81,7 +82,7 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
   dt_iop_overlay_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
-  dt_imgid_t imgid; // overlay image id
+  dt_imgid_t imgid; // overlay image id $DESCRIPTION: "image id"
   char filename[1024]; // full overlay's filename
   // keep parameter struct to avoid a version bump
   size_t dummy0;
@@ -149,7 +150,8 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("combine with elements from a processed image"),
+     _("combine the image with elements from another processed image\n"
+       "(move this module to after output color profile if you see banding)"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -225,7 +227,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     char *buf = g_malloc0(PATH_MAX);
     for(GList *m = result; m; m = g_list_next(m))
     {
-      char *mod = (char *)(m->data);
+      const char *mod = (char *)(m->data);
       g_strlcat(buf, mod, PATH_MAX);
       g_strlcat(buf, " ", PATH_MAX);
     }
@@ -238,7 +240,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
   return result;
 }
 
-static void _clear_cache_entry(dt_iop_module_t *self, const int index)
+static void _clear_cache_entry(const dt_iop_module_t *self, const int index)
 {
   dt_iop_overlay_global_data_t *gd = self->global_data;
   if(!gd) return;
@@ -249,26 +251,26 @@ static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 
 static void _module_remove_callback(gpointer instance,
                                     dt_iop_module_t *self,
-                                    gpointer user_data)
+                                    const gpointer user_data)
 {
   if(!self || self != user_data) return;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_params_t *p = self->params;
 
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 }
 
 static void _setup_overlay(dt_iop_module_t *self,
-                           dt_dev_pixelpipe_iop_t *piece,
+                           const dt_dev_pixelpipe_iop_t *piece,
                            uint8_t **pbuf,
                            size_t *pwidth,
                            size_t *pheight)
 {
   dt_iop_overlay_params_t *p = self->params;
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_data_t *data = piece->data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_data_t *data = piece->data;
 
-  const dt_imgid_t imgid = data->imgid;
+  dt_imgid_t imgid = data->imgid;
 
   if(!p || !dt_is_valid_imgid(imgid))
     return;
@@ -286,13 +288,14 @@ static void _setup_overlay(dt_iop_module_t *self,
     {
       image_exists = TRUE;
       p->imgid = new_imgid;
+      imgid = new_imgid;
       dt_dev_add_history_item(dev, self, TRUE);
       if(g)
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
     else if(g)
     {
-      gchar *tooltip = g_strdup_printf
+      const gchar *tooltip = g_strdup_printf
         (_("overlay image missing from database\n\n"
            "'%s'" ), p->filename);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), tooltip);
@@ -315,8 +318,7 @@ static void _setup_overlay(dt_iop_module_t *self,
 
     dt_dev_image(imgid, width, height,
                  -1,
-                 &buf, NULL, &bw, &bh,
-                 NULL, NULL,
+                 &buf, NULL, &bw, &bh, NULL,
                  -1, disabled_modules, piece->pipe->devid, TRUE);
 
     uint8_t *old_buf = *pbuf;
@@ -353,7 +355,7 @@ void process(dt_iop_module_t *self,
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  const float angle = (M_PI / 180) * (-data->rotate);
+  const float angle = deg2radf(-data->rotate);
   const int index   = self->multi_priority;
 
   if(!dt_is_valid_imgid(data->imgid))
@@ -516,19 +518,19 @@ void process(dt_iop_module_t *self,
     case DT_SCALE_MAINMENU_ADVANCED:
       wbase = iw;
       hbase = ih;
-      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         sbase = iw;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
-      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         sbase = ih;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
-      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         sbase = (iw > ih) ? iw : ih;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
@@ -584,17 +586,17 @@ void process(dt_iop_module_t *self,
       svg_calc_heightfromwidth = FALSE;
       break;
     case DT_SCALE_MAINMENU_ADVANCED:
-      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         svg_calc_base = iw * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
       }
-      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         svg_calc_base = ih * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
       }
-      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
@@ -734,10 +736,10 @@ void process(dt_iop_module_t *self,
 
 static void _draw_thumb(GtkWidget *area,
                         cairo_t *crf,
-                        dt_iop_module_t *self)
+                        const dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(area, &allocation);
@@ -807,9 +809,9 @@ static void _draw_thumb(GtkWidget *area,
   }
 }
 
-static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
   dt_iop_overlay_params_t *p = self->params;
@@ -841,7 +843,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
+  const dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
   dt_iop_overlay_data_t *d = piece->data;
 
   d->opacity    = p->opacity;
@@ -874,8 +876,8 @@ void cleanup_pipe(dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   for(int i = 0; i < 9; i++)
   {
@@ -909,7 +911,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
   dt_iop_overlay_params_t *p = self->params;
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
@@ -922,8 +924,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   if(w == g->scale_base)
   {
@@ -975,16 +977,24 @@ static void _signal_image_changed(gpointer instance, dt_iop_module_t *self)
     _clear_cache_entry(self, k);
 }
 
+static void _signal_module_moved(gpointer instance, dt_iop_module_t *self)
+{
+  if(!self) return;
+
+  _clear_cache_entry(self, self->multi_priority);
+  dt_dev_reprocess_all(self->dev);
+}
+
 static void _drag_and_drop_received(GtkWidget *widget,
                                     GdkDragContext *context,
                                     gint x,
                                     gint y,
-                                    GtkSelectionData *selection_data,
-                                    guint target_type,
-                                    guint time,
+                                    const GtkSelectionData *selection_data,
+                                    const guint target_type,
+                                    const guint time,
                                     dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
   dt_iop_overlay_params_t *p = self->params;
 
   gboolean success = FALSE;
@@ -994,7 +1004,7 @@ static void _drag_and_drop_received(GtkWidget *widget,
     if(imgs_nb)
     {
       const int index  = self->multi_priority;
-      dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
+      const dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
       const dt_imgid_t imgid_intended_overlay = imgs[0];
       const dt_imgid_t imgid_target_image = self->dev->image_storage.id;
@@ -1041,7 +1051,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
                                 gint x,
                                 gint y,
                                 guint time,
-                                dt_iop_module_t *self)
+                                const dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = self->gui_data;
 
@@ -1053,7 +1063,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
 static void _on_drag_leave(GtkWidget *widget,
                            GdkDragContext *dc,
                            guint time,
-                           dt_iop_module_t *self)
+                           const dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = self->gui_data;
 
@@ -1065,8 +1075,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = IOP_GUI_ALLOC(overlay);
   dt_iop_overlay_params_t *p = self->params;
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
@@ -1095,18 +1103,18 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(GTK_WIDGET(g->area),
                    "drag-leave", G_CALLBACK(_on_drag_leave), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(grid);
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(C_("section", "placement")), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "placement")));
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
   dt_bauhaus_slider_set_format(g->rotate, "°");
+  dt_bauhaus_slider_set_factor(g->rotate, -1.f);
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
@@ -1151,7 +1159,7 @@ void gui_init(dt_iop_module_t *self)
                      G_CALLBACK(_alignment_callback), self);
   }
 
-  gtk_box_pack_start(GTK_BOX(self->widget), bat, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, bat);
 
   // x/y offset
   g->x_offset = dt_bauhaus_slider_from_params(self, "xoffset");
@@ -1164,17 +1172,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale, _("the scale of the overlay"));
   gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the overlay"));
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _module_remove_callback, self);
-
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
-
-  DT_CONTROL_SIGNAL_DISCONNECT(_module_remove_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_signal_image_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _module_remove_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_MOVED, _signal_module_moved);
 }
 
 // clang-format off

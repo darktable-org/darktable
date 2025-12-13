@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@
 #include "develop/imageop.h"
 #include "develop/blend.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_develop_t;
 struct dt_iop_module_t;
@@ -55,6 +53,12 @@ typedef struct dt_history_hash_values_t
   int current_len;
 } dt_history_hash_values_t;
 
+typedef enum dt_history_copy_mode_t
+{
+  DT_HISTORY_COPY_APPEND    = 0,
+  DT_HISTORY_COPY_OVERWRITE = 1
+} dt_history_copy_mode_t;
+
 typedef struct dt_history_copy_item_t
 {
   GList *selops;
@@ -62,6 +66,7 @@ typedef struct dt_history_copy_item_t
   dt_imgid_t copied_imageid;
   gboolean full_copy;
   gboolean copy_iop_order;
+  dt_history_copy_mode_t paste_mode;
 } dt_history_copy_item_t;
 
 /** helper function to free a GList of dt_history_item_t */
@@ -140,7 +145,8 @@ typedef struct dt_history_item_t
 /** returns the history name + label with markup */
 char *dt_history_get_name_label(const char *name,
                                 const char *label,
-                                const gboolean markup);
+                                const gboolean markup,
+                                const gboolean hand_edited);
 
 /** get list of history items for image */
 GList *dt_history_get_items(const dt_imgid_t imgid,
@@ -188,9 +194,7 @@ void dt_history_hash_read(const dt_imgid_t imgid,
 /** release memory for hash values */
 void dt_history_hash_free(dt_history_hash_values_t *hash);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

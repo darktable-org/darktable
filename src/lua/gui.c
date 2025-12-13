@@ -314,10 +314,10 @@ static int _lua_create_job(lua_State *L)
     luaL_checktype(L, 3, LUA_TFUNCTION);
     cancellable = TRUE;
   }
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, has_progress_bar, message);
+  dt_progress_t *progress = dt_control_progress_create(has_progress_bar, message);
   if(cancellable)
   {
-    dt_control_progress_make_cancellable(darktable.control, progress, _lua_job_cancelled, progress);
+    dt_control_progress_make_cancellable(progress, _lua_job_cancelled, progress);
   }
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   if(cancellable)
@@ -351,7 +351,7 @@ static int _lua_job_progress(lua_State *L)
   {
     double value;
     luaA_to(L, progress_double, &value, 3);
-    dt_control_progress_set_progress(darktable.control, progress, value);
+    dt_control_progress_set_progress(progress, value);
     return 0;
   }
 }
@@ -377,7 +377,7 @@ static int _lua_job_valid(lua_State *L)
   {
     int validity = lua_toboolean(L, 3);
     if(validity) return luaL_argerror(L, 3, "a job can not be made valid");
-    dt_control_progress_destroy(darktable.control, progress);
+    dt_control_progress_destroy(progress);
     return 0;
   }
 }

@@ -123,14 +123,14 @@ read_ppm_header(
   char buf[2];
 
   r = fseek(f, 0, SEEK_SET);
-  if (r != 0) {
+  if(r != 0) {
     r = -1;
     goto exit;
   }
 
   // read and check header
   r = fread(buf, 1, 2, f);
-  if (r != 2 || buf[0] != 'P' || buf[1] != '6')
+  if(r != 2 || buf[0] != 'P' || buf[1] != '6')
   {
     r = -1;
     goto exit;
@@ -156,12 +156,12 @@ read_ppm16(const char *filename, int *wd, int *ht)
   uint16_t *p = NULL;
 
   f = fopen(filename, "rb");
-  if (!f)
+  if(!f)
   {
     goto exit;
   }
 
-  if (read_ppm_header(f, wd, ht)) {
+  if(read_ppm_header(f, wd, ht)) {
     goto exit;
   }
 
@@ -175,7 +175,7 @@ read_ppm16(const char *filename, int *wd, int *ht)
   }
 
 exit:
-  if (f) {
+  if(f) {
     fclose(f);
     f = NULL;
   }
@@ -194,7 +194,7 @@ read_ppm8(const char *filename, int *wd, int *ht)
     goto exit;
   }
 
-  if (read_ppm_header(f, wd, ht)) {
+  if(read_ppm_header(f, wd, ht)) {
     goto exit;
   }
 
@@ -208,7 +208,7 @@ read_ppm8(const char *filename, int *wd, int *ht)
   }
 
 exit:
-  if (f) {
+  if(f) {
     fclose(f);
     f = NULL;
   }
@@ -244,7 +244,7 @@ static inline void mutate(CurveData *c, CurveData *t, float* basecurve)
     float max = (c->m_anchors[k+1].x + c->m_anchors[k].x)/2.0f;
     const float x = min + drand48()*(max-min);
     uint32_t pos = 0;
-    if (x * CURVE_RESOLUTION > CURVE_RESOLUTION) {
+    if(x * CURVE_RESOLUTION > CURVE_RESOLUTION) {
         pos = x * CURVE_RESOLUTION;
     }
     if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
@@ -276,7 +276,7 @@ static inline float linearize_sRGB(float val)
 static inline float Lab(float val)
 {
   static const float threshold = CUBIC(6.f) / CUBIC(29.f);
-  if (val>threshold)
+  if(val>threshold)
   {
     val = powf(val, 1.f / 3.f);
   }
@@ -328,10 +328,10 @@ linearize_8bit(
 {
   // XXX support ICC profiles here ?
 #pragma omp parallel for
-  for (int y=0; y<height; y++) {
+  for(int y=0; y<height; y++) {
     float* d = _d + 3*width*y;
     uint8_t* s = _s + 3*width*y;
-    for (int x=0; x<width; x++) {
+    for(int x=0; x<width; x++) {
       d[0] = linearize_sRGB((float)s[0]/255.f);
       d[1] = linearize_sRGB((float)s[1]/255.f);
       d[2] = linearize_sRGB((float)s[2]/255.f);
@@ -348,10 +348,10 @@ linearize_16bit(
   float* _d)
 {
 #pragma omp parallel for
-  for (int y=0; y<height; y++) {
+  for(int y=0; y<height; y++) {
     float* d = _d + 3*width*y;
     uint16_t* s = _s + 3*width*y;
-    for (int x=0; x<width; x++) {
+    for(int x=0; x<width; x++) {
       d[0] = (float)s[0]/65535.f;
       d[1] = (float)s[1]/65535.f;
       d[2] = (float)s[2]/65535.f;
@@ -593,7 +593,7 @@ parse_arguments(
 
   int c;
   int ex = 0;
-  while ((c = getopt(argc, argv, "hn:b:c:t:u:s:ze:a")) >= 0)
+  while((c = getopt(argc, argv, "hn:b:c:t:u:s:ze:a")) >= 0)
   {
     switch (c)
     {
@@ -640,11 +640,11 @@ parse_arguments(
     }
   }
 
-  if (!ex)
+  if(!ex)
   {
-    if (!opts->finalize)
+    if(!opts->finalize)
     {
-      if (optind < argc - 1)
+      if(optind < argc - 1)
       {
         opts->filename_raw = argv[optind];
         opts->filename_jpeg = argv[optind+1];
@@ -667,7 +667,7 @@ read_curveset(
   uint32_t* hist)
 {
   size_t r = fread(curve, 1, sizeof(float) * 3 * CURVE_RESOLUTION, f);
-  if (r != sizeof(float) * 3 * CURVE_RESOLUTION)
+  if(r != sizeof(float) * 3 * CURVE_RESOLUTION)
   {
     /* could not read save state, either missing stats in that save file or
      * corrupt data. both cases need to clean state */
@@ -676,7 +676,7 @@ read_curveset(
   else
   {
     r = fread(hist, 1, sizeof(uint32_t) * 3 * CURVE_RESOLUTION, f);
-    if (r != sizeof(uint32_t) * 3 * CURVE_RESOLUTION)
+    if(r != sizeof(uint32_t) * 3 * CURVE_RESOLUTION)
     {
       /* could not read save state, either missing stats in that save file or
        * corrupt data. both cases need to clean state */
@@ -695,14 +695,14 @@ write_curveset(
   int ret = -1;
 
   int w = fwrite(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), f);
-  if (w != 3*CURVE_RESOLUTION*sizeof(float))
+  if(w != 3*CURVE_RESOLUTION*sizeof(float))
   {
     fprintf(stderr, "error: failed writing curves to save state file\n");
     goto exit;
   }
 
   w = fwrite(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), f);
-  if (w != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+  if(w != 3*CURVE_RESOLUTION*sizeof(uint32_t))
   {
     fprintf(stderr, "error: failed writing histograms to save state file\n");
     goto exit;
@@ -758,7 +758,7 @@ main(int argc, char** argv)
 
   set_default_options(&opt);
   int shallexit = parse_arguments(argc, argv, &opt);
-  if (shallexit)
+  if(shallexit)
   {
     goto exit;
   }
@@ -770,7 +770,7 @@ main(int argc, char** argv)
   }
 
   curve = calloc(1, sizeof(float) * 6 * CURVE_RESOLUTION);
-  if (!curve) {
+  if(!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
     goto exit;
@@ -779,7 +779,7 @@ main(int argc, char** argv)
   curve_tone = curve + 3*CURVE_RESOLUTION;
 
   hist = calloc(1, sizeof(uint32_t) * 6 * CURVE_RESOLUTION);
-  if (!hist) {
+  if(!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;
     goto exit;
@@ -789,7 +789,7 @@ main(int argc, char** argv)
 
   // read saved state if any
   f = fopen(opt.filename_state, "rb");
-  if (f)
+  if(f)
   {
     read_curveset(f, curve_base, hist_base);
     read_curveset(f, curve_tone, hist_tone);
@@ -797,7 +797,7 @@ main(int argc, char** argv)
     f = NULL;
   }
 
-  if (opt.finalize)
+  if(opt.finalize)
   {
     goto fit;
   }
@@ -828,16 +828,16 @@ main(int argc, char** argv)
   }
 
   // swap to host byte, PPM16 are BE
-  if (!is_bigendian())
+  if(!is_bigendian())
   {
-    for (int k=0; k<3*raw_width*raw_height; k++)
+    for(int k=0; k<3*raw_width*raw_height; k++)
     {
       raw_buff[k] = ((raw_buff[k]&0xff) << 8) | (raw_buff[k] >> 8);
     }
   }
 
   raw_buff_f = calloc(1, sizeof(float)*3*raw_width*raw_height);
-  if (!raw_buff_f) {
+  if(!raw_buff_f) {
     fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
   }
@@ -850,7 +850,7 @@ main(int argc, char** argv)
   raw_buff = NULL;
 
   jpeg_buff_f = calloc(1, sizeof(float)*3*jpeg_width*jpeg_height);
-  if (!jpeg_buff_f) {
+  if(!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
   }
@@ -870,18 +870,18 @@ main(int argc, char** argv)
   {
     uint32_t maxhist = 0;
 
-    for (int i=0 ; i<6; i++)
+    for(int i=0 ; i<6; i++)
     {
-      for (int j=0; j<CURVE_RESOLUTION; j++)
+      for(int j=0; j<CURVE_RESOLUTION; j++)
       {
-        if (maxhist < hist[i*CURVE_RESOLUTION + j])
+        if(maxhist < hist[i*CURVE_RESOLUTION + j])
         {
           maxhist = hist[i*CURVE_RESOLUTION + j];
         }
       }
     }
 
-    if ((UINT32_MAX - maxhist) < (uint32_t)(jpeg_width*jpeg_height))
+    if((UINT32_MAX - maxhist) < (uint32_t)(jpeg_width*jpeg_height))
     {
       fprintf(stderr, "error: analyzing this image could overflow internal counters. Refusing to process\n");
       goto exit;
@@ -893,13 +893,13 @@ main(int argc, char** argv)
    * ----------------------------------------------------------------------*/
 
   f = fopen(opt.filename_basecurve, "wb");
-  if (!f)
+  if(!f)
   {
     fprintf(stderr, "error: could not open '%s'\n", opt.filename_basecurve);
     goto exit;
   }
 
-  for (int ch=0; ch<3; ch++)
+  for(int ch=0; ch<3; ch++)
   {
     build_channel_basecurve(jpeg_width, jpeg_height, jpeg_buff_f, raw_offx, raw_offy, raw_width, raw_buff_f, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
   }
@@ -928,7 +928,7 @@ main(int argc, char** argv)
    * ----------------------------------------------------------------------*/
 
   f = fopen(opt.filename_tonecurve, "wb");
-  if (!f)
+  if(!f)
   {
     fprintf(stderr, "error: could not open '%s'\n", opt.filename_tonecurve);
     goto exit;
@@ -964,17 +964,17 @@ main(int argc, char** argv)
    * ----------------------------------------------------------------------*/
 
   f = fopen(opt.filename_state, "r+");
-  if (!f && errno == ENOENT)
+  if(!f && errno == ENOENT)
   {
     f = fopen(opt.filename_state, "w+");
   }
-  if (f)
+  if(f)
   {
-    if (write_curveset(f, curve_base, hist_base))
+    if(write_curveset(f, curve_base, hist_base))
     {
       goto exit;
     }
-    if (write_curveset(f, curve_tone, hist_tone))
+    if(write_curveset(f, curve_tone, hist_tone))
     {
       goto exit;
     }
@@ -985,7 +985,7 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  if (!opt.finalize)
+  if(!opt.finalize)
   {
     goto exit;
   }
@@ -995,7 +995,7 @@ fit:;
   char maker[32];
   char model[32];
 
-  if (opt.filename_exif)
+  if(opt.filename_exif)
   {
     exif_get_ascii_datafield(opt.filename_exif, "Exif.Image.Model", model, sizeof(model));
     exif_get_ascii_datafield(opt.filename_exif, "Exif.Image.Make", maker, sizeof(maker));
@@ -1010,7 +1010,7 @@ fit:;
    * ----------------------------------------------------------------------*/
 
   f = fopen(opt.filename_basecurve_fit, "w+b");
-  if (!f)
+  if(!f)
   {
     fprintf(stderr, "error: could not open '%s'\n", opt.filename_basecurve_fit);
     goto exit;
@@ -1081,7 +1081,7 @@ fit:;
    * ----------------------------------------------------------------------*/
 
   f = fopen(opt.filename_tonecurve_fit, "w+b");
-  if (!f)
+  if(!f)
   {
     fprintf(stderr, "error: could not open '%s'\n", opt.filename_tonecurve_fit);
     goto exit;
@@ -1091,7 +1091,7 @@ fit:;
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
 
-    for (int i=0; i<(opt.scale_ab ? 3 : 1); i++)
+    for(int i=0; i<(opt.scale_ab ? 3 : 1); i++)
     {
       fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve_tone+i*CURVE_RESOLUTION, hist_tone+i*CURVE_RESOLUTION);
 
@@ -1102,7 +1102,7 @@ fit:;
       }
       fprintf(f, "\n\n");
 
-      for (int k=0; k<fit.m_numAnchors; k++)
+      for(int k=0; k<fit.m_numAnchors; k++)
       {
         params.tonecurve[i][k].x = fit.m_anchors[k].x;
         params.tonecurve[i][k].y = fit.m_anchors[k].y;
@@ -1114,15 +1114,15 @@ fit:;
     fclose(f);
     f = NULL;
 
-    if (opt.scale_ab)
+    if(opt.scale_ab)
     {
       params.tonecurve_autoscale_ab = 0;
     }
     else
     {
-      for (int i=1; i<3; i++)
+      for(int i=1; i<3; i++)
       {
-        for (int k=0; k<opt.num_nodes; k++)
+        for(int k=0; k<opt.num_nodes; k++)
         {
           params.tonecurve[i][k].x = (float)k/(float)opt.num_nodes;
           params.tonecurve[i][k].y = (float)k/(float)opt.num_nodes;
@@ -1164,38 +1164,38 @@ fit:;
   }
 
 exit:
-  if (f)
+  if(f)
   {
     fclose(f);
     f = NULL;
   }
-  if (raw_buff) {
+  if(raw_buff) {
     free(raw_buff);
     raw_buff = NULL;
   }
-  if (jpeg_buff) {
+  if(jpeg_buff) {
     free(jpeg_buff);
     jpeg_buff = NULL;
   }
-  if (raw_buff_f) {
+  if(raw_buff_f) {
     free(raw_buff_f);
     raw_buff_f = NULL;
   }
-  if (jpeg_buff_f) {
+  if(jpeg_buff_f) {
     free(jpeg_buff_f);
     jpeg_buff_f = NULL;
   }
-  if (csample.m_Samples)
+  if(csample.m_Samples)
   {
     free(csample.m_Samples);
     csample.m_Samples = NULL;
   }
-  if (curve)
+  if(curve)
   {
     free(curve);
     curve = NULL;
   }
-  if (hist)
+  if(hist)
   {
     free(hist);
     hist = NULL;

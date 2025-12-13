@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2024 darktable developers.
+   Copyright (C) 2009-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,13 +16,11 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/dtpthread.h"
 #define __STDC_FORMAT_MACROS
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <errno.h>
+#include <exiv2/types.hpp>
 #include <glib.h>
 #include <sqlite3.h>
 #include <sys/stat.h>
@@ -40,7 +38,11 @@
 #include <sstream>
 #include <string>
 
+// avoid error reported when including exiv2.hpp on macOS (XCode 15.2)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <exiv2/exiv2.hpp>
+#pragma GCC diagnostic pop
 
 #include "control/control.h"
 
@@ -86,6 +88,9 @@ using namespace std;
 // For these models we can't calculate the correct crop factor or, for some we could, but we
 // prefer to take it from here, rather than complicate the calculation code with exceptions
 static const struct dt_model_cropfactor dt_cropfactors[] = {
+  {.model = "Canon EOS 5D Mark IV", // tags contain incorrect data, so formula gives us incorrect result
+   .cropfactor = 1.0f
+  },
   {.model = "FinePix SL1000", // exiv2 doesn't yet read the tags we need to calculate correctly
    .cropfactor = 5.6f
   },
@@ -338,7 +343,7 @@ void dt_exif_set_exiv2_taglist()
     _get_xmp_tags("expressionmedia", &exiv2_taglist);
     _get_xmp_tags("MicrosoftPhoto", &exiv2_taglist);
   }
-  catch (Exiv2::AnyError& e)
+  catch(const Exiv2::AnyError& e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s", errstring);
@@ -388,6 +393,12 @@ public:
   image->readMetadata();                                      \
 }
 
+#define write_metadata_threadsafe(image)                      \
+{                                                             \
+  Lock lock;                                                  \
+  image->writeMetadata();                                     \
+}
+
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
@@ -420,12 +431,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
         "Xmp.darktable.print_timestamp",      "Xmp.darktable.version_name",
         "Xmp.darktable.harmony_guide_type",   "Xmp.darktable.harmony_guide_rotation",
-        "Xmp.darktable.harmony_guide_width",
-        "Xmp.acdsee.notes",                   "Xmp.dc.creator",
-        "Xmp.dc.publisher",                   "Xmp.dc.title",
-        "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom",
-        "Xmp.xmpMM.PreservedFileName" };
+        "Xmp.darktable.harmony_guide_width" };
 
 // The number of XmpBag XmpSeq keys that dt uses
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
@@ -468,16 +474,10 @@ static void _exif_value_str(const int value,
   g_free(str_value);
 }
 
-
-// Function to remove known dt keys and subtrees from xmpdata, so not
-// to append them twice. This should work because dt first reads all
-// known keys.
-static void _remove_known_keys(Exiv2::XmpData &xmp)
+static void _deleteXmpTag(Exiv2::XmpData &xmp, const char *tag)
 {
-  xmp.sortByKey();
-  for(unsigned int i = 0; i < dt_xmp_keys_n; i++)
-  {
-    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
+  try {
+    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(tag));
 
     while(pos != xmp.end())
     {
@@ -487,12 +487,40 @@ static void _remove_known_keys(Exiv2::XmpData &xmp)
 
       // Stop iterating once the key no longer matches what we are
       // trying to delete. This assumes sorted input.
-      if(!(g_str_has_prefix(ckey, dt_xmp_keys[i])
-           && (ckey[len] == '[' || ckey[len] == '\0')))
+      if(!(g_str_has_prefix(ckey, tag)
+        && (ckey[len] == '[' || ckey[len] == '\0')))
         break;
       pos = xmp.erase(pos);
     }
   }
+  catch(const Exiv2::AnyError &e)
+  {
+    // The only exception we may get is "invalid" tag, which is not
+    // important enough to either stop the function, or even display
+    // a message (it's probably the tag that is not implemented in
+    // the Exiv2 version used).
+  }
+}
+
+// Function to remove known dt keys and subtrees from xmpdata, so not
+// to append them twice. This should work because dt first reads all
+// known keys.
+static void _remove_known_keys(Exiv2::XmpData &xmp)
+{
+  xmp.sortByKey();
+
+  // dt internal tags
+  for(unsigned int i = 0; i < dt_xmp_keys_n; i++)
+    _deleteXmpTag(xmp, dt_xmp_keys[i]);
+
+  // now the tags from the metadata editor
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+  {
+    const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+    _deleteXmpTag(xmp, metadata->tagname);
+  }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 }
 
 static void _remove_exif_keys(Exiv2::ExifData &exif,
@@ -507,7 +535,7 @@ static void _remove_exif_keys(Exiv2::ExifData &exif,
       while((pos = exif.findKey(Exiv2::ExifKey(keys[i]))) != exif.end())
         exif.erase(pos);
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       // The only exception we may get is "invalid" tag, which is not
       // important enough to either stop the function, or even display
@@ -529,7 +557,7 @@ static void _remove_xmp_keys(Exiv2::XmpData &xmp,
       while((pos = xmp.findKey(Exiv2::XmpKey(keys[i]))) != xmp.end())
         xmp.erase(pos);
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       // The only exception we may get is "invalid" tag, which is not
       // important enough to either stop the function, or even display
@@ -548,7 +576,7 @@ static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
     return (*pos = xmpData.findKey(Exiv2::XmpKey(key))) != xmpData.end()
       && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s", errstring);
@@ -581,11 +609,13 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     // passed to that function.
     if(version == -1 || version > 0)
     {
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       if(!exif_read) dt_metadata_clear(imgs, FALSE);
-      for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+
+      for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
-        const gchar *key = dt_metadata_get_key(i);
-        if(FIND_XMP_TAG(key))
+        dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+        if(FIND_XMP_TAG(metadata->tagname))
         {
           char *value = strdup(pos->toString().c_str());
           char *adr = value;
@@ -596,10 +626,11 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
             while(*value != ' ' && *value) value++;
             while(*value == ' ') value++;
           }
-          dt_metadata_set_import(img->id, key, value);
+          dt_metadata_set_import(img->id, metadata->tagname, value);
           free(adr);
         }
       }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     // If XMP file(s) are found, read the rating from here.
@@ -710,7 +741,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     imgs = NULL;
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     if(imgs) g_list_free(imgs);
     imgs = NULL;
@@ -732,7 +763,7 @@ static bool _exif_read_iptc_tag(Exiv2::IptcData &iptcData,
     return (*pos = iptcData.findKey(Exiv2::IptcKey(key)))
       != iptcData.end() && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s", errstring);
@@ -773,27 +804,27 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Copyright"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Byline"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Contact"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
@@ -816,7 +847,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
 
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
@@ -836,7 +867,7 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
     return (*pos = exifData.findKey(Exiv2::ExifKey(key)))
       != exifData.end() && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s", errstring);
@@ -1105,6 +1136,133 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
+static void _check_highlight_preservation(Exiv2::ExifData &exifData,
+                                          dt_image_t *img)
+{
+    // Compute exposure bias applied by HDR/highlight-preservation/Dynamic Range Expansion/HLG-tone modes
+    img->exif_highlight_preservation = 0.0f;
+
+    Exiv2::ExifData::const_iterator pos;
+    if(FIND_EXIF_TAG("Exif.Canon.LightingOpt"))  // Active Lighting Optimization
+    {
+       // tag consists of an array of long values
+       // [0] total number of bytes in tag, i.e 4*array_length
+       // [1] ??, probably a boolean
+       // [2] state - 0=standard, 1=low, 2=strong, 3=off
+       const long state = pos->toLong(2);
+       if(state == 0)
+	  img->exif_highlight_preservation = 0.50f;	// estimated strength for Standard
+       else if(state == 1)
+	  img->exif_highlight_preservation = 0.33f;	// estimated strength for Low
+       else if(state == 2)
+	  img->exif_highlight_preservation = 0.66f;	// estimated strength for Strong
+    }
+    else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
+       || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
+    {
+      int dr = pos->toLong();
+      if(dr == 200)
+	img->exif_highlight_preservation = 1.0f;
+      else if(dr == 400)
+	img->exif_highlight_preservation = 2.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Nikon3.ColorSpace"))
+    {
+      if(pos->toLong() == 4)  // HLG tone mode
+	img->exif_highlight_preservation = 2.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Nikon3.ActiveDLighting"))
+    {
+      switch(pos->toLong())
+      {
+      case 0: // off
+      case 1: // low - experiments showed no exposure change, so presumably implemented with just tone curve
+      default:
+	 break;
+      case 3: // normal
+	 img->exif_highlight_preservation = 0.33f;
+	 break;
+      case 5: // high
+	 img->exif_highlight_preservation = 0.66f;
+	 break;
+      case 7: // extra high
+	 img->exif_highlight_preservation = 1.00f;
+	 break;
+      case 8: // extra high1
+	 img->exif_highlight_preservation = 1.10f;// guess as to strength
+	 break;
+      case 9: // extra high2
+	 img->exif_highlight_preservation = 1.20f;// guess as to strength
+	 break;
+      case 10: // extra high3
+	 img->exif_highlight_preservation = 1.30f;// guess as to strength
+	 break;
+      case 11: // extra high4
+	 img->exif_highlight_preservation = 1.33f;// guess as to strength
+	 break;
+      case 65535: // auto
+	 // no idea how to compute actual strength; maybe in some other tag?  For now, do nothing
+	 break;
+      }
+    }
+    else if(FIND_EXIF_TAG("Exif.OlympusCs.Gradation")
+       ||FIND_EXIF_TAG("Exif.OlympusRd2.Gradation"))
+    {
+      // first three values specify one of the possible settings: Normal(Off), Auto, Low Key, High Key
+      // fourth specifies 0=user-selected or 1=auto-override
+      const long state1 = pos->toLong(0);
+      const long state2 = pos->toLong(1);
+      const long state3 = pos->toLong(2);
+      const long state4 = pos->toLong(3);
+      if(state4 == 1) // Auto mode is reported to apply a -0.3EV exposure compensation
+	 img->exif_highlight_preservation = 0.33f;
+      else if(state1 == -1 && state2 == -1 && state3 == 1) // low key, reported -1.0EV exposure compensation
+	 img->exif_highlight_preservation = 0.66f;	   // but 0.66 is a better match to JPEG
+//// we currently don't compensate for deliberate over-exposure ////
+//      else if(state1 == 1 && state2 == -1 && state3 == 1) // high key, reported +1.0EV exposure compensation
+//	 img->exif_highlight_preservation = -1.00f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Pentax.DynamicRangeExpansion"))
+    {
+      // if set to On, the camera underexposed by one stop
+#if EXIV2_TEST_VERSION(0, 28, 0)
+      Exiv2::DataBuf buf = pos->dataArea();
+      const int value0 = buf.c_data(0) ? *buf.c_data(0) : 0;    // 0=off, 1=on
+      //const int value1 = buf.c_data(1) ? *buf.c_data(1) : 0;    // 0=0, 1=enabled, 2=auto
+      //  alternative:
+      //const int value0 = buf.read_uint8(0);    // 0=off, 1=on
+      //const int value1 = buf.read_uint8(1);    // 0=0, 1=enabled, 2=auto
+#else
+      // the DataBuf accessor functions listed in the exiv2 v0.28 API docs are not present in v0.27, so we
+      // have to use an ugly workaround
+      std::string str = pos->toString();
+      const char *cstr = str.c_str();
+      const int value0 = cstr ? (*cstr == '1') : 0;   // 0=off, 1=on
+      //const int value1 = cstr ? cstr[2]-'0' : 0;    // 0=0, 1=enabled, 2=auto
+#endif
+      if(value0 == 1)
+	 img->exif_highlight_preservation = 1.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Sony1.DynamicRangeOptimizer"))  // only used by A100 among RPU samples
+    {
+      if(FIND_EXIF_TAG("Exif.Sony1Cs.DynamicRangeOptimizerLevel"))
+      {
+        // this tag, if present, gives the precise level of DRO applied, particularly when the main tag reports Auto
+        //TODO
+      }
+      //TODO
+    }
+    else if(FIND_EXIF_TAG("Exif.Sony2.DynamicRangeOptimizer"))
+    {
+      if(FIND_EXIF_TAG("Exif.Sony2Cs.DynamicRangeOptimizerLevel"))
+      {
+        // this tag, if present, gives the precise level of DRO applied, particularly when the main tag reports Auto
+        //TODO
+      }
+      //TODO
+    }
+}
+
 void dt_exif_img_check_additional_tags(dt_image_t *img,
                                        const char *filename)
 {
@@ -1120,10 +1278,11 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
+      _check_highlight_preservation(exifData, img);
     }
     return;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading additional exif tags] %s: %s", filename, errstring);
@@ -1138,9 +1297,12 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
   // Note: We allow a longer "datetime original" field with an unnecessary
   // trailing byte(s) due to buggy software that creates it.
   // See https://github.com/darktable-org/darktable/issues/17389
+  // We also accept the out of spec Exif.Photo.DateTimeOriginal
+  // without a null terminator, which AnalogExif creates.
+  // See https://github.com/darktable-org/darktable/issues/18146
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH - 1)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
@@ -1401,6 +1563,23 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 0.0f; // Will be shown as "no data" in the image information module
     }
 
+    if(img->exif_crop == 0.0f
+       && (FIND_EXIF_TAG("Exif.OlympusEq.FocalPlaneDiagonal")
+           || FIND_EXIF_TAG("Exif.Olympus.FocalPlaneDiagonal"))
+       )
+    {
+      const Exiv2::Rational r = pos->toRational();
+
+      // Check that this data is not invalid, so we can safely perform the division
+      if(r.first != 0 && r.second != 0)
+      {
+        const double olympus_diagonal = static_cast<double>(r.first) / r.second;
+        img->exif_crop = dt_fast_hypotf(36.0f, 24.0f) / olympus_diagonal;
+      }
+      else
+        img->exif_crop = 0.0f;
+    }
+
     // Override crop factors for models for which we can't calculate the correct value
     for (size_t i = 0; i < sizeof(dt_cropfactors)/sizeof(dt_cropfactors[0]); i++)
     {
@@ -1626,24 +1805,40 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // For every Olympus camera Exif.OlympusEq.LensType is present.
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
 
-      // We have to check if Exif.OlympusEq.LensType has been translated by
-      // Exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel.
-      std::string lens(img->exif_lens);
-      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+      // Special case of a lens without electronic data.
+      if(pos->toString() == "0 0 0 0 0 0")
       {
-        // Exif.OlympusEq.LensType contains only digits and spaces.
-        // This means that Exiv2 couldn't convert it to human readable form.
-        if(FIND_EXIF_TAG("Exif.OlympusEq.LensModel"))
+        // If the photographer has entered something into the in camera lens info settings
+        // and activated that, it shows up in Exif.Photo.LensModel.
+        // In newer bodies this is the only place.
+        if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
         {
           _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        // Just in case Exif.OlympusEq.LensModel hasn't been found.
-        else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
+      }
+      else
+      {
+        // We have to check if Exif.OlympusEq.LensType has been translated by
+        // Exiv2. This happens with new lenses not yet known by exiv2.
+        // If it hasn't, fall back to Exif.OlympusEq.LensModel.
+        std::string lens(img->exif_lens);
+        if(std::string::npos == lens.find_first_not_of(" 1234567890"))
         {
-          _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+          // Exif.OlympusEq.LensType contains only digits and spaces.
+          // It means that Exiv2 couldn't convert it to human readable form.
+          // This happens for lenses not yet known to exiv2
+          if(FIND_EXIF_TAG("Exif.OlympusEq.LensModel"))
+          {
+            _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+          }
+          // Just in case Exif.OlympusEq.LensModel hasn't been found.
+          else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
+          {
+            _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+          }
+          dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
+                  img->exif_lens, lens.c_str());
         }
-        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
-                 img->exif_lens, lens.c_str());
       }
     }
     else if(Exiv2::testVersion(0,27,4)
@@ -1726,6 +1921,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
       const int value = pos->toLong();
+      img->exif_flash_tagvalue = value;
       if(value != 0)
       {
         _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
@@ -1759,12 +1955,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
 
     // FIXME: Should the UserComment go into the description? Or do we
@@ -1775,18 +1971,18 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::CommentValue value(str);
       std::string str2 = value.comment();
       if(str2 != "binary comment")
-        dt_metadata_set_import(img->id, "Xmp.dc.description", str2.c_str());
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str2.c_str());
     }
     else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
     }
 
     if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
@@ -1809,6 +2005,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
       gboolean missing_sample = FALSE;
+      gboolean modified_dng = FALSE;
+
+      // All known camera vendors writing native dng files support this tag according to specs.
+      if(FIND_EXIF_TAG("Exif.Image.OriginalRawFileName"))
+      {
+        std::string str = pos->print(&exifData);
+        gchar *name = g_ascii_strup(str.c_str(), str.length());
+        modified_dng = !g_str_has_suffix(name, ".DNG");
+        g_free(name);
+      }
 
       // initialize matrixes and data with noop / defaults
       float CM[3][9];
@@ -1944,10 +2150,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request samples
         if(illu[k] == DT_LS_Other)
         {
-          dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
-          dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+          if(!modified_dng)
+          {
+            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`", img->filename);
+            missing_sample = TRUE;
+          }
           illu[k] = DT_LS_D65;
-          missing_sample = TRUE;
         }
 
         if(illu[k] != DT_LS_Unknown)
@@ -1991,10 +2199,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
 
       const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
-      if(interpolate)
+      if(interpolate && !modified_dng)
       {
-        dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
-        dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
+        dt_print(DT_DEBUG_IMAGEIO, "special exif illuminants in `%s`", img->filename);
         missing_sample = TRUE;
       }
 
@@ -2019,11 +2226,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         const dt_dng_illuminant_t illuminant = illu[sel_illu];
         const gboolean forward_suggested = has_FM[sel_illu];
-        if(forward_suggested)
-        {
-          dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
+        if(forward_suggested && !modified_dng)
           missing_sample = TRUE;
-        }
         dt_print(DT_DEBUG_IMAGEIO,
           "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
                  _illu_to_str(illuminant),
@@ -2151,7 +2355,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     img->exif_inited = TRUE;
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s", img->filename, errstring);
@@ -2161,49 +2365,52 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
 void dt_exif_apply_default_metadata(dt_image_t *img)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_apply_default_metadata] failed as no img was provided");
+    return;
+  }
   if(dt_conf_get_bool("ui_last/import_apply_metadata")
      && !(img->job_flags & DT_IMAGE_JOB_NO_METADATA))
   {
-    char *str;
+    gchar *str;
 
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
-      if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+
+      // don't import hidden stuff
+      if(metadata->visible)
       {
-        const char *name = dt_metadata_get_name(i);
-        char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-        const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-        g_free(setting);
-        // don't import hidden stuff
-        if(!hidden)
+        const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
+        gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
+        str = dt_conf_get_string(setting);
+        if(str && str[0])
         {
-          setting = g_strdup_printf("ui_last/import_last_%s", name);
-          str = dt_conf_get_string(setting);
-          if(str && str[0])
+          // calculated metadata
+          dt_variables_params_t *params;
+          dt_variables_params_init(&params);
+          params->filename = img->filename;
+          params->jobcode = "import";
+          params->sequence = 0;
+          params->imgid = img->id;
+          params->img = (void *)img;
+          // at this time only Exif info is available
+          gchar *result = dt_variables_expand(params, str, FALSE);
+          dt_variables_params_destroy(params);
+          if(result && result[0])
           {
-            // calculated metadata
-            dt_variables_params_t *params;
-            dt_variables_params_init(&params);
-            params->filename = img->filename;
-            params->jobcode = "import";
-            params->sequence = 0;
-            params->imgid = img->id;
-            params->img = (void *)img;
-            // at this time only Exif info is available
-            gchar *result = dt_variables_expand(params, str, FALSE);
-            dt_variables_params_destroy(params);
-            if(result && result[0])
-            {
-              g_free(str);
-              str = result;
-            }
-            dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
             g_free(str);
+            str = result;
           }
-          g_free(setting);
+          dt_metadata_set(img->id, metadata->tagname, str, FALSE);
+          g_free(str);
         }
+        g_free(setting);
       }
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_is_valid_imgid(img->id)
@@ -2224,6 +2431,11 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
                                 uint8_t *blob,
                                 const int size)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[exiv2 dt_exif_read_from_blob] failed as no img was provided");
+    return TRUE;
+  }
   try
   {
     Exiv2::ExifData exifData;
@@ -2232,7 +2444,7 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
     dt_exif_apply_default_metadata(img);
     return res ? FALSE : TRUE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s", img->filename, errstring);
@@ -2289,7 +2501,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
 
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_thumbnail] %s: %s",
@@ -2305,6 +2517,11 @@ gboolean dt_exif_get_thumbnail(const char *path,
 gboolean dt_exif_read(dt_image_t *img,
                       const char *path)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_read] failed as no img was provided");
+    return TRUE;
+  }
   // At least set 'datetime taken' to something useful in case there is
   // no Exif data in this file (pfm, png, ...)
   struct stat statbuf;
@@ -2367,7 +2584,7 @@ gboolean dt_exif_read(dt_image_t *img,
 
     return res ? FALSE : TRUE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_read] %s: %s",
@@ -2427,9 +2644,9 @@ int dt_exif_write_blob(uint8_t *blob,
     }
 
     imgExifData.sortByTag();
-    image->writeMetadata();
+    write_metadata_threadsafe(image);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_write_blob] %s: %s",
@@ -2714,14 +2931,14 @@ int dt_exif_read_blob(uint8_t **buf,
       static const guint n_keys = G_N_ELEMENTS(keys);
       _remove_exif_keys(exifData, keys, n_keys);
 
-      GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
+      GList *res = dt_metadata_get_lock(imgid, "Xmp.dc.creator", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char *)res->data;
         g_list_free_full(res, &g_free);
       }
 
-      res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.dc.description", NULL);
       if(res != NULL)
       {
         char *desc = (char *)res->data;
@@ -2738,7 +2955,7 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.ImageDescription"] = "";
 #endif
 
-      res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char *)res->data;
@@ -2751,7 +2968,7 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.Copyright"] = "";
 #endif
 
-      res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.xmp.Rating", NULL);
       if(res != NULL)
       {
         const int rating = GPOINTER_TO_INT(res->data) + 1;
@@ -2761,8 +2978,8 @@ int dt_exif_read_blob(uint8_t **buf,
 
       // GPS data
       _remove_exif_geotag(exifData);
-      const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(!std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
+      const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
+      if(cimg && !std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->geoloc.longitude < 0) ? "W" : "E";
@@ -2783,7 +3000,7 @@ int dt_exif_read_blob(uint8_t **buf,
         g_free(long_str);
         g_free(lat_str);
       }
-      if(!std::isnan(cimg->geoloc.elevation))
+      if(cimg && !std::isnan(cimg->geoloc.elevation))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->geoloc.elevation < 0) ? "1" : "0";
@@ -2809,7 +3026,7 @@ int dt_exif_read_blob(uint8_t **buf,
       if(g_strcmp0(&datetime[DT_DATETIME_EXIF_LENGTH], "000"))
         exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
-      dt_image_cache_read_release(darktable.image_cache, cimg);
+      dt_image_cache_read_release(cimg);
     }
 
     Exiv2::Blob blob;
@@ -2823,7 +3040,7 @@ int dt_exif_read_blob(uint8_t **buf,
     memcpy(*buf, &(blob[0]), length);
     return length;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // std::cerr.rdbuf(savecerr);
     dt_print(DT_DEBUG_IMAGEIO,
@@ -3783,8 +4000,13 @@ static gboolean _image_altered_deprecated(const dt_imgid_t imgid)
 // Need a write lock on *img (non-const) to write stars (and soon color labels).
 gboolean dt_exif_xmp_read(dt_image_t *img,
                           const char *filename,
-                          const int history_only)
+                          const gboolean history_only)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_xmp_read] failed as no img was provided for '%s'", filename);
+    return TRUE;
+  }
   // Exclude pfm to avoid stupid errors on the console
   const char *c = filename + strlen(filename) - 4;
   if(c >= filename && !strcmp(c, ".pfm")) return TRUE;
@@ -4398,7 +4620,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     }
 
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // Actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
@@ -4778,22 +5000,37 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
                               "SELECT key, value FROM main.meta_data WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    if(export_flag
-       && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
+    const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
+    if(metadata && g_str_has_prefix(metadata->tagname, "Xmp."))
     {
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const uint32_t flag =  dt_conf_get_int(setting);
-      g_free(setting);
-      if(!(flag & (DT_METADATA_FLAG_PRIVATE | DT_METADATA_FLAG_HIDDEN)))
-        xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+      try
+      {
+        if(export_flag
+          && !metadata->internal)
+        {
+          if(metadata->visible && !metadata->priv)
+            xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+          else
+          {
+            Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
+            if(pos != xmpData.end()) xmpData.erase(pos);
+          }
+        }
+        else
+          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+      }
+      catch(const Exiv2::AnyError &e)
+      {
+        // ignore invalid tags
+      }
     }
-    else
-      xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   sqlite3_finalize(stmt);
 
   // Color labels
@@ -4906,7 +5143,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
     xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   g_list_free_full(tags, g_free);
 
-  GList *hierarchical = dt_tag_get_hierarchical(imgid);
+  GList *hierarchical = dt_tag_get_hierarchical(imgid, FALSE);
   for(GList *hier = hierarchical; hier; hier = g_list_next(hier))
   {
     v2->read((char *)hier->data);
@@ -5100,6 +5337,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
 {
   try
   {
+    Lock lock;
     char input_filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
 
@@ -5160,7 +5398,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
     }
     return g_strdup(xmpPacket.c_str());
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[xmp_read_blob] caught exiv2 exception '%s'",
@@ -5178,7 +5416,7 @@ static void _remove_xmp_key(Exiv2::XmpData &xmp,
     if(pos != xmp.end())
       xmp.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5197,7 +5435,7 @@ static void _remove_xmp_keys(Exiv2::XmpData &xmpData,
         ++i;
     }
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5211,7 +5449,7 @@ static void _remove_exif_key(Exiv2::ExifData &exif,
     if(pos != exif.end())
       exif.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5225,7 +5463,7 @@ static void _remove_iptc_key(Exiv2::IptcData &iptc,
     while((pos = iptc.findKey(Exiv2::IptcKey(key))) != iptc.end())
       iptc.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5478,7 +5716,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         img->setXmpData(input_image->xmpData());
       }
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       dt_print(DT_DEBUG_IMAGEIO,
                "[xmp_attach] %s: caught exiv2 exception '%s'",
@@ -5494,6 +5732,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     g_strlcat(input_filename, ".xmp", sizeof(input_filename));
     if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
     {
+      Lock lock;
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
@@ -5544,6 +5783,38 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
       _exif_xmp_read_data_export(xmpData, imgid, m);
 
       Exiv2::IptcData &iptcData = img->iptcData();
+
+      // now add all exif and iptc metadata from the metadata editor.
+      // xmp metadata is already processed.
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT key, value FROM main.meta_data WHERE id = ?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        int keyid = sqlite3_column_int(stmt, 0);
+        const dt_metadata_t *md = dt_metadata_get_metadata_by_keyid(keyid);
+        if(md && md->visible && !md->priv && !md->internal)
+        {
+          const char *value = (char *)sqlite3_column_text(stmt, 1);
+          try
+          {
+            if(g_str_has_prefix(md->tagname, "Iptc."))
+              iptcData[md->tagname] = value;
+            else if(g_str_has_prefix(md->tagname, "Exif."))
+              exifData[md->tagname] = value;
+          }
+          catch(const Exiv2::AnyError &e)
+          {
+            // ignore invalid tags
+          }
+        }
+      }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+      sqlite3_finalize(stmt);
 
       if(!(m->flags & DT_META_GEOTAG))
         _remove_exif_geotag(exifData);
@@ -5678,9 +5949,9 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 
     try
     {
-      img->writeMetadata();
+      write_metadata_threadsafe(img);
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       if(e.code() == Exiv2::ErrorCode::kerTooLargeJpegSegment)
       {
@@ -5690,9 +5961,9 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         _remove_xmp_keys(xmpData, "Xmp.darktable.iop_order");
         try
         {
-          img->writeMetadata();
+          write_metadata_threadsafe(img);
         }
-        catch(Exiv2::AnyError &e2)
+        catch(const Exiv2::AnyError &e2)
         {
           dt_print(DT_DEBUG_IMAGEIO,
                    "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'",
@@ -5706,7 +5977,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     }
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'",
@@ -5730,6 +6001,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
 
   try
   {
+    Lock lock;
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
     char *checksum_old = NULL;
@@ -5818,7 +6090,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
 
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
@@ -5868,7 +6140,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
 
     return DT_COLORSPACE_DISPLAY; // nothing embedded
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_color_space] %s",
@@ -5891,7 +6163,7 @@ void dt_exif_get_basic_data(const uint8_t *data,
     _find_datetime_taken(exifData, pos, basic_exif->datetime);
     _find_exif_makermodel(exifData, pos, basic_exif);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_basic_data] %s",
@@ -5929,7 +6201,7 @@ void dt_exif_init()
   {
     Exiv2::XmpProperties::propertyList("lr");
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // If Lightroom is not known register it.
     Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
@@ -5938,7 +6210,7 @@ void dt_exif_init()
   {
     Exiv2::XmpProperties::propertyList("exifEX");
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // If exifEX is not known register it.
     Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");

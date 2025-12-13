@@ -1,0 +1,263 @@
+
+#define MyAppName "darktable"
+#define MyAppVersion "${PROJECT_VERSION}"
+#define MyAppVersionLength Len(MyAppVersion)
+
+#define CurrentYear GetDateTimeString('yyyy', '', '')
+#define MyAppCopyright "Copyright © 2009-" + CurrentYear + " darktable developers"
+
+#define MyAppPublisher "darktable team"
+#define MyAppURL "https://darktable.org/"
+#define MyAppExeName "darktable.exe"
+#define MyAppCliExeName "darktable-cli.exe"
+
+[Setup]
+; The value of AppId uniquely identifies the application. Some users install
+; both a darktable release and a development snapshot (as a daily driver and
+; for testing, respectively), so it makes sense to use the application name
+; along with the release/non-release discriminator as the AppId.
+AppId={#MyAppName}{code:SuffixIfNotRelease}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+
+; By default AppVername (and UninstallDisplayName) contains the word "version"
+; between the app name and the version number. We don't want it, the presence
+; of this word doesn't improve anything, it's just not needed.
+AppVerName={#MyAppName} {#MyAppVersion}
+
+AppCopyright={#MyAppCopyright}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}{code:SuffixIfNotRelease}
+
+UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+WizardSmallImageFile=${CMAKE_SOURCE_DIR}\data\pixmaps\256x256\darktable.png
+
+; This file is not in the source tree, it is expected to be created in
+; the installer build environment before compiling this script as:
+;   magick data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
+SetupIconFile=dt_logo_multiresolution.ico
+
+; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
+; on anything but x64 and Windows 11 on Arm.
+ArchitecturesAllowed=x64compatible
+
+; "ArchitecturesInstallIn64BitMode=x64compatible" requests that the
+; install be done in "64-bit mode" on x64 or Windows 11 on Arm,
+; meaning it should use the native 64-bit Program Files directory and
+; the 64-bit view of the registry.
+ArchitecturesInstallIn64BitMode=x64compatible
+
+ChangesAssociations=yes
+DefaultGroupName={#MyAppName}{code:SuffixIfNotRelease}
+AllowNoIcons=yes
+
+; For potential future contributors:
+; Please do not set the LicenseFile directive, as it effectively sets a step
+; to accept the EULA. The darktable license is GPL, and GPL is not an EULA.
+; Users are not required to agree to anything to merely use GPLed software.
+; LicenseFile=share\doc\darktable\LICENSE
+
+; Uncomment the following line to run in non administrative install mode
+; (install for current user only).
+; PrivilegesRequired=lowest
+
+PrivilegesRequiredOverridesAllowed=dialog
+
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+
+; When this directive is set, the compiler will create a manifest file
+; detailing information about the files compiled into Setup.
+; May be useful for debugging, not needed for production builds.
+; OutputManifestFile=darktable-manifest.txt
+
+; See https://github.com/teeks99/inno-test/ for which compression parameters
+; should be set and to what values, and which are better not to touch.
+Compression=lzma2/ultra64
+SolidCompression=yes
+LZMAUseSeparateProcess=yes
+
+; Setting this parameter to 2 (default is 1) only slightly (by a few fractions
+; of a percent) increases file size, but significantly speeds up compression.
+; OTOH, saving a minute of nightly job is not that important (if at all). But
+; neither is an extra couple of hundred KB of installer file. So, really,
+; there is no strong justification for choosing the value of this parameter...
+LZMANumBlockThreads=2
+
+WizardStyle=modern
+
+; We allow users who install the program to add darktable to their Quick Launch
+; list (on supported Windows versions), even when installing for all users.
+; This is intentional, don't warn.
+UsedUserAreasWarning=no
+
+; These parameters must be set to "no" if the AppId contains constants. We use
+; scripted constant to have different AppIds for release and nightly snapshot.
+; However, the behavior for "no" values seems logical, so these values are what
+; would make sense to set even if we weren't forced to.
+UsePreviousLanguage=no
+UsePreviousPrivileges=no
+
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+; We don't offer Quick Launch for Windows 11 (initial build number 10.0.22000) where it's not supported
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVersion: 10.0.22000
+
+[Files]
+Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignoreversion
+Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
+
+[Registry]
+; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
+  ValueType: string; Flags: uninsdeletevalue; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
+${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
+
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppExeName}"; \
+  Flags: uninsdeletekey
+
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppCliExeName}"; \
+  Flags: uninsdeletekey
+
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
+  ValueType: string; \
+  ValueName: "CAMLIBS"; \
+  ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
+  Flags: uninsdeletevalue
+
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
+  ValueType: string; \
+  ValueName: "IOLIBS"; \
+  ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
+  Flags: uninsdeletevalue
+
+[Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
+  Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
+
+[Run]
+Filename: "https://docs.darktable.org/usermanual/development/"; \
+  Description: "Open darktable user manual"; \
+  Flags: postinstall shellexec runasoriginaluser
+
+Filename: "{app}\bin\{#MyAppExeName}"; \
+  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
+  Flags: nowait postinstall skipifsilent
+
+[Code]
+function EnvironmentKey(Param: String): String;
+begin
+  if IsAdminInstallMode then
+    Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+  else
+    Result := 'Environment'
+end;
+
+function SuffixIfNotRelease(Param: String): String;
+begin
+  (*
+  The length of the release version string is 5, but let's add some safety
+  margin (the major and minor numbers may become double digits someday),
+  the git snapshot version is _much_ longer anyway.
+  *)
+  if {#MyAppVersionLength} > 7 then
+    Result := '-dev'
+  else
+    Result := ''
+end;
+
+
+#define NSIS_UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\darktable"
+
+function InitializeSetup(): Boolean;
+var
+  UninstallKey: String;
+  UninstallPath: String;
+  UninstallParams: String;
+  InstalledVersion: String;
+  ErrorCode: Integer;
+  IsNSIS: Boolean;
+begin
+  UninstallPath := '';
+  UninstallParams := '';
+  IsNSIS := False;
+
+  // If we installing a dev snapshot, just don't check for NSIS darktable
+  // installed, as we have a different default installation directory.
+  // There is also no need to check for NSIS darktable if we are installing
+  // for a currently logged-in user only, as this mode was not supported
+  // by our old NSIS installer.
+  if IsAdminInstallMode and ({#MyAppVersionLength} <= 7) then begin
+    UninstallKey := '{#NSIS_UNINSTKEY}';
+    IsNSIS := RegQueryStringValue(HKLM, UninstallKey, 'UninstallString', UninstallPath);
+  end;
+
+  // Check appropriate flavor determined by AppId (release or -dev version)
+  // We also automatically check for the appropriate type of installation
+  // (system-wide or user-local) according to the admin mode of our run.
+  if UninstallPath = '' then begin
+    UninstallKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\'
+                     + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
+    RegQueryStringValue(HKA, UninstallKey, 'UninstallString', UninstallPath);
+  end;
+
+  if (UninstallPath <> '')
+     and
+     // Installation files could have been manually deleted, but registry
+     // entries remained, so let's check that we have something to run.
+     (FileExists(RemoveQuotes(UninstallPath)))
+  then begin
+    UninstallPath := RemoveQuotes(UninstallPath);
+    RegQueryStringValue(HKA, UninstallKey, 'DisplayVersion', InstalledVersion);
+    if SuppressibleMsgBox('Installation of darktable ' + InstalledVersion +
+                          ' is detected. Do you want to uninstall it' +
+                          ' before installing the new version?',
+                          mbConfirmation, MB_YESNO, IDYES) = IDNO
+    then begin
+      Result := True;  // Continue with the installation
+      Exit;
+    end;
+
+    if IsNSIS then
+      // Tell the NSIS uninstaller not to copy itself to a temp file and restart
+      // from there, as this will break the wait for the uninstall to complete.
+      UninstallParams := '_?=' + ExtractFileDir(UninstallPath);
+
+    Exec(UninstallPath, UninstallParams, '', SW_SHOW, ewWaitUntilTerminated, ErrorCode);
+
+    if (ErrorCode = 0) and IsNSIS then begin
+      // The NSIS uninstaller is invoked in such a way that it cannot delete
+      // itself (as a result, the installation directory is also not deleted),
+      // we will complete the job.
+      DeleteFile(UninstallPath);
+      RemoveDir(ExtractFileDir(UninstallPath))
+    end;
+
+    if (ErrorCode <> 0) then begin
+      MsgBox('Failed to uninstall previous version. Reason:'#10#13
+             + SysErrorMessage(ErrorCode) + '. (code ' + IntToStr(ErrorCode) + ')'#10#13
+             + 'Setup will now exit.',
+             mbError, MB_OK);
+      Result := False;  // Abort the installation
+      Exit;
+    end;
+  end;
+  Result := True;
+end;

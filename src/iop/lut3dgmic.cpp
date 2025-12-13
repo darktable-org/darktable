@@ -34,9 +34,9 @@ extern "C"
   gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints, const char *const filename,
                           int *const nb_lut, void *widget, const char *const lutname, const gboolean newlutname);
 
-  void lut3d_add_lutname_to_list(void *g, const char *const lutname);
+  void _lut3d_add_lutname_to_list(void *g, const char *const lutname);
 
-  void lut3d_clear_lutname_list(void *g);
+  void _lut3d_clear_lutname_list(void *g);
 }
 
 void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
@@ -194,10 +194,10 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
   *nb_lut = (int)image_names._width;
   if(!newlutname)
   { // list of luts for this new file
-    lut3d_clear_lutname_list(g);
+    _lut3d_clear_lutname_list(g);
     for(unsigned int i = 0; i < image_names._width; ++i)
     {
-      lut3d_add_lutname_to_list(g, image_names[i]._data);
+      _lut3d_add_lutname_to_list(g, image_names[i]._data);
     }
   }
 

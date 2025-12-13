@@ -305,7 +305,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[23] = p.source_b[23] = 41.285167694091797;
   dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   memset(&p, 0, sizeof(p));
   p.num_patches = 49;
@@ -423,7 +423,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_L[34] = p.source_L[34] = 41;  // purple red
   p.target_a[34] = p.source_a[34] = 33;
   p.target_b[34] = p.source_b[34] = -66;
-  
+
   // IT8 skin tones in sixth row
   p.target_L[35] = p.source_L[35] = 17;
   p.target_a[35] = p.source_a[35] = 8;
@@ -446,7 +446,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_L[41] = p.source_L[41] = 76;
   p.target_a[41] = p.source_a[41] = 5;
   p.target_b[41] = p.source_b[41] = 33;
-  
+
   // 7-level gray ramp in last row
   p.target_L[42] = p.source_L[42] = 2.0;
   p.target_L[43] = p.source_L[43] = 18.0;
@@ -471,7 +471,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[48] = p.source_b[48] = 0.0;
   dt_gui_presets_add_generic(_("expanded color checker"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Helmholtz/Kohlrausch effect applied to black and white conversion.
   // implemented by wmader as an iop and matched as a clut for increased
@@ -487,7 +487,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(hk_params);
   dt_gui_presets_add_generic(_("Helmholtz/Kohlrausch monochrome"), self->op,
                              self->version(), hk_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(hk_params);
 
   /** The following are based on Jo's Fuji film emulations, without
@@ -504,7 +504,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(astia_params);
   dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op,
                              self->version(), astia_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(astia_params);
 
 
@@ -518,7 +518,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(chrome_params);
   dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op,
                              self->version(), chrome_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(chrome_params);
 
 
@@ -532,7 +532,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(mchrome_params);
   dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op,
                              self->version(), mchrome_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(mchrome_params);
 
 
@@ -546,7 +546,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(provia_params);
   dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op,
                              self->version(), provia_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(provia_params);
 
 
@@ -560,7 +560,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(velvia_params);
   dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op,
                              self->version(), velvia_params, params_len,
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(velvia_params);
 }
 
@@ -1439,7 +1439,7 @@ static gboolean checker_button_press(
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
   int patch = (int)mx + cells_x*(int)my;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click
     if(patch < 0 || patch >= p->num_patches) return FALSE;
     p->target_L[patch] = p->source_L[patch];
@@ -1452,7 +1452,7 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if(event->button == 3 && (patch < p->num_patches))
+  else if(event->button == GDK_BUTTON_SECONDARY && (patch < p->num_patches))
   {
     // right click: delete patch, move others up
     if(patch < 0 || patch >= p->num_patches) return FALSE;
@@ -1477,7 +1477,7 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if((event->button == 1) &&
+  else if((event->button == GDK_BUTTON_PRIMARY) &&
           dt_modifier_is(event->state, GDK_SHIFT_MASK) &&
           (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
   {
@@ -1531,12 +1531,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
   const dt_iop_colorchecker_params_t *const p = self->default_params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
-
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_POINTER_MOTION_MASK
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -1616,12 +1612,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_C, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_target, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->area, g->combobox_patch, g->scale_L, g->scale_a,
+                                      g->scale_b, g->scale_C, g->combobox_target);
 
   g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed",
                    G_CALLBACK(patch_callback), self);

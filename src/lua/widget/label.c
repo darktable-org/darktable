@@ -34,6 +34,7 @@ static int label_member(lua_State *L)
   if(lua_gettop(L) > 2) {
     const char * text = luaL_checkstring(L, 3);
     gtk_label_set_text(GTK_LABEL(label->widget), text);
+    gtk_label_set_ellipsize(GTK_LABEL(label->widget), PANGO_ELLIPSIZE_END);
     return 0;
   }
   lua_pushstring(L, gtk_label_get_text(GTK_LABEL(label->widget)));

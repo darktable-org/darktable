@@ -172,7 +172,7 @@ void dt_control_sidecar_synch_start()
   {
     return;
   }
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
+  dt_control_add_job(DT_JOB_QUEUE_SYSTEM_FG, job);
   background_running = TRUE;
 }
 

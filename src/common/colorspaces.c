@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "common/file_location.h"
 #include "common/math.h"
 #include "common/matrices.h"
-#include "common/srgb_tone_curve_values.h"
 #include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -2467,7 +2466,8 @@ void dt_colorspaces_rgb_to_cygm(float *out,
   }
 }
 
-void cmsCIEXYZ_to_xy(const cmsCIEXYZ *const cmsXYZ, float xy[2])
+void cmsCIEXYZ_to_xy(const cmsCIEXYZ *const cmsXYZ,
+                     float xy[2])
 {
   dt_aligned_pixel_t XYZ = { cmsXYZ->X, cmsXYZ->Y, cmsXYZ->Z, 0.f };
   dt_aligned_pixel_t xyY;
@@ -2476,7 +2476,8 @@ void cmsCIEXYZ_to_xy(const cmsCIEXYZ *const cmsXYZ, float xy[2])
   xy[1] = xyY[1];
 }
 
-gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE prof, float primaries[3][2],
+gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE prof,
+                                                                  float primaries[3][2],
                                                                   float whitepoint[2])
 {
   cmsCIEXYZ *red_color = cmsReadTag(prof, cmsSigRedColorantTag);
@@ -2494,6 +2495,22 @@ gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE pr
   return TRUE;
 }
 
+static inline float _sanitizeY(const float y)
+{
+  if (y < FLT_EPSILON && y >= 0)
+  {
+    return FLT_EPSILON;
+  }
+  else if (y < 0 && y > -FLT_EPSILON)
+  {
+    return -FLT_EPSILON;
+  }
+  else
+  {
+    return y;
+  }
+}
+
 void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
                                                                const float whitepoint[2],
                                                                dt_colormatrix_t RGB_to_XYZ_transposed)
@@ -2502,17 +2519,19 @@ void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float prima
   dt_colormatrix_t primaries_matrix = { { 0.f } };
   for(size_t i = 0; i < 3; i++)
   {
+    const float y = _sanitizeY(primaries[i][1]);
     // N.B. compared to linked equations, our matrix is transposed
-    primaries_matrix[i][0] = primaries[i][0] / primaries[i][1];
+    primaries_matrix[i][0] = primaries[i][0] / y;
     primaries_matrix[i][1] = 1.f;
-    primaries_matrix[i][2] = (1.f - primaries[i][0] - primaries[i][1]) / primaries[i][1];
+    primaries_matrix[i][2] = (1.f - primaries[i][0] - y) / y;
   }
 
   dt_colormatrix_t primaries_inverse = { { 0.f } };
   mat3SSEinv(primaries_inverse, primaries_matrix);
   dt_aligned_pixel_t scale;
+  const float y = _sanitizeY(whitepoint[1]);
   const dt_aligned_pixel_t XYZ_white
-      = { whitepoint[0] / whitepoint[1], 1.f, (1.f - whitepoint[0] - whitepoint[1]) / whitepoint[1] };
+      = { whitepoint[0] / y, 1.f, (1.f - whitepoint[0] - y) / y };
   dt_apply_transposed_color_matrix(XYZ_white, primaries_inverse, scale);
 
   for(size_t i = 0; i < 3; i++)

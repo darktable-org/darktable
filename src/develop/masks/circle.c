@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -253,7 +253,7 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
       }
     }
   }
-  else if(which == 3)
+  else if(which == GDK_BUTTON_SECONDARY)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -262,7 +262,7 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(which == 1
+  else if(which == GDK_BUTTON_PRIMARY
           && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
               || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
@@ -398,7 +398,7 @@ static int _circle_events_button_released(dt_iop_module_t *module,
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
-  if(which == 3
+  if(which == GDK_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -518,11 +518,10 @@ static int _circle_events_mouse_moved(dt_iop_module_t *module,
                                       dt_masks_form_gui_t *gui,
                                       const int index)
 {
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
   if(gui->form_dragging || gui->source_dragging)
   {
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -577,6 +576,8 @@ static int _circle_events_mouse_moved(dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * wd;
     const float y = pzy * ht;
@@ -621,15 +622,13 @@ static int _circle_events_mouse_moved(dt_iop_module_t *module,
       const float dist_b = sqf(x - gpt->border[2]) + sqf(y - gpt->border[3]);
       const float dist_p = sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]);
 
-      // prefer border point over shape itself in case of near overlap
-      // for ease of pickup
-      if(dist_b < as2)
-      {
-        gui->point_border_selected = 1;
-      }
-      else if(dist_p < as2)
+      if(!gui->select_only_border && dist_p < as2)
       {
         gui->point_selected = 1;
+      }
+      else if(dist_b < as2)
+      {
+        gui->point_border_selected = 1;
       }
     }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -109,11 +109,11 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     g_list_free(imgs);
-    dt_styles_apply_to_dev(action->label, imgid);
+    dt_styles_apply_to_dev(action->id, imgid);
   }
   else
   {
-    GList *styles = g_list_prepend(NULL, g_strdup(action->label));
+    GList *styles = g_list_prepend(NULL, g_strdup(action->id));
     dt_control_apply_styles(imgs, styles, FALSE);
   }
 }
@@ -651,8 +651,9 @@ void dt_styles_create_from_list(const GList *list)
   for(const GList *l = list; l; l = g_list_next(l))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
+    if(!dt_gui_styles_dialog_new(imgid))
+      break;
   }
 
   if(!selected) dt_control_log(_("no image selected!"));
@@ -703,11 +704,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
                sizeof(dt_develop_blend_params_t));
       }
       else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params
-                   (module, style_item->blendop_params,
-                    style_item->blendop_version,
-                    module->blend_params, dt_develop_blend_version(),
-                    style_item->blendop_params_size) == 0)
+              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
+                                                style_item->blendop_version,
+                                                module->blend_params, dt_develop_blend_version(),
+                                                style_item->blendop_params_size) == FALSE)
       {
         // do nothing
       }
@@ -866,9 +866,9 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    dt_print(DT_DEBUG_IOPORDER,
-             "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
-             dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER | DT_DEBUG_PIPE,
+             "[styles_apply_to_image_ext] Apply `%s' on ID=%i, history size %i",
+             name, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -958,12 +958,15 @@ void _styles_apply_to_image_ext(const char *name,
     /* add tag */
     guint tagid = 0;
     gchar ntag[512] = { 0 };
-    g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", name);
+    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+    g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", local_name);
+    g_free(local_name);
+
     if(dt_tag_new(ntag, &tagid)) dt_tag_attach(tagid, newimgid, FALSE, FALSE);
     if(dt_tag_new("darktable|changed", &tagid))
     {
       dt_tag_attach(tagid, newimgid, FALSE, FALSE);
-      dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+      dt_image_cache_set_change_timestamp(imgid);
     }
 
     /* if current image in develop reload history */
@@ -975,7 +978,7 @@ void _styles_apply_to_image_ext(const char *name,
     }
 
     /* remove old obsolete thumbnails */
-    dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
+    dt_mipmap_cache_remove(newimgid);
     dt_image_update_final_size(newimgid);
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */
@@ -1004,6 +1007,8 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
   if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
     return;
+  dt_print(DT_DEBUG_IOPORDER | DT_DEBUG_PIPE,
+      "[dt_styles_apply_to_dev] Apply `%s' on ID=%d", name, imgid);
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
@@ -1022,10 +1027,12 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
 
-  dt_control_log(_("applied style `%s' on current image"), name);
+  gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+  dt_control_log(_("applied style `%s' on current image"), local_name);
+  g_free(local_name);
 }
 
-void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut)
 {
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
@@ -1047,9 +1054,12 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
-    dt_action_rename(old, NULL);
+    if(shortcut)
+    {
+      dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
+                                          (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
+      dt_action_rename(old, NULL);
+    }
 
     if(raise)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
@@ -1058,7 +1068,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 
 void dt_styles_delete_by_name(const char *name)
 {
-  dt_styles_delete_by_name_adv(name, TRUE);
+  dt_styles_delete_by_name_adv(name, TRUE, FALSE);
 }
 
 GList *dt_styles_get_item_list(const char *name,
@@ -1098,9 +1108,9 @@ GList *dt_styles_get_item_list(const char *name,
           "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation"
-          "        NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
-          " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
+          "   AND (main.history.operation || multi_name"
+          "        NOT IN (SELECT operation || multi_name FROM data.style_items WHERE styleid=?1))"
+          " GROUP BY (operation || multi_name) HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
         // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
@@ -1139,6 +1149,7 @@ GList *dt_styles_get_item_list(const char *name,
 
       item->enabled = sqlite3_column_int(stmt, 4);
 
+      const char *operation = (const char *)sqlite3_column_text(stmt, 3);
       const char *multi_name = (const char *)sqlite3_column_text(stmt, 8);
       const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 9);
       const gboolean has_multi_name =
@@ -1165,7 +1176,6 @@ GList *dt_styles_get_item_list(const char *name,
         // when we get the parameters we do not want to get the
         // operation localized as this is used to compare against the
         // internal module name.
-
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s",
                      sqlite3_column_text(stmt, 3), multi_name);
@@ -1174,18 +1184,18 @@ GList *dt_styles_get_item_list(const char *name,
       }
       else
       {
-        const gchar *itname =
-          dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
-        if(has_multi_name && with_multi_name)
-          g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
-        else
-          g_snprintf(iname, sizeof(iname), "%s", itname);
+        g_strlcpy(iname,
+                  dt_history_get_name_label(dt_iop_get_localized_name(operation),
+                                            has_multi_name && with_multi_name ? multi_name : "",
+                                            FALSE,
+                                            multi_name_hand_edited),
+                  sizeof(iname));
 
         if(dt_is_valid_imgid(imgid) && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 5);
       }
       item->name = g_strdup(iname);
-      item->operation = g_strdup((char *)sqlite3_column_text(stmt, 3));
+      item->operation = g_strdup(operation);
       item->multi_name = g_strdup(multi_name);
       item->multi_name_hand_edited = multi_name_hand_edited;
       item->iop_order = 0;
@@ -1461,7 +1471,14 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context,
 
   if(g_ascii_strcasecmp(elt, "name") == 0)
   {
-    g_string_append_len(style->info->name, text, text_len);
+    if (text_len == 0)
+    {
+      g_string_append(style->info->name, _("imported-style"));
+    }
+    else
+    {
+      g_string_append_len(style->info->name, text, text_len);
+    }
   }
   else if(g_ascii_strcasecmp(elt, "description") == 0)
   {
@@ -1588,7 +1605,9 @@ static void dt_style_save(StyleData *style)
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
     g_list_foreach(style->plugins, (GFunc)dt_style_plugin_save, GINT_TO_POINTER(id));
-    dt_control_log(_("style %s was successfully imported"), style->info->name->str);
+    gchar *local_name = dt_util_localize_segmented_name(style->info->name->str, TRUE);
+    dt_control_log(_("style %s was successfully imported"), local_name);
+    g_free(local_name);
   }
 }
 
@@ -1771,6 +1790,16 @@ gchar *dt_get_style_name(const char *filename)
     dt_print(DT_DEBUG_CONTROL,
              "[styles] file %s is a malformed style file", filename);
   }
+  else
+  {
+    if(strlen(bname) == 0)
+    {
+      dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is a malformed style file (with an empty name)", filename);
+      g_free(bname);
+      bname = g_strdup(_("imported-style"));
+    }
+  }
   return bname;
 }
 
@@ -1792,6 +1821,9 @@ void dt_import_default_styles(const char *folder)
 {
   struct dirent **entries;
   const int numentries = scandir(folder, &entries, _check_extension, alphasort);
+  if(numentries < 0)
+    return;
+  dt_database_start_transaction(darktable.db);
   for(int i = 0; i < numentries; i++)
   {
     char *filename = g_build_filename(folder, entries[i]->d_name, NULL);
@@ -1807,8 +1839,8 @@ void dt_import_default_styles(const char *folder)
     g_free(filename);
     free(entries[i]);
   }
-  if(numentries != -1)
-    free(entries);
+  dt_database_release_transaction(darktable.db);
+  free(entries);
 }
 
 // clang-format off

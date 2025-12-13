@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1499,7 +1499,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
   const float masks_density = 1.0f;
 
   if(gui->creation
-     && which == 1
+     && which == GDK_BUTTON_PRIMARY
      && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
          || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
@@ -1509,7 +1509,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(which == 1)
+  else if(which == GDK_BUTTON_PRIMARY)
   {
     if(gui->creation)
     {
@@ -1678,7 +1678,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
     gui->point_edited = -1;
   }
-  else if(gui->creation && which == 3)
+  else if(gui->creation && which == GDK_BUTTON_SECONDARY)
   {
     dt_masks_dynbuf_free(gui->guipoints);
     dt_masks_dynbuf_free(gui->guipoints_payload);
@@ -1694,7 +1694,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(gui->point_selected >= 0 && which == 3)
+  else if(gui->point_selected >= 0 && which == GDK_BUTTON_SECONDARY)
   {
     // we remove the point (and the entire form if there is too few points)
     if(g_list_shorter_than(form->points, 3))
@@ -1747,7 +1747,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(gui->feather_selected >= 0 && which == 3)
+  else if(gui->feather_selected >= 0 && which == GDK_BUTTON_SECONDARY)
   {
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_selected);
@@ -1763,7 +1763,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == 3 && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if(which == GDK_BUTTON_SECONDARY && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1821,14 +1821,14 @@ static int _brush_events_button_released(dt_iop_module_t *module,
         BORDER_MAX);
 
   if(gui->creation
-     && which == 1
+     && which == GDK_BUTTON_PRIMARY
      && (dt_modifier_is(state, GDK_SHIFT_MASK)
          || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
     // user just set the source position, so just return
     return 1;
   }
-  else if(gui->creation && which == 1)
+  else if(gui->creation && which == GDK_BUTTON_PRIMARY)
   {
     if(gui->guipoints && gui->guipoints_count > 0)
     {
@@ -2152,8 +2152,6 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                                      dt_masks_form_gui_t *gui,
                                      const int index)
 {
-  const float as = dt_masks_sensitive_dist(zoom_scale);
-
   if(!gui) return 0;
 
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
@@ -2331,6 +2329,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
 
   pzx *= wd;
   pzy *= ht;
+
+  const float as = dt_masks_sensitive_dist(zoom_scale);
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {

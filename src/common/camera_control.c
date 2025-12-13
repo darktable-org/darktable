@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,9 +16,6 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/camera_control.h"
 #include "common/exif.h"
 #include "common/image.h"
@@ -654,7 +651,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   }
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] Stopping live view");
   cam->is_live_viewing = FALSE;
-  pthread_join(cam->live_view_thread, NULL);
+  dt_pthread_join(cam->live_view_thread);
   // tell camera to get back to normal state (close mirror)
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 0);
   dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 0);
@@ -923,7 +920,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
       if(removed)
       {
         dt_print(DT_DEBUG_CAMCTL,
-                 "[camera_control] remove %s on port %s from ununsed camera list",
+                 "[camera_control] remove %s on port %s from unused camera list",
                  cam->model, cam->port);
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
         camctl->unused_cameras = unused_item =
@@ -981,7 +978,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 
           dt_print(DT_DEBUG_CAMCTL,
                    "[camera_control] remove %s on port %s from"
-                   " ununsed camera list as mounted",
+                   " unused camera list as mounted",
                    cam->model, cam->port);
           dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
           camctl->unused_cameras = unused_item =
@@ -2065,20 +2062,20 @@ static void _camera_poll_events(const dt_camctl_t *c,
            "[camera_control] Camera configuration change event '%s', lets update internal "
            "configuration cache", (char*)data);
         // Update individual properties with gp_camera_get_single_config
-        if (strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
+        if(strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
         {
           // Use the property name if provided (GUI elements use this
           // name and won't update if the numeric code is used
           // instead)
-          if (strstr((char*)data, "changed,"))
+          if(strstr((char*)data, "changed,"))
           {
             char * nameStart = strchr(data + strlen("PTP Property "), '"');
-            if (nameStart != NULL)
+            if(nameStart != NULL)
             {
               // Skip quotation marks
               nameStart += 1;
               const char *nameEnd = strchr(nameStart, '"');
-              if (nameEnd != NULL)
+              if(nameEnd != NULL)
               {
                 char *name = g_try_malloc0(nameEnd - nameStart + 1);
                 if(name)
@@ -2259,7 +2256,7 @@ static void _camera_configuration_single_update(const dt_camctl_t *c,
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->config_lock);
   CameraWidget *remote;
-  if (gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
+  if(gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to get config value for property %s", name);

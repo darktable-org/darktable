@@ -2,7 +2,7 @@ add_executable(darktable-chart
                main.c
                colorchart.c
                deltaE.c
-               pfm.c
+               ../common/pfm.c
                dtcairo.c
                common.c
                thinplate.c

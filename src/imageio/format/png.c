@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <inttypes.h>
 #include <png.h>
@@ -201,53 +197,11 @@ int write_image(dt_imageio_module_data_t *p_tmp,
     dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
   cmsHPROFILE out_profile = cp->profile;
 
-#ifdef PNG_iCCP_SUPPORTED
-  // embed ICC profile regardless of cICP later (compliant readers
-  // shall check cICP first)
-  uint32_t len = 0;
-  cmsSaveProfileToMem(out_profile, NULL, &len);
-  if(len > 0)
-  {
-    png_bytep buf = malloc(sizeof(png_byte) * len);
-    if(buf)
-    {
-      cmsSaveProfileToMem(out_profile, buf, &len);
-      char name[512] = { 0 };
-      dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
-      png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0, buf, len);
-      free(buf);
-    }
-  }
-#endif
-
-  // write exif data
-  if(exif && exif_len > 0)
-  {
-#if defined(PNG_eXIf_SUPPORTED) && (EXIV2_MAJOR_VERSION >= 1 || EXIV2_MINOR_VERSION > 27)
-    png_set_eXIf_1(png_ptr, info_ptr, (uint32_t)exif_len, (png_bytep)exif);
-#else
-    /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
-    uint8_t *buf = malloc(exif_len + 6);
-    if(buf)
-    {
-      memcpy(buf, "Exif\0\0", 6);
-      memcpy(buf + 6, exif, exif_len);
-      PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
-      free(buf);
-    }
-#endif
-  }
-
-  png_write_info(png_ptr, info_ptr);
-
   /*
    * If possible, we want libpng to save the color encoding in a new
    * cICP chunk as well (see https://www.w3.org/TR/png-3/#cICP-chunk).
-   * If we are unable to find the required color encoding data we have
-   * anyway provided an iCCP chunk (and hope we could at least do that!).
-   *
-   * Must come after png_write_info() for the time being.
-   * TODO: use known cICP chunk write support API once added to libpng
+   * If we are unable to find the required color encoding data we will
+   * anyway provide an iCCP chunk (and hope we could at least do that!).
    */
   png_byte data[4] = {
     DT_CICP_COLOR_PRIMARIES_UNSPECIFIED, DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED,
@@ -297,12 +251,62 @@ int write_image(dt_imageio_module_data_t *p_tmp,
       break;
   }
 
+#ifdef PNG_cICP_SUPPORTED
+  if(data[0] != DT_CICP_COLOR_PRIMARIES_UNSPECIFIED
+     && data[1] != DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED)
+  {
+    png_set_cICP(png_ptr, info_ptr, data[0], data[1], data[2], data[3]);
+  }
+#endif
+
+#ifdef PNG_iCCP_SUPPORTED
+  // embed ICC profile regardless of cICP (compliant readers shall
+  // check cICP first)
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
+  {
+    png_bytep buf = malloc(sizeof(png_byte) * len);
+    if(buf)
+    {
+      cmsSaveProfileToMem(out_profile, buf, &len);
+      char name[512] = { 0 };
+      dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
+      png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0, buf, len);
+      free(buf);
+    }
+  }
+#endif
+
+  // write exif data
+  if(exif && exif_len > 0)
+  {
+#if defined(PNG_eXIf_SUPPORTED) && (EXIV2_MAJOR_VERSION >= 1 || EXIV2_MINOR_VERSION > 27)
+    png_set_eXIf_1(png_ptr, info_ptr, (uint32_t)exif_len, (png_bytep)exif);
+#else
+    /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
+    uint8_t *buf = malloc(exif_len + 6);
+    if(buf)
+    {
+      memcpy(buf, "Exif\0\0", 6);
+      memcpy(buf + 6, exif, exif_len);
+      PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
+      free(buf);
+    }
+#endif
+  }
+
+  png_write_info(png_ptr, info_ptr);
+
+  /* Backup CICP chunk write method must come after png_write_info(). */
+#ifndef PNG_cICP_SUPPORTED
   if(data[0] != DT_CICP_COLOR_PRIMARIES_UNSPECIFIED
      && data[1] != DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED)
   {
     const png_byte chunk_name[5] = "cICP";
     png_write_chunk(png_ptr, chunk_name, data, 4);
   }
+#endif
 
   /*
    * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
@@ -680,15 +684,12 @@ void gui_init(dt_imageio_module_format_t *self)
   if(dt_conf_key_exists("plugins/imageio/format/png/compression"))
     compression = dt_conf_get_int("plugins/imageio/format/png/compression");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // Bit depth combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bit_depth, self, NULL, N_("bit depth"), NULL,
                                0, bit_depth_changed, self,
                                N_("8 bit"), N_("16 bit"));
   if(bpp == 16)
     dt_bauhaus_combobox_set(gui->bit_depth, 1);
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
 
   // Compression level slider
   gui->compression = dt_bauhaus_slider_new_with_range
@@ -700,9 +701,10 @@ void gui_init(dt_imageio_module_format_t *self)
      0);
   dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
   dt_bauhaus_slider_set(gui->compression, compression);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compression), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compression), "value-changed",
                    G_CALLBACK(compression_level_changed), NULL);
+
+  self->widget = dt_gui_vbox(gui->bit_depth, gui->compression);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

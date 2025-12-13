@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/math.h"
@@ -73,7 +70,7 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
-    | IOP_FLAGS_UNSAFE_COPY;
+    | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN;
 }
 
 int default_group()
@@ -96,7 +93,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("internal module to setup technical specificities of raw sensor.\n\n"
+                                _("internal module to setup technical specificities of raw sensor\n\n"
                                   "you should not touch values here!"),
                                 NULL, NULL, NULL, NULL);
 }
@@ -108,9 +105,9 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece,
                       const float *const x,
                       float *o)
 {
-  dt_iop_rotatepixels_data_t *d = piece->data;
+  const dt_iop_rotatepixels_data_t *d = piece->data;
 
-  float pi[2] = { x[0] - d->rx * scale, x[1] - d->ry * scale };
+  const float pi[2] = { x[0] - d->rx * scale, x[1] - d->ry * scale };
 
   mul_mat_vec_2(d->m, pi, o);
 }
@@ -122,9 +119,9 @@ static void backtransform(const dt_dev_pixelpipe_iop_t *const piece,
                           const float *const x,
                           float *o)
 {
-  dt_iop_rotatepixels_data_t *d = piece->data;
+  const dt_iop_rotatepixels_data_t *d = piece->data;
 
-  float rt[] = { d->m[0], -d->m[1], -d->m[2], d->m[3] };
+  const float rt[] = { d->m[0], -d->m[1], -d->m[2], d->m[3] };
   mul_mat_vec_2(rt, x, o);
 
   o[0] += d->rx * scale;
@@ -194,7 +191,7 @@ void distort_mask(dt_iop_module_t *self,
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_rotatepixels_data_t *d = piece->data;
+  const dt_iop_rotatepixels_data_t *d = piece->data;
 
   *roi_out = *roi_in;
 
@@ -223,7 +220,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   const float y = sqrtf(2.0f * T * T),
               x = sqrtf(2.0f * ((float)roi_in->width - T) * ((float)roi_in->width - T));
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   const float IW = (float)interpolation->width * scale;
 
   roi_out->width = y - IW;
@@ -240,7 +237,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   const float scale = roi_in->scale / piece->iscale;
 
-  dt_boundingbox_t aabb = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
+  const dt_boundingbox_t aabb = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
 
   dt_boundingbox_t aabb_in = { FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -257,7 +254,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
     adjust_aabb(o, aabb_in);
   }
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   const float IW = (float)interpolation->width * scale;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
@@ -287,7 +284,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   assert(ch == 4);
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   DT_OMP_FOR()
   // (slow) point-by-point transformation.
@@ -316,15 +313,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)p1;
+  const dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)p1;
   dt_iop_rotatepixels_data_t *d = piece->data;
 
   d->rx = p->rx;
   d->ry = p->ry;
 
-  const float angle = p->angle * M_PI / 180.0f;
+  const float angle = deg2radf(p->angle);
 
-  float rt[] = { cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
+  const float rt[] = { cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
   for(int k = 0; k < 4; k++) d->m[k] = rt[k];
 
   // this should not be used for normal images
@@ -352,26 +349,6 @@ void reload_defaults(dt_iop_module_t *self)
   *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
   self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
-
-  // FIXME: does not work.
-  self->hide_enable_button = !self->default_enabled;
-
-  if(self->widget)
-    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
-                       ? _("automatic pixel rotation")
-                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
-}
-
-void gui_update(dt_iop_module_t *self)
-{
-}
-void gui_init(dt_iop_module_t *self)
-{
-  IOP_GUI_ALLOC(rotatepixels);
-
-  self->widget = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-
 }
 
 // clang-format off
@@ -379,4 +356,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

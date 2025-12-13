@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_sqrt(A) native_sqrt(A)
   #define dtcl_pow(A,B) native_powr(A,B)
   #define dtcl_exp(A) native_exp(A)
+  #define dtcl_log(A) native_log(A)
   // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
   // on compatible platforms
   #pragma OPENCL FP_CONTRACT ON
@@ -58,6 +59,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_sqrt(A) sqrt(A)
   #define dtcl_pow(A,B) pow(A,B)
   #define dtcl_exp(A) exp(A)
+  #define dtcl_log(A) log(A)
   #pragma OPENCL FP_CONTRACT OFF
 #endif
 
@@ -71,7 +73,18 @@ FC(const int row, const int col, const unsigned int filters)
 static inline int
 FCxtrans(const int row, const int col, global const unsigned char (*const xtrans)[6])
 {
-  return xtrans[row % 6][col % 6];
+  // There used to be a few cases in xtrans demosaicers in which row or col was negative.
+  // The +600 ensures a non-negative array index as in CPU code
+  return xtrans[(row + 600) % 6][(col + 600) % 6];
+}
+
+int
+fcol(const int row, const int col, const unsigned int filters, global const unsigned char (*const xtrans)[6])
+{
+  if(filters == 9)
+    return FCxtrans(row, col, xtrans);
+  else
+    return FC(row, col, filters);
 }
 
 
@@ -99,4 +112,14 @@ dt_fast_expf(const float x)
   } u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
+}
+
+static inline float fsquare(const float a)
+{
+  return (a * a);
+}
+
+static inline float clipf(const float a)
+{
+  return clamp(a, 0.0f, 1.0f);
 }

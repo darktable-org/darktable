@@ -107,7 +107,7 @@ void dt_styles_apply_to_image(const char *name,
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid);
 
 /** delete a style by name */
-void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut);
 
 /** delete a style by name, raise signal */
 void dt_styles_delete_by_name(const char *name);

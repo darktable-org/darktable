@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
+#include "common/curve_tools.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -56,28 +57,15 @@ static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *dat
   }
 }
 
-static gchar *_section_from_package(dt_iop_module_t **self)
+static gchar *_iop_section_for_params(dt_iop_module_t *self)
 {
-  if((*self)->actions != DT_ACTION_TYPE_IOP_SECTION) return NULL;
-
-  dt_iop_module_section_t *package = (dt_iop_module_section_t *)*self;
-  *self = package->self;
-  return package->section;
-}
-
-static void _store_intro_section(const dt_introspection_field_t *f, gchar *section)
-{
-  if(section)
-  {
-    GHashTable **sections = &f->header.so->get_introspection()->sections;
-    if(!*sections) *sections = g_hash_table_new(NULL, NULL);
-    g_hash_table_insert(*sections, GINT_TO_POINTER(f->header.offset), section);
-  }
+  if(!self->widget) self->widget = dt_gui_vbox();
+  return self->actions == DT_ACTION_TYPE_IOP_SECTION && self->data ? self->data : NULL;
 }
 
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
-  gchar *section = _section_from_package(&self);
+  gchar *section = _iop_section_for_params(self);
 
   dt_iop_params_t *p = self->params;
   dt_iop_params_t *d = self->default_params;
@@ -99,7 +87,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   }
   g_free(base_name);
 
-  const dt_introspection_field_t *f = self->so->get_f(param_name);
+  const dt_introspection_field_t *f = self->get_f(param_name);
 
   GtkWidget *slider = NULL;
   size_t offset = 0;
@@ -142,7 +130,6 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   if(f)
   {
     dt_bauhaus_widget_set_field(slider, (uint8_t *)p + offset, f->header.type);
-    _store_intro_section(f, section);
 
     if(!skip_label)
     {
@@ -172,8 +159,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     g_free(str);
   }
 
-  if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), slider, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, slider);
 
   g_free(param_name);
 
@@ -182,11 +168,11 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param)
 {
-  gchar *section = _section_from_package(&self);
+  gchar *section = _iop_section_for_params(self);
 
   dt_iop_params_t *p = self->params;
   dt_iop_params_t *d = self->default_params;
-  dt_introspection_field_t *f = self->so->get_f(param);
+  dt_introspection_field_t *f = self->get_f(param);
 
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
   gchar *str = NULL;
@@ -197,7 +183,6 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
     dt_bauhaus_widget_set_field(combobox, (uint8_t *)p + f->header.offset, f->header.type);
-    _store_intro_section(f, section);
 
     str = *f->header.description ? g_strdup(f->header.description)
                                  : dt_util_str_replace(param, "_", " ");
@@ -229,18 +214,17 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
   g_free(str);
 
-  if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), combobox, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, combobox);
 
   return combobox;
 }
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param)
 {
-  gchar *section = _section_from_package(&self);
+  gchar *section = _iop_section_for_params(self);
 
   dt_iop_params_t *p = self->params;
-  dt_introspection_field_t *f = self->so->get_f(param);
+  dt_introspection_field_t *f = self->get_f(param);
 
   GtkWidget *button = NULL;
   gchar *str = NULL;
@@ -259,11 +243,11 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     gtk_container_add(GTK_CONTAINER(button), label);
     dt_module_param_t *module_param = g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
+    DT_IOP_SECTION_FOR_PARAMS_UNWIND(module_param->module);
     module_param->param = (uint8_t *)p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
 
-    _store_intro_section(f, section);
-    dt_action_define_iop(self, section, str, button, &dt_action_def_toggle);
+    dt_action_define_iop(module_param->module, section, str, button, &dt_action_def_toggle);
   }
   else
   {
@@ -273,8 +257,8 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   }
 
   g_free(str);
-  if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+
+  dt_gui_box_add(self->widget, button);
 
   return button;
 }
@@ -323,7 +307,6 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
   g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
 
   dt_action_t *ac = dt_action_define_iop(self, NULL, label, button, &dt_action_def_button);
-  if(darktable.control->accel_initialising)
     dt_shortcut_register(ac, 0, 0, accel_key, mods);
 
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
@@ -335,6 +318,20 @@ gboolean dt_mask_scroll_increases(int up)
 {
   const gboolean mask_down = dt_conf_get_bool("masks_scroll_down_increases");
   return up ? !mask_down : mask_down;
+}
+
+GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)
+{
+  static const dt_introspection_type_enum_tuple_t interpolation_names[]
+    = { { N_("cubic spline"), CUBIC_SPLINE },
+        { N_("centripetal spline"), CATMULL_ROM },
+        { N_("monotonic spline"), MONOTONE_HERMITE },
+        { } };
+  GtkWidget *w = dt_bauhaus_combobox_new(self);
+  dt_action_t *ac = dt_bauhaus_widget_set_label(w, NULL, N_("interpolation method"));
+  dt_bauhaus_combobox_add_introspection(w, ac, interpolation_names, 0, -1);
+
+  return w;
 }
 
 // clang-format off

@@ -73,8 +73,7 @@ if(NOT WIN32)
   file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop
-    SOURCE ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in
-    COMMAND sh -c "${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop"
+    COMMAND sh -c "${intltool_merge_BIN} --desktop-style \"${CMAKE_CURRENT_SOURCE_DIR}/../po\" \"${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in\" \"${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop\""
     MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in
     DEPENDS ${PO_FILES}
     )
@@ -96,7 +95,7 @@ if(NOT WIN32)
       OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
       SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
       COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-      COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+      COMMAND sh -c "${intltool_merge_BIN} --xml-style \"${CMAKE_CURRENT_SOURCE_DIR}/../po\" \"${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in\" \"${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml\""
       COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
       MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
       DEPENDS ${PO_FILES}
@@ -104,9 +103,8 @@ if(NOT WIN32)
   else()
     add_custom_command(
       OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
-      SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
       COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-      COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+      COMMAND sh -c "${intltool_merge_BIN} --xml-style \"${CMAKE_CURRENT_SOURCE_DIR}/../po\" \"${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in\" \"${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml\""
       MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
       DEPENDS ${PO_FILES}
     )
@@ -129,6 +127,13 @@ install(FILES ${WATERMARKS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/w
 #
 FILE(COPY gdb_commands DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
+#
+# Install shortcutsrc with extra key+mouse combinations, and any localized versions of it
+#
+FILE(GLOB LOCALIZED_SHORTCUTS "shortcutsrc.*")
+FILE(COPY shortcutsrc ${LOCALIZED_SHORTCUTS} DESTINATION "${DARKTABLE_DATADIR}")
+install(FILES shortcutsrc ${LOCALIZED_SHORTCUTS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
 # Install noiseprofiles

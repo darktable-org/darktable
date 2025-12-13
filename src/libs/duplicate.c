@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,8 +46,7 @@ typedef struct dt_lib_duplicate_t
   float scale;
   size_t buf_width;
   size_t buf_height;
-  float zoom_x;
-  float zoom_y;
+  dt_dev_zoom_pos_t zoom_pos;
 
   dt_view_context_t view_ctx;
   int preview_id;
@@ -152,7 +151,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   }
 
   // and we remove the image
-  dt_control_delete_image(imgid);
+  dt_control_delete_duplicate(imgid);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
@@ -166,7 +165,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_BUTTON_PRESS)
     {
@@ -224,17 +223,15 @@ void gui_post_expose(dt_lib_module_t *self,
 
     dt_dev_image(d->imgid, width, height, -1,
                  &d->buf, &d->scale,
-                 &d->buf_width, &d->buf_height,
-                 &d->zoom_x, &d->zoom_y, -1, NULL, DT_DEVICE_NONE, FALSE);
+                 &d->buf_width, &d->buf_height, d->zoom_pos,
+                 -1, NULL, DT_DEVICE_NONE, FALSE);
 
     d->preview_id = d->imgid;
   }
 
   if(d->buf)
     dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
-                          d->buf, d->scale,
-                          d->buf_width, d->buf_height,
-                          d->zoom_x, d->zoom_y);
+                          d->buf, d->scale, d->buf_width, d->buf_height, d->zoom_pos);
 }
 
 static void _thumb_remove(gpointer user_data)
@@ -275,14 +272,14 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT i.version, i.id, m.value"
                               " FROM images AS i"
-                              " LEFT JOIN meta_data AS m ON m.id = i.id AND m.key = ?3"
+                              " LEFT JOIN meta_data AS m ON m.id = i.id"
+                              " AND m.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.darktable.version_name')"
                               " WHERE film_id = ?1 AND filename = ?2"
                               " ORDER BY i.version",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_VERSION_NAME);
 
   GtkWidget *bt = NULL;
 
@@ -297,7 +294,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
                                              imgid,
                                              -1,
                                              DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
-                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                             DT_THUMBNAIL_CONTAINER_DUPLICATE,
                                              TRUE,
                                              DT_THUMBNAIL_SELECTION_UNSELECTED);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -327,6 +324,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     gtk_widget_set_hexpand(lb, TRUE);
     bt = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    gtk_widget_set_tooltip_text(bt, _("delete this duplicate"));
     //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
@@ -336,9 +334,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
 
-    gtk_widget_show_all(hb);
+    gtk_widget_show(hb);
+    gtk_widget_show(lb);
+    gtk_widget_show(tb);
+    gtk_widget_show(bt);
 
-    gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
+    dt_gui_box_add(d->duplicate_box, hb);
     d->thumbs = g_list_append(d->thumbs, thumb);
     count++;
   }
@@ -389,52 +390,37 @@ static void _lib_duplicate_preview_updated_callback(gpointer instance,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_duplicate_t *d = g_malloc0(sizeof(dt_lib_duplicate_t));
-  self->data = (void *)d;
+  dt_lib_duplicate_t *d = self->data = g_malloc0(sizeof(dt_lib_duplicate_t));
 
   d->imgid = NO_IMGID;
   d->buf = NULL;
   d->view_ctx = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  d->duplicate_box = dt_gui_vbox();
+  self->widget = dt_gui_vbox
+                   (dt_ui_resize_wrap(d->duplicate_box, 1,
+                                      "plugins/darkroom/duplicate/windowheight"),
+                    dt_gui_hbox
+                      (dt_action_button_new
+                         (NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                          _("create a duplicate of the image with same history stack"), 0, 0),
+                       dt_action_button_new
+                         (NULL, N_("original"),
+                          _lib_duplicate_new_clicked_callback, self,
+                          _("create a 'virgin' duplicate of the image without any development"), 0, 0)));
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
-
-  d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dt_action_button_new
-    (NULL, N_("original"),
-     _lib_duplicate_new_clicked_callback, self,
-     _("create a 'virgin' duplicate of the image without any development"), 0, 0);
-
-  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-  bt = dt_action_button_new
-    (NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
-     _("create a duplicate of the image with same history stack"), 0, 0);
-
-  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-
-  /* add duplicate list and buttonbox to widget */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap
-                       (d->duplicate_box, 1,
-                        "plugins/darkroom/duplicate/windowheight"), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hb, TRUE, TRUE, 0);
-
+  dt_act_on_set_class(self->widget);
   gtk_widget_show_all(self->widget);
-
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_duplicate_init_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _lib_duplicate_collection_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _lib_duplicate_mipmap_updated_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _lib_duplicate_preview_updated_callback, self);
+  gtk_widget_set_sensitive(self->widget, !dt_check_gimpmode_ok("file"));
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_duplicate_init_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_duplicate_collection_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _lib_duplicate_mipmap_updated_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _lib_duplicate_preview_updated_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_duplicate_init_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_duplicate_mipmap_updated_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_duplicate_preview_updated_callback, self);
   g_free(self->data);
   self->data = NULL;
 }

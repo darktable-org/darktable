@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ typedef enum dt_collection_properties_t
 
   //  keep DT_COLLECTION_PROP_GROUPING to avoid breaking all presets based on
   //  filters defined after GROUPING here.
-  DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER,
+  DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + DT_METADATA_LEGACY_NUMBER,
   DT_COLLECTION_PROP_LOCAL_COPY,
 
   DT_COLLECTION_PROP_HISTORY,
@@ -124,8 +124,11 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
-  DT_COLLECTION_PROP_SORT
+  DT_COLLECTION_PROP_SORT,
 
+  // the number of metadata tags is variable, so we keep this at the end with
+  // a huge offset
+  DT_COLLECTION_PROP_METADATA_OFFSET = 10000
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t
@@ -265,6 +268,9 @@ int64_t dt_collection_get_image_position(const dt_imgid_t image_id,
 void dt_collection_shift_image_positions(const unsigned int length,
                                          const int64_t image_position,
                                          const int32_t tagid);
+
+/* returns TRUE if the current collection uses property has part of the query */
+gboolean dt_collection_has_property(const dt_collection_properties_t property);
 
 /* move images with drag and drop */
 void dt_collection_move_before(const dt_imgid_t image_id, GList * selected_images);

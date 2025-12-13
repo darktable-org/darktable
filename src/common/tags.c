@@ -644,7 +644,8 @@ gboolean dt_tag_detach_by_string(const char *name,
      "SELECT tagid"
      " FROM main.tagged_images as ti, data.tags as t"
      " WHERE ti.tagid = t.id"
-     "   AND t.name GLOB ?1",
+     "   AND t.name GLOB ?1"
+     "   AND ti.imgid = ?2",
      -1, &stmt,
      NULL);
 
@@ -661,6 +662,7 @@ gboolean dt_tag_detach_by_string(const char *name,
   }
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, n, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
   gboolean res = FALSE;
 
@@ -670,6 +672,8 @@ gboolean dt_tag_detach_by_string(const char *name,
     const guint tagid = (guint)sqlite3_column_int(stmt, 0);
     dt_tag_detach(tagid, imgid, undo_on, group_on);
   }
+
+  sqlite3_finalize(stmt);
 
   g_free(n);
 
@@ -933,12 +937,12 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
+GList *dt_tag_get_hierarchical(const dt_imgid_t imgid, const gboolean ignore_dt_tags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, ignore_dt_tags);
 
   if(count < 1)
     return NULL;

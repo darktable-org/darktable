@@ -40,20 +40,12 @@
 
 DT_MODULE(1)
 
-typedef enum dt_history_copy_mode_t
-{
-  DT_COPY_HISTORY_APPEND    = 0,
-  DT_COPY_HISTORY_OVERWRITE = 1
-} dt_history_copy_mode_t;
-
 typedef struct dt_lib_copy_history_t
 {
-  GtkWidget *pastemode;
   GtkWidget *paste, *paste_parts;
   GtkWidget *copy_button, *discard_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
   GtkWidget *compress_button;
-  gboolean is_full_copy;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -126,7 +118,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     //single image to load xmp to, assume we want to load from same dir
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     if(img && img->film_id != -1)
     {
       char pathname[PATH_MAX] = { 0 };
@@ -140,7 +132,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       dt_conf_get_folder_to_file_chooser("ui_last/import_path",
                                          GTK_FILE_CHOOSER(filechooser));
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   else
   {
@@ -208,26 +200,20 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void copy_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = self->data;
-
   const dt_imgid_t id = dt_act_on_get_main_image();
 
   if(dt_is_valid_imgid(id) && dt_history_copy(id))
   {
-    d->is_full_copy = TRUE;
     dt_lib_gui_queue_update(self);
   }
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = self->data;
-
   const dt_imgid_t id = dt_act_on_get_main_image();
 
   if(dt_is_valid_imgid(id) && dt_history_copy_parts(id))
   {
-    d->is_full_copy = FALSE;
     dt_lib_gui_queue_update(self);
   }
 }
@@ -240,7 +226,7 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   const int number = g_list_length((GList *)imgs);
 
   if(!dt_conf_get_bool("ask_before_discard")
-     || dt_gui_show_yes_no_dialog(_("delete images' history?"),
+     || dt_gui_show_yes_no_dialog(_("delete images' history?"), "",
           ngettext("do you really want to clear history of %d selected image?",
                    "do you really want to clear history of %d selected images?", number),
                                   number))
@@ -256,23 +242,9 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void paste_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = self->data;
-
-  const int current_mode = dt_bauhaus_combobox_get(d->pastemode);
-
-  /* get paste mode and store, overwrite / merge */
-  const int mode = d->is_full_copy
-    ? DT_COPY_HISTORY_OVERWRITE
-    : current_mode;
-
-  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
-
   /* copy history from previously copied image and paste onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   dt_control_paste_history(imgs);
-
-  // restore mode
-  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", current_mode);
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -280,14 +252,6 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   /* copy history from previously copied image and paste onto selection */
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   dt_control_paste_parts_history(imgs);
-}
-
-static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
-{
-  const int mode = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
-
-  dt_lib_gui_queue_update((dt_lib_module_t *)user_data);
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -366,16 +330,6 @@ void gui_init(dt_lib_module_t *self)
      _("discard history stack of\nall selected images"), 0, 0);
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL
-    (d->pastemode, self, NULL, N_("mode"),
-     _("how to handle existing history"),
-     dt_conf_get_int("plugins/lighttable/copy_history/pastemode"),
-     pastemode_combobox_changed, self,
-     N_("append"),     // DT_COPY_HISTORY_APPEND
-     N_("overwrite")); // DT_COPY_HISTORY_OVERWRITE
-  dt_gui_add_help_link(d->pastemode, "history");
-  gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
-
   d->load_button = dt_action_button_new
     (self, N_("load sidecar file..."), load_button_clicked, self,
      _("open an XMP sidecar file\nand apply it to selected images"), 0, 0);
@@ -386,17 +340,13 @@ void gui_init(dt_lib_module_t *self)
      _("write history stack and tags to XMP sidecar files"), 0, 0);
   gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
-
   free(self->data);
   self->data = NULL;
 }

@@ -16,9 +16,6 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
@@ -1193,7 +1190,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_gui_enter_critical_section(self);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
   g->can = NULL;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -1225,9 +1222,9 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorreconstruct_gui_data_t *g = IOP_GUI_ALLOC(colorreconstruct);
 
   g->can = NULL;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
 
-  GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_enabled = self->widget = dt_gui_vbox();
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
@@ -1267,8 +1264,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   dt_iop_colorreconstruct_bilateral_dump(g->can);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

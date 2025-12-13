@@ -15,9 +15,6 @@
   You should have received a copy of the GNU General Public License
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
@@ -604,8 +601,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = IOP_GUI_ALLOC(channelmixer);
   const dt_iop_channelmixer_params_t *const p = self->default_params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   /* output */
   g->output_channel = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->output_channel, NULL, N_("destination"));
@@ -637,12 +632,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
 
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->output_channel), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_red), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_green), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_blue), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->output_channel, g->scale_red, g->scale_green, g->scale_blue);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -654,111 +644,111 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               { 0, 0, 0, 1, 0, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("swap G and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
                                                               { 0, 0, 0, 0, 0, 1, 0 },
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color contrast boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.8, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color details boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.8, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color artifacts boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.8, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W luminance-based"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.72 },
                                                               { 0, 0, 0, 0, 0, 1, 0.07 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W artifacts boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, -0.275 },
                                                               { 0, 0, 0, 0, 1, 0, -0.275 },
                                                               { 0, 0, 0, 0, 0, 1, 1.275 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W smooth skin"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 1.0 },
                                                               { 0, 0, 0, 0, 1, 0, 0.325 },
                                                               { 0, 0, 0, 0, 0, 1, -0.4 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W blue artifacts reduce"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.4 },
                                                               { 0, 0, 0, 0, 1, 0, 0.750 },
                                                               { 0, 0, 0, 0, 0, 1, -0.15 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford Delta 100-400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.42 },
                                                               { 0, 0, 0, 0, 0, 1, 0.37 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford Delta 3200"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.31 },
                                                               { 0, 0, 0, 0, 1, 0, 0.36 },
                                                               { 0, 0, 0, 0, 0, 1, 0.33 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford FP4"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.28 },
                                                               { 0, 0, 0, 0, 1, 0, 0.41 },
                                                               { 0, 0, 0, 0, 0, 1, 0.31 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford HP5"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.23 },
                                                               { 0, 0, 0, 0, 1, 0, 0.37 },
                                                               { 0, 0, 0, 0, 0, 1, 0.40 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford SFX"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.36 },
                                                               { 0, 0, 0, 0, 1, 0, 0.31 },
                                                               { 0, 0, 0, 0, 0, 1, 0.33 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak T-Max 100"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.24 },
                                                               { 0, 0, 0, 0, 1, 0, 0.37 },
                                                               { 0, 0, 0, 0, 0, 1, 0.39 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak T-max 400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.27 },
                                                               { 0, 0, 0, 0, 1, 0, 0.36 },
                                                               { 0, 0, 0, 0, 0, 1, 0.37 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak Tri-X 400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.25 },
                                                               { 0, 0, 0, 0, 1, 0, 0.35 },
                                                               { 0, 0, 0, 0, 0, 1, 0.40 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(dt_iop_channelmixer_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
 
   dt_database_release_transaction(darktable.db);

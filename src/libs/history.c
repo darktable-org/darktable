@@ -31,7 +31,9 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "common/history.h"
+#include "bauhaus/bauhaus.h"
 #include <complex.h>
+#include <locale.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -99,8 +101,12 @@ const char *name(dt_lib_module_t *self)
 const char *description(dt_lib_module_t *self)
 {
   return _("display the sequence of edit actions\n"
-           "and allow temporarily returning to\n"
-           "an earlier state of the edit");
+           "- click on an entry to temporarily return to\n"
+           "  that earlier state of the edit\n"
+           "  (warning: any edits will be made to that\n"
+           "  earlier state, losing later changes)\n"
+           "- shift-click to focus that module without\n"
+           "  changing the edit state");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
@@ -127,12 +133,8 @@ void gui_init(dt_lib_module_t *self)
   d->record_undo = TRUE;
   d->record_history_level = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(self->widget, "history-ui");
-
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_has_tooltip(d->history_box, FALSE);
 
   d->compress_button = dt_action_button_new
     (self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
@@ -152,31 +154,20 @@ void gui_init(dt_lib_module_t *self)
                    N_("create style from history"),
                    d->create_button, &dt_action_def_button);
 
-  /* add buttons to buttonbox */
-  gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hhbox), d->create_button, FALSE, FALSE, 0);
-
-  /* add history list and buttonbox to widget */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap(d->history_box, 1,
-                                       "plugins/darkroom/history/windowheight"),
-                     FALSE, FALSE, 0);
-  gtk_widget_set_has_tooltip(d->history_box, FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), hhbox, FALSE, FALSE, 0);
-
+  self->widget = dt_gui_vbox
+    (dt_ui_resize_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"),
+     dt_gui_hbox(dt_gui_expand(d->compress_button), d->create_button));
+  gtk_widget_set_name(self->widget, "history-ui");
   gtk_widget_show_all(self->widget);
 
   /* connect to history change signal for updating the history view */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_module_remove_callback, self);
   g_free(self->data);
   self->data = NULL;
 }
@@ -242,8 +233,6 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   gtk_widget_set_sensitive(onoff, FALSE);
 
-  g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
-  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
@@ -252,6 +241,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
+  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
 
   gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -457,26 +447,6 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
   return deleted_module_found;
 }
 
-static void _reorder_gui_module_list(dt_develop_t *dev)
-{
-  int pos_module = 0;
-  for(const GList *modules = g_list_last(dev->iop);
-      modules;
-      modules = g_list_previous(modules))
-  {
-    dt_iop_module_t *module = modules->data;
-
-    GtkWidget *expander = module->expander;
-    if(expander)
-    {
-      gtk_box_reorder_child
-        (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-         expander,
-         pos_module++);
-    }
-  }
-}
-
 static gboolean _rebuild_multi_priority(GList *history_list)
 {
   gboolean changed = FALSE;
@@ -640,7 +610,7 @@ static void _pop_undo(gpointer user_data,
     dt_dev_pixelpipe_rebuild(dev);
 
     // if dev->iop has changed reflect that on module list
-    if(pipe_remove) _reorder_gui_module_list(dev);
+    if(pipe_remove) dt_dev_reorder_gui_module_list(dev);
 
     // write new history and reload
     dt_dev_write_history(dev);
@@ -716,13 +686,47 @@ static void _lib_history_will_change_callback(gpointer instance,
   }
 }
 
+#define CHG_STR(fmt, ...) g_strdup_printf("%s\t\t" #fmt "\t\u2192\t\t" #fmt " ", __VA_ARGS__)
+static gchar *_lib_history_bauhaus_text(gpointer bhfield,
+                                        const char *d,
+                                        dt_iop_module_t *module,
+                                        float oval,
+                                        float pval)
+{
+  for(GSList *w = module->widget_list_bh; w; w = g_slist_next(w))
+  {
+    dt_action_target_t *at = w->data;
+    GtkWidget *widget = at->target;
+    if(dt_bauhaus_widget_get_field(widget) == bhfield)
+    {
+      dt_action_t *as = at->action->owner;
+      gchar *s = as && as->type == DT_ACTION_TYPE_SECTION
+                 ? g_strdup_printf("%s/%s", as->label, d) : NULL;
+      gchar *old_text = dt_bauhaus_slider_get_text(widget, oval);
+      gchar *new_text = dt_bauhaus_slider_get_text(widget, pval);
+      gchar *ret_text = CHG_STR(%s, s ? s : d, old_text, new_text);
+      g_free(old_text);
+      g_free(new_text);
+      g_free(s);
+      return ret_text;
+    }
+  }
+  return NULL;
+}
+
 static gchar *_lib_history_change_text(dt_introspection_field_t *field,
                                        const char *d,
+                                       dt_iop_module_t *module,
                                        gpointer params,
                                        gpointer oldpar)
 {
-  dt_iop_params_t *p = ((uint8_t *)params + field->header.offset);
-  dt_iop_params_t *o = ((uint8_t *)oldpar + field->header.offset);
+  void *p = (void*)params + field->header.offset;
+  void *o = (void*)oldpar + field->header.offset;
+
+#define CHANGE_TEXT_BAUHAUS(format, fieldtype)                            \
+  _lib_history_bauhaus_text((void*)module->params + field->header.offset, \
+                            d, module, *(fieldtype*)o, *(fieldtype*)p)    \
+  ?: CHG_STR(format, d, *(fieldtype*)o, *(fieldtype*)p)
 
   switch(field->header.type)
   {
@@ -742,21 +746,8 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
 
         if(d) description = g_strdup_printf("%s.%s", d, description);
 
-        gchar *part, *sect = NULL;
-        if((part = _lib_history_change_text(entry, description, params, oldpar)))
-        {
-          GHashTable *sections = field->header.so->get_introspection()->sections;
-          if(sections
-             && (sect = g_hash_table_lookup(sections,
-                                            GINT_TO_POINTER(entry->header.offset))))
-          {
-            sect = g_strdup_printf("%s/%s", Q_(sect), part);
-            g_free(part);
-            part = sect;
-          }
-
-          change_parts[num_parts++] = part;
-        }
+        gchar *part = _lib_history_change_text(entry, description, module, params, oldpar);
+        if(part) change_parts[num_parts++] = part;
 
         if(d) g_free(description);
       }
@@ -775,7 +766,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
         && g_utf8_validate((char *)p, -1, NULL);
 
       if(is_valid && strncmp((char*)o, (char*)p, field->Array.count))
-        return g_strdup_printf("%s\t\"%s\"\t\u2192\t\"%s\"", d, (char*)o, (char*)p);
+        return CHG_STR("%s", d, (char*)o, (char*)p);
     }
     else
     {
@@ -789,7 +780,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
       {
         char *description = g_strdup_printf("%s[%d]", d, i);
         char *element_text =
-          _lib_history_change_text(field->Array.field, description,
+          _lib_history_change_text(field->Array.field, description, module,
                                    (uint8_t *)params + item_offset,
                                    (uint8_t *)oldpar + item_offset);
         g_free(description);
@@ -812,36 +803,34 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    if(*(float*)o != *(float*)p && (dt_isfinite(*(float*)o) || dt_isfinite(*(float*)p)))
-      return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
+    if(!feqf(*(float*)o, *(float*)p, 1e-6) && (dt_isfinite(*(float*)o) || dt_isfinite(*(float*)p)))
+      return CHANGE_TEXT_BAUHAUS(%.4f, float);
     break;
   case DT_INTROSPECTION_TYPE_INT:
     if(*(int*)o != *(int*)p)
-      return g_strdup_printf("%s\t%d\t\u2192\t%d", d, *(int*)o, *(int*)p);
+      return CHANGE_TEXT_BAUHAUS(%d, int);
     break;
   case DT_INTROSPECTION_TYPE_UINT:
     if(*(unsigned int*)o != *(unsigned int*)p)
-      return g_strdup_printf("%s\t%u\t\u2192\t%u", d, *(unsigned int*)o,
-                             *(unsigned int*)p);
+      return CHANGE_TEXT_BAUHAUS(%u, unsigned int);
     break;
   case DT_INTROSPECTION_TYPE_USHORT:
     if(*(unsigned short int*)o != *(unsigned short int*)p)
-      return g_strdup_printf("%s\t%hu\t\u2192\t%hu", d, *(unsigned short int*)o,
-                             *(unsigned short int*)p);
+      return CHANGE_TEXT_BAUHAUS(%hu, unsigned short int);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
     if(*(uint8_t*)o != *(uint8_t*)p)
-      return g_strdup_printf("%s\t%d\t\u2192\t%d", d, *(uint8_t*)o, *(uint8_t*)p);
+      return CHANGE_TEXT_BAUHAUS(%d, uint8_t);
     break;
   case DT_INTROSPECTION_TYPE_CHAR:
     if(*(char*)o != *(char*)p)
-      return g_strdup_printf("%s\t'%c'\t\u2192\t'%c'", d, *(char *)o, *(char *)p);
+      return CHANGE_TEXT_BAUHAUS('%c', char);
     break;
   case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
     if(*(float complex*)o != *(float complex*)p)
-      return g_strdup_printf("%s\t%.4f + %.4fi\t\u2192\t%.4f + %.4fi", d,
-                             creal(*(float complex*)o), cimag(*(float complex*)o),
-                             creal(*(float complex*)p), cimag(*(float complex*)p));
+      return CHG_STR(%.4f + %.4fi, d,
+                     creal(*(float complex*)o), cimag(*(float complex*)o),
+                     creal(*(float complex*)p), cimag(*(float complex*)p));
     break;
   case DT_INTROSPECTION_TYPE_ENUM:
     if(*(int*)o != *(int*)p)
@@ -861,7 +850,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
         }
       }
 
-      return g_strdup_printf("%s\t%s\t\u2192\t%s", d, _(old_str), _(new_str));
+      return CHG_STR(%s, d, _(old_str), _(new_str));
     }
     break;
   case DT_INTROSPECTION_TYPE_BOOL:
@@ -869,7 +858,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
     {
       char *old_str = *(gboolean*)o ? "on" : "off";
       char *new_str = *(gboolean*)p ? "on" : "off";
-      return g_strdup_printf("%s\t%s\t\u2192\t%s", d, _(old_str), _(new_str));
+      return CHG_STR(%s, d, _(old_str), _(new_str));
     }
     break;
   case DT_INTROSPECTION_TYPE_OPAQUE:
@@ -915,37 +904,38 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
 
   if(hitem->module->have_introspection)
     change_parts[0] = _lib_history_change_text(hitem->module->get_introspection()->field,
-                                               NULL,
+                                               NULL, hitem->module,
                                                hitem->params, old_params);
   int num_parts = change_parts[0] ? 1 : 0;
 
   if(hitem->module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    #define add_blend_history_change(field, format, label)                             \
-      if((hitem->blend_params->field) != (old_blend->field))                           \
-      {                                                                                \
-        gchar *full_format = g_strconcat("%s\t", format, "\t\u2192\t", format, NULL);  \
-        change_parts[num_parts++] = g_strdup_printf(full_format, label,                \
-                                    (old_blend->field), (hitem->blend_params->field)); \
-        g_free(full_format);                                                           \
+    #define add_blend_history_change(field, fmt, label)                         \
+      if((hitem->blend_params->field) != (old_blend->field))                    \
+      {                                                                         \
+        gchar *chg_fmt = g_strconcat("%s\t\t", fmt, "\t\u2192\t\t", fmt, NULL); \
+        change_parts[num_parts++] =                                             \
+          _lib_history_bauhaus_text(&hitem->module->blend_params->field,        \
+                                    label, hitem->module, old_blend->field,     \
+                                    hitem->blend_params->field)                 \
+          ?: g_strdup_printf(chg_fmt, label,                                    \
+                             old_blend->field, hitem->blend_params->field);     \
+        g_free(chg_fmt);                                                        \
       }
-
-    #define add_blend_history_change_enum(field, label, list)                          \
-      if((hitem->blend_params->field) != (old_blend->field))                           \
-      {                                                                                \
-        const char *old_str = NULL, *new_str = NULL;                                   \
-        for(const dt_introspection_type_enum_tuple_t *i = list; i->name; i++)          \
-        {                                                                              \
-          if(i->value == (old_blend->field)) old_str = i->name;                        \
-          if(i->value == (hitem->blend_params->field)) new_str = i->name;              \
-        }                                                                              \
-                                                                                       \
-        change_parts[num_parts++] = (!old_str || !new_str)                             \
-              ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                           \
-                                old_blend->field, hitem->blend_params->field)          \
-                                  : g_strdup_printf("%s\t%s\t\u2192\t%s", label,       \
-                                                    Q_(old_str),                       \
-                                                    Q_(new_str));                      \
+    #define add_blend_history_change_enum(field, label, list)                   \
+      if((hitem->blend_params->field) != (old_blend->field))                    \
+      {                                                                         \
+        const char *old_str = NULL, *new_str = NULL;                            \
+        for(const dt_introspection_type_enum_tuple_t *i = list; i->name; i++)   \
+        {                                                                       \
+          if(i->value == (old_blend->field)) old_str = i->name;                 \
+          if(i->value == (hitem->blend_params->field)) new_str = i->name;       \
+        }                                                                       \
+                                                                                \
+        change_parts[num_parts++] = (!old_str || !new_str)                      \
+                                ? CHG_STR(%d, label, old_blend->field,          \
+                                                     hitem->blend_params->field)\
+                                : CHG_STR(%s, label, Q_(old_str), Q_(new_str)); \
       }
 
     add_blend_history_change_enum(blend_cst, _("colorspace"),
@@ -972,9 +962,10 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     add_blend_history_change_enum(raster_mask_invert, _("invert mask"),
                                   dt_develop_invert_mask_names);
 
-    add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS
-                             ? '-'
-                             : '+', "%c", _("drawn mask polarity"));
+    const char old_combine = old_blend->mask_combine           & DEVELOP_COMBINE_MASKS_POS ? '+' : '-';
+    const char new_combine = hitem->blend_params->mask_combine & DEVELOP_COMBINE_MASKS_POS ? '+' : '-';
+    if(new_combine != old_combine)
+      change_parts[num_parts++] = CHG_STR(%c, _("drawn mask polarity"), old_combine, new_combine);
 
     if(hitem->blend_params->mask_id != old_blend->mask_id)
       change_parts[num_parts++] = old_blend->mask_id == 0
@@ -1027,11 +1018,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
           char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
           char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
 
-          change_parts[num_parts++] =
-            g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s",
-                            _(b->name),
-                            s[0][0], s[1][0], s[2][0], s[3][0], opol,
-                            s[0][1], s[1][1], s[2][1], s[3][1], npol);
+          change_parts[num_parts++] = CHG_STR(%s| %s- %s| %s%s, _(b->name),
+                                              s[0][0], s[1][0], s[2][0], s[3][0], opol,
+                                              s[0][1], s[1][1], s[2][1], s[3][1], npol);
         }
       }
     }
@@ -1053,44 +1042,59 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
       g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
     }
 
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
-    gtk_text_buffer_set_text(buffer, tooltip_text, -1);
-    gtk_tooltip_set_custom(tooltip, view);
-    gtk_widget_map(view); // FIXME: workaround added in order to fix
-                          // #9908, probably a Gtk issue, remove when
-                          // fixed upstream
-
-    int count_column1 = 0, count_column2 = 0;
-    for(gchar *line = tooltip_text; *line; )
+    // find tabs to align columns and decimals
+    int t[5] = { 0 };
+    struct lconv *locale = localeconv();
+    for(char *line = tooltip_text; *line; )
     {
       gchar *endline = g_strstr_len(line, -1, "\n");
       if(!endline) endline = line + strlen(line);
 
-      gchar *found_tab1 = g_strstr_len(line, endline - line, "\t");
-      if(found_tab1)
+      gchar *tab1 = g_strstr_len(line, endline - line, "\t");
+      if(tab1)
       {
-        if(found_tab1 - line >= count_column1) count_column1 = found_tab1 - line + 1;
+        if(t[0] <= tab1 - line) t[0] = tab1 - line + 1;
 
-        gchar *found_tab2 = g_strstr_len(found_tab1 + 1, endline - found_tab1 - 1, "\t");
-        if(found_tab2 - found_tab1 > count_column2)
-          count_column2 = found_tab2 - found_tab1;
+        tab1 += 2;
+        gchar *tab2 = g_strstr_len(tab1, endline - tab1, "\t");
+        if(tab2)
+        {
+          if(t[3] < tab2 - tab1) t[3] = tab2 - tab1;
+          gchar *decimal1 = g_strstr_len(tab1, tab2 - tab1, locale->decimal_point);
+          if(decimal1 && t[1] < decimal1 - tab1) t[1] = decimal1 - tab1;
+          if(decimal1 && t[2] < tab2 - decimal1) t[2] = tab2 - decimal1;
+
+          gchar *tab3 = g_strrstr_len(tab2, endline - tab2, "\t") + 1;
+          gchar *decimal2 = g_strstr_len(tab3, endline - tab3, locale->decimal_point);
+          if(decimal2 && t[4] < decimal2 - tab3) t[4] = decimal2 - tab3;
+        }
       }
 
       line = endline;
       if(*line) line++;
     }
+    if(t[3] < t[1] + t[2]) t[3] = t[1] + t[2];
 
     PangoLayout *layout = gtk_widget_create_pango_layout(view, " ");
     int char_width;
     pango_layout_get_size(layout, &char_width, NULL);
     g_object_unref(layout);
     PangoTabArray *tabs = pango_tab_array_new_with_positions
-      (3, FALSE,
-       PANGO_TAB_LEFT, (count_column1) * char_width,
-       PANGO_TAB_LEFT, (count_column1 + count_column2) * char_width,
-       PANGO_TAB_LEFT, (count_column1 + count_column2 + 2) * char_width);
+      (5, FALSE,
+       PANGO_TAB_LEFT   , char_width * (t[0]),
+       PANGO_TAB_DECIMAL, char_width * (t[0] + t[1] + 1),
+       PANGO_TAB_LEFT   , char_width * (t[0] + t[3] + 1),
+       PANGO_TAB_LEFT   , char_width * (t[0] + t[3] + 3),
+       PANGO_TAB_DECIMAL, char_width * (t[0] + t[3] + 4 + t[4]));
     gtk_text_view_set_tabs(GTK_TEXT_VIEW(view), tabs);
     pango_tab_array_free(tabs);
+
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
+    gtk_text_buffer_set_text(buffer, tooltip_text, -1);
+    gtk_tooltip_set_custom(tooltip, view);
+    gtk_widget_map(view); // FIXME: workaround added in order to fix
+                          // #9908, probably a Gtk issue, remove when
+                          // fixed upstream
   }
 
   g_free(tooltip_text);
@@ -1103,12 +1107,11 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   gchar *label = NULL;
   if(!item)
     label = g_strdup("");
-  else if(!item->multi_name[0] || strcmp(item->multi_name, "0") == 0)
-    label = g_strdup(item->module->name());
   else
-    label = g_markup_printf_escaped("%s • <small>%s</small>",
-                                    item->module->name(), item->multi_name);
-
+    label = dt_history_get_name_label(item->module->name(),
+                                      item->multi_name,
+                                      TRUE,
+                                      item->multi_name_hand_edited);
   return label;
 }
 
@@ -1172,7 +1175,7 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_show_all(d->history_box);
   dt_gui_widget_reallocate_now(d->history_box);
 
-  if (num == darktable.develop->history_end)
+  if(num == darktable.develop->history_end)
   {
     // history has changed, scroll to the top
     GtkWidget *sw = gtk_widget_get_ancestor(d->history_box, GTK_TYPE_SCROLLED_WINDOW);
@@ -1305,8 +1308,11 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
     Yet - there are modules that require fresh data for internal visualizing.
     As there is currently no way to know about that we do a brute-force way and simply
     invalidate cachelines.
+    (we might want an additional iop module flag and keep track of that in pixelpipe cache code ???)
+    For raws we have at least rawprepare and demosaic
   */
-  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, 0);
+  const int order = dt_image_is_raw(&darktable.develop->image_storage) ? 2 : 0;
+  dt_dev_pixelpipe_cache_invalidate_later(darktable.develop->preview_pipe, order);
 
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);
@@ -1333,7 +1339,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog
-          (_("delete image's history?"),
+          (_("delete image's history?"), "",
            _("do you really want to clear history of current image?")))
   {
     dt_dev_undo_start_record(darktable.develop);

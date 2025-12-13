@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -569,8 +566,6 @@ void gui_init(dt_imageio_module_format_t *self)
     dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
 
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  self->widget = box;
   // quality slider
   g->quality = dt_bauhaus_slider_new_with_range
     ((dt_iop_module_t*)self,
@@ -582,7 +577,6 @@ void gui_init(dt_imageio_module_format_t *self)
 
   dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed",
                    G_CALLBACK(quality_changed), NULL);
 
@@ -602,8 +596,7 @@ void gui_init(dt_imageio_module_format_t *self)
      self,
      N_("auto"), N_("4:4:4"), N_("4:4:0"), N_("4:2:2"), N_("4:2:0"));
 
-  gtk_box_pack_start(GTK_BOX(box), g->subsample, TRUE, TRUE, 0);
-
+  self->widget = dt_gui_vbox(g->quality, g->subsample);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

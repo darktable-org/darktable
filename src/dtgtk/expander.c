@@ -178,9 +178,11 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
     return;
 
   _scroll_widget = widget;
-  gtk_widget_add_tick_callback(widget, _expander_scroll,
-                               GINT_TO_POINTER(gdk_frame_clock_get_frame_time(gtk_widget_get_frame_clock(widget))
-                               + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
+  GdkFrameClock *clock = gtk_widget_get_frame_clock(widget);
+  if(clock)
+    gtk_widget_add_tick_callback(widget, _expander_scroll,
+                                GINT_TO_POINTER(gdk_frame_clock_get_frame_time(clock)
+                                + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
 }
 
 void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean allow, gboolean below, guint time)
@@ -281,8 +283,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), TRUE);
   gtk_container_add(GTK_CONTAINER(expander->frame), frame);
 
-  gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
+  dt_gui_box_add(expander, expander->header_evb, expander->frame);
 
   g_signal_connect(expander->header_evb, "drag-begin", G_CALLBACK(_expander_drag_begin), NULL);
   g_signal_connect(expander->header_evb, "drag-end", G_CALLBACK(_expander_drag_end), NULL);

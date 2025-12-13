@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -17,9 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "common/imagebuf.h"
@@ -107,7 +104,7 @@ int operation_tags()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
-    | IOP_FLAGS_UNSAFE_COPY;
+    | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_WRITE_DETAILS;
 }
 
 int default_group()
@@ -168,7 +165,7 @@ int legacy_params(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n"
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor\n\n"
                                         "touch with great care!"),
                                       _("mandatory"),
                                       _("linear, raw, scene-referred"),
@@ -190,7 +187,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                            .raw_black_level_separate[2] = 0,
                                                            .raw_black_level_separate[3] = 0,
                                                            .raw_white_point = UINT16_MAX },
-                             sizeof(dt_iop_rawprepare_params_t), 1, DEVELOP_BLEND_CS_NONE);
+                             sizeof(dt_iop_rawprepare_params_t), TRUE, DEVELOP_BLEND_CS_NONE);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -251,16 +248,6 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   }
 
   return TRUE;
-}
-
-void distort_mask(dt_iop_module_t *self,
-                  dt_dev_pixelpipe_iop_t *piece,
-                  const float *const in,
-                  float *const out,
-                  const dt_iop_roi_t *const roi_in,
-                  const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 // we're not scaling here (bayer input), so just crop borders
@@ -344,12 +331,13 @@ void process(dt_iop_module_t *self,
   const int csx = _compute_proper_crop(piece, roi_in, d->left);
   const int csy = _compute_proper_crop(piece, roi_in, d->top);
 
+  float *const out = (float *const)ovoid;
+
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
      && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
@@ -373,7 +361,6 @@ void process(dt_iop_module_t *self,
   { // raw mosaic, fp, unnormalized
 
     const float *const in = (const float *const)ivoid;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
@@ -396,8 +383,6 @@ void process(dt_iop_module_t *self,
   { // pre-downsampled buffer that needs black/white scaling
 
     const float *const in = (const float *const)ivoid;
-    float *const out = (float *const)ovoid;
-
     const int ch = piece->colors;
 
     DT_OMP_FOR_SIMD(collapse(3))
@@ -426,7 +411,6 @@ void process(dt_iop_module_t *self,
     const float rel_to_map_y = 1.0f / d->gainmaps[0]->map_spacing_v;
     const float map_origin_h = d->gainmaps[0]->map_origin_h;
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
@@ -456,8 +440,9 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-    dt_dev_write_scharr_mask(piece, (float *const)ovoid, roi_in, FALSE);
+  const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
+  if(color_sraw && piece->pipe->want_detail_mask)
+    dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -572,8 +557,9 @@ finish:
       _adjust_xtrans_filters(piece->pipe, csx, csy);
     }
     for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-    if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-      err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
+    const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
+    if(color_sraw && piece->pipe->want_detail_mask)
+      err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_out, FALSE);
   }
 
   return err;
@@ -627,10 +613,10 @@ static gboolean _image_set_rawcrops(dt_iop_module_t *self,
 
   // we update p_width & height both in the image_storage for fast access within the pipeline
   // and the database so we can access that also via dt_image_cache_get()
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
   image->p_width = img->p_width = img->width - (cropvalid ? left + right : 0);
   image->p_height = img->p_height = img->height - (cropvalid ? top + bottom : 0);
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -809,6 +795,8 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rawprepare_4f);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_gainmap);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized_gainmap);
   free(self->data);
   self->data = NULL;
 }
@@ -895,7 +883,7 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rawprepare_gui_data_t *g = IOP_GUI_ALLOC(rawprepare);
 
-  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = dt_gui_vbox();;
 
   for(int i = 0; i < 4; i++)
   {
@@ -920,8 +908,7 @@ void gui_init(dt_iop_module_t *self)
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
-    gtk_box_pack_start(GTK_BOX(self->widget),
-                       dt_ui_section_label_new(C_("section", "crop")), FALSE, FALSE, 0);
+    dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "crop")));
 
     g->left = dt_bauhaus_slider_from_params(self, "left");
     gtk_widget_set_tooltip_text(g->left, _("crop left border"));

@@ -103,9 +103,9 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->dropdown = NULL;
-  GtkTreeIter tree_iter;
   GtkListStore *model = NULL;
 
+  const gboolean gimping =  dt_check_gimpmode("file");
   for(GList *view_iter = darktable.view_manager->views; view_iter; view_iter = g_list_next(view_iter))
   {
     dt_view_t *view = view_iter->data;
@@ -115,12 +115,15 @@ void gui_init(dt_lib_module_t *self)
     // skip hidden views
     if(view->flags() & VIEW_FLAGS_HIDDEN) continue;
 
-    if(!g_strcmp0(view->module_name, "lighttable") || !g_strcmp0(view->module_name, "darkroom"))
+    const gboolean lighttable = !g_strcmp0(view->module_name, "lighttable");
+    const gboolean darkroom = !g_strcmp0(view->module_name, "darkroom");
+    if(lighttable || darkroom)
     {
       GtkWidget *w = _lib_viewswitcher_create_label(view);
       gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
       d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
 
+      gtk_widget_set_sensitive(w, !(lighttable && gimping));
       SHORTCUT_TOOLTIP(view, w);
 
       /* create space if more views */
@@ -145,29 +148,25 @@ void gui_init(dt_lib_module_t *self)
         gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->dropdown), renderer, "markup", TEXT_COLUMN,
                                         "sensitive", SENSITIVE_COLUMN, NULL);
 
-        gtk_list_store_append(model, &tree_iter);
-        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
+        gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
 
         gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
         g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
       }
 
-      gtk_list_store_append(model, &tree_iter);
-      gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, 1, -1);
+      gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, gimping ? 0 : 1, -1);
     }
   }
 
   if(model) g_object_unref(model);
 
   /* connect callback to view change signal */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _lib_viewswitcher_view_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, _lib_viewswitcher_view_cannot_change_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _lib_viewswitcher_view_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, _lib_viewswitcher_view_cannot_change_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_viewswitcher_view_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_viewswitcher_view_cannot_change_callback, self);
   g_free(self->data);
   self->data = NULL;
 }
@@ -190,7 +189,7 @@ static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_
   g_signal_handlers_block_by_func(d->dropdown, _dropdown_changed, d);
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
   gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_SELECTED, FALSE);
-  g_hash_table_remove(darktable.control->widgets, d->dropdown);
+  g_object_set_data(G_OBJECT(d->dropdown), "dt_action", NULL);
   g_signal_handlers_unblock_by_func(d->dropdown, _dropdown_changed, d);
 }
 
@@ -220,7 +219,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
   {
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
     gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_NORMAL, TRUE);
-    g_hash_table_remove(darktable.control->widgets, d->dropdown);
+    g_object_set_data(G_OBJECT(d->dropdown), "dt_action", NULL);
   }
   else
   {
@@ -277,7 +276,7 @@ static void _switch_view(const dt_view_t *view)
 
 static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view)
 {
-  if(ev->button == 1)
+  if(ev->button == GDK_BUTTON_PRIMARY)
   {
     _switch_view(view);
     return TRUE;

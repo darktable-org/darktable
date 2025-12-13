@@ -18,9 +18,9 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/darktable.h"
 #include "common/dynload.h"
 #include "common/dlopencl.h"
-#include "common/darktable.h"
 
 #include <assert.h>
 #include <signal.h>

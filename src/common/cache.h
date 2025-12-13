@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,8 +32,7 @@ typedef struct dt_cache_entry_t
   dt_pthread_rwlock_t lock;
   gboolean _lock_demoting;
   uint32_t key;
-}
-dt_cache_entry_t;
+} dt_cache_entry_t;
 
 typedef void((*dt_cache_allocate_t)(void *userdata, dt_cache_entry_t *entry));
 typedef void((*dt_cache_cleanup_t)(void *userdata, dt_cache_entry_t *entry));
@@ -54,8 +53,7 @@ typedef struct dt_cache_t
   dt_cache_allocate_t cleanup;
   void *allocate_data;
   void *cleanup_data;
-}
-dt_cache_t;
+} dt_cache_t;
 
 // entry size is only used if alloc callback is 0
 void dt_cache_init(dt_cache_t *cache,
@@ -95,27 +93,16 @@ void dt_cache_release_with_caller(dt_cache_t *cache,
                                   const char *file,
                                   const int line);
 
-// 0: not contained
-int32_t dt_cache_contains(dt_cache_t *cache,
-                          const uint32_t key);
-// returns 0 on success, 1 if the key was not found.
-int32_t dt_cache_remove(dt_cache_t *cache,
-                        const uint32_t key);
+// FALSE: not contained
+gboolean dt_cache_contains(dt_cache_t *cache, const uint32_t key);
+// returns FALSE on success, TRUE if the key was not found.
+gboolean dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the tip of the lru list, until the fill ratio of the hashtable
 // goes below the given parameter, in terms of the user defined cost measure.
 // will never lock and never fail, but sometimes not free memory (in case all
 // is locked)
 void dt_cache_gc(dt_cache_t *cache,
                  const float fill_ratio);
-
-// iterate over all currently contained data blocks.
-// not thread safe! only use this for init/cleanup!
-// returns non zero the first time process() returns non zero.
-int dt_cache_for_all(dt_cache_t *cache,
-    int (*process)(const uint32_t key,
-                   const void *data,
-                   void *user_data),
-    void *user_data);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

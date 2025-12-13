@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,34 +181,25 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   latex_t *d = malloc(sizeof(latex_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  GtkWidget *widget;
 
   d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
                                            _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory")));
-  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
+  dt_gtkentry_setup_variables_completion(d->entry);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
-  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
-
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
 
   d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(title_changed_callback), self,
                                            _("enter the title of the book"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/title")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
 
+  self->widget = dt_gui_vbox
+    (dt_gui_hbox(d->entry, widget),
+     dt_gui_hbox(dt_ui_label_new(_("title")), d->title_entry));
   // TODO: support title, author, subject, keywords (collect tags?)
 }
 
@@ -233,7 +224,8 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+          const gboolean high_quality, const gboolean upscale, const gboolean is_scaling,
+          const double scale_factor, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
           dt_export_metadata_t *metadata)
 {
@@ -306,6 +298,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res_title, *res_desc, *res_subj;
 
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
     {
@@ -319,6 +312,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     }
 
     res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)
@@ -369,6 +363,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   /* export image to file */
   dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale,
+                    is_scaling, scale_factor,
                     TRUE, export_masks, icc_type, icc_filename,
                     icc_intent, self, sdata, num, total, metadata);
 

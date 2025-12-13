@@ -28,10 +28,6 @@
 #include <glib.h>
 #include <stdint.h>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>
 #endif
@@ -142,7 +138,7 @@ OPTIONAL(void, gui_changed, struct dt_iop_module_t *self,
                             GtkWidget *widget,
                             void *previous);
 /** destroy widget. */
-DEFAULT(void, gui_cleanup, struct dt_iop_module_t *self);
+OPTIONAL(void, gui_cleanup, struct dt_iop_module_t *self);
 /** optional method called after darkroom expose. */
 OPTIONAL(void, gui_post_expose, struct dt_iop_module_t *self,
                                 cairo_t *cr,
@@ -299,12 +295,12 @@ DEFAULT(int, process_tiling_cl, struct dt_iop_module_t *self,
  * points is an array of float {x1,y1,x2,y2,...}
  * size is 2*points_count */
 /** points before the iop is applied => point after processed */
-DEFAULT(gboolean, distort_transform, struct dt_iop_module_t *self,
+OPTIONAL(gboolean, distort_transform, struct dt_iop_module_t *self,
                                      struct dt_dev_pixelpipe_iop_t *piece,
                                      float *points,
                                      size_t points_count);
 /** reverse points after the iop is applied => point before process */
-DEFAULT(gboolean, distort_backtransform, struct dt_iop_module_t *self,
+OPTIONAL(gboolean, distort_backtransform, struct dt_iop_module_t *self,
                                          struct dt_dev_pixelpipe_iop_t *piece,
                                          float *points,
                                          size_t points_count);

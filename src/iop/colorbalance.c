@@ -19,9 +19,6 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 // our includes go first:
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
@@ -273,8 +270,8 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
     // update to current blendop params format
     void *bp_new = malloc(sizeof(dt_develop_blend_params_t));
 
-    if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
-      blen) == 0)
+    if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new,
+                                              dt_develop_blend_version(), blen) == FALSE)
     {
       free(bp);
       bp = bp_new;
@@ -289,7 +286,11 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
+  {
+    gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
+    dt_gui_presets_add_with_blendop(prefixed_name, self->op, version, p, len, bp, TRUE);
+    g_free(prefixed_name);
+  }
   free(bp);
   free(p);
 }
@@ -297,26 +298,26 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
 void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
-  add_preset(self, _("split-toning teal-orange (2nd instance)"),
+  add_preset(self, N_("split-toning teal-orange (2nd instance)"),
              "gz02eJxjZGBg8HhYZX99cYN9kkCDfdCOOnsGhgZ7ruvN9m8CK+yXFNTaz5w50z5PqBku9u9/PVjNv//9jqfP+NgDAHs0HIc=", 3,
              "gz05eJxjZWBgYGUAgRNODFDAzszAxMBQ5cwI4Tow4AUNdkBsD8E3gGwue9x8uB6q8s+c8bEF8Z9Y9Nnt2f3bbluCN03tg/EBIBckVg==", 8);
-  add_preset(self, _("split-toning teal-orange (1st instance)"),
+  add_preset(self, N_("split-toning teal-orange (1st instance)"),
              "gz02eJxjZACBBvugHXX2E3fU219f3GAP4n/TqLFvfd1oL8HZaH/2jI/9prn1cLHUtDSwGgaGCY7//tfbAwBRixpm", 3,
              "gz04eJxjZWBgYGUAgRNODFDApgwiq5wZIVyHD4E7bBnwggZ7CIYBRiBbBA8fXT1l/P5DX21i+pnA/Pfv8uw6OzzIMq9I5rgtSH//4wii1AMASbIlcw==", 8);
 
-  add_preset(self, _("generic film"),
+  add_preset(self, N_("generic film"),
              "gz02eJxjZACBBntN5gb7op/19u5AGsSX3dFgr+jYaL+vttb+0NcM+1Pnq+3XyFTZr/rYBJZPS0sD0hMcQDQA29kXSQ==", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodak Portra"),
+  add_preset(self, N_("similar to Kodak Portra"),
              "gz02eJxjZACBBnsQfh3YYK8VU28P43s8rLKP6W+yP/Q1w36deyMYLymoBcsZGxcDaQGHs2d87AGnphWu", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodak Ektar"),
+  add_preset(self, N_("similar to Kodak Ektar"),
              "gz02eJxjZACBBvvrixvsrXIb7IN21NnD+CA2iOa6nmxvZFxsX15ebp+e1gaWNwbyGRgEHNLS0uwBE7wWhw==", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodachrome"),
+  add_preset(self, N_("similar to Kodachrome"),
              "gz02eJxjZACBBvvrixvsrXIb7IN21NnD+CA2iG59HWhvZFxsX15ebp+e1gaWT0tLA9ICDrNmRtoDACjOF7c=", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
@@ -1736,7 +1737,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 
   if(!g_strcmp0(layout, "list"))
   {
-    new_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+    new_container = dt_gui_vbox();
 
     for(int i=0; i<3; i++)
     {
@@ -1846,7 +1847,7 @@ void gui_init(dt_iop_module_t *self)
     g->luma_patches_flags[k] = INVALID;
   }
 
-  GtkWidget *mode_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *mode_box = self->widget = dt_gui_vbox();
 
   // mode choice
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
@@ -1858,7 +1859,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->controls, _("HSL"));
   dt_bauhaus_combobox_add(g->controls, _("RGBL"));
   dt_bauhaus_combobox_add(g->controls, _("both"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->controls);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
 
@@ -1866,9 +1867,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->controls, !g_strcmp0(mode, "RGBL") ? RGBL :
                                        !g_strcmp0(mode, "BOTH") ? BOTH : HSL);
 
-  g->master_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(C_("section", "master")), FALSE, FALSE, 0);
+  g->master_box = self->widget = dt_gui_vbox(dt_ui_section_label_new(C_("section", "master")));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_soft_range(g->saturation, 0.5f, 1.5f);
@@ -1895,53 +1894,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->contrast, "%");
   gtk_widget_set_tooltip_text(g->contrast, _("contrast"));
 
-#ifdef SHOW_COLOR_WHEELS
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
-
-  GtkWidget *area = dtgtk_drawing_area_new_with_height(0);
-  gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-
-  //   gtk_widget_add_events(g->area,
-  //                         GDK_POINTER_MOTION_MASK |
-  //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
-  //   g_signal_connect (G_OBJECT (area), "button-press-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
-  //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_motion_notify), self);
-  //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
-
-  area = dtgtk_drawing_area_new_with_height(0);
-  gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-
-  //   gtk_widget_add_events(g->area,
-  //                         GDK_POINTER_MOTION_MASK |
-  //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
-  //   g_signal_connect (G_OBJECT (area), "button-press-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
-  //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_motion_notify), self);
-  //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
-  //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
-
-  area = dtgtk_drawing_area_new_with_height(0);
-  gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-
-  //   gtk_widget_add_events(g->area,
-  //                         GDK_POINTER_MOTION_MASK |
-  //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
-//   g_signal_connect (G_OBJECT (area), "button-press-event",
-//                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
-//   g_signal_connect (G_OBJECT (area), "motion-notify-event",
-//                     G_CALLBACK (dt_iop_colorbalance_motion_notify), self);
-//   g_signal_connect (G_OBJECT (area), "leave-notify-event",
-//                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
-#endif
-
   g->main_label = dt_ui_section_label_new(""); // is set in _configure_slider_blocks
   gtk_widget_set_tooltip_text(g->main_label, _("click to cycle layout"));
   GtkWidget *main_label_box = gtk_event_box_new();
@@ -1963,7 +1915,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->which##_##c, section, #n);                 \
 
 #define ADD_BLOCK(blk, which, section, text, span, satspan)                 \
-  g->blocks[blk] = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  g->blocks[blk] = self->widget = dt_gui_vbox();                            \
                                                                             \
   sprintf(field_name, "%s[%d]", #which, CHANNEL_FACTOR);                    \
   g->which##_factor = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,       \
@@ -1994,7 +1946,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_##which, _("select the hue"));         \
   g_signal_connect(G_OBJECT(g->hue_##which), "value-changed",               \
                    G_CALLBACK(which##_callback), self);                     \
-  gtk_box_pack_start(GTK_BOX(self->widget), g->hue_##which, TRUE, TRUE, 0); \
                                                                             \
   g->sat_##which = dt_bauhaus_slider_new_with_range_and_feedback(self,      \
                    0.0f, 100.0f, 0, 0.0f, 2, 0);                            \
@@ -2006,7 +1957,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sat_##which, _("select the saturation"));  \
   g_signal_connect(G_OBJECT(g->sat_##which), "value-changed",               \
                    G_CALLBACK(which##_callback), self);                     \
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sat_##which, TRUE, TRUE, 0); \
+                                                                            \
+  dt_gui_box_add(self->widget, g->hue_##which, g->sat_##which);             \
                                                                             \
   ADD_CHANNEL(which, section, r, red, RED, text, span)                      \
   dt_bauhaus_slider_set_stop(g->which##_r, 0.0, 0.0, 1.0, 1.0);             \
@@ -2044,39 +1996,27 @@ void gui_init(dt_iop_module_t *self)
   ADD_BLOCK(2, gain,  N_("highlights"), gain_messages,  0.5f, 25.0f)
   _configure_slider_blocks(NULL, self);
 
-  g->optimizer_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "auto optimizers")), FALSE, FALSE, 0);
-
   g->auto_luma = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                  dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_luma, NULL, N_("optimize luma"));
   gtk_widget_set_tooltip_text(g->auto_luma, _("fit the whole histogram and center the average luma"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_luma, FALSE, FALSE, 0);
 
   g->auto_color = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                   dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_color, NULL, N_("neutralize colors"));
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_color, FALSE, FALSE, 0);
+
+  g->optimizer_box = dt_gui_vbox(dt_ui_section_label_new(C_("section", "auto optimizers")),
+                                 g->auto_luma, g->auto_color);
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = dt_gui_vbox(mode_box,
+                             g->master_box,
+                             main_label_box,
+                             g->main_box,
+                             g->optimizer_box);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(mode_box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->master_box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(main_label_box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->main_box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->optimizer_box), TRUE, TRUE, 0);
-
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _configure_slider_blocks, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_configure_slider_blocks, self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _configure_slider_blocks);
 }
 
 // clang-format off

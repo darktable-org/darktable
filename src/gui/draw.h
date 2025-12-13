@@ -20,10 +20,6 @@
 
 /** some common drawing routines. */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/splines.h"

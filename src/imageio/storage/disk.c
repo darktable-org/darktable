@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 #include "common/utility.h"
 #include "common/variables.h"
 #include "control/conf.h"
@@ -199,7 +200,7 @@ static void button_clicked(GtkWidget *widget,
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   gchar *dirname;
   gchar *filename;
-  if (g_file_test(old, G_FILE_TEST_IS_DIR))
+  if(g_file_test(old, G_FILE_TEST_IS_DIR))
   {
     // only a directory was specified, no filename
     // so we use the default $(FILE.NAME) for filename.
@@ -221,10 +222,21 @@ static void button_clicked(GtkWidget *widget,
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *composed = g_build_filename(dir, filename, NULL);
 
-    // composed can now contain '\': on Windows it's the path separator,
-    // on other platforms it can be part of a regular folder name.
-    // This would later clash with variable substitution, so we have to escape them
+#ifdef _WIN32
+    // Windows does not support forward slashes in filename,
+    // but they can also be used as path separators.
+    // To keep it consistent with Unix, we can just replace backslashes
+    // with forward slashes.
+    // This also means that we do not have problems with variable substitution.
+    // TODO: Of course it would be better if we supported "natural"
+    // Windows style path names.
+    gchar *escaped = dt_util_str_replace(composed, "\\", "/");
+#else
+    // On Unix, the backslash _can_ be part of a regular folder name.
+    // So it has to be escaped, because it would clash with variable
+    // substitution.
     gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+#endif
 
     gtk_entry_set_text(GTK_ENTRY(d->entry), escaped);
     // the signal handler will write this to conf
@@ -255,10 +267,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   disk_t *d = malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
   d->entry =
     GTK_ENTRY(dt_action_entry_new
@@ -267,14 +275,12 @@ void gui_init(dt_imageio_module_storage_t *self)
                  " like string manipulation\n"
                  "type '$(' to activate the completion and see the list of variables"),
                dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory")));
-  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(d->entry);
   gtk_editable_set_position(GTK_EDITABLE(d->entry), -1);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
 
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
-  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->onsave_action, self, NULL, N_("on conflict"), NULL,
@@ -284,7 +290,8 @@ void gui_init(dt_imageio_module_storage_t *self)
                                N_("overwrite"),
                                N_("overwrite if changed"),
                                N_("skip"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(dt_gui_hbox(d->entry, widget), d->onsave_action);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -316,6 +323,8 @@ int store(dt_imageio_module_storage_t *self,
           const int total,
           const gboolean high_quality,
           const gboolean upscale,
+          const gboolean is_scaling,
+          const double scale_factor,
           const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type,
           const gchar *icc_filename,
@@ -354,31 +363,21 @@ try_again:
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    if(dt_gimpmode())
-    {
-      /* we certainly don't want to use any variable based expansion of the given filename
-         while in gimp mode but just keep it.
-      */
-      g_strlcpy(filename, pattern, sizeof(filename));
-    }
-    else
-    {
-      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
-      g_strlcpy(filename, result_filename, sizeof(filename));
-      g_free(result_filename);
+    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+    g_strlcpy(filename, result_filename, sizeof(filename));
+    g_free(result_filename);
 
-      // if filenamepattern is a directory just add ${FILE_NAME} as
-      // default..  this can happen if the filename component of the
-      // pattern is an empty variable
-      const char last_char = *(filename + strlen(filename) - 1);
-      if(last_char == '/' || last_char == '\\')
-      {
-        // add to the end of the original pattern without caring about a
-        // potentially added "_$(SEQUENCE)"
-        if(snprintf(pattern, sizeof(pattern), "%s"
-                  G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-          goto try_again;
-      }
+    // if filenamepattern is a directory just add ${FILE_NAME} as
+    // default..  this can happen if the filename component of the
+    // pattern is an empty variable
+    const char last_char = *(filename + strlen(filename) - 1);
+    if(last_char == '/' || last_char == '\\')
+    {
+      // add to the end of the original pattern without caring about a
+      // potentially added "_$(SEQUENCE)"
+      if(snprintf(pattern, sizeof(pattern), "%s"
+                G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
+        goto try_again;
     }
 
     // get the directory path of the output file
@@ -454,10 +453,11 @@ try_again:
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         // get the image data
-        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        const GTimeSpan change_timestamp = img->change_timestamp;
-        const GTimeSpan export_timestamp = img->export_timestamp;
-        dt_image_cache_read_release(darktable.image_cache, img);
+        const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+        const GTimeSpan change_timestamp = img ? img->change_timestamp : 0;
+        const GTimeSpan export_timestamp = img ? img->export_timestamp : 0;
+
+        dt_image_cache_read_release(img);
 
         // check if the export timestamp in the database is more recent than the change
         // date, if yes skip the image
@@ -478,7 +478,8 @@ try_again:
 
   /* export image to file */
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
-                       upscale, TRUE, export_masks, icc_type,
+                       upscale, is_scaling, scale_factor,
+                       TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata,
                        num, total, metadata) != 0)
   {

@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -353,7 +350,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       // contains NANs which initiates special handling below to avoid inconsistent results. in all
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+      if(hash != DT_INVALID_HASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
@@ -575,7 +572,7 @@ void gui_update(dt_iop_module_t *self)
   g->auto_levels[0] = DT_LEVELS_UNINIT;
   g->auto_levels[1] = DT_LEVELS_UNINIT;
   g->auto_levels[2] = DT_LEVELS_UNINIT;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -618,7 +615,7 @@ void gui_init(dt_iop_module_t *self)
   g->auto_levels[0] = DT_LEVELS_UNINIT;
   g->auto_levels[1] = DT_LEVELS_UNINIT;
   g->auto_levels[2] = DT_LEVELS_UNINIT;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 
   g->modes = NULL;
@@ -634,9 +631,6 @@ void gui_init(dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/levels/graphheight"));
-  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area),_("drag handles to set black, gray, and white points. "
                                                     "operates on L channel."));
   dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(g->area), NULL);
@@ -647,8 +641,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
-
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
@@ -666,15 +658,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(g->whitepick), "picker-white");
 
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton  ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->blackpick), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->greypick ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->whitepick), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox_manual), box, TRUE, TRUE, 0);
+  GtkWidget *vbox_manual = dt_gui_vbox(g->area,
+                                       dt_gui_hbox(dt_gui_expand(autobutton  ),
+                                                   dt_gui_expand(g->blackpick),
+                                                   dt_gui_expand(g->greypick ),
+                                                   dt_gui_expand(g->whitepick)));
 
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
-  GtkWidget *vbox_automatic = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  GtkWidget *vbox_automatic = self->widget = dt_gui_vbox();
 
   g->percentile_black = dt_bauhaus_slider_from_params(self, N_("black"));
   gtk_widget_set_tooltip_text(g->percentile_black, _("black percentile"));
@@ -691,19 +683,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_automatic, "automatic");
 
   // start building top level widget
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  self->widget = dt_gui_vbox();
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->mode_stack);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   g_list_free(g->modes);
-
-  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
@@ -920,7 +910,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   // set active point
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
@@ -948,7 +938,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_levels_gui_data_t *g = self->gui_data;
     g->dragging = 0;

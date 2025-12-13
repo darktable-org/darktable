@@ -23,9 +23,7 @@
 #include "develop/pixelpipe.h"
 
 /** wrapper around exiv2, C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 typedef enum dt_dng_illuminant_t // from adobes dng_sdk
 {
@@ -112,7 +110,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename,
 char *dt_exif_xmp_read_string(const dt_imgid_t imgid);
 
 /** read xmp sidecar file. Returns TRUE in case of any error*/
-gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
+gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const gboolean history_only);
 
 /** apply default import metadata */
 void dt_exif_apply_default_metadata(dt_image_t *img);
@@ -135,9 +133,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
 /** look for basic info in data. used import jobs */
 void dt_exif_get_basic_data(const uint8_t *data, size_t size, dt_image_basic_exif_t *basic_exif);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

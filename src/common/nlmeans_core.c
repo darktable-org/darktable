@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -709,7 +706,7 @@ int nlmeans_denoise_cl(
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
 error:
@@ -796,7 +793,7 @@ int nlmeans_denoiseprofile_cl(
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
 error:

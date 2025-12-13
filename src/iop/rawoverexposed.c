@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2016-2024 darktable developers.
+   Copyright (C) 2016-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,10 +15,6 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "common/darktable.h"    // for darktable, darktable_t, dt_alloc_a...
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
@@ -45,7 +41,7 @@ typedef struct dt_iop_rawoverexposed_t
   int dummy;
 } dt_iop_rawoverexposed_t;
 
-static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(64))) = {
+static const float dt_iop_rawoverexposed_colors[4][4] __attribute__((aligned(64))) = {
   { 1.0f, 0.0f, 0.0f, 1.0f }, // red
   { 0.0f, 1.0f, 0.0f, 1.0f }, // green
   { 0.0f, 0.0f, 1.0f, 1.0f }, // blue
@@ -131,11 +127,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     return;
   }
 
@@ -187,7 +183,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       int c;
       if(filters == 9u)
       {
-        c = FCxtrans(j_raw, i_raw, NULL, xtrans);
+        c = FCNxtrans(j_raw, i_raw, xtrans);
       }
       else // if(filters)
       {
@@ -217,7 +213,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   dt_free_align(coordbuf);
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -237,16 +233,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_colors = NULL;
   cl_mem dev_xtrans = NULL;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = DT_OPENCL_PROCESS_CL;
 
-  const dt_image_t *const image = &(dev->image_storage);
+  const dt_image_t *const image = &dev->image_storage;
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     goto error;
   }
 
@@ -272,7 +268,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int raw_width = buf.width;
   const int raw_height = buf.height;
 
-  err = DT_OPENCL_SYSMEM_ALLOCATION;
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_raw = dt_opencl_copy_host_to_device(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
   if(dev_raw == NULL) goto error;
 
@@ -297,11 +293,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     dt_dev_distort_backtransform_plus(self->dev, self->dev->full.pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
   }
 
-  dev_coord = dt_opencl_alloc_device_buffer(devid, coordbufsize);
-  if(dev_coord == NULL) goto error;
-
-  /* _blocking_ memory transfer: host coordbuf buffer -> opencl dev_coordbuf */
-  err = dt_opencl_write_buffer_to_device(devid, coordbuf, dev_coord, 0, coordbufsize, CL_TRUE);
+  dev_coord = dt_opencl_copy_host_to_device_constant(devid, coordbufsize, coordbuf);
   if(err != CL_SUCCESS) goto error;
 
   int kernel;
@@ -310,12 +302,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
       kernel = gd->kernel_rawoverexposed_mark_cfa;
 
-      dev_colors = dt_opencl_alloc_device_buffer(devid, sizeof(dt_iop_rawoverexposed_colors));
-      if(dev_colors == NULL) goto error;
-
-      /* _blocking_ memory transfer: host coordbuf buffer -> opencl dev_colors */
-      err = dt_opencl_write_buffer_to_device(devid, (void *)dt_iop_rawoverexposed_colors, dev_colors, 0,
-                                             sizeof(dt_iop_rawoverexposed_colors), CL_TRUE);
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      dev_colors = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_rawoverexposed_colors), (void *)dt_iop_rawoverexposed_colors);
       if(err != CL_SUCCESS) goto error;
 
       break;
@@ -328,7 +316,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       break;
   }
 
-  err = DT_OPENCL_SYSMEM_ALLOCATION;
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(filters == 9u)
   {
     dev_xtrans
@@ -340,14 +328,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(dev_thresholds == NULL) goto error;
 
   size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord), CLARG(width),
-    CLARG(height), CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
+  dt_opencl_set_kernel_args(devid, kernel, 0,
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
+    CLARG(width), CLARG(height),
+    CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
     CLARG(dev_thresholds));
 
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
     dt_opencl_set_kernel_args(devid, kernel, 11, CLARG(dev_colors));
   else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
-    dt_opencl_set_kernel_args(devid, kernel, 11, CLARRAY(4, color));
+    dt_opencl_set_kernel_args(devid, kernel, 11, CLFLARRAY(4, color));
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 
@@ -358,7 +348,7 @@ error:
   dt_opencl_release_mem_object(dev_coord);
   dt_free_align(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   return err;
 }
 #endif
@@ -377,7 +367,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   int raw_width = 0;
   int raw_height = 0;
 
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   if(buf.buf)
   {
@@ -385,7 +375,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     raw_height = buf.height;
   }
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   tiling->factor = 2.5f;  // in + out + coordinates
   tiling->maxbuf = 1.0f;

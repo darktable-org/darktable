@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@
 */
 
 #pragma once
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #define DT_OPENCL_MAX_PLATFORMS 5
 #define DT_OPENCL_MAX_PROGRAMS 256
@@ -41,6 +37,13 @@
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
 #define DT_OPENCL_PROCESS_CL -997
 #define DT_OPENCL_NODEVICE -996
+#define DT_OPENCL_DT_EXCEPTION -995
+
+/* exceptions */
+#define DT_OPENCL_AMD_APP 1
+#define DT_OPENCL_ONLY_CUDA 2
+
+
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -111,10 +114,12 @@ typedef struct dt_opencl_device_t
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
+  cl_ulong max_mem_constant;
+  cl_uint alignsize; 
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
-  int program_used[DT_OPENCL_MAX_PROGRAMS];
-  int kernel_used[DT_OPENCL_MAX_KERNELS];
+  gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
+  gboolean kernel_used[DT_OPENCL_MAX_KERNELS];
   cl_event *eventlist;
   dt_opencl_eventtag_t *eventtags;
   int numevents;
@@ -127,8 +132,11 @@ typedef struct dt_opencl_device_t
   int maxeventslot;
   gboolean nvidia_sm_20;
   const char *fullname;
+  const char *platform;
+  const char *device_version;
   const char *cname;
   const char *options;
+  const char *cflags;
   cl_int summary;
   size_t memory_in_use;
   size_t peak_memory;
@@ -198,6 +206,12 @@ typedef struct dt_opencl_device_t
   // Some devices are known to be unused by other apps so they can use
   // all memory.
   int headroom;
+
+  // lets keep the vendor for runtime checks
+  int vendor_id;
+
+  // exceptions bit mask
+  uint32_t exceptions;
 
   float advantage;
 } dt_opencl_device_t;
@@ -409,13 +423,6 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int height,
                                   const int bpp);
 
-int dt_opencl_read_host_from_device(const int devid,
-                                    void *host,
-                                    void *device,
-                                    const int width,
-                                    const int height,
-                                    const int bpp);
-
 int dt_opencl_read_host_from_device_rowpitch(const int devid,
                                              void *host,
                                              void *device,
@@ -608,6 +615,9 @@ void dt_opencl_check_tuning(const int devid);
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
+/** checks for a detected OpenCL runtime exception */
+gboolean dt_opencl_exception(const int devid, const uint32_t mask);
+
 /** round size to a multiple of the value given in the device specifig
  * config parameter for opencl_size_roundup */
 int dt_opencl_dev_roundup_width(int size,
@@ -634,7 +644,7 @@ int dt_opencl_local_buffer_opt(const int devid,
 void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 gboolean dt_opencl_avoid_atomics(const int devid);
-int dt_opencl_micro_nap(const int devid);
+void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
 G_END_DECLS
@@ -750,10 +760,6 @@ static inline gboolean dt_opencl_image_fits_device(const int devid,
 static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
-}
-static inline void dt_opencl_check_tuning(const int devid)
-{
-  return;
 }
 static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {

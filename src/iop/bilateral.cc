@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
 #include "control/control.h"
@@ -40,7 +37,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-extern "C" {
+G_BEGIN_DECLS
 
 /**
  * implementation of the 5d-color bilateral filter using andrew adams
@@ -100,7 +97,9 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
-    (self, _("apply edge-aware surface blur to denoise or smoothen textures"),
+    (self,
+     _("apply edge-aware surface blur\n"
+       "to denoise or smoothen textures"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -386,7 +385,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->blue, 4);
 }
 
-} // extern "C"
+G_END_DECLS
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

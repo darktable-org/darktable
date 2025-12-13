@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,6 +106,7 @@ typedef struct dt_variables_data_t
 
 static char *_expand_source(dt_variables_params_t *params, char **source, char extra_stop);
 
+
 // gather some data that might be used for variable expansion
 static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 {
@@ -156,7 +157,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   {
     const dt_image_t *img = params->img
       ? (dt_image_t *)params->img
-      : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+      : dt_image_cache_get(params->imgid, 'r');
 
     params->data->datetime = dt_datetime_img_to_gdatetime(img, darktable.utc_tz);
     if(params->data->datetime)
@@ -180,8 +181,22 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
     params->data->elevation = img->geoloc.elevation;
-    params->data->exif_flash_icon = img->exif_flash[0] == 'Y' ? "⚡" : "";
-    params->data->exif_flash = img->exif_flash[0] == 'Y' ? _("yes") : (img->exif_flash[0] == 'N' ? _("no") : _("n/a"));
+
+
+    // We don't want to claim that the flash did not fire when the photo is
+    // clearly taken with a flash, but information about this is not available
+    if(img->exif_flash_tagvalue == -1)
+    {
+       params->data->exif_flash_icon = "";
+       params->data->exif_flash = _("no info");
+    }
+    else
+    {
+      // Bit 0 set means that flash was fired
+      params->data->exif_flash_icon = (img->exif_flash_tagvalue & 1) ? "⚡" : "";
+      params->data->exif_flash = (img->exif_flash_tagvalue & 1) ? _("yes") : _("no");
+    }
+
     params->data->exif_exposure_program = img->exif_exposure_program;
     params->data->exif_metering_mode = img->exif_metering_mode;
     params->data->exif_whitebalance = img->exif_whitebalance;
@@ -214,7 +229,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
       }
     }
 
-    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
+    if(params->img == NULL) dt_image_cache_read_release(img);
   }
   else
   { // session data
@@ -285,63 +300,39 @@ static char *_variables_get_latitude(dt_variables_params_t *params)
   }
 }
 
-static int _get_parameters(char **variable, char **parameters, size_t max_param)
-/*
- * @param char **variable - The variable to read parameters from
- * @param char **parameters - a pointer to where list of parameters are stored in
- * @param size_t max_param - The maximum number of parameters to read
- *                           (and parameters has space for pointers)
- * @return The number of parameters, -1 if any error
- *
- * You should free the string in parameters with g_free() after usage unless
- * returnvalue is 0 or -1;
+/**
+ * get n,m from a variable with [n,m], i.e. $(SEQUENCE[4,1])
+ * param_m may be NULL if only n is needed, i.e. $(IMAGE_ID[4])
  */
+static void _get_parameters_n_m(char **variable, gchar **param_n, gchar **param_m)
 {
-  *parameters = NULL;
-  if(*variable[0] == '[')
+  *param_n = NULL;
+  if(param_m) *param_m = NULL;
+
+  if(*variable[0] != '[') return;
+  (*variable)++;
+  if(*variable[0] == ',') return;
+
+  gchar *parameters = g_strdup(*variable);
+  char *end = g_strstr_len(parameters, -1, "]");
+  if(end)
   {
-    (*variable) ++;
-    if(*variable[0] == ',')
+    end[0] = '\0';
+    (*variable) += strlen(parameters) + 1;
+
+    gchar **res = g_strsplit(parameters, ",", 2);
+    gchar **p = res;
+    int n = 0;
+    while(*p && n < 2)
     {
-      return -1;
+      gchar **target = (n == 0)? param_n : param_m;
+      if(target) *target = g_strdup(*p);
+      p++;
+      n++;
     }
-    *parameters = g_strdup(*variable);
-    char *end = g_strstr_len(*parameters, -1, "]");
-    if(end)
-    {
-      end[0] = '\0';
-      (*variable) += strlen(*parameters) + 1;
-
-      size_t count = 0;
-      char *token = strtok(*parameters, ",");
-      while (token != NULL && count < max_param)
-      {
-        *parameters = token;
-        parameters++;
-        count++;
-        token = strtok(NULL, ",");
-      }
-      return count;
-    }
+    g_strfreev(res);
   }
-  return -1;
-}
-
-static gboolean _is_number(char *str)
-{
-  if(*str == '-' || *str == '+')
-    str++;
-
-  if(!g_ascii_isdigit(*str))
-    return FALSE;  // don't take empty strings
-
-  while(*str)
-  {
-    if(!g_ascii_isdigit(*str))
-      return FALSE;
-    str++;
-  }
-  return TRUE;
+  g_free(parameters);
 }
 
 static uint8_t _get_var_parameter(char **variable, const int default_value)
@@ -349,13 +340,12 @@ static uint8_t _get_var_parameter(char **variable, const int default_value)
   uint8_t val = default_value;
   if(*variable[0] == '[')
   {
-    char *parameters[1] = { NULL };
-    const int num = _get_parameters(variable, parameters, 1);
-    if(num == 1 && _is_number(parameters[0]))
-    {
-      val = (uint8_t)strtol(parameters[0], NULL, 10);
-    }
-    g_free(parameters[0]);
+    gchar *val_s;
+    _get_parameters_n_m(variable, &val_s, NULL);
+    int n = g_ascii_strtoll(val_s, NULL, 10);
+    if(n > 0)
+      val = n;
+    g_free(val_s);
   }
   return val;
 }
@@ -478,7 +468,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
   {
-    if (params->use_html_newline)
+    if(params->use_html_newline)
       result = g_strdup_printf("&#13;");
     else
       result = g_strdup_printf("\n");
@@ -588,14 +578,14 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     sqlite3_finalize(stmt);
     // determine how many zero-padded digits to use with an optional
     // parameter: $(IMAGE.ID.NEXT[n]), default n=1
-    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    const uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, highest_id + 1);
   }
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
   {
     // determine how many zero-padded digits to use with an optional
     // parameter: $(IMAGE.ID[n]), default n=1
-    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    const uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, params->imgid);
   }
   else if(_has_prefix(variable, "IMAGE.EXIF"))
@@ -603,17 +593,17 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     gchar buffer[1024];
     const dt_image_t *img = params->img
       ? (dt_image_t *)params->img
-      : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+      : dt_image_cache_get(params->imgid, 'r');
 
     dt_image_print_exif(img, buffer, sizeof(buffer));
     if(params->img == NULL)
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
     result = g_strdup(buffer);
   }
   else if(_has_prefix(variable, "VERSION.NAME")
           || _has_prefix(variable, "VERSION_NAME"))
   {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.version_name", NULL);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -657,7 +647,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
     {
       gchar *dirname = g_path_get_dirname(params->filename);
-      result = g_path_get_basename(dirname);
+      const uint8_t levels = _get_var_parameter(variable, 1);
+      result = g_strdup(dt_image_film_roll_name_levels(dirname, CLAMPS(levels, 1, 5)));
       g_free(dirname);
     }
   }
@@ -702,26 +693,30 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(g_ascii_isdigit(*variable[0]))
     {
       nb_digit = (uint8_t)*variable[0] & 0b1111;
-      (*variable) ++;
+      (*variable)++;
     }
     // new $(SEQUENCE[n,m]) syntax
     // allows \[[0-9]+,[0-9]+] (PCRE)
     // everything else will be ignored
     else if(*variable[0] == '[')
     {
-      char *parameters[2] = {NULL};
-      const int num = _get_parameters(variable, parameters, 2);
-      if(num >= 1 && _is_number(parameters[0]))
+      gchar *nb_digit_s, *shift_s;
+      _get_parameters_n_m(variable, &nb_digit_s, &shift_s);
+
+      if(nb_digit_s)
       {
-        nb_digit = (uint8_t) strtol(parameters[0], NULL, 10);
-        if(num == 2 && _is_number(parameters[1]))
-        {
-          shift = (gint) strtol(parameters[1], NULL, 10);
-        }
+        const int nb = g_ascii_strtoll(nb_digit_s, NULL, 10);
+        if(nb > 0) nb_digit = nb;
       }
-      if(num == 2)
-        g_free(parameters[1]);
-      g_free(parameters[0]);
+
+      if(shift_s)
+      {
+        const int nb = g_ascii_strtoll(shift_s, NULL, 10);
+        if(nb > 0) shift = nb;
+      }
+
+      g_free(nb_digit_s);
+      g_free(shift_s);
     }
     result = g_strdup_printf("%.*u", nb_digit,
                              params->sequence >= 0
@@ -785,7 +780,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           && g_strcmp0(params->jobcode, "infos") == 0)
   {
     escape = FALSE;
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.colorlabels", NULL);
     for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
       const int dot_index = GPOINTER_TO_INT(res_iter->data);
@@ -802,7 +797,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // TODO: currently we concatenate all the color labels with a ','
     // as a separator. Maybe it's better to only use the first/last
     // label?
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.colorlabels", NULL);
     if(res != NULL)
     {
       GList *labels = NULL;
@@ -818,56 +813,6 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(_has_prefix(variable, "TITLE")
-          || _has_prefix(variable, "Xmp.dc.title"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "DESCRIPTION")
-          || _has_prefix(variable, "Xmp.dc.description"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "CREATOR")
-          || _has_prefix(variable, "Xmp.dc.creator"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "PUBLISHER")
-          || _has_prefix(variable, "Xmp.dc.publisher"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "RIGHTS")
-          || _has_prefix(variable, "Xmp.dc.rights"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
   else if(_has_prefix(variable, "OPENCL.ACTIVATED")
           || _has_prefix(variable, "OPENCL_ACTIVATED"))
   {
@@ -875,6 +820,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup(_("yes"));
     else
       result = g_strdup(_("no"));
+  }
+  else if(_has_prefix(variable, "WORKSPACE.LABEL"))
+  {
+    result = g_strdup(dt_conf_get_string("workspace/label"));
   }
   else if(_has_prefix(variable, "WIDTH.MAX")
           || _has_prefix(variable, "MAX_WIDTH"))
@@ -923,7 +872,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(g_ascii_isdigit(*variable[0]))
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b1111;
-      (*variable) ++;
+      (*variable)++;
       if(*variable[0] == '(')
       {
         char *category = g_strdup(*variable + 1);
@@ -947,21 +896,23 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // $(CATEGORY[n,category]) with category as above (new syntax)
     else if(*variable[0] == '[')
     {
-      char *parameters[2] = {NULL};
-      const int num = _get_parameters(variable, parameters, 2);
-      if(num == 2 && g_ascii_isdigit(*parameters[0]))
+      gchar *level_s, *category;
+      _get_parameters_n_m(variable, &level_s, &category);
+
+      if(level_s && category && g_ascii_isdigit(*level_s))
       {
-        const uint8_t level = (uint8_t)*parameters[0] & 0b1111;
-        parameters[1][strlen(parameters[1]) + 1] = '\0';
-        parameters[1][strlen(parameters[1])] = '|';
-        char *tag = dt_tag_get_subtags(params->imgid, parameters[1], (int)level);
+        const uint8_t level = (uint8_t)*level_s & 0b1111;
+        gchar *cat = g_strdup_printf("%s|", category);
+        char *tag = dt_tag_get_subtags(params->imgid, cat, (int)level);
+        g_free(cat);
         if(tag)
         {
           result = g_strdup(tag);
           g_free(tag);
         }
       }
-      g_free(parameters[0]);
+      g_free(level_s);
+      g_free(category);
     }
   }
   else if(_has_prefix(variable, "IMAGE.TAGS.HIERARCHY"))
@@ -978,7 +929,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(tags);
     g_free(tags);
   }
-  else if(_has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
+  else if(_has_prefix(variable, "SIDECAR_TXT")
+          && g_strcmp0(params->jobcode, "infos") == 0
           && (params->data->flags & DT_IMAGE_HAS_TXT))
   {
     char *path = dt_image_get_text_path(params->imgid);
@@ -1001,6 +953,27 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           || _has_prefix(variable, "DARKTABLE_NAME"))
     result = g_strdup(PACKAGE_NAME);
   else
+  {
+    // metadata
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList* iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+      gboolean found = FALSE;
+      if(_has_prefix(variable, metadata->tagname))
+      {
+        GList *res = dt_metadata_get(params->imgid, metadata->tagname, NULL);
+        if(res != NULL)
+          	result = g_strdup((char *)res->data);
+        g_list_free_full(res, g_free);
+        found = TRUE;
+      }
+      if(found) break;
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+  }
+
+  if(!result)
   {
     // go past what looks like an invalid variable. we only expect to
     // see [a-zA-Z]* in a variable name.
@@ -1141,7 +1114,9 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
       {
         char *pattern = _expand_source(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
-        if(!strncmp(base_value + base_value_length - pattern_length, pattern, pattern_length))
+        if(!strncmp(base_value + base_value_length - pattern_length,
+                    pattern,
+                    pattern_length))
           base_value[base_value_length - pattern_length] = '\0';
         g_free(pattern);
       }
@@ -1277,7 +1252,7 @@ static char *_variable_get_value(dt_variables_params_t *params, char **variable)
             ? g_unichar_toupper(changed)
             : g_unichar_tolower(changed);
 
-          int utf8_length = g_unichar_to_utf8(changed, NULL);
+          const int utf8_length = g_unichar_to_utf8(changed, NULL);
           char *next = g_utf8_next_char(base_value);
           _base_value =
             g_malloc0(base_value_length - (next - base_value) + utf8_length + 1);
@@ -1381,13 +1356,41 @@ static char *_expand_source(dt_variables_params_t *params,
   return result;
 }
 
+static gchar *_legacy_aliases(const gchar *source)
+{
+  // create aliases for legacy variable names to avoid breaking old edits
+  gchar *result, *result_old;
+  result = dt_util_str_replace(source, "$(TITLE)", "$(Xmp.dc.title)");
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(DESCRIPTION)", "$(Xmp.dc.description)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(PUBLISHER)", "$(Xmp.dc.publisher)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(CREATOR)", "$(Xmp.dc.creator)");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "$(RIGHTS)", "$(Xmp.dc.rights)");
+  g_free(result_old);
+
+  return result;
+}
+
 char *dt_variables_expand(dt_variables_params_t *params,
                           gchar *source,
                           const gboolean iterate)
 {
   _init_expansion(params, iterate);
 
-  char *result = _expand_source(params, &source, '\0');
+  gchar *aliased_source = _legacy_aliases(source);
+  gchar *nsource = aliased_source;
+  char *result = _expand_source(params, &nsource, '\0');
+  g_free(aliased_source);
 
   _cleanup_expansion(params);
   return result;

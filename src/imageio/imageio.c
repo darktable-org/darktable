@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/colorlabels.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -34,41 +31,50 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
 #endif
+
 #ifdef HAVE_OPENJPEG
 #include "imageio/imageio_j2k.h"
 #endif
+
 #ifdef HAVE_LIBJXL
 #include "imageio/imageio_jpegxl.h"
 #endif
-#include "imageio/imageio_gm.h"
-#include "imageio/imageio_im.h"
+
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_pfm.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_pnm.h"
 #include "imageio/imageio_qoi.h"
 #include "imageio/imageio_rawspeed.h"
-#include "imageio/imageio_libraw.h"
 #include "imageio/imageio_rgbe.h"
 #include "imageio/imageio_tiff.h"
+
 #ifdef HAVE_LIBAVIF
 #include "imageio/imageio_avif.h"
 #endif
+
 #ifdef HAVE_LIBHEIF
 #include "imageio/imageio_heif.h"
 #endif
+
 #ifdef HAVE_WEBP
 #include "imageio/imageio_webp.h"
 #endif
+
+#ifdef HAVE_LIBRAW
 #include "imageio/imageio_libraw.h"
+#endif
 
 #ifdef HAVE_GRAPHICSMAGICK
+#include "imageio/imageio_gm.h"
 #include <magick/api.h>
 #include <magick/blob.h>
 #elif defined HAVE_IMAGEMAGICK
+#include "imageio/imageio_im.h"
   #ifdef HAVE_IMAGEMAGICK7
   #include <MagickWand/MagickWand.h>
   #else
@@ -174,7 +180,7 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
 #define dt_imageio_open_gm _unsupported_type
 #endif
 
-#ifndef HAVE_IMAGESMAGICK
+#ifndef HAVE_IMAGEMAGICK
 #define dt_imageio_open_im _unsupported_type
 #endif
 
@@ -191,6 +197,11 @@ typedef struct {
   gchar         magic[MAX_MAGIC];  // the actual signature bytes
   const char   *searchstring;	   // sub-signature which might be anywhere in first 512 bytes of file
 } dt_magic_bytes_t;
+
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
+   (dt_image_t *img,
+    const char *filename,
+    dt_mipmap_buffer_t *mbuf);
 
 // the signatures for the file types we know about.  More specific ones need to come before
 // less specific ones, e.g. TIFF needs to come after DNG and nearly all camera formats, since
@@ -228,20 +239,26 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // WEBP image
   { DT_FILETYPE_WEBP, FALSE, 8, 4, dt_imageio_open_webp,
     { 'W', 'E', 'B', 'P' } },  // full signature is RIFF????WEPB, where ???? is the file size
-  // HEIC/HEIF image
-  { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
-    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'c' } },
-  { DT_FILETYPE_HEIC, TRUE, 4, 8, dt_imageio_open_heif,
-    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'x' } }, // 10-bit
+  // HEIC/HEIF images
+  // this matches heic, heix, heim, heis, hevc, hevx, hevm and hevs major brands
+  { DT_FILETYPE_HEIC, FALSE, 4, 6, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'h', 'e' } },
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'j', '2', 'k', 'i' } }, // JPEG 2000 encapsulated in HEIF
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'a', 'v', 'c', 'i' } }, // AVC (H.264) encoded HEIF
   // AVIF image
-  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
-    { 'f', 't', 'y', 'p', 'a', 'v', 'i', 'f' } },
-//  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
-//    { 'f', 't', 'y', 'p', 'm', 'i', 'f', '1' } },  //alternate? HEIF or AVIF, depending on bytes 16-19
+  // this matches 'avif' and 'avis'
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_avif,
+    { 'f', 't', 'y', 'p', 'a', 'v', 'i' } },
+  // Technically, files with major brand names starting with 'mif' or 'msf'
+  // can be either HEIF or AVIF files, depending on information in the
+  // next bytes. But the HEIF loader can read files of both formats, so
+  // that's the loader we're calling in this case.
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'm', 'i', 'f' } },
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'm', 's', 'f' } },
   // Quite OK Image Format (QOI)
   { DT_FILETYPE_QOI, FALSE, 0, 4, dt_imageio_open_qoi,
     { 'q', 'o', 'i', 'f' } },
@@ -297,32 +314,32 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_RW2, TRUE, 0, 8, dt_imageio_open_rawspeed,
     { 'I', 'I', 'U', 0x00, 0x08, 0x00, 0x00, 0x00 } },
   // Sigma Foveon X3F file
-  { DT_FILETYPE_X3F, TRUE, 0, 4, NULL,
+  { DT_FILETYPE_X3F, TRUE, 0, 4, dt_imageio_open_libraw,
     { 'F', 'O', 'V', 'b' } },
   // Nikon NEF files are TIFFs with (usually) the string "NIKON CORP" early in the file
-  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "NIKON CORP" },
-  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "NIKON CORP" },
   // Epson ERF files are TIFFs with the string "EPSON" early in the file
-  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ERF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "EPSON" },
-  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ERF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "EPSON" },
   // Pentax/Ricoh PEF files are TIFFs with the string "PENTAX" early in the file
-  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_PEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "PENTAX" },
-  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_PEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "PENTAX" },
   // Samsung SRW files are TIFFs with the string "SAMSUNG" early in the file
-  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_SRW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "SAMSUNG" },
-  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_SRW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "SAMSUNG" },
   // Sony ARW files are TIFFs with the string "SONY" early in the file
-  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ARW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "SONY" },
-  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ARW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "SONY" },
   // little-endian (Intel) TIFF
   { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
@@ -559,6 +576,31 @@ static const dt_magic_bytes_t *_find_signature(const char *filename)
   if(magicbuf[0] == 40 && magicbuf[1] == 0 && magicbuf[12] == 1 && magicbuf[13] == 0)
     return &_windows_BMP_signature;
   return NULL;
+}
+
+// Note: if some program creates a TIFF file from a raw file which is based
+// on a TIFF container, while preserving all Exif data, such a file cannot
+// be distinguished from a raw file by its signature.
+
+// We want to support reading such TIFFs, and even those that, by mistake,
+// contain metadata specific to raw files. The raw loader may in this case
+// conclude that it is reading a raw file and produce wrong image.
+
+// We can fix this by calling TIFF loader first. It checks the file extension
+// and limits itself to processing only .tif/.tiff. So it's safe for nearly
+// all raw files except those few disguised as TIFF files with .tif extension.
+// Obviously, for them, this function should not be called.
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed
+   (dt_image_t *img,
+    const char *filename,
+    dt_mipmap_buffer_t *mbuf)
+{
+  dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
+  ret = dt_imageio_open_tiff(img, filename, mbuf);
+  if(!_image_handled(ret))
+    ret = dt_imageio_open_rawspeed(img, filename, mbuf);
+
+  return ret;
 }
 
 static dt_imageio_retval_t _open_by_magic_number(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
@@ -921,28 +963,6 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out,
   }
 }
 
-size_t dt_imageio_write_pos(const int i,
-                            const int j,
-                            const int wd,
-                            const int ht,
-                            const float fwd,
-                            const float fht,
-                            const dt_image_orientation_t orientation)
-{
-  int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
-  if(orientation & ORIENTATION_SWAP_XY)
-  {
-    w = ht;
-    ii = j;
-    jj = i;
-    fw = fht;
-    fh = fwd;
-  }
-  if(orientation & ORIENTATION_FLIP_X) ii = (int)fw - ii - 1;
-  if(orientation & ORIENTATION_FLIP_Y) jj = (int)fh - jj - 1;
-  return (size_t)jj * w + ii;
-}
-
 gboolean dt_imageio_is_ldr(const char *filename)
 {
   const dt_magic_bytes_t *sig = _find_signature(filename);
@@ -974,6 +994,8 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                            dt_imageio_module_data_t *format_params,
                            const gboolean high_quality,
                            const gboolean upscale,
+                           const gboolean is_scaling,
+                           const double scale_factor,
                            const gboolean copy_metadata,
                            const gboolean export_masks,
                            const dt_colorspaces_color_profile_type_t icc_type,
@@ -992,12 +1014,9 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                                export_masks)) != 0;
   else
   {
-    const gboolean is_scaling =
-      dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
-
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
                                         FALSE, FALSE, high_quality, upscale,
-                                        is_scaling, FALSE, NULL, copy_metadata,
+                                        is_scaling, scale_factor, FALSE, NULL, copy_metadata,
                                         export_masks, icc_type, icc_filename,
                                         icc_intent, storage, storage_params,
                                         num, total, metadata, -1);
@@ -1032,6 +1051,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                       const gboolean high_quality,
                                       const gboolean upscale,
                                       const gboolean is_scaling,
+                                      const double scale_factor,
                                       const gboolean thumbnail_export,
                                       const char *filter,
                                       const gboolean copy_metadata,
@@ -1052,19 +1072,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(history_end != -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
-  const gboolean buf_is_downscaled =
-    (thumbnail_export && dt_conf_get_bool("ui/performance"));
-
   if(!thumbnail_export)
     dt_set_backthumb_time(600.0); // make sure we don't interfere
 
   dt_mipmap_buffer_t buf;
-  if(buf_is_downscaled)
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
-                        DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
-  else
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
-                        DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   const dt_image_t *img = &dev.image_storage;
 
@@ -1273,10 +1285,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     if(is_scaling)
     {
-      // scaling
-      double _num, _denum;
-      dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
-      const double scale_factor = _num / _denum;
       if(!thumbnail_export)
       {
         scale = fmin(scale_factor, max_scale);
@@ -1289,13 +1297,14 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
-           " upscale=%s, hq=%s",
+           " upscale=%s, hq=%s%s",
            size_warning ? "**missing size** " : "",
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
            upscale ? "yes" : "no",
-           high_quality_processing || scale > 1.0f ? "yes" : "no");
+           high_quality_processing || scale > 1.0f ? "yes" : "no",
+           dt_check_gimpmode("file") ? " GIMP" : "");
 
   const int bpp = format->bpp(format_params);
 
@@ -1493,7 +1502,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   if(!thumbnail_export && strcmp(format->mime(format_params), "memory")
     && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE))
@@ -1532,7 +1541,7 @@ error:
   dt_dev_pixelpipe_cleanup(&pipe);
 error_early:
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   if(!thumbnail_export)
     dt_set_backthumb_time(5.0);
@@ -1622,29 +1631,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    // there are reports that AVIF and HEIF files with alternate magic bytes exist, so try loading
-    // as such if we haven't yet succeeded
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_avif(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_heif(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_exr(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_rgbe(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_j2k(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_jpeg(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_pnm(img, filename, buf);
-
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
@@ -1680,6 +1666,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                                  mk, mk_len,
                                                  md, md_len,
                                                  al, al_len);
+
+#ifdef HAVE_LIBRAW
   if(found == FALSE)
   {
     // Special handling for CR3 raw files via libraw
@@ -1688,6 +1676,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                         md, md_len,
                                         al, al_len);
   }
+#endif
+
   return found;
 }
 
@@ -1763,10 +1753,11 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   const gboolean upscale = TRUE;
   const gboolean export_masks = FALSE;
   const gboolean is_scaling = FALSE;
+  const double scale_factor = 1.0;
 
   dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-     high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE, export_masks,
      DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
      history_end);
 

@@ -1,6 +1,8 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/styles_string.h
 build/bin/tools/darktable_authors.h
+build/lib/darktable/plugins/introspection_agx.c
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -67,6 +69,7 @@ build/lib/darktable/plugins/introspection_overexposed.c
 build/lib/darktable/plugins/introspection_overlay.c
 build/lib/darktable/plugins/introspection_primaries.c
 build/lib/darktable/plugins/introspection_profile_gamma.c
+build/lib/darktable/plugins/introspection_rasterfile.c
 build/lib/darktable/plugins/introspection_rawdenoise.c
 build/lib/darktable/plugins/introspection_rawoverexposed.c
 build/lib/darktable/plugins/introspection_rawprepare.c
@@ -191,11 +194,13 @@ src/external/lua-scripts/tools/script_manager.lua
 src/generate-cache/main.c
 src/gui/about.c
 src/gui/accelerators.c
+src/gui/workspace.c
 src/gui/gtk.c
 src/gui/gtkentry.c
 src/gui/guides.c
 src/gui/hist_dialog.c
 src/gui/import_metadata.c
+src/gui/metadata_tags.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/splash.c
@@ -221,6 +226,7 @@ src/imageio/storage/email.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
+src/iop/agx.c
 src/iop/ashift.c
 src/iop/atrous.c
 src/iop/basecurve.c
@@ -257,6 +263,7 @@ src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/demosaicing/amaze.cc
 src/iop/demosaicing/basics.c
+src/iop/demosaicing/capture.c
 src/iop/demosaicing/passthrough.c
 src/iop/demosaicing/ppg.c
 src/iop/demosaicing/vng.c
@@ -295,6 +302,7 @@ src/iop/overlay.c
 src/iop/primaries.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
+src/iop/rasterfile.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
 src/iop/relight.c

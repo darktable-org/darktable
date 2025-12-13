@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
@@ -313,7 +310,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 0.0f;
   dt_gui_presets_add_generic(_("daylight"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -331,7 +328,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("indoor bright"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -349,7 +346,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("indoor dim"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -367,7 +364,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 40.0f;
   dt_gui_presets_add_generic(_("indoor dark"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -385,7 +382,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("twilight"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -403,7 +400,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("night street lit"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -421,7 +418,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("night street"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.150000;
@@ -439,7 +436,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 40.0f;
   dt_gui_presets_add_generic(_("night street dark"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -458,7 +455,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("night"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -722,7 +719,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
 static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = self->params;
@@ -735,7 +732,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
@@ -753,7 +750,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
 
 static gboolean lowlight_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_lowlight_gui_data_t *g = self->gui_data;
     g->dragging = 0;
@@ -803,14 +800,12 @@ void gui_init(dt_iop_module_t *self)
   g->x_move = -1;
   g->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/lowlight/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox(g->area);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(lowlight_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);
@@ -828,8 +823,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
   dt_draw_curve_destroy(g->transition_curve);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

@@ -41,10 +41,12 @@
 // 4.6.0 was 9.2.0 (added change_timestamp to dt_image_t)
 // 4.8.0 was 9.3.0 (added button and box widget enhancements)
 // 5.0.0 was 9.4.0 (added group events and uuid)
+// 5.2.0 was 9.5.0 (added apply_sidecar to image)
+// 5.4.0 was 9.6.0 (added event querying)
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 4
+#define LUA_API_VERSION_MINOR 6
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/image.h"
+#include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/map_locations.h"
@@ -40,6 +41,11 @@
 #include "win/strptime.h"
 #endif
 
+
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#endif
 
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
@@ -106,10 +112,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 
 void dt_collection_free(const dt_collection_t *collection)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_tag, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_filmroll, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_2, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_filmroll_imported_callback, (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(collection, "collection");
 
   g_free(collection->query);
   g_free(collection->query_no_group);
@@ -340,15 +343,15 @@ int dt_collection_update(const dt_collection_t *collection)
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id AND mt.key = %d",
-        DT_METADATA_XMP_DC_TITLE);
+        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id"
+         " AND mt.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.title')");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id AND md.key = %d",
-        DT_METADATA_XMP_DC_DESCRIPTION);
+        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id"
+        " AND md.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.description')");
     }
   }
 
@@ -546,6 +549,18 @@ void dt_collection_set_tag_id(dt_collection_t *collection,
   collection->tagid = tagid;
 }
 
+static void _image_set_raw_aspect_ratio(const dt_imgid_t imgid)
+{
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
+  if(image)
+  {
+    /* set image aspect ratio */
+    const int side = image->orientation < ORIENTATION_SWAP_XY ? image->p_height : image->p_width;
+    image->aspect_ratio = dt_usable_aspect((float )image->p_height / (float )(MAX(1, side)));
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "dt_image_set_raw_aspect_ratio");
+  }
+}
+
 static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
@@ -575,7 +590,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-      dt_image_set_raw_aspect_ratio(imgid);
+      _image_set_raw_aspect_ratio(imgid);
 
       if(dt_get_wtime() - start > MAX_TIME)
       {
@@ -660,22 +675,7 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
     case DT_COLLECTION_PROP_LAST:
       return NULL;
     default:
-    {
-      if(prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
-      {
-        const int i = prop - DT_COLLECTION_PROP_METADATA;
-        const int type = dt_metadata_get_type_by_display_order(i);
-        if(type != DT_METADATA_TYPE_INTERNAL)
-        {
-          char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
-          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-          free(setting);
-          if(!hidden) col_name = name;
-        }
-      }
-    }
+      return NULL;
   }
   return col_name;
 }
@@ -1586,7 +1586,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       else if(operator && number1)
         query = g_strdup_printf("(aspect_ratio %s %s)", operator, number1);
       else if(number1)
-        query = g_strdup_printf("(aspect_ratio = %s)", number1);
+        query = g_strdup_printf("(ROUND(aspect_ratio,2) = %s)", number1);
       else
         query = g_strdup_printf("(aspect_ratio LIKE '%%%s%%')", escaped_text);
 
@@ -2266,11 +2266,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     default:
       {
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
-          const int keyid =
-            dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
+          // metadata
+          const int keyid = property - DT_COLLECTION_PROP_METADATA_OFFSET;
           if(strcmp(escaped_text, _("not defined")) != 0)
             // clang-format off
             query = g_strdup_printf
@@ -2658,7 +2657,6 @@ void dt_collection_update_query(const dt_collection_t *collection,
     g_free(text);
   }
 
-
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where(collection, query_parts);
   g_strfreev(query_parts);
@@ -2708,7 +2706,31 @@ void dt_collection_update_query(const dt_collection_t *collection,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
                             query_change, changed_property,
                             list, next);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "collection-changed",
+        LUA_ASYNC_DONE);
+#endif
   }
+}
+
+gboolean dt_collection_has_property(const dt_collection_properties_t property)
+{
+  const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int num_rules = CLAMP(_n_r, 1, 10);
+  char confname[200];
+
+  for(int i = 0; i < num_rules; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    const int prop = dt_conf_get_int(confname);
+
+    if(prop == property)
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 gboolean dt_collection_hint_message_internal(void *message)
@@ -2721,7 +2743,7 @@ gboolean dt_collection_hint_message_internal(void *message)
   }
   g_free(message);
 
-  dt_control_hinter_message(darktable.control, "");
+  dt_control_hinter_message("");
 
   return FALSE;
 }

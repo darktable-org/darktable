@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/points.h"
-#include "config.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
@@ -548,15 +547,49 @@ int main(int argc, char *arg[])
 
     if(g_file_test(input, G_FILE_TEST_IS_DIR))
     {
-      const dt_filmid_t filmid = dt_film_import(input);
-      if(!filmid)
+      //const dt_filmid_t filmid = dt_film_import(input);
+      dt_film_t film;
+      dt_filmid_t filmid = dt_film_new(&film, input);
+      //if(!filmid)
+      if(!dt_is_valid_filmid(filmid))
       {
-        // one of inputs was a failure, no prob
         fprintf(stderr, _("error: can't open folder %s"), input);
         fprintf(stderr, "\n");
         continue;
       }
-      id_list = g_list_concat(id_list, dt_film_get_image_ids(filmid));
+      // Based on dt_pathlist_import_create in control/jobs/film_jobs.c
+      GDir *cdir = g_dir_open(input, 0, NULL);
+      if(cdir)
+      {
+        const gchar *fname;
+        while((fname = g_dir_read_name(cdir)) != NULL)
+        {
+          if(fname[0] == '.') continue;  // skip hidden files
+          gchar *fullname = g_build_filename(input, fname, NULL);
+          if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(fname))
+          {
+            // Import each supported image file directly
+            const dt_imgid_t imgid = dt_image_import(filmid, fullname, TRUE, TRUE);
+            if(dt_is_valid_imgid(imgid))
+            {
+              id_list = g_list_append(id_list, GINT_TO_POINTER(imgid));
+            }
+            else
+            {
+              fprintf(stderr, _("error: can't import file %s"), fullname);
+              fprintf(stderr, "\n");
+            }
+          }
+          g_free(fullname);
+        }
+        g_dir_close(cdir);
+      }
+      else
+      {
+        fprintf(stderr, _("error: can't read directory %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
     }
     else
     {
@@ -600,8 +633,8 @@ int main(int argc, char *arg[])
     for(GList *iter = id_list; iter; iter = g_list_next(iter))
     {
       int id = GPOINTER_TO_INT(iter->data);
-      dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
-      if(dt_exif_xmp_read(image, xmp_filename, 1))
+      dt_image_t *image = dt_image_cache_get(id, 'w');
+      if(dt_exif_xmp_read(image, xmp_filename, FALSE))
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");
@@ -612,7 +645,7 @@ int main(int argc, char *arg[])
         exit(1);
       }
       // don't write new xmp:
-      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
     }
   }
 
@@ -775,11 +808,22 @@ int main(int argc, char *arg[])
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     const int id = GPOINTER_TO_INT(iter->data);
-    // TODO: have a parameter in command line to get the export presets
     dt_export_metadata_t metadata;
-    metadata.flags = dt_lib_export_metadata_default_flags();
-    metadata.list = NULL;
-    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
+    // TODO: have a parameter in command line to get the export presets
+    if(custom_presets)
+    {
+      metadata.flags = dt_lib_export_metadata_get_conf_flags();
+      metadata.list = dt_util_str_to_glist("\1", dt_lib_export_metadata_get_conf());
+      if(metadata.list)
+        metadata.list = g_list_remove(metadata.list, metadata.list->data);
+    }
+    else
+    {
+      metadata.flags = dt_lib_export_metadata_default_flags();
+      metadata.list = NULL;
+    }
+    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality,
+                      upscale, FALSE, 1.0, export_masks,
                       icc_type, icc_filename, icc_intent, &metadata) != 0)
       res = 1;
   }

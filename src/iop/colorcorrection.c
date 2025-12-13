@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
@@ -107,7 +104,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.hib = 3.0f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("warm tone"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = 3.55f;
   p.lob = 0.0f;
@@ -115,7 +112,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.hib = 4.5f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("warming filter"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = -3.55f;
   p.lob = -0.0f;
@@ -123,7 +120,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.hib = -4.5f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("cooling filter"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
@@ -239,16 +236,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->selected = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag the line for split-toning. "
                                                      "bright means highlights, dark means shadows. "
                                                      "use mouse wheel to change saturation."));
-
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -263,6 +256,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
+  self->widget = dt_gui_vbox(g->area);
   g->slider = dt_bauhaus_slider_from_params(self, N_("saturation"));
   gtk_widget_set_tooltip_text(g->slider, _("set the global saturation"));
 
@@ -275,8 +269,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
-
-  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -401,7 +393,7 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event,
                                                     dt_iop_module_t *self)
 {
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // double click resets:
     dt_iop_colorcorrection_gui_data_t *g = self->gui_data;

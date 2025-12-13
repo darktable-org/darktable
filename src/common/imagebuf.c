@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -446,34 +446,6 @@ void dt_iop_image_mul_const(float *const buf,
   DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] *= mul_value;
-}
-
-void dt_iop_image_div_const(float *const buf,
-                            const float div_value,
-                            const size_t width,
-                            const size_t height,
-                            const size_t ch)
-{
-  const size_t nfloats = width * height * ch;
-#ifdef _OPENMP
-  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
-  {
-    // we can gain a little by using a small number of threads in
-    // parallel, but not much since the memory bus quickly saturates
-    // (basically, each core can saturate a memory channel, so a
-    // system with quad-channel memory won't be able to take advantage
-    // of more than four cores).
-    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
-    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
-    for(size_t k = 0; k < nfloats; k++)
-      buf[k] /= div_value;
-    return;
-  }
-#endif // _OPENMP
-  // no OpenMP, or image too small to bother parallelizing
-  DT_OMP_SIMD(aligned(buf:16))
-  for(size_t k = 0; k < nfloats; k++)
-    buf[k] /= div_value;
 }
 
 // elementwise: buf = lammda*buf + (1-lambda)*other

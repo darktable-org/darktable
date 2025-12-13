@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,15 +24,18 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
 void dt_shortcuts_save(const gchar *ext, const gboolean backup);
 
+// load the contents of a shortcutsrc file
+// if 'ext' points at a string containing a directory separator, it is taken
+//   to be the path of the file to load
+// otherwise, a shortcuts file will be loaded from the user configuration directory,
+//  and the contents of 'ext' (if non-NULL) wlil be appended to the default name.
 void dt_shortcuts_load(const gchar *ext, const gboolean clear);
 
 void dt_shortcuts_reinitialise(dt_action_t *action);
@@ -141,6 +144,17 @@ typedef struct dt_action_element_def_t
     { N_("7th"), dt_action_effect_##effect }, \
     { N_("8th"), dt_action_effect_##effect }, \
     { N_("9th"), dt_action_effect_##effect }, \
+    { N_("10th"), dt_action_effect_##effect }, \
+    { N_("11th"), dt_action_effect_##effect }, \
+    { N_("12th"), dt_action_effect_##effect }, \
+    { N_("13th"), dt_action_effect_##effect }, \
+    { N_("14th"), dt_action_effect_##effect }, \
+    { N_("15th"), dt_action_effect_##effect }, \
+    { N_("16th"), dt_action_effect_##effect }, \
+    { N_("17th"), dt_action_effect_##effect }, \
+    { N_("18th"), dt_action_effect_##effect }, \
+    { N_("19th"), dt_action_effect_##effect }, \
+    { N_("20th"), dt_action_effect_##effect }, \
     {} }
 
 extern const dt_action_element_def_t dt_action_elements_hold[];
@@ -218,9 +232,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer cal
 // find the action a widget is linked to
 dt_action_t *dt_action_widget(GtkWidget *widget);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

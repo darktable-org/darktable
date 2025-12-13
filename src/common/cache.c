@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "config.h"
 
 #include "common/cache.h"
 #include "common/darktable.h"
@@ -69,37 +67,13 @@ void dt_cache_cleanup(dt_cache_t *cache)
   dt_pthread_mutex_destroy(&cache->lock);
 }
 
-int32_t dt_cache_contains(dt_cache_t *cache,
+gboolean dt_cache_contains(dt_cache_t *cache,
                           const uint32_t key)
 {
   dt_pthread_mutex_lock(&cache->lock);
-  int32_t result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
+  const gboolean result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
   dt_pthread_mutex_unlock(&cache->lock);
   return result;
-}
-
-int dt_cache_for_all
-  (dt_cache_t *cache,
-   int (*process)(const uint32_t key, const void *data, void *user_data),
-   void *user_data)
-{
-  dt_pthread_mutex_lock(&cache->lock);
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_hash_table_iter_init (&iter, cache->hashtable);
-  while(g_hash_table_iter_next (&iter, &key, &value))
-  {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
-    if(err)
-    {
-      dt_pthread_mutex_unlock(&cache->lock);
-      return err;
-    }
-  }
-  dt_pthread_mutex_unlock(&cache->lock);
-  return 0;
 }
 
 // return read locked bucket, or NULL if it's not already there.
@@ -126,7 +100,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
-      return 0;
+      return NULL;
     }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
@@ -150,7 +124,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs", end - start);
-  return 0;
+  return NULL;
 }
 
 // if found, the data void* is returned. if not, it is set to be
@@ -173,11 +147,9 @@ restart:
   if(res)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    int result;
-    if(mode == 'w')
-      result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
-    else
-      result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
+    const int result = (mode == 'w')
+                      ? dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line)
+                      : dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
@@ -224,9 +196,8 @@ restart:
   }
 
   // here dies your 32-bit system:
-  dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
-  const int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d", ret);
+  dt_cache_entry_t *entry = g_slice_alloc(sizeof(dt_cache_entry_t));
+  dt_pthread_rwlock_init(&entry->lock, 0);
 
   entry->data = 0;
   entry->data_size = cache->entry_size;
@@ -248,8 +219,7 @@ restart:
   ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
 
   // if allocate callback is given, always return a write lock
-  const int write = ((mode == 'w') || cache->allocate);
-
+  const gboolean write = ((mode == 'w') || cache->allocate);
   // write lock in case the caller requests it:
   if(write)
     dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
@@ -271,8 +241,8 @@ restart:
   return entry;
 }
 
-int dt_cache_remove(dt_cache_t *cache,
-                    const uint32_t key)
+gboolean dt_cache_remove(dt_cache_t *cache,
+                         const uint32_t key)
 {
   dt_cache_entry_t *entry;
   gpointer orig_key, value;
@@ -287,11 +257,10 @@ restart:
   if(!res)
   { // not found in cache, not deleting.
     dt_pthread_mutex_unlock(&cache->lock);
-    return 1;
+    return TRUE;
   }
   // need write lock to be able to delete:
-  const int result = dt_pthread_rwlock_trywrlock(&entry->lock);
-  if(result)
+  if(dt_pthread_rwlock_trywrlock(&entry->lock))
   {
     dt_pthread_mutex_unlock(&cache->lock);
     g_usleep(5);
@@ -308,7 +277,7 @@ restart:
     goto restart;
   }
 
-  gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
+  const gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
   cache->lru = g_list_delete_link(cache->lru, entry->link);
@@ -329,7 +298,7 @@ restart:
   g_slice_free1(sizeof(*entry), entry);
 
   dt_pthread_mutex_unlock(&cache->lock);
-  return 0;
+  return FALSE;
 }
 
 // best-effort garbage collection. never blocks, never fails. well,

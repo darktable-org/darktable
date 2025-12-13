@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -21,9 +21,7 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include <glib.h>
 #include <stdint.h>
@@ -69,7 +67,9 @@ OPTIONAL(int, initialize_store, struct dt_imageio_module_storage_t *self, struct
 /* this actually does the work */
 REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data, const dt_imgid_t imgid,
                      struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *fdata, const int num,
-                     const int total, const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+                     const int total, const gboolean high_quality, const gboolean upscale,
+                     const gboolean is_scaling, const double scale_factor,
+                     const gboolean export_masks,
                      const enum dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                      enum dt_iop_color_intent_t icc_intent, struct dt_export_metadata_t *metadata);
 /* called once at the end (after exporting all images), if implemented. */
@@ -94,13 +94,14 @@ OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self
 /* ask the storage if export is currently possible */
 OPTIONAL(gboolean, export_enabled, struct dt_imageio_module_storage_t *self);
 
+/* for storage modules which require a login */
+OPTIONAL(gboolean, storage_login, struct dt_imageio_module_storage_t *self);
+
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

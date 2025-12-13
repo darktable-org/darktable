@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,11 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "common/dttypes.h"
 
 #include <lcms2.h>
+
+G_BEGIN_DECLS
 
 // this was removed from lcms2 in 2.4
 #ifndef TYPE_XYZA_FLT
@@ -290,8 +293,8 @@ static inline void rgb2hsl(const dt_aligned_pixel_t rgb,
                            float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  const float pmax = fmaxf(r, fmaxf(g, b));
-  const float pmin = fminf(r, fminf(g, b));
+  const float pmax = max3f(rgb);
+  const float pmin = min3f(rgb);
   const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
@@ -418,6 +421,8 @@ gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE pr
 void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
                                                                const float whitepoint[2],
                                                                dt_colormatrix_t RGB_to_XYZ_transposed);
+
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

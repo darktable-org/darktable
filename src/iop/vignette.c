@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -542,14 +539,14 @@ int mouse_moved(dt_iop_module_t *self,
   }
 
   if(grab == 0
-     || !(darktable.control->button_down && darktable.control->button_down_which == 1))
+     || !(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY))
   {
     grab = _get_grab(pzx * wd - vignette_x, pzy * ht - vignette_y,
                      vignette_w, -vignette_h, vignette_fx,
                     -vignette_fy, zoom_scale);
   }
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
     if(grab == 0) // pan the image
     {
@@ -679,7 +676,7 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
-  if(which == 1) return 1;
+  if(which == GDK_BUTTON_PRIMARY) return 1;
   return 0;
 }
 
@@ -690,7 +687,7 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  if(which == 1) return 1;
+  if(which == GDK_BUTTON_PRIMARY) return 1;
   return 0;
 }
 
@@ -818,7 +815,7 @@ void process(dt_iop_module_t *self,
       if(weight > 0.0f)
       {
         // Then apply falloff vignette
-        if (brightness < 0.0f)
+        if(brightness < 0.0f)
         {
           const float falloff = (1.0f + (weight * brightness));
           for_each_channel(c)
@@ -1011,7 +1008,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.dithering = 0;
   p.unbound = TRUE;
   dt_gui_presets_add_generic(_("lomo"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_database_release_transaction(darktable.db);
 }
@@ -1048,9 +1045,7 @@ void gui_init(dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(C_("section", "position / form")),
-                     FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "position / form"))),
 
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");

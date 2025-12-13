@@ -138,6 +138,8 @@ static int label_member(lua_State *L)
       gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize_store.mode);
       ellipsize_store.used = FALSE;
     }
+    else
+      gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), PANGO_ELLIPSIZE_END);
     if(halign_store.used)
     {
       gtk_widget_set_halign(GTK_WIDGET(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget)))), halign_store.halign);

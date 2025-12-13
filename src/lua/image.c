@@ -45,25 +45,24 @@ static const dt_image_t *checkreadimage(lua_State *L, int index)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, index);
-  return dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  return dt_image_cache_get(imgid, 'r');
 }
 
 static void releasereadimage(lua_State *L, const dt_image_t *image)
 {
-  dt_image_cache_read_release(darktable.image_cache, image);
+  dt_image_cache_read_release(image);
 }
 
 static dt_image_t *checkwriteimage(lua_State *L, int index)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, index);
-  return dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  return dt_image_cache_get(imgid, 'w');
 }
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
 {
-  dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
+  dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
 }
 
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
@@ -94,11 +93,23 @@ static int history_delete(lua_State *L)
   return 0;
 }
 
+static int apply_sidecar(lua_State *L)
+{
+  dt_lua_image_t imgid = NO_IMGID;
+  gchar filename[PATH_MAX] = { 0 };
+  luaA_to(L, dt_lua_image_t, &imgid, 1);
+  const char *sidecar = luaL_checkstring(L, 2);
+  g_strlcpy(filename, sidecar, PATH_MAX);
+  gboolean result = dt_history_load_and_apply(imgid, filename, 0);
+  lua_pushboolean(L, !result);
+  return 1;
+}
+
 static int drop_cache(lua_State *L)
 {
   dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
   return 0;
 }
 
@@ -138,8 +149,8 @@ static int generate_cache(lua_State *L)
     if(dt_util_test_image_file(filename)) continue;
     // else, generate thumbnail and store in mipmap cache.
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(&buf);
   }
   // thumbnail in sync with image
   dt_history_hash_set_mipmap(imgid);
@@ -303,7 +314,7 @@ static int metadata_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, key, NULL);
+    GList *res = dt_metadata_get_lock(my_image->id, key, NULL);
     if(res)
       lua_pushstring(L, (char *)res->data);
     else
@@ -444,9 +455,9 @@ int group_with(lua_State *L)
   dt_lua_image_t second_image;
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
+  const dt_image_t *cimg = dt_image_cache_get(second_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
 
   dt_grouping_add_to_group(group_id, first_image);
   return 0;
@@ -465,9 +476,9 @@ int get_group(lua_State *L)
 {
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
+  const dt_image_t *cimg = dt_image_cache_get(first_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE group_id = ?1", -1,
@@ -606,14 +617,18 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, change_timestamp_member);
   dt_lua_type_register(L, dt_lua_image_t, "change_timestamp");
   // metadata
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t *metadata = iter->data;
+
+    if(!metadata->internal)
     {
       lua_pushcfunction(L, metadata_member);
-      dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_subkey(i));
+      dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_tag_subkey(metadata->tagname));
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   // constant functions (i.e class methods)
   lua_pushcfunction(L, dt_lua_duplicate_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
@@ -663,6 +678,9 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, generate_cache);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "generate_cache");
+  lua_pushcfunction(L, apply_sidecar);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "apply_sidecar");
   lua_pushcfunction(L, image_tostring);
   dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 

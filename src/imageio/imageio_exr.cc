@@ -16,10 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <assert.h>
 #include <inttypes.h>
 #include <memory>
@@ -131,11 +127,15 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
     else
     {
       if(Imf::hasOwner(header))
-        dt_metadata_set_import(img->id, "Xmp.dc.rights",
-                               Imf::owner(header).c_str());
+      {
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.rights",
+                                    Imf::owner(header).c_str());
+      }
       if(Imf::hasComments(header))
-        dt_metadata_set_import(img->id, "Xmp.dc.description",
-                               Imf::comments(header).c_str());
+      {
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.description",
+                                    Imf::comments(header).c_str());
+      }
       if(Imf::hasCapDate(header))
       {
         // utcOffset can be ignored for now, see dt_datetime_exif_to_numbers()

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,11 +29,7 @@
 #include "control/settings.h"
 #include "develop/imageop.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-struct dt_iop_module_t;
+G_BEGIN_DECLS
 
 typedef struct dt_dev_history_item_t
 {
@@ -66,7 +62,8 @@ typedef enum dt_dev_overlay_colors_t
   DT_DEV_OVERLAY_GREEN = 2,
   DT_DEV_OVERLAY_YELLOW = 3,
   DT_DEV_OVERLAY_CYAN = 4,
-  DT_DEV_OVERLAY_MAGENTA = 5
+  DT_DEV_OVERLAY_MAGENTA = 5,
+  DT_DEV_OVERLAY_LAST
 } dt_dev_overlay_colors_t;
 
 typedef enum dt_dev_rawoverexposed_mode_t {
@@ -88,7 +85,8 @@ typedef enum dt_dev_transform_direction_t
   DT_DEV_TRANSFORM_DIR_FORW_INCL = 1,
   DT_DEV_TRANSFORM_DIR_FORW_EXCL = 2,
   DT_DEV_TRANSFORM_DIR_BACK_INCL = 3,
-  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4
+  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4,
+  DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY = 5,
 } dt_dev_transform_direction_t;
 
 typedef enum dt_clipping_preview_mode_t
@@ -103,14 +101,15 @@ typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
   float (*get_exposure)(struct dt_iop_module_t *exp);
+  float (*get_effective_exposure)(struct dt_iop_module_t *exp);
   float (*get_black)(struct dt_iop_module_t *exp);
-  void (*handle_event)(GdkEvent *event, gboolean blackwhite);
+  void (*handle_event)(gpointer, int, gdouble, const gboolean);
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
 typedef struct dt_dev_viewport_t
 {
-  GtkWidget *widget;
+  GtkWidget *widget; // TODO (#18559): remove gtk stuff from here
   int32_t orig_width, orig_height;
 
   // dimensions of window
@@ -118,7 +117,7 @@ typedef struct dt_dev_viewport_t
   int32_t border_size;
   double dpi, dpi_factor, ppd;
 
-  gboolean iso_12646;
+  gboolean color_assessment;
 
   dt_dev_zoom_t zoom;
   int closeup;
@@ -150,7 +149,7 @@ typedef struct dt_dev_chroma_t
   struct dt_iop_module_t *temperature;  // always available for GUI reports
   struct dt_iop_module_t *adaptation;   // set if one module is processing this without blending
 
-  double wb_coeffs[4];                  // data actually used by the pipe
+  dt_aligned_pixel_t wb_coeffs;         // coeffs actually set by temperature
   double D65coeffs[4];                  // both read from exif data or "best guess"
   double as_shot[4];
   gboolean late_correction;
@@ -289,18 +288,22 @@ typedef struct dt_develop_t
 
   dt_dev_chroma_t chroma;
 
-  // for exposing the crop
+  // for exposing and handling the crop
   struct
   {
     // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
     struct dt_iop_module_t *exposer;
+
+    // proxy to change crop settings via flip module
+    struct dt_iop_module_t *flip_handler;
+    void (*flip_callback)(struct dt_iop_module_t *crop,
+                          const dt_image_orientation_t flipmode);
   } cropping;
 
   // for the overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button;
-    // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_overexposed_colorscheme_t colorscheme;
@@ -312,8 +315,7 @@ typedef struct dt_develop_t
   // for the raw overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button;
-    // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_rawoverexposed_mode_t mode;
@@ -321,26 +323,26 @@ typedef struct dt_develop_t
     float threshold;
   } rawoverexposed;
 
-  // ISO 12646-compliant colour assessment conditions
+  // Color assessment conditions
   struct
   {
-    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
-  } iso_12646;
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
+  } color_assessment;
 
   // late scaling down from full roi
   struct
   {
-    GtkWidget *button;
+    GtkWidget *button; // TODO (#18559): remove gtk stuff from here
     gboolean enabled;
   } late_scaling;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
-    GtkWidget *floating_window, *softproof_button, *gamut_button;
+    GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
   } profile;
 
-  GtkWidget *second_wnd, *second_wnd_button;
+  GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
 
   // several views of the same image
   dt_dev_viewport_t full, preview2;
@@ -359,7 +361,7 @@ float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               struct dt_dev_pixelpipe_t *pipe,
-                              dt_signal_t signal,
+                              const dt_signal_t signal,
                               const int devid);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
@@ -397,8 +399,8 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
                                    struct dt_iop_module_t *_module,
                                    const gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
-void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
-void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt);
+void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt);
 void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
@@ -421,9 +423,10 @@ void dt_dev_reprocess_preview(dt_develop_t *dev);
 gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
                                  float *ht);
-void dt_dev_get_processed_size(dt_dev_viewport_t *port,
-                               int *procw,
-                               int *proch);
+// return TRUE in case we got it from current port instead of preview
+gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
+                                   int *procw,
+                                   int *proch);
 gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
                                 float *zoom_x,
                                 float *zoom_y,
@@ -431,15 +434,15 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
                                 float *boxhh);
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
-                      float scale,
-                      int closeup,
-                      float x,
-                      float y,
-                      gboolean constrain);
+                      const float scale,
+                      const int closeup,
+                      const float x,
+                      const float y,
+                      const gboolean constrain);
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t zoom,
+                            const dt_dev_zoom_t zoom,
                             const int closeup_factor,
-                            const int mode);
+                            const gboolean preview);
 float dt_dev_get_zoom_scale_full(void);
 float dt_dev_get_zoomed_in(void);
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
@@ -448,6 +451,14 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  float *zoom_x,
                                  float *zoom_y,
                                  float *zoom_scale);
+void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
+                                             const float px,
+                                             const float py,
+                                             const float zbound_x,
+                                             const float zbound_y,
+                                             float *zoom_x,
+                                             float *zoom_y,
+                                             float *zoom_scale);
 void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
                                 dt_dev_zoom_t *zoom,
                                 int *closeup,
@@ -458,10 +469,12 @@ void dt_dev_configure(dt_dev_viewport_t *port);
 
 /** get exposure level */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
+/** get final effective exposure level including compensations */
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
-void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite);
+void dt_dev_exposure_handle_event(gpointer controller, int n_press, gdouble x, const gboolean blackwhite);
 
 /*
  * modulegroups plugin hooks
@@ -601,8 +614,7 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *scale,
                   size_t *buf_width,
                   size_t *buf_height,
-                  float *zoom_x,
-                  float *zoom_y,
+                  dt_dev_zoom_pos_t zoom_pos,
                   const int32_t snapshot_id,
                   GList *module_filter_out,
                   const int devid,
@@ -610,7 +622,6 @@ void dt_dev_image(const dt_imgid_t imgid,
 
 
 gboolean dt_dev_equal_chroma(const float *f, const double *d);
-gboolean dt_dev_is_D65_chroma(const dt_develop_t *dev);
 void dt_dev_reset_chroma(dt_develop_t *dev);
 void dt_dev_init_chroma(dt_develop_t *dev);
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev);
@@ -619,9 +630,7 @@ static inline struct dt_iop_module_t *dt_dev_gui_module(void)
   return darktable.develop ? darktable.develop->gui_module : NULL;
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

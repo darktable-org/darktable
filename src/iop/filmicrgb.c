@@ -24,15 +24,13 @@
 #pragma GCC optimize("finite-math-only", "fp-contract=fast", "fast-math", "no-math-errno")
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"
 #include "common/bspline.h"
 #include "common/gamut_mapping.h"
 #include "common/image.h"
+#include "common/dttypes.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -391,20 +389,20 @@ static void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   dt_iop_filmic_rgb_compute_spline(n, &spline);
 
   // from the spline, compute new values for contrast, balance, and latitude to update spline_version to v3
-  float grey_log = spline.x[2];
+  const float grey_log = spline.x[2];
   float toe_log = fminf(spline.x[1], grey_log);
   float shoulder_log = fmaxf(spline.x[3], grey_log);
-  float black_display = spline.y[0];
-  float grey_display = spline.y[2];
-  float white_display = spline.y[4];
+  const float black_display = spline.y[0];
+  const float grey_display = spline.y[2];
+  const float white_display = spline.y[4];
   const float scaled_safety_margin = SAFETY_MARGIN * (white_display - black_display);
   float toe_display = fminf(spline.y[1], grey_display);
   float shoulder_display = fmaxf(spline.y[3], grey_display);
 
-  float hardness = n->output_power;
+  const float hardness = n->output_power;
   float contrast = (shoulder_display - toe_display) / (shoulder_log - toe_log);
   // sanitize toe and shoulder, for min and max values, while keeping the same contrast
-  float linear_intercept = grey_display - (contrast * grey_log);
+  const float linear_intercept = grey_display - (contrast * grey_log);
   if(toe_display < black_display + scaled_safety_margin)
   {
     toe_display = black_display + scaled_safety_margin;
@@ -423,8 +421,8 @@ static void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   // latitude is the % of the segment [b+safety*(w-b),w-safety*(w-b)] which is covered, where b is black_display and w white_display
   const float latitude = CLAMP((shoulder_display - toe_display) / ((white_display - black_display) - 2.0f * scaled_safety_margin), 0.0f, 0.99f);
   // find balance
-  float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
-  float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  const float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  const float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
   float balance;
   if(shoulder_display < shoulder_display_ref)
     balance = 0.5f * (1.0f - fmaxf(shoulder_display - grey_display, 0.0f) / fmaxf(shoulder_display_ref - grey_display, 1E-5f));
@@ -870,7 +868,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
   switch(variant)
   {
     case(DT_FILMIC_METHOD_MAX_RGB):
-      return fmaxf(fmaxf(pixel[0], pixel[1]), pixel[2]);
+      return max3f(pixel);
 
     case(DT_FILMIC_METHOD_LUMINANCE):
       return (work_profile)
@@ -1292,7 +1290,7 @@ static inline gboolean reconstruct_highlights(const float *const restrict in,
                                           float *const restrict reconstructed,
                                           const dt_iop_filmicrgb_reconstruction_type_t variant,
                                           const dt_iop_filmicrgb_data_t *const data,
-                                          dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in,
                                           const dt_iop_roi_t *const roi_out)
 {
@@ -1606,7 +1604,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
       pix_out[c] = ratios[c] * norm;
 
     // Gamut mapping
-    const float max_pix = MAX(MAX(pix_out[0], pix_out[1]), pix_out[2]);
+    const float max_pix = max3f(pix_out);
     const int penalize = (max_pix > 1.0f);
 
     // Penalize the ratios by the amount of clipping
@@ -2118,7 +2116,7 @@ void process(dt_iop_module_t *self,
    * integer
    */
 
-  float *restrict in = (float *)ivoid;
+  const float *restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
   float *const restrict mask = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
 
@@ -2132,7 +2130,7 @@ void process(dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && mask)
   {
-    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+    const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2236,9 +2234,9 @@ void process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem reconstructed,
-                                          const dt_iop_filmicrgb_reconstruction_type_t variant, dt_iop_filmicrgb_global_data_t *const gd,
-                                          const dt_iop_filmicrgb_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
+static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mask, const cl_mem reconstructed,
+                                          const dt_iop_filmicrgb_reconstruction_type_t variant, const dt_iop_filmicrgb_global_data_t *const gd,
+                                          const dt_iop_filmicrgb_data_t *const data, const dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -2251,13 +2249,13 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
-  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
-  cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // high-frequencies RGB backup
+  const cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
+  const cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
+  const cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
+  const cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // high-frequencies RGB backup
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
+  const cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -2373,7 +2371,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_filmicrgb_data_t *const d = piece->data;
-  dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
+  const dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -2387,7 +2385,7 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem in = dev_in;
   cl_mem inpainted = NULL;
@@ -2419,8 +2417,8 @@ int process_cl(dt_iop_module_t *self,
   const float norm_min = exp_tonemapping_v2(0.f, d->grey_source, d->black_source, d->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, d->grey_source, d->black_source, d->dynamic_range);
 
-  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
-  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  const cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  const cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   cl_mem export_input_matrix_cl = NULL;
   cl_mem export_output_matrix_cl = NULL;
 
@@ -2467,7 +2465,7 @@ int process_cl(dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+    const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2586,7 +2584,7 @@ error:
 }
 #endif
 
-static inline void _compute_output_power(dt_iop_module_t *self,
+static inline void _compute_output_power(const dt_iop_module_t *self,
                                          dt_iop_filmicrgb_params_t *p)
 {
   const float min = self->so->get_f("output_power")->Float.Min;
@@ -2602,7 +2600,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -2630,7 +2628,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // Black
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2657,7 +2655,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // White
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2681,7 +2679,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -2721,7 +2719,7 @@ static void apply_autotune(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(picker == g->grey_point_source)
     apply_auto_grey(self);
@@ -2733,7 +2731,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     apply_autotune(self);
 }
 
-static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, dt_iop_module_t *self)
+static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
@@ -2798,10 +2796,10 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
   }
 
   float toe_log, shoulder_log, toe_display, shoulder_display, contrast;
-  float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
+  const float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
   if(p->spline_version < DT_FILMIC_SPLINE_VERSION_V3)
   {
-    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
+    const float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
     contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
 
     // nodes for mapping from log encoding to desired target luminance
@@ -2810,7 +2808,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     shoulder_log = grey_log + latitude / dynamic_range * fabsf(white_source / dynamic_range);
 
     // interception
-    float linear_intercept = grey_display - (contrast * grey_log);
+    const float linear_intercept = grey_display - (contrast * grey_log);
 
     // y coordinates
     toe_display = (toe_log * contrast + linear_intercept);
@@ -2831,8 +2829,8 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
   {
     const float hardness = p->output_power;
     // latitude in %
-    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
-    float slope = p->contrast * dynamic_range / 8.0f;
+    const float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
+    const float slope = p->contrast * dynamic_range / 8.0f;
     float min_contrast = 1.0f; // otherwise, white_display and black_display cannot be reached
     // make sure there is enough contrast to be able to construct the top right part of the curve
     min_contrast = fmaxf(min_contrast, (white_display - grey_display) / (white_log - grey_log));
@@ -2847,12 +2845,12 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     //              = contrast * hardness * grey_display^(hardness-1)
     // f'(grey_log) = target_contrast <=> contrast = target_contrast / (hardness * grey_display^(hardness-1))
     contrast = slope / (hardness * powf(grey_display, hardness - 1.0f));
-    float clamped_contrast = CLAMP(contrast, min_contrast, 100.0f);
+    const float clamped_contrast = CLAMP(contrast, min_contrast, 100.0f);
     clamping = (clamped_contrast != contrast);
     contrast = clamped_contrast;
 
     // interception
-    float linear_intercept = grey_display - (contrast * grey_log);
+    const float linear_intercept = grey_display - (contrast * grey_log);
 
     // consider the line of equation y = contrast * x + linear_intercept
     // we want to keep y in [black_display, white_display] (with some safety margin)
@@ -2868,7 +2866,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 
     // Apply the highlights/shadows balance as a shift along the contrast slope
     // negative values drag to the left and compress the shadows, on the UI negative is the inverse
-    float balance_correction = (balance > 0.0f) ? 2.0f * balance * (shoulder_log - grey_log)
+    const float balance_correction = (balance > 0.0f) ? 2.0f * balance * (shoulder_log - grey_log)
                                                 : 2.0f * balance * (grey_log - toe_log);
     toe_log -= balance_correction;
     shoulder_log -= balance_correction;
@@ -3051,7 +3049,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
+  const dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
   dt_iop_filmicrgb_data_t *d = piece->data;
 
   // source and display greys
@@ -3129,7 +3127,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     // lost focus - hide the mask
-    gint mask_was_shown = g->show_mask;
+    const gint mask_was_shown = g->show_mask;
     g->show_mask = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), FALSE);
     if(mask_was_shown) dt_dev_reprocess_center(self->dev);
@@ -3150,7 +3148,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
-  dt_iop_filmicrgb_params_t *p = self->params;
+  const dt_iop_filmicrgb_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -3210,12 +3208,12 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("scene-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_SCENE);
+       TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
-    dt_gui_presets_update_format(_("scene-referred default"), self->op,
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_RAW | FOR_MATRIX);
 
-    dt_gui_presets_update_autoapply(_("scene-referred default"),
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
 }
@@ -3244,7 +3242,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_filmicrgb_global_data_t *gd = self->data;
+  const dt_iop_filmicrgb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   dt_opencl_free_kernel(gd->kernel_filmic_mask);
@@ -3269,8 +3267,8 @@ void gui_reset(dt_iop_module_t *self)
 
 #define LOGBASE 20.f
 
-static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double origin_y, double destination_x,
-                                       double destination_y, gboolean show_head)
+static inline void dt_cairo_draw_arrow(cairo_t *cr, const double origin_x, const double origin_y, const double destination_x,
+                                       const double destination_y, const gboolean show_head)
 {
   cairo_move_to(cr, origin_x, origin_y);
   cairo_line_to(cr, destination_x, destination_y);
@@ -3296,8 +3294,8 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double orig
   }
 }
 
-void filmic_gui_draw_icon(cairo_t *cr, dt_iop_filmicrgb_gui_button_data_t *button,
-                          dt_iop_filmicrgb_gui_data_t *g)
+void filmic_gui_draw_icon(cairo_t *cr, const dt_iop_filmicrgb_gui_button_data_t *button,
+                          const dt_iop_filmicrgb_gui_data_t *g)
 {
   if(!g->gui_sizes_inited) return;
 
@@ -3656,7 +3654,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     float y_white = 1.f;
 
     const float central_slope = (g->spline.y[3] - g->spline.y[1]) * g->graph_width / ((g->spline.x[3] - g->spline.x[1]) * g->graph_height);
-    const float central_slope_angle = atanf(central_slope) + M_PI / 2.0f;
+    const float central_slope_angle = atanf(central_slope) + M_PI_F / 2.f;
     set_color(cr, darktable.bauhaus->graph_fg);
     for(int k = 0; k < 5; k++)
     {
@@ -4185,7 +4183,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   return FALSE;
 }
 
-static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -4196,7 +4194,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
   if(g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
   {
 
-    if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+    if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
     {
       // double click resets view
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4211,7 +4209,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
         return FALSE;
       }
     }
-    else if(event->button == 1)
+    else if(event->button == GDK_BUTTON_PRIMARY)
     {
       // simple left click cycles through modes in positive direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4240,7 +4238,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
         return FALSE;
       }
     }
-    else if(event->button == 3)
+    else if(event->button == GDK_BUTTON_SECONDARY)
     {
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4271,7 +4269,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
   return FALSE;
 }
 
-static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static gboolean area_enter_leave_notify(GtkWidget *widget, const GdkEventCrossing *event, const dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   g->gui_hover = event->type == GDK_ENTER_NOTIFY;
@@ -4279,7 +4277,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *eve
   return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *event, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return 1;
 
@@ -4292,7 +4290,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_
 
   if(x > 0. && x < g->allocation.width && y > 0. && y < g->allocation.height) g->gui_hover = TRUE;
 
-  gint save_active_button = g->active_button;
+  const gint save_active_button = g->active_button;
 
   if(g->gui_hover)
   {
@@ -4433,13 +4431,12 @@ void gui_init(dt_iop_module_t *self)
                                                 "but fails for high-keys, low-keys and high-ISO images.\n"
                                                 "this is not an artificial intelligence, but a simple guess.\n"
                                                 "ensure you understand its assumptions before using it."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, g->auto_button);
 
   // Page RECONSTRUCT
   self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
-  GtkWidget *label = dt_ui_section_label_new(C_("section", "highlights clipping"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "highlights clipping")));
 
   g->enable_highlight_reconstruction = dt_bauhaus_toggle_from_params(self, "enable_highlight_reconstruction");
 
@@ -4461,17 +4458,14 @@ void gui_init(dt_iop_module_t *self)
                                 "increase to make the transition softer and blurrier."));
 
   // Highlight Reconstruction Mask
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("display highlight reconstruction mask")), TRUE, TRUE, 0);
+  GtkWidget *hbox = dt_gui_hbox(dt_ui_label_new(_("display highlight reconstruction mask")));
   g->show_highlight_mask = dt_iop_togglebutton_new(self, NULL, N_("display highlight reconstruction mask"), NULL, G_CALLBACK(show_mask_callback),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_highlight_mask), dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_highlight_mask, "dt_bauhaus_alignment");
   dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  label = dt_ui_section_label_new(C_("section", "balance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, hbox, dt_ui_section_label_new(C_("section", "balance")));
 
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%");
@@ -4631,16 +4625,13 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is useful to match natural sensor noise pattern."));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox(g->area, g->notebook);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->auto_hardness || w == g->security_factor || w == g->grey_point_source
      || w == g->black_point_source || w == g->white_point_source)
@@ -4649,7 +4640,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     if(w == g->security_factor || w == g->grey_point_source)
     {
-      float prev = *(float *)previous;
+      const float prev = *(float *)previous;
       if(w == g->security_factor)
       {
         const float ratio = (p->security_factor - prev) / (prev + 100.0f);

@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -91,7 +88,7 @@ DT_OMP_DECLARE_SIMD(aligned(pixel: 16) uniform(norm))
 static void _normalize_color(float *const restrict pixel, const float norm)
 {
   // color may not be black!
-  const float factor = norm / fmaxf(pixel[0], fmaxf(pixel[1], pixel[2]));
+  const float factor = norm / max3f(pixel);
   for_each_channel(x)
     pixel[x] *= factor;
 }
@@ -254,11 +251,11 @@ static void _mask_display(const float *const restrict in,
 {
   // yellow, "unused" element aids vectorization
   const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f };
-  const gboolean devel = dt_conf_get_bool("darkroom/ui/develop_mask");
+  const float mix = CLIP(dt_conf_get_float("darkroom/ui/develop_mask_mix"));
   DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
   for(size_t j = 0; j < buffsize; j+= 4)
   {
-    const float gray = devel ? in[j + 3] : (0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
+    const float gray = interpolatef(mix, in[j + 3], 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
     const dt_aligned_pixel_t pixel = { gray, gray, gray, gray };
     _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
   }
@@ -325,6 +322,9 @@ void process(dt_iop_module_t *self,
   {
     _copy_output((const float *const restrict)i, (uint8_t *const restrict)o, buffsize);
   }
+
+  if(mask_display)
+    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i);
 }
 
 void init(dt_iop_module_t *self)

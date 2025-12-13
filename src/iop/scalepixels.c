@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "develop/imageop.h"
@@ -83,7 +80,8 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("module for setting pixel aspect ratio\n\n"
-                                "useful for certain sensor types and anamorphic desqueeze"),
+                                "useful for certain sensor types\n"
+                                "and anamorphic desqueeze"),
                                 _("corrective"),
                                 _("linear, RGB, scene-referred"),
                                 _("linear, RGB"),
@@ -208,7 +206,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   const dt_iop_scalepixels_data_t * const d = piece->data;
 
   DT_OMP_FOR()

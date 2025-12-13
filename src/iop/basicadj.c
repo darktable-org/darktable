@@ -20,10 +20,6 @@
     auto exposure is based on RawTherapee's Auto Levels
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
@@ -411,13 +407,13 @@ int button_pressed(dt_iop_module_t *self,
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
-    if((which == 3) || (which == 1 && type == GDK_2BUTTON_PRESS))
+    if((which == GDK_BUTTON_SECONDARY) || (which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS))
     {
       _turn_selregion_picker_off(self);
 
       handled = 1;
     }
-    else if(which == 1)
+    else if(which == GDK_BUTTON_PRIMARY)
     {
       float wd, ht;
       dt_dev_get_preview_size(self->dev, &wd, &ht);
@@ -615,8 +611,6 @@ void gui_init(dt_iop_module_t *self)
 
   change_image(self);
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
   dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
@@ -657,11 +651,8 @@ void gui_init(dt_iop_module_t *self)
   g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
   gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
 
-  GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-
   g->bt_auto_levels = dt_action_button_new(NULL, N_("auto"), _auto_levels_callback, self, _("apply auto exposure based on the entire image"), 0, 0);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
@@ -670,26 +661,17 @@ void gui_init(dt_iop_module_t *self)
                                 "click and drag to draw the area\n"
                                 "right-click to cancel"));
   g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_gui_expand(g->bt_auto_levels), dt_gui_expand(g->bt_select_region));
 
   g->sl_clip = dt_bauhaus_slider_from_params(self, N_("clip"));
   dt_bauhaus_slider_set_digits(g->sl_clip, 3);
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
   // and profile change
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed);
 }
 
 static inline int64_t doubleToRawLongBits(double d)
@@ -1175,32 +1157,32 @@ cleanup:
   if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!");
   }
   if(dt_isnan(black))
   {
     black = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!");
   }
   if(dt_isnan(bright))
   {
     bright = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!");
   }
   if(dt_isnan(contr))
   {
     contr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!");
   }
   if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!");
   }
   if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!");
   }
 
   *_expcomp = expcomp;

@@ -15,9 +15,6 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "lua/configuration.h"
@@ -109,6 +106,16 @@ int dt_lua_init_configuration(lua_State *L)
 
   lua_pushstring(L, "cache_dir");
   dt_loc_get_user_cache_dir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "share_dir");
+  dt_loc_get_sharedir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data_dir");
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L, tmp_path);
   lua_settable(L, -3);
 

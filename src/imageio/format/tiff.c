@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -225,7 +225,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   if(d->shortfile && layers == 3)
-    dt_control_log("%s", _("not a B&W image, will not export as grayscale"));
+    dt_print(DT_DEBUG_IMAGEIO, "[tiff export] '%s' is not a B&W image, not exporting as grayscale\n", filename);
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
@@ -876,16 +876,12 @@ void gui_init(dt_imageio_module_format_t *self)
   const int compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
   const int shortmode = dt_conf_get_bool("plugins/imageio/format/tiff/shortfile");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // Bit depth combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL,
                                bpp == 16   ? 1
                                : bpp == 32 ? 2
                                            : 0,
                                bpp_combobox_changed, gui, N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
-
 
   // Pixel format combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixelformat, self, NULL, N_("pixel type"), NULL, pixelformat,
@@ -897,7 +893,6 @@ void gui_init(dt_imageio_module_format_t *self)
 #else
   gtk_widget_set_visible(gui->pixelformat, FALSE);
 #endif
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->pixelformat, TRUE, TRUE, 0);
 
   gtk_widget_set_no_show_all(gui->pixelformat, TRUE);
 
@@ -907,7 +902,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("deflate with predictor"));
   dt_bauhaus_combobox_set_default(gui->compress,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
   // Compression level slider
   gui->compresslevel = dt_bauhaus_slider_new_with_range(
@@ -916,7 +910,6 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT), 0);
   dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
 
   gtk_widget_set_visible(gui->compresslevel, compress != 0);
@@ -928,7 +921,8 @@ void gui_init(dt_imageio_module_format_t *self)
                                shortfile_combobox_changed, self, N_("no"), N_("yes"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
                                   dt_confgen_get_bool("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
-  gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(gui->bpp, gui->pixelformat, gui->compress, gui->compresslevel, gui->shortfiles);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

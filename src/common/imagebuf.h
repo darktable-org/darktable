@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@
 */
 
 #pragma once
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "develop/imageop.h" // for dt_iop_roi_t
 
 G_BEGIN_DECLS
@@ -157,13 +153,6 @@ void dt_iop_image_invert(float *const buf,
 // Multiply every element of the image buffer by a specified constant value
 void dt_iop_image_mul_const(float *const buf,
                             const float mul_value,
-                            const size_t width,
-                            const size_t height,
-                            const size_t ch);
-
-// Divide every element of the image buffer by a specified constant value
-void dt_iop_image_div_const(float *const buf,
-                            const float div_value,
                             const size_t width,
                             const size_t height,
                             const size_t ch);

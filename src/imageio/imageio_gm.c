@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,15 +30,24 @@
 #include <strings.h>
 
 
-// we only support images with certain filename extensions via GraphicsMagick;
+// We only support images with certain filename extensions via GraphicsMagick.
 // RAWs are excluded as GraphicsMagick would render them with third party
-// libraries in reduced quality - slow and only 8-bit
+// libraries in reduced quality - slow and only 8-bit.
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "tiff", "tif", "pbm", "pgm", "ppm", "pnm",
-                                         "webp", "jpc", "jp2", "jpf", "jpx", "bmp",
-                                         "miff", "dcm", "jng", "mng", "pam", "gif",
-                                         "fits", "fit", "fts", "jxl", NULL };
+  const char *extensions_whitelist[] =
+    {
+    "tiff", "tif", // may support more format features than the native loader
+    "pam", "pbm", "pgm", "ppm", "pnm", // PNM-style formats
+    "jpc", "jp2", "jpf", "jpx", // JPEG 2000 extensions
+    "bmp", "miff", "dcm", "jng", "mng", "gif",  // misc exotic formats
+    "fits", "fit", "fts",  // FITS format (common in astro imagery)
+    "cin", "dpx", // Kodak made formats used in film industry for still frames
+    "jxl",  // probably of no practical use
+    "webp", // probably of no practical use
+    NULL
+    };
+
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -79,29 +88,18 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] image '%s' not found",
+             "[GraphicsMagick_open] ReadImage failed for '%s'",
              img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[GraphicsMagick_open] image '%s' loading",
+           "[GraphicsMagick_open] loading image '%s'",
            img->filename);
 
-  if(IsCMYKColorspace(image->colorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error: CMYK images are not supported");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
-
-  uint32_t width = image->columns;
-  uint32_t height = image->rows;
-
-  img->width = width;
-  img->height = height;
+  img->width = image->columns;
+  img->height = image->rows;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -116,29 +114,43 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
-  for(uint32_t row = 0; row < height; row++)
+  char *colormap;
+  if(IsCMYKColorspace(image->colorspace))
+    colormap = "CMYK";
+  else
+    colormap = "RGBP";
+
+  int ret = DispatchImage(image,
+                          0,
+                          0,
+                          img->width,
+                          img->height,
+                          colormap,
+                          FloatPixel,
+                          mipbuf,
+                          &exception);
+
+  if(exception.severity != UndefinedException)
+    CatchException(&exception);
+
+  if(ret != MagickPass)
   {
-    float *bufprt = mipbuf + (size_t)4 * row * img->width;
-    int ret = DispatchImage(image,
-                            0,
-                            row,
-                            width,
-                            1,
-                            "RGBP",
-                            FloatPixel,
-                            bufprt,
-                            &exception);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] error reading image pixels for '%s'",
+             img->filename);
+    err = DT_IMAGEIO_LOAD_FAILED;
+    goto error;
+  }
 
-    if(exception.severity != UndefinedException)
-      CatchException(&exception);
-
-    if(ret != MagickPass)
+  // If the image in CMYK color space convert it to linear RGB
+  if(IsCMYKColorspace(image->colorspace))
+  {
+    for(size_t index = 0; index < img->width * img->height * 4; index += 4)
     {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[GraphicsMagick_open] error reading image '%s'",
-               img->filename);
-      err = DT_IMAGEIO_LOAD_FAILED;
-      goto error;
+      float black = mipbuf[index + 3];
+      mipbuf[index]     = (1.f - black) * (1.f - mipbuf[index]);
+      mipbuf[index + 1] = (1.f - black) * (1.f - mipbuf[index + 1]);
+      mipbuf[index + 2] = (1.f - black) * (1.f - mipbuf[index + 2]);
     }
   }
 

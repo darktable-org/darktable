@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -202,8 +203,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
-  if(which == 1
-     && type == GDK_2BUTTON_PRESS)
+  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
   {
     // double-click resets curvature
     dt_masks_point_gradient_t *gradient = form->points->data;
@@ -239,8 +239,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
   }
-  else if(gui->creation
-          && (which == 3))
+  else if(gui->creation && (which == GDK_BUTTON_SECONDARY))
   {
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
@@ -257,7 +256,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 }
 
 static void _gradient_init_values(const float zoom_scale,
-                                  dt_masks_form_gui_t *gui,
+                                  const dt_masks_form_gui_t *gui,
                                   const float xpos,
                                   const float ypos,
                                   const float pzx,
@@ -321,7 +320,7 @@ static void _gradient_init_values(const float zoom_scale,
   const float compr =
     MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(0, gradient, compression)));
 
-  *rotation = -rot / M_PI * 180.0f;
+  *rotation = rad2degf(-rot);
   *compression = MAX(0.0f, compr);
   *curvature = MAX(-2.0f, MIN(2.0f,
                               dt_conf_get_float(DT_MASKS_CONF(0, gradient, curvature))));
@@ -340,7 +339,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
-  if(which == 3
+  if(which == GDK_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -415,7 +414,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
 
-    float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+    const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
 
     const float dv = atan2f(pts[3] - pts[1],
                             pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]),
@@ -431,9 +430,9 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0)
-      gradient->rotation += dv / M_PI * 180.0f;
+      gradient->rotation += rad2degf(dv);
     else
-      gradient->rotation -= dv / M_PI * 180.0f;
+      gradient->rotation -= rad2degf(dv);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
@@ -505,7 +504,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     {
       if(crea_module)
       {
-        dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
+        const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
@@ -541,9 +540,6 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
   if(gui->creation && gui->form_dragging)
   {
     dt_control_queue_redraw_center();
@@ -555,6 +551,9 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_point_gradient_t *gradient = form->points->data;
 
     // we change the center value
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -570,6 +569,8 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
   {
     dt_masks_point_gradient_t *gradient = form->points->data;
 
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     const float x = pzx * wd;
     const float y = pzy * ht;
 
@@ -579,7 +580,7 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
 
-    float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
+    const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
 
     // we remap dx, dy to the right values, as it will be used in next movements
     gui->dx = xref - gui->posx;
@@ -598,9 +599,9 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0.0f)
-      gradient->rotation += dv / M_PI * 180.0f;
+      gradient->rotation += rad2degf(dv);
     else
-      gradient->rotation -= dv / M_PI * 180.0f;
+      gradient->rotation -= rad2degf(dv);
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
@@ -609,6 +610,8 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     const float as = dt_masks_sensitive_dist(zoom_scale);
     const float as2 = sqf(as);
     const float x = pzx * wd;
@@ -694,7 +697,7 @@ static int _gradient_get_points(dt_develop_t *dev,
   const float scale = sqrtf(wd * wd + ht * ht);
   const float distance = 0.1f * fminf(wd, ht);
 
-  const float v = (-rotation / 180.0f) * M_PI;
+  const float v = deg2radf(-rotation);
   const float cosv = cosf(v);
   const float sinv = sinf(v);
 
@@ -707,12 +710,12 @@ static int _gradient_get_points(dt_develop_t *dev,
   (*points)[1] = y * ht;
 
   // we set the pivot points
-  const float v1 = (-(rotation - 90.0f) / 180.0f) * M_PI;
+  const float v1 = deg2radf(-(rotation - 90.0f));
   const float x1 = x * wd + distance * cosf(v1);
   const float y1 = y * ht + distance * sinf(v1);
   (*points)[2] = x1;
   (*points)[3] = y1;
-  const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
+  const float v2 = deg2radf(-(rotation + 90.0f));
   const float x2 = x * wd + distance * cosf(v2);
   const float y2 = y * ht + distance * sinf(v2);
   (*points)[4] = x2;
@@ -794,7 +797,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
   dt_masks_get_image_size(NULL, NULL, &wd, &ht);
   const float scale = sqrtf(wd * wd + ht * ht);
 
-  const float v1 = (-(rotation - 90.0f) / 180.0f) * M_PI;
+  const float v1 = deg2radf(-(rotation - 90.0f));
 
   const float x1 = (x * wd + distance * scale * cosf(v1)) / wd;
   const float y1 = (y * ht + distance * scale * sinf(v1)) / ht;
@@ -802,7 +805,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
   const int r1 = _gradient_get_points(dev, x1, y1, rotation, curvature,
                                       &points1, &points_count1);
 
-  const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
+  const float v2 = deg2radf(-(rotation + 90.0f));
 
   const float x2 = (x * wd + distance * scale * cosf(v2)) / wd;
   const float y2 = (y * ht + distance * scale * sinf(v2)) / ht;
@@ -879,7 +882,7 @@ static void _gradient_draw_lines(const gboolean borders,
                                  cairo_t *cr,
                                  const gboolean selected,
                                  const float zoom_scale,
-                                 float *pts_line,
+                                 const float *pts_line,
                                  const int pts_line_count,
                                  const float xref,
                                  const float yref)
@@ -933,7 +936,7 @@ static void _gradient_draw_arrow(cairo_t *cr,
                                  const gboolean selected,
                                  const gboolean border_selected,
                                  const float zoom_scale,
-                                 float *pts,
+                                 const float *pts,
                                  const int pts_count)
 {
   if(pts_count < 3) return;
@@ -1042,7 +1045,7 @@ static int _gradient_get_points_border(dt_develop_t *dev,
                                        const dt_iop_module_t *module)
 {
   (void)source;  // unused arg, keep compiler from complaining
-  dt_masks_point_gradient_t *gradient = form->points->data;
+  const dt_masks_point_gradient_t *gradient = form->points->data;
   if(_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1],
                           gradient->rotation, gradient->curvature,
                           points, points_count))
@@ -1122,7 +1125,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
            dt_get_lap_time(&start2));
 
   // we get the gradient values
-  dt_masks_point_gradient_t *gradient = form->points->data;
+  const dt_masks_point_gradient_t *gradient = form->points->data;
 
   // we create a buffer of grid points for later interpolation. mainly
   // in order to reduce memory footprint
@@ -1168,7 +1171,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   const float ht = piece->pipe->iheight;
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
   const float ihwscale = 1.0f / hwscale;
-  const float v = (-gradient->rotation / 180.0f) * M_PI;
+  const float v = deg2radf(-gradient->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
@@ -1199,7 +1202,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   }
 
   // center lut around zero
-  float *clut = lut + lutmax;
+  const float *clut = lut + lutmax;
 
 
   DT_OMP_FOR(collapse(2))
@@ -1320,7 +1323,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   const float ht = piece->pipe->iheight;
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
   const float ihwscale = 1.0f / hwscale;
-  const float v = (-gradient->rotation / 180.0f) * M_PI;
+  const float v = deg2radf(-gradient->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
@@ -1351,7 +1354,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   // center lut around zero
-  float *clut = lut + lutmax;
+  const float *clut = lut + lutmax;
 
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
@@ -1424,7 +1427,7 @@ static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
   return lm;
 }
 
-static void _gradient_sanitize_config(dt_masks_type_t type)
+static void _gradient_sanitize_config(const dt_masks_type_t type)
 {
   // we always want to start with no curvature
   dt_conf_set_float(DT_MASKS_CONF(type, gradient, curvature), 0.0f);
@@ -1462,7 +1465,7 @@ static void _gradient_duplicate_points(dt_develop_t *dev,
   (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
-    dt_masks_point_gradient_t *pt = pts->data;
+    const dt_masks_point_gradient_t *pt = pts->data;
     dt_masks_point_gradient_t *npt = malloc(sizeof(dt_masks_point_gradient_t));
     memcpy(npt, pt, sizeof(dt_masks_point_gradient_t));
     dest->points = g_list_append(dest->points, npt);
@@ -1497,7 +1500,7 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       ++*count;
       break;
     case DT_MASKS_PROPERTY_COMPRESSION:;
-      float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
       float compression = gradient
         ? gradient->compression
         : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));

@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -212,11 +209,11 @@ static inline void process_drago(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     const dt_hash_t hash = g->hash;
     dt_iop_gui_leave_critical_section(self);
 
-    // note that the case 'hash == 0' on first invocation in a session implies that g->lwmax
+    // note that the case 'hash == DT_INVALID_HASH' on first invocation in a session implies that g->lwmax
     // is -FLT_MAX which initiates special handling below to avoid inconsistent results. in all
     // other cases we make sure that the preview pipe has left us with proper readings for
     // lwmax. if data are not yet there we need to wait (with timeout).
-    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+    if(hash != DT_INVALID_HASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
 
     dt_iop_gui_enter_critical_section(self);
@@ -371,7 +368,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       dt_iop_gui_enter_critical_section(self);
       const dt_hash_t hash = g->hash;
       dt_iop_gui_leave_critical_section(self);
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+      if(hash != DT_INVALID_HASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
@@ -570,7 +567,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 #ifdef HAVE_OPENCL
   if(d->detail != 0.0f)
-    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_micro_nap(pipe->devid));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 }
 
@@ -630,7 +627,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_gui_enter_critical_section(self);
   g->lwmax = -FLT_MAX;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -639,7 +636,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
   g->lwmax = -FLT_MAX;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
 
   g->operator = dt_bauhaus_combobox_from_params(self, N_("operator"));
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
@@ -653,11 +650,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
   dt_bauhaus_slider_set_digits(g->detail, 3);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
 }
 
 // clang-format off

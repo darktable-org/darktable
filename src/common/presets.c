@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 
-static char *dt_preset_encode(sqlite3_stmt *stmt, int row)
+static char *_preset_encode(sqlite3_stmt *stmt,
+                            const int row)
 {
   const int32_t len = sqlite3_column_bytes(stmt, row);
   char *vparams = dt_exif_xmp_encode
@@ -128,7 +129,7 @@ void dt_presets_save_to_file(const int rowid,
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", description);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", operation);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
-                                    dt_preset_encode(stmt, 0));
+                                    _preset_encode(stmt, 0));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_version", "%d", op_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", enabled);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "autoapply", "%d", autoapply);
@@ -146,7 +147,7 @@ void dt_presets_save_to_file(const int rowid,
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_max", "%d",
                                     focal_length_max);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
-                                    dt_preset_encode(stmt, 1));
+                                    _preset_encode(stmt, 1));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
                                     blendop_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",
@@ -341,7 +342,8 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   return TRUE;
 }
 
-gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect)
+gchar *dt_get_active_preset_name(dt_iop_module_t *module,
+                                 gboolean *writeprotect)
 {
   sqlite3_stmt *stmt;
   // if we sort by writeprotect DESC then in case user copied the writeprotected preset
@@ -428,7 +430,7 @@ char *dt_presets_get_module_label(const char *module_name,
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
     if(multi_name && (strlen(multi_name) == 0 || multi_name[0] != ' '))
-      result = g_strdup(dt_presets_get_multi_name(name, multi_name));
+      result = dt_presets_get_multi_name(name, multi_name, FALSE);
   }
   g_free(query);
   sqlite3_finalize(stmt);
@@ -436,16 +438,81 @@ char *dt_presets_get_module_label(const char *module_name,
   return result;
 }
 
-const char *dt_presets_get_multi_name(const char *name, const char *multi_name)
+char *dt_presets_get_multi_name(const char *name,
+                                const char *multi_name,
+                                const gboolean localize)
 {
   const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
 
   // in auto-update mode     : use either the multi_name if defined otherwise the name
   // in non auto-update mode : use only the multi_name if defined
   if(auto_module)
-    return strlen(multi_name) > 0 ? multi_name : name;
+    return strlen(multi_name) > 0
+      ? g_strdup(multi_name)
+      : (localize ? dt_util_localize_segmented_name(name, FALSE) : g_strdup(name));
   else
-    return strlen(multi_name) > 0 ? multi_name : "";
+    return g_strdup(strlen(multi_name) > 0 ? multi_name : "");
+}
+
+static void _menu_shell_insert_sorted(GtkWidget *menu_shell,
+                                      GtkWidget *item,
+                                      const gchar *name)
+{
+  GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
+  int num = g_list_length(items);
+  for(GList *i = g_list_last(items); i; i = i->prev, num--)
+    if(g_utf8_collate(gtk_menu_item_get_label(i->data), name) < 0) break;
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_shell), item, num);
+  g_list_free(items);
+}
+
+GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
+                                              GSList **menu_path,
+                                              GtkWidget *mainmenu,
+                                              GtkWidget **submenu,
+                                              gchar ***prev_split,
+                                              gboolean isdefault)
+{
+  gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+  gchar **split = g_strsplit(local_name, "|", -1);
+  gchar **s = split;
+  gchar **p = *prev_split;
+  GSList *mpath = *menu_path;
+  GtkWidget *mi;
+  g_free(local_name);
+  for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
+    ;
+  for(; p && *(p+1); p++)
+  {
+    mpath = g_slist_delete_link(mpath, mpath); // pop
+    *submenu = mpath ? gtk_menu_item_get_submenu(mpath->data) : mainmenu;
+  }
+  for(; *(s+1); s++)
+  {
+    GtkWidget *sm = gtk_menu_item_new_with_label(*s);
+    mpath = g_slist_prepend(mpath, sm); // push
+
+    _menu_shell_insert_sorted(*submenu, sm, *s);
+    *submenu = gtk_menu_new();
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), *submenu);
+  }
+  *menu_path = mpath;
+  g_strfreev(*prev_split);
+  *prev_split = split;
+  if(isdefault)
+  {
+    gchar *label = g_strdup_printf("%s %s", *s, _("(default)"));
+    mi = gtk_check_menu_item_new_with_label(label);
+    _menu_shell_insert_sorted(*submenu, mi, label);
+    g_free(label);
+  }
+  else
+  {
+    mi = gtk_check_menu_item_new_with_label(*s);
+    _menu_shell_insert_sorted(*submenu, mi, *s);
+  }
+  dt_gui_add_class(mi, "dt_transparent_background");
+  return mi;
 }
 
 // clang-format off

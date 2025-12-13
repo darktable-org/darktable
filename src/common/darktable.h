@@ -40,9 +40,6 @@
 
 #include "external/ThreadSafetyAnalysis.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/database.h"
 #include "common/dtpthread.h"
 #include "common/dttypes.h"
@@ -143,9 +140,7 @@ typedef unsigned int u_int;
 // for signal debugging symbols
 #include "control/signal.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
@@ -285,6 +280,7 @@ struct dt_l10n_t;
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
 typedef float dt_pickerbox_t[8];
+typedef float dt_dev_zoom_pos_t[6];
 
 typedef enum dt_debug_thread_t
 {
@@ -333,19 +329,15 @@ typedef struct dt_sys_resources_t
   size_t mipmap_memory;
   int *fractions;   // fractions are calculated as res=input / 1024  * fraction
   int *refresource; // for the debug resource modes we use fixed settings
-  int group;
   int level;
-  gboolean tunehead;
 } dt_sys_resources_t;
 
 typedef struct dt_backthumb_t
 {
   double time;
   double idle;
-  gboolean service;
-  gboolean running;
+  int32_t state;
   gboolean capable;
-  int32_t mipsize;
 } dt_backthumb_t;
 
 typedef struct dt_gimp_t
@@ -396,6 +388,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t capabilities_threadsafe;
   dt_pthread_mutex_t exiv2_threadsafe;
   dt_pthread_mutex_t readFile_mutex;
+  dt_pthread_mutex_t metadata_threadsafe;
   char *progname;
   char *datadir;
   char *sharedir;
@@ -712,8 +705,7 @@ static inline size_t dt_get_num_threads()
 static inline size_t dt_get_num_procs()
 {
 #ifdef _OPENMP
-  // we can safely assume omp_get_num_procs is > 0
-  return (size_t)omp_get_num_procs();
+  return (size_t)MAX(1, omp_get_num_procs());
 #else
   return 1;
 #endif
@@ -729,6 +721,7 @@ static inline int dt_get_thread_num()
 }
 
 #define DT_INITHASH 5381
+#define DT_INVALID_HASH 0
 typedef uint64_t dt_hash_t;
 static inline dt_hash_t dt_hash(dt_hash_t hash, const void *data, const size_t size)
 {
@@ -887,8 +880,9 @@ static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
 // checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage(char *info);
 
-// try to start the backthumbs crawler
-void dt_start_backtumbs_crawler();
+// start/stop the backthumbs crawler
+void dt_start_backthumbs_crawler(void);
+void dt_stop_backthumbs_crawler(const gboolean wait);
 
 void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:
@@ -963,13 +957,15 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
  * NQ_ should be used to strip any context from the string.
  */
 #undef NC_
-#define NC_(Context, String) (Context "|" String)
+#define NC_(Context, String) Context "|" String
 
 static inline const gchar *NQ_(const gchar *String)
 {
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#define dt_buf_printf(buf, fmt, ...) (snprintf((buf), sizeof(buf), (fmt) __VA_OPT__(,) __VA_ARGS__), (buf))
 
 static inline gboolean dt_gimpmode(void)
 {
@@ -986,9 +982,7 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
   return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -34,7 +34,7 @@ graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width,
 
   const float len = length_base + y*length_inc_y + x*length_inc_x;
 
-  const float t = 0.693147181f * (density * clamp(0.5f+len, 0.0f, 1.0f)/8.0f);
+  const float t = 0.693147181f * (density * clipf(0.5f+len)/8.0f);
   const float d1 = t * t * 0.5f;
   const float d2 = d1 * t * 0.333333333f;
   const float d3 = d2 * t * 0.25f;
@@ -62,7 +62,7 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
 
   const float len = length_base + y*length_inc_y + x*length_inc_x;
 
-  const float t = 0.693147181f * (-density * clamp(0.5f-len, 0.0f, 1.0f)/8.0f);
+  const float t = 0.693147181f * (-density * clipf(0.5f-len)/8.0f);
   const float d1 = t * t * 0.5f;
   const float d2 = d1 * t * 0.333333333f;
   const float d3 = d2 * t * 0.25f;
@@ -122,12 +122,12 @@ relight (read_only image2d_t in, write_only image2d_t out, const int width, cons
   if(isnan(gauss) || isinf(gauss))
     gauss = 0.0f;
 
-  float relight = 1.0f / exp2(-ev * clamp(gauss, 0.0f, 1.0f));
+  float relight = 1.0f / exp2(-ev * clipf(gauss));
 
   if(isnan(relight) || isinf(relight))
     relight = 1.0f;
 
-  pixel.x = 100.0f * clamp(lightness*relight, 0.0f, 1.0f);
+  pixel.x = 100.0f * clipf(lightness*relight);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -170,9 +170,9 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
       break;
 
     case OPERATION_MODE_HSL_V1:
-      hmix = clamp(pixel.x * hsl_matrix[0], 0.0f, 1.0f) + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2];
-      smix = clamp(pixel.x * hsl_matrix[3], 0.0f, 1.0f) + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5];
-      lmix = clamp(pixel.x * hsl_matrix[6], 0.0f, 1.0f) + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8];
+      hmix = clipf(pixel.x * hsl_matrix[0]) + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2];
+      smix = clipf(pixel.x * hsl_matrix[3]) + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5];
+      lmix = clipf(pixel.x * hsl_matrix[6]) + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8];
 
       if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
       {
@@ -183,18 +183,18 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
         pixel = HSL_2_RGB(hsl);
       }
 
-      opixel.x = clamp(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2], 0.0f, 1.0f);
-      opixel.y = clamp(pixel.x * rgb_matrix[3] + pixel.y * rgb_matrix[4] + pixel.z * rgb_matrix[5], 0.0f, 1.0f);
-      opixel.z = clamp(pixel.x * rgb_matrix[6] + pixel.y * rgb_matrix[7] + pixel.z * rgb_matrix[8], 0.0f, 1.0f);
+      opixel.x = clipf(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2]);
+      opixel.y = clipf(pixel.x * rgb_matrix[3] + pixel.y * rgb_matrix[4] + pixel.z * rgb_matrix[5]);
+      opixel.z = clipf(pixel.x * rgb_matrix[6] + pixel.y * rgb_matrix[7] + pixel.z * rgb_matrix[8]);
       break;
 
     case OPERATION_MODE_HSL_V2:
-      hmix = clamp(pixel.x * hsl_matrix[0] + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2], 0.0f, 1.0f);
-      smix = clamp(pixel.x * hsl_matrix[3] + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5], 0.0f, 1.0f);
-      lmix = clamp(pixel.x * hsl_matrix[6] + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8], 0.0f, 1.0f);
+      hmix = clipf(pixel.x * hsl_matrix[0] + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2]);
+      smix = clipf(pixel.x * hsl_matrix[3] + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5]);
+      lmix = clipf(pixel.x * hsl_matrix[6] + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8]);
       if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
       {
-        pixel = (float4)(clamp(pixel.x, 0.0f, 1.0f), clamp(pixel.y, 0.0f, 1.0f), clamp(pixel.z, 0.0f, 1.0f), pixel.w);
+        pixel = (float4)(clipf(pixel.x), clipf(pixel.y), clipf(pixel.z), pixel.w);
         float4 hsl = RGB_2_HSL(pixel);
         hsl.x = (hmix != 0.0f ) ? hmix : hsl.x;
         hsl.y = (smix != 0.0f ) ? smix : hsl.y;
@@ -223,19 +223,19 @@ velvia (read_only image2d_t in, write_only image2d_t out, const int width, const
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   // calculate vibrance, and apply boost velvia saturation at least saturated pixels
-  float pmax = fmax(pixel.x, fmax(pixel.y, pixel.z));     // max value in RGB set
-  float pmin = fmin(pixel.x, fmin(pixel.y, pixel.z));     // min value in RGB set
-  float plum = (pmax + pmin) / 2.0f;                // pixel luminocity
-  float psat = (plum <= 0.5f) ? (pmax-pmin)/(1e-5f + pmax+pmin) : (pmax-pmin)/(1e-5f + fmax(0.0f, 2.0f-pmax-pmin));
+  const float pmax = fmax(pixel.x, fmax(pixel.y, pixel.z));     // max value in RGB set
+  const float pmin = fmin(pixel.x, fmin(pixel.y, pixel.z));     // min value in RGB set
+  const float plum = (pmax + pmin) / 2.0f;                // pixel luminocity
+  const float psat = (plum <= 0.5f) ? (pmax-pmin)/(1e-5f + pmax+pmin) : (pmax-pmin)/(1e-5f + fmax(0.0f, 2.0f-pmax-pmin));
 
-  float pweight = clamp(((1.0f- (1.5f*psat)) + ((1.0f+(fabs(plum-0.5f)*2.0f))*(1.0f-bias))) / (1.0f+(1.0f-bias)), 0.0f, 1.0f); // The weight of pixel
-  float saturation = strength*pweight;      // So lets calculate the final affection of filter on pixel
+  const float pweight = clipf(((1.0f- (1.5f*psat)) + ((1.0f+(fabs(plum-0.5f)*2.0f))*(1.0f-bias))) / (1.0f+(1.0f-bias))); // The weight of pixel
+  const float saturation = strength*pweight;      // So lets calculate the final affection of filter on pixel
 
   float4 opixel;
 
-  opixel.x = clamp(pixel.x + saturation*(pixel.x-0.5f*(pixel.y+pixel.z)), 0.0f, 1.0f);
-  opixel.y = clamp(pixel.y + saturation*(pixel.y-0.5f*(pixel.z+pixel.x)), 0.0f, 1.0f);
-  opixel.z = clamp(pixel.z + saturation*(pixel.z-0.5f*(pixel.x+pixel.y)), 0.0f, 1.0f);
+  opixel.x = clipf(pixel.x + saturation*(pixel.x-0.5f*(pixel.y+pixel.z)));
+  opixel.y = clipf(pixel.y + saturation*(pixel.y-0.5f*(pixel.z+pixel.x)));
+  opixel.z = clipf(pixel.z + saturation*(pixel.z-0.5f*(pixel.x+pixel.y)));
   opixel.w = pixel.w;
 
   write_imagef (out, (int2)(x, y), opixel);
@@ -344,14 +344,14 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(weight > 0.0f)
   {
-    float falloff = brightness < 0.0f ? 1.0f + (weight * brightness) : weight * brightness;
+    const float falloff = brightness < 0.0f ? 1.0f + (weight * brightness) : weight * brightness;
 
     pixel.xyz = (brightness < 0.0f ? pixel * falloff + dith : pixel + falloff + dith).xyz;
 
     pixel.xyz = unbound ? pixel.xyz : clamp(pixel, (float4)0.0f, (float4)1.0f).xyz;
 
-    float mv = (pixel.x + pixel.y + pixel.z) / 3.0f;
-    float wss = weight * saturation;
+    const float mv = (pixel.x + pixel.y + pixel.z) / 3.0f;
+    const float wss = weight * saturation;
 
     pixel.xyz = (pixel - (mv - pixel)* wss).xyz,
 
@@ -381,8 +381,8 @@ splittoning (read_only image2d_t in, write_only image2d_t out, const int width, 
   {
     hsl.x = hsl.z < balance ? shadow_hue : highlight_hue;
     hsl.y = hsl.z < balance ? shadow_saturation : highlight_saturation;
-    float ra = hsl.z < balance ? clamp(2.0f*fabs(-balance + compress + hsl.z), 0.0f, 1.0f) :
-               clamp(2.0f*fabs(-balance - compress + hsl.z), 0.0f, 1.0f);
+    const float ra = hsl.z < balance ? clipf(2.0f*fabs(-balance + compress + hsl.z))
+                                     : clipf(2.0f*fabs(-balance - compress + hsl.z));
 
     float4 mixrgb = HSL_2_RGB(hsl);
 
@@ -415,8 +415,8 @@ pixelmax_first (read_only image2d_t in, const int width, const int height, globa
   {
     if (l < offset)
     {
-      float other = buffer[l + offset];
-      float mine =  buffer[l];
+      const float other = buffer[l + offset];
+      const float mine =  buffer[l];
       buffer[l] = (mine > other) ? mine : other;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -445,7 +445,7 @@ pixelmax_second(global float* input, global float *result, const int length, loc
     x += get_global_size(0);
   }
 
-  int lid = get_local_id(0);
+  const int lid = get_local_id(0);
   buffer[lid] = accu;
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -480,7 +480,7 @@ global_tonemap_reinhard (read_only image2d_t in, write_only image2d_t out, const
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float l = pixel.x * 0.01f;
+  const float l = pixel.x * 0.01f;
 
   pixel.x = 100.0f * (l/(1.0f + l));
 
@@ -506,7 +506,7 @@ global_tonemap_drago (read_only image2d_t in, write_only image2d_t out, const in
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float lw = pixel.x * 0.01f;
+  const float lw = pixel.x * 0.01f;
 
   pixel.x = 100.0f * (ldc * log(fmax(eps, lw + 1.0f)) / log(fmax(eps, 2.0f + (pow(lw/lwmax,bl)) * 8.0f)));
 
@@ -526,8 +526,8 @@ global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const i
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float l = pixel.x * 0.01f;
-  float m = fmax(0.0f, l - 0.004f);
+  const float l = pixel.x * 0.01f;
+  const float m = fmax(0.0f, l - 0.004f);
 
   pixel.x = 100.0f * ((m*(6.2f*m+0.5f))/(m*(6.2f*m+1.7f)+0.06f));
 
@@ -565,7 +565,7 @@ colormapping_histogram (read_only image2d_t in, write_only image2d_t out, const 
 
   if(x >= width || y >= height) return;
 
-  float L = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float L = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   float dL = 0.5f*((L * (1.0f - equalization) + source_ihist[target_hist[(int)clamp(HISTN*L/100.0f, 0.0f, (float)HISTN-1.0f)]] * equalization) - L) + 50.0f;
   dL = clamp(dL, 0.0f, 100.0f);
@@ -583,7 +583,7 @@ colormapping_mapping (read_only image2d_t in, read_only image2d_t tmp, write_onl
   if(x >= width || y >= height) return;
 
   float4 ipixel = read_imagef(in, sampleri, (int2)(x, y));
-  float dL = read_imagef(tmp, sampleri, (int2)(x, y)).x;
+  const float dL = read_imagef(tmp, sampleri, (int2)(x, y)).x;
   float weight[MAXN];
   float4 opixel = (float4)0.0f;
 

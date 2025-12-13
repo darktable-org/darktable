@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -24,10 +24,6 @@
 #include "common/file_location.h"
 #include "common/dttypes.h"
 #include "develop/imageop.h"
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>           // for cl_mem
@@ -87,10 +83,10 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
  * work profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module,
+dt_ioppr_get_iop_work_profile_info(const struct dt_iop_module_t *module,
                                    GList *iop_list);
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module,
+dt_ioppr_get_iop_input_profile_info(const struct dt_iop_module_t *module,
                                     GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
@@ -126,16 +122,16 @@ dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
 /** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_ioppr_get_pipe_work_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_ioppr_get_pipe_input_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe);
 
 /** Get the relevant RGB -> XYZ profile at the position of current module */
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_pipe_current_profile_info(struct dt_iop_module_t *module,
-                                       struct dt_dev_pixelpipe_t *pipe);
+dt_ioppr_get_pipe_current_profile_info(const struct dt_iop_module_t *module,
+                                       const struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,

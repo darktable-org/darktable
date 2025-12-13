@@ -32,6 +32,7 @@ hbDependencies="adwaita-icon-theme \
     glib \
     gmic \
     gphoto2 \
+    graphicsmagick \
     imagemagick \
     gtk-mac-integration \
     gtk+3 \
@@ -102,4 +103,4 @@ fi
 
 # link keg-only packages
 brew link --force libomp
-brew link --force libsoup@2
+brew link --force libsoup

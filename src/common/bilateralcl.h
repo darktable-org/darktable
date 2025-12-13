@@ -19,10 +19,6 @@
 #pragma once
 
 #ifdef HAVE_OPENCL
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <CL/cl.h>          // for cl_mem, _cl_mem
 #include <stddef.h>         // for size_t
 

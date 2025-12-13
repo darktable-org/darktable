@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "common/darktable.h"
 #include "common/iop_order.h"
@@ -86,6 +82,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 1.0f }, "rawprepare", 0},
   { { 2.0f }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -143,6 +140,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {44.0f }, "lowlight", 0},
   { {45.0f }, "monochrome", 0},
   { {45.3f }, "sigmoid", 0},
+  { {45.5f }, "agx", 0},
   { {46.0f }, "filmic", 0},
   { {46.5f }, "filmicrgb", 0},
   { {47.0f }, "colisa", 0},
@@ -181,6 +179,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -255,6 +254,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
   { {45.3f }, "sigmoid", 0},
+  { {45.5f }, "agx", 0},
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
   { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
@@ -297,6 +297,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -371,6 +372,7 @@ const dt_iop_order_entry_t v50_order[] = {
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
   { {45.3f }, "sigmoid", 0},
+  { {45.5f }, "agx", 0},
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
   { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
@@ -415,6 +417,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 1.0 }, "rawprepare", 0 },
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -487,6 +490,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
+  { {45.5f }, "agx", 0},
   { { 45.3f }, "sigmoid", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
@@ -534,6 +538,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 1.0 }, "rawprepare", 0 },
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -607,6 +612,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
   { { 45.3f }, "sigmoid", 0},
+  { {45.5f }, "agx", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
@@ -1176,7 +1182,9 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
+          _insert_before(iop_order_list, "filmicrgb", "agx");
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
+          _insert_before(iop_order_list, "highlights", "rasterfile");
         }
       }
       else if(version >= DT_IOP_ORDER_LEGACY
@@ -1503,7 +1511,7 @@ static gboolean _operation_already_handled(GList *e_list,
 }
 
 // returns the nth module's priority being active or not
-int _get_multi_priority(dt_develop_t *dev,
+static int _get_multi_priority(dt_develop_t *dev,
                         const char *operation,
                         const int n,
                         const gboolean only_disabled)
@@ -1522,9 +1530,9 @@ int _get_multi_priority(dt_develop_t *dev,
   return INT_MAX;
 }
 
-void dt_ioppr_update_for_entries(dt_develop_t *dev,
-                                 GList *entry_list,
-                                 const gboolean append)
+static void _ioppr_update_for_entries(dt_develop_t *dev,
+                                      GList *entry_list,
+                                      const gboolean append)
 {
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
@@ -1656,7 +1664,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev,
 
   e_list = g_list_reverse(e_list);  // list was built in reverse order, so un-reverse it
 
-  dt_ioppr_update_for_entries(dev, e_list, append);
+  _ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -1703,7 +1711,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev,
   }
   e_list = g_list_reverse(e_list);  // list was built in reverse order, so un-reverse it
 
-  dt_ioppr_update_for_entries(dev, e_list, append);
+  _ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -2470,7 +2478,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         {
           iop_order_ok = FALSE;
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_ioppr_check_iop_order] module not used but enabled!!"
+                   "[dt_ioppr_check_iop_order] module not used but enabled!"
                    " %s %s(%d) image %i (%s)",
                    mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
@@ -2540,7 +2548,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         iop_order_ok = FALSE;
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_ioppr_check_iop_order] history module not"
-                 " used but enabled!! %s %s(%d) image %i (%s)",
+                 " used but enabled! %s %s(%d) image %i (%s)",
                  hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
       if(hist->multi_priority == 0)

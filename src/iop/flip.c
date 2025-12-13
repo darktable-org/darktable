@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -350,14 +347,6 @@ void modify_roi_in(dt_iop_module_t *self,
   // to convert valid points to widths, we need to add one
   roi_in->width = aabb_in[2] - aabb_in[0] + 1;
   roi_in->height = aabb_in[3] - aabb_in[1] + 1;
-
-  // sanity check.
-  const float w = piece->buf_in.width * roi_out->scale;
-  const float h = piece->buf_in.height * roi_out->scale;
-  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(w));
-  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(h));
-  roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(w) - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(h) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from
@@ -394,10 +383,11 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int orientation = data->orientation;
 
   return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_flip, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(orientation));
+    CLARG(dev_in), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(roi_out->width), CLARG(roi_out->height),
+    CLARG(data->orientation));
 }
 #endif
 
@@ -431,7 +421,7 @@ void commit_params(dt_iop_module_t *self,
     d->orientation = p->orientation;
 
   if(d->orientation == ORIENTATION_NONE)
-    piece->enabled = 0;
+    piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -456,32 +446,32 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.orientation = ORIENTATION_NULL;
   dt_gui_presets_add_generic(_("auto"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
-  dt_gui_presets_update_autoapply(_("auto"), self->op, self->version(), TRUE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
+  dt_gui_presets_update_autoapply(BUILTIN_PRESET("auto"), self->op, self->version(), TRUE);
 
   p.orientation = ORIENTATION_NONE;
   dt_gui_presets_add_generic(_("no rotation"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_FLIP_HORIZONTALLY;
   dt_gui_presets_add_generic(_("flip horizontally"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_FLIP_VERTICALLY;
   dt_gui_presets_add_generic(_("flip vertically"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_ROTATE_CW_90_DEG;
   dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
   dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_ROTATE_180_DEG;
   dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_NONE);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -518,6 +508,20 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
+static void _crop_callback(dt_iop_module_t *self,
+                           const dt_image_orientation_t mode)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_iop_module_t *cropper = dev->cropping.flip_handler;
+
+  // FIXME: can we "compress" history here by checking for a flip/crop pair on top of history
+  // and a) drop the crop on top of history and b) compress flip in one step
+
+  dt_dev_add_history_item(dev, self, TRUE);
+  if(cropper && dev->cropping.flip_callback)
+    dev->cropping.flip_callback(cropper, mode);
+}
+
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
   dt_iop_flip_params_t *p = self->params;
@@ -543,7 +547,7 @@ static void do_rotate(dt_iop_module_t *self, uint32_t cw)
   orientation ^= ORIENTATION_SWAP_XY;
 
   p->orientation = orientation;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, cw ? ORIENTATION_ROTATE_CW_90_DEG : ORIENTATION_ROTATE_CCW_90_DEG);
 }
 
 static void rotate_cw(GtkWidget *widget, dt_iop_module_t *self)
@@ -569,7 +573,7 @@ static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
   else
     p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, ORIENTATION_FLIP_HORIZONTALLY);
 }
 
 static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
@@ -586,7 +590,7 @@ static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
   else
     p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, ORIENTATION_FLIP_VERTICALLY);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -594,11 +598,9 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   GtkWidget *label = dtgtk_reset_label_new(_("transform"),
                                            self, &p->orientation, sizeof(int32_t));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  self->widget = dt_gui_hbox(label);
 
   dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
                     G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,

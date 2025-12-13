@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -141,6 +141,8 @@ int store(dt_imageio_module_storage_t *self,
           const int total,
           const gboolean high_quality,
           const gboolean upscale,
+          const gboolean is_scaling,
+          const double scale_factor,
           const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type,
           const gchar *icc_filename,
@@ -176,7 +178,8 @@ int store(dt_imageio_module_storage_t *self,
   attachment->file = g_build_filename(tmpdir, dirname, (char *)NULL);
 
   if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality,
-                       upscale, TRUE, export_masks, icc_type,
+                       upscale, is_scaling, scale_factor,
+                       TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -233,7 +236,7 @@ void free_params(dt_imageio_module_storage_t *self,
 #ifdef _WIN32
 static LPWSTR _convert_to_widechar(UINT codepage, LPSTR str)
 {
-  if (!str) return NULL;
+  if(!str) return NULL;
 
   DWORD length = MultiByteToWideChar(codepage, 0, str, -1, NULL, 0);
   LPWSTR wc_str = g_malloc(length * sizeof(WCHAR));
@@ -287,10 +290,9 @@ void finalize_store(dt_imageio_module_storage_t *self,
     m_fd[index].lpFileType = NULL;
     m_fd[index].nPosition = (ULONG) -1;
 
-    const dt_image_t *img =
-      dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
     if(body != NULL)
@@ -311,7 +313,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
 
   MapiMessage m_msg;
   ZeroMemory(&m_msg, sizeof (m_msg));
-  m_msg.lpszSubject = (LPSTR) _convert_to_widechar(CP_UTF8, 
+  m_msg.lpszSubject = (LPSTR) _convert_to_widechar(CP_UTF8,
                                                    _("images exported from darktable"));
   m_msg.lpszNoteText = (LPSTR) _convert_to_widechar(CP_ACP, body);
 
@@ -411,10 +413,9 @@ void finalize_store(dt_imageio_module_storage_t *self,
     gchar exif[256] = { 0 };
     _email_attachment_t *attachment = (_email_attachment_t *)iter->data;
     gchar *filename = g_path_get_basename(attachment->file);
-    const dt_image_t *img =
-      dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
     if(body != NULL)

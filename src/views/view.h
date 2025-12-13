@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,8 +58,7 @@ typedef enum dt_view_type_flags_t
   DT_VIEW_MAP        = 1 << 3,
   DT_VIEW_SLIDESHOW  = 1 << 4,
   DT_VIEW_PRINT      = 1 << 5,
-  DT_VIEW_KNIGHT     = 1 << 6,
-  DT_VIEW_MULTI      = 1 << 28, 
+  DT_VIEW_MULTI      = 1 << 28,
   DT_VIEW_FALLBACK   = 1 << 29,
   DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
   DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
@@ -82,6 +81,13 @@ typedef enum dt_lighttable_layout_t
   DT_LIGHTTABLE_LAYOUT_PREVIEW = 4,
   DT_LIGHTTABLE_LAYOUT_LAST = 5
 } dt_lighttable_layout_t;
+
+typedef enum dt_lighttable_culling_restriction_t
+{
+  DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO,
+  DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION,
+  DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION
+} dt_lighttable_culling_restriction_t;
 
 typedef enum dt_darkroom_layout_t
 {
@@ -159,7 +165,8 @@ typedef enum dt_view_image_over_t
   DT_VIEW_GROUP   =  7,
   DT_VIEW_AUDIO   =  8,
   DT_VIEW_ALTERED =  9,
-  DT_VIEW_END     = 10, // placeholder for the end of the list
+  DT_VIEW_TAGS    = 10,
+  DT_VIEW_END     = 11, // placeholder for the end of the list
 } dt_view_image_over_t;
 
 /** returns an uppercase string of file extension **plus** some flag information **/
@@ -315,20 +322,26 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       struct dt_view_t *view;
+      void (*update_layout_btn)(struct dt_lib_module_t *module);
       void (*set_zoom)(struct dt_lib_module_t *module,
                        const gint zoom);
       gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module,
                          const dt_lighttable_layout_t layout);
-      void (*culling_init_mode)(struct dt_view_t *view);
       void (*culling_preview_refresh)(struct dt_view_t *view);
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
+      dt_lighttable_culling_restriction_t (*get_culling_initial_restriction)(struct dt_lib_module_t *module);
+      dt_lighttable_culling_restriction_t (*get_culling_restricted_state)(struct dt_view_t *view);
+      dt_imgid_t (*get_culling_selection)(struct dt_view_t *view);
+      void (*set_culling_restricted_state)(struct dt_view_t *view,
+                                           const dt_lighttable_culling_restriction_t state);
       gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*set_preview_state)(struct dt_view_t *view,
                                 const gboolean state,
                                 const gboolean sticky,
-                                const gboolean focus);
+                                const gboolean focus,
+                                const dt_lighttable_culling_restriction_t restriction);
       void (*change_offset)(struct dt_view_t *view,
                             const gboolean reset,
                             const dt_imgid_t imgid);
@@ -408,7 +421,7 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
-const char *dt_view_manager_name(dt_view_manager_t *vm);
+const char *dt_view_manager_name(const dt_view_manager_t *vm);
 /** switch to this module. returns TRUE if the module fails to change. */
 gboolean dt_view_manager_switch(dt_view_manager_t *vm,
                                 const char *view_name);
@@ -424,7 +437,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
-const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
+const dt_view_t *dt_view_manager_get_current_view(const dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_enter(dt_view_manager_t *vm);
 void dt_view_manager_mouse_leave(dt_view_manager_t *vm);
@@ -525,21 +538,31 @@ GSList *dt_view_active_images_get();
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
 /** get the darkroom current layout */
-dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
+dt_darkroom_layout_t dt_view_darkroom_get_layout(const dt_view_manager_t *vm);
+/** update the layout buttons of the lighttable lib */
+void dt_view_lighttable_update_layout_buttons(dt_view_manager_t *vm);
+/** get the lighttable culling initial restricted state */
+dt_lighttable_culling_restriction_t dt_view_lighttable_culling_initial_restriction(dt_view_manager_t *vm);
+/** get the lighttable culling restricted state */
+dt_lighttable_culling_restriction_t dt_view_lighttable_culling_restricted_state(dt_view_manager_t *vm);
+/** set the lighttable culling restricted state */
+void dt_view_lighttable_set_culling_restricted_state(dt_view_manager_t *vm,
+                                                     const dt_lighttable_culling_restriction_t state);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
+/** get the culling selection imgid (used in the "selection" act_on algorithm) */
+dt_imgid_t dt_view_lighttable_get_culling_selection(dt_view_manager_t *vm);
 /** set the lighttable full preview state */
 void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm,
                                           const gboolean state,
                                           const gboolean sticky,
-                                          const gboolean focus);
+                                          const gboolean focus,
+                                          const dt_lighttable_culling_restriction_t restriction);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm,
                                  const gint zoom);
 /** gets the lighttable image in row zoom */
-gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
-/** reinit culling for new mode */
-void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm);
+gint dt_view_lighttable_get_zoom(const dt_view_manager_t *vm);
 /** force refresh of culling and/or preview */
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview overlays */
@@ -642,8 +665,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_scale,
                            int buf_width,
                            int buf_height,
-                           float buf_zoom_x,
-                           float buf_zoom_y);
+                           dt_dev_zoom_pos_t buf_zoom_pos);
 
 typedef dt_hash_t dt_view_context_t;
 

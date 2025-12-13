@@ -59,7 +59,7 @@ void dt_guides_add_module_menuitem(void *menu, struct dt_iop_module_t *module);
 
 // show the line in UI modules
 void dt_guides_init_module_widget(GtkWidget *box, struct dt_iop_module_t *module);
-void dt_guides_update_module_widget(struct dt_iop_module_t *module);
+void dt_guides_update_module_widget(const struct dt_iop_module_t *module);
 
 void dt_guides_set_overlay_colors();
 

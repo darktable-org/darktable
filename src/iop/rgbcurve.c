@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "bauhaus/bauhaus.h"
 #include "common/iop_profile.h"
@@ -184,9 +180,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][3].y = 0.290352;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y = 0.773852;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y = 1.000000;
-  dt_gui_presets_add_generic(_("contrast compression"), self->op,
+  dt_gui_presets_add_generic(_("contrast | compression"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.curve_num_nodes[DT_IOP_RGBCURVE_R] = 7;
   float linear_L[7] = { 0.0, 0.08, 0.17, 0.50, 0.83, 0.92, 1.0 };
@@ -194,9 +190,9 @@ void init_presets(dt_iop_module_so_t *self)
   // Linear - no contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
-  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op,
+  dt_gui_presets_add_generic(_("linear (gamma 1.0)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Linear contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
@@ -205,9 +201,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.020;
-  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | medium (linear)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
@@ -215,9 +211,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.040;
-  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | high (linear)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
@@ -232,9 +228,9 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y =
       powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | medium (gamma 2.2)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
@@ -248,9 +244,9 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y =
       powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | high (gamma 2.2)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   /** for pure power-like functions, we need more nodes close to the bounds**/
 
@@ -262,30 +258,30 @@ void init_presets(dt_iop_module_so_t *self)
   // Gamma 2.0 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = (linear_L[k] * linear_L[k]);
-  dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | gamma 2.0"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = sqrtf(linear_L[k]);
-  dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | gamma 0.5"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Log2 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = logf(linear_L[k] + 1.0f) / logf(2.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | logarithm (base 2)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(2.0f, linear_L[k]) - 1.0f;
-  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | exponential (base 2)"), self->op,
                              self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 static float _curve_to_mouse(const float x,
@@ -895,9 +891,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     float hist_max;
 
     if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBCURVE_R],
-                       fmaxf(self->histogram_max[DT_IOP_RGBCURVE_G],
-                             self->histogram_max[DT_IOP_RGBCURVE_B]));
+      hist_max = max3ui(self->histogram_max);
     else
       hist_max = self->histogram_max[ch];
 
@@ -1310,7 +1304,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_rgbcurve_node_t *curve_nodes = p->curve_nodes[ch];
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_BUTTON_PRESS
        && dt_modifier_is(event->state, GDK_CONTROL_MASK)
@@ -1409,7 +1403,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == 3 && g->selected >= 0)
+  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {
@@ -1489,8 +1483,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->autoscale,
                               _("choose between linked and independent channels."));
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   dt_action_define_iop(self, NULL, N_("channel"),
                        GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_rgb);
@@ -1499,13 +1491,11 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("B"), _("curve nodes for b channel"));
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(tab_switch_callback), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self,
                                        DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO,
-                                       hbox);
+                                       NULL);
   gtk_widget_set_tooltip_text(g->colorpicker,
                               _("pick GUI color from image\n"
                                 "ctrl+click or right-click to select an area"));
@@ -1514,7 +1504,7 @@ void gui_init(dt_iop_module_t *self)
                        g->colorpicker, &dt_action_def_toggle);
   g->colorpicker_set_values = dt_color_picker_new(self,
                                                   DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO,
-                                                  hbox);
+                                                  NULL);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
   dt_gui_add_class(g->colorpicker_set_values, "dt_transparent_background");
@@ -1528,14 +1518,9 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, N_("pickers"), N_("create curve"),
                        g->colorpicker_set_values, &dt_action_def_toggle);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover
   // a node to get a reading
@@ -1560,17 +1545,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "key-press-event",
                    G_CALLBACK(_area_key_press_callback), self);
 
-  /* From src/common/curve_tools.h :
-    #define CUBIC_SPLINE 0
-    #define CATMULL_ROM 1
-    #define MONOTONE_HERMITE 2
-  */
-  g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, N_("interpolation method"));
-  dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator, TRUE, TRUE, 0);
+  g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
   gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
@@ -1578,6 +1553,11 @@ void gui_init(dt_iop_module_t *self)
         "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
                    G_CALLBACK(interpolator_callback), self);
+
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs),
+                                           dt_gui_expand(gtk_grid_new()),
+                                           g->colorpicker, g->colorpicker_set_values),
+                               g->area, g->interpolator);
 
   g->chk_compensate_middle_grey =
     dt_bauhaus_toggle_from_params(self, "compensate_middle_grey");
@@ -1612,8 +1592,6 @@ void gui_cleanup(dt_iop_module_t *self)
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++)
     dt_draw_curve_destroy(g->minmax_curve[k]);
-
-  IOP_GUI_FREE;
 }
 
 void init_pipe(dt_iop_module_t *self,
