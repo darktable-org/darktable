@@ -867,7 +867,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
     g_object_set_data(G_OBJECT(smt), "topbar", GINT_TO_POINTER(0));
     if(data) g_object_set_data(G_OBJECT(smt), "collect_data", data);
-    g_signal_connect(G_OBJECT(smt), "activate", callback, self);
+    g_signal_connect_data(G_OBJECT(smt), "activate", callback, self, NULL, 0);
   }
   gtk_menu_shell_append(pop, smt);
 }

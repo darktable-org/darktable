@@ -374,7 +374,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   }
 
   g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated",
-                   (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
+                   G_CALLBACK(tree_on_row_activated), GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);
