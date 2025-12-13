@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-28 18:37+0100\n"
+"POT-Creation-Date: 2025-12-13 19:23+0100\n"
 "PO-Revision-Date: 2025-12-13 18:30+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: johan@betahaus.net\n"
@@ -3702,7 +3702,7 @@ msgstr "lyft, gamma, förstärkning (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2406 ../src/develop/blend_gui.c:2454
-#: ../src/iop/atrous.c:1793 ../src/iop/channelmixerrgb.c:4485
+#: ../src/iop/atrous.c:1807 ../src/iop/channelmixerrgb.c:4485
 #: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1803
 #: ../src/iop/colorzones.c:2626 ../src/iop/nlmeans.c:465
 msgid "chroma"
@@ -3957,7 +3957,7 @@ msgstr "urval av"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:233
 #: ../build/lib/darktable/plugins/introspection_soften.c:66
 #: ../build/lib/darktable/plugins/introspection_soften.c:121
-#: ../src/iop/atrous.c:1829
+#: ../src/iop/atrous.c:1843
 msgid "mix"
 msgstr "blanda"
 
@@ -4440,7 +4440,7 @@ msgstr "procent botten"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1354
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1397
 #: ../src/libs/colorpicker.c:396 ../src/libs/image.c:665
 #: ../src/libs/modulegroups.c:2360
 msgid "color"
@@ -6150,7 +6150,7 @@ msgid "history"
 msgstr "historik"
 
 #: ../src/common/collection.c:634 ../src/common/colorlabels.c:388
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1589
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1590
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:146
 msgid "color label"
@@ -6184,7 +6184,7 @@ msgstr "geotaggning"
 msgid "group"
 msgstr "gruppera"
 
-#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1604
+#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1605
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:365
 msgid "local copy"
@@ -6754,7 +6754,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:1562
+#: ../src/common/darktable.c:1564
 #, c-format
 msgid ""
 "you do not have write access to create one of the user directories:\n"
@@ -6769,112 +6769,112 @@ msgstr ""
 "\n"
 "vänligen fixa detta och starta sedan darktable igen"
 
-#: ../src/common/darktable.c:1567
+#: ../src/common/darktable.c:1569
 msgid "darktable - unable to create directories"
 msgstr "darktable - kunde inte skapa kataloger"
 
-#: ../src/common/darktable.c:1569 ../src/common/database.c:4121
+#: ../src/common/darktable.c:1571 ../src/common/database.c:4121
 #: ../src/common/database.c:4323
 msgid "_quit darktable"
 msgstr "_avsluta darktable"
 
 #. initialize the database
-#: ../src/common/darktable.c:1625
+#: ../src/common/darktable.c:1630
 msgid "opening image library"
 msgstr "öppnar bildbibliotek"
 
-#: ../src/common/darktable.c:1638
+#: ../src/common/darktable.c:1643
 msgid "forwarding image(s) to running instance"
 msgstr "skickar vidare bild(er) till körande instans"
 
-#: ../src/common/darktable.c:1669
+#: ../src/common/darktable.c:1674
 msgid "preparing database"
 msgstr "förbereder databas"
 
 #. init darktable tags table
-#: ../src/common/darktable.c:1673
+#: ../src/common/darktable.c:1678
 msgid "setting up tags table"
 msgstr "ställer in taggar"
 
 #. Initialize the signal system
-#: ../src/common/darktable.c:1677
+#: ../src/common/darktable.c:1682
 msgid "initializing signals and control"
 msgstr "initierar signaler och kontroll"
 
-#: ../src/common/darktable.c:1696
+#: ../src/common/darktable.c:1701
 msgid "importing default styles"
 msgstr "importerar standardstilar"
 
-#: ../src/common/darktable.c:1796
+#: ../src/common/darktable.c:1801
 msgid "initializing GraphicsMagick"
 msgstr "initierar GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1808
+#: ../src/common/darktable.c:1813
 msgid "initializing ImageMagick"
 msgstr "initierar ImageMagick"
 
-#: ../src/common/darktable.c:1813
+#: ../src/common/darktable.c:1818
 msgid "initializing libheif"
 msgstr "initierar libheif"
 
-#: ../src/common/darktable.c:1817
+#: ../src/common/darktable.c:1822
 msgid "starting OpenCL"
 msgstr "startar OpenCL"
 
-#: ../src/common/darktable.c:1829
+#: ../src/common/darktable.c:1834
 msgid "loading noise profiles"
 msgstr "laddar brusprofiler"
 
-#: ../src/common/darktable.c:1846
+#: ../src/common/darktable.c:1851
 msgid "synchronizing local copies"
 msgstr "synkroniserar lokala kopior"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1853
+#: ../src/common/darktable.c:1858
 msgid "initializing camera control"
 msgstr "initierar kamerakontroll"
 
-#: ../src/common/darktable.c:1863
+#: ../src/common/darktable.c:1868
 msgid "initializing GUI"
 msgstr "initierar användargränssnitt"
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1898
 msgid "loading processing modules"
 msgstr "laddar processmoduler"
 
-#: ../src/common/darktable.c:1928
+#: ../src/common/darktable.c:1933
 msgid "loading utility modules"
 msgstr "laddar tillbehörsmoduler"
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1933
+#: ../src/common/darktable.c:1938
 msgid "loading views"
 msgstr "laddar vyer"
 
-#: ../src/common/darktable.c:1939
+#: ../src/common/darktable.c:1944
 msgid "initializing Lua"
 msgstr "initierar Lua"
 
-#: ../src/common/darktable.c:1971
+#: ../src/common/darktable.c:1976
 msgid "importing image"
 msgstr "importerar bild"
 
-#: ../src/common/darktable.c:1991
+#: ../src/common/darktable.c:1996
 msgid "configuration information"
 msgstr "information om konfiguration"
 
-#: ../src/common/darktable.c:1993
+#: ../src/common/darktable.c:1998
 msgid "_show this message again"
 msgstr "_visa det här meddelandet igen"
 
-#: ../src/common/darktable.c:1993
+#: ../src/common/darktable.c:1998
 msgid "_dismiss"
 msgstr "_avfärda"
 
-#: ../src/common/darktable.c:2486
+#: ../src/common/darktable.c:2491
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6882,12 +6882,12 @@ msgstr ""
 "RCD-färginterpoleraren har definierats som standard istället för PPG på "
 "grund av bättre kvalitet och prestanda."
 
-#: ../src/common/darktable.c:2488
+#: ../src/common/darktable.c:2493
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "se inställningar/darkroom/färginterpolering för mörkrummet i utzoomat läge"
 
-#: ../src/common/darktable.c:2494
+#: ../src/common/darktable.c:2499
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6895,7 +6895,7 @@ msgstr ""
 "användargränssnittet och underliggande funktioner för att finjustera "
 "prestanda i darktable har ändrats."
 
-#: ../src/common/darktable.c:2496
+#: ../src/common/darktable.c:2501
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6903,15 +6903,15 @@ msgstr ""
 "du kommer inte hitta headroom and friends längre, använd istället i "
 "inställningar/bearbetning:"
 
-#: ../src/common/darktable.c:2498
+#: ../src/common/darktable.c:2503
 msgid "1) darktable resources"
 msgstr "1) darktable-resurser"
 
-#: ../src/common/darktable.c:2500
+#: ../src/common/darktable.c:2505
 msgid "2) tune OpenCL performance"
 msgstr "2) finjustera OpenCL-prestanda"
 
-#: ../src/common/darktable.c:2507
+#: ../src/common/darktable.c:2512
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6919,7 +6919,7 @@ msgstr ""
 "vissa globala inställningar relevanta för OpenCL-prestanda används inte "
 "längre."
 
-#: ../src/common/darktable.c:2509
+#: ../src/common/darktable.c:2514
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6927,8 +6927,8 @@ msgstr ""
 "istället hittar du 'per enhet'-data i 'cldevice_v5_canonical-name'. "
 "innehållet är:"
 
-#: ../src/common/darktable.c:2511 ../src/common/darktable.c:2530
-#: ../src/common/darktable.c:2545
+#: ../src/common/darktable.c:2516 ../src/common/darktable.c:2535
+#: ../src/common/darktable.c:2550
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6936,18 +6936,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2513 ../src/common/darktable.c:2532
+#: ../src/common/darktable.c:2518 ../src/common/darktable.c:2537
 msgid "you may tune as before except 'magic'"
 msgstr "du kan finjustera som tidigare, förutom 'magic'"
 
-#: ../src/common/darktable.c:2519
+#: ../src/common/darktable.c:2524
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "dina inställningar för OpenCL-kompileraren för alla enheter har återställts "
 "till standard."
 
-#: ../src/common/darktable.c:2526
+#: ../src/common/darktable.c:2531
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6955,13 +6955,13 @@ msgstr ""
 "Inställningar för OpenCL 'per enhet'-data har återskapats med ett uppdaterat "
 "namn."
 
-#: ../src/common/darktable.c:2528 ../src/common/darktable.c:2543
+#: ../src/common/darktable.c:2533 ../src/common/darktable.c:2548
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "du hittar 'per enhet'-data i 'cldevice_v5_canonical-name'. innehållet är:"
 
-#: ../src/common/darktable.c:2534
+#: ../src/common/darktable.c:2539
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6969,7 +6969,7 @@ msgstr ""
 "Om du använder enhetsnamn i 'opencl_device_priority' bör du uppdatera dem "
 "till nya namn."
 
-#: ../src/common/darktable.c:2541
+#: ../src/common/darktable.c:2546
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6977,7 +6977,7 @@ msgstr ""
 "OpenCL 'per enhet'-konfiguration har automatiskt utökats av 'unified-"
 "fraction'."
 
-#: ../src/common/darktable.c:2552
+#: ../src/common/darktable.c:2557
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -6985,7 +6985,7 @@ msgstr ""
 "OpenCL 'per enhet'-kompileringsinställningar kan ha uppdaterats.\n"
 "\n"
 
-#: ../src/common/darktable.c:2557
+#: ../src/common/darktable.c:2562
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -7617,7 +7617,7 @@ msgstr "v5.0 RAW"
 msgid "v5.0 JPEG"
 msgstr "v5.0 JPEG"
 
-#: ../src/common/iop_profile.c:1137
+#: ../src/common/iop_profile.c:1143
 #, c-format
 msgid ""
 "darktable loads %s from\n"
@@ -8869,11 +8869,11 @@ msgstr "importera bild"
 msgid "synchronize sidecars"
 msgstr "synkronisera sidofiler"
 
-#: ../src/develop/blend.c:299
+#: ../src/develop/blend.c:298
 msgid "detail mask blending error"
 msgstr "fel vid blandning av detaljmask"
 
-#: ../src/develop/blend.c:845
+#: ../src/develop/blend.c:844
 msgid "detail mask CL blending problem"
 msgstr "fel vid CL-blandning av detaljmask"
 
@@ -9097,17 +9097,17 @@ msgid "uniformly"
 msgstr "jämnt"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2765
-#: ../src/develop/blend_gui.c:3435 ../src/develop/imageop.c:2802
+#: ../src/develop/blend_gui.c:3435 ../src/develop/imageop.c:2808
 msgid "drawn mask"
 msgstr "ritad mask"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2559
-#: ../src/develop/blend_gui.c:3444 ../src/develop/imageop.c:2804
+#: ../src/develop/blend_gui.c:3444 ../src/develop/imageop.c:2810
 msgid "parametric mask"
 msgstr "parametermask"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2971
-#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2806
+#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2812
 msgid "raster mask"
 msgstr "rastermask"
 
@@ -9154,12 +9154,12 @@ msgid "on"
 msgstr "på"
 
 #: ../src/develop/blend_gui.c:1018 ../src/develop/blend_gui.c:2624
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "input"
 msgstr "inkommande"
 
 #: ../src/develop/blend_gui.c:1018 ../src/develop/blend_gui.c:2624
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "output"
 msgstr "utgående"
 
@@ -9345,7 +9345,7 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr "återställ blandningsmaskens inställningar"
 
-#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1789
+#: ../src/develop/blend_gui.c:2570 ../src/iop/atrous.c:1803
 #: ../src/iop/colorzones.c:2622 ../src/iop/denoiseprofile.c:3771
 #: ../src/iop/rawdenoise.c:880 ../src/iop/rgbcurve.c:1487
 #: ../src/iop/rgblevels.c:1037 ../src/iop/tonecurve.c:1268
@@ -9622,7 +9622,7 @@ msgstr "justera stödjepunkten som används av vissa blandningsoperationer"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:3557 ../src/iop/overlay.c:1109
-#: ../src/iop/watermark.c:1370 ../src/libs/masks.c:106
+#: ../src/iop/watermark.c:1413 ../src/libs/masks.c:106
 msgid "opacity"
 msgstr "opacitet"
 
@@ -9736,82 +9736,82 @@ msgstr "%s: modul `%s' skiljer i version: %d != %d"
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "modulen är en dubblett, kan inte flytta ny instans efter basinstans\n"
 
-#: ../src/develop/imageop.c:995
+#: ../src/develop/imageop.c:1001
 msgid "new instance"
 msgstr "ny instans"
 
-#: ../src/develop/imageop.c:1002
+#: ../src/develop/imageop.c:1008
 msgid "duplicate instance"
 msgstr "duplicera instans"
 
-#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4085
+#: ../src/develop/imageop.c:1015 ../src/develop/imageop.c:4091
 #: ../src/libs/masks.c:1136
 msgid "move up"
 msgstr "flytta upp"
 
-#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4086
+#: ../src/develop/imageop.c:1022 ../src/develop/imageop.c:4092
 #: ../src/libs/masks.c:1141
 msgid "move down"
 msgstr "flytta ner"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4088
+#: ../src/develop/imageop.c:1029 ../src/develop/imageop.c:4094
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:307
 #: ../src/libs/image.c:522
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4089
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:4095
 #: ../src/libs/modulegroups.c:4002
 msgid "rename"
 msgstr "byt namn"
 
-#: ../src/develop/imageop.c:1122 ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:1128 ../src/develop/imageop.c:2984
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' är påslagen"
 
-#: ../src/develop/imageop.c:1122 ../src/develop/imageop.c:2978
+#: ../src/develop/imageop.c:1128 ../src/develop/imageop.c:2984
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' är avslagen"
 
-#: ../src/develop/imageop.c:2168
+#: ../src/develop/imageop.c:2174
 #, c-format
 msgid "'%s' has an introspection error"
 msgstr "'%s' har ett självinspektionsfel"
 
-#: ../src/develop/imageop.c:2796
+#: ../src/develop/imageop.c:2802
 msgid "unknown mask"
 msgstr "okänd mask"
 
-#: ../src/develop/imageop.c:2800
+#: ../src/develop/imageop.c:2806
 msgid "drawn + parametric mask"
 msgstr "ritad- och parametermask"
 
-#: ../src/develop/imageop.c:2809
+#: ../src/develop/imageop.c:2815
 #, c-format
 msgid "this module has a `%s'"
 msgstr "denna modul har en `%s'"
 
-#: ../src/develop/imageop.c:2814
+#: ../src/develop/imageop.c:2820
 #, c-format
 msgid "taken from module %s"
 msgstr "tagen från modul %s"
 
-#: ../src/develop/imageop.c:2819
+#: ../src/develop/imageop.c:2825
 msgid "click to display (module must be activated first)"
 msgstr "klicka för att visa (modul behöver aktiveras först)"
 
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "purpose"
 msgstr "syfte"
 
-#: ../src/develop/imageop.c:2930
+#: ../src/develop/imageop.c:2936
 msgid "process"
 msgstr "process"
 
-#: ../src/develop/imageop.c:2994
+#: ../src/develop/imageop.c:3000
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9819,7 +9819,7 @@ msgstr ""
 "återställ parametrar\n"
 "ctrl+klick för att återapplicera eventuella automatiska förinställningar"
 
-#: ../src/develop/imageop.c:3201
+#: ../src/develop/imageop.c:3207
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9827,7 +9827,7 @@ msgstr ""
 "flera instansåtgärder\n"
 "högerklick skapar en ny instans"
 
-#: ../src/develop/imageop.c:3205
+#: ../src/develop/imageop.c:3211
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9835,15 +9835,15 @@ msgstr ""
 "förinställningar\n"
 "högerklicka för att applicera på en ny instans"
 
-#: ../src/develop/imageop.c:3417 ../src/develop/imageop.c:3439
+#: ../src/develop/imageop.c:3423 ../src/develop/imageop.c:3445
 msgid "ERROR"
 msgstr "FEL"
 
-#: ../src/develop/imageop.c:3941
+#: ../src/develop/imageop.c:3947
 msgid "unsupported input"
 msgstr "inmatning stöds inte"
 
-#: ../src/develop/imageop.c:3942
+#: ../src/develop/imageop.c:3948
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9854,23 +9854,23 @@ msgstr ""
 "på en plats i arbetsflödet där\n"
 "dataformatet inte passar dess krav."
 
-#: ../src/develop/imageop.c:4084 ../src/develop/imageop.c:4094
+#: ../src/develop/imageop.c:4090 ../src/develop/imageop.c:4100
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1582
 msgid "show"
 msgstr "visa"
 
-#: ../src/develop/imageop.c:4087 ../src/libs/modulegroups.c:3484
+#: ../src/develop/imageop.c:4093 ../src/libs/modulegroups.c:3484
 #: ../src/libs/modulegroups.c:3615 ../src/libs/modulegroups.c:4006
 #: ../src/libs/tagging.c:3678
 msgid "new"
 msgstr "ny"
 
-#: ../src/develop/imageop.c:4090 ../src/libs/duplicate.c:402
+#: ../src/develop/imageop.c:4096 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:543 ../src/libs/modulegroups.c:3998
 msgid "duplicate"
 msgstr "duplicera"
 
-#: ../src/develop/imageop.c:4095
+#: ../src/develop/imageop.c:4101
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:140
 #: ../src/gui/gtk.c:3699 ../src/gui/gtk.c:3754 ../src/gui/hist_dialog.c:289
@@ -9880,24 +9880,24 @@ msgstr "duplicera"
 msgid "reset"
 msgstr "återställ"
 
-#: ../src/develop/imageop.c:4096 ../src/gui/preferences.c:1036
+#: ../src/develop/imageop.c:4102 ../src/gui/preferences.c:1036
 #: ../src/libs/lib.c:1584
 msgid "presets"
 msgstr "fördefinierade"
 
-#: ../src/develop/imageop.c:4097
+#: ../src/develop/imageop.c:4103
 msgid "enable"
 msgstr "aktivera"
 
-#: ../src/develop/imageop.c:4098 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:4104 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "fokus"
 
-#: ../src/develop/imageop.c:4099 ../src/gui/accelerators.c:2951
+#: ../src/develop/imageop.c:4105 ../src/gui/accelerators.c:2951
 msgid "instance"
 msgstr "instans"
 
-#: ../src/develop/imageop.c:4119
+#: ../src/develop/imageop.c:4125
 msgid "processing module"
 msgstr "process-modul"
 
@@ -10281,7 +10281,7 @@ msgstr ""
 "troligen uppstått av att applicera en förinställning, stil eller inklistring "
 "av historik"
 
-#: ../src/develop/pixelpipe_hb.c:1262
+#: ../src/develop/pixelpipe_hb.c:1261
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10292,11 +10292,11 @@ msgstr ""
 "modul '%s'\n"
 "vänligen rapportera på GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1746
+#: ../src/develop/pixelpipe_hb.c:1745
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "fatalt: inkommande data linjerar inte, vänligen rapportera på GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3117
+#: ../src/develop/pixelpipe_hb.c:3131
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10316,7 +10316,7 @@ msgstr ""
 "  - några drivrutiner saknar stöd som krävs för ett antal event,\n"
 "  - för litet \"headroom\" i läge 'använd hela enhetens minne'."
 
-#: ../src/develop/pixelpipe_hb.c:3309
+#: ../src/develop/pixelpipe_hb.c:3323
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10546,7 +10546,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "grupperade bilder"
 
-#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1676
+#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1677
 #: ../src/iop/ashift.c:6047 ../src/iop/ashift.c:6134 ../src/iop/ashift.c:6136
 #: ../src/iop/ashift.c:6138 ../src/libs/navigation.c:112
 #: ../src/libs/navigation.c:249
@@ -14979,7 +14979,7 @@ msgid ""
 msgstr ""
 "inställning för delsampling av mättnad för AVIF-kodaren.\n"
 "auto - använda delsampling bestämd utifrån kvalitetsvärde\n"
-"      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\r\n"
+"      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\n"
 "4:4:4 - ingen delsampling av mättnad\n"
 "4:2:2 - frekvens på färgsampling halveras horisontellt\n"
 "4:2:0 - frekvens på färgsampling halveras horisontellt och vertikalt"
@@ -15168,7 +15168,7 @@ msgstr ""
 msgid "internal"
 msgstr "intern"
 
-#: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:405
+#: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:408
 #: ../src/libs/history.c:1141 ../src/libs/snapshots.c:928
 msgid "original"
 msgstr "original"
@@ -15786,7 +15786,7 @@ msgstr "linjärt, RGB, scen-tillämpat"
 #: ../src/iop/graduatednd.c:145 ../src/iop/negadoctor.c:144
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rgbcurve.c:144
 #: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:207
-#: ../src/iop/vignette.c:119 ../src/iop/watermark.c:417
+#: ../src/iop/vignette.c:119 ../src/iop/watermark.c:460
 msgid "non-linear, RGB"
 msgstr "icke-linjär, RGB"
 
@@ -15899,16 +15899,15 @@ msgid ""
 "the relative black exposure or move the white point closer to the pivot\n"
 "by decreasing relative white exposure)."
 msgstr ""
-"kurvan har förlorat sin 'S'-form, fotstyrka kan inte appliceras.\r\n"
-"utan att invertera foten (tvinga den att böjas uppåt), skulle det vara\r\n"
-"omöjligt att nå målsvart med vald kontrast och mellanpunkt.\r\n"
-"öka kontrasten, flytta mellanpunkten lägre (minska mellanpunktens "
-"utgående\r\n"
-"mål eller kurva y gamma), eller öka avståndet mellan mellanpunkten och\r\n"
+"kurvan har förlorat sin 'S'-form, fotstyrka kan inte appliceras.\n"
+"utan att invertera foten (tvinga den att böjas uppåt), skulle det vara\n"
+"omöjligt att nå målsvart med vald kontrast och mellanpunkt.\n"
+"öka kontrasten, flytta mellanpunkten lägre (minska mellanpunktens utgående\n"
+"mål eller kurva y gamma), eller öka avståndet mellan mellanpunkten och\n"
 "den vänstra kanten (öka skiftning av mellanpunkt, flytta svartpunkten "
-"längre\r\n"
-"från mellanpunkten genom att öka relativ svartexponering eller flytta\r\n"
-"vitpunkten närmare mellanpunkten genom att minska relativ\r\n"
+"längre\n"
+"från mellanpunkten genom att öka relativ svartexponering eller flytta\n"
+"vitpunkten närmare mellanpunkten genom att minska relativ\n"
 "vitexponering)."
 
 #: ../src/iop/agx.c:1869
@@ -15940,7 +15939,7 @@ msgstr "utseende"
 msgid "show curve"
 msgstr "visa kurva"
 
-#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1810
+#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1824
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3803
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -16618,23 +16617,23 @@ msgstr "finast"
 msgid "x"
 msgstr "×"
 
-#: ../src/iop/atrous.c:1791 ../src/iop/nlmeans.c:462
+#: ../src/iop/atrous.c:1805 ../src/iop/nlmeans.c:462
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1792
+#: ../src/iop/atrous.c:1806
 msgid "change lightness at each feature size"
 msgstr "ändra ljushet på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1794
+#: ../src/iop/atrous.c:1808
 msgid "change color saturation at each feature size"
 msgstr "ändra färgmättnad på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1796
+#: ../src/iop/atrous.c:1810
 msgid "edges"
 msgstr "kanter"
 
-#: ../src/iop/atrous.c:1797
+#: ../src/iop/atrous.c:1811
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -16642,7 +16641,7 @@ msgstr ""
 "ändra halon vid kanterna vid vardera detaljstorlek\n"
 "ändrar enbart luma- och chroma-flikarna"
 
-#: ../src/iop/atrous.c:1830 ../src/iop/colorzones.c:2705
+#: ../src/iop/atrous.c:1844 ../src/iop/colorzones.c:2705
 msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
@@ -16743,8 +16742,8 @@ msgstr "korrigerande"
 #: ../src/iop/filmicrgb.c:353 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:145 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgblevels.c:124 ../src/iop/vignette.c:118
-#: ../src/iop/vignette.c:120 ../src/iop/watermark.c:416
-#: ../src/iop/watermark.c:418
+#: ../src/iop/vignette.c:120 ../src/iop/watermark.c:459
+#: ../src/iop/watermark.c:461
 msgid "non-linear, RGB, display-referred"
 msgstr "icke-linjär, RGB, skärm-tillämpat"
 
@@ -16814,7 +16813,7 @@ msgstr "tillämpa de vanliga bildjusteringarna"
 #: ../src/iop/levels.c:137 ../src/iop/liquify.c:294 ../src/iop/lowlight.c:89
 #: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:99
 #: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:97 ../src/iop/vibrance.c:94
-#: ../src/iop/vignette.c:117 ../src/iop/watermark.c:415
+#: ../src/iop/vignette.c:117 ../src/iop/watermark.c:458
 msgid "creative"
 msgstr "kreativ"
 
@@ -22081,7 +22080,7 @@ msgstr "distans till motivet"
 
 #. scale
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1120 ../src/iop/vignette.c:1043
-#: ../src/iop/watermark.c:1381 ../src/libs/export.c:1545
+#: ../src/iop/watermark.c:1424 ../src/libs/export.c:1545
 msgid "scale"
 msgstr "skala"
 
@@ -23025,7 +23024,7 @@ msgstr ""
 "kan inte använda bild %d som lager eftersom den redan använder denna bild "
 "som lager, direkt eller indirekt"
 
-#: ../src/iop/overlay.c:1112 ../src/iop/watermark.c:1373
+#: ../src/iop/overlay.c:1112 ../src/iop/watermark.c:1416
 msgctxt "section"
 msgid "placement"
 msgstr "position"
@@ -23057,7 +23056,7 @@ msgstr "referensdimension för bilden mot vilken lager ska skalas"
 msgid "overlay dimension to scale"
 msgstr "lagerdimension att skala"
 
-#: ../src/iop/overlay.c:1147 ../src/iop/watermark.c:1404
+#: ../src/iop/overlay.c:1147 ../src/iop/watermark.c:1447
 #: ../src/libs/print_settings.c:2760
 msgid "alignment"
 msgstr "orientering"
@@ -24280,7 +24279,7 @@ msgstr "tonkurva för a kanal"
 msgid "tonecurve for b channel"
 msgstr "tonkurva för b kanal"
 
-#: ../src/iop/tonecurve.c:1281 ../src/iop/watermark.c:1361
+#: ../src/iop/tonecurve.c:1281 ../src/iop/watermark.c:1404
 #: ../src/libs/colorpicker.c:779
 msgid "pick color"
 msgstr "välj färg"
@@ -24712,29 +24711,29 @@ msgstr ""
 msgid "[%s on center] move vignette"
 msgstr "[%s på centrum] flytta vinjettering"
 
-#: ../src/iop/watermark.c:409
+#: ../src/iop/watermark.c:452
 msgid "watermark"
 msgstr "vattenstämpel"
 
-#: ../src/iop/watermark.c:414
+#: ../src/iop/watermark.c:457
 msgid "overlay an SVG watermark like a signature on the image"
 msgstr "lägg ett SVG-vattenmärke som en signatur över bilden"
 
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1355
 msgid "marker"
 msgstr "markör"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1358
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG-vattenstämplar i %s/watermarks eller %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1325 ../src/iop/watermark.c:1326
+#: ../src/iop/watermark.c:1368 ../src/iop/watermark.c:1369
 msgid "text"
 msgstr "text"
 
-#: ../src/iop/watermark.c:1327
+#: ../src/iop/watermark.c:1370
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
@@ -24742,16 +24741,16 @@ msgstr ""
 "text-sträng, tagg: $(WATERMARK_TEXT)\n"
 "använd $(NL) för att infoga en radbrytning"
 
-#: ../src/iop/watermark.c:1331
+#: ../src/iop/watermark.c:1374
 msgid "content"
 msgstr "innehåll"
 
 #. Text font
-#: ../src/iop/watermark.c:1336
+#: ../src/iop/watermark.c:1379
 msgid "font"
 msgstr "typsnitt"
 
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1384
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -24763,7 +24762,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1356
+#: ../src/iop/watermark.c:1399
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -24771,15 +24770,15 @@ msgstr ""
 "vattenmärkesfärg, tagg:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1358
+#: ../src/iop/watermark.c:1401
 msgid "select watermark color"
 msgstr "välj vattenmärkesfärg"
 
-#: ../src/iop/watermark.c:1360
+#: ../src/iop/watermark.c:1403
 msgid "pick color from image"
 msgstr "välj gränsnittsfärg från bild"
 
-#: ../src/iop/watermark.c:1387
+#: ../src/iop/watermark.c:1430
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -24800,24 +24799,24 @@ msgstr ""
 "• avancerade alternativ: välj dimensioner för vattenmärket och bilden "
 "individuellt"
 
-#: ../src/iop/watermark.c:1396
+#: ../src/iop/watermark.c:1439
 msgid "reference image dimension against which to scale the watermark"
 msgstr "referens-bilddimension mot vilken vattenmärket ska skalas"
 
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1443
 msgid "watermark dimension to scale"
 msgstr "dimension av vattenmärket att skala"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1425
+#: ../src/iop/watermark.c:1468
 msgid "the opacity of the watermark"
 msgstr "vattenstämpelns opacitet"
 
-#: ../src/iop/watermark.c:1426
+#: ../src/iop/watermark.c:1469
 msgid "the scale of the watermark"
 msgstr "skalning av vattenstämpel"
 
-#: ../src/iop/watermark.c:1427
+#: ../src/iop/watermark.c:1470
 msgid "the rotation of the watermark"
 msgstr "vattenstämpelns rotation"
 
@@ -25385,11 +25384,11 @@ msgstr ""
 msgid "delete this duplicate"
 msgstr "radera den här kopian"
 
-#: ../src/libs/duplicate.c:403
+#: ../src/libs/duplicate.c:406
 msgid "create a duplicate of the image with same history stack"
 msgstr "skapa en kopia av bilden med samma historik"
 
-#: ../src/libs/duplicate.c:407
+#: ../src/libs/duplicate.c:410
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "skapa en orörd kopia av bilden utan bearbetning"
 
