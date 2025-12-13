@@ -116,6 +116,7 @@ const struct _modifier_name
       { 0, NULL } };
 
 static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
+static gboolean _break_stuck = FALSE;
 static guint _previous_move = DT_SHORTCUT_MOVE_NONE;
 static dt_action_t *_selected_action = NULL;
 static dt_shortcut_t *_selected_shortcut = NULL;
@@ -540,6 +541,9 @@ static gint _shortcut_compare_func(gconstpointer shortcut_a,
 
   return 0;
 };
+
+#define _shortcut_lookup(s, v) g_sequence_lookup(darktable.control->shortcuts, s, _shortcut_compare_func, v)
+#define _shortcut_search(s, v) g_sequence_search(darktable.control->shortcuts, s, _shortcut_compare_func, v)
 
 static gchar *_action_full_id(dt_action_t *action)
 {
@@ -1371,9 +1375,7 @@ static void _add_shortcut(dt_shortcut_t *shortcut,
     dt_shortcut_t find_disabled = *shortcut;
     find_disabled.is_default = TRUE;
     find_disabled.views = DT_VIEW_NONE;
-    GSequenceIter *found_disabled =
-      g_sequence_lookup(darktable.control->shortcuts,
-                        &find_disabled, _shortcut_compare_func, NULL);
+    GSequenceIter *found_disabled = _shortcut_lookup(&find_disabled, NULL);
     if(found_disabled)
     {
       shortcut->is_default = TRUE;
@@ -1428,9 +1430,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
     gchar *existing_labels = NULL;
     do
     {
-      GSequenceIter *existing =
-        g_sequence_lookup(darktable.control->shortcuts, s,
-                          _shortcut_compare_func, GINT_TO_POINTER(view));
+      GSequenceIter *existing = _shortcut_lookup(s, GINT_TO_POINTER(view));
       if(existing) // at least one found
       {
         // go to first one that has same shortcut
@@ -3699,8 +3699,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f,
   f->views = dt_view_get_current();
   gpointer v = GINT_TO_POINTER(f->views);
 
-  GSequenceIter *existing =
-    g_sequence_search(darktable.control->shortcuts, f, _shortcut_compare_func, v);
+  GSequenceIter *existing = _shortcut_search(f, v);
 
   gboolean matched = FALSE;
 
@@ -3730,8 +3729,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f,
         f->key_device = 0;
         f->key = 0;
 
-        existing =
-          g_sequence_search(darktable.control->shortcuts, f, _shortcut_compare_func, v);
+        existing = _shortcut_search(f, v);
         if(!_shortcut_closest_match(&existing, f, &matched, &elements, fb_log)
            && !f->action)
           return FALSE;
@@ -3754,14 +3752,14 @@ static gboolean _shortcut_match(dt_shortcut_t *f,
                                     .target = GINT_TO_POINTER(matched_action->type) };
     f->action = &fallback_action;
 
-    existing = g_sequence_search(darktable.control->shortcuts, f, _shortcut_compare_func, v);
+    existing = _shortcut_search(f, v);
     while(_shortcut_closest_match(&existing, f, &matched, &elements, fb_log)
           && !matched) {};
 
     if(!matched && ELEMENT_IS(value, f, elements))
     {
       f->action = &_value_action;
-      existing = g_sequence_search(darktable.control->shortcuts, f, _shortcut_compare_func, v);
+      existing = _shortcut_search(f, v);
       while(_shortcut_closest_match(&existing, f, &matched, &elements, fb_log)
             && !matched) {};
     }
@@ -3896,9 +3894,7 @@ static float _process_action(dt_action_t *action,
              || effect != DT_ACTION_EFFECT_SET))
       {
         dt_shortcut_t s = { .action = action, .views = DT_VIEW_ALL };
-        GSequenceIter *speed_adjustment
-          = g_sequence_lookup(darktable.control->shortcuts, &s,
-                              _shortcut_compare_func, NULL);
+        GSequenceIter *speed_adjustment = _shortcut_lookup(&s, NULL);
         if(speed_adjustment)
         {
           dt_shortcut_t *f = g_sequence_get(speed_adjustment);
@@ -3991,6 +3987,8 @@ static float _process_shortcut(float move_size)
   {
     if(_sc.key_device == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && _sc.key == GDK_KEY_Escape)
       dt_print(DT_DEBUG_ALWAYS, "this should cancel the running blocking job"); // TODO
+
+    dt_toast_log(_("ignoring shortcuts while blocking jobs running"));
 
     return return_value;
   }
@@ -4155,6 +4153,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, float move_
   _sc.move = move;
   _sc.speed = 1.0;
   _sc.direction = 0;
+  _break_stuck = FALSE;
 
   if(_shortcut_is_move(&_sc))
   {
@@ -4254,6 +4253,8 @@ static gboolean _key_release_delayed(gpointer timed_out)
 
   if(!_pressed_keys)
     _sc = (dt_shortcut_t) { 0 };
+  else
+    _sc.press &= ~DT_SHORTCUT_LONG;
 
   return G_SOURCE_REMOVE;
 }
@@ -4270,8 +4271,6 @@ static gboolean _button_release_delayed(gpointer timed_out)
 
   return G_SOURCE_REMOVE;
 }
-
-gboolean break_stuck = FALSE;
 
 void dt_shortcut_key_press(const dt_input_device_t id,
                            const guint time,
@@ -4302,16 +4301,13 @@ void dt_shortcut_key_press(const dt_input_device_t id,
           .views = dt_view_get_current() };
 
     dt_shortcut_t *s = NULL;
-    GSequenceIter *existing
-      = g_sequence_lookup(darktable.control->shortcuts, &just_key,
-                          _shortcut_compare_func, GINT_TO_POINTER(just_key.views));
+    GSequenceIter *existing = _shortcut_lookup(&just_key, GINT_TO_POINTER(just_key.views));
     if(existing)
       s = g_sequence_get(existing);
     else
     {
       just_key.mods = 0; // fall back to key without modifiers (for multiple emulated modifiers)
-      existing = g_sequence_lookup(darktable.control->shortcuts, &just_key,
-                                   _shortcut_compare_func, GINT_TO_POINTER(just_key.views));
+      existing = _shortcut_lookup(&just_key, GINT_TO_POINTER(just_key.views));
       if(existing && (s = g_sequence_get(existing)) &&
          (s->action != darktable.control->actions_modifiers || s->effect != DT_ACTION_EFFECT_HOLD))
         s = NULL;
@@ -4380,11 +4376,8 @@ void dt_shortcut_key_press(const dt_input_device_t id,
     }
 
     // short press after 2 seconds will clear all keys
-    break_stuck = _pressed_keys && time > _last_time + 2000;
-
-    // allow extra time when pressing multiple keys "at same time"
-    if(!_pressed_keys || double_press || break_stuck)
-      _last_time = time;
+    _break_stuck = _pressed_keys && time > _last_time + 2000;
+    _last_time = time;
 
     _sc.key_device = id;
     _sc.key = key;
@@ -4419,7 +4412,7 @@ static void _delay_for_double_triple(guint time, guint is_key)
     _sc.press |= DT_SHORTCUT_LONG & is_key;
     _sc.click |= DT_SHORTCUT_LONG & ~is_key;
   }
-  else if(break_stuck && !_sc.button)
+  else if(_break_stuck && !_sc.button)
   {
     _ungrab_grab_widget();
     dt_control_log(_("short key press resets stuck keys"));
@@ -4435,9 +4428,7 @@ static void _delay_for_double_triple(guint time, guint is_key)
     _sc.click += DT_SHORTCUT_DOUBLE & ~is_key;
 
     _sc.views = dt_view_get_current();
-    GSequenceIter *multi =
-      g_sequence_search(darktable.control->shortcuts, &_sc, _shortcut_compare_func,
-                        GINT_TO_POINTER(_sc.views));
+    GSequenceIter *multi = _shortcut_search(&_sc, GINT_TO_POINTER(_sc.views));
     for(int checks = 2; checks--; multi = g_sequence_iter_prev(multi))
     {
       if(g_sequence_iter_is_end(multi)) continue;
@@ -4498,7 +4489,7 @@ void dt_shortcut_key_release(const dt_input_device_t id,
     _pressed_keys = g_slist_delete_link(_pressed_keys, stored_key);
 
     if(_sc.key_device != id || _sc.key != key)
-      break_stuck = FALSE;
+      _break_stuck = FALSE;
 
     _sc.key_device = id;
     _sc.key = key;
@@ -4603,15 +4594,28 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
   {
   case GDK_KEY_PRESS:
     if(event->key.is_modifier
+    // || event->key.keyval >= GDK_KEY_ModeLock (all hardware event "keys", including extra "media" keys)
        || event->key.keyval == GDK_KEY_VoidSymbol
        || event->key.keyval == GDK_KEY_Meta_L
        || event->key.keyval == GDK_KEY_Meta_R
        || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
       return FALSE;
 
+    dt_shortcut_t ko = { .key = _fix_keyval(event) - 1, .press = 0x7,
+                         .views = dt_view_get_current() };
+    // if no shortcuts at all use this key, ignore it (except when creating a new shortcut)
+    // this should avoid wakeup keys etc getting stuck
+    if(!_sc.action && !dt_action_widget(darktable.control->mapping_widget))
+    {
+      GSequenceIter *key_only = _shortcut_search(&ko, GINT_TO_POINTER(ko.views));
+      dt_shortcut_t *fko = g_sequence_iter_is_end(key_only) ? NULL : g_sequence_get(key_only);
+      if(!fko || fko->key_device || fko->key != ko.key + 1)
+        return FALSE;
+    }
+
     _sc.mods = _key_modifiers_clean(event->key.state);
 
-    dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, _fix_keyval(event));
+    dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, ko.key + 1);
     break;
   case GDK_KEY_RELEASE:
     if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
@@ -5202,8 +5206,7 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
     dt_action_t *wac = dt_action_widget(widget);
     while(s.action)
     {
-      GSequenceIter *speed_adjustment =
-        g_sequence_lookup(darktable.control->shortcuts, &s, _shortcut_compare_func, NULL);
+      GSequenceIter *speed_adjustment = _shortcut_lookup(&s, NULL);
       if(speed_adjustment)
       {
         const dt_shortcut_t *const f = g_sequence_get(speed_adjustment);
