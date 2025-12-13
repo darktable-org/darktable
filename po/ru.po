@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-28 18:37+0100\n"
-"PO-Revision-Date: 2025-12-12 23:04+0300\n"
+"PO-Revision-Date: 2025-12-13 18:09+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -8428,9 +8428,9 @@ msgstr[2] "Не удалять снимок '%s', перекрывающее с�
 #, c-format
 msgid "setting GPS information"
 msgid_plural "setting GPS information for %u images"
-msgstr[0] "Настройка данных GPS"
-msgstr[1] "Настройка данных GPS для %u"
-msgstr[2] ""
+msgstr[0] "Настройка данных GPS %u"
+msgstr[1] "setting GPS information for %u images"
+msgstr[2] "setting GPS information for %u images"
 
 #: ../src/control/jobs/control_jobs.c:1438
 #, c-format
