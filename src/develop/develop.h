@@ -107,6 +107,7 @@ typedef struct dt_dev_proxy_exposure_t
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
+struct dt_develop_t;
 typedef struct dt_dev_viewport_t
 {
   GtkWidget *widget; // TODO (#18559): remove gtk stuff from here
@@ -129,6 +130,9 @@ typedef struct dt_dev_viewport_t
   
   // Pin button for the second window
   GtkWidget *pin_button;
+  
+  // Back-pointer to the owning develop structure
+  struct dt_develop_t *dev;
 } dt_dev_viewport_t;
 
 /* keep track on what and where we do chromatic adaptation, used
@@ -356,19 +360,10 @@ typedef struct dt_develop_t
 
   GList *module_filter_out;
   
-  // Pinned image for second window
-  gboolean preview2_pinned;           // Whether the second window is pinned to a specific image
-  dt_imgid_t preview2_pinned_imgid;   // The ID of the pinned image
-  cairo_surface_t *preview2_pinned_surface;  // Snapshot of the pinned image
-  /* transform state for pinned surface (independent of preview2 viewport)
-   * base_scale: scale used to fit the image into the window at pin time
-   * scale: user-applied zoom multiplier on top of base_scale
-   * off_x/off_y: pan offsets in image pixels (applied after scaling)
-   */
-  float preview2_pinned_base_scale;
-  float preview2_pinned_scale;
-  float preview2_pinned_off_x;
-  float preview2_pinned_off_y;
+  // Pinned image for second window: a separate develop structure for the pinned image
+  // When pinned, this holds its own image, history, iop modules, and pipeline
+  gboolean preview2_pinned;                       // Whether the second window is pinned to a specific image
+  struct dt_develop_t *preview2_pinned_dev;       // Separate develop for pinned image (NULL when not pinned)
 } dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
