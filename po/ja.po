@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-28 18:37+0100\n"
-"PO-Revision-Date: 2025-12-14 00:39+0900\n"
+"PO-Revision-Date: 2025-12-14 00:48+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -13703,16 +13703,12 @@ msgid "reinitialising input devices"
 msgstr "インプットデバイスを再初期化"
 
 #: ../src/gui/accelerators.c:3610
-#, fuzzy
-#| msgid "%s not assigned"
 msgid "move not assigned"
-msgstr "%sは割り当てられていません"
+msgstr "操作が割り当てられていません"
 
 #: ../src/gui/accelerators.c:3610
-#, fuzzy
-#| msgid "fallback to move"
 msgid "fallback to earlier move"
-msgstr "フォールバックして移動する"
+msgstr "以前の操作にフォールバック"
 
 #: ../src/gui/accelerators.c:3690
 msgid "down move"
