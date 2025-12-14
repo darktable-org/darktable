@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 5.3.x\n"
+"Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-14 00:14-0600\n"
+"PO-Revision-Date: 2025-12-14 00:47-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -13371,7 +13371,7 @@ msgstr "y..."
 #: ../src/gui/about.c:59
 msgid "translator-credits"
 msgstr ""
-"Edgar De la Luz «EdgarLux» (2019-2025)\n"
+"Edgar De la Luz «EdgarLux» (2019-2026)\n"
 "Tatica Leandro (2012-2017)\n"
 "José Carlos García Sogo (2011-2014)\n"
 "Roberto Quintero (2010-2011)\n"
@@ -15518,7 +15518,6 @@ msgstr "submuestreo de color"
 
 # dt•v5.4
 #: ../src/imageio/format/avif.c:1019
-#, fuzzy
 msgid ""
 "chroma subsampling setting for AVIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -15527,10 +15526,10 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"Ajuste de submuestreo de crominancia para el codificador JPEG.\n"
+"Ajuste de submuestreo de crominancia para el codificador AVIF.\n"
 "automático → utiliza el submuestreo determinado por el valor de calidad\n"
+"      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\n"
 "4:4:4 → sin submuestreo de crominancia\n"
-"4:4:0 → frecuencia de muestreo del color reducida a la mitad verticalmente\n"
 "4:2:2 → frecuencia de muestreo del color reducida a la mitad "
 "horizontalmente\n"
 "4:2:0 → frecuencia de muestreo del color reducida a la mitad horizontal y "
@@ -16407,6 +16406,10 @@ msgid ""
 "and the output will be adjusted based on the default\n"
 "mid-gray to mid-gray mapping"
 msgstr ""
+"La luminancia media de la región seleccionada se utilizará\n"
+"para establecer el punto medio en relación con el gris medio,\n"
+"y la salida se ajustará en función del de gris medio predeterminado\n"
+"al gris medio configurado."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1823
@@ -16420,6 +16423,9 @@ msgid ""
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near white"
 msgstr ""
+"Contraste en las luces\n"
+"Los valores más altos mantienen la pendiente casi constante más extensa\n"
+"a costa de una caída drástica cerca del blanco."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1833
@@ -16672,14 +16678,13 @@ msgstr "reiniciar colores primarios"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2266
-#, fuzzy
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
 msgstr ""
 "Base para los colores primarios que se utilizará para los ajustes debajo.\n"
-"La opción «perfil de trabajo» utiliza el perfil configurado en «perfil de "
-"color de entrada»."
+"La opción «exportar perfil» utiliza el perfil configurado en «perfil de "
+"color de salida»."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2269
@@ -16689,42 +16694,33 @@ msgstr "previo al ajuste de tono"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2279
-#, fuzzy
 msgid "increase to desaturate reds in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los rojos en las luces altas más rápidamente."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2286
-#, fuzzy
 msgid "shift the red primary towards yellow (+) or magenta (-)"
-msgstr "Desplazar el rojo hacia el magenta o el amarillo"
+msgstr "Desplaza el rojo hacia el magenta (-) o el amarillo (+)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2292
-#, fuzzy
 msgid "increase to desaturate greens in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los verdes en las luces altas más rápidamente."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2299
-#, fuzzy
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "Desplazar el verde hacia el amarillo o el cian"
+msgstr "Desplazar el verde hacia el amarillo (-) o el cian (+)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2305
-#, fuzzy
 msgid "increase to desaturate blues in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los azules en las luces altas más rápidamente."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2312
-#, fuzzy
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
-msgstr "Desplazar el azul hacia el cian o el magenta"
+msgstr "Desplazar el azul hacia el cian (-) o el magenta (+)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2318
@@ -16770,6 +16766,7 @@ msgstr "Revierte la rotación general"
 #: ../src/iop/agx.c:2353
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del rojo, principalmente en tonos medios y sombras"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2360
@@ -16780,6 +16777,7 @@ msgstr "Revierte el cambio de color en los rojos"
 #: ../src/iop/agx.c:2366
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del verde, principalmente en tonos medios y sombras"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2373
@@ -16790,6 +16788,7 @@ msgstr "Revierte el cambio de color en los verdes"
 #: ../src/iop/agx.c:2379
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del azul, principalmente en tonos medios y sombras"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2386
@@ -16807,15 +16806,13 @@ msgstr "configuración"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2439
-#, fuzzy
 msgid "main look and curve settings"
-msgstr "configuración de previsualización de la máscara"
+msgstr "configuración principal del aspecto y la curva"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2448
-#, fuzzy
 msgid "detailed curve settings"
-msgstr "Exportar con la configuración actual"
+msgstr "configuración detallada de la curva"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2545
@@ -16825,12 +16822,12 @@ msgstr "colores primarios sin modificar"
 # dt•v5.4
 #: ../src/iop/agx.c:2554
 msgid "blender-like|base"
-msgstr ""
+msgstr "estilo Blender|base"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2560
 msgid "blender-like|punchy"
-msgstr ""
+msgstr "estilo Blender|intenso"
 
 #: ../src/iop/agx.c:2575 ../src/iop/channelmixerrgb.c:397
 #: ../src/iop/exposure.c:334 ../src/iop/filmicrgb.c:3209
@@ -18925,9 +18922,8 @@ msgstr ""
 
 # dt•v5.4
 #: ../src/iop/clahe.c:61
-#, fuzzy
 msgid "old local contrast"
-msgstr "añadir contraste local"
+msgstr "contraste local antiguo"
 
 #: ../src/iop/clahe.c:71
 msgid ""
@@ -20601,15 +20597,13 @@ msgstr ""
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:773 ../src/iop/demosaic.c:820
-#, fuzzy
 msgid "can't allocate demosaic buffer"
-msgstr ""
-" [doble interpolación cromática] No es posible asignar búferes internos."
+msgstr "No es posible asignar búferes de la interpolación cromática."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:810
 msgid "can't equilibrate greens"
-msgstr ""
+msgstr "No es posible equilibrar verdes"
 
 #: ../src/iop/demosaic.c:1477
 #, c-format
@@ -20652,9 +20646,8 @@ msgstr "métodos de interpolación cromática para el sensor Bayer4"
 # Demosaicing -> Algoritmo de interpolación cromática.
 # dt•v5.4
 #: ../src/iop/demosaic.c:1781
-#, fuzzy
 msgid "monochrome sensor demosaicing methods."
-msgstr "métodos de interpolación cromática para el sensor Bayer4"
+msgstr "métodos de interpolación cromática para sensores monocromáticos"
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
@@ -20708,18 +20701,20 @@ msgid ""
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
 "sources of gaussian-type blur"
 msgstr ""
+"La función «nitidez de captura» recupera los detalles perdidos debido a "
+"elementos de la cámara,\n"
+"como pueden ser la difracción, el filtro suavizado de bordes u otras\n"
+"fuentes de desenfoque de tipo gaussiano."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1809
-#, fuzzy
 msgid "capture sharpen controls"
-msgstr "controles de pliegue"
+msgstr "controles de nitidez de captura"
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1813
-#, fuzzy
 msgid "set effect strength by iterations"
-msgstr "Intensidad del realce de la saturación"
+msgstr "incrementar fuerza del efecto por iteraciones"
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1818
@@ -20732,6 +20727,16 @@ msgid ""
 "Note: a radius set to zero will be recalculated automatically the next run. "
 "use for presets"
 msgstr ""
+"El radio de nitidez de captura debería reflejar el desenfoque gaussiano "
+"general\n"
+"del sensor de la cámara, posiblemente el filtro de suavizado de bordes y el "
+"objetivo.\n"
+"Aumentarlo demasiado provocará rápidamente anomalías como halos y\n"
+"ruido, especialmente cuando se utiliza con un ajuste elevado de "
+"«iteraciones».\n"
+"\n"
+"Nota: Al establecer el radio en cero, se recalculará automáticamente para la "
+"siguiente ejecución. Emplearlo para preajustes."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1824
