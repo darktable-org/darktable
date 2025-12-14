@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-14 00:47-0600\n"
+"PO-Revision-Date: 2025-12-14 01:33-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -4202,7 +4202,7 @@ msgstr "nitidez central"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:192
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:279
 msgid "capture sharpen"
-msgstr "aumentar nitidez"
+msgstr "nitidez de captura"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:293
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:300
@@ -14212,6 +14212,12 @@ msgid ""
 "\n"
 "if XMP writing is not activated, the editing work will be lost."
 msgstr ""
+"ADVERTENCIA\n"
+"\n"
+"¿Realmente desea eliminar el espacio de trabajo «%s»?\n"
+"\n"
+"Si no está activada la opción de crear archivos XMP, se perderá el trabajo "
+"de edición."
 
 # dt•v5.4
 #. add a memory workspace just after default one
@@ -16442,6 +16448,19 @@ msgid ""
 "pivot\n"
 "by lowering relative black exposure)."
 msgstr ""
+"La curva ha perdido su forma de «S», por lo que no se puede aplicar la "
+"potencia del tramo superior.\n"
+"Sin invertir el tramo superior (forzándolo a curvarse hacia arriba), sería\n"
+"imposible alcanzar el blanco objetivo con el contraste seleccionado y la "
+"posición del punto medio.\n"
+"Aumente el contraste, mueva el punto medio más arriba (aumente la salida "
+"objetivo del punto medio\n"
+"o la curva y gamma), o aumente la distancia entre el punto medio y el borde "
+"derecho\n"
+"(disminuya el desplazamiento del punto medio, aleje el punto blanco del "
+"punto medio aumentando\n"
+"la exposición relativa del blanco o acerque el punto negro al punto medio\n"
+"disminuyendo la exposición relativa del negro)."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1846
@@ -16450,6 +16469,9 @@ msgid ""
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near black"
 msgstr ""
+"Contraste en las sombras\n"
+"Los valores más altos mantienen la pendiente casi constante más extensa\n"
+"a costa de una caída drástica cerca del negro."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1850
@@ -16466,6 +16488,19 @@ msgid ""
 "the relative black exposure or move the white point closer to the pivot\n"
 "by decreasing relative white exposure)."
 msgstr ""
+"La curva ha perdido su forma de «S», por lo que no se puede aplicar la "
+"potencia del tramo inferior.\n"
+"Sin invertir el tramo superior (forzándolo a curvarse hacia abajo), sería\n"
+"imposible alcanzar el negro objetivo con el contraste seleccionado y la "
+"posición del punto medio.\n"
+"Aumente el contraste, mueva el punto medio más abajo (reduzca la salida "
+"objetivo del punto medio\n"
+"o la curva y gamma), o aumente la distancia entre el punto medio y el borde "
+"izquierdo\n"
+"(aumente el desplazamiento del punto medio, aleje el punto negro del punto "
+"medio aumentando\n"
+"la exposición relativa del negro o acerque el punto blanco al punto medio\n"
+"disminuyendo la exposición relativa del blanco)."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1869
@@ -16557,6 +16592,12 @@ msgid ""
 "the curve always remains S-shaped (given that contrast\n"
 "is high enough), so toe and shoulder controls remain effective."
 msgstr ""
+"Ajusta automáticamente la gamma, tratando de garantizar que la curva "
+"mantenga siempre\n"
+" la forma de S (mientras que el valor de contraste sea lo suficientemente "
+"alto), \n"
+"de modo que los controles de los tramos inferior y superior sigan siendo "
+"efectivos."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2005
@@ -16567,6 +16608,13 @@ msgid ""
 "but shadows and highlights are; you may have to counteract it\n"
 "with the contrast slider or with toe / shoulder controls."
 msgstr ""
+"Desplaza la representación (pero no la potencia de salida) del punto medio\n"
+"a lo largo del eje «y» de la curva.\n"
+"El contraste inmediato alrededor del punto medio no se ve afectado,\n"
+"pero sí lo están las sombras y las luces; es posible que se tenga que "
+"contrarrestar\n"
+"con el control deslizante de contraste o con los controles de tremo "
+"inferior / superior."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2016
@@ -20736,7 +20784,7 @@ msgstr ""
 "«iteraciones».\n"
 "\n"
 "Nota: Al establecer el radio en cero, se recalculará automáticamente para la "
-"siguiente ejecución. Emplearlo para preajustes."
+"siguiente ejecución. Emplearlo para "
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1824
@@ -20744,6 +20792,10 @@ msgid ""
 "calculate the capture sharpen radius from available raw sensor data.\n"
 "for best results avoid cropping or darkroom zooming in"
 msgstr ""
+"Calcula el radio de nitidez de captura a partir de los datos brutos "
+"disponibles del sensor.\n"
+"Para obtener los mejores resultados, evite recortar o ampliar la imagen en "
+"el cuarto oscuro."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1828
@@ -20755,11 +20807,17 @@ msgid ""
 "Note: a threshold set to zero will be reset to defaults the next run. use "
 "for presets"
 msgstr ""
+"Restringe el enfoque de captura a áreas con alto contraste local.\n"
+"Incremente para excluir áreas planas en imágenes muy oscuras o con ruido.\n"
+"Disminuya para imágenes bien expuestas y con poco ruido.\n"
+"\n"
+"Nota: un umbral establecido en cero se restablecerá en la siguiente "
+"ejecución a los valores predeterminados. Emplearlo para preajustes."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1832
 msgid "visualize sharpened areas"
-msgstr ""
+msgstr "visualiza áreas nítidas"
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1837
@@ -20767,17 +20825,18 @@ msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
 msgstr ""
+"Aumenta aún más el radio de nitidez en las esquinas de la imagen.\n"
+"La nitidez central de la imagen no se verá afectada."
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1839
 msgid "visualize the overall radius"
-msgstr ""
+msgstr "visualiza el radio en general"
 
 # dt•v5.4
 #: ../src/iop/demosaic.c:1844
-#, fuzzy
 msgid "adjust to the sharp image center"
-msgstr "Ajusta el aspecto de la imagen"
+msgstr "Ajusta la nitidez central de la imagen"
 
 #: ../src/iop/demosaic.c:1851
 msgid "demosaicing is only used for color raw images"
@@ -20791,6 +20850,8 @@ msgid ""
 "imprecise radius calculation due to cropping or because you are zoomed in "
 "too much"
 msgstr ""
+"Cálculo impreciso del radio debido al recorte o porque se ha ampliado "
+"demasiado la imagen."
 
 #: ../src/iop/denoiseprofile.c:807
 msgid "wavelets: chroma only"
@@ -20810,25 +20871,25 @@ msgstr ""
 #: ../src/iop/denoiseprofile.c:3020
 #, c-format
 msgid "found ISO %d (ISO %d %+d EV)"
-msgstr ""
+msgstr "ISO %d encontrado (ISO %d %+d EV)"
 
 # dt•v5.4
 #: ../src/iop/denoiseprofile.c:3024
-#, fuzzy, c-format
+#, c-format
 msgid "found ISO %d"
-msgstr "coincidencia encontrada para el ISO %d"
+msgstr "ISO %d encontrado"
 
 # dt•v5.4
 #: ../src/iop/denoiseprofile.c:3041
-#, fuzzy, c-format
+#, c-format
 msgid "interpolated ISO %d (ISO %d %+d EV)"
-msgstr "interpolación del ISO %d y %d"
+msgstr "ISO %d interpolado (ISO %d %+d EV)"
 
 # dt•v5.4
 #: ../src/iop/denoiseprofile.c:3045
-#, fuzzy, c-format
+#, c-format
 msgid "interpolated ISO %d"
-msgstr "interpolación del ISO %d y %d"
+msgstr "ISO %d interpolado"
 
 #: ../src/iop/denoiseprofile.c:3781
 msgid "Y0"
@@ -20901,6 +20962,10 @@ msgid ""
 "bias used in HDR / highlight preservation /\n"
 "dynamic range / HLG tone modes."
 msgstr ""
+"Si se habilita, reduce el ISO utilizado para eliminar el ruido\n"
+"por el factor de la exposición oculta de la cámara\n"
+"utilizada en HDR / preservación de luces /\n"
+"rango dinámico / modos de tono HLG."
 
 #: ../src/iop/denoiseprofile.c:3893
 msgid ""
@@ -21551,9 +21616,9 @@ msgstr "compensar la exposición (%+.1f EV)"
 
 # dt•v5.4
 #: ../src/iop/exposure.c:699
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "highlight preservation mode (%.1f EV)"
-msgstr "Método de reconstrucción de luces"
+msgstr "Método de conservación de luces (%.1f EV)"
 
 #. Write report in GUI
 #: ../src/iop/exposure.c:894
@@ -21583,6 +21648,12 @@ msgid ""
 "when enabled on an image with nonzero bias, tone mapping\n"
 "(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
+"Elimina el sesgo de exposición oculto de la cámara en\n"
+"HDR / conservación de luces / rango dinámico / modo de tono HLG.\n"
+"\n"
+"Cuando se habilita en una imagen con un sesgo distinto de cero, se requiere "
+"un ajuste de tonos\n"
+"(por ejemplo con sigmoidal) para evitar luces quemadas."
 
 # dt•v5.0
 #: ../src/iop/exposure.c:1217
@@ -23070,9 +23141,8 @@ msgstr "Muestra la máscara de corrección de viñeteado óptico aplicada"
 
 # dt•v5.4
 #: ../src/iop/lens.cc:4596
-#, fuzzy
 msgid "radius of uncorrected center"
-msgstr "Área central que no es modificada por la corrección."
+msgstr "Radio que no es modificada por la corrección."
 
 #: ../src/iop/lens.cc:4602
 msgid "steepness of the correction effect outside of radius"
@@ -26389,9 +26459,8 @@ msgstr ""
 
 # dt•v5.4
 #: ../src/libs/duplicate.c:327
-#, fuzzy
 msgid "delete this duplicate"
-msgstr "borrar esta figura"
+msgstr "borrar esta duplicado"
 
 #: ../src/libs/duplicate.c:403
 msgid "create a duplicate of the image with same history stack"
@@ -27625,6 +27694,13 @@ msgid ""
 "- shift-click to focus that module without\n"
 "  changing the edit state"
 msgstr ""
+"Mostrar la secuencia de acciones de edición:\n"
+"• Haga clic sobre una entrada para volver temporalmente a\\n\n"
+"  ese estado anterior de la edición.\n"
+"  (Advertencia: cualquier edición que se realice a partir\n"
+"  de ese estado anterior, se perderán los cambios posteriores)\n"
+"• Haga clic con la tecla Mayús pulsada para enfocar ese módulo sin\n"
+"  cambiar el estado de edición."
 
 #: ../src/libs/history.c:140
 msgid "compress history stack"
@@ -29764,7 +29840,7 @@ msgstr "Seleccionadas: %s "
 
 # dt•v5.4
 #: ../src/libs/tagging.c:1680
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
 "<u>%d</u> image is assigned this tag!"
@@ -29773,10 +29849,10 @@ msgid_plural ""
 "<u>%d</u> images are assigned this tag!"
 msgstr[0] ""
 "¿Desea borrar la etiqueta «%s»?\n"
-"%d imágenes tienen asignada esta etiqueta"
+"<u>%d<u/> imagen tiene asignada esta etiqueta"
 msgstr[1] ""
-"¿Desea borrar las etiqueta «%s»?\n"
-"%d imágenes tienen asignada esta etiqueta!"
+"¿Desea borrar la etiqueta «%s»?\n"
+"<u>%d<u/> imágenes tienen asignada esta etiqueta"
 
 #: ../src/libs/tagging.c:1718
 #, c-format
@@ -30774,7 +30850,7 @@ msgstr ""
 # dt•v5.4
 #: ../src/views/darkroom.c:956 ../src/views/darkroom.c:1340
 msgid "can't change image in GIMP plugin mode"
-msgstr ""
+msgstr "No se puede cambiar la imagen en el modo complementario de GIMP"
 
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2458
 msgid "quick access to presets"
