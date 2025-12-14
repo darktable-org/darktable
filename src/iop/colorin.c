@@ -1375,11 +1375,26 @@ void commit_params(dt_iop_module_t *self,
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
-    if(!dt_is_valid_colormatrix(pipe->image.adobe_XYZ_to_CAM[0][0]))
+    /* Note In rawspeed we set image.adobe_XYZ_to_CAM to zeros thus marking it as valid
+        but we can't do dt_colorspaces_create_xyzimatrix_profile() on this as that involves
+        an undefined matrix inversion leading to undefined matrix parameters.
+    */
+    gboolean validmat = dt_is_valid_colormatrix(pipe->image.adobe_XYZ_to_CAM[0][0]);
+
+    if(validmat)
+    {
+      float sum = 0.0f;
+      for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+          sum += fabsf(pipe->image.adobe_XYZ_to_CAM[i][j]);
+      validmat = sum != 0.0f;
+    }
+
+    if(!validmat)
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
-        dt_print(DT_DEBUG_ALWAYS, "[colorin] `%s' color matrix not found!",
+        dt_print(DT_DEBUG_ALWAYS, "[colorin] `%s' color matrix not found, !",
                  pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
       }
@@ -1387,8 +1402,7 @@ void commit_params(dt_iop_module_t *self,
     }
     else
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile
-        ((float(*)[3])pipe->image.adobe_XYZ_to_CAM);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])pipe->image.adobe_XYZ_to_CAM);
       d->clear_input = TRUE;
     }
   }
