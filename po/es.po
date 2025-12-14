@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 5.3.x\n"
+"Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-02 11:27-0600\n"
+"PO-Revision-Date: 2025-12-14 01:33-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -24,28 +24,29 @@ msgctxt "preferences"
 msgid "last instance"
 msgstr "Última instancia"
 
+# dt•v5.4
 #: ../build/bin/conf_gen.h:179 ../build/bin/preferences_gen.h:4244
-#, fuzzy
 msgctxt "preferences"
 msgid "triangle"
-msgstr "ángulo"
+msgstr "triángulo"
 
+# dt•v5.4
 #: ../build/bin/conf_gen.h:180
-#, fuzzy
 msgctxt "preferences"
 msgid "circle"
-msgstr "Añadir círculo"
+msgstr "círculo"
 
+# dt•v5.4
 #: ../build/bin/conf_gen.h:181
 msgctxt "preferences"
 msgid "diamond"
-msgstr ""
+msgstr "diamante"
 
+# dt•v5.4
 #: ../build/bin/conf_gen.h:182
-#, fuzzy
 msgctxt "preferences"
 msgid "bar"
-msgstr "Deficiente"
+msgstr "barrita"
 
 #: ../build/bin/conf_gen.h:231 ../build/bin/conf_gen.h:359
 #: ../build/bin/conf_gen.h:370 ../build/bin/conf_gen.h:1509
@@ -741,11 +742,11 @@ msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Basado en la escena (película rgb)"
 
+# dt•v5.4
 #: ../build/bin/conf_gen.h:3978
-#, fuzzy
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
-msgstr "Basado en la escena (sigmoidal)"
+msgstr "Basado en la escena (agx)"
 
 #: ../build/bin/conf_gen.h:3979
 msgctxt "preferences"
@@ -1761,14 +1762,14 @@ msgstr ""
 msgid "RustiCL"
 msgstr "RustiCL"
 
+# dt•v5.4
 #: ../build/bin/preferences_gen.h:3660
-#, fuzzy
 msgid ""
 "RustiCL Mesa OpenCL. if you want to use this, you should disable the vendor "
 "driver"
 msgstr ""
-"El controlador RustiCL de OpenCL para Mesa OpenCL es aún inestable. Si elige "
-"esta opción, deshabilite el controlador dado por el proveedor."
+"RustiCL de OpenCL para Mesa. Si elige esta opción, deshabilite el "
+"controlador dado por el proveedor."
 
 #: ../build/bin/preferences_gen.h:3673
 msgid "Apple"
@@ -1952,14 +1953,17 @@ msgstr "almacenamiento"
 msgid "database"
 msgstr "base de datos"
 
+# dt•v5.4
 #: ../build/bin/preferences_gen.h:4021
-#, fuzzy
 msgid "allow for multiple workspaces"
-msgstr "Añadir varios círculos"
+msgstr "habilitar espacios de trabajo múltiples"
 
+# dt•v5.4
 #: ../build/bin/preferences_gen.h:4029
 msgid "allow multiple workspaces which can be selected at startup"
 msgstr ""
+"Permite tener múltiples espacios de trabajo que se pueden seleccionar al "
+"iniciar el sistema"
 
 #: ../build/bin/preferences_gen.h:4038
 msgid "create database snapshot"
@@ -2118,15 +2122,17 @@ msgid "vary slider step size with min/max range"
 msgstr ""
 "Variar el incremento de los controles deslizantes según el rango mín./máx."
 
+# dt•v5.4
 #: ../build/bin/preferences_gen.h:4237
-#, fuzzy
 msgid "marker shape"
-msgstr "altura"
+msgstr "Figura del indicador en el control deslizante"
 
+# dt•v5.4
 #: ../build/bin/preferences_gen.h:4246
-#, fuzzy
 msgid "the shape of the slider marker"
-msgstr "Dimensión de la marca de agua"
+msgstr ""
+"Elige la figura de la punta de la barra en el control deslizante (el "
+"indicador)"
 
 #: ../build/bin/preferences_gen.h:4255
 msgid "sort built-in presets first"
@@ -2749,10 +2755,10 @@ msgstr "Colaboradores de RawSpeed:"
 msgid "integration contributors"
 msgstr "Colaboradores en la integración:"
 
+# dt•v5.4
 #: ../build/bin/tools/darktable_authors.h:26
-#, fuzzy
 msgid "lua-scripts contributors"
-msgstr "Colaboradores de RawSpeed:"
+msgstr "Colaboradores de guiones de LUA:"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:247
 #: ../build/lib/darktable/plugins/introspection_agx.c:500
@@ -2760,9 +2766,9 @@ msgstr "Colaboradores de RawSpeed:"
 msgid "lift"
 msgstr "realce"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:253
 #: ../build/lib/darktable/plugins/introspection_agx.c:504
-#, fuzzy
 msgid "slope"
 msgstr "pendiente"
 
@@ -2827,17 +2833,17 @@ msgstr "exposición blanca relativa"
 msgid "dynamic range scaling"
 msgstr "escala de rango dinámico"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:295
 #: ../build/lib/darktable/plugins/introspection_agx.c:532
-#, fuzzy
 msgid "pivot relative exposure"
-msgstr "exposición blanca relativa"
+msgstr "exposición relativa del punto medio"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:301
 #: ../build/lib/darktable/plugins/introspection_agx.c:536
-#, fuzzy
 msgid "pivot target output"
-msgstr "Salida inconsistente"
+msgstr "salida de destino del punto medio"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:307
 #: ../build/lib/darktable/plugins/introspection_agx.c:540
@@ -2854,40 +2860,41 @@ msgstr "Salida inconsistente"
 msgid "contrast"
 msgstr "contraste"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:313
 #: ../build/lib/darktable/plugins/introspection_agx.c:544
-#, fuzzy
 msgid "toe start"
-msgstr "ir al inicio"
+msgstr "inicio del tramo inferior"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:319
 #: ../build/lib/darktable/plugins/introspection_agx.c:548
-#, fuzzy
 msgid "shoulder start"
-msgstr "ir al inicio"
+msgstr "inicio del tramo superior"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:325
 #: ../build/lib/darktable/plugins/introspection_agx.c:552
-#, fuzzy
 msgid "toe power"
-msgstr "potencia"
+msgstr "potencia del tramo inferior"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:331
 #: ../build/lib/darktable/plugins/introspection_agx.c:556
 msgid "shoulder power"
-msgstr ""
+msgstr "potencia del tramo superior"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:337
 #: ../build/lib/darktable/plugins/introspection_agx.c:560
-#, fuzzy
 msgid "curve y gamma"
-msgstr "gamma destino"
+msgstr "curva y gamma"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:343
 #: ../build/lib/darktable/plugins/introspection_agx.c:564
-#, fuzzy
 msgid "keep the pivot on the diagonal"
-msgstr "Corta la imagen de acuerdo a la diagonal"
+msgstr "Mantiene el punto medio en la diagonal"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:349
 #: ../build/lib/darktable/plugins/introspection_agx.c:568
@@ -2910,11 +2917,11 @@ msgstr "blanco destino"
 msgid "base primaries"
 msgstr "colores básicos primarios"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:367
 #: ../build/lib/darktable/plugins/introspection_agx.c:580
-#, fuzzy
 msgid "disable adjustments"
-msgstr "ajustes rápidos"
+msgstr "inhabilitar ajustes"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:373
 #: ../build/lib/darktable/plugins/introspection_agx.c:584
@@ -2958,58 +2965,59 @@ msgstr "atenuación del azul"
 msgid "blue rotation"
 msgstr "rotación del azul"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:409
 #: ../build/lib/darktable/plugins/introspection_agx.c:608
 msgid "master purity boost"
-msgstr ""
+msgstr "acentuar pureza general"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:415
 #: ../build/lib/darktable/plugins/introspection_agx.c:612
-#, fuzzy
 msgid "master rotation reversal"
-msgstr "Grados de rotación de la capa de imagen"
+msgstr "revertir rotación general"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:421
 #: ../build/lib/darktable/plugins/introspection_agx.c:616
-#, fuzzy
 msgid "red purity boost"
-msgstr "pureza del rojo"
+msgstr "acentuar pureza del rojo"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:427
 #: ../build/lib/darktable/plugins/introspection_agx.c:620
-#, fuzzy
 msgid "red reverse rotation"
-msgstr "restaurar rotación"
+msgstr "rotación inversa del rojo"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:433
 #: ../build/lib/darktable/plugins/introspection_agx.c:624
-#, fuzzy
 msgid "green purity boost"
-msgstr "pureza del verde"
+msgstr "acentuar pureza del verde"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:439
 #: ../build/lib/darktable/plugins/introspection_agx.c:628
-#, fuzzy
 msgid "green reverse rotation"
-msgstr "rotación del verde"
+msgstr "rotación inversa del verde"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:445
 #: ../build/lib/darktable/plugins/introspection_agx.c:632
-#, fuzzy
 msgid "blue purity boost"
-msgstr "pureza del azul"
+msgstr "acentuar pureza del azul"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:451
 #: ../build/lib/darktable/plugins/introspection_agx.c:636
-#, fuzzy
 msgid "blue reverse rotation"
-msgstr "rotación del azul"
+msgstr "rotación inversa del azul"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_agx.c:457
 #: ../build/lib/darktable/plugins/introspection_agx.c:640
-#, fuzzy
 msgid "reverse all"
-msgstr "invertir"
+msgstr "revertir todo"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:654
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1769
@@ -4172,29 +4180,29 @@ msgstr "LMMSE perfeccionado"
 msgid "dual threshold"
 msgstr "doble umbral"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:168
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:263
-#, fuzzy
 msgid "contrast sensitivity"
-msgstr "Mayúsculas y minúsculas en las etiquetas"
+msgstr "sensibilidad al contraste"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:174
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:267
-#, fuzzy
 msgid "corner boost"
-msgstr "incremento de contraste"
+msgstr "acentuar esquinas"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:186
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:275
-#, fuzzy
 msgid "sharp center"
-msgstr "enfoque"
+msgstr "nitidez central"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:192
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:279
-#, fuzzy
 msgid "capture sharpen"
-msgstr "fecha de captura (por día)"
+msgstr "nitidez de captura"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:293
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:300
@@ -4275,10 +4283,10 @@ msgstr "croma de dominio de frecuencia"
 msgid "Markesteijn 3-pass (dual)"
 msgstr "Markesteijn 3 pasadas (dual)"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:325
-#, fuzzy
 msgid "Monochrome"
-msgstr "monocromo"
+msgstr "Monocromo"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:329
@@ -4361,13 +4369,13 @@ msgstr "Actualización del modelo"
 msgid "color mode"
 msgstr "modo de color"
 
+# dt•v5.4
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:268
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:403
 #: ../build/lib/darktable/plugins/introspection_exposure.c:102
 #: ../build/lib/darktable/plugins/introspection_exposure.c:169
-#, fuzzy
 msgid "compensate highlight preservation"
-msgstr "activar reconstrucción de luces"
+msgstr "compensar la preservación de las luces"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:417
 msgid "non-local means"
@@ -6130,15 +6138,17 @@ msgstr "El archivo de salida ya existe. Se procede a renombrarlo."
 msgid "error: can't open folder %s"
 msgstr "Error: no se puede abrir la carpeta %s"
 
+# dt•v5.4
 #: ../src/cli/main.c:579
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't import file %s"
-msgstr "Error: no se puede abrir el archivo %s"
+msgstr "Error: no se puede importar el archivo %s"
 
+# dt•v5.4
 #: ../src/cli/main.c:589
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't read directory %s"
-msgstr "Error: no se puede abrir la carpeta %s"
+msgstr "Error: no se puede leer la carpeta %s"
 
 #: ../src/cli/main.c:605
 #, c-format
@@ -7564,8 +7574,8 @@ msgstr[1] "Eliminar directorios vacíos"
 msgid "name"
 msgstr "nombre"
 
+# dt•v5.4
 #: ../src/common/film.c:469
-#, fuzzy
 msgid "cannot remove film roll having local copies with inaccessible originals"
 msgstr ""
 "El carrete no se puede eliminar si tiene copias locales sin acceso a los "
@@ -7612,11 +7622,11 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "Se ha vuelto a fijar la fecha/hora para %d imagen"
 msgstr[1] "Se ha vuelto a fijar la fecha/hora para %d imágenes"
 
+# dt•v5.4
 #. FIXME make GIMP handle duplicates
 #: ../src/common/image.c:1326
-#, fuzzy
 msgid "can't create a duplicate in GIMP mode"
-msgstr "crear duplicado"
+msgstr "No es posible crear duplicado en el modo GIMP"
 
 #: ../src/common/image.c:2423
 #, c-format
@@ -8079,10 +8089,10 @@ msgstr "Falló al intentar sobrescribir el archivo del estilo para %s"
 msgid "style file for %s exists"
 msgstr "Ya existe el archivo del estilo para %s"
 
+# dt•v5.4
 #: ../src/common/styles.c:1476 ../src/common/styles.c:1800
-#, fuzzy
 msgid "imported-style"
-msgstr "importado: hoy"
+msgstr "estilo del importado"
 
 #: ../src/common/styles.c:1609
 #, c-format
@@ -8696,12 +8706,13 @@ msgstr[1] ""
 "La imagen «%s» no fue eliminada ya que se utiliza como capa superpuesta en "
 "%d imágenes."
 
+# dt•v5.4
 #: ../src/control/jobs/control_jobs.c:1393
-#, fuzzy, c-format
+#, c-format
 msgid "setting GPS information"
 msgid_plural "setting GPS information for %u images"
-msgstr[0] "información de la imagen"
-msgstr[1] "información de la imagen"
+msgstr[0] "Fijando la información GPS"
+msgstr[1] "Fijando la información GPS para %u imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1438
 #, c-format
@@ -8914,24 +8925,24 @@ msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "¿En verdad desea borrar FÍSICAMENTE del disco %d imagen?"
 msgstr[1] "¿En verdad desea borrar FÍSICAMENTE del disco %d imágenes?"
 
+# dt•v5.4
 #: ../src/control/jobs/control_jobs.c:2144
-#, fuzzy
 msgid "delete duplicate"
-msgstr "crear duplicado"
+msgstr "eliminar duplicado"
 
+# dt•v5.4
 #: ../src/control/jobs/control_jobs.c:2160
-#, fuzzy
 msgid "delete duplicate?"
-msgstr "crear duplicado"
+msgstr "¿eliminar duplicado?"
 
+# dt•v5.4
 #: ../src/control/jobs/control_jobs.c:2161
-#, fuzzy
 msgid ""
 "do you really want to delete the duplicate (without deleting the source "
 "image file on disk)?"
 msgstr ""
-"¿Realmente desea quitar de darktable %d imagen?\n"
-"(Sin eliminar el archivo del disco)"
+"¿Realmente desea eliminar la imagen duplicada de darktable?\n"
+"(Sin eliminar el archivo fuente del disco)"
 
 #: ../src/control/jobs/control_jobs.c:2178
 msgid "move images"
@@ -13360,7 +13371,7 @@ msgstr "y..."
 #: ../src/gui/about.c:59
 msgid "translator-credits"
 msgstr ""
-"Edgar De la Luz «EdgarLux» (2019-2025)\n"
+"Edgar De la Luz «EdgarLux» (2019-2026)\n"
 "Tatica Leandro (2012-2017)\n"
 "José Carlos García Sogo (2011-2014)\n"
 "Roberto Quintero (2010-2011)\n"
@@ -13975,11 +13986,12 @@ msgstr "Seleccionar el archivo a importar"
 msgid "_import"
 msgstr "_importar"
 
+# dt•v5.4
 #: ../src/gui/accelerators.c:2789
-#, fuzzy
 msgid "import sample shortcuts"
-msgstr "Importar atajos de teclado"
+msgstr "Importar de atajos de teclado"
 
+# dt•v5.4
 #: ../src/gui/accelerators.c:2795
 msgid ""
 "add darktable sample shortcuts?\n"
@@ -13993,6 +14005,17 @@ msgid ""
 "it is recommended to export your current\n"
 "shortcuts before adding these.\n"
 msgstr ""
+"¿Añadir atajos de teclado a darktable?\n"
+"\n"
+"Se sobrescribirá cualquier acceso directo existente\n"
+"que utilice la misma combinación de teclas y ratón.\n"
+"Se podrá deshacer esta acción durante\\n\n"
+"la sesión actual pulsando «Restaurar...»\\n\n"
+"y seleccionando la opción de borrar todos los accesos directos más "
+"recientes.\n"
+"\n"
+"Se recomienda primero exportar los atajos actuales\n"
+"antes de añadir nuevos.\n"
 
 #: ../src/gui/accelerators.c:2891
 msgid "search shortcuts list"
@@ -14061,15 +14084,15 @@ msgid "restore default shortcuts or previous state"
 msgstr "Restaura los atajos predefinidos o a un estado anterior"
 
 # dt•v5.0
+# v5.4
 #: ../src/gui/accelerators.c:3070
-#, fuzzy
 msgid "import extras"
-msgstr "Filtros de importación"
+msgstr "importar extras"
 
+# dt•v5.4
 #: ../src/gui/accelerators.c:3071
-#, fuzzy
 msgid "import extended default shortcuts"
-msgstr "¿Desea rehabilitar la configuración del atajo de teclado seleccionado?"
+msgstr "Importar atajos de teclado predefinidos extras"
 
 #: ../src/gui/accelerators.c:3074 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3683
@@ -14128,15 +14151,15 @@ msgstr ""
 msgid "reinitialising input devices"
 msgstr "Reiniciar los dispositivos de entrada"
 
+# dt•v5.4
 #: ../src/gui/accelerators.c:3610
-#, fuzzy
 msgid "move not assigned"
-msgstr "%s sin asignar"
+msgstr "movimiento no asignado"
 
+# dt•v5.4
 #: ../src/gui/accelerators.c:3610
-#, fuzzy
 msgid "fallback to earlier move"
-msgstr "alternativa para moverse"
+msgstr "regresar al movimiento configurado previo"
 
 #: ../src/gui/accelerators.c:3690
 msgid "down move"
@@ -14174,11 +14197,12 @@ msgstr "%s asignado a %s"
 msgid "short key press resets stuck keys"
 msgstr "Una pulsación corta restablece las teclas bloqueadas"
 
+# dt•v5.4
 #: ../src/gui/workspace.c:59
-#, fuzzy
 msgid "delete workspace"
-msgstr "borrar rama"
+msgstr "eliminar espacio de trabajo"
 
+# dt•v5.4
 #: ../src/gui/workspace.c:60
 #, c-format
 msgid ""
@@ -14188,28 +14212,34 @@ msgid ""
 "\n"
 "if XMP writing is not activated, the editing work will be lost."
 msgstr ""
+"ADVERTENCIA\n"
+"\n"
+"¿Realmente desea eliminar el espacio de trabajo «%s»?\n"
+"\n"
+"Si no está activada la opción de crear archivos XMP, se perderá el trabajo "
+"de edición."
 
+# dt•v5.4
 #. add a memory workspace just after default one
 #: ../src/gui/workspace.c:103 ../src/gui/workspace.c:209
-#, fuzzy
 msgid "memory"
-msgstr "tamaño de memoria"
+msgstr "memoria"
 
+# dt•v5.4
 #: ../src/gui/workspace.c:165
-#, fuzzy
 msgid "darktable - select a workspace"
-msgstr "Mantenimiento del esquema de darktable"
+msgstr "darktable: selección de espacio de trabajo"
 
 # dt•v5.0
+# v5.4
 #: ../src/gui/workspace.c:175
-#, fuzzy
 msgid "select an existing workspace"
-msgstr "Seleccionar un ejecutable"
+msgstr "Elija un espacio de trabajo existente"
 
+# dt•v5.4
 #: ../src/gui/workspace.c:234
-#, fuzzy
 msgid "or create a new one"
-msgstr "crear un estilo nuevo"
+msgstr "o cree uno nuevo"
 
 #: ../src/gui/workspace.c:242 ../src/libs/session.c:104
 msgid "create"
@@ -14231,10 +14261,10 @@ msgstr "Descripción de herramienta emergente activado"
 msgid "closing darktable..."
 msgstr "Cerrando darktable..."
 
+# dt•v5.4
 #: ../src/gui/gtk.c:926
-#, fuzzy
 msgid "exporting to GIMP"
-msgstr "Exportando %d / %d a %s"
+msgstr "Exportando a GIMP"
 
 #: ../src/gui/gtk.c:1166
 msgid "URL opened in web browser"
@@ -14286,11 +14316,12 @@ msgctxt "menu"
 msgid "Tethering"
 msgstr "captura"
 
+# dt•v5.4
 #. Window menu
 #: ../src/gui/gtk.c:1329
 msgctxt "menu"
 msgid "Window"
-msgstr ""
+msgstr "Ventana"
 
 #. Help menu
 #: ../src/gui/gtk.c:1337
@@ -14477,10 +14508,10 @@ msgstr "No contiene páginas"
 msgid "never show more than %d lines"
 msgstr "No mostrar más de %d líneas"
 
+# dt•v5.4
 #: ../src/gui/gtkentry.c:37
-#, fuzzy
 msgid "$(ROLL.NAME[n]) - roll of the input image, n: levels used"
-msgstr "$(ROLL.NAME) → carrete de la imagen de entrada"
+msgstr "$(ROLL.NAME) → carrete de la imagen de entrada, n: niveles usados"
 
 #: ../src/gui/gtkentry.c:44
 msgid "$(JOBCODE) - job code for import"
@@ -14589,9 +14620,10 @@ msgstr "$(TAGS) → etiquetas establecidas en la configuración de metadatos"
 msgid "$(DARKTABLE.NAME) - darktable name"
 msgstr "$(DARKTABLE.NAME) → mencionar a darktable"
 
+# dt•v5.4
 #: ../src/gui/gtkentry.c:122
 msgid "$(WORKSPACE.LABEL) - label of the current workspace"
-msgstr ""
+msgstr "$(WORKSPACE.LABEL) : Etiqueta del espacio de trabajo actual"
 
 # dt•v5.0*dt•v5.2
 #: ../src/gui/gtkentry.c:291
@@ -14754,10 +14786,10 @@ msgstr "seleccionar ítems para pegar"
 msgid "_overwrite"
 msgstr "_sobreescribir"
 
+# dt•v5.4
 #: ../src/gui/hist_dialog.c:250
-#, fuzzy
 msgid "appen_d"
-msgstr "anexar"
+msgstr "ane_xar"
 
 #: ../src/gui/hist_dialog.c:280 ../src/gui/styles_dialog.c:618
 #: ../src/gui/styles_dialog.c:640
@@ -14943,7 +14975,7 @@ msgstr ""
 #: ../src/gui/preferences.c:518
 msgctxt "usercss"
 msgid "save CSS and apply"
-msgstr "guardar CSS y aplicar"
+msgstr "guardar y aplicar CSS"
 
 #: ../src/gui/preferences.c:526
 msgid "click to save and apply the CSS tweaks entered in this editor"
@@ -15250,12 +15282,11 @@ msgstr "(primero)"
 msgid "(last)"
 msgstr "(último)"
 
+# dt•v5.4
 #: ../src/gui/presets.c:1161
-#, fuzzy, c-format
+#, c-format
 msgid "preset '%s' %s"
-msgstr ""
-"preajuste %s\n"
-"%s"
+msgstr "preajuste \"%s\" %s"
 
 #: ../src/gui/presets.c:1162
 msgid "no presets"
@@ -15482,16 +15513,17 @@ msgstr "Compresión de la imagen"
 msgid "quality"
 msgstr "calidad"
 
+# dt•v5.4
 #: ../src/imageio/format/avif.c:1006
 msgid "the quality of an image, less quality means fewer details"
-msgstr ""
+msgstr "Calidad de la imagen. Menos calidad implica menos detalles."
 
 #: ../src/imageio/format/avif.c:1018 ../src/imageio/format/jpeg.c:587
 msgid "chroma subsampling"
 msgstr "submuestreo de color"
 
+# dt•v5.4
 #: ../src/imageio/format/avif.c:1019
-#, fuzzy
 msgid ""
 "chroma subsampling setting for AVIF encoder.\n"
 "auto - use subsampling determined by the quality value\n"
@@ -15500,10 +15532,10 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"Ajuste de submuestreo de crominancia para el codificador JPEG.\n"
+"Ajuste de submuestreo de crominancia para el codificador AVIF.\n"
 "automático → utiliza el submuestreo determinado por el valor de calidad\n"
+"      (5-80: YUV420, 81-90: YUV422, 91-100: YUV444)\n"
 "4:4:4 → sin submuestreo de crominancia\n"
-"4:4:0 → frecuencia de muestreo del color reducida a la mitad verticalmente\n"
 "4:2:2 → frecuencia de muestreo del color reducida a la mitad "
 "horizontalmente\n"
 "4:2:0 → frecuencia de muestreo del color reducida a la mitad horizontal y "
@@ -16267,19 +16299,23 @@ msgid_plural "%d/%d exported to Piwigo webalbum"
 msgstr[0] "%d/%d exportado a álbum Piwigo"
 msgstr[1] "%d/%d exportados a álbum Piwigo"
 
+# dt•v5.4
 #: ../src/iop/agx.c:45
 msgid "AgX"
-msgstr ""
+msgstr "agx"
 
 #: ../src/iop/agx.c:50 ../src/iop/sigmoid.c:197
 msgid "tone mapping|view transform|display transform"
 msgstr "mapeo de tonos|cambiar aspecto|cambiar visualización"
 
+# dt•v5.4
 #: ../src/iop/agx.c:56
 msgid ""
 "applies a tone mapping curve.\n"
 "inspired by Blender's AgX tone mapper"
 msgstr ""
+"Aplica una curva de ajuste tonal\n"
+"Inspirado en el módulo AgX de Blender"
 
 #: ../src/iop/agx.c:58 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
@@ -16335,32 +16371,40 @@ msgstr "No lineal, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "Lineal, RGB, basado en la pantalla"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1792
-#, fuzzy
 msgctxt "section"
 msgid "basic curve parameters"
-msgstr "parámetros no válidos de recorte"
+msgstr "parámetros básicos de la curva"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1794 ../src/iop/agx.c:1950
-#, fuzzy
 msgctxt "section"
 msgid "curve"
 msgstr "curva"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1802
 msgid "set the pivot's input exposure in EV relative to mid-gray"
 msgstr ""
+"Fijar el punto medio de la exposición de entrada en EV referente al gris "
+"medio"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1803
 msgid ""
 "the average luminance of the selected region will be\n"
 "used to set the pivot relative to mid-gray"
 msgstr ""
+"La luminancia media de la región seleccionada se utilizará\n"
+"para establecer el punto medio en relación con el gris medio."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1813
 msgid "darken or brighten the pivot (linear output power)"
-msgstr ""
+msgstr "Oscurecer o aclarar el punto medio (salida de potencia lineal)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1814
 msgid ""
 "the average luminance of the selected region will be\n"
@@ -16368,18 +16412,28 @@ msgid ""
 "and the output will be adjusted based on the default\n"
 "mid-gray to mid-gray mapping"
 msgstr ""
+"La luminancia media de la región seleccionada se utilizará\n"
+"para establecer el punto medio en relación con el gris medio,\n"
+"y la salida se ajustará en función del de gris medio predeterminado\n"
+"al gris medio configurado."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1823
 msgid "slope of the linear section around the pivot"
-msgstr ""
+msgstr "Pendiente de la sección lineal alrededor del punto medio"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1829
 msgid ""
 "contrast in highlights\n"
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near white"
 msgstr ""
+"Contraste en las luces\n"
+"Los valores más altos mantienen la pendiente casi constante más extensa\n"
+"a costa de una caída drástica cerca del blanco."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1833
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
@@ -16394,14 +16448,32 @@ msgid ""
 "pivot\n"
 "by lowering relative black exposure)."
 msgstr ""
+"La curva ha perdido su forma de «S», por lo que no se puede aplicar la "
+"potencia del tramo superior.\n"
+"Sin invertir el tramo superior (forzándolo a curvarse hacia arriba), sería\n"
+"imposible alcanzar el blanco objetivo con el contraste seleccionado y la "
+"posición del punto medio.\n"
+"Aumente el contraste, mueva el punto medio más arriba (aumente la salida "
+"objetivo del punto medio\n"
+"o la curva y gamma), o aumente la distancia entre el punto medio y el borde "
+"derecho\n"
+"(disminuya el desplazamiento del punto medio, aleje el punto blanco del "
+"punto medio aumentando\n"
+"la exposición relativa del blanco o acerque el punto negro al punto medio\n"
+"disminuyendo la exposición relativa del negro)."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1846
 msgid ""
 "contrast in shadows\n"
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near black"
 msgstr ""
+"Contraste en las sombras\n"
+"Los valores más altos mantienen la pendiente casi constante más extensa\n"
+"a costa de una caída drástica cerca del negro."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1850
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
@@ -16416,40 +16488,55 @@ msgid ""
 "the relative black exposure or move the white point closer to the pivot\n"
 "by decreasing relative white exposure)."
 msgstr ""
+"La curva ha perdido su forma de «S», por lo que no se puede aplicar la "
+"potencia del tramo inferior.\n"
+"Sin invertir el tramo superior (forzándolo a curvarse hacia abajo), sería\n"
+"imposible alcanzar el negro objetivo con el contraste seleccionado y la "
+"posición del punto medio.\n"
+"Aumente el contraste, mueva el punto medio más abajo (reduzca la salida "
+"objetivo del punto medio\n"
+"o la curva y gamma), o aumente la distancia entre el punto medio y el borde "
+"izquierdo\n"
+"(aumente el desplazamiento del punto medio, aleje el punto negro del punto "
+"medio aumentando\n"
+"la exposición relativa del negro o acerque el punto blanco al punto medio\n"
+"disminuyendo la exposición relativa del blanco)."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1869
 msgid "decrease or increase contrast and brightness"
-msgstr ""
+msgstr "Disminuir o aumentar el contraste o el brillo"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1874
-#, fuzzy
 msgid "deepen or lift shadows"
-msgstr "sombras profundas"
+msgstr "Acentuar o atenuar sombras"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1878
-#, fuzzy
 msgid "increase or decrease brightness"
-msgstr "Aumentar o disminuir la nitidez en las frecuencias altas"
+msgstr "Disminuir o aumentar el brillo"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1885
-#, fuzzy
 msgid "decrease or increase saturation"
-msgstr "contraste brillo saturación"
+msgstr "Disminuir o aumentar la saturación"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1892
 msgid "increase to bring hues closer to the original"
-msgstr ""
+msgstr "Incremente para aproximar los tonos a los originales."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1902
-#, fuzzy
 msgctxt "section"
 msgid "look"
 msgstr "apariencia"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1925
-#, fuzzy
 msgid "show curve"
-msgstr "estilo de curva"
+msgstr "visualizar curva"
 
 #: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1810
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
@@ -16459,44 +16546,60 @@ msgstr "estilo de curva"
 msgid "graph"
 msgstr "gráfico"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1932
-#, fuzzy
 msgid "tone mapping curve"
-msgstr "mapeo de tonos"
+msgstr "curva de ajuste de tonos"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1945
-#, fuzzy
 msgctxt "section"
 msgid "advanced curve parameters"
-msgstr "configuración avanzada"
+msgstr "configuración avanzada de la curva"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1963
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
 msgstr ""
+"Longitud para mantener la curva lineal por encima del punto medio.\n"
+"Puede recortar las luces."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1972
 msgid "max linear output power"
-msgstr ""
+msgstr "Potencia de salida lineal máxima"
 
+# dt•v5.4
 #: ../src/iop/agx.c:1981
 msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
 msgstr ""
+"Longitud para mantener la curva lineal por debajo del punto medio.\n"
+"Puede emplastar las sombras."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1990
 msgid "raise for a faded look"
-msgstr ""
+msgstr "Aumentar para obtener un aspecto deslavado."
 
+# dt•v5.4
 #: ../src/iop/agx.c:1996
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
 "is high enough), so toe and shoulder controls remain effective."
 msgstr ""
+"Ajusta automáticamente la gamma, tratando de garantizar que la curva "
+"mantenga siempre\n"
+" la forma de S (mientras que el valor de contraste sea lo suficientemente "
+"alto), \n"
+"de modo que los controles de los tramos inferior y superior sigan siendo "
+"efectivos."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2005
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
@@ -16505,30 +16608,39 @@ msgid ""
 "but shadows and highlights are; you may have to counteract it\n"
 "with the contrast slider or with toe / shoulder controls."
 msgstr ""
+"Desplaza la representación (pero no la potencia de salida) del punto medio\n"
+"a lo largo del eje «y» de la curva.\n"
+"El contraste inmediato alrededor del punto medio no se ve afectado,\n"
+"pero sí lo están las sombras y las luces; es posible que se tenga que "
+"contrarrestar\n"
+"con el control deslizante de contraste o con los controles de tremo "
+"inferior / superior."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2016
-#, fuzzy
 msgctxt "section"
 msgid "input exposure range"
-msgstr "tiempo mínimo de exposición"
+msgstr "rango de exposición de entrada"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2024
 msgid "relative exposure above mid-gray (white point)"
-msgstr ""
+msgstr "exposición relativa encima del gris medio (punto blanco)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2025
-#, fuzzy
 msgid "pick the white point"
-msgstr "Mover punto blanco"
+msgstr "Seleccionar el punto blanco de la imagen"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2033
 msgid "relative exposure below mid-gray (black point)"
-msgstr ""
+msgstr "exposición relativa debajo del gris medio (punto negro)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2034
-#, fuzzy
 msgid "pick the black point"
-msgstr "Arrastrar para cambiar el punto negro"
+msgstr "Seleccionar el punto negro de la imagen"
 
 #: ../src/iop/agx.c:2042 ../src/iop/filmicrgb.c:4421
 msgid ""
@@ -16544,44 +16656,48 @@ msgid "auto tune levels"
 msgstr "niveles automáticos"
 
 # dt•v5.0
+# v5.4
 #: ../src/iop/agx.c:2050
-#, fuzzy
 msgid "set black and white relative exposure using the selected area"
-msgstr "Establecer el ajuste de la exposición utilizando el área seleccionada"
+msgstr ""
+"Establecer la exposición relativa del blanco y del negro utilizando el área "
+"seleccionada."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2051 ../src/iop/agx.c:2058
-#, fuzzy
 msgid "exposure range"
-msgstr "compensación"
+msgstr "rango de exposición"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2056
 msgid "read exposure from metadata and exposure module"
-msgstr ""
+msgstr "Extraela exposición de los metadatos y del módulo de exposición."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2058
-#, fuzzy
 msgid "read exposure"
-msgstr "triple exposición"
+msgstr "extraer la exposición"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2081
-#, fuzzy
 msgid "blender-like"
-msgstr "lavanda"
+msgstr "estilo Blender"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2091
-#, fuzzy
 msgid "unmodified"
-msgstr "Modificado"
+msgstr "sin modificar"
 
 #: ../src/iop/agx.c:2238 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "colores primarios"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2238
-#, fuzzy
 msgid "color primaries adjustments"
-msgstr "Ajusta la saturación de color"
+msgstr "configuración de colores primarios"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2247
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
@@ -16590,122 +16706,142 @@ msgid ""
 "especially with bright, saturated lights (e.g. LEDs).\n"
 "mainly intended to be used for experimenting."
 msgstr ""
+"Desactiva los ajustes de pureza y las rotaciones, aplicando únicamente la "
+"curva.\n"
+"Tenga en cuenta que esos ajustes son fundamentales en agx,\n"
+"sin ellos, casi siempre los resultados empeorarían,\n"
+"especialmente con luces brillantes y saturadas como, por ejemplo, las luces "
+"LED.\n"
+"Destinado principalmente para experimentación."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2255
 msgid "reset primaries to a predefined configuration"
-msgstr ""
+msgstr "Restablece los colores primarios a la configuración predefinida"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2258
-#, fuzzy
 msgid "reset primaries"
-msgstr "colores básicos primarios"
+msgstr "reiniciar colores primarios"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2266
-#, fuzzy
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
 msgstr ""
 "Base para los colores primarios que se utilizará para los ajustes debajo.\n"
-"La opción «perfil de trabajo» utiliza el perfil configurado en «perfil de "
-"color de entrada»."
+"La opción «exportar perfil» utiliza el perfil configurado en «perfil de "
+"color de salida»."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2269
-#, fuzzy
 msgctxt "section"
 msgid "before tone mapping"
-msgstr "mapeo de tonos"
+msgstr "previo al ajuste de tono"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2279
-#, fuzzy
 msgid "increase to desaturate reds in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los rojos en las luces altas más rápidamente."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2286
-#, fuzzy
 msgid "shift the red primary towards yellow (+) or magenta (-)"
-msgstr "Desplazar el rojo hacia el magenta o el amarillo"
+msgstr "Desplaza el rojo hacia el magenta (-) o el amarillo (+)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2292
-#, fuzzy
 msgid "increase to desaturate greens in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los verdes en las luces altas más rápidamente."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2299
-#, fuzzy
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "Desplazar el verde hacia el amarillo o el cian"
+msgstr "Desplazar el verde hacia el amarillo (-) o el cian (+)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2305
-#, fuzzy
 msgid "increase to desaturate blues in highlights faster"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las luces"
+msgstr "Aumentar para desaturar los azules en las luces altas más rápidamente."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2312
-#, fuzzy
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
-msgstr "Desplazar el azul hacia el cian o el magenta"
+msgstr "Desplazar el azul hacia el cian (-) o el magenta (+)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2318
-#, fuzzy
 msgctxt "section"
 msgid "after tone mapping"
-msgstr "mapeo de tonos"
+msgstr "posterior al ajuste de tono"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2323
 msgid ""
 "completely restore purity, undo all rotations, and hide\n"
 "the controls below. uncheck to restore the previous state."
 msgstr ""
+"Restablece completamente la pureza, deshace todas las rotaciones y oculta "
+"los controles debajo.\n"
+"Desmarque para restaurar al estado anterior."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2326
-#, fuzzy
 msgid "set from above"
-msgstr "fijar rango"
+msgstr "usar valores de arriba"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2328
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
 msgstr ""
+"Establece parámetros para revertir totalmente las modificaciones \n"
+"en los colores primarios para permitir la edición posterior."
 
+# dt•v5.4
 #: ../src/iop/agx.c:2341
-#, fuzzy
 msgid "overall purity boost"
-msgstr "mejorar pureza"
+msgstr "Acentúa la pureza general"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2349
-#, fuzzy
 msgid "overall unrotation ratio"
-msgstr "proporción automática"
+msgstr "Revierte la rotación general"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2353
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del rojo, principalmente en tonos medios y sombras"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2360
-#, fuzzy
 msgid "reverse the color shift in reds"
-msgstr "Tono del incremento de color en las sombras"
+msgstr "Revierte el cambio de color en los rojos"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2366
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del verde, principalmente en tonos medios y sombras"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2373
 msgid "reverse the color shift in greens"
-msgstr ""
+msgstr "Revierte el cambio de color en los verdes"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2379
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr ""
+"Restablece la pureza del azul, principalmente en tonos medios y sombras"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2386
 msgid "reverse the color shift in blues"
-msgstr ""
+msgstr "Revierte el cambio de color en los azules"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
@@ -16716,28 +16852,30 @@ msgstr ""
 msgid "settings"
 msgstr "configuración"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2439
-#, fuzzy
 msgid "main look and curve settings"
-msgstr "configuración de previsualización de la máscara"
+msgstr "configuración principal del aspecto y la curva"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2448
-#, fuzzy
 msgid "detailed curve settings"
-msgstr "Exportar con la configuración actual"
+msgstr "configuración detallada de la curva"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2545
-#, fuzzy
 msgid "unmodified base primaries"
-msgstr "colores básicos primarios"
+msgstr "colores primarios sin modificar"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2554
 msgid "blender-like|base"
-msgstr ""
+msgstr "estilo Blender|base"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2560
 msgid "blender-like|punchy"
-msgstr ""
+msgstr "estilo Blender|intenso"
 
 #: ../src/iop/agx.c:2575 ../src/iop/channelmixerrgb.c:397
 #: ../src/iop/exposure.c:334 ../src/iop/filmicrgb.c:3209
@@ -16745,15 +16883,15 @@ msgstr ""
 msgid "scene-referred default"
 msgstr "basado en la escena (predefinido)"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2591
-#, fuzzy
 msgid "smooth|base"
-msgstr "suavizado"
+msgstr "suavizado|base"
 
+# dt•v5.4
 #: ../src/iop/agx.c:2595
-#, fuzzy
 msgid "smooth|punchy"
-msgstr "suavizado"
+msgstr "suavizado|fuerte"
 
 #: ../src/iop/ashift.c:113
 msgid "rotate and perspective"
@@ -18830,10 +18968,10 @@ msgstr ""
 "La factorización de Cholesky falló al reservar memoria, verifique la "
 "configuración de la RAM"
 
+# dt•v5.4
 #: ../src/iop/clahe.c:61
-#, fuzzy
 msgid "old local contrast"
-msgstr "añadir contraste local"
+msgstr "contraste local antiguo"
 
 #: ../src/iop/clahe.c:71
 msgid ""
@@ -20505,15 +20643,15 @@ msgstr ""
 "Reconstruye la imagen a partir de las muestras cromáticas obtenidas desde un "
 "sensor recubierto de un mosaico de filtros de color"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:773 ../src/iop/demosaic.c:820
-#, fuzzy
 msgid "can't allocate demosaic buffer"
-msgstr ""
-" [doble interpolación cromática] No es posible asignar búferes internos."
+msgstr "No es posible asignar búferes de la interpolación cromática."
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:810
 msgid "can't equilibrate greens"
-msgstr ""
+msgstr "No es posible equilibrar verdes"
 
 #: ../src/iop/demosaic.c:1477
 #, c-format
@@ -20554,10 +20692,10 @@ msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolación cromática para el sensor Bayer4"
 
 # Demosaicing -> Algoritmo de interpolación cromática.
+# dt•v5.4
 #: ../src/iop/demosaic.c:1781
-#, fuzzy
 msgid "monochrome sensor demosaicing methods."
-msgstr "métodos de interpolación cromática para el sensor Bayer4"
+msgstr "métodos de interpolación cromática para sensores monocromáticos"
 
 #: ../src/iop/demosaic.c:1785
 msgid ""
@@ -20604,23 +20742,29 @@ msgstr ""
 msgid "green channels matching method"
 msgstr "Método de correspondencia para los canales verdes"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1804
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
 "sources of gaussian-type blur"
 msgstr ""
+"La función «nitidez de captura» recupera los detalles perdidos debido a "
+"elementos de la cámara,\n"
+"como pueden ser la difracción, el filtro suavizado de bordes u otras\n"
+"fuentes de desenfoque de tipo gaussiano."
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1809
-#, fuzzy
 msgid "capture sharpen controls"
-msgstr "controles de pliegue"
+msgstr "controles de nitidez de captura"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1813
-#, fuzzy
 msgid "set effect strength by iterations"
-msgstr "Intensidad del realce de la saturación"
+msgstr "incrementar fuerza del efecto por iteraciones"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1818
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
@@ -20631,13 +20775,29 @@ msgid ""
 "Note: a radius set to zero will be recalculated automatically the next run. "
 "use for presets"
 msgstr ""
+"El radio de nitidez de captura debería reflejar el desenfoque gaussiano "
+"general\n"
+"del sensor de la cámara, posiblemente el filtro de suavizado de bordes y el "
+"objetivo.\n"
+"Aumentarlo demasiado provocará rápidamente anomalías como halos y\n"
+"ruido, especialmente cuando se utiliza con un ajuste elevado de "
+"«iteraciones».\n"
+"\n"
+"Nota: Al establecer el radio en cero, se recalculará automáticamente para la "
+"siguiente ejecución. Emplearlo para "
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1824
 msgid ""
 "calculate the capture sharpen radius from available raw sensor data.\n"
 "for best results avoid cropping or darkroom zooming in"
 msgstr ""
+"Calcula el radio de nitidez de captura a partir de los datos brutos "
+"disponibles del sensor.\n"
+"Para obtener los mejores resultados, evite recortar o ampliar la imagen en "
+"el cuarto oscuro."
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1828
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
@@ -20647,25 +20807,36 @@ msgid ""
 "Note: a threshold set to zero will be reset to defaults the next run. use "
 "for presets"
 msgstr ""
+"Restringe el enfoque de captura a áreas con alto contraste local.\n"
+"Incremente para excluir áreas planas en imágenes muy oscuras o con ruido.\n"
+"Disminuya para imágenes bien expuestas y con poco ruido.\n"
+"\n"
+"Nota: un umbral establecido en cero se restablecerá en la siguiente "
+"ejecución a los valores predeterminados. Emplearlo para preajustes."
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1832
 msgid "visualize sharpened areas"
-msgstr ""
+msgstr "visualiza áreas nítidas"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1837
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
 msgstr ""
+"Aumenta aún más el radio de nitidez en las esquinas de la imagen.\n"
+"La nitidez central de la imagen no se verá afectada."
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1839
 msgid "visualize the overall radius"
-msgstr ""
+msgstr "visualiza el radio en general"
 
+# dt•v5.4
 #: ../src/iop/demosaic.c:1844
-#, fuzzy
 msgid "adjust to the sharp image center"
-msgstr "Ajusta el aspecto de la imagen"
+msgstr "Ajusta la nitidez central de la imagen"
 
 #: ../src/iop/demosaic.c:1851
 msgid "demosaicing is only used for color raw images"
@@ -20673,11 +20844,14 @@ msgstr ""
 "La interpolación cromática solo es\n"
 "necesaria para imágenes en bruto (RAW) a color."
 
+# dt•v5.4
 #: ../src/iop/demosaicing/capture.c:748
 msgid ""
 "imprecise radius calculation due to cropping or because you are zoomed in "
 "too much"
 msgstr ""
+"Cálculo impreciso del radio debido al recorte o porque se ha ampliado "
+"demasiado la imagen."
 
 #: ../src/iop/denoiseprofile.c:807
 msgid "wavelets: chroma only"
@@ -20693,25 +20867,29 @@ msgstr ""
 "Realiza la reducción de ruido recurriendo a las estadísticas perfiladas en "
 "el sensor"
 
+# dt•v5.4
 #: ../src/iop/denoiseprofile.c:3020
 #, c-format
 msgid "found ISO %d (ISO %d %+d EV)"
-msgstr ""
+msgstr "ISO %d encontrado (ISO %d %+d EV)"
 
+# dt•v5.4
 #: ../src/iop/denoiseprofile.c:3024
-#, fuzzy, c-format
+#, c-format
 msgid "found ISO %d"
-msgstr "coincidencia encontrada para el ISO %d"
+msgstr "ISO %d encontrado"
 
+# dt•v5.4
 #: ../src/iop/denoiseprofile.c:3041
-#, fuzzy, c-format
+#, c-format
 msgid "interpolated ISO %d (ISO %d %+d EV)"
-msgstr "interpolación del ISO %d y %d"
+msgstr "ISO %d interpolado (ISO %d %+d EV)"
 
+# dt•v5.4
 #: ../src/iop/denoiseprofile.c:3045
-#, fuzzy, c-format
+#, c-format
 msgid "interpolated ISO %d"
-msgstr "interpolación del ISO %d y %d"
+msgstr "ISO %d interpolado"
 
 #: ../src/iop/denoiseprofile.c:3781
 msgid "Y0"
@@ -20776,6 +20954,7 @@ msgstr ""
 "Deshabilitar si en un módulo previo del mismo\n"
 "se ha utilizado con el modo de fusión de color."
 
+# dt•v5.4
 #: ../src/iop/denoiseprofile.c:3888
 msgid ""
 "if enabled, reduces the ISO used for denoise\n"
@@ -20783,6 +20962,10 @@ msgid ""
 "bias used in HDR / highlight preservation /\n"
 "dynamic range / HLG tone modes."
 msgstr ""
+"Si se habilita, reduce el ISO utilizado para eliminar el ruido\n"
+"por el factor de la exposición oculta de la cámara\n"
+"utilizada en HDR / preservación de luces /\n"
+"rango dinámico / modos de tono HLG."
 
 #: ../src/iop/denoiseprofile.c:3893
 msgid ""
@@ -21431,10 +21614,11 @@ msgstr "No se pudo obtener el búfer en bruto de la imagen «%s»"
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar la exposición (%+.1f EV)"
 
+# dt•v5.4
 #: ../src/iop/exposure.c:699
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "highlight preservation mode (%.1f EV)"
-msgstr "Método de reconstrucción de luces"
+msgstr "Método de conservación de luces (%.1f EV)"
 
 #. Write report in GUI
 #: ../src/iop/exposure.c:894
@@ -21455,6 +21639,7 @@ msgstr ""
 "Elimina automáticamente el sesgo de exposición de la cámara.\n"
 "Es conveniente cuando la imagen se ha expuesto a la derecha."
 
+# dt•v5.4
 #: ../src/iop/exposure.c:1205
 msgid ""
 "remove the camera's hidden exposure bias in\n"
@@ -21463,6 +21648,12 @@ msgid ""
 "when enabled on an image with nonzero bias, tone mapping\n"
 "(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
+"Elimina el sesgo de exposición oculto de la cámara en\n"
+"HDR / conservación de luces / rango dinámico / modo de tono HLG.\n"
+"\n"
+"Cuando se habilita en una imagen con un sesgo distinto de cero, se requiere "
+"un ajuste de tonos\n"
+"(por ejemplo con sigmoidal) para evitar luces quemadas."
 
 # dt•v5.0
 #: ../src/iop/exposure.c:1217
@@ -22948,10 +23139,10 @@ msgstr "Intensidad del efecto de corrección de viñeteado óptico aplicada"
 msgid "show applied optical vignette correction mask"
 msgstr "Muestra la máscara de corrección de viñeteado óptico aplicada"
 
+# dt•v5.4
 #: ../src/iop/lens.cc:4596
-#, fuzzy
 msgid "radius of uncorrected center"
-msgstr "Área central que no es modificada por la corrección."
+msgstr "Radio que no es modificada por la corrección."
 
 #: ../src/iop/lens.cc:4602
 msgid "steepness of the correction effect outside of radius"
@@ -26060,9 +26251,10 @@ msgstr "volver al conjunto de reglas previo"
 msgid "jump back to previous collection"
 msgstr "volver a la colección anterior"
 
+# dt•v5.4
 #: ../src/libs/colorpicker.c:52
 msgid "RGB%"
-msgstr ""
+msgstr "RGB (%) "
 
 #: ../src/libs/colorpicker.c:52
 msgid "LCh"
@@ -26265,10 +26457,10 @@ msgstr ""
 "Crear/renombrar/eliminar múltiples\n"
 " ediciones en la imagen actual"
 
+# dt•v5.4
 #: ../src/libs/duplicate.c:327
-#, fuzzy
 msgid "delete this duplicate"
-msgstr "borrar esta figura"
+msgstr "borrar esta duplicado"
 
 #: ../src/libs/duplicate.c:403
 msgid "create a duplicate of the image with same history stack"
@@ -26556,7 +26748,7 @@ msgstr "opciones generales"
 # dt•v5.2
 #: ../src/libs/export.c:1688
 msgid "multi-preset export"
-msgstr "exportación multiselección"
+msgstr "exportación múltiple"
 
 # dt•v5.2
 #: ../src/libs/export.c:1691
@@ -26564,11 +26756,11 @@ msgid "export the selected images with multiple presets"
 msgstr "Exportar con múltiples preajustes seleccionados"
 
 # dt•v5.2
+# v5.4
 #: ../src/libs/export.c:1717
-#, fuzzy
 msgctxt "actionbutton"
 msgid "start batch export"
-msgstr "exportar"
+msgstr "exportar multiselección"
 
 #: ../src/libs/export_metadata.c:164
 msgid "edit metadata exportation"
@@ -27491,6 +27683,7 @@ msgstr "armonías de color"
 msgid "cycle color harmonies"
 msgstr "alternar armonías de color"
 
+# dt•v5.4
 #: ../src/libs/history.c:103
 msgid ""
 "display the sequence of edit actions\n"
@@ -27501,6 +27694,13 @@ msgid ""
 "- shift-click to focus that module without\n"
 "  changing the edit state"
 msgstr ""
+"Mostrar la secuencia de acciones de edición:\n"
+"• Haga clic sobre una entrada para volver temporalmente a\\n\n"
+"  ese estado anterior de la edición.\n"
+"  (Advertencia: cualquier edición que se realice a partir\n"
+"  de ese estado anterior, se perderán los cambios posteriores)\n"
+"• Haga clic con la tecla Mayús pulsada para enfocar ese módulo sin\n"
+"  cambiar el estado de edición."
 
 #: ../src/libs/history.c:140
 msgid "compress history stack"
@@ -29638,8 +29838,9 @@ msgstr "¿Borrar etiqueta?"
 msgid "selected: %s"
 msgstr "Seleccionadas: %s "
 
+# dt•v5.4
 #: ../src/libs/tagging.c:1680
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
 "<u>%d</u> image is assigned this tag!"
@@ -29648,10 +29849,10 @@ msgid_plural ""
 "<u>%d</u> images are assigned this tag!"
 msgstr[0] ""
 "¿Desea borrar la etiqueta «%s»?\n"
-"%d imágenes tienen asignada esta etiqueta"
+"<u>%d<u/> imagen tiene asignada esta etiqueta"
 msgstr[1] ""
-"¿Desea borrar las etiqueta «%s»?\n"
-"%d imágenes tienen asignada esta etiqueta!"
+"¿Desea borrar la etiqueta «%s»?\n"
+"<u>%d<u/> imágenes tienen asignada esta etiqueta"
 
 #: ../src/libs/tagging.c:1718
 #, c-format
@@ -30646,9 +30847,10 @@ msgstr ""
 "No fue posible cargar la imagen «%s»\n"
 "%s"
 
+# dt•v5.4
 #: ../src/views/darkroom.c:956 ../src/views/darkroom.c:1340
 msgid "can't change image in GIMP plugin mode"
-msgstr ""
+msgstr "No se puede cambiar la imagen en el modo complementario de GIMP"
 
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2458
 msgid "quick access to presets"
