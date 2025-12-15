@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-14 01:33-0600\n"
+"PO-Revision-Date: 2025-12-14 22:53-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2894,7 +2894,7 @@ msgstr "curva y gamma"
 #: ../build/lib/darktable/plugins/introspection_agx.c:343
 #: ../build/lib/darktable/plugins/introspection_agx.c:564
 msgid "keep the pivot on the diagonal"
-msgstr "Mantiene el punto medio en la diagonal"
+msgstr "asegurar el punto medio en la diagonal"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:349
 #: ../build/lib/darktable/plugins/introspection_agx.c:568
@@ -16387,8 +16387,7 @@ msgstr "curva"
 #: ../src/iop/agx.c:1802
 msgid "set the pivot's input exposure in EV relative to mid-gray"
 msgstr ""
-"Fijar el punto medio de la exposición de entrada en EV referente al gris "
-"medio"
+"Fija el punto medio de la exposición de entrada en EV referente al gris medio"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1803
@@ -16402,7 +16401,7 @@ msgstr ""
 # dt•v5.4
 #: ../src/iop/agx.c:1813
 msgid "darken or brighten the pivot (linear output power)"
-msgstr "Oscurecer o aclarar el punto medio (salida de potencia lineal)"
+msgstr "Oscurece o aclara el punto medio (salida de potencia lineal)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1814
@@ -16429,7 +16428,7 @@ msgid ""
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near white"
 msgstr ""
-"Contraste en las luces\n"
+"Contraste en las luces.\n"
 "Los valores más altos mantienen la pendiente casi constante más extensa\n"
 "a costa de una caída drástica cerca del blanco."
 
@@ -16469,7 +16468,7 @@ msgid ""
 "higher values keep the slope nearly constant for longer,\n"
 "at the cost of a more sudden drop near black"
 msgstr ""
-"Contraste en las sombras\n"
+"Contraste en las sombras.\n"
 "Los valores más altos mantienen la pendiente casi constante más extensa\n"
 "a costa de una caída drástica cerca del negro."
 
@@ -16505,27 +16504,27 @@ msgstr ""
 # dt•v5.4
 #: ../src/iop/agx.c:1869
 msgid "decrease or increase contrast and brightness"
-msgstr "Disminuir o aumentar el contraste o el brillo"
+msgstr "Disminuye o aumenta el contraste y el brillo"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1874
 msgid "deepen or lift shadows"
-msgstr "Acentuar o atenuar sombras"
+msgstr "Acentúa o atenúa sombras"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1878
 msgid "increase or decrease brightness"
-msgstr "Disminuir o aumentar el brillo"
+msgstr "Disminuye o aumenta el brillo"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1885
 msgid "decrease or increase saturation"
-msgstr "Disminuir o aumentar la saturación"
+msgstr "Disminuye o aumenta la saturación"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1892
 msgid "increase to bring hues closer to the original"
-msgstr "Incremente para aproximar los tonos a los originales."
+msgstr "Incrementar para aproximar los tonos a los originales."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1902
@@ -16549,13 +16548,13 @@ msgstr "gráfico"
 # dt•v5.4
 #: ../src/iop/agx.c:1932
 msgid "tone mapping curve"
-msgstr "curva de ajuste de tonos"
+msgstr "Curva de ajuste de tonos"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1945
 msgctxt "section"
 msgid "advanced curve parameters"
-msgstr "configuración avanzada de la curva"
+msgstr "parámetros avanzados de la curva"
 
 # dt•v5.4
 #: ../src/iop/agx.c:1963
@@ -16563,8 +16562,8 @@ msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
 msgstr ""
-"Longitud para mantener la curva lineal por encima del punto medio.\n"
-"Puede recortar las luces."
+"Extensión por encima del punto medio que mantiene la curva lineal.\n"
+"Las luces podrían recortarse."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1972
@@ -16577,8 +16576,8 @@ msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
 msgstr ""
-"Longitud para mantener la curva lineal por debajo del punto medio.\n"
-"Puede emplastar las sombras."
+"Extensión por debajo del punto medio que mantiene la curva lineal.\n"
+"Las sombras podrían emplastarse."
 
 # dt•v5.4
 #: ../src/iop/agx.c:1990
@@ -16625,7 +16624,7 @@ msgstr "rango de exposición de entrada"
 # dt•v5.4
 #: ../src/iop/agx.c:2024
 msgid "relative exposure above mid-gray (white point)"
-msgstr "exposición relativa encima del gris medio (punto blanco)"
+msgstr "Exposición relativa encima del gris medio (punto blanco)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2025
@@ -16635,7 +16634,7 @@ msgstr "Seleccionar el punto blanco de la imagen"
 # dt•v5.4
 #: ../src/iop/agx.c:2033
 msgid "relative exposure below mid-gray (black point)"
-msgstr "exposición relativa debajo del gris medio (punto negro)"
+msgstr "Exposición relativa debajo del gris medio (punto negro)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2034
@@ -16660,7 +16659,7 @@ msgstr "niveles automáticos"
 #: ../src/iop/agx.c:2050
 msgid "set black and white relative exposure using the selected area"
 msgstr ""
-"Establecer la exposición relativa del blanco y del negro utilizando el área "
+"Establece la exposición relativa del blanco y del negro utilizando el área "
 "seleccionada."
 
 # dt•v5.4
@@ -16671,7 +16670,7 @@ msgstr "rango de exposición"
 # dt•v5.4
 #: ../src/iop/agx.c:2056
 msgid "read exposure from metadata and exposure module"
-msgstr "Extraela exposición de los metadatos y del módulo de exposición."
+msgstr "Extrae la exposición desde los metadatos y el módulo de exposición."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2058
@@ -16758,7 +16757,7 @@ msgstr "Aumentar para desaturar los verdes en las luces altas más rápidamente.
 # dt•v5.4
 #: ../src/iop/agx.c:2299
 msgid "shift the green primary towards cyan (+) or yellow (-)"
-msgstr "Desplazar el verde hacia el amarillo (-) o el cian (+)"
+msgstr "Desplaza el verde hacia el amarillo (-) o el cian (+)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2305
@@ -16768,7 +16767,7 @@ msgstr "Aumentar para desaturar los azules en las luces altas más rápidamente.
 # dt•v5.4
 #: ../src/iop/agx.c:2312
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
-msgstr "Desplazar el azul hacia el cian (-) o el magenta (+)"
+msgstr "Desplaza el azul hacia el cian (-) o el magenta (+)"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2318
@@ -16789,7 +16788,7 @@ msgstr ""
 # dt•v5.4
 #: ../src/iop/agx.c:2326
 msgid "set from above"
-msgstr "usar valores de arriba"
+msgstr "revertir y configurar"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2328
@@ -16797,8 +16796,8 @@ msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
 msgstr ""
-"Establece parámetros para revertir totalmente las modificaciones \n"
-"en los colores primarios para permitir la edición posterior."
+"Establece parámetros que revierten las modificaciones totalmente\n"
+"en los colores primarios y posteriormente permite modificarlos."
 
 # dt•v5.4
 #: ../src/iop/agx.c:2341
@@ -21261,11 +21260,11 @@ msgid ""
 "if you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 msgstr ""
-"A mayor número de iteraciones, mayor se vuelve el efecto. Sin embargo, el "
-"módulo se vuelve más lento.\n"
+"Un mayor número de iteraciones aumenta el efecto, a costa de que el módulo "
+"se vuelva más lento.\n"
 "De manera análoga, es a dar más tiempo a la reacción de difusión.\n"
 "Si la intención es aumentar la nitidez o reconstruir,\n"
-" se recomienda un mayor número iteraciones."
+"se recomienda un mayor número de iteraciones."
 
 #: ../src/iop/diffuse.c:1784
 msgid ""
