@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-13 19:23+0100\n"
-"PO-Revision-Date: 2025-12-13 18:30+0100\n"
+"PO-Revision-Date: 2025-12-15 11:43+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: johan@betahaus.net\n"
 "Language: sv\n"
@@ -233,7 +233,7 @@ msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
 msgstr ""
-"om aktiv tillåts endast import av bilder i raw-format. Andra bilder kommer "
+"om aktiv tillåts endast import av bilder i raw-format. andra bilder kommer "
 "inte synas i dialogrutan och kommer inte importeras."
 
 #: ../build/bin/conf_gen.h:1182
@@ -368,7 +368,7 @@ msgstr "av"
 #: ../build/bin/conf_gen.h:1608
 msgctxt "preferences"
 msgid "hardness (relative)"
-msgstr "hårdhet (relativt)"
+msgstr "hårdhet (relativ)"
 
 #: ../build/bin/conf_gen.h:1609
 msgctxt "preferences"
@@ -378,7 +378,7 @@ msgstr "hårdhet (absolut)"
 #: ../build/bin/conf_gen.h:1610
 msgctxt "preferences"
 msgid "opacity (relative)"
-msgstr "opacitet (relativt)"
+msgstr "opacitet (relativ)"
 
 #: ../build/bin/conf_gen.h:1611
 msgctxt "preferences"
@@ -388,7 +388,7 @@ msgstr "opacitet (absolut)"
 #: ../build/bin/conf_gen.h:1612
 msgctxt "preferences"
 msgid "brush size (relative)"
-msgstr "penselsorlek (relativt)"
+msgstr "penselstorlek (relativ)"
 
 #: ../build/bin/conf_gen.h:1621
 msgctxt "preferences"
@@ -429,7 +429,7 @@ msgstr "övre högra"
 #: ../build/bin/conf_gen.h:1668
 msgctxt "preferences"
 msgid "top center"
-msgstr "övre centrum"
+msgstr "övre mitt"
 
 #: ../build/bin/conf_gen.h:1669 ../build/bin/preferences_gen.h:3015
 msgctxt "preferences"
@@ -849,7 +849,7 @@ msgstr "glid"
 
 #: ../build/bin/preferences_gen.h:80 ../build/bin/preferences_gen.h:120
 msgid "this setting has been modified"
-msgstr "denna inställning har ändrads"
+msgstr "denna inställning har ändrats"
 
 #: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3061
 #: ../src/gui/gtk.c:3251 ../src/gui/preferences.c:528
