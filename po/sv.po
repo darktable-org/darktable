@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-13 19:23+0100\n"
-"PO-Revision-Date: 2025-12-15 11:43+0100\n"
+"PO-Revision-Date: 2025-12-15 11:49+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: johan@betahaus.net\n"
 "Language: sv\n"
@@ -544,13 +544,13 @@ msgstr "till 1/4"
 #: ../build/bin/conf_gen.h:2846 ../build/bin/conf_gen.h:2857
 msgctxt "preferences"
 msgid "bilinear"
-msgstr "bilinear"
+msgstr "bilinjär"
 
 #: ../build/bin/conf_gen.h:2847 ../build/bin/conf_gen.h:2858
 #: ../build/bin/preferences_gen.h:3339
 msgctxt "preferences"
 msgid "bicubic"
-msgstr "bicubic"
+msgstr "bikubisk"
 
 #: ../build/bin/conf_gen.h:2848 ../build/bin/conf_gen.h:2859
 msgctxt "preferences"
@@ -4743,7 +4743,7 @@ msgstr "reinhard"
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:152
 #: ../src/iop/filmic.c:159
 msgid "filmic"
-msgstr "filmisk"
+msgstr "filmic"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:153
 msgid "drago"
@@ -21104,11 +21104,11 @@ msgstr "logaritmisk formare"
 #: ../src/iop/filmic.c:1631
 msgctxt "section"
 msgid "filmic S curve"
-msgstr "filmisk S-kurva"
+msgstr "filmic S-kurva"
 
 #: ../src/iop/filmicrgb.c:337
 msgid "filmic rgb"
-msgstr "filmisk rgb"
+msgstr "filmic rgb"
 
 #: ../src/iop/filmicrgb.c:342
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
