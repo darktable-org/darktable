@@ -265,8 +265,8 @@ static gboolean _is_point_in_polygon(const dt_geo_map_display_point_t *pt,
     }
     if((lat1 > pt->lat) != (lat2 > pt->lat))
     {
-      const float sl = lon1 + (lon2 - lon1) * (pt->lat - lat1) / (lat2 - lat1);
-      if(pt->lon > sl)
+      const float sl = (lat2 - lat1) * (pt->lon - lon1) - (lon2 - lon1) * (pt->lat - lat1);
+      if((sl > 0) != (lat2 < lat1))
         inside = !inside;
     }
     lat1 = lat2;
