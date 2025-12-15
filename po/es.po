@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-14 22:53-0600\n"
+"PO-Revision-Date: 2025-12-15 00:51-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -16869,7 +16869,7 @@ msgstr "colores primarios sin modificar"
 # dt•v5.4
 #: ../src/iop/agx.c:2554
 msgid "blender-like|base"
-msgstr "estilo Blender|base"
+msgstr "estilo Blender|básico"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2560
@@ -16885,12 +16885,12 @@ msgstr "basado en la escena (predefinido)"
 # dt•v5.4
 #: ../src/iop/agx.c:2591
 msgid "smooth|base"
-msgstr "suavizado|base"
+msgstr "suavizado|básico"
 
 # dt•v5.4
 #: ../src/iop/agx.c:2595
 msgid "smooth|punchy"
-msgstr "suavizado|fuerte"
+msgstr "suavizado|intenso"
 
 #: ../src/iop/ashift.c:113
 msgid "rotate and perspective"
