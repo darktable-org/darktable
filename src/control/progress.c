@@ -103,7 +103,10 @@ static void _global_progress_start(dt_control_t *control, dt_progress_t *progres
 #endif // HAVE_UNITY
 
 #else // _WIN32
-
+/* Commented out for 5.4 because this code could cause a crash when importing
+   a folder from the command line and there was not enough time before the planned
+   release to figure out how to properly fix the code.
+   Should be uncommented back and investigated how to properly fix this when time permits.
   // we can't init this in dt_control_progress_init as it's run too early :/
   if(!control->progress_system.taskbarlist && darktable.gui)
   {
@@ -121,7 +124,7 @@ static void _global_progress_start(dt_control_t *control, dt_progress_t *progres
     if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd, control->progress_system.global_progress * 100, 100) != S_OK)
       dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed");
   }
-
+*/
 #endif
 }
 
