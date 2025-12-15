@@ -16405,7 +16405,7 @@ msgstr "Blender-like|Base"
 
 #: ../src/iop/agx.c:2560
 msgid "blender-like|punchy"
-msgstr "Blender-like|Renforcé"
+msgstr "Blender-like|Intense"
 
 #: ../src/iop/agx.c:2575 ../src/iop/channelmixerrgb.c:397
 #: ../src/iop/exposure.c:334 ../src/iop/filmicrgb.c:3209
@@ -16419,7 +16419,7 @@ msgstr "Doux|Base"
 
 #: ../src/iop/agx.c:2595
 msgid "smooth|punchy"
-msgstr "Doux|Renforcé"
+msgstr "Doux|Intense"
 
 #: ../src/iop/ashift.c:113
 msgid "rotate and perspective"
