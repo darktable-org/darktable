@@ -239,10 +239,14 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const gboolean late = chr->late_correction;
-  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
-                                          1.0f };
+  dt_aligned_pixel_t correction;
+  for_four_channels(k)
+  {
+    if(late && chr->wb_coeffs[k] > 1e-6f)
+      correction[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    else
+      correction[k] = 1.0f;
+  }
 
   const size_t mwidth  = roi_in->width / 3;
   const size_t mheight = roi_in->height / 3;
@@ -434,10 +438,14 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const gboolean late = chr->late_correction;
-  dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
-                                    late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
-                                    late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
-                                    1.0f };
+  dt_aligned_pixel_t correction;
+  for_four_channels(k)
+  {
+    if(late && chr->wb_coeffs[k] > 1e-6f)
+      correction[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    else
+      correction[k] = 1.0f;
+  }
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_chrominance = NULL;
