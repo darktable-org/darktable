@@ -4002,8 +4002,8 @@ lock_again:
       fd = g_open(*lockfile, O_RDWR | O_CREAT, 0666);
       if(fd != -1)
       {
-        int foo;
-        if((foo = read(fd, buf, sizeof(buf) - 1)) > 0)
+        int bytes_read = read(fd, buf, sizeof(buf) - 1);
+        if(bytes_read > 0)
         {
           db->error_other_pid = atoi(buf);
           if(!pid_is_alive(db->error_other_pid))
