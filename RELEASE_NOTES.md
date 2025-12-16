@@ -426,7 +426,7 @@ changes (where available).
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Phase One other than IIQ L
-- Sony ARW 5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C) and ARW 6.0 lossy
+- Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C) and ARW 6.0 lossy
 
 ### Suspended Support
 
