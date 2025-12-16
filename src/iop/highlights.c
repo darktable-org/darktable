@@ -693,11 +693,11 @@ int process_cl(dt_iop_module_t *self,
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clipper, clipper, clipper, clipper};
-    if(chr->late_correction)
+    if(pipe->dsc.temperature.enabled && chr->late_correction)
     {
-      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
-      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
-      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[0] *= chr->wb_coeffs[0] / chr->D65coeffs[0];
+      clips[1] *= chr->wb_coeffs[1] / chr->D65coeffs[1];
+      clips[2] *= chr->wb_coeffs[2] / chr->D65coeffs[2];
     }
 
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
@@ -773,11 +773,11 @@ static void process_clip(dt_iop_module_t *self,
     const uint8_t(*const xtrans)[6] = piece->xtrans;
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(chr->late_correction)
+    if(piece->pipe->dsc.temperature.enabled && chr->late_correction)
     {
-      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
-      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
-      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[0] *= chr->wb_coeffs[0] / chr->D65coeffs[0];
+      clips[1] *= chr->wb_coeffs[1] / chr->D65coeffs[1];
+      clips[2] *= chr->wb_coeffs[2] / chr->D65coeffs[2];
     }
     for(int row = 0; row < roi_out->height; row++)
     {
