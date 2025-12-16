@@ -468,10 +468,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
   const gboolean late = chr->late_correction;
-  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
-                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
-                                          1.0f };
+  dt_aligned_pixel_t correction;
+  for_four_channels(k)
+  {
+    if(late && chr->wb_coeffs[k] > 1e-6f)
+      correction[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    else
+      correction[k] = 1.0f;
+  }
   const int recovery_mode = d->recovery;
   const float strength = d->strength;
 

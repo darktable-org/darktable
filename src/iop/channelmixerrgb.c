@@ -593,9 +593,12 @@ void init_presets(dt_iop_module_so_t *self)
 static gboolean _dev_is_D65_chroma(const dt_develop_t *dev)
 {
   const dt_dev_chroma_t *chr = &dev->chroma;
-  return chr->late_correction
-    ? dt_dev_equal_chroma(chr->wb_coeffs, chr->as_shot)
-    : dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
+
+  // if late correction is active, colorin guarantees the pipe is D65-aligned
+  // regardless of the specific user coefficients.
+  if (chr->late_correction) return TRUE;
+
+  return dt_dev_equal_chroma(chr->wb_coeffs, chr->D65coeffs);
 }
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -2209,7 +2212,7 @@ void process(dt_iop_module_t *self,
     // re-run the detection at runtime…
     float x, y;
     dt_aligned_pixel_t custom_wb;
-    _get_white_balance_coeff(self, custom_wb);
+    copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
 
     if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
     {
@@ -2320,7 +2323,7 @@ int process_cl(dt_iop_module_t *self,
     // re-run the detection at runtime…
     float x, y;
     dt_aligned_pixel_t custom_wb;
-    _get_white_balance_coeff(self, custom_wb);
+    copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
 
     if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
     {
@@ -3111,7 +3114,10 @@ void commit_params(dt_iop_module_t *self,
   float x = p->x;
   float y = p->y;
   dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
+  if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
+  else
+    _get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage),
                    custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
@@ -3556,7 +3562,10 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
   float y = p->y;
   dt_aligned_pixel_t RGB = { 0 };
   dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
+  if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
+  else
+    _get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb,
                    &x, &y, p->temperature, p->illum_fluo, p->illum_led);
   illuminant_xy_to_RGB(x, y, RGB);
@@ -3659,7 +3668,10 @@ static void _update_approx_cct(const dt_iop_module_t *self)
   float x = p->x;
   float y = p->y;
   dt_aligned_pixel_t custom_wb;
-  _get_white_balance_coeff(self, custom_wb);
+  if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
+  else
+    _get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage),
                    custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
@@ -3896,7 +3908,21 @@ void reload_defaults(dt_iop_module_t *self)
     d->adaptation = DT_ADAPTATION_CAT16;
 
     dt_aligned_pixel_t custom_wb;
-    if(!_get_white_balance_coeff(self, custom_wb))
+    gboolean wb_retrieved = FALSE;
+
+    // In modern mode, we want the actual coefficients (User/AsShot) to determine the CCT.
+    // In legacy mode, we rely on the helper which calculates a D65 ratio.
+    if (self->dev->chroma.late_correction && dt_image_is_matrix_correction_supported(img))
+    {
+      copy_pixel(custom_wb, self->dev->chroma.wb_coeffs);
+      wb_retrieved = TRUE;
+    }
+    else
+    {
+      wb_retrieved = !_get_white_balance_coeff(self, custom_wb);
+    }
+
+    if(wb_retrieved)
     {
       if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
         d->illuminant = DT_ILLUMINANT_CAMERA;
