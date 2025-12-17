@@ -104,6 +104,7 @@ typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
   int preset;
+  gboolean late_correction;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -554,7 +555,7 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     chr->wb_coeffs[k] = d->coeffs[k];
   }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = d->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -745,18 +746,24 @@ void commit_params(dt_iop_module_t *self,
 
   d->preset = p->preset;
 
+  gboolean effective_late_correction = FALSE;
+
+  if (p->preset == DT_IOP_TEMP_D65_LATE)
+    effective_late_correction = TRUE;
+  else if (p->preset == DT_IOP_TEMP_D65)
+    effective_late_correction = FALSE;
+  else
+    effective_late_correction = p->late_correction;
+
+  d->late_correction = effective_late_correction;
+
+  chr->late_correction = effective_late_correction;
+
+  chr->temperature = piece->enabled ? self : NULL;
   /* Make sure the chroma information stuff is valid
      If piece is disabled we always clear the trouble message and
      make sure chroma does know there is no temperature module.
   */
-  if(p->preset == DT_IOP_TEMP_D65_LATE)
-    chr->late_correction = TRUE;
-  else if(p->preset == DT_IOP_TEMP_D65)
-    chr->late_correction = FALSE;
-  else
-    chr->late_correction = p->late_correction;
-
-  chr->temperature = piece->enabled ? self : NULL;
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW && !piece->enabled)
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
