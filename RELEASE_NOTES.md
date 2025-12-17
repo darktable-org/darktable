@@ -195,10 +195,10 @@ changes (where available).
 - Allow far smaller crop area to be created (crop up to 99% of the
   image size).
 
-- Allow the variable $(ROLL.NAME) to have optional levels,
-  $(ROLL.NAME[n]), where 1 <= n <= 5, the levels follow the same
+- Allow the variable `$(ROLL.NAME)` to have optional levels,
+  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
   rules as film roll, the default value `n=1`, this keep the previous
-  behavior of $(ROLL.NAME).
+  behavior of `$(ROLL.NAME)`.
 
 - Added optional collection of shortcut assignments using
   keyboard+mouse combinations to control image processing
