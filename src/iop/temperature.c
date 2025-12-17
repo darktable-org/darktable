@@ -197,11 +197,7 @@ int legacy_params(dt_iop_module_t *self,
     const dt_iop_temperature_params_v4_t *o = (dt_iop_temperature_params_v4_t *)old_params;
     dt_iop_temperature_params_v5_t *n = malloc(sizeof(dt_iop_temperature_params_v5_t));
 
-    n->red = o->red;
-    n->green = o->green;
-    n->blue = o->blue;
-    n->various = NAN;
-    n->preset = DT_IOP_TEMP_UNKNOWN;
+    memcpy(n, o, sizeof(dt_iop_temperature_params_v4_t));
     n->late_correction = FALSE;
     *new_params = n;
     *new_params_size = sizeof(dt_iop_temperature_params_v5_t);
@@ -748,15 +744,14 @@ void commit_params(dt_iop_module_t *self,
 
   gboolean effective_late_correction = FALSE;
 
-  if (p->preset == DT_IOP_TEMP_D65_LATE)
+  if(p->preset == DT_IOP_TEMP_D65_LATE)
     effective_late_correction = TRUE;
-  else if (p->preset == DT_IOP_TEMP_D65)
+  else if(p->preset == DT_IOP_TEMP_D65)
     effective_late_correction = FALSE;
   else
     effective_late_correction = p->late_correction;
 
   d->late_correction = effective_late_correction;
-
   chr->late_correction = effective_late_correction;
 
   chr->temperature = piece->enabled ? self : NULL;
@@ -1211,7 +1206,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   const gboolean is_new_mode_manual = (mode != DT_IOP_TEMP_D65_LATE) &&
                                     (mode != DT_IOP_TEMP_D65);
 
-  if (is_current_reference && is_new_mode_manual)
+  if(is_current_reference && is_new_mode_manual)
   {
     // set iff color calibration active in adaptation mode
     p->late_correction = (chr->adaptation != NULL);
@@ -1219,11 +1214,11 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 
   p->preset = mode;
 
-  if (mode == DT_IOP_TEMP_D65_LATE)
+  if(mode == DT_IOP_TEMP_D65_LATE)
   {
     chr->late_correction = TRUE;
   }
-  else if (mode == DT_IOP_TEMP_D65)
+  else if(mode == DT_IOP_TEMP_D65)
   {
     chr->late_correction = FALSE;
   }
@@ -1233,10 +1228,9 @@ static void _update_preset(dt_iop_module_t *self, int mode)
     chr->late_correction = p->late_correction;
   }
 
-  if (g && g->check_late_correction)
+  if(g && g->check_late_correction)
   {
-    // Hide checkbox in reference modes (logic is enforced hardcoded)
-    // Show in manual modes (user has control)
+    // show the checkbox only in modes where user can adjust multipliers
     gtk_widget_set_visible(g->check_late_correction, is_new_mode_manual);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check_late_correction),
@@ -2244,8 +2238,7 @@ void gui_init(dt_iop_module_t *self)
      _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
   g->check_late_correction = dt_bauhaus_toggle_from_params(self, "late_correction");
-
-  g_object_ref(g->check_late_correction); // Prevent destruction
+  g_object_ref(g->check_late_correction); // prevent destruction
   GtkWidget *temp_parent = gtk_widget_get_parent(g->check_late_correction);
   if(temp_parent)
     gtk_container_remove(GTK_CONTAINER(temp_parent), g->check_late_correction);
