@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 11:20-0600\n"
-"PO-Revision-Date: 2025-12-18 00:51-0600\n"
+"PO-Revision-Date: 2025-12-18 13:23-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2806,7 +2806,7 @@ msgstr "saturación"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:146
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
 msgid "preserve hue"
-msgstr "preservar tono"
+msgstr "preservación de tono"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:277
 #: ../build/lib/darktable/plugins/introspection_agx.c:520
@@ -5769,7 +5769,7 @@ msgstr "nivelación de exposición"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:235
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:350
 msgid "preserve details"
-msgstr "preservar los detalles"
+msgstr "preservación de detalles"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:241
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:354
