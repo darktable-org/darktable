@@ -91,6 +91,9 @@ static const struct dt_model_cropfactor dt_cropfactors[] = {
   {.model = "Canon EOS 5D Mark IV", // tags contain incorrect data, so formula gives us incorrect result
    .cropfactor = 1.0f
   },
+  {.model = "Canon EOS 6D Mark II", // tags contain incorrect data, so formula gives us incorrect result
+   .cropfactor = 1.0f
+  },
   {.model = "FinePix SL1000", // exiv2 doesn't yet read the tags we need to calculate correctly
    .cropfactor = 5.6f
   },
