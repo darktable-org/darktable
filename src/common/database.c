@@ -51,7 +51,7 @@
 #define LAST_FULL_DATABASE_VERSION_DATA    10
 
 // You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 57
+#define CURRENT_DATABASE_VERSION_LIBRARY 58
 #define CURRENT_DATABASE_VERSION_DATA    13
 
 #define USE_NESTED_TRANSACTIONS
@@ -2966,6 +2966,21 @@ static int _upgrade_library_schema_step(dt_database_t *db,
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN flash_tagvalue INTEGER DEFAULT -1",
              "[init] can't add `flash_tagvalue' column to images table in database\n");
     new_version = 57;
+  }
+  else if(version == 57)
+  {
+
+    TRY_EXEC("CREATE TABLE film_mode"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "can't create table film_mode");
+    TRY_EXEC("CREATE UNIQUE INDEX film_mode_name ON film_mode (name)",
+             "can't create index `film_mode_name' on table `film_mode'");
+
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN film_mode_id INTEGER REFERENCES film_mode (id) ON DELETE "
+             "RESTRICT ON UPDATE CASCADE",
+             "[init] can't add `film_mode' column to images table in database\n");
+    new_version = 58;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
