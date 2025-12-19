@@ -4,68 +4,58 @@ Victor Forsiuk
 Hanno Schwalm
 Mario Zimmermann
 Ralf Brown
-Aldric Renaudin
 Roman Lebedev
+Kofa
 Diederik ter Rahe
 Jeronimo Pellegrini
 Martin Straeten
-Miloš Komarčević
 Bill Ferguson
+Miloš Komarčević
+Vladimir Tyrtov
 EdgarLux
-esq4
-Kang-Wei Hsu
-Kofa
-Elia Devito
+Marko Vertainen
 Matjaž Jeran
-Šarūnas Burdulis
+Jonas Schäfer
+Hwanyong Lee
+bajdero
 
 * Translators:
-Pascal Obry
 Victor Forsiuk
+Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
 EdgarLux
-Kang-Wei Hsu
-Elia Devito
-Matjaž Jeran
-Jan Šmucr
-Ryo Shinozaki
 Marko Vertainen
-Tianhao Chai
+Matjaž Jeran
+Hwanyong Lee
+bajdero
 Besmir Godolja
-Báthory Péter
-Johan Schiff
-Patrick Fournier
-Paul Kocialkowski
-Reinder Mulder
-Wojciech Nagrodzki
-osiixy
+Elia Devito
+Kang-Wei Hsu
 Яна Тунгушпаева
+Báthory Péter
+Jan Šmucr
+Johan Schiff
+Reinder Mulder
+Ryo Shinozaki
+Tianhao Chai
 
 * Sub-module rawspeed contributors (at least 1 commit):
-Roman Lebedev
 Miloš Komarčević
-Kolton Yager
-Aurélien PIERRE
-Louie Lu
-Victor Forsiuk
-Andreas Stiller
-Georg Lukas
-Hon1nbo
+Roman Lebedev
+Jonas Schäfer
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
 ralfbrown
 
 * Sub-module lua-scripts contributors (at least 1 commit):
-Krzysztof Kotowicz
 wpferguson
 Bill Ferguson
-Georg Lutz
-Martin Straeten
-Miloš Komarčević
-Nahuel José
-Yuri van der Burg
-fjb2020
+Michael Reiger
+Tasos Bakogiannis
+deekayhd
+Balázs Dura-Kovács
+sjjh
 
 And all those of you that made previous releases possible
