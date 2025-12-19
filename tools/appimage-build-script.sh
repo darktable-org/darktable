@@ -52,13 +52,14 @@ cp -a /var/lib/lensfun-updates/* ../AppDir/usr/share/lensfun
 # environment variable in AppRun.wrapped accordingly when starting
 # AppImage so that libgphoto2 can find these drivers.
 mkdir -p ../AppDir/usr/lib/libgphoto2
-cp -a /usr/lib/x86_64-linux-gnu/libgphoto2/* ../AppDir/usr/lib/libgphoto2
+ARCH=$(uname -m)
+cp -a /usr/lib/$ARCH-linux-gnu/libgphoto2/* ../AppDir/usr/lib/libgphoto2
 
 # Include gphoto2 port libraries. We also have to set the IOLIBS
 # environment variable in AppRun.wrapped accordingly when starting
 # AppImage so that libgphoto2 can find these drivers.
 mkdir -p ../AppDir/usr/lib/libgphoto2_port
-cp -a /usr/lib/x86_64-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_port
+cp -a /usr/lib/$ARCH-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_port
 
 # Include networking related GIO modules. We also have to set the GIO_EXTRA_MODULES
 # environment variable in AppRun.wrapped accordingly when starting AppImage
@@ -67,14 +68,13 @@ cp -a /usr/lib/x86_64-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_p
 # may be incompatibility issues with different versions of glib in the bundle and
 # on the host system, see https://github.com/darktable-org/darktable/issues/19266
 mkdir -p ../AppDir/usr/lib/gio
-cp -a /usr/lib/x86_64-linux-gnu/gio/* ../AppDir/usr/lib/gio
+cp -a /usr/lib/$ARCH-linux-gnu/gio/* ../AppDir/usr/lib/gio
 
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed
 # on the build system, but download it every time we run this script. If that
 # doesn't suit you (for example, you want to build an AppImage without an
 # Internet connection), you can edit this script accordingly, and call
 # linuxdeploy and its plugin from where you put them.
-ARCH=$(uname -m)
 wget -c --no-verbose "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage"
 wget -c --no-verbose "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
 
