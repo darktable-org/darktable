@@ -34,9 +34,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.2:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- 993 commits to darktable+rawspeed
+- 385 pull requests handled
+-  56 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.4
 and contributions are greatly appreciated. Please see the
@@ -420,15 +420,39 @@ changes (where available).
 
 - Canon EOS R1 (requires LibRaw 0.22-PreRC1 and later)
 - Canon EOS R5 Mark II (requires LibRaw 0.22-PreRC1 and later)
-- ???
+- Canon PowerShot D10 (DNG)
+- Canon PowerShot S100V
+- Canon PowerShot S2 IS (DNG)
+- Fujifilm FinePix HS33EXR
+- Fujifilm X-E5 (compressed)
+- Kodak DCS Pro SLR/c
+- Kodak P712
+- Leica D-Lux 8
+- Leica M EV1 (DNG)
+- Leica Q3 Monochrom (DNG)
+- Leica X-E (Typ 102) (DNG)
+- Nikon Z fc (14bit-uncompressed, 12bit-uncompressed)
+- OM System OM-5 Mark II
+- Olympus SP550UZ
+- Olympus SP565UZ
+- Panasonic DC-S1M2 (3:2)
+- Panasonic DC-S1M2ES (3:2)
+- Ricoh GR IV (DNG)
+- Ricoh GX200 (DNG)
+- Sony DSC-RX1RM3
+- Sony ZV-1M2
 
 ### White Balance Presets
 
-- ???
+- Nikon D2H
+- Nikon Z5_2
 
 ### Noise Profiles
 
-- ???
+- Fujifilm X-E5
+- Fujifilm X-M5
+- Nikon Z fc
+- Sony ILCA-99M2
 
 ### Missing Compression Mode Support
 
