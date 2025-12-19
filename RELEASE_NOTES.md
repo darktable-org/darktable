@@ -444,11 +444,14 @@ changes (where available).
 
 ### White Balance Presets
 
+- Canon EOS R5 Mark II
 - Nikon D2H
 - Nikon Z5_2
 
 ### Noise Profiles
 
+- Canon EOS R1
+- Canon EOS R5 Mark II
 - Fujifilm X-E5
 - Fujifilm X-M5
 - Nikon Z fc
