@@ -917,7 +917,9 @@ int dt_init(int argc,
 #endif
 
   // make everything go a lot faster.
+#ifdef __SSE2__
   dt_mm_enable_flush_zero();
+#endif
 
   dt_set_signal_handlers();
 
