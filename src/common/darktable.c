@@ -1475,6 +1475,10 @@ int dt_init(int argc,
     g_free(new_xdg_data_dirs);
   }
 
+  // desktop entry name required for mapping application icon to
+  // window for KDE/Plasma on Wayland under GTK 3
+  g_set_prgname("org.darktable.darktable");
+
   setlocale(LC_ALL, "");
   char localedir[PATH_MAX] = { 0 };
   dt_loc_get_localedir(localedir, sizeof(localedir));
