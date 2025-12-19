@@ -1751,11 +1751,19 @@ static void _init_widgets(dt_gui_gtk_t *gui)
     // On Wayland, use NORMAL hint to allow proper window resizing
     gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
-    GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
-    gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
-    gtk_widget_show(header_bar);
+    const gchar *xdg_current_desktop = getenv("XDG_CURRENT_DESKTOP");
+    if(g_strcmp0(xdg_current_desktop, "KDE") != 0)
+    {
+      // On Gnome, using client-side decoration with a custom titlebar
+      // allows for hiding titlebar when it is maximized. For
+      // Plasma/Wayland, default server-side decorations give window
+      // shadow and wide resize area.
+      GtkWidget *header_bar = gtk_header_bar_new();
+      gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+      gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+      gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+      gtk_widget_show(header_bar);
+    }
   }
 #endif
 
