@@ -446,6 +446,7 @@ changes (where available).
 
 - Nikon D2H
 - Nikon Z5_2
+- Canon EOS R5 Mark II
 
 ### Noise Profiles
 
@@ -453,6 +454,8 @@ changes (where available).
 - Fujifilm X-M5
 - Nikon Z fc
 - Sony ILCA-99M2
+- Canon EOS R5 Mark II
+- Canon EOS R1
 
 ### Missing Compression Mode Support
 
