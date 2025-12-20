@@ -215,10 +215,10 @@ int legacy_params(dt_iop_module_t *self,
     memcpy(n, o, sizeof(dt_iop_crop_params_t));
 
     // Let's check for bad square crops because of bad edits with original image ratio
-    if(abs(n->ratio_d) == 1 && n->ratio_n == 0)
+    if(self && self->dev && abs(n->ratio_d) == 1 && n->ratio_n == 0)
     {
-      const float pwd = self->dev->image_storage.p_width;
-      const float pht = self->dev->image_storage.p_height;
+      const float pwd = MAX(1.0f, self->dev->image_storage.p_width);
+      const float pht = MAX(1.0f, self->dev->image_storage.p_height);
       const gboolean safe = pwd > 4.0f && pht > 4.0f;
       const float ratio = safe ? pwd / pht : 1.0f;
 
