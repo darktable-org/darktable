@@ -195,6 +195,16 @@ int legacy_params(dt_iop_module_t *self,
     gboolean aligned;
   } dt_iop_crop_params_v2_t;
 
+  typedef struct dt_iop_crop_params_v3_t
+  {
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_crop_params_v3_t;
+
   if(old_version == 1)
   {
     const dt_iop_crop_params_v1_t *o = (dt_iop_crop_params_v1_t *)old_params;
@@ -207,12 +217,12 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 2;
     return 0;
   }
-
-  if(old_version == 2)
+  else if(old_version == 2)
   {
+    // recover from wrong params, see #19919
     const dt_iop_crop_params_v2_t *o = (dt_iop_crop_params_v2_t *)old_params;
-    dt_iop_crop_params_t *n = malloc(sizeof(dt_iop_crop_params_t));
-    memcpy(n, o, sizeof(dt_iop_crop_params_t));
+    dt_iop_crop_params_t *n = malloc(sizeof(dt_iop_crop_params_v3_t));
+    memcpy(n, o, sizeof(dt_iop_crop_params_v3_t));
 
     // Let's check for bad square crops because of bad edits with original image ratio
     if(abs(n->ratio_d) == 1 && n->ratio_n == 0)
@@ -264,21 +274,24 @@ int legacy_params(dt_iop_module_t *self,
             n->cw = (new_dx + px) / wd;
           }
         }
-        dt_print(DT_DEBUG_ALWAYS, "WARNING: BAD CROP in [crop legacacy_params 2->3] ID=%d %s%s %s%s topleft=%d/%d %dx%d --> %dx%d (ratio=%.3f image %dx%d)",
-          self->dev->image_storage.id,
-          quadratic ? "quadratic " : "",
-          landscape ? "landscape" : "portrait",
-          flipped ? "flipped" : "unflipped",
-          o->aligned ? " aligned-mode" : "",
-          (int)px, (int)py, (int)dx, (int)dy, (int)new_dx, (int)new_dy,
-          ratio, (int)wd, (int)ht);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "WARNING: BAD CROP in [crop legacacy_params 2->3] ID=%d %s%s %s%s topleft=%d/%d %dx%d --> %dx%d (ratio=%.3f image %dx%d)",
+                 self->dev->image_storage.id,
+                 quadratic ? "quadratic " : "",
+                 landscape ? "landscape" : "portrait",
+                 flipped ? "flipped" : "unflipped",
+                 o->aligned ? " aligned-mode" : "",
+                 (int)px, (int)py, (int)dx, (int)dy, (int)new_dx, (int)new_dy,
+                 ratio, (int)wd, (int)ht);
       }
       else
-        dt_print(DT_DEBUG_PARAMS, "[crop legacacy_params 2->3] 'original image' ratio was ok");
+        dt_print(DT_DEBUG_PARAMS,
+                 "[crop legacacy_params 2->3] 'original image' ratio was ok");
     }
     else
-      dt_print(DT_DEBUG_PARAMS, "[crop legacy_params 2->3] unchanged ratio_d=%d ratio_n=%d",
-        n->ratio_d, n->ratio_n);
+      dt_print(DT_DEBUG_PARAMS,
+               "[crop legacy_params 2->3] unchanged ratio_d=%d ratio_n=%d",
+               n->ratio_d, n->ratio_n);
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_crop_params_t);
