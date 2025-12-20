@@ -2293,6 +2293,9 @@ static gboolean _gui_reset_callback(GtkButton *button,
     dt_iop_reload_defaults(module);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
 
+    if(!module->multi_name_hand_edited)
+      module->multi_name[0] = '\0';
+
     /* reset ui to its defaults */
     dt_iop_gui_reset(module);
 
