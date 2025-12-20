@@ -8,16 +8,16 @@ The checksums are:
 
 ```
 $ sha256sum darktable-5.4.0.tar.xz
-5ae8b9edfe25470f51f3d44f94d910063e9f9c6ace24ae5d801f095070b30965  darktable-5.4.0.tar.xz
+2bf0baea78d27945cf09c33d8804f179e03a83ee19d2e927fd660ea46aca3b16  darktable-5.4.0.tar.xz
 
 $ sha256sum darktable-5.4.0-arm64.dmg
-ed58379f71ec41d218a51394104cd8dfa0e8a717988499b71a6b1b46fa9e0d00  darktable-5.4.0-arm64.dmg
+17e1eaf2bd7ab0ada2e93d4bba2ba6b81345e99eb338635682d08dae64d7a150  darktable-5.4.0-arm64.dmg
 
 $ sha256sum darktable-5.4.0-win64.exe
-0105aa2edda3a34740e3209e61d1fedeae592906f39294daf1f3b2df739b31f0  darktable-5.4.0-win64.exe
+655ce83046f27d20e1385bffa1e5471b702033083772f65db1fe1a07445c3eb8  darktable-5.4.0-win64.exe
 
 $ sha256sum Darktable-5.4.0-x86_64.AppImage
-820a01b220091a1551537b0dc66087ee94d6e5fa43935ef654b145044433255c  Darktable-5.4.0-x86_64.AppImage
+efdd80be618dfa53f37f54a254e1eaaf2bd3a8c8b8d01b70582dad5cff07ef39  Darktable-5.4.0-x86_64.AppImage
 ```
 
 When updating from the stable 5.2 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 5.2.
