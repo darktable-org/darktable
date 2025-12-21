@@ -633,6 +633,9 @@ static void _preview_set_state(dt_view_t *self,
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_library_t));
+  dt_library_t *lib = self->data;
+
+  lib->current_layout = DT_LIGHTTABLE_LAYOUT_FIRST;
 
   darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.set_preview_state = _preview_set_state;
