@@ -34,9 +34,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.2:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- 995 commits to darktable+rawspeed
+- 385 pull requests handled
+-  56 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.4
 and contributions are greatly appreciated. Please see the
@@ -97,11 +97,11 @@ changes (where available).
 - In Tone Equalizer module move controls for mask exposure and
   contrast compensation to the advanced tab.
 
-- In the navigation windows, the zoom is now better behaving. After a
+- In the navigation windows, the zoom dropdown is now better behaving. After a
   free zoom over the darkroom, using the scroll over the zoom level
   indicator of the navigation window, the selected zoom will be the
   closest match (above or below depending on the scroll
-  direction). This is better as previous behavior where the zoom level
+  direction). This is better than previous behavior where the zoom level
   was always set to "small".
 
 - When moving around in a (zoomed) center view in the darkroom, we now
@@ -115,6 +115,11 @@ changes (where available).
   recalculation is triggered by a module parameter change, say
   exposure increase, only the exact area shown is calculated as
   before, for optimal responsiveness.
+
+- When applying a rotation or flip, the transformation will be immediately
+  applied to the part of the image currently shown in the center view while
+  waiting for a full recalc. It used to be only repositioned but not rotated
+  which would lead to weird overlays for a brief period.
 
 - The popup (that you get when right-clicking) for sliders with a 360°
   range now shows a color wheel or compass. If the slider is
@@ -163,6 +168,10 @@ changes (where available).
 - Dramatically speed up first startup of a new installation when the
   library is stored on a hard drive or NAS rather than SSD.
 
+- When zooming or panning the center view, transformations in the liquify
+  module are ignored. This leads to much improved responsiveness when
+  that module is active.
+
 ## Other Changes
 
 - Allow using <kbd>Shift</kbd> modifier to select only the feather
@@ -186,10 +195,10 @@ changes (where available).
 - Allow far smaller crop area to be created (crop up to 99% of the
   image size).
 
-- Allow the variable $(ROLL.NAME) to have optional levels,
-  $(ROLL.NAME[n]), where 1 <= n <= 5, the levels follow the same
+- Allow the variable `$(ROLL.NAME)` to have optional levels,
+  `$(ROLL.NAME[n])`, where 1 <= n <= 5, the levels follow the same
   rules as film roll, the default value `n=1`, this keep the previous
-  behavior of $(ROLL.NAME).
+  behavior of `$(ROLL.NAME)`.
 
 - Added optional collection of shortcut assignments using
   keyboard+mouse combinations to control image processing
@@ -208,14 +217,14 @@ changes (where available).
   independently of the quality setting, allowing better optimization of the
   quality-vs-size tradeoff for AVIF files.
 
-- The processing modules/<focused> shortcuts also work if the quick
+- The processing modules/`<focused>` shortcuts also work if the quick
   access panel is "focused", addressing the first 20 sliders or
   dropdowns.
 
 - If only the first rotor on a midi controller is assigned, the higher
   numbered ones automatically address increasing elements of the same
   action or subsequent actions. This allows quick (re) assignment to
-  the <focused> action or to the mimics set up with for example the
+  the `<focused>` action or to the mimics set up with for example the
   x-touch Lua script.
 
 - Added the ability to calculate crop factor for Olympus cameras.
@@ -246,6 +255,9 @@ changes (where available).
 
 - Make sure we always fill the complete main darkroom canvas while
   zooming at large scales.
+
+- When zoomed to 1600% don't ignore sub-pixel panning/dragging, which
+  made it almost impossible to move around at all.
 
 - Make sure image changed_timestamp is updated when a sidecar file
   is applied.
@@ -408,15 +420,42 @@ changes (where available).
 
 - Canon EOS R1 (requires LibRaw 0.22-PreRC1 and later)
 - Canon EOS R5 Mark II (requires LibRaw 0.22-PreRC1 and later)
-- ???
+- Canon PowerShot D10 (DNG)
+- Canon PowerShot S100V
+- Canon PowerShot S2 IS (DNG)
+- Fujifilm FinePix HS33EXR
+- Fujifilm X-E5 (compressed)
+- Kodak DCS Pro SLR/c
+- Kodak P712
+- Leica D-Lux 8
+- Leica M EV1 (DNG)
+- Leica Q3 Monochrom (DNG)
+- Leica X-E (Typ 102) (DNG)
+- Nikon Z fc (14bit-uncompressed, 12bit-uncompressed)
+- OM System OM-5 Mark II
+- Olympus SP550UZ
+- Olympus SP565UZ
+- Panasonic DC-S1M2 (3:2)
+- Panasonic DC-S1M2ES (3:2)
+- Ricoh GR IV (DNG)
+- Ricoh GX200 (DNG)
+- Sony DSC-RX1RM3
+- Sony ZV-1M2
 
 ### White Balance Presets
 
-- ???
+- Canon EOS R5 Mark II
+- Nikon D2H
+- Nikon Z5_2
 
 ### Noise Profiles
 
-- ???
+- Canon EOS R1
+- Canon EOS R5 Mark II
+- Fujifilm X-E5
+- Fujifilm X-M5
+- Nikon Z fc
+- Sony ILCA-99M2
 
 ### Missing Compression Mode Support
 
@@ -426,7 +465,7 @@ changes (where available).
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Phase One other than IIQ L
-- Sony HQ and downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
+- Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C) and ARW 6.0 lossy
 
 ### Suspended Support
 

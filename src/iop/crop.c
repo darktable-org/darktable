@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-DT_MODULE_INTROSPECTION(2, dt_iop_crop_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_crop_params_t)
 
 #define MIN_CROP_SIZE 0.01f /* minimum crop width/height as fraction of image size */
 
@@ -66,7 +66,6 @@ typedef struct dt_iop_crop_params_t
   float ch;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "bottom"
   int ratio_n; // $DEFAULT: -1
   int ratio_d; // $DEFAULT: -1
-  gboolean aligned; // $DEFAULT: 1
 } dt_iop_crop_params_t;
 
 typedef enum _grab_region_t
@@ -114,7 +113,6 @@ typedef struct dt_iop_crop_data_t
 {
   float aspect;         // forced aspect ratio
   float cx, cy, cw, ch; // crop window
-  gboolean aligned;
   int ratio_n;
   int ratio_d;
 } dt_iop_crop_data_t;
@@ -176,28 +174,131 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
+  typedef struct dt_iop_crop_params_v1_t
+  {
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_crop_params_v1_t;
+
+  typedef struct dt_iop_crop_params_v2_t
+  {
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    int ratio_n;
+    int ratio_d;
+    gboolean aligned;
+  } dt_iop_crop_params_v2_t;
+
+  typedef struct dt_iop_crop_params_v3_t
+  {
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_crop_params_v3_t;
+
   if(old_version == 1)
   {
-    typedef struct dt_iop_crop_params_v1_t
-    {
-      float cx;
-      float cy;
-      float cw;
-      float ch;
-      int ratio_n;
-      int ratio_d;
-    } dt_iop_crop_params_v1_t;
-
     const dt_iop_crop_params_v1_t *o = (dt_iop_crop_params_v1_t *)old_params;
-    dt_iop_crop_params_t *n = malloc(sizeof(dt_iop_crop_params_t));
+    dt_iop_crop_params_v2_t *n = malloc(sizeof(dt_iop_crop_params_v2_t));
     memcpy(n, o, sizeof(dt_iop_crop_params_v1_t));
     n->aligned = FALSE;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_crop_params_t);
+    *new_params_size = sizeof(dt_iop_crop_params_v2_t);
     *new_version = 2;
     return 0;
   }
+  else if(old_version == 2)
+  {
+    // recover from wrong params, see #19919
+    const dt_iop_crop_params_v2_t *o = (dt_iop_crop_params_v2_t *)old_params;
+    dt_iop_crop_params_t *n = malloc(sizeof(dt_iop_crop_params_v3_t));
+    memcpy(n, o, sizeof(dt_iop_crop_params_v3_t));
+
+    // Let's check for bad square crops because of bad edits with original image ratio
+    if(self && self->dev && abs(n->ratio_d) == 1 && n->ratio_n == 0)
+    {
+      const float pwd = MAX(1.0f, self->dev->image_storage.p_width);
+      const float pht = MAX(1.0f, self->dev->image_storage.p_height);
+      const gboolean safe = pwd > 4.0f && pht > 4.0f;
+      const float ratio = safe ? pwd / pht : 1.0f;
+
+      const float landscape = (self->dev->image_storage.orientation & ORIENTATION_SWAP_XY) == 0;
+      const float wd = landscape ? pwd : pht;
+      const float ht = landscape ? pht : pwd;
+
+      const float px = n->cx * wd;
+      const float py = n->cy * ht;
+      const float dx = (n->cw - n->cx) * wd;
+      const float dy = (n->ch - n->cy) * ht;
+      float new_dx = dx;
+      float new_dy = dy;
+
+      const gboolean correct = feqf(ratio, dx / dy, 0.01f) || feqf(ratio, dy / dx, 0.01f);
+      const gboolean quadratic = feqf(dx, dy, 1.0f);
+      const gboolean flipped = n->ratio_d < 0;
+      if(!correct && safe)
+      {
+        if(landscape)
+        {
+          if(flipped)
+          {
+            new_dx = dy / ratio;
+            n->cw = (new_dx + px) / wd;
+          }
+          else
+          {
+            new_dy = dx / ratio;
+            n->ch = (new_dy + py) / ht;
+          }
+        }
+        else
+        { // portrait
+          if(flipped)
+          {
+            new_dx = dy * ratio;
+            n->cw = (new_dx +px) / wd;
+          }
+          else
+          {
+            new_dx = dy / ratio;
+            n->cw = (new_dx + px) / wd;
+          }
+        }
+        dt_print(DT_DEBUG_ALWAYS,
+                 "WARNING: BAD CROP in [crop legacacy_params 2->3] ID=%d %s%s %s%s topleft=%d/%d %dx%d --> %dx%d (ratio=%.3f image %dx%d)",
+                 self->dev->image_storage.id,
+                 quadratic ? "quadratic " : "",
+                 landscape ? "landscape" : "portrait",
+                 flipped ? "flipped" : "unflipped",
+                 o->aligned ? " aligned-mode" : "",
+                 (int)px, (int)py, (int)dx, (int)dy, (int)new_dx, (int)new_dy,
+                 ratio, (int)wd, (int)ht);
+      }
+      else
+        dt_print(DT_DEBUG_PARAMS,
+                 "[crop legacacy_params 2->3] 'original image' ratio was ok");
+    }
+    else
+      dt_print(DT_DEBUG_PARAMS,
+               "[crop legacy_params 2->3] unchanged ratio_d=%d ratio_n=%d",
+               n->ratio_d, n->ratio_n);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_crop_params_t);
+    *new_version = 3;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -225,8 +326,10 @@ static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_params_t *p,
                         const gboolean enforce_history)
 {
-  if(darktable.gui->reset) return;
-  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return;
+  if(darktable.gui->reset)
+    return;
+  if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID)
+    return;
 
   g->cropping = GRAB_CENTER;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
@@ -246,7 +349,6 @@ static void _commit_box(dt_iop_module_t *self,
                               g->clip_y * ht,
                              (g->clip_x + g->clip_w) * wd,
                              (g->clip_y + g->clip_h) * ht };
-
   if(dt_dev_distort_backtransform_plus(self->dev, fpipe, self->iop_order,
                                        DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2))
   {
@@ -256,7 +358,9 @@ static void _commit_box(dt_iop_module_t *self,
       if(piece->buf_out.width < 1 || piece->buf_out.height < 1)
         return;
 
-      if(p->aligned)
+      // Do we need to align on a given ratio?
+      // excludes original image (portrait and landscape) and free
+      if(p->ratio_d != 0 && p->ratio_n != 0)
       {
         const gboolean landscape = piece->buf_out.width >= piece->buf_out.height;
         const gboolean flipped = p->ratio_d < 0 ;
@@ -416,7 +520,9 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->height = MAX(4, (int)ody);
 
   const gboolean exporting = piece->pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!exporting) return;
+  const gboolean aligned = d->ratio_d != 0 && d->ratio_n != 0;
+  if(!exporting || !aligned)
+    return;
 
   odx = floorf(odx);
   ody = floorf(ody);
@@ -437,7 +543,7 @@ void modify_roi_out(dt_iop_module_t *self,
 
   int align_w = roi_out->width >= roi_out->height ? d->ratio_d : d->ratio_n;
   int align_h = roi_out->width >= roi_out->height ? d->ratio_n : d->ratio_d;
-  const gboolean exact = d->aligned && _reduce_aligners(&align_w, &align_h);
+  const gboolean exact = _reduce_aligners(&align_w, &align_h);
   const int dw = exact ? (roi_out->width  % align_w) : 0;
   const int dh = exact ? (roi_out->height % align_h) : 0;
   roi_out->x += dw / 2;
@@ -533,15 +639,16 @@ void commit_params(dt_iop_module_t *self,
     else                        // defined ratio
       d->aspect = (float)rd / (float)rn;
   }
-  d->aligned = p->aligned;
   d->ratio_n = p->ratio_n;
   d->ratio_d = p->ratio_d;
+  dt_print(DT_DEBUG_PARAMS, "[crop] commit ratio_d=%d ratio_n=%d", d->ratio_d, d->ratio_n);
 }
 
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = self->gui_data;
-  if(!g) return; // seems that sometimes, g can be undefined for some reason...
+  if(!g)
+    return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
   DT_CONTROL_SIGNAL_DISCONNECT(_event_preview_updated_callback, self);
 
@@ -772,7 +879,6 @@ void reload_defaults(dt_iop_module_t *self)
   dp->cw = img->usercrop[3];
   dp->ch = img->usercrop[2];
   dp->ratio_n = dp->ratio_d = -1;
-  dp->aligned = FALSE;
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
@@ -910,11 +1016,11 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   {
     p->ratio_d = abs(d);
     p->ratio_n = n;
-    p->aligned = p->ratio_d != 0 && p->ratio_n != 0;
 
     dt_conf_set_int("plugins/darkroom/crop/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/crop/ratio_n", abs(p->ratio_n));
-    if(darktable.gui->reset) return;
+    if(darktable.gui->reset)
+      return;
     _aspect_apply(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
@@ -1395,8 +1501,9 @@ void gui_post_expose(dt_iop_module_t *self,
   // we don't do anything if the image is not ready within crop module
   // and we don't have visualizing enforced by other modules
   if((dev->full.pipe->changed & DT_DEV_PIPE_REMOVE
-      || self->dev->preview_pipe->loading)
-     && !external) return;
+          || self->dev->preview_pipe->loading)
+      && !external)
+    return;
 
   _aspect_apply(self, GRAB_HORIZONTAL | GRAB_VERTICAL);
 
@@ -1424,7 +1531,8 @@ void gui_post_expose(dt_iop_module_t *self,
     cairo_stroke(cr);
   }
 
-  if(dimmed) return;
+  if(dimmed)
+    return;
 
   // draw cropping window dimensions if first mouse button is pressed
   if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)

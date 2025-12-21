@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-23 08:26+0100\n"
-"PO-Revision-Date: 2025-11-25 18:02+0800\n"
+"POT-Creation-Date: 2025-11-28 18:37+0100\n"
+"PO-Revision-Date: 2025-12-15 09:36+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -808,7 +808,7 @@ msgstr "滑動"
 msgid "this setting has been modified"
 msgstr "設定已修改"
 
-#: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3066
+#: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3061
 #: ../src/gui/gtk.c:3251 ../src/gui/preferences.c:528
 #: ../src/gui/preferences.c:1013 ../src/libs/modulegroups.c:4087
 msgid "?"
@@ -2901,7 +2901,7 @@ msgstr "特定"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3418 ../src/gui/accelerators.c:148
-#: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:246
+#: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:241
 #: ../src/imageio/format/avif.c:973 ../src/imageio/format/j2k.c:713
 #: ../src/libs/live_view.c:424
 msgid "off"
@@ -3879,7 +3879,7 @@ msgid "lightness"
 msgstr "明度"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/agx.c:2456 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
+#: ../src/iop/agx.c:2086 ../src/iop/atrous.c:1405 ../src/iop/atrous.c:1409
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/rawdenoise.c:747
 #: ../src/iop/sigmoid.c:294
 msgid "smooth"
@@ -4901,8 +4901,8 @@ msgstr "僅手動暗角"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2625
-#: ../src/gui/accelerators.c:2697 ../src/gui/gtk.c:1535 ../src/gui/gtk.c:3851
+#: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2620
+#: ../src/gui/accelerators.c:2692 ../src/gui/gtk.c:1535 ../src/gui/gtk.c:3851
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3773
 #: ../src/iop/rawdenoise.c:882 ../src/libs/collect.c:3552
 #: ../src/libs/filtering.c:1510 ../src/libs/filters/colors.c:157
@@ -4994,7 +4994,7 @@ msgid "line"
 msgstr "線條"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#: ../src/iop/agx.c:2299 ../src/iop/agx.c:2817 ../src/iop/basecurve.c:2127
+#: ../src/iop/agx.c:1929 ../src/iop/agx.c:2447 ../src/iop/basecurve.c:2127
 #: ../src/iop/rgbcurve.c:1523 ../src/iop/tonecurve.c:1288
 msgid "curve"
 msgstr "曲線"
@@ -5687,16 +5687,16 @@ msgstr "在地圖中顯示影像"
 msgid "Print your images"
 msgstr "列印影像"
 
-#: ../src/bauhaus/bauhaus.c:910 ../src/bauhaus/bauhaus.c:4074
+#: ../src/bauhaus/bauhaus.c:910 ../src/bauhaus/bauhaus.c:4080
 #: ../src/iop/colorequal.c:3053
 msgid "sliders"
 msgstr "滑桿"
 
-#: ../src/bauhaus/bauhaus.c:912 ../src/bauhaus/bauhaus.c:4079
+#: ../src/bauhaus/bauhaus.c:912 ../src/bauhaus/bauhaus.c:4085
 msgid "dropdowns"
 msgstr "下拉選單"
 
-#: ../src/bauhaus/bauhaus.c:914 ../src/bauhaus/bauhaus.c:4084
+#: ../src/bauhaus/bauhaus.c:914 ../src/bauhaus/bauhaus.c:4090
 msgid "buttons"
 msgstr "按鈕"
 
@@ -5709,71 +5709,71 @@ msgstr ""
 "%s 點擊滑鼠右鍵以輸入介於 <b>%s</b> 和 <b>%s</b> 之間的特定數值，\n"
 "或在拖曳時按住 ctrl 與 shift 以超出軟限制範圍。"
 
-#: ../src/bauhaus/bauhaus.c:3742
+#: ../src/bauhaus/bauhaus.c:3748
 msgid "button on"
 msgstr "按鈕開啟"
 
-#: ../src/bauhaus/bauhaus.c:3742
+#: ../src/bauhaus/bauhaus.c:3748
 msgid "button off"
 msgstr "按鈕關閉"
 
-#: ../src/bauhaus/bauhaus.c:3743
+#: ../src/bauhaus/bauhaus.c:3749
 msgid "button pressed"
 msgstr "按鈕已按下"
 
-#: ../src/bauhaus/bauhaus.c:3979
+#: ../src/bauhaus/bauhaus.c:3985
 msgid "not that many sliders"
 msgstr "沒有那麼多滑桿"
 
-#: ../src/bauhaus/bauhaus.c:3993
+#: ../src/bauhaus/bauhaus.c:3999
 msgid "not that many dropdowns"
 msgstr "沒有那麼多下拉選單"
 
-#: ../src/bauhaus/bauhaus.c:4012
+#: ../src/bauhaus/bauhaus.c:4018
 msgid "not that many buttons"
 msgstr "沒有那麼多按鈕"
 
-#: ../src/bauhaus/bauhaus.c:4017 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:4023 ../src/gui/accelerators.c:387
 msgid "value"
 msgstr "值"
 
-#: ../src/bauhaus/bauhaus.c:4018 ../src/bauhaus/bauhaus.c:4024
-#: ../src/gui/accelerators.c:371
+#: ../src/bauhaus/bauhaus.c:4024 ../src/bauhaus/bauhaus.c:4030
+#: ../src/gui/accelerators.c:366
 msgid "button"
 msgstr "按鈕"
 
-#: ../src/bauhaus/bauhaus.c:4019
+#: ../src/bauhaus/bauhaus.c:4025
 msgid "force"
 msgstr "強度"
 
-#: ../src/bauhaus/bauhaus.c:4020 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:4026 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "縮放"
 
-#: ../src/bauhaus/bauhaus.c:4023 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:4029 ../src/libs/select.c:40
 msgid "selection"
 msgstr "選取"
 
-#: ../src/bauhaus/bauhaus.c:4063
+#: ../src/bauhaus/bauhaus.c:4069
 msgid "slider"
 msgstr "滑桿"
 
-#: ../src/bauhaus/bauhaus.c:4068
+#: ../src/bauhaus/bauhaus.c:4074
 msgid "dropdown"
 msgstr "下拉選單"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3875
 #: ../src/control/jobs/control_jobs.c:2190
-#: ../src/control/jobs/control_jobs.c:2248 ../src/gui/accelerators.c:2536
-#: ../src/gui/accelerators.c:2615 ../src/gui/accelerators.c:2658
-#: ../src/gui/accelerators.c:2687 ../src/gui/accelerators.c:2744
-#: ../src/gui/accelerators.c:2796 ../src/gui/hist_dialog.c:236
+#: ../src/control/jobs/control_jobs.c:2248 ../src/gui/accelerators.c:2531
+#: ../src/gui/accelerators.c:2610 ../src/gui/accelerators.c:2653
+#: ../src/gui/accelerators.c:2682 ../src/gui/accelerators.c:2739
+#: ../src/gui/accelerators.c:2791 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1206
 #: ../src/gui/preferences.c:1246 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:573 ../src/gui/styles_dialog.c:553
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
-#: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1570
+#: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1573
 #: ../src/iop/rasterfile.c:262 ../src/libs/collect.c:433
 #: ../src/libs/collect.c:3383 ../src/libs/copy_history.c:114
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:951
@@ -6065,7 +6065,7 @@ msgid "history"
 msgstr "歷史紀錄"
 
 #: ../src/common/collection.c:634 ../src/common/colorlabels.c:388
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1579
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1589
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:146
 msgid "color label"
@@ -6099,7 +6099,7 @@ msgstr "地理標籤"
 msgid "group"
 msgstr "群組"
 
-#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1594
+#: ../src/common/collection.c:656 ../src/dtgtk/thumbnail.c:1604
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:365
 msgid "local copy"
@@ -7026,8 +7026,8 @@ msgstr ""
 "現在可以重新啟動 darktable\n"
 
 #: ../src/common/database.c:3902 ../src/common/database.c:3909
-#: ../src/gui/accelerators.c:2616 ../src/gui/accelerators.c:2688
-#: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:237
+#: ../src/gui/accelerators.c:2611 ../src/gui/accelerators.c:2683
+#: ../src/gui/accelerators.c:2792 ../src/gui/hist_dialog.c:237
 #: ../src/gui/presets.c:574
 msgid "_ok"
 msgstr "確定(_O）"
@@ -9032,7 +9032,7 @@ msgid "input after blur"
 msgstr "先模糊後柔化 / 輸入"
 
 #: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:147
-#: ../src/gui/accelerators.c:157 ../src/gui/accelerators.c:246
+#: ../src/gui/accelerators.c:157 ../src/gui/accelerators.c:241
 #: ../src/imageio/format/avif.c:973 ../src/libs/live_view.c:425
 msgid "on"
 msgstr "開啟"
@@ -9291,7 +9291,7 @@ msgstr ""
 "按「m」切換顯示遮罩不透明度。"
 
 #: ../src/develop/blend_gui.c:2671 ../src/develop/blend_gui.c:3548
-#: ../src/iop/agx.c:2170 ../src/iop/agx.c:2392 ../src/iop/agx.c:2401
+#: ../src/iop/agx.c:1800 ../src/iop/agx.c:2022 ../src/iop/agx.c:2031
 #: ../src/iop/basicadj.c:624 ../src/iop/colorbalancergb.c:2000
 #: ../src/iop/colorequal.c:3134 ../src/iop/exposure.c:1215
 #: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491
@@ -9676,24 +9676,24 @@ msgstr "新的模組實例"
 msgid "duplicate instance"
 msgstr "複製模組實例"
 
-#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4079
+#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:4085
 #: ../src/libs/masks.c:1136
 msgid "move up"
 msgstr "向上移動"
 
-#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4080
+#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4086
 #: ../src/libs/masks.c:1141
 msgid "move down"
 msgstr "向下移動"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4082
+#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4088
 #: ../src/gui/accelerators.c:173 ../src/libs/image.c:307
 #: ../src/libs/image.c:522
 msgid "delete"
 msgstr "刪除"
 
-#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4083
+#: ../src/develop/imageop.c:1031 ../src/develop/imageop.c:4089
 #: ../src/libs/modulegroups.c:4002
 msgid "rename"
 msgstr "重新命名"
@@ -9787,50 +9787,50 @@ msgstr ""
 "⚠️ 警告 ⚠️\n"
 "此模組的運算順序（排列位置）不符合資料格式的要求。"
 
-#: ../src/develop/imageop.c:4078 ../src/develop/imageop.c:4088
-#: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1580
+#: ../src/develop/imageop.c:4084 ../src/develop/imageop.c:4094
+#: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1582
 msgid "show"
 msgstr "顯示"
 
-#: ../src/develop/imageop.c:4081 ../src/libs/modulegroups.c:3484
+#: ../src/develop/imageop.c:4087 ../src/libs/modulegroups.c:3484
 #: ../src/libs/modulegroups.c:3615 ../src/libs/modulegroups.c:4006
 #: ../src/libs/tagging.c:3678
 msgid "new"
 msgstr "新增"
 
-#: ../src/develop/imageop.c:4084 ../src/libs/duplicate.c:402
+#: ../src/develop/imageop.c:4090 ../src/libs/duplicate.c:402
 #: ../src/libs/image.c:543 ../src/libs/modulegroups.c:3998
 msgid "duplicate"
 msgstr "複製"
 
-#: ../src/develop/imageop.c:4089
+#: ../src/develop/imageop.c:4095
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:140
 #: ../src/gui/gtk.c:3699 ../src/gui/gtk.c:3754 ../src/gui/hist_dialog.c:289
 #: ../src/gui/styles_dialog.c:628 ../src/gui/styles_dialog.c:650
-#: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1581
+#: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1583
 #: ../src/libs/modulegroups.c:4082
 msgid "reset"
 msgstr "重設"
 
-#: ../src/develop/imageop.c:4090 ../src/gui/preferences.c:1036
-#: ../src/libs/lib.c:1582
+#: ../src/develop/imageop.c:4096 ../src/gui/preferences.c:1036
+#: ../src/libs/lib.c:1584
 msgid "presets"
 msgstr "預設集"
 
-#: ../src/develop/imageop.c:4091
+#: ../src/develop/imageop.c:4097
 msgid "enable"
 msgstr "啟用"
 
-#: ../src/develop/imageop.c:4092 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:4098 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "使用中"
 
-#: ../src/develop/imageop.c:4093 ../src/gui/accelerators.c:2956
+#: ../src/develop/imageop.c:4099 ../src/gui/accelerators.c:2951
 msgid "instance"
 msgstr "多模組實例"
 
-#: ../src/develop/imageop.c:4113
+#: ../src/develop/imageop.c:4119
 msgid "processing module"
 msgstr "編輯模組"
 
@@ -10475,7 +10475,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "群組影像"
 
-#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1666
+#: ../src/dtgtk/thumbnail.c:863 ../src/dtgtk/thumbnail.c:1676
 #: ../src/iop/ashift.c:6047 ../src/iop/ashift.c:6134 ../src/iop/ashift.c:6136
 #: ../src/iop/ashift.c:6138 ../src/libs/navigation.c:112
 #: ../src/libs/navigation.c:249
@@ -12691,7 +12691,7 @@ msgstr "選擇腳本資料夾"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/agx.c:2801 ../src/iop/channelmixerrgb.c:4426
+#: ../src/iop/agx.c:2431 ../src/iop/channelmixerrgb.c:4426
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3007 ../src/iop/filmicrgb.c:4379
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
@@ -12719,7 +12719,7 @@ msgstr "設置"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1545
-#: ../src/gui/accelerators.c:2921 ../src/gui/accelerators.c:3021
+#: ../src/gui/accelerators.c:2916 ../src/gui/accelerators.c:3016
 #: ../src/views/view.c:1611
 msgid "action"
 msgstr "動作"
@@ -12915,13 +12915,13 @@ msgstr "alt（右）"
 msgid "edit"
 msgstr "編輯"
 
-#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:775
-#: ../src/gui/accelerators.c:1465
+#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:770
+#: ../src/gui/accelerators.c:1460
 msgid "up"
 msgstr "上"
 
-#: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:775
-#: ../src/gui/accelerators.c:1465
+#: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:770
+#: ../src/gui/accelerators.c:1460
 msgid "down"
 msgstr "下"
 
@@ -12943,16 +12943,16 @@ msgstr "下一個"
 msgid "previous"
 msgstr "前一個"
 
-#: ../src/gui/accelerators.c:141 ../src/gui/accelerators.c:1609
+#: ../src/gui/accelerators.c:141 ../src/gui/accelerators.c:1604
 msgid "last"
 msgstr "最後一個"
 
-#: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:1608
+#: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:1603
 msgid "first"
 msgstr "第一個"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
-#: ../src/gui/accelerators.c:359 ../src/libs/filters/rating_range.c:295
+#: ../src/gui/accelerators.c:354 ../src/libs/filters/rating_range.c:295
 #: ../src/libs/tagging.c:3521 ../src/views/darkroom.c:2555
 #: ../src/views/darkroom.c:2621 ../src/views/darkroom.c:2897
 msgid "toggle"
@@ -13011,94 +13011,94 @@ msgstr "開始"
 msgid "end"
 msgstr "結束"
 
-#: ../src/gui/accelerators.c:377
+#: ../src/gui/accelerators.c:372
 msgid "entry"
 msgstr "輸入"
 
-#: ../src/gui/accelerators.c:474
+#: ../src/gui/accelerators.c:469
 msgid "combo effect not found"
 msgstr "找不到組合效果"
 
-#: ../src/gui/accelerators.c:665
+#: ../src/gui/accelerators.c:660
 msgid "(keypad)"
 msgstr "（小鍵盤）"
 
-#: ../src/gui/accelerators.c:674
+#: ../src/gui/accelerators.c:669
 msgid "tablet button"
 msgstr "平板按鈕"
 
-#: ../src/gui/accelerators.c:683
+#: ../src/gui/accelerators.c:678
 msgid "unknown driver"
 msgstr "未知裝置"
 
-#: ../src/gui/accelerators.c:756
+#: ../src/gui/accelerators.c:751
 msgid "long"
 msgstr "長按"
 
-#: ../src/gui/accelerators.c:757
+#: ../src/gui/accelerators.c:752
 msgid "double-press"
 msgstr "雙擊"
 
-#: ../src/gui/accelerators.c:758
+#: ../src/gui/accelerators.c:753
 msgid "triple-press"
 msgstr "按三下"
 
-#: ../src/gui/accelerators.c:759
+#: ../src/gui/accelerators.c:754
 msgid "press"
 msgstr "點擊"
 
-#: ../src/gui/accelerators.c:763
+#: ../src/gui/accelerators.c:758
 msgctxt "accel"
 msgid "left"
 msgstr "左鍵"
 
-#: ../src/gui/accelerators.c:764
+#: ../src/gui/accelerators.c:759
 msgctxt "accel"
 msgid "right"
 msgstr "右鍵"
 
-#: ../src/gui/accelerators.c:765
+#: ../src/gui/accelerators.c:760
 msgctxt "accel"
 msgid "middle"
 msgstr "中鍵"
 
-#: ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:761
 msgctxt "accel"
 msgid "long"
 msgstr "長按"
 
-#: ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:762
 msgctxt "accel"
 msgid "double-click"
 msgstr "雙擊"
 
-#: ../src/gui/accelerators.c:768
+#: ../src/gui/accelerators.c:763
 msgctxt "accel"
 msgid "triple-click"
 msgstr "按三下"
 
-#: ../src/gui/accelerators.c:769
+#: ../src/gui/accelerators.c:764
 msgid "click"
 msgstr "點擊"
 
-#: ../src/gui/accelerators.c:797
+#: ../src/gui/accelerators.c:792
 msgid "first instance"
 msgstr "第一個模組實例"
 
-#: ../src/gui/accelerators.c:799
+#: ../src/gui/accelerators.c:794
 msgid "last instance"
 msgstr "最後一個模組實例"
 
-#: ../src/gui/accelerators.c:801
+#: ../src/gui/accelerators.c:796
 msgid "relative instance"
 msgstr "相對的模組實例"
 
-#: ../src/gui/accelerators.c:818 ../src/gui/accelerators.c:2946
-#: ../src/gui/accelerators.c:3913
+#: ../src/gui/accelerators.c:813 ../src/gui/accelerators.c:2941
+#: ../src/gui/accelerators.c:3908
 msgid "speed"
 msgstr "速度"
 
-#: ../src/gui/accelerators.c:960
+#: ../src/gui/accelerators.c:955
 #, c-format
 msgid ""
 "Lua script command copied to clipboard:\n"
@@ -13109,11 +13109,11 @@ msgstr ""
 "\n"
 "<tt>%s</tt>"
 
-#: ../src/gui/accelerators.c:1063 ../src/gui/accelerators.c:1082
+#: ../src/gui/accelerators.c:1058 ../src/gui/accelerators.c:1077
 msgid "start typing for incremental search"
 msgstr "直接輸入搜尋動作"
 
-#: ../src/gui/accelerators.c:1066
+#: ../src/gui/accelerators.c:1061
 msgid ""
 "\n"
 "press Delete to delete selected shortcut"
@@ -13121,7 +13121,7 @@ msgstr ""
 "\n"
 "按 Delete 鍵刪除選取的快速鍵"
 
-#: ../src/gui/accelerators.c:1068
+#: ../src/gui/accelerators.c:1063
 msgid ""
 "\n"
 "press Delete to disable selected default shortcut"
@@ -13129,7 +13129,7 @@ msgstr ""
 "\n"
 "按 Delete 鍵取消選取的預設快速鍵"
 
-#: ../src/gui/accelerators.c:1069
+#: ../src/gui/accelerators.c:1064
 msgid ""
 "\n"
 "press Delete to restore selected default shortcut"
@@ -13137,7 +13137,7 @@ msgstr ""
 "\n"
 "按 Delete 鍵恢復選取的預設快速鍵"
 
-#: ../src/gui/accelerators.c:1071
+#: ../src/gui/accelerators.c:1066
 msgid ""
 "\n"
 "double-click to add new shortcut"
@@ -13145,11 +13145,11 @@ msgstr ""
 "\n"
 "雙擊以新增快速鍵"
 
-#: ../src/gui/accelerators.c:1083
+#: ../src/gui/accelerators.c:1078
 msgid "click to filter shortcuts list"
 msgstr "點擊可篩選快速鍵"
 
-#: ../src/gui/accelerators.c:1085
+#: ../src/gui/accelerators.c:1080
 msgid ""
 "\n"
 "right-click to show action of selected shortcut"
@@ -13157,7 +13157,7 @@ msgstr ""
 "\n"
 "右鍵展開選擇的快速鍵清單"
 
-#: ../src/gui/accelerators.c:1088
+#: ../src/gui/accelerators.c:1083
 msgid ""
 "\n"
 "double-click to define new shortcut"
@@ -13165,53 +13165,53 @@ msgstr ""
 "\n"
 "雙擊以自訂新的快速鍵"
 
-#: ../src/gui/accelerators.c:1104
+#: ../src/gui/accelerators.c:1099
 msgid "shift+alt+scroll to change height"
 msgstr "shift + alt + 滑鼠滾輪改變高度"
 
-#: ../src/gui/accelerators.c:1124
+#: ../src/gui/accelerators.c:1119
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr "按鍵和滑鼠動作組合以建立快速鍵"
 
-#: ../src/gui/accelerators.c:1125
+#: ../src/gui/accelerators.c:1120
 msgid "click to open shortcut configuration"
 msgstr "滑鼠點擊打開此功能的快速鍵設定視窗"
 
-#: ../src/gui/accelerators.c:1126
+#: ../src/gui/accelerators.c:1121
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl + 左鍵添加到快速存取面板\n"
 
-#: ../src/gui/accelerators.c:1127
+#: ../src/gui/accelerators.c:1122
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl + 左鍵從快速存取面板中刪除\n"
 
-#: ../src/gui/accelerators.c:1128
+#: ../src/gui/accelerators.c:1123
 msgid "scroll to change default speed"
 msgstr "滑鼠滾輪可改變快速鍵速度"
 
-#: ../src/gui/accelerators.c:1129
+#: ../src/gui/accelerators.c:1124
 msgid "right-click to exit mapping mode"
 msgstr "滑鼠右鍵退出快速鍵錄製模式"
 
-#: ../src/gui/accelerators.c:1188
+#: ../src/gui/accelerators.c:1183
 msgid "ctrl+v"
 msgstr "ctrl + v"
 
-#: ../src/gui/accelerators.c:1188
+#: ../src/gui/accelerators.c:1183
 msgid "right long click"
 msgstr "長按滑鼠右鍵"
 
-#: ../src/gui/accelerators.c:1188
+#: ../src/gui/accelerators.c:1183
 msgid "to copy Lua command"
 msgstr "複製 Lua 腳本命令"
 
-#: ../src/gui/accelerators.c:1460
+#: ../src/gui/accelerators.c:1455
 msgid "shortcut for move exists with single effect"
 msgstr "用於移動的快速鍵只有單一效果"
 
-#: ../src/gui/accelerators.c:1462
+#: ../src/gui/accelerators.c:1457
 #, c-format
 msgid ""
 "%s\n"
@@ -13222,62 +13222,62 @@ msgstr ""
 "\n"
 "「%s」指定給「%s」"
 
-#: ../src/gui/accelerators.c:1463
+#: ../src/gui/accelerators.c:1458
 msgid "create separate shortcuts for up and down move?"
 msgstr "為上下移動建立單獨的快速鍵？"
 
-#: ../src/gui/accelerators.c:1489
+#: ../src/gui/accelerators.c:1484
 #, c-format
 msgid "%s, speed reset"
 msgstr "「%s」，速度重設"
 
-#: ../src/gui/accelerators.c:1508
+#: ../src/gui/accelerators.c:1503
 msgid "shortcut exists with different settings"
 msgstr "快速鍵已指定為其他的設定"
 
-#: ../src/gui/accelerators.c:1509
+#: ../src/gui/accelerators.c:1504
 msgid "reset the settings of the shortcut?"
 msgstr "是否重設快速鍵的配置？"
 
-#: ../src/gui/accelerators.c:1518
+#: ../src/gui/accelerators.c:1513
 msgid "shortcut already exists"
 msgstr "快速鍵已存在"
 
-#: ../src/gui/accelerators.c:1520
+#: ../src/gui/accelerators.c:1515
 msgid "disable this default shortcut?"
 msgstr "取消這個預設的快速鍵？"
 
-#: ../src/gui/accelerators.c:1521
+#: ../src/gui/accelerators.c:1516
 msgid "remove the shortcut?"
 msgstr "刪除此快速鍵？"
 
-#: ../src/gui/accelerators.c:1561
+#: ../src/gui/accelerators.c:1556
 msgid "clashing shortcuts exist"
 msgstr "與現有快速鍵衝突"
 
-#: ../src/gui/accelerators.c:1562
+#: ../src/gui/accelerators.c:1557
 msgid "remove these existing shortcuts?"
 msgstr "刪除這些已有的快速鍵？"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1607
+#: ../src/gui/accelerators.c:1602
 msgid "preferred"
 msgstr "優先"
 
-#: ../src/gui/accelerators.c:1610
+#: ../src/gui/accelerators.c:1605
 msgid "second"
 msgstr "第二"
 
-#: ../src/gui/accelerators.c:1611
+#: ../src/gui/accelerators.c:1606
 msgid "last but one"
 msgstr "倒數第二"
 
-#: ../src/gui/accelerators.c:1774 ../src/gui/accelerators.c:1839
+#: ../src/gui/accelerators.c:1769 ../src/gui/accelerators.c:1834
 msgid "(unchanged)"
 msgstr "（未更改）"
 
-#: ../src/gui/accelerators.c:1956
+#: ../src/gui/accelerators.c:1951
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -13297,47 +13297,47 @@ msgstr ""
 "\n"
 "點擊右鍵取消"
 
-#: ../src/gui/accelerators.c:2029
+#: ../src/gui/accelerators.c:2024
 msgid "removing shortcut"
 msgstr "移除快速鍵"
 
-#: ../src/gui/accelerators.c:2031
+#: ../src/gui/accelerators.c:2026
 msgid "disable the selected default shortcut?"
 msgstr "取消選取的預設快速鍵？"
 
-#: ../src/gui/accelerators.c:2032
+#: ../src/gui/accelerators.c:2027
 msgid "restore the selected default shortcut?"
 msgstr "恢復選取的預設快速鍵？"
 
-#: ../src/gui/accelerators.c:2033
+#: ../src/gui/accelerators.c:2028
 msgid "remove the selected shortcut?"
 msgstr "是否要移除選取的快速鍵 ？"
 
-#: ../src/gui/accelerators.c:2148
+#: ../src/gui/accelerators.c:2143
 msgid "command"
 msgstr "確認"
 
-#: ../src/gui/accelerators.c:2149
+#: ../src/gui/accelerators.c:2144
 msgid "preset"
 msgstr "預設集"
 
-#: ../src/gui/accelerators.c:2530
+#: ../src/gui/accelerators.c:2525
 msgid "restore shortcuts"
 msgstr "恢復快速鍵"
 
-#: ../src/gui/accelerators.c:2533
+#: ../src/gui/accelerators.c:2528
 msgid "_defaults"
 msgstr "預設（_D）"
 
-#: ../src/gui/accelerators.c:2534
+#: ../src/gui/accelerators.c:2529
 msgid "_startup"
 msgstr "開始（_S）"
 
-#: ../src/gui/accelerators.c:2535
+#: ../src/gui/accelerators.c:2530
 msgid "_edits"
 msgstr "編輯（_E）"
 
-#: ../src/gui/accelerators.c:2540
+#: ../src/gui/accelerators.c:2535
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -13349,7 +13349,7 @@ msgstr ""
 " - 程式開啟時\n"
 " - 本次修改前\n"
 
-#: ../src/gui/accelerators.c:2546
+#: ../src/gui/accelerators.c:2541
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -13357,17 +13357,17 @@ msgstr ""
 "清除所有更新的快速鍵\n"
 "（而不僅是恢復已更改的）"
 
-#: ../src/gui/accelerators.c:2603 ../src/gui/preferences.c:1045
+#: ../src/gui/accelerators.c:2598 ../src/gui/preferences.c:1045
 #: ../src/libs/tools/global_toolbox.c:487
 #: ../src/libs/tools/global_toolbox.c:662
 msgid "shortcuts"
 msgstr "快速鍵"
 
-#: ../src/gui/accelerators.c:2613
+#: ../src/gui/accelerators.c:2608
 msgid "export shortcuts"
 msgstr "匯出快速鍵"
 
-#: ../src/gui/accelerators.c:2620
+#: ../src/gui/accelerators.c:2615
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -13375,27 +13375,27 @@ msgstr ""
 "選擇要匯出全部的快速鍵\n"
 "或是特定裝置的快速鍵設定\n"
 
-#: ../src/gui/accelerators.c:2626 ../src/gui/accelerators.c:2698
+#: ../src/gui/accelerators.c:2621 ../src/gui/accelerators.c:2693
 msgid "keyboard"
 msgstr "鍵盤"
 
-#: ../src/gui/accelerators.c:2639
+#: ../src/gui/accelerators.c:2634
 msgid "device id"
 msgstr "裝置識別碼"
 
-#: ../src/gui/accelerators.c:2657
+#: ../src/gui/accelerators.c:2652
 msgid "select file to export"
 msgstr "選擇要匯出的檔案"
 
-#: ../src/gui/accelerators.c:2658 ../src/libs/tagging.c:2847
+#: ../src/gui/accelerators.c:2653 ../src/libs/tagging.c:2847
 msgid "_export"
 msgstr "匯出（_E）"
 
-#: ../src/gui/accelerators.c:2685
+#: ../src/gui/accelerators.c:2680
 msgid "import shortcuts"
 msgstr "匯入快速鍵"
 
-#: ../src/gui/accelerators.c:2692
+#: ../src/gui/accelerators.c:2687
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -13403,31 +13403,31 @@ msgstr ""
 "選擇要匯入全部的快速鍵\n"
 "或是特定裝置的快速鍵設定\n"
 
-#: ../src/gui/accelerators.c:2709
+#: ../src/gui/accelerators.c:2704
 msgid "id in file"
 msgstr "檔案識別碼"
 
-#: ../src/gui/accelerators.c:2715
+#: ../src/gui/accelerators.c:2710
 msgid "id when loaded"
 msgstr "載入時的識別碼"
 
-#: ../src/gui/accelerators.c:2718
+#: ../src/gui/accelerators.c:2713
 msgid "clear device first"
 msgstr "先刪除原有的設備快速鍵"
 
-#: ../src/gui/accelerators.c:2743
+#: ../src/gui/accelerators.c:2738
 msgid "select file to import"
 msgstr "選擇要匯入的檔案"
 
-#: ../src/gui/accelerators.c:2744 ../src/libs/tagging.c:2805
+#: ../src/gui/accelerators.c:2739 ../src/libs/tagging.c:2805
 msgid "_import"
 msgstr "匯入（_I）"
 
-#: ../src/gui/accelerators.c:2794
+#: ../src/gui/accelerators.c:2789
 msgid "import sample shortcuts"
 msgstr "匯入範例快速鍵"
 
-#: ../src/gui/accelerators.c:2800
+#: ../src/gui/accelerators.c:2795
 msgid ""
 "add darktable sample shortcuts?\n"
 "\n"
@@ -13448,11 +13448,11 @@ msgstr ""
 "\n"
 "建議在新增前先備份目前的快速鍵設定。\n"
 
-#: ../src/gui/accelerators.c:2896
+#: ../src/gui/accelerators.c:2891
 msgid "search shortcuts list"
 msgstr "搜尋快速鍵"
 
-#: ../src/gui/accelerators.c:2898
+#: ../src/gui/accelerators.c:2893
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -13460,23 +13460,23 @@ msgstr ""
 "輸入關鍵字搜尋快速鍵\n"
 "使用上下鍵在符合的快速鍵中切換"
 
-#: ../src/gui/accelerators.c:2918 ../src/views/view.c:1609
+#: ../src/gui/accelerators.c:2913 ../src/views/view.c:1609
 msgid "shortcut"
 msgstr "快速鍵"
 
-#: ../src/gui/accelerators.c:2931
+#: ../src/gui/accelerators.c:2926
 msgid "element"
 msgstr "元素"
 
-#: ../src/gui/accelerators.c:2939
+#: ../src/gui/accelerators.c:2934
 msgid "effect"
 msgstr "效果"
 
-#: ../src/gui/accelerators.c:2997
+#: ../src/gui/accelerators.c:2992
 msgid "search actions list"
 msgstr "搜尋動作"
 
-#: ../src/gui/accelerators.c:2999
+#: ../src/gui/accelerators.c:2994
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -13484,16 +13484,16 @@ msgstr ""
 "輸入關鍵字搜尋動作\n"
 "使用上下鍵在符合的動作中切換"
 
-#: ../src/gui/accelerators.c:3029 ../src/gui/guides.c:840
+#: ../src/gui/accelerators.c:3024 ../src/gui/guides.c:840
 #: ../src/gui/metadata_tags.c:117
 msgid "type"
 msgstr "類別"
 
-#: ../src/gui/accelerators.c:3059
+#: ../src/gui/accelerators.c:3054
 msgid "enable fallbacks"
 msgstr "啟用更多通用擴展快速鍵"
 
-#: ../src/gui/accelerators.c:3060
+#: ../src/gui/accelerators.c:3055
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -13501,45 +13501,45 @@ msgstr ""
 "在基本快速鍵之上啟用更多附加按鈕、調整或移動的效果\n"
 "更多詳細內容及參數，請閱讀操作手冊的「shortcuts」章節"
 
-#: ../src/gui/accelerators.c:3067
+#: ../src/gui/accelerators.c:3062
 msgid "open help page for shortcuts"
 msgstr "開啟快速鍵的說明頁面"
 
-#: ../src/gui/accelerators.c:3071
+#: ../src/gui/accelerators.c:3066
 msgid "restore..."
 msgstr "重設…"
 
-#: ../src/gui/accelerators.c:3072
+#: ../src/gui/accelerators.c:3067
 msgid "restore default shortcuts or previous state"
 msgstr "恢復預設快速鍵或之前的狀態"
 
-#: ../src/gui/accelerators.c:3075
+#: ../src/gui/accelerators.c:3070
 msgid "import extras"
 msgstr "匯入更多"
 
-#: ../src/gui/accelerators.c:3076
+#: ../src/gui/accelerators.c:3071
 msgid "import extended default shortcuts"
 msgstr "匯入延伸的範例快速鍵"
 
-#: ../src/gui/accelerators.c:3079 ../src/libs/styles.c:901
+#: ../src/gui/accelerators.c:3074 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3683
 msgid "import..."
 msgstr "匯入…"
 
-#: ../src/gui/accelerators.c:3080
+#: ../src/gui/accelerators.c:3075
 msgid "fully or partially import shortcuts from file"
 msgstr "從檔案匯入快速鍵"
 
-#: ../src/gui/accelerators.c:3083 ../src/libs/styles.c:907
+#: ../src/gui/accelerators.c:3078 ../src/libs/styles.c:907
 #: ../src/libs/tagging.c:3690
 msgid "export..."
 msgstr "匯出…"
 
-#: ../src/gui/accelerators.c:3084
+#: ../src/gui/accelerators.c:3079
 msgid "fully or partially export shortcuts to file"
 msgstr "匯出快速鍵成檔案"
 
-#: ../src/gui/accelerators.c:3096
+#: ../src/gui/accelerators.c:3091
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -13566,31 +13566,31 @@ msgstr ""
 "\n"
 "<i>點擊<b>三次</b>可永久關閉此訊息</i>"
 
-#: ../src/gui/accelerators.c:3526
+#: ../src/gui/accelerators.c:3521
 msgid "reinitialising input devices"
 msgstr "重新初始化輸入裝置"
 
-#: ../src/gui/accelerators.c:3615
+#: ../src/gui/accelerators.c:3610
 msgid "move not assigned"
 msgstr "未指定動作"
 
-#: ../src/gui/accelerators.c:3615
+#: ../src/gui/accelerators.c:3610
 msgid "fallback to earlier move"
 msgstr "恢復之前的動作"
 
-#: ../src/gui/accelerators.c:3695
+#: ../src/gui/accelerators.c:3690
 msgid "down move"
 msgstr "向下移動"
 
-#: ../src/gui/accelerators.c:3695
+#: ../src/gui/accelerators.c:3690
 msgid "flip top/bottom first/last"
 msgstr "反轉 頂部/底部 第一/最後"
 
-#: ../src/gui/accelerators.c:3776
+#: ../src/gui/accelerators.c:3771
 msgid "fallback to move"
 msgstr "回復上一動"
 
-#: ../src/gui/accelerators.c:3882
+#: ../src/gui/accelerators.c:3877
 #, c-format
 msgid ""
 "\n"
@@ -13599,17 +13599,17 @@ msgstr ""
 "\n"
 "套用的預設集「%s」"
 
-#: ../src/gui/accelerators.c:4032
+#: ../src/gui/accelerators.c:4027
 #, c-format
 msgid "%s not assigned"
 msgstr "「%s」未指定"
 
-#: ../src/gui/accelerators.c:4211
+#: ../src/gui/accelerators.c:4206
 #, c-format
 msgid "%s assigned to %s"
 msgstr "「%s」指定給「%s」"
 
-#: ../src/gui/accelerators.c:4430
+#: ../src/gui/accelerators.c:4425
 msgid "short key press resets stuck keys"
 msgstr "短按按鍵可重置卡住的按鍵"
 
@@ -14410,7 +14410,7 @@ msgstr "開啟（_O）"
 msgid "darktable preset files"
 msgstr "darktable 預設集檔案"
 
-#: ../src/gui/preferences.c:1220 ../src/iop/lut3d.c:1601
+#: ../src/gui/preferences.c:1220 ../src/iop/lut3d.c:1604
 #: ../src/libs/copy_history.c:153 ../src/libs/geotagging.c:968
 #: ../src/libs/styles.c:609
 msgid "all files"
@@ -15672,31 +15672,31 @@ msgstr "非線性、RGB"
 msgid "linear, RGB, display-referred"
 msgstr "線性、RGB、顯示參照"
 
-#: ../src/iop/agx.c:2162
+#: ../src/iop/agx.c:1792
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "基礎曲線參數"
 
-#: ../src/iop/agx.c:2164 ../src/iop/agx.c:2320
+#: ../src/iop/agx.c:1794 ../src/iop/agx.c:1950
 msgctxt "section"
 msgid "curve"
 msgstr "曲線"
 
-#: ../src/iop/agx.c:2172
+#: ../src/iop/agx.c:1802
 msgid "set the pivot's input exposure in EV relative to mid-gray"
 msgstr "設定轉折點相對於中灰的曝光 EV 值"
 
-#: ../src/iop/agx.c:2173
+#: ../src/iop/agx.c:1803
 msgid ""
 "the average luminance of the selected region will be\n"
 "used to set the pivot relative to mid-gray"
 msgstr "從選擇區域的平均亮度自動設定轉折點位置"
 
-#: ../src/iop/agx.c:2183
+#: ../src/iop/agx.c:1813
 msgid "darken or brighten the pivot (linear output power)"
 msgstr "調亮或調暗轉折點的位置（線性輸出乘冪）"
 
-#: ../src/iop/agx.c:2184
+#: ../src/iop/agx.c:1814
 msgid ""
 "the average luminance of the selected region will be\n"
 "used to set the pivot relative to mid-gray,\n"
@@ -15706,11 +15706,11 @@ msgstr ""
 "從選擇區域的平均亮度自動設定轉折點位置\n"
 "並將依據預設的灰至灰映射方式調整轉折點輸出位置"
 
-#: ../src/iop/agx.c:2193
+#: ../src/iop/agx.c:1823
 msgid "slope of the linear section around the pivot"
 msgstr "轉折點附近直線區段的斜率"
 
-#: ../src/iop/agx.c:2199
+#: ../src/iop/agx.c:1829
 msgid ""
 "contrast in highlights\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15721,7 +15721,7 @@ msgstr ""
 "較高的數值讓亮部有更多接近轉折點的斜率，換取明顯的亮部對比\n"
 "但在接近白色時會更突然改變，犧牲極亮部的反差"
 
-#: ../src/iop/agx.c:2203
+#: ../src/iop/agx.c:1833
 msgid ""
 "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
 "without inverting the shoulder (forcing it to bend upwards), it would be\n"
@@ -15740,7 +15740,7 @@ msgstr ""
 "建議增加對比度、將轉折點向上移動（提高轉折點輸出目標）、轉折點向左移動\n"
 "（降低轉折點相對曝光、提高白點相對曝光）等方法以修正錯誤。"
 
-#: ../src/iop/agx.c:2216
+#: ../src/iop/agx.c:1846
 msgid ""
 "contrast in shadows\n"
 "higher values keep the slope nearly constant for longer,\n"
@@ -15751,7 +15751,7 @@ msgstr ""
 "較高的數值讓暗部有更多接近轉折點的斜率，換取明顯的暗部對比\n"
 "但在接近黑色時會更突然改變，犧牲極暗部的反差"
 
-#: ../src/iop/agx.c:2220
+#: ../src/iop/agx.c:1850
 msgid ""
 "the curve has lost its 'S' shape, toe power cannot be applied.\n"
 "without inverting the toe (forcing it to bend downwards), it would be\n"
@@ -15770,36 +15770,36 @@ msgstr ""
 "建議增加對比度、將轉折點向下移動（降低轉折點輸出目標）、轉折點向右移動\n"
 "（提高轉折點相對曝光、降低黑點相對曝光）等方法以修正錯誤。"
 
-#: ../src/iop/agx.c:2239
+#: ../src/iop/agx.c:1869
 msgid "decrease or increase contrast and brightness"
 msgstr "降低或提高對比度和亮度"
 
-#: ../src/iop/agx.c:2244
+#: ../src/iop/agx.c:1874
 msgid "deepen or lift shadows"
 msgstr "加深或拉亮陰影"
 
-#: ../src/iop/agx.c:2248
+#: ../src/iop/agx.c:1878
 msgid "increase or decrease brightness"
 msgstr "增加或降低亮度"
 
-#: ../src/iop/agx.c:2255
+#: ../src/iop/agx.c:1885
 msgid "decrease or increase saturation"
 msgstr "減少或增加飽和度"
 
-#: ../src/iop/agx.c:2262
+#: ../src/iop/agx.c:1892
 msgid "increase to bring hues closer to the original"
 msgstr "提高以使色調更接近原始色彩"
 
-#: ../src/iop/agx.c:2272
+#: ../src/iop/agx.c:1902
 msgctxt "section"
 msgid "look"
 msgstr "外觀"
 
-#: ../src/iop/agx.c:2295
+#: ../src/iop/agx.c:1925
 msgid "show curve"
 msgstr "顯示曲線"
 
-#: ../src/iop/agx.c:2299 ../src/iop/atrous.c:1810
+#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1810
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3018
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3803
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
@@ -15807,16 +15807,16 @@ msgstr "顯示曲線"
 msgid "graph"
 msgstr "圖表"
 
-#: ../src/iop/agx.c:2302
+#: ../src/iop/agx.c:1932
 msgid "tone mapping curve"
 msgstr "階調映射曲線"
 
-#: ../src/iop/agx.c:2315
+#: ../src/iop/agx.c:1945
 msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "進階曲線參數"
 
-#: ../src/iop/agx.c:2333
+#: ../src/iop/agx.c:1963
 msgid ""
 "length to keep curve linear above the pivot.\n"
 "may clip highlights"
@@ -15824,11 +15824,11 @@ msgstr ""
 "設定亮部維持與轉折點相同斜率直線的距離\n"
 "過高的設定可能會因此裁切掉亮部細節"
 
-#: ../src/iop/agx.c:2342
+#: ../src/iop/agx.c:1972
 msgid "max linear output power"
 msgstr "白點的最高輸出亮度"
 
-#: ../src/iop/agx.c:2351
+#: ../src/iop/agx.c:1981
 msgid ""
 "length to keep curve linear below the pivot.\n"
 "may crush shadows"
@@ -15836,11 +15836,11 @@ msgstr ""
 "設定暗部維持與轉折點相同斜率直線的距離\n"
 "過高的設定可能會因此裁切掉暗部細節"
 
-#: ../src/iop/agx.c:2360
+#: ../src/iop/agx.c:1990
 msgid "raise for a faded look"
 msgstr "黑點的最低輸出亮度"
 
-#: ../src/iop/agx.c:2366
+#: ../src/iop/agx.c:1996
 msgid ""
 "adjusts the gamma automatically, trying to make sure\n"
 "the curve always remains S-shaped (given that contrast\n"
@@ -15849,7 +15849,7 @@ msgstr ""
 "自動調整伽瑪值，盡量確保階調映射曲線保持 S 形，\n"
 "在對比度足夠高的情況下，避免肩部與趾部的設定失效。"
 
-#: ../src/iop/agx.c:2375
+#: ../src/iop/agx.c:2005
 msgid ""
 "shifts the representation (but not the output power) of the pivot\n"
 "along the y axis of the curve.\n"
@@ -15860,28 +15860,28 @@ msgstr ""
 "上下移動轉折點的位置，轉折點周圍的直線段斜率不受影響。\n"
 "但暗部和亮部的對比會因此改變，可能需要重新調整肩趾部乘冪與起點。"
 
-#: ../src/iop/agx.c:2386
+#: ../src/iop/agx.c:2016
 msgctxt "section"
 msgid "input exposure range"
 msgstr "輸入曝光範圍"
 
-#: ../src/iop/agx.c:2394
+#: ../src/iop/agx.c:2024
 msgid "relative exposure above mid-gray (white point)"
 msgstr "白點相對高於中灰點的曝光值"
 
-#: ../src/iop/agx.c:2395
+#: ../src/iop/agx.c:2025
 msgid "pick the white point"
 msgstr "選取白點"
 
-#: ../src/iop/agx.c:2403
+#: ../src/iop/agx.c:2033
 msgid "relative exposure below mid-gray (black point)"
 msgstr "黑點相對低於中灰點的曝光值"
 
-#: ../src/iop/agx.c:2404
+#: ../src/iop/agx.c:2034
 msgid "pick the black point"
 msgstr "選取黑點"
 
-#: ../src/iop/agx.c:2412 ../src/iop/filmicrgb.c:4421
+#: ../src/iop/agx.c:2042 ../src/iop/filmicrgb.c:4421
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -15889,44 +15889,44 @@ msgstr ""
 "對稱性地同時擴張或縮減目前的黑白點相對曝光設定數值。\n"
 "有助於為極端的亮度提供安全剩餘量，或是修改自動階調的效果。"
 
-#: ../src/iop/agx.c:2418 ../src/iop/agx.c:2421 ../src/iop/filmic.c:1509
+#: ../src/iop/agx.c:2048 ../src/iop/agx.c:2051 ../src/iop/filmic.c:1509
 #: ../src/iop/filmicrgb.c:4427 ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "自動調整階調"
 
-#: ../src/iop/agx.c:2420
+#: ../src/iop/agx.c:2050
 msgid "set black and white relative exposure using the selected area"
 msgstr "從選擇區域中自動設定黑點與白點"
 
-#: ../src/iop/agx.c:2421 ../src/iop/agx.c:2428
+#: ../src/iop/agx.c:2051 ../src/iop/agx.c:2058
 msgid "exposure range"
 msgstr "曝光範圍"
 
-#: ../src/iop/agx.c:2426
+#: ../src/iop/agx.c:2056
 msgid "read exposure from metadata and exposure module"
 msgstr "從檔案與「曝光」模組中讀取曝光值"
 
-#: ../src/iop/agx.c:2428
+#: ../src/iop/agx.c:2058
 msgid "read exposure"
 msgstr "取得曝光參數"
 
-#: ../src/iop/agx.c:2451
+#: ../src/iop/agx.c:2081
 msgid "blender-like"
 msgstr "類 Blender"
 
-#: ../src/iop/agx.c:2461
+#: ../src/iop/agx.c:2091
 msgid "unmodified"
 msgstr "歸零"
 
-#: ../src/iop/agx.c:2608 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
+#: ../src/iop/agx.c:2238 ../src/iop/sigmoid.c:923 ../src/iop/sigmoid.c:927
 msgid "primaries"
 msgstr "原色"
 
-#: ../src/iop/agx.c:2608
+#: ../src/iop/agx.c:2238
 msgid "color primaries adjustments"
 msgstr "色彩三原色調整"
 
-#: ../src/iop/agx.c:2617
+#: ../src/iop/agx.c:2247
 msgid ""
 "disable purity adjustments and rotations, only applying the curve.\n"
 "note that those adjustments are at the heart of AgX,\n"
@@ -15941,15 +15941,15 @@ msgstr ""
 "\n"
 "此關閉功能主要用於測試目的，取消此勾選可恢復至之前的設定狀態。"
 
-#: ../src/iop/agx.c:2625
+#: ../src/iop/agx.c:2255
 msgid "reset primaries to a predefined configuration"
 msgstr "將原色設定恢復為預設數值"
 
-#: ../src/iop/agx.c:2628
+#: ../src/iop/agx.c:2258
 msgid "reset primaries"
 msgstr "重置設定"
 
-#: ../src/iop/agx.c:2636
+#: ../src/iop/agx.c:2266
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
@@ -15957,41 +15957,41 @@ msgstr ""
 "下方調整所依據的原色\n"
 "匯出用描述檔使用「輸出色彩描述檔」中的設定"
 
-#: ../src/iop/agx.c:2639
+#: ../src/iop/agx.c:2269
 msgctxt "section"
 msgid "before tone mapping"
 msgstr "階調映射之前"
 
-#: ../src/iop/agx.c:2649
+#: ../src/iop/agx.c:2279
 msgid "increase to desaturate reds in highlights faster"
 msgstr "加快高亮度紅色飽和度降低的速度"
 
-#: ../src/iop/agx.c:2656
+#: ../src/iop/agx.c:2286
 msgid "shift the red primary towards yellow (+) or magenta (-)"
 msgstr "紅色主色偏移往黃色（+）或洋紅色（-）"
 
-#: ../src/iop/agx.c:2662
+#: ../src/iop/agx.c:2292
 msgid "increase to desaturate greens in highlights faster"
 msgstr "加快高亮度綠色飽和度降低的速度"
 
-#: ../src/iop/agx.c:2669
+#: ../src/iop/agx.c:2299
 msgid "shift the green primary towards cyan (+) or yellow (-)"
 msgstr "綠色主色偏移往青色（+）或黃色（-）"
 
-#: ../src/iop/agx.c:2675
+#: ../src/iop/agx.c:2305
 msgid "increase to desaturate blues in highlights faster"
 msgstr "加快高亮度藍色飽和度降低的速度"
 
-#: ../src/iop/agx.c:2682
+#: ../src/iop/agx.c:2312
 msgid "shift the blue primary towards magenta (+) or cyan (-)"
 msgstr "藍色主色偏移往洋紅色（+）或青色（-）"
 
-#: ../src/iop/agx.c:2688
+#: ../src/iop/agx.c:2318
 msgctxt "section"
 msgid "after tone mapping"
 msgstr "階調映射之後"
 
-#: ../src/iop/agx.c:2693
+#: ../src/iop/agx.c:2323
 msgid ""
 "completely restore purity, undo all rotations, and hide\n"
 "the controls below. uncheck to restore the previous state."
@@ -15999,11 +15999,11 @@ msgstr ""
 "關閉色彩純度與反向旋轉設定效果，並隱藏下方滑桿。\n"
 "取消此勾選可恢復至之前的設定狀態。"
 
-#: ../src/iop/agx.c:2696
+#: ../src/iop/agx.c:2326
 msgid "set from above"
 msgstr "依據上方設定"
 
-#: ../src/iop/agx.c:2698
+#: ../src/iop/agx.c:2328
 msgid ""
 "set parameters to completely reverse primaries modifications,\n"
 "but allow subsequent editing"
@@ -16011,78 +16011,78 @@ msgstr ""
 "參數設定為完全反轉原色的修改，\n"
 "但允許從下方滑桿進行後續編輯"
 
-#: ../src/iop/agx.c:2711
+#: ../src/iop/agx.c:2341
 msgid "overall purity boost"
 msgstr "整體顏色純度"
 
-#: ../src/iop/agx.c:2719
+#: ../src/iop/agx.c:2349
 msgid "overall unrotation ratio"
 msgstr "整體色彩反轉率"
 
-#: ../src/iop/agx.c:2723
+#: ../src/iop/agx.c:2353
 msgid "restore the purity of red, mostly in midtones and shadows"
 msgstr "恢復紅色的純淨度，尤其是中間調和陰影"
 
-#: ../src/iop/agx.c:2730
+#: ../src/iop/agx.c:2360
 msgid "reverse the color shift in reds"
 msgstr "反轉紅色中的顏色偏移"
 
-#: ../src/iop/agx.c:2736
+#: ../src/iop/agx.c:2366
 msgid "restore the purity of green, mostly in midtones and shadows"
 msgstr "恢復綠色的純淨度，尤其是中間調和陰影"
 
-#: ../src/iop/agx.c:2743
+#: ../src/iop/agx.c:2373
 msgid "reverse the color shift in greens"
 msgstr "反轉綠色中的顏色偏移"
 
-#: ../src/iop/agx.c:2749
+#: ../src/iop/agx.c:2379
 msgid "restore the purity of blue, mostly in midtones and shadows"
 msgstr "恢復藍色的純淨度，尤其是中間調和陰影"
 
-#: ../src/iop/agx.c:2756
+#: ../src/iop/agx.c:2386
 msgid "reverse the color shift in blues"
 msgstr "反轉藍色中的顏色偏移"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/agx.c:2808 ../src/iop/temperature.c:2077
+#: ../src/iop/agx.c:2438 ../src/iop/temperature.c:2077
 #: ../src/iop/temperature.c:2090 ../src/iop/temperature.c:2097
 #: ../src/iop/temperature.c:2103 ../src/iop/temperature.c:2111
 #: ../src/iop/temperature.c:2130
 msgid "settings"
 msgstr "設定"
 
-#: ../src/iop/agx.c:2809
+#: ../src/iop/agx.c:2439
 msgid "main look and curve settings"
 msgstr "主要外觀與曲線設定"
 
-#: ../src/iop/agx.c:2818
+#: ../src/iop/agx.c:2448
 msgid "detailed curve settings"
 msgstr "細部曲線設定"
 
-#: ../src/iop/agx.c:2915
+#: ../src/iop/agx.c:2545
 msgid "unmodified base primaries"
 msgstr "原色設定歸零"
 
-#: ../src/iop/agx.c:2924
+#: ../src/iop/agx.c:2554
 msgid "blender-like|base"
 msgstr "類 Blender | 基礎"
 
-#: ../src/iop/agx.c:2930
+#: ../src/iop/agx.c:2560
 msgid "blender-like|punchy"
 msgstr "類 Blender | 強烈"
 
-#: ../src/iop/agx.c:2945 ../src/iop/channelmixerrgb.c:397
+#: ../src/iop/agx.c:2575 ../src/iop/channelmixerrgb.c:397
 #: ../src/iop/exposure.c:334 ../src/iop/filmicrgb.c:3209
 #: ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "場景參照流程預設值"
 
-#: ../src/iop/agx.c:2961
+#: ../src/iop/agx.c:2591
 msgid "smooth|base"
 msgstr "平滑 | 基本"
 
-#: ../src/iop/agx.c:2965
+#: ../src/iop/agx.c:2595
 msgid "smooth|punchy"
 msgstr "平滑 | 強力"
 
@@ -16818,7 +16818,7 @@ msgstr "剪裁"
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "調整自動計算曝光的剪裁臨界值"
 
-#: ../src/iop/bilat.c:74 ../src/iop/clahe.c:61
+#: ../src/iop/bilat.c:74
 msgid "local contrast"
 msgstr "局部對比度"
 
@@ -17010,7 +17010,7 @@ msgstr ""
 "模組中顯示的圖形表示模糊的形狀"
 
 #. add the tooltips
-#: ../src/iop/blurs.c:794
+#: ../src/iop/blurs.c:807
 msgid ""
 "size of the blur in pixels\n"
 "<b>caution</b>: doubling the radius quadruples the run-time!"
@@ -17018,11 +17018,11 @@ msgstr ""
 "以像素為單位的模糊尺寸\n"
 "<b>注意</b>：半徑加倍會讓運算時間變成四倍！"
 
-#: ../src/iop/blurs.c:796
+#: ../src/iop/blurs.c:809
 msgid "shifts towards a star shape as value approaches blades-1"
 msgstr "當數值接近 -1 時，形狀漸趨星形"
 
-#: ../src/iop/blurs.c:798
+#: ../src/iop/blurs.c:811
 msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
@@ -17030,21 +17030,21 @@ msgstr ""
 "調整邊緣的直線度\n"
 "從 0=正圓 到 1=完全筆直"
 
-#: ../src/iop/blurs.c:799
+#: ../src/iop/blurs.c:812
 msgid "set amount by which to rotate shape around its center"
 msgstr "設定形狀繞其中心旋轉的量"
 
-#: ../src/iop/blurs.c:801
+#: ../src/iop/blurs.c:814
 msgid "orientation of the motion's path"
 msgstr "運動路徑的方向"
 
-#: ../src/iop/blurs.c:802
+#: ../src/iop/blurs.c:815
 msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
 msgstr "相對於整體運動方向的彎曲量"
 
-#: ../src/iop/blurs.c:803
+#: ../src/iop/blurs.c:816
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
@@ -18235,6 +18235,10 @@ msgid ""
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "Choleski 分解無法分配記憶體，請檢查記憶體設定"
+
+#: ../src/iop/clahe.c:61
+msgid "old local contrast"
+msgstr "舊式局部對比"
 
 #: ../src/iop/clahe.c:71
 msgid ""
@@ -22826,7 +22830,7 @@ msgstr "PNG 檔案中的色階 %d %d 無效"
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr "此版本 darktable 不相容壓縮的 CLUT"
 
-#: ../src/iop/lut3d.c:558 ../src/iop/lut3d.c:810
+#: ../src/iop/lut3d.c:558 ../src/iop/lut3d.c:813
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
 msgstr ""
@@ -22846,127 +22850,127 @@ msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "無法讀取 PNG 影像「%s」"
 
-#: ../src/iop/lut3d.c:588
+#: ../src/iop/lut3d.c:590
 msgid "error - allocating buffer for png LUT"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "分配 PNG LUT 緩衝區時出錯"
 
-#: ../src/iop/lut3d.c:763
+#: ../src/iop/lut3d.c:766
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "無效的 cube 檔案「%s」"
 
-#: ../src/iop/lut3d.c:777
+#: ../src/iop/lut3d.c:780
 msgid "DOMAIN MIN other than 0 is not supported"
 msgstr "不支援 0 以外的 DOMAIN MIN"
 
-#: ../src/iop/lut3d.c:789
+#: ../src/iop/lut3d.c:792
 msgid "DOMAIN MAX other than 1 is not supported"
 msgstr "不支援 1 以外的 DOMAIN MAX"
 
-#: ../src/iop/lut3d.c:799
+#: ../src/iop/lut3d.c:802
 msgid "1D cube LUT is not supported"
 msgstr "不支援一維 LUT"
 
-#: ../src/iop/lut3d.c:821
+#: ../src/iop/lut3d.c:824
 msgid "error - allocating buffer for cube LUT"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "分配 cube LUT「%s」緩衝區時出錯"
 
-#: ../src/iop/lut3d.c:832
+#: ../src/iop/lut3d.c:835
 msgid "error - cube LUT size is not defined"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "未定義 LUT 尺寸"
 
-#: ../src/iop/lut3d.c:843
+#: ../src/iop/lut3d.c:846
 #, c-format
 msgid "error - cube LUT invalid number line %d"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "cube LUT 第 %d 行數值無效"
 
-#: ../src/iop/lut3d.c:859
+#: ../src/iop/lut3d.c:862
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "cube LUT 第 %d 行數值無效，應為 %d"
 
-#: ../src/iop/lut3d.c:869
+#: ../src/iop/lut3d.c:872
 #, c-format
 msgid "warning - cube LUT has %d values out of range [0,1]"
 msgstr ""
 "⚠️ 警告 ⚠️\n"
 "cube LUT 中 %d 超出數值範圍範圍 [0,1]"
 
-#: ../src/iop/lut3d.c:894
+#: ../src/iop/lut3d.c:897
 #, c-format
 msgid "error - invalid 3dl file: %s"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "無效的 3DL 檔案「%s」"
 
-#: ../src/iop/lut3d.c:915
+#: ../src/iop/lut3d.c:918
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "LUT 最大值 %d 過低"
 
-#: ../src/iop/lut3d.c:926
+#: ../src/iop/lut3d.c:929
 msgid "error - allocating buffer for 3dl LUT"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "分配 PNG LUT 緩衝區時出錯"
 
-#: ../src/iop/lut3d.c:939
+#: ../src/iop/lut3d.c:942
 msgid "error - 3dl LUT size is not defined"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "未定義 LUT 尺寸"
 
-#: ../src/iop/lut3d.c:967
+#: ../src/iop/lut3d.c:970
 msgid "error - 3dl LUT lines number is not correct"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "3dl LUT 行數不正確"
 
-#: ../src/iop/lut3d.c:983
+#: ../src/iop/lut3d.c:986
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "LUT 最大值不符合任何有效的色彩深度"
 
-#: ../src/iop/lut3d.c:1563
+#: ../src/iop/lut3d.c:1566
 msgid "LUT root folder not defined"
 msgstr "未定義 LUT 根目錄，請至「偏好設定」〉「運算方法」中定義"
 
-#: ../src/iop/lut3d.c:1569
+#: ../src/iop/lut3d.c:1572
 msgid "select LUT file"
 msgstr "選擇 LUT 檔案"
 
-#: ../src/iop/lut3d.c:1570 ../src/iop/rasterfile.c:262
+#: ../src/iop/lut3d.c:1573 ../src/iop/rasterfile.c:262
 msgid "_select"
 msgstr "選擇（_S）"
 
-#: ../src/iop/lut3d.c:1590
+#: ../src/iop/lut3d.c:1593
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
 msgstr "hald CLUT, 3D LUT, gmic LUT"
 
-#: ../src/iop/lut3d.c:1592
+#: ../src/iop/lut3d.c:1595
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
 msgstr "hald CLUT, 3D LUT"
 
-#: ../src/iop/lut3d.c:1616
+#: ../src/iop/lut3d.c:1619
 msgid "select file outside LUT root folder is not allowed"
 msgstr "不能選擇 LUT 根目錄之外的檔案"
 
-#: ../src/iop/lut3d.c:1684
+#: ../src/iop/lut3d.c:1687
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -22980,7 +22984,7 @@ msgstr ""
 "僅有 gmic 壓縮 LUT（gmz）格式可以儲存完整數據在 XMP 文件裡\n"
 "因此，自行正確備份 3D LUT 檔案非常重要"
 
-#: ../src/iop/lut3d.c:1688
+#: ../src/iop/lut3d.c:1691
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -22993,37 +22997,37 @@ msgstr ""
 "僅有 gmic 壓縮 LUT（gmz）格式可以儲存完整數據在 XMP 文件裡\n"
 "因此，自行正確備份 3D LUT 檔案非常重要"
 
-#: ../src/iop/lut3d.c:1697
+#: ../src/iop/lut3d.c:1700
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
 msgstr "若使用 gmic 壓縮 LUT，將 gmz 檔案路徑與影像一併儲存"
 
-#: ../src/iop/lut3d.c:1700
+#: ../src/iop/lut3d.c:1703
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
 msgstr "僅儲存 gmz 的檔案路徑（相對於 LUT 根目錄），而非 LUT 資料本身"
 
-#: ../src/iop/lut3d.c:1709
+#: ../src/iop/lut3d.c:1712
 msgid "enter LUT name"
 msgstr "輸入 LUT 名稱"
 
-#: ../src/iop/lut3d.c:1724
+#: ../src/iop/lut3d.c:1727
 msgid "select the LUT"
 msgstr "選取 LUT"
 
-#: ../src/iop/lut3d.c:1741
+#: ../src/iop/lut3d.c:1744
 msgid "select the color space in which the LUT has to be applied"
 msgstr ""
 "選擇套用 LUT 時使用的色彩空間\n"
 "LUT 是在特定色彩空間中定義的，選擇對應的色彩空間才能呈現正確外觀"
 
-#: ../src/iop/lut3d.c:1743
+#: ../src/iop/lut3d.c:1746
 msgid "interpolation"
 msgstr "內插法"
 
-#: ../src/iop/lut3d.c:1744
+#: ../src/iop/lut3d.c:1747
 msgid "select the interpolation method"
 msgstr ""
 "選擇 LUT 使用的內插計算方法\n"
@@ -27583,7 +27587,7 @@ msgstr "顯示模組"
 msgid "presets and preferences"
 msgstr "預設與偏好設定"
 
-#: ../src/libs/lib.c:1596
+#: ../src/libs/lib.c:1598
 msgid "utility module"
 msgstr "工具模組"
 
@@ -31641,9 +31645,6 @@ msgstr "滑鼠動作"
 
 #~ msgid "black & white film"
 #~ msgstr "黑白底片"
-
-#~ msgid "add local contrast"
-#~ msgstr "增加局部對比"
 
 #~ msgid "fast sharpness"
 #~ msgstr "快速銳利化"

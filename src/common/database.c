@@ -4002,17 +4002,24 @@ lock_again:
       fd = g_open(*lockfile, O_RDWR | O_CREAT, 0666);
       if(fd != -1)
       {
-        int foo;
-        if((foo = read(fd, buf, sizeof(buf) - 1)) > 0)
+        const int bytes_read = read(fd, buf, sizeof(buf) - 1);
+        if(bytes_read > 0)
         {
           db->error_other_pid = atoi(buf);
           if(!pid_is_alive(db->error_other_pid))
           {
-            // the other process seems to no longer exist. unlink the .lock file and try again
+            // The other process appears to no longer exist. So we can safely
+            // unlink the .lock file and try again, hopefully we will be able
+            // to create a new .lock file and thus take over the lock.
+            close(fd);  // close the file, otherwise g_unlink will fail
             g_unlink(*lockfile);
+            // Let's limit the number of attempts. This avoids a theoretically
+            // possible infinite loop if, after unlinking the lock file, we
+            // cannot create it for some reason and end up here again.
+            // Not that this is a realistically expected situation in practice,
+            // but still...
             if(lock_tries < 5)
             {
-              close(fd);
               goto lock_again;
             }
           }
@@ -4024,14 +4031,15 @@ lock_again:
             db->error_message
               = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"),
                                 db->error_other_pid);
+            close(fd);
           }
         }
         else
         {
           dt_print(DT_DEBUG_ALWAYS, "[init] the database lock file seems to be empty");
           db->error_message = g_strdup_printf(_("the database lock file seems to be empty"));
+          close(fd);
         }
-        close(fd);
       }
       else
       {
