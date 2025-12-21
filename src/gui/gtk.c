@@ -1781,7 +1781,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* connect to signal redraw all */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_ALL, _ui_widget_redraw_callback, gui->ui->main_window);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_ALL,
+                            _ui_widget_redraw_callback, gui->ui->main_window);
 
   container = widget;
 
@@ -2462,8 +2463,9 @@ static gboolean _side_panel_draw(GtkWidget *widget,
                                  cairo_t *cr,
                                  gpointer user_data)
 {
-  // in lighttable view, if there are no thumbs displayed in the center view, we have lines to
-  // modules which need to be updated as we expand and collapse modules in the side panels
+  // in lighttable view, if there are no thumbs displayed in the
+  // center view, we have lines to modules which need to be updated as
+  // we expand and collapse modules in the side panels
   if(darktable.collection
      && dt_view_get_current() == DT_VIEW_LIGHTTABLE
      && dt_collection_get_count(darktable.collection) == 0)
