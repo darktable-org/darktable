@@ -333,7 +333,7 @@ static void _set_sample_box_area(dt_lib_module_t *self,
 }
 
 static void _set_sample_point(dt_lib_module_t *self,
-                              const float pos[2])
+                              const dt_pickerpoint_t pos)
 {
   dt_lib_colorpicker_t *data = self->data;
 
@@ -701,6 +701,9 @@ void gui_init(dt_lib_module_t *self)
   // _update_samples_output() will update the RGB values
   data->primary_sample.swatch.alpha = 1.0;
 
+  dt_lib_colorpicker_reset_box_area(data->primary_sample.box);
+  dt_lib_colorpicker_reset_point(data->primary_sample.point);
+
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
   darktable.lib->proxy.colorpicker.display_samples =
@@ -772,7 +775,8 @@ void gui_init(dt_lib_module_t *self)
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
   gtk_widget_set_tooltip_text
     (data->picker_button,
-     _("turn on color picker\nctrl+click or right-click to select an area"));
+     _("turn on color picker\nctrl+click or right-click to select an area\n"
+       "ctrl+click on canvas to switch between point/area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled",
                    G_CALLBACK(_picker_button_toggled), data);
