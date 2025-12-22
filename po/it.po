@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-12 17:13+0100\n"
-"PO-Revision-Date: 2025-12-12 16:15+0100\n"
+"PO-Revision-Date: 2025-12-22 02:34+0100\n"
 "Last-Translator: Elia Devito <eliadevito@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -16229,10 +16229,7 @@ msgstr "ripristina i colori primari a una configurazione predefinita"
 
 #: ../src/iop/agx.c:2258
 msgid "reset primaries"
-msgstr ""
-"Primari dello spazio colore da usare come base per le regolazioni "
-"sottostanti. 'profilo di esportazione' usa il profilo impostato in 'profilo "
-"colore di output'"
+msgstr "Ripristina primari"
 
 #: ../src/iop/agx.c:2266
 msgid ""
