@@ -123,6 +123,20 @@ Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\c
   ValueType: string; Flags: uninsdeletekey; \
   ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
 
+;
+; Add "Import into darktable" menu item to the right-click context menu on images.
+; Files that are not images will not be affected due to the "AppliesTo" filter.
+;
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "Import into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueName: "AppliesTo"; ValueData: "System.Kind:=picture"
+Root: HKA; Subkey: "SOFTWARE\Classes\*\shell\ImportImageIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
   ValueType: string; Flags: uninsdeletevalue; \
