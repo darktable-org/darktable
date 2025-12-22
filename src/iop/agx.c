@@ -2272,7 +2272,7 @@ static void _create_primaries_page(dt_iop_module_t *main,
   gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
   g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), main);
 
-  g->primaries_controls_vbox = dt_gui_vbox(dt_gui_hbox(gtk_label_new(_("reset primaries")),
+  g->primaries_controls_vbox = dt_gui_vbox(dt_gui_hbox(dt_ui_label_new(_("reset primaries")),
                                                        dt_gui_align_right(primaries_button)));
   dt_gui_box_add(page_primaries, g->primaries_controls_vbox);
 
