@@ -3050,7 +3050,7 @@ static void _buttons_update(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-    char *tooltip = g_strdup_printf("%s\nright-click tab icon to add/remove modules", gr->name);
+    char *tooltip = g_strdup_printf(_("%s\nright-click tab icon to add/remove modules"), gr->name);
     gtk_widget_set_tooltip_text(bt, tooltip);
     g_free(tooltip);
     gr->button = bt;
