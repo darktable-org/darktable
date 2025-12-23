@@ -672,14 +672,19 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                              const char *filename,
                                              const int intent)
 {
-  gboolean error = FALSE;
-  cmsHPROFILE *rgb_profile = NULL;
-
   _mark_as_nonmatrix_profile(profile_info);
   _clear_lut_curves(profile_info);
 
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.1842f;
+
+  if(type == DT_COLORSPACE_FILE
+    && (!filename || !filename[0] || !g_file_test(filename, G_FILE_TEST_IS_REGULAR)))
+  {
+    dt_print(DT_DEBUG_PARAMS, "[generate_profile_info] icc profile '%s' not available",
+      filename ? filename : "???");
+    return TRUE;
+  }
 
   profile_info->type = type;
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
@@ -690,21 +695,13 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
 
   const dt_colorspaces_color_profile_t *profile =
     dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
-  if(profile)
-    rgb_profile = profile->profile;
+
+  cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
 
   if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
-
-  if(filename[0])
-    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'",
-      filename,
-      (char)(rgb_profile_color_space>>24),
-      (char)(rgb_profile_color_space>>16),
-      (char)(rgb_profile_color_space>>8),
-      (char)(rgb_profile_color_space));
 
   // get the matrix
   if(rgb_profile)
@@ -769,7 +766,17 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                            profile_info->nonlinearlut);
   }
 
-  return error;
+  if(type == DT_COLORSPACE_FILE)
+    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space %c%c%c%c%s%s",
+      filename,
+      (char)(rgb_profile_color_space>>24),
+      (char)(rgb_profile_color_space>>16),
+      (char)(rgb_profile_color_space>>8),
+      (char)(rgb_profile_color_space),
+      dt_is_valid_colormatrix(profile_info->matrix_in[0][0]) ? "" : " NO matrix provided",
+      profile_info->nonlinearlut ? " nonlinearlut" : "");
+
+  return FALSE;
 }
 
 dt_iop_order_iccprofile_info_t *
