@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/imagebuf.h"
 #include "common/matrices.h"
+#include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
@@ -878,6 +879,9 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
+  if(!profile_info && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+      dt_control_log(_("work icc profile '%s' missing"), filename);
+
   if(profile_info == NULL
      || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
      || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
@@ -906,6 +910,9 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL)
   {
+    if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+      dt_control_log(_("input icc profile '%s' missing"), filename);
+
     dt_print(DT_DEBUG_PIPE,
              "[dt_ioppr_set_pipe_input_profile_info] profile `%s' in `%s'"
              " replaced by linear Rec2020",
@@ -938,6 +945,9 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+
+  if(!profile_info && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+    dt_control_log(_("output icc profile '%s' missing"), filename);
 
   if(profile_info == NULL
      || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
