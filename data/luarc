@@ -20,6 +20,12 @@ ipairs = function(t)
   end
 end
 
-require "tools/script_manager"
+local dt = require "darktable"
+
+-- make sure we don't hang darktable when starting the scripts
+
+if dt.has_gui then
+  require "tools/script_manager"
+end
 
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
