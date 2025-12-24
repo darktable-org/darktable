@@ -92,7 +92,8 @@ typedef struct dt_control_export_t
                                    // resets things like overwrite
                                    // once the export
   // is dispatched, but we have to keep that information
-  gboolean high_quality, upscale, export_masks;
+  gboolean high_quality, upscale, export_masks, is_scaling;
+  double scale_factor;
   char style[128];
   gboolean style_append;
   dt_colorspaces_color_profile_type_t icc_type;
@@ -1884,14 +1885,6 @@ static int32_t _control_export_job_run(dt_job_t *job)
                     "\x1b%G");  // ESC % G
   }
 
-  // scaling
-  const gboolean is_scaling =
-    dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
-
-  double _num, _denum;
-  dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
-  const double scale_factor = is_scaling? _num / _denum : 1.0;
-
   dt_export_metadata_t metadata;
   metadata.flags = 0;
   metadata.list = dt_util_str_to_glist("\1", settings->metadata_export);
@@ -1934,7 +1927,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
         dt_image_cache_read_release(image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata,
                            num, total, settings->high_quality, settings->upscale,
-                           is_scaling, scale_factor,
+                           settings->is_scaling, settings->scale_factor,
                            settings->export_masks, settings->icc_type,
                            settings->icc_filename, settings->icc_intent,
                            &metadata) != 0)
@@ -2533,6 +2526,8 @@ void dt_control_export(GList *imgid_list,
                        const gboolean high_quality,
                        const gboolean upscale,
                        const gboolean dimensions_scale,
+                       const gboolean is_scaling,
+                       const double scale_factor,
                        const gboolean export_masks,
                        char *style,
                        const gboolean style_append,
@@ -2574,6 +2569,8 @@ void dt_control_export(GList *imgid_list,
   data->export_masks = export_masks;
   data->upscale = ((max_width == 0 && max_height == 0)
                    && !dimensions_scale) ? FALSE : upscale;
+  data->is_scaling = is_scaling;
+  data->scale_factor = scale_factor;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   data->icc_type = icc_type;
