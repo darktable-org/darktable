@@ -1,10 +1,11 @@
+# SPDX-FileCopyrightText: 2015-2025 Báthory Péter <bathory86p@gmail.com>
 # SPDX-FileCopyrightText: 2025 osiixy <osiixy@gmail.com>
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-28 18:37+0100\n"
-"PO-Revision-Date: 2025-12-05 23:49+0100\n"
+"PO-Revision-Date: 2025-12-24 23:18+0100\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -1640,8 +1641,8 @@ msgid ""
 "your graphics card(s).\n"
 "can be switched on and off at any time."
 msgstr ""
-"ha megtalálja, a rendszer OpenCL futtatókörnyezetét használja, hogy "
-"felgyorsítsa a feldolgozást a grafikus kártyák használatával.\n"
+"ha a rendszer megtalálja az OpenCL futtatókörnyezetet, akkor azt használja, "
+"hogy felgyorsítsa a feldolgozást a grafikus kártyák használatával.\n"
 "bármikor be- és kikapcsolható."
 
 #: ../build/bin/preferences_gen.h:3539
@@ -1867,14 +1868,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3966
 msgid "auto login to storage server"
-msgstr "automatikus bejelentkezés tárhely szolgáltatóra"
+msgstr "automatikus bejelentkezés tárhelykiszolgálóra"
 
 #: ../build/bin/preferences_gen.h:3974
 msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
 msgstr ""
-"automatikus bejelentkezés a beállított tárhely kiszolgálóra. ehhez egy "
+"automatikus bejelentkezés a beállított tárhelykiszolgálóra. ehhez egy "
 "beállított jelszókezelő szükséges."
 
 #: ../build/bin/preferences_gen.h:3983
@@ -2407,7 +2408,7 @@ msgstr "kék LED megvilágítás javítása (erős)"
 
 #: ../build/bin/styles_string.h:9
 msgid "camera styles"
-msgstr "kamerastílusok"
+msgstr "fényképezőstílusok"
 
 #: ../build/bin/styles_string.h:10 ../src/libs/image.c:621
 msgid "colors"
@@ -2418,12 +2419,12 @@ msgid ""
 "composite four images plus a caption into an image which can be printed "
 "borderless on 8.5x11 paper"
 msgstr ""
-"négy kép összeállítása felirattal egy képbe, ami egy szegély nélküli 8.5x11 "
+"négy kép összeállítása felirattal egy képpé, ami egy szegély nélküli 8.5x11 "
 "inch-es (215.9x279.4 mm-es) papírra kinyomtatható"
 
 #: ../build/bin/styles_string.h:12
 msgid "contrast and sharpness"
-msgstr "kontraszt és árnyék"
+msgstr "kontraszt és élesség"
 
 #: ../build/bin/styles_string.h:13
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:284
@@ -2461,8 +2462,8 @@ msgid ""
 "desaturate and darken red pupils in flash photos.  add drawn masks to limit "
 "affected areas to just the eyes if necessary."
 msgstr ""
-"a vörös pupillák színének csökkentése és sötétítése vakus fényképeken. "
-"Rajzoljon maszkot, ha szükséges, hogy csak a szemekre korlátozza az érintett "
+"a vörös pupillák telítettségét csökkenti és sötétíti vakus fényképeken. "
+"rajzoljon maszkot, ha szükséges, hogy csak a szemekre korlátozza az érintett "
 "területeket."
 
 #: ../build/bin/styles_string.h:19
@@ -2492,7 +2493,7 @@ msgid ""
 "fine-tune the selected color by adjusting the 'node placement' slider in "
 "color equalizer"
 msgstr ""
-"a kiválasztott szín finomhangolása a 'csomópontok helye' csúszkák "
+"a kiválasztott szín finomhangolása a „csomópontok helye” csúszkák "
 "állításával a szín kiegyenlítőben"
 
 #: ../build/bin/styles_string.h:25
@@ -2543,7 +2544,8 @@ msgstr "bíbor"
 #: ../build/bin/styles_string.h:29
 msgid "make a photo taken in daylight look like it was taken in twilight"
 msgstr ""
-"nappali fényben készült kép átalakítás úgy, mintha szürkületben készült volna"
+"nappali fényben készült kép átalakítása úgy, mintha szürkületben készült "
+"volna"
 
 #: ../build/bin/styles_string.h:30
 msgid ""
@@ -2551,7 +2553,7 @@ msgid ""
 "emulates the cinematic technique of the same name."
 msgstr ""
 "teljes nappali fényben készült kép átalakítás úgy, mintha szürkületben "
-"készült volna. Azonos nevű filmes technikát emulál."
+"készült volna. az azonos nevű filmes technikát emulálja."
 
 #: ../build/bin/styles_string.h:31
 msgid "motion blur"
@@ -5750,7 +5752,7 @@ msgid ""
 "darktable manages your camera raw files and images in a database, lets you "
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"a darktable adatbázist épít a camera raw fájlokból és képekből, és lehetővé "
+"A darktable adatbázist épít a camera raw fájlokból és képekből, és lehetővé "
 "teszi a nézegetésüket átvilágító asztal módban, valamint javításukat és "
 "kidolgozásukat sötétkamra módban."
 
@@ -5767,7 +5769,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"a darktable támogatja a legtöbb modern kamera raw formátumát, a "
+"A darktable támogatja a legtöbb modern fényképező raw formátumát, a "
 "feldolgozásukat pedig nagy pontossággal végzi."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:5
@@ -6064,8 +6066,8 @@ msgid ""
 msgstr ""
 "„%s” fényképező „%s” porton, hiba %s\n"
 "\n"
-"győződjön meg róla, hogy a kamera engedélyezi az elérést és nincs másként "
-"csatolva"
+"győződjön meg arról, hogy a fényképező engedélyezi az hozzáférést, és nincs "
+"másként csatolva"
 
 #: ../src/common/camera_control.c:947
 #, c-format
@@ -6839,7 +6841,7 @@ msgstr "hely másolatok szinkronizálása"
 #. lighttable!
 #: ../src/common/darktable.c:1853
 msgid "initializing camera control"
-msgstr "kameravezérlés előkészítése"
+msgstr "fényképező vezérlésének előkészítése"
 
 #: ../src/common/darktable.c:1863
 msgid "initializing GUI"
@@ -7265,7 +7267,7 @@ msgid ""
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
-"nincs írási joga legkevesebb az egyik darktable adatbázishoz\n"
+"nincs írási joga legalább az egyik darktable adatbázishoz\n"
 "\n"
 "<span style='italic'>%s</span>\n"
 "<span style='italic'>%s</span>\n"
@@ -8039,7 +8041,7 @@ msgstr "manuális WB"
 
 #: ../src/common/wb_presets.c:92
 msgid "camera WB"
-msgstr "kamera WB"
+msgstr "fényképező WB"
 
 #: ../src/common/wb_presets.c:93
 msgid "auto WB"
@@ -11289,12 +11291,12 @@ msgstr "$(EXIF.FOCUS.DISTANCE) – EXIF fókusztávolság"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:941
 #: ../src/gui/gtkentry.c:89
 msgid "$(EXIF.MAKER) - camera maker"
-msgstr "$(EXIF.MAKER) – kamera gyártó"
+msgstr "$(EXIF.MAKER) – fényképező gyártó"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:942
 #: ../src/gui/gtkentry.c:90
 msgid "$(EXIF.MODEL) - camera model"
-msgstr "$(EXIF.MODEL) – kamera modell"
+msgstr "$(EXIF.MODEL) – fényképező modell"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:943
 #: ../src/gui/gtkentry.c:91
@@ -11480,7 +11482,7 @@ msgstr "kamerstílus alkalmazása"
 #. name of script
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:95
 msgid "apply darktable camera style to matching images"
-msgstr "draktable kamerastílus alkalmazása az egyező képekre"
+msgstr "draktable fényképezőstílus alkalmazása az egyező képekre"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -11525,7 +11527,7 @@ msgstr "draktable kamerastílus alkalmazása az egyező képekre"
 #. strip off the maker name
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:381
 msgid "applying camera styles to images"
-msgstr "kamerastílusok alkalmazása képekre"
+msgstr "fényképezőstílusok alkalmazása képekre"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
@@ -11541,11 +11543,11 @@ msgstr "kamerastílusok alkalmazása képekre"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:474
 msgid "apply darktable camera styles to collection"
-msgstr "draktable kamerastílus alkalmazása a gyűjteményre"
+msgstr "draktable fényképezőstílus alkalmazása a gyűjteményre"
 
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:480
 msgid "apply darktable camera styles to selection"
-msgstr "draktable kamerastílus alkalmazása a kiválasztásra"
+msgstr "draktable fényképezőstílus alkalmazása a kiválasztásra"
 
 #.
 #. This file is part of darktable,
@@ -13835,32 +13837,32 @@ msgstr "Nézetek"
 #: ../src/gui/gtk.c:1310
 msgctxt "menu"
 msgid "Lighttable"
-msgstr "átvilágító"
+msgstr "Átvilágító"
 
 #: ../src/gui/gtk.c:1311
 msgctxt "menu"
 msgid "Darkroom"
-msgstr "sötétkamra"
+msgstr "Sötétkamra"
 
 #: ../src/gui/gtk.c:1317
 msgctxt "menu"
 msgid "Slideshow"
-msgstr "diavetítés"
+msgstr "Diavetítés"
 
 #: ../src/gui/gtk.c:1319
 msgctxt "menu"
 msgid "Map"
-msgstr "térkép"
+msgstr "Térkép"
 
 #: ../src/gui/gtk.c:1321
 msgctxt "menu"
 msgid "Print"
-msgstr "nyomtatás"
+msgstr "Nyomtatás"
 
 #: ../src/gui/gtk.c:1323
 msgctxt "menu"
 msgid "Tethering"
-msgstr "tethering"
+msgstr "Tethering"
 
 #. Window menu
 #: ../src/gui/gtk.c:1329
@@ -14832,7 +14834,7 @@ msgstr "tárolt beállítás törlése"
 
 #: ../src/gui/presets.c:1811 ../src/libs/lib.c:559
 msgid "store new preset.."
-msgstr "új beállítás eltárolás…"
+msgstr "új beállítás eltárolása…"
 
 #: ../src/gui/presets.c:1821 ../src/libs/lib.c:573
 msgid "update preset"
@@ -16802,7 +16804,7 @@ msgid ""
 "apply a view transform based on personal or camera maker look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
-"nézet transzformációt végez, személyes vagy kamera gyártói nézet alapján,\n"
+"nézettranszformációt végez, személyes vagy fényképezőgyártói nézet alapján,\n"
 "korrekciós célból, hogy megjelenítéshez előkészítse a képet"
 
 #: ../src/iop/basecurve.c:372 ../src/iop/cacorrect.c:81
@@ -17129,7 +17131,7 @@ msgstr ""
 
 #: ../src/iop/blurs.c:89
 msgid "simulate physically-accurate lens and motion blurs"
-msgstr "fizikailag pontos lencse és bemozdulásos elmosódást szimulál"
+msgstr "fizikailag pontos lencsé és bemozdulásos elmosódást szimulál"
 
 #. add the tooltips
 #: ../src/iop/blurs.c:807
@@ -20060,7 +20062,7 @@ msgid ""
 "Note: a radius set to zero will be recalculated automatically the next run. "
 "use for presets"
 msgstr ""
-"a felvétel élesítési sugarának tükröznie kell a kamera érzékelőjének,\n"
+"a felvétel élesítési sugarának tükröznie kell a fényképező érzékelőjének,\n"
 "esetleg az antialias-szűrőnek és a lencsének az általános gauss-"
 "elmosódását.\n"
 "túlzottan megnövelve olyan műtermékek jelennek meg, mint\n"
@@ -20230,7 +20232,7 @@ msgid ""
 "dynamic range / HLG tone modes."
 msgstr ""
 "ha engedélyezve van, a zajszűréshez használt ISO-t\n"
-"csökkenti a kamera által a\n"
+"csökkenti a fényképező által a\n"
 "HDR / csúcsfénymegőrzés / dinamikatartomány / HLG-tónus\n"
 "módokban alkalmazott, rejtett expozíció-eltolásának tényezőjével."
 
@@ -20879,7 +20881,7 @@ msgid ""
 "when enabled on an image with nonzero bias, tone mapping\n"
 "(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
-"eltávolítja a kamera rejtett expozíció-eltolását a\n"
+"eltávolítja a fényképező rejtett expozíció-eltolását a\n"
 "HDR / csúcsfénymegőrzés / dinamikatartomány / HLG-tónus\n"
 "módokban.\n"
 "ha engedélyezve van egy nem nulla eltolású képen,\n"
@@ -21284,7 +21286,7 @@ msgstr "FÉ látvány"
 #: ../src/iop/filmicrgb.c:3849
 #, no-c-format
 msgid "% camera"
-msgstr "% kamera"
+msgstr "% fényképező"
 
 #. Page DISPLAY
 #: ../src/iop/filmicrgb.c:3885 ../src/iop/filmicrgb.c:4543
@@ -21895,7 +21897,7 @@ msgstr ""
 "ellen használnak\n"
 "használható a „Laplace”, „ellentétes befestése” és „szakaszolás” módok "
 "finomhangolására,\n"
-"különösen, ha a kamera fehérpontja nem megfelelő."
+"különösen, ha a fényképező fehérpontja nem megfelelő."
 
 #: ../src/iop/highlights.c:1311
 msgid ""
@@ -22163,7 +22165,7 @@ msgstr "táv"
 
 #: ../src/iop/lens.cc:4239
 msgid "camera/lens not found"
-msgstr "kamera/objektív nem található"
+msgstr "fényképező/objektív nem található"
 
 #: ../src/iop/lens.cc:4240
 msgid ""
@@ -22179,7 +22181,7 @@ msgstr ""
 #. camera selector
 #: ../src/iop/lens.cc:4384
 msgid "camera model"
-msgstr "kamera modell"
+msgstr "fényképező modell"
 
 #: ../src/iop/lens.cc:4389
 msgid "find camera"
@@ -23108,7 +23110,7 @@ msgid ""
 "(move this module to after output color profile if you see banding)"
 msgstr ""
 "egyesíti a képet egy másik feldolgozott kép elemeivel\n"
-"(Mozgassa ezt a modult a kimeneti színprofil után, ha a sávóltságot lát)"
+"(mozgassa ezt a modult a kimeneti színprofil után, ha a sávosodást lát)"
 
 #: ../src/iop/overlay.c:163
 msgid "layer|stack|overlay"
@@ -23360,8 +23362,7 @@ msgstr "a megadott fájl nincs a raszter maszkok gyökérkönyvtárában"
 #: ../src/iop/rasterfile.c:591
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr ""
-"azon RGB csatornáknak a megadása, ami a raszter maszk generálására lettek "
-"szánva"
+"válassza ki a raszter maszk generálásakor figyelembe veendő RGB csatornákat"
 
 #: ../src/iop/rasterfile.c:595
 msgid ""
@@ -23370,7 +23371,7 @@ msgid ""
 msgstr ""
 "válasszon ki egy PFM fájlt, ami raszter maszkként lett mentve,\n"
 "VIGYÁZAT: az elérési utat előre be kell állítani a beállítások/feldolgozás "
-"alatt a kiválasztás megelőzően"
+"alatt a kiválasztást megelőzően"
 
 #: ../src/iop/rasterfile.c:601
 msgid "the mask file path is saved with the image history"
@@ -23395,7 +23396,7 @@ msgid ""
 "\n"
 "touch with great care!"
 msgstr ""
-"a raw szenzorok technikai sajátosságait állítja.\n"
+"a raw szenzorok technikai sajátosságait állítja\n"
 "\n"
 "nagyon óvatosan nyúljon hozzá!"
 
@@ -24299,7 +24300,7 @@ msgid ""
 "in most cases it should be D65"
 msgstr ""
 "beállítja a fehéregyensúlyt a felvétel szerintire, és később korrigálja a "
-"kamera referenciapontja szerint,\n"
+"fényképező referenciapontja szerint,\n"
 "ami általában D65 kell legyen"
 
 #: ../src/iop/temperature.c:2131
@@ -24988,7 +24989,7 @@ msgstr "háttérfolyamatok"
 
 #: ../src/libs/camera.c:79
 msgid "camera settings"
-msgstr "kamera beállítások"
+msgstr "fényképező beállításai"
 
 #: ../src/libs/camera.c:133
 msgid "toggle view property in center view"
@@ -25569,7 +25570,7 @@ msgstr "exportálás lemezre"
 #: ../src/libs/export.c:452
 #, c-format
 msgid "could not login to storage `%s'!"
-msgstr "nem lehet bejelentkezni a(z) '%s' tárhelyre!"
+msgstr "nem lehet bejelentkezni a(z) „%s” tárhelyre!"
 
 #: ../src/libs/export.c:621
 #, c-format
@@ -25811,11 +25812,11 @@ msgstr "globális beállítások"
 
 #: ../src/libs/export.c:1688
 msgid "multi-preset export"
-msgstr "többszörös beállítás exportálása"
+msgstr "exportálás több tárolt beállítással"
 
 #: ../src/libs/export.c:1691
 msgid "export the selected images with multiple presets"
-msgstr "a kijelölt képek exportálása többszörös beállítással"
+msgstr "a kijelölt képek exportálása több különböző tárolt beállítással"
 
 #: ../src/libs/export.c:1717
 msgctxt "actionbutton"
@@ -26364,8 +26365,8 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"szűrés a kép metaadataiban lévő szövegek, a kamera gyártó és modell, címkék, "
-"elérési út és név alapján\n"
+"szűrés a kép metaadataiban lévő szövegek, a fényképező gyártója és modellje, "
+"címkék, elérési út és név alapján\n"
 "a „%” a helyettesítő karater\n"
 "alapértelmezés szerint helyettesítő karakterek kerülnek az elejére és "
 "végére\n"
@@ -26526,12 +26527,12 @@ msgstr ""
 #. but label is use in "shortcuts" dialog.
 #: ../src/libs/geotagging.c:1933
 msgid "view entire track"
-msgstr "teljes nyomvonal megtekintés"
+msgstr "teljes nyomvonal megtekintése"
 
 #: ../src/libs/geotagging.c:1934
 msgid "refresh map to view entire selected track segments"
 msgstr ""
-"a térkép frissítése a teljes, kijelölt nyomvonal szakasz megtekintéséhez"
+"a térkép frissítése a teljes, kijelölt nyomvonalszakasz megtekintéséhez"
 
 #: ../src/libs/geotagging.c:1948
 msgid "preview images"
@@ -27532,7 +27533,7 @@ msgstr "mód: kivonás"
 
 #: ../src/libs/masks.c:1148
 msgid "delete unused shapes"
-msgstr "nem használt formák törlése"
+msgstr "nem használt alakzatok törlése"
 
 #: ../src/libs/masks.c:1872
 msgid "created shapes"
@@ -27644,9 +27645,9 @@ msgid ""
 "you are about to delete metadata which is currently assigned to images.\n"
 "the assignments will be removed."
 msgstr ""
-"arra készül, hogy törölje a metaadatokat, amik jelenleg képekhez vannak "
-"rendelve\n"
-"a hozzárendelések törölve lesznek."
+"olyan metaadatok törlésére készül, melyek jelenleg képekhez vannak "
+"rendelve.\n"
+"a hozzárendelések el lesznek távolítva."
 
 #: ../src/libs/metadata.c:1141
 msgid "write metadata for selected images"
@@ -29513,7 +29514,7 @@ msgstr "kattintson a dinamikus elrendezésű selejtező nézetbe lépéshez."
 
 #: ../src/libs/tools/lighttable.c:136
 msgid "click to allow browsing all images from the collection."
-msgstr "kattintson az engedélyezésre az összes kép böngészésére gyűjteményből."
+msgstr "kattintson a gyűjtemény összes képe böngészésének engedélyezéséhez."
 
 #: ../src/libs/tools/lighttable.c:141
 msgid "click to limit browsing to the selection."
@@ -29561,7 +29562,7 @@ msgid ""
 "or the total number of thumbnails shown in culling layouts."
 msgstr ""
 "adja meg a bélyegképek soronkénti számát a fájlkezelő nézethez.\n"
-"vagy a bélyegképek teljes számát a selejtező nézethet."
+"vagy a bélyegképek teljes számát a selejtező nézethez."
 
 #: ../src/libs/tools/lighttable.c:515
 msgid "toggle culling restricted"
@@ -29851,20 +29852,20 @@ msgstr "színkiértékelés"
 
 #: ../src/views/darkroom.c:2510
 msgid "total border width relative to screen"
-msgstr "a teljes szegély szélesség kijelzőhöz viszonyítva"
+msgstr "a teljes szegélyszélesség a kijelzőhöz viszonyítva"
 
 #: ../src/views/darkroom.c:2512
 msgid ""
 "total border width in relation to the screen size for the assessment mode.\n"
 "this includes the outer gray part plus the inner white frame."
 msgstr ""
-"a teljes szegély szélesség a kijelző méretéhez viszonyítva kiértékelő "
+"a teljes szegélyszélesség a kijelző méretéhez viszonyítva, a kiértékelő "
 "üzemmódhoz.\n"
 "ez magába foglalja a külső szürke részt a belső fehér kereten felül."
 
 #: ../src/views/darkroom.c:2523
 msgid "white border ratio"
-msgstr "fehér szegély arány"
+msgstr "fehér szegély aránya"
 
 #: ../src/views/darkroom.c:2525
 msgid ""
@@ -30510,7 +30511,7 @@ msgstr "dupla jobb kattintás"
 
 #: ../src/views/view.c:1428
 msgid "drag and drop"
-msgstr "fogja meg és mozgassa"
+msgstr "fogd és vidd"
 
 #: ../src/views/view.c:1431
 msgid "left-click+drag"
