@@ -381,6 +381,14 @@ static void _export_with_current_settings(dt_lib_module_t *self)
     g_strlcpy(style, tmp, sizeof(style));
   }
 
+  // scaling
+  const gboolean is_scaling =
+    dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
+
+  double _num, _denum;
+  dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
+  const double scale_factor = is_scaling? _num / _denum : 1.0;
+
   // if upscale is activated and only one dimension is 0 we adjust it to ensure
   // that the up-scaling will happen. The null dimension is set to MAX_ASPECT_RATIO
   // time the other dimension, allowing for a ratio of max 1:100 exported images.
@@ -406,8 +414,9 @@ static void _export_with_current_settings(dt_lib_module_t *self)
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index,
-                    high_quality, upscale, scaledimension, export_masks,
-                    style, style_append,
+                    high_quality, upscale, scaledimension,
+                    is_scaling, scale_factor,
+                    export_masks, style, style_append,
                     icc_type, icc_filename, icc_intent,
                     d->metadata_export);
 
