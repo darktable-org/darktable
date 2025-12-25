@@ -1008,8 +1008,8 @@ GSList *mouse_actions(const dt_view_t *self)
                                        0, _("switch to next/previous image"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                        GDK_CONTROL_MASK, _("zoom in the image"));
-    /* xgettext:no-c-format */
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE,
+                                          /* xgettext:no-c-format */
                                        0, _("zoom to 100% and back"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                        0, _("pan a zoomed image"));
@@ -1048,8 +1048,8 @@ GSList *mouse_actions(const dt_view_t *self)
                                        _("zoom current image"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                        GDK_SHIFT_MASK, _("pan inside current image"));
-    /* xgettext:no-c-format */
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE,
+                                          /* xgettext:no-c-format */
                                        0, _("zoom to 100% and back"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE, GDK_SHIFT_MASK,
                                        /* xgettext:no-c-format */
