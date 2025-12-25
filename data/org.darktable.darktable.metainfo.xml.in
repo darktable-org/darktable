@@ -7,42 +7,42 @@
   <launchable type="desktop-id">org.darktable.darktable.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
-  <_summary>Organize and develop images from digital cameras</_summary>
+  <summary>Organize and develop images from digital cameras</summary>
   <translation type="gettext">darktable</translation>
   <description>
-    <_p>
+    <p>
       darktable manages your camera raw files and images in a database, lets you
       view them through lighttable mode and develop/enhance them in darkroom mode.
-    </_p>
-    <_p>
+    </p>
+    <p>
       Other modes besides lighttable and darkroom are a map for geotagging,
       tethering, print and a slideshow.
-    </_p>
-    <_p>
+    </p>
+    <p>
       darktable supports most modern cameras' raw formats, and does all
       of its processing at very high precision.
-    </_p>
+    </p>
   </description>
   <screenshots>
     <screenshot width="1920" height="1080">
       <image>https://www.darktable.org/images/darktable-appdata-lighttable.jpg</image>
-      <_caption>Virtual light table, showing a collection</_caption>
+      <caption>Virtual light table, showing a collection</caption>
     </screenshot>
     <screenshot width="1920" height="1080" type="default">
       <image>https://www.darktable.org/images/darktable-appdata-darkroom1.jpg</image>
-      <_caption>Virtual dark room with an opened image</_caption>
+      <caption>Virtual dark room with an opened image</caption>
     </screenshot>
     <screenshot width="1920" height="1080">
       <image>https://www.darktable.org/images/darktable-appdata-darkroom2.jpg</image>
-      <_caption>Virtual dark room, sharpening an image</_caption>
+      <caption>Virtual dark room, sharpening an image</caption>
     </screenshot>
     <screenshot width="1920" height="1080">
       <image>https://www.darktable.org/images/darktable-appdata-map.jpg</image>
-      <_caption>Show images on a map</_caption>
+      <caption>Show images on a map</caption>
     </screenshot>
     <screenshot width="1920" height="1080">
       <image>https://www.darktable.org/images/darktable-appdata-print.jpg</image>
-      <_caption>Print your images</_caption>
+      <caption>Print your images</caption>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1" />
