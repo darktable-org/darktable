@@ -116,6 +116,13 @@ Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignorevers
 Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Registry]
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "Import folder into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
   ValueType: string; Flags: uninsdeletevalue; \
