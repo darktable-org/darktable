@@ -579,9 +579,9 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
   return FALSE;
 }
 
-static void _widht_mdlclick(GtkEntry *spin,
-                            GdkEventButton *event,
-                            gpointer user_data)
+static gboolean _widht_mdlclick(GtkEntry *spin,
+                                GdkEventButton *event,
+                                gpointer user_data)
 {
   if(event->button == GDK_BUTTON_MIDDLE)
   {
@@ -594,11 +594,13 @@ static void _widht_mdlclick(GtkEntry *spin,
   {
     _width_changed(GTK_EDITABLE(spin), user_data);
   }
+
+  return FALSE;
 }
 
-static void _height_mdlclick(GtkEntry *spin,
-                             GdkEventButton *event,
-                             gpointer user_data)
+static gboolean _height_mdlclick(GtkEntry *spin,
+                                 GdkEventButton *event,
+                                 gpointer user_data)
 {
   if(event->button == GDK_BUTTON_MIDDLE)
   {
@@ -611,6 +613,7 @@ static void _height_mdlclick(GtkEntry *spin,
   {
     _height_changed(GTK_EDITABLE(spin), user_data);
   }
+  return FALSE;
 }
 
 static void _size_in_px_update(dt_lib_export_t *d)

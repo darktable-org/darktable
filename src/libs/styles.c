@@ -734,13 +734,12 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
   g_object_unref(filechooser);
 }
 
-static gboolean _entry_callback(GtkEntry *entry, dt_lib_styles_t *d)
+static void _entry_callback(GtkEntry *entry, dt_lib_styles_t *d)
 {
   _gui_styles_update_view(d);
-  return FALSE;
 }
 
-static gboolean _entry_activated(GtkEntry *entry, dt_lib_styles_t *d)
+static void _entry_activated(GtkEntry *entry, dt_lib_styles_t *d)
 {
   const gchar *name = gtk_entry_get_text(d->entry);
   if(name)
@@ -753,15 +752,12 @@ static gboolean _entry_activated(GtkEntry *entry, dt_lib_styles_t *d)
       dt_control_apply_styles(imgs, styles, duplicate);
     }
   }
-
-  return FALSE;
 }
 
-static gboolean _duplicate_callback(GtkEntry *entry, dt_lib_styles_t *d)
+static void _duplicate_callback(GtkWidget *widget, dt_lib_styles_t *d)
 {
   dt_conf_set_bool("ui_last/styles_create_duplicate",
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
-  return FALSE;
 }
 
 static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
