@@ -175,7 +175,7 @@ jobs:
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable Windows
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
@@ -183,11 +183,17 @@ jobs:
           - Release
         msystem:
           - UCRT64
+          - CLANGARM64
         target:
           - skiptest
         generator:
           - Ninja
         eco: [-DBINARY_PACKAGE_BUILD=ON]
+        include:
+          - msystem: UCRT64
+            os: windows-latest
+          - msystem: CLANGARM64
+            os: windows-11-arm
     defaults:
       run:
         shell: msys2 {0}
@@ -212,7 +218,6 @@ jobs:
             cmake:p
             libxslt:p
             ninja:p
-            nsis:p
             python-jsonschema:p
             curl:p
             drmingw:p
@@ -297,7 +302,9 @@ jobs:
           iscc "darktable.iss"
           mv Output/*.exe ${{ env.BUILD_DIR }}/
       - name: Create NSIS installer
+        if: runner.arch != 'ARM64'
         run: |
+          pacboy --noconfirm -S --needed nsis:p
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
