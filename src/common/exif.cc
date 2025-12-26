@@ -1160,6 +1160,18 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
        else if(state == 2)
 	  img->exif_highlight_preservation = 0.66f;	// estimated strength for Strong
     }
+    else if(FIND_EXIF_TAG("Exif.CanonLiOp.AutoLightingOptimizer"))
+    {
+       // Canon CR3 contains another tag, but same enum values
+       // [0] state - 0=standard, 1=low, 2=strong, 3=off
+       const long state = pos->toLong(0);
+       if(state == 0)
+          img->exif_highlight_preservation = 0.50f;     // estimated strength for Standard
+       else if(state == 1)
+          img->exif_highlight_preservation = 0.33f;     // estimated strength for Low
+       else if(state == 2)
+          img->exif_highlight_preservation = 0.66f;     // estimated strength for Strong
+    }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
     {
