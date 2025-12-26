@@ -144,15 +144,55 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i,
   }
 }
 
-// apply clip and zoom on parts of a supplied full image.
-// roi_in and roi_out define which part to work on.
+/* apply clip and zoom on parts of a supplied full image, roi_in and roi_out define which part to work on.
+    gamma correction around scaling supported.
+    full RGB->linear and backwards transformation is provided with a performance
+    penalty without doing significant quality improvements as we only down/upscale.
+    To do so requires commenting the #define JUST_GAMMA
+*/
+#define JUST_GAMMA
 void dt_iop_clip_and_zoom(float *out,
                           const float *const in,
                           const dt_iop_roi_t *const roi_out,
-                          const dt_iop_roi_t *const roi_in)
+                          const dt_iop_roi_t *const roi_in,
+                          const gboolean gamma)
 {
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample(itor, out, roi_out, in, roi_in);
+  float *linear = gamma ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
+  if(!linear)
+    return dt_interpolation_resample(itor, out, roi_out, in, roi_in);
+
+#ifdef JUST_GAMMA
+  static const dt_aligned_pixel_t two_point_four = { 2.4f, 2.4f, 2.4f, 2.4f };
+#endif
+  static const dt_aligned_pixel_t rev_two_point_four = { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f };
+
+  DT_OMP_SIMD(aligned(in, linear : 16))
+  for(size_t k = 0; k < (size_t)roi_in->width * roi_in->height*4; k += 4)
+#ifdef JUST_GAMMA
+    dt_vector_powf(&in[k], two_point_four, &linear[k]);
+#else
+    dt_sRGB_to_linear_sRGB(&in[k], &linear[k]);
+#endif
+
+  dt_interpolation_resample(itor, out, roi_out, linear, roi_in);
+  dt_free_align(linear);
+
+  DT_OMP_SIMD(aligned(out : 16))
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
+#ifdef JUST_GAMMA
+    dt_vector_powf(&out[k], rev_two_point_four, &out[k]);
+#else
+  {
+    dt_aligned_pixel_t toe;
+    dt_aligned_pixel_t curved;
+    for_each_channel(c)
+      toe[c] = 12.92f * out[k+c];
+    dt_vector_powf(&out[k], rev_two_point_four, curved);
+    for_each_channel(c)
+      out[k+c] = (out[k+c] <=  0.0031308f) ? toe[c] : (1.055f * curved[c] - 0.055f);
+  }
+#endif
 }
 
 // apply clip and zoom on the image region supplied in the input buffer.

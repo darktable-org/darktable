@@ -1724,15 +1724,16 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
-
+        const gboolean gamma = dev->image_storage.colorspace != DT_IMAGE_COLORSPACE_NONE;
         dt_print_pipe(DT_DEBUG_PIPE,
                       "pipe data: clip&zoom",
-                      pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s",
-                      valid_bpp ? "" : "requires 4 floats data",
-                      aligned_input ? "" : "non-aligned input buffer");
+                      pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s%s",
+                      valid_bpp ? "" : "requires 4 floats data ",
+                      aligned_input ? "" : "non-aligned input buffer ",
+                      gamma ? "gamma corrected" : "");
 
         if(valid_bpp && aligned_input)
-          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, gamma);
         else
         {
           memset(*output, 0, (size_t)roi_out->width * roi_out->height * bpp);
