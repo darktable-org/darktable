@@ -995,7 +995,7 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
     : DT_GUI_SESSION_X11;
 #elif defined(GDK_WINDOWING_X11)
   GdkDisplay* disp = gdk_display_get_default();
-  retun G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
+  return G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
     ? DT_GUI_SESSION_X11
     : DT_GUI_SESSION_WAYLAND;
 #else
@@ -1744,6 +1744,34 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
+  /*
+   * Optional: hint the WM to hide server-side titlebar when maximized.
+   * Default is OFF to preserve the titlebar for users not relying on
+   * extensions. Enable to avoid a top gap when an external component
+   * (e.g. GNOME Unite) hides the titlebar.
+   *
+   * Enable via:
+   *   - env:  DARKTABLE_HIDE_TITLEBAR_ON_MAXIMIZE=1|true
+   *   - conf: ui/hide_titlebar_on_maximize=true
+   *
+   * By default do NOT hide the titlebar on maximize. Enable only when
+   * explicitly requested via env/config for compatibility with extensions
+   * such as GNOME Unite. */
+  gboolean hide_on_max = FALSE;
+  const char *env_hide = g_getenv("DARKTABLE_HIDE_TITLEBAR_ON_MAXIMIZE");
+  if(env_hide)
+  {
+    if(*env_hide == '1' || g_ascii_strcasecmp(env_hide, "true") == 0)
+      hide_on_max = TRUE;
+    else if(*env_hide == '0' || g_ascii_strcasecmp(env_hide, "false") == 0)
+      hide_on_max = FALSE;
+  }
+  if(dt_conf_key_exists("ui/hide_titlebar_on_maximize"))
+  {
+    /* config overrides environment */
+    hide_on_max = dt_conf_get_bool("ui/hide_titlebar_on_maximize");
+  }
+  gtk_window_set_hide_titlebar_when_maximized(GTK_WINDOW(widget), hide_on_max);
 
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
@@ -1751,11 +1779,23 @@ static void _init_widgets(dt_gui_gtk_t *gui)
     // On Wayland, use NORMAL hint to allow proper window resizing
     gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
-    GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
-    gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
-    gtk_widget_show(header_bar);
+    /* Wayland: by default use GtkHeaderBar (as in master).
+     * If hide_on_max is enabled (compat mode for GNOME Unite extension), do NOT use
+     * HeaderBar and prefer server-side decorations so the WM/extension
+     * can hide the titlebar and resize correctly. */
+    if(hide_on_max)
+    {
+      /* Use server-side decorations */
+      gtk_window_set_decorated(GTK_WINDOW(widget), TRUE);
+    }
+    else
+    {
+      GtkWidget *header_bar = gtk_header_bar_new();
+      gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+      gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+      gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+      gtk_widget_show(header_bar);
+    }
   }
 #endif
 
