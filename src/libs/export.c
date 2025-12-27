@@ -499,6 +499,7 @@ static void _batch_export_button_clicked(GtkWidget *widget, dt_lib_module_t *sel
 static void _scale_changed(GtkEntry *spin,
                            dt_lib_export_t *d)
 {
+  if(darktable.gui->reset) return;
   const char *validSign = ",.0123456789";
   const gchar *value = gtk_entry_get_text(spin);
 
@@ -555,7 +556,9 @@ static void _scale_changed(GtkEntry *spin,
     }
   }
   dt_conf_set_string(CONFIG_PREFIX "resizing_factor", new_value);
+  ++darktable.gui->reset;
   gtk_entry_set_text(spin, new_value);
+  --darktable.gui->reset;
 }
 
 static void _width_changed(GtkEditable *entry, gpointer user_data);

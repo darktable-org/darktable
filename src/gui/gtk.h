@@ -395,6 +395,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
+  gtk_widget_set_hexpand(label, TRUE); // GTK4
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_label_set_xalign (GTK_LABEL(label), 0.5f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels
@@ -573,6 +574,8 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 #define dt_modifier_eq(controller, mask)\
   dt_modifier_is(dt_key_modifier_state(), mask)
 
+#define dt_controller_state(controller) gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller))
+
 // control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
 // the calls may be nested, but must be matched
 void dt_gui_cursor_set_busy();
@@ -623,6 +626,10 @@ static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
   gtk_container_add(GTK_CONTAINER(scrolled_window), widget);
   return scrolled_window;
 }
+
+void dt_gui_draw_resize_handle(GtkWidget *widget,
+                               GtkSnapshot *snapshot,
+                               graphene_rect_t *bounds);
 
 // Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
 void dt_gui_simulate_button_event(GtkWidget *widget,
