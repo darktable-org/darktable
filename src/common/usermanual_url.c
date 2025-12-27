@@ -101,6 +101,7 @@ dt_help_url urls_db[] =
   {"preset_dialog",              "darkroom/processing-modules/presets/#creating-and-editing-presets"},
 
   // iop links
+  {"agx",                        "module-reference/processing-modules/agx/"},
   {"ashift",                     "module-reference/processing-modules/rotate-perspective/"},
   {"atrous",                     "module-reference/processing-modules/contrast-equalizer/"},
   {"basecurve",                  "module-reference/processing-modules/base-curve/"},
