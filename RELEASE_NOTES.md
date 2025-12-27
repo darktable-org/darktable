@@ -59,7 +59,10 @@ changes (where available).
 
 ## Bug Fixes
 
-- Fixed wrong handling of scaling factor during multi-preset export
+- Fixed wrong handling of scaling factor during multi-preset export.
+
+- Fixed missing help URL, pointing to the online documentation, for
+  the new AgX module.
 
 ## Lua
 
