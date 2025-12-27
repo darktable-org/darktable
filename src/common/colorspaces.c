@@ -1732,9 +1732,9 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
   switch(type)
   {
      case DT_COLORSPACE_NONE:
-       return NULL;
+       return _("DT_COLORSPACE_NONE");
      case DT_COLORSPACE_FILE:
-       return filename;
+       return filename && filename[0] ? filename : _("no filename");
      case DT_COLORSPACE_SRGB:
        return _("sRGB");
      case DT_COLORSPACE_ADOBERGB:
