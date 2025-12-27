@@ -1286,8 +1286,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                   dt_iop_colorspace_to_name(cst_from),
                   dt_iop_colorspace_to_name(cst_to),
                   work_profile
-                    ? dt_colorspaces_get_name(work_profile->type,
-                                              work_profile->filename)
+                    ? dt_colorspaces_get_name(work_profile->type, work_profile->filename)
                     : "no work profile");
   }
 
@@ -1669,7 +1668,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
        && aligned_input)
     {
       *output = pipe->input;
-      dt_print_pipe(DT_DEBUG_PIPE,
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                     "pipe data: full",
                     pipe, module, DT_DEVICE_NONE, &roi_in, roi_out);
     }
