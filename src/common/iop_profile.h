@@ -181,6 +181,7 @@ typedef struct dt_colorspaces_cl_global_t
   int kernel_colorspaces_transform_lab_to_rgb_matrix;
   int kernel_colorspaces_transform_rgb_matrix_to_lab;
   int kernel_colorspaces_transform_rgb_matrix_to_rgb;
+  int kernel_colorspaces_gamma;
 } dt_colorspaces_cl_global_t;
 
 // must be in synch with colorspaces.cl dt_colorspaces_iccprofile_info_cl_t
