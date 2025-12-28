@@ -107,7 +107,8 @@ typedef enum dt_image_colorspace_t
 {
   DT_IMAGE_COLORSPACE_NONE,
   DT_IMAGE_COLORSPACE_SRGB,
-  DT_IMAGE_COLORSPACE_ADOBE_RGB
+  DT_IMAGE_COLORSPACE_ADOBE_RGB,
+  DT_IMAGE_COLORSPACE_USER_RGB
 } dt_image_colorspace_t;
 
 typedef struct dt_image_raw_parameters_t
