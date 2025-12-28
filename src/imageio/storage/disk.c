@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -34,6 +35,7 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
+#include <glib-2.0/gio/gio.h>
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -452,16 +454,36 @@ try_again:
       // of the changes.
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
+        GFile *gfile = g_file_new_for_path(filename);
+
+        GFileInfo *info = g_file_query_info(
+          gfile,
+          G_FILE_ATTRIBUTE_TIME_MODIFIED,
+          G_FILE_QUERY_INFO_NONE,
+          NULL,
+          NULL);
+
+        GTimeSpan export_file_timestamp = 0;
+
+        if (info) {
+          if (g_file_info_has_attribute(info, G_FILE_ATTRIBUTE_TIME_MODIFIED)) {
+            time_t mtime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+            GDateTime *gdt = g_date_time_new_from_unix_local(mtime);
+            export_file_timestamp = dt_datetime_gdatetime_to_gtimespan(gdt);
+            g_date_time_unref(gdt);
+          }
+          g_object_unref(info);
+        }
+        g_object_unref(gfile);
+
         // get the image data
         const dt_image_t *img = dt_image_cache_get(imgid, 'r');
         const GTimeSpan change_timestamp = img ? img->change_timestamp : 0;
-        const GTimeSpan export_timestamp = img ? img->export_timestamp : 0;
-
         dt_image_cache_read_release(img);
 
-        // check if the export timestamp in the database is more recent than the change
-        // date, if yes skip the image
-        if(export_timestamp > change_timestamp)
+        // check if the exported file is more recent than the change date.
+        // if yes skip the image
+        if(export_file_timestamp > change_timestamp)
         {
           dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
           dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'", filename);
