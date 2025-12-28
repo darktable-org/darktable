@@ -81,3 +81,15 @@ colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image
 
   write_imagef(out, (int2)(x, y), pixel);
 }
+
+kernel void
+colorspaces_transform_gamma(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float gamma)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)) );
+  write_imagef(out, (int2)(x, y), dtcl_pow(pixel, gamma));
+}
