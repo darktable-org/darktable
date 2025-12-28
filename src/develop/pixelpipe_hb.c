@@ -1724,15 +1724,81 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
-
+        const gboolean gamma = dev->image_storage.colorspace != DT_IMAGE_COLORSPACE_NONE;
+#ifdef HAVE_OPENCL
+        const size_t in_size = bpp * roi_in.width * roi_in.height; 
+        const gboolean cl_scale_possible = ((2 * in_size) < dt_opencl_get_device_available(pipe->devid))
+                                            && roi_out->width < roi_in.width
+                                            && roi_out->height < roi_in.height;
+#else
+        const gboolean cl_scale_possible = FALSE:
+#endif
         dt_print_pipe(DT_DEBUG_PIPE,
                       "pipe data: clip&zoom",
-                      pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s",
-                      valid_bpp ? "" : "requires 4 floats data",
-                      aligned_input ? "" : "non-aligned input buffer");
+                      pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s%s",
+                      valid_bpp ? "" : "requires 4 floats data ",
+                      aligned_input ? "" : "non-aligned input buffer ",
+                      cl_scale_possible ? "OpenCL scaling " : "",
+                      gamma ? "gamma corrected" : "");
 
         if(valid_bpp && aligned_input)
-          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+        {
+          gboolean done = FALSE;
+#ifdef HAVE_OPENCL
+          if(cl_scale_possible)
+          {
+            cl_mem tmp_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp);
+            cl_mem linear_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp);
+            cl_mem tmp_output = NULL;
+            cl_mem linear_output = NULL;
+            if(tmp_input && linear_input)
+            {
+              cl_int err = dt_opencl_write_host_to_device(pipe->devid, pipe->input, tmp_input, roi_in.width, roi_in.height, bpp);
+              if(err == CL_SUCCESS)
+              {
+                const float fgamma = 2.4f;
+                err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_in.width, roi_in.height,
+                        CLARG(tmp_input), CLARG(linear_input), CLARG(roi_in.width), CLARG(roi_in.height), CLARG(fgamma));
+                dt_opencl_release_mem_object(tmp_input);
+                tmp_input = NULL;
+              }
+              if(err == CL_SUCCESS)
+              {
+                linear_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+                if(!linear_output) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+                if(err == CL_SUCCESS)
+                  err = dt_iop_clip_and_zoom_cl(pipe->devid, linear_output, linear_input, roi_out, &roi_in);
+                dt_opencl_release_mem_object(linear_input);
+                linear_input = NULL;
+              }
+              if(err == CL_SUCCESS)
+              {
+                tmp_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+                if(!tmp_output) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+                const float fgamma = 1.0f / 2.4f;
+                if(err == CL_SUCCESS)
+                  err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_out->width, roi_out->height,
+                    CLARG(linear_output), CLARG(tmp_output), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(fgamma));
+              }
+              if(err == CL_SUCCESS)
+                err = dt_opencl_copy_device_to_host(pipe->devid, *output, tmp_output, roi_out->width, roi_out->height, bpp);
+              if(err == CL_SUCCESS)
+                done = TRUE;
+              else 
+                dt_print(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "OpenCL pipe data: clip&zoom failed");       
+            }
+            dt_opencl_release_mem_object(tmp_input);
+            dt_opencl_release_mem_object(tmp_output);
+            dt_opencl_release_mem_object(linear_input);
+            dt_opencl_release_mem_object(linear_output);
+          }
+
+          if(!done)
+            dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, gamma);
+#else
+         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, gamma);
+#endif
+        }
         else
         {
           memset(*output, 0, (size_t)roi_out->width * roi_out->height * bpp);

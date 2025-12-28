@@ -1448,10 +1448,12 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   }
   else
   {
-    // downsample
+    // scale
+    const gboolean gamma = image->colorspace != DT_IMAGE_COLORSPACE_NONE;
     dt_print_pipe(DT_DEBUG_PIPE,
-      "mipmap clip and zoom", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
-    dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in);
+      "mipmap clip&zoom", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out, "%s",
+          gamma ? "gamma corrected" : "");
+    dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, gamma);
   }
 
   dt_mipmap_cache_release(&buf);

@@ -186,7 +186,7 @@ void process(dt_iop_module_t *self,
   if(exporting)
     dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
   else
-    dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+    dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in, FALSE);
 }
 
 void commit_params(dt_iop_module_t *self,
