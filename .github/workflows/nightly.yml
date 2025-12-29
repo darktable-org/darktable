@@ -259,6 +259,7 @@ jobs:
             -DEXIV2_ENABLE_BMFF=ON \
             -DEXIV2_ENABLE_NLS=ON \
             -DEXIV2_ENABLE_VIDEO=OFF \
+            -DEXIV2_ENABLE_WIN_UNICODE=ON \
             -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX}
           cmake --build build
           cmake --install build
