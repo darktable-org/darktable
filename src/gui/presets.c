@@ -563,9 +563,11 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                       const gboolean allow_remove)
 {
   /* Create the widgets */
+  const char *lname = dt_util_localize_string(g->module_name);
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"),
-           g->original_name, g->module_name);
+           g->original_name, lname);
+
   GtkWidget *dialog = gtk_dialog_new_with_buttons(title, g->parent,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                   _("_export..."), GTK_RESPONSE_YES,
