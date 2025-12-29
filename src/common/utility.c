@@ -73,12 +73,13 @@ gchar *dt_util_localize_segmented_name(const char *s,
 
   const char *local_s = is_builtin
     ? _(s+sizeof(BUILTIN_PREFIX)-1) : s;
+  const gboolean is_empty = strlen(s) == 0;
 
-  char *localized = g_strdup(_(local_s));
+  char *localized = g_strdup(is_empty ? "" : _(local_s));
 
   //  Check if translation found, if not localize each segment
 
-  if(!strcmp(local_s, localized))
+  if(!is_empty && !strcmp(local_s, localized))
   {
     gchar **split = g_strsplit(local_s, "|", 0);
     GList *items = NULL;
