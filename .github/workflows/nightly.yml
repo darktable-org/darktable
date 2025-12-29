@@ -141,6 +141,7 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DEXIV2_ENABLE_NLS=ON \
             -DEXIV2_ENABLE_VIDEO=OFF \
+            -DEXIV2_ENABLE_WIN_UNICODE=ON \
             -DCMAKE_INSTALL_PREFIX=/usr
           cmake --build build
           sudo cmake --install build
