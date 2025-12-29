@@ -1546,7 +1546,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
     dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
   // clang-format off
-  gchar *query = g_strdup_printf("SELECT name"
+  gchar *query = g_strdup_printf("SELECT name, writeprotect"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
@@ -1579,6 +1579,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const char *name = (char *)sqlite3_column_text(stmt, 0);
+        const gboolean write_protect = (gboolean)sqlite3_column_int(stmt, 1);
         if(retrieve_list)
         {
           // we only show it if module is in favorite
@@ -1593,7 +1594,10 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
         if(config && strstr(config, txt))
         {
           GtkWidget *mi = gtk_menu_item_new_with_label("");
-          gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+          gchar *local_name =
+            write_protect
+            ? dt_util_localize_segmented_name(name, TRUE)
+            : g_strdup(name);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s",
                                               iop->name(), iop->multi_name, local_name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
@@ -1754,7 +1758,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       isdefault = TRUE;
 
     mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu,
-                                            &submenu, &prev_split, isdefault);
+                                            &submenu, &prev_split,
+                                            isdefault, chk_writeprotect);
 
     if(module
        && ((op_params_size == 0

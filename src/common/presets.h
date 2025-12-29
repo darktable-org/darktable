@@ -55,7 +55,8 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GtkWidget *mainmenu,
                                               GtkWidget **submenu,
                                               gchar ***prev_split,
-                                              gboolean isdefault);
+                                              gboolean isdefault,
+                                              gboolean writeprotect);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
