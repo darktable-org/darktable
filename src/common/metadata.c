@@ -200,13 +200,13 @@ void dt_metadata_init()
   _metadata_list = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int key = sqlite3_column_int(stmt, 0);
-    char *tagname = (char *)sqlite3_column_text(stmt, 1);
-    char *name = (char *)sqlite3_column_text(stmt, 2);
-    int internal = sqlite3_column_int(stmt, 3);
-    gboolean visible = (gboolean) sqlite3_column_int(stmt, 4);
-    gboolean private = (gboolean) sqlite3_column_int(stmt, 5);
-    int display_order = sqlite3_column_int(stmt, 6);
+    const int key = sqlite3_column_int(stmt, 0);
+    const char *tagname = (char *)sqlite3_column_text(stmt, 1);
+    const char *name = (char *)sqlite3_column_text(stmt, 2);
+    const int internal = sqlite3_column_int(stmt, 3);
+    const gboolean visible = (gboolean)sqlite3_column_int(stmt, 4);
+    const gboolean private = (gboolean)sqlite3_column_int(stmt, 5);
+    const int display_order = sqlite3_column_int(stmt, 6);
 
     dt_metadata_t *metadata = calloc(1, sizeof(dt_metadata_t));
     metadata->key = key;
