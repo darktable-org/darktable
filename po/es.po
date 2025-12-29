@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.4.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-27 15:43-0600\n"
-"PO-Revision-Date: 2025-12-27 15:46-0600\n"
+"PO-Revision-Date: 2025-12-29 01:21-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -13005,12 +13005,12 @@ msgstr "Actualizar automáticamente a la versión correcta de los guiones"
 #. ----------------
 #: ../src/external/lua-scripts/tools/script_manager.lua:409
 msgid "contributed"
-msgstr "aportados"
+msgstr "contribuciones"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:413
 msgid "official"
-msgstr "Oficial"
+msgstr "oficiales"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:415
 #: ../src/iop/retouch.c:2470 ../src/iop/retouch.c:2475
@@ -13245,17 +13245,18 @@ msgstr "página"
 #. configure options
 #: ../src/external/lua-scripts/tools/script_manager.lua:1501
 msgid "scripts per page"
-msgstr "guiones por página"
+msgstr "pulsadores por página"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1502
 msgid "select number of start/stop buttons to display"
-msgstr "Selecciona el número de botones de inicio/parada a mostrar"
+msgstr ""
+"Determina la cantidad de pulsadores de inicio/parada listada por página"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1513
 msgid "change number of buttons"
-msgstr "cambiar el número de botones"
+msgstr "guardar modificación"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1523
@@ -13273,7 +13274,7 @@ msgstr "acción"
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1551
 msgid "install/update scripts"
-msgstr "instalar o actualizar guiones de Lua"
+msgstr "instalar/actualizar guiones"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1551
@@ -13283,7 +13284,7 @@ msgstr "configurar"
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1551
 msgid "start/stop scripts"
-msgstr "Iniciar/detener guiones"
+msgstr "iniciar/detener guiones"
 
 #: ../src/generate-cache/main.c:49
 #, c-format
