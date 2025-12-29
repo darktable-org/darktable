@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 200
           path: src
-      - uses: dawidd6/action-download-artifact@v11
+      - uses: dawidd6/action-download-artifact@v12
         continue-on-error: true
         with:
           workflow: irc.yml
