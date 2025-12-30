@@ -948,12 +948,15 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
   {
     dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
     const char *operation = (const char *)sqlite3_column_text(stmt, 0);
-    dt_lib_module_t *module = dt_lib_get_module(operation);
+    dt_lib_module_t *lib_module = dt_lib_get_module(operation);
+
     g->old_id = rowid;
     g->original_name = g_strdup(name_in);
     g->operation = g_strdup(operation);
     g->op_version = sqlite3_column_int(stmt, 1);
-    g->module_name = g_strdup(module->name(module));
+    g->module_name = g_strdup(lib_module
+                              ? lib_module->name(lib_module)
+                              : dt_iop_get_localized_name(operation));
     g->callback = final_callback;
     g->data = data;
     g->parent = parent;
