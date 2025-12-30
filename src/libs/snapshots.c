@@ -130,11 +130,13 @@ enum _lib_snapshot_button_items
   } _lib_snapshot_button_items;
 
 static GtkWidget *_lib_snapshot_button_get_item(GtkWidget *button,
-                                                const int num)
+                                                int num)
 {
-  GtkWidget *cont = gtk_bin_get_child(GTK_BIN(button));
-  GList *items = gtk_container_get_children(GTK_CONTAINER(cont));
-  return (GtkWidget *)g_list_nth_data(items, num);
+  GtkWidget *cont = gtk_button_get_child(GTK_BUTTON(button));
+  GtkWidget *child = gtk_widget_get_first_child(cont);
+  while(child && num--)
+    child = gtk_widget_get_next_sibling(child);
+  return child;
 }
 
 // draw snapshot sign
@@ -621,8 +623,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
     GtkWidget *lstatus = _lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_STATUS);
     gtk_widget_set_tooltip_text(s->button, "");
     gtk_widget_set_tooltip_text(lstatus, "");
-    gtk_widget_hide(s->button);
-    gtk_widget_hide(s->restore_button);
+    gtk_widget_hide(s->bbox);
   }
 
   g_free(s->module);
@@ -826,33 +827,18 @@ void gui_init(dt_lib_module_t *self)
     _clear_snapshot_entry(s);
     _init_snapshot_entry(self, s);
 
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-    // 4 items inside box, num, status, name, label
-
-    gtk_box_pack_start(GTK_BOX(box), s->num, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), s->status, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(box), s->name, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(box), s->entry, TRUE, TRUE, 0);
-
-    gtk_widget_show_all(box);
-
     // hide entry, will be used only when editing
     gtk_widget_hide(s->entry);
 
-    gtk_container_add(GTK_CONTAINER(s->button), box);
+    gtk_button_set_child(GTK_BUTTON(s->button), dt_gui_hbox(
+      s->num, s->status, dt_gui_expand(s->name), dt_gui_expand(s->entry)));
 
     // add snap button and restore button
-    s->bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(s->bbox), s->button, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(s->bbox), s->restore_button, FALSE, FALSE, 0);
+    s->bbox = dt_gui_hbox(dt_gui_expand(s->button), s->restore_button);
 
     /* add button to snapshot box */
-    gtk_box_pack_end(GTK_BOX(d->snapshots_box), s->bbox, FALSE, FALSE, 0);
-
-    /* prevent widget to show on external show all */
-    gtk_widget_set_no_show_all(s->button, TRUE);
-    gtk_widget_set_no_show_all(s->restore_button, TRUE);
+    gtk_box_append(GTK_BOX(d->snapshots_box), s->bbox);
+    gtk_widget_hide(s->bbox);
   }
 
   /* add snapshot box and take snapshot button to widget ui*/
@@ -962,8 +948,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   /* show active snapshot slots */
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
-    gtk_widget_show(d->snapshot[k].button);
-    gtk_widget_show(d->snapshot[k].restore_button);
+    gtk_widget_show(d->snapshot[k].bbox);
   }
 
   if(d->num_snapshots == MAX_SNAPSHOT)

@@ -182,7 +182,6 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
                                              const gboolean deprecated)
 {
   /* create label */
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gchar numlab[10];
 
   g_snprintf(numlab, sizeof(numlab), "%2d", num + 1);
@@ -243,11 +242,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
 
-  gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox), onoff, FALSE, FALSE, 0);
-
-  return hbox;
+  return dt_gui_hbox(numwidget, dt_gui_expand(widget), onoff);
 }
 
 static void _reset_module_instance(GList *hist,
@@ -1033,14 +1028,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
 
   if(show_tooltip)
   {
-    static GtkWidget *view = NULL;
-    if(!view)
-    {
-      view = gtk_text_view_new();
-      dt_gui_add_class(view, "dt_transparent_background");
-      dt_gui_add_class(view, "dt_monospace");
-      g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
-    }
+    GtkWidget *view = gtk_text_view_new();
+    dt_gui_add_class(view, "dt_transparent_background");
+    dt_gui_add_class(view, "dt_monospace");
 
     // find tabs to align columns and decimals
     int t[5] = { 0 };
@@ -1092,9 +1082,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
     gtk_text_buffer_set_text(buffer, tooltip_text, -1);
     gtk_tooltip_set_custom(tooltip, view);
-    gtk_widget_map(view); // FIXME: workaround added in order to fix
-                          // #9908, probably a Gtk issue, remove when
-                          // fixed upstream
+        // GTK4 tooltip does not get resized automatically
   }
 
   g_free(tooltip_text);
