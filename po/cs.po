@@ -5752,7 +5752,7 @@ msgstr "úprava barev světla"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:241
 #: ../src/gui/accelerators.c:96
 msgid "skew"
-msgstr "sklonit"
+msgstr "sklon"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:140
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:253
@@ -8094,19 +8094,17 @@ msgstr "v5.0 JPEG"
 #: ../src/common/iop_profile.c:884
 #, c-format
 msgid "work icc profile '%s' missing"
-msgstr ""
+msgstr "Pracovní ICC profil '%s' nenalezen."
 
 #: ../src/common/iop_profile.c:915
-#, fuzzy, c-format
-#| msgid "input color profile"
+#, c-format
 msgid "input icc profile '%s' missing"
-msgstr "vstupní barevný profil"
+msgstr "Vstupní ICC profil '%s' nenalezen."
 
 #: ../src/common/iop_profile.c:968
-#, fuzzy, c-format
-#| msgid "output ICC profiles in %s or %s"
+#, c-format
 msgid "output icc profile '%s' missing"
-msgstr "výstupní ICC profily z %s nebo %s"
+msgstr "Výstupní ICC profil '%s' nenalezen."
 
 #: ../src/common/iop_profile.c:1178
 #, c-format
@@ -29324,16 +29322,13 @@ msgstr "vymazat text"
 
 # tooltip
 #: ../src/libs/modulegroups.c:3144
-#, fuzzy, c-format
-#| msgid ""
-#| "quick access panel\n"
-#| "right-click tab icon to add/remove widgets"
+#, c-format
 msgid ""
 "%s\n"
 "right-click tab icon to add/remove modules"
 msgstr ""
-"Panel rychlého přístupu.\n"
-"Klikněte pravým tlačítkem pro jeho odebrání."
+"%s\n"
+"Klikněte pravým tlačítkem na ikonu panelu pro přidání/odebrání modulů."
 
 #: ../src/libs/modulegroups.c:3288
 msgid "basic icon"
