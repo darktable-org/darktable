@@ -1850,14 +1850,15 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near white"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
-                                "without inverting the shoulder (forcing it to bend upwards), it would be\n"
-                                "impossible to reach target white with the selected contrast and pivot position.\n"
-                                "increase contrast, move the pivot higher (increase pivot target output\n"
-                                "or curve y gamma), or increase the distance between the pivot and the right\n"
-                                "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
-                                "increasing relative white exposure or move the black point closer to the pivot\n"
-                                "by lowering relative black exposure)."));
+                              _("shoulder power cannot be applied because the curve has lost its 'S' shape\n"
+                                "due to the current settings for white relative exposure, contrast, and pivot.\n"
+                                "to re-enable, do one of the following:\n"
+                                " - increase contrast\n"
+                                " - increase pivot target output\n"
+                                " - increase white relative exposure\n"
+                                " - increase curve y gamma (in the advanced curve parmeters section)\n"
+                                "\n"
+                                "open the 'show curve' section to see the effects of the above settings."));
 
   // curve_toe_power
   slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
@@ -1867,14 +1868,15 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near black"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
-                                "without inverting the toe (forcing it to bend downwards), it would be\n"
-                                "impossible to reach target black with the selected contrast and pivot position.\n"
-                                "increase contrast, move the pivot lower (reduce the pivot target output or\n"
-                                "curve y gamma), or increase the distance between the pivot and the left edge\n"
-                                "(increase the pivot shift, move the black point farther from the pivot by raising\n"
-                                "the relative black exposure or move the white point closer to the pivot\n"
-                                "by decreasing relative white exposure)."));
+                              _("toe power cannot be applied because the curve has lost its 'S' shape due\n"
+                                "to the current settings for white relative exposure, contrast, and pivot.\n"
+                                "to re-enable, do one of the following:\n"
+                                " - increase contrast\n"
+                                " - decrease pivot target output\n"
+                                " - decrease black relative exposure (make more negative)\n"
+                                " - decrease curve y gamma (in the advanced curve parmeters section)\n"
+                                "\n"
+                                "open the 'show curve' section to see the effects of the above settings."));
 
   return box;
 }
