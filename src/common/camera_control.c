@@ -158,7 +158,7 @@ static void _dispatch_camera_property_value_changed(const dt_camctl_t *c,
                                                     const char *value);
 
 /** Helper function to destroy a dt_camera_t object */
-static void dt_camctl_camera_destroy(dt_camera_t *cam);
+static void _camctl_camera_destroy(dt_camera_t *cam);
 
 static int logid = 0;
 
@@ -565,7 +565,7 @@ static void _camera_process_job(const dt_camctl_t *c,
 /* LIVE VIEW */
 /*************/
 
-static void *dt_camctl_camera_get_live_view(void *data)
+static void *_camctl_camera_get_live_view(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
@@ -633,7 +633,7 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 1);
 
   dt_pthread_create(&cam->live_view_thread,
-                    &dt_camctl_camera_get_live_view, (void *)camctl);
+                    &_camctl_camera_get_live_view, (void *)camctl);
 
   return TRUE;
 }
@@ -711,7 +711,7 @@ dt_camctl_t *dt_camctl_new()
   return camctl;
 }
 
-static void dt_camctl_camera_destroy_struct(dt_camera_t *cam)
+static void _camctl_camera_destroy_struct(dt_camera_t *cam)
 {
   if(!cam) return;
   if(cam->live_view_buffer)
@@ -729,7 +729,7 @@ static void dt_camctl_camera_destroy_struct(dt_camera_t *cam)
   g_free(cam);
 }
 
-static void dt_camctl_camera_destroy(dt_camera_t *cam)
+static void _camctl_camera_destroy(dt_camera_t *cam)
 {
   if(!cam) return;
   dt_print(DT_DEBUG_CAMCTL,
@@ -743,10 +743,10 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
   gp_camera_exit(cam->gpcam, cam->gpcontext);
   gp_camera_unref(cam->gpcam);
   gp_widget_unref(cam->configuration);
-  dt_camctl_camera_destroy_struct(cam);
+  _camctl_camera_destroy_struct(cam);
 }
 
-static void dt_camctl_unused_camera_destroy(dt_camera_unused_t *cam)
+static void _camctl_unused_camera_destroy(dt_camera_unused_t *cam)
 {
   if(!cam) return;
   g_free(cam->model);
@@ -763,12 +763,12 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
 
   for(GList *it = camctl->cameras; it; it = g_list_delete_link(it, it))
   {
-    dt_camctl_camera_destroy((dt_camera_t *)it->data);
+    _camctl_camera_destroy((dt_camera_t *)it->data);
   }
   // Go thru all c->unused_cameras and free them
   for(GList *itl = camctl->unused_cameras; itl; itl = g_list_delete_link(itl, itl))
   {
-    dt_camctl_unused_camera_destroy((dt_camera_unused_t *)itl->data);
+    _camctl_unused_camera_destroy((dt_camera_unused_t *)itl->data);
   }
   gp_context_unref(camctl->gpcontext);
   gp_abilities_list_free(camctl->gpcams);
@@ -834,7 +834,7 @@ static gboolean _have_camera_on_port(const dt_camera_unused_t *const testcam,
 static int cameras_cnt = -1;
 static int ports_cnt = -1;
 
-static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
+static gboolean _camctl_update_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   if(!camctl) return FALSE;
@@ -925,7 +925,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
         camctl->unused_cameras = unused_item =
           g_list_delete_link(c->unused_cameras, unused_item);
-        dt_camctl_unused_camera_destroy(oldcam);
+        _camctl_unused_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
       else
@@ -983,7 +983,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
           camctl->unused_cameras = unused_item =
             g_list_delete_link(c->unused_cameras, unused_item);
-          dt_camctl_unused_camera_destroy(oldcam);
+          _camctl_unused_camera_destroy(oldcam);
          // Notify listeners of connected camera
          _dispatch_camera_connected(camctl, camera);
         }
@@ -1019,7 +1019,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
                  cam->model, cam->port);
         dt_control_log(_("camera `%s' on port `%s' disconnected while mounted"),
                        cam->model, cam->port);
-        dt_camctl_camera_destroy_struct(oldcam);
+        _camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
       }
       else if((cam->ptperror) || (cam->unmount))
@@ -1036,7 +1036,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
-        dt_camctl_camera_destroy(oldcam);
+        _camctl_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
     } while(citem && (citem = g_list_next(citem)) != NULL);
@@ -1057,38 +1057,33 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 void *dt_update_cameras_thread(void *ptr)
 {
   dt_pthread_setname("gphoto_update");
-  /* make sure control is up and running */
-  for(int k = 0; k < 100; k++)
-  {
-    if(dt_control_running()) break;
-    g_usleep(100000);
-  }
+  /* wait until dt_camctl_new() has created darktable.camctl
+      This might take some time depending on initial work like updating xmp / splash
+  */
+  while(darktable.camctl == NULL)
+    g_usleep(1000);
+
+  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+
   while(dt_control_running())
   {
-    dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-
-    if(camctl)
-    {
-      if(camctl->import_ui == FALSE
+    if(camctl->import_ui == FALSE
          && dt_view_get_current() == DT_VIEW_LIGHTTABLE)
 //TODO:  && import module is expanded and visible
+    {
+      camctl->ticker += 1;
+      if((camctl->ticker & camctl->tickmask) == 0)
       {
-        camctl->ticker += 1;
-        if((camctl->ticker & camctl->tickmask) == 0)
-        {
-          // we've rolled over the current scan interval, so check for
-          // new/removed cameras and decide how long to wait until the
-          // next scan based on the result: one second if there was a
-          // change, eight seconds if not
-          camctl->tickmask = (dt_camctl_update_cameras(camctl)) ? 0x03 : 0x1F;
-        }
+        // we've rolled over the current scan interval, so check for
+        // new/removed cameras and decide how long to wait until the
+        // next scan based on the result: one second if there was a
+        // change, eight seconds if not
+        camctl->tickmask = _camctl_update_cameras(camctl) ? 0x03 : 0x1F;
       }
-      else
-        camctl->tickmask = 3; // want to be responsive right after
-                              // other modes are done - scan in one
-                              // second
-    g_usleep(250000);  // 1/4 second
     }
+    else
+      camctl->tickmask = 3; // want to be responsive in one sec right after other modes are done
+    g_usleep(250000);  // 1/4 second
   }
   return 0;
 }
