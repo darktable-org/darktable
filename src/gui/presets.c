@@ -563,9 +563,11 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                       const gboolean allow_remove)
 {
   /* Create the widgets */
+  const char *lname = dt_util_localize_string(g->module_name);
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"),
-           g->original_name, g->module_name);
+           g->original_name, lname);
+
   GtkWidget *dialog = gtk_dialog_new_with_buttons(title, g->parent,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                   _("_export..."), GTK_RESPONSE_YES,
@@ -616,14 +618,14 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                 "this might be the last time you see your preset."));
 
   // check if module_name is an IOP module
-  const dt_iop_module_so_t *module = dt_iop_get_module_so(g->module_name);
+  const dt_iop_module_so_t *module = dt_iop_get_module_so(g->operation);
 
   if(!module)
   {
     // lib usually don't support auto-init / autoapply
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoinit), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoapply),
-                               !dt_presets_module_can_autoapply(g->module_name));
+                               !dt_presets_module_can_autoapply(g->operation));
     // for libs, we don't want the filtering option as it's not implemented...
     gtk_widget_set_no_show_all(GTK_WIDGET(g->filter), TRUE);
   }
@@ -918,7 +920,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
   g->iop = module;
   g->operation = g_strdup(module->op);
   g->op_version = module->version();
-  g->module_name = g_strdup(module->op);
+  g->module_name = g_strdup(module->name());
   g->callback = final_callback;
   g->data = data;
   g->parent = parent;
@@ -945,11 +947,13 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+    const char *operation = (const char *)sqlite3_column_text(stmt, 0);
+    dt_lib_module_t *module = dt_lib_get_module(operation);
     g->old_id = rowid;
     g->original_name = g_strdup(name_in);
-    g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));
+    g->operation = g_strdup(operation);
     g->op_version = sqlite3_column_int(stmt, 1);
-    g->module_name = g_strdup(module_name);
+    g->module_name = g_strdup(module->name(module));
     g->callback = final_callback;
     g->data = data;
     g->parent = parent;
@@ -1542,7 +1546,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
     dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
   // clang-format off
-  gchar *query = g_strdup_printf("SELECT name"
+  gchar *query = g_strdup_printf("SELECT name, writeprotect"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
@@ -1575,6 +1579,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const char *name = (char *)sqlite3_column_text(stmt, 0);
+        const gboolean write_protect = (gboolean)sqlite3_column_int(stmt, 1);
         if(retrieve_list)
         {
           // we only show it if module is in favorite
@@ -1589,7 +1594,10 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
         if(config && strstr(config, txt))
         {
           GtkWidget *mi = gtk_menu_item_new_with_label("");
-          gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+          gchar *local_name =
+            write_protect
+            ? dt_util_localize_segmented_name(name, TRUE)
+            : g_strdup(name);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s",
                                               iop->name(), iop->multi_name, local_name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
@@ -1750,7 +1758,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       isdefault = TRUE;
 
     mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu,
-                                            &submenu, &prev_split, isdefault);
+                                            &submenu, &prev_split,
+                                            isdefault, chk_writeprotect);
 
     if(module
        && ((op_params_size == 0

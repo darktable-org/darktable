@@ -471,9 +471,14 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GtkWidget *mainmenu,
                                               GtkWidget **submenu,
                                               gchar ***prev_split,
-                                              gboolean isdefault)
+                                              gboolean isdefault,
+                                              gboolean writeprotect)
 {
-  gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+  gchar *local_name =
+    writeprotect ?
+    dt_util_localize_segmented_name(name, FALSE)
+    : g_strdup(name);
+
   gchar **split = g_strsplit(local_name, "|", -1);
   gchar **s = split;
   gchar **p = *prev_split;
