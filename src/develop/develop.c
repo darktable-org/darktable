@@ -798,11 +798,22 @@ static void _dev_auto_module_label(dt_develop_t *dev,
     if(preset_name)
       snprintf(module->multi_name,
                sizeof(module->multi_name), "%s", preset_name);
+    else if(strlen(module->multi_name) > strspn(module->multi_name, "0123456789"))
+    {
+      if(module->multi_name[0] != '*')
+      {
+        // prepend asterisk to indicate changed from preset
+        int len = MIN(strlen(module->multi_name), sizeof(module->multi_name) - 2);
+        memmove(module->multi_name + 1, module->multi_name, len);
+        module->multi_name[0] = '*';
+        module->multi_name[len + 1] = '\0';
+      }
+    }
     else if(module->multi_priority != 0)
       snprintf(module->multi_name,
                sizeof(module->multi_name), "%d", module->multi_priority);
     else
-      g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+      module->multi_name[0] = '\0';
 
     g_free(preset_name);
 
