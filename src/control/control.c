@@ -354,7 +354,7 @@ void dt_control_shutdown()
   err = dt_pthread_join(s->kick_on_workers_thread);
   dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined kicker%s", err ? ", error" : "");
 
-  for(int k = 0; k < s->num_threads-1; k++)
+  for(int k = 0; k < s->num_threads; k++)
   {
     err = dt_pthread_join(s->thread[k]);
     dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined num_thread %i%s", k, err ? ", error" : "");
