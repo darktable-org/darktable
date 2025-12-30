@@ -3746,7 +3746,7 @@ static void _preset_autoapply_edit(GtkButton *button,
   {
     const int rowid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    dt_gui_presets_show_edit_dialog(d->edit_preset, self->name(self),
+    dt_gui_presets_show_edit_dialog(d->edit_preset,
                                     rowid, G_CALLBACK(_preset_autoapply_changed),
                                     self, FALSE, FALSE, FALSE, GTK_WINDOW(d->dialog));
   }

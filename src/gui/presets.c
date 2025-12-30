@@ -929,7 +929,6 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
 }
 
 void dt_gui_presets_show_edit_dialog(const char *name_in,
-                                     const char *module_name,
                                      int rowid,
                                      GCallback final_callback,
                                      gpointer data,

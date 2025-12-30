@@ -1112,17 +1112,16 @@ static void tree_row_activated_presets(GtkTreeView *tree,
   {
     // For leaf nodes, open editing window if the preset is not writeprotected
     gint rowid;
-    gchar *name, *operation;
+    gchar *name;
     GdkPixbuf *editable;
     gtk_tree_model_get(model, &edited_iter,
                        P_ROWID_COLUMN, &rowid,
                        P_NAME_COLUMN, &name,
-                       P_OPERATION_COLUMN, &operation,
                        P_EDITABLE_COLUMN, &editable,
                        -1);
     if(editable == NULL)
     {
-      dt_gui_presets_show_edit_dialog(name, operation,
+      dt_gui_presets_show_edit_dialog(name,
                                       rowid,
                                       G_CALLBACK(edit_preset_response),
                                       model, TRUE, TRUE, TRUE,
@@ -1133,7 +1132,6 @@ static void tree_row_activated_presets(GtkTreeView *tree,
       g_object_unref(editable);
     }
     g_free(name);
-    g_free(operation);
   }
 }
 
