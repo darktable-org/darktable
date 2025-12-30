@@ -1057,6 +1057,7 @@ static gboolean _camctl_update_cameras(const dt_camctl_t *c)
 void *dt_update_cameras_thread(void *ptr)
 {
   dt_pthread_setname("gphoto_update");
+  dt_atomic_add_int(&darktable.control->running_jobs, 1);
   /* wait until dt_camctl_new() has created darktable.camctl
       This might take some time depending on initial work like updating xmp / splash
   */
