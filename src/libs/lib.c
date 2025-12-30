@@ -491,7 +491,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, FALSE);
+    mi = dt_insert_preset_in_menu_hierarchy(name,
+                                            &menu_path, mainmenu, &submenu, &prev_split,
+                                            FALSE, writeprotect);
 
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
