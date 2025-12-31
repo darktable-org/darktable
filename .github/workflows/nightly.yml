@@ -113,6 +113,7 @@ jobs:
             libopenjp2-7-dev \
             libsharpyuv-dev \
             libx265-dev \
+            libwebm-dev \
             x11proto-dev \
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
