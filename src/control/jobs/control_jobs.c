@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,6 +92,7 @@ typedef struct dt_control_export_t
                                    // resets things like overwrite
                                    // once the export
   // is dispatched, but we have to keep that information
+  void *fdata;
   gboolean high_quality, upscale, export_masks, is_scaling;
   double scale_factor;
   char style[128];
@@ -1815,11 +1816,9 @@ static int32_t _control_export_job_run(dt_job_t *job)
     dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = settings->sdata;
+  dt_imageio_module_data_t *fdata = settings->fdata;
 
   gboolean tag_change = FALSE;
-
-  // get a thread-safe fdata struct (one jpeg struct per thread etc):
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
 
   if(mstorage->initialize_store)
   {
@@ -2553,6 +2552,7 @@ void dt_control_export(GList *imgid_list,
   data->max_height = max_height;
   data->format_index = format_index;
   data->storage_index = storage_index;
+
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(storage_index);
   g_assert(mstorage);
   // get shared storage param struct (global sequence counter, one picasa connection etc)
@@ -2565,6 +2565,19 @@ void dt_control_export(GList *imgid_list,
     return;
   }
   data->sdata = sdata;
+
+  dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_index(format_index);
+  g_assert(mformat);
+  void *fdata = mformat->get_params(mformat);
+  if(fdata == NULL)
+  {
+    dt_control_log(_("failed to get parameters from format module `%s', aborting export.."),
+                   mformat->name());
+    dt_control_job_dispose(job);
+    return;
+  }
+  data->fdata = fdata;
+
   data->high_quality = high_quality;
   data->export_masks = export_masks;
   data->upscale = ((max_width == 0 && max_height == 0)
