@@ -22,7 +22,9 @@
 #include "develop/imageop.h"
 
 /** save preset to file */
-void dt_presets_save_to_file(const int rowid, const char *preset_name, const char *filedir);
+void dt_presets_save_to_file(const int rowid,
+                             const char *preset_name,
+                             const char *filedir);
 
 /** load preset from file */
 gboolean dt_presets_import_from_file(const char *preset_path);
@@ -47,9 +49,11 @@ char *dt_presets_get_multi_name(const char *name,
                                 const gboolean localize);
 
 /** get currently active preset name for the module */
-gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);
+gchar *dt_get_active_preset_name(dt_iop_module_t *module,
+                                 gboolean *writeprotect);
 
-/** helper for creating menu hierarchy, generates submenus as indicated by vertical bars in name */
+/** helper for creating menu hierarchy, generates submenus as
+ * indicated by vertical bars in name */
 GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GSList **menu_path,
                                               GtkWidget *mainmenu,
