@@ -346,9 +346,10 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module,
                                  gboolean *writeprotect)
 {
   sqlite3_stmt *stmt;
-  // if we sort by writeprotect DESC then in case user copied the writeprotected preset
-  // then the preset name returned will be writeprotected and thus not deletable
-  // sorting ASC prefers user created presets.
+  // if we sort by writeprotect DESC then in case user copied the
+  // writeprotected preset then the preset name returned will be
+  // writeprotected and thus not deletable sorting ASC prefers user
+  // created presets.
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
