@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -456,17 +456,19 @@ try_again:
       {
         GFile *gfile = g_file_new_for_path(filename);
 
-        GFileInfo *info = g_file_query_info(
-          gfile,
-          G_FILE_ATTRIBUTE_TIME_MODIFIED,
-          G_FILE_QUERY_INFO_NONE,
-          NULL,
-          NULL);
+        GFileInfo *info = g_file_query_info
+          (gfile,
+           G_FILE_ATTRIBUTE_TIME_MODIFIED,
+           G_FILE_QUERY_INFO_NONE,
+           NULL,
+           NULL);
 
         GTimeSpan export_file_timestamp = 0;
 
-        if (info) {
-          if (g_file_info_has_attribute(info, G_FILE_ATTRIBUTE_TIME_MODIFIED)) {
+        if(info)
+        {
+          if (g_file_info_has_attribute(info, G_FILE_ATTRIBUTE_TIME_MODIFIED))
+          {
             time_t mtime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
             GDateTime *gdt = g_date_time_new_from_unix_local(mtime);
             export_file_timestamp = dt_datetime_gdatetime_to_gtimespan(gdt);
