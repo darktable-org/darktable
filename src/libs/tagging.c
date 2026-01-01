@@ -37,7 +37,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
-#define FLOATING_ENTRY_WIDTH DT_PIXEL_APPLY_DPI(150)
+#define FLOATING_ENTRY_WIDTH DT_PIXEL_APPLY_DPI(250)
 
 DT_MODULE(1)
 
