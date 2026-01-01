@@ -927,22 +927,6 @@ popover separator
   background-color: @selected_bg_color;
 }
 
-popover *
-{
-  background-color: @tooltip_bg_color;
-}
-
-#tag-completion *
-{
-  background-color: @tooltip_bg_color;
-}
-
-#tag-completion box
-{
-  background-color: @tooltip_bg_color;
-  border : 1px solid @button_border;
-}
-
 combobox separator
 {
   min-height: 0.07em;
@@ -2552,4 +2536,23 @@ window headerbar button.titlebutton
     color: white;
     border: none;
     margin: 8px;                    /* Spaces around button */
+}
+
+#tag-completion box
+{
+  background-color: @tooltip_bg_color;
+  border : 1px solid @button_border;
+}
+
+/* the popover entry */
+popover *
+{
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
+}
+
+/* the popover completion list */
+#tag-completion *:selected
+{
+  background-color: @selected_bg_color;
 }
