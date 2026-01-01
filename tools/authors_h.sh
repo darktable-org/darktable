@@ -44,7 +44,7 @@ function print_section()
     if [ -n "${CONTENT}" ]; then
         echo "static const char *section${SECTIONS}[] = {" >> "$H_FILE"
         echo "$CONTENT" >> "$H_FILE"
-        echo "  NULL };" >> "$H_FILE"
+        echo ",NULL };" >> "$H_FILE"
         echo "gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _(\"${SECTION}\"), section${SECTIONS});" >> "$H_FILE"
         echo "" >> "$H_FILE"
     fi
@@ -71,7 +71,7 @@ while IFS="" read -r p || [ -n "$p" ]; do
 
       #on some weird configs read doesn't remove new line, remove it here just to be sure
       LINE=$(echo -n "$p" | tr -d '[:cntrl:]')
-      CONTENT="\"$LINE\",$CONTENT"
+      CONTENT+="${CONTENT:+,}\"$LINE\""
   fi
 done < "$AUTHORS"
 
