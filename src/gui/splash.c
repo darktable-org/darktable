@@ -253,6 +253,7 @@ void darktable_splash_screen_set_progress(const char *msg)
       showing_remaining = FALSE;
     }
     _process_all_gui_events();
+    gdk_display_sync(gdk_display_get_default());
   }
 }
 
