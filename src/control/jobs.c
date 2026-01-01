@@ -612,9 +612,8 @@ double dt_control_job_get_progress(const dt_job_t *job)
 
 
 // moved out of control.c to be able to make some helper functions static
-void dt_control_jobs_init()
+void dt_control_jobs_init(dt_control_t *control)
 {
-  dt_control_t *control = darktable.control;
   // start threads
   control->num_threads = dt_worker_threads();
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
@@ -682,15 +681,6 @@ gboolean dt_control_all_running()
   dt_control_t *control = darktable.control;
   const int requested = control->num_threads + 1 + DT_CTL_WORKER_RESERVED;
   return dt_atomic_get_int(&control->running_jobs) == requested;
-}
-
-void dt_control_jobs_cleanup()
-{
-  dt_control_t *control = darktable.control;
-  free(control->job);
-  control->job = NULL;
-  free(control->thread);
-  control->thread = NULL;
 }
 
 int dt_control_jobs_pending()
