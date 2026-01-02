@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -340,6 +340,30 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
     }
   }
   return TRUE;
+}
+
+void dt_presets_get_filter(const dt_image_t *image,
+                           int *iformat,
+                           int *excluded)
+{
+  const gboolean is_raw = dt_image_is_rawprepare_supported(image);
+  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+
+  *iformat = 0;
+  *excluded = 0;
+
+  if(is_raw | has_matrix)
+    *iformat |= FOR_RAW;
+  else
+    *iformat |= FOR_LDR;
+
+  if(dt_image_is_hdr(image))
+    *iformat |= FOR_HDR;
+
+  if(dt_image_monochrome_flags(image))
+    *excluded |= FOR_NOT_MONO;
+  else
+    *excluded |= FOR_NOT_COLOR;
 }
 
 gchar *dt_get_active_preset_name(dt_iop_module_t *module,

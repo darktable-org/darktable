@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@ gboolean dt_presets_import_from_file(const char *preset_path);
 
 /** does the module support autoapplying presets ? */
 gboolean dt_presets_module_can_autoapply(const gchar *operation);
+
+/** get the preset filters */
+void dt_presets_get_filter(const dt_image_t *image,
+                           int *iformat,
+                           int *excluded);
 
 /** get preset multi_name for given module params */
 char *dt_presets_get_module_label(const char *module_name,
