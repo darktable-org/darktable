@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/iop_group.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -2777,23 +2778,14 @@ static void _dt_dev_image_changed_callback(gpointer instance,
            "       AND ?8 BETWEEN exposure_min AND exposure_max"
            "       AND ?9 BETWEEN aperture_min AND aperture_max"
            "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+           "       AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0))"
            " ORDER BY writeprotect DESC, name DESC"
            " LIMIT 1");
   // clang-format on
 
   int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image))
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
-
   int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
+  dt_presets_get_filter(image, &iformat, &excluded);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
