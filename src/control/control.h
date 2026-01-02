@@ -175,7 +175,6 @@ typedef struct dt_control_t
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
-  double last_expose_time;
 
   // job management
   dt_atomic_int running;
@@ -249,7 +248,20 @@ void dt_control_cleanup(const gboolean withgui);
 void dt_control_quit(void);
 
 /** get threadsafe running state. */
-gboolean dt_control_running(void);
+#define dt_control_running() _control_running_with_caller(__FILE__, __LINE__, __FUNCTION__)
+static inline gboolean _control_running_with_caller(const char *file,
+                                                    const int line,
+                                                    const char *function)
+{
+  dt_control_t *c = darktable.control;
+  if(!c)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "undefined control in '%s': `%s:%d`", function, file, line);
+    return FALSE;
+  }
+  else
+    return dt_atomic_get_int(&c->running) == DT_CONTROL_STATE_RUNNING;
+}
 
 // thread-safe interface between core and gui.
 // is the locking really needed?

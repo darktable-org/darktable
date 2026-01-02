@@ -1627,9 +1627,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   /* start the event loop */
   if(dt_control_all_running())
   {
+    dt_print(DT_DEBUG_CONTROL, "gtk_main() started");
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
     g_atomic_int_set(&darktable.gui_running, 0);
+    dt_print(DT_DEBUG_CONTROL, "gtk_main() stopped");
   }
   if(darktable.gui->surface)
   {

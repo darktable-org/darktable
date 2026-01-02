@@ -79,8 +79,7 @@ void dt_control_job_set_progress_message(dt_job_t *job, const char *message, ...
 void dt_control_job_set_progress(dt_job_t *job, const double value);
 double dt_control_job_get_progress(const dt_job_t *job);
 
-void dt_control_jobs_init(void);
-void dt_control_jobs_cleanup(void);
+void dt_control_jobs_init(struct dt_control_t *control);
 int dt_control_jobs_pending(void);
 gboolean dt_control_all_running(void);
 

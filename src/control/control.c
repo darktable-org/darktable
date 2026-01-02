@@ -109,10 +109,30 @@ const dt_action_def_t dt_action_def_modifiers
 
 void dt_control_init(const gboolean withgui)
 {
-  dt_control_t *s = darktable.control = calloc(1, sizeof(dt_control_t));
+  dt_control_t *s = calloc(1, sizeof(dt_control_t));
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
+  if(!withgui)
+  {
+    darktable.control = s;
+    return;
+  }
 
-  if(!withgui) return;
+  /* set control struct data as not already cleared by calloc or for readability */
+  s->shortcuts = g_sequence_new(g_free);
+  s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
+  s->mapping_widget = NULL;
+  s->confirm_mapping = TRUE;
+  s->widget_definitions = g_ptr_array_new ();
+  s->input_drivers = NULL;
+  s->mouse_over_id = s->last_clicked_filmstrip_id = NO_IMGID;
+
+  pthread_cond_init(&s->cond, NULL);
+  dt_pthread_mutex_init(&s->cond_mutex, NULL);
+  dt_pthread_mutex_init(&s->queue_mutex, NULL);
+  dt_pthread_mutex_init(&s->res_mutex, NULL);
+  dt_pthread_mutex_init(&s->global_mutex, NULL);
+  dt_pthread_mutex_init(&s->progress_system.mutex, NULL);
+  dt_pthread_mutex_init(&s->log_mutex, NULL);
 
   s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL,
     "global",
@@ -193,19 +213,14 @@ void dt_control_init(const gboolean withgui)
     NULL,
     NULL };
 
+  // same thread as init
+  s->gui_thread = pthread_self();
+  // The rest requires global darktable.control to be set
+  darktable.control = s;
+  // start threads, this 
+  dt_control_jobs_init(s);
+
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
-
-  s->shortcuts = g_sequence_new(g_free);
-  s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
-  s->mapping_widget = NULL;
-  s->confirm_mapping = TRUE;
-  s->widget_definitions = g_ptr_array_new ();
-  s->input_drivers = NULL;
-  dt_atomic_set_int(&s->quitting, 0);
-  dt_atomic_set_int(&s->pending_jobs, 0);
-  dt_atomic_set_int(&s->running_jobs, 0);
-  s->cups_started = FALSE;
-
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
   dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
@@ -217,33 +232,6 @@ void dt_control_init(const gboolean withgui)
 
   s->actions_modifiers = dt_action_define(&s->actions_global, NULL,
                                           N_("modifiers"), NULL, &dt_action_def_modifiers);
-
-  // same thread as init
-  s->gui_thread = pthread_self();
-
-  // s->last_expose_time = dt_get_wtime();
-  s->log_pos = s->log_ack = 0;
-  s->busy = 0;
-  s->log_message_timeout_id = 0;
-  dt_pthread_mutex_init(&s->log_mutex, NULL);
-
-  s->toast_pos = s->toast_ack = 0;
-  s->toast_message_timeout_id = 0;
-
-  pthread_cond_init(&s->cond, NULL);
-  dt_pthread_mutex_init(&s->cond_mutex, NULL);
-  dt_pthread_mutex_init(&s->queue_mutex, NULL);
-  dt_pthread_mutex_init(&s->res_mutex, NULL);
-  dt_pthread_mutex_init(&s->global_mutex, NULL);
-  dt_pthread_mutex_init(&s->progress_system.mutex, NULL);
-
-  // start threads
-  dt_control_jobs_init();
-
-  s->button_down = 0;
-  s->button_down_which = 0;
-  s->mouse_over_id = NO_IMGID;
-  s->lock_cursor_shape = FALSE;
 }
 
 void dt_control_forbid_change_cursor()
@@ -283,11 +271,6 @@ void dt_control_change_cursor(dt_cursor_t curs)
   dt_control_shutdown() is called when darktable closes, it checks for pending work (threads to be joined)
     via DT_CONTROL_STATE_CLEANUP before doing so.
 */
-
-gboolean dt_control_running()
-{
-  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
-}
 
 void dt_control_quit()
 {
@@ -370,12 +353,14 @@ void dt_control_shutdown()
 void dt_control_cleanup(const gboolean withgui)
 {
   dt_control_t *s = darktable.control;
+  darktable.control = NULL;
   if(withgui)
   {
     // vacuum TODO: optional?
     // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
     // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "vacuum", NULL, NULL, NULL);
-    dt_control_jobs_cleanup();
+    free(s->job);
+    free(s->thread);
     dt_pthread_mutex_destroy(&s->queue_mutex);
     dt_pthread_mutex_destroy(&s->cond_mutex);
     dt_pthread_mutex_destroy(&s->log_mutex);
@@ -384,7 +369,6 @@ void dt_control_cleanup(const gboolean withgui)
     if(s->shortcuts) g_sequence_free(s->shortcuts);
     if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
   }
-  darktable.control = NULL;
   free(s);
 }
 
