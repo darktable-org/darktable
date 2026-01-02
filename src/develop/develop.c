@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1566,27 +1566,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean is_display_referred = dt_is_display_referred();
   const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
-  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
-
-  //  set filters
 
   int iformat = 0;
-  if(is_raw)
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-
-  if(has_matrix)
-    iformat |= FOR_MATRIX;
-
-  if(dt_image_is_hdr(image))
-    iformat |= FOR_HDR;
-
   int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
+  dt_presets_get_filter(image, &iformat, &excluded);
 
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
@@ -1616,7 +1599,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "          AND ?8 BETWEEN exposure_min AND exposure_max"
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+           "          AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0))))"
            // skip non iop modules:
            "   AND operation NOT IN"
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
@@ -1635,7 +1618,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "                    AND ?8 BETWEEN exposure_min AND exposure_max"
            "                    AND ?9 BETWEEN aperture_min AND aperture_max"
            "                    AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "                    AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0)))))"
+           "                    AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0)))))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
