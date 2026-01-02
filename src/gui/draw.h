@@ -121,6 +121,50 @@ static inline void dt_draw_grid(cairo_t *cr,
   }
 }
 
+static inline void dt_draw_grid_xy(cairo_t *cr,
+                                   const int num_x,
+                                   const int num_y,
+                                   const int left,
+                                   const int top,
+                                   const int right,
+                                   const int bottom,
+                                   const gboolean border_left,
+                                   const gboolean border_top,
+                                   const gboolean border_right,
+                                   const gboolean border_bottom)
+{
+  float width = right - left;
+  float height = bottom - top;
+
+  // Draw vertical lines (num_x divisions)
+  const int k_min_x = border_left ? 0 : 1;
+  const int k_max_x = border_right ? num_x : num_x - 1;
+
+  for(int k = k_min_x; k <= k_max_x; k++)
+  {
+    dt_draw_line(cr,
+                 left + k / (float)num_x * width,
+                 top,
+                 left + k / (float)num_x * width,
+                 bottom);
+    cairo_stroke(cr);
+  }
+
+  // Draw horizontal lines (num_y divisions)
+  const int k_min_y = border_top ? 0 : 1;
+  const int k_max_y = border_bottom ? num_y : num_y - 1;
+
+  for(int k = k_min_y; k <= k_max_y; k++)
+  {
+    dt_draw_line(cr,
+                 left,
+                 top + k / (float)num_y * height,
+                 right,
+                 top + k / (float)num_y * height);
+    cairo_stroke(cr);
+  }
+}
+
 static inline float dt_curve_to_mouse(const float x,
                                       const float zoom_factor,
                                       const float offset)
