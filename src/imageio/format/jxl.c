@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2024 darktable developers.
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   }
   else
   {
-    basic_info.uses_original_profile = params->original == FALSE ? JXL_FALSE : JXL_TRUE;
+    basic_info.uses_original_profile = JXL_FALSE;
     const float distance
 #if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
         = MIN(params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
