@@ -140,14 +140,16 @@ void dt_wb_presets_init(const char *alternative)
   else
     g_strlcpy(filename, alternative, sizeof(filename));
 
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading wb_presets from `%s'", filename);
-  if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
+  const gboolean preset_file = g_file_test(filename, G_FILE_TEST_EXISTS);
+  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading wb_presets from `%s'%s",
+    filename, preset_file ? "" : " missing");
+  if(!preset_file) return;
 
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[wb_presets] error: parsing json from `%s' failed\n%s", filename, error->message);
+             "[wb_presets] error: parsing json from `%s' failed: %s", filename, error->message);
     g_error_free(error);
     g_object_unref(parser);
     return;
@@ -157,8 +159,6 @@ void dt_wb_presets_init(const char *alternative)
 
   JsonReader *reader = NULL;
   gboolean valid = TRUE;
-
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading noiseprofile file");
 
   JsonNode *root = json_parser_get_root(parser);
   if(!root) _ERROR("can't get the root node");
@@ -198,15 +198,13 @@ void dt_wb_presets_init(const char *alternative)
       g_strdup(json_reader_get_string_value(reader));
     json_reader_end_member(reader);
 
-    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found maker `%s'",
-             wb_presets[wb_presets_count].make);
     // go through all models and check those
 
     if(!json_reader_read_member(reader, "models"))
       _ERROR("missing `models`");
 
     const int n_models = json_reader_count_elements(reader);
-    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d models", n_models);
+    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d models for maker `%s'", n_models, wb_presets[wb_presets_count].make);
 
     for(int j = 0; j < n_models; j++)
     {
@@ -223,15 +221,12 @@ void dt_wb_presets_init(const char *alternative)
 
       json_reader_end_member(reader);
 
-      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %s",
-               wb_presets[wb_presets_count].model);
-
       if(!json_reader_read_member(reader, "presets"))
         _ERROR("missing `presets`");
 
       const int n_presets = json_reader_count_elements(reader);
-      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d presets",
-               n_presets);
+      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d presets for `%s'",
+               n_presets, wb_presets[wb_presets_count].model);
 
       for(int k = 0; k < n_presets; k++)
       {
