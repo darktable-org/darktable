@@ -552,10 +552,12 @@ static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   gtk_widget_set_visible(gui->original, !lossless);
 }
 
+/*
 static void original_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
 {
   dt_conf_set_bool("plugins/imageio/format/jxl/original", dt_bauhaus_combobox_get(widget));
 }
+*/
 
 static void effort_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
 {
@@ -608,6 +610,15 @@ void gui_init(dt_imageio_module_format_t *self)
                                 "quality comparable\n100 = lossless"));
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), gui);
 
+/* As of now we should not expose this control at all:
+   - For "truly lossless" compression the original_profile should be set to
+     TRUE to avoid RGB->XYB->RGB color space conversions, so it should not be
+     user-controllable. We have already hidden this control for lossless mode.
+   - For lossy compression setting original_profile to TRUE may result in
+     suboptimal quality, see https://github.com/libjxl/libjxl/issues/4552
+     (If this issue is resolved, we could bring this control back, which is
+     why it is commented out rather than removed.)
+
   // encoding color profile combobox
   const int original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1;
 
@@ -623,6 +634,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gtk_widget_set_visible(gui->original, quality < 100);
   gtk_widget_set_no_show_all(gui->original, TRUE);
+*/
 
   // encoding effort slider
   gui->effort = dt_bauhaus_slider_new_with_range(
