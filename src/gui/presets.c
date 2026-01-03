@@ -1183,6 +1183,8 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
+  char *format_filter = dt_presets_get_filter(image);
+
   // Take the first auto-applied preset (autoapply = 1) and select first the
   // user's presets if they exist (writeprotect = 0) by ordering on writeprotect.
   // Also make sure we pick the last user's defined preset (ORDER BY rowid DESC).
@@ -1198,13 +1200,16 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
      "           AND ?8 BETWEEN exposure_min AND exposure_max"
      "           AND ?9 BETWEEN aperture_min AND aperture_max"
      "           AND ?10 BETWEEN focal_length_min AND focal_length_max"
-     "           AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0))"
+     "           AND (%s)"
      "           AND operation NOT IN"
      "               ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
      "  OR (name = ?13)) AND op_version = ?14"
      " ORDER BY writeprotect ASC, rowid DESC",
+     format_filter,
      is_display_referred?"":"basecurve");
   // clang-format on
+
+  g_free(format_filter);
 
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
@@ -1212,9 +1217,6 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
                                 : (has_matrix && is_scene_referred
                                    ? BUILTIN_PRESET("scene-referred default")
                                    : "\t\n");
-  int iformat = 0;
-  int excluded = 0;
-  dt_presets_get_filter(image, &iformat, &excluded);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
@@ -1232,8 +1234,6 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
                                                fminf(1000000, image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, module->version());
 

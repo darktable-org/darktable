@@ -31,9 +31,7 @@ gboolean dt_presets_import_from_file(const char *preset_path);
 gboolean dt_presets_module_can_autoapply(const gchar *operation);
 
 /** get the preset filters */
-void dt_presets_get_filter(const dt_image_t *image,
-                           int *iformat,
-                           int *excluded);
+char *dt_presets_get_filter(const dt_image_t *image);
 
 /** get preset multi_name for given module params */
 char *dt_presets_get_module_label(const char *module_name,
