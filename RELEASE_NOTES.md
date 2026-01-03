@@ -69,7 +69,8 @@ changes (where available).
 - Fixed images exported with wrong settings when using multi-preset
   export.
 
-- Fixed wrong RAW specific auto-applied preset to non RAW images.
+- Fixed wrong RAW specific auto-applied preset being applied to non
+  RAW images.
 
 ## Lua
 
