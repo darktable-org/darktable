@@ -2765,6 +2765,8 @@ static void _dt_dev_image_changed_callback(gpointer instance,
 
   if(!image) return;
 
+  char *format_filter = dt_presets_get_filter(image);
+
   char query[1024];
   // clang-format off
   snprintf(query, sizeof(query),
@@ -2778,14 +2780,13 @@ static void _dt_dev_image_changed_callback(gpointer instance,
            "       AND ?8 BETWEEN exposure_min AND exposure_max"
            "       AND ?9 BETWEEN aperture_min AND aperture_max"
            "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "       AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0))"
+           "       AND (%s)"
            " ORDER BY writeprotect DESC, name DESC"
-           " LIMIT 1");
+           " LIMIT 1",
+           format_filter);
   // clang-format on
 
-  int iformat = 0;
-  int excluded = 0;
-  dt_presets_get_filter(image, &iformat, &excluded);
+  g_free(format_filter);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -2799,9 +2800,6 @@ static void _dt_dev_image_changed_callback(gpointer instance,
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
 
   dt_image_cache_read_release(image);
 
