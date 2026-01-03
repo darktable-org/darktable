@@ -22,6 +22,10 @@
 #include "common/dynload.h"
 #include "common/dlopencl.h"
 
+#ifdef __APPLE__
+#include <dlfcn.h>
+#endif
+
 #include <assert.h>
 #include <signal.h>
 #include <stdio.h>
@@ -36,6 +40,19 @@ static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Ver
 static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", NULL };
 #endif
 
+void dt_dlopencl_close(dt_dlopencl_t *ocl)
+{
+  free(ocl->symbols);
+  g_free(ocl->library);
+#ifndef __APPLE__
+  if(!g_module_close(ocl->gmodule))
+    dt_print(DT_DEBUG_OPENCL, "Couldn't close OpenCL library");
+#else
+  if(dlclose(ocl->gmodule))
+    dt_print(DT_DEBUG_OPENCL, "Couldn't close OpenCL library");
+#endif
+  free(ocl);
+}
 
 /* only for debugging: default noop function for all unassigned function pointers */
 void dt_dlopencl_noop(void)
@@ -210,6 +227,8 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
 
   if(!success)
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library");
+  else
+    ocl->gmodule = module->gmodule;
 
   free(module);
 
