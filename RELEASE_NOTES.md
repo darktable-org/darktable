@@ -64,6 +64,11 @@ changes (where available).
 - Fixed missing help URL, pointing to the online documentation, for
   the new AgX module.
 
+- Fixed wrong handling of overwrite if changed in export.
+
+- Fixed images exported with wrong settings when using multi-preset
+  export.
+
 ## Lua
 
 ### API Version
