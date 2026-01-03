@@ -644,10 +644,6 @@ void dt_control_jobs_init()
     params->threadid = k;
     err |= dt_pthread_create(&control->thread_res[k], _control_work_res, params);
   }
-  /* create thread taking care of connecting gphoto2 devices */
-#ifdef HAVE_GPHOTO2
-  err |= dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
-#endif
 
   if(err != 0)
   {
@@ -671,6 +667,22 @@ void dt_control_jobs_init()
     if(running != requested)
       dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] ERROR STARTED %d THREADS of %d, PROBLEMS AHEAD",
         running, requested);
+
+#ifdef HAVE_GPHOTO2
+    else
+    {
+      /* create thread taking care of connecting gphoto2 devices if all control jobs are fine*/
+      dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
+      for(int i = 0; i < 1000; i++)
+      {
+        running = dt_atomic_get_int(&control->running_jobs);
+        if(running == requested+1) break;
+        g_usleep(1000);   // let's wait for up to 1sec
+      }
+      if(running != requested+1)
+        dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] ERROR STARTING CAMERA THREAD");
+    }
+#endif
   }
 }
 
@@ -680,7 +692,10 @@ gboolean dt_control_all_running()
     return FALSE;
 
   dt_control_t *control = darktable.control;
-  const int requested = control->num_threads + 1 + DT_CTL_WORKER_RESERVED;
+  int requested = control->num_threads + 1 + DT_CTL_WORKER_RESERVED;
+#ifdef HAVE_GPHOTO2
+  requested++;
+#endif
   return dt_atomic_get_int(&control->running_jobs) == requested;
 }
 
