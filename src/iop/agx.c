@@ -2578,7 +2578,7 @@ void init_presets(dt_iop_module_so_t *self)
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"),
                                  self->op, self->version(),
-                                 FOR_RAW | FOR_MATRIX | FOR_HDR);
+                                 FOR_RAW | FOR_MATRIX);
     dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
