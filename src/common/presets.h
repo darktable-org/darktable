@@ -65,6 +65,17 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               gboolean isdefault,
                                               gboolean writeprotect);
 
+GtkWidget *dt_insert_preset_in_menu_hierarchy2(const char *name,
+                                               const char *action,
+                                               GSList **menu_path,
+                                               GtkWidget *mainmenu,
+                                               GtkWidget **submenu,
+                                               GSList **menu_path2,
+                                               GMenu *mainmenu2,
+                                               GMenu **submenu2,
+                                               gchar ***prev_split,
+                                               gboolean isdefault);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
