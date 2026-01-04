@@ -1298,7 +1298,7 @@ static void _create_matrices(const primaries_params_t *params,
   // the start of the process.  Its inverse (see the next steps), when
   // applied to RGB values in the curve's working space (which
   // actually uses the base primaries), will undo the rotation and,
-  // depending on purity, push colours further from achromatic,
+  // depending on purity, push colors further from achromatic,
   // resaturating them.
   dt_colormatrix_t outset_and_unrotated_to_xyz_transposed;
   dt_make_transposed_matrices_from_primaries_and_whitepoint
@@ -1313,7 +1313,7 @@ static void _create_matrices(const primaries_params_t *params,
 
   // 'tmp' is constructed the same way as
   // inbound_inset_and_rotated_to_xyz_transposed, but this matrix will
-  // be used to remap colours to the 'base' profile, so we need to
+  // be used to remap colors to the 'base' profile, so we need to
   // invert it.
   dt_colormatrix_t rendering_to_base_transposed;
   mat3SSEinv(rendering_to_base_transposed, tmp);
