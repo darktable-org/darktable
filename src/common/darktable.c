@@ -1872,6 +1872,8 @@ int dt_init(int argc,
     {
       dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init gui, aborting.");
       darktable_splash_screen_destroy();
+      free(darktable.gui);
+      darktable.gui = NULL;
       return 1;
     }
     dt_bauhaus_init();
@@ -1882,9 +1884,7 @@ int dt_init(int argc,
         && dt_get_num_threads() >= 4
         && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
   }
-  else
-    darktable.gui = NULL;
-
+ 
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
@@ -2171,8 +2171,11 @@ void dt_cleanup()
     dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
-    free(darktable.gui);
-    darktable.gui = NULL;
+    if(darktable.gui)
+    {
+      free(darktable.gui);
+      darktable.gui = NULL;
+    }
   }
   else
     dt_control_cleanup(FALSE);

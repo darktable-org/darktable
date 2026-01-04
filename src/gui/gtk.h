@@ -146,8 +146,6 @@ typedef struct dt_gui_gtk_t
   guint sidebar_scroll_mask;
 
   cairo_filter_t filter_image;    // filtering used to scale images to screen
-
-  dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
 
 typedef struct _gui_collapsible_section_t
@@ -203,7 +201,7 @@ void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
 
 void dt_open_url(const char *url);
 int dt_gui_theme_init(dt_gui_gtk_t *gui);
-int dt_gui_gtk_init(dt_gui_gtk_t *gui);
+gboolean dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 void dt_gui_gtk_quit();
