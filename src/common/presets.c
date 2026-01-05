@@ -350,23 +350,22 @@ char *dt_presets_get_filter(const dt_image_t *image)
   const gint raw = is_raw ? FOR_RAW : FOR_LDR;
   const gint mat = has_matrix ? FOR_MATRIX : 0xFFFF;
   const gint exl = dt_image_monochrome_flags(image) ? FOR_NOT_MONO : FOR_NOT_COLOR;
-  const gint hdr = dt_image_is_hdr(image) ? TRUE : FALSE; // FOR_HDR : 0;
+  const gint hdr = dt_image_is_hdr(image) ? FOR_HDR : 0xFFFF;
 
   // The rules for matching are:
   // R1. Match presets with RAW or LDR or MATRIX flag. If the picture has no matrix we
   //     ignore the preset MATRIX flag.
-  // R2. If R1 matches, then we want to macth only HDR presets if image is HDR.
+  // R2. If R1 matches, then we want to macth also HDR presets if image is HDR.
   // R3. If R1 matches, we want either presets for color or monochome images or both.
 
   return g_strdup_printf
     ("format = 0"
      " OR ((format&%d == %d OR format&%d == %d)"
-     "     AND %sformat&%d != 0"
+     "     AND format&%d != 0"
      "     AND ~format&%d != 0)",
      raw, raw,
      mat, mat,
-     hdr ? "" : "~",
-     hdr ? FOR_HDR : FOR_HDR,
+     hdr,
      exl);
 }
 
