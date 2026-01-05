@@ -1616,7 +1616,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "                    AND ?8 BETWEEN exposure_min AND exposure_max"
            "                    AND ?9 BETWEEN aperture_min AND aperture_max"
            "                    AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "                    AND (format = 0 OR (format&?11 == ?11 AND ~format&?12 != 0)))))"
+           "                    AND (%s))))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
@@ -1631,7 +1631,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
            format_filter,
-           is_display_referred ? "" : "basecurve");
+           is_display_referred ? "" : "basecurve",
+           format_filter);
   // clang-format on
 
   // query for all modules at once:
