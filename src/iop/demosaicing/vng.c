@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,10 +137,11 @@ static void lin_interpolate(float *out,
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
 */
-static inline void _ensure_abovezero(float *to, float *from, const int floats)
+static void _copy_abovezero(float *to, float *from, const int pixels)
 {
-  for(int i = 0; i < floats; i++)
-    to[i] = fmaxf(0.0f, from[i]);
+  static dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f};
+  for(int i = 0; i < pixels; i++)
+    dt_vector_max(&to[i*4], zero, &from[i*4]);
 }
 
 static void vng_interpolate(float *out,
@@ -295,14 +296,14 @@ static void vng_interpolate(float *out,
       }
     }
     if(row > 3) /* Write buffer to image */
-      _ensure_abovezero(out + 4 * ((row - 2) * width + 2), (float *)(brow[0] + 2), 4 * (width - 4));
+      _copy_abovezero(out + 4 * ((row - 2) * width + 2), (float *)(brow[0] + 2), width - 4);
 
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  _ensure_abovezero(out + (4 * ((height - 4) * width + 2)), (float *)(brow[0] + 2), 4 * (width - 4));
-  _ensure_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), 4 * (width - 4));
+  _copy_abovezero(out + (4 * ((height - 4) * width + 2)), (float *)(brow[0] + 2), width - 4);
+  _copy_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), width - 4);
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
@@ -337,7 +338,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   else
     filters4 = filters | 0x0c0c0c0cu;
 
-  const int size = (filters4 == 9u) ? 6 : 16;
+  const int lsize = (filters4 == 9u) ? 6 : 16;
   const int colors = (filters4 == 9u) ? 3 : 4;
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
@@ -351,53 +352,46 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   cl_mem dev_ips = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  int32_t(*lookup)[16][32] = NULL;
-
-
-    // build interpolation lookup table for linear interpolation which for a given offset in the sensor
-    // lists neighboring pixels from which to interpolate:
-    // NUM_PIXELS                 # of neighboring pixels to read
-    // for(1..NUM_PIXELS):
-    //   OFFSET                   # in bytes from current pixel
-    //   WEIGHT                   # how much weight to give this neighbor
-    //   COLOR                    # sensor color
-    // # weights of adjoining pixels not of this pixel's color
-    // COLORA TOT_WEIGHT
-    // COLORB TOT_WEIGHT
-    // COLORPIX                   # color of center pixel
-    const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
-    lookup = malloc(lookup_size);
-
-    for(int row = 0; row < size; row++)
-      for(int col = 0; col < size; col++)
+  const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
+  int32_t(*lookup)[16][32] = malloc(lookup_size);
+  if(!lookup) goto finish;
+  // build interpolation lookup table for linear interpolation which for a given offset in the sensor
+  // lists neighboring pixels from which to interpolate:
+  for(int row = 0; row < lsize; row++)
+  {
+    for(int col = 0; col < lsize; col++)
+    {
+      int32_t *ip = &(lookup[row][col][1]);
+      int sum[4] = { 0 };
+      const int f = fcol(row, col, filters4, xtrans);
+      // make list of adjoining pixel offsets by weight & color
+      for(int y = -1; y <= 1; y++)
       {
-        int32_t *ip = &(lookup[row][col][1]);
-        int sum[4] = { 0 };
-        const int f = fcol(row, col, filters4, xtrans);
-        // make list of adjoining pixel offsets by weight & color
-        for(int y = -1; y <= 1; y++)
-          for(int x = -1; x <= 1; x++)
-          {
-            const int weight = 1 << ((y == 0) + (x == 0));
-            const int color = fcol(row + y, col + x, filters4, xtrans);
-            if(color == f) continue;
-            *ip++ = (y << 16) | (x & 0xffffu);
-            *ip++ = weight;
-            *ip++ = color;
-            sum[color] += weight;
-          }
-        lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
-        for(int c = 0; c < colors; c++)
-          if(c != f)
-          {
-            *ip++ = c;
-            *ip++ = sum[c];
-          }
-        *ip = f;
+        for(int x = -1; x <= 1; x++)
+        {
+          const int weight = 1 << ((y == 0) + (x == 0));
+          const int color = fcol(row + y, col + x, filters4, xtrans);
+          if(color == f) continue;
+          *ip++ = (y << 16) | (x & 0xffffu);
+          *ip++ = weight;
+          *ip++ = color;
+          sum[color] += weight;
+        }
       }
+      lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
+      for(int c = 0; c < colors; c++)
+      {
+        if(c != f)
+        {
+          *ip++ = c;
+          *ip++ = sum[c];
+        }
+      }
+      *ip = f;
+    }
+  }
 
-    // Precalculate for VNG
-    static const signed char terms[]
+  static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
           -2, -1, +0, +0, 1, 0x03, -2, -1, +0, +1, 2, 0x01, -2, +0, +0, -1, 1, 0x06, -2, +0, +0, +0, 2, 0x02,
           -2, +0, +0, +1, 1, 0x03, -2, +1, -1, +0, 1, 0x04, -2, +1, +0, -1, 2, 0x04, -2, +1, +0, +0, 1, 0x06,
@@ -414,9 +408,11 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
           +0, +0, +2, +2, 2, 0x10, +0, +1, +1, +0, 1, 0x44, +0, +1, +1, +2, 1, 0x10, +0, +1, +2, -1, 2, 0x40,
           +0, +1, +2, +0, 1, 0x60, +0, +1, +2, +1, 1, 0x20, +0, +1, +2, +2, 1, 0x10, +1, -2, +1, +0, 1, 0x80,
           +1, -1, +1, +1, 1, 0x88, +1, +0, +1, +2, 1, 0x08, +1, +0, +2, -1, 1, 0x40, +1, +0, +2, +1, 1, 0x10 };
-    static const signed char chood[]
+  static const signed char chood[]
       = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
 
+  if(!only_vng_linear)
+  {
     const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
     ips = malloc(ips_size);
 
@@ -424,6 +420,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
     int code[16][16];
 
     for(int row = 0; row < prow; row++)
+    {
       for(int col = 0; col < pcol; col++)
       {
         code[row][col] = ip - ips;
@@ -468,19 +465,17 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
           }
         }
       }
+    }
 
+    dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
+    if(dev_code == NULL) goto finish;
+
+    dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
+    if(dev_ips == NULL) goto finish;
+  }
 
   dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
   if(dev_lookup == NULL) goto finish;
-
-  dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
-  if(dev_code == NULL) goto finish;
-
-  dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
-  if(dev_ips == NULL) goto finish;
-
-  // need to reserve scaled auxiliary buffer or use dev_out
-  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   // manage borders for linear interpolation part
   int border = 1;
@@ -514,6 +509,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   if(only_vng_linear)
     goto finish;
 
+  // need to reserve scaled auxiliary buffer or use dev_out
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   // do full VNG interpolation
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto finish;
