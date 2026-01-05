@@ -660,7 +660,7 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(gui->tier), "value-changed", G_CALLBACK(tier_changed), NULL);
 
   self->widget = dt_gui_vbox(gui->bpp, gui->pixel_type, gui->quality,
-                             gui->original, gui->effort, gui->tier);
+                             /* (see above) gui->original,*/ gui->effort, gui->tier);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
