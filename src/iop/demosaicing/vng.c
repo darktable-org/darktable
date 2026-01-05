@@ -175,13 +175,16 @@ static void vng_interpolate(float *out,
   // ring buffer pointing to three most recent rows processed (brow[3]
   // is only used for rotating the buffer
   float(*brow[4])[4];
-  const int prow = (filters == 9) ? 6 : 8;
-  const int pcol = (filters == 9) ? 6 : 2;
-  const int colors = (filters == 9) ? 3 : 4;
+  const gboolean is_xtrans = (filters == 9);
+  const gboolean is_4bayer = FILTERS_ARE_4BAYER(filters);
+  const gboolean is_bayer = !(is_xtrans || is_4bayer);
+  const int prow = is_xtrans ? 6 : 8;
+  const int pcol = is_xtrans ? 6 : 2;
+  const int colors = is_xtrans ? 3 : 4;
 
   // separate out G1 and G2 in RGGB Bayer patterns
   uint32_t filters4 = filters;
-  if(filters == 9 || FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
+  if(is_xtrans || is_4bayer)
     filters4 = filters;
   else if((filters & 3) == 1)
     filters4 = filters | 0x03030303u;
@@ -191,7 +194,11 @@ static void vng_interpolate(float *out,
   lin_interpolate(out, in, width, height, filters4, xtrans);
 
   // if only linear interpolation is requested we can stop it here
-  if(only_vng_linear) return;
+  if(only_vng_linear)
+  {
+    if(is_bayer) goto bayer_greens;
+    else return;
+  }
 
   char *buffer = dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
@@ -306,9 +313,9 @@ static void vng_interpolate(float *out,
   _copy_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), width - 4);
   dt_free_align(buffer);
 
-  if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
-  {
-// for Bayer mix the two greens to make VNG4
+bayer_greens:
+ if(is_bayer) // x-trans or CYGM/RGBE
+ {
     DT_OMP_FOR()
     for(int i = 0; i < height * width; i++)
       out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
@@ -328,20 +335,21 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                              const gboolean only_vng_linear)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
-
+  const gboolean is_xtrans = (filters == 9u);
+ 
   // separate out G1 and G2 in Bayer patterns
   uint32_t filters4;
-  if(filters == 9u)
+  if(is_xtrans)
     filters4 = filters;
   else if((filters & 3) == 1)
     filters4 = filters | 0x03030303u;
   else
     filters4 = filters | 0x0c0c0c0cu;
 
-  const int lsize = (filters4 == 9u) ? 6 : 16;
-  const int colors = (filters4 == 9u) ? 3 : 4;
-  const int prow = (filters4 == 9u) ? 6 : 8;
-  const int pcol = (filters4 == 9u) ? 6 : 2;
+  const int lsize = is_xtrans ? 6 : 16;
+  const int colors = is_xtrans ? 3 : 4;
+  const int prow = is_xtrans ? 6 : 8;
+  const int pcol = is_xtrans ? 6 : 2;
   const int devid = piece->pipe->devid;
 
   int *ips = NULL;
@@ -477,10 +485,21 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
   if(dev_lookup == NULL) goto finish;
 
+  if(!only_vng_linear || !is_xtrans)  // we need this for full VNG or VNG4
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    if(dev_tmp == NULL) goto finish;
+  }
+
+  /* If only_linear we still want the green equilibration for VNG4 so we write the linear
+      interpolation data to dev_tmp right here.
+  */
+  cl_mem tmp_out = only_vng_linear ? dev_tmp : dev_out;
+
   // manage borders for linear interpolation part
   int border = 1;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border),
+        CLARG(dev_in), CLARG(tmp_out), CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto finish;
 
@@ -499,22 +518,16 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
-        CLARG(dev_in), CLARG(dev_out),
+        CLARG(dev_in), CLARG(tmp_out),
         CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto finish;
   }
 
-
   if(only_vng_linear)
-    goto finish;
+    goto vng4_greens;
 
-  // need to reserve scaled auxiliary buffer or use dev_out
-  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   // do full VNG interpolation
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if(dev_tmp == NULL) goto finish;
-
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -541,7 +554,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
         CLARG(filters4), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto finish;
 
-  if(filters4 != 9)
+vng4_greens:
+  if(!is_xtrans)
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
       CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
