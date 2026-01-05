@@ -1644,21 +1644,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   // order: get shipped defaults first
   if(image)
   {
-    // only matching if filter is on:
-    int iformat = 0;
-    if(dt_image_is_rawprepare_supported(image))
-      iformat |= FOR_RAW;
-    else
-      iformat |= FOR_LDR;
-
-    if(dt_image_is_hdr(image))
-      iformat |= FOR_HDR;
-
-    int excluded = 0;
-    if(dt_image_monochrome_flags(image))
-      excluded |= FOR_NOT_MONO;
-    else
-      excluded |= FOR_NOT_COLOR;
+    char *format_filter = dt_presets_get_filter(image);
 
     // clang-format off
     query = g_strdup_printf
@@ -1674,10 +1660,13 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
        "        AND ?8 BETWEEN exposure_min AND exposure_max"
        "        AND ?9 BETWEEN aperture_min AND aperture_max"
        "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
-       "        AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+       "        AND (%s)))"
        " ORDER BY writeprotect %s, LOWER(name), rowid",
+       format_filter,
        default_first ? "DESC":"ASC");
     // clang-format on
+
+    g_free(format_filter);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
@@ -1690,8 +1679,6 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   }
   else
   {
