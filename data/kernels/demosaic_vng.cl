@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2025 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "common.h"
 
 kernel void
+#define AVGWINDOW 1
+
 vng_border_interpolate(read_only image2d_t in,
                        write_only image2d_t out,
                        const int width,
@@ -33,7 +35,6 @@ vng_border_interpolate(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const int colors = (filters == 9) ? 3 : 4;
-  const int avgwindow = 1;
 
   if(x >= border && x < width-border && y >= border && y < height-border) return;
 
@@ -41,13 +42,13 @@ vng_border_interpolate(read_only image2d_t in,
   float sum[4] = { 0.0f };
   int count[4] = { 0 };
 
-  for(int j = y-avgwindow; j <= y+avgwindow; j++)
-    for(int i = x-avgwindow; i <= x+avgwindow; i++)
+  for(int j = y-AVGWINDOW; j <= y+AVGWINDOW; j++)
+    for(int i = x-AVGWINDOW; i <= x+AVGWINDOW; i++)
     {
       if(j >= 0 && i >= 0 && j < height && i < width)
       {
         const int f = fcol(j, i, filters, xtrans);
-        sum[f] += fmax(0.0f, read_imagef(in, sampleri, (int2)(i, j)).x);
+        sum[f] += fmax(0.0f, read_imagef(in, samplerA, (int2)(i, j)).x);
         count[f]++;
       }
     }
@@ -118,7 +119,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
   float o[4] = { 0.0f };
 
   global const int *ip = lookup[y % size][x % size];
-  int num_pixels = ip[0];
+  const int num_pixels = ip[0];
   ip++;
 
   // for each adjoining pixel not of this pixel's color, sum up its weighted values
@@ -239,7 +240,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
     return;
   }
 
-  float thold = gmin + (gmax * 0.5f);
+  const float thold = gmin + (gmax * 0.5f);
   float sum[4] = { 0.0f };
   const int color = fcol(y, x, filters, xtrans);
   int num = 0;
@@ -298,7 +299,7 @@ vng_green_equilibrate(read_only image2d_t in, write_only image2d_t out, const in
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x , y));
+  float4 pixel = read_imagef(in, samplerA, (int2)(x , y));
 
   pixel.y = (pixel.y + pixel.w) / 2.0f;
   pixel.w = 0.0f;
