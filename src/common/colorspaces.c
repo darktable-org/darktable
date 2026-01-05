@@ -2020,11 +2020,18 @@ void dt_colorspaces_set_display_profile
   GdkWindow *window = gtk_widget_get_window(widget);
   HWND hwnd = (HWND)gdk_win32_window_get_handle(window);  // get window handle
   HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST); // get monitor handle
-  if(!hMonitor){ dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor handle"); return;}
+  if(!hMonitor)
+  { 
+    dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor handle"); 
+    return;
+  }
   MONITORINFOEX monitorInfo;
   monitorInfo.cbSize = sizeof(MONITORINFOEX);
   if(!GetMonitorInfoW(hMonitor, (LPMONITORINFO) &monitorInfo))  //get monitor info
-    { dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor info"); return;}
+  { 
+    dt_print(DT_DEBUG_ALWAYS, "[win32 dt_colorspaces_set_display_profile] error getting monitor info"); 
+    return;
+  }
   HDC hdc = CreateIC(L"MONITOR", monitorInfo.szDevice, NULL, NULL); // get device-info context of the monitor
   if(hdc != NULL)
   {
