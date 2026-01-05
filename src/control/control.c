@@ -203,7 +203,6 @@ void dt_control_init(const gboolean withgui)
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->quitting, 0);
   dt_atomic_set_int(&s->pending_jobs, 0);
-  dt_atomic_set_int(&s->running_jobs, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);

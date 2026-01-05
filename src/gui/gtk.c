@@ -1625,7 +1625,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(dt_control_all_running())
+  if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();

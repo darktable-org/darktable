@@ -181,7 +181,6 @@ typedef struct dt_control_t
   dt_atomic_int running;
   dt_atomic_int quitting;
   dt_atomic_int pending_jobs;
-  dt_atomic_int running_jobs;
   gboolean cups_started;
   gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex;
