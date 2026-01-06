@@ -2553,7 +2553,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
-  else if(old < 16)
+  else if(old < 16 || old == 17)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL 'per device' compiler settings might have been updated.\n\n"), DT_PERF_INFOSIZE);

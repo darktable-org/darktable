@@ -953,7 +953,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   const char* compile_opt = NULL;
 
   if(dt_conf_key_exists(compile_option_name_cname)
-     && (dt_conf_get_int("performance_configuration_version_completed") > 15))
+     && (dt_conf_get_int("performance_configuration_version_completed") > 17))
     compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
   {
@@ -962,6 +962,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     else if(!strcmp("apple", pname))
       compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
     else if(!strcmp("amdacceleratedparallelprocessing", pname))
+      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
+    else if(!strncmp("rusticl", pname, 7))
       compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
     else
       compile_opt = DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
