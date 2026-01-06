@@ -558,6 +558,13 @@ void dt_ctl_switch_mode()
   dt_ctl_switch_mode_to(mode);
 }
 
+static void _control_log_redraw()
+{
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
+}
+
+
 static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 {
   dt_control_t *dc = darktable.control;
@@ -565,8 +572,14 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
   dc->log_ack = dc->log_pos;
   dc->log_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&dc->log_mutex);
-  dt_control_log_redraw();
+  _control_log_redraw();
   return FALSE;
+}
+
+static void _control_toast_redraw()
+{
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
 static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
@@ -576,7 +589,7 @@ static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
   dc->toast_ack = dc->toast_pos;
   dc->toast_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&dc->log_mutex);
-  dt_control_toast_redraw();
+  _control_toast_redraw();
   return FALSE;
 }
 
@@ -642,8 +655,8 @@ void dt_control_button_pressed(double x,
 
 static gboolean _redraw_center(gpointer user_data)
 {
-  dt_control_log_redraw();
-  dt_control_toast_redraw();
+  _control_log_redraw();
+  _control_toast_redraw();
   return FALSE; // don't call this again
 }
 
@@ -745,29 +758,20 @@ void dt_control_busy_leave()
 
 void dt_control_queue_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_ALL);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_navigation_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
-}
-
-void dt_control_log_redraw()
-{
   if(dt_control_running())
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
-}
-
-void dt_control_toast_redraw()
-{
-  if(dt_control_running())
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
 }
 
 static int _widget_queue_draw(void *widget)

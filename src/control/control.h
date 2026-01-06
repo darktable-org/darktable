@@ -92,16 +92,6 @@ void dt_control_queue_redraw_widget(GtkWidget *widget);
  */
 void dt_control_navigation_redraw(void);
 
-/** \brief request redraw of the log widget.
-    This redraws the message label.
- */
-void dt_control_log_redraw(void);
-
-/** \brief request redraw of the toast widget.
-    This redraws the message label.
- */
-void dt_control_toast_redraw(void);
-
 void dt_ctl_switch_mode(void);
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
