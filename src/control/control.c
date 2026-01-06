@@ -220,7 +220,6 @@ void dt_control_init(const gboolean withgui)
   // same thread as init
   s->gui_thread = pthread_self();
 
-  // s->last_expose_time = dt_get_wtime();
   s->log_pos = s->log_ack = 0;
   s->busy = 0;
   s->log_message_timeout_id = 0;
@@ -282,11 +281,6 @@ void dt_control_change_cursor(dt_cursor_t curs)
   dt_control_shutdown() is called when darktable closes, it checks for pending work (threads to be joined)
     via DT_CONTROL_STATE_CLEANUP before doing so.
 */
-
-gboolean dt_control_running()
-{
-  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
-}
 
 void dt_control_quit()
 {
