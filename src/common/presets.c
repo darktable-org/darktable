@@ -496,32 +496,6 @@ static void _menu_shell_insert_sorted(GtkWidget *menu_shell,
   g_list_free(items);
 }
 
-static void _menu_shell_insert_sorted2(GMenu *menu,
-                                       GMenuItem *item,
-                                       const gchar *name)
-{
-  GMenuModel *model = G_MENU_MODEL(menu);
-
-  int num = g_menu_model_get_n_items(model);
-  gboolean found = FALSE;
-  int i;
-  for(i = 0; i < num; i++)
-  {
-    gchar *item_label = NULL;
-    GVariant *attr = g_menu_model_get_item_attribute_value(model, i, "label", G_VARIANT_TYPE_STRING);
-    if(attr)
-    {
-      item_label = g_variant_dup_string(attr, NULL);
-      g_variant_unref(attr);
-      if(g_utf8_collate(item_label, name) > 0) found = TRUE;
-      g_free(item_label);
-      if(found) break;
-    }
-  }
-
-  g_menu_insert_item(menu, i, item);
-}
-
 GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GSList **menu_path,
                                               GtkWidget *mainmenu,
@@ -576,79 +550,82 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
   return mi;
 }
 
-GtkWidget *dt_insert_preset_in_menu_hierarchy2(const char *name,
-                                               const char *action,
-                                               GSList **menu_path,
-                                               GtkWidget *mainmenu,
-                                               GtkWidget **submenu,
-                                               GSList **menu_path2,
-                                               GMenu *mainmenu2,
-                                               GMenu **submenu2,
-                                               gchar ***prev_split,
-                                               gboolean isdefault)
+static void _menu_shell_insert_sorted2(GMenu *menu,
+                                       GMenuItem *item,
+                                       const gchar *name)
+{
+  GMenuModel *model = G_MENU_MODEL(menu);
+
+  int num = g_menu_model_get_n_items(model);
+  gboolean found = FALSE;
+  int i;
+  for(i = 0; i < num; i++)
+  {
+    gchar *item_label = NULL;
+    GVariant *attr = g_menu_model_get_item_attribute_value(model, i, "label", G_VARIANT_TYPE_STRING);
+    if(attr)
+    {
+      item_label = g_variant_dup_string(attr, NULL);
+      g_variant_unref(attr);
+      if(g_utf8_collate(item_label, name) > 0) found = TRUE;
+      g_free(item_label);
+      if(found) break;
+    }
+  }
+
+  g_menu_insert_item(menu, i, item);
+}
+
+void dt_insert_preset_in_menu_hierarchy2(const char *name,
+                                         const char *action,
+                                         GSList **menu_path,
+                                         GMenu *mainmenu,
+                                         GMenu **submenu,
+                                         gchar ***prev_split,
+                                         gboolean isdefault)
 {
   gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
   gchar **split = g_strsplit(local_name, "|", -1);
   gchar **s = split;
   gchar **p = *prev_split;
   GSList *mpath = *menu_path;
-  GSList *mpath2 = *menu_path2;
-  GtkWidget *mi;
-  GMenuItem *mi2;
+  GMenuItem *mi;
   g_free(local_name);
+
   for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
     ;
+
   for(; p && *(p+1); p++)
   {
     mpath = g_slist_delete_link(mpath, mpath); // pop
-    *submenu = mpath ? gtk_menu_item_get_submenu(mpath->data) : mainmenu;
-
-    mpath2 = g_slist_delete_link(mpath2, mpath2); // pop
-    *submenu2 = mpath2 ? mpath->data : mainmenu2;
-
+    *submenu = mpath ? mpath->data : mainmenu;
   }
+
   for(; *(s+1); s++)
   {
-    GtkWidget *sm = gtk_menu_item_new_with_label(*s);
+    GMenu *sm = g_menu_new();
+    GMenuItem *smi = g_menu_item_new_submenu(*s, G_MENU_MODEL(sm));
+    _menu_shell_insert_sorted2(*submenu, smi, *s);
+    *submenu = sm;
     mpath = g_slist_prepend(mpath, sm); // push
-
-    _menu_shell_insert_sorted(*submenu, sm, *s);
-    *submenu = gtk_menu_new();
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), *submenu);
-
-    GMenu *sm2 = g_menu_new();
-    GMenuItem *smi = g_menu_item_new_submenu(*s, G_MENU_MODEL(sm2));
-    _menu_shell_insert_sorted2(*submenu2, smi, *s);
-    *submenu2 = sm2;
-    mpath2 = g_slist_prepend(mpath2, sm2); // push
-
   }
+
   *menu_path = mpath;
-  *menu_path2 = mpath2;
   g_strfreev(*prev_split);
   *prev_split = split;
+
   if(isdefault)
   {
     gchar *label = g_strdup_printf("%s %s", *s, _("(default)"));
-    mi = gtk_check_menu_item_new_with_label(label);
-    _menu_shell_insert_sorted(*submenu, mi, label);
-
-    mi2 = g_menu_item_new(label, action);
-    _menu_shell_insert_sorted2(*submenu2, mi2, label);
-
+    mi = g_menu_item_new(label, action);
+    _menu_shell_insert_sorted2(*submenu, mi, label);
     g_free(label);
   }
   else
-{
-    mi = gtk_check_menu_item_new_with_label(*s);
-    _menu_shell_insert_sorted(*submenu, mi, *s);
-
-    mi2 = g_menu_item_new(*s, action);
-    _menu_shell_insert_sorted2(*submenu2, mi2, *s);
-
+  {
+    mi = g_menu_item_new(*s, action);
+    _menu_shell_insert_sorted2(*submenu, mi, *s);
   }
-  dt_gui_add_class(mi, "dt_transparent_background");
-  return mi;
 }
 
 // clang-format off
