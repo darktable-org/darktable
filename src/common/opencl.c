@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3152,12 +3152,16 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)
     (darktable.opencl->dev[devid].context, mode, size, host, &err);
 
-  if(err != CL_SUCCESS || oversize)
+  if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant]"
-             " could not allocate %sbuffer on device '%s' id=%d: %s",
-             oversize ? "oversize " : "",
+             " could not allocate buffer on device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  if(oversize)
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_host_to_device_constant]"
+             " fallback to non-const buffer on device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 

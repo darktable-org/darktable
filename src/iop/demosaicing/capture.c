@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -731,7 +731,7 @@ static void _capture_radius(dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
       pipe, self, DT_DEVICE_NONE, NULL, NULL,
-      "%sradius=%.2f from %s image data is %s reliable",
+      "%sradius=%.2f from %s image data is %sreliable",
       same_radius ? "unchanged" : "", radius,
       enough ? "enough" : "small",
       reliable ? "" : "not ");
