@@ -13,14 +13,18 @@ jobs:
   AppImage:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable AppImage
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        compiler:
-          - { compiler: GNU12, CC: gcc-12, CXX: g++-12, packages: gcc-12 g++-12 }
+        os: [ubuntu-22.04, ubuntu-24.04-arm]
         branch:
           - { code: master, label: gitmaster }
+        include:
+          - os: ubuntu-22.04
+            compiler: { compiler: GNU12, CC: gcc-12, CXX: g++-12, packages: gcc-12 g++-12 }
+          - os: ubuntu-24.04-arm
+            compiler: { compiler: GNU14, CC: gcc-14, CXX: g++-14, packages: gcc-14 g++-14 }
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -424,7 +428,7 @@ jobs:
 
             Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
 
-            The AppImage package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible.
+            The `*-x86_64.AppImage` package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible. The `*-aarch64.AppImage` package requires glibc 2.39 or higher (e.g. Ubuntu 24.04, Debian 13, Fedora 40 and newer).
 
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
