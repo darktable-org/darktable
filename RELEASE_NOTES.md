@@ -72,6 +72,8 @@ changes (where available).
 - Fixed wrong RAW specific auto-applied preset being applied to non
   RAW images.
 
+- Fixed subtle color casts in bayer dual demosaicers.
+
 ## Lua
 
 ### API Version
