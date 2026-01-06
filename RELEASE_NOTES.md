@@ -74,6 +74,9 @@ changes (where available).
 
 - Fixed subtle color casts in bayer dual demosaicers.
 
+- RustiCL gets the default optimizing compiler flags as other
+  platforms.
+
 ## Lua
 
 ### API Version
