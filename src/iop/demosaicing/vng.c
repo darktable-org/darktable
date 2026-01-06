@@ -485,15 +485,9 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
   if(dev_lookup == NULL) goto finish;
 
-  if(!only_vng_linear || !is_xtrans)  // we need this for full VNG or VNG4
-  {
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto finish;
-  }
-
-  /* If only_linear we still want the green equilibration for VNG4 so we write the linear
-      interpolation data to dev_tmp right here.
-  */
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(dev_tmp == NULL) goto finish;
+ 
   cl_mem tmp_out = only_vng_linear ? dev_tmp : dev_out;
 
   // manage borders for linear interpolation part
@@ -525,9 +519,9 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   }
 
   if(only_vng_linear)
-    goto vng4_greens;
+    goto backcopy;
 
-  // do full VNG interpolation
+  // do full VNG interpolation; linear data is in dev_out
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -554,7 +548,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
         CLARG(filters4), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto finish;
 
-vng4_greens:
+backcopy:
   if(!is_xtrans)
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
