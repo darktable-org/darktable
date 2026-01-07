@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2025 darktable developers.
+    Copyright (C) 2014-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ const char **description(dt_iop_module_t *self)
                                 _("linear, RGB, scene-referred"));
 }
 
-static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
+static void _transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
 
@@ -102,7 +102,7 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
   }
 }
 
-static void precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void _precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   // Since the scaling is calculated by modify_roi_in use that to get them
   // This doesn't seem strictly needed but since clipping.c also does it we try
@@ -118,7 +118,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *points,
                            size_t points_count)
 {
-  precalculate_scale(self, piece);
+  _precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -135,7 +135,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *points,
                                size_t points_count)
 {
-  precalculate_scale(self, piece);
+  _precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -147,15 +147,29 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const in,
-        float *const out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
+  const dt_iop_scalepixels_data_t * const d = piece->data;
+  const dt_interpolation_t *iter = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const int iw = roi_in->width;
+  const int ih = roi_in->height;
+  const size_t ow = roi_out->width;
+
+  DT_OMP_FOR(collapse(2))
+  for(int row = 0; row < roi_out->height; row++)
+  {
+    for(int col = 0; col < roi_out->width; col++)
+    {
+      const float x = col * d->x_scale;
+      const float y = row * d->y_scale;
+      out[ow * row + col] = CLIP(dt_interpolation_compute_sample(iter, in, x, y, iw, ih, 1, iw));
+    }
+  }
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
@@ -166,8 +180,8 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   float xy[2] = { roi_out->x, roi_out->y };
   float wh[2] = { roi_out->width, roi_out->height };
 
-  transform(piece, xy);
-  transform(piece, wh);
+  _transform(piece, xy);
+  _transform(piece, wh);
 
   roi_out->x = (int)floorf(xy[0]);
   roi_out->y = (int)floorf(xy[1]);
@@ -188,7 +202,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   // If possible try to get an image that's strictly larger than what we want to output
   float hw[2] = {roi_out->height, roi_out->width};
-  transform(piece, hw); // transform() is used reversed here intentionally
+  _transform(piece, hw); // _transform() is used reversed here intentionally
   roi_in->height = hw[0];
   roi_in->width = hw[1];
 
@@ -217,9 +231,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      float x = i*d->x_scale;
-      float y = j*d->y_scale;
-
+      const float x = i*d->x_scale;
+      const float y = j*d->y_scale;
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
     }
