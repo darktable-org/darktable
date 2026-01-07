@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1504,16 +1504,16 @@ static void _init_8(uint8_t *buf,
       res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, color_space);
       if(!res)
       {
-        // if the thumbnail is not large enough, we compute one
+        // use embedded JPEG if it is large enough or conf requests
+        // always use, otherwise compute one
         const dt_image_t *img2 = dt_image_cache_get(imgid, 'r');
         const int imgwd = img2->width;
         const int imght = img2->height;
         dt_image_cache_read_release(img2);
-        if(thumb_width < wd
-           && thumb_height < ht
-           && thumb_width < imgwd - 4
-           && thumb_height < imght - 4)
-        {
+        const gboolean always_use_thumb = (min_s == DT_MIPMAP_NONE);
+        const gboolean thumb_lt_mip = ((thumb_width < wd) && (thumb_height < ht));
+        const gboolean thumb_lt_raw = ((thumb_width < imgwd - 4) && (thumb_height < imght - 4));
+        if (!always_use_thumb && thumb_lt_mip && thumb_lt_raw) {
           res = TRUE;
         }
         else
