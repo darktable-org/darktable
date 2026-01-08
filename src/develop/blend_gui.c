@@ -2007,13 +2007,8 @@ static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
 }
 
 static void _blendif_options_callback(GtkButton *button,
-                                      GdkEventButton *event,
                                       dt_iop_module_t *module)
 {
-  if(event->button != 1
-     && event->button != 2)
-    return;
-
   const dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   if(!bd
@@ -3476,7 +3471,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_tooltip_text(presets_button, _("blending options"));
     if(bd->blendif_support)
     {
-      g_signal_connect(G_OBJECT(presets_button), "button-press-event",
+      g_signal_connect(G_OBJECT(presets_button), "clicked",
                        G_CALLBACK(_blendif_options_callback), module);
     }
     else
