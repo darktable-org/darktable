@@ -796,9 +796,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->rotation, "°");
 
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
-  dt_bauhaus_slider_set_factor(g->angle, RAD_2_DEG);
+  dt_bauhaus_slider_set_factor(g->angle, -RAD_2_DEG);
   dt_bauhaus_slider_set_format(g->angle, "°");
-  dt_bauhaus_slider_set_factor(g->angle, -1.f);
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
   g->offset = dt_bauhaus_slider_from_params(self, "offset");
