@@ -77,7 +77,9 @@ changes (where available).
 - RustiCL gets the default optimizing compiler flags as other
   platforms.
 
-- Fixed loading Olympus ORF files from E-410 and E-510 DSLRs.
+- Fixed loading some Olympus ORF files (e.g. E-410 and E-510)
+  due to a possible crash or memory corruption when parsing
+  highlight-preservation Exif tag.
 
 - Fixed the mask support in scale pixels module.
 
