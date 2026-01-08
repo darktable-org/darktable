@@ -77,6 +77,8 @@ changes (where available).
 - RustiCL gets the default optimizing compiler flags as other
   platforms.
 
+- Fixed loading Olympus ORF files from E-410 and E-510 DSLRs.
+
 ## Lua
 
 ### API Version
