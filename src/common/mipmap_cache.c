@@ -1270,6 +1270,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
   if(strcmp(value, "6K") == 0)     return DT_MIPMAP_8;
   if(strcmp(value, "8K") == 0)     return DT_MIPMAP_9;
+  if(strcmp(value, "auto") == 0)   return DT_MIPMAP_LDR_MAX;
   return DT_MIPMAP_NONE;
 }
 

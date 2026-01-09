@@ -1696,6 +1696,15 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     max_level = MAX(max_level, MAX(table->pref_embedded, embeddedl));
   }
 
+  // switching between auto/never options
+  if (max_level == DT_MIPMAP_NONE && min_level == DT_MIPMAP_LDR_MAX)
+  {
+    // err on side of discarding too many thumbnails: a quick
+    // survey of vintage raw files shows a lowest res embedded
+    // JPEG of 1616x1080 (found in 2011 & 2014 Sony)
+    min_level = DT_MIPMAP_4;
+  }
+
   sqlite3_stmt *stmt = NULL;
 
   if(min_level < max_level)
