@@ -1740,7 +1740,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-        for(int i = max_level - 1; i >= min_level; i--)
+        for(int i = max_level; i >= min_level; i--)
         {
           dt_mipmap_cache_remove_at_size(imgid, i);
         }
