@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,7 +176,8 @@ gchar *dt_util_str_replace(const gchar *string,
 
   if(occurrences)
   {
-    nstring = g_malloc_n(strlen(string) + (occurrences * strlen(substitute)) + 1, sizeof(gchar));
+    nstring = g_malloc_n(strlen(string) + (occurrences * strlen(substitute)) + 1,
+                         sizeof(gchar));
     const gchar *pend = string + strlen(string);
     const gchar *s = string, *p = string;
     gchar *np = nstring;
@@ -195,7 +196,8 @@ gchar *dt_util_str_replace(const gchar *string,
     np[pend - p] = '\0';
   }
   else
-    nstring = g_strdup(string); // otherwise it's a hell to decide whether to free this string later.
+    nstring = g_strdup(string); // otherwise it's a hell to decide
+                                // whether to free this string later.
   return nstring;
 }
 
@@ -429,7 +431,8 @@ gchar *dt_util_foo_to_utf8(const char *string)
   else
     tag = g_convert(string, -1, "UTF-8", "LATIN1", NULL, NULL, NULL); // let's try latin1
 
-  if(!tag) // hmm, neither utf8 nor latin1, let's fall back to ascii and just remove everything that isn't
+  if(!tag) // hmm, neither utf8 nor latin1, let's fall back to ascii
+           // and just remove everything that isn't
   {
     tag = g_strdup(string);
     char *c = tag;
@@ -443,7 +446,7 @@ gchar *dt_util_foo_to_utf8(const char *string)
 }
 
 // get easter sunday (in the western world)
-static void easter(int Y, int* month, int *day)
+static void easter(const int Y, int* month, int *day)
 {
   const int a  = Y % 19;
   const int b  = Y / 100;
@@ -485,7 +488,8 @@ dt_logo_season_t dt_util_get_logo_season(void)
     easter_sunday.tm_isdst = -1;
     time_t easter_sunday_sec = mktime(&easter_sunday);
     // we start at midnight, so it's basically +- 2 days
-    if(llabs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
+    if(llabs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60)
+      return DT_LOGO_SEASON_EASTER;
   }
 
   return DT_LOGO_SEASON_NONE;
@@ -517,21 +521,27 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo,
     guint8 *image_buffer = calloc(stride * final_height, sizeof(guint8));
     if(!image_buffer)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: unable to allocate rasterization buffer for SVG '%s'", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS,
+               "warning: unable to allocate rasterization buffer for SVG '%s'", dtlogo);
       g_free(logo);
       g_free(dtlogo);
       g_object_unref(svg);
       return NULL;
     }
     if(darktable.gui)
-      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
-                                                      final_height, stride);
-    else // during startup we don't know ppd yet and darktable.gui isn't initialized yet.
-      surface = cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+      surface = dt_cairo_image_surface_create_for_data(image_buffer,
+                                                       CAIRO_FORMAT_ARGB32, final_width,
                                                        final_height, stride);
+    else // during startup we don't know ppd yet and darktable.gui isn't initialized yet.
+      surface = cairo_image_surface_create_for_data(image_buffer,
+                                                    CAIRO_FORMAT_ARGB32,
+                                                    final_width,
+                                                    final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS,
+               "warning: can't load darktable logo from SVG file `%s'",
+               dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -550,7 +560,8 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo,
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "warning: can't load darktable logo from SVG file `%s'\n%s", dtlogo, error->message);
+             "warning: can't load darktable logo from SVG file `%s'\n%s",
+             dtlogo, error->message);
     g_error_free(error);
   }
 
@@ -577,7 +588,8 @@ cairo_surface_t *dt_util_get_logo_text(const float size)
   return _util_get_svg_img(g_strdup("dt_text.svg"), size);
 }
 
-// the following two functions (dt_util_latitude_str and dt_util_longitude_str) were taken from libosmgpsmap
+// the following two functions (dt_util_latitude_str and
+// dt_util_longitude_str) were taken from libosmgpsmap
 // Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
 /* these can be overwritten with versions that support
  *   localization */
@@ -780,12 +792,15 @@ gchar *dt_util_normalize_path(const gchar *_input)
   }
 
 #ifdef _WIN32
-  // on Windows filenames are case insensitive, so we can end up with an arbitrary number of different spellings for the same file.
-  // another problem is that path separators can either be / or \ leading to even more problems.
+  // on Windows filenames are case insensitive, so we can end up with
+  // an arbitrary number of different spellings for the same file.
+  // another problem is that path separators can either be / or \ leading
+  // to even more problems.
 
   // TODO:
-  // this handles filenames in the formats <drive letter>:\path\to\file or \\host-name\share-name\file
-  // some other formats like \Device\... are not supported
+  // this handles filenames in the formats <drive
+  // letter>:\path\to\file or \\host-name\share-name\file some other
+  // formats like \Device\... are not supported
 
   // the Windows api expects wide chars and not utf8 :(
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -1076,8 +1091,10 @@ void dt_render_svg(RsvgHandle *svg,
   #endif
 }
 
-// check if the path + basenames are the same (<=> only differ by the extension)
-gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
+// check if the path + basenames are the same (<=> only differ by the
+// extension)
+gboolean dt_has_same_path_basename(const char *filename1,
+                                   const char *filename2)
 {
   // assume both filenames have an extension
   if(!filename1 || !filename2) return FALSE;
@@ -1095,7 +1112,8 @@ gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
   return TRUE;
 }
 
-// set the filename2 extension to filename1 - return NULL if fails - result should be freed
+// set the filename2 extension to filename1 - return NULL if fails -
+// result should be freed
 char *dt_copy_filename_extension(const char *filename1,
                                  const char *filename2)
 {
@@ -1125,7 +1143,8 @@ char *dt_filename_change_extension(const char *filename,
   return output;
 }
 
-GList *dt_read_file_pattern(const char *dir_path, const char *pattern_str)
+GList *dt_read_file_pattern(const char *dir_path,
+                            const char *pattern_str)
 {
   GList *files = NULL;
   GError *error = NULL;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -454,11 +454,13 @@ const char *name()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the image"),
-                                      _("creative"),
-                                      _("non-linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description
+    (self,
+     _("overlay an SVG watermark like a signature on the image"),
+     _("creative"),
+     _("non-linear, RGB, display-referred"),
+     _("non-linear, RGB"),
+     _("non-linear, RGB, display-referred"));
 }
 
 int flags()
@@ -484,7 +486,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 // sets text / color / font widgets sensitive based on watermark file type
-static void _text_color_font_set_sensitive(const dt_iop_watermark_gui_data_t *g, const gchar *filename)
+static void _text_color_font_set_sensitive(const dt_iop_watermark_gui_data_t *g,
+                                           const gchar *filename)
 {
   const gchar *extension = strrchr(filename, '.');
   if(extension)
@@ -497,7 +500,8 @@ static void _text_color_font_set_sensitive(const dt_iop_watermark_gui_data_t *g,
   }
 }
 
-static void _combo_box_set_active_text(const dt_iop_watermark_gui_data_t *g, const gchar *text)
+static void _combo_box_set_active_text(const dt_iop_watermark_gui_data_t *g,
+                                       const gchar *text)
 {
   int i = 0;
   for(const GList *iter = g->watermarks_filenames; iter; iter = g_list_next(iter))
@@ -529,17 +533,22 @@ static gchar *_string_escape(const gchar *string)
   return result;
 }
 
-static gchar *_string_substitute(gchar *string, const gchar *search, const gchar *replace)
+static gchar *_string_substitute(gchar *string,
+                                 const gchar *search,
+                                 const gchar *replace)
 {
   gchar *_replace = _string_escape(replace);
   gchar *result = dt_util_str_replace(string, search, _replace);
   g_free(_replace);
-  g_free(string);  // dt_util_str_replace always returns a new string, and we don't need the original after this func
+  g_free(string);  // dt_util_str_replace always returns a new string,
+                   // and we don't need the original after this func
   return result;
 }
 
-static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, const dt_iop_watermark_data_t *data,
-                                    const dt_image_t *image, const gchar *filename)
+static gchar *_watermark_get_svgdoc(dt_iop_module_t *self,
+                                    const dt_iop_watermark_data_t *data,
+                                    const dt_image_t *image,
+                                    const gchar *filename)
 {
   gchar *svgdata = NULL;
   gsize length = 0;
@@ -682,7 +691,8 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  /* create a cairo memory surface that is later used for reading watermark overlay data */
+  /* create a cairo memory surface that is later used for reading
+   * watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
   if(!image)
   {
@@ -691,9 +701,14 @@ void process(dt_iop_module_t *self,
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
-                                                                 roi_out->height, stride);
-  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
+  cairo_surface_t *surface =
+    cairo_image_surface_create_for_data(image,
+                                        CAIRO_FORMAT_ARGB32,
+                                        roi_out->width,
+                                        roi_out->height, stride);
+
+  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+     || (image == NULL))
   {
     dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface error: %s",
              cairo_status_to_string(cairo_surface_status(surface)));
@@ -702,7 +717,8 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
+  // rsvg (or some part of cairo which is used underneath) isn't
+  // thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   RsvgHandle *svg = NULL;
@@ -718,7 +734,9 @@ void process(dt_iop_module_t *self,
       g_free(image);
       dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-      dt_print(DT_DEBUG_ALWAYS, "[watermark] error processing svg file: %s", error->message);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[watermark] error processing svg file: %s",
+               error->message);
       g_error_free(error);
       return;
     }
@@ -798,22 +816,30 @@ void process(dt_iop_module_t *self,
       if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         sbase = iw;
-        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
+          ? sbase / dimension.width
+          : sbase / dimension.height;
       }
       else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         sbase = ih;
-        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
+          ? sbase / dimension.width
+          : sbase / dimension.height;
       }
       else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         sbase = (iw > ih) ? iw : ih;
-        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
+          ? sbase / dimension.width
+          : sbase / dimension.height;
       }
       else // data->scale_img == DT_SCALE_IMG_SMALLER
       {
         sbase = (iw < ih) ? iw : ih;
-        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
+          ? sbase / dimension.width
+          : sbase / dimension.height;
       }
       break;
 
@@ -919,14 +945,16 @@ void process(dt_iop_module_t *self,
   float svg_offset_y = 0;
   if(type == DT_WTM_SVG)
   {
-    /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
+    /* the svg_offsets allow safe text boxes as they might render out
+     * of the dimensions */
     svg_offset_x = ceilf(3.0f * scale);
     svg_offset_y = ceilf(3.0f * scale);
 
     const int watermark_width  = (int)((dimension.width  * scale) + 3* svg_offset_x);
     const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
 
-    const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
+    const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
+                                                         watermark_width);
     image_two = g_try_malloc0_n(watermark_height, stride_two);
     if(!image_two)
     {
@@ -938,8 +966,11 @@ void process(dt_iop_module_t *self,
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return;
     }
-    surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
-                                                                   watermark_height, stride_two);
+    surface_two = cairo_image_surface_create_for_data(image_two,
+                                                      CAIRO_FORMAT_ARGB32,
+                                                      watermark_width,
+                                                      watermark_height,
+                                                      stride_two);
     if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
     {
       dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface 2 error: %s",
@@ -1057,7 +1088,8 @@ void process(dt_iop_module_t *self,
 
 }
 
-static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
+static void _watermark_callback(GtkWidget *tb,
+                                dt_iop_module_t *self)
 {
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
 
@@ -1065,12 +1097,15 @@ static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
   dt_iop_watermark_params_t *p = self->params;
   memset(p->filename, 0, sizeof(p->filename));
   const int n = dt_bauhaus_combobox_get(g->watermarks);
-  g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
+  g_strlcpy(p->filename,
+            (char *)g_list_nth_data(g->watermarks_filenames, n),
+            sizeof(p->filename));
   _text_color_font_set_sensitive(g, p->filename);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
@@ -1085,9 +1120,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   }
 
   const GdkRGBA c = {.red   = self->picked_color[0],
-               .green = self->picked_color[1],
-               .blue  = self->picked_color[2],
-               .alpha = 1.0 };
+                     .green = self->picked_color[1],
+                     .blue  = self->picked_color[2],
+                     .alpha = 1.0 };
 
   p->color[0] = self->picked_color[0];
   p->color[1] = self->picked_color[1];
@@ -1097,7 +1132,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
+static void _load_watermarks(const char *basedir,
+                             dt_iop_watermark_gui_data_t *g)
 {
   GList *files = NULL;
   char *watermarks_dir = g_build_filename(basedir, "watermarks", NULL);
@@ -1118,10 +1154,12 @@ static void _load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g
     if(extension)
     {
       // we add only supported file formats to the list
-      if(!g_ascii_strcasecmp(extension, ".svg") || !g_ascii_strcasecmp(extension, ".png"))
+      if(!g_ascii_strcasecmp(extension, ".svg")
+         || !g_ascii_strcasecmp(extension, ".png"))
       {
         // remember the whole filename for later
-        g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
+        g->watermarks_filenames = g_list_append(g->watermarks_filenames,
+                                                g_strdup(filename));
         // ... and build string shown in the gui
         *extension = '\0';
         extension++;
@@ -1162,12 +1200,14 @@ static void _refresh_watermarks(dt_iop_module_t *self)
   g_signal_handlers_unblock_by_func(g->watermarks, _watermark_callback, self);
 }
 
-static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
+static void _refresh_callback(GtkWidget *tb,
+                              dt_iop_module_t *self)
 {
   _refresh_watermarks(self);
 }
 
-static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(const GtkWidget *tb,
+                                dt_iop_module_t *self)
 {
   int index = -1;
   const dt_iop_watermark_gui_data_t *g = self->gui_data;
@@ -1196,7 +1236,8 @@ static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
+static void _text_callback(GtkWidget *entry,
+                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = self->params;
@@ -1205,7 +1246,8 @@ static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
+static void _colorpick_color_set(GtkColorButton *widget,
+                                 dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = self->params;
@@ -1222,7 +1264,8 @@ static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _fontsel_callback(GtkWidget *button, dt_iop_module_t *self)
+static void _fontsel_callback(GtkWidget *button,
+                              dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = self->params;
@@ -1270,7 +1313,9 @@ void init_pipe(dt_iop_module_t *self,
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -1288,7 +1333,10 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g, p->filename);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
-  const GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  const GdkRGBA color = (GdkRGBA){.red   = p->color[0],
+                                  .green = p->color[1],
+                                  .blue  = p->color[2],
+                                  .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
   gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
 
@@ -1352,10 +1400,12 @@ void gui_init(dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self,
+                                           &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
-  char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
+  char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"),
+                                  configdir, datadir);
   gtk_widget_set_tooltip_text(g->watermarks, tooltip);
   g_free(tooltip);
   g->refresh = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
@@ -1366,10 +1416,12 @@ void gui_init(dt_iop_module_t *self)
 
   // Simple text
   label = dt_ui_label_new(_("text"));
-  g->text = dt_action_entry_new(DT_ACTION(self), N_("text"), G_CALLBACK(_text_callback), self,
-                                _("text string, tag: $(WATERMARK_TEXT)\n"
-                                  "use $(NL) to insert a line break"),
-                                dt_conf_get_string_const("plugins/darkroom/watermark/text"));
+  g->text = dt_action_entry_new
+    (DT_ACTION(self), N_("text"),
+     G_CALLBACK(_text_callback), self,
+     _("text string, tag: $(WATERMARK_TEXT)\n"
+       "use $(NL) to insert a line break"),
+     dt_conf_get_string_const("plugins/darkroom/watermark/text"));
   dt_gtkentry_setup_variables_completion(GTK_ENTRY(g->text));
   gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
@@ -1379,10 +1431,12 @@ void gui_init(dt_iop_module_t *self)
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
   const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
-  GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
+  GtkWidget *child =
+    dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
   gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(g->fontsel, _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
-                                            "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
+  gtk_widget_set_tooltip_text(g->fontsel,
+                              _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
+                                "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
@@ -1400,8 +1454,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
   g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
-  dt_action_define_iop(self, NULL, N_("pick color"), g->color_picker_button, &dt_action_def_toggle);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button),
+                              _("pick color from image"));
+  dt_action_define_iop(self, NULL, N_("pick color"),
+                       g->color_picker_button, &dt_action_def_toggle);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
@@ -1427,16 +1483,20 @@ void gui_init(dt_iop_module_t *self)
 
   // legacy scale on drop-down
   g->scale_base = dt_bauhaus_combobox_from_params(self, "scale_base");
-  gtk_widget_set_tooltip_text(g->scale_base, _("choose how to scale the watermark\n"
-                                               "• image: scale watermark relative to whole image\n"
-                                               "• larger border: scale larger watermark border relative to larger image border\n"
-                                               "• smaller border: scale larger watermark border relative to smaller image border\n"
-                                               "• height: scale watermark height to image height\n"
-                                               "• advanced options: choose watermark and image dimensions independently"));
+  gtk_widget_set_tooltip_text
+    (g->scale_base,
+     _("choose how to scale the watermark\n"
+       "• image: scale watermark relative to whole image\n"
+       "• larger border: scale larger watermark border relative to larger image border\n"
+       "• smaller border: scale larger watermark border relative to smaller image border\n"
+       "• height: scale watermark height to image height\n"
+       "• advanced options: choose watermark and image dimensions independently"));
 
   // scale image reference
   g->scale_img = dt_bauhaus_combobox_from_params(self, "scale_img");
-  gtk_widget_set_tooltip_text(g->scale_img, _("reference image dimension against which to scale the watermark"));
+  gtk_widget_set_tooltip_text
+    (g->scale_img,
+     _("reference image dimension against which to scale the watermark"));
 
   // scale marker reference
   g->scale_svg = dt_bauhaus_combobox_from_params(self, "scale_svg");
@@ -1451,9 +1511,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_grid_set_column_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
   for(int i = 0; i < 9; i++)
   {
-    g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, (CPF_SPECIAL_FLAG << i), NULL);
+    g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment,
+                                         (CPF_SPECIAL_FLAG << i), NULL);
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), 1 + i%3, i/3, 1, 1);
-    g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(_alignment_callback), self);
+    g_signal_connect(G_OBJECT(g->align[i]), "toggled",
+                     G_CALLBACK(_alignment_callback), self);
   }
 
   dt_gui_box_add(self->widget, bat);
@@ -1471,10 +1533,14 @@ void gui_init(dt_iop_module_t *self)
 
   _refresh_watermarks(self);
 
-  g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(_watermark_callback), self);
-  g_signal_connect(G_OBJECT(g->refresh), "clicked", G_CALLBACK(_refresh_callback), self);
-  g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(_colorpick_color_set), self);
-  g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(_fontsel_callback), self);
+  g_signal_connect(G_OBJECT(g->watermarks), "value-changed",
+                   G_CALLBACK(_watermark_callback), self);
+  g_signal_connect(G_OBJECT(g->refresh), "clicked",
+                   G_CALLBACK(_refresh_callback), self);
+  g_signal_connect(G_OBJECT(g->colorpick), "color-set",
+                   G_CALLBACK(_colorpick_color_set), self);
+  g_signal_connect(G_OBJECT(g->fontsel), "font-set",
+                   G_CALLBACK(_fontsel_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
