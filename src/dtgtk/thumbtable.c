@@ -1669,13 +1669,13 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   dt_mipmap_size_t hql =
     dt_mipmap_cache_get_min_mip_from_pref(hq);
+
   const char *embedded =
     dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
-
   dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
 
-  int min_level = 8;
-  int max_level = 0;
+  int min_level = DT_MIPMAP_8;
+  int max_level = DT_MIPMAP_0;
   if(hql != table->pref_hq)
   {
     min_level = MIN(table->pref_hq, hql);
@@ -1696,6 +1696,10 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
                  " how thumbnails are generated.\n"));
     if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
       dt_util_str_cat(&txt, _("all cached thumbnails need to be invalidated.\n\n"));
+    else if (max_level == DT_MIPMAP_NONE && min_level == DT_MIPMAP_8 && embeddedl == DT_MIPMAP_NONE)
+      dt_util_str_cat(&txt, _("all thumbnails possibly generated from raw files need to be invalidated.\n\n"));
+    else if (max_level == DT_MIPMAP_NONE && min_level == DT_MIPMAP_8 && embeddedl == DT_MIPMAP_8)
+      dt_util_str_cat(&txt, _("all thumbnails possibly upscaled from embedded JPEGs need to be invalidated.\n\n"));
     else if(max_level >= DT_MIPMAP_8)
       dt_util_str_cat
         (&txt,
@@ -1717,6 +1721,15 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"), "",
                                  "%s", txt))
     {
+      // switching between auto/never modes
+      if (max_level == DT_MIPMAP_NONE && min_level == DT_MIPMAP_8)
+      {
+        // err on side of discarding too many thumbnails: a quick
+        // survey of vintage raw files shows a lowest res embedded
+        // JPEG of 1616x1080 (found in 2011 & 2014 Sony)
+        min_level = DT_MIPMAP_4;
+      }
+
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT id FROM main.images", -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
