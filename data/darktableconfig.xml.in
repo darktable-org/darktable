@@ -577,9 +577,16 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/filtering/sortorder0</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>first sort order</shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/filtering/string0</name>
     <type>string</type>
-    <default>%</default>
+    <default></default>
     <shortdescription>first filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -649,7 +656,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/string2</name>
     <type>string</type>
-    <default>%%</default>
+    <default></default>
     <shortdescription>third filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
