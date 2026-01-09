@@ -369,7 +369,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state);
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
 /* duplicate module and return new instance */
-dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params);
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
+                                      const gboolean copy_params);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
@@ -384,8 +385,9 @@ void dt_iop_commit_params(dt_iop_module_t *module,
    Also watch out for a raster mask source module to get it's first `target`,
    dt_iop_commit_blend_params() either returns NULL or the source module.
 */
-dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
-                                const struct dt_develop_blend_params_t *blendop_params);
+dt_iop_module_t *dt_iop_commit_blend_params
+  (dt_iop_module_t *module,
+   const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
 void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
@@ -456,6 +458,9 @@ static inline gboolean dt_iop_module_is(const dt_iop_module_so_t *module,
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
 dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module);
+
+/** return an enabled instance, if any, preferring unmasked instances earlier in the pipe **/
+dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(const dt_iop_module_so_t *module);
 
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, const dt_iop_module_t *module);

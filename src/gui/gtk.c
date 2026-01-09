@@ -51,6 +51,9 @@
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
 #endif
+#ifdef GDK_WINDOWING_X11
+#include <gdk/gdkx.h>
+#endif
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
@@ -850,14 +853,17 @@ int dt_gui_gtk_write_config()
   dt_pthread_mutex_lock(&darktable.gui->mutex);
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gint x, y;
+  gint x, y, width, height;
+  // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
+  // the content size without window decorations. This is especially important
+  // on Wayland where CSD (Client-Side Decorations) are included in allocation
+  // but not in the size set by gtk_window_resize().
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int("ui_last/window_x", x);
   dt_conf_set_int("ui_last/window_y", y);
-  dt_conf_set_int("ui_last/window_w", allocation.width);
-  dt_conf_set_int("ui_last/window_h", allocation.height);
+  dt_conf_set_int("ui_last/window_w", width);
+  dt_conf_set_int("ui_last/window_h", height);
   dt_conf_set_bool("ui_last/maximized",
                    (gdk_window_get_state(gtk_widget_get_window(widget))
                     & GDK_WINDOW_STATE_MAXIMIZED));
@@ -914,12 +920,19 @@ static void _quit_callback(dt_action_t *action)
   if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_dev_write_history(darktable.develop);
-    dt_image_write_sidecar_file(darktable.develop->image_storage.id);
+    if(!dt_check_gimpmode("file"))
+      dt_image_write_sidecar_file(darktable.develop->image_storage.id);
   }
 
   if(dt_check_gimpmode_ok("file"))
+  {
+    dt_control_log(_("exporting to GIMP"));
+    dt_gui_cursor_set_busy();
+    g_usleep(10000);
+    dt_gui_process_events();
     darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
-
+    dt_gui_cursor_clear_busy();
+  }
   dt_control_quit();
 }
 
@@ -934,7 +947,6 @@ static gboolean _gui_quit_callback(GtkWidget *widget,
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE, DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO);
   else
     _quit_callback(NULL);
-
   return TRUE;
 }
 
@@ -986,7 +998,7 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
     : DT_GUI_SESSION_X11;
 #elif defined(GDK_WINDOWING_X11)
   GdkDisplay* disp = gdk_display_get_default();
-  retun G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
+  return G_TYPE_CHECK_INSTANCE_TYPE(disp, GDK_TYPE_X11_DISPLAY)
     ? DT_GUI_SESSION_X11
     : DT_GUI_SESSION_WAYLAND;
 #else
@@ -1613,7 +1625,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(dt_control_running())
+  if(dt_control_all_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
@@ -1739,6 +1751,9 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
   {
+    // On Wayland, use NORMAL hint to allow proper window resizing
+    gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
+
     GtkWidget *header_bar = gtk_header_bar_new();
     gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
@@ -1769,7 +1784,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* connect to signal redraw all */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_ALL, _ui_widget_redraw_callback, gui->ui->main_window);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_ALL,
+                            _ui_widget_redraw_callback, gui->ui->main_window);
 
   container = widget;
 
@@ -2450,8 +2466,9 @@ static gboolean _side_panel_draw(GtkWidget *widget,
                                  cairo_t *cr,
                                  gpointer user_data)
 {
-  // in lighttable view, if there are no thumbs displayed in the center view, we have lines to
-  // modules which need to be updated as we expand and collapse modules in the side panels
+  // in lighttable view, if there are no thumbs displayed in the
+  // center view, we have lines to modules which need to be updated as
+  // we expand and collapse modules in the side panels
   if(darktable.collection
      && dt_view_get_current() == DT_VIEW_LIGHTTABLE
      && dt_collection_get_count(darktable.collection) == 0)
@@ -4436,6 +4453,13 @@ gboolean dt_gui_long_click(const guint second,
   return second - delay > first;
 }
 
+static void _gesture_cancel(GtkGestureSingle *gesture,
+                            GdkEventSequence *sequence,
+                            GtkWidget *widget)
+{
+  g_signal_emit_by_name(gesture, "released", 1, .0, .0);
+}
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
@@ -4447,7 +4471,11 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
   if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
-  if(released) g_signal_connect(gesture, "released", released, data);
+  if(released)
+  {
+    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
+  }
 
   return (GtkGestureSingle *)gesture;
 }
@@ -4459,6 +4487,7 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             gpointer data)
 {
   GtkEventController *controller = gtk_event_controller_motion_new(widget);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
   g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
   // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
 
@@ -4609,13 +4638,19 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
 static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
 {
   char buf[256];
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gtk_window_get_position(GTK_WINDOW(widget), &allocation.x, &allocation.y);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), allocation.width);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
-  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+  int width, height, x, y;
+
+  // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
+  // the content size without window decorations. This is especially important
+  // on Wayland where CSD (Client-Side Decorations) are included in allocation
+  // but not in the size set by gtk_window_resize().
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
+  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
+
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), width);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), height);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), x);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), y);
   return FALSE;
 }
 

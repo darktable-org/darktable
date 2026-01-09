@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,13 +22,18 @@
 #include "develop/imageop.h"
 
 /** save preset to file */
-void dt_presets_save_to_file(const int rowid, const char *preset_name, const char *filedir);
+void dt_presets_save_to_file(const int rowid,
+                             const char *preset_name,
+                             const char *filedir);
 
 /** load preset from file */
 gboolean dt_presets_import_from_file(const char *preset_path);
 
 /** does the module support autoapplying presets ? */
 gboolean dt_presets_module_can_autoapply(const gchar *operation);
+
+/** get the preset filters */
+char *dt_presets_get_filter(const dt_image_t *image);
 
 /** get preset multi_name for given module params */
 char *dt_presets_get_module_label(const char *module_name,
@@ -47,15 +52,18 @@ char *dt_presets_get_multi_name(const char *name,
                                 const gboolean localize);
 
 /** get currently active preset name for the module */
-gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);
+gchar *dt_get_active_preset_name(dt_iop_module_t *module,
+                                 gboolean *writeprotect);
 
-/** helper for creating menu hierarchy, generates submenus as indicated by vertical bars in name */
+/** helper for creating menu hierarchy, generates submenus as
+ * indicated by vertical bars in name */
 GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GSList **menu_path,
                                               GtkWidget *mainmenu,
                                               GtkWidget **submenu,
                                               gchar ***prev_split,
-                                              gboolean isdefault);
+                                              gboolean isdefault,
+                                              gboolean writeprotect);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

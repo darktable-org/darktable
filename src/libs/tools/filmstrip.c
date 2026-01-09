@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,11 @@ const char *name(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
+  return DT_VIEW_LIGHTTABLE
+    | DT_VIEW_DARKROOM
+    | DT_VIEW_TETHERING
+    | DT_VIEW_MAP
+    | DT_VIEW_PRINT;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -65,7 +69,9 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gpointer user_data)
+static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget,
+                                             cairo_t *wcr,
+                                             gpointer user_data)
 {
   // we only ensure that the thumbtable is inside our container
   if(!gtk_bin_get_child(GTK_BIN(widget)))
@@ -85,7 +91,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw",
+                   G_CALLBACK(_lib_filmstrip_draw_callback), self);
 
   /* initialize view manager proxy */
   darktable.view_manager->proxy.filmstrip.module = self;

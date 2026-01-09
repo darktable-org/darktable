@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -563,9 +563,11 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                       const gboolean allow_remove)
 {
   /* Create the widgets */
+  const char *lname = dt_util_localize_string(g->module_name);
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"),
-           g->original_name, g->module_name);
+           g->original_name, lname);
+
   GtkWidget *dialog = gtk_dialog_new_with_buttons(title, g->parent,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                   _("_export..."), GTK_RESPONSE_YES,
@@ -616,14 +618,14 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                 "this might be the last time you see your preset."));
 
   // check if module_name is an IOP module
-  const dt_iop_module_so_t *module = dt_iop_get_module_so(g->module_name);
+  const dt_iop_module_so_t *module = dt_iop_get_module_so(g->operation);
 
   if(!module)
   {
     // lib usually don't support auto-init / autoapply
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoinit), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoapply),
-                               !dt_presets_module_can_autoapply(g->module_name));
+                               !dt_presets_module_can_autoapply(g->operation));
     // for libs, we don't want the filtering option as it's not implemented...
     gtk_widget_set_no_show_all(GTK_WIDGET(g->filter), TRUE);
   }
@@ -918,7 +920,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
   g->iop = module;
   g->operation = g_strdup(module->op);
   g->op_version = module->version();
-  g->module_name = g_strdup(module->op);
+  g->module_name = g_strdup(module->name());
   g->callback = final_callback;
   g->data = data;
   g->parent = parent;
@@ -927,7 +929,6 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
 }
 
 void dt_gui_presets_show_edit_dialog(const char *name_in,
-                                     const char *module_name,
                                      int rowid,
                                      GCallback final_callback,
                                      gpointer data,
@@ -945,11 +946,16 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+    const char *operation = (const char *)sqlite3_column_text(stmt, 0);
+    dt_lib_module_t *lib_module = dt_lib_get_module(operation);
+
     g->old_id = rowid;
     g->original_name = g_strdup(name_in);
-    g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));
+    g->operation = g_strdup(operation);
     g->op_version = sqlite3_column_int(stmt, 1);
-    g->module_name = g_strdup(module_name);
+    g->module_name = g_strdup(lib_module
+                              ? lib_module->name(lib_module)
+                              : dt_iop_get_localized_name(operation));
     g->callback = final_callback;
     g->data = data;
     g->parent = parent;
@@ -1167,7 +1173,8 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
 
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget)
 {
-  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE) return FALSE;
+  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE)
+    return FALSE;
 
   dt_image_t *image = &module->dev->image_storage;
 
@@ -1175,6 +1182,11 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
+  char *format_filter = dt_presets_get_filter(image);
+
+  // Take the first auto-applied preset (autoapply = 1) and select first the
+  // user's presets if they exist (writeprotect = 0) by ordering on writeprotect.
+  // Also make sure we pick the last user's defined preset (ORDER BY rowid DESC).
   char query[2024];
   // clang-format off
   snprintf(query, sizeof(query),
@@ -1187,27 +1199,23 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
      "           AND ?8 BETWEEN exposure_min AND exposure_max"
      "           AND ?9 BETWEEN aperture_min AND aperture_max"
      "           AND ?10 BETWEEN focal_length_min AND focal_length_max"
-     "           AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+     "           AND (%s)"
      "           AND operation NOT IN"
      "               ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
-     "  OR (name = ?13)) AND op_version = ?14",
+     "  OR (name = ?13)) AND op_version = ?14"
+     " ORDER BY writeprotect ASC, rowid DESC",
+     format_filter,
      is_display_referred?"":"basecurve");
   // clang-format on
 
+  g_free(format_filter);
+
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
-                                ? _("display-referred default")
+                                ? BUILTIN_PRESET("display-referred default")
                                 : (has_matrix && is_scene_referred
-                                   ?_("scene-referred default")
-                                   :"\t\n");
-  int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
-  else iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
-
-  int excluded = 0;
-  if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
-  else excluded |= FOR_NOT_COLOR;
+                                   ? BUILTIN_PRESET("scene-referred default")
+                                   : "\t\n");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
@@ -1225,13 +1233,12 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
                                                fminf(1000000, image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, module->version());
 
-  gboolean applied = FALSE;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  const gboolean found = sqlite3_step(stmt) == SQLITE_ROW;
+
+  if(found)
   {
     if(widget)
     {
@@ -1246,12 +1253,10 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
       const char *name = (const char *)sqlite3_column_text(stmt, 0);
       dt_gui_presets_apply_preset(name, module);
     }
-
-    applied = TRUE;
   }
   sqlite3_finalize(stmt);
 
-  return applied;
+  return found;
 }
 
 static guint _click_time = G_MAXUINT;
@@ -1538,7 +1543,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
     dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
   // clang-format off
-  gchar *query = g_strdup_printf("SELECT name"
+  gchar *query = g_strdup_printf("SELECT name, writeprotect"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
@@ -1571,6 +1576,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const char *name = (char *)sqlite3_column_text(stmt, 0);
+        const gboolean write_protect = (gboolean)sqlite3_column_int(stmt, 1);
         if(retrieve_list)
         {
           // we only show it if module is in favorite
@@ -1585,7 +1591,10 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
         if(config && strstr(config, txt))
         {
           GtkWidget *mi = gtk_menu_item_new_with_label("");
-          gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+          gchar *local_name =
+            write_protect
+            ? dt_util_localize_segmented_name(name, TRUE)
+            : g_strdup(name);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s",
                                               iop->name(), iop->multi_name, local_name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
@@ -1634,21 +1643,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   // order: get shipped defaults first
   if(image)
   {
-    // only matching if filter is on:
-    int iformat = 0;
-    if(dt_image_is_rawprepare_supported(image))
-      iformat |= FOR_RAW;
-    else
-      iformat |= FOR_LDR;
-
-    if(dt_image_is_hdr(image))
-      iformat |= FOR_HDR;
-
-    int excluded = 0;
-    if(dt_image_monochrome_flags(image))
-      excluded |= FOR_NOT_MONO;
-    else
-      excluded |= FOR_NOT_COLOR;
+    char *format_filter = dt_presets_get_filter(image);
 
     // clang-format off
     query = g_strdup_printf
@@ -1664,10 +1659,13 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
        "        AND ?8 BETWEEN exposure_min AND exposure_max"
        "        AND ?9 BETWEEN aperture_min AND aperture_max"
        "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
-       "        AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+       "        AND (%s)))"
        " ORDER BY writeprotect %s, LOWER(name), rowid",
+       format_filter,
        default_first ? "DESC":"ASC");
     // clang-format on
+
+    g_free(format_filter);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
@@ -1680,8 +1678,6 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   }
   else
   {
@@ -1746,7 +1742,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       isdefault = TRUE;
 
     mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu,
-                                            &submenu, &prev_split, isdefault);
+                                            &submenu, &prev_split,
+                                            isdefault, chk_writeprotect);
 
     if(module
        && ((op_params_size == 0

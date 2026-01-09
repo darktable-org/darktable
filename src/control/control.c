@@ -203,6 +203,7 @@ void dt_control_init(const gboolean withgui)
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->quitting, 0);
   dt_atomic_set_int(&s->pending_jobs, 0);
+  dt_atomic_set_int(&s->running_jobs, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -285,7 +286,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 gboolean dt_control_running()
 {
-  return dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
+  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
 }
 
 void dt_control_quit()
@@ -353,7 +354,7 @@ void dt_control_shutdown()
   err = dt_pthread_join(s->kick_on_workers_thread);
   dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined kicker%s", err ? ", error" : "");
 
-  for(int k = 0; k < s->num_threads-1; k++)
+  for(int k = 0; k < s->num_threads; k++)
   {
     err = dt_pthread_join(s->thread[k]);
     dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined num_thread %i%s", k, err ? ", error" : "");
@@ -383,8 +384,8 @@ void dt_control_cleanup(const gboolean withgui)
     if(s->shortcuts) g_sequence_free(s->shortcuts);
     if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
   }
-  free(s);
   darktable.control = NULL;
+  free(s);
 }
 
 

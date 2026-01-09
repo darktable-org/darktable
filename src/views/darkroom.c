@@ -3348,8 +3348,8 @@ void mouse_moved(dt_view_t *self,
     // module requested a color box
     dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
     // Make sure a minimal width/height
-    float delta_x = 1.0f / (float) dev->full.pipe->processed_width;
-    float delta_y = 1.0f / (float) dev->full.pipe->processed_height;
+    const float delta_x = 1.0f / (float) dev->full.pipe->processed_width;
+    const float delta_y = 1.0f / (float) dev->full.pipe->processed_height;
 
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
     dt_boundingbox_t pbox = { zoom_x, zoom_y };
@@ -3531,8 +3531,8 @@ int button_pressed(dt_view_t *self,
         dt_color_picker_transform_box(dev, 2, sample->box, sbox, TRUE);
 
         const float handle_px = 6.0f;
-        float hx = handle_px / (procw * zoom_scale);
-        float hy = handle_px / (proch * zoom_scale);
+        const float hx = handle_px / (procw * zoom_scale);
+        const float hy = handle_px / (proch * zoom_scale);
 
         const float dx0 = fabsf(zoom_x - sbox[0]);
         const float dx1 = fabsf(zoom_x - sbox[2]);

@@ -143,8 +143,7 @@ static void edit_preset(const char *name_in,
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   dt_gui_presets_show_edit_dialog
-    (name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
-     GTK_WINDOW(window));
+    (name, rowid, NULL, NULL, TRUE, TRUE, FALSE, GTK_WINDOW(window));
 }
 
 static void menuitem_update_preset(GtkMenuItem *menuitem,
@@ -491,7 +490,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, FALSE);
+    mi = dt_insert_preset_in_menu_hierarchy(name,
+                                            &menu_path, mainmenu, &submenu, &prev_split,
+                                            FALSE, writeprotect);
 
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
@@ -1559,7 +1560,9 @@ static float _action_process(gpointer target,
     switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(module);
+      if(DT_ACTION_TOGGLE_NEEDED(effect, move_size,
+           dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander))))
+        show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       if(module->gui_reset)

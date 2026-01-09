@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/iop_group.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -2764,6 +2765,8 @@ static void _dt_dev_image_changed_callback(gpointer instance,
 
   if(!image) return;
 
+  char *format_filter = dt_presets_get_filter(image);
+
   char query[1024];
   // clang-format off
   snprintf(query, sizeof(query),
@@ -2777,23 +2780,13 @@ static void _dt_dev_image_changed_callback(gpointer instance,
            "       AND ?8 BETWEEN exposure_min AND exposure_max"
            "       AND ?9 BETWEEN aperture_min AND aperture_max"
            "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+           "       AND (%s)"
            " ORDER BY writeprotect DESC, name DESC"
-           " LIMIT 1");
+           " LIMIT 1",
+           format_filter);
   // clang-format on
 
-  int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image))
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
-
-  int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
+  g_free(format_filter);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -2807,9 +2800,6 @@ static void _dt_dev_image_changed_callback(gpointer instance,
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
 
   dt_image_cache_read_release(image);
 
@@ -3050,7 +3040,7 @@ static void _buttons_update(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-    char *tooltip = g_strdup_printf("%s\nright-click tab icon to add/remove modules", gr->name);
+    char *tooltip = g_strdup_printf(_("%s\nright-click tab icon to add/remove modules"), gr->name);
     gtk_widget_set_tooltip_text(bt, tooltip);
     g_free(tooltip);
     gr->button = bt;
@@ -3746,7 +3736,7 @@ static void _preset_autoapply_edit(GtkButton *button,
   {
     const int rowid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    dt_gui_presets_show_edit_dialog(d->edit_preset, self->name(self),
+    dt_gui_presets_show_edit_dialog(d->edit_preset,
                                     rowid, G_CALLBACK(_preset_autoapply_changed),
                                     self, FALSE, FALSE, FALSE, GTK_WINDOW(d->dialog));
   }

@@ -348,7 +348,7 @@ static float _calc_refavg(
     for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(dx, dy)).x);
-      const int c = (filters == 9u) ? FCxtrans(dy, dx, xtrans) : FC(dy, dx, filters);
+      const int c = fcol(dy, dx, filters, xtrans);
       sum[c] += val;
       cnt[c] += 1.0f;
     }
@@ -358,7 +358,7 @@ static float _calc_refavg(
     mean[c] = (cnt[c] > 0.0f) ? dtcl_pow((correction[c] * sum[c]) / cnt[c], 0.33333333333f) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
-  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const int color = fcol(row, col, filters, xtrans);
   return dtcl_pow(croot_refavg[color], 3.0f);
 }
 
@@ -392,7 +392,7 @@ kernel void highlights_initmask(
   {
     for(int x = -1; x < 2; x++)
     {
-      const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, xtrans) : FC(mrow+y, mcol+x, filters);
+      const int color = fcol(mrow+y, mcol+x, filters, xtrans);
       const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(3 * mcol + x, 3 * mrow + y)).x);
       mbuff[color] += (val >= clips[color]) ? 1 : 0;
     }
@@ -486,14 +486,14 @@ kernel void highlights_chroma(
 
   if((row < 3) || (row > height - 4)) return;
 
-  float sum[3] = {0.0f, 0.0f, 0.0f};
-  float cnt[3] = {0.0f, 0.0f, 0.0f};
+  float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+  float cnt[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
   float clipped = 0.0f;
-  for(int col = 3; col < width-3; col++)
+  for(int col = 3; col < width-4; col++)
   {
     const int idx = mad24(row, width, col);
-    const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+    const int color = fcol(row, col, filters, xtrans);
     const float inval = fmax(0.0f, read_imagef(in, samplerA, (int2)(col, row)).x);
     const int px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
@@ -546,7 +546,7 @@ kernel void highlights_opposed(
 
     if(!fastcopymode)
     {
-      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+      const int color = fcol(irow, icol, filters, xtrans);
       if(val >= clips[color])
       {
         const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth, correction);
@@ -3152,7 +3152,7 @@ monochrome_filter(read_only image2d_t in,
 
   float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
   // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
-  pixel.x = 100.0f*dt_fast_expf(-clipf((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size));
+  pixel.x = 100.0f*dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -3174,15 +3174,13 @@ monochrome(read_only image2d_t in,
 
   float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
   float4 basep = read_imagef (base, sampleri, (int2)(x, y));
-  float filter  = dt_fast_expf(-clipf(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size)));
+  float filter  = dt_fast_expf(-clipf((fsquare(pixel.y - a) + fsquare(pixel.z - b)) / (2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
   pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
   pixel.y = pixel.z = 0.0f;
   write_imagef (out, (int2)(x, y), pixel);
 }
-
-
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void

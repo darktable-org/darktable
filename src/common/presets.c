@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -342,13 +342,41 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   return TRUE;
 }
 
+char *dt_presets_get_filter(const dt_image_t *image)
+{
+  const gboolean is_raw = dt_image_is_rawprepare_supported(image);
+  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+
+  const gint raw = is_raw ? FOR_RAW : FOR_LDR;
+  const gint mat = has_matrix ? FOR_MATRIX : 0xFFFF;
+  const gint exl = dt_image_monochrome_flags(image) ? FOR_NOT_MONO : FOR_NOT_COLOR;
+  const gint hdr = dt_image_is_hdr(image) ? FOR_HDR : 0xFFFF;
+
+  // The rules for matching are:
+  // R1. Match presets with RAW or LDR or MATRIX flag. If the picture has no matrix we
+  //     ignore the preset MATRIX flag.
+  // R2. If R1 matches, then we want to macth also HDR presets if image is HDR.
+  // R3. If R1 matches, we want either presets for color or monochome images or both.
+
+  return g_strdup_printf
+    ("format = 0"
+     " OR ((format&%d == %d OR format&%d == %d)"
+     "     AND format&%d != 0"
+     "     AND ~format&%d != 0)",
+     raw, raw,
+     mat, mat,
+     hdr,
+     exl);
+}
+
 gchar *dt_get_active_preset_name(dt_iop_module_t *module,
                                  gboolean *writeprotect)
 {
   sqlite3_stmt *stmt;
-  // if we sort by writeprotect DESC then in case user copied the writeprotected preset
-  // then the preset name returned will be writeprotected and thus not deletable
-  // sorting ASC prefers user created presets.
+  // if we sort by writeprotect DESC then in case user copied the
+  // writeprotected preset then the preset name returned will be
+  // writeprotected and thus not deletable sorting ASC prefers user
+  // created presets.
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
@@ -471,9 +499,14 @@ GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
                                               GtkWidget *mainmenu,
                                               GtkWidget **submenu,
                                               gchar ***prev_split,
-                                              gboolean isdefault)
+                                              gboolean isdefault,
+                                              gboolean writeprotect)
 {
-  gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+  gchar *local_name =
+    writeprotect ?
+    dt_util_localize_segmented_name(name, FALSE)
+    : g_strdup(name);
+
   gchar **split = g_strsplit(local_name, "|", -1);
   gchar **s = split;
   gchar **p = *prev_split;

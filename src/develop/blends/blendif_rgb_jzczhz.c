@@ -164,6 +164,36 @@ static inline void _blendif_jzczhz(const float *const restrict pixels,
   }
 }
 
+DT_OMP_DECLARE_SIMD(aligned(pixels, invert_mask: 16) uniform(parameters, invert_mask, stride))
+static inline void _blendif_jzczhz_lab(const float *const restrict pixels,
+                                       float *const restrict mask,
+                                       const size_t stride,
+                                       const float *const restrict parameters,
+                                       const unsigned int *const restrict invert_mask,
+                                       cmsHTRANSFORM *const xform)
+{
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
+  {
+    dt_aligned_pixel_t XYZ_D65;
+    dt_aligned_pixel_t XYZ_D50;
+    dt_aligned_pixel_t JzAzBz;
+    dt_aligned_pixel_t JzCzhz;
+    dt_aligned_pixel_t pLAB;
+
+    cmsDoTransform(xform, pixels+j, pLAB, 1);
+    dt_Lab_to_XYZ(pLAB, XYZ_D50);
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+    dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
+    dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
+
+    float factor = 1.0f;
+    for(size_t i = 0; i < 3; i++)
+      factor *= _blendif_compute_factor(JzCzhz[i], invert_mask[i],
+                                        parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * i);
+    mask[x] *= factor;
+  }
+}
+
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(stride, blendif, parameters, profile))
 static void _blendif_combine_channels(const float *const restrict pixels,
                                       float *const restrict mask,
@@ -205,10 +235,21 @@ static void _blendif_combine_channels(const float *const restrict pixels,
     const unsigned int invert_mask[3] DT_ALIGNED_PIXEL = {
         (blendif >> 16) & (1 << DEVELOP_BLENDIF_Jz_in),
         (blendif >> 16) & (1 << DEVELOP_BLENDIF_Cz_in),
-        (blendif >> 16) & (1 << DEVELOP_BLENDIF_hz_in),
-    };
-    _blendif_jzczhz(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_Jz_in,
+        (blendif >> 16) & (1 << DEVELOP_BLENDIF_hz_in) };
+
+    if(dt_is_valid_colormatrix(profile->matrix_out_transposed[0][0]))
+      _blendif_jzczhz(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_Jz_in,
                     invert_mask, profile);
+    else
+    {
+      cmsHPROFILE *input = dt_colorspaces_get_profile(profile->type, profile->filename, DT_PROFILE_DIRECTION_IN)->profile;
+      cmsHPROFILE *Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+      cmsHTRANSFORM *xform = cmsCreateTransform(input, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, profile->intent, 0);
+
+      _blendif_jzczhz_lab(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_Jz_in,
+                    invert_mask, xform);
+      cmsDeleteTransform(xform);
+    }
   }
 }
 

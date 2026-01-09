@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/imagebuf.h"
 #include "common/matrices.h"
+#include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
@@ -672,14 +673,19 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                              const char *filename,
                                              const int intent)
 {
-  gboolean error = FALSE;
-  cmsHPROFILE *rgb_profile = NULL;
-
   _mark_as_nonmatrix_profile(profile_info);
   _clear_lut_curves(profile_info);
 
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.1842f;
+
+  if(type == DT_COLORSPACE_FILE
+    && (!filename || !filename[0] || !g_file_test(filename, G_FILE_TEST_IS_REGULAR)))
+  {
+    dt_print(DT_DEBUG_PARAMS, "[generate_profile_info] icc profile '%s' not available",
+      filename ? filename : "???");
+    return TRUE;
+  }
 
   profile_info->type = type;
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
@@ -690,21 +696,13 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
 
   const dt_colorspaces_color_profile_t *profile =
     dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
-  if(profile)
-    rgb_profile = profile->profile;
+
+  cmsHPROFILE *rgb_profile = profile ? profile->profile : NULL;;
 
   if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
-
-  if(filename[0])
-    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'",
-      filename,
-      (char)(rgb_profile_color_space>>24),
-      (char)(rgb_profile_color_space>>16),
-      (char)(rgb_profile_color_space>>8),
-      (char)(rgb_profile_color_space));
 
   // get the matrix
   if(rgb_profile)
@@ -769,7 +767,17 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                            profile_info->nonlinearlut);
   }
 
-  return error;
+  if(type == DT_COLORSPACE_FILE)
+    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space %c%c%c%c%s%s",
+      filename,
+      (char)(rgb_profile_color_space>>24),
+      (char)(rgb_profile_color_space>>16),
+      (char)(rgb_profile_color_space>>8),
+      (char)(rgb_profile_color_space),
+      dt_is_valid_colormatrix(profile_info->matrix_in[0][0]) ? "" : " NO matrix provided",
+      profile_info->nonlinearlut ? " nonlinearlut" : "");
+
+  return FALSE;
 }
 
 dt_iop_order_iccprofile_info_t *
@@ -817,7 +825,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   return profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module,
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(const struct dt_iop_module_t *module,
                                                                    GList *iop_list)
 {
   dt_iop_order_iccprofile_info_t *profile = NULL;
@@ -871,6 +879,9 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
+  if(!profile_info && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+      dt_control_log(_("work icc profile '%s' missing"), filename);
+
   if(profile_info == NULL
      || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
      || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
@@ -899,6 +910,9 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL)
   {
+    if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+      dt_control_log(_("input icc profile '%s' missing"), filename);
+
     dt_print(DT_DEBUG_PIPE,
              "[dt_ioppr_set_pipe_input_profile_info] profile `%s' in `%s'"
              " replaced by linear Rec2020",
@@ -932,6 +946,9 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
+  if(!profile_info && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (type == DT_COLORSPACE_FILE))
+    dt_control_log(_("output icc profile '%s' missing"), filename);
+
   if(profile_info == NULL
      || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
      || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
@@ -960,36 +977,42 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_de
                                            DT_INTENT_RELATIVE_COLORIMETRIC);
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(const struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->work_profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(const struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->input_profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(const struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->output_profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(dt_iop_module_t *module,
-                                                                       struct dt_dev_pixelpipe_t *pipe)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(const dt_iop_module_t *module,
+                                                                       const struct dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_order_iccprofile_info_t *restrict color_profile;
 
   const int colorin_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorin", 0);
   const int colorout_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorout", 0);
-  const int current_module_order = module->iop_order;
 
-  if(current_module_order < colorin_order)
+  if(module->iop_order < colorin_order)
     color_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
-  else if(current_module_order < colorout_order)
+  else if(module->iop_order < colorout_order)
     color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   else
     color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
+
+  if(color_profile
+      && color_profile->type == DT_COLORSPACE_FILE
+      && (!dt_is_valid_colormatrix(color_profile->matrix_in[0][0])
+          || !dt_is_valid_colormatrix(color_profile->matrix_out[0][0])))
+    dt_print_pipe(DT_DEBUG_PIPE, "current pipe profile", pipe, module, DT_DEVICE_NONE, NULL, NULL,
+     "no matrix in '%s'", color_profile->filename);
 
   return color_profile;
 }

@@ -162,7 +162,6 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          const gboolean allow_remove,
                                          GtkWindow *parent);
 void dt_gui_presets_show_edit_dialog(const char *name_in,
-                                     const char *module_name,
                                      const int rowid,
                                      GCallback final_callback,
                                      gpointer data,

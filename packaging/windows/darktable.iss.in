@@ -116,6 +116,13 @@ Source: "AUTHORS";  DestDir: "{app}"; DestName: "AUTHORS.txt"; Flags: ignorevers
 Source: "LICENSE";  DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Registry]
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: "Import folder into darktable"
+Root: HKA; Subkey: "SOFTWARE\Classes\Directory\shell\ImportFolderIntoDarktable\command"; \
+  ValueType: string; Flags: uninsdeletekey; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
   ValueType: string; Flags: uninsdeletevalue; \
@@ -181,4 +188,83 @@ begin
     Result := '-dev'
   else
     Result := ''
+end;
+
+
+#define NSIS_UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\darktable"
+
+function InitializeSetup(): Boolean;
+var
+  UninstallKey: String;
+  UninstallPath: String;
+  UninstallParams: String;
+  InstalledVersion: String;
+  ErrorCode: Integer;
+  IsNSIS: Boolean;
+begin
+  UninstallPath := '';
+  UninstallParams := '';
+  IsNSIS := False;
+
+  // If we installing a dev snapshot, just don't check for NSIS darktable
+  // installed, as we have a different default installation directory.
+  // There is also no need to check for NSIS darktable if we are installing
+  // for a currently logged-in user only, as this mode was not supported
+  // by our old NSIS installer.
+  if IsAdminInstallMode and ({#MyAppVersionLength} <= 7) then begin
+    UninstallKey := '{#NSIS_UNINSTKEY}';
+    IsNSIS := RegQueryStringValue(HKLM, UninstallKey, 'UninstallString', UninstallPath);
+  end;
+
+  // Check appropriate flavor determined by AppId (release or -dev version)
+  // We also automatically check for the appropriate type of installation
+  // (system-wide or user-local) according to the admin mode of our run.
+  if UninstallPath = '' then begin
+    UninstallKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\'
+                     + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
+    RegQueryStringValue(HKA, UninstallKey, 'UninstallString', UninstallPath);
+  end;
+
+  if (UninstallPath <> '')
+     and
+     // Installation files could have been manually deleted, but registry
+     // entries remained, so let's check that we have something to run.
+     (FileExists(RemoveQuotes(UninstallPath)))
+  then begin
+    UninstallPath := RemoveQuotes(UninstallPath);
+    RegQueryStringValue(HKA, UninstallKey, 'DisplayVersion', InstalledVersion);
+    if SuppressibleMsgBox('Installation of darktable ' + InstalledVersion +
+                          ' is detected. Do you want to uninstall it' +
+                          ' before installing the new version?',
+                          mbConfirmation, MB_YESNO, IDYES) = IDNO
+    then begin
+      Result := True;  // Continue with the installation
+      Exit;
+    end;
+
+    if IsNSIS then
+      // Tell the NSIS uninstaller not to copy itself to a temp file and restart
+      // from there, as this will break the wait for the uninstall to complete.
+      UninstallParams := '_?=' + ExtractFileDir(UninstallPath);
+
+    Exec(UninstallPath, UninstallParams, '', SW_SHOW, ewWaitUntilTerminated, ErrorCode);
+
+    if (ErrorCode = 0) and IsNSIS then begin
+      // The NSIS uninstaller is invoked in such a way that it cannot delete
+      // itself (as a result, the installation directory is also not deleted),
+      // we will complete the job.
+      DeleteFile(UninstallPath);
+      RemoveDir(ExtractFileDir(UninstallPath))
+    end;
+
+    if (ErrorCode <> 0) then begin
+      MsgBox('Failed to uninstall previous version. Reason:'#10#13
+             + SysErrorMessage(ErrorCode) + '. (code ' + IntToStr(ErrorCode) + ')'#10#13
+             + 'Setup will now exit.',
+             mbError, MB_OK);
+      Result := False;  // Abort the installation
+      Exit;
+    end;
+  end;
+  Result := True;
 end;

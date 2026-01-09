@@ -823,6 +823,9 @@ static void _histogram_collect_cl(const int devid,
                                    roi->width, roi->height, sizeof(float) * 4) != CL_SUCCESS)
   {
     dt_free_align(tmpbuf);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "[histogram_collect]",
+                  piece->pipe, piece->module, devid, roi, NULL,
+                  "Couldn't read histogramm data");
     return;
   }
 
@@ -881,9 +884,6 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
                         picker_source, box);
   if(!nobox)
   {
-    const dt_iop_order_iccprofile_info_t *const profile =
-      dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
                   picker_source == PIXELPIPE_PICKER_INPUT
                     ? "pixelpipe IN picker"
@@ -902,7 +902,8 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
     dt_color_picker_helper(dsc, pixel, roi, box,
                            darktable.lib->proxy.colorpicker.primary_sample->denoise,
                            pick, image_cst,
-                           dt_iop_color_picker_get_active_cst(module), profile);
+                           dt_iop_color_picker_get_active_cst(module),
+                           dt_ioppr_get_pipe_current_profile_info(module, piece->pipe));
   }
 
   for_four_channels(k)
@@ -939,19 +940,18 @@ static void _pixelpipe_picker_cl(const int devid,
 {
   int box[4] = { 0 };
 
-  if(dt_color_picker_box(module, roi,
-                           darktable.lib->proxy.colorpicker.primary_sample,
-                           picker_source, box))
+  // make sure we return safe data in case of errors
+  for_four_channels(k)
   {
-    for_four_channels(k)
-    {
-      picked_color_min[k] = FLT_MAX;
-      picked_color_max[k] = -FLT_MAX;
-      picked_color[k] = 0.0f;
-    }
-
-    return;
+    picked_color_min[k] = FLT_MAX;
+    picked_color_max[k] = -FLT_MAX;
+    picked_color[k] = 0.0f;
   }
+
+  if(dt_color_picker_box(module, roi,
+                         darktable.lib->proxy.colorpicker.primary_sample,
+                         picker_source, box))
+    return;
 
   const size_t origin[3] = { box[0], box[1], 0 };
   const size_t region[3] = { box[2] - box[0], box[3] - box[1], 1 };
@@ -972,11 +972,16 @@ static void _pixelpipe_picker_cl(const int devid,
   if(pixel == NULL) return;
 
   // get the required part of the image from opencl device
-  const cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img,
-                                                         origin, region, region[0] * bpp,
-                                                         CL_TRUE);
-
-  if(err != CL_SUCCESS) goto error;
+  if(dt_opencl_read_host_from_device_raw(devid, pixel, img,
+                                         origin, region, region[0] * bpp, CL_TRUE) != CL_SUCCESS)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  picker_source == PIXELPIPE_PICKER_INPUT
+                  ? "pixelpipe IN picker CL"
+                  : "pixelpipe OUT picker CL",
+                  piece->pipe, module, devid, roi, NULL, "Couldn't read picker data");
+    goto error;
+  }
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
                 picker_source == PIXELPIPE_PICKER_INPUT
@@ -1006,13 +1011,11 @@ static void _pixelpipe_picker_cl(const int devid,
 
   lib_colorpicker_stats pick;
 
-  const dt_iop_order_iccprofile_info_t *const profile =
-    dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-
   dt_color_picker_helper(dsc, pixel, &roi_copy, box,
                          darktable.lib->proxy.colorpicker.primary_sample->denoise,
                          pick, image_cst,
-                         dt_iop_color_picker_get_active_cst(module), profile);
+                         dt_iop_color_picker_get_active_cst(module),
+                         dt_ioppr_get_pipe_current_profile_info(module, piece->pipe));
 
   for_four_channels(k)
   {
@@ -1962,6 +1965,21 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_type_to_str(pipe->type), module->op, pipe->devid,
                    advantage, tilemem_cl / 1e9, tilemem_cpu / 1e9);
           possible_cl = FALSE;
+        }
+      }
+    }
+
+    if(possible_cl)
+    {
+      dt_develop_blend_params_t *const bd = piece->blendop_data;
+      if(bd)
+      {
+        if(bd->blend_cst  == DEVELOP_BLEND_CS_RGB_SCENE
+          && bd->mask_mode & DEVELOP_MASK_ENABLED)
+        {
+          const dt_iop_order_iccprofile_info_t *profile = dt_ioppr_get_pipe_current_profile_info(module, pipe);
+          if(profile && !dt_is_valid_colormatrix(profile->matrix_in[0][0]))
+            possible_cl = FALSE;
         }
       }
     }
@@ -2949,9 +2967,6 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
                                                         const int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-#ifdef HAVE_OPENCL
-  dt_opencl_check_tuning(pipe->devid);
-#endif
   gboolean ret = _dev_pixelpipe_process_rec(pipe, dev, output,
                                             cl_mem_output, out_format, roi_out,
                                             modules, pieces, pos);
@@ -3053,22 +3068,23 @@ restart:
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
 #ifdef HAVE_OPENCL
+  dt_opencl_check_tuning(pipe->devid);
   if(pipe->devid > DT_DEVICE_CPU)
     dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                  pipe, NULL, pipe->devid, &roi, &roi, "ID=%i, %s %luMB%s%s",
-                  pipe->image.id,
+                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i, %s using %luMB%s%s",
+                  pipe->image.filename, pipe->image.id,
                   darktable.opencl->dev[pipe->devid].cname,
                   darktable.opencl->dev[pipe->devid].used_available / DT_MEGA,
                   darktable.opencl->dev[pipe->devid].tunehead ? ", tuned" : "",
                   darktable.opencl->dev[pipe->devid].pinned_memory ? ", pinned": "");
   else
     dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                  pipe, NULL, pipe->devid, &roi, &roi, "ID=%i",
-                  pipe->image.id);
+                  pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
+                  pipe->image.filename, pipe->image.id, dt_get_available_mem() / DT_MEGA);
 #else
   dt_print_pipe(DT_DEBUG_PIPE, "pipe starting",
-                pipe, NULL, pipe->devid, &roi, &roi, "ID=%i",
-                pipe->image.id);
+                pipe, NULL, pipe->devid, &roi, &roi, "'%s' ID=%i using %luMB",
+                pipe->image.filename, pipe->image.id, dt_get_available_mem() / DT_MEGA);
 #endif
   dt_print_mem_usage("before pixelpipe process");
 
@@ -3183,8 +3199,8 @@ restart:
     dt_dev_pixelpipe_cache_report(pipe);
 
   dt_print_pipe(DT_DEBUG_PIPE, "pipe finished",
-                pipe, NULL, old_devid, &roi, &roi, "ID=%i",
-                pipe->image.id);
+                pipe, NULL, old_devid, &roi, &roi, "'%s' ID=%i",
+                pipe->image.filename, pipe->image.id);
   dt_print_mem_usage("after pixelpipe process");
 
   pipe->processing = FALSE;

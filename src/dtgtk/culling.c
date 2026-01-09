@@ -1907,7 +1907,8 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
     }
   }
 
-  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec", dt_get_wtime() - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
+           "[dt_culling_full_redraw] done in %0.04f sec", dt_get_wtime() - start);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print();
 }

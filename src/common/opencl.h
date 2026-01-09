@@ -114,6 +114,10 @@ typedef struct dt_opencl_device_t
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
+  cl_ulong max_mem_constant;
+  cl_uint alignsize; 
+  cl_uint compute_units;
+  size_t workgroup_size;  
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
   gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
@@ -634,7 +638,7 @@ cl_int dt_opencl_events_flush(const int devid,
 
 /** utility function to calculate optimal work group dimensions for a
  * given kernel */
-int dt_opencl_local_buffer_opt(const int devid,
+gboolean dt_opencl_local_buffer_opt(const int devid,
                                const int kernel,
                                dt_opencl_local_buffer_t *factors);
 

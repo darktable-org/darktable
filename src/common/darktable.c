@@ -917,7 +917,9 @@ int dt_init(int argc,
 #endif
 
   // make everything go a lot faster.
+#ifdef __SSE2__
   dt_mm_enable_flush_zero();
+#endif
 
   dt_set_signal_handlers();
 
@@ -1534,6 +1536,8 @@ int dt_init(int argc,
   const int last_configure_version =
     dt_conf_get_int("performance_configuration_version_completed");
 
+  gboolean has_workspace = FALSE;
+
   // we need this REALLY early so that error messages can be shown,
   // however after gtk_disable_setlocale
   if(init_gui)
@@ -1576,7 +1580,7 @@ int dt_init(int argc,
     }
 
     // select database
-    dt_workspace_create(datadir);
+    has_workspace = dt_workspace_create(datadir);
   }
 
   // now load darktablerc for the given library. Either darktablerc
@@ -1586,7 +1590,7 @@ int dt_init(int argc,
   const char *dblabel = dt_conf_get_string("workspace/label");
   const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
-  const gboolean default_dbname = strcmp(dblabel, "") == 0;
+  const gboolean default_dbname = !has_workspace || strcmp(dblabel, "") == 0;
 
   char darktablerc[PATH_MAX] = { 0 };
   snprintf(darktablerc, sizeof(darktablerc),
@@ -1598,14 +1602,17 @@ int dt_init(int argc,
 
   g_slist_free_full(config_override, g_free);
 
-  // restore dbname & label (as set in call dt_dbsession_create) to
-  // the one selected on the dialog ensuring that if the
-  // darktablerc-* is not yet preset we won't store the default
-  // values from confgen.
+  if(has_workspace)
+  {
+    // restore dbname & label (as set in call dt_workspace_create) to
+    // the one selected on the dialog ensuring that if the
+    // darktablerc-* is not yet present we won't store the default
+    // values from confgen.
 
-  dt_conf_set_string("database", dbname);
-  dt_conf_set_string("workspace/label", dblabel);
-  dt_conf_set_bool("database/multiple_workspace", multiple_db);
+    dt_conf_set_string("database", dbname);
+    dt_conf_set_string("workspace/label", dblabel);
+    dt_conf_set_bool("database/multiple_workspace", multiple_db);
+  }
 
   if(init_gui)
   {
@@ -2002,12 +2009,11 @@ int dt_init(int argc,
   }
   free(config_info);
 
-  if(init_gui)
+  if(init_gui && !dt_gimpmode() && changed_xmp_files)
   {
     // construct the popup that asks the user how to handle images whose xmp
     // files are newer than the db entry
-    if(changed_xmp_files)
-      dt_control_crawler_show_image_list(changed_xmp_files);
+    dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
   // fire up a background job to perform sidecar writes
@@ -2547,7 +2553,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
-  else if(old < 16)
+  else if(old < 16 || old == 17)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL 'per device' compiler settings might have been updated.\n\n"), DT_PERF_INFOSIZE);

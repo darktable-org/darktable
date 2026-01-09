@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,9 +51,12 @@ typedef struct dt_lib_darktable_t
 
 
 /* expose function for darktable module */
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self);
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
+                                             cairo_t *cr,
+                                             dt_lib_module_t *self);
 /* button press callback */
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_darktable_button_press_callback(GtkWidget *widget,
+                                                     GdkEventButton *event,
                                                      dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
@@ -91,7 +94,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_darktable_draw_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw",
+                   G_CALLBACK(_lib_darktable_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_darktable_button_press_callback), self);
 
@@ -119,7 +123,8 @@ void gui_init(dt_lib_module_t *self)
     g_free(logo);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'", filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "warning: can't load darktable logo from PNG file `%s'", filename);
       goto done;
     }
     const int png_width = cairo_image_surface_get_width(surface),
@@ -132,10 +137,13 @@ void gui_init(dt_lib_module_t *self)
 
     d->image_buffer = (guint8 *)calloc((size_t)stride * height, sizeof(guint8));
     d->image
-        = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+        = dt_cairo_image_surface_create_for_data(d->image_buffer,
+                                                 CAIRO_FORMAT_ARGB32,
+                                                 width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'", filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "warning: can't load darktable logo from PNG file `%s'", filename);
       free(d->image_buffer);
       d->image_buffer = NULL;
       cairo_surface_destroy(d->image);
@@ -188,7 +196,9 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget,
+                                             cairo_t *cr,
+                                             dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = self->data;
 
@@ -233,7 +243,8 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_
   {
     /* fallback using normal text */
     pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
-    pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(font_desc,
+                                             DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
 
     pango_layout_set_font_description(layout, font_desc);
 
@@ -264,13 +275,15 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_
   return TRUE;
 }
 
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_darktable_button_press_callback(GtkWidget *widget,
+                                                     GdkEventButton *event,
                                                      dt_lib_module_t *self)
 {
   /* show about box */
   darktable_show_about_dialog();
   return TRUE;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

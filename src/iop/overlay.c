@@ -305,7 +305,7 @@ static void _setup_overlay(dt_iop_module_t *self,
   if(image_exists)
   {
     const size_t width  = dev->image_storage.width;
-    const size_t height = dev->image_storage.width;
+    const size_t height = dev->image_storage.height;
 
     if(g)
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");

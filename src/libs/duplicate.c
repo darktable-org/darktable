@@ -294,7 +294,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
                                              imgid,
                                              -1,
                                              DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
-                                             DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+                                             DT_THUMBNAIL_CONTAINER_DUPLICATE,
                                              TRUE,
                                              DT_THUMBNAIL_SELECTION_UNSELECTED);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -334,7 +334,10 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
 
-    gtk_widget_show_all(hb);
+    gtk_widget_show(hb);
+    gtk_widget_show(lb);
+    gtk_widget_show(tb);
+    gtk_widget_show(bt);
 
     dt_gui_box_add(d->duplicate_box, hb);
     d->thumbs = g_list_append(d->thumbs, thumb);
@@ -408,7 +411,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
   dt_act_on_set_class(self->widget);
   gtk_widget_show_all(self->widget);
-
+  gtk_widget_set_sensitive(self->widget, !dt_check_gimpmode_ok("file"));
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_duplicate_init_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_duplicate_collection_changed);

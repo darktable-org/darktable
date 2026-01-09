@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,10 +130,13 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
     case GTK_RESPONSE_OK:
       g->selops = _gui_hist_get_active_items(g);
       g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
-      if(g->overwrite)
-      {
-        g->is_overwrite_set = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->overwrite));
-      }
+      g->paste_mode = DT_HISTORY_COPY_APPEND;
+      break;
+
+    case GTK_RESPONSE_APPLY:
+      g->selops = _gui_hist_get_active_items(g);
+      g->copy_iop_order = _gui_hist_is_copy_module_order_set(g);
+      g->paste_mode = DT_HISTORY_COPY_OVERWRITE;
       break;
   }
 }
@@ -213,13 +216,6 @@ void tree_on_row_activated(GtkTreeView       *treeview,
   }
 }
 
-static void _overwrite_mode_clicked_callback(GtkWidget *widget,
-                                             dt_history_copy_item_t *d)
-{
-  const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->overwrite));
-  dt_conf_set_bool("ui_last/history_overwrite", flag);
-}
-
 int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
                            const dt_imgid_t imgid,
                            const gboolean iscopy)
@@ -227,15 +223,34 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
-  GtkDialog *dialog = GTK_DIALOG
-    (gtk_dialog_new_with_buttons(
-      iscopy ? _("select parts to copy") : _("select parts to paste"),
-      GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      _("select _all"),  GTK_RESPONSE_YES,
-      _("select _none"), GTK_RESPONSE_NONE,
-      _("_cancel"),      GTK_RESPONSE_CANCEL,
-      _("_ok"),          GTK_RESPONSE_OK,
-      NULL));
+  GtkDialog *dialog = NULL;
+
+  if(iscopy)
+  {
+    dialog = GTK_DIALOG
+      (gtk_dialog_new_with_buttons(
+        _("select parts to copy"),
+        GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        _("select _all"),  GTK_RESPONSE_YES,
+        _("select _none"), GTK_RESPONSE_NONE,
+        _("_cancel"),      GTK_RESPONSE_CANCEL,
+        _("_ok"),          GTK_RESPONSE_OK,
+        NULL));
+  }
+  else
+  {
+    dialog = GTK_DIALOG
+      (gtk_dialog_new_with_buttons(
+        _("select parts to paste"),
+        GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        _("select _all"),  GTK_RESPONSE_YES,
+        _("select _none"), GTK_RESPONSE_NONE,
+        _("_cancel"),      GTK_RESPONSE_CANCEL,
+        _("_overwrite"),   GTK_RESPONSE_APPLY,
+        _("appen_d"),      GTK_RESPONSE_OK,
+        NULL));
+  }
+
   dt_gui_dialog_add_help(dialog, "copy_history");
   dt_gui_dialog_restore_size(dialog, "copy_history");
 
@@ -358,24 +373,6 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     return GTK_RESPONSE_CANCEL;
   }
 
-  /* overwrite/append mode */
-
-  if(!iscopy)
-  {
-    d->overwrite = gtk_check_button_new_with_label(_("overwrite mode"));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite),
-                                 dt_conf_get_bool("ui_last/history_overwrite"));
-    gtk_widget_set_tooltip_text(d->overwrite,
-                                _("clear history stack before pasting the copied history.\n"
-                                  "required modules will be added with default values."));
-    g_signal_connect(G_OBJECT(d->overwrite), "clicked",                 \
-                     G_CALLBACK(_overwrite_mode_clicked_callback), d);
-
-    dt_gui_dialog_add(GTK_DIALOG(dialog), d->overwrite);
-  }
-  else
-    d->overwrite = NULL;
-
   g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated",
                    (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
@@ -389,7 +386,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     if(res == GTK_RESPONSE_CANCEL
        || res == GTK_RESPONSE_DELETE_EVENT
-       || res == GTK_RESPONSE_OK) break;
+       || res == GTK_RESPONSE_OK
+       || res == GTK_RESPONSE_APPLY) break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));

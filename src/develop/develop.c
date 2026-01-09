@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1566,27 +1566,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean is_display_referred = dt_is_display_referred();
   const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
-  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
-  //  set filters
-
-  int iformat = 0;
-  if(is_raw)
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-
-  if(has_matrix)
-    iformat |= FOR_MATRIX;
-
-  if(dt_image_is_hdr(image))
-    iformat |= FOR_HDR;
-
-  int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
+  char *format_filter = dt_presets_get_filter(image);
 
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
@@ -1616,7 +1597,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "          AND ?8 BETWEEN exposure_min AND exposure_max"
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+           "          AND (%s)))"
            // skip non iop modules:
            "   AND operation NOT IN"
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
@@ -1635,7 +1616,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "                    AND ?8 BETWEEN exposure_min AND exposure_max"
            "                    AND ?9 BETWEEN aperture_min AND aperture_max"
            "                    AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "                    AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0)))))"
+           "                    AND (%s))))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
@@ -1649,7 +1630,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  THEN multi_name"
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
-           is_display_referred ? "" : "basecurve");
+           format_filter,
+           is_display_referred ? "" : "basecurve",
+           format_filter);
   // clang-format on
 
   // query for all modules at once:
@@ -1667,8 +1650,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1678,9 +1659,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(!dt_ioppr_has_iop_order_list(imgid))
   {
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
+    snprintf(query, sizeof(query),
        "SELECT op_params"
        " FROM data.presets"
        " WHERE autoapply=1"
@@ -1689,10 +1668,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
        "       AND ?8 BETWEEN exposure_min AND exposure_max"
        "       AND ?9 BETWEEN aperture_min AND aperture_max"
        "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-       "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+       "       AND (%s)"
        "       AND operation = 'ioporder'"
        " ORDER BY writeprotect ASC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-       -1, &stmt, NULL);
+       format_filter);
+
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     // NOTE: the order "writeprotect ASC" is very important as it ensure that
     //       user's defined presets are listed first and will be used instead of
     //       the darktable internal ones.
@@ -1710,9 +1692,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                                                 fminf(1000000, image->exif_aperture)));
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
                                                  fminf(1000000, image->exif_focal_length)));
-    // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
 
     GList *iop_list = NULL;
 
@@ -1731,9 +1710,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       {
         dt_print(DT_DEBUG_PARAMS,
                  "[dev_auto_apply_presets] no iop-order preset, use DT_IOP_ORDER_{JPG/RAW} on %d", imgid);
-        iop_list = dt_ioppr_get_iop_order_list_version((iformat & FOR_LDR)
-                                                       ? DT_DEFAULT_IOP_ORDER_JPG
-                                                       : DT_DEFAULT_IOP_ORDER_RAW);
+        iop_list = dt_ioppr_get_iop_order_list_version(is_raw
+                                                       ? DT_DEFAULT_IOP_ORDER_RAW
+                                                       : DT_DEFAULT_IOP_ORDER_JPG);
       }
       else
       {
@@ -1742,6 +1721,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
       }
     }
+
+    g_free(format_filter);
 
     // add multi-instance entries that could have been added if more
     // than one auto-applied preset was found for a single iop.
@@ -2949,6 +2930,43 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
 {
   const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
   return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
+}
+
+float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev)
+{
+  if (dt_view_get_current() != DT_VIEW_DARKROOM)
+  {
+    return 0.0f;
+  }
+
+  // The proxy function pointers are only set if an exposure module has been initialized.
+  if (!dev->proxy.exposure.get_effective_exposure)
+  {
+    return 0.0f;
+  }
+
+  const dt_iop_module_so_t *exposure_so = NULL;
+
+  for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
+  {
+    const dt_iop_module_so_t *module_so = modules->data;
+    if(dt_iop_module_is(module_so, "exposure"))
+    {
+      exposure_so = module_so;
+      break;
+    }
+  }
+
+  if (exposure_so)
+  {
+    dt_iop_module_t *preferred_exposure_instance = dt_iop_get_module_enabled_preferring_unmasked_first_instance(exposure_so);
+    if (preferred_exposure_instance)
+    {
+      return dev->proxy.exposure.get_effective_exposure(preferred_exposure_instance);
+    }
+  }
+
+  return 0.0f;
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)

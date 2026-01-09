@@ -369,6 +369,12 @@ textview
   margin: 0.07em 0.4em 0.07em 0.07em;
 }
 
+window entry,
+dialog entry
+{
+  margin: 0.07em;
+}
+
 .combo,
 entry,
 #dt-metadata-multi,
@@ -407,6 +413,12 @@ header button,
 .dt_ignore_fg_state:checked
 {
   color: @button_fg;
+}
+
+/* iop on/off buton */
+.dt_module_btn.dt_transparent_background:first-child
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 spinbutton > button,
@@ -1625,10 +1637,15 @@ progressbar progress
 }
 
 /* deactivated switch buttons, make them less visible */
-.dt_history_switch_off,
-.dt_history_switch_off:disabled
+.dt_history_switch_off
 {
   color: @disabled_fg_color;
+}
+
+/* history on/off button */
+.dt_history_switch_off:disabled
+{
+  color: shade(@disabled_fg_color, 0.9);
 }
 
 #dt-metadata-changed
@@ -2519,4 +2536,23 @@ window headerbar button.titlebutton
     color: white;
     border: none;
     margin: 8px;                    /* Spaces around button */
+}
+
+#tag-completion box
+{
+  background-color: @tooltip_bg_color;
+  border : 1px solid @button_border;
+}
+
+/* the popover entry */
+popover *
+{
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
+}
+
+/* the popover completion list */
+#tag-completion *:selected
+{
+  background-color: @selected_bg_color;
 }

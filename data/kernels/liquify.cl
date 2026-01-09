@@ -34,15 +34,15 @@ typedef struct {
 } dt_liquify_kernel_descriptor_t;
 
 
-float kmix (global const float *k,
-	    global const dt_liquify_kernel_descriptor_t* kdesc,
-	    float t)
+float kmix(global const float *k,
+	         global const dt_liquify_kernel_descriptor_t* kdesc,
+	         float t)
 {
-  t = fabs (t * kdesc->resolution);
+  t = fabs(t * kdesc->resolution);
   float flor;
-  t = fract (t, &flor);
+  t = fract(t, &flor);
   int i = (int) flor;
-  return mix (k[i], k[i+1], t);
+  return mix(k[i], k[i+1], t);
 }
 
 /**
@@ -80,7 +80,7 @@ warp_kernel (read_only image2d_t in,
 	           global dt_liquify_kernel_descriptor_t *kdesc,
 	           global float *k)
 {
-  int2 pos = (int2) (get_global_id (0), get_global_id (1));
+  int2 pos = (int2) (get_global_id(0), get_global_id(1));
 
   // stop surplus workers in the last workgroup
   if (pos.x >= map_extent->width || pos.y >= map_extent->height)
@@ -102,7 +102,7 @@ warp_kernel (read_only image2d_t in,
   const int2 roi_in_origin  = (int2) (roi_in->x,    roi_in->y);
   const int2 roi_out_origin = (int2) (roi_out->x,   roi_out->y);
 
-  float2 in_pos = convert_float2 (pos - roi_in_origin) + warp;
+  float2 in_pos = convert_float2(pos - roi_in_origin) + warp;
 
   const int a = kdesc->size;      // half the kernel width
 
@@ -111,11 +111,11 @@ warp_kernel (read_only image2d_t in,
   float2 norm = (float2) 0.0f;
   for (int i = 1 - a; i <= a; ++i)
   {
-    norm.x += (lk[i].x = kmix (k, kdesc, in_pos.x - floor (in_pos.x) - i));
-    norm.y += (lk[i].y = kmix (k, kdesc, in_pos.y - floor (in_pos.y) - i));
+    norm.x += (lk[i].x = kmix(k, kdesc, in_pos.x - floor(in_pos.x) - i));
+    norm.y += (lk[i].y = kmix(k, kdesc, in_pos.y - floor(in_pos.y) - i));
   }
 
-  in_pos = floor (in_pos);
+  in_pos = floor(in_pos);
 
   int2 sample_pos;
   float4 Sxy = (float4) 0.0f;
@@ -123,9 +123,9 @@ warp_kernel (read_only image2d_t in,
   // loop over support region (eg. 6x6 pixels for lanczos3)
   for (sample_pos.y = 1 - a; sample_pos.y <= a; ++sample_pos.y)
     for (sample_pos.x = 1 - a; sample_pos.x <= a; ++sample_pos.x)
-      Sxy += fmax(0.0f, (read_imagef (in, sampleri, in_pos + convert_float2 (sample_pos))
-	      * lk[sample_pos.x].x * lk[sample_pos.y].y));
+      Sxy += fmax(0.0f, read_imagef(in, sampleri, in_pos + convert_float2(sample_pos)))
+	      * lk[sample_pos.x].x * lk[sample_pos.y].y;
 
   Sxy = fmax(0.0f, Sxy / fmax(1e-7f, norm.x * norm.y));
-  write_imagef (out, pos - roi_out_origin, Sxy);
+  write_imagef(out, pos - roi_out_origin, Sxy);
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,8 +46,11 @@ static inline void _update_stats_by_ch(dt_aligned_pixel_t acc,
 static inline void _update_stats_4ch(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t low,
                                      dt_aligned_pixel_t high,
-                                     const dt_aligned_pixel_t pick)
+                                     dt_aligned_pixel_t pick)
 {
+  // allow for determining sensible max/min values
+  // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
+  pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
   // need all channels as blend pickers may use 4th to reverse hues
   for_four_channels(k,aligned(acc,low,high,pick:16))
     _update_stats_by_ch(acc, low, high, k, pick[k]);
@@ -83,7 +86,7 @@ typedef void((*picker_worker_4ch)(dt_aligned_pixel_t acc,
                                   dt_aligned_pixel_t high,
                                   const float *const pixels,
                                   const size_t width,
-                                  const void *const data));
+                                  const dt_iop_order_iccprofile_info_t *const profile));
 
 typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
                                   dt_aligned_pixel_t low,
@@ -100,7 +103,7 @@ static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
                                             dt_aligned_pixel_t high,
                                             const float *const pixels,
                                             const size_t width,
-                                            const void *const data)
+                                            const dt_iop_order_iccprofile_info_t *const profile)
 {
   for(size_t i = 0; i < width; i += 4)
     for_each_channel(k, aligned(acc,low,high,pixels:16))
@@ -112,15 +115,12 @@ static inline void _color_picker_lch(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t high,
                                      const float *const pixels,
                                      const size_t width,
-                                     const void *const data)
+                                     const dt_iop_order_iccprofile_info_t *const profile)
 {
   for(size_t i = 0; i < width; i += 4)
   {
     dt_aligned_pixel_t pick;
     dt_Lab_2_LCH(pixels + i, pick);
-    // allow for determining sensible max/min values
-    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
-    pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     _update_stats_4ch(acc, low, high, pick);
   }
 }
@@ -130,15 +130,12 @@ static inline void _color_picker_hsl(dt_aligned_pixel_t acc,
                                      dt_aligned_pixel_t high,
                                      const float *const pixels,
                                      const size_t width,
-                                     const void *const data)
+                                     const dt_iop_order_iccprofile_info_t *const profile)
 {
   for(size_t i = 0; i < width; i += 4)
   {
     dt_aligned_pixel_t pick;
     dt_RGB_2_HSL(pixels + i, pick);
-    // allow for determining sensible max/min values
-    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
-    pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
     _update_stats_4ch(acc, low, high, pick);
   }
 }
@@ -148,16 +145,12 @@ static inline void _color_picker_jzczhz(dt_aligned_pixel_t acc,
                                         dt_aligned_pixel_t high,
                                         const float *const pixels,
                                         const size_t width,
-                                        const void *const data)
+                                        const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_iop_order_iccprofile_info_t *const profile = data;
   for(size_t i = 0; i < width; i += 4)
   {
     dt_aligned_pixel_t pick;
     rgb_to_JzCzhz(pixels + i, pick, profile);
-    // allow for determining sensible max/min values
-    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
-    pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     _update_stats_4ch(acc, low, high, pick);
   }
 }
@@ -200,11 +193,11 @@ static inline void _color_picker_xtrans(dt_aligned_pixel_t acc,
   }
 }
 
-static void _color_picker_work_4ch(const float *const pixel,
+static void _color_picker_work_4ch(const float *const source,
                                    const dt_iop_roi_t *const roi,
                                    const int *const box,
                                    lib_colorpicker_stats pick,
-                                   const void *const data,
+                                   const dt_iop_order_iccprofile_info_t *const profile,
                                    const picker_worker_4ch worker,
                                    const size_t min_for_threads)
 {
@@ -224,14 +217,58 @@ static void _color_picker_work_4ch(const float *const pixel,
   for(size_t j = box[1]; j < box[3]; j++)
   {
     const size_t offset = j * off_mul + off_add;
-    worker(acc, low, high, pixel + offset, stride, data);
+    worker(acc, low, high, source + offset, stride, profile);
   }
 
   // copy all four channels, as four some colorspaces there may be
-  // meaningful data in the fourth pixel
+  // meaningful data in the fourth channel
   for_four_channels(c)
   {
     pick[DT_PICK_MEAN][c] = acc[c] / (float)size;
+    pick[DT_PICK_MIN][c] = low[c];
+    pick[DT_PICK_MAX][c] = high[c];
+  }
+}
+
+static void _color_picker_nomat(const float *const source,
+                                const dt_iop_roi_t *const roi,
+                                const int *const box,
+                                lib_colorpicker_stats pick,
+                                const dt_iop_order_iccprofile_info_t *const profile)
+{
+  cmsHPROFILE *input = dt_colorspaces_get_profile(profile->type, profile->filename, DT_PROFILE_DIRECTION_IN)->profile;
+  cmsHPROFILE *Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  cmsHTRANSFORM *xform = cmsCreateTransform(input, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, profile->intent, 0);
+ 
+  dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+  const size_t bsize = _box_size(box);
+  DT_OMP_FOR(if (bsize > 10) reduction(+ : acc[:4]) reduction(min : low[:4]) reduction(max : high[:4]))
+  for(size_t y = box[1]; y < box[3]; y++)
+  {
+    for(size_t x = box[0]; x < box[2]; x++)
+    {
+      dt_aligned_pixel_t JzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t JzCzhz = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t pLAB = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t XYZ_D50 = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      cmsDoTransform(xform, source + (y * roi->width + x) * 4, pLAB, 1);
+      dt_Lab_to_XYZ(pLAB, XYZ_D50);
+      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
+      dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
+      _update_stats_4ch(acc, low, high, JzCzhz);
+    }
+  }
+
+  cmsDeleteTransform(xform);
+  for_four_channels(c)
+  {
+    pick[DT_PICK_MEAN][c] = acc[c] / (float)bsize;
     pick[DT_PICK_MIN][c] = low[c];
     pick[DT_PICK_MAX][c] = high[c];
   }
@@ -314,7 +351,7 @@ void dt_color_picker_transform_box(dt_develop_t *dev,
                                    const int num,
                                    const float *in,
                                    float *out,
-                                   gboolean scale)
+                                   const gboolean scale)
 {
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;
@@ -481,7 +518,10 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
     {
       // scene-referred blending for RGB modules
-      _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
+      if(profile && !dt_is_valid_colormatrix(profile->matrix_in[0][0]))
+        _color_picker_nomat(source, roi, box, pick, profile);
+      else
+        _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
     }
     else if(effective_cst == picker_cst)
     {

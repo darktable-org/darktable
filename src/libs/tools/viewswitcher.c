@@ -105,6 +105,7 @@ void gui_init(dt_lib_module_t *self)
   d->dropdown = NULL;
   GtkListStore *model = NULL;
 
+  const gboolean gimping =  dt_check_gimpmode("file");
   for(GList *view_iter = darktable.view_manager->views; view_iter; view_iter = g_list_next(view_iter))
   {
     dt_view_t *view = view_iter->data;
@@ -114,12 +115,15 @@ void gui_init(dt_lib_module_t *self)
     // skip hidden views
     if(view->flags() & VIEW_FLAGS_HIDDEN) continue;
 
-    if(!g_strcmp0(view->module_name, "lighttable") || !g_strcmp0(view->module_name, "darkroom"))
+    const gboolean lighttable = !g_strcmp0(view->module_name, "lighttable");
+    const gboolean darkroom = !g_strcmp0(view->module_name, "darkroom");
+    if(lighttable || darkroom)
     {
       GtkWidget *w = _lib_viewswitcher_create_label(view);
       gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
       d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
 
+      gtk_widget_set_sensitive(w, !(lighttable && gimping));
       SHORTCUT_TOOLTIP(view, w);
 
       /* create space if more views */
@@ -150,7 +154,7 @@ void gui_init(dt_lib_module_t *self)
         g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
       }
 
-      gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, 1, -1);
+      gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, gimping ? 0 : 1, -1);
     }
   }
 

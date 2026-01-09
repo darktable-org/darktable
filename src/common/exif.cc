@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2025 darktable developers.
+   Copyright (C) 2009-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -89,6 +89,9 @@ using namespace std;
 // prefer to take it from here, rather than complicate the calculation code with exceptions
 static const struct dt_model_cropfactor dt_cropfactors[] = {
   {.model = "Canon EOS 5D Mark IV", // tags contain incorrect data, so formula gives us incorrect result
+   .cropfactor = 1.0f
+  },
+  {.model = "Canon EOS 6D Mark II", // tags contain incorrect data, so formula gives us incorrect result
    .cropfactor = 1.0f
   },
   {.model = "FinePix SL1000", // exiv2 doesn't yet read the tags we need to calculate correctly
@@ -1209,11 +1212,11 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
        ||FIND_EXIF_TAG("Exif.OlympusRd2.Gradation"))
     {
       // first three values specify one of the possible settings: Normal(Off), Auto, Low Key, High Key
-      // fourth specifies 0=user-selected or 1=auto-override
+      // fourth (if present) specifies 0=user-selected or 1=auto-override
       const long state1 = pos->toLong(0);
       const long state2 = pos->toLong(1);
       const long state3 = pos->toLong(2);
-      const long state4 = pos->toLong(3);
+      const long state4 = pos->count() > 3 ? pos->toLong(3) : 0;
       if(state4 == 1) // Auto mode is reported to apply a -0.3EV exposure compensation
 	 img->exif_highlight_preservation = 0.33f;
       else if(state1 == -1 && state2 == -1 && state3 == 1) // low key, reported -1.0EV exposure compensation
@@ -2586,7 +2589,7 @@ gboolean dt_exif_read(dt_image_t *img,
   }
   catch(const Exiv2::AnyError &e)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "[exiv2 dt_exif_read] %s: %s",
              path,
              e.what());

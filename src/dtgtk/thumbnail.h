@@ -52,7 +52,8 @@ typedef enum dt_thumbnail_container_t
 {
   DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
   DT_THUMBNAIL_CONTAINER_CULLING,
-  DT_THUMBNAIL_CONTAINER_PREVIEW
+  DT_THUMBNAIL_CONTAINER_PREVIEW,
+  DT_THUMBNAIL_CONTAINER_DUPLICATE
 } dt_thumbnail_container_t;
 
 typedef enum dt_thumbnail_selection_mode_t

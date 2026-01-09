@@ -311,6 +311,12 @@ static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
                                  dt_view_manager_get_current_view(darktable.view_manager));
 }
 
+// forward declaration for use in init_tab_general
+static gboolean
+_gui_preferences_bool_click(GtkWidget *label,
+                            GdkEventButton *event,
+                            GtkWidget *widget);
+
 static void init_tab_general(GtkWidget *dialog,
                              GtkWidget *stack,
                              dt_gui_themetweak_widgets_t *tw)
@@ -404,6 +410,7 @@ static void init_tab_general(GtkWidget *dialog,
     ? gtk_widget_set_hexpand(fontsize, TRUE), 2 : 0;
 
   //checkbox to use system font size
+  gtk_widget_set_name(usesysfont, "use_system_font");
   if(dt_conf_get_bool("use_system_font"))
     gtk_widget_set_state_flags(fontsize, GTK_STATE_FLAG_INSENSITIVE, TRUE);
   else
@@ -421,6 +428,8 @@ static void init_tab_general(GtkWidget *dialog,
                                dt_conf_get_bool("use_system_font"));
   g_signal_connect(G_OBJECT(usesysfont), "toggled",
                    G_CALLBACK(use_sys_font_callback), (gpointer)fontsize);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)usesysfont);
 
 
   //font size selector
@@ -475,6 +484,7 @@ static void init_tab_general(GtkWidget *dialog,
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   tw->apply_toggle = gtk_check_button_new();
+  gtk_widget_set_name(tw->apply_toggle, "themes/usercss");
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -486,6 +496,8 @@ static void init_tab_general(GtkWidget *dialog,
                                dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled",
                    G_CALLBACK(usercss_callback), 0);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event",
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)tw->apply_toggle);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1100,17 +1112,16 @@ static void tree_row_activated_presets(GtkTreeView *tree,
   {
     // For leaf nodes, open editing window if the preset is not writeprotected
     gint rowid;
-    gchar *name, *operation;
+    gchar *name;
     GdkPixbuf *editable;
     gtk_tree_model_get(model, &edited_iter,
                        P_ROWID_COLUMN, &rowid,
                        P_NAME_COLUMN, &name,
-                       P_OPERATION_COLUMN, &operation,
                        P_EDITABLE_COLUMN, &editable,
                        -1);
     if(editable == NULL)
     {
-      dt_gui_presets_show_edit_dialog(name, operation,
+      dt_gui_presets_show_edit_dialog(name,
                                       rowid,
                                       G_CALLBACK(edit_preset_response),
                                       model, TRUE, TRUE, TRUE,
@@ -1121,7 +1132,6 @@ static void tree_row_activated_presets(GtkTreeView *tree,
       g_object_unref(editable);
     }
     g_free(name);
-    g_free(operation);
   }
 }
 
@@ -1318,10 +1328,16 @@ void dt_gui_preferences_bool_reset(GtkWidget *widget)
 }
 
 static gboolean
-_gui_preferences_bool_reset(GtkWidget *label,
+_gui_preferences_bool_click(GtkWidget *label,
                             GdkEventButton *event,
                             GtkWidget *widget)
 {
+  if(event->type == GDK_BUTTON_PRESS)
+  {
+    const gboolean cur = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), !cur);
+    return TRUE;
+  }
   if(event->type == GDK_2BUTTON_PRESS)
   {
     dt_gui_preferences_bool_reset(widget);
@@ -1357,7 +1373,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
   g_signal_connect(G_OBJECT(w), "toggled",
                    G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
-                   G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
+                   G_CALLBACK(_gui_preferences_bool_click), (gpointer)w);
   return w;
 }
 

@@ -89,7 +89,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
 // update thumbtable class and overlays mode, depending on size category
 static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 {
-  int ns = _thumbs_get_prefs_size(table);
+  const int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
   gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
@@ -1230,9 +1230,9 @@ static void _line_to_module(cairo_t *cr,
 
 // display help text in the center view if there's no image to show
 static void _lighttable_expose_empty(cairo_t *cr,
-                                    const int32_t width,
-                                    const int32_t height,
-                                    dt_thumbtable_t *lighttable)
+                                     const int32_t width,
+                                     const int32_t height,
+                                     dt_thumbtable_t *lighttable)
 {
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -2477,11 +2477,16 @@ dt_thumbtable_t *dt_thumbtable_new()
                    G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, table);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _dt_mouse_over_image_callback, table);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, table);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _dt_profile_change_callback, table);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED,
+                            _dt_collection_changed_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            _dt_mouse_over_image_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                            _dt_active_images_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                            _dt_profile_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _dt_pref_change_callback, table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -2504,7 +2509,8 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table,
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
     // get first visible line position
-    const float first_line = ((table->offset - 1) / table->thumbs_per_row)*table->thumb_size - table->thumbs_area.y;
+    const float first_line = ((table->offset - 1) / table->thumbs_per_row)
+      * table->thumb_size - table->thumbs_area.y;
 
     _move(table, 0, first_line - y * table->thumb_size, TRUE);
   }

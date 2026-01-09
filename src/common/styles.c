@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -651,8 +651,9 @@ void dt_styles_create_from_list(const GList *list)
   for(const GList *l = list; l; l = g_list_next(l))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
+    if(!dt_gui_styles_dialog_new(imgid))
+      break;
   }
 
   if(!selected) dt_control_log(_("no image selected!"));
@@ -1820,6 +1821,9 @@ void dt_import_default_styles(const char *folder)
 {
   struct dirent **entries;
   const int numentries = scandir(folder, &entries, _check_extension, alphasort);
+  if(numentries < 0)
+    return;
+  dt_database_start_transaction(darktable.db);
   for(int i = 0; i < numentries; i++)
   {
     char *filename = g_build_filename(folder, entries[i]->d_name, NULL);
@@ -1835,8 +1839,8 @@ void dt_import_default_styles(const char *folder)
     g_free(filename);
     free(entries[i]);
   }
-  if(numentries != -1)
-    free(entries);
+  dt_database_release_transaction(darktable.db);
+  free(entries);
 }
 
 // clang-format off
