@@ -208,13 +208,16 @@ typedef struct dt_dlopencl_symbols_t
   dt_clEnqueueWaitForEvents_t dt_clEnqueueWaitForEvents;
 } dt_dlopencl_symbols_t;
 
-
-
 typedef struct dt_dlopencl_t
 {
   gboolean have_opencl;
   dt_dlopencl_symbols_t *symbols;
   char *library;
+#ifndef __APPLE__
+  GModule *gmodule;
+#else
+  void *gmodule;
+#endif
 } dt_dlopencl_t;
 
 /* default noop function for all unassigned function pointers */
@@ -222,6 +225,9 @@ void dt_dlopencl_noop(void);
 
 /* dynamically load OpenCL library and bind needed functions */
 dt_dlopencl_t *dt_dlopencl_init(const char *);
+
+/* dynamically close OpenCL library opened by dt_dlopencl_init() */
+void dt_dlopencl_close(dt_dlopencl_t *ocl);
 
 #endif // HAVE_OPENCL
 
