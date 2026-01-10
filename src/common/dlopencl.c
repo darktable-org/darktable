@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,9 +80,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     library = name;
     module = dt_gmodule_open(library);
     if(module == NULL)
-      dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'", library);
+      dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'\n", library);
     else
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'", library);
+      dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'\n", library);
   }
   else
   {
@@ -92,15 +92,18 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       library = *iter;
       module = dt_gmodule_open(library);
       if(module == NULL)
-        dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find default opencl runtime library '%s'", library);
+        dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] could not find default opencl runtime library '%s'\n", library);
       else
-        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'", library);
+        dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'\n", library);
       iter++;
     }
   }
 
   if(module == NULL)
+  {
+    dt_print_nts(DT_DEBUG_ALWAYS, "[dt_dlopencl_init] could not find any opencl runtime library\n");
     return NULL;
+  }
 
   /* now bind symbols */
   ocl = malloc(sizeof(dt_dlopencl_t));
@@ -115,6 +118,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
 
   if(ocl->symbols == NULL)
   {
+    dt_print_nts(DT_DEBUG_ALWAYS, "[dt_dlopencl_init] could not find symbols in opencl runtime library\n");
     free(ocl);
     free(module);
     return NULL;
@@ -226,7 +230,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
   ocl->have_opencl = success;
 
   if(!success)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library");
+    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
   else
     ocl->gmodule = module->gmodule;
 
