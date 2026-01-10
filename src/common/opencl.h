@@ -432,20 +432,6 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid,
                                              const int height,
                                              const int rowpitch);
 
-int dt_opencl_read_host_from_device_non_blocking(const int devid,
-                                                 void *host,
-                                                 void *device,
-                                                 const int width,
-                                                 const int height,
-                                                 const int bpp);
-
-int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid,
-                                                          void *host,
-                                                          void *device,
-                                                          const int width,
-                                                          const int height,
-                                                          const int rowpitch);
-
 int dt_opencl_read_host_from_device_raw(const int devid,
                                         void *host,
                                         void *device,
@@ -468,20 +454,6 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid,
                                             const int height,
                                             const int rowpitch);
 
-int dt_opencl_write_host_to_device_non_blocking(const int devid,
-                                                void *host,
-                                                void *device,
-                                                const int width,
-                                                const int height,
-                                                const int bpp);
-
-int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid,
-                                                         void *host,
-                                                         void *device,
-                                                         const int width,
-                                                         const int height,
-                                                         const int rowpitch);
-
 int dt_opencl_write_host_to_device_raw(const int devid,
                                        void *host,
                                        void *device,
@@ -495,13 +467,6 @@ void *dt_opencl_copy_host_to_device(const int devid,
                                     const int width,
                                     const int height,
                                     const int bpp);
-
-void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
-                                             void *host,
-                                             const int width,
-                                             const int height,
-                                             const int bpp,
-                                             const int rowpitch);
 
 void *dt_opencl_copy_host_to_device_constant(const int devid,
                                              const size_t size,
@@ -518,13 +483,6 @@ void *dt_opencl_alloc_device(const int devid,
                              const int width,
                              const int height,
                              const int bpp);
-
-void *dt_opencl_alloc_device_use_host_pointer(const int devid,
-                                              const int width,
-                                              const int height,
-                                              const int bpp,
-                                              const int rowpitch,
-                                              void *host);
 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
                                            cl_mem src_image,
