@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1155,8 +1155,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     maxw = MAX(maxw, th->width);
     maxh = MAX(maxh, th->height);
   }
+  const int32_t mipwidth = maxw * darktable.gui->ppd;
+  const int32_t mipheight = maxh * darktable.gui->ppd;
   dt_mipmap_size_t mip =
-    dt_mipmap_cache_get_matching_size(maxw, maxh);
+    dt_mipmap_cache_get_matching_size(mipwidth, mipheight);
 
   // prefetch next image
   gchar *query;

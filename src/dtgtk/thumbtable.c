@@ -1669,13 +1669,13 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   dt_mipmap_size_t hql =
     dt_mipmap_cache_get_min_mip_from_pref(hq);
+
   const char *embedded =
     dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
-
   dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
 
-  int min_level = 8;
-  int max_level = 0;
+  int min_level = DT_MIPMAP_8;
+  int max_level = DT_MIPMAP_0;
   if(hql != table->pref_hq)
   {
     min_level = MIN(table->pref_hq, hql);
@@ -1685,6 +1685,15 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
   {
     min_level = MIN(min_level, MIN(table->pref_embedded, embeddedl));
     max_level = MAX(max_level, MAX(table->pref_embedded, embeddedl));
+  }
+
+  // switching between auto/never options
+  if (max_level == DT_MIPMAP_NONE && min_level == DT_MIPMAP_8)
+  {
+    // err on side of discarding too many thumbnails: a quick
+    // survey of vintage raw files shows a lowest res embedded
+    // JPEG of 1616x1080 (found in 2011 & 2014 Sony)
+    min_level = DT_MIPMAP_4;
   }
 
   sqlite3_stmt *stmt = NULL;
@@ -1722,7 +1731,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-        for(int i = max_level - 1; i >= min_level; i--)
+        for(int i = max_level; i >= min_level; i--)
         {
           dt_mipmap_cache_remove_at_size(imgid, i);
         }
