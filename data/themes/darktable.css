@@ -621,8 +621,16 @@ dialog .sidebar row:selected:hover label,
 #iop-module-name
 {
   font-weight: lighter;
-  font-family: sans-serif, "Arial Unicode MS";
-  font-size: 0.8em;
+  font-family: "Roboto Light", "Roboto",                  /* best case scenario */
+               "Segoe UI Variable",                       /* Windows 11 default */
+               "Segoe UI",                                /* Windows 10 default */
+               "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
+               "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
+               "Noto Sans",                               /* Fedora default */
+               "Adwaita Sans", "Cantarell",               /* Gnome default new */
+               "Lucida Sans Unicode", "Arial Unicode MS", /* Unicode glyphs */
+                sans-serif;                               /* default default */
+  font-size: 0.85em;
 }
 
 #iop-module-name-error
