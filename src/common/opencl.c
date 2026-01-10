@@ -524,7 +524,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *deviceversion = NULL;
   size_t deviceversion_size;
 
-  size_t infoint;
   size_t *infointtab = NULL;
   cl_device_type type;
   cl_bool image_support = 0;
@@ -838,10 +837,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   COMPUTE UNITS:            %d\n", cl->dev[dev].compute_units);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX WORK GROUP SIZE:      %zu\n", cl->dev[dev].workgroup_size);
+
+  cl_uint max_item_dimension = 0;  
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
-                                           sizeof(infoint), &infoint, NULL);
+                                           sizeof(max_item_dimension), &max_item_dimension, NULL);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX WORK ITEM DIMENSIONS: %zu\n", infoint);
+               "   MAX WORK ITEM DIMENSIONS: %d\n", max_item_dimension);
 
   size_t infointtab_size;
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES,
@@ -850,7 +851,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   {
     dt_print_nts(DT_DEBUG_OPENCL,
                  "   MAX WORK ITEM SIZES:      [ ");
-    for(size_t i = 0; i < infoint; i++)
+    for(size_t i = 0; i < max_item_dimension; i++)
       dt_print_nts(DT_DEBUG_OPENCL, "%zu ", infointtab[i]);
     free(infointtab);
     infointtab = NULL;
