@@ -115,7 +115,7 @@ typedef struct dt_iop_agx_params_t
   // Corresponds to p_y, but not directly -- needs application of gamma
   float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
   // P_slope
-  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 2.4f $DESCRIPTION: "contrast"
+  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 3.0f $DESCRIPTION: "contrast"
   // related to P_tlength; the number expresses the portion of the y range below the pivot
   float curve_linear_ratio_below_pivot;   // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "toe start"
   // related to P_slength; the number expresses the portion of the y range below the pivot
@@ -123,7 +123,7 @@ typedef struct dt_iop_agx_params_t
   // t_p
   float curve_toe_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.5f $DESCRIPTION: "toe power"
   // s_p
-  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.5f $DESCRIPTION: "shoulder power"
+  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 3.3f $DESCRIPTION: "shoulder power"
   float curve_gamma;                      // $MIN: 0.01f $MAX: 100.f $DEFAULT: 2.2f $DESCRIPTION: "curve y gamma"
   gboolean auto_gamma;                    // $DEFAULT: FALSE $DESCRIPTION: "keep the pivot on the diagonal"
   // t_ly
@@ -1849,9 +1849,10 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near white"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
+                              _("shoulder power setting is ineffective, as the curve is no longer S-shaped.\n"
                                 "without inverting the shoulder (forcing it to bend upwards), it would be\n"
                                 "impossible to reach target white with the selected contrast and pivot position.\n"
+                                "if you see artifacts, or wish to regain the control, try the following:\n"
                                 "increase contrast, move the pivot higher (increase pivot target output\n"
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
@@ -1866,9 +1867,10 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near black"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
+                              _("toe power setting is ineffective, as the curve is no longer S-shaped.\n"
                                 "without inverting the toe (forcing it to bend downwards), it would be\n"
                                 "impossible to reach target black with the selected contrast and pivot position.\n"
+                                "if you see artifacts, or wish to regain the control, try the following:\n"
                                 "increase contrast, move the pivot lower (reduce the pivot target output or\n"
                                 "curve y gamma), or increase the distance between the pivot and the left edge\n"
                                 "(increase the pivot shift, move the black point farther from the pivot by raising\n"
