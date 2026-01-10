@@ -97,7 +97,7 @@ typedef enum dt_develop_mask_mode_t
   DEVELOP_MASK_MASK = 1 << 1,                                                        // drawn mask
   DEVELOP_MASK_CONDITIONAL = 1 << 2,                                                 // parametric mask
   DEVELOP_MASK_RASTER = 1 << 3,                                                      // raster mask
-  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)     // drawn & parametric
+  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)    // drawn & parametric
 } dt_develop_mask_mode_t;
 
 typedef enum dt_develop_mask_combine_mode_t
@@ -282,7 +282,7 @@ extern const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[]
 extern const dt_introspection_type_enum_tuple_t dt_develop_feathering_guide_names[];
 extern const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[];
 
-#define DEVELOP_MASKS_NB_SHAPES 5
+#define DEVELOP_MASKS_NB_SHAPES 6
 
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
