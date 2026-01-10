@@ -150,7 +150,7 @@ static void vng_interpolate(float *out,
                             const int height,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6],
-                            const gboolean only_vng_linear)
+                            const gboolean only_linear)
 {
   static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -194,7 +194,7 @@ static void vng_interpolate(float *out,
   lin_interpolate(out, in, width, height, filters4, xtrans);
 
   // if only linear interpolation is requested we can stop it here
-  if(only_vng_linear)
+  if(only_linear)
   {
     if(is_bayer) goto bayer_greens;
     else return;
@@ -332,7 +332,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                              const int width,
                              const int height,
                              const uint32_t filters,
-                             const gboolean only_vng_linear)
+                             const gboolean only_linear)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
   const gboolean is_xtrans = (filters == 9u);
@@ -419,7 +419,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   static const signed char chood[]
       = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
 
-  if(!only_vng_linear)
+  if(!only_linear)
   {
     const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
     ips = malloc(ips_size);
@@ -485,43 +485,55 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
   if(dev_lookup == NULL) goto finish;
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if(dev_tmp == NULL) goto finish;
- 
-  cl_mem tmp_out = only_vng_linear ? dev_tmp : dev_out;
+  // Only xtrans only-linear does not require a tmp buffer and can render directly to out
+  const gboolean linear_xtrans = is_xtrans && only_linear;
+  if(!linear_xtrans)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    if(dev_tmp == NULL) goto finish;
+  }
 
-  // manage borders for linear interpolation part
+  /* We don't want any copy of data so we fiddle a bit
+    linear xtrans:  directly to out
+    linear bayer:   first to dev_tmp, greens always take dev_tmp to out
+    full xtrans:    first to tmp, then directly to out
+    full bayer:     first to out, then to tmp, greens take tmp to out
+  */
+  const gboolean full_bayer = !is_xtrans && !only_linear;
+  const gboolean lin_to_out = linear_xtrans || full_bayer;
+  cl_mem dev_lin_out = lin_to_out ? dev_out : dev_tmp;
+  cl_mem dev_full_out = is_xtrans ? dev_out : dev_tmp;
+
+  // write border **before** linear interpolation
   int border = 1;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(tmp_out), CLARG(width), CLARG(height), CLARG(border),
+        CLARG(dev_in), CLARG(dev_lin_out), CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto finish;
 
-  {
-    // do linear interpolation
-    dt_opencl_local_buffer_t locopt
+  // do linear interpolation
+  dt_opencl_local_buffer_t locopt_lin
         = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
                                       .cellsize = 1 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
-
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto finish;
-    }
-    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
-        CLARG(dev_in), CLARG(tmp_out),
-        CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto finish;
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt_lin))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
+    goto finish;
   }
 
-  if(only_vng_linear)
+  size_t sizes_lin[3] = { ROUNDUP(width, locopt_lin.sizex), ROUNDUP(height, locopt_lin.sizey), 1 };
+  size_t local_lin[3] = { locopt_lin.sizex, locopt_lin.sizey, 1 };
+  dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
+        CLARG(dev_in), CLARG(dev_lin_out),
+        CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt_lin.sizex + 2) * (locopt_lin.sizey + 2)));
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes_lin, local_lin);
+  if(err != CL_SUCCESS) goto finish;
+
+  if(only_linear)
     goto backcopy;
 
-  // do full VNG interpolation; linear data is in dev_out
+  // do full VNG interpolation; linear data is in dev_lin_out
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -535,31 +547,23 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
   dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
-        CLARG(dev_out), CLARG(dev_tmp),
+        CLARG(dev_lin_out), CLARG(dev_full_out),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
   if(err != CL_SUCCESS) goto finish;
 
-  // manage borders
+  // overwrite border as 2nd outermost pixels were not interpolated
   border = 2;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border),
+        CLARG(dev_in), CLARG(dev_full_out), CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto finish;
 
 backcopy:
   if(!is_xtrans)
-  {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
       CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
-  }
-  else
-  {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
-  }
 
 finish:
   dt_opencl_release_mem_object(dev_tmp);
