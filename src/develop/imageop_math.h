@@ -34,7 +34,7 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
-                          const struct dt_iop_roi_t *const roi_in);
+                          const struct dt_iop_roi_t *const roi_in, const gboolean gamma);
 
 /** zoom pixel array for roi buffers. */
 void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
