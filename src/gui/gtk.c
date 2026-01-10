@@ -1278,9 +1278,11 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui)
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
-  /* lets zero mem */
-  memset(gui, 0, sizeof(dt_gui_gtk_t));
-
+  /* Note:
+    *gui has been calloced in dt_init() so no need to clear via memset
+    also it got some changes already, let's keep them
+    memset(gui, 0, sizeof(dt_gui_gtk_t));
+  */
   dt_pthread_mutex_init(&gui->mutex, NULL);
 
   // force gtk3 to use normal scroll bars instead of the popup
@@ -1603,6 +1605,15 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                         darktable.gui->focus_peaking_button, &dt_action_def_toggle);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
+  // give Gtk a chance to update the screen; we need to let the event
+  // processing run several times for the window to actually be
+  // fully displayed/updated
+  for(int i = 0; i < 5; i++)
+  {
+    g_usleep(1000);
+    dt_gui_process_events();
+  }
+
   return 0;
 }
 
@@ -1625,7 +1636,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(dt_control_all_running())
+  if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
