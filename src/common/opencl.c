@@ -388,7 +388,7 @@ gboolean dt_opencl_read_device_config(const int devid)
            &event_handles, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
 
     // some rudimentary safety checking if string seems to be ok
-    safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
+    safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513) && (advantage >= 0.0f) && (advantage <= 10000.0f);
 
     if(safety_ok)
     {
@@ -420,14 +420,14 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->clroundup_ht = 16;
   if(cldid->event_handles < 0)
     cldid->event_handles = 0x40000000;
+  if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
+    cldid->advantage = 0.0f;
 
-  cldid->use_events = cldid->event_handles ? TRUE : FALSE;
+  cldid->use_events = cldid->event_handles > 0;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
   cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
   cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
-
-  cldid->advantage = fmaxf(0.0f, cldid->advantage);
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid
