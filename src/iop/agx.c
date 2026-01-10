@@ -115,15 +115,15 @@ typedef struct dt_iop_agx_params_t
   // Corresponds to p_y, but not directly -- needs application of gamma
   float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
   // P_slope
-  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 2.8f $DESCRIPTION: "contrast"
+  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 3.0f $DESCRIPTION: "contrast"
   // related to P_tlength; the number expresses the portion of the y range below the pivot
   float curve_linear_ratio_below_pivot;   // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "toe start"
   // related to P_slength; the number expresses the portion of the y range below the pivot
   float curve_linear_ratio_above_pivot;   // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "shoulder start"
   // t_p
-  float curve_toe_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.55f $DESCRIPTION: "toe power"
+  float curve_toe_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.5f $DESCRIPTION: "toe power"
   // s_p
-  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.55f $DESCRIPTION: "shoulder power"
+  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 3.3f $DESCRIPTION: "shoulder power"
   float curve_gamma;                      // $MIN: 0.01f $MAX: 100.f $DEFAULT: 2.2f $DESCRIPTION: "curve y gamma"
   gboolean auto_gamma;                    // $DEFAULT: FALSE $DESCRIPTION: "keep the pivot on the diagonal"
   // t_ly
