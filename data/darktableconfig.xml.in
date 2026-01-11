@@ -3616,6 +3616,13 @@
     <longdescription>this folder (and sub-folders) contains PFM files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
+    <name>plugins/darkroom/segments/use_image_folder</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use image folder for raster masks</shortdescription>
+    <longdescription>when enabled, the raster mask file chooser defaults to the current image's folder and restricts selections to it, ignoring the raster mask root folder setting</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
       <enum>
