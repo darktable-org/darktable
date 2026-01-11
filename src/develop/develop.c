@@ -224,6 +224,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
+  assert(dev && dev->gui_attached);
   if(!dev->gui_attached || dev->full.pipe->processing) return;
   const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
@@ -231,6 +232,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
+  assert(dev && dev->gui_attached);
   if(!dev->gui_attached) return;
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview_job_create(dev), DT_CTL_WORKER_ZOOM_FILL);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!");
@@ -238,12 +240,15 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
+  assert(dev && dev->gui_attached);
+  if(!dev->gui_attached) return;
   const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
 
 void dt_dev_invalidate(dt_develop_t *dev)
 {
+  assert(dev);
   dev->full.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
   if(dev->preview_pipe)
@@ -254,6 +259,7 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_invalidate_all(dt_develop_t *dev)
 {
+  assert(dev);
   if(dev->full.pipe)
     dev->full.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   if(dev->preview_pipe)
@@ -265,6 +271,7 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
 
 void dt_dev_invalidate_preview(dt_develop_t *dev)
 {
+  assert(dev);
   dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
   if(dev->full.pipe)
