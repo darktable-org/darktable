@@ -1090,8 +1090,9 @@ int process_cl(dt_iop_module_t *self,
     goto finish;
   }
 
+  const int in_channels = true_monochrome ? 4 : 1;
   out_image = direct ? dev_out : dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
-  t_in = tiling  ? dt_opencl_alloc_device(devid, iwidth, tile_height, sizeof(float)) : in_image;
+  t_in = tiling  ? dt_opencl_alloc_device(devid, iwidth, tile_height, sizeof(float) * in_channels) : in_image;
   t_out = tiling ? dt_opencl_alloc_device(devid, iwidth, tile_height, sizeof(float) * 4) : out_image;
   t_high = dual  ? dt_opencl_alloc_device(devid, iwidth, tile_height, sizeof(float) * 4) : t_out;
   t_low = dual   ? dt_opencl_alloc_device(devid, iwidth, tile_height, sizeof(float) * 4) : NULL;
