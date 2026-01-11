@@ -548,8 +548,10 @@ static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   const int quality = (int)dt_bauhaus_slider_get(widget);
   dt_conf_set_int("plugins/imageio/format/jxl/quality", quality);
 
+  /* see below
   const gboolean lossless = quality == 100;
   gtk_widget_set_visible(gui->original, !lossless);
+  */
 }
 
 /*
@@ -680,9 +682,11 @@ void gui_reset(dt_imageio_module_format_t *self)
      dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
   dt_bauhaus_slider_set
     (gui->quality, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT));
+/* see above
   dt_bauhaus_combobox_set
     (gui->original,
      dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
+*/
   dt_bauhaus_slider_set
     (gui->effort, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT));
   dt_bauhaus_slider_set
