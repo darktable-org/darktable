@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,7 @@
 #include "common/interpolation.h"
 #include "common/fast_guided_filter.h"
 #include "common/pfm.h"
+#include "imageio/imageio_png.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
@@ -96,7 +98,7 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-      _("read PFM files recorded for use as raster masks"),
+      _("read PFM/PNG files recorded for use as raster masks"),
       _("corrective or creative"),
       _("linear, raw, scene-referred"),
       _("linear, raw"),
@@ -159,6 +161,89 @@ static float *_read_rasterfile(char *filename,
   *sheight = 0;
   if(!filename || filename[0] == 0) return NULL;
 
+  char *extension = g_strrstr(filename, ".");
+  char *ext_lower = extension ? g_ascii_strdown(extension, -1) : NULL;
+  const gboolean is_png = ext_lower && !g_strcmp0(ext_lower, ".png");
+  g_free(ext_lower);
+
+  if(is_png)
+  {
+    dt_imageio_png_t png;
+    if(!dt_imageio_png_read_header(filename, &png))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+      dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
+      return NULL;
+    }
+
+    const size_t rowbytes = png_get_rowbytes(png.png_ptr, png.info_ptr);
+    uint8_t *buf = dt_alloc_aligned((size_t)png.height * rowbytes);
+    if(!buf)
+    {
+      fclose(png.f);
+      png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
+      dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+      dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
+      return NULL;
+    }
+
+    if(!dt_imageio_png_read_image(&png, buf))
+    {
+      dt_free_align(buf);
+      dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+      dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
+      return NULL;
+    }
+
+    const int width = png.width;
+    const int height = png.height;
+    float *mask = dt_iop_image_alloc(width, height, 1);
+    if(!mask)
+    {
+      dt_free_align(buf);
+      dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+      dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
+      return NULL;
+    }
+
+    if(png.bit_depth < 16)
+    {
+      const float normalizer = 1.0f / 255.0f;
+      DT_OMP_FOR()
+      for(size_t k = 0; k < (size_t)width * height; k++)
+      {
+        const size_t base = 3 * k;
+        float val = 0.0f;
+        if(mode & DT_RASTERFILE_MODE_RED)   val = MAX(val, buf[base] * normalizer);
+        if(mode & DT_RASTERFILE_MODE_GREEN) val = MAX(val, buf[base + 1] * normalizer);
+        if(mode & DT_RASTERFILE_MODE_BLUE)  val = MAX(val, buf[base + 2] * normalizer);
+        mask[k] = CLIP(val);
+      }
+    }
+    else
+    {
+      const float normalizer = 1.0f / 65535.0f;
+      DT_OMP_FOR()
+      for(size_t k = 0; k < (size_t)width * height; k++)
+      {
+        const size_t base = 6 * k;
+        const float red = (buf[base] * 256.0f + buf[base + 1]) * normalizer;
+        const float green = (buf[base + 2] * 256.0f + buf[base + 3]) * normalizer;
+        const float blue = (buf[base + 4] * 256.0f + buf[base + 5]) * normalizer;
+        float val = 0.0f;
+        if(mode & DT_RASTERFILE_MODE_RED)   val = MAX(val, red);
+        if(mode & DT_RASTERFILE_MODE_GREEN) val = MAX(val, green);
+        if(mode & DT_RASTERFILE_MODE_BLUE)  val = MAX(val, blue);
+        mask[k] = CLIP(val);
+      }
+    }
+
+    dt_free_align(buf);
+    *swidth = width;
+    *sheight = height;
+    return mask;
+  }
+
   int width, height, channels, error = 0;
   float *image = dt_read_pfm(filename, &error, &width, &height, &channels, 3);
   float *mask = dt_iop_image_alloc(width, height, 1);
@@ -196,7 +281,7 @@ static int _check_extension(const struct dirent *namestruct)
   char *p = g_strrstr(filename, ".");
   if(!p) return res;
   char *fext = g_ascii_strdown(g_strdup(p), -1);
-  if(!g_strcmp0(fext, ".pfm")) res = 1;
+  if(!g_strcmp0(fext, ".pfm") || !g_strcmp0(fext, ".png")) res = 1;
   g_free(fext);
   return res;
 }
@@ -247,13 +332,35 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
 
-  gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
-  if(strlen(mfolder) == 0)
+  gchar *config_folder = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  const gboolean use_image_folder = dt_conf_get_bool("plugins/darkroom/segments/use_image_folder");
+  char image_folder[PATH_MAX] = { 0 };
+  const char *root_folder = NULL;
+
+  if(use_image_folder)
   {
-    dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
-    dt_control_log(_("raster mask files root folder not defined"));
-    g_free(mfolder);
-    return;
+    if(self->dev && dt_is_valid_imgid(self->dev->image_storage.id))
+      dt_image_film_roll_directory(&self->dev->image_storage, image_folder, sizeof(image_folder));
+
+    if(image_folder[0] == '\0')
+    {
+      dt_print(DT_DEBUG_ALWAYS, "raster mask image folder not available");
+      dt_control_log(_("raster mask image folder not available for this image"));
+      g_free(config_folder);
+      return;
+    }
+    root_folder = image_folder;
+  }
+  else
+  {
+    if(strlen(config_folder) == 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
+      dt_control_log(_("raster mask files root folder not defined"));
+      g_free(config_folder);
+      return;
+    }
+    root_folder = config_folder;
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -261,19 +368,21 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
         _("select raster mask file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
         _("_select"), _("_cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), mfolder);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), root_folder);
   GtkFileFilter *filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  // only pfm files yet supported
+  // only pfm/png files yet supported
   gtk_file_filter_add_pattern(filter, "*.pfm");
   gtk_file_filter_add_pattern(filter, "*.PFM");
+  gtk_file_filter_add_pattern(filter, "*.png");
+  gtk_file_filter_add_pattern(filter, "*.PNG");
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    const gboolean within = (strlen(filepath) > strlen(mfolder))
-                        && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
+    const gboolean within = (strlen(filepath) > strlen(root_folder))
+                        && (memcmp(filepath, root_folder, strlen(root_folder)) == 0);
     if(within)
     {
       char *relativepath = g_path_get_dirname(filepath);
@@ -291,13 +400,21 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
     }
     else
     {
-      dt_print(DT_DEBUG_ALWAYS, "selected file not within raster masks root folder");
-      dt_control_log(_("selected file not within raster masks root folder"));
+      if(use_image_folder)
+      {
+        dt_print(DT_DEBUG_ALWAYS, "selected file not within raster mask image folder");
+        dt_control_log(_("selected file not within raster mask image folder"));
+      }
+      else
+      {
+        dt_print(DT_DEBUG_ALWAYS, "selected file not within raster masks root folder");
+        dt_control_log(_("selected file not within raster masks root folder"));
+      }
     }
     g_free(filepath);
     gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
   }
-  g_free(mfolder);
+  g_free(config_folder);
   g_object_unref(filechooser);
 }
 
@@ -592,7 +709,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(g->fbutton, "non-flat");
-  gtk_widget_set_tooltip_text(g->fbutton, _("select the PFM file recorded as a raster mask,\n"
+  gtk_widget_set_tooltip_text(g->fbutton, _("select the PFM/PNG file recorded as a raster mask,\n"
       "CAUTION: path must be set in preferences/processing before choosing"));
   g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(_fbutton_clicked), self);
 
