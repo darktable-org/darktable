@@ -2463,20 +2463,51 @@ static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 {
   if(!g->checker_ready)
   {
+    const float handle_offset = 10.0f;
+
+    dt_develop_t *dev = darktable.develop;
+    dt_dev_viewport_t *port = &dev->full;
+
+    float x1 = handle_offset;
+    float y1 = handle_offset;
+    float x2 = width - handle_offset;
+    float y2 = height - handle_offset;
+
+    float zoom_x, zoom_y, boxw, boxh;
+
+    if(dt_dev_get_zoom_bounds(port, &zoom_x, &zoom_y, &boxw, &boxh))
+    {
+      // size of the view box
+      const float h_box = width * boxw;
+      const float v_box = height * boxh;
+      // size of the non visible borders
+      const float h_border = width - h_box;
+      const float v_border = height - v_box;
+
+      const float offx = (h_border / 2.0f) + (zoom_x * width);
+      const float offy = (v_border / 2.0f) + (zoom_y * height);
+
+      x1 = offx + handle_offset;
+      y1 = offy + handle_offset;
+      x2 = offx + h_box - handle_offset;
+      y2 = offy + v_box - handle_offset;
+    }
+
     // top left
-    g->box[0].x = g->box[0].y = 10.;
+    g->box[0].x = x1;
+    g->box[0].y = y1;
 
     // top right
-    g->box[1].x = (width - 10.);
-    g->box[1].y = g->box[0].y;
+    g->box[1].x = x2;
+    g->box[1].y = y1;
 
     // bottom right
-    g->box[2].x = g->box[1].x;
-    g->box[2].y = (width - 10.) * g->checker->ratio;
+    g->box[2].x = x2;
+    g->box[2].y = y2;
 
     // bottom left
-    g->box[3].x = g->box[0].x;
-    g->box[3].y = g->box[2].y;
+    g->box[3].x = x1;
+    g->box[3].y = y2;
 
     g->checker_ready = TRUE;
   }
