@@ -1850,9 +1850,11 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near white"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
+                              _("shoulder power setting is ineffective, as the curve is no longer S-shaped.\n"
                                 "without inverting the shoulder (forcing it to bend upwards), it would be\n"
                                 "impossible to reach target white with the selected contrast and pivot position.\n"
+                                "this is not an error, the module is still working correctly.\n"
+                                "if you see artifacts, or wish to regain control over the shoulder, try the following:\n"
                                 "increase contrast, move the pivot higher (increase pivot target output\n"
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
@@ -1867,9 +1869,11 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                         "higher values keep the slope nearly constant for longer,\n"
                                         "at the cost of a more sudden drop near black"));
   dt_bauhaus_widget_set_quad_tooltip(slider,
-                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
+                              _("toe power setting is ineffective, as the curve is no longer S-shaped.\n"
                                 "without inverting the toe (forcing it to bend downwards), it would be\n"
                                 "impossible to reach target black with the selected contrast and pivot position.\n"
+                                "this is not an error, the module is still working correctly.\n"
+                                "if you see artifacts, or wish to regain control over the toe, try the following:\n"
                                 "increase contrast, move the pivot lower (reduce the pivot target output or\n"
                                 "curve y gamma), or increase the distance between the pivot and the left edge\n"
                                 "(increase the pivot shift, move the black point farther from the pivot by raising\n"
