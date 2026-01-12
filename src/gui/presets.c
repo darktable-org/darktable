@@ -46,7 +46,7 @@ const char *dt_gui_presets_exposure_value_str[]
         "1/125", "1/60",   "1/30",   "1/15",   "1/8",    "1/4",   "1/2",
         "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",  "60\"",  "+" };
 
-const int dt_gui_presets_aperture_value_cnt = 19;
+const int dt_gui_presets_aperture_value_cnt = 21;
 const float dt_gui_presets_aperture_value[]
     = { 0,   0.95,  1.0,  1.2,  1.4,  1.8,  2.0,  2.4,   2.8,  4.0,   5.6,
         8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
