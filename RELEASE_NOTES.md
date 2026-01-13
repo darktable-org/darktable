@@ -83,6 +83,9 @@ changes (where available).
 
 - Fixed the mask support in scale pixels module.
 
+- Fixed a possible crash when using workspace due to the non
+  deterministic ordering of the list of workspace read on disk.
+
 ## Lua
 
 ### API Version
