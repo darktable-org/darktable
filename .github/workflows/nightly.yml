@@ -323,8 +323,8 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-14,       xcode: 16.2,   deployment: 14.0 } # AppleClang 16, arm64
-          - { os: macos-15-intel, xcode: 26.1.1, deployment: 15.0 } # AppleClang 17, x86_64
+          - { os: macos-14,       xcode: 16.2, deployment: 14.0 } # AppleClang 16, arm64
+          - { os: macos-15-intel, xcode: 26.2, deployment: 15.0 } # AppleClang 17, x86_64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
