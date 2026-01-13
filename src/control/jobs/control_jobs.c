@@ -1534,7 +1534,7 @@ static int32_t _control_refresh_exif_run(dt_job_t *job)
   dt_control_job_set_progress_message(job, ngettext("refreshing info for %d image",
                                                     "refreshing info for %d images", total), total);
   double prev_time = 0;
-  while(t)
+  while(t && !_job_cancelled(job))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     if(dt_is_valid_imgid(imgid))
