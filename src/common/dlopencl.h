@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,6 +215,11 @@ typedef struct dt_dlopencl_t
   gboolean have_opencl;
   dt_dlopencl_symbols_t *symbols;
   char *library;
+#ifndef __APPLE__
+  GModule *gmodule;
+#else
+  void *gmodule;
+#endif
 } dt_dlopencl_t;
 
 /* default noop function for all unassigned function pointers */
@@ -222,6 +227,9 @@ void dt_dlopencl_noop(void);
 
 /* dynamically load OpenCL library and bind needed functions */
 dt_dlopencl_t *dt_dlopencl_init(const char *);
+
+/* dynamically close OpenCL library opened by dt_dlopencl_init() */
+void dt_dlopencl_close(dt_dlopencl_t *ocl);
 
 #endif // HAVE_OPENCL
 
