@@ -193,7 +193,8 @@ static int32_t _generic_dt_control_fileop_images_job_run
    int32_t (*fileop_callback)(const int32_t,
                               const int32_t),
    const char *desc,
-   const char *desc_pl)
+   const char *desc_pl,
+   const gboolean is_copy)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
@@ -215,27 +216,44 @@ static int32_t _generic_dt_control_fileop_images_job_run
     return -1;
   }
 
+  int32_t col_count = dt_collection_get_collected_count();
+  char *old_chk = dt_collection_checksum(FALSE);
+
   gboolean completeSuccess = TRUE;
   double prev_time = 0;
   while(t && !_job_cancelled(job))
   {
-    completeSuccess &= (fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1);
+    const gboolean success = fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1;
+    completeSuccess &= success;
     t = g_list_next(t);
     fraction += 1.0 / total;
     _update_progress(job, fraction, &prev_time);
+    if(success) col_count--;
   }
 
-  if(completeSuccess)
+  char *new_chk = dt_collection_checksum(FALSE);
+  const gboolean col_changed = g_strcmp0(old_chk, new_chk) != 0;
+  g_free(old_chk);
+  g_free(new_chk);
+
+  // If there is no more image in the current collection or we did a
+  // copy and we did not change to a new collection then jump to the
+  // new location.
+  if(completeSuccess
+     && !col_changed
+     && (col_count == 0 || is_copy))
   {
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
     dt_collection_deserialize(collect, FALSE);
   }
   dt_film_remove_empty();
+
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy(params->index));
+
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1456,14 +1474,16 @@ static int32_t _control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
                                                    _("moving %d image"),
-                                                   _("moving %d images"));
+                                                   _("moving %d images"),
+                                                   FALSE);
 }
 
 static int32_t _control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
                                                    _("copying %d image"),
-                                                   _("copying %d images"));
+                                                   _("copying %d images"),
+                                                   TRUE);
 }
 
 static int32_t _control_local_copy_images_job_run(dt_job_t *job)
