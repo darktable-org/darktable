@@ -1596,9 +1596,9 @@ void reload_defaults(dt_iop_module_t *self)
 
   dt_print(DT_DEBUG_PARAMS,
     "[dt_iop_reload_defaults] scene=%s, modern=%s, CAT=%s. D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
-    dt_is_scene_referred() ? "YES" : "NO",
-    is_modern ? "YES" : "NO",
-    another_cat_defined ? "YES" : "NO",
+    STR_YESNO(dt_is_scene_referred()),
+    STR_YESNO(is_modern),
+    STR_YESNO(another_cat_defined),
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
   d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;

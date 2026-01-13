@@ -882,11 +882,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ASYNC PIXELPIPE:          %s\n", cl->dev[dev].asyncmode ? "YES" : "NO");
+               "   ASYNC PIXELPIPE:          %s\n", STR_YESNO(cl->dev[dev].asyncmode));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TRANSFER:   %s\n", cl->dev[dev].pinned_memory ? "YES" : "NO");
+               "   PINNED MEMORY TRANSFER:   %s\n", STR_YESNO(cl->dev[dev].pinned_memory));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   AVOID ATOMICS:            %s\n", cl->dev[dev].avoid_atomics ? "YES" : "NO");
+               "   AVOID ATOMICS:            %s\n", STR_YESNO(cl->dev[dev].avoid_atomics));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MICRO NAP:                %i\n", cl->dev[dev].micro_nap);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -896,7 +896,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
+               "   DEFAULT DEVICE:           %s\n", STR_YESNO(type & CL_DEVICE_TYPE_DEFAULT));
 
   if(cl->dev[dev].disabled)
   {
@@ -1464,9 +1464,9 @@ void dt_opencl_init(dt_opencl_t *cl,
   }
 
 finally:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] FINALLY: opencl PREFERENCE=%s is %sAVAILABLE and %sENABLED.",
-           opencl_requested ? "ON" : "OFF",
+  dt_print_nts(DT_DEBUG_OPENCL,
+           "[opencl_init] FINALLY: opencl PREFERENCE=%s is %sAVAILABLE and %sENABLED\n",
+           STR_YESNO(opencl_requested),
            cl->inited ? "" : "NOT ",
            cl->enabled ? "" : "NOT ");
   if(cl->inited && cl->enabled)
@@ -1995,7 +1995,7 @@ static void _opencl_update_priorities(const char *configstr)
                " \t\timage\tpreview\texport\tthumbs\tpreview2\n");
   for(int i = 0; i < cl->num_devs; i++)
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "[dt_opencl_update_priorities]\t\t%d\t%d\t%d\t%d\t%d\n",
+                 "[opencl_update_priorities]\t\t%d\t%d\t%d\t%d\t%d\n",
                  cl->dev_priority_image[i],
                  cl->dev_priority_preview[i], cl->dev_priority_export[i],
                  cl->dev_priority_thumbnail[i], cl->dev_priority_preview2[i]);
@@ -2006,9 +2006,10 @@ static void _opencl_update_priorities(const char *configstr)
                "[opencl_update_priorities]"
                " \t\timage\tpreview\texport\tthumbs\tpreview2\n");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "[opencl_update_priorities]\t\t%d\t%d\t%d\t%d\t%d\n",
-               cl->mandatory[0], cl->mandatory[1], cl->mandatory[2],
-               cl->mandatory[3], cl->mandatory[4]);
+               "[opencl_update_priorities]\t\t%s\t%s\t%s\t%s\t%s\n",
+               STR_YESNO(cl->mandatory[0]), STR_YESNO(cl->mandatory[1]),
+               STR_YESNO(cl->mandatory[2]), STR_YESNO(cl->mandatory[3]),
+               STR_YESNO(cl->mandatory[4]));
 }
 
 int dt_opencl_lock_device(const int pipetype)
