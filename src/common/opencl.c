@@ -559,7 +559,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *filename = calloc(PATH_MAX, sizeof(char));
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
-  dt_print_nts(DT_DEBUG_OPENCL, "\n[dt_opencl_device_init]\n");
+  dt_print_nts(DT_DEBUG_OPENCL, "\n[dt_opencl_device_init] ");
 
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE,
@@ -570,7 +570,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(err != CL_SUCCESS)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "  *** could not get vendor name of device %d: %s\n", k, cl_errstr(err));
+                 "*** could not get vendor name of device %d: %s\n", k, cl_errstr(err));
     res = TRUE;
     goto end;
   }
@@ -583,7 +583,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(err != CL_SUCCESS)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "  *** could not get device name of device %d: %s\n",
+                 "*** could not get device name of device %d: %s\n",
                  k, cl_errstr(err));
     res = TRUE;
     goto end;
@@ -599,7 +599,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     g_strlcpy(platform_vendor, "no platform id", DT_OPENCL_CBUFFSIZE);
     g_strlcpy(platform_display_name, "no platform id", DT_OPENCL_CBUFFSIZE);
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "  *** could not get platform id for device `%s' : %s\n",
+                 "*** could not get platform id for device `%s' : %s\n",
                  device_name, cl_errstr(err));
   }
   else
@@ -611,7 +611,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
       has_platform_name = FALSE;
       g_strlcpy(platform_display_name, "???", DT_OPENCL_CBUFFSIZE);
       dt_print_nts(DT_DEBUG_OPENCL,
-                   "  *** could not get platform name for device `%s' : %s\n",
+                   "*** could not get platform name for device `%s' : %s\n",
                    device_name, cl_errstr(err));
     }
 
@@ -620,7 +620,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     if(err != CL_SUCCESS)
     {
       dt_print_nts(DT_DEBUG_OPENCL,
-                   "  *** could not get platform vendor for device `%s' : %s\n",
+                   "*** could not get platform vendor for device `%s' : %s\n",
                    device_name, cl_errstr(err));
       g_strlcpy(platform_vendor, "???", DT_OPENCL_CBUFFSIZE);
     }
@@ -641,7 +641,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   {
     device_name_cleaned = g_strchomp(_strsep(&device_name_cleaned, "("));
     dt_print_nts(DT_DEBUG_OPENCL,
-                   "OpenCL Mesa platform `%s' --> `%s'\n",
+                   "%s %s ",
                    platform_vendor, device_name_cleaned);
     is_mesa = TRUE;
   }
@@ -663,7 +663,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   DEVICE:                   %d: '%s'%s\n",
+               "\n   DEVICE:                   %d: '%s'%s\n",
                k, device_name, (newdevice) ? ", NEW" : "" );
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CONF KEY:                 %s%s\n",
@@ -1076,9 +1076,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
       if(!programname || programname[0] == '\0' || prog < 0)
       {
-        dt_print(DT_DEBUG_OPENCL,
+        dt_print_nts(DT_DEBUG_OPENCL,
                  "[dt_opencl_device_init] malformed entry in programs.conf `%s';"
-                 " ignoring it!", confentry);
+                 " ignoring it\n", confentry);
         continue;
       }
 
@@ -1086,16 +1086,16 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "%s" G_DIR_SEPARATOR_S "%s", kerneldir, programname);
       snprintf(binname, PATH_MAX * sizeof(char),
                "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-               "[dt_opencl_device_init] testing program `%s' ..", programname);
+      dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+               "[dt_opencl_device_init] testing program `%s'\n", programname);
       gboolean loaded_cached;
       char md5sum[33];
       if(_opencl_load_program(dev, prog, programname, filename, binname, cachedir,
                               md5sum, includemd5, &loaded_cached)
          && _opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached))
       {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[dt_opencl_device_init] failed to compile program `%s'!",
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[dt_opencl_device_init] failed to compile program `%s'\n",
                  programname);
         fclose(f);
         g_strfreev(tokens);
@@ -1108,12 +1108,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
     fclose(f);
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   KERNEL LOADING TIME:       %2.4lf sec\n", dt_get_lap_time(&tstart));
+                 "   KERNEL LOADING TIME:      %.4lf sec\n", dt_get_lap_time(&tstart));
   }
   else
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "[dt_opencl_device_init] could not open `%s'!\n", filename);
+                 "[dt_opencl_device_init] could not open `%s'\n", filename);
     res = TRUE;
     goto end;
   }
@@ -1180,14 +1180,14 @@ void dt_opencl_init(dt_opencl_t *cl,
 
   if(exclude_opencl)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_init] opencl disabled due to explicit user request");
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_init] opencl disabled due to explicit user request\n");
     goto finally;
   }
 
   if(!opencl_requested)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_init] opencl disabled via darktable preferences");
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_init] opencl disabled via darktable preferences\n");
 
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string_const("opencl_library");
@@ -1197,17 +1197,17 @@ void dt_opencl_init(dt_opencl_t *cl,
   if(cl->dlocl == NULL)
   {
     logerror = _("no working OpenCL library found");
-    dt_print(DT_DEBUG_OPENCL,
+    dt_print_nts(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl '%s' library found."
-             " Continue with opencl disabled",
+             " Continue with opencl disabled\n",
              (strlen(library) == 0) ? "default path" : library);
     goto finally;
   }
   else
   {
-    dt_print(DT_DEBUG_OPENCL,
+    dt_print_nts(DT_DEBUG_OPENCL,
              "[opencl_init] opencl library '%s' found on your system and loaded,"
-             " preference '%s'",
+             " preference '%s'\n",
              cl->dlocl->library,
              (strlen(library) == 0) ? "default path" : library);
   }
@@ -1227,8 +1227,8 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(0, NULL, &num_platforms);
   if((err != CL_SUCCESS) || (num_platforms == 0))
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_init] %i platforms detected, error: %s",
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_init] %i platforms detected, error: %s\n",
              num_platforms, cl_errstr(err));
     goto finally;
   }
@@ -1238,19 +1238,19 @@ void dt_opencl_init(dt_opencl_t *cl,
     (DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_init] could not get platforms IDs: %s", cl_errstr(err));
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_init] could not get platforms IDs: %s\n", cl_errstr(err));
     goto finally;
   }
   if(num_platforms == 0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available");
+    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
 
   logerror = NULL;
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] found %d platform%s",
+  dt_print_nts(DT_DEBUG_OPENCL,
+           "[opencl_init] found %d platform%s\n",
            num_platforms, num_platforms > 1 ? "s" : "");
 
   // safety check for platforms; we must not have several versions for the same platform
@@ -1267,8 +1267,8 @@ void dt_opencl_init(dt_opencl_t *cl,
       for(int k = 0; k < n; k++)
       {
         if(!strcmp(platforms + n * DT_OPENCL_CBUFFSIZE, platforms + k * DT_OPENCL_CBUFFSIZE))
-        dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] possibly a multiple platform problem for `%s'",
+        dt_print_nts(DT_DEBUG_OPENCL,
+           "[opencl_init] WARNING possibly a multiple platform problem for `%s'\n",
            platforms + n * DT_OPENCL_CBUFFSIZE);
       }
     }
@@ -1319,18 +1319,18 @@ void dt_opencl_init(dt_opencl_t *cl,
     {
       if(!valid_platform)
       {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[check platform] platform '%s' with key '%s' is NOT active",
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[check platform] platform '%s' with key '%s' is NOT active\n",
                  platform_name, platform_key);
       }
       else if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] no devices found for %s (vendor) - %s (name)",
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
                  platform_vendor, platform_name);
       else
       {
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] no devices found for unknown platform");
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[opencl_init] no devices found for unknown platform\n");
         logerror = _("no devices found for unknown platform");
       }
       all_num_devices[n] = 0;
@@ -1344,8 +1344,8 @@ void dt_opencl_init(dt_opencl_t *cl,
       if(err != CL_SUCCESS)
       {
         all_num_devices[n] = 0;
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] could not get profile for platform '%s': %s",
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[opencl_init] could not get profile for platform '%s': %s\n",
                  platform_name, cl_errstr(err));
       }
       else
@@ -1353,8 +1353,8 @@ void dt_opencl_init(dt_opencl_t *cl,
         if(strcmp("FULL_PROFILE", profile) != 0)
         {
           all_num_devices[n] = 0;
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_init] platform '%s' is not FULL_PROFILE",
+          dt_print_nts(DT_DEBUG_OPENCL,
+                   "[opencl_init] platform '%s' is not FULL_PROFILE\n",
                    platform_name);
         }
       }
@@ -1376,8 +1376,8 @@ void dt_opencl_init(dt_opencl_t *cl,
       cl->dev = NULL;
       free(devices);
       devices = NULL;
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_init] could not allocate memory for device resources");
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_init] could not allocate memory for device resources\n");
       logerror = _("not enough memory for OpenCL devices");
       goto finally;
     }
@@ -1397,8 +1397,8 @@ void dt_opencl_init(dt_opencl_t *cl,
       if(err != CL_SUCCESS)
       {
         num_devices -= all_num_devices[n];
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] could not get devices list: %s",
+        dt_print_nts(DT_DEBUG_OPENCL,
+                 "[opencl_init] could not get devices list: %s\n",
                  cl_errstr(err));
       }
       devs += all_num_devices[n];
@@ -1517,8 +1517,8 @@ finally:
       dt_conf_set_string("opencl_checksum", checksum);
       // set scheduling profile to "default"
       dt_conf_set_string("opencl_scheduling_profile", "default");
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_init] set scheduling profile to default, setup has changed.");
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_init] set scheduling profile to default, setup has changed\n");
       dt_control_log(_("OpenCL scheduling profile set to default, setup has changed"));
     }
     // apply config settings for scheduling profile: sets device
@@ -1615,7 +1615,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       if(cl->print_statistics && (darktable.unmuted & DT_DEBUG_MEMORY))
       {
         dt_print_nts(DT_DEBUG_OPENCL,
-                     " [opencl_summary_statistics] device '%s' id=%d:"
+                     "[opencl_summary_statistics] device '%s' id=%d:"
                      " peak memory usage %.1f MB%s\n",
                      cl->dev[i].fullname, i,
                      (float)cl->dev[i].peak_memory/(1024*1024),
@@ -1629,7 +1629,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].totalevents)
         {
           dt_print_nts(DT_DEBUG_OPENCL,
-                       " [opencl_summary_statistics] device '%s' id=%d: %d"
+                       "[opencl_summary_statistics] device '%s' id=%d: %d"
                        " out of %d events were "
                        "successful and %d events lost. max event=%d%s%s\n",
                        cl->dev[i].fullname, i, cl->dev[i].totalsuccess,
@@ -1645,7 +1645,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         else
         {
           dt_print_nts(DT_DEBUG_OPENCL,
-                       " [opencl_summary_statistics] device '%s' id=%d: NOT utilized\n",
+                       "[opencl_summary_statistics] device '%s' id=%d: NOT utilized\n",
                        cl->dev[i].fullname, i);
         }
       }
@@ -2089,7 +2089,7 @@ int dt_opencl_lock_device(const int pipetype)
     }
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_lock_device] reached opencl_mandatory_timeout trying"
-             " to lock mandatory device, fallback to CPU\n");
+             " to lock mandatory device, fallback to CPU");
   }
   else
   {
@@ -2121,15 +2121,15 @@ static FILE *_fopen_stat(const char *filename, struct stat *st)
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl_fopen_stat] could not open file `%s'!", filename);
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fopen_stat] could not open file `%s'\n", filename);
     return NULL;
   }
   const int fd = fileno(f);
   if(fstat(fd, st) < 0)
   {
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl_fopen_stat] could not stat file `%s'!", filename);
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_fopen_stat] could not stat file `%s'\n", filename);
     return NULL;
   }
   return f;
@@ -2157,8 +2157,8 @@ static void _opencl_md5sum(const char **files,
 
     if(!f)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_md5sums] could not open file `%s'!", filename);
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_md5sums] could not open file `%s'\n", filename);
       *md5sums = NULL;
       continue;
     }
@@ -2168,8 +2168,8 @@ static void _opencl_md5sum(const char **files,
 
     if(!file)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_md5sums] could not allocate buffer for file `%s'!", filename);
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_md5sums] could not allocate buffer for file `%s'\n", filename);
       *md5sums = NULL;
       fclose(f);
       continue;
@@ -2181,8 +2181,8 @@ static void _opencl_md5sum(const char **files,
     if(rd != filesize)
     {
       free(file);
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_md5sums] could not read all of file `%s'!", filename);
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_md5sums] could not read all of file `%s'\n", filename);
       *md5sums = NULL;
       continue;
     }
@@ -2212,17 +2212,17 @@ static gboolean _opencl_load_program(const int dev,
 
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_load_source] invalid program number `%d' of file `%s'!", prog,
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_load_source] invalid program number `%d' of file `%s'\n", prog,
              filename);
     return FALSE;
   }
 
   if(cl->dev[dev].program_used[prog])
   {
-    dt_print(DT_DEBUG_OPENCL,
+    dt_print_nts(DT_DEBUG_OPENCL,
              "[opencl_load_source] program number `%d' already in use"
-             " when loading file `%s'!", prog,
+             " when loading file `%s'\n", prog,
              filename);
     return FALSE;
   }
@@ -2239,9 +2239,9 @@ static gboolean _opencl_load_program(const int dev,
   if(rd != filesize)
   {
     free(file);
-    dt_print(DT_DEBUG_OPENCL,
+    dt_print_nts(DT_DEBUG_OPENCL,
              "[opencl_load_source] could not read all"
-             " of file `%s' for program number %d!",
+             " of file `%s' for program number %d\n",
       filename, prog);
     return FALSE;
   }
@@ -2320,8 +2320,8 @@ static gboolean _opencl_load_program(const int dev,
           rd = 0;
         if(rd != cached_filesize)
         {
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_load_program] could not read all of file '%s' MD5: %s!",
+          dt_print_nts(DT_DEBUG_OPENCL,
+                   "[opencl_load_program] could not read all of file '%s' MD5: %s\n",
                    binname, md5sum);
         }
         else
@@ -2331,9 +2331,9 @@ static gboolean _opencl_load_program(const int dev,
                 (const unsigned char **)&cached_content, NULL, &err);
           if(err != CL_SUCCESS)
           {
-            dt_print(DT_DEBUG_OPENCL,
+            dt_print_nts(DT_DEBUG_OPENCL,
                      "[opencl_load_program] could not load cached binary"
-                     " program from file '%s' MD5: '%s'! (%s)",
+                     " program from file '%s' MD5: '%s'! (%s)\n",
                      binname, md5sum, cl_errstr(err));
           }
           else
@@ -2367,7 +2367,7 @@ static gboolean _opencl_load_program(const int dev,
     g_unlink(dup);
 #endif //!defined(_WIN32)
 
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
              "[opencl_load_program] could not load cached binary program,"
              " trying to compile source\n");
 
@@ -2378,8 +2378,8 @@ static gboolean _opencl_load_program(const int dev,
     free(file);
     if((err != CL_SUCCESS) || (cl->dev[dev].program[prog] == NULL))
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_load_source] could not create program from file `%s'! (%s)",
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_load_source] could not create program from file `%s' (%s)\n",
                filename, cl_errstr(err));
       return FALSE;
     }
@@ -2391,13 +2391,13 @@ static gboolean _opencl_load_program(const int dev,
   else
   {
     free(file);
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
              "[opencl_load_program] loaded cached"
-             " binary program from file '%s' MD5: '%s' ", binname, md5sum);
+             " binary program from file '%s' MD5: '%s'\n", binname, md5sum);
   }
 
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'",
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+           "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'\n",
            filename, md5sum);
 
   return TRUE;
@@ -2433,26 +2433,26 @@ static gboolean _opencl_build_program(const int dev,
   }
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_build_program] could not build program: %s", cl_errstr(err));
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_build_program] could not build program: %s\n", cl_errstr(err));
   else
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl_build_program] successfully built program");
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_build_program] successfully built program\n");
 
   cl_build_status build_status;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid,
                                                  CL_PROGRAM_BUILD_STATUS,
                                                  sizeof(cl_build_status),
                                                  &build_status, NULL);
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "[opencl_build_program] BUILD STATUS: %d", build_status);
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+           "[opencl_build_program] BUILD STATUS: %d\n", build_status);
 
   char *build_log;
   size_t ret_val_size;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid,
                                                  CL_PROGRAM_BUILD_LOG, 0, NULL,
                                                  &ret_val_size);
-  if(ret_val_size != SIZE_MAX)
+  if(ret_val_size > 2 && ret_val_size < 0x100000) // we don't want to see nothing or crazy things
   {
     build_log = malloc(sizeof(char) * (ret_val_size + 1));
     if(build_log)
@@ -2463,8 +2463,8 @@ static gboolean _opencl_build_program(const int dev,
 
       build_log[ret_val_size] = '\0';
 
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "BUILD LOG:");
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "%s", build_log);
+      dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "BUILD LOG:\n");
+      dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "%s\n", build_log);
 
       free(build_log);
     }
@@ -2475,8 +2475,8 @@ static gboolean _opencl_build_program(const int dev,
 
   if(!loaded_cached)
   {
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl_build_program] saving binary");
+    dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl_build_program] saving binary\n");
 
     cl_uint numdev = 0;
     err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_NUM_DEVICES,
@@ -2484,8 +2484,8 @@ static gboolean _opencl_build_program(const int dev,
                                                     &numdev, NULL);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %s",
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %s\n",
                cl_errstr(err));
       return TRUE;
     }
@@ -2496,8 +2496,8 @@ static gboolean _opencl_build_program(const int dev,
                                                     devices, NULL);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_build_program] CL_PROGRAM_DEVICES failed: %s", cl_errstr(err));
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_build_program] CL_PROGRAM_DEVICES failed: %s\n", cl_errstr(err));
       free(devices);
       return TRUE;
     }
@@ -2508,8 +2508,8 @@ static gboolean _opencl_build_program(const int dev,
                                                     binary_sizes, NULL);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %s",
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %s\n",
                cl_errstr(err));
       free(binary_sizes);
       free(devices);
@@ -2524,8 +2524,8 @@ static gboolean _opencl_build_program(const int dev,
                                                     binaries, NULL);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_build_program] CL_PROGRAM_BINARIES failed: %s",
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_build_program] CL_PROGRAM_BINARIES failed: %s\n",
                cl_errstr(err));
       goto ret;
     }
@@ -2574,8 +2574,8 @@ static gboolean _opencl_build_program(const int dev,
     free(binary_sizes);
     free(devices);
     if(err != CL_SUCCESS)
-      dt_print(DT_DEBUG_OPENCL,
-               "[dt_opencl_build_program] problems while writing OpenCL kernel files");
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[dt_opencl_build_program] problems while writing OpenCL kernel files\n");
   }
 
   return err != CL_SUCCESS;
@@ -2592,8 +2592,8 @@ int dt_opencl_create_kernel(const int prog,
 
   if(k >= DT_OPENCL_MAX_KERNELS)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_create_kernel] too many kernels! can't create kernel `%s'",
+    dt_print_nts(DT_DEBUG_OPENCL,
+             "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
               name);
     return -1;
   }
@@ -2624,8 +2624,8 @@ static gboolean _check_kernel(const int dev,
                                   (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_create_kernel] could not create kernel `%s' for '%s' id=%d: (%s)",
+      dt_print_nts(DT_DEBUG_OPENCL,
+               "[opencl_create_kernel] could not create kernel `%s' for '%s' id=%d: (%s)\n",
                cl->name_saved[kernel], cl->dev[dev].fullname, dev, cl_errstr(err));
       cl->dev[dev].kernel_used[kernel] = FALSE;
       cl->name_saved[kernel] = NULL; // don't try again
