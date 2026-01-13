@@ -852,7 +852,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
 
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_has_mono_preview] testing `%s', monochrome=%s, %ix%i",
-           filename, mono ? "YES" : "FALSE", thumb_width, thumb_height);
+           filename, STR_YESNO(mono), thumb_width, thumb_height);
   dt_free_align(tmp);
   return mono;
 }
@@ -1302,8 +1302,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
-           upscale ? "yes" : "no",
-           high_quality_processing || scale > 1.0f ? "yes" : "no",
+           STR_YESNO(upscale),
+           STR_YESNO(high_quality_processing || scale > 1.0f),
            dt_check_gimpmode("file") ? " GIMP" : "");
 
   const int bpp = format->bpp(format_params);

@@ -2042,7 +2042,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
-      _dev_is_D65_chroma(dev) ? "YES" : "NO",
+      STR_YESNO(_dev_is_D65_chroma(dev)),
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
       chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
       img->id);
