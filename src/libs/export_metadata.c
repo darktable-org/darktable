@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -98,7 +98,7 @@ static void _metadata_activated(GtkTreeView *tree_view,
 // dialog to add metadata tag into the formula list
 static void _add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
 {
-  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, _metadata_activated, d);
+  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, FALSE, _metadata_activated, d);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
