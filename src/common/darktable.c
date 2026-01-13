@@ -2468,7 +2468,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     dt_conf_set_bool("cache_disk_backend_full", largedisk);
     dt_print(DT_DEBUG_DEV,
              "[dt_configure_runtime_performance] cache_disk_backend_full=%s",
-             (largedisk) ? "TRUE" : "FALSE");
+             STR_TRUEFALSE(largedisk));
   }
 
   gboolean updated_mandatory = FALSE;
