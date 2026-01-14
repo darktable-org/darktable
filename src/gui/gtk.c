@@ -1278,9 +1278,6 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui)
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
-  /* lets zero mem */
-  memset(gui, 0, sizeof(dt_gui_gtk_t));
-
   dt_pthread_mutex_init(&gui->mutex, NULL);
 
   // force gtk3 to use normal scroll bars instead of the popup
