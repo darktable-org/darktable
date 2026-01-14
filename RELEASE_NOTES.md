@@ -86,6 +86,9 @@ changes (where available).
 - Fixed a possible crash when using workspace due to the non
   deterministic ordering of the list of workspace read on disk.
 
+- The list of the allowed tags in the metadata editor preferences has
+  been restricted to tags which are supposed to be user-editable.
+
 ## Lua
 
 ### API Version
