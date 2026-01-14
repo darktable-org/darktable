@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-2025 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,6 +50,8 @@ static gboolean showing_remaining = FALSE;
 static GtkWidget *remaining_box = NULL;
 
 static GtkWidget *exit_screen = NULL;
+
+static gboolean create_if_needed = FALSE;
 
 static void _process_all_gui_events()
 {
@@ -126,8 +128,13 @@ static void _set_header_bar(GtkWidget *dialog)
 #endif
 }
 
-void darktable_splash_screen_create(GtkWindow *parent_window,
-                                    const gboolean force)
+void dt_splash_screen_allow_create(const gboolean allow_create)
+{
+  printf("[dt_splash_screen_allow_create] (%d)\n", allow_create);
+  create_if_needed = allow_create;
+}
+
+void dt_splash_screen_create(const gboolean force)
 {
   // no-op if the splash has already been created; if not, only run if
   // the splash screen is enabled in the config or we are told to
@@ -151,7 +158,7 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
 #endif
   splash_screen =
     gtk_dialog_new_with_buttons(_("darktable starting"),
-                                parent_window, flags,
+                                NULL, flags,
                                 NULL,
                                 GTK_RESPONSE_NONE, // <-- fake button list for compiler
                                 NULL);
@@ -241,8 +248,11 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   _process_all_gui_events();
 }
 
-void darktable_splash_screen_set_progress(const char *msg)
+void dt_splash_screen_set_progress(const char *msg)
 {
+  if(!splash_screen && create_if_needed)
+    dt_splash_screen_create(TRUE);
+
   if(splash_screen)
   {
     gtk_label_set_text(GTK_LABEL(progress_text), msg);
@@ -257,10 +267,13 @@ void darktable_splash_screen_set_progress(const char *msg)
   }
 }
 
-void darktable_splash_screen_set_progress_percent(const char *msg,
-                                                  const double fraction,
-                                                  const double elapsed)
+void dt_splash_screen_set_progress_percent(const char *msg,
+                                           const double fraction,
+                                           const double elapsed)
 {
+  if(!splash_screen && create_if_needed)
+    dt_splash_screen_create(TRUE);
+
   if(splash_screen)
   {
     const int percent = round(100.0 * fraction);
@@ -289,7 +302,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
   }
 }
 
-void darktable_splash_screen_destroy()
+void dt_splash_screen_destroy()
 {
   if(splash_screen)
   {
@@ -300,8 +313,7 @@ void darktable_splash_screen_destroy()
   }
 }
 
-void darktable_exit_screen_create(GtkWindow *parent_window,
-                                  const gboolean force)
+void dt_exit_screen_create(const gboolean force)
 {
   // no-op if the exit screen has already been created; if not, only
   // run if the splash screen is enabled in the config or we are told
@@ -326,7 +338,7 @@ void darktable_exit_screen_create(GtkWindow *parent_window,
 #endif
 
   exit_screen =
-    gtk_dialog_new_with_buttons(_("darktable shutdown"), parent_window, flags,
+    gtk_dialog_new_with_buttons(_("darktable shutdown"), NULL, flags,
                                 NULL,
                                 GTK_RESPONSE_NONE,  // <-- fake button list for compiler
                                 NULL);
@@ -352,7 +364,7 @@ void darktable_exit_screen_create(GtkWindow *parent_window,
   dt_gui_process_events();
 }
 
-void darktable_exit_screen_destroy()
+void dt_exit_screen_destroy()
 {
   if(exit_screen)
   {
