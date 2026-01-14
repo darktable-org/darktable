@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-2025 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,7 +195,9 @@ void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table,
 }
 
 // get the thumb at specific position
-static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table, int x, int y)
+static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table,
+                                         const int x,
+                                         const int y)
 {
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
@@ -226,7 +228,7 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
 }
 
 // get imgid from rowid
-static dt_imgid_t _thumb_get_imgid(int rowid)
+static dt_imgid_t _thumb_get_imgid(const int rowid)
 {
   dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
@@ -242,7 +244,7 @@ static dt_imgid_t _thumb_get_imgid(int rowid)
   return id;
 }
 // get rowid from imgid
-static int _thumb_get_rowid(dt_imgid_t imgid)
+static int _thumb_get_rowid(const dt_imgid_t imgid)
 {
   int id = -1;
   sqlite3_stmt *stmt;

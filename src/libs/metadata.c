@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -382,7 +382,9 @@ static void _write_metadata(dt_lib_module_t *self)
     dt_gui_cursor_set_busy();
     dt_metadata_set_list(d->last_act_on, key_value, TRUE);
 
-    for(GList *l = key_value; l; l = l->next->next) g_free(l->next->data);
+    // NOTE: we free only one item out of two
+    for(GList *l = key_value; l; l = l->next->next)
+      g_free(l->next->data);
     g_list_free(key_value);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
