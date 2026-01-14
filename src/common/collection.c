@@ -2896,6 +2896,65 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance,
   }
 }
 
+void dt_collection_sync_custom_order(const dt_collection_t *collection)
+{
+  // Update the position field based on the current sort order
+  // This allows switching to custom sort while preserving the current ordering
+  
+  const uint32_t tagid = collection->tagid;
+  
+  // Build a query to get all images in the current sort order
+  const gchar *query = dt_collection_get_query(collection);
+  if(!query) return;
+  
+  sqlite3_stmt *stmt = NULL;
+  sqlite3_stmt *update_stmt = NULL;
+  
+  // Prepare the select statement to get images in current order
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+  {
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  }
+  
+  // Prepare the update statement
+  // clang-format off
+  gchar *update_query = g_strdup(
+        tagid ? "UPDATE main.tagged_images SET position = ?1 WHERE imgid = ?2 AND tagid = ?3"
+              : "UPDATE main.images SET position = ?1 WHERE id = ?2");
+  // clang-format on
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              update_query, -1, &update_stmt, NULL);
+  g_free(update_query);
+  
+  // Update positions based on current sort order
+  dt_database_start_transaction(darktable.db);
+  
+  int64_t position = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const int64_t new_position = position << 32;
+    
+    DT_DEBUG_SQLITE3_BIND_INT64(update_stmt, 1, new_position);
+    DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 2, imgid);
+    if(tagid) DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 3, tagid);
+    
+    sqlite3_step(update_stmt);
+    sqlite3_reset(update_stmt);
+    
+    position++;
+  }
+  
+  dt_database_release_transaction(darktable.db);
+  
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(update_stmt);
+}
+
 int64_t dt_collection_get_image_position(const dt_imgid_t image_id,
                                          const int32_t tagid)
 {

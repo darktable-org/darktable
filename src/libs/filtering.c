@@ -1863,6 +1863,17 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
   _widgets_sort_t *sort = (_widgets_sort_t *)user_data;
   if(sort->lib->manual_sort_set) return;
 
+  // Check if switching to custom sort - if so, sync positions from current order
+  const int new_sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(widget));
+  const int old_sortid = sort->sortid;
+  
+  if(new_sortid == DT_COLLECTION_SORT_CUSTOM_ORDER 
+     && old_sortid != DT_COLLECTION_SORT_CUSTOM_ORDER)
+  {
+    // Sync positions from current sort order before switching
+    dt_collection_sync_custom_order(darktable.collection);
+  }
+
   _sort_update_query(sort);
 }
 
