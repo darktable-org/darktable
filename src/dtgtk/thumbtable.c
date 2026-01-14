@@ -1790,6 +1790,27 @@ static void _dt_profile_change_callback(gpointer instance,
   }
 }
 
+static void _dt_metadata_change_callback(gpointer instance,
+                                         const int type,
+                                         dt_thumbtable_t *table)
+{
+  if(!table)
+    return;
+
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
+
+  //  Update thumbnails information as they are possibly using
+  //  metadata $(Xmp.??.???) into their tooltips.
+  for(const GList *l = imgs; l; l = g_list_next(l))
+  {
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
+    dt_thumbnail_t *th = _thumbtable_get_thumb(table, imgid);
+    dt_thumbnail_reload_infos(th);
+  }
+
+  g_list_free(imgs);
+}
+
 // this is called each time the list of active images change
 static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table)
 {
@@ -2487,6 +2508,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                             _dt_profile_change_callback, table);
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
                             _dt_pref_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED,
+                            _dt_metadata_change_callback, table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
