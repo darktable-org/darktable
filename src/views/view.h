@@ -417,7 +417,6 @@ typedef struct dt_view_manager_t
 } dt_view_manager_t;
 
 void dt_view_manager_init(dt_view_manager_t *vm);
-void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
