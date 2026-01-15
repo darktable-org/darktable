@@ -89,6 +89,10 @@ changes (where available).
 - The list of the allowed tags in the metadata editor preferences has
   been restricted to tags which are supposed to be user-editable.
 
+- Fixed the thumbnail information update in the overlay or the tooltip
+  when some metadata variable are used. That is, when changing the
+  metadata we need to recompute the thumbnail information.
+
 ## Lua
 
 ### API Version
