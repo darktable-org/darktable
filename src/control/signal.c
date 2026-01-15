@@ -262,7 +262,7 @@ static gboolean _signal_raise(gpointer user_data)
   for(int i = 0; i <= params->n_params; i++) g_value_unset(&params->instance_and_params[i]);
   free(params->instance_and_params);
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 typedef struct async_com_data
@@ -280,7 +280,7 @@ gboolean _async_com_callback(gpointer data)
 
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void _print_trace(int signal, dt_debug_signal_action_t action, const char* op)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,6 +63,8 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
                                     const gboolean undo,
                                     const gboolean init_history)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
   dt_undo_lt_history_t *hist = undo?dt_history_snapshot_item_init():NULL;
 
   if(undo)
@@ -135,19 +137,18 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
-  /* signal that the tags may have changed */
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
+  /* We leave the signal that the tags may have changed to callers */
 
   /* unset change timestamp */
   dt_image_cache_unset_change_timestamp(imgid);
 
-  // signal that the mipmap need to be updated
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  // update history hash
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_unlock_image(imgid);
 
-  // update history hash
-  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+  // signal that the mipmap need to be updated
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
   if(undo)
   {
@@ -164,14 +165,20 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 
 void dt_history_delete_on_image(const dt_imgid_t imgid)
 {
-  dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
+  if(dt_is_valid_imgid(imgid))
+  {
+    dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
+  }
 }
 
 gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    gchar *filename,
                                    const gboolean history_only)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+
   dt_lock_image(imgid);
   dt_image_t *img = dt_image_cache_get(imgid, 'w');
   if(img)
@@ -1006,7 +1013,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   return !ret_val;
 }
 
-char *dt_history_item_as_string(const char *name, const gboolean enabled)
+static char *_history_item_as_string(const char *name, const gboolean enabled)
 {
   return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
 }
@@ -1045,6 +1052,9 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean multi_priority_order,
                             const gboolean markup)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return NULL;
+
   GList *result = NULL;
   sqlite3_stmt *stmt;
 
@@ -1097,6 +1107,9 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
 
 char *dt_history_get_items_as_string(const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return NULL;
+
   GList *items = NULL;
   sqlite3_stmt *stmt;
   // clang-format off
@@ -1117,7 +1130,7 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
     if(mn && *mn && g_strcmp0(mn, " ") != 0 && g_strcmp0(mn, "0") != 0)
       multi_name = g_strconcat(" ", sqlite3_column_text(stmt, 2), NULL);
 
-    char *iname = dt_history_item_as_string
+    char *iname = _history_item_as_string
       (dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 0)),
        sqlite3_column_int(stmt, 1));
 
@@ -1134,7 +1147,7 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
   return result;
 }
 
-static int dt_history_end_attop(const dt_imgid_t imgid)
+static int _history_end_attop(const dt_imgid_t imgid)
 {
   int size=0;
   int end=0;
@@ -1179,6 +1192,8 @@ static int dt_history_end_attop(const dt_imgid_t imgid)
 */
 void dt_history_compress_on_image(const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
   dt_lock_image(imgid);
   sqlite3_stmt *stmt;
 
@@ -1333,6 +1348,9 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 void dt_history_truncate_on_image(const dt_imgid_t imgid,
                                   const int32_t history_end)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
+
   dt_lock_image(imgid);
   sqlite3_stmt *stmt;
 
@@ -1382,8 +1400,11 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
 
 gboolean dt_history_compress(const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+
   dt_lock_image(imgid);
-  const int test = dt_history_end_attop(imgid);
+  const int test = _history_end_attop(imgid);
   if(test == 1) // we do a compression and we know for sure history_end is at the top!
   {
     dt_history_compress_on_image(imgid);
@@ -1455,6 +1476,9 @@ gboolean dt_history_check_module_exists(const dt_imgid_t imgid,
                                         const char *operation,
                                         const gboolean enabled)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
@@ -1699,6 +1723,8 @@ void dt_history_hash_write_from_history(const dt_imgid_t imgid,
 void dt_history_hash_write(const dt_imgid_t imgid,
                            const dt_history_hash_values_t *const hash)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
   if(hash->basic || hash->auto_apply || hash->current)
   {
     sqlite3_stmt *stmt;
@@ -1910,6 +1936,8 @@ gboolean dt_history_paste(const dt_imgid_t imgid,
 gboolean dt_history_delete(const dt_imgid_t imgid,
                            const gboolean undo)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return TRUE;
   if(undo)
   {
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();

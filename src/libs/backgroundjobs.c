@@ -139,7 +139,7 @@ static gboolean _added_gui_thread(gpointer user_data)
   g_object_unref(cursor);
 
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message)
@@ -208,7 +208,7 @@ static gboolean _destroyed_gui_thread(gpointer user_data)
   // free data
   free(params->instance);
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 // remove the gui that is pointed to in instance
@@ -244,7 +244,7 @@ static gboolean _cancellable_gui_thread(gpointer user_data)
   gtk_widget_show_all(button);
 
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
@@ -274,7 +274,7 @@ static gboolean _update_gui_thread(gpointer user_data)
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(params->instance->progressbar), CLAMP(params->value, 0, 1.0));
 
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
@@ -304,7 +304,7 @@ static gboolean _update_message_gui_thread(gpointer user_data)
 
   g_free(params->message);
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,

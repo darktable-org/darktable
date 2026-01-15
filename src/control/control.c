@@ -517,7 +517,7 @@ static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
   const char *mode = (const char*)user_data;
   _dt_ctl_switch_mode_prepare();
   dt_view_manager_switch(darktable.view_manager, mode);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
@@ -525,7 +525,7 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
   const dt_view_t *view = (const dt_view_t*)user_data;
   _dt_ctl_switch_mode_prepare();
   dt_view_manager_switch_by_view(darktable.view_manager, view);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 void dt_ctl_switch_mode_to(const char *mode)
