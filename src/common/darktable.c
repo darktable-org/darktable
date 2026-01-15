@@ -2094,9 +2094,6 @@ void dt_cleanup()
 {
   const gboolean init_gui = (darktable.gui != NULL);
 
-//  if(init_gui)
-//    darktable_exit_screen_create(NULL);
-
   dt_stop_backthumbs_crawler(TRUE);
 
   // last chance to ask user for any input...
@@ -2274,9 +2271,6 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.metadata_threadsafe));
 
   dt_exif_cleanup();
-
-  if(init_gui)
-    dt_exit_screen_destroy();
 }
 
 /* The dt_print variations can be used with a combination of DT_DEBUG_ flags.

@@ -4557,6 +4557,11 @@ void dt_gui_process_events()
   unsigned max_iter = 200;
   while(g_main_context_iteration(NULL, FALSE) && --max_iter > 0)
     continue;
+
+  /*
+  while(gtk_events_pending() && --max_iter > 0)
+    gtk_main_iteration();
+  */
 }
 
 void dt_gui_simulate_button_event(GtkWidget *widget,
