@@ -279,7 +279,7 @@ static dt_job_t *_control_generic_images_job_create(dt_job_execute_callback exec
                                                       const char *message,
                                                       const int flag,
                                                       gpointer data,
-                                                      progress_type_t progress_type,
+                                                      const progress_type_t progress_type,
                                                       const gboolean only_visible)
 {
   dt_job_t *job = dt_control_job_create(execute, "%s", message);
@@ -295,11 +295,11 @@ static dt_job_t *_control_generic_images_job_create(dt_job_execute_callback exec
   {
     params->blocking = TRUE;
     dt_gui_cursor_set_busy();
-    progress_type = PROGRESS_CANCELLABLE;
   }
 
   if(progress_type != PROGRESS_NONE)
-    dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
+    dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE
+                                              || progress_type == PROGRESS_BLOCKING);
   params->index = dt_act_on_get_images(only_visible, TRUE, FALSE);
 
   dt_control_job_set_params(job, params, _control_image_enumerator_cleanup);
