@@ -2410,19 +2410,6 @@ Details :
     min-width: 720px;
 }
 
-#splashscreen-header
-{
-    padding: 0;
-    margin: 0;
-}
-
-#splashscreen-header label
-{
-    font-size: 1%;
-    padding: 0;
-    margin: 0;
-}
-
 #splashscreen-logo
 {
     margin-left: 30px;
@@ -2480,7 +2467,7 @@ Details :
     background-color: transparent;
     margin-left: 30pt;
     margin-top: 10pt;
-    margin-bottom: 5pt;
+    margin-bottom: 1em;
 }
 
 /* time remaining */
@@ -2488,6 +2475,7 @@ Details :
 {
     color: @grey_60;
     font-size: 10pt;
+    padding-bottom: 1em;
 }
 
 /* style the message on the exit screen */
