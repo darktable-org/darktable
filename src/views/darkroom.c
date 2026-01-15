@@ -152,11 +152,7 @@ static void _get_zoom_pos_bnd(dt_dev_viewport_t *port,
 
 void init(dt_view_t *self)
 {
-  dt_develop_t *dev = malloc(sizeof(dt_develop_t));
-  self->data = darktable.develop = dev;
-
-  dt_dev_init(dev, TRUE);
-
+  self->data = darktable.develop;
   darktable.view_manager->proxy.darkroom.view = self;
 
 #ifdef USE_LUA
@@ -2444,6 +2440,10 @@ void connect_button_press_release(GtkWidget *w, GtkWidget *p)
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = self->data;
+  dev->full.ppd = darktable.gui->ppd;
+  dev->full.dpi = darktable.gui->dpi;
+  dev->full.dpi_factor = darktable.gui->dpi_factor;
+  dev->full.widget = dt_ui_center(darktable.gui->ui);
 
   dt_action_t *sa = &self->actions, *ac = NULL;
 

@@ -91,15 +91,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->audio.audio_player_id = -1;
 }
 
-void dt_view_manager_gui_init(dt_view_manager_t *vm)
-{
-  for(GList *iter = vm->views; iter; iter = g_list_next(iter))
-  {
-    dt_view_t *view = iter->data;
-    if(view->gui_init) view->gui_init(view);
-  }
-}
-
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(GList *iter = vm->views;
@@ -187,6 +178,7 @@ static int dt_view_load_module(void *v,
                                      module->module_name,
                                      module->name(module) };
     dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
+    if(module->gui_init) module->gui_init(module);
   }
 
   return 0;
