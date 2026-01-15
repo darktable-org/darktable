@@ -130,7 +130,7 @@ changes (where available).
 
 ### Mandatory
 
-- N/A
+- LibRaw v0.22.0
 
 ### Optional
 
