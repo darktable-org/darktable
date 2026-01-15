@@ -1725,6 +1725,7 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
     _update_progress(job, fraction, &prev_time);
   }
 
+  /* After all is done we raise the signal for changed tags */
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   dt_undo_end_group(darktable.undo);
   dt_collection_update_query(darktable.collection,
