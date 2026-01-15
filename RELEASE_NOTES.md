@@ -93,6 +93,8 @@ changes (where available).
   when some metadata variable are used. That is, when changing the
   metadata we need to recompute the thumbnail information.
 
+- Fixed a possibly standstill while discarding history on fast systems.
+
 ## Lua
 
 ### API Version
