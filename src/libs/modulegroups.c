@@ -1023,7 +1023,7 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
   _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
@@ -1033,7 +1033,7 @@ static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
   _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 /* this is a proxy function so it might be called from another thread */
