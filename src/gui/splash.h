@@ -26,9 +26,6 @@ void dt_splash_screen_set_progress_percent(const char *msg,
                                            const double elapsed);
 void dt_splash_screen_destroy();
 
-void dt_exit_screen_create(const gboolean force);
-void dt_exit_screen_destroy(void);
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
