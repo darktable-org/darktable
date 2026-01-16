@@ -775,7 +775,6 @@ static gboolean _event_button_release(GtkWidget *widget,
   table->panning = FALSE;
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
-
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
@@ -784,13 +783,13 @@ static gboolean _event_button_release(GtkWidget *widget,
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)
-     {
+    {
       // this image is already selected
       // so we deselect it
       table->selection = NO_IMGID;
-    } 
+    }
     else
-      table->selection = overid; 
+      table->selection = overid;
 
     // now we update the thumbnail class to reflect the selected state
     _update_selected_thumbnail(table, old_sel);
