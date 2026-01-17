@@ -266,8 +266,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_init(dt_iop_module_t *self)
 {
-  IOP_GUI_ALLOC(scalepixels);
-
   GtkWidget *w = dt_bauhaus_slider_from_params(self, "pixel_aspect_ratio");
   gtk_widget_set_tooltip_text(w, _("adjust pixel aspect ratio"));
 }
@@ -277,4 +275,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
