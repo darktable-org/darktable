@@ -1964,9 +1964,7 @@ int dt_init(int argc,
     if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
-#ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
-#endif
       dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
