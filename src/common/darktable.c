@@ -1861,6 +1861,9 @@ int dt_init(int argc,
   darktable.camctl = dt_camctl_new();
 #endif
 
+  darktable.develop = malloc(sizeof(dt_develop_t));
+  dt_dev_init(darktable.develop, TRUE);
+
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to
   // register their keyboard accelerators
@@ -1881,26 +1884,16 @@ int dt_init(int argc,
         !dt_gimpmode()
         && dt_get_num_threads() >= 4
         && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
+
   }
   else
     darktable.gui = NULL;
 
-  darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
-
-  // check whether we were able to load darkroom view. if we failed,
-  // we'll crash everywhere later on.
-  if(!darktable.develop)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.");
-    darktable_splash_screen_destroy();
-    return 1;
-  }
-
-  darktable_splash_screen_set_progress(_("loading processing modules"));
+  darktable_splash_screen_set_progress(_("loading image formats"));
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
+  darktable_splash_screen_set_progress(_("loading processing modules"));
   // load default iop order
   darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
@@ -1932,13 +1925,13 @@ int dt_init(int argc,
 
   if(init_gui)
   {
+    darktable_splash_screen_set_progress(_("loading views"));
+    darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
+    dt_view_manager_init(darktable.view_manager);
+
     darktable_splash_screen_set_progress(_("loading utility modules"));
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
-
-    // init the gui part of views
-    darktable_splash_screen_set_progress(_("loading views"));
-    dt_view_manager_gui_init(darktable.view_manager);
   }
 
 /* init lua last, since it's user made stuff it must be in the real environment */
@@ -1974,9 +1967,7 @@ int dt_init(int argc,
     if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
-#ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
-#endif
       dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)

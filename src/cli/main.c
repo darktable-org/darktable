@@ -569,7 +569,7 @@ int main(int argc, char *arg[])
           if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(fname))
           {
             // Import each supported image file directly
-            const dt_imgid_t imgid = dt_image_import(filmid, fullname, TRUE, TRUE);
+            const dt_imgid_t imgid = dt_image_import(filmid, fullname, TRUE, FALSE);
             if(dt_is_valid_imgid(imgid))
             {
               id_list = g_list_append(id_list, GINT_TO_POINTER(imgid));
@@ -598,7 +598,7 @@ int main(int argc, char *arg[])
 
       gchar *directory = g_path_get_dirname(input);
       filmid = dt_film_new(&film, directory);
-      const dt_imgid_t id = dt_image_import(filmid, input, TRUE, TRUE);
+      const dt_imgid_t id = dt_image_import(filmid, input, TRUE, FALSE);
       g_free(directory);
       if(!dt_is_valid_imgid(id))
       {
