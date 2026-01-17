@@ -402,10 +402,10 @@ void gui_init(dt_lib_module_t *self)
                                       "plugins/darkroom/duplicate/windowheight"),
                     dt_gui_hbox
                       (dt_action_button_new
-                         (NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                         (self, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
                           _("create a duplicate of the image with same history stack"), 0, 0),
                        dt_action_button_new
-                         (NULL, N_("original"),
+                         (self, N_("original"),
                           _lib_duplicate_new_clicked_callback, self,
                           _("create a 'virgin' duplicate of the image without any development"), 0, 0)));
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
