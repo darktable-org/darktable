@@ -539,6 +539,25 @@ static void _toggle_zoom_all(dt_culling_t *table,
     _thumbs_zoom_add(table, ZOOM_MAX, x_root, y_root, 0);
 }
 
+static void _update_selected_thumbnail(dt_culling_t *table,
+                                       dt_imgid_t old_sel)
+{
+  for(GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *th = l->data;
+    if (th->imgid == old_sel)
+    {
+      dt_gui_remove_class(th->w_main, "dt_culling_selected");
+      gtk_widget_queue_draw(th->w_main);
+    }
+    else if(th->imgid == table->selection)
+    {
+      dt_gui_add_class(th->w_main, "dt_culling_selected");
+      gtk_widget_queue_draw(th->w_main);
+    }
+  }
+}
+
 static gboolean _event_scroll(GtkWidget *widget,
                               GdkEvent *event,
                               gpointer user_data)
@@ -641,10 +660,19 @@ static gboolean _event_button_press(GtkWidget *widget,
   }
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
-
   if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
-  {
+  { 
+    // we have to set again the selected image, because it was deselected 
+    // during the previous GDK_BUTTON_PRESS event
+    const dt_imgid_t old_selection = table->selection;
+    table->selection = id;
     dt_view_manager_switch(darktable.view_manager, "darkroom");
+    if (id != old_selection) 
+    {
+      _update_selected_thumbnail(table, old_selection);
+       dt_act_on_reset_cache(TRUE);
+       dt_act_on_reset_cache(FALSE);
+    }
     return TRUE;
   }
 
@@ -747,7 +775,6 @@ static gboolean _event_button_release(GtkWidget *widget,
   table->panning = FALSE;
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
-
   // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
@@ -765,21 +792,8 @@ static gboolean _event_button_release(GtkWidget *widget,
       table->selection = overid;
 
     // now we update the thumbnail class to reflect the selected state
-    for(GList *l = table->list; l; l = g_list_next(l))
-    {
-      dt_thumbnail_t *th = l->data;
-      if (th->imgid == old_sel)
-      {
-        dt_gui_remove_class(th->w_main, "dt_culling_selected");
-        gtk_widget_queue_draw(th->w_main);
-      }
-      else if(th->imgid == table->selection)
-      {
-        dt_gui_add_class(th->w_main, "dt_culling_selected");
-        gtk_widget_queue_draw(th->w_main);
-      }
-    }
-
+    _update_selected_thumbnail(table, old_sel);
+    
     // and we reset the cache
     dt_act_on_reset_cache(TRUE);
     dt_act_on_reset_cache(FALSE);
