@@ -299,6 +299,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   // show we are busy changing views
   dt_control_change_cursor(GDK_WATCH);
+  gdk_display_sync(gdk_display_get_default());
 
   /* cleanup current view before initialization of new  */
   if(old_view)
