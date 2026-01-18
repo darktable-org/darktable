@@ -826,7 +826,7 @@ static void _view_changed_callback(gpointer instance,
                                    dt_view_t *new_view,
                                    dt_lib_module_t *self)
 {
-  //In darkroom switch off duplicate creation and hide checkbox
+  // In darkroom switch off duplicate creation and hide checkbox
   dt_lib_styles_t *d = self->data;
   if (dt_view_get_current() == DT_VIEW_DARKROOM)
   {
@@ -883,15 +883,14 @@ void gui_init(dt_lib_module_t *self)
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
-                    d->duplicate, &dt_action_def_toggle);
+                   d->duplicate, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->duplicate))), PANGO_ELLIPSIZE_START);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(_duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
-                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
+                               dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
-  
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
                                dt_conf_get_int("plugins/lighttable/style/applymode"),
