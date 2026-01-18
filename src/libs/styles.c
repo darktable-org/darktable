@@ -160,8 +160,8 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
       imgid = GPOINTER_TO_INT(selected_image->data);
       g_list_free(selected_image);
     }
-
-    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, FALSE);
+    
+    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->show_preview)));
     dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
     return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, ht);
