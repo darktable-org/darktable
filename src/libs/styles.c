@@ -821,6 +821,26 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
+static void _view_changed_callback(gpointer instance,
+                                   dt_view_t *old_view,
+                                   dt_view_t *new_view,
+                                   dt_lib_module_t *self)
+{
+  //In darkroom switch off duplicate creation and hide checkbox
+  dt_lib_styles_t *d = self->data;
+  if (dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate), FALSE);
+    gtk_widget_hide(d->duplicate);
+  }
+  else
+  {
+    gtk_widget_show(d->duplicate);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
+                                 dt_conf_get_bool("ui_last/styles_create_duplicate"));
+  }
+}
+
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
   dt_lib_gui_queue_update((dt_lib_module_t *)data);
@@ -861,17 +881,17 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 
-
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
-                   d->duplicate, &dt_action_def_toggle);
+                    d->duplicate, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->duplicate))), PANGO_ELLIPSIZE_START);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(_duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
-                               dt_conf_get_bool("ui_last/styles_create_duplicate"));
+                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
+  
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
                                dt_conf_get_int("plugins/lighttable/style/applymode"),
@@ -938,6 +958,7 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
