@@ -878,10 +878,14 @@ void gui_init(dt_lib_module_t *self)
                    d->show_preview, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_preview))), PANGO_ELLIPSIZE_START);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(_duplicate_callback), d);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_preview),
-                               dt_conf_get_bool("ui_last/styles_show_preview"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_preview), TRUE);
   gtk_widget_set_tooltip_text(d->show_preview,
                               _("show preview of style applied to image"));
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(box), d->duplicate, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(box), d->show_preview, FALSE, FALSE, 0);
+  gtk_widget_set_hexpand(box, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
@@ -936,7 +940,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = dt_gui_vbox
     (d->entry,
      dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
-     d->duplicate, d->show_preview, d->applymode,
+     box, d->applymode,
      dt_gui_hbox(d->create_button, d->edit_button, d->delete_button),
      dt_gui_hbox(d->import_button, d->export_button),
      d->apply_button);
