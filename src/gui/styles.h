@@ -37,7 +37,7 @@ void dt_gui_styles_dialog_edit(const char *name, char **new_name);
 
 cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name);
 
-GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid);
+GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid, const gboolean hide_preview);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

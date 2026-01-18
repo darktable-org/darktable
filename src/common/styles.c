@@ -277,7 +277,7 @@ static gboolean dt_styles_create_style_header(const char *name,
   dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
   dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
-  dt_gui_style_content_dialog("", -1);
+  dt_gui_style_content_dialog("", -1, FALSE);
 
   g_free(iop_list_txt);
   return TRUE;
@@ -465,7 +465,7 @@ void dt_styles_update(const char *name,
     dt_action_rename(old, newname);
   }
 
-  dt_gui_style_content_dialog("", -1);
+  dt_gui_style_content_dialog("", -1, FALSE);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
 

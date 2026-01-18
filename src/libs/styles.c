@@ -45,6 +45,7 @@ typedef struct dt_lib_styles_t
   GtkTreeView *tree;
   GtkWidget *create_button, *edit_button, *delete_button;
   GtkWidget *import_button, *export_button, *applymode, *apply_button;
+  GtkWidget *show_preview;
 } dt_lib_styles_t;
 
 
@@ -160,7 +161,7 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
       g_list_free(selected_image);
     }
 
-    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
+    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, FALSE);
     dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
     return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, ht);
@@ -872,6 +873,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
+  d->show_preview = gtk_check_button_new_with_label(_("show preview"));
+  dt_action_define(DT_ACTION(self), NULL, N_("show preview"),
+                   d->show_preview, &dt_action_def_toggle);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_preview))), PANGO_ELLIPSIZE_START);
+  g_signal_connect(d->duplicate, "toggled", G_CALLBACK(_duplicate_callback), d);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_preview),
+                               dt_conf_get_bool("ui_last/styles_show_preview"));
+  gtk_widget_set_tooltip_text(d->show_preview,
+                              _("show preview of style applied to image"));
+
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
                                dt_conf_get_int("plugins/lighttable/style/applymode"),
@@ -925,7 +936,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = dt_gui_vbox
     (d->entry,
      dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
-     d->duplicate, d->applymode,
+     d->duplicate, d->show_preview, d->applymode,
      dt_gui_hbox(d->create_button, d->edit_button, d->delete_button),
      dt_gui_hbox(d->import_button, d->export_button),
      d->apply_button);

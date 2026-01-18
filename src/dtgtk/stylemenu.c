@@ -45,7 +45,7 @@ static gboolean _styles_tooltip_callback(GtkWidget* self,
   if(dev)
     dt_dev_write_history(dev);
 
-  GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
+  GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, FALSE);
 
   return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
