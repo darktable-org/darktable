@@ -85,6 +85,9 @@ void dt_view_manager_init(dt_view_manager_t *vm)
                               "   AND id != ?2",
                               -1, &vm->statements.get_grouped, NULL);
 
+  vm->module_toolbox = dt_gui_hbox();
+  vm->view_toolbox = dt_gui_hbox();
+
   dt_view_manager_load_modules(vm);
 
   vm->current_view = NULL;
@@ -194,9 +197,12 @@ static void dt_view_unload_module(dt_view_t *view)
     g_module_close(view->module);
 }
 
-void dt_vm_remove_child(GtkWidget *widget, gpointer data)
+static void _show_hide_toolbox_widget(GtkWidget *widget,
+                                      gpointer data)
 {
-  gtk_container_remove(GTK_CONTAINER(data), widget);
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_widget_set_visible(widget,
+    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "views")) & GPOINTER_TO_INT(data));
 }
 
 gboolean dt_view_manager_switch(dt_view_manager_t *vm,
@@ -398,8 +404,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     if(!strcmp(plugin->plugin_name,"module_toolbox")
       || !strcmp(plugin->plugin_name,"view_toolbox"))
     {
+      gtk_container_foreach(GTK_CONTAINER(w), _show_hide_toolbox_widget, GINT_TO_POINTER(view_type));
       if(view_type == DT_VIEW_LIGHTTABLE)
-                       dt_gui_add_help_link(w, "lighttable_mode");
+        dt_gui_add_help_link(w, "lighttable_mode");
       if(view_type == DT_VIEW_DARKROOM)
         dt_gui_add_help_link(w, "darkroom_bottom_panel");
     }
@@ -1102,16 +1109,16 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,
                                       GtkWidget *tool,
                                       const dt_view_type_flags_t views)
 {
-  if(vm->proxy.view_toolbox.module)
-    vm->proxy.view_toolbox.add(vm->proxy.view_toolbox.module, tool, views);
+  g_object_set_data(G_OBJECT(tool), "views", GINT_TO_POINTER(views));
+  dt_gui_box_add(vm->view_toolbox, tool);
 }
 
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,
                                         GtkWidget *tool,
                                         const dt_view_type_flags_t views)
 {
-  if(vm->proxy.module_toolbox.module)
-    vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
+  g_object_set_data(G_OBJECT(tool), "views", GINT_TO_POINTER(views));
+  dt_gui_box_add(vm->module_toolbox, tool);
 }
 
 dt_darkroom_layout_t dt_view_darkroom_get_layout(const dt_view_manager_t *vm)
