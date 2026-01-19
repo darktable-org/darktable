@@ -93,7 +93,11 @@ changes (where available).
   when some metadata variable are used. That is, when changing the
   metadata we need to recompute the thumbnail information.
 
-- Fixed a possibly standstill while discarding history on fast systems.
+- Fixed a possibly standstill while discarding history on fast
+  systems.
+
+- Fixed a possible crash in the way the Color Equalizer module GUI is
+  initialized.
 
 ## Lua
 
