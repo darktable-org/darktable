@@ -43,10 +43,11 @@
 // 5.0.0 was 9.4.0 (added group events and uuid)
 // 5.2.0 was 9.5.0 (added apply_sidecar to image)
 // 5.4.0 was 9.6.0 (added event querying)
+// 5.6.0 was 9.7.0 (added scripts to destribution)
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 6
+#define LUA_API_VERSION_MINOR 7
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
