@@ -821,14 +821,13 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
-static void _view_changed_callback(gpointer instance,
-                                   dt_view_t *old_view,
-                                   dt_view_t *new_view,
-                                   dt_lib_module_t *self)
+void view_enter(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
 {
   // In darkroom switch off duplicate creation and hide checkbox
   dt_lib_styles_t *d = self->data;
-  if (dt_view_get_current() == DT_VIEW_DARKROOM)
+  if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate), FALSE);
     gtk_widget_hide(d->duplicate);
@@ -890,6 +889,7 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
+  gtk_widget_set_no_show_all(d->duplicate, TRUE);                              
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
@@ -957,7 +957,6 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
