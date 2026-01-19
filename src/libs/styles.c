@@ -829,8 +829,12 @@ void view_enter(struct dt_lib_module_t *self,
   dt_lib_styles_t *d = self->data;
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
+    // keep current checkbox state, so we can restore it after switching off,
+    // otherwise it will always be unchecked when returning to lighttable.
+    const gboolean old_state = dt_conf_get_bool("ui_last/styles_create_duplicate");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate), FALSE);
     gtk_widget_hide(d->duplicate);
+    dt_conf_set_bool("ui_last/styles_create_duplicate", old_state);
   }
   else
   {
