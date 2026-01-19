@@ -248,26 +248,14 @@ typedef struct dt_view_manager_t
   // toggle button for guides (in the module toolbox)
   GtkWidget *guides_toggle, *guides, *guides_colors, *guides_contrast, *guides_popover;
 
+  // toolbox containers
+  GtkWidget *module_toolbox, *view_toolbox;
+
   /*
    * Proxy
    */
   struct
   {
-
-    /* view toolbox proxy object */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *, GtkWidget *, dt_view_type_flags_t );
-    } view_toolbox;
-
-    /* module toolbox proxy object */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *, GtkWidget *, dt_view_type_flags_t);
-    } module_toolbox;
-
     /* filter toolbox proxy object */
     struct
     {
