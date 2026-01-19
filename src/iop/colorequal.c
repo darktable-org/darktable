@@ -3005,8 +3005,6 @@ void gui_init(dt_iop_module_t *self)
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
-  g_signal_connect(G_OBJECT(g->notebook), "switch_page",
-                   G_CALLBACK(_channel_tabs_switch_callback), self);
 
   // graph
   g->area = GTK_DRAWING_AREA
@@ -3193,6 +3191,9 @@ void gui_init(dt_iop_module_t *self)
   g->page_num = active_page;
 
   self->widget = GTK_WIDGET(box);
+
+  g_signal_connect(G_OBJECT(g->notebook), "switch_page",
+                   G_CALLBACK(_channel_tabs_switch_callback), self);
 }
 
 // clang-format off
