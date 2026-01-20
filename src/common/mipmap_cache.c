@@ -734,10 +734,10 @@ void dt_mipmap_cache_init()
     { 7680, 4320 },           // mip9 - covers 8K
     { 999999999, 999999999 }, // mip10 - used for full preview at full size
   };
-  // Set mipf to mip2 size as at most the user will be using an 8K screen and
+  // Set mipf to mip3 size assuming the user will be using an 6K screen and
   // have a preview that's ~4x smaller
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0];
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1];
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0];
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1];
   for(int k = DT_MIPMAP_LDR_MAX; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
