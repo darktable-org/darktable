@@ -515,14 +515,23 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->y = 0;
 }
 
+static inline int _snap_to_cfa(const int p, const uint32_t filters)
+{
+  const int snap = !filters ? 1 : filters != 9u ? 2 : 3;
+  return (p / snap) * snap;
+}
+
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
-  roi_in->x = MAX(0, roi_in->x / roi_out->scale);
-  roi_in->y = MAX(0, roi_in->y / roi_out->scale);
+  // always set position to closest top/left sensor pattern snap
+  const uint32_t filters = piece->pipe->dsc.filters;
+  roi_in->x = MAX(0, _snap_to_cfa(roi_in->x / roi_out->scale, filters));
+  roi_in->y = MAX(0, _snap_to_cfa(roi_in->y / roi_out->scale, filters));
+
   roi_in->width = MAX(8, roi_in->width / roi_out->scale);
   roi_in->height = MAX(8, roi_in->height / roi_out->scale);
   roi_in->scale = 1.0f;
