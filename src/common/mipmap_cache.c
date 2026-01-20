@@ -710,15 +710,14 @@ void dt_mipmap_cache_init()
     { 10240, 6192 },          // mip9 - covers 10K and 8256x6192 senors
     { 999999999, 999999999 }, // mip10 - used for full preview at full size
   };
-  // Set mipf to mip2 size as at most the user will be using an 8K screen and
-  // have a preview that's ~4x smaller
+  // Set mipf to mip3 size, which is ~4x smaller than a 6K screen screen
   const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
   const float downsample = (!g_strcmp0(preview_downsample, "original")) ? 1.0f
                          : (!g_strcmp0(preview_downsample, "to 1/2")) ? 0.5f
                          : (!g_strcmp0(preview_downsample, "to 1/3")) ? 1/3.0f
                          : 0.25f;
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0] * downsample;
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1] * downsample;
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0] * downsample;
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1] * downsample;
   for(int k = DT_MIPMAP_LDR_MAX; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
