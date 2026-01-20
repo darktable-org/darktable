@@ -164,8 +164,8 @@ static void _interpolate_and_mask(const float *const restrict input,
         }
       }
 
-      dt_aligned_pixel_t RGB = { R, G, B, sqrtf(sqf(R) + sqf(G) + sqf(B)) };
-      dt_aligned_pixel_t clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
+      const dt_aligned_pixel_t RGB = { R, G, B, sqrtf(sqf(R) + sqf(G) + sqf(B)) };
+      const dt_aligned_pixel_t clipped = { (float)R_clipped, (float)G_clipped, (float)B_clipped, (R_clipped || G_clipped || B_clipped) ? 1.0f : 0.0f };
 
       for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped, wb))
       {
@@ -193,7 +193,7 @@ static void _remosaic_and_replace(const float *const restrict input,
       const size_t c = FC(i, j, filters);
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
-      const float opacity = clipping_mask[index + ALPHA];
+      const float opacity = CLIP(clipping_mask[index + ALPHA]);
       output[idx] = opacity * fmaxf(interpolated[index + c] * wb[c], 0.f)
                     + (1.f - opacity) * input[idx];
     }
@@ -689,7 +689,6 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem in,
                                          cl_mem reconstructed,
                                          cl_mem clipping_mask,
-                                         const size_t sizes[3],
                                          const int width,
                                          const int height,
                                          dt_iop_highlights_global_data_t *const gd,
@@ -702,7 +701,7 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          const int salt,
                                          const float solid_color)
 {
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_SUCCESS;
 
   // À trous wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
@@ -732,21 +731,18 @@ static inline cl_int wavelets_process_cl(const int devid,
     }
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0,
-      CLARG(buffer_in), CLARG(HF), CLARG(width), CLARG(height), CLARG(mult));
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_horizontal, width, height,
+          CLARG(buffer_in), CLARG(HF), CLARG(width), CLARG(height), CLARG(mult));
     if(err != CL_SUCCESS) return err;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0,
-      CLARG(HF), CLARG(buffer_out), CLARG(width), CLARG(height), CLARG(mult));
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_vertical, width, height,
+          CLARG(HF), CLARG(buffer_out), CLARG(width), CLARG(height), CLARG(mult));
     if(err != CL_SUCCESS) return err;
 
     // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
     // Note : HF = detail - LF
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0,
-      CLARG(buffer_in), CLARG(buffer_out), CLARG(HF), CLARG(width), CLARG(height));
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_wavelets_detail, width, height,
+          CLARG(buffer_in), CLARG(buffer_out), CLARG(HF), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) return err;
 
     unsigned int current_scale_type = scale_type(s, scales);
@@ -755,22 +751,20 @@ static inline cl_int wavelets_process_cl(const int devid,
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
     {
-      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_guide_laplacians, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_guide_laplacians, width, height,
         CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask),
         CLARG(reconstructed), // read-only
         CLARG(reconstructed), // write-only
         CLARG(width), CLARG(height), CLARG(mult), CLARG(noise_level), CLARG(salt), CLARG(current_scale_type), CLARG(radius));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_guide_laplacians, sizes);
       if(err != CL_SUCCESS) return err;
     }
     else // DIFFUSE_RECONSTRUCT_CHROMA
     {
-      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_diffuse_color, 0,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_diffuse_color, width, height,
         CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask),
         CLARG(reconstructed), // read-only
         CLARG(reconstructed), // write-only
         CLARG(width), CLARG(height), CLARG(mult), CLARG(current_scale_type), CLARG(solid_color));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_diffuse_color, sizes);
       if(err != CL_SUCCESS) return err;
     }
   }
@@ -789,7 +783,7 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   dt_iop_highlights_data_t *data = piece->data;
   dt_iop_highlights_global_data_t *gd = self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -798,8 +792,8 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   const int ds_height = height / DS_FACTOR;
   const int ds_width = width / DS_FACTOR;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  size_t ds_sizes[] = { ROUNDUPDWD(ds_width, devid), ROUNDUPDHT(ds_height, devid), 1 };
+  const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
+  const size_t ds_sizes[2] = { ROUNDUPDWD(ds_width, devid), ROUNDUPDHT(ds_height, devid) };
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
@@ -811,6 +805,11 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
     wb[2] = piece->pipe->dsc.temperature.coeffs[2];
   }
 
+  const float scale = fmaxf(DS_FACTOR * piece->iscale / (roi_in->scale), 1.f);
+  const float final_radius = (float)((int)(1 << data->scales)) / scale;
+  const int scales = CLAMP((int)ceilf(log2f(final_radius)), 1, MAX_NUM_SCALES);
+  const float noise_level = data->noise_level / scale;
+
   cl_mem interpolated = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // [R, G, B, norm] for each pixel
   cl_mem clipping_mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // [R, G, B, norm] for each pixel
 
@@ -819,12 +818,6 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   cl_mem LF_even = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
   cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // need full size here for blurring
 
-  const float scale = fmaxf(DS_FACTOR * piece->iscale / (roi_in->scale), 1.f);
-  const float final_radius = (float)((int)(1 << data->scales)) / scale;
-  const int scales = CLAMP((int)ceilf(log2f(final_radius)), 1, MAX_NUM_SCALES);
-
-  const float noise_level = data->noise_level / scale;
-
   // wavelets scales buffers
   cl_mem HF = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
   cl_mem ds_interpolated = dt_opencl_alloc_device(devid, ds_sizes[0], ds_sizes[1], sizeof(float) * 4);
@@ -832,11 +825,13 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
 
   cl_mem clips_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)clips);
   cl_mem wb_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)wb);
+  if(!interpolated || !clipping_mask || !LF_odd || !LF_even || !temp || !HF
+      || !ds_interpolated || !ds_clipping_mask || !clips_cl || !wb_cl)
+    goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_bilinear_and_mask, width, height,
     CLARG(dev_in), CLARG(interpolated), CLARG(temp),
     CLARG(clips_cl), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
-  dt_opencl_release_mem_object(clips_cl);
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_box_blur, width, height,
@@ -859,11 +854,11 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   for(int i = 0; i < data->iterations; i++)
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
-    err = wavelets_process_cl(devid, ds_interpolated, temp, ds_clipping_mask, ds_sizes, ds_width, ds_height, gd, scales, HF,
+    err = wavelets_process_cl(devid, ds_interpolated, temp, ds_clipping_mask, ds_width, ds_height, gd, scales, HF,
                               LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
 
-    err = wavelets_process_cl(devid, temp, ds_interpolated, ds_clipping_mask, ds_sizes, ds_width, ds_height, gd, scales, HF,
+    err = wavelets_process_cl(devid, temp, ds_interpolated, ds_clipping_mask, ds_width, ds_height, gd, scales, HF,
                               LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
   }
@@ -881,6 +876,7 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
 
 error:
   dt_opencl_release_mem_object(wb_cl);
+  dt_opencl_release_mem_object(clips_cl);
   dt_opencl_release_mem_object(interpolated);
   dt_opencl_release_mem_object(ds_clipping_mask);
   dt_opencl_release_mem_object(ds_interpolated);

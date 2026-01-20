@@ -583,12 +583,14 @@ int process_cl(dt_iop_module_t *self,
 
         dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
         if(dev_xtrans == NULL) goto finish;
+        const int dy = roi_out->y - roi_in->y;
+        const int dx = roi_out->x - roi_in->x;
 
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_false_color, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(roi_in->width), CLARG(roi_in->height),
-          CLARG(roi_out->x), CLARG(roi_out->y),
+          CLARG(dx), CLARG(dy),
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips));
         announce = FALSE;
