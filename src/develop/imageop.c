@@ -46,6 +46,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/splash.h"
 #include "imageio/imageio_rawspeed.h"
 #include "libs/modulegroups.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1681,6 +1682,14 @@ static void _init_module_so(void *m)
     if(module->gui_init
        && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
+      dt_print(DT_DEBUG_VERBOSE,
+               "loading processing module : %s",
+               module_instance->op);
+      char *msg = g_strdup_printf(_("%s: %s"),
+                                  _("loading processing modules"),
+                                  module_instance->name());
+      dt_splash_screen_set_progress(msg);
+      g_free(msg);
       dt_iop_gui_init(module_instance);
 
       static gboolean blending_accels_initialized = FALSE;
