@@ -833,15 +833,15 @@ interpolate_and_mask(read_only image2d_t input,
     const size_t j_prev = (j - 1);
     const size_t j_next = (j + 1);
 
-    const float north = read_imagef(input, samplerA, (int2)(j, i_prev)).x;
-    const float south = read_imagef(input, samplerA, (int2)(j, i_next)).x;
-    const float west = read_imagef(input, samplerA, (int2)(j_prev, i)).x;
-    const float east = read_imagef(input, samplerA, (int2)(j_next, i)).x;
+    const float north = read_imagef(input, sampleri, (int2)(j, i_prev)).x;
+    const float south = read_imagef(input, sampleri, (int2)(j, i_next)).x;
+    const float west = read_imagef(input, sampleri, (int2)(j_prev, i)).x;
+    const float east = read_imagef(input, sampleri, (int2)(j_next, i)).x;
 
-    const float north_east = read_imagef(input, samplerA, (int2)(j_next, i_prev)).x;
-    const float north_west = read_imagef(input, samplerA, (int2)(j_prev, i_prev)).x;
-    const float south_east = read_imagef(input, samplerA, (int2)(j_next, i_next)).x;
-    const float south_west = read_imagef(input, samplerA, (int2)(j_prev, i_next)).x;
+    const float north_east = read_imagef(input, sampleri, (int2)(j_next, i_prev)).x;
+    const float north_west = read_imagef(input, sampleri, (int2)(j_prev, i_prev)).x;
+    const float south_east = read_imagef(input, sampleri, (int2)(j_next, i_next)).x;
+    const float south_west = read_imagef(input, sampleri, (int2)(j_prev, i_next)).x;
 
     if(c == GREEN) // green pixel
     {
@@ -913,8 +913,8 @@ interpolate_and_mask(read_only image2d_t input,
     }
   }
 
-  float4 RGB = {R, G, B, dtcl_sqrt(R * R + G * G + B * B) };
-  float4 clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
+  const float4 RGB = {R, G, B, dtcl_sqrt(R * R + G * G + B * B) };
+  const float4 clipped = { (float)R_clipped, (float)G_clipped, (float)B_clipped, (R_clipped || G_clipped || B_clipped) ? 1.0f : 0.0f };
   const float4 WB4 = { wb[0], wb[1], wb[2], wb[3] };
   write_imagef(interpolated, (int2)(j, i), RGB / WB4);
   write_imagef(clipping_mask, (int2)(j, i), clipped);
@@ -940,7 +940,7 @@ remosaic_and_replace(read_only image2d_t input,
   const int c = FC(i, j, filters);
   const float4 center = read_imagef(interpolated, sampleri, (int2)(j, i));
   float *rgb = (float *)&center;
-  const float opacity = read_imagef(clipping_mask, sampleri, (int2)(j, i)).w;
+  const float opacity = clipf(read_imagef(clipping_mask, sampleri, (int2)(j, i)).w);
   const float4 pix_in = read_imagef(input, sampleri, (int2)(j, i));
   const float4 pix_out = opacity * fmax(rgb[c] * wb[c], 0.f) + (1.f - opacity) * pix_in;
   write_imagef(output, (int2)(j, i), pix_out);
@@ -964,7 +964,7 @@ box_blur_5x5(read_only image2d_t in,
     {
       const int row = clamp(y + ii, 0, height - 1);
       const int col = clamp(x + jj, 0, width - 1);
-      acc += read_imagef(in, samplerA, (int2)(col, row)) / 25.f;
+      acc += fmax(0.0f, read_imagef(in, samplerA, (int2)(col, row))) / 25.f;
     }
 
   write_imagef(out, (int2)(x, y), acc);

@@ -164,8 +164,8 @@ static void _interpolate_and_mask(const float *const restrict input,
         }
       }
 
-      dt_aligned_pixel_t RGB = { R, G, B, sqrtf(sqf(R) + sqf(G) + sqf(B)) };
-      dt_aligned_pixel_t clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
+      const dt_aligned_pixel_t RGB = { R, G, B, sqrtf(sqf(R) + sqf(G) + sqf(B)) };
+      const dt_aligned_pixel_t clipped = { (float)R_clipped, (float)G_clipped, (float)B_clipped, (R_clipped || G_clipped || B_clipped) ? 1.0f : 0.0f };
 
       for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped, wb))
       {
@@ -193,7 +193,7 @@ static void _remosaic_and_replace(const float *const restrict input,
       const size_t c = FC(i, j, filters);
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
-      const float opacity = clipping_mask[index + ALPHA];
+      const float opacity = CLIP(clipping_mask[index + ALPHA]);
       output[idx] = opacity * fmaxf(interpolated[index + c] * wb[c], 0.f)
                     + (1.f - opacity) * input[idx];
     }
