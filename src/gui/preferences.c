@@ -581,11 +581,13 @@ void dt_gui_preferences_show()
 #endif
   gtk_widget_set_name(_preferences_dialog, "preferences-notebook");
 
-  //grab the content area of the dialog
-  GtkWidget *box = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
-  gtk_widget_set_name(box, "preferences-box");
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
+  gtk_widget_set_name(content, "preferences-box");
+  // changing orientation of content area to horizontal causes wide (empty) action-box
+  // so insert an hbox instead
+  GtkWidget *box = dt_gui_hbox();
   gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(box), GTK_ORIENTATION_HORIZONTAL);
+  dt_gui_box_add(content, box);
 
   //create stack and sidebar and pack into the box
   GtkWidget *stack = gtk_stack_new();
