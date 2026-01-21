@@ -821,6 +821,29 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
+void view_enter(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
+{
+  // In darkroom switch off duplicate creation and hide checkbox
+  dt_lib_styles_t *d = self->data;
+  if(new_view->view(new_view) == DT_VIEW_DARKROOM)
+  {
+    // keep current checkbox state, so we can restore it after switching off,
+    // otherwise it will always be unchecked when returning to lighttable.
+    const gboolean old_state = dt_conf_get_bool("ui_last/styles_create_duplicate");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate), FALSE);
+    gtk_widget_hide(d->duplicate);
+    dt_conf_set_bool("ui_last/styles_create_duplicate", old_state);
+  }
+  else
+  {
+    gtk_widget_show(d->duplicate);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
+                                 dt_conf_get_bool("ui_last/styles_create_duplicate"));
+  }
+}
+
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
   dt_lib_gui_queue_update((dt_lib_module_t *)data);
@@ -861,7 +884,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 
-
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
                    d->duplicate, &dt_action_def_toggle);
@@ -871,6 +893,7 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
+  gtk_widget_set_no_show_all(d->duplicate, TRUE);                              
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
