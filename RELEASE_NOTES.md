@@ -99,6 +99,12 @@ changes (where available).
 - Fixed a possible crash in the way the Color Equalizer module GUI is
   initialized.
 
+- Fixed an inconsistency in the styles module UI when shown in the
+  darkroom view. It is not possible to create a duplicate to which the
+  style is applied, and the setting of the corresponding checkbox has
+  just been ignored. To avoid confusion, the checkbox is now hidden in
+  the darkroom view.
+
 ## Lua
 
 ### API Version
