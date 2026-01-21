@@ -1564,7 +1564,15 @@ void gui_post_expose(dt_iop_module_t *self,
     pango_layout_set_font_description(layout, desc);
 
     char dimensions[64] = { '\0' };
-    snprintf(dimensions, sizeof(dimensions), "%d x %d", width - diff_w, height - diff_h);
+    const double ratio = (double)(width - diff_w)/(height - diff_h);
+    char ratio_str[15] = { '\0' };
+    if(ratio<1)
+      snprintf(ratio_str, sizeof(ratio_str), "(1 : %.2f)", (double)1/ratio);
+    else if(ratio>1)
+      snprintf(ratio_str, sizeof(ratio_str), "(%.2f : 1)", ratio);
+    else
+      snprintf(ratio_str, sizeof(ratio_str), "(1 : 1)");
+    snprintf(dimensions, sizeof(dimensions), "%d x %d %s", width - diff_w, height - diff_h, ratio_str);
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
