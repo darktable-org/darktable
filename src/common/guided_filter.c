@@ -630,8 +630,7 @@ int guided_filter_cl(int devid,
   assert(ch >= 3);
   assert(w >= 1);
 
-  // estimate required memory for OpenCL code path with a safety factor of 1.25
-  const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
+  const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float) * ch, 18.0f * 0.25f + 2.5f, 0);
 
   cl_int err =  DT_OPENCL_DEFAULT_ERROR;
   if(fits)
