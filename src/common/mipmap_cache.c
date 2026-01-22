@@ -705,9 +705,9 @@ void dt_mipmap_cache_init()
     { 1920, 1200 },           // mip4 - covers 1080p and 1600x1200
     { 2560, 1600 },           // mip5 - covers 2560x1440
     { 4096, 2560 },           // mip6 - covers 4K and UHD
-    { 6144, 3200 },           // mip7 - covers 6K and 5120x2880 panels
-    { 7680, 4320 },           // mip8 - covers 8K
-    { 10240, 6192 },          // mip9 - covers 10K and 8256x6192 senors
+    { 5120, 3200 },           // mip7 - covers 5K
+    { 6144, 3456 },           // mip8 - covers 6K
+    { 7680, 4320 },           // mip9 - covers 8K
     { 999999999, 999999999 }, // mip10 - used for full preview at full size
   };
   // Set mipf to mip3 size, which is ~4x smaller than a 6K screen screen
@@ -1215,11 +1215,9 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   if(strcmp(value, "1080p") == 0)  return DT_MIPMAP_4;
   if(strcmp(value, "WQXGA") == 0)  return DT_MIPMAP_5;
   if(strcmp(value, "4K") == 0)     return DT_MIPMAP_6;
-  if(strcmp(value, "6K") == 0)     return DT_MIPMAP_7;
-  if(strcmp(value, "8K") == 0)     return DT_MIPMAP_8;
-  if(strcmp(value, "10K") == 0)    return DT_MIPMAP_9;
-  // support obsolete pref value
   if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
+  if(strcmp(value, "6K") == 0)     return DT_MIPMAP_8;
+  if(strcmp(value, "8K") == 0)     return DT_MIPMAP_9;
   return DT_MIPMAP_NONE;
 }
 
