@@ -540,6 +540,7 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, exif_flash, char_64);
   luaA_struct_member(L, dt_image_t, exif_exposure_program, char_64);
   luaA_struct_member(L, dt_image_t, exif_metering_mode, char_64);
+  luaA_struct_member(L, dt_image_t, exif_film_mode, char_64);
   luaA_struct_member(L, dt_image_t, filename, const char_filename_length);
   luaA_struct_member(L, dt_image_t, width, const int32_t);
   luaA_struct_member(L, dt_image_t, height, const int32_t);

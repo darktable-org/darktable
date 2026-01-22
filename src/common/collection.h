@@ -121,6 +121,7 @@ typedef enum dt_collection_properties_t
 
   // all new collection types need to be added before DT_COLLECTION_PROP_LAST,
   // which separates actual collection types from special flag values
+  DT_COLLECTION_PROP_FILM_MODE,
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
