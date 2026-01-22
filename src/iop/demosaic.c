@@ -532,8 +532,8 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->x = MAX(0, _snap_to_cfa(roi_in->x / roi_out->scale, filters));
   roi_in->y = MAX(0, _snap_to_cfa(roi_in->y / roi_out->scale, filters));
 
-  roi_in->width = MAX(8, roi_in->width / roi_out->scale);
-  roi_in->height = MAX(8, roi_in->height / roi_out->scale);
+  roi_in->width = MAX(8, MIN(roi_in->width / roi_out->scale, piece->buf_in.width - roi_in->x));
+  roi_in->height = MAX(8, MIN(roi_in->height / roi_out->scale, piece->buf_in.height - roi_in->y));
   roi_in->scale = 1.0f;
 }
 
