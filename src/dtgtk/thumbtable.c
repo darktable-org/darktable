@@ -1806,8 +1806,9 @@ static void _dt_metadata_change_callback(gpointer instance,
   for(const GList *l = imgs; l; l = g_list_next(l))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    dt_thumbnail_t *th = _thumbtable_get_thumb(table, imgid);
-    dt_thumbnail_reload_infos(th);
+    dt_thumbnail_t *thumb = _thumbtable_get_thumb(table, imgid);
+    if(thumb)
+      dt_thumbnail_reload_infos(thumb);
   }
 
   g_list_free(imgs);
