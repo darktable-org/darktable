@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "common/interpolation.h"
 #include "common/fast_guided_filter.h"
 #include "common/pfm.h"
+#include "common/ras2vect.h"
 #include "imageio/imageio_png.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -127,6 +128,7 @@ typedef struct dt_iop_rasterfile_gui_data_t
   GtkWidget *mode;
   GtkWidget *fbutton;
   GtkWidget *file;
+  GtkWidget *vectorize;
 } dt_iop_rasterfile_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self,
@@ -150,6 +152,82 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
   roi_in->height = piece->buf_in.height;
+}
+
+static void _trans_pts(dt_iop_module_t *self,
+                       const dt_rasterfile_cache_t *cd,
+                       float p[2])
+{
+  const dt_image_t *const image = &(self->dev->image_storage);
+
+  const float iwidth = image->width;
+  const float iheight = image->height;
+  const float pwidth = image->p_width;
+  const float pheight = image->p_height;
+  const float cx = image->crop_x;
+  const float cy = image->crop_y;
+
+  const float xscale = pwidth / (float)cd->width;
+  const float yscale = pheight / (float)cd->height;
+
+  float posx = p[0] * xscale;
+  float posy = p[1] * yscale;
+
+  posx += cx;
+  posy += cy;
+
+  posx /= iwidth;
+  posy /= iheight;
+
+  p[0] = posx;
+  p[1] = posy;
+}
+
+static void _vectorize_button_clicked(GtkWidget *widget,
+                                      dt_iop_module_t *self)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+
+  dt_rasterfile_cache_t *cd = self->data;
+
+  dt_pthread_mutex_lock(&cd->lock);
+
+  GList *forms = ras2forms(cd->mask, cd->width, cd->height);
+
+  dt_pthread_mutex_unlock(&cd->lock);
+
+  const int nbform = g_list_length(forms);
+  if(nbform == 0)
+  {
+    dt_control_log(_("no mask extracted from the raster file\n"
+                     "make sure the masks have proper contrast"));
+  }
+  else
+  {
+    dt_control_log(ngettext("%d mask extracted from the raster file",
+                            "%d masks extracted from the raster file", nbform), nbform);
+
+    for(GList *l = forms;
+        l;
+        l = g_list_next(l))
+    {
+      dt_masks_form_t *form = l->data;
+      gui->creation_module = self;
+
+      for(GList *p = form->points; p; p = g_list_next(p))
+      {
+        dt_masks_point_path_t *pts = p->data;
+
+        _trans_pts(self, cd, pts->corner);
+        _trans_pts(self, cd, pts->ctrl1);
+        _trans_pts(self, cd, pts->ctrl2);
+      }
+
+      dev->forms = g_list_append(dev->forms, form);
+      dt_dev_add_masks_history_item(dev, NULL, TRUE);
+    }
+  }
 }
 
 static float *_read_rasterfile(char *filename,
@@ -247,7 +325,8 @@ static float *_read_rasterfile(char *filename,
   float *mask = dt_iop_image_alloc(width, height, 1);
   if(!image || !mask)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+    dt_print(DT_DEBUG_ALWAYS,
+             "can't read raster mask file '%s'", filename ? filename : "???");
     dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
 
     dt_free_align(image);
@@ -378,6 +457,7 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
     }
     g_free(filepath);
     gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
+    gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
   }
   g_free(mfolder);
   g_object_unref(filechooser);
@@ -439,6 +519,7 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
       if(scale) dt_free_align(tmp);
     }
   }
+
   dt_pthread_mutex_unlock(&cd->lock);
   return res;
 }
@@ -613,6 +694,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_pthread_mutex_unlock(&cd->lock);
     if(other) dt_dev_reprocess_center(self->dev);
   }
+
+  gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -683,7 +766,19 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->file, _("the mask file path is saved with the image history"));
   g_signal_connect(G_OBJECT(g->file), "value-changed", G_CALLBACK(_file_callback), self);
 
-  dt_gui_box_add(self->widget, dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)));
+  // Vectorize button
+
+  g->vectorize = gtk_button_new_with_label(_("vectorize"));
+  gtk_widget_set_tooltip_text
+    (g->vectorize,
+     _("vectorize the current bitmap and creates corresponding"
+       " path masks in the mask manager"));
+  g_signal_connect(g->vectorize, "clicked",
+                   G_CALLBACK(_vectorize_button_clicked), self);
+
+  dt_gui_box_add(self->widget,
+                 dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)),
+                 g->vectorize);
 }
 
 #undef RASTERFILE_MAXFILE
