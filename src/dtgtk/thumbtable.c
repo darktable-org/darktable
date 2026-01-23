@@ -1772,8 +1772,11 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = l->data;
-    dt_thumbnail_reload_infos(th);
-    dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
+    if(th)
+    {
+      dt_thumbnail_reload_infos(th);
+      dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
+    }
   }
   dt_start_backthumbs_crawler();
 }
@@ -1807,7 +1810,8 @@ static void _dt_metadata_change_callback(gpointer instance,
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     dt_thumbnail_t *th = _thumbtable_get_thumb(table, imgid);
-    dt_thumbnail_reload_infos(th);
+    if(th)
+      dt_thumbnail_reload_infos(th);
   }
 
   g_list_free(imgs);
