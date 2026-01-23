@@ -82,7 +82,6 @@ double dt_control_job_get_progress(const dt_job_t *job);
 void dt_control_jobs_init(void);
 void dt_control_jobs_cleanup(void);
 int dt_control_jobs_pending(void);
-gboolean dt_control_all_running(void);
 
 gboolean dt_control_add_job(dt_job_queue_t queue_id, dt_job_t *job);
 gboolean dt_control_add_job_res(dt_job_t *job, const int32_t res);
