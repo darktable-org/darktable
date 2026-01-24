@@ -1659,6 +1659,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
 
 static int32_t _control_compress_history_job_run(dt_job_t *job)
 {
+  dt_stop_backthumbs_crawler(FALSE);
   dt_control_image_enumerator_t *params =
     (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->data;
@@ -1693,6 +1694,7 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
                              (GList*)params->data); // frees list of images
   params->data = NULL;
   dt_control_queue_redraw_center();
+  dt_start_backthumbs_crawler();
   if(missing)
     dt_control_log(ngettext("no history compression of %d image",
                             "no history compression of %d images", missing), missing);
@@ -1733,8 +1735,8 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
                              (GList*)params->data); // frees list of images
   params->data = NULL;
 
-  dt_start_backthumbs_crawler();
   dt_control_queue_redraw_center();
+  dt_start_backthumbs_crawler();
   return 0;
 }
 
