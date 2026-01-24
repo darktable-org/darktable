@@ -310,6 +310,10 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
+      // do not draw if the area is empty
+      if(dt_iop_color_picker_is_area_empty(sample->box))
+        continue;
+
       dt_boundingbox_t fbox;
       dt_color_picker_transform_box(dev, 2, sample->box, fbox, FALSE);
       x = fbox[0];
