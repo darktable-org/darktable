@@ -181,14 +181,7 @@ static void _vectorize_button_clicked(GtkWidget *widget,
 
     // add all forms into the mask manager
 
-    for(GList *l = forms;
-        l;
-        l = g_list_next(l))
-    {
-      dt_masks_form_t *form = l->data;
-      dev->forms = g_list_append(dev->forms, form);
-      dt_dev_add_masks_history_item(dev, NULL, TRUE);
-    }
+    dt_masks_register_forms(dev, forms);
   }
 }
 
