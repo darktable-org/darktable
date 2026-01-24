@@ -831,13 +831,16 @@ static void _dt_pref_change_callback(gpointer instance,
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = l->data;
-    th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
-    dt_thumbnail_reload_infos(th);
-    const float zoom_ratio = th->zoom_100 > 1
-      ? th->zoom / th->zoom_100
-      : table->zoom_ratio;
+    if(th)
+    {
+      th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+      dt_thumbnail_reload_infos(th);
+      const float zoom_ratio = th->zoom_100 > 1
+        ? th->zoom / th->zoom_100
+        : table->zoom_ratio;
 
-    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+      dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+    }
   }
   dt_get_sysresource_level();
   dt_opencl_update_settings();
