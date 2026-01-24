@@ -154,46 +154,17 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->height = piece->buf_in.height;
 }
 
-static void _trans_pts(dt_iop_module_t *self,
-                       const dt_rasterfile_cache_t *cd,
-                       float p[2])
-{
-  const dt_image_t *const image = &(self->dev->image_storage);
-
-  const float iwidth = image->width;
-  const float iheight = image->height;
-  const float pwidth = image->p_width;
-  const float pheight = image->p_height;
-  const float cx = image->crop_x;
-  const float cy = image->crop_y;
-
-  const float xscale = pwidth / (float)cd->width;
-  const float yscale = pheight / (float)cd->height;
-
-  float posx = p[0] * xscale;
-  float posy = p[1] * yscale;
-
-  posx += cx;
-  posy += cy;
-
-  posx /= iwidth;
-  posy /= iheight;
-
-  p[0] = posx;
-  p[1] = posy;
-}
-
 static void _vectorize_button_clicked(GtkWidget *widget,
                                       dt_iop_module_t *self)
 {
   dt_develop_t *dev = darktable.develop;
-  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
 
   dt_rasterfile_cache_t *cd = self->data;
 
   dt_pthread_mutex_lock(&cd->lock);
 
-  GList *forms = ras2forms(cd->mask, cd->width, cd->height);
+  const dt_image_t *const image = &(self->dev->image_storage);
+  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image);
 
   dt_pthread_mutex_unlock(&cd->lock);
 
@@ -208,22 +179,13 @@ static void _vectorize_button_clicked(GtkWidget *widget,
     dt_control_log(ngettext("%d mask extracted from the raster file",
                             "%d masks extracted from the raster file", nbform), nbform);
 
+    // add all forms into the mask manager
+
     for(GList *l = forms;
         l;
         l = g_list_next(l))
     {
       dt_masks_form_t *form = l->data;
-      gui->creation_module = self;
-
-      for(GList *p = form->points; p; p = g_list_next(p))
-      {
-        dt_masks_point_path_t *pts = p->data;
-
-        _trans_pts(self, cd, pts->corner);
-        _trans_pts(self, cd, pts->ctrl1);
-        _trans_pts(self, cd, pts->ctrl2);
-      }
-
       dev->forms = g_list_append(dev->forms, form);
       dt_dev_add_masks_history_item(dev, NULL, TRUE);
     }
