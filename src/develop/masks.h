@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -536,6 +536,9 @@ void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 /** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(const dt_develop_t *dev, dt_mask_id_t id);
+/** register forms into the mask manager */
+void dt_masks_register_forms(dt_develop_t *dev,
+                             GList *forms);
 
 /** read the forms from the db */
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid);
