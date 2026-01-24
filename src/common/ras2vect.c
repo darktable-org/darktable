@@ -68,7 +68,22 @@ static void _bm_free(potrace_bitmap_t *bm)
 
 #define SET_THRESHOLD 0.6f
 
+static inline void _scale_point(float p[2],
+                                const float xscale,
+                                const float yscale,
+                                const float cx,
+                                const float cy,
+                                const float iwidth,
+                                const float iheight)
+{
+  p[0] = ((p[0] * xscale) + cx) / iwidth;
+  p[1] = ((p[1] * yscale) + cy) / iheight;
+}
+
 static void _add_point(dt_masks_form_t *form,
+                       const dt_image_t *const image,
+                       const float width,
+                       const float height,
                        const float x,
                        const float y,
                        const float ctl1_x,
@@ -97,6 +112,23 @@ static void _add_point(dt_masks_form_t *form,
     bzpt->ctrl2[1] = y;
   }
 
+  if(image)
+  {
+    const float iwidth = image->width;
+    const float iheight = image->height;
+    const float pwidth = image->p_width;
+    const float pheight = image->p_height;
+    const float cx = image->crop_x;
+    const float cy = image->crop_y;
+
+    const float xscale = pwidth / (float)width;
+    const float yscale = pheight / (float)height;
+
+    _scale_point(bzpt->corner, xscale, yscale, cx, cy, iwidth, iheight);
+    _scale_point(bzpt->ctrl1, xscale, yscale, cx, cy, iwidth, iheight);
+    _scale_point(bzpt->ctrl2, xscale, yscale, cx, cy, iwidth, iheight);
+  }
+
   bzpt->state = DT_MASKS_POINT_STATE_USER;
   bzpt->border[0] = bzpt->border[1] = 0.f;
 
@@ -107,7 +139,8 @@ static uint32_t formnb = 0;
 
 GList *ras2forms(const float *mask,
                  const int width,
-                 const int height)
+                 const int height,
+                 const dt_image_t *const image)
 {
   GList *forms = NULL;
 
@@ -152,9 +185,9 @@ GList *ras2forms(const float *mask,
     const potrace_dpoint_t start = cv->c[n-1][2];
 
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
-    snprintf(form->name, sizeof(form->name), "path raster%d", ++formnb);
+    snprintf(form->name, sizeof(form->name), "path raster %d", ++formnb);
 
-    _add_point(form, start.x, start.y, -1, -1, -1, -1);
+    _add_point(form, image, width, height, start.x, start.y, -1, -1, -1, -1);
 
     for(int i = 0; i < n; i++)
     {
@@ -164,15 +197,15 @@ GList *ras2forms(const float *mask,
         const potrace_dpoint_t c1 = cv->c[i][1];
         const potrace_dpoint_t e  = cv->c[i][2];
 
-        _add_point(form, e.x, e.y, c0.x, c0.y, c1.x, c1.y);
+        _add_point(form, image, width, height, e.x, e.y, c0.x, c0.y, c1.x, c1.y);
       }
       else // POTRACE_CORNER
       {
         const potrace_dpoint_t v = cv->c[i][1];
         const potrace_dpoint_t e = cv->c[i][2];
 
-        _add_point(form, v.x, v.y, -1, -1, -1, -1);
-        _add_point(form, e.x, e.y, -1, -1, -1, -1);
+        _add_point(form, image, width, height, v.x, v.y, -1, -1, -1, -1);
+        _add_point(form, image, width, height, e.x, e.y, -1, -1, -1, -1);
       }
     }
 
