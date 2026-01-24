@@ -18,10 +18,16 @@
 
 #pragma once
 
-/* Returns a list of path forms after having vectorized the raster mask */
+/* Returns a list of path forms after having vectorized the raster mask.
+   The coordinates are either on mask space: (0 x 0) -> (width x height)
+   or if image is set (not NULL) on image spaces making the masks directly
+   usable on the corresponding image.
+
+*/
 GList *ras2forms(const float *mask,
                  const int width,
-                 const int height);
+                 const int height,
+                 const dt_image_t *const image);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
