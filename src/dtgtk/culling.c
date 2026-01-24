@@ -661,13 +661,13 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
   if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
-  { 
-    // we have to set again the selected image, because it was deselected 
+  {
+    // we have to set again the selected image, because it was deselected
     // during the previous GDK_BUTTON_PRESS event
     const dt_imgid_t old_selection = table->selection;
     table->selection = id;
     dt_view_manager_switch(darktable.view_manager, "darkroom");
-    if (id != old_selection) 
+    if (id != old_selection)
     {
       _update_selected_thumbnail(table, old_selection);
        dt_act_on_reset_cache(TRUE);
@@ -793,7 +793,7 @@ static gboolean _event_button_release(GtkWidget *widget,
 
     // now we update the thumbnail class to reflect the selected state
     _update_selected_thumbnail(table, old_sel);
-    
+
     // and we reset the cache
     dt_act_on_reset_cache(TRUE);
     dt_act_on_reset_cache(FALSE);
@@ -817,10 +817,16 @@ static void _dt_pref_change_callback(gpointer instance,
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = l->data;
-    th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
-    dt_thumbnail_reload_infos(th);
-    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
-    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+    if(th)
+    {
+      th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+      dt_thumbnail_reload_infos(th);
+      const float zoom_ratio = th->zoom_100 > 1
+        ? th->zoom / th->zoom_100
+        : table->zoom_ratio;
+
+      dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+    }
   }
   dt_get_sysresource_level();
   dt_opencl_update_settings();

@@ -1770,8 +1770,11 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = l->data;
-    dt_thumbnail_reload_infos(th);
-    dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
+    if(th)
+    {
+      dt_thumbnail_reload_infos(th);
+      dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
+    }
   }
   dt_start_backthumbs_crawler();
 }
