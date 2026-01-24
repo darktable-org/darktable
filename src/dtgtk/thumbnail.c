@@ -2229,6 +2229,7 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb,
                               const dt_thumbnail_overlay_t over,
                               const int timeout)
 {
+  if(!thumb) return;
   // if no change...
   if(thumb->over == over)
   {
@@ -2337,6 +2338,8 @@ float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
 // force the reload of image infos
 void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 {
+  if(!thumb) return;
+
   const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
@@ -2381,6 +2384,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
 {
+  if(!thumb) return;
   // we need to check also the reference count to be sure the surface
   // is not in an intermediate state
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
@@ -2392,7 +2396,7 @@ void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
 void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
                                 const gboolean selected)
 {
-  if(thumb->selected == selected)
+  if(!thumb || thumb->selected == selected)
     return;
 
   thumb->selected = selected;
