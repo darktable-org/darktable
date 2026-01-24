@@ -569,6 +569,7 @@ static void init_tab_general(GtkWidget *dialog,
 
 void dt_gui_preferences_show()
 {
+  dt_stop_backthumbs_crawler(FALSE);
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog =
     gtk_dialog_new_with_buttons(_("darktable preferences"), win,
@@ -633,6 +634,7 @@ void dt_gui_preferences_show()
   if(restart_required)
     dt_control_log(_("darktable needs to be restarted for settings to take effect"));
 
+  dt_start_backthumbs_crawler();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
