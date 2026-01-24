@@ -1791,16 +1791,9 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
 {
   if(!thumb) return;
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
-       || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
-    dt_thumbnail_reload_infos(thumb);
-  else
-  {
-    _image_get_infos(thumb);
-    _thumb_write_extension(thumb);
-    _thumb_update_icons(thumb);
-  }
+  _image_get_infos(thumb);
+  _thumb_write_extension(thumb);
+  _thumb_update_icons(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
 
