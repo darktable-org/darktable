@@ -225,14 +225,9 @@ static float *_read_rasterfile(char *filename,
 static int _check_extension(const struct dirent *namestruct)
 {
   const char *filename = namestruct->d_name;
-  int res = 0;
-  if(!filename || !filename[0]) return res;
-  char *p = g_strrstr(filename, ".");
-  if(!p) return res;
-  char *fext = g_ascii_strdown(g_strdup(p), -1);
-  if(!g_strcmp0(fext, ".pfm")) res = 1;
-  g_free(fext);
-  return res;
+  if(!filename || !filename[0]) return 0;
+  const char *p = g_strrstr(filename, ".");
+  return p && !g_ascii_strcasecmp(p, ".pfm");
 }
 
 static void _update_filepath(dt_iop_module_t *self)
