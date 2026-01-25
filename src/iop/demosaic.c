@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -515,25 +515,17 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->y = 0;
 }
 
-static inline int _snap_to_cfa(const int p, const uint32_t filters)
-{
-  const int snap = !filters ? 1 : filters != 9u ? 2 : 3;
-  return (p / snap) * snap;
-}
-
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
-  // always set position to closest top/left sensor pattern snap
-  const uint32_t filters = piece->pipe->dsc.filters;
-  roi_in->x = MAX(0, _snap_to_cfa(roi_in->x / roi_out->scale, filters));
-  roi_in->y = MAX(0, _snap_to_cfa(roi_in->y / roi_out->scale, filters));
+  roi_in->x = MAX(0, roi_out->x / roi_out->scale);
+  roi_in->y = MAX(0, roi_out->y / roi_out->scale);
 
-  roi_in->width = MAX(8, roi_in->width / roi_out->scale);
-  roi_in->height = MAX(8, roi_in->height / roi_out->scale);
+  roi_in->width = MAX(8, roi_out->width / roi_out->scale);
+  roi_in->height = MAX(8, roi_out->height / roi_out->scale);
   roi_in->scale = 1.0f;
 }
 
@@ -660,19 +652,10 @@ void process(dt_iop_module_t *self,
   const gboolean run_fast = pipe->type & (DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_PREVIEW);
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
 
-  uint8_t xtrans_new[6][6];
-  for(int ii = 0; ii < 6; ++ii)
-  {
-    for(int jj = 0; jj < 6; ++jj)
-    {
-      xtrans_new[jj][ii] = pipe->dsc.xtrans[(jj + roi_in->y) % 6][(ii + roi_in->x) % 6];
-    }
-  }
-
-  const uint8_t(*const xtrans)[6] = xtrans_new;
+  const uint8_t(*const xtrans)[6] = piece->xtrans;
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  const uint32_t filters = dt_rawspeed_crop_dcraw_filters(pipe->dsc.filters, roi_in->x, roi_in->y);
+  const uint32_t filters = piece->filters;
 
   const gboolean fullscale = _demosaic_full(piece, img, roi_out);
   const gboolean is_xtrans = filters == 9u;
@@ -928,17 +911,10 @@ int process_cl(dt_iop_module_t *self,
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean true_monochrome = dt_image_is_mono_sraw(img);
 
-  uint8_t xtrans[6][6];
-  for(int ii = 0; ii < 6; ++ii)
-  {
-    for(int jj = 0; jj < 6; ++jj)
-    {
-      xtrans[jj][ii] = pipe->dsc.xtrans[(jj + roi_in->y) % 6][(ii + roi_in->x) % 6];
-    }
-  }
+  uint8_t(*const xtrans)[6] = piece->xtrans;
   cl_mem dev_xtrans = NULL;
 
-  const uint32_t filters = dt_rawspeed_crop_dcraw_filters(pipe->dsc.filters, roi_in->x, roi_in->y);
+  const uint32_t filters = piece->filters;
   const gboolean fullscale = _demosaic_full(piece, img, roi_out);
   const gboolean is_xtrans = filters == 9u;
   const gboolean is_bayer = !is_xtrans && filters != 0 && !true_monochrome;
@@ -999,7 +975,7 @@ int process_cl(dt_iop_module_t *self,
 
   if(is_xtrans)
   {
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(xtrans), &xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), xtrans);
     if(!dev_xtrans) return err;
   }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
 #include "gui/color_picker_proxy.h"
+#include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 
 #include <assert.h>
 #include <stdint.h>
@@ -1232,6 +1233,22 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
   return stopper != DT_DEV_PIXELPIPE_STOP_NO;
 }
 
+void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
+{
+  dt_iop_module_t *module = piece->module;
+  if(module && module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW)
+  {
+    piece->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->dsc.filters, roi->x, roi->y);
+    for(int ii = 0; ii < 6; ++ii)
+    {
+      for(int jj = 0; jj < 6; ++jj)
+      {
+        piece->xtrans[jj][ii] = piece->pipe->dsc.xtrans[(jj + roi->y) % 6][(ii + roi->x) % 6];
+      }
+    }
+  }
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1277,6 +1294,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   const int cst_from = input_format->cst;
   const int cst_to = module->input_colorspace(module, pipe, piece);
   const int cst_out = module->output_colorspace(module, pipe, piece);
+
+  dt_dev_prepare_piece_cfa(piece, roi_in);
 
   if(cst_from != cst_to)
   {
@@ -2096,6 +2115,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
         if(dt_pipe_shutdown(pipe))
           return TRUE;
+
+        dt_dev_prepare_piece_cfa(piece, &roi_in);
 
         /* now call process_cl of module; module should emit
            meaningful messages in case of error */
