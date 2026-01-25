@@ -329,6 +329,13 @@ gboolean dt_opencl_use_pinned_memory(const int devid)
 void dt_opencl_write_device_config(const int devid)
 {
   if(devid < 0) return;
+
+  /* As we have floats as per-device parameters we keep track of current locale
+     and do conversions via "C" here and while reading device config
+  */
+  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
+
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
@@ -348,7 +355,8 @@ void dt_opencl_write_device_config(const int devid)
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'", dat, key);
   dt_conf_set_string(key, dat);
-
+  setlocale(LC_NUMERIC, locale);
+  
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid to support systems with two
   // similar cards.
@@ -362,6 +370,10 @@ void dt_opencl_write_device_config(const int devid)
 gboolean dt_opencl_read_device_config(const int devid)
 {
   if(devid < 0) return FALSE;
+
+  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
+
   dt_opencl_t *cl = darktable.opencl;
   dt_opencl_device_t *cldid = &cl->dev[devid];
   gchar key[256] = { 0 };
@@ -408,7 +420,10 @@ gboolean dt_opencl_read_device_config(const int devid)
       dt_print(DT_DEBUG_OPENCL,
                "[dt_opencl_read_device_config] malformed data '%s' for '%s'", dat, key);
     }
+    setlocale(LC_NUMERIC, locale);
   }
+
+
   // do some safety housekeeping
   if((cldid->unified_fraction < 0.05f) || (cldid->unified_fraction > 0.5f))
     cldid->unified_fraction = 0.25f;
