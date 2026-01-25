@@ -2745,8 +2745,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
         {
           dt_gui_add_class(th->w_main, "dt_last_active");
           th->active = FALSE;
-          // force reload of information to get latest from darkroom
-          dt_thumbnail_reload_infos(th);
+          dt_thumbnail_update_infos(th);
         }
       }
       g_slist_free(darktable.view_manager->active_images);

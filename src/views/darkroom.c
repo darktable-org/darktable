@@ -1114,7 +1114,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
         LUA_ASYNC_DONE);
 #endif
     // update the lighttable metadata_view with any changes
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED);
   }
 
   // clean the undo list
@@ -3203,7 +3203,7 @@ void leave(dt_view_t *self)
         LUA_ASYNC_DONE);
 #endif
     // update the lighttable metadata_view with any changes
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED);
   }
   else
     dt_image_synch_xmp(imgid);
