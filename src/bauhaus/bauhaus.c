@@ -2189,6 +2189,8 @@ static void _draw_color_wheel(dt_bauhaus_widget_t *w,
     _show_pango_text(w, c, cr, "-90°",  tp,   -th/2, 0, TRUE,  FALSE, 0, FALSE, FALSE, NULL, NULL);
     _show_pango_text(w, c, cr,  "90°", -tp,   -th/2, 0, FALSE, FALSE, 0, FALSE, FALSE, NULL, NULL);
     _show_pango_text(w, c, cr, "180°", -tw/2, -tp,   0, FALSE, FALSE, 0, FALSE, FALSE, NULL, NULL);
+
+    cairo_set_source_rgba(cr, fg_color->red, fg_color->green, fg_color->blue, fg_color->alpha * .5);
   }
   cairo_arc(cr, .0, .0, r * .5, 0, 2.0 * M_PI);
   cairo_fill(cr);
