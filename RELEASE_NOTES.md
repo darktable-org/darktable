@@ -108,6 +108,8 @@ changes (where available).
   just been ignored. To avoid confusion, the checkbox is now hidden in
   the darkroom view.
 
+- Fixes resets to default OpenCL per device setting.
+
 ## Lua
 
 ### API Version
