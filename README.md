@@ -339,11 +339,11 @@ sudo cmake --install .
 
 ##### macOS
 
-See [Homebrew](https://github.com/darktable-org/darktable/blob/master/packaging/macosx/BUILD_hb.txt) or [MacPorts](https://github.com/darktable-org/darktable/blob/master/packaging/macosx/BUILD.txt) instructions.
+See [Homebrew](packaging/macosx/BUILD_hb.txt) or [MacPorts](packaging/macosx/BUILD.txt) instructions.
 
 ##### Windows
 
-See [these instructions](https://github.com/darktable-org/darktable/tree/master/packaging/windows).
+See [these instructions](packaging/windows/README.md).
 
 ### Using
 
