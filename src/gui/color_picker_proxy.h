@@ -42,7 +42,9 @@ typedef enum _iop_color_picker_flags_t
   // all pickers sample input, only ones with this flag set sample output
   DT_COLOR_PICKER_IO = 1 << 3,
   // don't auto-expand the area, wait for user selection via dragging
-  DT_COLOR_PICKER_NO_AUTO = 1 << 4
+  DT_COLOR_PICKER_NO_AUTO = 1 << 4,
+  // only invoke the callback when the user releases the button
+  DT_COLOR_PICKER_CALLBACK_ONLY_WHEN_DONE = 1 << 5
 } dt_iop_color_picker_flags_t;
 
 typedef struct dt_iop_color_picker_t

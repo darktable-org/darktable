@@ -3550,13 +3550,24 @@ int button_pressed(dt_view_t *self,
         }
         else
         {
-          const float dx = 0.02f;
-          const float dy = dx * (float)dev->full.pipe->processed_width / (float)dev->full.pipe->processed_height;
-          const dt_boundingbox_t fbox = { zoom_x - dx,
-                                          zoom_y - dy,
-                                          zoom_x + dx,
-                                          zoom_y + dy };
-          dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
+          dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+
+          if(picker && (picker->flags & DT_COLOR_PICKER_NO_AUTO))
+          {
+            // don't create a box around the starting point; the user has to explicitly select an area by dragging
+            const dt_boundingbox_t fbox = { zoom_x, zoom_y, zoom_x, zoom_y };
+            dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
+          }
+          else
+          {
+            const float dx = 0.02f;
+            const float dy = dx * (float)dev->full.pipe->processed_width / (float)dev->full.pipe->processed_height;
+            const dt_boundingbox_t fbox = { zoom_x - dx,
+                                            zoom_y - dy,
+                                            zoom_x + dx,
+                                            zoom_y + dy };
+            dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
+          }
         }
         dt_control_change_cursor(GDK_FLEUR);
       }

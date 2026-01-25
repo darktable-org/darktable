@@ -75,7 +75,7 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
 
 gboolean dt_iop_color_picker_is_area_empty(const dt_pickerbox_t box)
 {
-  return (fabsf(box[2] - box[0]) < 1e-5f || fabsf(box[3] - box[1]) < 1e-5f);
+  return (fabsf(box[2] - box[0]) < 1e-3f || fabsf(box[3] - box[1]) < 1e-3f);
 }
 
 static gboolean _record_point_area(dt_iop_color_picker_t *self)
@@ -324,6 +324,11 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
   // FIXME: is this overdoing it? see #14812
   pipe->changed |= DT_DEV_PIPE_REMOVE;
   pipe->cache_obsolete = TRUE;
+
+  if((picker->flags & DT_COLOR_PICKER_CALLBACK_ONLY_WHEN_DONE) && darktable.control->button_down)
+  {
+    return;
+  }
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))
