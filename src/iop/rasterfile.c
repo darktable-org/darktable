@@ -392,18 +392,16 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     const gboolean within = (strlen(filepath) > strlen(mfolder))
-                        && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
+                         && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
     if(within)
     {
       char *relativepath = g_path_get_dirname(filepath);
-      const int rplen = strlen(relativepath);
-      memcpy(p->path, relativepath, rplen);
-      p->path[rplen] = '\0';
+      g_strlcpy(p->path, relativepath, sizeof(p->path));
       g_free(relativepath);
 
-      const int flen = strlen(filepath) - rplen - 1;
-      memcpy(p->file, filepath + rplen + 1, flen);
-      p->file[flen] = '\0';
+      char *bname = g_path_get_basename(filepath);
+      g_strlcpy(p->file, bname, sizeof(p->file));
+      g_free(bname);
 
       _update_filepath(self);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -633,8 +631,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   self->default_enabled = FALSE;
   dt_iop_rasterfile_params_t *dp = self->default_params;
-  memset(dp->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  memset(dp->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
+  memset(dp->path, 0, sizeof(dp->path));
+  memset(dp->file, 0, sizeof(dp->file));
 }
 
 void distort_mask(dt_iop_module_t *self,
@@ -689,8 +687,8 @@ void init(dt_iop_module_t *self)
   dt_iop_default_init(self);
 
   dt_iop_rasterfile_params_t *d = self->default_params;
-  memset(d->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  memset(d->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
+  memset(d->path, 0, sizeof(d->path));
+  memset(d->file, 0, sizeof(d->file));
 
   /*
     Implementation note and reminder:
