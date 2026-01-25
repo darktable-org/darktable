@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2026 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 
 #define CAPTURE_KERNEL_ALIGN 32
 #define CAPTURE_GAUSS_FRACTION 0.01f
+#define CAPTURE_SAME_RADIUS 0.04f
 #define CAPTURE_YMIN 0.001f
 #define CAPTURE_CFACLIP 0.9f
 #define CAPTURE_SMALL 0.66f
@@ -217,12 +218,12 @@ static float _calcRadiusMono(const float *in,
   {
     for(int col = 5; col < width - 4; col += 2)
     {
-      const float *cfa = in + 4*(row*width + col);
+      const float *cfa = in + row*width + col;
       const float val00 = cfa[0];
       if(val00 > RAWEPS)
       {
-        const float val1m1 = cfa[4*(width-1)];
-        const float val1p1 = cfa[4*(width+1)];
+        const float val1m1 = cfa[width-1];
+        const float val1p1 = cfa[width+1];
         const float maxVal0 = MAX(val00, val1m1);
         if(val1m1 > RAWEPS && maxVal0 > lowerLimit)
         {
@@ -232,12 +233,12 @@ static float _calcRadiusMono(const float *in,
             gboolean clipped = FALSE;
             if(maxVal0 == val00)
             {
-              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+              if(MAX(MAX(cfa[-width-1], cfa[-width+1]), val1p1) >= upperLimit)
                 clipped = TRUE;
             }
             else
             {
-              if(MAX(MAX(MAX(cfa[-8], val00), cfa[8*width-8]), cfa[8*width]) >= upperLimit)
+              if(MAX(MAX(MAX(cfa[-2], val00), cfa[2*width-2]), cfa[2*width]) >= upperLimit)
                 clipped = TRUE;
             }
             if(!clipped)
@@ -253,12 +254,12 @@ static float _calcRadiusMono(const float *in,
           {
             if(maxVal1 == val00)
             { // check for influence by clipped green in neighborhood
-              if(MAX(MAX(cfa[4*(-width-1)], cfa[4*(-width+1)]), val1p1) >= upperLimit)
+              if(MAX(MAX(cfa[-width-1], cfa[-width+1]), val1p1) >= upperLimit)
                 continue;
             }
             else
             {
-              if(MAX(MAX(MAX(val00, cfa[8]), cfa[8*width]), cfa[8*width+8]) >= upperLimit)
+              if(MAX(MAX(MAX(val00, cfa[2]), cfa[2*width]), cfa[2*width+2]) >= upperLimit)
                 continue;
             }
             maxRatio = maxVal1 / minVal;
@@ -402,11 +403,16 @@ static float _calcRadiusXtrans(const float *in,
 }
 
 static float _calc_auto_radius(float *const in,
-                               const int width,
-                               const int height,
+                               const dt_image_t *img,
+                               const dt_iop_roi_t *const roi,
                                const uint32_t filters,
                                const uint8_t(*const xtrans)[6],
-                               const dt_iop_buffer_dsc_t *dsc)
+                               const dt_iop_buffer_dsc_t *dsc,
+                               gboolean *reliable,
+                               int *xpos,
+                               int *ypos,
+                               int *mwidth,
+                               int *mheight)
 {
   // calculating the radius should be done on sensor data so we need this extra step
   const gboolean wbon = dsc->temperature.enabled;
@@ -414,42 +420,84 @@ static float _calc_auto_radius(float *const in,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[1]) : 1.0f,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[2]) : 1.0f, 1.0f };
 
-  float *input = wbon ? dt_iop_image_alloc(width, height, 1) : in;
+  const int iwidth = roi->width;
+  const int iheight = roi->height;
+  const int pwidth = img->p_width;
+  const int pheight = img->p_height;
+
+  /* We only use the centre 60% of CFA data assuming this to be the sharp part of the lens.
+     Set left-top displacements and possibly reduce dimension
+  */
+  const int dx = (roi->x < pwidth / 5)  ? 0.2f * (pwidth - roi->x) : 0;
+  const int dy = (roi->y < pheight / 5) ? 0.2f * (pheight - roi->y) : 0;
+  const int owidth = MIN(iwidth - dx,   0.8f * pwidth - roi->x - dx);
+  const int oheight = MIN(iheight - dy, 0.8f * pheight - roi->y - dy);
+
+  *xpos = dx + roi->x;
+  *ypos = dy + roi->y;
+  *mwidth = owidth;
+  *mheight = oheight;
+  *reliable = FALSE;
+
+  if((((float)owidth / (float)pwidth) < 0.2f ) || (((float)oheight / (float)pheight) < 0.2f))
+    return 0.5f;
+
+  float *input = dt_iop_image_alloc(owidth, oheight, 1);
+  if(!input)
+    return 0.5f;
+
   if(wbon)
   {
     if(filters == 9u)
     {
       DT_OMP_FOR(collapse(2))
-      for(int row = 0; row < height; row++)
+      for(int row = 0; row < oheight; row++)
       {
-        for(int col = 0; col < width; col++)
+        for(int col = 0; col < owidth; col++)
         {
-          const size_t k = (size_t)row * width + col;
-          input[k] = in[k] * coeff[FCNxtrans(row, col, xtrans)];
+          const size_t ko = (size_t)row * owidth + col;
+          const size_t ki =  (size_t)(row + dy) * iwidth + col + dx;
+          input[ko] = in[ki] * coeff[FCNxtrans(row, col, xtrans)];
         }
       }
     }
     else
     {
       DT_OMP_FOR(collapse(2))
-      for(int row = 0; row < height; row++)
+      for(int row = 0; row < oheight; row++)
       {
-        for(int col = 0; col < width; col++)
+        for(int col = 0; col < owidth; col++)
         {
-          const size_t k = (size_t)row * width + col;
-          input[k] = in[k] * coeff[FC(row, col, filters)];
+          const size_t ko = (size_t)row * owidth + col;
+          const size_t ki =  (size_t)(row + dy) * iwidth + col + dx;
+          input[ko] = in[ki] * coeff[FC(row, col, filters)];
         }
+      }
+    }
+  }
+  else // monochrome, only take one channel
+  {
+    DT_OMP_FOR(collapse(2))
+    for(int row = 0; row < oheight; row++)
+    {
+      for(int col = 0; col < owidth; col++)
+      {
+        const size_t ko = (size_t)row * owidth + col;
+        const size_t ki =  (size_t)4*((row + dy) * iwidth + col + dx);
+        input[ko] = in[ki];
       }
     }
   }
 
   const float radius =
-              !filters  ? _calcRadiusMono(input, width, height)
+              !filters  ? _calcRadiusMono(input, owidth, oheight)
                         : filters != 9u
-                          ? _calcRadiusBayer(input, width, height, filters)
-                          : _calcRadiusXtrans(input, width, height, xtrans);
+                          ? _calcRadiusBayer(input, owidth, oheight, filters)
+                          : (0.2f + _calcRadiusXtrans(input, owidth, oheight, xtrans));
 
-  if(in != input) dt_free_align(input);
+  dt_free_align(input);
+
+  *reliable = TRUE;
   return CLAMP(radius, 0.0f, 1.5f);
 }
 
@@ -710,31 +758,30 @@ static void _modify_blend(float *blend,
 static void _capture_radius(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *const piece,
                             float *const in,
-                            const int width,
-                            const int height,
+                            const dt_iop_roi_t *const roi,
                             const uint8_t (*const xtrans)[6],
                             const uint32_t filters)
 {
   dt_iop_demosaic_params_t *p = self->params;
   const dt_image_t *img = &self->dev->image_storage;
-  const gboolean reliable = ((float)width / (float)img->p_width) > 0.5f
-                      &&  ((float)height / (float)img->p_height) > 0.5f;
-  const gboolean enough = width > 200 && height > 200;
 
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
-  const float radius = 0.01f * (int)(enough ? 100.0f * _calc_auto_radius(in, width, height, filters, xtrans, dsc) : 50);
-  const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_GAUSS_FRACTION);
 
-  dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-      pipe, self, DT_DEVICE_NONE, NULL, NULL,
-      "%sradius=%.2f from %s image data is %sreliable",
-      same_radius ? "unchanged" : "", radius,
-      enough ? "enough" : "small",
-      reliable ? "" : "not ");
+  gboolean reliable;
+  int px, py, dx, dy;
+  const float radius = _calc_auto_radius(in, img, roi, filters, xtrans, dsc, &reliable, &px, &py, &dx, &dy);
+  const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_SAME_RADIUS);
+
+  dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
+      pipe, self, DT_DEVICE_NONE, roi, NULL,
+      "%s radius=%.2f is %sreliable at (%d/%d) %dx%d",
+      same_radius ? "same" : "new", radius,
+      reliable ? "" : "NOT ",
+      px, py, dx, dy);
 
   if(fullpipe && g)
   {
@@ -942,8 +989,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
 static void _capture_radius_cl(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *const piece,
                               const cl_mem dev_in,
-                              const int width,
-                              const int height,
+                              const dt_iop_roi_t *const roi,
                               const uint8_t (*const xtrans)[6],
                               const uint32_t filters,
                               const gboolean mono)
@@ -951,18 +997,18 @@ static void _capture_radius_cl(dt_iop_module_t *self,
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   const int ch = mono ? 4 : 1;
-  float *in = dt_iop_image_alloc(width, height, ch);
+  float *in = dt_iop_image_alloc(roi->width, roi->height, ch);
   if(!in) goto finish;
 
-  err = dt_opencl_copy_device_to_host(pipe->devid, in, dev_in, width, height, sizeof(float) * ch);
+  err = dt_opencl_copy_device_to_host(pipe->devid, in, dev_in, roi->width, roi->height, sizeof(float) * ch);
   if(err == CL_SUCCESS)
-    _capture_radius(self, piece, in, width, height, xtrans, filters);
+    _capture_radius(self, piece, in, roi, xtrans, filters);
 
   finish:
 
   if(err != CL_SUCCESS)
-    dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-            pipe, self, pipe->devid, NULL, NULL, "calculation failed");
+    dt_print_pipe(DT_DEBUG_PIPE, filters == 9u ? "xtrans autoradius" : filters ? "bayer autoradius" : "mono autoradius",
+            pipe, self, pipe->devid, roi, NULL, "calculation failed");
   dt_free_align(in);
 }
 
