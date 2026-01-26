@@ -45,7 +45,7 @@ static void _list_remove_thumb(gpointer user_data)
 }
 
 // get the class name associated with the overlays mode
-static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
+static gchar *_thumbs_get_overlays_class(const dt_thumbnail_overlay_t over)
 {
   switch(over)
   {
@@ -293,7 +293,9 @@ static void _pos_compute_area(dt_thumbtable_t *table)
 }
 
 // get the position of the next image after the one at (x,y)
-static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
+static void _pos_get_next(dt_thumbtable_t *table,
+                          int *x,
+                          int *y)
 {
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -320,7 +322,9 @@ static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
   }
 }
 // get the position of the previous image after the one at (x,y)
-static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
+static void _pos_get_previous(dt_thumbtable_t *table,
+                              int *x,
+                              int *y)
 {
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -348,7 +352,8 @@ static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
 
 // compute thumb_size, thumbs_per_row and rows for the current widget size
 // return TRUE if something as changed (or forced) FALSE otherwise
-static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
+static gboolean _compute_sizes(dt_thumbtable_t *table,
+                               const gboolean force)
 {
   gboolean ret = FALSE; // return value to show if something as changed
   GtkAllocation allocation;
@@ -361,7 +366,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
     return FALSE;
   }
 
-  int old_size = table->thumb_size;
+  const int old_size = table->thumb_size;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
     const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
@@ -542,8 +547,10 @@ static void _thumb_move_or_create(dt_thumbtable_t *table,
 
     // we remember image margins for new thumbs (this limit flickering)
     dt_thumbnail_t *first = table->list->data;
-    gtk_widget_set_margin_start(thumb->w_image_box, gtk_widget_get_margin_start(first->w_image_box));
-    gtk_widget_set_margin_top(thumb->w_image_box, gtk_widget_get_margin_top(first->w_image_box));
+    gtk_widget_set_margin_start(thumb->w_image_box,
+                                gtk_widget_get_margin_start(first->w_image_box));
+    gtk_widget_set_margin_top(thumb->w_image_box,
+                              gtk_widget_get_margin_top(first->w_image_box));
     gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
   }
   else

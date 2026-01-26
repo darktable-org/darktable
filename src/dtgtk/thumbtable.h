@@ -113,40 +113,65 @@ typedef struct dt_thumbtable_t
 
 dt_thumbtable_t *dt_thumbtable_new();
 // reload all thumbs from scratch.
-void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force);
+void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
+                               const gboolean force);
 // change thumbtable parent widget
-void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode);
+void dt_thumbtable_set_parent(dt_thumbtable_t *table,
+                              GtkWidget *new_parent,
+                              const dt_thumbtable_mode_t mode);
 // get/set offset (and redraw if needed)
 int dt_thumbtable_get_offset(dt_thumbtable_t *table);
-gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
+gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table,
+                                  const int offset,
+                                  const gboolean redraw);
 // set offset at specific imageid (and redraw if needed)
-gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, dt_imgid_t imgid, gboolean redraw);
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table,
+                                        const dt_imgid_t imgid,
+                                        const gboolean redraw);
 
 // fired when the zoom level change
-void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom);
+void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
+                                const int oldzoom,
+                                const int newzoom);
 
 // ensure that the mentioned image is visible by moving the view if needed
-gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, dt_imgid_t imgid);
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table,
+                                               const dt_imgid_t imgid);
 // check if the mentioned image is visible
-gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, dt_imgid_t imgid);
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table,
+                                              const dt_imgid_t imgid);
 
-// drag & drop receive function - handles dropping of files in the center view (files are added to the library)
-void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, dt_thumbtable_t *table);
+// drag & drop receive function - handles dropping of files in the
+// center view (files are added to the library)
+void dt_thumbtable_event_dnd_received(GtkWidget *widget,
+                                      GdkDragContext *context,
+                                      const gint x,
+                                      const gint y,
+                                      GtkSelectionData *selection_data,
+                                      const guint target_type,
+                                      const guint time,
+                                      dt_thumbtable_t *table);
 
 // move by key actions.
 // this key accels are not managed here but inside view
-gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
+gboolean dt_thumbtable_key_move(dt_thumbtable_t *table,
+                                const dt_thumbtable_move_t move,
+                                const gboolean select);
 
 // ensure the first image in collection as no offset (is positioned on top-left)
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // scrollbar change
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y);
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table,
+                                     const float x,
+                                     const float y);
 
 // change the type of overlays that should be shown (over or under the image)
-void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);
+void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table,
+                                     const dt_thumbnail_overlay_t over);
 // change the timeout of the overlays block
-void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout);
+void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table,
+                                              const int timeout);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
