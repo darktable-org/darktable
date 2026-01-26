@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,11 +23,16 @@ typedef enum dt_distance_transform_t
 } dt_distance_transform_t;
 
 #define DT_DISTANCE_TRANSFORM_MAX (1e20)
-float dt_image_distance_transform(float *const src, float *const out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode);
+
+float dt_image_distance_transform(float *const src,
+                                  float *const out,
+                                  const size_t width,
+                                  const size_t height,
+                                  const float clip,
+                                  const dt_distance_transform_t mode);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

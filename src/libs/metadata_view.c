@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -257,9 +257,11 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
 
 // helper which eliminates non-printable characters from a string
 // strings which are already in valid UTF-8 are retained.
-static void _filter_non_printable(char *string, size_t length)
+static void _filter_non_printable(char *string,
+                                  const size_t length)
 {
-  /* explicitly tell the validator to ignore the trailing nulls, otherwise this fails */
+  /* explicitly tell the validator to ignore the trailixsng nulls,
+   * otherwise this fails */
   if(g_utf8_validate(string, -1, 0)) return;
 
   unsigned char *str = (unsigned char *)string;
@@ -274,7 +276,8 @@ static void _filter_non_printable(char *string, size_t length)
   }
 }
 
-static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_module_t *self)
+static dt_lib_metadata_info_t *_get_metadata_per_index(const int index,
+                                                       dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
@@ -286,7 +289,9 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
   return NULL;
 }
 
-static void _metadata_update_markup(const gint32 i, const char *const format, dt_lib_module_t *self)
+static void _metadata_update_markup(const gint32 i,
+                                    const char *const format,
+                                    dt_lib_module_t *self)
 {
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
   dt_lib_metadata_view_t *d = self->data;
@@ -298,7 +303,9 @@ static void _metadata_update_markup(const gint32 i, const char *const format, dt
 }
 
 /* helper function for updating a metadata value */
-static void _metadata_update_value(const int i, const char *value, dt_lib_module_t *self)
+static void _metadata_update_value(const int i,
+                                   const char *value,
+                                   dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
   gboolean validated = g_utf8_validate(value, -1, NULL);
@@ -315,7 +322,9 @@ static void _metadata_update_value(const int i, const char *value, dt_lib_module
   }
 }
 
-static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_module_t *self)
+static void _metadata_update_tooltip(const int i,
+                                     const char *tooltip,
+                                     dt_lib_module_t *self)
 {
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
   if(m)
@@ -325,10 +334,14 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
   }
 }
 
-static void _metadata_update_timestamp(const int i, const GTimeSpan gts, dt_lib_module_t *self)
+static void _metadata_update_timestamp(const int i,
+                                       const GTimeSpan gts,
+                                       dt_lib_module_t *self)
 {
   char datetime[200];
-  const gboolean valid = gts ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE) : FALSE;
+  const gboolean valid = gts
+    ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE)
+    : FALSE;
   _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
@@ -346,7 +359,10 @@ static gint _lib_metadata_sort_index(gconstpointer a, gconstpointer b)
   return ma->index - mb->index;
 }
 
-static void _metadata_get_flags(const dt_image_t *const img, char *const text, char *const tooltip, const size_t tooltip_size)
+static void _metadata_get_flags(const dt_image_t *const img,
+                                char *const text,
+                                char *const tooltip,
+                                const size_t tooltip_size)
 {
 #define EMPTY_FIELD '.'
 #define FALSE_FIELD '.'
@@ -382,7 +398,9 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
   else
   {
     value[0] = '0' + stars;
-    tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
+    tooltip_parts[next_tooltip_part++] =
+      star_string =
+      g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
   }
 
 
@@ -545,7 +563,11 @@ void gui_update(dt_lib_module_t *self)
       if(!metadata->internal)
       {
         dt_util_str_cat(&metadata_subquery,
-                        "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = %d WHERE images.id in (%s)), ",
+                        "(SELECT COUNT(DISTINCT IFNULL(value,''))"
+                        " FROM images"
+                        " LEFT JOIN meta_data"
+                        "   ON meta_data.id = images.id"
+                        "      AND key = %d WHERE images.id in (%s)), ",
                         metadata->key,
                         images);
       }
@@ -565,45 +587,45 @@ void gui_update(dt_lib_module_t *self)
     // and the list of metadata fields defined by the enum and _labels[] array above.
     // clang-format off
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
-                                         "2, " //id always different
-                                         "COUNT(DISTINCT group_id), "
-                                         "COUNT(DISTINCT filename), "
-                                         "COUNT(DISTINCT version), "
-                                         "COUNT(DISTINCT film_id || '/' || filename), " //path
-                                         "COUNT(DISTINCT flags & 2048), " //local copy
-                                         "COUNT(DISTINCT import_timestamp), "
-                                         "COUNT(DISTINCT change_timestamp), "
-                                         "COUNT(DISTINCT export_timestamp), "
-                                         "COUNT(DISTINCT print_timestamp), "
-                                         "COUNT(DISTINCT flags), "
-                                         "COUNT(DISTINCT model_id), "
-                                         "COUNT(DISTINCT maker_id), "
-                                         "COUNT(DISTINCT lens_id), "
-                                         "COUNT(DISTINCT aperture), "
-                                         "COUNT(DISTINCT exposure), "
-                                         "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
-                                         "COUNT(DISTINCT IFNULL(exposure_program_id, '')), "
-                                         "COUNT(DISTINCT IFNULL(whitebalance_id, '')), "
-                                         "COUNT(DISTINCT IFNULL(flash_id, '')), "
-                                         "COUNT(DISTINCT IFNULL(metering_mode_id, '')), "
-                                         "COUNT(DISTINCT focal_length), "
-                                         "COUNT(DISTINCT focal_length) + COUNT(DISTINCT crop), "
-                                         "COUNT(DISTINCT crop), "
-                                         "COUNT(DISTINCT focus_distance), "
-                                         "COUNT(DISTINCT iso), "
-                                         "COUNT(DISTINCT datetime_taken), "
-                                         "COUNT(DISTINCT width), "
-                                         "COUNT(DISTINCT height), "
-                                         "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
-                                         "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
-                                         "COUNT(DISTINCT IFNULL(latitude, '')), "
-                                         "COUNT(DISTINCT IFNULL(longitude, '')), "
-                                         "COUNT(DISTINCT IFNULL(altitude, '')), "
-                                         "2, "  // placeholder for tags
-                                         "2, "  // placeholder for categories
-                                         "%s "  // metadata_subquery
-                                         "FROM main.images "
-                                         "WHERE id IN (%s)",
+                                   "2, " //id always different
+                                   "COUNT(DISTINCT group_id), "
+                                   "COUNT(DISTINCT filename), "
+                                   "COUNT(DISTINCT version), "
+                                   "COUNT(DISTINCT film_id || '/' || filename), " //path
+                                   "COUNT(DISTINCT flags & 2048), " //local copy
+                                   "COUNT(DISTINCT import_timestamp), "
+                                   "COUNT(DISTINCT change_timestamp), "
+                                   "COUNT(DISTINCT export_timestamp), "
+                                   "COUNT(DISTINCT print_timestamp), "
+                                   "COUNT(DISTINCT flags), "
+                                   "COUNT(DISTINCT model_id), "
+                                   "COUNT(DISTINCT maker_id), "
+                                   "COUNT(DISTINCT lens_id), "
+                                   "COUNT(DISTINCT aperture), "
+                                   "COUNT(DISTINCT exposure), "
+                                   "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
+                                   "COUNT(DISTINCT IFNULL(exposure_program_id, '')), "
+                                   "COUNT(DISTINCT IFNULL(whitebalance_id, '')), "
+                                   "COUNT(DISTINCT IFNULL(flash_id, '')), "
+                                   "COUNT(DISTINCT IFNULL(metering_mode_id, '')), "
+                                   "COUNT(DISTINCT focal_length), "
+                                   "COUNT(DISTINCT focal_length) + COUNT(DISTINCT crop), "
+                                   "COUNT(DISTINCT crop), "
+                                   "COUNT(DISTINCT focus_distance), "
+                                   "COUNT(DISTINCT iso), "
+                                   "COUNT(DISTINCT datetime_taken), "
+                                   "COUNT(DISTINCT width), "
+                                   "COUNT(DISTINCT height), "
+                                   "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
+                                   "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
+                                   "COUNT(DISTINCT IFNULL(latitude, '')), "
+                                   "COUNT(DISTINCT IFNULL(longitude, '')), "
+                                   "COUNT(DISTINCT IFNULL(altitude, '')), "
+                                   "2, "  // placeholder for tags
+                                   "2, "  // placeholder for categories
+                                   "%s "  // metadata_subquery
+                                   "FROM main.images "
+                                   "WHERE id IN (%s)",
                                    metadata_subquery, images);
     // clang-format on
 
@@ -613,11 +635,12 @@ void gui_update(dt_lib_module_t *self)
 
     sqlite3_stmt *stmt_tags = NULL;
     // clang-format off
-    gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid) "
-                                       "FROM main.tagged_images "
-                                       "JOIN data.tags "
-                                       "ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' "
-                                       "WHERE imgid in (%s) GROUP BY tagid", images);
+    gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid)"
+                                       " FROM main.tagged_images"
+                                       " JOIN data.tags"
+                                       " ON data.tags.id = main.tagged_images.tagid"
+                                       "   AND name NOT LIKE 'darktable|%%' "
+                                       " WHERE imgid in (%s) GROUP BY tagid", images);
     // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
     g_free(tag_query);
@@ -1165,7 +1188,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    dt_lib_metadata_info_t *m = meta->data;
+    const dt_lib_metadata_info_t *m = meta->data;
     dt_util_str_cat(&pref, "%s%s,", m->visible ? "" : "|", m->setting);
   }
   if(pref)
@@ -1202,8 +1225,10 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
     {
       // film roll jump to:
       if(d->filmroll_event && GTK_IS_WIDGET(d->filmroll_event))
-        g_signal_handlers_disconnect_by_func(d->filmroll_event, G_CALLBACK(_filmroll_clicked), NULL);
-      g_signal_connect(G_OBJECT(w_value), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+        g_signal_handlers_disconnect_by_func(d->filmroll_event,
+                                             G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(G_OBJECT(w_value), "button-press-event",
+                       G_CALLBACK(_filmroll_clicked), NULL);
       d->filmroll_event = G_OBJECT(w_value);
     }
 
@@ -1213,7 +1238,9 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
   }
 }
 
-static void _add_grid_row(dt_lib_metadata_info_t *m, int row, dt_lib_module_t *self)
+static void _add_grid_row(dt_lib_metadata_info_t *m,
+                          const int row,
+                          dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
 
@@ -1256,7 +1283,9 @@ static void _free_metadata_queue(dt_lib_metadata_info_t *m)
   g_free(m);
 }
 
-static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self)
+static void _metadata_changed(gpointer instance,
+                              const int type,
+                              dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
 
@@ -1269,7 +1298,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
   GList *new_metadata_keys = NULL;
 
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  
+
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
@@ -1297,7 +1326,8 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
 
       if(!found)
         // new metadata, store the new key
-        new_metadata_keys = g_list_prepend(new_metadata_keys, GINT_TO_POINTER(metadata->key));
+        new_metadata_keys = g_list_prepend(new_metadata_keys,
+                                           GINT_TO_POINTER(metadata->key));
     }
   }
 
@@ -1361,7 +1391,8 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
     _lib_metadata_refill_grid(self);
 }
 
-static void _apply_preferences(const char *prefs_list, dt_lib_module_t *self)
+static void _apply_preferences(const char *prefs_list,
+                               dt_lib_module_t *self)
 {
   if(!prefs_list || !prefs_list[0]) return;
   dt_lib_metadata_view_t *d = self->data;
@@ -1405,7 +1436,9 @@ static void _save_preferences(dt_lib_module_t *self)
   g_free(pref);
 }
 
-static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar *path_str, gpointer user_data)
+static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer,
+                                     gchar *path_str,
+                                     gpointer user_data)
 {
   GtkListStore *store = (GtkListStore *)user_data;
   GtkTreeIter iter;
@@ -1413,18 +1446,23 @@ static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar
   gboolean selected;
 
   gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, path);
-  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, DT_METADATA_PREF_COL_VISIBLE, &selected, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
+                     DT_METADATA_PREF_COL_VISIBLE, &selected, -1);
   gtk_list_store_set(store, &iter, DT_METADATA_PREF_COL_VISIBLE, !selected, -1);
 
   gtk_tree_path_free(path);
 }
 
-static void _drag_data_inserted(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void _drag_data_inserted(GtkTreeModel *tree_model,
+                                GtkTreePath *path,
+                                GtkTreeIter *iter,
+                                gpointer user_data)
 {
   _dndactive = TRUE;
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+void _menuitem_preferences(GtkMenuItem *menuitem,
+                           dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
 
@@ -1456,8 +1494,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *view = gtk_tree_view_new_with_model(model);
   g_object_unref(model);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer,
-                                                    "text", DT_METADATA_PREF_COL_NAME_L, NULL);
+  GtkTreeViewColumn *column =
+    gtk_tree_view_column_new_with_attributes(_("metadata"), renderer,
+                                             "text", DT_METADATA_PREF_COL_NAME_L, NULL);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   GtkWidget *header = gtk_tree_view_column_get_button(column);
@@ -1468,7 +1507,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_select_toggled_callback), store);
   column = gtk_tree_view_column_new_with_attributes(_("visible"), renderer,
-                                                    "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
+                                                    "active",
+                                                    DT_METADATA_PREF_COL_VISIBLE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   GtkTreePath *first = gtk_tree_path_new_first ();
   gtk_tree_view_set_cursor(GTK_TREE_VIEW(view), first, column, FALSE);
@@ -1479,7 +1519,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), NULL);
   GtkWidget *w = dt_gui_scroll_wrap(view);
   gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
+                                 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(w), FALSE);
   dt_gui_dialog_add(GTK_DIALOG(dialog), w);
 
@@ -1538,14 +1579,16 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_widget_destroy(dialog);
 }
 
-void set_preferences(void *menu, dt_lib_module_t *self)
+void set_preferences(void *menu,
+                     dt_lib_module_t *self)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
-void *get_params(dt_lib_module_t *self, int *size)
+void *get_params(dt_lib_module_t *self,
+                 int *size)
 {
   *size = 0;
   char *params = _get_current_configuration(self);
@@ -1554,7 +1597,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   return params;
 }
 
-int set_params(dt_lib_module_t *self, const void *params, int size)
+int set_params(dt_lib_module_t *self,
+               const void *params,
+               const int size)
 {
   if(!params) return 1;
 
@@ -1587,7 +1632,9 @@ void gui_init(dt_lib_module_t *self)
   d->grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(d->grid), DT_PIXEL_APPLY_DPI(5));
 
-  self->widget = dt_gui_vbox(dt_ui_resize_wrap(d->grid, 200, "plugins/lighttable/metadata_view/windowheight"));
+  self->widget = dt_gui_vbox
+    (dt_ui_resize_wrap(d->grid, 200,
+                       "plugins/lighttable/metadata_view/windowheight"));
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
@@ -1616,7 +1663,8 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_METADATA_UPDATE, _mouse_over_image_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_METADATA_CHANGED, _metadata_changed);
 
-  dt_action_register(DT_ACTION(self), N_("jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("jump to film roll"),
+                     _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1740,7 +1788,8 @@ static int lua_register_info(lua_State *L)
       lua_pop(L, 1);
     }
     // apply again preferences because it's already done
-    const char *pref = dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
+    const char *pref =
+      dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
     _apply_preferences(pref, self);
   }
   return 0;
@@ -1826,7 +1875,7 @@ static int lua_destroy_info(lua_State *L)
 void init(struct dt_lib_module_t *self)
 {
   lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  const int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_register_info, 1);
   dt_lua_gtk_wrap(L);
