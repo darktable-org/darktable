@@ -511,52 +511,80 @@ static gboolean _popup_scroll(GtkWidget *widget,
   return TRUE;
 }
 
-static void _window_moved_to_rect(GdkWindow *window,
-                                  GdkRectangle *flipped_rect,
-                                  GdkRectangle *final_rect,
-                                  gboolean flipped_x,
-                                  gboolean flipped_y,
-                                  gpointer user_data)
-{
-  darktable.bauhaus->popup.offcut += final_rect->y - flipped_rect->y;
-}
-
 static void _window_position(const int offset)
 {
   dt_bauhaus_popup_t *pop = &darktable.bauhaus->popup;
   int height = pop->position.height;
-
-  // On Xwayland gdk_screen_is_composited is TRUE but popups are opaque
-  // So we need to explicitly test for pure wayland
-#ifdef GDK_WINDOWING_WAYLAND
-  if(GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(pop->window)))
-  {
-    if(gtk_widget_get_visible(pop->window))
-    {
-      pop->offcut += offset;
-      return;
-    }
-    gtk_widget_set_app_paintable(pop->window, TRUE);
-    GdkScreen *screen = gtk_widget_get_screen(pop->window);
-    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
-    pop->offcut = -height;
-    height *= 2;
-    gtk_widget_set_visual(pop->window, visual);
-  }
-#endif
 
   pop->offset += offset;
 
   if(pop->offcut > 0)
     pop->offcut = MAX(0, pop->offcut + offset);
 
-  GdkWindow *window = gtk_widget_get_window(pop->window);
-  gdk_window_resize(window, pop->position.width, height - pop->offcut);
-  gdk_window_move_to_rect(window, &pop->position,
-                          GDK_GRAVITY_NORTH_WEST,
-                          GDK_GRAVITY_NORTH_WEST,
-                          GDK_ANCHOR_SLIDE_X | GDK_ANCHOR_RESIZE_Y,
-                          0, - pop->offset + pop->offcut);
+    dt_print(0, "setting popup offset to %d", offset);
+gtk_popover_set_offset(GTK_POPOVER(pop->window), 0, offset);
+gtk_popover_present(GTK_POPOVER(pop->window));
+
+
+
+/*
+GdkSurface *parent_surface = gtk_native_get_surface(parent_native);
+GdkPopup *popup = gdk_popup_new(...); // Create popup surface
+
+// Create layout with anchors
+GdkPopupLayout *layout = gdk_popup_layout_new(
+    &rect_in_parent,           // GdkRectangle* - anchor rect
+    GDK_GRAVITY_SOUTH_WEST,    // rect_anchor
+    GDK_GRAVITY_NORTH_WEST     // surface_anchor
+);
+
+// Set constraint adjustment (replaces GTK3's GDK_ANCHOR_* flags)
+gdk_popup_layout_set_anchor_hints(layout,
+    GDK_ANCHOR_FLIP_X |        // Flip horizontally if needed
+    GDK_ANCHOR_FLIP_Y |        // Flip vertically if needed  
+    GDK_ANCHOR_SLIDE_X |       // Slide horizontally if needed
+    GDK_ANCHOR_SLIDE_Y |       // Slide vertically if needed
+    GDK_ANCHOR_RESIZE_X |      // Resize horizontally if needed
+    GDK_ANCHOR_RESIZE_Y        // Resize vertically if needed
+);
+
+// Present the popup with this layout
+gdk_popup_present(popup, width, height, layout);
+gdk_popup_layout_unref(layout);
+*/
+  // GdkWindow *window = gtk_widget_get_window(pop->window);
+  // gdk_window_resize(window, pop->position.width, height - pop->offcut);
+  // gdk_window_move_to_rect(window, &pop->position,
+  //                         GDK_GRAVITY_NORTH_WEST,
+  //                         GDK_GRAVITY_NORTH_WEST,
+  //                         GDK_ANCHOR_SLIDE_X | GDK_ANCHOR_RESIZE_Y,
+  //                         0, - pop->offset + pop->offcut);
+  gtk_widget_set_size_request(pop->area, pop->position.width, height - pop->offcut);
+/*
+  gtk_popover_popup(GTK_POPOVER(pop->window));
+
+
+
+
+  GdkSurface *surface = gtk_native_get_surface(GTK_NATIVE(pop->window));
+  GdkPopup *popup = GDK_POPUP(surface);
+
+  // Create new layout with desired positioning
+  GdkRectangle anchor_rect = { -200, -200, 0, 0 };
+  GdkPopupLayout *layout = gdk_popup_layout_new(
+      &anchor_rect,
+      GDK_GRAVITY_NORTH_WEST,  // Anchor on rect
+      GDK_GRAVITY_NORTH_WEST   // Anchor on popup (same = overlap)
+  );
+
+  gdk_popup_layout_set_anchor_hints(layout,
+      GDK_ANCHOR_SLIDE_X | GDK_ANCHOR_SLIDE_Y |
+      GDK_ANCHOR_RESIZE_X | GDK_ANCHOR_RESIZE_Y);
+
+  // Reposition the popup
+  gdk_popup_present(popup, pop->position.width, pop->position.height, layout);
+  gdk_popup_layout_unref(layout);
+*/
 }
 
 static gboolean _window_motion_notify(GtkWidget *widget,
@@ -862,41 +890,6 @@ void dt_bauhaus_init()
   bh->skip_accel = 1;
   bh->combo_introspection = g_hash_table_new(NULL, NULL);
   bh->combo_list = g_hash_table_new(NULL, NULL);
-
-  pop->window = gtk_window_new(GTK_WINDOW_POPUP);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(pop->window);
-#endif
-  gtk_widget_set_size_request(pop->window, 1, 1);
-  gtk_window_set_keep_above(GTK_WINDOW(pop->window), TRUE);
-  gtk_window_set_modal(GTK_WINDOW(pop->window), TRUE);
-  gtk_window_set_type_hint(GTK_WINDOW(pop->window),
-                           GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-
-  pop->area = gtk_drawing_area_new();
-  // GTK4 g_object_set(pop->area, "expand", TRUE, NULL);
-  gtk_container_add(GTK_CONTAINER(pop->window), pop->area);
-  gtk_widget_set_can_focus(pop->area, TRUE);
-  gtk_widget_add_events(pop->area,
-                        GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
-                        | darktable.gui->scroll_mask);
-
-  GObject *window = G_OBJECT(pop->window);
-  GObject *area = G_OBJECT(pop->area);
-
-  gtk_widget_realize(pop->window);
-  g_signal_connect(gtk_widget_get_window(pop->window),
-                   "moved-to-rect", G_CALLBACK(_window_moved_to_rect), NULL);
-  g_signal_connect(window, "show", G_CALLBACK(_window_show), area);
-  g_signal_connect(window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
-  g_signal_connect(area, "draw", G_CALLBACK(_popup_draw), NULL);
-  g_signal_connect(area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
-  g_signal_connect(area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
-  g_signal_connect(area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
-  g_signal_connect(area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
-  g_signal_connect(area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
 
   dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"),
                    NULL, &_action_def_focus_slider);
@@ -2341,6 +2334,8 @@ static gboolean _popup_draw(GtkWidget *widget,
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
+  GdkRGBA color = {.red = 0.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f};
+  bg_color = gdk_rgba_copy(&color); // GTK4
   gtk_style_context_get_color(context, state, fg_color);
 
   // draw background
@@ -2886,9 +2881,19 @@ static void _popup_hide()
   _stop_cursor();
 }
 
+void
+_layout_callback (
+  GdkSurface* self,
+  gint width,
+  gint height,
+  gpointer user_data
+)
+{
+  dt_print(0, "layout called with width=%d height=%d x=%d y=%d anchor=%d", width, height, gdk_popup_get_position_x(GDK_POPUP(user_data)), gdk_popup_get_position_y(GDK_POPUP(user_data)), gdk_popup_get_surface_anchor(GDK_POPUP(user_data)));
+}
+
 static void _popup_show(GtkWidget *widget)
 {
-  return; // GTK4
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
@@ -2901,6 +2906,32 @@ static void _popup_show(GtkWidget *widget)
   _stop_cursor();
 
   _request_focus(w);
+
+  pop->window = gtk_popover_new();
+  gtk_widget_set_parent(pop->window, widget);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(pop->window);
+#endif
+  pop->area = gtk_drawing_area_new();
+  // GTK4 g_object_set(pop->area, "expand", TRUE, NULL);
+  gtk_popover_set_has_arrow(GTK_POPOVER(pop->window), FALSE);
+  gtk_popover_set_child(GTK_POPOVER(pop->window), pop->area);
+  gtk_widget_set_can_focus(pop->area, TRUE);
+  gtk_widget_add_events(pop->area,
+                        GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                        | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
+
+  g_signal_connect(pop->window, "show", G_CALLBACK(_window_show), pop->area);
+  g_signal_connect(pop->window, "motion-notify-event", G_CALLBACK(_window_motion_notify), NULL);
+  g_signal_connect(pop->area, "draw", G_CALLBACK(_popup_draw), NULL);
+  g_signal_connect(pop->area, "leave-notify-event", G_CALLBACK(_popup_leave_notify), NULL);
+  g_signal_connect(pop->area, "button-press-event", G_CALLBACK(_popup_button_press), NULL);
+  g_signal_connect(pop->area, "button-release-event", G_CALLBACK (_popup_button_release), NULL);
+  g_signal_connect(pop->area, "key-press-event", G_CALLBACK(_popup_key_press), NULL);
+  g_signal_connect(pop->area, "scroll-event", G_CALLBACK(_popup_scroll), NULL);
 
   // we update the popup padding defined in css
   GtkStyleContext *context = gtk_widget_get_style_context(pop->area);
@@ -3017,15 +3048,57 @@ static void _popup_show(GtkWidget *widget)
   p->height += pop->padding.top + pop->padding.bottom;
   pop->offcut = 0;
 
-  gtk_tooltip_trigger_tooltip_query(gdk_display_get_default());
-  if(top == main_window)
-    g_signal_connect(pop->window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
+  gtk_widget_trigger_tooltip_query(widget);
+  // if(top == main_window)
+  //   g_signal_connect(pop->window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
-  gtk_window_set_attached_to(GTK_WINDOW(pop->window), widget);
-  gdk_window_set_transient_for(gtk_widget_get_window(pop->window), top);
   _window_position(0);
-  gtk_widget_show_all(pop->window);
+/*
+  graphene_rect_t rect;
+  if(gtk_widget_compute_bounds(widget, widget, &rect))
+  {
+    // rect now contains the bounds of the button relative to itself
+    // For a popover, you typically want it pointing to the entire button
+    GdkRectangle gdk_rect = {
+      .x = rect.origin.x,
+      .y = rect.origin.y,
+      .width = rect.size.width,
+      .height = rect.size.height
+    };
+    gtk_popover_set_pointing_to(GTK_POPOVER(pop->window), &gdk_rect);
+    gtk_popover_set_position(GTK_POPOVER(pop->window), GTK_POS_BOTTOM);
+  }
+  gtk_widget_set_size_request(pop->area, p->width, p->height);
+  gtk_popover_popup(GTK_POPOVER(pop->window));
+  // gtk_widget_realize(pop->window);
+  // gtk_widget_map(pop->window);
   gtk_widget_grab_focus(pop->area);
+
+// gtk_popover_set_offset(GTK_POPOVER(pop->window), 0, -100);
+// gtk_popover_present(GTK_POPOVER(pop->window));
+
+
+
+  GdkSurface *surface = gtk_native_get_surface(GTK_NATIVE(pop->window));
+  GdkPopup *popup = GDK_POPUP(surface);
+
+  g_signal_connect(surface, "layout", G_CALLBACK(_layout_callback), popup);
+  // Create new layout with desired positioning
+  GdkRectangle anchor_rect = { 0, 0, p->width, p->height };
+  GdkPopupLayout *layout = gdk_popup_layout_new(
+      &anchor_rect,
+      GDK_GRAVITY_NORTH_WEST,  // Anchor on rect
+      GDK_GRAVITY_NORTH_WEST   // Anchor on popup (same = overlap)
+  );
+
+  gdk_popup_layout_set_anchor_hints(layout, GDK_ANCHOR_SLIDE | GDK_ANCHOR_RESIZE);
+
+  // Reposition the popup
+  gtk_popover_set_autohide(GTK_POPOVER(pop->window), TRUE);
+  gdk_popup_present(popup, p->width, p->height, layout);
+  gtk_popover_present(GTK_POPOVER(pop->window));
+  gdk_popup_layout_unref(layout);
+*/
 }
 
 static void _slider_add_step(GtkWidget *widget,
