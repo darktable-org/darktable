@@ -110,6 +110,10 @@ changes (where available).
 
 - Fixes resets to default OpenCL per device setting.
 
+- Fixed possibly outdated metadata when returning from darkroom. For
+  example if the image is cropped in darkroom, the metadata $(WIDTH.x)
+  and $(HEIGHT.x) where not correct on lighttable.
+
 ## Lua
 
 ### API Version
