@@ -1119,7 +1119,12 @@ static void _dt_image_info_changed_callback(gpointer instance,
   {
     if(GPOINTER_TO_INT(i->data) == thumb->imgid)
     {
-      dt_thumbnail_update_infos(thumb);
+      if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+        || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+        dt_thumbnail_reload_infos(thumb);
+      else
+        dt_thumbnail_update_infos(thumb);
       break;
     }
   }
