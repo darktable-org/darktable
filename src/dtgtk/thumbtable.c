@@ -1868,8 +1868,9 @@ static void _dt_mouse_over_image_callback(gpointer instance, dt_thumbtable_t *ta
       dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_NONE);
     }
 
-    // during dragging, we can "lost" the drag_thumb if the pointer goes out of the central view
-    // when the pointer is back, let's restore it
+    // during dragging, we can "lost" the drag_thumb if the pointer
+    // goes out of the central view when the pointer is back, let's
+    // restore it
     if(th->imgid == imgid
        && table->mode == DT_THUMBTABLE_MODE_ZOOM
        && table->dragging
@@ -2147,7 +2148,8 @@ static void _dt_collection_changed_callback(gpointer instance,
       dt_view_lighttable_change_offset(darktable.view_manager, FALSE, table->offset_imgid);
     else
     {
-      // if we are in culling or preview mode, ensure to refresh active images
+      // if we are in culling or preview mode, ensure to refresh
+      // active images.
       dt_view_lighttable_culling_preview_refresh(darktable.view_manager);
     }
 
@@ -2163,11 +2165,14 @@ static void _dt_collection_changed_callback(gpointer instance,
       }
     }
 
-    // if the previous hovered image isn't here anymore, try to hover "next" image
+    // if the previous hovered image isn't here anymore, try to hover
+    // "next" image.
     if(dt_is_valid_imgid(old_hover) && dt_is_valid_imgid(next))
     {
-      // except for darkroom when mouse is not in filmstrip (the active image primes)
-      if(table->mouse_inside || dt_view_get_current() != DT_VIEW_DARKROOM)
+      // except for darkroom when mouse is not in filmstrip (the
+      // active image primes).
+      if(table->mouse_inside
+         || dt_view_get_current() != DT_VIEW_DARKROOM)
       {
         in_list = FALSE;
         gboolean in_list_next = FALSE;
@@ -2188,7 +2193,8 @@ static void _dt_collection_changed_callback(gpointer instance,
   else
   {
     // otherwise we reset the offset to the wanted position or the beginning
-    const int nextpos = MAX(dt_conf_get_int("plugins/lighttable/collect/history_next_pos"), 1);
+    const int nextpos = MAX(dt_conf_get_int("plugins/lighttable/collect/history_next_pos"),
+                            1);
     table->offset = nextpos;
     table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/collect/history_pos0", nextpos);
@@ -2602,7 +2608,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       // (i.e. we don't get empty spaces in the very first row)
       offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
 
-      // ensure that we don't go up too far (we only want a space <thumb_size at the bottom)
+      // ensure that we don't go up too far (we only want a space
+      // <thumb_size at the bottom).
       if(table->offset != offset
          && offset > 1
          && table->thumbs_per_row > 1)
@@ -2648,7 +2655,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       }
     }
 
-    // let's create a hashtable of table->list in order to speddup search in next loop
+    // let's create a hashtable of table->list in order to speddup
+    // search in next loop.
     GHashTable *htable = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, _list_remove_thumb);
     for(const GList *l = table->list; l; l = g_list_next(l))
     {
@@ -2775,7 +2783,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
   }
 }
 
-// change thumbtable parent widget. Typically from center screen to filmstrip lib
+// change thumbtable parent widget. Typically from center screen to
+// filmstrip lib.
 void dt_thumbtable_set_parent(dt_thumbtable_t *table,
                               GtkWidget *new_parent,
                               const dt_thumbtable_mode_t mode)
@@ -3305,7 +3314,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
                                    const gboolean select)
 {
   // let's be sure that the current image is selected
-  dt_imgid_t baseid = dt_control_get_mouse_over_id();
+  const dt_imgid_t baseid = dt_control_get_mouse_over_id();
   if(dt_is_valid_imgid(baseid) && select)
     dt_selection_select(darktable.selection, baseid);
 
@@ -3363,7 +3372,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
     dt_selection_select_range(darktable.selection, thumb->imgid);
 
   // and we record new positions values
-  dt_thumbnail_t *first = table->list->data;
+  const dt_thumbnail_t *first = table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
@@ -3397,7 +3406,7 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
     return FALSE;
 
   // chained dereference is dangerous, but there was a check above in the code
-  dt_thumbnail_t *first = table->list->data;
+  const dt_thumbnail_t *first = table->list->data;
   const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
   if(offset == 0)
     return FALSE;
