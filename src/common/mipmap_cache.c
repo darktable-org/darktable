@@ -607,7 +607,7 @@ static void _mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry
   {
     dt_mipmap_buffer_dsc_t *dsc = (dt_mipmap_buffer_dsc_t *)entry->data;
     // don't write skulls:
-    if(dsc->width > 8 && dsc->height > 8)
+    if(dsc->width * dsc->height > MIN_IMG_PIXELS)
     {
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE)
       {
