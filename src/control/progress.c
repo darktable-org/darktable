@@ -28,7 +28,7 @@
 #endif
 
 #ifdef _WIN32
-#include <gdk/gdkwin32.h>
+// #include <gdk/gdkwin32.h>
 #ifndef ITaskbarList3_SetProgressValue
   #define ITaskbarList3_SetProgressValue(This,hwnd,ullCompleted,ullTotal) (This)->lpVtbl->SetProgressValue(This,hwnd,ullCompleted,ullTotal)
 #endif

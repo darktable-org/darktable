@@ -32,6 +32,7 @@
 #include "common/selection.h"
 #include "common/variables.h"
 #include "control/control.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
@@ -1356,11 +1357,11 @@ static gboolean _event_star_leave(GtkWidget *widget,
 }
 
 static void _event_main_leave(GtkEventControllerMotion *controller,
-                              dt_thumbnail_t *user_data)
+                              dt_thumbnail_t *thumb)
 {
-  GdkEventCrossing *event = (GdkEventCrossing *)gtk_get_current_event();
   // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
+  if(!gtk_event_controller_motion_contains_pointer(controller))
+    dt_control_set_mouse_over_id(NO_IMGID);
 }
 
 // we only want to specify that the mouse is hovereing the thumbnail

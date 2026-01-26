@@ -3106,7 +3106,6 @@ static void _toneequal_button_release(GtkGestureSingle *gesture,
       return;
     }
   }
-  return;
 }
 
 static gboolean area_scroll(GtkWidget *widget,

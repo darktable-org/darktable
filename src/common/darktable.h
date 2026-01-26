@@ -982,6 +982,550 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
   return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
+
+
+
+
+
+
+
+// GTK4 compatibility stubs
+
+
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-const-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wuninitialized"
+// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+// #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#pragma GCC diagnostic ignored "-Wswitch"
+
+typedef int gboolean;
+typedef struct {void *dummy;} *GdkAtom;
+typedef struct {void *dummy;} GdkWindow;
+typedef struct {void *dummy;} GdkScreen;
+typedef struct {void *dummy;} GtkContainer;
+typedef struct {void *dummy;} GtkMenu;
+typedef struct {void *dummy;} GtkMenuItem;
+typedef struct {void *dummy;} GtkMenuShell;
+typedef struct {void *dummy;} GdkDragContext;
+typedef struct {void *dummy;} GdkVisual;
+typedef struct {void *dummy;} GtkSelectionData;
+typedef struct {void *dummy;} GtkWidgetPath;
+typedef struct {void *dummy;} GdkKeymap;
+typedef struct {void *dummy;} GtkTargetList;
+typedef struct {void *dummy;} GtkFileChooserButton;
+typedef struct {void *dummy;} GtkRadioButton;
+
+typedef enum
+{
+  GDK_X_CURSOR 		  = 0,
+  GDK_BOTTOM_LEFT_CORNER  = 12,
+  GDK_BOTTOM_RIGHT_CORNER = 14,
+  GDK_BOTTOM_SIDE 	  = 16,
+  GDK_CROSS 		  = 30,
+  GDK_CROSSHAIR 	  = 34,
+  GDK_FLEUR 		  = 52,
+  GDK_HAND1 		  = 58,
+  GDK_LEFT_PTR 		  = 68,
+  GDK_LEFT_SIDE 	  = 70,
+  GDK_PIRATE 		  = 88,
+  GDK_PLUS 		  = 90,
+  GDK_QUESTION_ARROW 	  = 92,
+  GDK_RIGHT_SIDE 	  = 96,
+  GDK_SB_H_DOUBLE_ARROW   = 108,
+  GDK_SB_V_DOUBLE_ARROW   = 116,
+  GDK_TOP_LEFT_CORNER 	  = 134,
+  GDK_TOP_RIGHT_CORNER 	  = 136,
+  GDK_TOP_SIDE 		  = 138,
+  GDK_WATCH 		  = 150,
+  GDK_BLANK_CURSOR        = -2,
+} GdkCursorType;
+typedef struct GtkFileFilterInfo
+{
+  // GtkFileFilterFlags contains;
+
+  const gchar *filename;
+  const gchar *uri;
+  const gchar *display_name;
+  const gchar *mime_type;
+} GtkFileFilterInfo;
+typedef enum
+{
+  GTK_WINDOW_TOPLEVEL,
+  GTK_WINDOW_POPUP
+} GtkWindowType;
+
+typedef struct GtkTargetEntry
+{
+  gchar *target;
+  guint  flags;
+  guint  info;
+} GtkTargetEntry;
+typedef enum
+{
+  GTK_DRAG_RESULT_SUCCESS,
+  GTK_DRAG_RESULT_NO_TARGET,
+  GTK_DRAG_RESULT_USER_CANCELLED,
+  GTK_DRAG_RESULT_TIMEOUT_EXPIRED,
+  GTK_DRAG_RESULT_GRAB_BROKEN,
+  GTK_DRAG_RESULT_ERROR
+} GtkDragResult;
+typedef enum {
+  GTK_TARGET_SAME_APP = 1 << 0,    /*< nick=same-app >*/
+  GTK_TARGET_SAME_WIDGET = 1 << 1, /*< nick=same-widget >*/
+  GTK_TARGET_OTHER_APP = 1 << 2,   /*< nick=other-app >*/
+  GTK_TARGET_OTHER_WIDGET = 1 << 3 /*< nick=other-widget >*/
+} GtkTargetFlags;
+typedef enum {
+  GTK_DEST_DEFAULT_MOTION     = 1 << 0,
+  GTK_DEST_DEFAULT_HIGHLIGHT  = 1 << 1,
+  GTK_DEST_DEFAULT_DROP       = 1 << 2,
+  GTK_DEST_DEFAULT_ALL        = 0x07
+} GtkDestDefaults;
+typedef enum
+{
+  GDK_WINDOW_STATE_MAXIMIZED        = 1 << 2,
+  GDK_WINDOW_STATE_FULLSCREEN       = 1 << 4,
+  GDK_WINDOW_STATE_FOCUSED          = 1 << 7,
+} GdkWindowState;
+
+typedef struct GdkEventCrossing
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  GdkWindow *subwindow;
+  guint32 time;
+  gdouble x;
+  gdouble y;
+  gdouble x_root;
+  gdouble y_root;
+  GdkCrossingMode mode;
+  GdkNotifyType detail;
+  gboolean focus;
+  guint state;
+} GdkEventCrossing;
+typedef struct GdkEventScroll
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  guint32 time;
+  gdouble x;
+  gdouble y;
+  guint state;
+  GdkScrollDirection direction;
+  GdkDevice *device;
+  gdouble x_root, y_root;
+  gdouble delta_x;
+  gdouble delta_y;
+  guint is_stop : 1;
+} GdkEventScroll;
+typedef struct GdkEventKey
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  guint32 time;
+  guint state;
+  guint keyval;
+  gint length;
+  gchar *string;
+  guint16 hardware_keycode;
+  guint8 group;
+  guint is_modifier : 1;
+} GdkEventKey;
+typedef struct GdkEventButton
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  guint32 time;
+  gdouble x;
+  gdouble y;
+  gdouble *axes;
+  guint state;
+  guint button;
+  GdkDevice *device;
+  gdouble x_root, y_root;
+} GdkEventButton;
+
+typedef struct GdkEventConfigure
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  gint x, y;
+  gint width;
+  gint height;
+} GdkEventConfigure;
+typedef struct GdkEventMotion
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  guint32 time;
+  gdouble x;
+  gdouble y;
+  gdouble *axes;
+  guint state;
+  gint16 is_hint;
+  GdkDevice *device;
+  gdouble x_root, y_root;
+} GdkEventMotion;
+typedef struct GdkEventFocus
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  gint16 in;
+} GdkEventFocus;
+typedef struct GdkEventGrabBroken {
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  gboolean keyboard;
+  gboolean implicit;
+  GdkWindow *grab_window;
+} GdkEventGrabBroken;
+typedef struct GdkEventWindowState
+{
+  GdkEventType type;
+  GdkWindow *window;
+  gint8 send_event;
+  GdkWindowState changed_mask;
+  GdkWindowState new_window_state;
+} GdkEventWindowState;
+
+typedef union GdkEventOld
+{
+  GdkEventType		    type;
+  // GdkEventAny		    any;
+  // GdkEventExpose	    expose;
+  // GdkEventVisibility	    visibility;
+  GdkEventMotion	    motion;
+  GdkEventButton	    button;
+  // GdkEventTouch             touch;
+  GdkEventScroll            scroll;
+  GdkEventKey		    key;
+  GdkEventCrossing	    crossing;
+  GdkEventFocus		    focus_change;
+  GdkEventConfigure	    configure;
+  // GdkEventProperty	    property;
+  // GdkEventSelection	    selection;
+  // GdkEventOwnerChange  	    owner_change;
+  // GdkEventProximity	    proximity;
+  // GdkEventDND               dnd;
+  GdkEventWindowState       window_state;
+  // GdkEventSetting           setting;
+  GdkEventGrabBroken        grab_broken;
+  // GdkEventTouchpadSwipe     touchpad_swipe;
+  // GdkEventTouchpadPinch     touchpad_pinch;
+  // GdkEventPadButton         pad_button;
+  // GdkEventPadAxis           pad_axis;
+  // GdkEventPadGroupMode      pad_group_mode;
+} GdkEventOld;
+#define GdkEvent GdkEventOld
+
+#define g_date_time_get_day_of_month(...) 0
+#define gdk_cairo_surface_create_from_pixbuf(...) NULL
+#define gdk_cursor_new_from_surface(...) NULL
+#define gdk_device_get_axis_use(...) 0
+#define gdk_device_get_mode(...) 0
+#define gdk_device_get_n_axes(...) 0
+#define gdk_device_get_n_keys(...) 0
+#define gdk_device_get_state(...) NULL
+#define gdk_device_get_window_at_position(...) NULL
+#define gdk_display_get_default_cursor_size(...) 0
+#define gdk_display_get_monitor_at_window(...) NULL
+#define gdk_display_get_monitor(...) NULL
+#define gdk_display_get_n_monitors(...) 1
+#define gdk_drag_status(...)
+#define gdk_event_free(...)
+#define gdk_event_get_axis(...)
+#define gdk_event_get_keyval(...)
+#define gdk_event_get_pointer_emulated(...) 0
+#define gdk_event_get_source_device(...) NULL
+#define gdk_event_handler_set(...)
+#define GDK_IS_WAYLAND_DISPLAY(...) 0
+#define gdk_keymap_get_entries_for_keyval(...) 0
+#define gdk_keymap_get_for_display(...) NULL
+#define gdk_keymap_get_modifier_mask(...) 0
+#define gdk_keymap_get_modifier_state(...) 0
+#define gdk_keymap_translate_keyboard_state(...) 0
+#define gdk_monitor_get_workarea(...)
+#define gdk_monitor_get_geometry(...)
+#define gdk_property_get(...)
+#define gdk_screen_get_default(...) NULL
+#define gdk_screen_get_resolution(...) 0
+#define gdk_screen_get_rgba_visual(...) NULL
+#define gdk_screen_set_resolution(...)
+#define gdk_seat_get_slaves(...) NULL
+#define gdk_seat_grab(...)
+#define gdk_seat_ungrab(...)
+#define gdk_threads_add_idle(...)
+#define gdk_window_get_cursor(...) NULL
+#define gdk_window_get_device_position(...)
+#define gdk_window_get_display(...) NULL
+#define gdk_window_get_height(...) 0
+#define gdk_window_get_origin(...)
+#define gdk_window_get_state(...) 0
+#define gdk_window_get_toplevel(...) NULL
+#define gdk_window_get_user_data(...)
+#define gdk_window_get_width(...) 0
+#define gdk_window_move_to_rect(...)
+#define gdk_window_move(...)
+#define gdk_window_resize(...)
+#define gdk_window_set_cursor(...)
+#define gdk_window_set_transient_for(...)
+#define gtk_box_query_child_packing(...)
+#define gtk_box_set_center_widget(...)
+#define gtk_button_box_set_child_non_homogeneous(...)
+#define gtk_calendar_get_date(...)
+#define gtk_calendar_mark_day(...)
+#define gtk_calendar_select_month(...)
+#define gtk_check_menu_item_get_active(...) 0
+#define gtk_check_menu_item_new_with_label(...) NULL
+#define gtk_check_menu_item_set_active(...)
+#define gtk_check_menu_item_set_inconsistent(...)
+#define gtk_clipboard_set_text(...)
+#define gtk_container_get_focus_child(...) NULL
+#define gtk_container_set_border_width(...)
+#define gtk_container_set_focus_child(...)
+#define gtk_drag_begin_with_coordinates(...) NULL
+#define gtk_drag_dest_set(...)
+#define gtk_drag_dest_unset(...)
+#define gtk_drag_finish(...)
+#define gtk_drag_get_source_widget(...) NULL
+#define gtk_drag_set_icon_pixbuf(...)
+#define gtk_drag_set_icon_surface(...)
+#define gtk_drag_set_icon_widget(...)
+#define gtk_drag_source_set(...)
+#define gtk_drag_source_unset(...)
+#define gtk_entry_get_layout(...) NULL
+#define gtk_entry_set_max_width_chars(...)
+#define gtk_entry_set_width_chars(...)
+#define gtk_event_box_set_visible_window(...)
+#define gtk_file_chooser_add_filter(...)
+#define gtk_file_chooser_button_set_title(...)
+#define gtk_file_chooser_button_set_width_chars(...)
+#define gtk_file_chooser_get_current_folder(...) NULL
+#define gtk_file_chooser_get_filename(...) NULL
+#define gtk_file_chooser_get_filenames(...) NULL
+#define gtk_file_chooser_get_uri(...) NULL
+#define gtk_file_chooser_select_filename(...)
+#define gtk_file_chooser_set_current_folder(...)
+#define gtk_file_chooser_set_current_folder(...)
+#define gtk_file_chooser_set_current_name(...)
+#define gtk_file_chooser_set_do_overwrite_confirmation(...)
+#define gtk_file_chooser_set_extra_widget(...)
+#define gtk_file_chooser_set_filename(...)
+#define gtk_file_chooser_unselect_all(...)
+#define gtk_file_filter_add_custom(...)
+#define gtk_file_filter_add_pattern(...)
+#define gtk_file_filter_set_name(...)
+#define gtk_font_button_set_show_size(...)
+#define gtk_get_event_widget(...) NULL
+#define gtk_grab_add(...)
+#define gtk_grab_remove(...)
+#define gtk_header_bar_set_custom_title(...)
+#define gtk_header_bar_set_has_subtitle(...)
+#define gtk_header_bar_set_show_close_button(...)
+#define gtk_icon_theme_append_search_path(...)
+#define GTK_IS_CHECK_MENU_ITEM(...) 0
+#define gtk_main_do_event(...)
+#define gtk_menu_item_get_label(...) NULL
+#define gtk_menu_item_get_submenu(...) NULL
+#define gtk_menu_item_new_with_label(...) NULL
+#define gtk_menu_item_new_with_mnemonic(...) NULL
+#define gtk_menu_item_set_submenu(...)
+#define GTK_MENU_ITEM(...) NULL
+#define gtk_menu_new(...) NULL
+#define gtk_menu_popup_at_pointer(...)
+#define gtk_menu_popup_at_widget(...)
+#define gtk_menu_shell_append(...)
+#define gtk_menu_shell_insert(...)
+#define gtk_menu_shell_prepend(...)
+#define GTK_MENU_SHELL(...) NULL
+#define GTK_MENU(...) NULL
+#define gtk_overlay_reorder_overlay(...)
+#define gtk_overlay_set_overlay_pass_through(...)
+#define gtk_parse_args(...) 0
+#define gtk_popover_get_default_widget(...) NULL
+#define gtk_popover_get_relative_to(...) NULL
+#define gtk_popover_set_modal(...)
+#define gtk_popover_set_relative_to(...)
+#define gtk_propagate_event(...)
+#define gtk_scrolled_window_set_shadow_type(...) NULL
+#define gtk_search_entry_handle_event(...) 0
+#define gtk_selection_data_get_data(...) NULL
+#define gtk_selection_data_get_length(...) 0
+#define gtk_selection_data_set(...)
+#define gtk_separator_menu_item_new(...) NULL
+#define gtk_show_uri_on_window(...) 0
+#define gtk_style_context_get(...)
+#define gtk_style_context_list_classes(...) NULL
+#define gtk_style_context_set_path(...)
+#define gtk_style_context_set_screen(...)
+#define gtk_target_list_new(...) NULL
+#define gtk_target_list_unref(...)
+#define gtk_text_view_add_child_in_window(...)
+#define gtk_text_view_im_context_filter_keypress(...) 0
+#define gtk_tooltip_trigger_tooltip_query(...)
+#define gtk_tree_view_column_cell_get_size(...)
+#define gtk_tree_view_create_row_drag_icon(...) NULL
+#define gtk_tree_view_get_tooltip_context(...) 0
+#define gtk_tree_view_set_search_entry(...)
+#define GTK_TYPE_CONTAINER(...) 0
+#define gtk_viewport_set_shadow_type(...)
+#define gtk_widget_add_events(...)
+#define gtk_widget_draw(...)
+#define gtk_widget_event(...) 0
+#define gtk_widget_get_preferred_width(...) 0
+#define gtk_widget_get_screen(...) NULL
+#define gtk_widget_get_tooltip_text(...) NULL
+#define gtk_widget_get_toplevel(...) NULL
+#define gtk_widget_get_window(...) NULL
+#define gtk_widget_has_grab(...) 0
+#define gtk_widget_path_append_type(...) 0
+#define gtk_widget_path_free(...)
+#define gtk_widget_path_iter_add_class(...)
+#define gtk_widget_path_iter_add_class(...)
+#define gtk_widget_path_new(...) NULL
+#define gtk_widget_set_app_paintable(...)
+#define gtk_widget_set_can_default(...)
+#define gtk_widget_set_events(...)
+#define gtk_widget_set_has_window(...)
+#define gtk_widget_set_no_show_all(...)
+#define gtk_widget_set_visual(...)
+#define gtk_widget_size_allocate(...)
+#define gtk_widget_style_get_property(...)
+#define gtk_widget_translate_coordinates(...)
+#define gtk_window_get_position(...)
+#define gtk_window_get_size(...)
+#define gtk_window_get_window_type(...) 0
+#define gtk_window_move(...)
+#define gtk_window_resize(...)
+#define gtk_window_set_attached_to(...)
+#define gtk_window_set_gravity(...)
+#define gtk_window_set_keep_above(...)
+#define gtk_window_set_position(...)
+#define gtk_window_set_type_hint(...)
+#define gtk_window_set_urgency_hint(...)
+
+#define GDK_NONE NULL
+#define GDK_2BUTTON_PRESS	0123
+#define GDK_3BUTTON_PRESS	0124
+#define GDK_WINDOW_STATE 0125
+#define GDK_DOUBLE_BUTTON_PRESS GDK_2BUTTON_PRESS
+#define GDK_TRIPLE_BUTTON_PRESS GDK_3BUTTON_PRESS
+#define GTK_SHADOW_NONE 0
+#define GDK_MOD1_MASK GDK_ALT_MASK
+#define GDK_MOD2_MASK 0
+#define GDK_MOD5_MASK 0
+#define GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR 0
+#define GDK_SCROLL_MASK 0
+#define GDK_SMOOTH_SCROLL_MASK 0
+
+typedef void (*GtkCallback)(GtkWidget *widget, gpointer data);
+gulong dt_signal_connect_data_with_caller(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer user_data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags,
+                                          gboolean gboolean_return,
+                                          const char *function,
+                                          const char *file,
+                                          const int line);
+
+#define g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy, flags) \
+  dt_signal_connect_data_with_caller((instance), (detailed_signal), (c_handler), (data), (destroy), (flags), \
+                                     /*_Generic((DISABLINGPREFIX##c_handler), gboolean(*)() : TRUE, default: */FALSE, \
+                                     __FUNCTION__, __FILE__, __LINE__)
+
+#define gtk_scrolled_window_new(...) gtk_scrolled_window_new()
+#define gtk_window_new(...) gtk_window_new()
+
+#define gtk_style_context_get_border(context, state, border) gtk_style_context_get_border(context, border)
+#define gtk_style_context_get_color(context, state, color) gtk_style_context_get_color(context, color)
+#define gtk_style_context_get_margin(context, state, margin) gtk_style_context_get_margin(context, margin)
+#define gtk_style_context_get_padding(context, state, padding) gtk_style_context_get_padding(context, padding)
+
+#define GTK_BIN(bin) (gpointer)bin
+GtkWidget *gtk_bin_get_child(gpointer bin);
+#define GTK_CONTAINER(container) (GtkContainer *)(container)
+#define GTK_IS_CONTAINER(container) GTK_IS_WIDGET(container)
+void gtk_container_add(GtkContainer *container, GtkWidget *child);
+#define gtk_container_remove(container, child) gtk_widget_unparent(child)
+GList *gtk_container_get_children(GtkContainer *container);
+static inline void gtk_container_child_get(GtkContainer *box, GtkWidget *child, const char *property_name, int *value, ...)
+{
+  *value = 0;
+  for(GtkWidget *w = gtk_widget_get_first_child(GTK_WIDGET(box)); w && w != child; w = gtk_widget_get_next_sibling(w))
+    (*value)++;
+}
+static inline void gtk_box_reorder_child(GtkBox *box, GtkWidget *child, int position)
+{
+  GtkWidget *sibling = NULL;
+  for(GtkWidget *w = gtk_widget_get_first_child(GTK_WIDGET(box)); w && position--; w = gtk_widget_get_next_sibling(w))
+    sibling = w;
+  gtk_box_reorder_child_after(box, child, sibling);
+}
+static inline void gtk_container_foreach(GtkContainer *container, GtkCallback callback, gpointer user_data)
+{
+  for(GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(container)); child; child = gtk_widget_get_next_sibling(child))
+    callback(child, user_data);
+}
+
+#define gtk_box_pack_end(box, child, expand, fill, padding) gtk_box_prepend(box, child)
+#define gtk_box_pack_start(box, child, expand, fill, padding) gtk_box_append(box, child)
+#define gtk_paned_pack1(paned, child, resize, shrink) gtk_paned_set_start_child(paned, child)
+#define gtk_paned_pack2(paned, child, resize, shrink) gtk_paned_set_end_child(paned, child)
+#define gtk_event_box_new(...) gtk_box_new(0,0)
+#define GTK_IS_EVENT_BOX(widget) GTK_IS_BOX(widget)
+#define GTK_EVENT_BOX(widget) GTK_BOX(widget)
+#define GTK_LAYOUT GTK_FIXED
+#define gtk_layout_new(...) gtk_fixed_new()
+#define gtk_layout_move gtk_fixed_move
+#define gtk_layout_put gtk_fixed_put
+
+#undef GTK_ENTRY
+#define GTK_ENTRY (gpointer)
+#define gtk_entry_get_text(entry) gtk_editable_get_text(GTK_EDITABLE(entry))
+#define gtk_entry_set_text(entry, text) gtk_editable_set_text(GTK_EDITABLE(entry), text)
+
+#undef GTK_TOGGLE_BUTTON
+#define GTK_TOGGLE_BUTTON (gpointer)
+#define gtk_toggle_button_get_active(button) (GTK_IS_CHECK_BUTTON(button) ? gtk_check_button_get_active(GTK_CHECK_BUTTON(button)) : gtk_toggle_button_get_active((GtkToggleButton *)(button)))
+#define gtk_toggle_button_set_active(button, active) (GTK_IS_CHECK_BUTTON(button) ? gtk_check_button_set_active(GTK_CHECK_BUTTON(button), active) : gtk_toggle_button_set_active((GtkToggleButton *)(button), active))
+
+#define gdk_cursor_new_from_name(display, name) gdk_cursor_new_from_name(name, NULL)
+#define gtk_image_new_from_icon_name(name, size) gtk_image_new_from_icon_name(name)
+
+#define gdk_event_new(event_type) g_memdup(&(GdkEvent){.type = event_type}, sizeof(GdkEvent))
+#define gtk_button_clicked(button) g_signal_emit_by_name(button, "clicked")
+#define gtk_file_chooser_button_new(...) gtk_button_new()
+#define gtk_label_set_line_wrap gtk_label_set_wrap
+#define gtk_popover_new(...) gtk_popover_new()
+#define gtk_stack_set_homogeneous gtk_stack_set_vhomogeneous
+#define gtk_widget_destroy(widget) GTK_IS_WINDOW(widget) ? gtk_window_destroy(GTK_WINDOW(widget)) : gtk_widget_unparent(widget)
+#define gtk_get_current_event(...) (GdkEventOld[]){{GDK_KEY_PRESS}}
+static void gtk_widget_destroyed(){};
+static void gtk_main_quit(){};
+static void gtk_main(){};
+static void gtk_widget_show_all(GtkWidget*w){gtk_widget_show(w);};
+int gtk_dialog_run(GtkDialog *dialog);
+int gtk_native_dialog_run(GtkNativeDialog *dialog);
+
+// WIN32
+#define GDK_WINDOW_HWND(...) NULL
+#define gdk_win32_window_get_handle(...) NULL
+#define DwmSetWindowAttribute(...) 0
+
 G_END_DECLS
 
 // clang-format off

@@ -21,45 +21,43 @@
 
 G_DEFINE_TYPE(GtkDarktableThumbnailBtn, dtgtk_thumbnail_btn, GTK_TYPE_DRAWING_AREA);
 
-static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr);
+static void _thumbnail_btn_snapshot(GtkWidget *widget, GtkSnapshot* snapshot);
 static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
 
 static void dtgtk_thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-  widget_class->draw = _thumbnail_btn_draw;
-  widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
-  widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  widget_class->snapshot = _thumbnail_btn_snapshot;
+  // widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  // widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
 }
 
 static void dtgtk_thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
 {
 }
 
-static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
+static void _thumbnail_btn_snapshot(GtkWidget *widget, GtkSnapshot* snapshot)
 {
-  g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
+  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_width(widget) < 2) return;
 
-  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_width(widget) < 2) return TRUE;
+  graphene_rect_t bounds;
+  graphene_rect_init(&bounds, 0, 0, gtk_widget_get_width(widget), gtk_widget_get_height(widget));
+  cairo_t* cr = gtk_snapshot_append_cairo(snapshot, &bounds);
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  GdkRGBA *fg_color, *bg_color;
+  GdkRGBA fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get(context, state, GTK_STYLE_PROPERTY_COLOR, &fg_color, GTK_STYLE_PROPERTY_BACKGROUND_COLOR,
-                        &bg_color, NULL);
-  if(fg_color->alpha == 0 && bg_color->alpha == 0)
+  gtk_style_context_get_color(context, state, &fg_color);
+  if(fg_color.alpha == 0)
   {
     DTGTK_THUMBNAIL_BTN(widget)->hidden = TRUE;
-    gdk_rgba_free(fg_color);
-    gdk_rgba_free(bg_color);
-    return TRUE;
+    return;
   }
   DTGTK_THUMBNAIL_BTN(widget)->hidden = FALSE;
 
-  cairo_save(cr);
-  gdk_cairo_set_source_rgba(cr, fg_color);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_THUMBNAIL_BTN(widget)->icon)
@@ -87,16 +85,14 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     const float icon_h = allocation.height - (padding.top + padding.bottom) * allocation.height / 100.0f;
     DTGTK_THUMBNAIL_BTN(widget)->icon(
         cr, icon_x, icon_y, icon_w, icon_h, flags,
-        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
+        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : NULL);
   }
   // and eventually the image border
   cairo_restore(cr);
   gtk_render_frame(context, cr, 0, 0, gtk_widget_get_allocated_width(widget),
                    gtk_widget_get_allocated_height(widget));
 
-  gdk_rgba_free(fg_color);
-  gdk_rgba_free(bg_color);
-  return TRUE;
+  cairo_destroy(cr);
 }
 
 static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)

@@ -2909,10 +2909,12 @@ void gui_update(dt_iop_module_t *self)
   const int nbpage = gtk_notebook_get_n_pages(g->notebook);
   if((nbpage == 4) ^ show_sliders)
   {
+    ++darktable.gui->reset;
     if(show_sliders)
       gtk_widget_show(dt_ui_notebook_page(g->notebook, N_("options"), _("options")));
     else
       gtk_notebook_remove_page(g->notebook, 3);
+    --darktable.gui->reset;
 
     GtkDarktableExpander *exp = DTGTK_EXPANDER(g->cs.expander);
     gtk_widget_set_visible(dtgtk_expander_get_header(exp), !show_sliders);
@@ -3014,7 +3016,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_connect_motion(g->area, _colorequal_motion, NULL, NULL, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "size_allocate",
+  g_signal_connect(G_OBJECT(g->area), "size-allocate",
                    G_CALLBACK(_area_size_callback), self);
 
   GtkWidget *box = self->widget = dt_gui_vbox(g->notebook, g->area);

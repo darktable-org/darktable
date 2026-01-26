@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
@@ -402,11 +403,9 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget,
   static GtkWidget *view = NULL;
   if(!view)
   {
-    view = gtk_text_view_new();
+    g_set_weak_pointer(&view, gtk_text_view_new());
     dt_gui_add_class(view, "dt_transparent_background");
     dt_gui_add_class(view, "dt_monospace");
-    g_signal_connect(G_OBJECT(view), "destroy",
-                     G_CALLBACK(gtk_widget_destroyed), &view);
   }
 
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));

@@ -43,6 +43,7 @@ void dt_shortcuts_reinitialise(dt_action_t *action);
 void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
+void dt_shortcut_connect_dispatcher(GtkWidget *widget);
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip *tooltip, GtkWidget *vbox);
 void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name);

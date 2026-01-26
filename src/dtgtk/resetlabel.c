@@ -18,7 +18,7 @@
 
 #include "dtgtk/resetlabel.h"
 
-G_DEFINE_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, GTK_TYPE_EVENT_BOX);
+G_DEFINE_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, GTK_TYPE_BOX);
 
 static void dtgtk_reset_label_class_init(GtkDarktableResetLabelClass *klass)
 {
