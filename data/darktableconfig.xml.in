@@ -1349,6 +1349,8 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
         <option>never</option>
       </enum>
     </type>
@@ -1368,6 +1370,8 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
         <option>never</option>
       </enum>
     </type>
@@ -1408,6 +1412,8 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
       </enum>
     </type>
     <default>never</default>

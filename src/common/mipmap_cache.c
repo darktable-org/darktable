@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -466,7 +466,7 @@ static void _mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
-    if(mip == DT_MIPMAP_8)
+    if(mip == DT_MIPMAP_LDR_MAX)
     {
       int imgfw= 0, imgfh= 0;
       // be sure that we have the right size values
@@ -516,10 +516,10 @@ static void _mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   assert(dsc->size >= sizeof(*dsc));
 
   int loaded_from_disk = 0;
-  if(mip < DT_MIPMAP_F)
+  if(mip <= DT_MIPMAP_LDR_MAX)
   {
-    if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
-                              || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
+    if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_LDR_MAX)
+                              || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_LDR_MAX)))
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
@@ -576,7 +576,7 @@ read_error:
   // to make sure quota is meaningful.
   if(mip >= DT_MIPMAP_F)
     entry->cost = 1;
-  else if(mip == DT_MIPMAP_8)
+  else if(mip == DT_MIPMAP_LDR_MAX)
     entry->cost = entry->data_size;
   else
     entry->cost = cache->buffer_size[mip];
@@ -603,7 +603,7 @@ static void _mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
   const dt_mipmap_size_t mip = _get_size(entry->key);
-  if(mip < DT_MIPMAP_F)
+  if(mip <= DT_MIPMAP_LDR_MAX)
   {
     dt_mipmap_buffer_dsc_t *dsc = (dt_mipmap_buffer_dsc_t *)entry->data;
     // don't write skulls:
@@ -613,8 +613,8 @@ static void _mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry
       {
         _mipmap_cache_unlink_ondisk_thumbnail(data, _get_imgid(entry->key), mip);
       }
-      else if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
-                                     || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
+      else if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_LDR_MAX)
+                                     || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_LDR_MAX)))
       {
         // serialize to disk
         char filename[PATH_MAX] = {0};
@@ -705,25 +705,26 @@ void dt_mipmap_cache_init()
     { 1920, 1200 },           // mip4 - covers 1080p and 1600x1200
     { 2560, 1600 },           // mip5 - covers 2560x1440
     { 4096, 2560 },           // mip6 - covers 4K and UHD
-    { 5120, 3200 },           // mip7 - covers 5120x2880 panels
-    { 999999999, 999999999 }, // mip8 - used for full preview at full size
+    { 5120, 3200 },           // mip7 - covers 5K
+    { 6144, 3456 },           // mip8 - covers 6K
+    { 7680, 4320 },           // mip9 - covers 8K
+    { 999999999, 999999999 }, // mip10 - used for full preview at full size
   };
-  // Set mipf to mip2 size as at most the user will be using an 8K screen and
-  // have a preview that's ~4x smaller
+  // Set mipf to mip3 size, which is ~4x smaller than a 6K screen screen
   const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
   const float downsample = (!g_strcmp0(preview_downsample, "original")) ? 1.0f
                          : (!g_strcmp0(preview_downsample, "to 1/2")) ? 0.5f
                          : (!g_strcmp0(preview_downsample, "to 1/3")) ? 1/3.0f
                          : 0.25f;
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0] * downsample;
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1] * downsample;
-  for(int k = DT_MIPMAP_F-1; k >= 0; k--)
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0] * downsample;
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1] * downsample;
+  for(int k = DT_MIPMAP_LDR_MAX; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
     cache->max_height[k] = mipsizes[k][1];
   }
-    // header + buffer
-  for(int k = DT_MIPMAP_F-1; k >= 0; k--)
+  // header + buffer
+  for(int k = DT_MIPMAP_LDR_MAX; k >= 0; k--)
     cache->buffer_size[k] = sizeof(dt_mipmap_buffer_dsc_t)
                                 + (size_t)cache->max_width[k] * cache->max_height[k] * 4;
 
@@ -1063,7 +1064,7 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
       const dt_imageio_retval_t ret = img ? img->load_status : DT_IMAGEIO_FILE_NOT_FOUND;
       dt_image_cache_read_release(img);
       dt_print(DT_DEBUG_PIPE, "[mipmap cache get] got a zero-sized ID=%d mip %d!", imgid, mip);
-      if(mip < DT_MIPMAP_F)
+      if(mip <= DT_MIPMAP_LDR_MAX)
       {
         switch(ret)
         {
@@ -1130,7 +1131,7 @@ void dt_mipmap_cache_get_with_caller(dt_mipmap_buffer_t *buf,
       }
     }
     // couldn't find a smaller thumb, try larger ones only now (these will be slightly slower due to cairo rescaling):
-    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_F-1;
+    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_LDR_MAX;
     for(int k = mip+1; k <= max_mip; k++)
     {
       // already loaded?
@@ -1196,7 +1197,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const int32_t width,
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   assert(cache);
-  for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
+  for(int k = DT_MIPMAP_0; k <= DT_MIPMAP_LDR_MAX; k++)
   {
     best = k;
     if((cache->max_width[k] >= width) && (cache->max_height[k] >= height))
@@ -1215,6 +1216,8 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
   if(strcmp(value, "WQXGA") == 0)  return DT_MIPMAP_5;
   if(strcmp(value, "4K") == 0)     return DT_MIPMAP_6;
   if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
+  if(strcmp(value, "6K") == 0)     return DT_MIPMAP_8;
+  if(strcmp(value, "8K") == 0)     return DT_MIPMAP_9;
   return DT_MIPMAP_NONE;
 }
 
@@ -1223,7 +1226,7 @@ void dt_mipmap_cache_remove_at_size(const dt_imgid_t imgid,
 {
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   assert(cache);
-  if(!cache || mip > DT_MIPMAP_8 || mip < DT_MIPMAP_0) return;
+  if(!cache || mip > DT_MIPMAP_LDR_MAX || mip < DT_MIPMAP_0) return;
   // get rid of all ldr thumbnails:
   const uint32_t key = _get_key(imgid, mip);
   dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, mip)->cache, key, 'w');
@@ -1246,7 +1249,7 @@ void dt_mipmap_cache_remove_at_size(const dt_imgid_t imgid,
 
 void dt_mipmap_cache_remove(const dt_imgid_t imgid)
 {
-  for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= DT_MIPMAP_LDR_MAX; k++)
   {
     dt_mipmap_cache_remove_at_size(imgid, k);
   }
@@ -1266,7 +1269,7 @@ void dt_mipmap_cache_evict_at_size(const dt_imgid_t imgid,
 void dt_mipmap_cache_evict(const dt_imgid_t imgid)
 {
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
-  for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= DT_MIPMAP_LDR_MAX; k++)
   {
     const uint32_t key = _get_key(imgid, k);
 
@@ -1533,7 +1536,7 @@ static void _init_8(uint8_t *buf,
   if(res)
   {
     //try to generate mip from larger mip
-    for(dt_mipmap_size_t k = size + 1; k < DT_MIPMAP_F; k++)
+    for(dt_mipmap_size_t k = size + 1; k <= DT_MIPMAP_LDR_MAX; k++)
     {
       dt_mipmap_buffer_t tmp;
       dt_mipmap_cache_get(&tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
@@ -1618,7 +1621,7 @@ void dt_mipmap_cache_copy_thumbnails(const dt_imgid_t dst_imgid,
     && dt_is_valid_imgid(src_imgid)
     && dt_is_valid_imgid(dst_imgid))
   {
-    for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip < DT_MIPMAP_F; mip++)
+    for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip <= DT_MIPMAP_LDR_MAX; mip++)
     {
       // try and load from disk, if successful set flag
       char srcpath[PATH_MAX] = {0};
