@@ -231,7 +231,7 @@ int main(int argc, char *arg[])
     exit(EXIT_FAILURE);
   }
 
-  if(max_mip == 8 && !dt_conf_get_bool("cache_disk_backend_full"))
+  if(max_mip == DT_MIPMAP_LDR_MAX && !dt_conf_get_bool("cache_disk_backend_full"))
   {
     fprintf(stderr,
             _("warning: disk backend for full preview cache is disabled (cache_disk_backend_full).\nif you want "
