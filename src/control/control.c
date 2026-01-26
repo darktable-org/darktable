@@ -818,6 +818,90 @@ void dt_control_set_mouse_over_id(const dt_imgid_t imgid)
     dt_pthread_mutex_unlock(&dc->global_mutex);
 }
 
+time_t dt_diratime_action(const char *dir_path, const char *action)
+{
+  time_t timestamp = 0;
+  gchar *_dir = g_strdup(dir_path);
+  size_t name_len = strlen(dir_path);
+  const char *ext = dir_path + name_len - 4;
+  if (((!g_strcmp0(action, "update") && (!g_strcmp0(ext, ".xmp") || !g_strcmp0(ext, ".XMP")))
+      || !g_strcmp0(action, "delete"))
+      && name_len > 4)
+  {
+    size_t len = strlen(dir_path);
+    const char *c  = dir_path + len;
+    while((c > dir_path) && ((*c) != G_DIR_SEPARATOR)) c--;
+    size_t vers_len = c - dir_path + 1;
+    g_strlcpy(_dir, dir_path, vers_len + 1);
+  }
+
+  GError *error = NULL;
+  GFile *_g_dir = g_file_new_for_path(_dir);
+  GFileInfo *info = g_file_query_info(_g_dir,
+                                       G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                                       G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                       G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, NULL);
+  const char *dirname = g_file_info_get_attribute_string(info, G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
+
+  const char *dir_mark = g_strconcat(_dir, dirname, ".dt", NULL);
+  time_t dir_mark_time = 0;
+
+  GFile *_g_dir_mark = g_file_new_for_path(dir_mark);
+  if (!g_strcmp0(action, "create"))
+  {
+    if(!g_file_test(dir_mark, G_FILE_TEST_EXISTS))
+    {
+      GFileEnumerator *dir_files = g_file_enumerate_children(_g_dir,
+                                                             G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                                                             G_FILE_ATTRIBUTE_TIME_MODIFIED ","
+                                                             G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                                                             G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
+      if(dir_files)
+      {
+        while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
+        {
+          const char *filename = g_file_info_get_display_name(info);
+          if(!filename) continue;
+          const GFileType filetype = g_file_info_get_attribute_uint32(info, G_FILE_ATTRIBUTE_STANDARD_TYPE);
+          if(filetype == G_FILE_TYPE_REGULAR)
+          {
+            name_len = strlen(filename);
+            ext = filename + name_len - 4;
+            if ((strcmp(ext, ".xmp") == 0 || strcmp(ext, ".XMP") == 0) && name_len > 4)
+            {
+              time_t _timestamp = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+              if (_timestamp > dir_mark_time)
+                dir_mark_time = _timestamp;
+            }
+          }
+        }
+      }
+      GFileOutputStream *out = g_file_replace(_g_dir_mark, NULL, FALSE, G_FILE_CREATE_REPLACE_DESTINATION, NULL, &error);
+      g_object_unref(out);
+      info = g_file_query_info(_g_dir_mark,
+                               G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                               G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
+      g_file_set_attribute_uint64(_g_dir_mark, G_FILE_ATTRIBUTE_TIME_MODIFIED, dir_mark_time, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,FALSE,&error);
+      g_object_unref(dir_files);
+    }
+  }
+  else if (!g_strcmp0(action, "update") || !g_strcmp0(action, "delete"))
+  {
+    GFileOutputStream *out = g_file_replace(_g_dir_mark, NULL, FALSE,
+                                            G_FILE_CREATE_REPLACE_DESTINATION, NULL, &error);
+    g_object_unref(out);
+  }
+  info = g_file_query_info(_g_dir_mark,
+                           G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                           G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL, &error);
+  timestamp = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+  g_object_unref(info);
+  g_object_unref(_g_dir_mark);
+  g_object_unref(_g_dir);
+
+  return timestamp;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

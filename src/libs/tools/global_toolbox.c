@@ -529,7 +529,16 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data)
 {
+  darktable.gui->hide_tooltips = 0;
   dt_gui_preferences_show();
+  darktable. gui->hide_tooltips = (dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0)
+      + (dt_conf_get_bool("ui/show_thumbs_tips") ? 2 : 0);
+
+  if (dt_conf_get_bool("xmp_full_scan_next_time"))
+  {
+    dt_conf_set_int64("db_synchronized", 0);
+    dt_conf_set_bool("xmp_full_scan_next_time", 0);
+  }
 }
 
 static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data)
