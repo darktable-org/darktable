@@ -2018,7 +2018,7 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
     g_strlcat(msgbuf, _("<b>rotate</b>: ctrl+drag"), msgbuf_len);
   else if(gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
+               _("<b>feather mode</b>: alt+click, <b>rotate</b>: ctrl+drag\n"
                  "<b>size</b>: scroll, <b>feather size</b>: shift+scroll,"
                  " <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
 }
