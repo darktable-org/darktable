@@ -414,6 +414,7 @@ void dt_dev_invalidate_history_module(GList *list,
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
 void dt_dev_invalidate_all(dt_develop_t *dev);
+void dt_dev_pipe_synch_all(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);

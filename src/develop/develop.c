@@ -269,6 +269,18 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
   dev->timestamp++;
 }
 
+void dt_dev_pipe_synch_all(dt_develop_t *dev)
+{
+  assert(dev);
+
+  if(dev->full.pipe)
+    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  if(dev->preview_pipe)
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  if(dev->preview2.pipe)
+    dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+}
+
 void dt_dev_invalidate_preview(dt_develop_t *dev)
 {
   assert(dev);
@@ -1151,9 +1163,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
   }
 
   // invalidate buffers and force redraw of darkroom
-  dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_dev_pipe_synch_all(dev);
   dt_dev_invalidate_all(dev);
 
   if(need_end_record)
@@ -1364,9 +1374,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
 
   if(!dev_iop_changed)
   {
-    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
-    dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+    dt_dev_pipe_synch_all(dev);
   }
   else
   {
@@ -2328,9 +2336,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   // FIXME : this probably needs to capture dev thread lock
   if(dev->gui_attached && !no_image)
   {
-    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
-    dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+    dt_dev_pipe_synch_all(dev);
     dt_dev_invalidate_all(dev);
 
     /* signal history changed */
@@ -2395,9 +2401,7 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
   if(darktable.gui->reset) return;
   if(dev && dev->gui_attached)
   {
-    dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dt_dev_pipe_synch_all(dev);
     dev->full.pipe->cache_obsolete = TRUE;
     dev->preview_pipe->cache_obsolete = TRUE;
     dev->preview2.pipe->cache_obsolete = TRUE;
