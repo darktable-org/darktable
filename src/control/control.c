@@ -220,7 +220,6 @@ void dt_control_init(const gboolean withgui)
   // same thread as init
   s->gui_thread = pthread_self();
 
-  // s->last_expose_time = dt_get_wtime();
   s->log_pos = s->log_ack = 0;
   s->busy = 0;
   s->log_message_timeout_id = 0;
