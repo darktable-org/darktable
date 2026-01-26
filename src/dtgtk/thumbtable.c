@@ -1815,6 +1815,12 @@ static void _dt_metadata_change_callback(gpointer instance,
   g_list_free(imgs);
 }
 
+static void _dt_tag_change_callback(gpointer instance,
+                                    dt_thumbtable_t *table)
+{
+  _dt_metadata_change_callback(instance, 0, table);
+}
+
 // this is called each time the list of active images change
 static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table)
 {
@@ -2514,6 +2520,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                             _dt_pref_change_callback, table);
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED,
                             _dt_metadata_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED,
+                            _dt_tag_change_callback, table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
