@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -239,7 +239,8 @@ static void _lighttable_check_layout(dt_view_t *self)
     gtk_widget_hide(lib->preview->widget);
     gtk_widget_show(lib->culling->widget);
 
-    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling->navigate_inside_selection;
+    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection =
+      lib->culling->navigate_inside_selection;
     dt_view_lighttable_update_layout_buttons(darktable.view_manager);
   }
 
@@ -268,7 +269,9 @@ static void _lighttable_check_layout(dt_view_t *self)
   }
 }
 
-static void _lighttable_change_offset(dt_view_t *self, gboolean reset, dt_imgid_t imgid)
+static void _lighttable_change_offset(dt_view_t *self,
+                                      const gboolean reset,
+                                      const dt_imgid_t imgid)
 {
   dt_library_t *lib = self->data;
 
@@ -427,7 +430,9 @@ static gboolean is_image_visible_cb(lua_State *L)
       if(luaL_testudata(L, 1, "dt_lua_image_t"))
       {
         luaA_to(L, dt_lua_image_t, &imgid, 1);
-        lua_pushboolean(L, dt_thumbtable_check_imgid_visibility(dt_ui_thumbtable(darktable.gui->ui), imgid));
+        lua_pushboolean(L,
+                        dt_thumbtable_check_imgid_visibility
+                          (dt_ui_thumbtable(darktable.gui->ui), imgid));
         return 1;
       }
       else
@@ -1078,7 +1083,8 @@ static void _profile_display_intent_callback(GtkWidget *combo,
 
   dt_iop_color_intent_t new_intent = darktable.color_profiles->display_intent;
 
-  // we are not using the int value directly so it's robust against changes on lcms' side
+  // we are not using the int value directly so it's robust against
+  // changes on lcms' side
   switch(pos)
   {
     case 0:
@@ -1112,7 +1118,8 @@ static void _profile_display2_intent_callback(GtkWidget *combo,
 
   dt_iop_color_intent_t new_intent = darktable.color_profiles->display2_intent;
 
-  // we are not using the int value directly so it's robust against changes on lcms' side
+  // we are not using the int value directly so it's robust against
+  // changes on lcms' side
   switch(pos)
   {
     case 0:
