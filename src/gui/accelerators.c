@@ -213,27 +213,26 @@ static float _action_process_toggle(gpointer target,
   if(DT_ACTION_TOGGLE_NEEDED(effect, move_size, value)
      && gtk_widget_get_ancestor(target, GTK_TYPE_WINDOW))
   {
-    GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
-                           || effect == DT_ACTION_EFFECT_ON_CTRL)
-                        ? GDK_CONTROL_MASK : 0;
-    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
-                            || effect == DT_ACTION_EFFECT_ON_RIGHT)
-                         ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+    // GTK4 FIXME how to pass right and ctrl clicks to event controllers?
+    // event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+    //                        || effect == DT_ACTION_EFFECT_ON_CTRL)
+    //                     ? GDK_CONTROL_MASK : 0;
+    // event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+    //                         || effect == DT_ACTION_EFFECT_ON_RIGHT)
+    //                      ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
     if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-    event->button.window = gtk_widget_get_window(target);
-    g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
     // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
-    gboolean handled;
-    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
-    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
-    event->type = GDK_BUTTON_RELEASE;
-    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
-
-    gdk_event_free(event);
+    GtkEventController *controller = g_object_get_data(target, "click");
+    if(controller)
+    {
+      g_signal_emit_by_name(G_OBJECT(controller), "pressed", 1, 0, 0);
+      g_signal_emit_by_name(G_OBJECT(controller), "released", 1, 0, 0);
+    }
+    // else
+      gtk_button_clicked(GTK_BUTTON(target));
 
     value = gtk_toggle_button_get_active(target);
 
@@ -1011,9 +1010,9 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                       GtkTooltip *tooltip,
                                       GtkWidget *vbox)
 {
-  GtkWindow *top = GTK_WINDOW(gtk_widget_get_toplevel(widget));
+  GtkWindow *top = GTK_WINDOW(gtk_widget_get_root(widget));
   if(!gtk_window_is_active(top)
-     && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
+ )//GTK4 && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
     return FALSE;
 
   if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK
@@ -1474,6 +1473,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
                 shortcut->speed = s->speed = roundf(s->speed * e->speed * 1000.) / 1000.;
               if(fabsf(s->speed) >= .001 && fabsf(s->speed) <= 1000.)
               {
+                if(0) // GTK4
                 _remove_shortcut(existing);
                 if(s->speed != 1.0)
                 {
@@ -1957,7 +1957,7 @@ static void _grab_in_tree_view(GtkTreeView *tree_view)
   g_set_weak_pointer(&_grab_window, gtk_widget_get_toplevel(_grab_widget));
   if(_sc.action && _sc.action->type == DT_ACTION_TYPE_FALLBACK)
     dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, 0);
-  g_signal_connect(_grab_window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
+  dt_shortcut_connect_dispatcher(_grab_window);
 }
 
 static void _shortcut_row_activated(GtkTreeView *tree_view,
@@ -2516,7 +2516,7 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
 {
   enum
   {
-    _DEFAULTS = 1,
+    _DEFAULTS,
     _STARTUP,
     _EDITS,
   };
@@ -2717,7 +2717,7 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   g_signal_connect(combo_from_id, "changed", G_CALLBACK(_import_id_changed), combo_to_id);
 
   dt_gui_dialog_add(GTK_DIALOG(dialog), label, combo_dev, device_grid, clear);
-  gtk_widget_show_all(dialog);
+  // gtk_widget_show_all(dialog);
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
 
@@ -2887,8 +2887,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(shortcuts_view, 0); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
   GtkWidget *search_shortcuts = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts),
-                                 _("search shortcuts list"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_shortcuts),
+                                        _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts),
                               _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_shortcuts), "activate",
@@ -2988,8 +2988,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
   GtkWidget *search_actions = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions),
-                                 _("search actions list"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_actions),
+                                        _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions),
                               _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_actions), "activate",
@@ -3964,7 +3964,7 @@ static void _ungrab_grab_widget()
     gtk_widget_set_sensitive(_grab_widget, TRUE);
     gtk_widget_set_tooltip_text(_grab_widget, NULL);
     g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(_grab_widget),
-                                         G_CALLBACK(dt_shortcut_dispatcher), NULL);
+                                         G_CALLBACK(dt_shortcut_dispatcher), NULL); // GTK4
     _grab_widget = NULL;
   }
 }
@@ -4523,9 +4523,8 @@ gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
 static guint _fix_keyval(GdkEvent *event)
 {
   guint keyval = 0;
-  GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-  gdk_keymap_translate_keyboard_state(keymap, event->key.hardware_keycode, 0, 0,
-                                      &keyval, NULL, NULL, NULL);
+  gdk_display_translate_key(gdk_display_get_default(), event->key.hardware_keycode, 0, 0,
+                            &keyval, NULL, NULL, NULL);
   return keyval;
 }
 
@@ -4748,6 +4747,20 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
   }
 
   return TRUE;
+}
+
+void dt_shortcut_connect_dispatcher(GtkWidget *widget)
+{
+  const gchar *eventnames[] = { "key-press-event", "key-release-event",
+                                "button-press-event", "button-release-event",
+                                "scroll-event",
+                                "motion-notify-event",
+                                NULL };
+  for(int i = 0; eventnames[i] != NULL; i++)
+    g_signal_connect(widget, eventnames[i], G_CALLBACK(dt_shortcut_dispatcher), NULL);
+  gtk_event_controller_set_propagation_phase(g_object_get_data(G_OBJECT(widget), "click" ), GTK_PHASE_CAPTURE);
+  gtk_event_controller_set_propagation_phase(g_object_get_data(G_OBJECT(widget), "scroll"), GTK_PHASE_CAPTURE);
+  gtk_event_controller_set_propagation_phase(g_object_get_data(G_OBJECT(widget), "motion"), GTK_PHASE_CAPTURE);
 }
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
@@ -5008,17 +5021,15 @@ void dt_shortcut_register(dt_action_t *owner,
 {
   if(accel_key != 0 && !darktable.control->accel_initialised)
   {
-    GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-
     GdkKeymapKey *keys;
     gint n_keys, i = 0;
 
-    if(!gdk_keymap_get_entries_for_keyval(keymap, accel_key, &keys, &n_keys)) return;
+    if(!gdk_display_map_keyval(gdk_display_get_default(), accel_key, &keys, &n_keys)) return; // GTK4
 
     for(int j = 0; j < n_keys; j++)
     {
-      gdk_keymap_translate_keyboard_state(keymap, keys[j].keycode, 0, 0,
-                                          &keys[j].keycode, NULL, NULL, NULL);
+      gdk_display_translate_key(gdk_display_get_default(), keys[j].keycode, 0, 0,
+                                                          &keys[j].keycode, NULL, NULL, NULL);
 
       if(_is_kp_key(keys[j].keycode))
         keys[j].group = 10;
@@ -5030,9 +5041,9 @@ void dt_shortcut_register(dt_action_t *owner,
     }
 
     if(keys[i].level & 1) mods |= GDK_SHIFT_MASK;
-    if(keys[i].level & 2) mods |= GDK_MOD5_MASK;
+    if(keys[i].level & 2) mods |= GDK_ALT_MASK; // GTK4
 
-    mods = _mods_fix_primary(mods);
+    // mods = _mods_fix_primary(mods); // GTK4
 
     dt_shortcut_t s = { .key_device = DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE,
                         .key = keys[i].keycode,

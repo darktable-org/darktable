@@ -1520,29 +1520,39 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 {
   GtkPopover *popover = GTK_POPOVER(user_data);
 
-  GtkWidget *button = gtk_popover_get_relative_to(popover);
+  GtkWidget *button = gtk_widget_get_parent(GTK_WIDGET(popover));
   GdkDevice *pointer =
     gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
 
-  int x, y;
-  GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+  double x, y;
+  GdkSurface *surface = gdk_device_get_surface_at_position(pointer, &x, &y);
   gpointer   pointer_widget = NULL;
-  if(pointer_window)
-    gdk_window_get_user_data(pointer_window, &pointer_widget);
-
-  GdkRectangle rect = { gtk_widget_get_allocated_width(button) / 2, 0, 1, 1 };
-
-  if(pointer_widget && button != pointer_widget)
-    gtk_widget_translate_coordinates(pointer_widget, button, x, y, &rect.x, &rect.y);
-
-  gtk_popover_set_pointing_to(popover, &rect);
+  if(surface)
+  {
+    GtkNative *native = gtk_native_get_for_surface(surface);
+    pointer_widget = gtk_widget_pick(GTK_WIDGET(native), x, y, GTK_PICK_DEFAULT);
+  }
+// GTK4 FIXME position when called from shortcut
+  graphene_rect_t rect;
+  if(gtk_widget_compute_bounds(button, button, &rect))
+  {
+    // rect now contains the bounds of the button relative to itself
+    // For a popover, you typically want it pointing to the entire button
+    GdkRectangle gdk_rect = {
+      .x = rect.origin.x + rect.size.width / 2,
+      .y = rect.origin.y,
+      .width = 1, .height = 1
+    };
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &gdk_rect);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_TOP);
+  }
 
   // for the guides popover, it need to be updated before we show it
   if(darktable.view_manager
      && GTK_WIDGET(popover) == darktable.view_manager->guides_popover)
     dt_guides_update_popover_values();
 
-  gtk_widget_show_all(GTK_WIDGET(popover));
+  gtk_popover_popup(popover);
 
   // cancel glib timeout if invoked by long button press
   return FALSE;
@@ -2421,9 +2431,10 @@ static gboolean _quickbutton_press_release(GtkWidget *button,
   if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY) ||
      (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
   {
-    gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
-
-    g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
+    g_object_ref(popover);
+    gtk_widget_unparent(popover);
+    gtk_widget_set_parent(popover, button);
+    g_object_unref(popover);
 
     _toolbar_show_popup(popover);
     return TRUE;
@@ -2735,8 +2746,8 @@ void gui_init(dt_view_t *self)
                                  dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
     // randomly connect to one of the buttons, so widgets can be realized
-    gtk_popover_set_relative_to(GTK_POPOVER(dev->profile.floating_window),
-                                dev->second_wnd_button);
+    gtk_widget_set_parent(GTK_WIDGET(dev->profile.floating_window),
+                          dev->second_wnd_button);
 
     /** let's fill the encapsulating widgets */
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
@@ -4037,8 +4048,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     g_signal_connect(G_OBJECT(dev->second_wnd), "delete-event",
                      G_CALLBACK(_second_window_delete_callback), dev);
-    g_signal_connect(G_OBJECT(dev->second_wnd), "event",
-                     G_CALLBACK(dt_shortcut_dispatcher), NULL);
+    dt_shortcut_connect_dispatcher(dev->second_wnd);
 
     _darkroom_ui_second_window_init(dev->second_wnd, dev);
   }

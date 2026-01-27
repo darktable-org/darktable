@@ -24,7 +24,6 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
@@ -856,7 +855,15 @@ static gboolean _lib_draw_callback(GtkWidget *widget,
 
 void dt_lib_gui_queue_update(dt_lib_module_t *module)
 {
+  // module->gui_uptodate = FALSE;
+
+// GTK4 need to implement class with snapshot override in expander for delayed updating
+if(module->gui_uptodate)
+{
   module->gui_uptodate = FALSE;
+  dt_lib_gui_update(module);
+}
+
   gtk_widget_queue_draw(module->widget);
 }
 
@@ -883,9 +890,10 @@ static void dt_lib_init_module(void *m)
     if(module->widget)
     {
       g_object_ref_sink(module->widget);
-      if(module->gui_update)
-        g_signal_connect(G_OBJECT(module->widget), "draw",
-                         G_CALLBACK(_lib_draw_callback), module);
+module->gui_uptodate = TRUE; // GTK4
+      // if(module->gui_update)
+      //   g_signal_connect(G_OBJECT(module->widget), "draw",
+      //                    G_CALLBACK(_lib_draw_callback), module);
     }
   }
 }
@@ -1266,7 +1274,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
                     G_CALLBACK(_lib_plugin_arrow_button_press), module);
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
-  gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
   /* add module label */
   GtkWidget *label = gtk_label_new("");
@@ -1283,7 +1290,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
   dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
-  gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
@@ -1298,7 +1304,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
 
   dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
-  gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
@@ -1309,7 +1314,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
-  gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
+
+  dt_gui_box_add(header, module->arrow, dt_gui_expand(label_evb), module->reset_button, module->presets_button);
 
   /* add button box - for module's specific action button */
   if(module->gui_tool_box)
@@ -1320,7 +1326,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   if(module->widget)
   {
     dt_gui_add_class(module->widget, "dt_plugin_ui_main");
-    gtk_widget_set_hexpand(module->widget, FALSE);
+    // gtk_widget_set_hexpand(module->widget, FALSE); // GTK4
     gtk_widget_set_vexpand(module->widget, FALSE);
   }
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
@@ -1335,8 +1341,12 @@ void dt_lib_gui_set_label(dt_lib_module_t *module,
 {
   if(!module->expander) return;
   GtkWidget *header = DTGTK_EXPANDER(module->expander)->header;
-  gtk_box_set_center_widget(GTK_BOX(header), gtk_label_new(label));
-  gtk_widget_show_all(header);
+  GtkWidget *module_name = gtk_widget_get_first_child(header);
+  GtkWidget *label_widget = gtk_widget_get_next_sibling(module_name);
+  if(GTK_IS_LABEL(label_widget))
+    gtk_widget_unparent(label_widget);
+  gtk_widget_set_hexpand(module_name, FALSE);
+  gtk_box_insert_child_after(GTK_BOX(header), dt_gui_expand(dt_ui_label_new(label)), module_name);
 }
 
 static void _preferences_changed(gpointer instance, gpointer self)
