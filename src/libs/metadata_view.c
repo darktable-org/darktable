@@ -374,7 +374,7 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
 
   int stars = img->flags & 0x7;
   char *star_string = NULL;
-  if(stars == 6)
+  if(stars == 6 || img->flags & 0x8)
   {
     value[0] = 'x';
     tooltip_parts[next_tooltip_part++] = _("image rejected");
@@ -384,15 +384,6 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
     value[0] = '0' + stars;
     tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
   }
-
-
-  if(img->flags & 8)
-  {
-    value[1] = TRUE_FIELD;
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[0]);
-  }
-  else
-    value[1] = FALSE_FIELD;
 
   if(img->flags & DT_IMAGE_THUMBNAIL_DEPRECATED)
   {
