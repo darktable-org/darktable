@@ -1743,10 +1743,11 @@ int dt_init(int argc,
      require fixed settings.  reference, mini and notebook require a
      cl capable system with 16GB of ram and 2GB of free video ram
   */
-  static int ref_resources[12] = {
+  static int ref_resources[16] = {
       8192,  32,  512, 2048,   // reference
       1024,   2,  128,  200,   // mini system
       4096,  32,  512, 1024,   // simple notebook with integrated graphics
+     16384,  64, 1024, 5500,   // common2026
   };
 
   /* This is where the sync is to be done if the enum for pref
@@ -2073,6 +2074,7 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "reference"))    level = -1;
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
+    else if(!strcmp(config, "common2026"))   level = -4;
   }
 
   if(level != oldlevel)
