@@ -1379,7 +1379,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
 
   if(!buf.buf)
   {
-    fprintf(stderr,"load_status = %d\n",(int)image->load_status);
+    dt_print(DT_DEBUG_ALWAYS, "[mimpmap _init_f] for ID=%d load_status=%d",image->id, (int)image->load_status);
     if(image->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
       dt_control_log(_("image `%s' is not available!"), image->filename);
     else if(image->load_status == DT_IMAGEIO_LOAD_FAILED
@@ -1404,45 +1404,69 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
     if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
+<<<<<<< HEAD
         "mipmap mosaic_half_size_f", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_half_size_f((float *const)out,
                                               (const float *const)buf.buf,
                                               &roi_out, &roi_in,
                                               roi_out.width, roi_in.width,
                                               image->buf_dsc.filters);
+=======
+        "mipmap mosaic_half_size_f", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
+      dt_iop_clip_and_zoom_mosaic_half_size_f((float *const)out, (const float *const)buf.buf, &roi_out, &roi_in,
+                                              roi_out.width, roi_in.width, image->buf_dsc.filters);
+>>>>>>> 67808860f5 (Various log improvements)
     }
     else if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_UINT16)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
+<<<<<<< HEAD
         "mipmap mosaic_half_size", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_half_size((uint16_t * const)out,
                                             (const uint16_t *)buf.buf,
                                             &roi_out, &roi_in,
                                             roi_out.width, roi_in.width,
                                             image->buf_dsc.filters);
+=======
+        "mipmap mosaic_half_size", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
+      dt_iop_clip_and_zoom_mosaic_half_size((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
+                                            roi_out.width, roi_in.width, image->buf_dsc.filters);
+>>>>>>> 67808860f5 (Various log improvements)
     }
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_UINT16)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
+<<<<<<< HEAD
         "mipmap mosaic_third_size_xtrans", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_third_size_xtrans((uint16_t * const)out,
                                                     (const uint16_t *)buf.buf, &roi_out,
                                                     &roi_in, roi_out.width,
                                                     roi_in.width, image->buf_dsc.xtrans);
+=======
+        "mipmap mosaic_third_size_xtrans", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
+      dt_iop_clip_and_zoom_mosaic_third_size_xtrans((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out,
+                                                    &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans);
+>>>>>>> 67808860f5 (Various log improvements)
     }
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
+<<<<<<< HEAD
         "mipmap mosaic_third_size_xtrans_f", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(out, (const float *)buf.buf,
                                                       &roi_out, &roi_in,
                                                       roi_out.width, roi_in.width,
                                                       image->buf_dsc.xtrans);
+=======
+        "mipmap mosaic_third_size_xtrans_f", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
+      dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
+                                                      roi_out.width, roi_in.width, image->buf_dsc.xtrans);
+>>>>>>> 67808860f5 (Various log improvements)
     }
     else
     {
       dt_print_pipe(DT_DEBUG_ALWAYS,
-        "mipmap unreachable_codepath", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
+        "mipmap unreachable_codepath", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
       dt_unreachable_codepath();
     }
   }
