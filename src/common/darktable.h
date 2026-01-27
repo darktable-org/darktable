@@ -158,6 +158,10 @@ G_BEGIN_DECLS
 #define __DT_CLONE_TARGETS__
 #endif
 
+
+#define STR_YESNO(b) ((b) ? "YES" : "NO")
+#define STR_TRUEFALSE(b) ((b) ? "TRUE" : "FALSE")
+
 typedef int32_t dt_imgid_t;
 typedef int32_t dt_filmid_t;
 #define NO_IMGID (0)
