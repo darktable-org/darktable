@@ -1674,9 +1674,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
   if(cl->dlocl)
   {
-    free(cl->dlocl->symbols);
-    g_free(cl->dlocl->library);
-    free(cl->dlocl);
+    dt_dlopencl_close(cl->dlocl);
   }
 
   free(cl->dev);
