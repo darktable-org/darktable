@@ -57,25 +57,25 @@ int dt_ratings_get(const dt_imgid_t imgid)
 
 static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
 {
+  int new_rating = rating;
   dt_image_t *image = dt_image_cache_get(imgid, 'w');
 
   if(image)
   {
     // apply or remove rejection
-    if(rating == DT_VIEW_REJECT) // changed invalid rating of 6 (DT_VIEW_REJECT) to -3 (DT_RATINGS_REJECT)
-      rating = DT_RATINGS_REJECT;
-    if(rating == DT_RATINGS_REJECT)
+    if(new_rating == DT_VIEW_REJECT) // handle undo
+      new_rating = DT_RATINGS_REJECT;
+    if(new_rating == DT_RATINGS_REJECT)
       image->flags = (image->flags | DT_IMAGE_REJECTED);
-    else if(rating == DT_RATINGS_UNREJECT)
+    else if(new_rating == DT_RATINGS_UNREJECT)
       image->flags = (image->flags & ~DT_IMAGE_REJECTED);
     else
     {
       image->flags = (image->flags & ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK))
-        | (DT_VIEW_RATINGS_MASK & rating);
+        | (DT_VIEW_RATINGS_MASK & new_rating);
     }
     // synch through:
     dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED);
   }
 }
 
