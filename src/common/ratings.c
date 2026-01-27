@@ -63,6 +63,8 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
   if(image)
   {
     // apply or remove rejection
+    if(new_rating == DT_VIEW_REJECT) // handle undo
+      new_rating = DT_RATINGS_REJECT;
     if(new_rating == DT_RATINGS_REJECT)
       image->flags = (image->flags | DT_IMAGE_REJECTED);
     else if(new_rating == DT_RATINGS_UNREJECT)
