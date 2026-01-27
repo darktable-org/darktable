@@ -2880,35 +2880,6 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid,
                                              region, rowpitch, CL_TRUE);
 }
 
-int dt_opencl_read_host_from_device_non_blocking(const int devid,
-                                                 void *host,
-                                                 void *device,
-                                                 const int width,
-                                                 const int height,
-                                                 const int bpp)
-{
-  return dt_opencl_read_host_from_device_rowpitch_non_blocking(devid, host, device,
-                                                               width, height,
-                                                               bpp * width);
-}
-
-int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid,
-                                                          void *host,
-                                                          void *device,
-                                                          const int width,
-                                                          const int height,
-                                                          const int rowpitch)
-{
-  if(!_cldev_running(devid))
-    return DT_OPENCL_NODEVICE;
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
-  // non-blocking.
-  return dt_opencl_read_host_from_device_raw(devid, host, device, origin,
-                                             region, rowpitch, CL_FALSE);
-}
-
-
 int dt_opencl_read_host_from_device_raw(const int devid,
                                         void *host,
                                         void *device,
@@ -2963,37 +2934,6 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid,
   // blocking.
   return dt_opencl_write_host_to_device_raw(devid, host, device, origin,
                                             region, rowpitch, CL_TRUE);
-}
-
-int dt_opencl_write_host_to_device_non_blocking(const int devid,
-                                                void *host,
-                                                void *device,
-                                                const int width,
-                                                const int height,
-                                                const int bpp)
-{
-  return dt_opencl_write_host_to_device_rowpitch_non_blocking(devid, host, device,
-                                                              width, height, width * bpp);
-}
-
-int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid,
-                                                         void *host,
-                                                         void *device,
-                                                         const int width,
-                                                         const int height,
-                                                         const int rowpitch)
-{
-  if(!_cldev_running(devid))
-    return DT_OPENCL_NODEVICE;
-
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
-  // non-blocking.
-
-  const cl_int err = dt_opencl_write_host_to_device_raw(devid, host, device,
-                                                        origin, region, rowpitch, CL_FALSE);
-  _check_clmem_err(devid, err);
-  return err;
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid,
@@ -3193,16 +3133,8 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   return dev;
 }
 
-void *dt_opencl_copy_host_to_device(const int devid,
-                                    void *host,
-                                    const int width,
-                                    const int height,
-                                    const int bpp)
-{
-  return dt_opencl_copy_host_to_device_rowpitch(devid, host, width, height, bpp, 0);
-}
 
-void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
+static void *_opencl_copy_host_to_device_rowpitch(const int devid,
                                              void *host,
                                              const int width,
                                              const int height,
@@ -3243,6 +3175,14 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
   return dev;
 }
 
+void *dt_opencl_copy_host_to_device(const int devid,
+                                    void *host,
+                                    const int width,
+                                    const int height,
+                                    const int bpp)
+{
+  return _opencl_copy_host_to_device_rowpitch(devid, host, width, height, bpp, 0);
+}
 
 void dt_opencl_release_mem_object(cl_mem mem)
 {
@@ -3348,56 +3288,6 @@ void *dt_opencl_alloc_device(const int devid,
 
   return dev;
 }
-
-
-void *dt_opencl_alloc_device_use_host_pointer(const int devid,
-                                              const int width,
-                                              const int height,
-                                              const int bpp,
-                                              const int rowpitch,
-                                              void *host)
-{
-  if(!_cldev_running(devid))
-    return NULL;
-
-  dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
-    return NULL;
-
-  cl_int err = CL_SUCCESS;
-  cl_image_format fmt;
-  // guess pixel format from bytes per pixel
-  if(bpp == 4 * sizeof(float))
-    fmt = (cl_image_format){ CL_RGBA, CL_FLOAT };
-  else if(bpp == 2 * sizeof(float))
-    fmt = (cl_image_format){ CL_RG, CL_FLOAT };
-  else if(bpp == sizeof(float))
-    fmt = (cl_image_format){ CL_R, CL_FLOAT };
-  else if(bpp == sizeof(uint16_t))
-    fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT16 };
-  else
-    return NULL;
-
-  const cl_image_desc desc = (cl_image_desc)
-        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, rowpitch, 0, 0, 0, NULL};
-
-  cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
-    (cl->dev[devid].context,
-     CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
-     &fmt, &desc, host, &err);
-
-  if(err != CL_SUCCESS || dev == NULL)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_use_host_pointer]"
-             " could not allocate cl image on device '%s' id=%d: %s",
-             cl->dev[devid].fullname, devid, cl_errstr(err));
-
-  _check_clmem_err(devid, err);
-  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
-
-  return dev;
-}
-
 
 void *dt_opencl_alloc_device_buffer(const int devid,
                                     const size_t size)
