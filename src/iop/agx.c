@@ -2275,6 +2275,8 @@ static void _create_primaries_page(dt_iop_module_t *main,
   GtkWidget *primaries_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
   g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), main);
+  dt_action_define_iop(main, NULL, N_("reset primaries"),
+                       primaries_button, &dt_action_def_button);
 
   g->primaries_controls_vbox = dt_gui_vbox(dt_gui_hbox(dt_ui_label_new(_("reset primaries")),
                                                        dt_gui_align_right(primaries_button)));
@@ -2344,6 +2346,8 @@ static void _create_primaries_page(dt_iop_module_t *main,
                               _("set parameters to completely reverse primaries modifications,\n"
                                   "but allow subsequent editing"));
   g_signal_connect(g->set_post_curve_primaries_from_pre_button, "clicked", G_CALLBACK(_set_post_curve_primaries_from_pre_callback), main);
+  dt_action_define_iop(main, NULL, N_("set post-mapping to reverse pre-mapping primaries"),
+                       g->set_post_curve_primaries_from_pre_button, &dt_action_def_button);
   dt_gui_box_add(reversal_hbox, dt_gui_align_right(g->set_post_curve_primaries_from_pre_button));
 
   self->widget = g->post_curve_primaries_controls_vbox;
