@@ -1847,18 +1847,18 @@ static char *_strsep(char **stringp,
 static void _opencl_priority_parse(dt_opencl_t *cl,
                                    char *configstr,
                                    int *priority_list,
-                                   int *mandatory)
+                                   gboolean *mandatory)
 {
   const int devs = cl->num_devs;
   int count = 0;
   int *full = malloc(sizeof(int) * (devs + 1));
-  int mnd = 0;
+  gboolean mnd = FALSE;
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
   {
     priority_list[0] = -1;
-    *mandatory = 0;
+    *mandatory = FALSE;
     free(full);
     return;
   }
@@ -1866,7 +1866,7 @@ static void _opencl_priority_parse(dt_opencl_t *cl,
   // check if user wants us to force-use opencl device(s)
   if(configstr[0] == '+')
   {
-    mnd = 1;
+    mnd = TRUE;
     configstr++;
   }
 
@@ -1936,7 +1936,7 @@ static void _opencl_priority_parse(dt_opencl_t *cl,
   while(count < devs + 1) priority_list[count++] = -1;
 
   // opencl use can only be mandatory if at least one opencl device is given
-  *mandatory = (priority_list[0] != -1) ? mnd : 0;
+  *mandatory = (priority_list[0] != -1) ? mnd : FALSE;
 
   free(full);
 }
@@ -2020,7 +2020,7 @@ int dt_opencl_lock_device(const int pipetype)
 
   const size_t prio_size = sizeof(int) * (cl->num_devs + 1);
   int *priority = malloc(prio_size);
-  int mandatory;
+  gboolean mandatory;
   gboolean heavy = FALSE;
 
   switch(pipetype & DT_DEV_PIXELPIPE_ANY)
@@ -2051,7 +2051,7 @@ int dt_opencl_lock_device(const int pipetype)
     default:
       free(priority);
       priority = NULL;
-      mandatory = 0;
+      mandatory = FALSE;
   }
 
   dt_pthread_mutex_unlock(&cl->lock);
