@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -330,7 +330,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float grey = max3f(self->picked_color);
+  const float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   ++darktable.gui->reset;
@@ -346,10 +346,10 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Black
-  float black = max3f(self->picked_color_min);
+  const float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -368,13 +368,13 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Black
   float EVmin = p->shadows_range;
 
   // White
-  float white = max3f(self->picked_color_max);
+  const float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -392,19 +392,19 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Grey
-  float grey = max3f(self->picked_color);
+  const float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   // Black
-  float black = max3f(self->picked_color_min);
+  const float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
-  float white = max3f(self->picked_color_max);
+  const float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -439,8 +439,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
   else if(w == g->security_factor)
   {
-    float prev = *(float *)previous;
-    float ratio = (p->security_factor - prev) / (prev + 100.0f);
+    const float prev = *(float *)previous;
+    const float ratio = (p->security_factor - prev) / (prev + 100.0f);
 
     float EVmin = p->shadows_range;
     EVmin = EVmin + ratio * EVmin;
