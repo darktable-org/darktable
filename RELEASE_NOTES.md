@@ -114,6 +114,9 @@ changes (where available).
   example if the image is cropped in darkroom, the metadata $(WIDTH.x)
   and $(HEIGHT.x) where not correct on lighttable.
 
+- Fixed a missing thumbnail overlays with $(CATEGORY[n,m]) variables
+  update when a tag is assigned.
+
 ## Lua
 
 ### API Version
