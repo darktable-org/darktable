@@ -516,7 +516,6 @@ static void *_control_work_res(void *ptr)
   dt_pthread_setname(name);
   free(params);
   const int32_t threadid_res = _control_get_threadid_res();
-  dt_atomic_add_int(&s->running_jobs, 1);
   while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d", threadid_res);
@@ -539,7 +538,6 @@ static void *_control_worker_kicker(void *ptr)
 {
   dt_control_t *control = (dt_control_t *)ptr;
   dt_pthread_setname("kicker");
-  dt_atomic_add_int(&control->running_jobs, 1);
   while(dt_control_running())
   {
     sleep(2);
@@ -562,8 +560,6 @@ static void *_control_work(void *ptr)
   snprintf(name, sizeof(name), "worker %d", threadid);
   dt_pthread_setname(name);
   free(params);
-
-  dt_atomic_add_int(&control->running_jobs, 1);
   while(dt_control_running())
   {
     if(_control_run_job(control))
@@ -620,7 +616,7 @@ void dt_control_jobs_init()
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
   control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
 
-  g_atomic_int_set(&control->running, DT_CONTROL_STATE_RUNNING);
+  dt_atomic_set_int(&control->running, DT_CONTROL_STATE_RUNNING);
 
   int err = 0; // collected errors while creating all threads
 
@@ -651,37 +647,9 @@ void dt_control_jobs_init()
 
   if(err != 0)
   {
-    /* FIXME can we handle this better?
-        Should we unset control->running here? requires further investigation
-        on how to join or avoid rogue threads
-    */
+    /* FIXME can we handle this better? */
     dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] ERROR STARTING THREADS, PROBLEMS AHEAD");
   }
-  else // no errors reported so we test & wait
-  {
-    const int requested = control->num_threads + 1 + DT_CTL_WORKER_RESERVED;
-    int running = 0;
-    for(int i = 0; i < 1000; i++)
-    {
-      running = dt_atomic_get_int(&control->running_jobs);
-      dt_print(DT_DEBUG_CONTROL, "[dt_control_jobs_init] %d of %d threads running", running, requested);
-      if(running == requested) break;
-      g_usleep(1000);   // let's wait for up to 1sec for OS dispatching the pthreads
-    }
-    if(running != requested)
-      dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] ERROR STARTED %d THREADS of %d, PROBLEMS AHEAD",
-        running, requested);
-  }
-}
-
-gboolean dt_control_all_running()
-{
-  if(!dt_control_running())
-    return FALSE;
-
-  dt_control_t *control = darktable.control;
-  const int requested = control->num_threads + 1 + DT_CTL_WORKER_RESERVED;
-  return dt_atomic_get_int(&control->running_jobs) == requested;
 }
 
 void dt_control_jobs_cleanup()

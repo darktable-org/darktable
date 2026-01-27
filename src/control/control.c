@@ -203,7 +203,6 @@ void dt_control_init(const gboolean withgui)
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->quitting, 0);
   dt_atomic_set_int(&s->pending_jobs, 0);
-  dt_atomic_set_int(&s->running_jobs, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -221,7 +220,6 @@ void dt_control_init(const gboolean withgui)
   // same thread as init
   s->gui_thread = pthread_self();
 
-  // s->last_expose_time = dt_get_wtime();
   s->log_pos = s->log_ack = 0;
   s->busy = 0;
   s->log_message_timeout_id = 0;
