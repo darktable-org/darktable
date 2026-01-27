@@ -4541,7 +4541,6 @@ void dt_gui_cursor_clear_busy()
       GtkWidget *toplevel = darktable.gui->ui->main_window;
       GdkWindow *window = gtk_widget_get_window(toplevel);
       gdk_window_set_cursor(window, busy_prev_cursor);
-      dt_gui_process_events();
       g_object_unref(busy_prev_cursor);
       busy_prev_cursor = NULL;
       dt_control_allow_change_cursor();
@@ -4554,7 +4553,7 @@ void dt_gui_process_events()
 {
   // process pending Gtk/GDK events; we need to limit the total calls because once the LUA
   // interpreeter starts the script installer we would end up in an infinite loop
-  unsigned max_iter = 200;
+  unsigned max_iter = 1000;
   while(g_main_context_iteration(NULL, FALSE) && --max_iter > 0)
     continue;
 }

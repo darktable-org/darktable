@@ -24,25 +24,6 @@
 
 DT_MODULE(1)
 
-/* proxy function, to add a widget to toolbox */
-static void _lib_view_toolbox_add(dt_lib_module_t *self,
-                                  GtkWidget *widget,
-                                  dt_view_type_flags_t views);
-
-
-typedef struct child_data_t
-{
-  GtkWidget * child;
-  dt_view_type_flags_t views;
-
-} child_data_t;
-
-typedef struct dt_lib_view_toolbox_t
-{
-  GtkWidget *container;
-  GList * child_views;
-} dt_lib_view_toolbox_t;
-
 const char *name(dt_lib_module_t *self)
 {
   return _("view toolbox");
@@ -70,64 +51,12 @@ int position(const dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  /* initialize ui widgets */
-  dt_lib_view_toolbox_t *d = g_malloc0(sizeof(dt_lib_view_toolbox_t));
-  self->data = (void *)d;
-
   /* the toolbar container */
-  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-  /* setup proxy */
-  darktable.view_manager->proxy.view_toolbox.module = self;
-  darktable.view_manager->proxy.view_toolbox.add = _lib_view_toolbox_add;
+  self->widget = darktable.view_manager->view_toolbox;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_view_toolbox_t *d = self->data;
-  g_list_free_full(d->child_views,free);
-  g_free(self->data);
-  self->data = NULL;
-}
-
-void view_enter(dt_lib_module_t *self,
-                dt_view_t *old_view,
-                dt_view_t *new_view)
-{
-  dt_lib_view_toolbox_t *d = self->data;
-  dt_view_type_flags_t nv= new_view->view(new_view);
-  gtk_widget_set_no_show_all(d->container, TRUE);
-
-  for(const GList *child_elt = d->child_views;
-      child_elt;
-      child_elt = g_list_next(child_elt))
-  {
-    child_data_t* child_data = child_elt->data;
-    if(child_data->views & nv)
-    {
-      gtk_widget_show_all(child_data->child);
-    }
-    else
-    {
-      gtk_widget_hide(child_data->child);
-    }
-  }
-}
-
-
-static void _lib_view_toolbox_add(dt_lib_module_t *self,
-                                  GtkWidget *widget,
-                                  dt_view_type_flags_t views)
-{
-  dt_lib_view_toolbox_t *d = self->data;
-  gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
-  gtk_widget_show_all(widget);
-
-  child_data_t *child_data = malloc(sizeof(child_data_t));
-  child_data->child = widget;
-  child_data->views = views;
-  d->child_views = g_list_prepend(d->child_views,child_data);
-
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
