@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,7 +55,8 @@ int dt_ratings_get(const dt_imgid_t imgid)
   return stars;
 }
 
-static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
+static void _ratings_apply_to_image(const dt_imgid_t imgid,
+                                    const int rating)
 {
   dt_image_t *image = dt_image_cache_get(imgid, 'w');
 
@@ -72,18 +73,26 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
         | (DT_VIEW_RATINGS_MASK & rating);
     }
     // synch through:
-    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE,
+                                      "_ratings_apply_to_image");
   }
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
+static void _pop_undo(gpointer user_data,
+                      const dt_undo_type_t type,
+                      const dt_undo_data_t data,
+                      const dt_undo_action_t action,
+                      GList **imgs)
 {
   if(type == DT_UNDO_RATINGS)
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
       dt_undo_ratings_t *ratings = list->data;
-      _ratings_apply_to_image(ratings->imgid, (action == DT_ACTION_UNDO) ? ratings->before : ratings->after);
+      _ratings_apply_to_image(ratings->imgid,
+                              (action == DT_ACTION_UNDO)
+                              ? ratings->before
+                              : ratings->after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(ratings->imgid));
     }
     dt_collection_hint_message(darktable.collection);
@@ -96,7 +105,8 @@ static void _ratings_undo_data_free(gpointer data)
   g_list_free(l);
 }
 
-// wrapper that does some precalculation to deal with toggle effects and rating increase/decrease
+// wrapper that does some precalculation to deal with toggle effects
+// and rating increase/decrease.
 static void _ratings_apply(const GList *imgs,
                            const int rating,
                            GList **undo,
@@ -134,17 +144,22 @@ static void _ratings_apply(const GList *imgs,
 
   if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
   {
-    const guint count = g_list_length((GList *) imgs);
+    const guint count = g_list_length((GList *)imgs);
     if(rating == DT_VIEW_REJECT)
-      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+      dt_control_log(ngettext("rejecting %d image",
+                              "rejecting %d images", count), count);
     else
-      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+      dt_control_log(ngettext("applying rating %d to %d image",
+                              "applying rating %d to %d images", count),
                      rating, count);
-    // process all pending events to ensure that the toast is actually shown right away
+    // process all pending events to ensure that the toast is actually
+    // shown right away
     dt_gui_process_events();
   }
 
-  for(const GList *images = imgs; images; images = g_list_next(images))
+  for(const GList *images = imgs;
+      images;
+      images = g_list_next(images))
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
     const int old_rating = dt_ratings_get(image_id);
@@ -184,13 +199,15 @@ void dt_ratings_apply_on_list(const GList *img,
   {
     dt_gui_cursor_set_busy();
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
 
     _ratings_apply(img, rating, &undo, undo_on);
 
     if(undo_on)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS,
+                     undo, _pop_undo, _ratings_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
     dt_gui_cursor_clear_busy();
@@ -205,7 +222,6 @@ void dt_ratings_apply_on_image(const dt_imgid_t imgid,
                                const gboolean group_on)
 {
   GList *imgs = NULL;
-  int new_rating = rating;
 
   if(dt_is_valid_imgid(imgid))
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
@@ -213,10 +229,12 @@ void dt_ratings_apply_on_image(const dt_imgid_t imgid,
   if(!g_list_is_empty(imgs))
   {
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+    if(group_on)
+      dt_grouping_add_grouped_images(&imgs);
 
-    _ratings_apply(imgs, new_rating, &undo, undo_on);
+    _ratings_apply(imgs, rating, &undo, undo_on);
 
     if(undo_on)
     {
@@ -238,9 +256,9 @@ enum
 };
 
 static float _action_process_rating(gpointer target,
-                                    dt_action_element_t element,
-                                    dt_action_effect_t effect,
-                                    float move_size)
+                                    const dt_action_element_t element,
+                                    const dt_action_effect_t effect,
+                                    const float move_size)
 {
   float return_value = DT_ACTION_NOT_VALID;
 
@@ -261,7 +279,8 @@ static float _action_process_rating(gpointer target,
         break;
       default:
         dt_print(DT_DEBUG_ALWAYS,
-                 "[_action_process_rating] unknown shortcut effect (%d) for rating", effect);
+                 "[_action_process_rating] unknown shortcut effect (%d) for rating",
+                 effect);
         break;
       }
     }
@@ -270,7 +289,9 @@ static float _action_process_rating(gpointer target,
     dt_ratings_apply_on_list(imgs, element, TRUE);
 
     // if we are in darkroom we show a message as there might be no other indication
-    if(dt_view_get_current() == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
+    if(dt_view_get_current() == DT_VIEW_DARKROOM
+       && g_list_is_singleton(imgs)
+       && darktable.develop->preview_pipe)
     {
       // we verify that the image is the active one
       const int id = GPOINTER_TO_INT(imgs->data);
@@ -279,7 +300,10 @@ static float _action_process_rating(gpointer target,
         const dt_image_t *img = dt_image_cache_get(id, 'r');
         if(img)
         {
-          const int r = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
+          const int r = img->flags & DT_IMAGE_REJECTED
+            ? DT_VIEW_REJECT
+            : (img->flags & DT_VIEW_RATINGS_MASK);
+
           dt_image_cache_read_release(img);
 
           // translate in human readable value
@@ -308,7 +332,7 @@ static float _action_process_rating(gpointer target,
     const dt_imgid_t image_id = darktable.develop->image_storage.id;
     if(dt_is_valid_imgid(image_id))
     {
-      int rating = dt_ratings_get(image_id);
+      const int rating = dt_ratings_get(image_id);
       return_value = - rating + (rating >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
     }
   }
