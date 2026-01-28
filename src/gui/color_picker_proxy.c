@@ -206,17 +206,19 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
-      if(flags & DT_COLOR_PICKER_NO_AUTO)
-      {
-        // reset coordinates to 0.0f to create a zero-area box,
-        // requiring the user to drag-select manually
-        memset(self->pick_box, 0, sizeof(self->pick_box));
-      }
-      else if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
+      if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
          && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
       {
-        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
-        dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
+        if(flags & DT_COLOR_PICKER_NO_AUTO)
+        {
+          // reset coordinates to 0.0f to create a zero-area box,
+          // requiring the user to drag-select manually
+          memset(self->pick_box, 0, sizeof(self->pick_box));
+        }
+        else {
+          dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
+          dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
+        }
       }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
@@ -324,11 +326,6 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
   // FIXME: is this overdoing it? see #14812
   pipe->changed |= DT_DEV_PIPE_REMOVE;
   pipe->cache_obsolete = TRUE;
-
-  if((picker->flags & DT_COLOR_PICKER_CALLBACK_ONLY_WHEN_DONE) && darktable.control->button_down)
-  {
-    return;
-  }
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))

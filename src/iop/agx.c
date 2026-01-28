@@ -1170,6 +1170,12 @@ static void _read_exposure_params_callback(GtkWidget *widget,
 // move only the pivot's relative (input) exposure, and recalculate its output based on mid-gray
 static void _apply_auto_pivot_xy(dt_iop_module_t *self, const dt_iop_order_iccprofile_info_t *profile)
 {
+  printf("_apply_auto_pivot_xy, %d\n", darktable.control->button_down);
+  // don't update while the user is dragging the mouse
+  if (darktable.control->button_down) {
+    return;
+  }
+
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
@@ -1815,7 +1821,7 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   dt_iop_basic_curve_controls_t *controls = &g->basic_curve_controls;
 
   // curve_pivot_x_relative_ev with picker
-  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE | DT_COLOR_PICKER_NO_AUTO | DT_COLOR_PICKER_CALLBACK_ONLY_WHEN_DONE, dt_bauhaus_slider_from_params(section, "curve_pivot_x"));
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_slider_from_params(section, "curve_pivot_x"));
   controls->curve_pivot_x = slider;
   dt_bauhaus_slider_set_format(slider, _(" EV"));
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1824,7 +1830,7 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                                "used to set the pivot relative to mid-gray"));
 
   // curve_pivot_y_linear
-  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE | DT_COLOR_PICKER_NO_AUTO | DT_COLOR_PICKER_CALLBACK_ONLY_WHEN_DONE, dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output"));
+  slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE | DT_COLOR_PICKER_NO_AUTO, dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output"));
   controls->curve_pivot_y_linear = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
