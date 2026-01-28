@@ -479,6 +479,11 @@ static gboolean _poll_devices(gpointer user_data)
 
 static void _midi_open_devices(dt_lib_module_t *self)
 {
+  dt_input_device_t id = dt_register_input_driver(self, &_driver_definition);
+  const char *devices_string = dt_conf_get_string_const("plugins/midi/devices");
+  if(!strcmp(devices_string, "-"))
+    return;
+
   if(Pm_Initialize())
   {
     dt_print(DT_DEBUG_ALWAYS, "[_midi_open_devices] ERROR initialising PortMidi");
@@ -487,11 +492,7 @@ static void _midi_open_devices(dt_lib_module_t *self)
   else
     dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] PortMidi initialized");
 
-  dt_input_device_t id = dt_register_input_driver(self, &_driver_definition);
-
-  const char *devices_string = dt_conf_get_string_const("plugins/midi/devices");
   gchar **dev_strings = g_strsplit(devices_string, ",", 0);
-
   int last_dev = -1;
 
   for(int i = 0; i < Pm_CountDevices(); i++)
@@ -620,7 +621,10 @@ static void _midi_open_devices(dt_lib_module_t *self)
 
   g_strfreev(dev_strings);
 
-  if(self->data) g_timeout_add(10, _poll_devices, self);
+  if(self->data)
+    g_timeout_add(10, _poll_devices, self);
+  else
+    Pm_Terminate();
 }
 
 static void _midi_device_free(dt_midi_device_t *midi)
@@ -637,12 +641,13 @@ static void _midi_device_free(dt_midi_device_t *midi)
 
 static void _midi_close_devices(dt_lib_module_t *self)
 {
-  g_source_remove_by_user_data(self);
-
-  g_slist_free_full(self->data, (void (*)(void *))_midi_device_free);
-  self->data = NULL;
-
-  Pm_Terminate();
+  if(self->data)
+  {
+    g_source_remove_by_user_data(self);
+    g_slist_free_full(self->data, (void (*)(void *))_midi_device_free);
+    self->data = NULL;
+    Pm_Terminate();
+  }
 }
 
 static gboolean _update_devices(gpointer user_data)
