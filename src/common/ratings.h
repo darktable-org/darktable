@@ -30,11 +30,16 @@ G_BEGIN_DECLS
 int dt_ratings_get(const dt_imgid_t imgid);
 
 /** apply rating to the specified image */
-void dt_ratings_apply_on_image(const dt_imgid_t imgid, const int rating, const gboolean single_star_toggle,
-                               const gboolean undo_on, const gboolean group_on);
+void dt_ratings_apply_on_image(const dt_imgid_t imgid,
+                               const int rating,
+                               const gboolean single_star_toggle,
+                               const gboolean undo_on,
+                               const gboolean group_on);
 
 /** apply rating to all images in the list */
-void dt_ratings_apply_on_list(const GList *list, const int rating, const gboolean undo_on);
+void dt_ratings_apply_on_list(const GList *list,
+                              const int rating,
+                              const gboolean undo_on);
 
 extern const struct dt_action_def_t dt_action_def_rating;
 
@@ -45,4 +50,3 @@ G_END_DECLS
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

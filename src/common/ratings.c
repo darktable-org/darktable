@@ -288,7 +288,8 @@ static float _action_process_rating(gpointer target,
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_ratings_apply_on_list(imgs, element, TRUE);
 
-    // if we are in darkroom we show a message as there might be no other indication
+    // if we are in darkroom we show a message as there might be no
+    // other indication.
     if(dt_view_get_current() == DT_VIEW_DARKROOM
        && g_list_is_singleton(imgs)
        && darktable.develop->preview_pipe)
