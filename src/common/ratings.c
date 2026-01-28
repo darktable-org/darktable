@@ -256,7 +256,7 @@ enum
 };
 
 static float _action_process_rating(gpointer target,
-                                    const dt_action_element_t element,
+                                    dt_action_element_t element,
                                     const dt_action_effect_t effect,
                                     const float move_size)
 {
