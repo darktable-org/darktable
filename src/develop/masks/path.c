@@ -2061,7 +2061,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
 
       bzpt->border[0] = bzpt->border[1] = MAX(0.0005f, masks_border);
 
-      // if that's the first point we should had another one as base point
+      // if that's the first point we should add another one as base point
       if(nb == 0)
       {
         dt_masks_point_path_t *bzpt2 = malloc(sizeof(dt_masks_point_path_t));
