@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2019 Heiko Bauke
-    Copyright (C) 2023 darktable developers.
+    Copyright (C) 2023-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 kernel void guided_filter_split_rgb_image(const int width,
                                           const int height,
+                                          const int first,
                                           read_only image2d_t guide,
                                           write_only image2d_t out_r,
                                           write_only image2d_t out_g,
@@ -32,7 +33,7 @@ kernel void guided_filter_split_rgb_image(const int width,
   if(x >= width || y >= height) return;
 
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
-  const float4 pixel = weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y))));
+  const float4 pixel = weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y+first))));
   write_imagef(out_r, (int2)(x, y), pixel.x);
   write_imagef(out_g, (int2)(x, y), pixel.y);
   write_imagef(out_b, (int2)(x, y), pixel.z);
@@ -172,6 +173,7 @@ kernel void guided_filter_box_mean_y(const int width,
 
 kernel void guided_filter_covariances(const int width,
                                       const int height,
+                                      const int first,
                                       read_only image2d_t guide,
                                       read_only image2d_t img,
                                       write_only image2d_t cov_imgg_img_r,
@@ -186,7 +188,7 @@ kernel void guided_filter_covariances(const int width,
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
   const float img_ = read_imagef(img, sampleri, (int2)(x, y)).x;
   const float4 imgv = { img_, img_, img_, 0.0f };
-  const float4 pixel = imgv * weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y))));
+  const float4 pixel = imgv * weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y+first))));
   write_imagef(cov_imgg_img_r, (int2)(x, y), pixel.x);
   write_imagef(cov_imgg_img_g, (int2)(x, y), pixel.y);
   write_imagef(cov_imgg_img_b, (int2)(x, y), pixel.z);
@@ -195,6 +197,7 @@ kernel void guided_filter_covariances(const int width,
 
 kernel void guided_filter_variances(const int width,
                                     const int height,
+                                    const int first,
                                     read_only image2d_t guide,
                                     write_only image2d_t var_imgg_rr,
                                     write_only image2d_t var_imgg_rg,
@@ -209,7 +212,7 @@ kernel void guided_filter_variances(const int width,
   if(x >= width || y >= height) return;
 
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
-  const float4 pixel = weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y))));
+  const float4 pixel = weight * fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y+first))));
   write_imagef(var_imgg_rr, (int2)(x, y), pixel.x * pixel.x);
   write_imagef(var_imgg_rg, (int2)(x, y), pixel.x * pixel.y);
   write_imagef(var_imgg_rb, (int2)(x, y), pixel.x * pixel.z);
@@ -307,6 +310,7 @@ kernel void guided_filter_solve(const int width,
 
 kernel void guided_filter_generate_result(const int width,
                                           const int height,
+                                          const int first,
                                           read_only image2d_t guide,
                                           read_only image2d_t a_r,
                                           read_only image2d_t a_g,
@@ -321,7 +325,7 @@ kernel void guided_filter_generate_result(const int width,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 pixel = fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y))));
+  const float4 pixel = fmin(100.0, fmax(0.0, read_imagef(guide, sampleri, (int2)(x, y+first))));
   const float a_r_ = pixel.x * read_imagef(a_r, sampleri, (int2)(x, y)).x;
   const float a_g_ = pixel.y * read_imagef(a_g, sampleri, (int2)(x, y)).x;
   const float a_b_ = pixel.z * read_imagef(a_b, sampleri, (int2)(x, y)).x;

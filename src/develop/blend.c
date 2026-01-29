@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1485,10 +1485,23 @@ void tiling_callback_blendop(dt_iop_module_t *self,
         tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
      }
 
-    if(bldata->feathering_radius > 0.1f)
-      tiling->factor = MAX(tiling->factor, 4.5f); // we need all intermediate guided filter mask buffers
+    if(bldata->feathering_radius > 0.1f) // we don't feather below that
+    {
+      const int devid = piece->pipe->devid;
+      if(devid > DT_DEVICE_CPU)
+      {
+        /* OpenCL feathering does simple internal tiling for less mem pressure,
+           we still need some mem here for this. 
+        */
+        tiling->factor_cl = MAX(tiling->factor, 1.0f);
+      }
+      tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+    }
   }
-  tiling->factor += 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
+  const float outnorm = (float)(roi_out->width * roi_out->height) / (roi_in->width * roi_in->height);
+  const float basic = 2.5f + outnorm; // in + out + (guide, tmp) + two quarter buffers for the mask
+  tiling->factor += basic;
+  tiling->factor_cl += basic;
 }
 
 /** check if content of params is all zero, indicating a
