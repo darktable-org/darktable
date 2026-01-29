@@ -100,6 +100,19 @@
     <shortdescription>enable shortcut fallbacks</shortdescription>
     <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface" capability="wayland" restart="true">
+    <name>ui/wayland_titlebar</name>
+    <type>
+      <enum>
+        <option>always</option>
+        <option>never</option>
+        <option>hide_when_maximized</option>
+      </enum>
+    </type>
+    <default>always</default>
+    <shortdescription>window titlebar (Wayland)</shortdescription>
+    <longdescription>controls window titlebar display on Wayland:\n- always: show titlebar using GTK HeaderBar (client-side decorations)\n- never: hide titlebar completely (no window decorations)\n- hide_when_maximized: use server-side decorations, hide titlebar when window is maximized (for GNOME Unite extension compatibility)</longdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>show_splash_screen</name>
     <type>bool</type>

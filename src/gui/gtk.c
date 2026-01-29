@@ -1743,10 +1743,32 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   GtkWidget *container;
   GtkWidget *widget;
 
+#ifdef GDK_WINDOWING_WAYLAND
+  // Add wayland capability for conditional preferences
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+    dt_capabilities_add("wayland");
+#endif
+
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
+
+  /*
+   * Wayland window titlebar configuration (ui/wayland_titlebar):
+   *   - "always"             : always show titlebar (GTK HeaderBar, default)
+   *   - "never"              : never show titlebar (no decorations)
+   *   - "hide_when_maximized": hide titlebar when maximized (GNOME Unite compat)
+   */
+  int titlebar_mode = 0; // default: always show
+  const char *mode = dt_conf_get_string_const("ui/wayland_titlebar");
+  if(!g_strcmp0(mode, "never"))
+    titlebar_mode = 1;
+  else if(!g_strcmp0(mode, "hide_when_maximized"))
+    titlebar_mode = 2;
+
+  // Apply hide-titlebar-when-maximized hint (works on X11 and Wayland with SSD)
+  gtk_window_set_hide_titlebar_when_maximized(GTK_WINDOW(widget), titlebar_mode == 2);
 
 #ifdef GDK_WINDOWING_WAYLAND
   if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
@@ -1754,11 +1776,24 @@ static void _init_widgets(dt_gui_gtk_t *gui)
     // On Wayland, use NORMAL hint to allow proper window resizing
     gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
-    GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
-    gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
-    gtk_widget_show(header_bar);
+    switch(titlebar_mode)
+    {
+      case 1: // never - no decorations
+        gtk_window_set_decorated(GTK_WINDOW(widget), FALSE);
+        break;
+      case 2: // hide_when_maximized - use SSD for GNOME Unite compatibility
+        gtk_window_set_decorated(GTK_WINDOW(widget), TRUE);
+        break;
+      default: // always (0) - use GTK HeaderBar (CSD)
+      {
+        GtkWidget *header_bar = gtk_header_bar_new();
+        gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+        gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
+        gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
+        gtk_widget_show(header_bar);
+        break;
+      }
+    }
   }
 #endif
 
