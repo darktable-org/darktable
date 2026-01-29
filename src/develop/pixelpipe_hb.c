@@ -1286,8 +1286,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                   dt_iop_colorspace_to_name(cst_from),
                   dt_iop_colorspace_to_name(cst_to),
                   work_profile
-                    ? dt_colorspaces_get_name(work_profile->type,
-                                              work_profile->filename)
+                    ? dt_colorspaces_get_name(work_profile->type, work_profile->filename)
                     : "no work profile");
   }
 
