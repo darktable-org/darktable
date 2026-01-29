@@ -1379,7 +1379,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
 
   if(!buf.buf)
   {
-    fprintf(stderr,"load_status = %d\n",(int)image->load_status);
+    dt_print(DT_DEBUG_ALWAYS, "[mimpmap _init_f] for ID=%d load_status=%d",image->id, (int)image->load_status);
     if(image->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
       dt_control_log(_("image `%s' is not available!"), image->filename);
     else if(image->load_status == DT_IMAGEIO_LOAD_FAILED
@@ -1442,7 +1442,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
     else
     {
       dt_print_pipe(DT_DEBUG_ALWAYS,
-        "mipmap unreachable_codepath", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
+        "mipmap unreachable_codepath", NULL, NULL, DT_DEVICE_NONE, &roi_in, &roi_out);
       dt_unreachable_codepath();
     }
   }
