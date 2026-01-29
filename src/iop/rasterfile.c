@@ -49,7 +49,7 @@
 #include <omp.h>
 #endif
 
-DT_MODULE_INTROSPECTION(2, dt_iop_rasterfile_params_t)
+DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
 {
@@ -69,7 +69,6 @@ typedef struct dt_iop_rasterfile_params_t
   dt_iop_rasterfile_mode_t mode;  // $DEFAULT: DT_RASTERFILE_MODE_ALL $DESCRIPTION: "mode"
   char path[RASTERFILE_MAXFILE];
   char file[RASTERFILE_MAXFILE];
-  gboolean use_relative_path;
 } dt_iop_rasterfile_params_t;
 
 typedef struct dt_iop_rasterfile_data_t
@@ -137,28 +136,6 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  if(old_version == 1)
-  {
-    typedef struct dt_iop_rasterfile_params_v1_t
-    {
-      dt_iop_rasterfile_mode_t mode;
-      char path[RASTERFILE_MAXFILE];
-      char file[RASTERFILE_MAXFILE];
-    } dt_iop_rasterfile_params_v1_t;
-
-    const dt_iop_rasterfile_params_v1_t *o = (const dt_iop_rasterfile_params_v1_t *)old_params;
-    dt_iop_rasterfile_params_t *n = malloc(sizeof(dt_iop_rasterfile_params_t));
-    n->mode = o->mode;
-    g_strlcpy(n->path, o->path, sizeof(n->path));
-    g_strlcpy(n->file, o->file, sizeof(n->file));
-    n->use_relative_path = FALSE;
-
-    *new_params = n;
-    *new_params_size = sizeof(dt_iop_rasterfile_params_t);
-    *new_version = 2;
-    return 0;
-  }
-
   return 1;
 }
 
@@ -184,10 +161,8 @@ static float *_read_rasterfile(char *filename,
   *sheight = 0;
   if(!filename || filename[0] == 0) return NULL;
 
-  char *extension = g_strrstr(filename, ".");
-  char *ext_lower = extension ? g_ascii_strdown(extension, -1) : NULL;
-  const gboolean is_png = ext_lower && !g_strcmp0(ext_lower, ".png");
-  g_free(ext_lower);
+  const char *extension = g_strrstr(filename, ".");
+  const gboolean is_png = extension && !g_ascii_strcasecmp(extension, ".png");
 
   if(is_png)
   {
@@ -299,24 +274,18 @@ static float *_read_rasterfile(char *filename,
 static int _check_extension(const struct dirent *namestruct)
 {
   const char *filename = namestruct->d_name;
-  int res = 0;
-  if(!filename || !filename[0]) return res;
-  char *p = g_strrstr(filename, ".");
-  if(!p) return res;
-  char *fext = g_ascii_strdown(g_strdup(p), -1);
-  if(!g_strcmp0(fext, ".pfm") || !g_strcmp0(fext, ".png")) res = 1;
-  g_free(fext);
-  return res;
+  if(!filename || !filename[0]) return 0;
+  const char *p = g_strrstr(filename, ".");
+  return p
+         && (!g_ascii_strcasecmp(p, ".pfm")
+             || !g_ascii_strcasecmp(p, ".png"));
 }
 
 static void _update_filepath(dt_iop_module_t *self)
 {
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
-  const gboolean has_file = p->file[0] != '\0';
-  const gboolean has_path = p->path[0] != '\0' || p->use_relative_path;
-
-  if(!has_file || !has_path)
+  if(!p->path[0] || !p->file[0])
   {
     dt_bauhaus_combobox_clear(g->file);
     // Making the empty widget insensitive is very important, because
@@ -327,39 +296,10 @@ static void _update_filepath(dt_iop_module_t *self)
   }
   gtk_widget_set_sensitive(g->file, TRUE);
 
-  char image_folder[PATH_MAX] = { 0 };
-  char *scan_path = NULL;
-
-  if(p->use_relative_path)
-  {
-    if(self->dev && dt_is_valid_imgid(self->dev->image_storage.id))
-      dt_image_film_roll_directory(&self->dev->image_storage, image_folder, sizeof(image_folder));
-
-    if(image_folder[0] == '\0')
-    {
-      dt_bauhaus_combobox_clear(g->file);
-      gtk_widget_set_sensitive(g->file, FALSE);
-      return;
-    }
-    scan_path = g_build_filename(image_folder, p->path, NULL);
-  }
-  else
-  {
-    scan_path = g_strdup(p->path);
-  }
-
-  if(scan_path[0] == '\0')
-  {
-    g_free(scan_path);
-    dt_bauhaus_combobox_clear(g->file);
-    gtk_widget_set_sensitive(g->file, FALSE);
-    return;
-  }
-
   if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
   {
     struct dirent **entries;
-    const int numentries = scandir(scan_path, &entries, _check_extension, alphasort);
+    const int numentries = scandir(p->path, &entries, _check_extension, alphasort);
     dt_bauhaus_combobox_clear(g->file);
 
     for(int i = 0; i < numentries; i++)
@@ -380,8 +320,6 @@ static void _update_filepath(dt_iop_module_t *self)
       g_free(invalidfilepath);
     }
   }
-
-  g_free(scan_path);
 }
 
 static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
@@ -389,35 +327,13 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
   dt_iop_rasterfile_params_t *p = self->params;
 
-  gchar *config_folder = dt_conf_get_string("plugins/darkroom/segments/def_path");
-  const gboolean use_image_folder = dt_conf_get_bool("plugins/darkroom/segments/use_image_folder");
-  char image_folder[PATH_MAX] = { 0 };
-  const char *root_folder = NULL;
-
-  if(use_image_folder)
+  gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  if(strlen(mfolder) == 0)
   {
-    if(self->dev && dt_is_valid_imgid(self->dev->image_storage.id))
-      dt_image_film_roll_directory(&self->dev->image_storage, image_folder, sizeof(image_folder));
-
-    if(image_folder[0] == '\0')
-    {
-      dt_print(DT_DEBUG_ALWAYS, "raster mask image folder not available");
-      dt_control_log(_("raster mask image folder not available for this image"));
-      g_free(config_folder);
-      return;
-    }
-    root_folder = image_folder;
-  }
-  else
-  {
-    if(strlen(config_folder) == 0)
-    {
-      dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
-      dt_control_log(_("raster mask files root folder not defined"));
-      g_free(config_folder);
-      return;
-    }
-    root_folder = config_folder;
+    dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
+    dt_control_log(_("raster mask files root folder not defined"));
+    g_free(mfolder);
+    return;
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -425,7 +341,7 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
         _("select raster mask file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
         _("_select"), _("_cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), root_folder);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), mfolder);
   GtkFileFilter *filter = GTK_FILE_FILTER(gtk_file_filter_new());
   // only pfm/png files yet supported
   gtk_file_filter_add_pattern(filter, "*.pfm");
@@ -438,56 +354,32 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    const size_t root_len = strlen(root_folder);
-    gboolean within = FALSE;
-    if(root_len > 0 && memcmp(filepath, root_folder, root_len) == 0)
-    {
-      if(root_folder[root_len - 1] == G_DIR_SEPARATOR)
-        within = strlen(filepath) > root_len;
-      else
-        within = filepath[root_len] == G_DIR_SEPARATOR;
-    }
+    const gboolean within = (strlen(filepath) > strlen(mfolder))
+                        && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
     if(within)
     {
-      char *selected_dir = g_path_get_dirname(filepath);
-      if(use_image_folder)
-      {
-        const char *relative_dir = selected_dir + root_len;
-        if(relative_dir[0] == G_DIR_SEPARATOR) relative_dir++;
-        g_strlcpy(p->path, relative_dir, sizeof(p->path));
-        p->use_relative_path = TRUE;
-      }
-      else
-      {
-        g_strlcpy(p->path, selected_dir, sizeof(p->path));
-        p->use_relative_path = FALSE;
-      }
-      g_free(selected_dir);
+      char *relativepath = g_path_get_dirname(filepath);
+      const int rplen = strlen(relativepath);
+      memcpy(p->path, relativepath, rplen);
+      p->path[rplen] = '\0';
+      g_free(relativepath);
 
-      char *basename = g_path_get_basename(filepath);
-      g_strlcpy(p->file, basename, sizeof(p->file));
-      g_free(basename);
+      const int flen = strlen(filepath) - rplen - 1;
+      memcpy(p->file, filepath + rplen + 1, flen);
+      p->file[flen] = '\0';
 
       _update_filepath(self);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else
     {
-      if(use_image_folder)
-      {
-        dt_print(DT_DEBUG_ALWAYS, "selected file not within raster mask image folder");
-        dt_control_log(_("selected file not within raster mask image folder"));
-      }
-      else
-      {
-        dt_print(DT_DEBUG_ALWAYS, "selected file not within raster masks root folder");
-        dt_control_log(_("selected file not within raster masks root folder"));
-      }
+      dt_print(DT_DEBUG_ALWAYS, "selected file not within raster masks root folder");
+      dt_control_log(_("selected file not within raster masks root folder"));
     }
     g_free(filepath);
-    gtk_widget_set_sensitive(g->file, p->file[0] && (p->path[0] || p->use_relative_path));
+    gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
   }
-  g_free(config_folder);
+  g_free(mfolder);
   g_object_unref(filechooser);
 }
 
@@ -660,28 +552,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_rasterfile_data_t *d = piece->data;
 
   d->mode = p->mode;
-  gchar *fullpath = NULL;
-
-  if(p->use_relative_path)
-  {
-    char image_folder[PATH_MAX] = { 0 };
-    if(self->dev && dt_is_valid_imgid(self->dev->image_storage.id))
-      dt_image_film_roll_directory(&self->dev->image_storage, image_folder, sizeof(image_folder));
-
-    if(image_folder[0] == '\0')
-    {
-      dt_print(DT_DEBUG_ALWAYS, "raster mask image folder not available");
-      d->filepath[0] = '\0';
-      return;
-    }
-
-    fullpath = g_build_filename(image_folder, p->path, p->file, NULL);
-  }
-  else
-  {
-    fullpath = g_build_filename(p->path, p->file, NULL);
-  }
-
+  gchar *fullpath = g_build_filename(p->path, p->file, NULL);
   g_strlcpy(d->filepath, fullpath, sizeof(d->filepath));
   g_free(fullpath);
 }
@@ -708,7 +579,6 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_rasterfile_params_t *dp = self->default_params;
   memset(dp->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
   memset(dp->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  dp->use_relative_path = FALSE;
 }
 
 void distort_mask(dt_iop_module_t *self,
@@ -757,7 +627,6 @@ void init(dt_iop_module_t *self)
   dt_iop_rasterfile_params_t *d = self->default_params;
   memset(d->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
   memset(d->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  d->use_relative_path = FALSE;
 
   /*
     Implementation note and reminder:
