@@ -341,7 +341,7 @@ undershoot,
 /* Allow to resize all windows */
 decoration
 {
-  margin: 1px; /* need to remains as px as just minimum size needed, no need to be scalable */
+  margin: 5px; /* need to remains as px as just minimum size needed, no need to be scalable */
 }
 
 /* Default Gtk buttons and other entries */
