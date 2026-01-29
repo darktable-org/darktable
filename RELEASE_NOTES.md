@@ -65,7 +65,12 @@ changes (where available).
 
 ## Bug Fixes
 
-- N/A
+- Honor the default configuration preference "never" for "use raw
+  instead of jpeg from size": for unaltered images, always generate
+  thumbnails/previews from embedded JPEGs rather than processing the
+  raw file. If you prefer the prior behavior, which processed the raw
+  file rather than upscale the embedded JPEG for higher resolution
+  thumbnails/previews, use the new configuration option "auto".
 
 ## Lua
 
