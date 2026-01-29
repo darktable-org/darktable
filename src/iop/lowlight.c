@@ -663,22 +663,25 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   return FALSE;
 }
 
-static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static void _lowlight_motion(GtkEventControllerMotion *controller,
+                             double x,
+                             double y,
+                             dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
   dt_iop_lowlight_params_t *p = self->params;
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
+  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
   int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
   if(g->dragging)
   {
     *p = g->drag_params;
     if(g->x_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+      const float mx = CLAMP(x - inset, 0, width) / (float)width;
       if(g->x_move > 0 && g->x_move < DT_IOP_LOWLIGHT_BANDS - 1)
       {
         const float minx = p->transition_x[g->x_move - 1] + 0.001f;
@@ -690,10 +693,9 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
     {
       dt_iop_lowlight_get_params(p, g->mouse_x, g->mouse_y + g->mouse_pick, g->mouse_radius);
     }
-    gtk_widget_queue_draw(widget);
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area);
   }
-  else if(event->y > height)
+  else if(y > height)
   {
     g->x_move = 0;
     float dist = fabs(p->transition_x[0] - g->mouse_x);
@@ -706,20 +708,22 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
         dist = d2;
       }
     }
-    gtk_widget_queue_draw(widget);
   }
   else
   {
     g->x_move = -1;
-    gtk_widget_queue_draw(widget);
   }
-  return TRUE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void _lowlight_button_press(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  if(n_press == 2)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = self->params;
@@ -729,42 +733,39 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
       p->transition_x[k] = d->transition_x[k];
       p->transition_y[k] = d->transition_y[k];
     }
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else
   {
     g->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
     GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
+    gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
     int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
     g->mouse_pick
-        = dt_draw_curve_calc_value(g->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+        = dt_draw_curve_calc_value(g->transition_curve, CLAMP(x - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(y - inset, 0, height) / (float)height;
     g->dragging = 1;
-    return TRUE;
   }
-  return FALSE;
 }
 
-static gboolean lowlight_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static void _lowlight_button_release(GtkGestureSingle *gesture,
+                                     int n_press,
+                                     double x,
+                                     double y,
+                                     dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
-  {
-    dt_iop_lowlight_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    return TRUE;
-  }
-  return FALSE;
+  dt_iop_lowlight_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
 }
 
-static gboolean lowlight_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static void _lowlight_leave(GtkEventControllerMotion *controller,
+                            dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
   if(!g->dragging) g->mouse_y = -1.0;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
@@ -808,10 +809,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_gui_vbox(g->area);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(lowlight_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(lowlight_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(lowlight_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(lowlight_leave_notify), self);
+  dt_gui_connect_click(g->area, _lowlight_button_press, _lowlight_button_release, self);
+  dt_gui_connect_motion(g->area, _lowlight_motion, NULL, _lowlight_leave, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(lowlight_scrolled), self);
 
   g->scale_blueness = dt_bauhaus_slider_from_params(self, "blueness");

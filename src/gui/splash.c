@@ -149,15 +149,15 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
 #else
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
 #endif
-  splash_screen =
-    gtk_dialog_new_with_buttons(_("darktable starting"),
-                                parent_window, flags,
-                                NULL,
-                                GTK_RESPONSE_NONE, // <-- fake button list for compiler
-                                NULL);
+  g_set_weak_pointer(&splash_screen,
+                     gtk_dialog_new_with_buttons(_("darktable starting"),
+                                                 parent_window, flags,
+                                                 NULL,
+                                                 GTK_RESPONSE_NONE,  // <-- fake button list for compiler
+                                                 NULL));
   gtk_window_set_position(GTK_WINDOW(splash_screen), GTK_WIN_POS_CENTER);
   gtk_widget_set_name(splash_screen, "splashscreen");
-  progress_text = gtk_label_new(_("initializing"));
+  g_set_weak_pointer(&progress_text, gtk_label_new(_("initializing")));
   gtk_widget_set_name(progress_text, "splashscreen-progress");
   remaining_text = gtk_label_new("");
   gtk_widget_set_name(remaining_text, "splashscreen-remaining");
@@ -292,12 +292,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
 void darktable_splash_screen_destroy()
 {
   if(splash_screen)
-  {
-    gtk_widget_destroy(progress_text);
-    progress_text = NULL;
-    gtk_widget_destroy(splash_screen);
-    splash_screen = NULL;
-  }
+    gtk_window_destroy(GTK_WINDOW(splash_screen));
 }
 
 void darktable_exit_screen_create(GtkWindow *parent_window,

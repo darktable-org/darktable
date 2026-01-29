@@ -1542,7 +1542,7 @@ int dt_init(int argc,
   // however after gtk_disable_setlocale
   if(init_gui)
   {
-    gtk_init(&argc, &argv);
+    gtk_init();
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
@@ -1941,6 +1941,18 @@ int dt_init(int argc,
     dt_view_manager_gui_init(darktable.view_manager);
   }
 
+
+
+
+
+
+  // g_log_set_always_fatal(G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL);
+
+
+
+
+
+
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing Lua"));
@@ -1965,9 +1977,7 @@ int dt_init(int argc,
     // Save the shortcuts including defaults
     dt_shortcuts_save(NULL, TRUE);
 
-    // connect the shortcut dispatcher
-    g_signal_connect(dt_ui_main_window(darktable.gui->ui), "event",
-                     G_CALLBACK(dt_shortcut_dispatcher), NULL);
+    dt_shortcut_connect_dispatcher(dt_ui_main_window(darktable.gui->ui));
 
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
@@ -2032,7 +2042,7 @@ int dt_init(int argc,
   if(init_gui)
   {
     // show the main window and restore its geometry to that saved in the config file
-    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
     dt_gui_gtk_load_config();
     darktable_splash_screen_destroy();
 
@@ -2700,6 +2710,321 @@ void dt_print_mem_usage(char *info)
 #else
   dt_print(DT_DEBUG_ALWAYS, "dt_print_mem_usage() currently unsupported on this platform");
 #endif
+}
+
+
+
+
+
+
+
+// GTK4
+
+
+void gtk_container_add(GtkContainer *container, GtkWidget *child)
+{
+  g_return_if_fail(GTK_IS_WIDGET(container));
+  g_return_if_fail(GTK_IS_WIDGET(child));
+
+  if(GTK_IS_BOX(container))
+    gtk_box_append(GTK_BOX(container), child);
+  else if(GTK_IS_GRID(container))
+    gtk_grid_attach(GTK_GRID (container), child, 0, 0, 1, 1);
+  else if(GTK_IS_OVERLAY(container))
+    gtk_overlay_set_child(GTK_OVERLAY(container), child);
+  else if(GTK_IS_SCROLLED_WINDOW(container))
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(container), child);
+  else if(GTK_IS_FRAME(container))
+    gtk_frame_set_child(GTK_FRAME(container), child);
+  else if(GTK_IS_WINDOW(container))
+    gtk_window_set_child(GTK_WINDOW(container), child);
+  else if(GTK_IS_EXPANDER(container))
+    gtk_expander_set_child(GTK_EXPANDER(container), child);
+  else if(GTK_IS_LIST_BOX(container))
+    gtk_list_box_append(GTK_LIST_BOX (container), child);
+  else if(GTK_IS_STACK (container))
+    gtk_stack_add_child(GTK_STACK(container), child);
+  else if(GTK_IS_NOTEBOOK(container))
+    gtk_notebook_append_page(GTK_NOTEBOOK (container), child, NULL);
+  else if(GTK_IS_POPOVER(container))
+    gtk_popover_set_child(GTK_POPOVER(container), child);
+  else if(GTK_IS_VIEWPORT(container))
+    gtk_viewport_set_child(GTK_VIEWPORT(container), child);
+  else if(GTK_IS_BUTTON(container))
+    gtk_button_set_child(GTK_BUTTON(container), child);
+  else if(GTK_IS_CHECK_BUTTON(container))
+    gtk_check_button_set_child(GTK_CHECK_BUTTON(container), child);
+  else if(GTK_IS_REVEALER(container))
+    gtk_revealer_set_child(GTK_REVEALER(container), child);
+  else if(GTK_IS_FLOW_BOX(container))
+    gtk_flow_box_append(GTK_FLOW_BOX(container), child);
+  else
+    g_warning("gtk_container_add: unsupported container type %s",
+              G_OBJECT_TYPE_NAME (container));
+}
+
+GList *gtk_container_get_children(GtkContainer *container)
+{
+  GList *children = NULL;
+  GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(container));
+  while(child)
+  {
+    children = g_list_append(children, child);
+    child = gtk_widget_get_next_sibling(child);
+  }
+  return children;
+}
+
+GtkWidget *gtk_bin_get_child(gpointer bin)
+{
+  GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(bin));
+  // in gtkcheckbox label is not first child
+  while(child && GTK_IS_CHECK_BUTTON(bin) && !GTK_IS_LABEL(child))
+    child = gtk_widget_get_next_sibling(child);
+  return child;
+}
+
+typedef struct _wrapped_data_t
+{
+  gpointer instance;
+  GCallback c_handler;
+  gpointer user_data;
+  GClosureNotify destroy_data;
+  gint type;
+  gboolean swapped;
+} _wrapped_data_t;
+
+void _free_wrapped_data(_wrapped_data_t *data)
+{
+  if(data->destroy_data)
+    data->destroy_data(data->user_data, NULL);
+  g_free(data);
+}
+
+static void _widget_button(GtkGestureSingle *gesture,
+                           int n_press,
+                           double x,
+                           double y,
+                           _wrapped_data_t *data)
+{
+  GdkEventButton event = {
+    .type = data->type ? n_press > 1 ? GDK_DOUBLE_BUTTON_PRESS + n_press - 2 : GDK_BUTTON_PRESS : GDK_BUTTON_RELEASE,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .x = x,
+    .y = y,
+    .axes = NULL,
+    .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(gesture)),
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture)),
+    .button = gtk_gesture_single_get_current_button(gesture),
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
+  gboolean ret = ((gboolean(*)(GtkWidget*, GdkEventButton*, gpointer))data->c_handler)(data->instance, &event, data->user_data);
+  if(ret) dt_gui_claim(gesture);
+}
+
+static void _widget_motion(GtkEventControllerMotion *controller,
+                           double x,
+                           double y,
+                           _wrapped_data_t *data)
+{
+  if(data->type > 0)
+  {
+    GdkEventMotion event = {
+      .type = GDK_MOTION_NOTIFY,
+      .window = gtk_widget_get_window(widget),
+      .send_event = TRUE,
+      .x = x,
+      .y = y,
+      .axes = NULL,
+      .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(controller)),
+      .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) ,
+      .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
+    ((gboolean(*)(GtkWidget*, GdkEventMotion*, gpointer))data->c_handler)(data->instance, &event, data->user_data);
+  }
+  else
+  {
+    GdkEventCrossing event = {
+      .type = data->type ? GDK_ENTER_NOTIFY : GDK_LEAVE_NOTIFY,
+      .window = gtk_widget_get_window(widget),
+      .send_event = TRUE,
+      .x = x,
+      .y = y,
+      .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(controller)),
+      .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) };
+    ((gboolean(*)(GtkWidget*, GdkEventCrossing*, gpointer))data->c_handler)(data->instance, &event, data->user_data);
+  }
+}
+
+static gboolean _widget_scroll(GtkEventControllerScroll* controller,
+                               gdouble dx,
+                               gdouble dy,
+                               _wrapped_data_t *data)
+{
+  GdkEventScroll event = {
+    .type = GDK_SCROLL,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(controller)),
+    // .state = gtk_event_controller_get_current_event_state(), doesn't work properly with scroll gestures
+    .state = gdk_event_get_modifier_state(gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(controller))),
+    .direction = GDK_SCROLL_SMOOTH,
+    .delta_x = dx,
+    .delta_y = dy,
+    .device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())) };
+  return ((gboolean(*)(GtkWidget*, GdkEventScroll*, gpointer))data->c_handler)(data->instance, &event, data->user_data);;
+}
+
+static void _widget_focus(GtkEventControllerFocus *controller,
+                          _wrapped_data_t *data)
+{
+  GdkEventCrossing event = {
+    .type = data->type ? GDK_ENTER_NOTIFY : GDK_LEAVE_NOTIFY,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(controller)),
+    .state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) };
+  ((gboolean(*)(GtkWidget*, GdkEventCrossing*, gpointer))data->c_handler)(data->instance, &event, data->user_data);
+}
+
+static gboolean _widget_key(GtkEventControllerKey *controller,
+                            guint keyval,
+                            guint keycode,
+                            GdkModifierType state,
+                            _wrapped_data_t *data)
+{
+  GdkEventKey event = {
+    .type =data->type ? GDK_KEY_PRESS : GDK_KEY_RELEASE,
+    .window = gtk_widget_get_window(widget),
+    .send_event = TRUE,
+    .time = gtk_event_controller_get_current_event_time(GTK_EVENT_CONTROLLER(controller)),
+    .keyval = keyval,
+    .hardware_keycode = keycode,
+    .state = state };
+  return ((gboolean(*)(GtkWidget*, GdkEventKey*, gpointer))data->c_handler)(data->instance, &event, data->user_data);
+}
+
+gulong dt_signal_connect_data_with_caller(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer user_data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags,
+                                          gboolean gboolean_return,
+                                          const char *function,
+                                          const char *file,
+                                          const int line)
+{
+  guint signal_id = 0;
+  GQuark detail = 0;
+  GtkEventController *controller = NULL;
+  gint type = 0;
+  const gchar *signal_name = NULL;
+  GCallback handler = NULL;
+
+  if(!(instance))
+    dt_print(DT_DEBUG_ALWAYS, "warning: instance is NULL in %s at %s:%d", function, file, line);
+  else if(g_signal_parse_name(detailed_signal, G_OBJECT_TYPE(instance), &signal_id, &detail, FALSE))
+  {
+    GSignalQuery type_query = {};
+    return (g_signal_connect_data)(instance, detailed_signal, c_handler, user_data, destroy_data, connect_flags);
+  }
+  else if(!strcmp(detailed_signal, "scroll-event"))
+  {
+    signal_name = "scroll";
+    controller = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
+    g_object_set_data(instance, "scroll", controller);
+    handler = G_CALLBACK(_widget_scroll);
+  }
+  else if(g_str_has_prefix(detailed_signal, "focus-"))
+  {
+    type = strcmp(detailed_signal, "focus-out-event");
+    signal_name = type ? "enter" : "leave";
+    controller = gtk_event_controller_focus_new();
+    handler = G_CALLBACK(_widget_focus);
+  }
+  else if(g_str_has_prefix(detailed_signal, "key-"))
+  {
+    type = strcmp(detailed_signal, "key-release-event");
+    signal_name = type ? "key-pressed" : "key-released";
+    controller = gtk_event_controller_key_new();
+    handler = G_CALLBACK(_widget_key);
+  }
+  else if(g_str_has_prefix(detailed_signal, "button-"))
+  {
+    type = strcmp(detailed_signal, "button-release-event");
+    signal_name = type ? "pressed" : "released";
+    if(!(controller = g_object_get_data(instance, "click")))
+      g_object_set_data(instance, "click",
+        controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new()));
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(controller), 0);
+    handler = G_CALLBACK(_widget_button);
+  }
+  else if(g_str_has_suffix(detailed_signal, "-notify-event"))
+  {
+    type = strcmp(detailed_signal,"leave-notify-event");
+    signal_name = type > 0 ? "motion" : type ? "enter" : "leave";
+    if(!(controller = g_object_get_data(instance, "motion")))
+      g_object_set_data(instance, "motion",
+        controller = gtk_event_controller_motion_new());
+    handler = G_CALLBACK(_widget_motion);
+  }
+  else if(g_str_has_prefix(detailed_signal, "drag-")
+          ||!strcmp(detailed_signal, "style-updated")
+          ||!strcmp(detailed_signal, "size-allocate")
+          ||!strcmp(detailed_signal, "draw"))
+    ; // GTK4 FIXME not yet supported
+  else
+    dt_print(DT_DEBUG_ALWAYS, "warning: no signal '%s' for %s in %s at %s:%d", detailed_signal, g_type_name(G_OBJECT_TYPE(instance)), function, file, line);
+
+  if(controller)
+  {
+    _wrapped_data_t *data = g_new(_wrapped_data_t, 1);
+    data->instance = connect_flags & G_CONNECT_SWAPPED ? user_data : instance;
+    data->c_handler = c_handler;
+    data->user_data = connect_flags & G_CONNECT_SWAPPED ? instance : user_data;
+    data->destroy_data = destroy_data;
+    data->type = type;
+    if(!gtk_event_controller_get_widget(controller))
+      gtk_widget_add_controller(instance, controller);
+    (g_signal_connect_data)(controller, signal_name, handler, data, (GClosureNotify)_free_wrapped_data, /*connect_flags*/0);
+  }
+
+  return 0;
+}
+
+static void _dialog_response(GtkDialog *dialog,
+                             int        response_id,
+                             int       *response_ptr)
+{
+  *response_ptr = response_id;
+}
+int _wait_for_dialog_response(gpointer dialog)
+{
+  int response_id = G_MAXINT;
+  g_signal_connect(dialog, "response", G_CALLBACK(_dialog_response), &response_id);
+// FIXME GTK4 doesn't really support reentrent event loops so all calls to dialog_run should be converted to respond to "response" directly.
+  while(response_id == G_MAXINT
+        && g_list_model_get_n_items(gtk_window_get_toplevels()) > 0)
+    g_main_context_iteration(NULL, FALSE);
+  return response_id;
+}
+int gtk_dialog_run(GtkDialog *dialog)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  if(!gtk_window_get_transient_for(GTK_WINDOW(dialog)))
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_present(GTK_WINDOW(dialog));
+  return _wait_for_dialog_response(dialog);
+}
+int gtk_native_dialog_run(GtkNativeDialog *dialog)
+{
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  if(!gtk_native_dialog_get_transient_for(GTK_NATIVE_DIALOG(dialog)))
+    gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(dialog), win);
+  gtk_native_dialog_set_modal(GTK_NATIVE_DIALOG(dialog), TRUE);
+  gtk_native_dialog_show(GTK_NATIVE_DIALOG(dialog));
+  return _wait_for_dialog_response(dialog);
 }
 
 // clang-format off
