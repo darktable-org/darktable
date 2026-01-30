@@ -2515,20 +2515,6 @@
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>preview_downsampling</name>
-    <type>
-      <enum>
-        <option>original</option>
-        <option>to 1/2</option>
-        <option>to 1/3</option>
-        <option>to 1/4</option>
-      </enum>
-    </type>
-    <default>original</default>
-    <shortdescription>reduce resolution of preview image</shortdescription>
-    <longdescription>decrease to speed up preview rendering, hinders accurate masking, pickers and some module algorithm</longdescription>
-  </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/loading_screen</name>
     <type>bool</type>
