@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3083,7 +3083,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
-  darktable_splash_screen_destroy();
+  dt_splash_screen_destroy();
 
   gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
   gtk_main();
@@ -4557,6 +4557,11 @@ void dt_gui_process_events()
   unsigned max_iter = 200;
   while(g_main_context_iteration(NULL, FALSE) && --max_iter > 0)
     continue;
+
+  /*
+  while(gtk_events_pending() && --max_iter > 0)
+    gtk_main_iteration();
+  */
 }
 
 void dt_gui_simulate_button_event(GtkWidget *widget,
