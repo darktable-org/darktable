@@ -310,6 +310,10 @@ static void _darkroom_pickers_draw(dt_view_t *self,
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
+      // do not draw if the area is empty
+      if(dt_iop_color_picker_is_area_empty(sample->box))
+        continue;
+
       dt_boundingbox_t fbox;
       dt_color_picker_transform_box(dev, 2, sample->box, fbox, FALSE);
       x = fbox[0];
@@ -3446,6 +3450,10 @@ int button_released(dt_view_t *self,
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev) && which == GDK_BUTTON_PRIMARY)
   {
+    // force an update on release so modules can detect the finish event
+    if(darktable.lib->proxy.colorpicker.picker_proxy)
+      darktable.lib->proxy.colorpicker.picker_proxy->changed = TRUE;
+
     // only sample box picker at end, for speed
     if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {

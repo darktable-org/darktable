@@ -40,7 +40,9 @@ typedef enum _iop_color_picker_flags_t
   // only works with 4-channel images
   DT_COLOR_PICKER_DENOISE = 1 << 2,
   // all pickers sample input, only ones with this flag set sample output
-  DT_COLOR_PICKER_IO = 1 << 3
+  DT_COLOR_PICKER_IO = 1 << 3,
+  // don't auto-expand the area, wait for user selection via dragging
+  DT_COLOR_PICKER_NO_AUTO = 1 << 4
 } dt_iop_color_picker_flags_t;
 
 typedef struct dt_iop_color_picker_t
@@ -70,6 +72,8 @@ typedef struct dt_iop_color_picker_t
 
 
 gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev);
+
+gboolean dt_iop_color_picker_is_area_empty(const dt_pickerbox_t box);
 
 //* reset current color picker if not keep-active or not keep */
 void dt_iop_color_picker_reset(dt_iop_module_t *module,
