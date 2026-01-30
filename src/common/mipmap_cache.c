@@ -57,7 +57,8 @@
 // the number of pixels in the largest static image is the smallest number of pixels we
 // can allocate for the mipmap buffer, since that gets filled in after we attempt to read
 // from the image file on disk
-#define MIN_IMG_PIXELS  (29*29)
+#define ERR_IMG_MAX_DIM 29
+#define MIN_IMG_PIXELS  (ERR_IMG_MAX_DIM * ERR_IMG_MAX_DIM)
 
 typedef enum dt_mipmap_buffer_dsc_flags
 {
@@ -618,7 +619,7 @@ static void _mipmap_cache_deallocate_dynamic(void *data,
   {
     dt_mipmap_buffer_dsc_t *dsc = (dt_mipmap_buffer_dsc_t *)entry->data;
     // don't write skulls:
-    if(dsc->width * dsc->height > MIN_IMG_PIXELS)
+    if(dsc->width > ERR_IMG_MAX_DIM || dsc->height > ERR_IMG_MAX_DIM)
     {
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE)
       {
