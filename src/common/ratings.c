@@ -75,6 +75,7 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid,
     // synch through:
     dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE,
                                       "_ratings_apply_to_image");
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
   }
 }
 
