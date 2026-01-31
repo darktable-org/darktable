@@ -53,16 +53,8 @@ vng_border_interpolate(read_only image2d_t in,
       }
     }
 
-  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int f = fcol(y, x, filters, xtrans);
-
   for(int c = 0; c < colors; c++)
-  {
-    if(c != f && count[c] != 0)
-      o[c] = sum[c] / count[c];
-    else
-      o[c] = fmax(i, 0.0f);
-  }
+    o[c] = sum[c] / count[c];
 
   write_imagef (out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
