@@ -59,6 +59,7 @@ hbDependencies="adwaita-icon-theme \
     perl \
     po4a \
     portmidi \
+    potrace \
     pugixml \
     sdl2 \
     webp"

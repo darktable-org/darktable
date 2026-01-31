@@ -72,6 +72,7 @@ jobs:
             libpango1.0-dev \
             libpng-dev \
             libportmidi-dev \
+            libpotrace-dev \
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
@@ -245,6 +246,7 @@ jobs:
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
+            potrace:p
             pugixml:p
             SDL2:p
             sqlite3:p

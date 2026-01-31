@@ -174,6 +174,7 @@ Required dependencies (minimum version):
 * libcurl 7.56
 * libpng 1.5.0 *(for PNG import & export, also for reading LUT files in PNG format)*
 * Exiv2 0.27.2 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+* potrace 1.16
 * pugixml 1.8
 
 Required dependencies (no version requirement):
