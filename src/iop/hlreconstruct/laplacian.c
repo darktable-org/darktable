@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -593,7 +593,7 @@ static void process_laplacian_bayer(dt_iop_module_t *self,
 {
   dt_iop_highlights_data_t *data = piece->data;
 
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
   dt_aligned_pixel_t wb = { 1.f, 1.f, 1.f, 1.f };
   if(piece->pipe->dsc.temperature.coeffs[0] != 0.f)
   {
@@ -795,7 +795,7 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
   const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   const size_t ds_sizes[2] = { ROUNDUPDWD(ds_width, devid), ROUNDUPDHT(ds_height, devid) };
 
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
 
   dt_aligned_pixel_t wb = { 1.f, 1.f, 1.f, 1.f };
   if(piece->pipe->dsc.temperature.coeffs[0] != 0.f)
