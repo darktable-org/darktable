@@ -78,13 +78,11 @@ FCxtrans(const int row, const int col, global const unsigned char (*const xtrans
   return xtrans[(row + 600) % 6][(col + 600) % 6];
 }
 
-int
+static inline int
 fcol(const int row, const int col, const unsigned int filters, global const unsigned char (*const xtrans)[6])
 {
-  if(filters == 9)
-    return FCxtrans(row, col, xtrans);
-  else
-    return FC(row, col, filters);
+  return (filters == 9) ? xtrans[(row + 600) % 6][(col + 600) % 6]
+                        : filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
 
