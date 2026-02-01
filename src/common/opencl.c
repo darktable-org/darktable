@@ -739,6 +739,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
+  const gboolean is_custom_device = type & CL_DEVICE_TYPE_CUSTOM;
 
   // micro_nap can be made less conservative on current systems at least if not on-CPU
   if(newdevice)
@@ -747,16 +748,18 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL, "   DRIVER VERSION:           %s\n", driverversion);
   dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s%s\n", cl->dev[dev].device_version,
      cl->dev[dev].nvidia_sm_20 ? ", SM_20 SUPPORT" : "");
-  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s%s\n",
+  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
+      ((type & CL_DEVICE_TYPE_CUSTOM) == CL_DEVICE_TYPE_CUSTOM) ? "CUSTOM" : "",
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "",
       unified_memory ? ", unified mem" : ", dedicated mem" );
 
-  if(is_cpu_device && newdevice)
+  if((is_cpu_device || is_custom_device) && newdevice)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   *** discarding new device as emulated by CPU ***\n");
+                 "   *** discarding new %s ***\n",
+                 is_cpu_device ? "device as emulated by CPU" : "custom device");
     cl->dev[dev].disabled |= TRUE;
     res = TRUE;
     goto end;
