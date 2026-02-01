@@ -19,8 +19,6 @@
 #include "common.h"
 
 kernel void
-#define AVGWINDOW 1
-
 vng_border_interpolate(read_only image2d_t in,
                        write_only image2d_t out,
                        const int width,
@@ -31,10 +29,10 @@ vng_border_interpolate(read_only image2d_t in,
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-
   if(x >= width || y >= height) return;
 
   const int colors = (filters == 9) ? 3 : 4;
+  const int av = (filters == 9) ? 2 : 1;
 
   if(x >= border && x < width-border && y >= border && y < height-border) return;
 
@@ -42,8 +40,8 @@ vng_border_interpolate(read_only image2d_t in,
   float sum[4] = { 0.0f };
   int count[4] = { 0 };
 
-  for(int j = y-AVGWINDOW; j <= y+AVGWINDOW; j++)
-    for(int i = x-AVGWINDOW; i <= x+AVGWINDOW; i++)
+  for(int j = y-av; j <= y+av; j++)
+    for(int i = x-av; i <= x+av; i++)
     {
       if(j >= 0 && i >= 0 && j < height && i < width)
       {
@@ -53,16 +51,8 @@ vng_border_interpolate(read_only image2d_t in,
       }
     }
 
-  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int f = fcol(y, x, filters, xtrans);
-
   for(int c = 0; c < colors; c++)
-  {
-    if(c != f && count[c] != 0)
-      o[c] = sum[c] / count[c];
-    else
-      o[c] = fmax(i, 0.0f);
-  }
+    o[c] = sum[c] / count[c];
 
   write_imagef (out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
