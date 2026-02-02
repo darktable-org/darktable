@@ -24,7 +24,7 @@ local dt = require "darktable"
 
 -- make sure we don't hang darktable when starting the scripts
 
-if dt.has_gui then
+if dt.configuration.has_gui then
   require "tools/script_manager"
 end
 

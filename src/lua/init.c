@@ -118,16 +118,7 @@ static int run_early_script(lua_State* L)
   char *luarc = g_build_filename(basedir, "luarc", NULL);
   dt_lua_check_print_error(L, luaL_dofile(L, luarc));
   g_free(luarc);
-fprintf(stderr, "%s\n", "past the luarc");
-  /* Move this to scripp_manager
-  if(darktable.gui != NULL)
-  {
-    // run user init script
-    dt_loc_get_user_config_dir(basedir, sizeof(basedir));
-    luarc = g_build_filename(basedir, "luarc", NULL);
-    dt_lua_check_print_error(L, luaL_dofile(L, luarc));
-    g_free(luarc);
-  }*/
+
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);
     dt_lua_check_print_error(L,luaL_dostring(L,lua_command));
