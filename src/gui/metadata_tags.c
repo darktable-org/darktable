@@ -133,6 +133,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent,
       "Xmp.dc.",
       "Xmp.acdsee.",
       "Xmp.iptc.",
+      "Xmp.dwc.",
       "Iptc."
     };
 
