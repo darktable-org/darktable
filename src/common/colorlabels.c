@@ -230,6 +230,7 @@ static void _colorlabels_execute(const GList *imgs,
     _pop_undo_execute(imgid, before, after);
   }
   dt_gui_cursor_clear_busy();
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 }
 
 void dt_colorlabels_set_labels(const GList *img,
@@ -252,7 +253,6 @@ void dt_colorlabels_set_labels(const GList *img,
       dt_undo_end_group(darktable.undo);
     }
     dt_collection_hint_message(darktable.collection);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
@@ -358,6 +358,7 @@ static float _action_process_color_label(gpointer target,
         else
           dt_toast_log(_("all colorlabels removed"));
         g_free(result);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
       }
     }
 
