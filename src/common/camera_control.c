@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2025 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <locale.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t
@@ -1185,8 +1186,37 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
       return FALSE;
     }
 
+    // Calling gp_camera_get_config can cause a crash (seen with
+    // libgphoto2 2.5.31) due to a stack smashing when working with
+    // some specific locales. At least this was seen with Ukrainian
+    // and Czech locales. This is clearly a bug in libgphoto2, which
+    // we will have to work around by temporarily switching to a safe
+    // locale. Note that for safety we should either use thread-safe
+    // functions (newlocale/uselocale), or this locale switching should
+    // be for the current thread only (on Windows where there is no
+    // implementation of newlocale/uselocale).
+#if defined(WIN32)
+    char *locale = strdup(setlocale(LC_ALL, NULL));
+    _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+    setlocale(LC_ALL, "C");
+#else
+    locale_t nlocale = newlocale(LC_ALL, "C", (locale_t) 0);
+    locale_t locale = uselocale(nlocale);
+#endif
     // read a full copy of config to configuration cache
     gp_camera_get_config(cam->gpcam, &cam->configuration, c->gpcontext);
+
+#if defined(WIN32)
+    if(locale)
+    {
+      setlocale(LC_ALL, locale);
+      free(locale);
+    }
+    _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
+#else
+    uselocale(locale);
+    freelocale(nlocale);
+#endif
 
     // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
     cam->can_live_view_advanced =
