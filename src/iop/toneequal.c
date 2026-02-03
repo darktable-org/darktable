@@ -1544,14 +1544,14 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
   {
     float factors[CHANNELS] DT_ALIGNED_ARRAY;
     dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
-    valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
+    valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, FALSE);
     if(valid) dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
-    else dt_print(DT_DEBUG_PIPE, "tone equalizer pseudo solve problem");
-    g->factors_valid = TRUE;
+
+    g->factors_valid = valid;
     g->lut_valid = FALSE;
   }
 
-  if(!g->lut_valid && g->factors_valid)
+  if(!g->lut_valid) // && g->factors_valid)
   {
     compute_lut_correction(g, 0.5f, 4.0f);
     g->lut_valid = TRUE;
@@ -1631,7 +1631,7 @@ void commit_params(dt_iop_module_t *self,
 
     float A[CHANNELS * PIXEL_CHAN] DT_ALIGNED_ARRAY;
     build_interpolation_matrix(A, p->smoothing);
-    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, FALSE);
+    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, TRUE);
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
@@ -2135,7 +2135,7 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
   float factors[CHANNELS] DT_ALIGNED_ARRAY;
   dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
   if(g->user_param_valid)
-    g->user_param_valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
+    g->user_param_valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, FALSE);
   if(!g->user_param_valid)
     dt_control_log(_("the interpolation is unstable, decrease the curve smoothing"));
 
@@ -2835,7 +2835,11 @@ static gboolean area_draw(GtkWidget *widget,
   if(g->lut_valid)
   {
     // draw the interpolation curve
-    set_color(g->cr, darktable.bauhaus->graph_fg);
+    if(g->factors_valid)
+      set_color(g->cr,  darktable.bauhaus->graph_fg);
+    else
+      cairo_set_source_rgb(g->cr, 0.75, .5, 0.);
+
     cairo_move_to(g->cr, 0, g->gui_lut[0] * g->graph_height);
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
 

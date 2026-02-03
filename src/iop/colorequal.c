@@ -1713,7 +1713,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     }
 
   // Solve A * x = y for lambdas
-  pseudo_solve((float *)A, nodes, NODES, NODES, FALSE);
+  pseudo_solve((float *)A, nodes, NODES, NODES, TRUE);
 
   // Interpolate data for all x : generate the LUT
   // WARNING: the LUT spans from [-pi; pi[ for consistency with the output of atan2f()
