@@ -133,7 +133,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     return;
   }
 
-  float value = dt_bauhaus_slider_get(widget);
+  const float value = dt_bauhaus_slider_get(widget);
 
   ++darktable.gui->reset;
   int count = 0, pos = 0;
@@ -1455,7 +1455,9 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
 
   GList *items = gtk_tree_selection_get_selected_rows(selection, &model);
 
-  for(GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+  for(GList *items_iter = items;
+      items_iter;
+      items_iter = g_list_next(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
@@ -1653,7 +1655,9 @@ static gboolean _remove_foreach(GtkTreeModel *model,
   return 0;
 }
 
-static void _lib_masks_remove_item(dt_lib_module_t *self, dt_mask_id_t formid, dt_mask_id_t parentid)
+static void _lib_masks_remove_item(dt_lib_module_t *self,
+                                   const dt_mask_id_t formid,
+                                   const dt_mask_id_t parentid)
 {
   dt_lib_masks_t *lm = self->data;
   // for each node , we refresh the string
@@ -1710,7 +1714,8 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
     GtkTreeIter child, parent = i;
     if(gtk_tree_model_iter_children(model, &child, &parent))
     {
-      found = _lib_masks_selection_change_r(model, selection, &child, module, selectid, level + 1);
+      found = _lib_masks_selection_change_r(model, selection,
+                                            &child, module, selectid, level + 1);
       if(found)
       {
         break;
