@@ -117,6 +117,8 @@ changes (where available).
 - Fixed a missing thumbnail overlays with $(CATEGORY[n,m]) variables
   update when a tag is assigned.
 
+- Fixed jumping of curvature slider when used on the mask manager.
+
 ## Lua
 
 ### API Version
