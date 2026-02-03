@@ -1489,7 +1489,7 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       float curvature = gradient
         ? gradient->curvature
         : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
-      curvature = CLAMP(curvature + new_val - old_val, -2.0f, 2.0f);
+      curvature = CLAMP(curvature + 2.0f * (new_val - old_val), -2.0f, 2.0f);
 
       if(gradient) gradient->curvature = curvature;
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
