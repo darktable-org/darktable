@@ -119,6 +119,9 @@ changes (where available).
 
 - Fixed jumping of curvature slider when used on the mask manager.
 
+- Fixed a crash when mounting a camera from Darktable due to the
+  current locale. Mounting is now done using the C locale.
+
 ## Lua
 
 ### API Version
