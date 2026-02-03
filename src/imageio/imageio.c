@@ -521,6 +521,9 @@ static const gchar *_supported_ldr[]
         NULL };
 static const gchar *_supported_hdr[]
     = { "avif", "exr", "hdr", "heic", "heif", "hif", "jxl", "pfm", NULL };
+static const gchar *_supported_raw_preview[] = {"jpg",  "jpeg", "j2k", "j2c",
+                                                "jpe",  "jiff", "thm", "tif",
+                                                "tiff", "png",  "bmp", NULL};
 
 static inline gboolean _image_handled(dt_imageio_retval_t ret)
 {
@@ -620,6 +623,63 @@ gboolean dt_imageio_is_raw_by_extension(const char *extension)
       return TRUE;
   }
   return FALSE;
+}
+
+gboolean dt_imageio_is_raw_preview_by_extension(const char *extension) {
+  const char *ext =
+      g_str_has_prefix(extension, ".") ? extension + 1 : extension;
+  for (const char **i = _supported_raw_preview; *i != NULL; i++) {
+    if (!g_ascii_strcasecmp(ext, *i))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+char *dt_imageio_find_companion_jpeg(const char *filepath) {
+  if (!filepath)
+    return NULL;
+
+  char *src_dir = g_path_get_dirname(filepath);
+  char *src_basename = g_path_get_basename(filepath);
+  char *dotpos = strrchr(src_basename, '.');
+  char *base_noext = NULL;
+  if (dotpos)
+    base_noext = g_strndup(src_basename, dotpos - src_basename);
+  else
+    base_noext = g_strdup(src_basename);
+
+  char *result = NULL;
+
+  GDir *d = g_dir_open(src_dir, 0, NULL);
+  if (d) {
+    const char *entry;
+    while ((entry = g_dir_read_name(d)) != NULL) {
+      const char *edot = strrchr(entry, '.');
+      if (!edot)
+        continue;
+      const size_t name_len = edot - entry;
+      if (name_len != strlen(base_noext))
+        continue;
+      if (g_ascii_strncasecmp(entry, base_noext, name_len) != 0)
+        continue;
+      if (dt_imageio_is_raw_preview_by_extension(edot)) {
+        char *cand = g_build_filename(src_dir, entry, NULL);
+        if (g_file_test(cand, G_FILE_TEST_IS_REGULAR)) {
+          result = g_strdup(cand);
+          g_free(cand);
+          break;
+        }
+        g_free(cand);
+      }
+    }
+    g_dir_close(d);
+  }
+
+  g_free(src_dir);
+  g_free(src_basename);
+  g_free(base_noext);
+
+  return result;
 }
 
 // get the type of image from its extension

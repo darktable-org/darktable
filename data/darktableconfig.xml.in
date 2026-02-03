@@ -274,6 +274,13 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>cache/import_raw_jpeg_optimization</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>optimize RAW+JPEG import using JPEG for thumbnails</shortdescription>
+    <longdescription>when enabled and both RAW and JPEG files are imported together, the JPEG file will be used to quickly populate the mipmap cache instead of expensive RAW demosaicing. this significantly speeds up thumbnail generation. the feature is only active when companion JPEG files are found during RAW import.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_device_priority</name>
     <type>string</type>
     <default>*/!0,*/*/*/!0,*</default>

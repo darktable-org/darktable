@@ -1795,10 +1795,10 @@ static int _image_read_duplicates(const uint32_t id,
 
 static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
                                          const char *filename,
+                                         const char *preview_jpeg_filepath,
                                          const gboolean override_ignore_nonraws,
                                          const gboolean lua_locking,
-                                         const gboolean raise_signals)
-{
+                                         const gboolean raise_signals) {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
@@ -2056,6 +2056,16 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(id);
 
+  // Try to optimize RAW+JPEG import by using companion JPEG for mipmap cache
+  // This speeds up thumbnail generation by avoiding RAW demosaicing
+  if (preview_jpeg_filepath != NULL) {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_import_internal] importing companion JPEG `%s' for mipmap "
+             "cache of img id %d\n",
+             preview_jpeg_filepath, id);
+    dt_mipmap_cache_import_jpeg_to_mips(id, preview_jpeg_filepath);
+  }
+
   // Always keep write timestamp in database and possibly write xmp
   dt_image_synch_all_xmp(normalized_filename);
 
@@ -2137,20 +2147,19 @@ dt_imgid_t dt_image_get_id(const dt_filmid_t film_id,
   return id;
 }
 
-dt_imgid_t dt_image_import(const dt_filmid_t film_id,
-                           const char *filename,
+dt_imgid_t dt_image_import(const dt_filmid_t film_id, const char *filename,
+                           const char *preview_jpeg_filepath,
                            const gboolean override_ignore_nonraws,
-                           const gboolean raise_signals)
-{
-  return _image_import_internal(film_id, filename, override_ignore_nonraws,
-                                TRUE, raise_signals);
+                           const gboolean raise_signals) {
+  return _image_import_internal(film_id, filename, preview_jpeg_filepath,
+                                override_ignore_nonraws, TRUE, raise_signals);
 }
 
-dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id,
-                               const char *filename,
-                               const gboolean override_ignore_nonraws)
-{
-  return _image_import_internal(film_id, filename, override_ignore_nonraws, FALSE, TRUE);
+dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id, const char *filename,
+                               const char *preview_jpeg_filepath,
+                               const gboolean override_ignore_nonraws) {
+  return _image_import_internal(film_id, filename, preview_jpeg_filepath,
+                                override_ignore_nonraws, FALSE, TRUE);
 }
 
 void dt_image_init(dt_image_t *img)

@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "control/jobs/camera_jobs.h"
-#include "common/darktable.h"
 #include "common/collection.h"
+#include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/import_session.h"
 #include "common/utility.h"
-#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/jobs/image_jobs.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
 #include "views/view.h"
 
 #include <glib.h>
@@ -67,6 +68,11 @@ typedef struct dt_camera_import_t
   dt_job_t *job;
   double fraction;
   uint32_t import_count;
+
+  gchar *last_imported_in_path;
+  gchar *last_imported_in_filename;
+  gchar *last_imported_path;
+
 } dt_camera_import_t;
 
 static int32_t dt_camera_capture_job_run(dt_job_t *job)
@@ -239,6 +245,46 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode,
   return job;
 }
 
+char *_find_companion_jpeg(const dt_camera_import_t *import,
+                           const char *in_path, const char *in_filename) {
+  if (!in_filename || !in_path || !import)
+    return NULL;
+
+  char *base_noext = NULL;
+  char *dotpos = strrchr(in_filename, '.');
+  if (dotpos)
+    base_noext = g_strndup(in_filename, dotpos - in_filename);
+  else
+    base_noext = g_strdup(in_filename);
+
+  if (!dotpos || !dt_imageio_is_raw_by_extension(dotpos)) {
+    g_free(base_noext);
+    return NULL;
+  }
+
+  char *result = NULL;
+
+  if (import->last_imported_in_path && import->last_imported_path &&
+      import->last_imported_in_filename &&
+      g_strcmp0(import->last_imported_in_path, in_path) == 0) {
+    char *last_basename =
+        g_path_get_basename(import->last_imported_in_filename);
+    char *ldot = strrchr(last_basename, '.');
+    if (ldot)
+      *ldot = '\0';
+    if (g_strcmp0(last_basename, base_noext) == 0)
+      result = g_strdup(import->last_imported_path);
+    g_free(last_basename);
+    if (result) {
+      g_free(base_noext);
+      return result;
+    }
+  }
+
+  g_free(base_noext);
+  return result;
+}
+
 /** Listener interface for import job */
 void _camera_import_image_downloaded(const dt_camera_t *camera,
                                      const char *in_path,
@@ -248,8 +294,30 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
+
+  // Find the preview files from the images list. Then check imported files by
+  // using Xmp.darktable.image_id. Then get its path to use for import preview
+  // image
+  char *preview_jpeg_file = NULL;
+  if (dt_conf_get_bool("cache/import_raw_jpeg_optimization"))
+    preview_jpeg_file = _find_companion_jpeg(t, in_path, in_filename);
+
   const dt_imgid_t imgid =
-    dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
+      dt_image_import(dt_import_session_film_id(t->shared.session), filename,
+                      preview_jpeg_file, FALSE, TRUE);
+
+  /* Cache the last imported paths when we found a companion preview */
+  if (in_path != NULL && in_filename != NULL && dt_is_valid_imgid(imgid)) {
+    g_free(t->last_imported_in_path);
+    g_free(t->last_imported_in_filename);
+    g_free(t->last_imported_path);
+    t->last_imported_in_path = g_strdup(in_path);
+    t->last_imported_in_filename = g_strdup(in_filename);
+    t->last_imported_path = g_strdup(filename);
+  }
+
+  if (preview_jpeg_file != NULL)
+    g_free(preview_jpeg_file);
 
   const time_t timestamp = (!in_path || !in_filename) ? 0 :
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
@@ -265,7 +333,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
 
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
-  const int num_images = g_list_length(t->images);
+  const int num_images = g_list_length(g_list_first(t->images));
   dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s",
                           t->import_count + 1),
                  t->import_count + 1, num_images, basename);
@@ -327,6 +395,18 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camera_import_t *params = dt_control_job_get_params(job);
   dt_control_log(_("starting to import images from camera"));
 
+  /* Diagnostic: log received images list so we can debug missing items */
+  if (params && params->images) {
+    const guint nimg = g_list_length(params->images);
+    dt_control_log("camera import: images list length = %u", nimg);
+    for (GList *l = params->images; l; l = g_list_next(l)) {
+      if (l->data)
+        dt_control_log("camera import: entry: %s", (const char *)l->data);
+      else
+        dt_control_log("camera import: entry: (null)");
+    }
+  }
+
   guint total = g_list_length(params->images);
   dt_control_job_set_progress_message(job,
            ngettext("importing %d image from camera",
@@ -370,6 +450,12 @@ static void dt_camera_import_cleanup(void *p)
   dt_camera_import_t *params = p;
 
   g_list_free(params->images);
+  g_free(params->last_imported_in_path);
+  g_free(params->last_imported_path);
+  g_free(params->last_imported_in_filename);
+  params->last_imported_in_path = NULL;
+  params->last_imported_path = NULL;
+  params->last_imported_in_filename = NULL;
 
   dt_import_session_destroy(params->shared.session);
 
@@ -407,6 +493,9 @@ dt_job_t *dt_camera_import_job_create(GList *images,
   params->camera = camera;
   params->import_count = 0;
   params->job = job;
+  params->last_imported_in_path = NULL;
+  params->last_imported_path = NULL;
+  params->last_imported_in_filename = NULL;
   return job;
 }
 

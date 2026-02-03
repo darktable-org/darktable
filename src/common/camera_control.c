@@ -1213,9 +1213,47 @@ static gboolean _camera_initialize(const dt_camctl_t *c,
   return TRUE;
 }
 
+static int _ext_priority(const char *ext) {
+  /* Ensure JPEG/preview is imported before RAW for identical basenames
+  — this populates the mipmap/preview cache (speeding thumbnails) */
+  if (dt_imageio_is_raw_preview_by_extension(ext)) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
 static int _sort_filename(gchar *a, gchar *b)
 {
-  return g_strcmp0(a, b);
+  /* compare by basename (without extension); if equal prefer extensions by
+   * priority */
+  gchar *ba = g_path_get_basename(a);
+  gchar *bb = g_path_get_basename(b);
+
+  char *da = strrchr(ba, '.');
+  char *db = strrchr(bb, '.');
+
+  if (da)
+    *da = '\0';
+  if (db)
+    *db = '\0';
+
+  int res = g_strcmp0(ba, bb);
+  if (res == 0) {
+    /* same basename, decide by extension priority */
+    const char *exta = da ? da + 1 : NULL;
+    const char *extb = db ? db + 1 : NULL;
+    int pa = _ext_priority(exta);
+    int pb = _ext_priority(extb);
+    if (pa != pb)
+      res = pa - pb;
+    else
+      res = g_strcmp0(a, b);
+  }
+
+  g_free(ba);
+  g_free(bb);
+  return res;
 }
 
 void dt_camctl_import(const dt_camctl_t *c,

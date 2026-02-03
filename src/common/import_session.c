@@ -187,7 +187,8 @@ void dt_import_session_unref(dt_import_session_t *self)
 
 void dt_import_session_import(dt_import_session_t *self)
 {
-  const dt_imgid_t imgid = dt_image_import(self->film->id, self->current_filename, TRUE, TRUE);
+  const dt_imgid_t imgid =
+      dt_image_import(self->film->id, self->current_filename, NULL, TRUE, TRUE);
   if(dt_is_valid_imgid(imgid))
   {
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);

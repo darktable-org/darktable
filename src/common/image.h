@@ -444,14 +444,14 @@ dt_imgid_t dt_image_get_id_full_path(const gchar *filename);
 dt_imgid_t dt_image_get_id(const dt_filmid_t film_id,
                            const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-dt_imgid_t dt_image_import(dt_filmid_t film_id,
-                           const char *filename,
+dt_imgid_t dt_image_import(dt_filmid_t film_id, const char *filename,
+                           const char *preview_jpeg_filepath,
                            const gboolean override_ignore_nonraws,
                            const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
-dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id,
-                               const char *filename,
+dt_imgid_t dt_image_import_lua(const dt_filmid_t film_id, const char *filename,
+                               const char *preview_jpeg_filepath,
                                const gboolean override_ignore_nonraws);
 /** removes the given image from the database. */
 void dt_image_remove(const dt_imgid_t imgid);

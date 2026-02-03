@@ -697,7 +697,8 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   gchar *directory = g_path_get_dirname((const gchar *)pathname);
   dt_film_t film;
   const dt_filmid_t filmid = dt_film_new(&film, directory);
-  const dt_imgid_t imageid = dt_image_import(filmid, pathname, TRUE, TRUE);
+  const dt_imgid_t imageid =
+      dt_image_import(filmid, pathname, NULL, TRUE, TRUE);
   g_free(directory);
 
   // refresh the thumbtable view
@@ -2852,8 +2853,17 @@ static int _control_import_image_copy(const char *filename,
     utimes(output, times); // set origin file timestamps
 #endif
 
-    const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(session),
-                                             output, FALSE, FALSE);
+    /* attempt to also find a companion JPEG from the source directory
+       (same basename, .jpg or .jpeg, case-insensitive) into the
+       destination alongside the main file */
+    char *preview_jpeg_file = NULL;
+    if (dt_conf_get_bool("cache/import_raw_jpeg_optimization"))
+      preview_jpeg_file = dt_imageio_find_companion_jpeg(filename);
+
+    const dt_imgid_t imgid =
+        dt_image_import(dt_import_session_film_id(session), output,
+                        preview_jpeg_file, FALSE, FALSE);
+    g_free(preview_jpeg_file);
     if(!dt_is_valid_imgid(imgid)) dt_control_log(_("error loading file `%s'"), output);
     else
     {
@@ -2908,7 +2918,12 @@ static int _control_import_image_insitu(const char *filename,
   char *dirname = dt_util_path_get_dirname(filename);
   dt_film_t film;
   const dt_filmid_t filmid = dt_film_new(&film, dirname);
-  const dt_imgid_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
+  char *preview_jpeg_file = NULL;
+  if (dt_conf_get_bool("cache/import_raw_jpeg_optimization"))
+    preview_jpeg_file = dt_imageio_find_companion_jpeg(filename);
+  const dt_imgid_t imgid =
+      dt_image_import(filmid, filename, preview_jpeg_file, FALSE, FALSE);
+  g_free(preview_jpeg_file);
   if(!dt_is_valid_imgid(imgid)) dt_control_log(_("error loading file `%s'"), filename);
   else
   {
