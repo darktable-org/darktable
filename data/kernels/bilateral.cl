@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012-2025 darktable developers.
+    copyright (c) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,45 +28,6 @@ image_to_grid(
     clamp(p.x/sigma.x, 0.0f, size.x-1.0f),
     clamp(p.y/sigma.y, 0.0f, size.y-1.0f),
     clamp(p.z/sigma.z, 0.0f, size.z-1.0f), 0.0f);
-}
-
-void
-atomic_add_f(
-    global float *val,
-    const  float  delta)
-{
-#ifdef NVIDIA_SM_20
-  // buys me another 3x--10x over the `algorithmic' improvements in the splat kernel below,
-  // depending on configuration (sigma_s and sigma_r)
-  float res = 0;
-  asm volatile ("atom.global.add.f32 %0, [%1], %2;" : "=f"(res) : "l"(val), "f"(delta));
-
-#else
-  union
-  {
-    float f;
-    unsigned int i;
-  }
-  old_val;
-  union
-  {
-    float f;
-    unsigned int i;
-  }
-  new_val;
-
-  global volatile unsigned int *ival = (global volatile unsigned int *)val;
-
-  do
-  {
-    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
-    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
-    // access it via a slower but consistent atomic operation.
-    old_val.i = atomic_add(ival, 0);
-    new_val.f = old_val.f + delta;
-  }
-  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
-#endif
 }
 
 kernel void
@@ -102,29 +63,29 @@ splat(
   const int j = get_local_id(1);
   int li = lszx*j + i;
 
-  int4   size  = (int4)(sizex, sizey, sizez, 0);
-  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+  const int4   size  = (int4)(sizex, sizey, sizez, 0);
+  const float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   int ox = 1;
-  int oy = size.x;
-  int oz = size.y*size.x;
+  const int oy = size.x;
+  const int oz = size.y*size.x;
 
   if(x < width && y < height)
   {
     // splat into downsampled grid
 
     const float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
-    float L = pixel.x;
-    float4 p = (float4)(x, y, L, 0);
-    float4 gridp = image_to_grid(p, size, sigma);
-    int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
-    float fx = gridp.x - xi.x;
-    float fy = gridp.y - xi.y;
-    float fz = gridp.z - xi.z;
+    const float L = pixel.x;
+    const float4 p = (float4)(x, y, L, 0.0f);
+    const float4 gridp = image_to_grid(p, size, sigma);
+    const int4 xi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+    const float fx = gridp.x - xi.x;
+    const float fy = gridp.y - xi.y;
+    const float fz = gridp.z - xi.z;
 
     // first accumulate into local memory
     gi[li] = xi.x + oy*xi.y + oz*xi.z;
-    float contrib = 100.0f/(sigma_s*sigma_s);
+    const float contrib = 100.0f/(sigma_s*sigma_s);
     li *= 8;
     accum[li++] = contrib * (1.0f-fx) * (1.0f-fy) * (1.0f-fz);
     accum[li++] = contrib * (     fx) * (1.0f-fy) * (1.0f-fz);
@@ -301,18 +262,18 @@ slice_to_output(
   const int oy = sizex;
   const int oz = sizey*sizex;
 
-  int4   size  = (int4)(sizex, sizey, sizez, 0);
-  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+  const int4   size  = (int4)(sizex, sizey, sizez, 0);
+  const float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
-  float4 pixel  = read_imagef (in,   samplerc, (int2)(x, y));
+  const float4 pixel  = read_imagef (in,   samplerc, (int2)(x, y));
   float4 pixel2 = read_imagef (target, samplerc, (int2)(x, y));
-  float L = pixel.x;
-  float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(p, size, sigma);
-  int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
-  float fx = gridp.x - gridi.x;
-  float fy = gridp.y - gridi.y;
-  float fz = gridp.z - gridi.z;
+  const float L = pixel.x;
+  const float4 p = (float4)(x, y, L, 0);
+  const float4 gridp = image_to_grid(p, size, sigma);
+  const int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+  const float fx = gridp.x - gridi.x;
+  const float fy = gridp.y - gridi.y;
+  const float fz = gridp.z - gridi.z;
 
   // trilinear lookup (wouldn't read/write access to 3d textures be cool)
   // could actually use an array of 2d textures, these only require opencl 1.2
@@ -354,17 +315,17 @@ slice(
   const int oy = sizex;
   const int oz = sizey*sizex;
 
-  int4   size  = (int4)(sizex, sizey, sizez, 0);
-  float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
+  const int4   size  = (int4)(sizex, sizey, sizez, 0);
+  const float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
-  float L = pixel.x;
-  float4 p = (float4)(x, y, L, 0);
-  float4 gridp = image_to_grid(p, size, sigma);
-  int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
-  float fx = gridp.x - gridi.x;
-  float fy = gridp.y - gridi.y;
-  float fz = gridp.z - gridi.z;
+  const float L = pixel.x;
+  const float4 p = (float4)(x, y, L, 0);
+  const float4 gridp = image_to_grid(p, size, sigma);
+  const int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
+  const float fx = gridp.x - gridi.x;
+  const float fy = gridp.y - gridi.y;
+  const float fz = gridp.z - gridi.z;
 
   // trilinear lookup (wouldn't read/write access to 3d textures be cool)
   // could actually use an array of 2d textures, these only require opencl 1.2
