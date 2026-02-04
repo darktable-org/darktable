@@ -13,6 +13,9 @@ $ sha256sum darktable-5.4.1.tar.xz
 $ sha256sum darktable-5.4.1-arm64.dmg
 ???  darktable-5.4.1-arm64.dmg
 
+$ sha256sum darktable-5.4.1-x86_64.dmg
+???  darktable-5.4.1-x86_64.dmg
+
 $ sha256sum darktable-5.4.1-win64.exe
 ???  darktable-5.4.1-win64.exe
 
