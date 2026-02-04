@@ -607,9 +607,40 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
 {
   /* Get tree path for row that was clicked */
   GtkTreePath *path = NULL;
+  gint cell_x;
+/*   gint bin_x, bin_y;
+  GtkTreeViewColumn *clickedCol = NULL;
+  GList *columns = gtk_tree_view_get_columns(GTK_TREE_VIEW(treeview));
+  gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(treeview), event->x, event->y, &bin_x, &bin_y);  */ 
+ 
   const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                                          (gint)event->x, (gint)event->y,
-                                                          &path, NULL, NULL, NULL);
+                                                         (gint)event->x, (gint)event->y,
+//                                                          bin_x, bin_y,
+                                                          &path, NULL, &cell_x, NULL);
+/*   gint col_index = g_list_index(columns, (gpointer)clickedCol);
+  g_print("clicked column: %d\n", col_index);               
+  g_list_free(columns); //required */                                        
+/*   GtkTreeViewColumn *expander = gtk_tree_view_get_expander_column(GTK_TREE_VIEW(treeview));
+  const gint expander_width = gtk_tree_view_column_get_width(expander);
+  g_print("expander column width: %d\n", expander_width); */
+  g_print("cell_x of click: %d\n", cell_x);
+  g_print("event->x: %d\n", (gint)event->x);
+/*   g_print("bin_x: %d\n\n", bin_x); */
+
+  gint depth = gtk_tree_path_get_depth(path);
+  g_print("Depth=%d, cell_x=%d\n\n", depth, cell_x);
+  gint base_indent = gtk_tree_view_get_level_indentation(GTK_TREE_VIEW(treeview));  // Extra pixels/level
+  gint total_indent = depth * (16 + base_indent); 
+  g_print("indent is: %d\n", total_indent);
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(treeview));
+  GValue value = G_VALUE_INIT;
+  gtk_style_context_get_property(context, "-GtkTreeView-expander-size", GTK_STATE_FLAG_NORMAL, &value);
+  gint expander_size = g_value_get_int(&value);  // e.g., 16
+  g_value_unset(&value);
+  g_print("expander size: %d\n", expander_size);
+
+  // exit if only clicked on expander
+  if(cell_x <= total_indent) return FALSE; 
 
   if(event->type == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
   {
@@ -3704,6 +3735,10 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
+/*   GtkTreeViewColumn *exp = gtk_tree_view_column_new();
+  // gtk_tree_view_column_set_fixed_width(exp, 30);
+  gtk_tree_view_column_set_sizing(exp, GTK_TREE_VIEW_COLUMN_AUTOSIZE); 
+  gtk_tree_view_append_column(view, exp); */
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
