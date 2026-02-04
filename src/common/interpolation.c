@@ -1335,7 +1335,7 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
           .sizex = 1,
           .sizey = (1 << 16) * taps };
 
-  if(dt_opencl_local_buffer_opt(devid, kernel, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, kernel, &locopt) == CL_SUCCESS)
     vblocksize = locopt.sizey;
   else
     vblocksize = 1;

@@ -626,11 +626,9 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt);
+    if(err != CL_SUCCESS) goto error;
+
     myborder = 32;
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -647,11 +645,9 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt);
+    if(err != CL_SUCCESS) goto error;
+
     myborder = 16;
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
