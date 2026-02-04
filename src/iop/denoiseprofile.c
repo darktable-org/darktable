@@ -2126,7 +2126,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
                                   .sizex = 1u << 16,
                                   .sizey = 1 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_horiz, &hlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_horiz, &hlocopt) == CL_SUCCESS)
     hblocksize = hlocopt.sizex;
   else
     hblocksize = 1;
@@ -2142,7 +2142,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
                                   .sizex = 1,
                                   .sizey = 1u << 16 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_vert, &vlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_vert, &vlocopt) == CL_SUCCESS)
     vblocksize = vlocopt.sizey;
   else
     vblocksize = 1;
@@ -2355,11 +2355,8 @@ static int process_wavelets_cl(dt_iop_module_t *self,
                                   .sizex = 1u << 4,
                                   .sizey = 1u << 4 };
 
-  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &flocopt))
-  {
-    err = CL_INVALID_WORK_DIMENSION;
-    goto error;
-  }
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &flocopt);
+  if(err != CL_SUCCESS) goto error;
 
   const size_t bwidth = ROUNDUP(width, flocopt.sizex);
   const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -2376,11 +2373,8 @@ static int process_wavelets_cl(dt_iop_module_t *self,
                                   .sizex = 1u << 16,
                                   .sizey = 1 };
 
-  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &slocopt))
-  {
-    err = CL_INVALID_WORK_DIMENSION;
-    goto error;
-  }
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &slocopt);
+  if(err != CL_SUCCESS) goto error;
 
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;

@@ -2657,7 +2657,7 @@ int dt_opencl_get_max_work_item_sizes(const int dev,
                                       size_t *sizes)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return -1;
+  if(!cl->inited || dev < 0) return CL_DEVICE_NOT_AVAILABLE;
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid,
                                                   CL_DEVICE_MAX_WORK_ITEM_SIZES,
                                                   sizeof(size_t) * 3, sizes, NULL);
@@ -2670,7 +2670,7 @@ int dt_opencl_get_work_group_limits(const int dev,
                                     unsigned long *localmemsize)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return -1;
+  if(!cl->inited || dev < 0) return CL_DEVICE_NOT_AVAILABLE;
   cl_ulong lmemsize;
   cl_int err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid,
                                                         CL_DEVICE_LOCAL_MEM_SIZE,
@@ -2693,7 +2693,7 @@ int dt_opencl_get_kernel_work_group_size(const int dev,
                                          const int kernel,
                                          size_t *kernelworkgroupsize)
 {
-  if(!_check_kernel(dev, kernel)) return -1;
+  if(!_check_kernel(dev, kernel)) return CL_DEVICE_NOT_AVAILABLE;
 
   dt_opencl_t *cl = darktable.opencl;
   return (cl->dlocl->symbols->dt_clGetKernelWorkGroupInfo)(cl->dev[dev].kernel[kernel],
@@ -4076,13 +4076,13 @@ static int _nextpow2(const int n)
 
 // utility function to calculate optimal work group dimensions for a given kernel
 // taking device specific restrictions and local memory limitations into account
-// returns TRUE in case of success
-gboolean dt_opencl_local_buffer_opt(const int devid,
-                                    const int kernel,
-                                    dt_opencl_local_buffer_t *factors)
+// returns CL_SUCCESS or an error code
+cl_int dt_opencl_local_buffer_opt(const int devid,
+                                  const int kernel,
+                                  dt_opencl_local_buffer_t *factors)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return FALSE;
+  if(!cl->inited || devid < 0) return DT_OPENCL_NODEVICE;
 
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
   size_t workgroupsize = 0;       // the maximum number of items in a work group
@@ -4098,10 +4098,8 @@ gboolean dt_opencl_local_buffer_opt(const int devid,
   *blocksizex = CLAMP(_nextpow2(*blocksizex), 1, 1 << 16);
   *blocksizey = CLAMP(_nextpow2(*blocksizey), 1, 1 << 16);
 
-  if(dt_opencl_get_work_group_limits
-      (devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size
-          (devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+     && dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
   {
     while(maxsizes[0] < *blocksizex
           || maxsizes[1] < *blocksizey
@@ -4114,9 +4112,8 @@ gboolean dt_opencl_local_buffer_opt(const int devid,
       if(*blocksizex == 1 && *blocksizey == 1)
       {
         dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_local_buffer_opt] no valid resource limits for device %d",
-                 devid);
-        return FALSE;
+             "[dt_opencl_local_buffer_opt] no valid resource limits for device %d", devid);
+        return CL_INVALID_WORK_GROUP_SIZE;
       }
 
       if(*blocksizex > *blocksizey)
@@ -4130,10 +4127,10 @@ gboolean dt_opencl_local_buffer_opt(const int devid,
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_local_buffer_opt] can not identify"
              " resource limits for device %d", devid);
-    return FALSE;
+    return CL_INVALID_WORK_GROUP_SIZE;
   }
 
-  return TRUE;
+  return CL_SUCCESS;
 }
 
 #endif

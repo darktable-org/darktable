@@ -712,7 +712,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
                                   .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
                                   .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt) == CL_SUCCESS)
   {
     blocksizex = locopt.sizex;
     blocksizey = locopt.sizey;
@@ -852,7 +852,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
                                   .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
                                   .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt) == CL_SUCCESS)
   {
     blocksizex = locopt.sizex;
     blocksizey = locopt.sizey;

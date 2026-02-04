@@ -572,14 +572,14 @@ static void get_blocksizes(
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1 << 16, .sizey = 1 };
 
-  *h = dt_opencl_local_buffer_opt(devid, horiz_kernel, &hlocopt) ? hlocopt.sizex : 1;
+  *h = dt_opencl_local_buffer_opt(devid, horiz_kernel, &hlocopt) == CL_SUCCESS ? hlocopt.sizex : 1;
 
   dt_opencl_local_buffer_t vlocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * radius, .yfactor = 1,
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1, .sizey = 1 << 16 };
 
-  *v = dt_opencl_local_buffer_opt(devid, vert_kernel, &vlocopt) ? vlocopt.sizey : 1;
+  *v = dt_opencl_local_buffer_opt(devid, vert_kernel, &vlocopt) == CL_SUCCESS ? vlocopt.sizey : 1;
   return;
 }
 

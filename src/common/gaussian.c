@@ -849,7 +849,7 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
                                   .cellsize = channels * sizeof(float), .overhead = 0,
                                   .sizex = BLOCKSIZE, .sizey = BLOCKSIZE };
 
-  if(dt_opencl_local_buffer_opt(devid, kernel_gaussian_transpose, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, kernel_gaussian_transpose, &locopt) == CL_SUCCESS)
     blocksize = MIN(locopt.sizex, locopt.sizey);
   else
     blocksize = 1;

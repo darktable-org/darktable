@@ -1733,11 +1733,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3);
+    if(err != CL_SUCCESS) goto error;
 
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
@@ -1757,11 +1754,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 4 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp);
+    if(err != CL_SUCCESS) goto error;
 
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
@@ -1811,11 +1805,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g);
+      if(err != CL_SUCCESS) goto error;
 
       cl_mem *dev_trgb = dev_rgb;
       for(int d = 0, i = 1, h = 0; d < 6; d++, i ^= 1, h ^= 2)
@@ -1841,11 +1832,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br);
+      if(err != CL_SUCCESS) goto error;
 
       for(int d = 0; d < 4; d++)
       {
@@ -1865,11 +1853,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22);
+      if(err != CL_SUCCESS) goto error;
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
       {
@@ -1906,11 +1891,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 4 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {
@@ -1957,11 +1939,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {
@@ -1987,11 +1966,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {

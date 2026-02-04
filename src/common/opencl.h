@@ -595,10 +595,11 @@ cl_int dt_opencl_events_flush(const int devid,
                               const gboolean reset);
 
 /** utility function to calculate optimal work group dimensions for a
- * given kernel */
-gboolean dt_opencl_local_buffer_opt(const int devid,
-                               const int kernel,
-                               dt_opencl_local_buffer_t *factors);
+    given kernel, returns an error code
+*/
+cl_int dt_opencl_local_buffer_opt(const int devid,
+                                  const int kernel,
+                                  dt_opencl_local_buffer_t *factors);
 
 /** utility functions handling device specific properties */
 void dt_opencl_write_device_config(const int devid);
