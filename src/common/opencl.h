@@ -359,6 +359,12 @@ int dt_opencl_get_kernel_work_group_size(const int dev,
 /** wrap opencl single argument */
 #define CLARG(arg) CLWRAP(sizeof(arg), &arg)
 
+/** wrap inline parameters as compound literals (C99) used for #defines / constants ..
+  See https://en.cppreference.com/w/c/language/compound_literal.html
+*/
+#define CLARGINT(arg) CLWRAP(sizeof(int), &((int){arg}))
+#define CLARGFLOAT(arg) CLWRAP(sizeof(float), &((float){arg}))
+
 /** wrap opencl argument array */
 #define CLARRAY(num, arg) CLWRAP(num * sizeof(*arg), arg)
 
