@@ -48,7 +48,7 @@ DT_MODULE(3)
 #define MAX_RULES 10
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
-#define DEFAULT_EXPANDER_SIZE 20
+#define DEFAULT_EXPANDER_SIZE 20 //FIXME: estimated value. How to get the actual?
 
 typedef struct _datetime_range_t
 {
@@ -610,20 +610,18 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   GtkTreePath *path = NULL;
   gint cell_x;
   const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                                          (gint)event->x, (gint)event->y,
-                                                          &path, NULL, NULL, NULL);
+                                                         (gint)event->x, (gint)event->y,
+                                                          &path, NULL, &cell_x, NULL);
 
-  if(event->type == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
-  {
-/*     if(event->state == last_state && path)
-    {
-      if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
-        gtk_tree_view_collapse_row(GTK_TREE_VIEW(treeview), path);
-      else
-        gtk_tree_view_expand_row(GTK_TREE_VIEW(treeview), path, FALSE);
-    } */
-    last_state = event->state;
-  }
+  // calculate the approximate indentation in pixels for the lower hierarchy levels.
+  // Then we can estimate, if the expander was clicked or the text in the row.
+  gint depth = gtk_tree_path_get_depth(path);
+  gint base_indent = gtk_tree_view_get_level_indentation(GTK_TREE_VIEW(treeview));
+  gint total_indent = depth * (DEFAULT_EXPANDER_SIZE + base_indent); 
+  // exit if only clicked on expander
+  if(cell_x <= total_indent) return FALSE; 
+
+  last_state = event->state;
 
   // case of a range selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
