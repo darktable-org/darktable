@@ -85,6 +85,44 @@ fcol(const int row, const int col, const unsigned int filters, global const unsi
                         : filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
+void
+atomic_add_f(
+    global float *val,
+    const  float  delta)
+{
+#ifdef NVIDIA_SM_20
+  // buys me another 3x--10x over the `algorithmic' improvements in the splat kernel below,
+  // depending on configuration (sigma_s and sigma_r)
+  float res = 0;
+  asm volatile ("atom.global.add.f32 %0, [%1], %2;" : "=f"(res) : "l"(val), "f"(delta));
+
+#else
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  old_val;
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  new_val;
+
+  global volatile unsigned int *ival = (global volatile unsigned int *)val;
+
+  do
+  {
+    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
+    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
+    // access it via a slower but consistent atomic operation.
+    old_val.i = atomic_add(ival, 0);
+    new_val.f = old_val.f + delta;
+  }
+  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
+#endif
+}
 
 static inline float
 dt_fast_hypot(const float x, const float y)
