@@ -31,9 +31,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.4.0:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
--  ?? issues closed
+- 124 commits to darktable+rawspeed
+-  74 pull requests handled
+-  25 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.4
 and contributions are greatly appreciated. Please see the
@@ -153,8 +153,9 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 5.4, Intel Macs and macOS versions older than 14.0
-  are no longer supported.
+- Starting with release 5.4, macOS versions older than 14.0 are no
+  longer supported on Apple Silicon Macs, nor older than macOS 15 on
+  Intel Macs.
 
 ## Changed Dependencies
 
@@ -170,7 +171,7 @@ changes (where available).
 
 - N/A
 
-## Camera support, compared to 5.2
+## Camera support, compared to 5.4.0
 
 ### Base Support
 
@@ -182,7 +183,8 @@ changes (where available).
 
 ### Noise Profiles
 
-- N/A
+- Canon EOS 10D
+- Sony ILCE-7CR
 
 ### Missing Compression Mode Support
 
