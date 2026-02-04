@@ -44,7 +44,7 @@ function for-submodule()
         SRANGE=$SHEAD
     else
         local SBASE=$(git log --patch -1 $BASE -- $SUBPATH |
-                          grep "Subproject commit" | head -1 | cut -d' ' -f3)
+                          grep "Subproject commit" | tail -1 | cut -d' ' -f3)
         SRANGE="$SBASE..$SHEAD"
     fi
 
