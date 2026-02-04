@@ -1486,6 +1486,7 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
   switch(prop)
   {
     case DT_MASKS_PROPERTY_CURVATURE:
+    {
       float curvature = gradient
         ? gradient->curvature
         : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
@@ -1499,8 +1500,10 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       *min = fmaxf(*min, -1.0f - 0.5 * curvature);
       ++*count;
       break;
+    }
 
     case DT_MASKS_PROPERTY_COMPRESSION:
+    {
       const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
       float compression = gradient
         ? gradient->compression
@@ -1515,8 +1518,10 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       *min = fmaxf(*min, 0.0005f / compression);
       ++*count;
       break;
+    }
 
     case DT_MASKS_PROPERTY_ROTATION:
+    {
       float rotation = gradient
         ? gradient->rotation
         : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
@@ -1528,7 +1533,9 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       *sum += 360.0f - rotation;
       ++*count;
       break;
-    default:;
+    }
+
+    default: {}
   }
 }
 
