@@ -160,7 +160,7 @@ changes (where available).
 
 ### Mandatory
 
-- LibRaw v0.22.0
+- N/A
 
 ### Optional
 
