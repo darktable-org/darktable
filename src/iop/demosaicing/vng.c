@@ -482,11 +482,9 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                                       .cellsize = 1 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto finish;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt);
+    if(err != CL_SUCCESS) goto finish;
+
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
@@ -508,11 +506,9 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
-  {
-    err = CL_INVALID_WORK_DIMENSION;
-    goto finish;
-  }
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt);
+  if(err != CL_SUCCESS) goto finish;
+
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
   dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,

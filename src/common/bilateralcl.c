@@ -84,7 +84,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
                                   .cellsize = 8 * sizeof(float) + sizeof(int), .overhead = 0,
                                   .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  if(!dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt) != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid", devid);
