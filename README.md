@@ -61,6 +61,7 @@ Requirements
 * OpenBSD
 * Windows 8.1 with [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
 * Apple Silicon Macs running macOS 14 and later
+* Intel Macs running macOS 15 and later
 
 *Big-endian platforms are not supported.*
 
@@ -93,11 +94,12 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-5.4.0 (stable)
+5.4.1 (stable)
 
-* [Download package for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.4.0/darktable-5.4.0-win64.exe)
-* [Download disk image for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.4.0/darktable-5.4.0-arm64.dmg)
-* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.4.0/Darktable-5.4.0-x86_64.AppImage)
+* [Download package for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-win64.exe)
+* [Download disk image for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-arm64.dmg)
+* [Download disk image for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/darktable-5.4.1-x86_64.dmg)
+* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.4.1/Darktable-5.4.1-x86_64.AppImage)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -265,7 +267,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-5.4.0
+5.4.1
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.2, 4.4, 4.6, 4.8).
 Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly provide bug fixes and camera support.
@@ -275,7 +277,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-5.4.0
+git checkout tags/release-5.4.1
 ```
 
 ### Get submodules
