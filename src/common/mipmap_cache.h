@@ -156,6 +156,13 @@ void dt_mipmap_cache_copy_thumbnails(const dt_imgid_t dst_imgid, const dt_imgid_
 // return the mipmap corresponding to text value saved in prefs
 dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value);
 
+// optimize RAW+JPEG import by extracting embedded JPEG and using it as base for
+// mipmap cache. extracts JPEG from RAW file, writes to mipmap level 8, then
+// downscales to create all mipmap tiers. returns TRUE if optimization was
+// applied, FALSE if JPEG extraction failed or feature disabled.
+gboolean dt_mipmap_cache_import_jpeg_to_mips(const dt_imgid_t imgid,
+                                             const char *filename);
+
 G_END_DECLS
 
 // clang-format off

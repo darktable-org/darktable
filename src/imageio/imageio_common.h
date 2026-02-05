@@ -58,6 +58,12 @@ typedef enum dt_imageio_levels_t
 
 // Check that the image is raw by file extension
 gboolean dt_imageio_is_raw_by_extension(const char *extension);
+// Check that the image is raw preview by file extension
+gboolean dt_imageio_is_raw_preview_by_extension(const char *extension);
+// Find a companion JPEG (same basename, .jpg/.jpeg) in the same directory as
+// `filepath`. Returns a newly-allocated string with the full path, or NULL if
+// not found.
+char *dt_imageio_find_companion_jpeg(const char *filepath);
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
 // checks that the image has a monochrome preview attached

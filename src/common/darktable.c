@@ -447,7 +447,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
     gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
     const dt_filmid_t filmid = dt_film_new(&film, directory);
-    imgid = dt_image_import(filmid, filename, TRUE, TRUE);
+    imgid = dt_image_import(filmid, filename, NULL, TRUE, TRUE);
     g_free(directory);
     if(dt_is_valid_imgid(imgid))
     {

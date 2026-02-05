@@ -74,7 +74,8 @@ static int32_t _image_import_job_run(dt_job_t *job)
 
   dt_control_job_set_progress_message(job, _("importing image %s"), params->filename);
 
-  const dt_imgid_t id = dt_image_import(params->film_id, params->filename, TRUE, TRUE);
+  const dt_imgid_t id =
+      dt_image_import(params->film_id, params->filename, NULL, TRUE, TRUE);
   if(dt_is_valid_imgid(id))
   {
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);

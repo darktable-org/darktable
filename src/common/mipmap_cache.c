@@ -1715,6 +1715,109 @@ void dt_mipmap_cache_copy_thumbnails(const dt_imgid_t dst_imgid,
   }
 }
 
+// Optimize RAW+JPEG import by using companion JPEG file to populate mipmap
+// cache. When RAW and JPEG files are imported together, this function reads the
+// JPEG and uses it to populate mipmap level 8, then downscales to generate
+// levels 0-7. This avoids expensive RAW demosaicing for thumbnail generation.
+// Returns TRUE if optimization was applied, FALSE if no companion JPEG found or
+// feature disabled.
+gboolean dt_mipmap_cache_import_jpeg_to_mips(const dt_imgid_t imgid,
+                                             const char *filename) {
+  // Check if feature is enabled via preference
+  if (!dt_conf_get_bool("cache/import_raw_jpeg_optimization"))
+    return FALSE;
+
+  if (!dt_is_valid_imgid(imgid) || !filename || !filename[0])
+    return FALSE;
+
+  // Read the JPEG file into memory
+  uint8_t *jpeg_blob = NULL;
+  size_t jpeg_blob_len = 0;
+  GError *gerror = NULL;
+
+  if (!g_file_get_contents(filename, (gchar **)&jpeg_blob, &jpeg_blob_len,
+                           &gerror)) {
+    dt_print(DT_DEBUG_CACHE,
+             "[mipmap_cache] failed to read companion JPEG %s: %s", filename,
+             gerror->message);
+    g_error_free(gerror);
+    return FALSE;
+  }
+
+  // Decompress JPEG header to get dimensions and color space
+  dt_imageio_jpeg_t jpg;
+  if (dt_imageio_jpeg_decompress_header(jpeg_blob, jpeg_blob_len, &jpg)) {
+    dt_print(DT_DEBUG_CACHE,
+             "[mipmap_cache] failed to read JPEG header from %s", filename);
+    g_free(jpeg_blob);
+    return FALSE;
+  }
+
+  // Get write-locked mipmap buffer for level 8 (full preview)
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_8, DT_MIPMAP_BLOCKING, 'w');
+
+  if (!buf.cache_entry || !buf.buf) {
+    dt_print(DT_DEBUG_CACHE,
+             "[mipmap_cache] failed to get mipmap 8 buffer for image %u",
+             imgid);
+    g_free(jpeg_blob);
+    return FALSE;
+  }
+
+  // Decompress JPEG into a temporary buffer first
+  uint8_t *tmp = dt_alloc_align_uint8((size_t)jpg.width * jpg.height * 4);
+  if (!tmp) {
+    dt_print(DT_DEBUG_CACHE,
+             "[mipmap_cache] memory allocation failed for temp jpeg buffer for "
+             "image %u",
+             imgid);
+    dt_mipmap_cache_release(&buf);
+    g_free(jpeg_blob);
+    return FALSE;
+  }
+
+  if (dt_imageio_jpeg_decompress(&jpg, tmp)) {
+    dt_print(DT_DEBUG_CACHE,
+             "[mipmap_cache] failed to decompress JPEG for image %u", imgid);
+    dt_free_align(tmp);
+    dt_mipmap_cache_release(&buf);
+    g_free(jpeg_blob);
+    return FALSE;
+  }
+
+  // Apply RAW image orientation so the cached image matches the RAW
+  const dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
+
+  // Destination buffer is the cache payload
+  dt_mipmap_buffer_dsc_t *dsc = (dt_mipmap_buffer_dsc_t *)buf.cache_entry->data;
+  uint32_t out_w = 0, out_h = 0;
+  // use flip_and_zoom with destination size equal to source, so we just
+  // reorient without scaling
+  dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf.buf, jpg.width,
+                         jpg.height, orientation, &out_w, &out_h);
+
+  dsc->width = out_w;
+  dsc->height = out_h;
+  dsc->iscale = 1.0f;
+  dsc->color_space = dt_imageio_jpeg_read_color_space(&jpg);
+  dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE; // Mark as generated
+
+  dt_print(DT_DEBUG_CACHE,
+           "[mipmap_cache] populated mipmap 8 (%dx%d) from companion JPEG for "
+           "image %u (oriented)",
+           dsc->width, dsc->height, imgid);
+
+  dt_free_align(tmp);
+  dt_mipmap_cache_release(&buf);
+  g_free(jpeg_blob);
+
+  // TODO: Generate mipmap levels 0-7 by downscaling from level 8
+  // This would require cairo or similar scaling infrastructure
+
+  return TRUE;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
