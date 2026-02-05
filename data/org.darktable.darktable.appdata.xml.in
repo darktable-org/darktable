@@ -47,6 +47,7 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2026-02-05" version="5.4.1"/>
     <release date="2025-12-21" version="5.4.0"/>
     <release date="2025-08-06" version="5.2.1"/>
     <release date="2025-06-21" version="5.2.0"/>
