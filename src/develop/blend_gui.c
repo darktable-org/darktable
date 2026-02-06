@@ -586,7 +586,7 @@ static void _add_wrapped_box(GtkWidget *container,
                              gchar *help_url)
 {
   GtkWidget *event_box = gtk_event_box_new();
-  GtkWidget *revealer = gtk_revealer_new();
+  GtkWidget *revealer = dt_gui_expand(gtk_revealer_new());
   gtk_container_add(GTK_CONTAINER(revealer), GTK_WIDGET(box));
   gtk_container_add(GTK_CONTAINER(event_box), revealer);
   gtk_container_add(GTK_CONTAINER(container), event_box);
@@ -602,7 +602,7 @@ static void _box_set_visible(GtkBox *box, gboolean visible)
   GtkRevealer *revealer = GTK_REVEALER(gtk_widget_get_parent(GTK_WIDGET(box)));
   gtk_revealer_set_transition_duration(revealer,
                                        dt_conf_get_int("darkroom/ui/transition_duration"));
-  gtk_revealer_set_reveal_child(revealer, visible);
+  gtk_revealer_set_reveal_child(revealer, TRUE);//GTK4 visible);
 }
 
 static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
@@ -796,6 +796,7 @@ static void _blendop_masks_combine_callback(GtkWidget *combo,
 
 static void _blendop_blendif_highlight_changed_tabs(dt_iop_module_t *module)
 {
+return; // GTK4 disabled for now
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   dt_develop_blend_params_t *bp = module->blend_params;
   dt_develop_blend_params_t *dp = module->default_blendop_params;
@@ -2522,7 +2523,8 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
     dt_iop_color_picker_reset(module, TRUE);
 
     /* remove tabs before adding others */
-    dt_gui_container_destroy_children(GTK_CONTAINER(bd->channel_tabs));
+    while(gtk_notebook_get_n_pages(bd->channel_tabs) > 0)
+      gtk_notebook_remove_page(bd->channel_tabs, 0);
 
     bd->channel_tabs_csp = bd->csp;
 

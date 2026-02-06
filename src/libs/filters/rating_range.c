@@ -179,7 +179,7 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 {
   // first, we set the color depending on the flags
   void *my_data = NULL;
-  GdkRGBA shade_color;
+  struct { gdouble red; gdouble green; gdouble blue; gdouble alpha;} shade_color;
 
   if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
   {

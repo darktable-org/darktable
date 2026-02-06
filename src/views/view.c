@@ -280,11 +280,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       }
     }
 
-    /* remove all widgets in all containers */
-    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++)
-      dt_ui_container_destroy_children(darktable.gui->ui, l);
-    vm->current_view = NULL;
-
     /* remove sticky accels window */
     if(vm->accels_window.window)
       dt_view_accels_hide(vm);
@@ -339,9 +334,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
           so remove the child before that
           */
         if(plugin->widget)
-          gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(plugin->widget)), plugin->widget);
+          gtk_widget_unparent(plugin->widget);
         if(plugin->expander)
-          gtk_widget_destroy(plugin->expander);
+          gtk_widget_unparent(plugin->expander);
       }
       plugin->expander = NULL;
     }

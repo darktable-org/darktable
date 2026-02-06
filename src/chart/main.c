@@ -1659,7 +1659,7 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
 
 static int main_gui(dt_lut_t *self, int argc, char *argv[])
 {
-  gtk_init(&argc, &argv);
+  gtk_init();
 
   char *source_filename = argc >= 2 ? argv[1] : NULL;
   char *cht_filename = argc >= 3 ? argv[2] : NULL;

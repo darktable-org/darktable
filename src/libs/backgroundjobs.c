@@ -134,7 +134,7 @@ static gboolean _added_gui_thread(gpointer user_data)
   gtk_widget_show_all(params->instance_widget);
   gtk_widget_show(params->self_widget);
 
-  GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
+  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
   gdk_window_set_cursor(gtk_widget_get_window(params->instance_widget), cursor);
   g_object_unref(cursor);
 

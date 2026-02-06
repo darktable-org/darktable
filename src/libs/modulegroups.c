@@ -26,7 +26,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -537,7 +536,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_object_ref(item->widget);
     gtk_container_remove(GTK_CONTAINER(item->old_parent), item->widget);
     gtk_box_pack_start(GTK_BOX(item->box), item->widget, TRUE, TRUE, 0);
-    gtk_widget_set_hexpand(item->widget, FALSE);
+    gtk_widget_set_hexpand(item->widget, TRUE);
     g_object_unref(item->widget);
 
     // change the widget label to integrate section name
@@ -646,7 +645,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       GtkWidget *sect = dt_ui_section_label_new(item->module->name());
       gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
       gtk_widget_show(sect);
-      gtk_box_pack_start(GTK_BOX(header_box), sect, TRUE, TRUE, 0);
+      gtk_box_insert_child_after(GTK_BOX(header_box), sect, btn);
     }
     else if(item_pos == FIRST_MODULE)
       // if there is no label, we handle separately in css the first module header
@@ -2907,8 +2906,8 @@ void gui_init(dt_lib_module_t *self)
   /* search box */
   d->text_entry = gtk_search_entry_new();
   dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, N_("search modules"), d->text_entry, &dt_action_def_entry);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry),
-                                 _("search modules by name or tag"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(d->text_entry),
+                                        _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed",
                    G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search",
@@ -2922,8 +2921,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), visibility_wrapper, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->text_entry), 35);
-  gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry),
-                                  GTK_ENTRY_ICON_SECONDARY, _("clear text"));
+  // GTK4 gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry),
+  //                                 GTK_ENTRY_ICON_SECONDARY, _("clear text"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);

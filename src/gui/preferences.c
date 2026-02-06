@@ -211,7 +211,7 @@ static void save_usercss(GtkTextBuffer *buffer)
 
   // write to file
   GError *error = NULL;
-  if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
+  if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error) && error)
   {
     dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s",
              G_STRFUNC, usercsspath, error->message);
@@ -609,7 +609,7 @@ void dt_gui_preferences_show()
   GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
 
-  gtk_widget_show_all(_preferences_dialog);
+  gtk_widget_show(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view
   const gchar *current_view = dt_view_manager_name(darktable.view_manager);
@@ -991,7 +991,7 @@ static void init_tab_presets(GtkWidget *stack)
 
   GtkWidget *search_presets = gtk_search_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("search presets list"));
+  gtk_search_entry_set_placeholder_text(GTK_SEARCH_ENTRY(search_presets), _("search presets list"));
   gtk_widget_set_tooltip_text
     (GTK_WIDGET(search_presets),
      _("incrementally search the list of presets\n"
