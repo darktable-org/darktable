@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -279,7 +279,7 @@ static void process_wavelets(dt_iop_module_t *self,
                              const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = piece->data;
+  const dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -360,8 +360,6 @@ void process(dt_iop_module_t *self,
 #ifdef HAVE_OPENCL
 
 #ifdef USE_NEW_CL
-/* this version is adapted to the new global tiling mechanism. it no
- * longer does tiling by itself. */
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
@@ -369,7 +367,10 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = piece->data;
+  const dt_iop_atrous_data_t *d = piece->data;
+  const dt_iop_atrous_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -384,100 +385,81 @@ int process_cl(dt_iop_module_t *self,
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = self->global_data;
-
-  const int devid = piece->pipe->devid;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmp2 = NULL;
   cl_mem dev_detail = NULL;
 
-  float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
+  const float m[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
   for(int j = 0; j < 5; j++)
     for(int i = 0; i < 5; i++) mm[j][i] = m[i] * m[j];
 
-  dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 25, mm);
-  if(dev_filter == NULL) goto error;
-
-  /* allocate space for two temporary buffer to participate_in in the
-     buffer ping-pong below.  We need dev_out to accumulate the result
-     and dev_in needs to stay unchanged for blendops */
-  dev_tmp = dt_opencl_alloc_device
-    (devid, roi_out->width, roi_out->height, sizeof(float) * 4);
-  if(dev_tmp == NULL) goto error;
-  dev_tmp2 = dt_opencl_alloc_device
-    (devid, roi_out->width, roi_out->height, sizeof(float) * 4);
-  if(dev_tmp2 == NULL) goto error;
-
-  /* allocate a buffer for storing the detail information. */
-  dev_detail = dt_opencl_alloc_device
-    (devid, roi_out->width, roi_out->height, sizeof(float) * 4);
-  if(dev_detail == NULL) goto error;
-
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 25, mm);
+
+  /* allocate space for two temporary buffer to participate_in in the
+     buffer ping-pong below.
+     We need dev_out to accumulate the result
+     and dev_in must stay unchanged
+  */
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  /* allocate a buffer for storing the detail information. */
+  dev_detail = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(!dev_detail || !dev_tmp || !dev_tmp2 || !dev_filter) goto error;
 
   // clear dev_out to zeros, as we will be incrementally accumulating results there
-  dt_opencl_set_kernel_args(devid, gd->kernel_zero, 0, CLARG(dev_out));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zero, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zero, width, height,
+    CLARG(dev_out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
   // the buffers for the buffer ping-pong.  We start with dev_in as
   // the input half for the first scale, then switch to using dev_tmp
-  // and dev_tmp2 as the two scratch buffers
-  void* dev_buf1 = &dev_in;
-  void* dev_buf2 = &dev_tmp;
+  // and dev_tmp2 as the two scratch buffers at the end of scaling loop
+  cl_mem pp_in = dev_in;
+  cl_mem pp_coarse = dev_tmp;
 
   /* decompose image into detail scales and coarse (the latter is left
-   * in dev_tmp or dev_out) */
+     in dev_tmp or dev_out)
+  */
   for(int s = 0; s < max_scale; s++)
   {
     const int scale = s;
 
     // run the decomposition
-    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0,
-                              CLARG(dev_buf2), CLARG(dev_buf1), CLARG(dev_detail),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_decompose, width, height,
+                              CLARG(pp_in), CLARG(pp_coarse), CLARG(dev_detail),
                               CLARG(width), CLARG(height),
                               CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
-
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
 
     // now immediately run the synthesis for the current scale, accumulating the details into dev_out
-    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0,
-                              CLARG(dev_out), CLARG(dev_out), CLARG(dev_detail),
+    // dev_out as the accumulator must be given twice as an OpenCL 1.2 workaround
+    // Is this safe here? or would we need another temp buff and accumalate?
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_synthesize, width, height,
+                              CLARG(dev_out), CLARG(pp_coarse), CLARG(dev_detail),
                               CLARG(width), CLARG(height),
-                              CLARG(thrs[scale][0]), CLARG(thrs[scale][1]),
-                              CLARG(thrs[scale][2]), CLARG(thrs[scale][3]),
-                              CLARG(boost[scale][0]), CLARG(boost[scale][1]),
-                              CLARG(boost[scale][2]), CLARG(boost[scale][3]));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
+                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));
     if(err != CL_SUCCESS) goto error;
 
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
-
-    // swap scratch buffers
-    if(scale == 0) dev_buf1 = dev_tmp2;
-    void* tmp = dev_buf2;
-    dev_buf2 = dev_buf1;
-    dev_buf1 = tmp;
+    // swap scratch buffers but leave as is for the final round to keep pp_coarse correct
+    if(s != max_scale -1)
+    {
+      cl_mem tmp = (s == 0) ? dev_tmp2 : pp_in;
+      pp_in = pp_coarse;
+      pp_coarse = tmp;
+    }
   }
 
   // add the residue (the coarse scale from the final decomposition)
   // to the accumulated details
-  dt_opencl_set_kernel_args
-    (devid, gd->kernel_addbuffers, 0, CLARG(dev_out), CLARG(dev_buf1));
-
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_addbuffers, sizes);
-
+  // work around CL 1.20 restriction is safe with the kernel,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_addbuffers, width, height,
+          CLARG(dev_out), CLARG(dev_out), CLARG(pp_coarse),
+          CLARG(width), CLARG(height));
 error:
   dt_opencl_release_mem_object(dev_filter);
   dt_opencl_release_mem_object(dev_tmp);
@@ -495,7 +477,10 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_atrous_data_t *d = piece->data;
+  const dt_iop_atrous_data_t *d = piece->data;
+  const dt_iop_atrous_global_data_t *gd = self->global_data;
+  const int devid = piece->pipe->devid;
+
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
   dt_aligned_pixel_t boost[MAX_NUM_SCALES];
   float sharp[MAX_NUM_SCALES];
@@ -510,45 +495,38 @@ int process_cl(dt_iop_module_t *self,
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = self->global_data;
-
-  const int devid = piece->pipe->devid;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem *dev_detail = calloc(max_scale, sizeof(cl_mem));
 
-  float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
+  const float m[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
   for(int j = 0; j < 5; j++)
     for(int i = 0; i < 5; i++)
       mm[j][i] = m[i] * m[j];
 
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
   dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 25, mm);
-  if(dev_filter == NULL) goto error;
 
   /* allocate space for a temporary buffer. we don't want to use
      dev_in in the buffer ping-pong below, as we need to keep it for
      blendops */
-  dev_tmp = dt_opencl_alloc_device
-    (devid, roi_out->width, roi_out->height, sizeof(float) * 4);
-  if(dev_tmp == NULL) goto error;
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(!dev_tmp || !dev_filter) goto error;
 
   /* allocate space to store detail information. Requires a number of
    * additional buffers, each with full image size */
   for(int k = 0; k < max_scale; k++)
   {
-    dev_detail[k] = dt_opencl_alloc_device
-      (devid, roi_out->width, roi_out->height, sizeof(float) * 4);
+    dev_detail[k] = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
-
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
@@ -560,55 +538,36 @@ int process_cl(dt_iop_module_t *self,
     const int scale = s;
 
     if(s & 1)
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0,
-                                CLARG(dev_tmp), CLARG(dev_out));
-    }
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_decompose, width, height,
+                                CLARG(dev_tmp), CLARG(dev_out),
+                                CLARG(dev_detail[s]), CLARG(width), CLARG(height),
+                                CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
     else
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0,
-                                CLARG(dev_out), CLARG(dev_tmp));
-    }
-    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 2,
-                              CLARG(dev_detail[s]), CLARG(width), CLARG(height),
-                              CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_decompose, width, height,
+                                CLARG(dev_out), CLARG(dev_tmp),
+                                CLARG(dev_detail[s]), CLARG(width), CLARG(height),
+                                CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
     if(err != CL_SUCCESS) goto error;
-
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
   }
 
   /* now synthesize again */
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
     if(scale & 1)
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0,
-                                CLARG(dev_tmp), CLARG(dev_out));
-    }
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_synthesize, width, height,
+                              CLARG(dev_tmp), CLARG(dev_out),
+                              CLARG(dev_detail[scale]),
+                              CLARG(width), CLARG(height),
+                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));  
+
     else
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0,
-                                CLARG(dev_out), CLARG(dev_tmp));
-    }
-
-    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 2,
-                              CLARG(dev_detail[scale]), CLARG(width),
-                              CLARG(height), CLARG(thrs[scale][0]),
-                              CLARG(thrs[scale][1]), CLARG(thrs[scale][2]),
-                              CLARG(thrs[scale][3]), CLARG(boost[scale][0]),
-                              CLARG(boost[scale][1]), CLARG(boost[scale][2]),
-                              CLARG(boost[scale][3]));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_synthesize, width, height,
+                              CLARG(dev_out), CLARG(dev_tmp),
+                              CLARG(dev_detail[scale]),
+                              CLARG(width), CLARG(height),
+                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));  
     if(err != CL_SUCCESS) goto error;
-
-    // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_opencl_micro_nap(devid);
   }
-
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
 error:
@@ -637,7 +596,7 @@ void tiling_callback(dt_iop_module_t *self,
   const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
   tiling->factor = 4.0f;                // in + out + 2*tmp
-  tiling->factor_cl = 3.0f + max_scale; // in + out + tmp + scale buffers
+  tiling->factor_cl = 5.0f; // in + out + details + 2*tmp
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
@@ -709,16 +668,6 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = piece->data;
 
-#if 0
-  printf("---------- atrous preset begin\n");
-  printf("p.octaves = %d;  p.mix = %.2f\n", p->octaves, p->mix);
-  for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
-    {
-      printf("p.x[%d][%d] = %f;\n", ch, k, p->x[ch][k]);
-      printf("p.y[%d][%d] = %f;\n", ch, k, p->y[ch][k]);
-    }
-  printf("---------- atrous preset end\n");
-#endif
   d->octaves = p->octaves;
   for(int ch = 0; ch < atrous_none; ch++)
     for(int k = 0; k < BANDS; k++)
