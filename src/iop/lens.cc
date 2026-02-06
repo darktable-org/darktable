@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4050,6 +4050,9 @@ static void _lens_set(dt_iop_module_t *self,
   char txt[30];
 
   // focal length
+  /* For prime lenses (single focal length), auto-select the only available value */
+  if(lens->MinFocal >= lens->MaxFocal) p->focal = lens->MinFocal;
+
   w = g->focal_length;
   dt_bauhaus_widget_set_label(w, NULL, N_("mm"));
   dt_bauhaus_combobox_clear(w);
