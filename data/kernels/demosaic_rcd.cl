@@ -276,18 +276,12 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
 
   const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
   const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-  const float4 blender = mask[idx];
+  const float4 blender = clipf(mask[mad24(row, w, col)]);
   float4 data = mix(low_val, high_val, blender);
-
-  if(showmask)
-    data.w = mask[idx];
-  else
-    data.w = 0.0f;
-
+  data.w = showmask ? blender.x : 0.0f;
   write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
 }
 
@@ -338,8 +332,8 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                     const unsigned int filters, local float *buffer, const int border)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -376,12 +370,10 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
-  if(x >= border && x < width - border && y >= border && y < height - border) return;
+  if(col >= width - 3 || col < 3 || row >= height - 3 || row < 3) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
 
   // process all non-green pixels
-  const int row = y;
-  const int col = x;
   const int c = FC(row, col, filters);
   float4 color = 0.0f; // output color
 
@@ -432,14 +424,14 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
       color.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
 }
 kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const unsigned int filters, local float4 *buffer, const int border)
 {
   // image in contains full green and sparse r b
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -476,11 +468,9 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width || y >= height) return;
-  if(x >= border && x < width - border && y >= border && y < height - border) return;
+  if(col >= width || row >= height) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
 
-  const int row = y;
-  const int col = x;
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
   if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
@@ -533,7 +523,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
       }
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
 }
 
 kernel void demosaic_box3(read_only image2d_t in,
