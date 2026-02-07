@@ -2328,6 +2328,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   // FIXME : this probably needs to capture dev thread lock
   if(dev->gui_attached && !no_image)
   {
+    dt_dev_pixelpipe_rebuild(dev);
     dt_dev_pipe_synch_all(dev);
     dt_dev_invalidate_all(dev);
 
