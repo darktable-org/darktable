@@ -73,6 +73,11 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
   return module_picker || primary_picker;
 }
 
+gboolean dt_iop_color_picker_is_area_empty(const dt_pickerbox_t box)
+{
+  return (fabsf(box[2] - box[0]) < 1e-3f || fabsf(box[3] - box[1]) < 1e-3f);
+}
+
 static gboolean _record_point_area(dt_iop_color_picker_t *self)
 {
   const dt_colorpicker_sample_t *const sample =
@@ -204,8 +209,16 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
       if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
          && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
       {
-        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
-        dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
+        if(flags & DT_COLOR_PICKER_NO_AUTO)
+        {
+          // reset coordinates to 0.0f to create a zero-area box,
+          // requiring the user to drag-select manually
+          memset(self->pick_box, 0, sizeof(self->pick_box));
+        }
+        else {
+          dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
+          dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
+        }
       }
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
@@ -317,6 +330,13 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))
   {
+    // in Area mode, ignore updates where the area is empty (e.g. when using DT_COLOR_PICKER_NO_AUTO
+    // and the user has not started dragging yet)
+    if((picker->flags & DT_COLOR_PICKER_AREA) && dt_iop_color_picker_is_area_empty(picker->pick_box))
+    {
+      return;
+    }
+
     if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, pipe))
     {
       if(module->color_picker_apply)
