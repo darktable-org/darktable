@@ -6084,6 +6084,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
         fprintf(fout, "%s", xml_header);
         fprintf(fout, "%s", xmpPacket.c_str());
         fclose(fout);
+        dt_diratime_action(filename, "update");
       }
       else
       {
