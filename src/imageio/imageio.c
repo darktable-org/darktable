@@ -1145,6 +1145,28 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
+    if(style_items)
+    {
+      // now let's deal with the iop-order (possibly merging style & dev lists)
+      GList *iop_list = dt_styles_module_order_list(format_params->style);
+
+      if(iop_list)
+      {
+        // the style has an iop-order, we need to merge the
+        // multi-instance from dev image. Get dev image iop-order:
+        GList *img_iop_order_list = dev.iop_order_list;;
+        // Get multi-instance modules if any:
+        GList *mi = dt_ioppr_extract_multi_instances_list(img_iop_order_list);
+        // If some where found merge them with the style list
+        if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+        // finally we have the final list for the image, use it:
+        dev.iop_order_list = iop_list;
+
+        g_list_free_full(img_iop_order_list, g_free);
+        g_list_free_full(mi, g_free);
+      }
+    }
+
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = st_items->data;
