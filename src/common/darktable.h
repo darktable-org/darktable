@@ -354,6 +354,15 @@ typedef struct dt_gimp_t
   gboolean error;
 } dt_gimp_t;
 
+typedef struct dt_splash_t
+{
+  GtkWidget *start_screen;
+  GtkWidget *progress_text;
+  GtkWidget *remaining_text;
+  GtkWidget *remaining_box;
+  gboolean create_if_needed;
+} dt_splash_t;
+
 typedef struct darktable_t
 {
   dt_codepath_t codepath;
@@ -420,6 +429,7 @@ typedef struct darktable_t
   struct dt_sys_resources_t dtresources;
   struct dt_backthumb_t backthumbs;
   struct dt_gimp_t gimp;
+  struct dt_splash_t splash;
 } darktable_t;
 
 typedef struct
