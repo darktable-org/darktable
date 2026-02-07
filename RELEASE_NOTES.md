@@ -65,6 +65,9 @@ changes (where available).
 - Enabled shortcuts for some existing buttons in duplicate manager,
   snapshots, and AgX modules.
 
+- Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
+  presets dialogue.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
