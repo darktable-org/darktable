@@ -53,7 +53,8 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- In the crop module, the crop aspect ratio is added to the dimensions
+  in the crop area preview.
 
 ## Performance Improvements
 
