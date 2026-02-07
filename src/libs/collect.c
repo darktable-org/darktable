@@ -588,13 +588,13 @@ static void view_popup_menu(GtkWidget *treeview,
 
   menuitem = gtk_menu_item_new_with_label(_("update path to files..."));
   g_signal_connect(menuitem, "activate",
-                   (GCallback)view_popup_menu_onSearchFilmroll, treeview);
+                   G_CALLBACK(view_popup_menu_onSearchFilmroll), treeview);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   menuitem = gtk_menu_item_new_with_label(_("remove..."));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate",
-                   (GCallback)view_popup_menu_onRemove, treeview);
+                   G_CALLBACK(view_popup_menu_onRemove), treeview);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 

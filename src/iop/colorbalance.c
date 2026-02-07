@@ -1798,7 +1798,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   if(old_container) gtk_widget_show(new_container);
 }
 
-static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
 {
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
@@ -1809,6 +1809,7 @@ static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_i
   g_free(layout);
 
   _configure_slider_blocks(NULL, self);
+  return TRUE;
 }
 
 #define HSL_CALLBACK(which)                                                             \

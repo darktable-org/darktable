@@ -94,6 +94,7 @@ static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, con
   }
 }
 
+#define	G_CALLBACK(f)			 ((GCallback) (f))
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   [DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE] = { "dt-global-mouse-over-image-change",
@@ -397,7 +398,7 @@ void dt_control_signal_connect(const dt_control_signal_t *ctlsig, dt_signal_t si
 {
   _print_trace(signal, DT_DEBUG_SIGNAL_ACT_CONNECT, "connect");
 
-  g_signal_connect(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data);
+  g_signal_connect_data(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data, NULL, 0);
 }
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)

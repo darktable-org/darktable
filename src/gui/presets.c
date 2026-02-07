@@ -987,7 +987,7 @@ static void _edit_preset(const char *name_in, dt_iop_module_t *module)
     name = g_strdup(name_in);
 
   dt_gui_presets_show_iop_edit_dialog
-    (name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
+    (name, module, G_CALLBACK(_edit_preset_final_callback), NULL, TRUE, TRUE,
      FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_free(name);
 }
