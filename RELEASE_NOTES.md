@@ -68,6 +68,9 @@ changes (where available).
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
 
+- Added Canon Automatic Lighting Optimizer support for CR3-format
+  images.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
