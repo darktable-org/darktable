@@ -270,6 +270,7 @@ typedef struct async_com_data
   GCond end_cond;
   GMutex end_mutex;
   gpointer user_data;
+  gboolean finished;
 } async_com_data;
 
 gboolean _async_com_callback(gpointer data)
@@ -278,6 +279,7 @@ gboolean _async_com_callback(gpointer data)
   g_mutex_lock(&communication->end_mutex);
   _signal_raise(communication->user_data);
 
+  communication->finished = TRUE;
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
   return G_SOURCE_REMOVE;
@@ -376,13 +378,14 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
     }
     else
     {
-      async_com_data communication;
+      async_com_data communication = {};
       g_mutex_init(&communication.end_mutex);
       g_cond_init(&communication.end_cond);
-      g_mutex_lock(&communication.end_mutex);
       communication.user_data = params;
       g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, _async_com_callback,&communication, NULL);
-      g_cond_wait(&communication.end_cond,&communication.end_mutex);
+      g_mutex_lock(&communication.end_mutex);
+      while(!communication.finished)
+        g_cond_wait(&communication.end_cond,&communication.end_mutex);
       g_mutex_unlock(&communication.end_mutex);
       g_mutex_clear(&communication.end_mutex);
     }
