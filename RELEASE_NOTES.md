@@ -62,7 +62,8 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Enabled shortcuts for some existing buttons in duplicate manager,
+  snapshots, and AgX modules.
 
 ## Bug Fixes
 
