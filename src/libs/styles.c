@@ -771,12 +771,18 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
 }
 
-static gboolean _show_preview_callback(GtkEntry *entry, dt_lib_styles_t *d)
+static void _previewmode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const int mode = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/lighttable/style/previewmode", mode);
+}
+
+/* static gboolean _show_preview_callback(GtkEntry *entry, dt_lib_styles_t *d)
 {
   dt_conf_set_bool("ui_last/styles_hide_preview",
                    !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->show_preview)));
   return FALSE;
-}
+} */
 
 void gui_update(dt_lib_module_t *self)
 {
@@ -879,14 +885,19 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
-  d->show_preview = gtk_check_button_new_with_label(_("show preview"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->show_preview, self, NULL, N_("preview"),
+  _("show/hide preview"),
+  dt_conf_get_int("plugins/lighttable/style/previewmode"),
+  _previewmode_combobox_changed, self,
+  N_("no"), N_("small"), N_("large"));  
+/*   d->show_preview = gtk_check_button_new_with_label(_("show preview"));
   dt_action_define(DT_ACTION(self), NULL, N_("show preview"),
                    d->show_preview, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_preview))), PANGO_ELLIPSIZE_START);
   g_signal_connect(d->show_preview, "toggled", G_CALLBACK(_show_preview_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_preview), !dt_conf_get_bool("ui_last/styles_hide_preview"));
   gtk_widget_set_tooltip_text(d->show_preview,
-                              _("show preview of style applied to image"));
+                              _("show preview of style applied to image")); */
   
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(box), d->duplicate, FALSE, FALSE, 0);
