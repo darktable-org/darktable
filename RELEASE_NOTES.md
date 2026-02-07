@@ -66,7 +66,9 @@ changes (where available).
 
 ## Bug Fixes
 
-- N/A
+- Properly apply the iop-order when applying a style at export
+  time. This also fixes the style preview when flying over styles in
+  the style module.
 
 ## Lua
 
