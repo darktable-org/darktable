@@ -30,6 +30,7 @@
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -879,6 +880,14 @@ static void dt_lib_init_module(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
+    dt_print(DT_DEBUG_VERBOSE, "loading utility module : %s",
+             module->plugin_name);
+    char *msg = g_strdup_printf(_("%s: %s"),
+                                _("loading utility modules"),
+                                module->name(module));
+    dt_splash_screen_set_progress(msg);
+    g_free(msg);
+
     module->gui_init(module);
 
     if(module->widget)
