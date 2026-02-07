@@ -2349,16 +2349,60 @@ void dt_collection_sort_serialize(char *buf, int bufsize)
   }
 }
 
+char *dt_collection_checksum(const gboolean filtering)
+{
+  const char *plugin_name = filtering
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
+  char confname[200];
+
+  snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+  const int num_rules = dt_conf_get_int(confname);
+
+  GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+  g_checksum_update(checksum, (const guchar *)&num_rules, sizeof(int));
+
+  for(int k = 0; k < num_rules; k++)
+  {
+    snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
+    const int mode = dt_conf_get_int(confname);
+    g_checksum_update(checksum, (const guchar *)&mode, sizeof(int));
+
+    snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
+    const int item = dt_conf_get_int(confname);
+    g_checksum_update(checksum, (const guchar *)&item, sizeof(int));
+
+    if(filtering)
+    {
+      snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+      const int off = dt_conf_get_int(confname);
+      g_checksum_update(checksum, (const guchar *)&off, sizeof(int));
+
+      snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+      const int top = dt_conf_get_int(confname);
+      g_checksum_update(checksum, (const guchar *)&top, sizeof(int));
+    }
+
+    snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
+    const char *str = dt_conf_get_string_const(confname);
+    g_checksum_update(checksum, (const guchar *)str, strlen(str));
+  }
+
+  char *chk = g_strdup(g_checksum_get_string(checksum));
+  g_checksum_free(checksum);
+  return chk;
+}
+
 int dt_collection_serialize(char *buf, int bufsize,
                             const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
-  int c;
   snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
   const int num_rules = dt_conf_get_int(confname);
-  c = snprintf(buf, bufsize, "%d:", num_rules);
+  int c = snprintf(buf, bufsize, "%d:", num_rules);
   buf += c;
   bufsize -= c;
   for(int k = 0; k < num_rules; k++)
@@ -2401,7 +2445,8 @@ int dt_collection_serialize(char *buf, int bufsize,
 void dt_collection_deserialize(const char *buf, const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);
