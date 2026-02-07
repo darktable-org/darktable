@@ -50,6 +50,7 @@
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
+#include <wayland-client.h>
 #endif
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
@@ -1004,6 +1005,47 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
 #endif
 }
 
+#ifdef GDK_WINDOWING_WAYLAND
+static gboolean _wayland_ssd_support;
+
+static void _reg_global(void *data, struct wl_registry *reg,
+                       uint32_t name, const char *iface, uint32_t version)
+{
+  if (g_strcmp0(iface, "zxdg_decoration_manager_v1") == 0)
+    _wayland_ssd_support = TRUE;
+}
+
+static const struct wl_registry_listener reg_listener = {
+  .global = _reg_global,
+  // it is highly unlikely that decoration manager will disappear
+  .global_remove = NULL
+};
+#endif
+
+// does display server suport windows with server-side decorations (SSD)?
+static gboolean _check_ssd_support(void)
+{
+#ifdef GDK_WINDOWING_WAYLAND
+  // servers which support SSD (e.g. Plasma/KWin but not Gnome/Mutter)
+  // have xdg-decoration-unstable-v1 protocol in registery
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    GdkDisplay* disp = gdk_display_get_default();
+    struct wl_display *wd = gdk_wayland_display_get_wl_display(disp);
+    struct wl_registry *reg = wl_display_get_registry(wd);
+    wl_registry_add_listener(reg, &reg_listener, NULL);
+    // receive the globals
+    wl_display_roundtrip(wd);
+    return _wayland_ssd_support;
+  }
+  else
+#endif
+  {
+    // X11, MacOS, and Windows can handle SSD
+    return TRUE;
+  }
+}
+
 static gboolean _configure(GtkWidget *da,
                            GdkEventConfigure *event,
                            const gpointer user_data)
@@ -1746,24 +1788,24 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
-#ifdef GDK_WINDOWING_WAYLAND
-  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  if(!_check_ssd_support())
   {
-    // On Wayland, use NORMAL hint to allow proper window resizing
-    gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
-
+    // if must use client-side decoration (CSD), set up custom
+    // titlebar which allows for hiding that titlebar in maximized
+    // windows when using an extensions such as Unite
     GtkWidget *header_bar = gtk_header_bar_new();
     gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
     gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
     gtk_widget_show(header_bar);
   }
-#endif
 
   dt_configure_ppd_dpi(gui);
 
   gtk_window_set_default_size(GTK_WINDOW(widget),
                               DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
+  // allows for proper window resizing
+  gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
   gtk_window_set_title(GTK_WINDOW(widget), "darktable");
