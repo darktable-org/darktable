@@ -3362,7 +3362,7 @@ void mouse_moved(dt_view_t *self,
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
       dt_pickerpoint_t corner;
-      dt_color_picker_transform_box(dev, 1, sample->pdrag, corner, TRUE);
+      dt_color_picker_transform_box(dev, 1, sample->point, corner, TRUE);
 
       pbox[0] = MAX(0.0, MIN(corner[0], zoom_x) - delta_x);
       pbox[1] = MAX(0.0, MIN(corner[1], zoom_y) - delta_y);
@@ -3569,8 +3569,8 @@ int button_pressed(dt_view_t *self,
 
         if(MIN(dx0, dx1) < hx && MIN(dy0, dy1) < hy)
         {
-          sample->pdrag[0] = sbox[dx0 < dx1 ? 2 : 0];
-          sample->pdrag[1] = sbox[dy0 < dy1 ? 3 : 1];
+          sample->point[0] = sbox[dx0 < dx1 ? 2 : 0];
+          sample->point[1] = sbox[dy0 < dy1 ? 3 : 1];
         }
         else
         {
