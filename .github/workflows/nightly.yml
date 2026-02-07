@@ -406,6 +406,7 @@ jobs:
           retention-days: 2
 
   upload_to_release:
+    if: github.ref_name == 'master'
     permissions:
       # We need write permission to update the nightly tag
       contents: write
