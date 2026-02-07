@@ -1703,7 +1703,6 @@ int dt_init(int argc,
   gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
   if(styledir)
   {
-    dt_gui_process_events();
     darktable_splash_screen_set_progress(_("importing default styles"));
     dt_import_default_styles(styledir);
     g_free(styledir);
@@ -1866,6 +1865,9 @@ int dt_init(int argc,
   darktable.camctl = dt_camctl_new();
 #endif
 
+  darktable.develop = malloc(sizeof(dt_develop_t));
+  dt_dev_init(darktable.develop, TRUE);
+
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to
   // register their keyboard accelerators
@@ -1886,26 +1888,16 @@ int dt_init(int argc,
         !dt_gimpmode()
         && dt_get_num_threads() >= 4
         && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
+
   }
   else
     darktable.gui = NULL;
 
-  darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
-
-  // check whether we were able to load darkroom view. if we failed,
-  // we'll crash everywhere later on.
-  if(!darktable.develop)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.");
-    darktable_splash_screen_destroy();
-    return 1;
-  }
-
-  darktable_splash_screen_set_progress(_("loading processing modules"));
+  darktable_splash_screen_set_progress(_("loading image formats"));
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
+  darktable_splash_screen_set_progress(_("loading processing modules"));
   // load default iop order
   darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
@@ -1937,20 +1929,18 @@ int dt_init(int argc,
 
   if(init_gui)
   {
+    darktable_splash_screen_set_progress(_("loading views"));
+    darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
+    dt_view_manager_init(darktable.view_manager);
+
     darktable_splash_screen_set_progress(_("loading utility modules"));
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
-
-    // init the gui part of views
-    darktable_splash_screen_set_progress(_("loading views"));
-    dt_view_manager_gui_init(darktable.view_manager);
   }
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing Lua"));
-  // after the following Lua startup call, we can no longer use dt_gui_process_events() or we hang;
-  // this also means no more calls to darktable_splash_screen_set_progress()
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
@@ -1979,9 +1969,7 @@ int dt_init(int argc,
     if(argc == 2 && !_is_directory(argv[1]))
     {
       // If only one image is listed, attempt to load it in darkroom
-#ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
-#endif
       dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
@@ -2010,16 +1998,26 @@ int dt_init(int argc,
         dt_conf_set_int("performance_configuration_version_completed",
                       DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
       }
+
+      if(changed_xmp_files)
+      {
+        // construct the popup that asks the user how to handle images whose xmp
+        // files are newer than the db entry
+        dt_control_crawler_show_image_list(changed_xmp_files);
+      }
     }
+
+    // show the main window and restore its geometry to that saved in the config file
+    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    dt_gui_gtk_load_config();
+    dt_gui_process_events();
+    darktable_splash_screen_destroy();
+
+    // finally set the cursor to be the default.
+    // for some reason this is needed on some systems to pick up the correctly themed cursor
+    dt_control_change_cursor(GDK_LEFT_PTR);
   }
   free(config_info);
-
-  if(init_gui && !dt_gimpmode() && changed_xmp_files)
-  {
-    // construct the popup that asks the user how to handle images whose xmp
-    // files are newer than the db entry
-    dt_control_crawler_show_image_list(changed_xmp_files);
-  }
 
   // fire up a background job to perform sidecar writes
   dt_control_sidecar_synch_start();
@@ -2033,18 +2031,6 @@ int dt_init(int argc,
   dt_capabilities_add("linux");
   dt_capabilities_add("nonapple");
 #endif
-
-  if(init_gui)
-  {
-    // show the main window and restore its geometry to that saved in the config file
-    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
-    dt_gui_gtk_load_config();
-    darktable_splash_screen_destroy();
-
-    // finally set the cursor to be the default.
-    // for some reason this is needed on some systems to pick up the correctly themed cursor
-    dt_control_change_cursor(GDK_LEFT_PTR);
-  }
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);

@@ -658,13 +658,15 @@ static int gtk_wrap(lua_State*L)
              lua_tostring(L, lua_upvalueindex(2)), lua_tointeger(L, lua_upvalueindex(3)));
 #endif
     dt_lua_unlock();
-    gtk_wrap_communication communication;
+    gtk_wrap_communication communication = {};
     g_mutex_init(&communication.end_mutex);
     g_cond_init(&communication.end_cond);
     communication.L = L;
-    g_mutex_lock(&communication.end_mutex);
+    communication.retval = -1;
     g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, dt_lua_gtk_wrap_callback,&communication, NULL);
-    g_cond_wait(&communication.end_cond,&communication.end_mutex);
+    g_mutex_lock(&communication.end_mutex);
+    while(communication.retval == -1)
+      g_cond_wait(&communication.end_cond,&communication.end_mutex);
     g_mutex_unlock(&communication.end_mutex);
     g_mutex_clear(&communication.end_mutex);
     dt_lua_lock();
