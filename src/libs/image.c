@@ -762,8 +762,8 @@ static int lua_register_action(lua_State *L)
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
   data->key = strdup(name);
   data->self = self;
-  const gulong s = g_signal_connect(G_OBJECT(button), "clicked",
-                                    G_CALLBACK(lua_button_clicked), data);
+  const gulong s = g_signal_connect_data(G_OBJECT(button), "clicked",
+                                         G_CALLBACK(lua_button_clicked), data, NULL, 0);
 
   // save the signal connection in case we need to destroy it later
   dt_lua_module_entry_push(L, "lib", self->plugin_name);

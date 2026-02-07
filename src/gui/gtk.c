@@ -755,10 +755,10 @@ static gboolean _borders_scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _scrollbar_changed(GtkWidget *widget,
-                                   gpointer user_data)
+static void _scrollbar_changed(GtkWidget *widget,
+                               gpointer user_data)
 {
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset) return;
 
   GtkAdjustment *adjustment_x =
     gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar));
@@ -769,8 +769,6 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   const gdouble value_y = gtk_adjustment_get_value(adjustment_y);
 
   dt_view_manager_scrollbar_changed(darktable.view_manager, value_x, value_y);
-
-  return TRUE;
 }
 
 gboolean _valid_window_placement(const gint saved_x,
@@ -1381,10 +1379,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtkosx_application_set_window_menu(OSXApp, GTK_MENU_ITEM(window_root_menu));
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
-                   G_CALLBACK(_osx_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile",
-                   G_CALLBACK(_osx_openfile_callback), NULL);
+  g_signal_connect_data(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
+                        G_CALLBACK(_osx_quit_callback), NULL, NULL, 0);
+  g_signal_connect_data(G_OBJECT(OSXApp), "NSApplicationOpenFile",
+                        G_CALLBACK(_osx_openfile_callback), NULL, NULL, 0);
 #endif
 
 #ifdef _WIN32
@@ -4470,10 +4468,10 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
-  if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
+  if(pressed) g_signal_connect(gesture, "pressed", G_CALLBACK(pressed), data);
   if(released)
   {
-    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "released", G_CALLBACK(released), data);
     g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
   }
 
@@ -4493,9 +4491,9 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 
   gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
 
-  if(motion) g_signal_connect(controller, "motion", motion, data);
-  if(enter) g_signal_connect(controller, "enter", enter, data);
-  if(leave) g_signal_connect(controller, "leave", leave, data);
+  if(motion) g_signal_connect(controller, "motion", G_CALLBACK(motion), data);
+  if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
+  if(leave) g_signal_connect(controller, "leave", G_CALLBACK(leave), data);
 
   return controller;
 }

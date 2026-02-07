@@ -1702,7 +1702,7 @@ static void _camera_build_property_menu(CameraWidget *widget,
           /* construct menu item for property */
           gp_widget_get_name(child, &sk);
           GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_label(sk));
-          g_signal_connect(G_OBJECT(item), "activate", item_activate, user_data);
+          g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(item_activate), user_data);
           /* add submenu item to menu */
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
         }

@@ -1414,7 +1414,7 @@ static void _pop_menu_attached(GtkWidget *treeview,
     {
       menuitem = gtk_menu_item_new_with_label(_("attach tag to all"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_attached_attach_to_all, self);
+                       G_CALLBACK(_pop_menu_attached_attach_to_all), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       menuitem = gtk_separator_menu_item_new();
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1423,15 +1423,14 @@ static void _pop_menu_attached(GtkWidget *treeview,
 
   menuitem = gtk_menu_item_new_with_label(_("detach tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_detach, self);
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_detach), self);
 
   menuitem = gtk_menu_item_new_with_label(_("find tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_find, self);
-
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_find), self);
   menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_clipboard, self);
+  g_signal_connect(menuitem, "activate", G_CALLBACK(_pop_menu_attached_clipboard), self);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
@@ -2494,12 +2493,12 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
     {
       menuitem = gtk_menu_item_new_with_label(_("attach tag"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_attach_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_attach_tag), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
       menuitem = gtk_menu_item_new_with_label(_("detach tag"));
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_detach_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_detach_tag), self);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
       menuitem = gtk_separator_menu_item_new();
@@ -2510,14 +2509,14 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("create tag..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_create_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_create_tag), self);
 
       if(tagid)
       {
         menuitem = gtk_menu_item_new_with_label(_("delete tag"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_delete_tag, self);
+                         G_CALLBACK(_pop_menu_dictionary_delete_tag), self);
       }
 
       if(gtk_tree_model_iter_children(model, &child, &iter))
@@ -2525,13 +2524,13 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
         menuitem = gtk_menu_item_new_with_label(_("delete node"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_delete_node, self);
+                         G_CALLBACK(_pop_menu_dictionary_delete_node), self);
       }
 
       menuitem = gtk_menu_item_new_with_label(_("edit..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_edit_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_edit_tag), self);
     }
 
     if(d->tree_flag)
@@ -2539,7 +2538,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("change path..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_change_path, self);
+                       G_CALLBACK(_pop_menu_dictionary_change_path), self);
     }
 
     if(d->tree_flag && !tagid)
@@ -2550,7 +2549,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       menuitem = gtk_menu_item_new_with_label(_("set as a tag"));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate",
-                       (GCallback)_pop_menu_dictionary_set_as_tag, self);
+                       G_CALLBACK(_pop_menu_dictionary_set_as_tag), self);
     }
 
     if(!d->suggestion_flag)
@@ -2561,13 +2560,13 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
 
     menuitem = gtk_menu_item_new_with_label(_("copy to entry"));
     g_signal_connect(menuitem, "activate",
-                     (GCallback)_pop_menu_dictionary_copy_tag, self);
+                     G_CALLBACK(_pop_menu_dictionary_copy_tag), self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     g_signal_connect(menuitem, "activate",
-                     (GCallback)_pop_menu_dictionary_clipboard, self);
+                     G_CALLBACK(_pop_menu_dictionary_clipboard), self);
 
     if(d->collection[0])
     {
@@ -2587,14 +2586,14 @@ static void _pop_menu_dictionary(GtkWidget *treeview,
       {
         menuitem = gtk_menu_item_new_with_label(_("go to tag collection"));
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_goto_tag_collection, self);
+                         G_CALLBACK(_pop_menu_dictionary_goto_tag_collection), self);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       }
       if(d->collection[0])
       {
         menuitem = gtk_menu_item_new_with_label(_("go back to work"));
         g_signal_connect(menuitem, "activate",
-                         (GCallback)_pop_menu_dictionary_goto_collection_back, self);
+                         G_CALLBACK(_pop_menu_dictionary_goto_collection_back), self);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       }
     }
