@@ -44,8 +44,9 @@ typedef struct dt_colorpicker_sample_t
   // For the primary sample, these are the current sample area,
   // whether from colorpicker lib or an iop. They are used for showing
   // the sample in the center view, and sampling in the pixelpipe.
-  float point[2];
+  dt_pickerpoint_t point;
   dt_pickerbox_t box;
+  dt_pickerpoint_t pdrag; // for dragging box corner
   dt_lib_colorpicker_size_t size;
   gboolean denoise;
   gboolean pick_output;
