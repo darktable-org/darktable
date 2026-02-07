@@ -71,6 +71,9 @@ changes (where available).
   time. This also fixes the style preview when flying over styles in
   the style module.
 
+- If a tag category is marked as private, all tags and subcategories
+  under it are also treated as private.
+
 ## Lua
 
 ### API Version
