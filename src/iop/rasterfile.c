@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "common/interpolation.h"
 #include "common/fast_guided_filter.h"
 #include "common/pfm.h"
+#include "common/ras2vect.h"
 #include "imageio/imageio_png.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -127,6 +128,7 @@ typedef struct dt_iop_rasterfile_gui_data_t
   GtkWidget *mode;
   GtkWidget *fbutton;
   GtkWidget *file;
+  GtkWidget *vectorize;
 } dt_iop_rasterfile_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self,
@@ -150,6 +152,37 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
   roi_in->height = piece->buf_in.height;
+}
+
+static void _vectorize_button_clicked(GtkWidget *widget,
+                                      dt_iop_module_t *self)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  dt_rasterfile_cache_t *cd = self->data;
+
+  dt_pthread_mutex_lock(&cd->lock);
+
+  const dt_image_t *const image = &(self->dev->image_storage);
+  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image);
+
+  dt_pthread_mutex_unlock(&cd->lock);
+
+  const int nbform = g_list_length(forms);
+  if(nbform == 0)
+  {
+    dt_control_log(_("no mask extracted from the raster file\n"
+                     "make sure the masks have proper contrast"));
+  }
+  else
+  {
+    dt_control_log(ngettext("%d mask extracted from the raster file",
+                            "%d masks extracted from the raster file", nbform), nbform);
+
+    // add all forms into the mask manager
+
+    dt_masks_register_forms(dev, forms);
+  }
 }
 
 static float *_read_rasterfile(char *filename,
@@ -247,7 +280,8 @@ static float *_read_rasterfile(char *filename,
   float *mask = dt_iop_image_alloc(width, height, 1);
   if(!image || !mask)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+    dt_print(DT_DEBUG_ALWAYS,
+             "can't read raster mask file '%s'", filename ? filename : "???");
     dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
 
     dt_free_align(image);
@@ -262,7 +296,7 @@ static float *_read_rasterfile(char *filename,
     if(mode & DT_RASTERFILE_MODE_RED)   val = MAX(val, image[k*3]);
     if(mode & DT_RASTERFILE_MODE_GREEN) val = MAX(val, image[k*3+1]);
     if(mode & DT_RASTERFILE_MODE_BLUE)  val = MAX(val, image[k*3+2]);
-    mask[k] =CLIP(val);
+    mask[k] = CLIP(val);
   }
 
   *swidth = width;
@@ -306,16 +340,19 @@ static void _update_filepath(dt_iop_module_t *self)
     {
       const char *file = entries[i]->d_name;
       char *normalized_filename = g_locale_to_utf8(file, -1, NULL, NULL, NULL);
-      dt_bauhaus_combobox_add_aligned(g->file, normalized_filename, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      dt_bauhaus_combobox_add_aligned(g->file, normalized_filename,
+                                      DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       free(entries[i]);
       g_free(normalized_filename);
     }
-    if(numentries != -1) free(entries);
+    if(numentries != -1)
+      free(entries);
 
     if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
     { // file may have disappeared - show it
       char *invalidfilepath = g_strconcat(" ??? ", p->file, NULL);
-      dt_bauhaus_combobox_add_aligned(g->file, invalidfilepath, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      dt_bauhaus_combobox_add_aligned(g->file, invalidfilepath,
+                                      DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       dt_bauhaus_combobox_set_from_text(g->file, invalidfilepath);
       g_free(invalidfilepath);
     }
@@ -355,18 +392,16 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     const gboolean within = (strlen(filepath) > strlen(mfolder))
-                        && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
+                         && (memcmp(filepath, mfolder, strlen(mfolder)) == 0);
     if(within)
     {
       char *relativepath = g_path_get_dirname(filepath);
-      const int rplen = strlen(relativepath);
-      memcpy(p->path, relativepath, rplen);
-      p->path[rplen] = '\0';
+      g_strlcpy(p->path, relativepath, sizeof(p->path));
       g_free(relativepath);
 
-      const int flen = strlen(filepath) - rplen - 1;
-      memcpy(p->file, filepath + rplen + 1, flen);
-      p->file[flen] = '\0';
+      char *bname = g_path_get_basename(filepath);
+      g_strlcpy(p->file, bname, sizeof(p->file));
+      g_free(bname);
 
       _update_filepath(self);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -378,6 +413,7 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
     }
     g_free(filepath);
     gtk_widget_set_sensitive(g->file, p->path[0] && p->file[0]);
+    gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
   }
   g_free(mfolder);
   g_object_unref(filechooser);
@@ -403,7 +439,9 @@ static inline dt_hash_t _get_cache_hash(dt_iop_module_t *self)
 {
   dt_hash_t hash = dt_hash(DT_INITHASH, self->params, self->params_size);
   // not technically required but possibly reduces mem footprint
-  hash = dt_hash(hash, &self->dev->image_storage.id, sizeof(self->dev->image_storage.id));
+  hash = dt_hash(hash,
+                 &self->dev->image_storage.id,
+                 sizeof(self->dev->image_storage.id));
   return hash;
 }
 
@@ -422,10 +460,12 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
   if(hash != cd->hash)
   {
     _clear_cache(cd);
-    dt_print(DT_DEBUG_PIPE, "read image raster file `%s'", d->filepath);
+    dt_print(DT_DEBUG_PIPE,
+             "read image raster file `%s'", d->filepath);
     cd->mask = _read_rasterfile(d->filepath, d->mode, &cd->width, &cd->height);
     cd->hash = cd->mask ? hash : DT_INVALID_HASH;
-    dt_print(DT_DEBUG_PIPE, "got raster mask data %p %dx%d", cd->mask, cd->width, cd->height);
+    dt_print(DT_DEBUG_PIPE,
+             "got raster mask data %p %dx%d", cd->mask, cd->width, cd->height);
   }
   if(cd->mask)
   {
@@ -433,12 +473,17 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
     float *tmp = scale ? dt_iop_image_alloc(roi->width, roi->height, 1) : cd->mask;
     if(tmp)
     {
-      if(scale) interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
+      if(scale)
+        interpolate_bilinear(cd->mask, cd->width, cd->height, tmp,
+                             roi->width, roi->height, 1);
       res = dt_iop_image_alloc(roo->width, roo->height, 1);
-      if(res) self->distort_mask(self, piece, tmp, res, roi, roo);
-      if(scale) dt_free_align(tmp);
+      if(res)
+        self->distort_mask(self, piece, tmp, res, roi, roo);
+      if(scale)
+        dt_free_align(tmp);
     }
   }
+
   dt_pthread_mutex_unlock(&cd->lock);
   return res;
 }
@@ -518,17 +563,24 @@ void process(dt_iop_module_t *self,
     pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     if(ch == 1)
     {
-      dt_box_mean(out, roi_out->height, roi_out->width, 1, 3, 2); // simple blur to remove CFA colors
+      // simple blur to remove CFA colors:
+      dt_box_mean(out, roi_out->height, roi_out->width, 1, 3, 2);
       DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-        out[k] = 0.2f * CLAMPF(sqrtf(out[k]), 0.0f, 0.5f) + (mask ? mask[k] : 0.0f);
+        out[k] =
+          0.2f
+          * CLAMPF(sqrtf(out[k]), 0.0f, 0.5f)
+          + (mask ? mask[k] : 0.0f);
     }
     else
     {
       DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
       {
-        float val = 0.2f * CLAMPF(sqrtf(0.33f * (out[4*k] + out[4*k+1]+ out[4*k+2])), 0.0f, 0.5f) + (mask ? mask[k] : 0.0f);
+        const float val =
+          0.2f
+          * CLAMPF(sqrtf(0.33f * (out[4*k] + out[4*k+1]+ out[4*k+2])), 0.0f, 0.5f)
+          + (mask ? mask[k] : 0.0f);
         for_three_channels(m) out[4*k+m] = val;
       }
     }
@@ -572,13 +624,15 @@ void tiling_callback(dt_iop_module_t *self,
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
+  // we might be called from presets update infrastructure => there is
+  // no image
+  if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id))
+    return;
 
   self->default_enabled = FALSE;
   dt_iop_rasterfile_params_t *dp = self->default_params;
-  memset(dp->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  memset(dp->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
+  memset(dp->path, 0, sizeof(dp->path));
+  memset(dp->file, 0, sizeof(dp->file));
 }
 
 void distort_mask(dt_iop_module_t *self,
@@ -597,9 +651,13 @@ void distort_mask(dt_iop_module_t *self,
     dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
 {
   dt_iop_rasterfile_gui_data_t *g = self->gui_data;
+  dt_iop_rasterfile_params_t *p = self->params;
+
   if(!w || w == g->mode)
     _update_filepath(self);
 
@@ -611,8 +669,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     const gboolean other = hash != cd->hash;
     if(other) _clear_cache(cd);
     dt_pthread_mutex_unlock(&cd->lock);
-    if(other) dt_dev_reprocess_center(self->dev);
+
+    if(other)
+      dt_dev_reprocess_center(self->dev);
   }
+
+  gtk_widget_set_sensitive(g->vectorize, p->path[0] && p->file[0]);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -625,20 +687,24 @@ void init(dt_iop_module_t *self)
   dt_iop_default_init(self);
 
   dt_iop_rasterfile_params_t *d = self->default_params;
-  memset(d->path, 0, sizeof(char) * RASTERFILE_MAXFILE);
-  memset(d->file, 0, sizeof(char) * RASTERFILE_MAXFILE);
+  memset(d->path, 0, sizeof(d->path));
+  memset(d->file, 0, sizeof(d->file));
 
   /*
     Implementation note and reminder:
+
     Here we allocate per-module-instance memory shared by all pipes.
     To be sure data are valid and access is safe we
-    a) ensure validity via a hash. Here it's just based on the parameters of the module's instance
-        in other situations we might have to use the piece hash
+
+    a) ensure validity via a hash. Here it's just based on the
+       parameters of the module's instance in other situations we
+       might have to use the piece hash
+
     b) **always** access any module->data within a mutex-locked state.
 
-    In this module the data do **not** depend on the using pipe.
-    In other cases, the pipe changing data according to a diffenrent hash must make sure
-    the other pipes get restarted afterwards.
+    In this module the data do **not** depend on the using pipe.  In
+    other cases, the pipe changing data according to a diffenrent hash
+    must make sure the other pipes get restarted afterwards.
   */
 
   dt_rasterfile_cache_t *cd = calloc(1, sizeof(dt_rasterfile_cache_t));
@@ -670,20 +736,40 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rasterfile_gui_data_t *g = IOP_GUI_ALLOC(rasterfile);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  gtk_widget_set_tooltip_text(g->mode, _("select the RGB channels taken into account to generate the raster mask"));
+  gtk_widget_set_tooltip_text
+    (g->mode,
+     _("select the RGB channels taken into account to generate the raster mask"));
 
   g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(g->fbutton, "non-flat");
-  gtk_widget_set_tooltip_text(g->fbutton, _("select the PFM/PNG file recorded as a raster mask,\n"
-      "CAUTION: path must be set in preferences/processing before choosing"));
-  g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(_fbutton_clicked), self);
+  gtk_widget_set_tooltip_text
+    (g->fbutton,
+     _("select the PFM/PNG file recorded as a raster mask,\n"
+       "CAUTION: path must be set in preferences/processing before choosing"));
+  g_signal_connect(G_OBJECT(g->fbutton), "clicked",
+                   G_CALLBACK(_fbutton_clicked), self);
 
   g->file = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->file, PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(g->file, _("the mask file path is saved with the image history"));
-  g_signal_connect(G_OBJECT(g->file), "value-changed", G_CALLBACK(_file_callback), self);
+  gtk_widget_set_tooltip_text
+    (g->file,
+     _("the mask file path is saved with the image history"));
+  g_signal_connect(G_OBJECT(g->file), "value-changed",
+                   G_CALLBACK(_file_callback), self);
 
-  dt_gui_box_add(self->widget, dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)));
+  // Vectorize button
+
+  g->vectorize = gtk_button_new_with_label(_("vectorize"));
+  gtk_widget_set_tooltip_text
+    (g->vectorize,
+     _("vectorize the current bitmap and creates corresponding"
+       " path masks in the mask manager"));
+  g_signal_connect(g->vectorize, "clicked",
+                   G_CALLBACK(_vectorize_button_clicked), self);
+
+  dt_gui_box_add(self->widget,
+                 dt_gui_hbox(g->fbutton, dt_gui_expand(g->file)),
+                 g->vectorize);
 }
 
 #undef RASTERFILE_MAXFILE
