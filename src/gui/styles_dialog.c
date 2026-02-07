@@ -1023,7 +1023,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid, const
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
     // style preview
-    if (!hide_preview)
+    if (!hide_preview) 
     {
       const int psize = dt_conf_get_int("ui/style/preview_size");
       GtkWidget *da = gtk_drawing_area_new();
