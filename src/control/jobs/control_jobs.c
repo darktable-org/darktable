@@ -212,7 +212,7 @@ static int32_t _generic_dt_control_fileop_images_job_run
   if(!dt_is_valid_filmid(film_id))
   {
     dt_control_log(_("failed to create film roll for destination directory,"
-                     " aborting move.."));
+                     " aborting move."));
     return -1;
   }
 
@@ -2582,7 +2582,7 @@ void dt_control_export(GList *imgid_list,
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
   if(sdata == NULL)
   {
-    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."),
+    dt_control_log(_("failed to get parameters from storage module `%s', aborting export."),
                    mstorage->name(mstorage));
     dt_control_job_dispose(job);
     return;
@@ -2594,7 +2594,7 @@ void dt_control_export(GList *imgid_list,
   void *fdata = mformat->get_params(mformat);
   if(fdata == NULL)
   {
-    dt_control_log(_("failed to get parameters from format module `%s', aborting export.."),
+    dt_control_log(_("failed to get parameters from format module `%s', aborting export."),
                    mformat->name());
     dt_control_job_dispose(job);
     return;
