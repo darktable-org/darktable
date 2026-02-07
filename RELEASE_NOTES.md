@@ -80,6 +80,9 @@ changes (where available).
 - If a tag category is marked as private, all tags and subcategories
   under it are also treated as private.
 
+- Fix occasional geolocation assignment errors in darktable's locations
+  module involving polygon-shaped locations
+
 ## Lua
 
 ### API Version
