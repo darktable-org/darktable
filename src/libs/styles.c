@@ -48,6 +48,11 @@ typedef struct dt_lib_styles_t
   GtkWidget *show_preview;
 } dt_lib_styles_t;
 
+enum PREVIEW_MODE {
+  PREVIEW_NO,
+  PREVIEW_DEFAULT,
+  PREVIEW_LARGE
+};
 
 const char *name(dt_lib_module_t *self)
 {
@@ -161,7 +166,7 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
       g_list_free(selected_image);
     }
     
-    const gboolean hide_preview = (dt_conf_get_int("ui_last/styles_preview_mode") == 0);
+    const gboolean hide_preview = (dt_conf_get_int("ui_last/styles_preview_mode") == PREVIEW_NO);
     GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, hide_preview);
     dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
@@ -780,8 +785,8 @@ static void _previewmode_combobox_changed(GtkWidget *widget, gpointer user_data)
   // for "no preview" we do not set to 0, because there is a minimum value of 100
   // defined in darktableconfig.xml.in, so we have to switch off separately, anyway.
   // Note: This also affects the size of the preview in the darkroom view.
-  int preview_size = dt_confgen_get_int("ui/style/preview_size", DT_DEFAULT);;
-  if(mode == 2) preview_size = dt_confgen_get_int("ui/style/preview_size", DT_MAX);
+  int preview_size = dt_confgen_get_int("ui/style/preview_size", DT_DEFAULT);
+  if(mode == PREVIEW_LARGE) preview_size = dt_confgen_get_int("ui/style/preview_size", DT_MAX);
   dt_conf_set_int("ui/style/preview_size", preview_size);
 }
 
