@@ -1895,18 +1895,21 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       g_free(pretty);
     }
 
-    // Capitalize Nikon Z-mount lenses properly for UI presentation.
-    if(g_str_has_prefix(img->exif_lens, "NIKKOR")
-       || g_str_has_prefix(img->exif_lens, "TAMRON"))
+    // Capitalize lenses properly for UI presentation, e.g.
+    // Nikon Z-mount: Nikkor, Tamron
+    // Leica L-mount: Viltrox
+    if(g_str_has_prefix(img->exif_lens, "NIKKOR ")
+       || g_str_has_prefix(img->exif_lens, "TAMRON ")
+       || g_str_has_prefix(img->exif_lens, "VILTROX"))
     {
-      for(size_t i = 1; i <= 5; ++i)
+      for(size_t i = 1; i <= 6; ++i)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
     // Handle Sigma lenses on modern bodies (e.g. Nikon Z) using already clean
     // Exif.Photo.LensMake and Exif.Photo.LensModel.
-    if(g_ascii_strcasecmp(img->exif_lens, "Sigma") && FIND_EXIF_TAG("Exif.Photo.LensMake")
-       && pos->toString() == "SIGMA")
+    if(FIND_EXIF_TAG("Exif.Photo.LensMake") && pos->toString() == "SIGMA"
+       && g_ascii_strcasecmp(img->exif_lens, "Sigma"))
     {
       char *pretty;
       pretty = g_strconcat("Sigma ", img->exif_lens, (char *)NULL);
