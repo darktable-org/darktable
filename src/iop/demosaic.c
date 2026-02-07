@@ -204,10 +204,8 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_border_interpolate;
   int kernel_color_smoothing;
   int kernel_zoom_passthrough_monochrome;
-  int kernel_vng_border_interpolate;
   int kernel_vng_lin_interpolate;
   int kernel_zoom_third_size;
-  int kernel_vng_green_equilibrate;
   int kernel_vng_interpolate;
   int kernel_markesteijn_initial_copy;
   int kernel_markesteijn_green_minmax;
@@ -1145,7 +1143,7 @@ int process_cl(dt_iop_module_t *self,
       else if(method == DT_IOP_DEMOSAIC_RCD)
         err = process_rcd_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
       else if(method == DT_IOP_DEMOSAIC_VNG4 || method == DT_IOP_DEMOSAIC_VNG)
-        err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, FALSE);
+        err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, FALSE);
       else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
         err = process_markesteijn_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows);
 
@@ -1159,7 +1157,7 @@ int process_cl(dt_iop_module_t *self,
 
       if(dual)
       {
-        err = process_vng_cl(self, piece, t_in, t_low, dev_xtrans, xtrans, iwidth, t_rows, filters, TRUE);
+        err = process_vng_cl(self, piece, t_in, t_low, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, TRUE);
         if(err == CL_SUCCESS)
           err = color_smoothing_cl(self, piece, t_low, t_low, iwidth, t_rows, DT_DEMOSAIC_SMOOTH_2);
         if(err == CL_SUCCESS)
@@ -1259,10 +1257,8 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_zoom_passthrough_monochrome = dt_opencl_create_kernel(other, "clip_and_zoom_demosaic_passthrough_monochrome");
 
   const int vng = 15; // from programs.conf
-  gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "vng_border_interpolate");
   gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "vng_lin_interpolate");
   gd->kernel_zoom_third_size = dt_opencl_create_kernel(vng, "clip_and_zoom_demosaic_third_size_xtrans");
-  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "vng_green_equilibrate");
   gd->kernel_vng_interpolate = dt_opencl_create_kernel(vng, "vng_interpolate");
 
   const int markesteijn = 16; // from programs.conf
@@ -1332,10 +1328,8 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_passthrough_monochrome);
   dt_opencl_free_kernel(gd->kernel_passthrough_color);
   dt_opencl_free_kernel(gd->kernel_zoom_passthrough_monochrome);
-  dt_opencl_free_kernel(gd->kernel_vng_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_vng_lin_interpolate);
   dt_opencl_free_kernel(gd->kernel_zoom_third_size);
-  dt_opencl_free_kernel(gd->kernel_vng_green_equilibrate);
   dt_opencl_free_kernel(gd->kernel_vng_interpolate);
   dt_opencl_free_kernel(gd->kernel_markesteijn_initial_copy);
   dt_opencl_free_kernel(gd->kernel_markesteijn_green_minmax);
@@ -1799,7 +1793,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
 
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
-  gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
+  gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method. only apply for some old sensors"));
 
   g->cs_enabled = dt_bauhaus_toggle_from_params(self, "cs_enabled");
   gtk_widget_set_tooltip_text(g->cs_enabled, _("capture sharpen recovers details lost due to in-camera blurring\n"
