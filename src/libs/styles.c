@@ -45,7 +45,7 @@ typedef struct dt_lib_styles_t
   GtkTreeView *tree;
   GtkWidget *create_button, *edit_button, *delete_button;
   GtkWidget *import_button, *export_button, *applymode, *apply_button;
-  GtkWidget *show_preview;
+  GtkWidget *preview_mode;
 } dt_lib_styles_t;
 
 const char *name(dt_lib_module_t *self)
@@ -877,7 +877,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->show_preview, self, NULL, N_("preview"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->preview_mode, self, NULL, N_("preview"),
                                _("change size or hide preview on tooltip of style"),
                                dt_conf_get_int("ui_last/styles_preview_mode"),
                                _previewmode_combobox_changed, self,
@@ -887,8 +887,8 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_box_add(box, d->duplicate);
   gtk_widget_set_halign(d->duplicate, GTK_ALIGN_START);
   gtk_widget_set_hexpand(d->duplicate, TRUE);
-  dt_gui_box_add(box, d->show_preview);
-  gtk_widget_set_halign(d->show_preview, GTK_ALIGN_END);
+  dt_gui_box_add(box, d->preview_mode);
+  gtk_widget_set_halign(d->preview_mode, GTK_ALIGN_END);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
