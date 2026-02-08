@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -301,9 +301,11 @@ static inline float vstransform(const float value)
   return sqrtf(fmaxf(0.0f, value));
 }
 
-static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
+static void wavelet_denoise_xtrans(const float *const restrict in,
+                                   float *const restrict out,
                                    const dt_iop_roi_t *const restrict roi,
-                                   const dt_iop_rawdenoise_data_t *const data, const uint8_t (*const xtrans)[6])
+                                   const dt_iop_rawdenoise_data_t *const data,
+                                   const uint8_t (*const xtrans)[6])
 {
   const int width = roi->width;
   const int height = roi->height;
@@ -344,7 +346,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
         const float *const restrict inp = in + row * width;
         float *const restrict fimgp = fimg + row * width;
         // handle red/blue pixel in first column
-        if(c != 1 && FCxtrans(row, 0, roi, xtrans) == c)
+        if(c != 1 && FCNxtrans(row, 0, xtrans) == c)
         {
           // copy to neighbors above and right
           const float d = vstransform(inp[0]);
@@ -352,7 +354,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
         }
         for(size_t col = (c != 1); col < width-1; col++)
         {
-          if(FCxtrans(row, col, roi, xtrans) == c)
+          if(FCNxtrans(row, col, xtrans) == c)
           {
             // the pixel at the current location has the desired color, so apply sqrt() as a variance-stablizing
             // transform, and then do cheap nearest-neighbor interpolation by copying it to appropriate neighbors
@@ -380,32 +382,32 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
           }
         }
         // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
-        if(FCxtrans(row, 0, roi, xtrans) != c)
+        if(FCNxtrans(row, 0, xtrans) != c)
         {
           int src = 0;	// fallback is current sensel even if it has the wrong color
-          if(row > 1 && FCxtrans(row-1, 0, roi, xtrans) == c)
+          if(row > 1 && FCNxtrans(row-1, 0, xtrans) == c)
             src = -width;
-          else if(FCxtrans(row, 1, roi, xtrans) == c)
+          else if(FCNxtrans(row, 1, xtrans) == c)
             src = 1;
-          else if(row > 1 && FCxtrans(row-1, 1, roi, xtrans) == c)
+          else if(row > 1 && FCNxtrans(row-1, 1, xtrans) == c)
             src = -width + 1;
           fimgp[0] = vstransform(inp[src]);
         }
         // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
-        if(c != 1 && FCxtrans(row, width-1, roi, xtrans) == c)
+        if(c != 1 && FCNxtrans(row, width-1, xtrans) == c)
         {
           // copy to neighbors above and left
           const float d = vstransform(inp[width-1]);
           fimgp[width-2] = fimgp[width-1] = fimgp[-1] = d;
         }
-        else if(FCxtrans(row, width-1, roi, xtrans) != c)
+        else if(FCNxtrans(row, width-1, xtrans) != c)
         {
           int src = width-1;	// fallback is current sensel even if it has the wrong color
-          if(FCxtrans(row, width-2, roi, xtrans) == c)
+          if(FCNxtrans(row, width-2, xtrans) == c)
             src = width-2;
-          else if(row > 1 && FCxtrans(row-1, width-1, roi, xtrans) == c)
+          else if(row > 1 && FCNxtrans(row-1, width-1, xtrans) == c)
             src = -1;
-          else if(row > 1 && FCxtrans(row-1, width-2, roi, xtrans) == c)
+          else if(row > 1 && FCNxtrans(row-1, width-2, xtrans) == c)
             src = -2;
           fimgp[width-1] = vstransform(inp[src]);
         }
@@ -418,12 +420,12 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
         float *const restrict fimgp = fimg + pastend * width;
         for(size_t col = 0; col < width-1; col++)
         {
-          if(FCxtrans(pastend, col, roi, xtrans) == c)
+          if(FCNxtrans(pastend, col, xtrans) == c)
           {
             const float d = vstransform(inp[col]);
             if(c == 1) // green pixel
             {
-              if(FCxtrans(pastend, col+1, roi, xtrans) != c)
+              if(FCNxtrans(pastend, col+1, xtrans) != c)
                 fimgp[col] = fimgp[col+1] = d;  // copy to the right
             }
             else // red/blue pixel
@@ -434,7 +436,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
             }
           }
           // some red and blue values may need to be restored from the row TWO past the end of our slice
-          if(c != 1 && pastend+1 < height && FCxtrans(pastend+1, col, roi, xtrans) == c)
+          if(c != 1 && pastend+1 < height && FCNxtrans(pastend+1, col, xtrans) == c)
           {
             const float d = vstransform(inp[col+width]);
             fimgp[col] = fimgp[col+1] = d;
@@ -455,7 +457,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
       const float *const restrict fimgp = fimg + (size_t)row * width;
       float *const restrict outp = out + (size_t)row * width;
       for(int col = 0; col < width; col++)
-        if(FCxtrans(row, col, roi, xtrans) == c)
+        if(FCNxtrans(row, col, xtrans) == c)
         {
           float d = fimgp[col];
           outp[col] = d * d;
@@ -477,8 +479,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else
   {
-    const uint32_t filters = piece->pipe->dsc.filters;
-    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+    const uint32_t filters = piece->filters;
+    const uint8_t(*const xtrans)[6] = piece->xtrans;
     if(filters != 9u)
       wavelet_denoise(ivoid, ovoid, roi_in, d, filters);
     else
