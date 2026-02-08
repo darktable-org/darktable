@@ -1730,7 +1730,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                             && roi_out->width < roi_in.width
                                             && roi_out->height < roi_in.height;
 #else
-        const gboolean cl_scale_possible = FALSE:
+        const gboolean cl_scale_possible = FALSE;
 #endif
         dt_print_pipe(DT_DEBUG_PIPE,
                       "pipe data: clip&zoom",
@@ -1742,8 +1742,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
         if(valid_bpp && aligned_input)
         {
-          gboolean done = FALSE;
 #ifdef HAVE_OPENCL
+          gboolean done = FALSE;
           if(cl_scale_possible)
           {
             cl_mem tmp_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp);

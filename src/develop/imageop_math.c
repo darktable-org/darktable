@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
+#include "common/math.h"             // for dt_vector_powf
 #include "develop/imageop.h"         // for dt_iop_roi_t
 #include "develop/imageop_math.h"
 #include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
