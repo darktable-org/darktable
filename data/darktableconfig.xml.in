@@ -1024,14 +1024,8 @@
   </dtconfig>
  <dtconfig>
     <name>ui_last/styles_preview_mode</name>
-    <type>
-      <enum>
-        <option>no</option>
-        <option>default</option>
-        <option>large</option>
-      </enum>
-    </type>
-    <default>default</default>
+    <type>int</type>
+    <default>1</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
