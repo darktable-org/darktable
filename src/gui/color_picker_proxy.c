@@ -142,19 +142,16 @@ static void _init_picker(dt_iop_color_picker_t *picker,
   DT_IOP_SECTION_FOR_PARAMS_UNWIND(module);
 
   // module is NULL if primary colorpicker
-  picker->module     = module;
-  picker->flags      = flags;
-  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL)
-                              : IOP_CS_NONE;
-  picker->colorpick  = button;
-  picker->changed    = FALSE;
-  picker->fixed_cst  = FALSE;
+  picker->module      = module;
+  picker->flags       = flags;
+  picker->picker_cst  = module ? module->default_colorspace(module, NULL, NULL)
+                               : IOP_CS_NONE;
+  picker->colorpick   = button;
+  picker->changed     = FALSE;
+  picker->fixed_cst   = FALSE;
+  picker->initialized = FALSE;
 
   _color_picker_reset(picker);
-
-  // set default positions
-  dt_lib_colorpicker_reset_box_area(picker->pick_box);
-  dt_lib_colorpicker_reset_point(picker->pick_pos);
 }
 
 static gboolean _color_picker_callback_button_press(GtkWidget *button,
@@ -197,14 +194,20 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
+      if(!self->initialized)
+        dt_lib_colorpicker_reset_box_area(self->pick_box);
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
     else if(kind & DT_COLOR_PICKER_POINT)
     {
+      if(!self->initialized)
+        dt_lib_colorpicker_reset_point(self->pick_pos);
       dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     }
     else
       dt_unreachable_codepath();
+
+    self->initialized = TRUE;
 
     dt_lib_colorpicker_setup(darktable.lib,
                              flags & DT_COLOR_PICKER_DENOISE,
