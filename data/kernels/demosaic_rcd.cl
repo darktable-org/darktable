@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   const int color = FC(row, col, filters);
 
   global float *rgbcol = rgb0;
-  if(color == 1) rgbcol = rgb1;
-  else if(color == 2) rgbcol = rgb2;
+  if(color == GREEN) rgbcol = rgb1;
+  else if(color == BLUE) rgbcol = rgb2;
 
   const int idx = mad24(row, w, col);
   cfa[idx] = rgbcol[idx] = val;
@@ -177,8 +177,8 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   const int color = 2 - FC(row, col, filters);
 
   global float *rgbc = rgb0;
-  if(color == 1) rgbc = rgb1;
-  else if(color == 2) rgbc = rgb2;
+  if(color == GREEN) rgbc = rgb1;
+  else if(color == BLUE) rgbc = rgb2;
 
   const int idx = mad24(row, w, col);
   const int pqidx = idx / 2;
@@ -239,7 +239,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
 
   for(int c = 0; c <= 2; c += 2)
   {
-    global float *rgbc = (c == 0) ? rgb0 : rgb2;
+    global float *rgbc = (c == RED) ? rgb0 : rgb2;
 
     const float SNabs = fabs(rgbc[idx - w] - rgbc[idx + w]);
     const float EWabs = fabs(rgbc[idx - 1] - rgbc[idx + 1]);
@@ -387,13 +387,13 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
 
   const float pc = buffer[0];
 
-  if     (c == 0) color.x = pc; // red
-  else if(c == 1) color.y = pc; // green1
-  else if(c == 2) color.z = pc; // blue
+  if     (c == RED) color.x = pc;
+  else if(c == GREEN) color.y = pc;
+  else if(c == BLUE) color.z = pc;
   else            color.y = pc; // green2
 
   // fill green layer for red and blue pixels:
-  if(c == 0 || c == 2)
+  if(c == RED || c == BLUE)
   {
     // look up horizontal and vertical neighbours, sharpened weight:
     const float pym  = buffer[-1 * stride];
@@ -485,14 +485,14 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
   float4 color = buffer[0];
   if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
   {
-    if(c == 1 || c == 3)
+    if(c == GREEN || c == 3)
     { // calculate red and blue for green pixels:
       // need 4-nbhood:
       const float4 nt = buffer[-stride];
       const float4 nb = buffer[ stride];
       const float4 nl = buffer[-1];
       const float4 nr = buffer[ 1];
-      if(FC(row, col+1, filters) == 0) // red nb in same row
+      if(FC(row, col+1, filters) == RED) // red nb in same row
       {
         color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
         color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
@@ -511,7 +511,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
       const float4 nbl = buffer[ stride - 1];
       const float4 nbr = buffer[ stride + 1];
 
-      if(c == 0)
+      if(c == RED)
       { // red pixel, fill blue:
         const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
         const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
@@ -554,8 +554,8 @@ kernel void demosaic_box3(read_only image2d_t in,
     {
       if(x >= 0 && y >= 0 && x < width && y < height)
       {
-        const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
-        sum[color] += fmax(0.0f, read_imagef(in, samplerA, (int2)(x, y)).x);
+        const int color = fcol(y, x, filters, xtrans);
+        sum[color] += fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
         cnt[color] += 1.0f;
       }
     }

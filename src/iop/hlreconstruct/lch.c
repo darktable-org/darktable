@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ static void process_lch_bayer(dt_iop_module_t *self,
                               const dt_iop_roi_t *const roi_out,
                               const float clip)
 {
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
 
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < roi_out->height; j++)
@@ -65,7 +65,7 @@ static void process_lch_bayer(dt_iop_module_t *self,
 
             clipped = (clipped || (val > clip));
 
-            const int c = FC(j + jj + roi_out->y, i + ii + roi_out->x, filters);
+            const int c = FC(j + jj, i + ii, filters);
             switch(c)
             {
               case 0:
@@ -118,7 +118,7 @@ static void process_lch_bayer(dt_iop_module_t *self,
           RGB[1] = L - H / 6.0f - C / SQRT12;
           RGB[2] = L + H / 3.0f;
 
-          out[0] = RGB[FC(j + roi_out->y, i + roi_out->x, filters)];
+          out[0] = RGB[FC(j, i, filters)];
         }
         else
         {
@@ -137,7 +137,7 @@ static void process_lch_xtrans(dt_iop_module_t *self,
                                const dt_iop_roi_t *const roi_out,
                                const float clip)
 {
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
 
   DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
@@ -213,7 +213,7 @@ static void process_lch_xtrans(dt_iop_module_t *self,
             for(int ii = -1; ii <= 1; ii++)
             {
               const float val = in[(ssize_t)jj * roi_in->width + ii];
-              const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+              const int c = FCNxtrans(j+jj, i+ii, xtrans);
               mean[c] += val;
               cnt[c]++;
               RGBmax[c] = MAX(RGBmax[c], val);
@@ -249,7 +249,7 @@ static void process_lch_xtrans(dt_iop_module_t *self,
           RGB[1] = L - H / 6.0f - C / SQRT12;
           RGB[2] = L + H / 3.0f;
 
-          out[0] = RGB[FCxtrans(j, i, roi_out, xtrans)];
+          out[0] = RGB[FCNxtrans(j, i, xtrans)];
         }
         else
           out[0] = in[0];

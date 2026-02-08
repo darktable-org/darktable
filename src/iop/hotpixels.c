@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,9 +102,10 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels.
  * This is the Bayer sensor variant. */
-static int process_bayer(const dt_iop_hotpixels_data_t *data,
-                         const void *const ivoid, void *const ovoid,
-                         const dt_iop_roi_t *const roi_out)
+static int _process_bayer(const dt_iop_hotpixels_data_t *data,
+                          const void *const ivoid,
+                          void *const ovoid,
+                          const dt_iop_roi_t *const roi_out)
 {
   const float threshold = data->threshold;
   const float multiplier = data->multiplier;
@@ -157,11 +158,11 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
 }
 
 /* This is the monochrome sensor variant. */
-static int process_monochrome(const dt_iop_hotpixels_data_t *data,
-                         const void *const ivoid,
-                         void *const ovoid,
-                         const dt_iop_roi_t *const roi_out,
-                         const int planes)
+static int _process_monochrome(const dt_iop_hotpixels_data_t *data,
+                              const void *const ivoid,
+                              void *const ovoid,
+                              const dt_iop_roi_t *const roi_out,
+                              const int planes)
 {
   const float threshold = data->threshold;
   const float multiplier = data->multiplier;
@@ -214,10 +215,12 @@ static int process_monochrome(const dt_iop_hotpixels_data_t *data,
   return fixed;
 }
 
-/* X-Trans sensor equivalent of process_bayer(). */
-static int process_xtrans(const dt_iop_hotpixels_data_t *data,
-                          const void *const ivoid, void *const ovoid,
-                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6])
+/* X-Trans sensor equivalent of _process_bayer(). */
+static int _process_xtrans(const dt_iop_hotpixels_data_t *data,
+                           const void *const ivoid,
+                           void *const ovoid,
+                           const dt_iop_roi_t *const roi_out,
+                           const uint8_t (*const xtrans)[6])
 {
   // for each cell of sensor array, pre-calculate, a list of the x/y
   // offsets of the four radially nearest pixels of the same color
@@ -247,10 +250,10 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   {
     for(int i = 0; i < 6; ++i)
     {
-      const uint8_t c = FCxtrans(j, i, roi_out, xtrans);
+      const uint8_t c = FCNxtrans(j, i, xtrans);
       for(int s = 0, found = 0; s < 20 && found < 4; ++s)
       {
-        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_out, xtrans))
+        if(c == FCNxtrans(j + search[s][1], i + search[s][0], xtrans))
         {
           offsets[j][i][found][0] = search[s][0];
           offsets[j][i][found][1] = search[s][1];
@@ -297,17 +300,17 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
           fixed++;
           if(markfixed)
           {
-            const uint8_t c = FCxtrans(row, col, roi_out, xtrans);
+            const uint8_t c = FCNxtrans(row, col, xtrans);
             for(int i = -2; i >= -10 && i >= -col; --i)
             {
-              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              if(c == FCNxtrans(row, col+i, xtrans))
               {
                 out[i] = *in;
               }
             }
             for(int i = 2; i <= 10 && i < width - col; ++i)
             {
-              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              if(c == FCNxtrans(row, col+i, xtrans))
               {
                 out[i] = *in;
               }
@@ -335,15 +338,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(data->monochrome || data->pure_monochrome)
   {
-    fixed = process_monochrome(data, ivoid, ovoid, roi_out, planes);
+    fixed = _process_monochrome(data, ivoid, ovoid, roi_out, planes);
   }
   else if(piece->pipe->dsc.filters == 9u)
   {
-    fixed = process_xtrans(data, ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->dsc.xtrans);
+    fixed = _process_xtrans(data, ivoid, ovoid, roi_out, piece->xtrans);
   }
   else
   {
-    fixed = process_bayer(data, ivoid, ovoid, roi_out);
+    fixed = _process_bayer(data, ivoid, ovoid, roi_out);
   }
 
   if(g != NULL && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))

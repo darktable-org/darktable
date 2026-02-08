@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -255,7 +255,7 @@ void process(dt_iop_module_t *self,
   const float *const input = (float *)ivoid;
   float *output = (float *) ovoid;
 
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;  // Just in case we want to use a roi_in 
 
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
