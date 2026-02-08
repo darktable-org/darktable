@@ -2378,6 +2378,12 @@
     <shortdescription>max style preview size</shortdescription>
   </dtconfig>
   <dtconfig>
+    <name>ui/style/large_preview_size</name>
+    <type min="100" max="500">int</type>
+    <default>500</default>
+    <shortdescription/>
+  </dtconfig>  
+  <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
     <default>0</default>

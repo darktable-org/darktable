@@ -48,12 +48,6 @@ typedef struct dt_lib_styles_t
   GtkWidget *show_preview;
 } dt_lib_styles_t;
 
-enum PREVIEW_MODE {
-  PREVIEW_NO,
-  PREVIEW_DEFAULT,
-  PREVIEW_LARGE
-};
-
 const char *name(dt_lib_module_t *self)
 {
   return _("styles");
@@ -166,8 +160,7 @@ gboolean _styles_tooltip_callback(GtkWidget* widget,
       g_list_free(selected_image);
     }
     
-    const gboolean hide_preview = (dt_conf_get_int("ui_last/styles_preview_mode") == PREVIEW_NO);
-    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid, hide_preview);
+    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
     dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
     return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, ht);
@@ -781,13 +774,6 @@ static void _previewmode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("ui_last/styles_preview_mode", mode);
-  // set the actual preview size here. 
-  // for "no preview" we do not set to 0, because there is a minimum value of 100
-  // defined in darktableconfig.xml.in, so we have to switch off separately, anyway.
-  // Note: This also affects the size of the preview in the darkroom view.
-  int preview_size = dt_confgen_get_int("ui/style/preview_size", DT_DEFAULT);
-  if(mode == PREVIEW_LARGE) preview_size = dt_confgen_get_int("ui/style/preview_size", DT_MAX);
-  dt_conf_set_int("ui/style/preview_size", preview_size);
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -891,17 +877,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
 
-
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->show_preview, self, NULL, N_("preview"),
-  _("show/hide preview"),
-  dt_conf_get_int("ui_last/styles_preview_mode"),
-  _previewmode_combobox_changed, self,
-  N_("no"), N_("default"), N_("large"));  
-  
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(box), d->duplicate, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(box), d->show_preview, FALSE, FALSE, 0);
-  gtk_widget_set_hexpand(box, TRUE);
+                               _("change size or hide preview on tooltip of style"),
+                               dt_conf_get_int("ui_last/styles_preview_mode"),
+                               _previewmode_combobox_changed, self,
+                               N_("no"), N_("default"), N_("large"));  
+
+  GtkWidget *box = dt_gui_hbox();
+  dt_gui_box_add(box, d->duplicate);
+  gtk_widget_set_halign(d->duplicate, GTK_ALIGN_START);
+  gtk_widget_set_hexpand(d->duplicate, TRUE);
+  dt_gui_box_add(box, d->show_preview);
+  gtk_widget_set_halign(d->show_preview, GTK_ALIGN_END);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
