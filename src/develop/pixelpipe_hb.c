@@ -1725,7 +1725,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
         const gboolean gamma = dev->image_storage.colorspace != DT_IMAGE_COLORSPACE_NONE;
 #ifdef HAVE_OPENCL
-        const size_t in_size = bpp * roi_in.width * roi_in.height; 
+        const size_t in_size = bpp * roi_in.width * roi_in.height;
         const gboolean cl_scale_possible = ((2 * in_size) < dt_opencl_get_device_available(pipe->devid))
                                             && roi_out->width < roi_in.width
                                             && roi_out->height < roi_in.height;
@@ -1783,8 +1783,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 err = dt_opencl_copy_device_to_host(pipe->devid, *output, tmp_output, roi_out->width, roi_out->height, bpp);
               if(err == CL_SUCCESS)
                 done = TRUE;
-              else 
-                dt_print(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "OpenCL pipe data: clip&zoom failed");       
+              else
+                dt_print(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "OpenCL pipe data: clip&zoom failed");
             }
             dt_opencl_release_mem_object(tmp_input);
             dt_opencl_release_mem_object(tmp_output);
