@@ -71,6 +71,8 @@ changes (where available).
 - Added Canon Automatic Lighting Optimizer support for CR3-format
   images.
 
+- Added PNG support (8/16-bit) for external raster masks.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
