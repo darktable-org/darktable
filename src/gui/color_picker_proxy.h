@@ -65,6 +65,7 @@ typedef struct dt_iop_color_picker_t
   // activated, and will remember the most recent picker position
   dt_pickerpoint_t pick_pos;
   dt_pickerbox_t pick_box;
+  gboolean initialized;
   gboolean changed;
 } dt_iop_color_picker_t;
 
