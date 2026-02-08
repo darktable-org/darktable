@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2025 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -226,8 +226,8 @@ static float *_process_opposed(dt_iop_module_t *self,
                                const gboolean quality)
 {
   dt_iop_highlights_data_t *d = piece->data;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
+  const uint32_t filters = piece->filters;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
 
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
@@ -279,7 +279,7 @@ static float *_process_opposed(dt_iop_module_t *self,
             for(int x = -1; x < 2; x++)
             {
               const size_t idx = grp + y * roi_in->width + x;
-              const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
+              const int color = fcol(mrow+y, mcol+x, filters, xtrans);
               const gboolean clipped = input[idx] >= clips[color];
               mbuff[color] += (clipped) ? 1 : 0;
             }
@@ -322,7 +322,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           for(size_t col = 3; col < roi_in->width - 3; col++)
           {
             const size_t idx = row * roi_in->width + col;
-            const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+            const int color = fcol(row, col, filters, xtrans);
             const float inval = input[idx];
 
             /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
@@ -365,7 +365,7 @@ static float *_process_opposed(dt_iop_module_t *self,
       for(size_t col = 0; col < roi_in->width; col++)
       {
         const size_t idx = row * roi_in->width + col;
-        const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+        const int color = fcol(row, col, filters, xtrans);
         const float inval = MAX(0.0f, input[idx]);
         if(inval >= clips[color])
         {
@@ -394,7 +394,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           oval = tmpout[ix];
         else
         {
-          const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          const int color = fcol(irow, icol, filters, xtrans);
           oval = MAX(0.0f, input[ix]);
           if(oval >= clips[color])
           {
@@ -421,7 +421,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
   const dt_iop_highlights_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
 
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
@@ -454,7 +454,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
   if(!fastcopymode)
   {
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto error;
 
     dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);

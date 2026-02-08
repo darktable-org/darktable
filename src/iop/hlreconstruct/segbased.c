@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2024 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -194,7 +194,7 @@ static inline float _calc_refavg(const float *in,
                                  const dt_aligned_pixel_t correction,
                                  const gboolean linear)
 {
-  const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
+  const int color = fcol(row, col, filters, xtrans);
   dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -208,7 +208,7 @@ static inline float _calc_refavg(const float *in,
     for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmaxf(0.0f, in[(size_t)dy * roi->width + dx]);
-      const int c = (filters == 9u) ? FCxtrans(dy, dx, roi, xtrans) : FC(dy, dx, filters);
+      const int c = fcol(dy, dx, filters, xtrans);
       mean[c] += val;
       cnt[c] += 1.0f;
     }
@@ -457,8 +457,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
                                   const int vmode,
                                   float *tmpout)
 {
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
+  const uint32_t filters = piece->filters;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const float clipval = MAX(0.1f, highlights_clip_magics[DT_IOP_HIGHLIGHTS_SEGMENTS] * d->clip);
 
@@ -536,7 +536,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           {
             const size_t idx = (size_t)dy * roi_in->width + dx;
             const float val = tmpout[idx];
-            const int c = (filters == 9u) ? FCxtrans(dy, dx, roi_in, xtrans) : FC(dy, dx, filters);
+            const int c = fcol(dy, dx, filters, xtrans);
             mean[c] += val;
             cnt[c] += 1.0f;
           }
@@ -600,7 +600,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     {
       const size_t idx = (size_t)row * roi_in->width + col;
       const float inval = fmaxf(0.0f, input[idx]);
-      const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+      const int color = fcol(row, col, filters, xtrans);
       if(inval > clips[color])
       {
         const size_t o = _raw_to_plane(pwidth, row, col);
@@ -689,7 +689,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         for(int col = 1; col < roi_in->width - 1; col++)
         {
           const size_t idx = (size_t)row * roi_in->width + col;
-          const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+          const int color = fcol(row, col, filters, xtrans);
           const float ival = fmaxf(0.0f, input[idx]);
           if(ival > clips[color])
           {
@@ -719,7 +719,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         output[odx] = do_masking ? fminf(0.2f, 0.2f * luminance[ppos]) : tmpout[idx];
         if(do_masking && (inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1))
         {
-          const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
+          const int color = fcol(inrow, incol, filters, xtrans);
           const uint32_t pid = _get_segment_id(&isegments[color], ppos);
 
           if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && pid)

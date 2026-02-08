@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2025 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -399,8 +399,8 @@ void tiling_callback(dt_iop_module_t *self,
   const gboolean is_bayer = filters && (filters != 9u);
   const gboolean is_xtrans = filters && (filters == 9u);
 
-  tiling->xalign = is_xtrans ? 3 : 2;
-  tiling->yalign = is_xtrans ? 3 : 2;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   tiling->overlap = 0;
   tiling->factor = 2.0f;
   tiling->factor_cl = 2.0f;
@@ -457,8 +457,6 @@ void tiling_callback(dt_iop_module_t *self,
 
   if(d->mode == DT_IOP_HIGHLIGHTS_LCH)
   {
-    tiling->xalign = is_xtrans ? 6 : 2;
-    tiling->yalign = is_xtrans ? 6 : 2;
     tiling->overlap = is_xtrans ? 2 : 1;
   }
 }
@@ -479,7 +477,7 @@ static float *_provide_raster_mask(const dt_iop_roi_t *const roi_in,
     return NULL;
   }
 
-  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
   const float clips[4] = { clip * piece->pipe->dsc.processed_maximum[0],
                            clip * piece->pipe->dsc.processed_maximum[1],
                            clip * piece->pipe->dsc.processed_maximum[2], clip };
@@ -505,8 +503,7 @@ static float *_provide_raster_mask(const dt_iop_roi_t *const roi_in,
   }
   else
   {
-    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-    const gboolean is_xtrans = (filters == 9u);
+    const uint8_t(*const xtrans)[6] = piece->xtrans;
     DT_OMP_FOR()
     for(int row = 0; row < roi_out->height; row++)
     {
@@ -515,7 +512,7 @@ static float *_provide_raster_mask(const dt_iop_roi_t *const roi_in,
         const size_t ox = (size_t)row * roi_out->width + col;
         const int irow = row + roi_out->y - roi_in->y;
         const int icol = col + roi_out->x - roi_in->x;
-        const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+        const int c = fcol(irow, icol, filters, xtrans);
         const float ref = MAX(0.5, 0.95f * clips[c]);
         tmp[ox] = MAX(0.0f, (in[ox] - ref) / ref);
       }
@@ -539,7 +536,7 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   dt_iop_highlights_global_data_t *gd = self->global_data;
 
-  const uint32_t filters = pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
   const int devid = pipe->devid;
 
   if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
@@ -579,10 +576,9 @@ int process_cl(dt_iop_module_t *self,
                            mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
 
         dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-        if(dev_clips == NULL) goto finish;
+        dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
+        if(!dev_clips || !dev_xtrans) goto finish;
 
-        dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
-        if(dev_xtrans == NULL) goto finish;
         const int dy = roi_out->y - roi_in->y;
         const int dx = roi_out->x - roi_in->x;
 
@@ -619,8 +615,7 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, roi_in->width, roi_in->height,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
-      CLARG(filters));
+      CLARG(clip), CLARG(filters));
   }
   else if(dmode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
   {
@@ -640,7 +635,7 @@ int process_cl(dt_iop_module_t *self,
     else
       blocksizex = blocksizey = 1;
 
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto finish;
 
     size_t sizes[] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey), 1 };
@@ -648,8 +643,7 @@ int process_cl(dt_iop_module_t *self,
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 0,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
-      CLARG(dev_xtrans),
+      CLARG(clip), CLARG(dev_xtrans),
       CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
   }
@@ -669,10 +663,8 @@ int process_cl(dt_iop_module_t *self,
     for_each_channel(c)
       clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
     dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-    if(dev_clips == NULL) goto finish;
-
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
-    if(dev_xtrans == NULL) goto finish;
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
+    if(!dev_clips || !dev_xtrans) goto finish;
 
     // raw images with clip mode (both bayer and xtrans)
     const int dy = roi_out->y - roi_in->y;
@@ -730,7 +722,8 @@ static void process_clip(dt_iop_module_t *self,
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const int ch = piece->pipe->dsc.filters ? 1 : 4;
+  const uint32_t filters = piece->filters;
+  const int ch = filters ? 1 : 4;
   if(ch == 4)
   {
     const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
@@ -740,10 +733,7 @@ static void process_clip(dt_iop_module_t *self,
   }
   else
   {
-    const uint32_t filters = piece->pipe->dsc.filters;
-    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-    const gboolean is_xtrans = (filters == 9u);
-
+    const uint8_t(*const xtrans)[6] = piece->xtrans;
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
     if(chr->late_correction)
@@ -761,7 +751,7 @@ static void process_clip(dt_iop_module_t *self,
 
         if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
         {
-          const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          const int c = fcol(irow, icol, filters, xtrans);
           out[ox] = fminf(in[ix], clips[c]);
         }
         else
@@ -778,9 +768,8 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_roi_t *const roi_out,
                               dt_iop_highlights_data_t *d)
 {
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-  const uint32_t filters = piece->pipe->dsc.filters;
-  const gboolean is_xtrans = (filters == 9u);
+  const uint8_t(*const xtrans)[6] = piece->xtrans;
+  const uint32_t filters = piece->filters;
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -816,7 +805,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
 
         if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
         {
-          const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          const int c = fcol(irow, icol, filters, xtrans);
           const float ival = in[ix];
           out[ox] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
         }
@@ -835,7 +824,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const uint32_t filters = pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
   dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
@@ -935,7 +924,7 @@ void process(dt_iop_module_t *self,
 
       if(filters == 9u)
       {
-        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])pipe->dsc.xtrans;
+        const uint8_t(*const xtrans)[6] = piece->xtrans;
         DT_OMP_FOR()
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -1078,12 +1067,10 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_highlights_box_blur = dt_opencl_create_kernel(program, "box_blur_5x5");
   gd->kernel_highlights_guide_laplacians = dt_opencl_create_kernel(program, "guide_laplacians");
   gd->kernel_highlights_diffuse_color = dt_opencl_create_kernel(program, "diffuse_color");
-
   gd->kernel_highlights_opposed = dt_opencl_create_kernel(program, "highlights_opposed");
   gd->kernel_highlights_initmask = dt_opencl_create_kernel(program, "highlights_initmask");
   gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
   gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
-
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
   gd->kernel_interpolate_bilinear = dt_opencl_create_kernel(program, "interpolate_bilinear");
 
@@ -1105,19 +1092,16 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_highlights_box_blur);
   dt_opencl_free_kernel(gd->kernel_highlights_guide_laplacians);
   dt_opencl_free_kernel(gd->kernel_highlights_diffuse_color);
-
   dt_opencl_free_kernel(gd->kernel_highlights_opposed);
   dt_opencl_free_kernel(gd->kernel_highlights_initmask);
   dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
   dt_opencl_free_kernel(gd->kernel_highlights_chroma);
-
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
+  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
   dt_opencl_free_kernel(gd->kernel_filmic_wavelets_detail);
-
-  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
 
   free(self->data);
   self->data = NULL;

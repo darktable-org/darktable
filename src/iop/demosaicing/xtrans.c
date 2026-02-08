@@ -1640,7 +1640,6 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, width, height, 9u, FALSE);
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmptmp = NULL;
@@ -1655,13 +1654,14 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
   cl_mem *dev_rgb = dev_rgbv;
 
-    const int passes = ((data->demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
-    const int ndir = passes > 1 ? 8 : 4 ;
-    const int pad_tile = (passes == 1) ? 12 : 17;
+  const int passes = ((data->demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
+  const int ndir = passes > 1 ? 8 : 4 ;
+  const int pad_tile = (passes == 1) ? 12 : 17;
+  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, width, height, 9u, pad_tile+2, TRUE);
 
-    static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
-                       patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
-                                       { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } };
+  static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
+                     patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
+                                     { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } };
 
     // allhex contains the offset coordinates (x,y) of a green hexagon around each
     // non-green pixel and vice versa

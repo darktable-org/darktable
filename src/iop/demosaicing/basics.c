@@ -519,10 +519,8 @@ static int process_default_cl(const dt_iop_module_t *self,
       }
 
       {
-        const int myborder = 3;
-        // manage borders
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters), CLARG(myborder));
+          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters));
         if(err != CL_SUCCESS) goto error;
       }
 

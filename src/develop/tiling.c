@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -765,6 +765,7 @@ static void _default_process_tiling_ptp(dt_iop_module_t *self,
 
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
+      dt_dev_prepare_piece_cfa(piece, &iroi);
 
       /* call process() of module */
       self->process(self, piece, input, output, &iroi, &oroi);
@@ -1115,6 +1116,7 @@ static void _default_process_tiling_roi(dt_iop_module_t *self,
 
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
+      dt_dev_prepare_piece_cfa(piece, &iroi_full);
 
       /* call process() of module */
       self->process(self, piece, input, output, &iroi_full, &oroi_full);
@@ -1576,7 +1578,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
 
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
-
+      dt_dev_prepare_piece_cfa(piece, &iroi);
       /* call process_cl of module */
       err = self->process_cl(self, piece, input, output, &iroi, &oroi);
       if(err != CL_SUCCESS)
@@ -2050,6 +2052,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
+      dt_dev_prepare_piece_cfa(piece, &iroi_full);
       /* call process_cl of module */
       err = self->process_cl(self, piece, input, output, &iroi_full, &oroi_full);
       if(err != CL_SUCCESS)
@@ -2227,7 +2230,7 @@ gboolean dt_tiling_piece_fits_host_memory(const dt_dev_pixelpipe_iop_t *piece,
   const size_t available = dt_get_available_pipe_mem(piece->pipe);
   const size_t total = factor * width * height * bpp + overhead;
 
-  return (total <= available) ? TRUE : FALSE;
+  return total <= available;
 }
 
 // clang-format off
