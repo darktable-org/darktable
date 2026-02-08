@@ -182,7 +182,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == GDK_BUTTON_SECONDARY);
   dt_iop_color_picker_flags_t flags = self->flags;
 
-  // setup if a new picker
+  // setup if a new picker or switching between point/area mode
   if(prior_picker != self)
   {
     darktable.lib->proxy.colorpicker.picker_proxy = self;
@@ -194,7 +194,6 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     dt_iop_color_picker_flags_t kind = self->flags & DT_COLOR_PICKER_POINT_AREA;
     if(kind == DT_COLOR_PICKER_POINT_AREA)
       kind = to_area_mode ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
-
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
