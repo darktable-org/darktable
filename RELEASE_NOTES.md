@@ -58,7 +58,7 @@ changes (where available).
 
 ## Performance Improvements
 
-- N/A
+- Increased performance for OpenCL guided filter by internal tiling.
 
 ## Other Changes
 
