@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +60,8 @@ typedef struct dt_dev_pixelpipe_iop_t
   // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in;
   dt_iop_buffer_dsc_t dsc_out;
-
+  uint8_t xtrans[6][6];
+  uint32_t filters;
   GHashTable *raster_masks;
 } dt_dev_pixelpipe_iop_t;
 
@@ -328,6 +329,8 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *const roi_in,
                                 const gboolean mode);
 #endif
+
+void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi);
 
 /* specialized version of dt_print for pixelpipe debugging */
 void dt_print_pipe_ext(const char *title,
