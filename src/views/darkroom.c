@@ -54,7 +54,6 @@
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "libs/colorpicker.h"
-#include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
 
@@ -3547,13 +3546,10 @@ int button_pressed(dt_view_t *self,
     if(which == GDK_BUTTON_PRIMARY)
     {
       _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
+      sample->point[0] = zoom_x;
+      sample->point[1] = zoom_y;
 
-      if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-      {
-        sample->point[0] = zoom_x;
-        sample->point[1] = zoom_y;
-      }
-      else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         dt_boundingbox_t sbox;
         dt_color_picker_transform_box(dev, 2, sample->box, sbox, TRUE);
