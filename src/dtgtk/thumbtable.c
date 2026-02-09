@@ -1683,8 +1683,8 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
   dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
 
-  int min_level = 8;
-  int max_level = 0;
+  int min_level = DT_MIPMAP_LDR_MAX;
+  int max_level = DT_MIPMAP_0;
   if(hql != table->pref_hq)
   {
     min_level = MIN(table->pref_hq, hql);
@@ -1703,9 +1703,9 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     gchar *txt =
       g_strdup(_("you have changed the settings related to"
                  " how thumbnails are generated.\n"));
-    if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
+    if(max_level >= DT_MIPMAP_LDR_MAX && min_level == DT_MIPMAP_0)
       dt_util_str_cat(&txt, _("all cached thumbnails need to be invalidated.\n\n"));
-    else if(max_level >= DT_MIPMAP_8)
+    else if(max_level >= DT_MIPMAP_LDR_MAX)
       dt_util_str_cat
         (&txt,
          _("cached thumbnails starting from level %d need to be invalidated.\n\n"),
