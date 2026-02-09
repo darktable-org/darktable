@@ -2386,7 +2386,7 @@
   </dtconfig>
   <dtconfig>
     <name>ui/style/large_preview_size</name>
-    <type min="100" max="500">int</type>
+    <type min="100" max="1000">int</type>
     <default>500</default>
     <shortdescription/>
   </dtconfig>  
