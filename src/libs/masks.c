@@ -941,13 +941,15 @@ static int _tree_button_pressed(GtkWidget *treeview,
         // feature only meaningful for rows with prev/next.
 
         GtkTreeIter it;
-        gtk_tree_model_get_iter(model, &it, it0);
+        GtkTreePath *item = gtk_tree_path_copy(it0);
+        gtk_tree_model_get_iter(model, &it, item);
         is_last_row = !gtk_tree_model_iter_next(model, &it);
 
-        if(!is_last_row && !gtk_tree_path_prev(it0))
+        if(!is_last_row && !gtk_tree_path_prev(item))
         {
           is_first_row = TRUE;
         }
+        gtk_tree_path_free(item);
       }
 
       for(const GList *items_iter = selected;
