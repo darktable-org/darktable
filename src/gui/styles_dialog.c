@@ -1026,7 +1026,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
     // style preview
     if(preview_mode != DT_STYLE_PREVIEW_NO) 
     {
-      if(preview_mode==DT_STYLE_PREVIEW_LARGE) 
+      if(preview_mode == DT_STYLE_PREVIEW_LARGE) 
       {
         data.psize = dt_conf_get_int("ui/style/large_preview_size");
       }
