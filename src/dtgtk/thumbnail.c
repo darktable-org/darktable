@@ -467,7 +467,7 @@ static void _get_dimensions_for_img_to_fit(const dt_thumbnail_t *thumb,
   // decimal, so not enough accurate so we compute it from the larger
   // available mipmap
   float ar = 0.0f;
-  for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
+  for(int k = DT_MIPMAP_LDR_MAX; k >= DT_MIPMAP_0; k--)
   {
     dt_mipmap_buffer_t tmp;
     dt_mipmap_cache_get(&tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ G_BEGIN_DECLS
 
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
 typedef enum dt_mipmap_size_t {
+  // 8 bit, downscaled, for lighttable thumbnails
   DT_MIPMAP_0 = 0,
   DT_MIPMAP_1,
   DT_MIPMAP_2,
@@ -35,10 +36,17 @@ typedef enum dt_mipmap_size_t {
   DT_MIPMAP_6,
   DT_MIPMAP_7,
   DT_MIPMAP_8,
+  DT_MIPMAP_9,
+  // 8 bit, full resolution, for zoomed in thumbnail
+  DT_MIPMAP_10,
+  // float, downscaled, for preview pixelpipe
   DT_MIPMAP_F,
+  // float, full resolution, for full/export pixelpipe
   DT_MIPMAP_FULL,
   DT_MIPMAP_NONE
 } dt_mipmap_size_t;
+
+static const dt_mipmap_size_t DT_MIPMAP_LDR_MAX = DT_MIPMAP_10;
 
 // type to be passed to getter functions
 typedef enum dt_mipmap_get_flags_t

@@ -862,7 +862,7 @@ static inline gboolean _lighttable_silent(void)
 
 static inline gboolean _valid_mip(dt_mipmap_size_t mip)
 {
-  return mip > DT_MIPMAP_0 && mip < DT_MIPMAP_8;
+  return mip > DT_MIPMAP_0 && mip < DT_MIPMAP_LDR_MAX;
 }
 
 static inline gboolean _still_thumbing(void)
@@ -991,7 +991,7 @@ void dt_update_thumbs_thread(void *p)
   }
 
   // return if any thumbcache dir is not writable
-  for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_7; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_LDR_MAX-1; k++)
   {
     char dirname[PATH_MAX] = { 0 };
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
