@@ -121,7 +121,7 @@ changes (where available).
 
 ### Mandatory
 
-- N/A
+- potrace 1.16 is a new requirement
 
 ### Optional
 
