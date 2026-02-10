@@ -845,9 +845,9 @@ void dt_bauhaus_load_theme()
   bh->quad_width = bh->line_height;
 
   // absolute size in Cairo unit:
-  bh->baseline_size = bh->line_height / 2.5f;
+  bh->baseline_size = bh->line_height / 3.0f;
   bh->border_width = 2.0f; // absolute size in Cairo unit
-  bh->marker_size = (bh->baseline_size + bh->border_width) * 0.9f;
+  bh->marker_size = (bh->baseline_size + bh->border_width) * 0.95f;
 
   const char *shape = dt_conf_get_string_const("bauhaus/marker_shape");
   bh->marker_shape = !g_strcmp0(shape, "circle") ? DT_BAUHAUS_MARKER_CIRCLE
