@@ -140,11 +140,11 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color collapsible_bg_color @grey_25;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg alpha(@bg_color, 0.55);
+@define-color bauhaus_bg shade(@plugin_bg_color,0.75);
+@define-color bauhaus_fill shade(@plugin_label_color,0.95);
 @define-color bauhaus_fg @fg_color;       /* needed to correctly display color pickers in all states, even if they inherit @fg_color by default */
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
-@define-color bauhaus_fill @grey_40;
 @define-color bauhaus_bg_hover @grey_60;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
@@ -881,7 +881,7 @@ menuitem > arrow
 /* then spacing around bauhaus widgets */
 .dt_bauhaus
 {
-  margin: 0.14em 0;
+  margin: 0.2em 0;
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */
