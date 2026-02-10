@@ -84,7 +84,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
                                   .cellsize = 8 * sizeof(float) + sizeof(int), .overhead = 0,
                                   .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  if(!dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt) != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid", devid);
@@ -166,41 +166,32 @@ cl_int dt_bilateral_splat_cl(dt_bilateral_cl_t *b, cl_mem in)
 
 cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
 {
-  size_t sizes[3] = { 0, 0, 1 };
-
   cl_int err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
                                                 sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(err != CL_SUCCESS) return err;
 
-  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
-  int stride1, stride2, stride3;
-  stride1 = b->size_x * b->size_y;
-  stride2 = b->size_x;
-  stride3 = 1;
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
-    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y), CLARG(b->size_x));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line, sizes);
+  int stride1 = b->size_x * b->size_y;
+  int stride2 = b->size_x;
+  int stride3 = 1;
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_blur_line, b->size_z, b->size_y,
+        CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
+        CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y), CLARG(b->size_x));
   if(err != CL_SUCCESS) return err;
 
   stride1 = b->size_x * b->size_y;
   stride2 = 1;
   stride3 = b->size_x;
-  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_x, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line, 0, CLARG(b->dev_grid), CLARG(b->dev_grid_tmp),
-    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x), CLARG(b->size_y));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_blur_line, b->size_z, b->size_x,
+        CLARG(b->dev_grid), CLARG(b->dev_grid_tmp),
+        CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x), CLARG(b->size_y));
   if(err != CL_SUCCESS) return err;
 
   stride1 = 1;
   stride2 = b->size_x;
   stride3 = b->size_x * b->size_y;
-  sizes[0] = ROUNDUPDWD(b->size_x, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line_z, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
-    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));
-  return dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line_z, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_blur_line_z, b->size_x, b->size_y,
+          CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
+          CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));   
 }
 
 cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)

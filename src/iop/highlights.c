@@ -627,7 +627,7 @@ int process_cl(dt_iop_module_t *self,
                                     .cellsize = sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(dt_opencl_local_buffer_opt(devid, gd->kernel_highlights_1f_lch_xtrans, &locopt))
+    if(dt_opencl_local_buffer_opt(devid, gd->kernel_highlights_1f_lch_xtrans, &locopt) == CL_SUCCESS)
     {
       blocksizex = locopt.sizex;
       blocksizey = locopt.sizey;

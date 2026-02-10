@@ -383,11 +383,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                       .cellsize = sizeof(float), .overhead = 0,
                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finally;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt);
+      if(err != CL_SUCCESS) goto finally;
 
       const size_t bwidth = ROUNDUP(width, flocopt.sizex);
       const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -399,11 +396,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                       .cellsize = sizeof(float), .overhead = 0,
                                       .sizex = 1 << 16, .sizey = 1 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finally;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt);
+      if(err != CL_SUCCESS) goto finally;
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 

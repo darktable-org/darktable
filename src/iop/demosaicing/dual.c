@@ -126,9 +126,8 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
      CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
-  const int detail = 1;
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
-      CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(detail));
+      CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARGINT(1));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_gaussian_fast_blur_cl_buffer(devid, mask, tmp, width, height, 2.0f, 1, 0.0f, 1.0f);

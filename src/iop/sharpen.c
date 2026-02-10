@@ -171,7 +171,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1 << 16, .sizey = 1 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_hblur, &hlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_hblur, &hlocopt) == CL_SUCCESS)
     hblocksize = hlocopt.sizex;
   else
     hblocksize = 1;
@@ -182,7 +182,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1, .sizey = 1 << 16 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_vblur, &vlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_vblur, &vlocopt) == CL_SUCCESS)
     vblocksize = vlocopt.sizey;
   else
     vblocksize = 1;

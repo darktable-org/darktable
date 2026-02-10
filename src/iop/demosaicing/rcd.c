@@ -615,7 +615,6 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
-  int myborder = 3;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
@@ -626,17 +625,14 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
-    myborder = 32;
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt);
+    if(err != CL_SUCCESS) goto error;
+
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_green, 0, CLARG(dev_in), CLARG(dev_tmp),
         CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
-        CLARG(myborder));
+        CLARGINT(32));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_green, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -647,17 +643,14 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
-    myborder = 16;
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt);
+    if(err != CL_SUCCESS) goto error;
+
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_redblue, 0, CLARG(dev_tmp), CLARG(dev_out),
       CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
-      CLARG(myborder));
+      CLARGINT(16));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -726,9 +719,8 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
 
   scaler = dt_iop_get_processed_maximum(piece);
   // write output
-  myborder = RCD_MARGIN;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
-        CLARG(dev_out), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler), CLARG(myborder));
+        CLARG(dev_out), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler), CLARGINT(RCD_MARGIN));
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
