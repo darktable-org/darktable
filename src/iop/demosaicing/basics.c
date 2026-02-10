@@ -249,7 +249,7 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
 
   const int devid = piece->pipe->devid;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
@@ -259,11 +259,8 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
                                   .cellsize = 4 * sizeof(float), .overhead = 0,
                                   .sizex = 1 << 8, .sizey = 1 << 8 };
 
-  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt))
-  {
-    err = CL_INVALID_WORK_DIMENSION;
-    goto error;
-  }
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt);
+  if(err != CL_SUCCESS) goto error;
 
   // two buffer references for our ping-pong
   cl_mem dev_t1 = dev_out;
@@ -360,11 +357,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = 2 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 4, .sizey = 1 << 4 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt);
+    if(err != CL_SUCCESS) goto error;
 
     const size_t bwidth = ROUNDUP(width, flocopt.sizex);
     const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -392,11 +386,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = sizeof(float) * 2, .overhead = 0,
                                     .sizex = 1 << 16, .sizey = 1 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt);
+    if(err != CL_SUCCESS) goto error;
 
     const int reducesize = MIN(DT_REDUCESIZE_MIN, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -451,11 +442,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt);
+    if(err != CL_SUCCESS) goto error;
 
     const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -538,11 +526,8 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = 1 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -561,11 +546,8 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = sizeof(float) * 1, .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
@@ -583,11 +565,8 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = 4 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };

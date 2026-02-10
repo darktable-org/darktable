@@ -21,6 +21,10 @@
 // tile size, optimized to keep data in L2 cache
 #define TS 122
 
+#define PAD_G1_G3 3
+#define PAD_G_INTERP 3
+#define PAD_G_RECALC 6
+
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *_hexmap(const int row,
                                    const int col,
@@ -186,13 +190,12 @@ static void xtrans_markesteijn_interpolate(float *out,
       // and g3 values to the min/max of green pixels surrounding the
       // pair. Use a 3 pixel border as gmin/gmax is used by
       // interpolate green which has a 3 pixel border.
-      const int pad_g1_g3 = 3;
-      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
+      for(int row = top + PAD_G1_G3; row < mrow - PAD_G1_G3; row++)
       {
         // setting max to 0.0f signifies that this is a new pair, which
         // requires a new min/max calculation of its neighboring greens
         float min = FLT_MAX, max = 0.0f;
-        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
+        for(int col = left + PAD_G1_G3; col < mcol - PAD_G1_G3; col++)
         {
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
@@ -238,9 +241,8 @@ static void xtrans_markesteijn_interpolate(float *out,
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
-      const int pad_g_interp = 3;
-      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
-        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
+      for(int row = top + PAD_G_INTERP; row < mrow - PAD_G_INTERP; row++)
+        for(int col = left + PAD_G_INTERP; col < mcol - PAD_G_INTERP; col++)
         {
           float color[8];
           const int f = FCNxtrans(row, col, xtrans);
@@ -274,9 +276,8 @@ static void xtrans_markesteijn_interpolate(float *out,
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
         {
-          const int pad_g_recalc = 6;
-          for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
-            for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
+          for(int row = top + PAD_G_RECALC; row < mrow - PAD_G_RECALC; row++)
+            for(int col = left + PAD_G_RECALC; col < mcol - PAD_G_RECALC; col++)
             {
               const int f = FCNxtrans(row, col, xtrans);
               if(f == 1) continue;
@@ -1227,13 +1228,12 @@ static void xtrans_fdc_interpolate(float *out,
       // and g3 values to the min/max of green pixels surrounding the
       // pair. Use a 3 pixel border as gmin/gmax is used by
       // interpolate green which has a 3 pixel border.
-      const int pad_g1_g3 = 3;
-      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
+      for(int row = top + PAD_G1_G3; row < mrow - PAD_G1_G3; row++)
       {
         // setting max to 0.0f signifies that this is a new pair, which
         // requires a new min/max calculation of its neighboring greens
         float min = FLT_MAX, max = 0.0f;
-        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
+        for(int col = left + PAD_G1_G3; col < mcol - PAD_G1_G3; col++)
         {
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
@@ -1279,9 +1279,8 @@ static void xtrans_fdc_interpolate(float *out,
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
-      const int pad_g_interp = 3;
-      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
-        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
+      for(int row = top + PAD_G_INTERP; row < mrow - PAD_G_INTERP; row++)
+        for(int col = left + PAD_G_INTERP; col < mcol - PAD_G_INTERP; col++)
         {
           float color[8];
           const int f = FCNxtrans(row, col, xtrans);
@@ -1727,41 +1726,33 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     }
 
     // find minimum and maximum allowed green values of red/blue pixel pairs
-    const int pad_g1_g3 = 3;
     dt_opencl_local_buffer_t locopt_g1_g3
       = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3);
+    if(err != CL_SUCCESS) goto error;
 
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
       const size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0,
         CLARG(dev_rgb[0]), CLARG(dev_gminmax),
-        CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARRAY(2, sgreen),
+        CLARG(width), CLARG(height), CLARGINT(PAD_G1_G3), CLARRAY(2, sgreen),
         CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
     // interpolate green horizontally, vertically, and along both diagonals
-    const int pad_g_interp = 3;
     dt_opencl_local_buffer_t locopt_g_interp
       = (dt_opencl_local_buffer_t){ .xoffset = 2*6, .xfactor = 1, .yoffset = 2*6, .yfactor = 1,
                                     .cellsize = 4 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp);
+    if(err != CL_SUCCESS) goto error;
 
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
@@ -1769,7 +1760,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0,
         CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]),
         CLARG(dev_gminmax), CLARG(width), CLARG(height),
-        CLARG(pad_g_interp), CLARRAY(2, sgreen), CLARG(dev_xtrans),
+        CLARGINT(PAD_G_INTERP), CLARRAY(2, sgreen), CLARG(dev_xtrans),
         CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -1796,10 +1787,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       if(pass)
       {
         // recalculate green from interpolated values of closer pixels
-        const int pad_g_recalc = 6;
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_recalculate_green, width, height,
           CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax),
-          CLARG(width), CLARG(height), CLARG(pad_g_recalc), CLARRAY(2, sgreen),
+          CLARG(width), CLARG(height), CLARGINT(PAD_G_RECALC), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex));
         if(err != CL_SUCCESS) goto error;
       }
@@ -1811,11 +1801,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g);
+      if(err != CL_SUCCESS) goto error;
 
       cl_mem *dev_trgb = dev_rgb;
       for(int d = 0, i = 1, h = 0; d < 6; d++, i ^= 1, h ^= 2)
@@ -1841,11 +1828,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br);
+      if(err != CL_SUCCESS) goto error;
 
       for(int d = 0; d < 4; d++)
       {
@@ -1865,11 +1849,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22);
+      if(err != CL_SUCCESS) goto error;
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
       {
@@ -1906,11 +1887,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 4 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {
@@ -1957,11 +1935,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {
@@ -1987,11 +1962,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum);
+    if(err != CL_SUCCESS) goto error;
 
     for(int d = 0; d < ndir; d++)
     {
