@@ -1203,8 +1203,10 @@ static void _thumbs_prefetch(dt_culling_t *table)
     maxw = MAX(maxw, th->width);
     maxh = MAX(maxh, th->height);
   }
+  const int32_t mipwidth = maxw * darktable.gui->ppd;
+  const int32_t mipheight = maxh * darktable.gui->ppd;
   dt_mipmap_size_t mip =
-    dt_mipmap_cache_get_matching_size(maxw, maxh);
+    dt_mipmap_cache_get_matching_size(mipwidth, mipheight);
 
   // prefetch next image
   gchar *query;

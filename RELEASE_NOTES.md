@@ -85,6 +85,16 @@ changes (where available).
 - Fix occasional geolocation assignment errors in darktable's locations
   module involving polygon-shaped locations
 
+- Prefetch correctly sized thumbnails when user has display scaling
+  enabled.
+
+- Honor the default configuration preference "never" for "use raw
+  instead of jpeg from size": for unaltered images, always generate
+  thumbnails/previews from embedded JPEGs rather than processing the
+  raw file. If you prefer the prior behavior, which processed the raw
+  file rather than upscale the embedded JPEG for higher resolution
+  thumbnails/previews, use the new configuration option "auto".
+
 ## Lua
 
 ### API Version
