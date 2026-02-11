@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2024 darktable developers.
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -188,9 +188,9 @@ static void lmmse_demosaic(float *const restrict out,
         {
           float *cfa = qix[5] + rrr * DT_LMMSE_TILESIZE + BORDER_AROUND;
           int idx = row * width + colStart;
-          for(int ccc = BORDER_AROUND, col = colStart;
+          for(int ccc = BORDER_AROUND;
               ccc < tileCols + BORDER_AROUND;
-              ccc++, col++, cfa++, idx++)
+              ccc++, cfa++, idx++)
           {
             cfa[0] = _calc_gamma(revscaler * in[idx], lmmse_gamma_in);
           }
