@@ -205,10 +205,7 @@ static void _toggle_tooltip_visibility(dt_action_t *action)
 static inline void _update_focus_peaking_button()
 {
   // read focus peaking global state and update toggle button accordingly
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   const gboolean state = darktable.gui->show_focus_peaking;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.gui->focus_peaking_button),
                                state);
 }
@@ -217,17 +214,12 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
                                                  gpointer user_data)
 {
   // button method
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   const gboolean state_memory = darktable.gui->show_focus_peaking;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   const gboolean state_new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 
   if(state_memory == state_new) return; // nothing to change, bypass
 
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   darktable.gui->show_focus_peaking = state_new;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   gtk_widget_queue_draw(button);
 
@@ -810,8 +802,6 @@ gboolean _valid_window_placement(const gint saved_x,
 
 int dt_gui_gtk_load_config()
 {
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
-
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   const int width = dt_conf_get_int("ui_last/window_w");
   const int height = dt_conf_get_int("ui_last/window_h");
@@ -842,15 +832,11 @@ int dt_gui_gtk_load_config()
   else
     darktable.gui->show_focus_peaking = FALSE;
 
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   return 0;
 }
 
 int dt_gui_gtk_write_config()
 {
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
-
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gint x, y, width, height;
   // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
@@ -870,8 +856,6 @@ int dt_gui_gtk_write_config()
                    (gdk_window_get_state(gtk_widget_get_window(widget))
                     & GDK_WINDOW_STATE_FULLSCREEN));
   dt_conf_set_bool("ui/show_focus_peaking", darktable.gui->show_focus_peaking);
-
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   return 0;
 }
@@ -1318,8 +1302,6 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui)
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
-  dt_pthread_mutex_init(&gui->mutex, NULL);
-
   // force gtk3 to use normal scroll bars instead of the popup
   // thing. they get in the way of controls the alternative would be
   // to gtk_scrolled_window_set_overlay_scrolling(..., FALSE); every
