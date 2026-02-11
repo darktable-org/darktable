@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2025 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include <string.h>
+#include <strings.h>
 
 // FIXME: in the future, we may want to also take DRIVER_VERSION into account
 static const gchar *bad_opencl_drivers[] =
@@ -27,6 +28,7 @@ static const gchar *bad_opencl_drivers[] =
 
   "beignet",
   "pocl",
+  "clover",
 /*
   Neo was originally blacklisted due to improper cache invalidation, but this has been fixed.
   Per Issue 20104, enabling neo for Windows.

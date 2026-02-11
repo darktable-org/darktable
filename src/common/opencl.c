@@ -29,7 +29,6 @@
 #include "common/heal.h"
 #include "common/interpolation.h"
 #include "common/locallaplaciancl.h"
-#include "common/nvidia_gpus.h"
 #include "common/opencl_drivers_blacklist.h"
 #include "common/tea.h"
 #include "control/conf.h"
@@ -310,7 +309,9 @@ error:
 gboolean dt_opencl_avoid_atomics(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].avoid_atomics;
+  return (!_cldev_running(devid))
+    ? FALSE
+    : (cl->dev[devid].atomic_support & DT_OPENCL_ATOMIC_INT32) == DT_OPENCL_ATOMIC_NONE;
 }
 
 void dt_opencl_micro_nap(const int devid)
@@ -341,7 +342,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f %.3f",
-    cl->dev[devid].avoid_atomics,
+    0, // don't use avoid atomics any longer
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
     cl->dev[devid].clroundup_wd,
@@ -352,8 +353,8 @@ void dt_opencl_write_device_config(const int devid)
     0.0f, // dummy for now as we don't have the benching any more
     cl->dev[devid].advantage,
     cl->dev[devid].unified_fraction);
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "[dt_opencl_write_device_config] writing data '%s' for '%s'", dat, key);
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+           "\n[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
   setlocale(LC_NUMERIC, locale);
   
@@ -362,8 +363,8 @@ void dt_opencl_write_device_config(const int devid)
   // similar cards.
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-           "[dt_opencl_write_device_config] writing data '%s' for '%s'", dat, key);
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+           "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
 
@@ -404,7 +405,6 @@ gboolean dt_opencl_read_device_config(const int devid)
 
     if(safety_ok)
     {
-      cldid->avoid_atomics = avoid_atomics;
       cldid->micro_nap = micro_nap;
       cldid->pinned_memory = pinned_memory;
       cldid->clroundup_wd = wd;
@@ -441,7 +441,6 @@ gboolean dt_opencl_read_device_config(const int devid)
   cldid->use_events = cldid->event_handles > 0;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
-  cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
   cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
 
   // Also take care of extended device data, these are not only device
@@ -490,7 +489,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].alignsize = 0;
   cl->dev[dev].compute_units = 0;
   cl->dev[dev].workgroup_size = 0;
-  cl->dev[dev].nvidia_sm_20 = FALSE;
+  cl->dev[dev].local_size = 0;
+  cl->dev[dev].workgroup_size_rec = 32; // default for OpenCL 1.2
+  cl->dev[dev].cuda = FALSE;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].platform = NULL;
   cl->dev[dev].device_version = NULL;
@@ -502,7 +503,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
   cl->dev[dev].unified_fraction = 0.25f;
-  cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
   cl->dev[dev].pinned_memory = FALSE;
   cl->dev[dev].unified_memory = FALSE;
@@ -512,12 +512,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = TRUE;
-  cl->dev[dev].event_handles = 128;
+  cl->dev[dev].event_handles = 1024;
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
   cl->dev[dev].headroom = 0;
   cl->dev[dev].vendor_id = 0;
   cl->dev[dev].tunehead = FALSE;
+  cl->dev[dev].atomic_support = DT_OPENCL_ATOMIC_NONE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *device_name = NULL;
@@ -559,7 +560,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   char *filename = calloc(PATH_MAX, sizeof(char));
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
-  dt_print_nts(DT_DEBUG_OPENCL, "\n[dt_opencl_device_init] ");
 
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE,
@@ -640,9 +640,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   if(!strncasecmp(platform_vendor, "Mesa", 4))
   {
     device_name_cleaned = g_strchomp(_strsep(&device_name_cleaned, "("));
-    dt_print_nts(DT_DEBUG_OPENCL,
-                   "%s %s ",
-                   platform_vendor, device_name_cleaned);
     is_mesa = TRUE;
   }
 
@@ -697,6 +694,19 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
   cl->dev[dev].device_version = strdup(deviceversion);
 
+
+  char *deviceextensions = NULL;
+  size_t deviceextensions_size;
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_EXTENSIONS,
+                                  (void **)&deviceextensions, &deviceextensions_size);
+  if(err == CL_SUCCESS && deviceextensions_size > 0)
+  {
+    if(strstr(deviceextensions, "cl_khr_global_int32_extended_atomics"))
+      cl->dev[dev].atomic_support |= DT_OPENCL_ATOMIC_INT32;
+    if(strstr(deviceextensions, "cl_ext_float_atomics"))
+      cl->dev[dev].atomic_support |= DT_OPENCL_ATOMIC_FLOAT32;
+  }
+
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE,
                                            sizeof(cl_device_type), &type, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT,
@@ -724,6 +734,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE,
                                            sizeof(size_t),
                                            &(cl->dev[dev].workgroup_size), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_LOCAL_MEM_SIZE,
+                                           sizeof(size_t),
+                                           &(cl->dev[dev].local_size), NULL);
+
+#if CL_TARGET_OPENCL_VERSION >= 300
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                                           sizeof(size_t),
+                                           &(cl->dev[dev].workgroup_size_rec), NULL);
+#endif
 
   // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
   // we would want to use CL_DEVICE_SVM_CAPABILITIES instead
@@ -731,12 +750,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            sizeof(cl_bool), &unified_memory, NULL);
   cl->dev[dev].unified_memory = unified_memory ? TRUE : FALSE;
 
-  if(!strncasecmp(platform_display_name, "NVIDIA CUDA", 11))
-  {
-    // very lame attempt to detect support for atomic float add in global memory.
-    // we need compute model sm_20, but let's try for all nvidia devices :(
-    cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(device_name);
-  }
+#ifndef _opencl_apply_scheduling_profile  // they never supported inline assembling
+  if(strstr(platform_display_name, "NVIDIA CUDA"))
+    cl->dev[dev].cuda = TRUE;
+#endif
 
   const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
   const gboolean is_custom_device = type & CL_DEVICE_TYPE_CUSTOM;
@@ -746,8 +763,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
 
   dt_print_nts(DT_DEBUG_OPENCL, "   DRIVER VERSION:           %s\n", driverversion);
-  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s%s\n", cl->dev[dev].device_version,
-     cl->dev[dev].nvidia_sm_20 ? ", SM_20 SUPPORT" : "");
+  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s API=%s\n",
+    cl->dev[dev].device_version,
+    cl->api30 ? "300" : "120");
   dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
@@ -850,25 +868,26 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX CONSTANT BUFFER:      %.0f KB\n", (double)cl->dev[dev].max_mem_constant / 1024.0);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ADDRESS ALIGN:            %d\n", cl->dev[dev].alignsize / 8);
+               "   LOCAL MEM SIZE:           %zu KB\n", cl->dev[dev].local_size / 1024lu);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   ADDRESS ALIGN:            %d B\n", cl->dev[dev].alignsize / 8);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   COMPUTE UNITS:            %d\n", cl->dev[dev].compute_units);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX WORK GROUP SIZE:      %zu\n", cl->dev[dev].workgroup_size);
+               "   MAX WORK GROUP SIZE:      %zu (%zu)\n",
+               cl->dev[dev].workgroup_size, cl->dev[dev].workgroup_size_rec);
 
   cl_uint max_item_dimension = 0;  
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
                                            sizeof(max_item_dimension), &max_item_dimension, NULL);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MAX WORK ITEM DIMENSIONS: %d\n", max_item_dimension);
+               "   MAX WORK ITEM DIMENSIONS: %d [ ", max_item_dimension);
 
   size_t infointtab_size;
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES,
                                   (void **)&infointtab, &infointtab_size);
   if(err == CL_SUCCESS)
   {
-    dt_print_nts(DT_DEBUG_OPENCL,
-                 "   MAX WORK ITEM SIZES:      [ ");
     for(size_t i = 0; i < max_item_dimension; i++)
       dt_print_nts(DT_DEBUG_OPENCL, "%zu ", infointtab[i]);
     free(infointtab);
@@ -889,9 +908,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   PINNED MEMORY TRANSFER:   %s\n", STR_YESNO(cl->dev[dev].pinned_memory));
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   AVOID ATOMICS:            %s\n", STR_YESNO(cl->dev[dev].avoid_atomics));
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   MICRO NAP:                %i\n", cl->dev[dev].micro_nap);
+               "   SUPPORTED ATOMICS:        %s%s%s\n",
+               cl->dev[dev].atomic_support == DT_OPENCL_ATOMIC_NONE ? "none" : "",
+               cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_INT32 ? "INT32 " : "",
+               cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_FLOAT32 ? "FLOAT32 " : "");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -999,9 +1019,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_conf_set_string(compile_option_name_cname, my_option);
 
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
-                                  my_option,
-                                  cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "",
-                                  _opencl_get_vendor_by_id(vendor_id));
+                                my_option,
+                                cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
+                                _opencl_get_vendor_by_id(vendor_id));
   cl->dev[dev].options = g_strdup_printf("%s -I%s",
                              cl->dev[dev].cflags, escapedkerneldir);
 
@@ -1160,6 +1180,11 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->enabled = FALSE;
   cl->stopped = FALSE;
   cl->error_count = 0;
+#if CL_TARGET_OPENCL_VERSION == 300
+  cl->api30 = TRUE;
+#else
+  cl->api30 = FALSE;
+#endif
   cl->print_statistics = print_statistics;
 
   // we might want to show an opencl error
@@ -1578,7 +1603,7 @@ finally:
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
       free((void *)(cl->dev[i].cflags));
-    }
+     }
   }
 
   free(all_num_devices);
@@ -2671,19 +2696,12 @@ int dt_opencl_get_work_group_limits(const int dev,
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return CL_DEVICE_NOT_AVAILABLE;
-  cl_ulong lmemsize;
-  cl_int err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid,
-                                                        CL_DEVICE_LOCAL_MEM_SIZE,
-                                                        sizeof(cl_ulong), &lmemsize,
-                                                        NULL);
-  if(err != CL_SUCCESS) return err;
 
-  *localmemsize = lmemsize;
+  if(cl->dev[dev].local_size == 0) return CL_INVALID_WORK_DIMENSION;
+  *localmemsize = cl->dev[dev].local_size;
 
-  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid,
-                                                 CL_DEVICE_MAX_WORK_GROUP_SIZE,
-                                                 sizeof(size_t), workgroupsize, NULL);
-  if(err != CL_SUCCESS) return err;
+  if(cl->dev[dev].workgroup_size == 0) return CL_INVALID_WORK_DIMENSION;
+  *workgroupsize = cl->dev[dev].workgroup_size;
 
   return dt_opencl_get_max_work_item_sizes(dev, sizes);
 }
@@ -3112,7 +3130,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
   if(!_cldev_running(devid))
     return NULL;
 
-  const gboolean oversize = size > darktable.opencl->dev[devid].max_mem_constant;
+  const gboolean oversize = size > (darktable.opencl->dev[devid].max_mem_constant / 8);
   const int mode = oversize ? CL_MEM_COPY_HOST_PTR : CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR;
 
   cl_int err = CL_SUCCESS;
@@ -3160,8 +3178,12 @@ static void *_opencl_copy_host_to_device_rowpitch(const int devid,
   else
     return NULL;
 
-  const cl_image_desc desc = (cl_image_desc)
-        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, rowpitch, 0, 0, 0, NULL};
+  cl_image_desc desc;
+  memset(&desc, 0, sizeof(cl_image_desc));
+  desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+  desc.image_width = width;
+  desc.image_height = height;
+  desc.image_row_pitch = rowpitch;
 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
     (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
@@ -3274,8 +3296,11 @@ void *dt_opencl_alloc_device(const int devid,
   else
     return NULL;
 
-  const cl_image_desc desc = (cl_image_desc)
-        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, 0, 0, 0, 0, NULL};
+  cl_image_desc desc;
+  memset(&desc, 0, sizeof(cl_image_desc));
+  desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+  desc.image_width = width;
+  desc.image_height = height;
 
   cl_mem dev = (cl->dlocl->symbols->dt_clCreateImage)
     (cl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
