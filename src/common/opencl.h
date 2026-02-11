@@ -98,6 +98,12 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
+typedef enum dt_opencl_atomics_t
+{
+  DT_OPENCL_ATOMIC_NONE = 0,
+  DT_OPENCL_ATOMIC_INT32 = 1,
+  DT_OPENCL_ATOMIC_FLOAT32 = 2,
+} dt_opencl_atomics_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -117,7 +123,9 @@ typedef struct dt_opencl_device_t
   cl_ulong max_mem_constant;
   cl_uint alignsize; 
   cl_uint compute_units;
-  size_t workgroup_size;  
+  size_t workgroup_size; 
+  size_t workgroup_size_rec;
+  size_t local_size;
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
   gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
@@ -132,7 +140,7 @@ typedef struct dt_opencl_device_t
   int totalsuccess;
   int totallost;
   int maxeventslot;
-  gboolean nvidia_sm_20;
+  gboolean cuda;
   const char *fullname;
   const char *platform;
   const char *device_version;
@@ -145,14 +153,8 @@ typedef struct dt_opencl_device_t
   size_t used_available;
   // flags if we want headroom mode
   gboolean tunehead;
-  // if set to TRUE darktable will not use OpenCL kernels which
-  // contain atomic operations (example bilateral).  pixelpipe
-  // processing will be done on CPU for the affected modules.  useful
-  // (only for very old devices) if your OpenCL implementation
-  // freezes/crashes on atomics or if they are processed with a bad
-  // performance.
-  gboolean avoid_atomics;
-
+  // we checked for atomic support; tested by avoid_atomics functions
+  dt_opencl_atomics_t atomic_support;
   // pause OpenCL processing for this number of microseconds from time
   // to time
   int micro_nap;
@@ -239,6 +241,7 @@ typedef struct dt_opencl_t
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
+  gboolean api30;
   dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
   gboolean mandatory[5];
