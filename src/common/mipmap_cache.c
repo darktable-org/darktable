@@ -1587,7 +1587,8 @@ static void _init_8(uint8_t *buf,
         const gboolean always_use_thumb = (min_s == DT_MIPMAP_NONE);
         const gboolean thumb_lt_mip = ((thumb_width < wd) && (thumb_height < ht));
         const gboolean thumb_lt_raw = ((thumb_width < imgwd - 4) && (thumb_height < imght - 4));
-        if (!always_use_thumb && thumb_lt_mip && thumb_lt_raw) {
+        if (!always_use_thumb && thumb_lt_mip && thumb_lt_raw) 
+        {
           res = TRUE;
         }
         else
