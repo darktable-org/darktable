@@ -101,7 +101,7 @@ typedef struct dt_iop_agx_params_t
   float look_slope;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "slope"
   float look_brightness;             // $MIN: 0.f $MAX: 100.f $DEFAULT: 1.f $DESCRIPTION: "brightness"
   float look_saturation;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "saturation"
-  float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "preserve hue"
+  float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.6f $DESCRIPTION: "preserve hue"
 
   // log mapping
   float range_black_relative_ev;  // $MIN: -20.f $MAX: -0.1f  $DEFAULT: -10.f $DESCRIPTION: "black relative exposure"
@@ -2487,9 +2487,8 @@ static void _set_default_curve_and_look_params(dt_iop_agx_params_t *p)
   p->look_lift = 0.f;
   p->look_saturation = 1.f;
   // In Blender, a related param is set to 40%, but is actually used as 1 - param,
-  // so 60% would give almost identical results; however, Eary_Chow suggested
-  // that we leave this as 0, based on feedback he had received
-  p->look_original_hue_mix_ratio = 0.f;
+  // so 60% would give almost identical results
+  p->look_original_hue_mix_ratio = 0.6f;
 
   p->range_black_relative_ev = -10.f;
   p->range_white_relative_ev = 6.5f;
@@ -2526,7 +2525,6 @@ void _set_smooth_params(dt_iop_agx_params_t *p)
 static void _set_blenderlike_params(dt_iop_agx_params_t *p)
 {
   _set_default_curve_and_look_params(p);
-  p->look_original_hue_mix_ratio = 0.6f; // Blender's default
   _set_blenderlike_primaries(p);
 
   // restore the original Blender settings
