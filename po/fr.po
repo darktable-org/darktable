@@ -14178,7 +14178,7 @@ msgstr "Ne pas montrer plus de %d lignes"
 
 #: ../src/gui/gtkentry.c:37
 msgid "$(ROLL.NAME[n]) - roll of the input image, n: levels used"
-msgstr "$(ROLL.NAME[n]) - Dossier de l'image, n: niveau hiérarchique"
+msgstr "$(ROLL.NAME[n]) - Dossier de l’image, n: niveau hiérarchique"
 
 #: ../src/gui/gtkentry.c:44
 msgid "$(JOBCODE) - job code for import"
@@ -16020,7 +16020,7 @@ msgid ""
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
-"La puissance de l'épaule ne peut être appliquée car la courbe à perdu sa "
+"La puissance de l’épaule ne peut être appliquée car la courbe à perdu sa "
 "forme en « S »\n"
 "à cause des paramètres pour l’exposition relative du blanc, le contraste et "
 "le pivot.\n"
@@ -16309,7 +16309,7 @@ msgid ""
 "the controls below. uncheck to restore the previous state."
 msgstr ""
 "Restaure complètement la pureté, défait toutes les rotations, et cache\n"
-"les contrôles ci-dessous. Désactiver pour restaurer l'état précédent."
+"les contrôles ci-dessous. Désactiver pour restaurer l’état précédent."
 
 #: ../src/iop/agx.c:2342
 msgid "set from above"
@@ -20187,7 +20187,7 @@ msgstr "Netteté de capture"
 
 #: ../src/iop/demosaic.c:1823
 msgid "set effect strength by iterations"
-msgstr "Force de l'effet via les itérations"
+msgstr "Force de l’effet via les itérations"
 
 #: ../src/iop/demosaic.c:1828
 msgid ""
@@ -28384,7 +28384,7 @@ msgid ""
 "right-click tab icon to add/remove modules"
 msgstr ""
 "%s\n"
-"Clic-droit sur l'icône de l'onglet pour ajouter/supprimer des modules"
+"Clic-droit sur l’icône de l'onglet pour ajouter/supprimer des modules"
 
 #: ../src/libs/modulegroups.c:3184
 msgid "basic icon"
@@ -29030,11 +29030,11 @@ msgstr "Filtrer les styles"
 
 #: ../src/libs/styles.c:883 ../src/libs/styles.c:884
 msgid "create duplicate"
-msgstr "Cloner l’image et appliquer le style"
+msgstr "Créer un clone"
 
 #: ../src/libs/styles.c:891
 msgid "creates a duplicate of the image before applying style"
-msgstr "Crée une image virtuelle avant d’appliquer le style"
+msgstr "Crée un clone avant d’appliquer le style"
 
 #: ../src/libs/styles.c:895
 msgid "how to handle existing history"
