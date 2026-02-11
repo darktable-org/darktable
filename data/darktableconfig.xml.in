@@ -1352,7 +1352,7 @@
         <option>6K</option>
         <option>8K</option>
         <option>never</option>
-	<option>auto</option>
+        <option>auto</option>
       </enum>
     </type>
     <default>never</default>
