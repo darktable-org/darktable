@@ -596,7 +596,8 @@ void tiling_callback(dt_iop_module_t *self,
   const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
   tiling->factor = 4.0f;                // in + out + 2*tmp
-  tiling->factor_cl = 5.0f; // in + out + details + 2*tmp
+  //  tiling->factor_cl = 5.0f; // in + out + details + 2*tmp - new flipping code
+  tiling->factor_cl = 3.0f + max_scale; // in + out + tmp + scale buffers
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
