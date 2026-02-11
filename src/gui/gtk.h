@@ -146,8 +146,6 @@ typedef struct dt_gui_gtk_t
   guint sidebar_scroll_mask;
 
   cairo_filter_t filter_image;    // filtering used to scale images to screen
-
-  dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
 
 typedef struct _gui_collapsible_section_t

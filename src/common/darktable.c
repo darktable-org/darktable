@@ -1892,11 +1892,9 @@ int dt_init(int argc,
         && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
 
   }
-  else
-    darktable.gui = NULL;
 
   dt_splash_screen_set_progress(_("loading image formats"));
-
+ 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
