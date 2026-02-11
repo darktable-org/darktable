@@ -886,6 +886,7 @@ typedef struct _preview_data_t
   cairo_surface_t *surface;
   guint8 *hash;
   int hash_len;
+  int psize;
 } _preview_data_t;
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
@@ -893,11 +894,11 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   _preview_data_t *data = (_preview_data_t *)user_data;
 
   if(dt_is_valid_imgid(data->imgid) && !data->first_draw && !data->surface)
-    data->surface = dt_gui_get_style_preview(data->imgid, data->style_name);
+    data->surface = dt_gui_get_style_preview(data->imgid, data->style_name, data->psize);
 
   if(data->surface)
   {
-    const int psize = dt_conf_get_int("ui/style/preview_size");
+    const int psize = data->psize;
     const int swidth = cairo_image_surface_get_width(data->surface);
     const int sheight = cairo_image_surface_get_height(data->surface);
     cairo_set_source_surface(cr, data->surface, .5f * (psize - swidth), .5f * (psize - sheight));
@@ -914,7 +915,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
 
 GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 {
-  static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0};
+  static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0, 0};
 
   dt_history_hash_values_t hash = { NULL, 0, NULL, 0, NULL, 0 };
   dt_history_hash_read(imgid, &hash);
@@ -1021,24 +1022,33 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   if(dt_is_valid_imgid(imgid))
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
-
+    const int preview_mode = dt_conf_get_int("ui_last/styles_preview_mode");
     // style preview
-    const int psize = dt_conf_get_int("ui/style/preview_size");
-    GtkWidget *da = gtk_drawing_area_new();
-    gtk_widget_set_size_request(da, psize, psize);
-    gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
-    gtk_widget_set_app_paintable(da, TRUE);
-    gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
-    data.first_draw = TRUE;
-    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
+    if(preview_mode != DT_STYLE_PREVIEW_NO) 
+    {
+      if(preview_mode == DT_STYLE_PREVIEW_LARGE) 
+      {
+        data.psize = dt_conf_get_int("ui/style/large_preview_size");
+      }
+      else
+      {
+        data.psize = dt_conf_get_int("ui/style/preview_size");
+      }
+      GtkWidget *da = gtk_drawing_area_new();
+      gtk_widget_set_size_request(da, data.psize, data.psize);
+      gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
+      gtk_widget_set_app_paintable(da, TRUE);
+      gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
+      data.first_draw = TRUE;
+      g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
+    }
   }
 
   return ht;
 }
 
-cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name)
+cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name, const int psize)
 {
-  const int psize = dt_conf_get_int("ui/style/preview_size");
   cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);
   return surface;
 }
