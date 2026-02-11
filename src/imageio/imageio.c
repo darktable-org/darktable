@@ -1316,7 +1316,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   const int processed_width = floor(scale * pipe.processed_width);
   const int processed_height = floor(scale * pipe.processed_height);
-  if(scale == max_scale && !thumbnail_export)
+  if(scale == max_possible_scale && !thumbnail_export)
     dt_control_log(_("export reduced to %dx%d because of memory restrictions"),
             processed_width, processed_height);
 
