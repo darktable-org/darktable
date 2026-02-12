@@ -2248,6 +2248,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
 
+  _update_redraw_dynamic_gui(self, g, p);
+
   gui_changed(self, NULL, NULL);
 }
 
