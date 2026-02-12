@@ -363,37 +363,49 @@ int store(dt_imageio_module_storage_t *self,
   {
 try_again:
     // avoid braindead export which is bound to overwrite at random:
-    if(total > 1 && !g_strrstr(pattern, "$"))
+    if(variable_expand && total > 1 && !g_strrstr(pattern, "$"))
     {
       snprintf(pattern + strlen(pattern),
                sizeof(pattern) - strlen(pattern), "_$(SEQUENCE)");
     }
 
-    gchar *fixed_path = dt_util_fix_path(pattern);
-    g_strlcpy(pattern, fixed_path, sizeof(pattern));
-    g_free(fixed_path);
+    if(variable_expand)
+    {
+      gchar *fixed_path = dt_util_fix_path(pattern);
+      g_strlcpy(pattern, fixed_path, sizeof(pattern));
+      g_free(fixed_path);
+    }
 
     d->vp->filename = input_dir;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
-    g_strlcpy(filename, result_filename, sizeof(filename));
-    g_free(result_filename);
-
-    // if filenamepattern is a directory just add ${FILE_NAME} as
-    // default..  this can happen if the filename component of the
-    // pattern is an empty variable
-    const char last_char = *(filename + strlen(filename) - 1);
-    if(last_char == '/' || last_char == '\\')
+    if(variable_expand)
     {
-      // add to the end of the original pattern without caring about a
-      // potentially added "_$(SEQUENCE)"
-      if(snprintf(pattern, sizeof(pattern), "%s"
+      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+      g_strlcpy(filename, result_filename, sizeof(filename));
+      g_free(result_filename);
+
+      // if filenamepattern is a directory just add ${FILE_NAME} as
+      // default..  this can happen if the filename component of the
+      // pattern is an empty variable
+      const char last_char = *(filename + strlen(filename) - 1);
+      if(last_char == '/' || last_char == '\\')
+      {
+        // add to the end of the original pattern without caring about a
+        // potentially added "_$(SEQUENCE)"
+        if(snprintf(pattern, sizeof(pattern), "%s"
                 G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-        goto try_again;
+          goto try_again;
+      }
     }
+    else
+    {
+      // we don't expand via variables but take what we got as pattern
+      g_strlcpy(filename, pattern, sizeof(filename));
+    }
+
 
     // get the directory path of the output file
     char *output_dir = g_path_get_dirname(filename);
