@@ -458,31 +458,49 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   if(!g_ascii_strncasecmp("cr3", ext, 3))
     _check_libraw_missing_support(img);
 
-  // Fix for DJI Mavic 3 Pro (FC4382) where LibRaw reports black level 0
-  // but the DNG tags (and visual evidence) indicate a pedestal of 4096.
-  // Missing this subtraction causes a purple cast in shadows (amplified by WB).
-  // CRITICAL: This must be done BEFORE copying metadata to img struct!
-  if(strstr(raw->idata.model, "FC4382"))
+  // Generic fix: Fold BlackLevelRepeatDim values into base black level.
+  // LibRaw stores DNG BlackLevel with RepeatDim in cblack[4..5] (dimensions)
+  // and cblack[6+] (the actual per-position values). Darktable only reads
+  // black + cblack[0..3]. When libraw_dcraw_process() is skipped (the
+  // colors==3 Bayer path below), the folding that pre_interpolate() normally
+  // does never happens, leaving cblack[0..3] at zero.
+  // This fix must run BEFORE copying metadata to the img struct.
   {
-      if(raw->rawdata.color.black == 0)
+    unsigned *cblk = raw->rawdata.color.cblack;
+    if(cblk[4] && cblk[5])
+    {
+      const int n = cblk[4] * cblk[5];
+      if(n > 0 && n < 4096)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] Detecting DJI FC4382 with black level 0. Forcing black=4096.");
-        raw->rawdata.color.black = 4096;
+        // Check if all repeat-dim values are uniform (common case for DNGs)
+        gboolean uniform = TRUE;
+        for(int i = 1; i < n; i++)
+        {
+          if(cblk[6 + i] != cblk[6])
+          {
+            uniform = FALSE;
+            break;
+          }
+        }
+        if(uniform && cblk[6] > 0)
+        {
+          dt_print(DT_DEBUG_IMAGEIO,
+                   "[libraw_open] Folding uniform BlackLevelRepeatDim (%ux%u)"
+                   " value %u into base black (was %u)",
+                   cblk[4], cblk[5], cblk[6], raw->rawdata.color.black);
+          raw->rawdata.color.black += cblk[6];
+          for(int i = 0; i < n; i++) cblk[6 + i] = 0;
+          cblk[4] = cblk[5] = 0;
+        }
+        else if(!uniform)
+        {
+          dt_print(DT_DEBUG_IMAGEIO,
+                   "[libraw_open] Non-uniform BlackLevelRepeatDim (%ux%u)"
+                   " - not yet handled, black levels may be incorrect",
+                   cblk[4], cblk[5]);
+        }
       }
-      // Ensure Black Level is correct: black is the base, cblack[] is per-channel OFFSET.
-      // Darktable computes: raw_black_level_separate[c] = black + cblack[c]
-      // So we set black=4096 and cblack[]=0 to get exactly 4096 per channel.
-      raw->rawdata.color.black = 4096;
-      for(int i=0; i<4; i++) raw->rawdata.color.cblack[i] = 0;
-      dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] FC4382: Forced Black Level 4096 on all channels.");
-
-      // Override Color Matrix with known good values from RawTherapee (DJI FC4382 / Mavic 3 Pro Medium Tele)
-      // Source: rtdata/cammatrices.json line 1849
-      // Matrix: 7789, -1611, -1074, -4566, 12974, 1732, -269, 1695, 5328
-      // dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] Overriding FC4382 color matrix with specific Medium Tele values.");
-      // img->d65_color_matrix[0] = 0.7789f; img->d65_color_matrix[1] = -0.1611f; img->d65_color_matrix[2] = -0.1074f;
-      // img->d65_color_matrix[3] = -0.4566f; img->d65_color_matrix[4] = 1.2974f; img->d65_color_matrix[5] = 0.1732f;
-      // img->d65_color_matrix[6] = -0.0269f; img->d65_color_matrix[7] = 0.1695f; img->d65_color_matrix[8] = 0.5328f;
+    }
   }
 
   // Copy white level (all linear_max[] equal single
