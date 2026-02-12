@@ -328,6 +328,28 @@ static gboolean _supported_image(const gchar *filename)
   }
   g_free(ext_lowercased);
   g_free(extensions_whitelist);
+
+  // Also allow DJI DNG files
+  if (g_ascii_strcasecmp(ext, "dng") == 0)
+  {
+    FILE *f = g_fopen(filename, "rb");
+    if(f)
+    {
+      char buf[4096];
+      size_t read = fread(buf, 1, sizeof(buf), f);
+      fclose(f);
+      if(read >= 4)
+      {
+         // Simple substring search for "DJI"
+         for(size_t offset = 0; offset < read - 3; offset++)
+         {
+           if(buf[offset] == 'D' && buf[offset+1] == 'J' && buf[offset+2] == 'I')
+             return TRUE;
+         }
+      }
+    }
+  }
+
   return FALSE;
 }
 
@@ -436,6 +458,33 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   if(!g_ascii_strncasecmp("cr3", ext, 3))
     _check_libraw_missing_support(img);
 
+  // Fix for DJI Mavic 3 Pro (FC4382) where LibRaw reports black level 0
+  // but the DNG tags (and visual evidence) indicate a pedestal of 4096.
+  // Missing this subtraction causes a purple cast in shadows (amplified by WB).
+  // CRITICAL: This must be done BEFORE copying metadata to img struct!
+  if(strstr(raw->idata.model, "FC4382"))
+  {
+      if(raw->rawdata.color.black == 0)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] Detecting DJI FC4382 with black level 0. Forcing black=4096.");
+        raw->rawdata.color.black = 4096;
+      }
+      // Ensure Black Level is correct: black is the base, cblack[] is per-channel OFFSET.
+      // Darktable computes: raw_black_level_separate[c] = black + cblack[c]
+      // So we set black=4096 and cblack[]=0 to get exactly 4096 per channel.
+      raw->rawdata.color.black = 4096;
+      for(int i=0; i<4; i++) raw->rawdata.color.cblack[i] = 0;
+      dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] FC4382: Forced Black Level 4096 on all channels.");
+
+      // Override Color Matrix with known good values from RawTherapee (DJI FC4382 / Mavic 3 Pro Medium Tele)
+      // Source: rtdata/cammatrices.json line 1849
+      // Matrix: 7789, -1611, -1074, -4566, 12974, 1732, -269, 1695, 5328
+      // dt_print(DT_DEBUG_IMAGEIO, "[libraw_open] Overriding FC4382 color matrix with specific Medium Tele values.");
+      // img->d65_color_matrix[0] = 0.7789f; img->d65_color_matrix[1] = -0.1611f; img->d65_color_matrix[2] = -0.1074f;
+      // img->d65_color_matrix[3] = -0.4566f; img->d65_color_matrix[4] = 1.2974f; img->d65_color_matrix[5] = 0.1732f;
+      // img->d65_color_matrix[6] = -0.0269f; img->d65_color_matrix[7] = 0.1695f; img->d65_color_matrix[8] = 0.5328f;
+  }
+
   // Copy white level (all linear_max[] equal single
   // SpecularWhiteLevel for CR3, we can skip min or mean)
   img->raw_white_point = raw->rawdata.color.linear_max[0]
@@ -487,6 +536,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
     img->buf_dsc.filters = raw->idata.filters;
   }
 
+
+
   // For CR3, we only have Bayer data and a single channel
   img->buf_dsc.channels = 1;
 
@@ -507,6 +558,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   // Use faster memcpy if buffer sizes are equal
   const size_t bufSize_mipmap = (size_t)img->width * img->height * sizeof(uint16_t);
   const size_t bufSize_libraw = (size_t)raw->rawdata.sizes.raw_pitch * raw->rawdata.sizes.raw_height;
+
   if(bufSize_mipmap == bufSize_libraw)
   {
     memcpy(buf, raw->rawdata.raw_image, bufSize_mipmap);

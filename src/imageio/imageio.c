@@ -1596,6 +1596,26 @@ void dt_imageio_set_hdr_tag(dt_image_t *img)
 //   combined reading
 // =================================================
 
+#ifdef HAVE_LIBRAW
+static gboolean _is_dji_dng(const char *filename)
+{
+  if(!filename || !*filename)
+    return FALSE;
+  const char *ext = strrchr(filename, '.');
+  if(!ext || g_ascii_strcasecmp(ext, ".dng"))
+    return FALSE;
+  FILE *f = g_fopen(filename, "rb");
+  if(!f)
+    return FALSE;
+  char buf[4096];
+  size_t read = fread(buf, 1, sizeof(buf), f);
+  fclose(f);
+  if(read < 4)
+    return FALSE;
+  return _memfind("DJI", buf, read);
+}
+#endif
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
                                     const char *filename,
                                     dt_mipmap_buffer_t *buf)
@@ -1622,6 +1642,13 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     // try loading the file as TIFF
     if(dt_imageio_is_ldr(filename))
       ret = dt_imageio_open_tiff(img, filename, buf);
+
+    // Prioritize LibRaw for DJI DNGs as RawSpeed currently fails to support them correctly
+    // (e.g. issues with opcodes/color casts on FC4382).
+#ifdef HAVE_LIBRAW
+    if(!_image_handled(ret) && _is_dji_dng(filename))
+       ret = dt_imageio_open_libraw(img, filename, buf);
+#endif
 
     // try using rawspeed to load a raw
     if(!_image_handled(ret))
