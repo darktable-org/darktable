@@ -3409,8 +3409,8 @@ void mouse_moved(dt_view_t *self,
     else
     {
       const int32_t bs = dev->full.border_size;
-      float dx = MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs);
-      float dy = MIN(0, y - bs) + MAX(0, y - dev->full.height - bs);
+      const float dx = MIN(0, x - bs) + MAX(0, x - dev->full.width  - bs);
+      const float dy = MIN(0, y - bs) + MAX(0, y - dev->full.height - bs);
       if(fabsf(dx) + fabsf(dy) > 0.5f)
         dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.f, 0, dx, dy, TRUE);
     }
