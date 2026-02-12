@@ -60,7 +60,7 @@ jobs:
         distro:
           - "ubuntu:26.04"
         compiler:
-          - { compiler: GNU15,  CC: gcc-15,   CXX: g++-15,     packages: gcc-15 g++-15 }
+          - { compiler: GNU16,  CC: gcc-16,   CXX: g++-16,     packages: gcc-16 g++-16 }
           - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
         btype:
           - Release
@@ -73,7 +73,7 @@ jobs:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
           - distro: "ubuntu:26.04"
             btype: Debug
-            compiler: { compiler: GNU15, CC: gcc-15, CXX: g++-15, packages: gcc-15 g++-15 }
+            compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
             target: skiptest
             generator: Ninja
             eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
