@@ -339,6 +339,19 @@ int store(dt_imageio_module_storage_t *self,
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
   g_strlcpy(pattern, d->filename, sizeof(pattern));
+
+  /* If we are in gimp plugin mode we can either export on purpose by using the
+     export interface or we do the final export - when quitting the plugin -
+     to the file that is later presented to GIMP as defined in the --gimp API
+     We have to test for this as we don't want the variable expand stepping in.
+  */
+  const gboolean variable_expand = dt_gimpmode()
+                                      ? (g_strrstr(pattern, "XDT2GIMP") == NULL)
+                                      : TRUE;
+  dt_print(DT_DEBUG_IMAGEIO, "disk store :%s: `%s'",
+    variable_expand ? "expand variables" : "FINAL GIMP EXPORT",
+    pattern);
+
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), NULL);
   // set variable values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
