@@ -329,26 +329,11 @@ static gboolean _supported_image(const gchar *filename)
   g_free(ext_lowercased);
   g_free(extensions_whitelist);
 
-  // Also allow DJI DNG files
-  if (g_ascii_strcasecmp(ext, "dng") == 0)
-  {
-    FILE *f = g_fopen(filename, "rb");
-    if(f)
-    {
-      char buf[4096];
-      size_t read = fread(buf, 1, sizeof(buf), f);
-      fclose(f);
-      if(read >= 4)
-      {
-         // Simple substring search for "DJI"
-         for(size_t offset = 0; offset < read - 3; offset++)
-         {
-           if(buf[offset] == 'D' && buf[offset+1] == 'J' && buf[offset+2] == 'I')
-             return TRUE;
-         }
-      }
-    }
-  }
+  // Allow all DNG files as a fallback when RawSpeed can't handle them.
+  // Many smartphone DNGs (DJI, Samsung, etc.) use compression formats
+  // that RawSpeed doesn't support, so LibRaw is the only decoder.
+  if(g_ascii_strcasecmp(ext, "dng") == 0)
+    return TRUE;
 
   return FALSE;
 }
