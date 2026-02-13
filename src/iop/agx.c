@@ -1855,7 +1855,7 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                 " - increase contrast\n"
                                 " - increase pivot target output\n"
                                 " - increase white relative exposure\n"
-                                " - increase curve y gamma (in the advanced curve parmeters section)\n"
+                                " - increase curve y gamma (in the advanced curve parameters section)\n"
                                 "\n"
                                 "open the 'show curve' section to see the effects of the above settings."));
 
@@ -1873,7 +1873,7 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                 " - increase contrast\n"
                                 " - decrease pivot target output\n"
                                 " - decrease black relative exposure (make more negative)\n"
-                                " - decrease curve y gamma (in the advanced curve parmeters section)\n"
+                                " - decrease curve y gamma (in the advanced curve parameters section)\n"
                                 "\n"
                                 "open the 'show curve' section to see the effects of the above settings."));
 
