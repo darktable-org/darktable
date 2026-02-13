@@ -73,6 +73,8 @@ changes (where available).
 
 - Added PNG support (8/16-bit) for external raster masks.
 
+- Removed `Neo` Intel GPU from the Windows blacklist.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
