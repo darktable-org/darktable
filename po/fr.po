@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-11 19:05+0100\n"
-"PO-Revision-Date: 2026-02-11 19:12+0100\n"
+"POT-Creation-Date: 2026-02-13 18:32+0100\n"
+"PO-Revision-Date: 2026-02-13 18:34+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1080,7 +1080,7 @@ msgid ""
 "if you want all thumbnails and pre-rendered images in best quality you "
 "should choose the *always* option.\n"
 "for the quickest display, choose the *never* option\n"
-"the *auto* option prefers the embedded JPEG except when the when thumb size "
+"the *auto* option prefers the embedded JPEG except when the thumb size "
 "exceeds the resolution of the embedded JPEG\n"
 "(more comments in the manual)"
 msgstr ""
@@ -1089,11 +1089,11 @@ msgstr ""
 "en utilisant le RAW à la place de la miniature JPEG embarquée (mieux mais "
 "plus lent).\n"
 "\n"
-" • Toujours –  pour une meilleure qualité des miniatures et "
-"des prévisualisations d’image.\n"
+" • Toujours –  pour une meilleure qualité des miniatures et des "
+"prévisualisations d’image.\n"
 " • Jamais – pour des rendus rapides.\n"
-" • Auto – pour utiliser la miniature JPEG tant qu’assez "
-"grande pour la taille demandée.\n"
+" • Auto – pour utiliser la miniature JPEG tant qu’assez grande pour la "
+"taille demandée.\n"
 "(plus de détails dans le manuel)."
 
 #: ../build/bin/preferences_gen.h:2759
@@ -2171,7 +2171,7 @@ msgid ""
 "device at id given by location in list\n"
 "add encoding and number of knobs like 'Loupedeck:127,BeatStep:63:16'\n"
 "prefix with '-' to ignore matching devices\n"
-"just '-' stops loading all further devices or on its own disables midi "
+"just '-' stops loading all further devices or on its own disables MIDI "
 "completely"
 msgstr ""
 "Fragments de noms de périphériques séparés par des virgules qui, si "
@@ -7402,12 +7402,12 @@ msgstr ""
 "Le filtre guidé indépendant de l’exposition a échoué lors de l’allocation de "
 "mémoire, vérifier les préférences de la RAM"
 
-#: ../src/common/exif.cc:6033
+#: ../src/common/exif.cc:6045
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:6092
+#: ../src/common/exif.cc:6104
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -9534,13 +9534,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4454 ../src/iop/graduatednd.c:1065
 #: ../src/iop/negadoctor.c:1004 ../src/iop/profile_gamma.c:629
 #: ../src/iop/profile_gamma.c:635 ../src/iop/relight.c:249
-#: ../src/iop/soften.c:390 ../src/iop/toneequal.c:3236
-#: ../src/iop/toneequal.c:3239 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3245 ../src/iop/toneequal.c:3248
-#: ../src/iop/toneequal.c:3251 ../src/iop/toneequal.c:3254
-#: ../src/iop/toneequal.c:3257 ../src/iop/toneequal.c:3260
-#: ../src/iop/toneequal.c:3317 ../src/iop/toneequal.c:3327
-#: ../src/iop/toneequal.c:3387 ../src/views/darkroom.c:2674
+#: ../src/iop/soften.c:390 ../src/iop/toneequal.c:3240
+#: ../src/iop/toneequal.c:3243 ../src/iop/toneequal.c:3246
+#: ../src/iop/toneequal.c:3249 ../src/iop/toneequal.c:3252
+#: ../src/iop/toneequal.c:3255 ../src/iop/toneequal.c:3258
+#: ../src/iop/toneequal.c:3261 ../src/iop/toneequal.c:3264
+#: ../src/iop/toneequal.c:3321 ../src/iop/toneequal.c:3331
+#: ../src/iop/toneequal.c:3391 ../src/views/darkroom.c:2674
 msgid " EV"
 msgstr " IL"
 
@@ -12943,7 +12943,7 @@ msgstr "Sélectionner le dossier du script"
 #: ../src/iop/agx.c:2449 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2098 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:3006 ../src/iop/filmicrgb.c:4379
-#: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3229
+#: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
 #: ../src/libs/image.c:499 ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "Page"
@@ -16038,7 +16038,7 @@ msgid ""
 " - increase contrast\n"
 " - increase pivot target output\n"
 " - increase white relative exposure\n"
-" - increase curve y gamma (in the advanced curve parmeters section)\n"
+" - increase curve y gamma (in the advanced curve parameters section)\n"
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
@@ -16075,7 +16075,7 @@ msgid ""
 " - increase contrast\n"
 " - decrease pivot target output\n"
 " - decrease black relative exposure (make more negative)\n"
-" - decrease curve y gamma (in the advanced curve parmeters section)\n"
+" - decrease curve y gamma (in the advanced curve parameters section)\n"
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
@@ -16126,7 +16126,7 @@ msgstr "Montrer la courbe"
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3015
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3663
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:807
-#: ../src/iop/rawdenoise.c:910 ../src/iop/toneequal.c:3280
+#: ../src/iop/rawdenoise.c:910 ../src/iop/toneequal.c:3284
 msgid "graph"
 msgstr "Graphique"
 
@@ -18440,7 +18440,7 @@ msgstr "Valider"
 msgid "check the output delta E"
 msgstr "Vérifier le delta E de sortie"
 
-#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:404
+#: ../src/iop/choleski.h:222 ../src/iop/choleski.h:313
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
 msgstr ""
@@ -24752,80 +24752,80 @@ msgstr "Certains paramètres sont hors limites"
 msgid "%+.1f EV"
 msgstr "%+.1f IL"
 
-#: ../src/iop/toneequal.c:3144
+#: ../src/iop/toneequal.c:3148
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sur l’image] Changer l’exposition du ton"
 
-#: ../src/iop/toneequal.c:3147
+#: ../src/iop/toneequal.c:3151
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sur l’image] Changer l’exposition du ton (grossièrement)"
 
-#: ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3154
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sur l’image] Changer l’exposition du ton (finement)"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3233 ../src/iop/toneequal.c:3262
-#: ../src/iop/toneequal.c:3263 ../src/iop/toneequal.c:3264
-#: ../src/iop/toneequal.c:3265 ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3237 ../src/iop/toneequal.c:3266
 #: ../src/iop/toneequal.c:3267 ../src/iop/toneequal.c:3268
 #: ../src/iop/toneequal.c:3269 ../src/iop/toneequal.c:3270
+#: ../src/iop/toneequal.c:3271 ../src/iop/toneequal.c:3272
+#: ../src/iop/toneequal.c:3273 ../src/iop/toneequal.c:3274
 msgid "simple"
 msgstr "Simple"
 
-#: ../src/iop/toneequal.c:3262
+#: ../src/iop/toneequal.c:3266
 msgid "-8 EV"
 msgstr "–8 IL"
 
-#: ../src/iop/toneequal.c:3263
+#: ../src/iop/toneequal.c:3267
 msgid "-7 EV"
 msgstr "–7 IL"
 
-#: ../src/iop/toneequal.c:3264
+#: ../src/iop/toneequal.c:3268
 msgid "-6 EV"
 msgstr "–6 IL"
 
-#: ../src/iop/toneequal.c:3265
+#: ../src/iop/toneequal.c:3269
 msgid "-5 EV"
 msgstr "–5 IL"
 
-#: ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3270
 msgid "-4 EV"
 msgstr "–4 IL"
 
-#: ../src/iop/toneequal.c:3267
+#: ../src/iop/toneequal.c:3271
 msgid "-3 EV"
 msgstr "–3 IL"
 
-#: ../src/iop/toneequal.c:3268
+#: ../src/iop/toneequal.c:3272
 msgid "-2 EV"
 msgstr "–2 IL"
 
-#: ../src/iop/toneequal.c:3269
+#: ../src/iop/toneequal.c:3273
 msgid "-1 EV"
 msgstr "–1 IL"
 
-#: ../src/iop/toneequal.c:3270
+#: ../src/iop/toneequal.c:3274
 msgid "+0 EV"
 msgstr "+0 IL"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3274
+#: ../src/iop/toneequal.c:3278
 msgid "advanced"
 msgstr "Avancé"
 
-#: ../src/iop/toneequal.c:3300
+#: ../src/iop/toneequal.c:3304
 msgid "double-click to reset the curve"
 msgstr "Double clic pour réinitialiser la courbe"
 
-#: ../src/iop/toneequal.c:3304
+#: ../src/iop/toneequal.c:3308
 msgid "curve smoothing"
 msgstr "Lissage de la courbe"
 
-#: ../src/iop/toneequal.c:3307
+#: ../src/iop/toneequal.c:3311
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -24839,7 +24839,7 @@ msgstr ""
 "mais les transitions seront plus brutales et le contraste local sera "
 "endommagé."
 
-#: ../src/iop/toneequal.c:3320
+#: ../src/iop/toneequal.c:3324
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes."
@@ -24850,11 +24850,11 @@ msgstr ""
 "disponibles."
 
 # bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
-#: ../src/iop/toneequal.c:3323
+#: ../src/iop/toneequal.c:3327
 msgid "auto-adjust the average exposure"
 msgstr "Ajuster automatiquement l’exposition moyenne"
 
-#: ../src/iop/toneequal.c:3330
+#: ../src/iop/toneequal.c:3334
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -24866,16 +24866,16 @@ msgstr ""
 "Ceci permet d’étaler l’histogramme d’exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d’exposition."
 
-#: ../src/iop/toneequal.c:3335
+#: ../src/iop/toneequal.c:3339
 msgid "auto-adjust the contrast"
 msgstr "Ajustement automatique le contraste"
 
 #. Masking options
-#: ../src/iop/toneequal.c:3339
+#: ../src/iop/toneequal.c:3343
 msgid "masking"
 msgstr "Masque"
 
-#: ../src/iop/toneequal.c:3344
+#: ../src/iop/toneequal.c:3348
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -24883,11 +24883,11 @@ msgstr ""
 "Prévisualiser le masque et choisir l’estimateur donnant le contraste\n"
 "le plus important entre les zones à éclaircir et celles à assombrir."
 
-#: ../src/iop/toneequal.c:3347
+#: ../src/iop/toneequal.c:3351
 msgid "details"
 msgstr "Détails"
 
-#: ../src/iop/toneequal.c:3350
+#: ../src/iop/toneequal.c:3354
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -24912,7 +24912,7 @@ msgstr ""
 "lumières)\n"
 " • Moyenne EIGF – une moyenne géométrique des méthodes « Non » et « EIGF »"
 
-#: ../src/iop/toneequal.c:3363
+#: ../src/iop/toneequal.c:3367
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -24920,7 +24920,7 @@ msgstr ""
 "Nombre de passes du filtre guidé à appliquer,\n"
 "aide à diffuser les bords du filtre mais dégrade les performances."
 
-#: ../src/iop/toneequal.c:3371
+#: ../src/iop/toneequal.c:3375
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -24931,7 +24931,7 @@ msgstr ""
 "la prévisualisation si le module de réduction du bruit par profil est "
 "utilisé."
 
-#: ../src/iop/toneequal.c:3379
+#: ../src/iop/toneequal.c:3383
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -24947,7 +24947,7 @@ msgstr ""
 "adoucissement\n"
 "mais peuvent créer des bords peu précis et des halos."
 
-#: ../src/iop/toneequal.c:3390
+#: ../src/iop/toneequal.c:3394
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -24958,7 +24958,7 @@ msgstr ""
 "à produire des zones plus lisses lors de l’utilisation de grandes valeurs de "
 "raffinement."
 
-#: ../src/iop/toneequal.c:3404 ../src/iop/toneequal.c:3411
+#: ../src/iop/toneequal.c:3408 ../src/iop/toneequal.c:3415
 msgid "display exposure mask"
 msgstr "Affiche le masque d’exposition"
 
