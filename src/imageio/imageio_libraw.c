@@ -28,6 +28,7 @@
 #include "imageio_libraw.h"
 
 #include <libraw/libraw.h>
+#include <pthread.h>
 
 #include <assert.h>
 #include <inttypes.h>
@@ -295,6 +296,7 @@ static gboolean is_in_glist(GList *list, const gchar *exif_model)
 }
 
 GList *warning_missing_support_seen = NULL;
+static pthread_mutex_t warning_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* LibRaw is expected to read only new Canon CR3 files */
 
@@ -343,6 +345,7 @@ static gboolean _supported_image(const gchar *filename)
 void _check_libraw_missing_support(const struct dt_image_t *img)
 {
   char lr_mk[64], lr_md[64], lr_al[64];
+  pthread_mutex_lock(&warning_mutex);
   if(!is_in_glist(warning_missing_support_seen, img->exif_model) &&
      !dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
                                   lr_mk, sizeof(lr_mk),
@@ -351,6 +354,7 @@ void _check_libraw_missing_support(const struct dt_image_t *img)
   {
     gchar *model_copy = g_strdup(img->exif_model);
     warning_missing_support_seen = g_list_append(warning_missing_support_seen, model_copy);
+    pthread_mutex_unlock(&warning_mutex);
 
     const char *T1 = _("<span foreground='red'><b>WARNING</b></span>:"
                        " camera is not fully supported!");
@@ -363,6 +367,10 @@ void _check_libraw_missing_support(const struct dt_image_t *img)
 
     dt_control_log(msg, (char *)NULL);
     g_free(msg);
+  }
+  else
+  {
+    pthread_mutex_unlock(&warning_mutex);
   }
 }
 
@@ -398,9 +406,28 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   if(!img->exif_inited)
     (void)dt_exif_read(img, filename);
 
+  // Serialize DNG loading because LibRaw is not thread-safe for some DNGs (e.g. compressed)
+  // or because of internal state issues.
+  gboolean is_dng = FALSE;
+  const gchar *ext = g_strrstr(filename, ".");
+  if(ext)
+  {
+    ext++;
+    if(g_ascii_strcasecmp(ext, "dng") == 0)
+      is_dng = TRUE;
+  }
+
+  static pthread_mutex_t dng_mutex = PTHREAD_MUTEX_INITIALIZER;
+  if(is_dng)
+    pthread_mutex_lock(&dng_mutex);
+
   libraw_data_t *raw = libraw_init(0);
   if(!raw)
+  {
+    if(is_dng)
+      pthread_mutex_unlock(&dng_mutex);
     return DT_IMAGEIO_LOAD_FAILED;
+  }
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -433,14 +460,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   // If the support detection method above failed (e.g. LibRaw matches color
   // matrix on a model substring), let's also check our internal LibRaw lookup
   // table for Canon CR3s only.
-  gchar *ext = g_strrstr(filename, ".");
-  if(!ext)
-  {
-    err = DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
-  ext++;
-  if(!g_ascii_strncasecmp("cr3", ext, 3))
+  // ext is already calculated above
+  if(ext && !g_ascii_strncasecmp("cr3", ext, 3))
     _check_libraw_missing_support(img);
 
   // Generic fix: Fold BlackLevelRepeatDim values into base black level.
@@ -628,6 +649,8 @@ error:
     }
   }
   libraw_close(raw);
+  if(is_dng)
+    pthread_mutex_unlock(&dng_mutex);
   return err;
 }
 #endif
