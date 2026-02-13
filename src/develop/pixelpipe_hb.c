@@ -2316,7 +2316,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                   if(terr == CL_SUCCESS)
                   {
                     terr = dt_opencl_copy_device_to_host(pipe->devid,
-                                                         clindata, cl_mem_input, ow, oh,
+                                                         clindata, cl_mem_input, iw, ih,
                                                          ch * sizeof(float));
                     if(terr == CL_SUCCESS)
                     {
