@@ -2981,6 +2981,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            roi_in.width, roi_in.height,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
+    darktable.lib->proxy.vectorscope.process(darktable.lib->proxy.vectorscope.module, input,
+                                             roi_in.width, roi_in.height,
+                                             display_profile,
+                                             dt_ioppr_get_histogram_profile_info(dev));
   }
   return dt_pipe_shutdown(pipe);
 }

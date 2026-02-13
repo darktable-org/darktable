@@ -3106,8 +3106,15 @@
     <name>plugins/darkroom/histogram/graphheight</name>
     <type min="100" max="300">int</type>
     <default>180</default>
-    <shortdescription>height of the scopes module</shortdescription>
-    <longdescription>height of the scopes module in the darkroom and tethering views</longdescription>
+    <shortdescription>height of the histogram/waveform module</shortdescription>
+    <longdescription>height of the histogram/waveform module in the darkroom and tethering views</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/vectorscope/graphheight</name>
+    <type min="100" max="300">int</type>
+    <default>180</default>
+    <shortdescription>height of the vectorscope module</shortdescription>
+    <longdescription>height of the vectorscope module in the darkroom and tethering views</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/colorequal/graphheight</name>
@@ -3190,7 +3197,6 @@
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
-        <option>vectorscope</option>
         <option>waveform</option>
         <option>RGB parade</option>
         <option>histogram</option>
@@ -3209,8 +3215,20 @@
        </enum>
     </type>
     <default>right</default>
-    <shortdescription>position of the scopes module</shortdescription>
-    <longdescription>position the scopes at the top-left or top-right of the screen</longdescription>
+    <shortdescription>position of the histogram/waveform modules</shortdescription>
+    <longdescription>position the histogram/waveform at the top-left or top-right of the screen</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface" restart="true">
+    <name>plugins/darkroom/vectorscope/panel_position</name>
+    <type>
+       <enum>
+          <option>left</option>
+          <option>right</option>
+       </enum>
+    </type>
+    <default>right</default>
+    <shortdescription>position of the vectorscope module</shortdescription>
+    <longdescription>position the vectorscope at the top-left or top-right of the screen</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/panel_swap</name>
@@ -3256,7 +3274,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope</name>
+    <name>plugins/darkroom/vectorscope/type</name>
     <type>
       <enum>
         <option>u*v*</option>
@@ -3269,7 +3287,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/scale</name>
+    <name>plugins/darkroom/vectorscope/scale</name>
     <type>
       <enum>
         <option>logarithmic</option>
@@ -3281,7 +3299,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/angle</name>
+    <name>plugins/darkroom/vectorscope/angle</name>
     <type>int</type>
     <default>270</default>
     <shortdescription/>
@@ -3309,7 +3327,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/harmony_type</name>
+    <name>plugins/darkroom/vectorscope/harmony_type</name>
     <type>
       <enum>
 		<option>none</option>
@@ -3329,14 +3347,14 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/harmony_rotation</name>
+    <name>plugins/darkroom/vectorscope/harmony_rotation</name>
     <type>int</type>
     <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/harmony_width</name>
+    <name>plugins/darkroom/vectorscope/harmony_width</name>
     <type>
       <enum>
 		<option>normal</option>
@@ -3350,7 +3368,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/harmony/dim</name>
+    <name>plugins/darkroom/vectorscope/harmony/dim</name>
     <type min="0" max="1">float</type>
     <default>0.7</default>
     <shortdescription>dim pixels outside of guides</shortdescription>

@@ -93,7 +93,7 @@ int expandable(dt_lib_module_t *self)
 
 int position(const dt_lib_module_t *self)
 {
-  return 1001;
+  return 1002;
 }
 
 

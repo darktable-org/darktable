@@ -6,7 +6,7 @@ add_definitions(-include common/module_api.h)
 add_definitions(-include libs/lib_api.h)
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect filtering metadata metadata_view navigation histogram history snapshots modulegroups backgroundjobs colorpicker masks session duplicate ioporder)
+set(MODULES import export copy_history styles tagging image select collect recentcollect filtering metadata metadata_view navigation histogram vectorscope history snapshots modulegroups backgroundjobs colorpicker masks session duplicate ioporder)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -38,6 +38,7 @@ add_library(metadata MODULE "metadata.c")
 add_library(metadata_view MODULE "metadata_view.c")
 add_library(navigation MODULE "navigation.c")
 add_library(histogram MODULE "histogram.c")
+add_library(vectorscope MODULE "vectorscope.c")
 add_library(history MODULE "history.c")
 add_library(snapshots MODULE "snapshots.c")
 add_library(modulegroups MODULE "modulegroups.c")

@@ -69,7 +69,7 @@ typedef struct dt_lib_t
                            const gboolean pick_output);
     } colorpicker;
 
-    /** Histogram processing hooks */
+    /** Histogram and waveform processing hooks */
     struct
     {
       struct dt_lib_module_t *module;
@@ -82,6 +82,16 @@ typedef struct dt_lib_t
       // dt_atomic_set_int() and dt_atomic_get_int()
       gboolean is_linear;
     } histogram;
+
+    /** Vectorscope processing hooks */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*process)(struct dt_lib_module_t *self, const float *const input,
+                      int width, int height,
+                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                      const dt_iop_order_iccprofile_info_t *const profile_info_to);
+    } vectorscope;
 
     struct
     {
