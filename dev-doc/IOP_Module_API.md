@@ -2,6 +2,10 @@
 
 This guide documents the functions that darktable Image Operation (IOP) modules can implement. The API is defined in `src/iop/iop_api.h` and used via `src/develop/imageop.h`. See `src/iop/useless.c` for a fully documented example module.
 
+See also:
+- [Pixelpipe Architecture](pixelpipe_architecture.md) for details on the processing pipeline.
+- [Introspection System](introspection.md) for details on parameter management.
+
 ---
 
 ## Module Structure Overview

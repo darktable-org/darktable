@@ -8,7 +8,8 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 | File | Description |
 |------|-------------|
 | **[IOP_Module_API.md](IOP_Module_API.md)** | Complete module API reference (required/optional functions) |
-
+| **[pixelpipe_architecture.md](pixelpipe_architecture.md)** | Pixelpipe architecture and data flow |
+| **[introspection.md](introspection.md)** | Introspection system for parameters and GUI |
 ### GUI Development
 | File | Description |
 |------|-------------|
