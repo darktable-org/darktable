@@ -22,7 +22,7 @@ jobs:
   po-check:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Check the PO files for correctness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
         with:
@@ -32,6 +32,7 @@ jobs:
 
       - name: Check to see if msgfmt reports an error
         run: |
+          sudo apt-get update
           sudo apt-get -y install gettext
           cd src/po
           for pofile in *.po; do
