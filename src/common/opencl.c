@@ -211,8 +211,6 @@ const char *cl_errstr(cl_int error)
       return "DT_OPENCL_PROCESS_CL";
     case DT_OPENCL_NODEVICE:
       return "DT_OPENCL_NODEVICE";
-    case DT_OPENCL_DT_EXCEPTION:
-      return "DT_OPENCL_DT_EXCEPTION";
     default:
       return "Unknown OpenCL error";
   }
@@ -357,7 +355,7 @@ void dt_opencl_write_device_config(const int devid)
            "\n[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
   setlocale(LC_NUMERIC, locale);
-  
+
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid to support systems with two
   // similar cards.
@@ -877,7 +875,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   MAX WORK GROUP SIZE:      %zu (%zu)\n",
                cl->dev[dev].workgroup_size, cl->dev[dev].workgroup_size_rec);
 
-  cl_uint max_item_dimension = 0;  
+  cl_uint max_item_dimension = 0;
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
                                            sizeof(max_item_dimension), &max_item_dimension, NULL);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1027,8 +1025,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
-
-  _write_test_exceptions(&cl->dev[dev]);
 
   g_free(compile_option_name_cname);
   g_free(my_option);
@@ -3637,12 +3633,6 @@ gboolean dt_opencl_is_enabled(void)
 gboolean dt_opencl_running(void)
 {
   return _cl_running();
-}
-
-gboolean dt_opencl_exception(const int devid, const uint32_t mask)
-{
-  if(!_cldev_running(devid)) return FALSE;
-  return (darktable.opencl->dev[devid].exceptions & mask) != 0;
 }
 
 /** update enabled flag and profile with value from preferences */
