@@ -2659,6 +2659,7 @@ void commit_params(dt_iop_module_t *self,
   // Calculate curve parameters once
   processing_params->tone_mapping_params = _calculate_tone_mapping_params(p);
   processing_params->primaries_params = _get_primaries_params(p);
+  _update_curve_warnings(self);
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -2667,12 +2668,14 @@ void reload_defaults(dt_iop_module_t *self)
   {
     dt_iop_agx_params_t *const d = self->default_params;
     _set_scene_referred_default_params(d);
+    _update_curve_warnings(self);
   }
 }
 
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
+  _update_curve_warnings(self);
 }
 
 #ifdef HAVE_OPENCL
