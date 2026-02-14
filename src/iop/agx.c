@@ -1756,54 +1756,59 @@ void gui_changed(dt_iop_module_t *self,
                  void *previous)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
-
-  if (darktable.gui->reset) return;
-
   dt_iop_agx_params_t *p = self->params;
 
-  if(widget == g->black_exposure_picker)
+  // avoid infinite cascades of GUI changes
+  if(!darktable.gui->reset)
   {
-    const float old_black_ev = *(float*)previous;
-    const float old_white_ev = p->range_white_relative_ev;
+    if(widget == g->black_exposure_picker)
+    {
+      const float old_black_ev = *(float*)previous;
+      const float old_white_ev = p->range_white_relative_ev;
 
-    _update_pivot_x(old_black_ev, old_white_ev, self, p);
+      _update_pivot_x(old_black_ev, old_white_ev, self, p);
+    }
+
+    if(widget == g->white_exposure_picker)
+    {
+      const float old_black_ev = p->range_black_relative_ev;
+      const float old_white_ev = *(float*)previous;
+
+      _update_pivot_x(old_black_ev, old_white_ev, self, p);
+    }
+
+    if(widget == g->security_factor)
+    {
+      const float prev = *(float *)previous;
+      const float ratio = (p->dynamic_range_scaling - prev) / (prev + 1.f);
+
+      const float old_black_ev = p->range_black_relative_ev;
+      const float old_white_ev = p->range_white_relative_ev;
+
+      p->range_black_relative_ev = old_black_ev * (1.f + ratio);
+      p->range_white_relative_ev = old_white_ev * (1.f + ratio);
+      _update_pivot_x(old_black_ev, old_white_ev, self, p);
+
+      darktable.gui->reset++;
+      dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
+      dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
+      darktable.gui->reset--;
+    }
+
+    if(g && p->auto_gamma)
+    {
+      tone_mapping_params_t tone_mapping_params;
+      _set_log_mapping_params(self->params, &tone_mapping_params);
+      _adjust_pivot(self->params, &tone_mapping_params);
+      dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
+    }
   }
 
-  if(widget == g->white_exposure_picker)
-  {
-    const float old_black_ev = p->range_black_relative_ev;
-    const float old_white_ev = *(float*)previous;
-
-    _update_pivot_x(old_black_ev, old_white_ev, self, p);
+  // unconditionally update visibilities / redraw the curve, required to support updates
+  // when called from gui_update
+  if (g) {
+    _update_redraw_dynamic_gui(self, g, p);
   }
-
-  if(widget == g->security_factor)
-  {
-    const float prev = *(float *)previous;
-    const float ratio = (p->dynamic_range_scaling - prev) / (prev + 1.f);
-
-    const float old_black_ev = p->range_black_relative_ev;
-    const float old_white_ev = p->range_white_relative_ev;
-
-    p->range_black_relative_ev = old_black_ev * (1.f + ratio);
-    p->range_white_relative_ev = old_white_ev * (1.f + ratio);
-    _update_pivot_x(old_black_ev, old_white_ev, self, p);
-
-    darktable.gui->reset++;
-    dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_ev);
-    dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_ev);
-    darktable.gui->reset--;
-  }
-
-  if(g && p->auto_gamma)
-  {
-    tone_mapping_params_t tone_mapping_params;
-    _set_log_mapping_params(self->params, &tone_mapping_params);
-    _adjust_pivot(self->params, &tone_mapping_params);
-    dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
-  }
-
-  _update_redraw_dynamic_gui(self, g, p);
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
