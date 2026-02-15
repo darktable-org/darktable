@@ -218,6 +218,40 @@ dt_bauhaus_slider_from_params(sect, "chroma_shadows");
 
 ---
 
+## Collapsible Sections
+
+### `dt_gui_new_collapsible_section()`
+
+```c
+#include "gui/gtk.h"
+
+dt_gui_collapsible_section_t cs;
+dt_gui_new_collapsible_section(&cs,
+    "plugins/darkroom/mymodule/expand_advanced",  // conf key for persisting state
+    _("advanced options"),                          // header label
+    GTK_BOX(self->widget),                         // parent container
+    DT_ACTION(self));                              // module for shortcuts
+```
+
+After creation, pack widgets into `cs.container`:
+```c
+// Temporarily redirect widget packing into the collapsible section
+self->widget = GTK_WIDGET(cs.container);
+
+g->detail_slider = dt_bauhaus_slider_from_params(self, "detail");
+g->method_combo = dt_bauhaus_combobox_from_params(self, "method");
+
+self->widget = main_box;  // restore original packing target
+```
+
+The section state (expanded/collapsed) is automatically persisted via the configuration key. Store the `dt_gui_collapsible_section_t` in your `gui_data_t` if you need to reference it later.
+
+**Related functions:**
+- `dt_gui_update_collapsible_section(&cs)` — sync section state from config
+- `dt_gui_hide_collapsible_section(&cs)` — programmatically collapse
+
+---
+
 ## Helper Function
 
 ### `dt_mask_scroll_increases()`
@@ -313,9 +347,27 @@ GtkWidget *slider = dt_bauhaus_slider_from_params(self, "exposure");
 // Wrap with color picker - this returns the combined widget
 g->exposure_picker = dt_color_picker_new(
     self,
-    DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,  // Picker flags
+    DT_COLOR_PICKER_AREA,  // Picker flags (see below)
     slider
 );
+```
+
+**Color picker flags** (from `gui/color_picker_proxy.h`, combine with `|`):
+
+| Flag | Purpose |
+|------|---------|
+| `DT_COLOR_PICKER_POINT` | Allow single-point sampling |
+| `DT_COLOR_PICKER_AREA` | Allow area (rectangle) sampling |
+| `DT_COLOR_PICKER_POINT_AREA` | Both point and area (shorthand for `POINT \| AREA`) |
+| `DT_COLOR_PICKER_DENOISE` | Use denoised sampling (4-channel images only) |
+| `DT_COLOR_PICKER_IO` | Sample module *output* instead of input |
+
+At least one of `POINT` or `AREA` must be set.
+
+**Variant with explicit colorspace:**
+```c
+// Force picker to work in a specific colorspace
+g->picker = dt_color_picker_new_with_cst(self, flags, slider, IOP_CS_HSL);
 ```
 
 Then implement `color_picker_apply()` in your module:
@@ -327,7 +379,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   if(picker == g->exposure_picker)
   {
-    // self->picked_color contains [R, G, B] from the picked area
+    // self->picked_color[0..2] = mean RGB from the picked area
+    // self->picked_color_min[0..2] = min values
+    // self->picked_color_max[0..2] = max values
     p->exposure = /* calculate from picked color */;
   }
 

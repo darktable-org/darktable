@@ -321,3 +321,35 @@ For section headers/dividers, use `dt_ui_section_label_new()` instead:
 ```c
 dt_gui_box_add(self->widget, dt_ui_section_label_new(_("Advanced Options")));
 ```
+
+---
+
+## Recipe 14: Collapsible Section
+
+```c
+void gui_init(dt_iop_module_t *self)
+{
+  dt_iop_mymodule_gui_data_t *g = IOP_GUI_ALLOC(mymodule);
+  GtkWidget *main_box = self->widget = dt_gui_vbox();
+
+  // Main controls (always visible)
+  g->amount = dt_bauhaus_slider_from_params(self, "amount");
+
+  // Collapsible "advanced" section
+  dt_gui_new_collapsible_section(&g->advanced_section,
+      "plugins/darkroom/mymodule/expand_advanced",
+      _("advanced"),
+      GTK_BOX(main_box),
+      DT_ACTION(self));
+
+  // Pack widgets into the collapsible container
+  self->widget = GTK_WIDGET(g->advanced_section.container);
+  g->detail = dt_bauhaus_slider_from_params(self, "detail");
+  g->quality = dt_bauhaus_combobox_from_params(self, "quality");
+
+  // Restore main container
+  self->widget = main_box;
+}
+```
+
+The section remembers its expand/collapse state across sessions via the config key.
