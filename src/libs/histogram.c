@@ -2236,13 +2236,6 @@ static void _lib_histogram_collapse_callback(dt_action_t *action)
   dt_lib_set_visible(self, !visible);
 }
 
-static void _lib_histogram_change_type_callback(dt_action_t *action)
-{
-  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
-  dt_lib_histogram_t *d = self->data;
-  _scope_view_clicked(d->scope_view_button, d);
-}
-
 static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
 {
   const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
@@ -2499,8 +2492,6 @@ void gui_init(dt_lib_module_t *self)
     dt_action_register(teth, N_("hide histogram"),
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-    dt_action_register(teth, N_("switch histogram view"),
-                       _lib_histogram_change_type_callback, 0, 0);
   }
 
   // red/green/blue channel on/off
