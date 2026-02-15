@@ -2,21 +2,31 @@
 
 This guide documents the functions that darktable Image Operation (IOP) modules can implement. The API is defined in `src/iop/iop_api.h` and used via `src/develop/imageop.h`. See `src/iop/useless.c` for a fully documented example module.
 
+See also:
+- [Pixelpipe Architecture](pixelpipe_architecture.md) for details on the processing pipeline.
+- [Introspection System](introspection.md) for details on parameter management.
+
 ---
 
 ## Module Structure Overview
 
 Every IOP module needs:
-1. **Parameter struct** (`dt_iop_modulename_params_t`) - stored in database
-2. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references
-3. **Required functions** - `name()`, `default_colorspace()`, `process()`
-4. **Optional functions** - GUI, lifecycle, geometry, etc.
+1. **Parameter struct** (`dt_iop_modulename_params_t`) - the user-facing parameters, serialized to the database, controlled via UI widgets in `self->params`
+2. **Processing data struct** (`dt_iop_modulename_data_t`) - optional but common; a processing-optimized version of the parameters, stored in `piece->data` and used by `process()`. When not provided, `piece->data` is a plain copy of `params_t` (see [params_t vs data_t](#params_t-vs-data_t--the-two-parameter-structs) below).
+3. **GUI data struct** (`dt_iop_modulename_gui_data_t`) - widget references, only present in darkroom mode
+4. **Required functions** - `name()`, `default_colorspace()`, `process()`
+5. **Optional functions** - GUI, lifecycle, geometry, etc.
 
 ---
 
 ## Required Structures
 
-### Parameter Struct
+### Parameter Struct (`params_t`)
+
+This struct defines the user-facing parameters. It is the contract between the module and the outside world:
+- **Database:** Serialized as a binary blob and stored in the history stack. This is how edits persist across sessions.
+- **UI widgets:** `dt_bauhaus_*_from_params()` functions read and write fields in `self->params` via introspection.
+- **Presets/styles:** Params are what gets exported and imported.
 
 ```c
 // Version number - increment when struct changes
@@ -40,6 +50,19 @@ typedef struct dt_iop_mymodule_params_t
 - Use `gboolean` not `bool` (4-byte alignment)
 - Changes require version bump and `legacy_params()` migration
 - Values are serialized to database - no pointers
+
+**Introspection tags** (parsed from comments at compile time, used by `dt_bauhaus_*_from_params()`):
+
+| Tag | Applies to | Purpose |
+|-----|-----------|---------|
+| `$MIN: value` | `float`, `int` | Hard minimum for the widget |
+| `$MAX: value` | `float`, `int` | Hard maximum for the widget |
+| `$DEFAULT: value` | all types | Default value (also used by `dt_iop_default_init()`) |
+| `$DESCRIPTION: "text"` | all types | Widget label in the GUI (translatable) |
+
+For enums, `$DESCRIPTION` on each enum member becomes the combobox entry text. For `gboolean`, `$DEFAULT` accepts `TRUE` / `FALSE`.
+
+The `DT_MODULE_INTROSPECTION(version, struct_type)` macro at the top of the file activates this system and sets the parameter version number.
 
 ### Enum for Comboboxes
 
@@ -65,6 +88,72 @@ typedef struct dt_iop_mymodule_gui_data_t
   // Any other GUI state needed between callbacks
 } dt_iop_mymodule_gui_data_t;
 ```
+
+### `params_t` vs `data_t` — The Two Parameter Structs
+
+A common source of confusion is the relationship between the parameter struct (`params_t`) and the processing data struct (`data_t`). They serve different purposes:
+
+| | `dt_iop_modulename_params_t` | `dt_iop_modulename_data_t` |
+|---|---|---|
+| **Where it lives** | `self->params` | `piece->data` |
+| **Source** | Database / UI widgets | Built by `commit_params()` |
+| **Purpose** | Record user intent in a stable, serializable format | Provide processing-ready values to `process()` |
+| **May contain** | Raw user values (e.g. EV, percentages, enum choices) | Precomputed LUTs, splines, normalized/transformed values, expensive one-time calculations |
+| **Constraints** | No pointers; must be serializable; changing it requires a version bump | No constraints — can contain pointers, LUTs, runtime-only data |
+
+**When you don't need a `data_t`:** If `process()` can work directly from the raw user parameters without any transformation, you don't need a separate `data_t`. The default `init_pipe()` allocates `piece->data` as a `params_t`-sized buffer, and the default `commit_params()` does `memcpy(piece->data, params, self->params_size)`. Simple modules like can use this approach — `process()` casts `piece->data` directly to `params_t *`.
+
+**When you do need a `data_t`:** Most non-trivial modules define a separate `data_t` struct because:
+- Some user parameters need transformation before they are useful for processing (e.g. converting percentages to linear factors, degrees to radians, EV values to exposure multipliers).
+- Expensive calculations should happen once in `commit_params()`, not per-pixel in `process()` (e.g. building interpolation splines, computing lookup tables, solving matrices).
+- Additional runtime state is needed that doesn't belong in the database (e.g. pointers to the current working color profile, gamut boundary LUTs).
+
+**Concrete examples from the codebase:**
+
+```c
+// exposure.c: data_t embeds params_t and adds precomputed fields
+typedef struct dt_iop_exposure_data_t
+{
+  dt_iop_exposure_params_t params;  // raw user params
+  int deflicker;                    // computed: is deflicker mode active?
+  float black;                      // computed: adjusted black point
+  float scale;                      // computed: exposure multiplier
+} dt_iop_exposure_data_t;
+
+// filmicrgb.c: data_t is entirely different from params_t
+typedef struct dt_iop_filmicrgb_data_t
+{
+  float dynamic_range;        // derived from white_point - black_point
+  float grey_source;          // computed from user grey_point / 100
+  float contrast;             // clamped/adjusted contrast
+  float saturation;           // normalized from user percentage
+  float sigma_toe, sigma_shoulder;  // computed from spline
+  struct dt_iop_filmic_rgb_spline_t spline;  // fully solved spline LUT
+  // ... no direct copy of params fields
+} dt_iop_filmicrgb_data_t;
+
+// toneequal.c: data_t contains precomputed correction LUT
+typedef struct dt_iop_toneequalizer_data_t
+{
+  float factors[PIXEL_CHAN];                              // solved interpolation
+  float correction_lut[PIXEL_CHAN * LUT_RESOLUTION + 1]; // precomputed LUT
+  float blending, feathering;                             // normalized from UI %
+  // ...
+} dt_iop_toneequalizer_data_t;
+```
+
+**The data flow:**
+```
+Database ──load──→ self->params ──UI widgets──→ self->params
+                                                    │
+                                             commit_params()
+                                                    │
+                                                    ▼
+                                              piece->data  ──→ process()
+                                          (params_t or data_t)
+```
+
+When a `data_t` is used, you must also implement `init_pipe()` and `cleanup_pipe()` to allocate/free it. See [Pipe Lifecycle Functions](#pipe-lifecycle-functions) below.
 
 ---
 
@@ -100,7 +189,8 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  // Get parameters (committed copy for this pipe)
+  // Get processing data — this is piece->data as prepared by commit_params().
+  // If using a custom data_t, cast to that instead of params_t.
   const dt_iop_mymodule_params_t *d = piece->data;
   const size_t ch = piece->colors;  // Usually 4 (RGBA)
 
@@ -298,6 +388,148 @@ if(g != NULL) {  // Missing pipe type check
 
 ---
 
+## Processing Fundamentals
+
+### Region of Interest (`dt_iop_roi_t`)
+
+Defined in `develop/pixelpipe.h`:
+
+```c
+typedef struct dt_iop_roi_t
+{
+  int x, y, width, height;  // position and dimensions in pixels (at current scale)
+  float scale;               // zoom factor relative to full image (0 < scale <= 1.0)
+} dt_iop_roi_t;
+```
+
+In `process()`, `roi_in` and `roi_out` describe the input and output buffer regions. For most modules (those that don't change geometry), `roi_in` and `roi_out` are identical. Modules implementing `modify_roi_in()` / `modify_roi_out()` may have different input and output regions.
+
+### Pipe Types (`dt_dev_pixelpipe_type_t`)
+
+Multiple pipelines may process an image simultaneously. Check `piece->pipe->type` when behavior should differ per pipeline:
+
+```c
+// Defined in develop/pixelpipe.h as bit flags:
+DT_DEV_PIXELPIPE_FULL       // Full-resolution center view
+DT_DEV_PIXELPIPE_PREVIEW    // Navigation preview
+DT_DEV_PIXELPIPE_PREVIEW2   // Secondary preview (dual view)
+DT_DEV_PIXELPIPE_EXPORT     // Full export
+DT_DEV_PIXELPIPE_THUMBNAIL  // Thumbnail generation
+
+// Convenience combinations:
+DT_DEV_PIXELPIPE_SCREEN     // PREVIEW | FULL | PREVIEW2
+DT_DEV_PIXELPIPE_ANY        // All types
+```
+
+Common usage:
+```c
+// Only do expensive work for the full view
+if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+{
+  // ... expensive computation or GUI update ...
+}
+```
+
+### Pixel Channel Count (`piece->colors`)
+
+Set automatically by the pipeline: `1` for RAW colorspace, `4` for RGB/Lab (RGBA with alpha). Always use this rather than hardcoding channel counts. Validate in `process()` with:
+
+```c
+if(!dt_iop_have_required_input_format(4 /*channels*/, self, piece->colors,
+                                      ivoid, ovoid, roi_in, roi_out))
+  return;  // wrong format — input copied to output, trouble message set
+```
+
+### Input Scaling (`piece->iscale`)
+
+The ratio between the input buffer and the full image: `piece->iscale * buffer_width = full_image_width`. Use this to scale spatial parameters (blur radii, feathering) so they behave consistently at all zoom levels:
+
+```c
+const float sigma = user_radius * roi_out->scale / piece->iscale;
+```
+
+### Pixel Processing Macros
+
+These macros from `common/darktable.h` and `common/dttypes.h` are used throughout `process()` functions:
+
+```c
+// OpenMP parallel for with safe defaults (firstprivate, static scheduling)
+DT_OMP_FOR()
+for(int j = 0; j < roi_out->height; j++) { ... }
+
+// SIMD-vectorized channel loop (4 channels, auto-vectorized with OpenMP SIMD)
+for_each_channel(c, aligned(in, out : 16))
+  out[c] = in[c] * factor;
+
+// Variants:
+for_four_channels(c, ...)   // explicit 4-channel loop
+for_three_channels(c, ...)  // explicit 3-channel loop
+```
+
+### Pixel Copy Functions
+
+```c
+// Standard per-pixel copy (4 channels, SIMD-friendly)
+copy_pixel(out, in);                // defined in common/darktable.h
+
+// Nontemporal copy — bypasses CPU cache, faster for sequential full-image writes
+// Do NOT use if you'll read the destination pixel again soon
+copy_pixel_nontemporal(out, in);    // defined in develop/imageop.h
+
+// After a loop using nontemporal writes, ensure visibility:
+dt_omploop_sfence();  // emits memory fence only if needed (no-op inside OpenMP loops)
+```
+
+### Buffer Allocation
+
+```c
+#include "common/imagebuf.h"
+
+float *temp = NULL;
+if(!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
+                                4 | DT_IMGSZ_OUTPUT | DT_IMGSZ_CLEARBUF,
+                                &temp, NULL))
+  return;  // allocation failed — trouble message already set
+
+// ... use temp ...
+
+dt_free_align(temp);
+```
+
+Flags (OR together): `DT_IMGSZ_OUTPUT` / `DT_IMGSZ_INPUT` (dimensions from which roi), `DT_IMGSZ_CLEARBUF` (zero-fill), `DT_IMGSZ_PERTHREAD` (per-thread buffer), `DT_IMGSZ_FULL` / `DT_IMGSZ_WIDTH` / `DT_IMGSZ_HEIGHT` / `DT_IMGSZ_LONGEST` (dimension selection). The channel count (1–4) is OR'd into the low bits.
+
+ROI-aware copy (handles size mismatch with zero-padding or cropping):
+```c
+dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out);
+```
+
+### Trouble Messages
+
+Report errors or warnings that appear as an icon on the module header:
+
+```c
+// Set trouble indicator
+dt_iop_set_module_trouble_message(module,
+    _("unsupported input"),           // short message (shown in UI)
+    _("expected 4-channel input"),    // tooltip
+    "module got wrong channel count"); // stderr (can be NULL)
+
+// Clear trouble indicator
+dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
+```
+
+### Pipeline Refresh Functions
+
+Trigger reprocessing from GUI callbacks (outside the normal `from_params` → `gui_changed` → history path):
+
+```c
+dt_iop_refresh_center(module);   // invalidate full/center pipe, redraw center view
+dt_iop_refresh_preview(module);  // invalidate preview pipe
+dt_iop_refresh_all(module);      // invalidate all pipes
+```
+
+---
+
 ## Metadata Functions
 
 ### `description()` - Tooltip Description
@@ -482,22 +714,67 @@ void cleanup(dt_iop_module_t *self)
 }
 ```
 
+### `init_global()` / `cleanup_global()` - Module-Level Resources
+
+Called once per module *type* (not per instance) at startup and shutdown. Used primarily to load OpenCL kernels and precompute shared data that doesn't change per image.
+
+```c
+// Global data struct — typically holds OpenCL kernel handles
+typedef struct dt_iop_mymodule_global_data_t
+{
+  int kernel_process;
+  int kernel_blend;
+  float *precomputed_lut;  // shared across all instances
+} dt_iop_mymodule_global_data_t;
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 42;  // OpenCL program index from programs.conf
+  dt_iop_mymodule_global_data_t *gd = calloc(1, sizeof(*gd));
+  self->data = gd;
+
+  gd->kernel_process = dt_opencl_create_kernel(program, "mymodule_process");
+  gd->kernel_blend = dt_opencl_create_kernel(program, "mymodule_blend");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_mymodule_global_data_t *gd = self->data;
+  dt_opencl_free_kernel(gd->kernel_process);
+  dt_opencl_free_kernel(gd->kernel_blend);
+  free(gd);
+}
+```
+
+Access in `process_cl()` via `self->global_data`. Note: the `self` parameter is `dt_iop_module_so_t *` (the shared module object), not `dt_iop_module_t *` (the per-instance object).
+
 ### `reload_defaults()` - Per-Image Defaults
 
-Called when switching images. Update defaults based on image properties.
+Called when switching images. Update defaults based on image properties. Common image property checks (from `common/image.h`):
+
+```c
+const dt_image_t *img = &self->dev->image_storage;
+
+dt_image_is_raw(img)          // RAW file
+dt_image_is_hdr(img)          // HDR (float) data
+dt_image_is_ldr(img)          // LDR (8/16-bit) data
+dt_image_is_monochrome(img)   // Monochrome sensor
+dt_image_is_bayerRGB(img)     // Bayer sensor with RGB CFA
+```
 
 ```c
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_mymodule_params_t *d = self->default_params;
+  const dt_image_t *img = &self->dev->image_storage;
 
-  if(!dt_image_is_raw(&self->dev->image_storage))
+  if(!dt_image_is_raw(img))
   {
     self->default_enabled = FALSE;
   }
   else
   {
-    // Set defaults based on EXIF, etc.
+    // Set defaults based on image type, EXIF, etc.
     d->exposure = 0.0f;
   }
 
@@ -510,9 +787,61 @@ void reload_defaults(dt_iop_module_t *self)
 }
 ```
 
-### `commit_params()` - Prepare for Processing
+### Pipe Lifecycle Functions
 
-Copy params to pipe piece before processing.
+Each pixelpipe (full preview, thumbnail, export) has its own copy of every module's data via `dt_dev_pixelpipe_iop_t` ("pipe piece"). The `init_pipe()` and `cleanup_pipe()` functions manage the `piece->data` allocation for each pipe piece.
+
+#### `init_pipe()` - Allocate Per-Pipe Processing Data
+
+Called when the pixelpipe creates a piece for this module. Allocates `piece->data`.
+
+**Default behavior** (if you don't implement this): allocates `self->params_size` bytes via `calloc`. This is appropriate when `piece->data` is just a copy of `params_t`.
+
+**Custom implementation** (required when using a separate `data_t`):
+
+```c
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_mymodule_data_t));
+}
+```
+
+For structs requiring alignment (e.g. containing `DT_ALIGNED_ARRAY` members), use:
+```c
+piece->data = dt_calloc1_align_type(dt_iop_mymodule_data_t);
+```
+
+#### `cleanup_pipe()` - Free Per-Pipe Processing Data
+
+Called when the pixelpipe destroys a piece for this module.
+
+**Default behavior**: calls `free(piece->data)`.
+
+**Custom implementation** (required if `init_pipe` allocated additional resources):
+
+```c
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_mymodule_data_t *d = piece->data;
+  dt_free_align(d->gamut_LUT);  // free any sub-allocations
+  dt_free_align(piece->data);
+  piece->data = NULL;
+}
+```
+
+### `commit_params()` - Transform UI Parameters into Processing Data
+
+Called by the framework (under a pipe mutex) whenever parameters are synced to the pixelpipe — after a widget change, history navigation, image switch, etc. Its job is to translate the user-facing parameters (`self->params`, originating from the database / UI) into processing-ready data stored in `piece->data`, which `process()` will read.
+
+The `p1` argument is a snapshot of `self->params` at commit time. `piece->data` was allocated by `init_pipe()`.
+
+**Simple case — `piece->data` is a direct copy of `params_t`:**
+
+If no transformation is needed, the default implementation does `memcpy(piece->data, p1, self->params_size)` and you don't need to implement this function at all. You can also do the memcpy yourself and add minor adjustments:
 
 ```c
 void commit_params(dt_iop_module_t *self,
@@ -521,10 +850,56 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   memcpy(piece->data, p1, self->params_size);
+}
+```
 
-  // Pre-compute values for process()
-  dt_iop_mymodule_params_t *d = piece->data;
-  // d->precomputed = expensive_calculation(d->exposure);
+**Common case — `piece->data` is a separate `data_t` with precomputed fields:**
+
+Most non-trivial modules define a `data_t` that is larger or differently structured than `params_t`. In `commit_params()`, you copy the relevant user values and precompute anything expensive, so `process()` runs as fast as possible.
+
+```c
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  const dt_iop_mymodule_params_t *p = (dt_iop_mymodule_params_t *)p1;
+  dt_iop_mymodule_data_t *d = piece->data;
+
+  // Copy relevant user values
+  d->exposure = p->exposure;
+  d->method = p->method;
+
+  // Precompute processing-ready values
+  d->exposure_scale = exp2f(p->exposure);             // EV → linear multiplier
+  d->blending = p->blending / 100.0f;                 // percentage → 0-1 range
+  dt_iop_compute_spline(p, &d->spline);               // solve spline from control points
+  build_correction_lut(d->correction_lut, d->factors); // precompute LUT
+}
+```
+
+**Real example from exposure.c** — compensates for exposure bias and highlight preservation, precomputes whether deflicker mode is active:
+
+```c
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
+  dt_iop_exposure_data_t *d = piece->data;
+
+  d->params.black = p->black;
+  d->params.exposure = p->exposure;
+
+  // Apply exposure bias compensation on top of user value
+  if(p->compensate_exposure_bias)
+    d->params.exposure -= _get_exposure_bias(self);
+  if(p->compensate_hilite_pres)
+    d->params.exposure += _get_highlight_bias(self);
+
+  d->deflicker = (p->mode == EXPOSURE_MODE_DEFLICKER
+                  && dt_image_is_raw(&self->dev->image_storage)) ? 1 : 0;
 }
 ```
 
@@ -662,9 +1037,59 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 
 ---
 
+## OpenCL Processing (Optional)
+
+If the module can use the GPU, implement `process_cl()`. Wrap in `#ifdef HAVE_OPENCL`:
+
+```c
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,         // GPU input buffer
+               cl_mem dev_out,        // GPU output buffer
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_mymodule_data_t *d = piece->data;
+  dt_iop_mymodule_global_data_t *gd = self->global_data;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_process,
+                                         width, height,
+                                         CLARG(dev_in), CLARG(dev_out),
+                                         CLARG(width), CLARG(height),
+                                         CLARG(d->scale));
+  return err;  // CL_SUCCESS or error code
+}
+#endif
+```
+
+**Return value:** `CL_SUCCESS` on success, any `cl_int` error code on failure. The pipeline falls back to CPU `process()` on failure.
+
+OpenCL kernels are loaded in `init_global()` (see [init_global / cleanup_global](#init_global--cleanup_global---module-level-resources) above) and accessed via `self->global_data`.
+
+---
+
 ## Tiling Support
 
-If `IOP_FLAGS_ALLOW_TILING` is set:
+If `IOP_FLAGS_ALLOW_TILING` is set, implement `tiling_callback()` to report memory requirements. The pipeline uses this to split processing into tiles when memory is limited.
+
+The `dt_develop_tiling_t` struct (from `develop/tiling.h`):
+
+| Field | Purpose |
+|-------|---------|
+| `factor` | Total CPU memory needed as a multiple of input buffer size (e.g. 2.0 = input + one temp buffer) |
+| `factor_cl` | Same for GPU memory |
+| `maxbuf` | Largest single temporary buffer as a multiple of input size |
+| `maxbuf_cl` | Same for GPU |
+| `overhead` | Fixed memory overhead in bytes (independent of image size) |
+| `overlap` | Pixels of overlap needed between adjacent tiles (for spatial filters like blur) |
+| `xalign` | Horizontal alignment of tile origin (1 = none, 2 = Bayer pattern) |
+| `yalign` | Vertical alignment of tile origin |
 
 ```c
 void tiling_callback(dt_iop_module_t *self,
@@ -673,12 +1098,13 @@ void tiling_callback(dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 2.0f;     // Memory: factor * input_size
-  tiling->factor_cl = 2.0f;  // Same for OpenCL
-  tiling->maxbuf = 1.0f;     // Largest single buffer needed
-  tiling->overhead = 0;      // Fixed memory overhead (bytes)
-  tiling->overlap = 0;       // Pixels needed from neighboring tiles
-  tiling->xalign = 1;        // Tile alignment requirements
+  tiling->factor = 2.5f;     // need input + 1.5× temp buffers
+  tiling->factor_cl = 2.5f;
+  tiling->maxbuf = 1.0f;     // largest single buffer = 1× input
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 4;       // 4-pixel overlap for a 3×3 kernel
+  tiling->xalign = 1;
   tiling->yalign = 1;
 }
 ```
@@ -896,17 +1322,22 @@ Module Load:
 Image Open:
   init() → reload_defaults() → gui_init()
 
+Pixelpipe Creation (per pipe):
+  init_pipe()  [allocates piece->data]
+
 Params Change:
   gui_update() → gui_changed()
 
 User Edits Widget:
-  [auto-callback] → gui_changed() → commit_params() → process()
+  [auto-callback] → gui_changed()
+       → commit_params()  [transforms self->params → piece->data]
+       → process()        [reads piece->data]
 
 Image Switch:
   reload_defaults() → gui_update() → gui_changed()
 
 Darkroom Exit:
-  gui_cleanup() → cleanup()
+  gui_cleanup() → cleanup_pipe() [per pipe] → cleanup()
 
 Module Unload:
   cleanup_global()
