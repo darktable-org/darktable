@@ -97,6 +97,9 @@ changes (where available).
   file rather than upscale the embedded JPEG for higher resolution
   thumbnails/previews, use the new configuration option "auto".
 
+- Fix for usage of incorrect color profiles on secondary monitors on
+  Windows.
+
 ## Lua
 
 ### API Version
