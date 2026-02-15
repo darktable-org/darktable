@@ -276,172 +276,20 @@ Creates a standard combobox pre-populated with interpolation methods (bilinear, 
 
 ---
 
-## Post-Creation Slider Configuration
-
-After creating a slider with `dt_bauhaus_slider_from_params()`, you typically configure it further using functions from `bauhaus/bauhaus.h`:
-
-### Range Limits
-
-```c
-// Soft limits: Default visible range (user can exceed with Ctrl+Shift)
-dt_bauhaus_slider_set_soft_range(widget, soft_min, soft_max);
-dt_bauhaus_slider_set_soft_min(widget, val);
-dt_bauhaus_slider_set_soft_max(widget, val);
-
-// Hard limits: Absolute boundaries (cannot be exceeded)
-dt_bauhaus_slider_set_hard_min(widget, val);
-dt_bauhaus_slider_set_hard_max(widget, val);
-```
-
-### Display Formatting
-
-```c
-// Number of decimal places
-dt_bauhaus_slider_set_digits(widget, 2);
-
-// Unit suffix (e.g., " EV", " %", "°")
-dt_bauhaus_slider_set_format(widget, " EV");
-
-// Transform internal value for display: displayed = (internal * factor) + offset
-dt_bauhaus_slider_set_factor(widget, 100.0f);  // For percentages
-dt_bauhaus_slider_set_offset(widget, 0.0f);
-```
-
-### Visual Gradient Stops
-
-```c
-// Add color stops for a gradient background (position 0.0-1.0, RGB 0.0-1.0)
-dt_bauhaus_slider_set_stop(widget, 0.0f, 1.0f, 0.0f, 0.0f);  // Red at start
-dt_bauhaus_slider_set_stop(widget, 0.5f, 0.0f, 1.0f, 0.0f);  // Green at middle
-dt_bauhaus_slider_set_stop(widget, 1.0f, 0.0f, 0.0f, 1.0f);  // Blue at end
-
-// Or use a hue gradient (for hue sliders)
-// See colorize.c for a complete example
-```
-
-### Other Options
-
-```c
-// Default value (for reset)
-dt_bauhaus_slider_set_default(widget, def);
-
-// Step size for keyboard/scroll
-dt_bauhaus_slider_set_step(widget, 0.1f);
-
-// Disable feedback (the moving bar) - useful for special displays
-dt_bauhaus_slider_set_feedback(widget, 0);
-```
-
----
-
-## Attaching Color Pickers
-
-To attach a color picker to a slider:
-
-```c
-#include "gui/color_picker_proxy.h"
-
-// Create slider first
-GtkWidget *slider = dt_bauhaus_slider_from_params(self, "exposure");
-
-// Wrap with color picker - this returns the combined widget
-g->exposure_picker = dt_color_picker_new(
-    self,
-    DT_COLOR_PICKER_AREA,  // Picker flags (see below)
-    slider
-);
-```
-
-**Color picker flags** (from `gui/color_picker_proxy.h`, combine with `|`):
-
-| Flag | Purpose |
-|------|---------|
-| `DT_COLOR_PICKER_POINT` | Allow single-point sampling |
-| `DT_COLOR_PICKER_AREA` | Allow area (rectangle) sampling |
-| `DT_COLOR_PICKER_POINT_AREA` | Both point and area (shorthand for `POINT \| AREA`) |
-| `DT_COLOR_PICKER_DENOISE` | Use denoised sampling (4-channel images only) |
-| `DT_COLOR_PICKER_IO` | Sample module *output* instead of input |
-
-At least one of `POINT` or `AREA` must be set.
-
-**Variant with explicit colorspace:**
-```c
-// Force picker to work in a specific colorspace
-g->picker = dt_color_picker_new_with_cst(self, flags, slider, IOP_CS_HSL);
-```
-
-Then implement `color_picker_apply()` in your module:
-```c
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
-{
-  dt_iop_mymodule_gui_data_t *g = self->gui_data;
-  dt_iop_mymodule_params_t *p = self->params;
-
-  if(picker == g->exposure_picker)
-  {
-    // self->picked_color[0..2] = mean RGB from the picked area
-    // self->picked_color_min[0..2] = min values
-    // self->picked_color_max[0..2] = max values
-    p->exposure = /* calculate from picked color */;
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-```
-
----
-
-## Complete gui_init() Example
-
-```c
-void gui_init(dt_iop_module_t *self)
-{
-  dt_iop_mymodule_gui_data_t *g = IOP_GUI_ALLOC(mymodule);
-
-  // Create main container (optional if first widget uses _from_params)
-  self->widget = dt_gui_vbox();
-
-  // Simple slider
-  g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
-  dt_bauhaus_slider_set_format(g->exposure, " EV");
-  dt_bauhaus_slider_set_soft_range(g->exposure, -4.0, 4.0);
-
-  // Combobox from enum
-  g->method = dt_bauhaus_combobox_from_params(self, "method");
-
-  // Toggle button
-  g->enabled = dt_bauhaus_toggle_from_params(self, "enabled");
-
-  // Visual section label
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(_("advanced")));
-
-  // More sliders...
-  g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
-  dt_bauhaus_slider_set_digits(g->gamma, 3);
-
-  // Icon button
-  g->reset_btn = dt_iop_button_new(self, N_("reset"),
-                                   G_CALLBACK(reset_callback), FALSE, 0, 0,
-                                   dtgtk_cairo_paint_reset, 0, self->widget);
-}
-```
-
----
-
 ## Key Points to Remember
 
 1. **`_from_params` functions auto-pack** widgets into `self->widget`. Set `self->widget` to the correct container before calling them.
 
 2. **Toggles need manual gui_update()** - unlike sliders/comboboxes which auto-sync.
 
-3. **Slider format order matters** - Set `factor` before `format` before `digits` to avoid rounding issues (see sliders.md).
+3. **Slider format order matters** - Set `factor` before `format` before `digits` to avoid rounding issues. See [sliders.md](sliders.md) for all configuration options and recipes.
 
 4. **Sections are for shortcuts**, not visual organization. Use `dt_ui_section_label_new()` for visual headers.
 
-5. **Color pickers wrap sliders** - The picker becomes the widget to store/pack, not the original slider.
+5. **Color pickers wrap sliders** - The picker becomes the widget to store/pack, not the original slider. See [sliders.md](sliders.md) for attachment details.
 
 6. **Don't set widget values in gui_init()** - Only create and configure widgets. Setting values belongs in `gui_update()`, which is called when params are available.
 
-7. **Always call gui_changed() from gui_update()** - End `gui_update()` with `gui_changed(self, NULL, NULL)` to ensure all UI state adjustments (visibility, sensitivity) are applied consistently.
+7. **Always call gui_changed() from gui_update()** - End `gui_update()` with `gui_changed(self, NULL, NULL)` to ensure all UI state adjustments (visibility, sensitivity) are applied consistently. See [GUI.md](GUI.md) for the full event flow.
 
 8. **Use dt_ui_label_new() for labels** - Never use `gtk_label_new()` directly. The wrapper ensures long text is ellipsized and doesn't stretch the panel width.
