@@ -1737,11 +1737,10 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
       const size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0,
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_green_minmax, sizes, local,
         CLARG(dev_rgb[0]), CLARG(dev_gminmax),
         CLARG(width), CLARG(height), CLARGINT(PAD_G1_G3), CLARRAY(2, sgreen),
         CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -1757,12 +1756,11 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
       const size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0,
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_interpolate_green, sizes, local,
         CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]),
         CLARG(dev_gminmax), CLARG(width), CLARG(height),
         CLARGINT(PAD_G_INTERP), CLARRAY(2, sgreen), CLARG(dev_xtrans),
         CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -1812,10 +1810,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         // we use dev_aux to transport intermediate results from one loop run to the next
         const size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
         const size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_solitary_green, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_solitary_green, sizes, local,
           CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g),
           CLARG(d), CLARRAY(2, dir), CLARG(h), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_solitary_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
 
         if((d < 2) || (d & 1)) dev_trgb++;
@@ -1835,10 +1832,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       {
         const size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
         const size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_red_and_blue, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_red_and_blue, sizes, local,
           CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -1856,10 +1852,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       {
         const size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
         const size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local,
           CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
     }
@@ -1901,10 +1896,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       // differentiate in all directions
       const size_t sizes_diff[3] = { ROUNDUP(width, locopt_diff.sizex), ROUNDUP(height, locopt_diff.sizey), 1 };
       const size_t local_diff[3] = { locopt_diff.sizex, locopt_diff.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_differentiate, 0,
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_differentiate, sizes_diff, local_diff,
         CLARG(dev_aux), CLARG(dev_drv[d]),
         CLARG(width), CLARG(height), CLARG(pad_yuv), CLARG(d), CLLOCAL(sizeof(float) * 4 * (locopt_diff.sizex + 2*1) * (locopt_diff.sizey + 2*1)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_differentiate, sizes_diff, local_diff);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -1942,10 +1936,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     {
       const size_t sizes[3] = { ROUNDUP(width, locopt_homo.sizex),ROUNDUP(height, locopt_homo.sizey), 1 };
       const size_t local[3] = { locopt_homo.sizex, locopt_homo.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_homo_set, 0,
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_homo_set, sizes, local,
         CLARG(dev_drv[d]), CLARG(dev_aux),
         CLARG(dev_homo[d]), CLARG(width), CLARG(height), CLARG(pad_homo), CLLOCAL(sizeof(float) * (locopt_homo.sizex + 2*1) * (locopt_homo.sizey + 2*1)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_set, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -1969,10 +1962,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_homo_sum.sizex), ROUNDUP(height, locopt_homo_sum.sizey), 1 };
       size_t local[3] = { locopt_homo_sum.sizex, locopt_homo_sum.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_homo_sum, 0,
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_markesteijn_homo_sum, sizes, local,
         CLARG(dev_homo[d]), CLARG(dev_homosum[d]),
         CLARG(width), CLARG(height), CLARG(pad_tile), CLLOCAL(sizeof(char) * (locopt_homo_sum.sizex + 2*2) * (locopt_homo_sum.sizey + 2*2)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_sum, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
