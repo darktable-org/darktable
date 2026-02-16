@@ -338,7 +338,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
   const gboolean is_xtrans = (filters == 9u);
- 
+
   // separate out G1 and G2 in Bayer patterns
   uint32_t filters4;
   if(is_xtrans)
@@ -487,13 +487,12 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_lin_interpolate, sizes, local,
         CLARG(dev_in), CLARG(tmp_out),
         CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans), CLARG(dev_lookup),
         CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)),
         CLARG(only_vng_linear));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
     if(err != CL_SUCCESS) goto finish;
   }
 
@@ -511,11 +510,10 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
 
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-  dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_interpolate, sizes, local,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
 
 finish:
   dt_opencl_release_mem_object(dev_tmp);

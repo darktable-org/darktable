@@ -158,10 +158,10 @@ cl_int dt_bilateral_splat_cl(dt_bilateral_cl_t *b, cl_mem in)
 {
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_splat, 0, CLARG(in), CLARG(b->dev_grid),
+  return dt_opencl_enqueue_kernel_2d_local_args(b->devid, b->global->kernel_splat, sizes, local,
+    CLARG(in), CLARG(b->dev_grid),
     CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
     CLARG(b->sigma_r), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 8 * sizeof(float)));
-  return dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
 }
 
 cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
@@ -191,7 +191,7 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   stride3 = b->size_x * b->size_y;
   return dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_blur_line_z, b->size_x, b->size_y,
           CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
-          CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));   
+          CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));
 }
 
 cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)

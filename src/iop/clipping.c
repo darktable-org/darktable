@@ -1134,15 +1134,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     const float maa[4] = { ma, mb, md, me };
     const float mbb[2] = { mg, mh };
 
-    size_t sizes[3];
-
-    sizes[0] = ROUNDUPDWD(width, devid);
-    sizes[1] = ROUNDUPDHT(height, devid);
-    sizes[2] = 1;
-    dt_opencl_set_kernel_args(devid, crkernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, crkernel, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
       CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi), CLARG(roo), CLARG(roi_in->scale), CLARG(roi_out->scale),
       CLARG(d->flip), CLARG(t), CLARG(k), CLARG(m), CLARG(k_space), CLARG(ka), CLARG(maa), CLARG(mbb));
-    err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
   }
 
 error:

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -192,12 +192,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(dev_m == NULL) goto error;
 
   /* invert image */
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_highpass_invert, 0, CLARG(dev_in), CLARG(dev_tmp),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highpass_invert, width, height,
+    CLARG(dev_in), CLARG(dev_tmp),
     CLARG(width), CLARG(height));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_invert, sizes);
   if(err != CL_SUCCESS) goto error;
 
   if(rad != 0)
@@ -205,36 +202,30 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     /* horizontal blur */
     sizes[0] = bwidth;
     sizes[1] = ROUNDUPDHT(height, devid);
-    sizes[2] = 1;
     local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_highpass_hblur, 0, CLARG(dev_tmp), CLARG(dev_out),
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highpass_hblur, sizes, local,
+      CLARG(dev_tmp), CLARG(dev_out),
       CLARG(dev_m), CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * wdh) * sizeof(float)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
-
 
     /* vertical blur */
     sizes[0] = ROUNDUPDWD(width, devid);
     sizes[1] = bheight;
-    sizes[2] = 1;
     local[0] = 1;
     local[1] = vblocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_highpass_vblur, 0, CLARG(dev_out), CLARG(dev_tmp),
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highpass_vblur, sizes, local,
+      CLARG(dev_out), CLARG(dev_tmp),
       CLARG(dev_m), CLARG(wdh), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * wdh) * sizeof(float)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
   /* mixing tmp and in -> out */
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_highpass_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highpass_mix, width, height,
+    CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(contrast_scale));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_mix, sizes);
 
 error:
   dt_opencl_release_mem_object(dev_m);
