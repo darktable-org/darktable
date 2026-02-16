@@ -730,10 +730,41 @@ static gboolean _draw(GtkWidget *da,
   return TRUE;
 }
 
+static gboolean _input_event(GtkWidget *widget,
+                             GdkEvent *event,
+                             gpointer user_data)
+{
+  (void)user_data;
+
+  if(event->type == GDK_TOUCHPAD_PINCH)
+  {
+    const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
+                                     pinch->phase, pinch->scale, pinch->state & 0xf))
+    {
+      gtk_widget_queue_draw(widget);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 static gboolean _scrolled(GtkWidget *widget,
                           const GdkEventScroll *event,
                           gpointer user_data)
 {
+  (void)user_data;
+
+  if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop
+     && (event->delta_x != 0.0 || event->delta_y != 0.0)
+     && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
+                                    event->delta_x, event->delta_y, event->state & 0xf))
+  {
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+  }
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -1481,10 +1512,13 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     gtk_widget_add_events(widget,
                           GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                           | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                          | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+                          | GDK_LEAVE_NOTIFY_MASK | GDK_TOUCHPAD_GESTURE_MASK
+                          | darktable.gui->scroll_mask);
 
     g_signal_connect(G_OBJECT(widget), "draw",
                     G_CALLBACK(_draw), NULL);
+    g_signal_connect(G_OBJECT(widget), "event",
+                    G_CALLBACK(_input_event), NULL);
     g_signal_connect(G_OBJECT(widget), "motion-notify-event",
                     G_CALLBACK(_mouse_moved), gui);
     g_signal_connect(G_OBJECT(widget), "leave-notify-event",
