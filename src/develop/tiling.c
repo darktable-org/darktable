@@ -32,8 +32,10 @@
 
 /* this defines an additional alignment requirement for opencl image width.
    It can have strong effects on processing speed. Reasonable values are a
-   power of 2. set to 1 for no effect. */
-#define CL_ALIGNMENT ((piece->pipe->dsc.filters != 9u) ? 4 : 1)
+   power of 2. set to 1 for no effect.
+   FIXME we can possibly fix this per device
+*/
+#define CL_ALIGNMENT 4
 
 /* parameter RESERVE for extended roi_in sizes due to inaccuracies when doing
    roi_out -> roi_in estimations.
