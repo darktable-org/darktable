@@ -99,6 +99,25 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
       gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), expander->expanded);
     }
   }
+  else if(expanded)
+  {
+    // The expander is already expanded. Still update scroll tracking
+    // so that _expander_resize can scroll to this widget. This is
+    // needed when navigating from the Quick Access Panel to a module
+    // that was already expanded on the destination tab.
+    _last_expanded = GTK_WIDGET(expander);
+    GtkWidget *sw = gtk_widget_get_ancestor(GTK_WIDGET(expander), GTK_TYPE_SCROLLED_WINDOW);
+    if(sw)
+    {
+      gtk_widget_get_allocation(GTK_WIDGET(expander), &_start_pos);
+      _start_pos.x = gtk_adjustment_get_value(
+        gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
+    }
+    // Force a size-allocate so _expander_resize fires even if the
+    // widget layout has not changed (e.g. module already visible and
+    // expanded on the current tab).
+    gtk_widget_queue_resize(GTK_WIDGET(expander));
+  }
 }
 
 gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander)
@@ -169,13 +188,58 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
 static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
-
-  if(widget == _scroll_widget ||
-     _drop_widget ? widget != _drop_widget :
-     ((!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) ||
-       gtk_widget_get_allocated_height(widget) == _start_pos.height) &&
-      (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
+  // Already scrolling to this widget
+  if(widget == _scroll_widget)
     return;
+
+  // Handle drag-and-drop case
+  if(_drop_widget)
+  {
+    if(widget != _drop_widget)
+      return;
+  }
+  else
+  {
+    const gboolean is_lib_gui_module = darktable.lib->gui_module
+      && darktable.lib->gui_module->expander == widget;
+
+    if(_last_expanded)
+    {
+      // When _last_expanded is set (by dtgtk_expander_set_expanded),
+      // only allow that specific widget (or lib gui_module) to
+      // trigger scroll.  This prevents modules with stale
+      // GTK_STATE_FLAG_SELECTED (left over from previous images or
+      // sessions) from stealing the scroll target.
+      if(widget != _last_expanded && !is_lib_gui_module)
+        return;
+
+      // Wait until the target widget has a valid layout (positive
+      // height means it is mapped and sized).  This handles the case
+      // where the module is on a different tab that hasn't been
+      // shown yet.
+      if(gtk_widget_get_allocated_height(widget) <= 0)
+        return;
+
+      // Clear _last_expanded so that, once the scroll animation
+      // finishes and _scroll_widget becomes NULL, subsequent
+      // size-allocate events do not re-trigger scrolling.
+      _last_expanded = NULL;
+    }
+    else
+    {
+      const gboolean height_changed =
+        gtk_widget_get_allocated_height(widget) != _start_pos.height;
+
+      if(!height_changed)
+        return;
+
+      const gboolean frame_selected =
+        gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED;
+
+      if(!frame_selected && !is_lib_gui_module)
+        return;
+    }
+  }
 
   _scroll_widget = widget;
   GdkFrameClock *clock = gtk_widget_get_frame_clock(widget);
