@@ -1640,7 +1640,8 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_lib_histogram_t *d)
 {
-  if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
+  if(dt_key_modifier_state() & GDK_BUTTON1_MASK
+     && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
@@ -1809,7 +1810,8 @@ static void _drawable_button_release(GtkGestureSingle *gesture,
                                      double y,
                                      dt_lib_histogram_t *d)
 {
-  dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
+  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
 }
 
 static void _drawable_leave(GtkEventControllerMotion *controller,
