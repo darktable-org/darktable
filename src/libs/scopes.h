@@ -1,0 +1,140 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2011-2025 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include "bauhaus/bauhaus.h"
+// FIXME: if we don't use histogram ROI this include can move to scopes/histogram.c
+#include "common/histogram.h"
+#include "gui/gtk.h"
+
+G_BEGIN_DECLS
+
+// FIXME: instead of tracking these by an enum, just put their function tables in a GList and track sequence in that as needed
+typedef enum dt_scopes_mode_type_t
+{
+  DT_SCOPES_MODE_HISTOGRAM = 0,
+  DT_SCOPES_MODE_N // needs to be the last one
+} dt_scopes_mode_type_t;
+
+typedef enum dt_scopes_highlight_t
+{
+  DT_SCOPES_HIGHLIGHT_NONE = 0,
+  DT_SCOPES_HIGHLIGHT_BLACK_POINT,
+  DT_SCOPES_HIGHLIGHT_EXPOSURE
+} dt_scopes_highlight_t;
+
+typedef enum dt_scopes_scale_t
+{
+  DT_SCOPES_SCALE_LOGARITHMIC = 0,
+  DT_SCOPES_SCALE_LINEAR,
+  DT_SCOPES_SCALE_N // needs to be the last one
+} dt_scopes_scale_t;
+
+typedef enum dt_scopes_rgb_t
+{
+  DT_SCOPES_RGB_RED = 0,
+  DT_SCOPES_RGB_GREEN,
+  DT_SCOPES_RGB_BLUE,
+  DT_SCOPES_RGB_N // needs to be the last one
+} dt_scopes_rgb_t;
+
+typedef gboolean scopes_channels_t[DT_SCOPES_RGB_N];
+
+struct dt_scopes_t;
+struct dt_scopes_mode_t;
+
+/** structure used to store pointers to the functions implementing scope modes */
+// FIXME: is this true?
+/** plus a few per-class descriptive data items */
+typedef struct dt_scopes_functions_t
+{
+  // FIXME: add a function which returns the (non-localized) name of the scope for storing in config
+  void (*process)(struct dt_scopes_mode_t *const self,
+                  const float *const input,
+                  // FIXME: should ROI by dt_histogram_roi_t or another type?
+                  const dt_histogram_roi_t *const roi);
+  // FIXME: do want a proper clear function or just tag as not up to date?
+  void (*clear)(struct dt_scopes_mode_t *const self);
+  void (*draw_bkgd)(const struct dt_scopes_mode_t *const self,
+                    cairo_t *cr,
+                    const int width,
+                    const int height);
+  void (*draw_highlight)(const struct dt_scopes_mode_t *const self,
+                         cairo_t *cr,
+                         dt_scopes_highlight_t highlight,
+                         const int width,
+                         const int height);
+  void (*draw_scope)(const struct dt_scopes_mode_t *const self,
+                     cairo_t *cr,
+                     const int width,
+                     const int height);
+  void (*draw_scope_channels)(const struct dt_scopes_mode_t *const self,
+                              cairo_t *cr,
+                              const int width,
+                              const int height,
+                              const scopes_channels_t channels);
+  // FIXME: rename to something more sensible
+  dt_scopes_highlight_t (*get_highlight)(const struct dt_scopes_mode_t *const self,
+                                         const float posx,
+                                         const float posy);
+  double (*get_exposure_pos)(const struct dt_scopes_mode_t *const self,
+                             const double x,
+                             const double y);
+  void (*mode_enter)(const struct dt_scopes_mode_t *const self);
+  void (*mode_leave)(const struct dt_scopes_mode_t *const self);
+  void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
+  void (*gui_init_options)(struct dt_scopes_mode_t *const mode, dt_action_t *dark, GtkWidget *box);
+  void (*gui_cleanup)(struct dt_scopes_mode_t *const self);
+} dt_scopes_functions_t;
+
+typedef struct dt_scopes_mode_t
+{
+  const dt_scopes_functions_t *functions;
+  void *data;
+  // FIXME: add a counter so we know if data is up to date
+  // FIXME: include "dt_scopes_t *scopes;" here instead of asking each mode to have it in private data
+} dt_scopes_mode_t;
+
+/** structure used to define internal storage for a scope */
+typedef struct dt_scopes_t
+{
+  dt_scopes_mode_t *cur_mode;
+  // FIXME: should this be a GList which is appended with scopes on module init?
+  dt_scopes_mode_t modes[DT_SCOPES_MODE_N];
+  // depends on mouse position
+  dt_scopes_highlight_t highlight;
+  // FIXME: add a counter so we know if each scope is up to date
+  //const dt_scopes_functions_t *view_functions[DT_SCOPES_VIEW_N];
+  //void *view_data[DT_SCOPES_VIEW_N];
+  GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
+  // state set by buttons
+  scopes_channels_t channels;
+} dt_scopes_t;
+
+/** the scope-specific function tables */
+// FIXME: does this even need to be declared if it is set up within each scopes/*.c?
+extern const dt_scopes_functions_t dt_scopes_functions_histogram;
+
+G_END_DECLS
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
