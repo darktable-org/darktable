@@ -1640,18 +1640,21 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_lib_histogram_t *d)
 {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(d->scope_draw, &allocation);
+
   if(dt_key_modifier_state() & GDK_BUTTON1_MASK)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
       x = -y;
 
-    dt_dev_exposure_handle_event(controller, 1, x, FALSE);
+    dt_dev_exposure_handle_event(controller, 1, x,
+                                 d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM ? allocation.width : allocation.height,
+                                 FALSE);
   }
   else
   {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(d->scope_draw, &allocation);
     const float posx = x / (float)(allocation.width);
     const float posy = y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
@@ -1724,7 +1727,11 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
       x = -y;
 
-    dt_dev_exposure_handle_event(gesture, n_press, x, d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(d->scope_draw, &allocation);
+    dt_dev_exposure_handle_event(gesture, n_press, x,
+                                 d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM ? allocation.width : allocation.height,
+                                 d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
   }
 }
 
@@ -1758,7 +1765,7 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
   {
     const gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
     if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-    dt_dev_exposure_handle_event(event, 0, 0, black);
+    dt_dev_exposure_handle_event(event, 0, 0.0, 1, black);
   }
   // note we are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
@@ -1809,7 +1816,11 @@ static void _drawable_button_release(GtkGestureSingle *gesture,
                                      double y,
                                      dt_lib_histogram_t *d)
 {
-  dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(d->scope_draw, &allocation);
+  dt_dev_exposure_handle_event(gesture, -n_press, x,
+                               d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM ? allocation.width : allocation.height,
+                               FALSE);
 }
 
 static void _drawable_leave(GtkEventControllerMotion *controller,

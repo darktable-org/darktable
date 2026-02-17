@@ -2979,10 +2979,10 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
-void dt_dev_exposure_handle_event(gpointer controller, int n_press, gdouble x, const gboolean blackwhite)
+void dt_dev_exposure_handle_event(gpointer controller, int n_press, gdouble x, int width, const gboolean blackwhite)
 {
   if(darktable.develop->proxy.exposure.handle_event)
-    darktable.develop->proxy.exposure.handle_event(controller, n_press, x, blackwhite);
+    darktable.develop->proxy.exposure.handle_event(controller, n_press, x, width, blackwhite);
 }
 
 void dt_dev_modulegroups_set(dt_develop_t *dev,

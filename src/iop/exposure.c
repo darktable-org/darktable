@@ -828,6 +828,7 @@ static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 static void _exposure_proxy_handle_event(gpointer controller,
                                          int n_press,
                                          double x,
+                                         int width,
                                          const gboolean blackwhite)
 {
   dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
@@ -847,8 +848,15 @@ static void _exposure_proxy_handle_event(gpointer controller,
                         p->mode == EXPOSURE_MODE_DEFLICKER
                       ? g->deflicker_target_level : g->exposure;
     if(!n_press)
+    {
       darktable.bauhaus->scroll(widget, controller);
+    }
     else
+    {
+      // bauhaus drags normally are relative to bauhaus widget width,
+      // but in this case they should be in relation to the scope
+      // width (histogram) or height (waveform)
+      x *= (float)gtk_widget_get_allocated_width(widget) / width;
       if(GTK_IS_GESTURE_SINGLE(controller))
         if(n_press > 0)
           darktable.bauhaus->press(controller, n_press, x, 0, widget);
@@ -856,6 +864,7 @@ static void _exposure_proxy_handle_event(gpointer controller,
           darktable.bauhaus->release(controller, -n_press, x, 0, widget);
       else
         darktable.bauhaus->motion(controller, x, 0, widget);
+    }
 
     gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
     dt_action_widget_toast(DT_ACTION(self), widget, "%s", text);
