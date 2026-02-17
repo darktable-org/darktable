@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -40,6 +40,9 @@ struct dt_view_t;
 
 /** get name of the module, to be translated. */
 REQUIRED(const char *, name, struct dt_lib_module_t *self);
+
+/** does the module support a preset label? */
+DEFAULT(gboolean, has_preset_label, struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
 REQUIRED(enum dt_view_type_flags_t, views, struct dt_lib_module_t *self);
