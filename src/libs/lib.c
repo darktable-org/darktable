@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ static dt_lib_module_info_t *_get_module_info_for_module(dt_lib_module_t *module
 static void _set_module_preset_label(dt_lib_module_t *module,
                                      const gchar *preset_name)
 {
-  if(!module->expander) return;
+  if(!module->expander || !module->has_preset_label(module)) return;
 
   gchar *preset_label_text = (*preset_name == '\0')? g_strdup("")
                                                    : g_strdup_printf("• %s", preset_name);
@@ -665,6 +665,12 @@ uint32_t dt_lib_get_container(dt_lib_module_t *module)
     container = DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 
   return container;
+}
+
+/* default has_preset_label  implementation */
+static gboolean default_has_preset_label(dt_lib_module_t *self)
+{
+  return FALSE;
 }
 
 /* default expandable implementation */
