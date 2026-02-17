@@ -856,7 +856,7 @@ static void _exposure_proxy_handle_event(gpointer controller,
       // bauhaus drags normally are relative to bauhaus widget width,
       // but in this case they should be in relation to the scope
       // width (histogram) or height (waveform)
-      x *= (float)gtk_widget_get_allocated_width(widget) / width;
+      x *= dt_bauhaus_widget_width_without_quad(widget) / width;
       if(GTK_IS_GESTURE_SINGLE(controller))
         if(n_press > 0)
           darktable.bauhaus->press(controller, n_press, x, 0, widget);

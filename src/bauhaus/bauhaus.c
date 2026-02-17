@@ -1113,11 +1113,12 @@ void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
   w->tooltip = g_strdup(text);
 }
 
-static float _widget_width(const dt_bauhaus_widget_t *w)
+float dt_bauhaus_widget_width_without_quad(GtkWidget *widget)
 {
+  const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   // return non-negative width even for a widget which is not yet
   // allocated (and which will report a width of 1)
-  return MAX(1, gtk_widget_get_allocated_width(GTK_WIDGET(w))
+  return MAX(1, gtk_widget_get_allocated_width(widget)
                 - w->margin.left - w->padding.left
                 - w->margin.right - w->padding.right
                 - _widget_get_quad_width(w));
@@ -1138,7 +1139,7 @@ gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
     dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
     dt_bauhaus_slider_data_t *d = &w->slider;
 
-    const float pos = (x - w->margin.left - w->padding.left) / _widget_width(w);
+    const float pos = (x - w->margin.left - w->padding.left) / dt_bauhaus_widget_width_without_quad(widget);
 
     if(y > darktable.bauhaus->line_height / 2.0f + w->margin.top + w->padding.top
        && pos <= 1.0f)
@@ -3546,7 +3547,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   _request_focus(w);
   gtk_widget_grab_focus(widget);
 
-  const float width = _widget_width(w);
+  const float width = dt_bauhaus_widget_width_without_quad(widget);
   const float pos = (x - w->margin.left - w->padding.left) / width;
 
   const guint button = gtk_gesture_single_get_current_button(gesture);
@@ -3631,7 +3632,7 @@ static void _widget_motion(GtkEventControllerMotion *controller,
   dt_bauhaus_slider_data_t *d = &w->slider;
   dt_bauhaus_t *bh = darktable.bauhaus;
 
-  const float width = _widget_width(w);
+  const float width = dt_bauhaus_widget_width_without_quad(widget);
   const float pos = (x - w->margin.left - w->padding.left) / width;
 
   if(w->type == DT_BAUHAUS_COMBOBOX)

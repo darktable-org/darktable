@@ -215,6 +215,8 @@ static inline void dt_bauhaus_widget_set_quad(GtkWidget *widget,
   g_signal_connect(G_OBJECT(widget), "quad-pressed", G_CALLBACK(callback), self);
   if(tooltip) dt_bauhaus_widget_set_quad_tooltip(widget, tooltip);
 }
+// get width of the widget less any quad button:
+float dt_bauhaus_widget_width_without_quad(GtkWidget *widget);
 // get the tooltip for widget or quad button:
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
                                             const int x,
