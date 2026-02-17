@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,6 +185,10 @@ const char *name(dt_lib_module_t *self)
   return _("import");
 }
 
+gboolean has_preset_label(dt_lib_module_t *self)
+{
+  return TRUE;
+}
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
