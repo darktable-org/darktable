@@ -3734,6 +3734,19 @@ gboolean gesture_pan(dt_view_t *self,
   (void)y;
   (void)state;
   if(!dev) return FALSE;
+
+  // Mask editing (brush etc.) uses scroll for tool parameters.
+  if(dev->form_visible
+     && !darktable.develop->darkroom_skip_mouse_events)
+    return FALSE;
+
+  // Let active modules consume scroll for their own interactions (e.g. brush size).
+  if(dev->gui_module && dev->gui_module->scrolled
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
+    return FALSE;
+
   if(dx == 0.0 && dy == 0.0) return FALSE;
 
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, dx, dy, TRUE);
