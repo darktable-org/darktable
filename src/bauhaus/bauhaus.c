@@ -1115,10 +1115,12 @@ void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
 
 static float _widget_width(const dt_bauhaus_widget_t *w)
 {
-  return gtk_widget_get_allocated_width(GTK_WIDGET(w))
-         - w->margin.left - w->padding.left
-         - w->margin.right - w->padding.right
-         - _widget_get_quad_width(w);
+  // unallocated widgets have a width of 1, and should keep that width
+  // even when accounting for the quad width
+  return MAX(1.0f, gtk_widget_get_allocated_width(GTK_WIDGET(w))
+                   - w->margin.left - w->padding.left
+                   - w->margin.right - w->padding.right
+                   - _widget_get_quad_width(w));
 }
 
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
