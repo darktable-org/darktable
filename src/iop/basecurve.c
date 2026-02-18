@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     Copyright (C) 2010-2026 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -989,6 +990,7 @@ int process_cl_lut(dt_iop_module_t *self,
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp = NULL;
 
@@ -1003,11 +1005,9 @@ int process_cl_lut(dt_iop_module_t *self,
   const int height = roi_in->height;
   const int preserve_colors = d->preserve_colors;
 
-  const float mul = 1.0f;
-
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
-  if(dev_m == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
+  if(!dev_m || !dev_coeffs) goto error;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
