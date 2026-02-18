@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-13 07:12-0300\n"
-"PO-Revision-Date: 2026-02-13 07:23-0300\n"
+"POT-Creation-Date: 2026-02-18 07:30-0300\n"
+"PO-Revision-Date: 2026-02-18 07:30-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1070,25 +1070,30 @@ msgstr "miniaturas"
 
 #: ../build/bin/preferences_gen.h:2741
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
-msgstr "para imagens inalteratas, usar arquivo RAW ao invés de JPEG embutido a partir do tamanho"
+msgstr ""
+"para imagens inalteratas, usar arquivo RAW ao invés de JPEG embutido a "
+"partir do tamanho"
 
 #: ../build/bin/preferences_gen.h:2750
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
 "if you want all thumbnails and pre-rendered images in best quality you "
 "should choose the *always* option.\n"
 "for the quickest display, choose the *never* option\n"
-"the *auto* option prefers the embedded JPEG except when the when thumb size "
+"the *auto* option prefers the embedded JPEG except when the thumb size "
 "exceeds the resolution of the embedded JPEG\n"
 "(more comments in the manual)"
 msgstr ""
 "se o tamanho da miniatura for superior a esse valor, ela será processada\n"
-"utilizando o arquivo RAW ao invés da pré-visualização JPEG (melhor porém\n"
+"utilizando o arquivo raw ao invés da pré-visualização JPEG (melhor porém\n"
 "mais lento).\n"
 "se você quiser que todas as miniaturas e imagens pré-processadas em alta\n"
 "qualidade você deveria escolher a opção *sempre*.\n"
+"para a visualização mais rápida possível, escolha a opção *nunca*\n"
+"a opção *auto* prefere o JPEG embarcado exceto quando o tamanho da "
+"miniatura\n"
+"excede a resolução do JPEG embarcado\n"
 "(mais comentários no manual)"
 
 #: ../build/bin/preferences_gen.h:2759
@@ -1530,7 +1535,6 @@ msgid "auto-apply pixel workflow defaults"
 msgstr "auto-aplicar padrões do fluxo de trabalho"
 
 #: ../build/bin/preferences_gen.h:3425
-#, fuzzy
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply the "
 "corresponding tone mapper (shown in parenthesis), color calibration and "
@@ -1539,7 +1543,8 @@ msgid ""
 "curve, white balance and the legacy module pipe order."
 msgstr ""
 "fluxo de trabalho relativo à cena é baseado em módulos lineares e auto-"
-"aplicará fílmico ou sigmóide, calibração de cor e exposição,\n"
+"aplicará o mapeador de tons correspondente (mostrado entre parênteses), "
+"calibração de cor e exposição,\n"
 "fluxo de trabalho relativo à exibição é baseado em módulos Lab e auto-"
 "aplicará a curva base, balanço de branco e a ordem legada de módulos da "
 "pixelpipe."
@@ -2150,21 +2155,22 @@ msgid "order or exclude MIDI devices"
 msgstr "carregar ou excluir dispositivos MIDI"
 
 #: ../build/bin/preferences_gen.h:4383
-#, fuzzy
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
 "add encoding and number of knobs like 'Loupedeck:127,BeatStep:63:16'\n"
 "prefix with '-' to ignore matching devices\n"
-"just '-' stops loading all further devices or on its own disables midi "
+"just '-' stops loading all further devices or on its own disables MIDI "
 "completely"
 msgstr ""
 "lista separada por vírgula de fragmentos de nomes de dispositivos que, se "
 "combinarem, carregam o dispositivo de MIDI no id dado pela localização na "
 "lista\n"
-"ou, se precedido por '-', previne que os dispositivos que combinem sejam "
-"carregados. adicione codificação e número de botões reguladores (knobs) como "
-"'BeatStep:63:16'"
+"adicione encoding ou número de botões reguladores (knobs) como "
+"'Loupedeck:127,BeatStep:63:16'\n"
+"preceda por '-', para ignorar dispositivos que combinem.\n"
+"simplesmente '-' impede o carregamento de quais quer outros dispositivos ou, "
+"por si mesmo, desabilita o MIDI completamente"
 
 #. tags
 #: ../build/bin/preferences_gen.h:4393 ../src/develop/lightroom.c:1573
@@ -7700,11 +7706,11 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1227
+#: ../src/common/opencl.c:1223
 msgid "no working OpenCL library found"
 msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
-#: ../src/common/opencl.c:1247
+#: ../src/common/opencl.c:1243
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -7722,23 +7728,23 @@ msgstr ""
 "  - nenhum driver OpenCL instalado,\n"
 "  - múltiplos drivers instalados por plataforma\n"
 
-#: ../src/common/opencl.c:1362
+#: ../src/common/opencl.c:1358
 msgid "no devices found for unknown platform"
 msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
 
-#: ../src/common/opencl.c:1409
+#: ../src/common/opencl.c:1405
 msgid "not enough memory for OpenCL devices"
 msgstr "não há memória suficiente para dispositivos OpenCL"
 
-#: ../src/common/opencl.c:1447
+#: ../src/common/opencl.c:1443
 msgid "no OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL encontrado"
 
-#: ../src/common/opencl.c:1490
+#: ../src/common/opencl.c:1486
 msgid "no suitable OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL adequado encontrado"
 
-#: ../src/common/opencl.c:1514
+#: ../src/common/opencl.c:1510
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -7749,12 +7755,12 @@ msgstr ""
 "%s\n"
 "desabilitando OpenCL por enquanto"
 
-#: ../src/common/opencl.c:1550
+#: ../src/common/opencl.c:1546
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2400
+#: ../src/common/opencl.c:2396
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
@@ -8818,12 +8824,15 @@ msgstr "aplicar estilo(s)"
 #: ../src/control/jobs/control_jobs.c:2585
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export."
-msgstr "falha o obter parâmetros do módulo de armazenamento `%s', abortando exportação."
+msgstr ""
+"falha o obter parâmetros do módulo de armazenamento `%s', abortando "
+"exportação."
 
 #: ../src/control/jobs/control_jobs.c:2597
 #, c-format
 msgid "failed to get parameters from format module `%s', aborting export."
-msgstr "falha o obter parâmetros do módulo de formato `%s', abortando exportação."
+msgstr ""
+"falha o obter parâmetros do módulo de formato `%s', abortando exportação."
 
 #: ../src/control/jobs/control_jobs.c:2617
 msgid "export images"
@@ -9727,8 +9736,8 @@ msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3591 ../src/develop/blend_gui.c:3600
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3146
-#: ../src/iop/colorequal.c:3173 ../src/iop/demosaic.c:1812
-#: ../src/iop/demosaic.c:1831 ../src/iop/diffuse.c:1782
+#: ../src/iop/colorequal.c:3173 ../src/iop/demosaic.c:1806
+#: ../src/iop/demosaic.c:1825 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2677
 msgid " px"
 msgstr " px"
@@ -10135,7 +10144,8 @@ msgid ""
 "ctrl+scroll (%d%%)"
 msgstr ""
 "<b>modo da névoa</b>: alt+clique, <b>rotacionar</b>: ctrl+arrastar\n"
-"<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</b>: ctrl+scroll (%d%%)"
+"<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</"
+"b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:174
 #, c-format
@@ -10390,7 +10400,7 @@ msgstr ""
 "porque ela é processada mais tarde na pixel pipe.\n"
 "a máscara de pixels será ignorada"
 
-#: ../src/develop/tiling.c:818 ../src/develop/tiling.c:1159
+#: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1161
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -15920,10 +15930,22 @@ msgid ""
 " - increase contrast\n"
 " - increase pivot target output\n"
 " - increase white relative exposure\n"
-" - increase curve y gamma (in the advanced curve parmeters section)\n"
+" - increase curve y gamma (in the advanced curve parameters section)\n"
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
+"potência de ombro não pode ser aplicada porque a curva perdeu sua forma de "
+"'S'\n"
+"por causa das configurações atuais de exposição relativa de branco, "
+"contraste,\n"
+"e pivô.\n"
+"para re-habilitar, faça uma dentre:\n"
+" - aumente o contraste\n"
+" - aumente a saída alvo do pivô\n"
+" - aumente a exposição relativa de branco\n"
+" - aumente curva e gama (na seção de parâmetros avançados da curva)\n"
+"\n"
+"abra a seção 'mostrar curva' para ver os efeitos das configurações acima."
 
 #: ../src/iop/agx.c:1866
 msgid ""
@@ -15943,10 +15965,21 @@ msgid ""
 " - increase contrast\n"
 " - decrease pivot target output\n"
 " - decrease black relative exposure (make more negative)\n"
-" - decrease curve y gamma (in the advanced curve parmeters section)\n"
+" - decrease curve y gamma (in the advanced curve parameters section)\n"
 "\n"
 "open the 'show curve' section to see the effects of the above settings."
 msgstr ""
+"potência de pé não pode ser aplicada porque a curva perdeu sua forma de 'S'\n"
+"por causa das configurações atuais de exposição relativa de branco, "
+"contraste,\n"
+"e pivô.\n"
+"para re-habilitar, faça uma dentre:\n"
+" - aumente o contraste\n"
+" - diminua a saída alvo do pivô\n"
+" - diminua a exposição relativa de branco\n"
+" - diminua curva e gama (na seção de parâmetros avançados da curva)\n"
+"\n"
+"abra a seção 'mostrar curva' para ver os efeitos das configurações acima."
 
 #: ../src/iop/agx.c:1890
 msgid "decrease or increase contrast and brightness"
@@ -19698,7 +19731,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1845
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1839
 #: ../src/iop/highlights.c:1345
 msgid "not applicable"
 msgstr "não aplicável"
@@ -19919,12 +19952,12 @@ msgstr "não foi possível alocar buffer para interpolação cromática"
 msgid "can't equilibrate greens"
 msgstr "não é possível equilibrar os verdes"
 
-#: ../src/iop/demosaic.c:1472
+#: ../src/iop/demosaic.c:1466
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1760
+#: ../src/iop/demosaic.c:1754
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19938,7 +19971,7 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1765
+#: ../src/iop/demosaic.c:1759
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19950,15 +19983,15 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1771
+#: ../src/iop/demosaic.c:1765
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1776
+#: ../src/iop/demosaic.c:1770
 msgid "monochrome sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores monocromáticos."
 
-#: ../src/iop/demosaic.c:1780
+#: ../src/iop/demosaic.c:1774
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19968,11 +20001,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência\n"
 "defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1783
+#: ../src/iop/demosaic.c:1777
 msgid "toggle mask visualization"
 msgstr "alterna visualização da máscara"
 
-#: ../src/iop/demosaic.c:1787
+#: ../src/iop/demosaic.c:1781
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19982,7 +20015,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1790
+#: ../src/iop/demosaic.c:1784
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19990,15 +20023,17 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1793
+#: ../src/iop/demosaic.c:1787
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1796
+#: ../src/iop/demosaic.c:1790
 msgid "green channels matching method. only apply for some old sensors"
-msgstr "método de casamento de canais de verde. somente se aplica a alguns sensores antigos"
+msgstr ""
+"método de casamento de canais de verde. somente se aplica a alguns sensores "
+"antigos"
 
-#: ../src/iop/demosaic.c:1799
+#: ../src/iop/demosaic.c:1793
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -20008,15 +20043,15 @@ msgstr ""
 "devido ao desfoque da câmera, que pode ser causado por difração, filtros\n"
 "anti-aliasing e outras fontes de desfoque do tipo gaussiano"
 
-#: ../src/iop/demosaic.c:1804
+#: ../src/iop/demosaic.c:1798
 msgid "capture sharpen controls"
 msgstr "controles de captura de nitidez"
 
-#: ../src/iop/demosaic.c:1808
+#: ../src/iop/demosaic.c:1802
 msgid "set effect strength by iterations"
 msgstr "determinar a força do efeito por iterações"
 
-#: ../src/iop/demosaic.c:1813
+#: ../src/iop/demosaic.c:1807
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -20034,7 +20069,7 @@ msgstr ""
 "Nota: o raio definido em zero será recalculado automaticamente na próxim "
 "vez. use para predefinições"
 
-#: ../src/iop/demosaic.c:1819
+#: ../src/iop/demosaic.c:1813
 msgid ""
 "calculate the capture sharpen radius from available raw sensor data.\n"
 "for best results avoid cropping or darkroom zooming in"
@@ -20042,7 +20077,7 @@ msgstr ""
 "calcular o raio de ajuste de nitidez a partir dos dados do sensor.\n"
 "para melhores resultados evite cortar o fazer zoom"
 
-#: ../src/iop/demosaic.c:1823
+#: ../src/iop/demosaic.c:1817
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -20058,11 +20093,11 @@ msgstr ""
 "Nota: o limiar em zero reinicializará aos defaults na próxima vez. use para "
 "predefinições"
 
-#: ../src/iop/demosaic.c:1827
+#: ../src/iop/demosaic.c:1821
 msgid "visualize sharpened areas"
 msgstr "visualizar áreas com nitidez ajustada"
 
-#: ../src/iop/demosaic.c:1832
+#: ../src/iop/demosaic.c:1826
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -20070,15 +20105,15 @@ msgstr ""
 "aumenta o raio de nitidez dos cantos da imagem,\n"
 "o centro da imagem não é afetado"
 
-#: ../src/iop/demosaic.c:1834
+#: ../src/iop/demosaic.c:1828
 msgid "visualize the overall radius"
 msgstr "visualizar o raio geral"
 
-#: ../src/iop/demosaic.c:1839
+#: ../src/iop/demosaic.c:1833
 msgid "adjust to the sharp image center"
 msgstr "ajusta a nitidez no centro da imagem"
 
-#: ../src/iop/demosaic.c:1846
+#: ../src/iop/demosaic.c:1840
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
@@ -23332,7 +23367,8 @@ msgid ""
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
 "selecione um arquivo PFM/PNG gravado como máscara de pixels,\n"
-"ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes de escolher o arquivo"
+"ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes "
+"de escolher o arquivo"
 
 #: ../src/iop/rasterfile.c:756
 msgid "the mask file path is saved with the image history"
@@ -23347,7 +23383,9 @@ msgstr "vetorizar"
 msgid ""
 "vectorize the current bitmap and creates corresponding path masks in the "
 "mask manager"
-msgstr "vetoriza o mapa de bits e cria máscaras de caminho correspondentes no gerenciador de máscaras"
+msgstr ""
+"vetoriza o mapa de bits e cria máscaras de caminho correspondentes no "
+"gerenciador de máscaras"
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
