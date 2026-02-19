@@ -1028,11 +1028,11 @@ static gboolean _check_private_recursive(dt_tag_t *t)
     if(*tag)
     {
       // now we have the parent leave. Check if this is a private category
-      uint32_t tagid = dt_tag_get_tag_id_by_name(tag);
+      const uint32_t tagid = dt_tag_get_tag_id_by_name(tag);
       if(tagid != 0)
       {
-        gint flags = dt_tag_get_flags(tagid);
-        is_private = flags & (DT_TF_CATEGORY | DT_TF_PRIVATE);
+        const gint flags = dt_tag_get_flags(tagid);
+        is_private = (flags & (DT_TF_CATEGORY | DT_TF_PRIVATE)) == (DT_TF_CATEGORY | DT_TF_PRIVATE);
       }
     }
   }
