@@ -762,7 +762,7 @@ void gui_init(dt_iop_module_t *self)
   g->vectorize = gtk_button_new_with_label(_("vectorize"));
   gtk_widget_set_tooltip_text
     (g->vectorize,
-     _("vectorize the current bitmap and creates corresponding"
+     _("vectorize the current bitmap and create corresponding"
        " path masks in the mask manager"));
   g_signal_connect(g->vectorize, "clicked",
                    G_CALLBACK(_vectorize_button_clicked), self);
