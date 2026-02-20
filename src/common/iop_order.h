@@ -230,6 +230,9 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev,
 void dt_ioppr_resync_modules_order(struct dt_develop_t *dev);
 void dt_ioppr_resync_iop_list(struct dt_develop_t *dev);
 
+void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list);
+/** ensure that iop_order_list contains all supported modules */
+
 /** update target_iop_order_list to ensure that modules in
     iop_order_list are in target_iop_order_list note that
     iop_order_list contains a set of dt_iop_order_entry_t where order
