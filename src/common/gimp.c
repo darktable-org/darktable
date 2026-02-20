@@ -24,7 +24,10 @@
 gboolean dt_export_gimp_file(const dt_imgid_t imgid)
 {
   const gboolean thumb = dt_check_gimpmode("thumb");
-  char *tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
+  /* We always export to a temporary location provided by the OS but want that
+     to be tested via the filename pattern so let's some kind of magic here.
+  */
+  char *tmp_directory = g_dir_make_tmp("XDT2GIMP_XXXXXX", NULL);
   char *path = g_build_filename(tmp_directory, thumb ? "thumb" : "image", NULL);
   g_free(tmp_directory);
 

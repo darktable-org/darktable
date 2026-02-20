@@ -1389,15 +1389,16 @@ int dt_init(int argc,
     g_free(theversion);
   }
 
-  if(myoptions)
+  if(myoptions && darktable.unmuted)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt starting]");
+    dt_print_nts(DT_DEBUG_ALWAYS, "[dt starting] as :");
     int k = 0;
     while(myoptions[k])
       dt_print_nts(DT_DEBUG_ALWAYS, " %s", myoptions[k++]);
     dt_print_nts(DT_DEBUG_ALWAYS, "\n");
-    g_strfreev(myoptions);
   }
+  if(myoptions)
+    g_strfreev(myoptions);
 
   if(darktable.dump_pfm_module
      || darktable.dump_pfm_pipe
