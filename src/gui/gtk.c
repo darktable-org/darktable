@@ -1318,9 +1318,6 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui)
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
-  /* lets zero mem */
-  memset(gui, 0, sizeof(dt_gui_gtk_t));
-
   dt_pthread_mutex_init(&gui->mutex, NULL);
 
   // force gtk3 to use normal scroll bars instead of the popup
@@ -1665,7 +1662,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(dt_control_all_running())
+  if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
