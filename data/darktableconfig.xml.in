@@ -1364,7 +1364,7 @@
     </type>
     <default>never</default>
     <shortdescription>for unaltered images, use raw file instead of embedded JPEG from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\nfor the quickest display, choose the *never* option\nthe *auto* option prefers the embedded JPEG except when the thumb size exceeds the resolution of the embedded JPEG\n(more comments in the manual)</longdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the 'always' option.\nfor the quickest display, choose the 'never' option\nthe 'auto' option prefers the embedded JPEG except when the thumb size exceeds the resolution of the embedded JPEG\n(more comments in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
@@ -1385,7 +1385,7 @@
     </type>
     <default>720p</default>
     <shortdescription>high quality processing from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the 'always' option.\n(more comments in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>cache_disk_backend</name>
