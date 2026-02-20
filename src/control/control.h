@@ -165,13 +165,11 @@ typedef struct dt_control_t
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
-  double last_expose_time;
 
   // job management
   dt_atomic_int running;
   dt_atomic_int quitting;
   dt_atomic_int pending_jobs;
-  dt_atomic_int running_jobs;
   gboolean cups_started;
   gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex;
