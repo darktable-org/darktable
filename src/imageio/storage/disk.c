@@ -339,6 +339,19 @@ int store(dt_imageio_module_storage_t *self,
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
   g_strlcpy(pattern, d->filename, sizeof(pattern));
+
+  /* If we are in gimp plugin mode we can either export on purpose by using the
+     export interface or we do the final export - when quitting the plugin -
+     to the file that is later presented to GIMP as defined in the --gimp API
+     We have to test for this as we don't want the variable expand stepping in.
+  */
+  const gboolean variable_expand = dt_gimpmode()
+                                      ? (g_strrstr(pattern, "XDT2GIMP") == NULL)
+                                      : TRUE;
+  dt_print(DT_DEBUG_IMAGEIO, "disk store :%s: `%s'",
+    variable_expand ? "expand variables" : "FINAL GIMP EXPORT",
+    pattern);
+
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), NULL);
   // set variable values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
@@ -350,37 +363,49 @@ int store(dt_imageio_module_storage_t *self,
   {
 try_again:
     // avoid braindead export which is bound to overwrite at random:
-    if(total > 1 && !g_strrstr(pattern, "$"))
+    if(variable_expand && total > 1 && !g_strrstr(pattern, "$"))
     {
       snprintf(pattern + strlen(pattern),
                sizeof(pattern) - strlen(pattern), "_$(SEQUENCE)");
     }
 
-    gchar *fixed_path = dt_util_fix_path(pattern);
-    g_strlcpy(pattern, fixed_path, sizeof(pattern));
-    g_free(fixed_path);
+    if(variable_expand)
+    {
+      gchar *fixed_path = dt_util_fix_path(pattern);
+      g_strlcpy(pattern, fixed_path, sizeof(pattern));
+      g_free(fixed_path);
+    }
 
     d->vp->filename = input_dir;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
-    g_strlcpy(filename, result_filename, sizeof(filename));
-    g_free(result_filename);
-
-    // if filenamepattern is a directory just add ${FILE_NAME} as
-    // default..  this can happen if the filename component of the
-    // pattern is an empty variable
-    const char last_char = *(filename + strlen(filename) - 1);
-    if(last_char == '/' || last_char == '\\')
+    if(variable_expand)
     {
-      // add to the end of the original pattern without caring about a
-      // potentially added "_$(SEQUENCE)"
-      if(snprintf(pattern, sizeof(pattern), "%s"
+      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+      g_strlcpy(filename, result_filename, sizeof(filename));
+      g_free(result_filename);
+
+      // if filenamepattern is a directory just add ${FILE_NAME} as
+      // default..  this can happen if the filename component of the
+      // pattern is an empty variable
+      const char last_char = *(filename + strlen(filename) - 1);
+      if(last_char == '/' || last_char == '\\')
+      {
+        // add to the end of the original pattern without caring about a
+        // potentially added "_$(SEQUENCE)"
+        if(snprintf(pattern, sizeof(pattern), "%s"
                 G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-        goto try_again;
+          goto try_again;
+      }
     }
+    else
+    {
+      // we don't expand via variables but take what we got as pattern
+      g_strlcpy(filename, pattern, sizeof(filename));
+    }
+
 
     // get the directory path of the output file
     char *output_dir = g_path_get_dirname(filename);
