@@ -1787,7 +1787,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
 
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
-  gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method. only apply for some old sensors"));
+  gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method. only applies for some old sensors"));
 
   g->cs_enabled = dt_bauhaus_toggle_from_params(self, "cs_enabled");
   gtk_widget_set_tooltip_text(g->cs_enabled, _("capture sharpen recovers details lost due to in-camera blurring\n"
