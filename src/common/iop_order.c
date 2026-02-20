@@ -763,7 +763,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_version(const dt_imgid_t imgid)
 
 // a rule prevents operations to be switched, that is a prev operation
 // will not be allowed to be moved on top of the next operation.
-GList *dt_ioppr_get_iop_order_rules()
+GList *dt_ioppr_get_iop_order_rules(void)
 {
   GList *rules = NULL;
 
