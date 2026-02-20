@@ -269,7 +269,7 @@ gboolean dt_ioppr_check_so_iop_order(GList *iop_list,
                                      GList *iop_order_list);
 
 /* returns a list of dt_iop_order_rule_t with the current iop order rules */
-GList *dt_ioppr_get_iop_order_rules();
+GList *dt_ioppr_get_iop_order_rules(void);
 
 /** returns a duplicate of iop_order_list */
 GList *dt_ioppr_iop_order_copy_deep(GList *iop_order_list);

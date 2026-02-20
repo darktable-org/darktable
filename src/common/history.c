@@ -65,7 +65,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 {
   if(!dt_is_valid_imgid(imgid))
     return;
-  dt_undo_lt_history_t *hist = undo?dt_history_snapshot_item_init():NULL;
+  dt_undo_lt_history_t *hist = undo ? dt_history_snapshot_item_init() : NULL;
 
   if(undo)
   {
