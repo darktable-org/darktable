@@ -2238,107 +2238,6 @@ static void _lib_histogram_collapse_callback(dt_action_t *action)
   dt_lib_set_visible(self, !visible);
 }
 
-static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
-{
-  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
-  dt_lib_histogram_t *d = self->data;
-
-  // FIXME: When switch modes, this hack turns off the highlight and
-  // turn the cursor back to pointer, as we don't know what/if the new
-  // highlight is going to be. Right solution would be to have a
-  // highlight update function which takes cursor x,y and is called
-  // either here or on pointer motion. Really right solution is
-  // probably separate widgets for the drag areas which generate
-  // enter/leave events.
-  d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-  dt_control_change_cursor(GDK_LEFT_PTR);
-
-  // The cycle order is Hist log -> lin -> waveform hori -> vert ->
-  // parade hori -> vert -> vectorscope log u*v* -> lin u*v* -> log
-  // AzBz -> lin AzBzS (update logic on more scopes)
-  switch(d->scope_type)
-  {
-    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
-      {
-        _scope_view_clicked(d->scope_view_button, d);
-      }
-      else
-      {
-        d->scope_orient = DT_LIB_HISTOGRAM_ORIENT_HORI;
-        dt_conf_set_string("plugins/darkroom/histogram/orient",
-                           dt_lib_histogram_orient_names[d->scope_orient]);
-        _scope_histogram_mode_clicked
-          (d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_WAVEFORM], NULL, d);
-      }
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      {
-        _scope_view_clicked(d->scope_view_button, d);
-      }
-      else
-      {
-        d->scope_orient = DT_LIB_HISTOGRAM_ORIENT_HORI;
-        dt_conf_set_string("plugins/darkroom/histogram/orient",
-                           dt_lib_histogram_orient_names[d->scope_orient]);
-        // we can't reuse histogram data, as we are changing orientation
-        // so this will force recalculation
-        d->waveform_bins = 0;
-        _scope_histogram_mode_clicked
-          (d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_PARADE], NULL, d);
-      }
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      {
-        _scope_view_clicked(d->scope_view_button, d);
-      }
-      else
-      {
-        d->vectorscope_type = DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
-                           dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
-        d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
-                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
-        _scope_histogram_mode_clicked
-          (d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE], NULL, d);
-      }
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
-      {
-        _scope_view_clicked(d->scope_view_button, d);
-      }
-      else if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-      {
-        d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
-                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
-        _colorspace_clicked(d->colorspace_button, d);
-      }
-      else
-      {
-        d->histogram_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
-        dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                           dt_lib_histogram_scale_names[d->histogram_scale]);
-        _scope_histogram_mode_clicked
-          (d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM], NULL, d);
-      }
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_N:
-      dt_unreachable_codepath();
-  }
-}
-
-static void _lib_histogram_change_type_callback(dt_action_t *action)
-{
-  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
-  dt_lib_histogram_t *d = self->data;
-  _scope_view_clicked(d->scope_view_button, d);
-}
-
 static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
 {
   const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
@@ -2527,9 +2426,6 @@ void gui_init(dt_lib_module_t *self)
                       N_("histogram"));
   dt_action_t *ac = NULL;
 
-  dt_action_register(dark, N_("cycle histogram modes"),
-                     _lib_histogram_cycle_mode_callback, 0, 0);
-
   // shows the scope, scale, and has draggable areas
   d->scope_draw = dt_ui_resize_wrap(NULL,
                                     0,
@@ -2595,13 +2491,9 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   if(teth)
   {
-    dt_action_register(teth, N_("cycle histogram modes"),
-                       _lib_histogram_cycle_mode_callback, 0, 0);
     dt_action_register(teth, N_("hide histogram"),
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-    dt_action_register(teth, N_("switch histogram view"),
-                       _lib_histogram_change_type_callback, 0, 0);
   }
 
   // red/green/blue channel on/off
