@@ -171,6 +171,26 @@ static void test_inference(void **state)
   dt_ai_unload_model(ctx);
 }
 
+/* ---- test: provider setting ---- */
+
+static void test_provider_change(void **state)
+{
+  /* stub returns "cpu" → init should have set CPU */
+  assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_CPU);
+
+  /* change to CoreML */
+  dt_ai_env_set_provider(env, DT_AI_PROVIDER_COREML);
+  assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_COREML);
+
+  /* change to AUTO */
+  dt_ai_env_set_provider(env, DT_AI_PROVIDER_AUTO);
+  assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_AUTO);
+
+  /* restore CPU for remaining tests */
+  dt_ai_env_set_provider(env, DT_AI_PROVIDER_CPU);
+  assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_CPU);
+}
+
 /* ---- test: unload + cleanup ---- */
 
 static void test_cleanup(void **state)
@@ -197,6 +217,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_model_load),
     cmocka_unit_test(test_introspection),
     cmocka_unit_test(test_inference),
+    cmocka_unit_test(test_provider_change),
     cmocka_unit_test(test_cleanup),
   };
 
