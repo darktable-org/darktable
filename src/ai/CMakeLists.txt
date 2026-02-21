@@ -4,8 +4,6 @@ add_library(darktable_ai STATIC
   backend.h
   backend_common.c
   backend_onnx.c
-  segmentation.h
-  segmentation.c
 )
 
 # Find ONNX Runtime (auto-downloads if not present)
@@ -30,7 +28,7 @@ target_include_directories(darktable_ai PUBLIC
   ${RSVG2_INCLUDE_DIRS}
 )
 
-target_link_directories(darktable_ai PRIVATE
+target_link_directories(darktable_ai PUBLIC
   ${GLIB_LIBRARY_DIRS}
   ${JSON_GLIB_LIBRARY_DIRS}
 )
