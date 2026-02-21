@@ -312,9 +312,14 @@ dt_ai_context_t *dt_ai_load_model_ext(
 
   g_mutex_lock(&env->lock);
 
-  // Resolve AUTO to environment-level provider preference (under lock)
+  // Resolve AUTO: re-read from config so preference changes take effect
+  // immediately without requiring app restart.
   if(provider == DT_AI_PROVIDER_AUTO)
-    provider = env->provider;
+  {
+    char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+    provider = dt_ai_provider_from_string(prov_str);
+    g_free(prov_str);
+  }
   const char *model_dir_orig
     = (const char *)g_hash_table_lookup(env->model_paths, model_id);
   char *model_dir = model_dir_orig ? g_strdup(model_dir_orig) : NULL;
