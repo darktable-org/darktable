@@ -53,6 +53,9 @@
 #include "common/undo.h"
 #include "common/gimp.h"
 #include "common/pfm.h"
+#ifdef HAVE_AI
+#include "common/ai_models.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -1118,6 +1121,7 @@ int dt_init(int argc,
           !strcmp(darg, "pipe") ? DT_DEBUG_PIPE :
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
+          !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1628,6 +1632,13 @@ int dt_init(int argc,
 
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
+
+#ifdef HAVE_AI
+  // initialize AI models registry
+  darktable.ai_registry = dt_ai_models_init();
+  if(darktable.ai_registry)
+    dt_ai_models_load_registry(darktable.ai_registry);
+#endif
 
   // initialize datetime data
   dt_datetime_init();
@@ -2173,6 +2184,10 @@ void dt_cleanup()
   dt_mipmap_cache_cleanup();
 
   dt_colorspaces_cleanup(darktable.color_profiles);
+#ifdef HAVE_AI
+  dt_ai_models_cleanup(darktable.ai_registry);
+  darktable.ai_registry = NULL;
+#endif
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   darktable.conf = NULL;

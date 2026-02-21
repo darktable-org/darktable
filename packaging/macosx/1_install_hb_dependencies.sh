@@ -44,6 +44,7 @@ hbDependencies="adwaita-icon-theme \
     json-glib \
     lensfun \
     libavif \
+    libarchive \
     libheif \
     libomp \
     libraw \
