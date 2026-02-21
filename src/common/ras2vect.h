@@ -23,11 +23,21 @@
    or if image is set (not NULL) on image spaces making the masks directly
    usable on the corresponding image.
 
+   turdsize  – potrace turdsize: area of largest speckle to suppress (0 = use default 50).
+   alphamax  – potrace alphamax: corner threshold (0 = all sharp, 1.0 = balanced,
+               1.3 = maximum smoothing). Higher = fewer control points.
+
+   If out_signs is not NULL, a parallel GList of GINT_TO_POINTER is
+   returned: '+' for outer boundaries, '-' for holes.
+   The caller must free this list with g_list_free().
 */
 GList *ras2forms(const float *mask,
                  const int width,
                  const int height,
-                 const dt_image_t *const image);
+                 const dt_image_t *const image,
+                 const int turdsize,
+                 const double alphamax,
+                 GList **out_signs);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
