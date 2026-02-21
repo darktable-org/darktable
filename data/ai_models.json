@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "denoise-nind",
+      "name": "denoise nind",
+      "description": "UNet denoiser trained on NIND dataset",
+      "task": "denoise",
+      "github_asset": "denoise-nind.zip",
+      "default": true
+    },
+    {
+      "id": "mask-object-sam21-small",
+      "name": "sam2.1 hiera small",
+      "description": "Segment Anything 2.1 (Hiera Small) for masking",
+      "task": "mask",
+      "github_asset": "mask-object-sam21-small.zip",
+      "default": true
+    }
+  ]
+}
