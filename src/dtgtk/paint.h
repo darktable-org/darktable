@@ -287,6 +287,10 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, 
 void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a brush + inverse icon for masks selection */
 void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+#ifdef HAVE_AI
+/** Paint an AI object mask icon (wand) */
+void dtgtk_cairo_paint_masks_object(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+#endif
 /** Paint a multi-path icon for masks */
 void dtgtk_cairo_paint_masks_multi(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an inverse icon for masks */

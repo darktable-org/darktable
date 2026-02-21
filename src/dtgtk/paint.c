@@ -628,6 +628,29 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+#ifdef HAVE_AI
+void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(0.90, 1, 0., 0.)
+
+  // Three-corner rounded rect (open top-right) + sparkle
+  cairo_move_to(cr, 0.80, 0.70);
+  cairo_arc(cr, 0.68, 0.88, 0.12, 0.0, 0.5 * M_PI);
+  cairo_arc(cr, 0.12, 0.88, 0.12, 0.5 * M_PI, M_PI);
+  cairo_arc(cr, 0.12, 0.37, 0.12, M_PI, 1.5 * M_PI);
+  cairo_line_to(cr, 0.35, 0.25);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.80, -0.05);
+  cairo_line_to(cr, 0.80, 0.55);
+  cairo_move_to(cr, 0.50, 0.25);
+  cairo_line_to(cr, 1.10, 0.25);
+  cairo_stroke(cr);
+
+  FINISH
+}
+#endif
+
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)

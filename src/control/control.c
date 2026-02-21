@@ -576,6 +576,21 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
   return FALSE;
 }
 
+void dt_control_log_ack_all(void)
+{
+  if(!dt_control_running()) return;
+  dt_control_t *dc = darktable.control;
+  dt_pthread_mutex_lock(&dc->log_mutex);
+  if(dc->log_message_timeout_id)
+  {
+    g_source_remove(dc->log_message_timeout_id);
+    dc->log_message_timeout_id = 0;
+  }
+  dc->log_ack = dc->log_pos;
+  dt_pthread_mutex_unlock(&dc->log_mutex);
+  _control_log_redraw();
+}
+
 static void _control_toast_redraw()
 {
   if(dt_control_running())
