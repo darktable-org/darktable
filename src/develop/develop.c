@@ -1188,7 +1188,6 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   dt_lock_image(dev->image_storage.id);
 
-  dt_ioppr_set_default_iop_order(dev, dev->image_storage.id);
   dt_dev_pop_history_items(dev, 0);
 
   // remove unused history items:
@@ -1204,6 +1203,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     history = next;
   }
   dt_dev_read_history(dev);
+  dt_ioppr_set_default_iop_order(dev, dev->image_storage.id);
 
   // we have to add new module instances first
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
