@@ -4084,7 +4084,25 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
   return TRUE;
 }
 
-// Query tooltip handler for the pin button
+static gboolean _second_window_buttons_enter_notify_callback(GtkWidget *widget,
+                                                              GdkEventCrossing *event,
+                                                              GtkWidget *button_box)
+{
+  gtk_widget_show(button_box);
+  return FALSE;
+}
+
+static gboolean _second_window_buttons_leave_notify_callback(GtkWidget *widget,
+                                                              GdkEventCrossing *event,
+                                                              GtkWidget *button_box)
+{
+  // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
+  // within the second window); keep the buttons visible in that case.
+  if(event->detail != GDK_NOTIFY_INFERIOR)
+    gtk_widget_hide(button_box);
+  return FALSE;
+}
+
 // Callback for the pin button in the overlay
 static void _preview2_pin_button_clicked(GtkToggleButton *button,
                                          dt_develop_t *dev)
@@ -4116,39 +4134,51 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
   
-  // Create the pin button for the overlay
+  // Group both overlay buttons in a vertical box positioned in the top-right corner.
+  // The box is hidden by default and shown/hidden based on mouse proximity.
+  GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_halign(button_box, GTK_ALIGN_END);
+  gtk_widget_set_valign(button_box, GTK_ALIGN_START);
+  gtk_widget_set_margin_top(button_box, 10);
+  gtk_widget_set_margin_end(button_box, 10);
+
+  // Create the pin button
   GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
   gtk_widget_set_name(pin_button, "dt_window2_pin_button");
   gtk_widget_set_size_request(pin_button, 24, 24);
   gtk_widget_set_tooltip_text(pin_button, _("pin current image"));
-  gtk_widget_add_events(pin_button, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK 
-                                    | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(pin_button), "toggled",
                    G_CALLBACK(_preview2_pin_button_clicked), dev);
-  gtk_widget_set_halign(pin_button, GTK_ALIGN_END);
-  gtk_widget_set_valign(pin_button, GTK_ALIGN_START);
-  gtk_widget_set_margin_top(pin_button, 10);
-  gtk_widget_set_margin_end(pin_button, 10);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), pin_button);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), pin_button, FALSE);
+  gtk_box_pack_start(GTK_BOX(button_box), pin_button, FALSE, FALSE, 0);
 
-  // Create keep-on-top button for the overlay
+  // Create keep-on-top button
   GtkWidget *on_top_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
   gtk_widget_set_name(on_top_button, "dt_window2_on_top_button");
   gtk_widget_set_size_request(on_top_button, 24, 24);
   gtk_widget_set_tooltip_text(on_top_button, _("keep second window on top"));
-  gtk_widget_add_events(on_top_button, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                       | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(on_top_button), "toggled",
                    G_CALLBACK(_preview2_on_top_button_clicked), dev);
-  gtk_widget_set_halign(on_top_button, GTK_ALIGN_END);
-  gtk_widget_set_valign(on_top_button, GTK_ALIGN_START);
-  gtk_widget_set_margin_top(on_top_button, 10 + 24 + 5);
-  gtk_widget_set_margin_end(on_top_button, 10);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), on_top_button);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), on_top_button, FALSE);
-  
-  // Store the button in the dev structure for later access if needed
+  gtk_box_pack_start(GTK_BOX(button_box), on_top_button, FALSE, FALSE, 0);
+
+  // Add the box as a single overlay widget and keep it hidden until the mouse enters.
+  // Show all children first so they are in the "shown" state; then hide the box.
+  // gtk_widget_set_no_show_all prevents gtk_widget_show_all from revealing it later.
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button_box);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), button_box, FALSE);
+  gtk_widget_show_all(button_box);
+  gtk_widget_set_no_show_all(button_box, TRUE);
+  gtk_widget_hide(button_box);
+
+  // GtkWindow does not have GDK_ENTER_NOTIFY_MASK by default; add it so crossing
+  // events are delivered.  Must be done before the window is realized (show_all).
+  gtk_widget_add_events(window, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+
+  // Show buttons when the mouse enters the second window, hide when it leaves.
+  g_signal_connect(G_OBJECT(window), "enter-notify-event",
+                   G_CALLBACK(_second_window_buttons_enter_notify_callback), button_box);
+  g_signal_connect(G_OBJECT(window), "leave-notify-event",
+                   G_CALLBACK(_second_window_buttons_leave_notify_callback), button_box);
+
   dev->preview2.pin_button = pin_button;
   
   dev->preview2.border_size = 0;
