@@ -460,7 +460,7 @@ static void _init_pinned_dev(dt_develop_t *pinned_dev, dt_develop_t *main_dev,
   dt_unlock_image(imgid);
 }
 
-void _pin_image(dt_develop_t *dev)
+static void _pin_image(dt_develop_t *dev)
 {
   const dt_imgid_t pinned_imgid = dev->image_storage.id;
   if(dev->preview2_pinned_dev)
@@ -484,7 +484,7 @@ void _pin_image(dt_develop_t *dev)
   dt_toast_log(_("image pinned"));
 }
 
-void _unpin_image(dt_develop_t *dev)
+static void _unpin_image(dt_develop_t *dev)
 {
   if(dev->preview2_pinned_dev)
   {
