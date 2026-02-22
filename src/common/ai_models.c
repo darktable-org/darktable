@@ -920,7 +920,7 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   archive_write_disk_set_options(
     ext,
     ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_SYMLINKS
-      | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
+      | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS);
 
   if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
   {
