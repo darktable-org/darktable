@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "common/atomic.h"
+// FIXME: move this to scopes/?
 #include "common/color_harmony.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -47,7 +48,6 @@
 #include "osx/osx.h"
 #endif
 
-#define HISTOGRAM_BINS 256
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate cases: curve to blue primary in
 // Luv in linear ProPhoto RGB and the widely spaced gradations of the
@@ -74,13 +74,6 @@ typedef enum dt_lib_histogram_scale_t
   DT_LIB_HISTOGRAM_SCALE_LINEAR,
   DT_LIB_HISTOGRAM_SCALE_N // needs to be the last one
 } dt_lib_histogram_scale_t;
-
-typedef enum dt_lib_histogram_orient_t
-{
-  DT_LIB_HISTOGRAM_ORIENT_HORI = 0,
-  DT_LIB_HISTOGRAM_ORIENT_VERT,
-  DT_LIB_HISTOGRAM_ORIENT_N // needs to be the last one
-} dt_lib_histogram_orient_t;
 
 typedef enum dt_lib_histogram_vectorscope_type_t
 {
@@ -122,9 +115,9 @@ const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
   N_("histogram")
 };
 
-const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] =
-  { "horizontal",
-    "vertical"
+const gchar *dt_lib_histogram_scale_names[DT_SCOPES_SCALE_N] =
+  { "logarithmic",
+    "linear"
   };
 
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] =
@@ -155,12 +148,6 @@ typedef struct dt_lib_histogram_t
   // FIXME: this will eventually become the data of this dt_lib_module_t
   dt_scopes_t *scopes;
 
-  // histogram for display
-  uint32_t *histogram;
-  uint32_t histogram_max;
-  // waveform buffers and dimensions
-  uint8_t *waveform_img[3];           // image per RGB channel
-  int waveform_bins, waveform_tones, waveform_max_bins;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph, *vectorscope_bkgd;
   float vectorscope_pt[2];            // point colorpicker position
@@ -181,7 +168,6 @@ typedef struct dt_lib_histogram_t
   GtkWidget *scope_type_button
     [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
   GtkWidget *vec_scale_button;         // GtkButton -- linear or logarithmic vectorscope
-  GtkWidget *scope_orient_button;      // GtkButton -- horizontal or vertical
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
@@ -190,7 +176,6 @@ typedef struct dt_lib_histogram_t
     [DT_COLOR_HARMONY_N - 1];  // GtkButton -- RYB vectorscope color harmonies
   // state set by buttons
   dt_lib_histogram_scope_type_t scope_type;
-  dt_lib_histogram_orient_t scope_orient;
   dt_lib_histogram_vectorscope_type_t vectorscope_type;
   dt_lib_histogram_scale_t vectorscope_scale;
   double vectorscope_angle;
@@ -229,108 +214,6 @@ int position(const dt_lib_module_t *self)
   return 1000;
 }
 
-
-static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
-                                            const float *const input,
-                                            const dt_histogram_roi_t *const roi)
-{
-  // FIXME: for point sample, calculate whole graph and the point
-  // sample values, draw these on top of a dimmer graph
-  const int sample_width = MAX(1, roi->width - roi->crop_right - roi->crop_x);
-  const int sample_height = MAX(1, roi->height - roi->crop_bottom - roi->crop_y);
-
-  // Use integral sized bins for columns, as otherwise they will be
-  // unequal and have banding. Rely on draw to smoothly do horizontal
-  // scaling. For a horizontal waveform of a 3:2 image, "landscape"
-  // orientation, bin_width will generally be 4, for "portrait" it
-  // will generally be 3. Note that waveform_bins varies, depending on
-  // preview image width and # of bins.
-  const dt_lib_histogram_orient_t orient = d->scope_orient;
-  const int to_bin = orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_width : sample_height;
-  const size_t samples_per_bin = ceilf(to_bin / (float)d->waveform_max_bins);
-  const size_t num_bins = ceilf(to_bin / (float)samples_per_bin);
-  d->waveform_bins = num_bins;
-  const size_t num_tones = d->waveform_tones;
-
-  // Note that, with current constants, the input buffer is from the
-  // preview pixelpipe and should be <= 1440x900x4. The output buffer
-  // will be <= 360x160x3. Hence process works with a relatively small
-  // quantity of data.
-  size_t bin_pad;
-  uint32_t *const restrict partial_binned =
-    dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
-
-  DT_OMP_FOR()
-  for(size_t y=0; y<sample_height; y++)
-  {
-    const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
-                                                   4U * ((y + roi->crop_y) * roi->width));
-    uint32_t *const restrict binned = dt_get_perthread(partial_binned, bin_pad);
-    for(size_t x=0; x<sample_width; x++)
-    {
-      const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-      size_t tone[4] DT_ALIGNED_PIXEL;
-      for_each_channel(ch, aligned(px,tone:16))
-      {
-        // 1.0 is at 8/9 of the height!
-        const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
-        // Using ceilf brings everything <= 0 to bottom tone,
-        // everything > 1.0f/(num_tones-1) to top tone.
-        tone[ch] = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
-      }
-      for(size_t ch = 0; ch < 3; ch++)
-        binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
-    }
-  }
-
-  // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
-  const dt_iop_order_iccprofile_info_t *const profile =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020,
-                                      "", DT_INTENT_PERCEPTUAL);
-  // lut for all three channels should be the same
-  const float *const restrict lut =
-    DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
-  const float lutmax = profile->lutsize - 1;
-  const size_t wf_img_stride = cairo_format_stride_for_width
-    (CAIRO_FORMAT_A8,
-     orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? num_bins : num_tones);
-
-  // Every bin_width x height portion of the image is being described
-  // in a 1 pixel x waveform_tones portion of the histogram.
-  // NOTE: if constant is decreased, will brighten output
-
-  // FIXME: instead of using an area-beased scale, figure out max bin
-  // count and scale to that?
-
-  const float brightness = num_tones / 40.0f;
-  const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI
-                                     ? sample_height
-                                     : sample_width) * samples_per_bin);
-  const size_t nthreads = dt_get_num_threads();
-
-  DT_OMP_FOR(collapse(3))
-  for(size_t ch = 0; ch < 3; ch++)
-    for(size_t bin = 0; bin < num_bins; bin++)
-      for(size_t tone = 0; tone < num_tones; tone++)
-      {
-        uint8_t *const restrict wf_img =
-          DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
-        uint32_t acc = 0;
-        for(size_t n = 0; n < nthreads; n++)
-        {
-          uint32_t *const restrict binned = dt_get_bythread(partial_binned, bin_pad, n);
-          acc += binned[num_tones * (ch * num_bins + bin) + tone];
-        }
-        const float linear = MIN(1.f, scale * acc);
-        const uint8_t display = lut[(int)(linear * lutmax)] * 255.f;
-        if(orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-          wf_img[tone * wf_img_stride + bin] = display;
-        else
-          wf_img[bin * wf_img_stride + tone] = display;
-      }
-
-  dt_free_align(partial_binned);
-}
 
 // Inspired by "Paint Inspired Color Mixing and Compositing for Visualization" - Gossett
 // http://vis.computer.org/vis2004/DVD/infovis/papers/gossett.pdf
@@ -900,9 +783,6 @@ static void dt_lib_histogram_process
     for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
       if(s->modes[i].functions->clear)
         s->modes[i].functions->clear(&s->modes[i]);
-    // FIXME: use scopes->clear running through all available scopes
-    memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
-    d->waveform_bins = 0;
     d->vectorscope_radius = 0.f;
     dt_pthread_mutex_unlock(&d->lock);
     return;
@@ -990,25 +870,35 @@ static void dt_lib_histogram_process
                                             profile_info_from, profile_info_out, "final histogram");
   dt_pthread_mutex_lock(&d->lock);
 
+  s->update_counter++;
   if(s->cur_mode)
+  {
     s->cur_mode->functions->process(s->cur_mode, img_display, &roi);
+    s->cur_mode->update_counter = s->update_counter;
+    // waveform and rgb parade share underlying data, so updates to one update both
+    // FIXME: hacky
+    if(s->cur_mode == &s->modes[DT_SCOPES_MODE_WAVEFORM])
+      s->modes[DT_SCOPES_MODE_PARADE].update_counter = s->update_counter;
+    if(s->cur_mode == &s->modes[DT_SCOPES_MODE_PARADE])
+      s->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = s->update_counter;
+  }
   else
     switch(d->scope_type)
     {
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-        _lib_histogram_process_waveform(d, img_display, &roi);
-        break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
         // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
         //   for calculating the vertex_rgb data.
         _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_out->type ? profile_info_out : fallback);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-        _lib_histogram_process_waveform(d, img_display, &roi);
+        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+        wave_view->functions->process(wave_view, img_display, &roi);
+        wave_view->update_counter = s->update_counter;
         _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_out->type ? profile_info_out : fallback);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
       case DT_LIB_HISTOGRAM_SCOPE_N:
         dt_unreachable_codepath();
         break;
@@ -1020,129 +910,6 @@ static void dt_lib_histogram_process
                   dt_lib_histogram_scope_type_names[d->scope_type]);
 }
 
-
-static void _lib_histogram_draw_waveform(const dt_lib_histogram_t *d,
-                                         cairo_t *cr,
-                                         const int width,
-                                         const int height,
-                                         const scopes_channels_t mask)
-{
-  // composite before scaling to screen dimensions, as scaling each
-  // layer on draw causes a >2x slowdown
-  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
-  const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI
-    ? d->waveform_bins : d->waveform_tones;
-  const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI
-    ? d->waveform_tones : d->waveform_bins;
-  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
-  cairo_surface_t *cs[3] = { NULL, NULL, NULL };
-  cairo_surface_t *cst = cairo_image_surface_create
-    (CAIRO_FORMAT_ARGB32, img_width, img_height);
-
-  cairo_t *crt = cairo_create(cst);
-  cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
-  for(int ch = 0; ch < 3; ch++)
-    if(mask[ch])
-    {
-      cs[ch] = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
-                                                   img_width, img_height, img_stride);
-      cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
-      cairo_mask_surface(crt, cs[ch], 0., 0.);
-    }
-  cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
-  for(int ch = 0; ch < 3; ch++)
-    if(cs[ch])
-    {
-      cairo_set_source_rgba(crt,
-                            ch==0 ? 1.:desat_over,
-                            ch==1 ? 1.:desat_over,
-                            ch==2 ? 1.:desat_over, alpha_over);
-      cairo_mask_surface(crt, cs[ch], 0., 0.);
-      cairo_surface_destroy(cs[ch]);
-    }
-  cairo_destroy(crt);
-
-  // scale and write to output buffer
-  cairo_save(cr);
-  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-  {
-    // y=0 is at bottom of widget
-    cairo_translate(cr, 0., height);
-    cairo_scale(cr, (float)width/img_width, (float)-height/img_height);
-  }
-  else
-  {
-    cairo_scale(cr, (float)width/img_width, (float)height/img_height);
-  }
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_source_surface(cr, cst, 0., 0.);
-  cairo_paint(cr);
-  cairo_surface_destroy(cst);
-  cairo_restore(cr);
-}
-
-static void _lib_histogram_draw_rgb_parade(const dt_lib_histogram_t *d,
-                                           cairo_t *cr,
-                                           const int width,
-                                           const int height)
-{
-  // same composite-to-temp optimization as in waveform code above
-  const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
-  const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI
-    ? d->waveform_bins : d->waveform_tones;
-  const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI
-    ? d->waveform_tones : d->waveform_bins;
-  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
-  cairo_surface_t *cst =
-    cairo_image_surface_create(CAIRO_FORMAT_ARGB32, img_width, img_height);
-
-  cairo_t *crt = cairo_create(cst);
-  // Though this scales and throws away data on each composite, it
-  // appears to be fastest and least memory wasteful. The bin-wise
-  // resolution will be visually equivalent to waveform.
-  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-    cairo_scale(crt, 1./3., 1.);
-  else
-    cairo_scale(crt, 1., 1./3.);
-  for(int ch = 0; ch < 3; ch++)
-  {
-    cairo_surface_t *cs
-      = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
-                                            img_width, img_height, img_stride);
-    cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
-    cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
-    cairo_mask_surface(crt, cs, 0., 0.);
-    cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
-    cairo_set_source_rgba(crt,
-                          ch==0 ? 1.:desat_over,
-                          ch==1 ? 1.:desat_over,
-                          ch==2 ? 1.:desat_over, alpha_over);
-    cairo_mask_surface(crt, cs, 0., 0.);
-    cairo_surface_destroy(cs);
-    if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      cairo_translate(crt, img_width, 0);
-    else
-      cairo_translate(crt, 0, img_height);
-  }
-  cairo_destroy(crt);
-
-  cairo_save(cr);
-  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-  {
-    // y=0 is at bottom of widget
-    cairo_translate(cr, 0., height);
-    cairo_scale(cr, (float)width/img_width, (float)-height/img_height);
-  }
-  else
-  {
-    cairo_scale(cr, (float)width/img_width, (float)height/img_height);
-  }
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_source_surface(cr, cst, 0., 0.);
-  cairo_paint(cr);
-  cairo_surface_destroy(cst);
-  cairo_restore(cr);
-}
 
 static void _lib_histogram_draw_vectorscope(const dt_lib_histogram_t *d, cairo_t *cr,
                                             const int width, const int height)
@@ -1483,28 +1250,14 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
   }
 
   // exposure change regions
+  // FIXME: should draw these if there is no data currently for this scope?
   set_color(cr, darktable.bauhaus->graph_overlay);
   if(cur_mode && cur_mode->functions->draw_highlight)
     cur_mode->functions->draw_highlight(cur_mode, cr, d->scopes->highlight, width, height);
-  else if(d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT)
+  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
   {
-    if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      cairo_rectangle(cr, 0., 7.0/9.0 * height, bkgd_width, height);
-    else if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT)
-      cairo_rectangle(cr, 0., 0., 2.0/9.0 * bkgd_width, height);
-    else
-      dt_unreachable_codepath();
-    cairo_fill(cr);
-  }
-  else if(d->scopes->highlight == DT_SCOPES_HIGHLIGHT_EXPOSURE)
-  {
-    if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      cairo_rectangle(cr, 0., 0., bkgd_width, 7.0/9.0 * height);
-    else if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT)
-      cairo_rectangle(cr, 2.0/9.0 * bkgd_width, 0., width, height);
-    else
-      dt_unreachable_codepath();
-    cairo_fill(cr);
+    dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+    wave_view->functions->draw_highlight(wave_view, cr, d->scopes->highlight, bkgd_width, height);
   }
 
   // draw grid
@@ -1515,11 +1268,9 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
   else
     switch(d->scope_type)
     {
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
       case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-        dt_draw_waveform_lines(cr, 0, 0, bkgd_width, height,
-                               d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI);
+        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+        wave_view->functions->draw_bkgd(wave_view, cr, bkgd_width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
         // grid is drawn with scope, as it depends on chromaticity scale
@@ -1527,6 +1278,8 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
         // logarithmic/linear, can draw grid here again?
         break;
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
       case DT_LIB_HISTOGRAM_SCOPE_N:
         dt_unreachable_codepath();
     }
@@ -1540,40 +1293,41 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
      || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     if(cur_mode)
-      if(cur_mode->functions->draw_scope_channels)
-        cur_mode->functions->draw_scope_channels(cur_mode, cr, width, height, d->scopes->channels);
-      else
-        cur_mode->functions->draw_scope(cur_mode, cr, width, height);
+    {
+      if(cur_mode->update_counter == d->scopes->update_counter)
+      {
+        if(cur_mode->functions->draw_scope_channels)
+          cur_mode->functions->draw_scope_channels(cur_mode, cr, width, height, d->scopes->channels);
+        else
+          cur_mode->functions->draw_scope(cur_mode, cr, width, height);
+      }
+    }
     else
+    {
       switch(d->scope_type)
       {
-        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-          if(d->waveform_bins)
-            _lib_histogram_draw_waveform(d, cr, width, height,
-                                         d->scopes->channels);
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-          if(d->waveform_bins)
-            _lib_histogram_draw_rgb_parade(d, cr, width, height);
-          break;
         case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
           if(d->vectorscope_radius != 0.f)
             _lib_histogram_draw_vectorscope(d, cr, width, height);
           break;
         case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
           cairo_save(cr);
-          if(d->waveform_bins)
-            _lib_histogram_draw_waveform(d, cr, bkgd_width, height,
-                                         d->scopes->channels);
+          dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+          wave_view->functions->draw_scope_channels(wave_view, cr,
+                                                    bkgd_width, height,
+                                                    d->scopes->channels);
           cairo_translate(cr, bkgd_width, 0);
           if(d->vectorscope_radius != 0.f)
             _lib_histogram_draw_vectorscope(d, cr, bkgd_width, height);
           cairo_restore(cr);
           break;
         case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+        case DT_LIB_HISTOGRAM_SCOPE_PARADE:
         case DT_LIB_HISTOGRAM_SCOPE_N:
           dt_unreachable_codepath();
       }
+    }
   }
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -1605,10 +1359,13 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     double pos;
     if(d->scopes->cur_mode)
       pos = d->scopes->cur_mode->functions->get_exposure_pos(d->scopes->cur_mode, x, y);
-    else if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      pos = -y;
     else
-      pos = x * x_adjust;
+    {
+      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+        pos = x * 2.0f;
+      else
+        pos = x;
+    }
 
     dt_dev_exposure_handle_event(controller, 1, pos, FALSE);
   }
@@ -1620,8 +1377,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     const float posy = y / (float)(allocation.height);
     const dt_scopes_highlight_t prior_highlight = d->scopes->highlight;
 
-    // FIXME: make just one tooltip for the widget depending on
-    // whether it is draggable or not, and set it when enter the view
+    // FIXME: update tooltip when change mode, not on mouse motion
     gchar *tip = g_strdup_printf("%s\n(%s)\n%s\n%s",
                                  _(dt_lib_histogram_scope_type_names[d->scope_type]),
                                  _("use buttons at top of graph to change type"),
@@ -1630,9 +1386,8 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
-              d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
-              d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
+      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
+         d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
         dt_util_str_cat(&tip, "\n%s\n%s\n%s\n%s",
                               _("scroll to coarse-rotate"),
                               _("ctrl+scroll to fine rotate"),
@@ -1643,19 +1398,19 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     else
     {
       if(d->scopes->cur_mode && d->scopes->cur_mode->functions->get_highlight)
+      {
         d->scopes->highlight =
           d->scopes->cur_mode->functions->get_highlight(d->scopes->cur_mode, posx, posy);
-      else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE
-              && posx > 1.0f)
-        d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-      else if((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM
-               || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE
-               || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-              && ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-                  ||(posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT)))
-        d->scopes->highlight = DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-      else
-        d->scopes->highlight = DT_SCOPES_HIGHLIGHT_EXPOSURE;
+      }
+      else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+      {
+        if(posx > 0.5f)
+          d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
+        else
+          d->scopes->highlight =
+            d->scopes->modes[DT_SCOPES_MODE_WAVEFORM].functions->get_highlight(
+              &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM], posx*2.0f, posy);
+      }
 
       if(d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT)
         dt_util_str_cat(&tip, "\n%s\n%s",
@@ -1693,12 +1448,13 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
     double pos;
     if(d->scopes->cur_mode)
       pos = d->scopes->cur_mode->functions->get_exposure_pos(d->scopes->cur_mode, x, y);
-    else if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-      pos = -y;
-    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-      pos = x * 2.0f;
     else
-      pos = x;
+    {
+      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+        pos = x * 2.0f;
+      else
+        pos = x;
+    }
 
     dt_dev_exposure_handle_event(gesture, n_press, pos, d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
   }
@@ -1804,26 +1560,6 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   }
 }
 
-
-static void _scope_orient_update(const dt_lib_histogram_t *d)
-{
-  switch(d->scope_orient)
-  {
-    case DT_LIB_HISTOGRAM_ORIENT_HORI:
-      gtk_widget_set_tooltip_text(d->scope_orient_button, _("set scope to vertical"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_orient_button),
-                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_UP, NULL);
-      break;
-    case DT_LIB_HISTOGRAM_ORIENT_VERT:
-      gtk_widget_set_tooltip_text(d->scope_orient_button, _("set scope to horizontal"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_orient_button),
-                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, NULL);
-      break;
-    case DT_LIB_HISTOGRAM_ORIENT_N:
-      dt_unreachable_codepath();
-  }
-}
-
 static void _vectorscope_view_update(const dt_lib_histogram_t *d)
 {
   switch(d->vectorscope_scale)
@@ -1889,61 +1625,46 @@ static void _scope_type_update(const dt_lib_histogram_t *const d)
     cur_mode->functions->mode_enter(cur_mode);
     // FIXME: temporary hack
     gtk_widget_hide(d->vec_scale_button);
-    gtk_widget_hide(d->scope_orient_button);
     gtk_widget_hide(d->colorspace_button);
   }
   else
     switch(d->scope_type)
     {
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        gtk_widget_show(d->button_box_rgb);
-        gtk_widget_hide(d->vec_scale_button);
-        gtk_widget_show(d->scope_orient_button);
-        gtk_widget_hide(d->colorspace_button);
-        _scope_orient_update(d);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-        gtk_widget_hide(d->button_box_rgb);
-        gtk_widget_hide(d->vec_scale_button);
-        gtk_widget_show(d->scope_orient_button);
-        gtk_widget_hide(d->colorspace_button);
-        _scope_orient_update(d);
-        break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
         gtk_widget_hide(d->button_box_rgb);
         gtk_widget_show(d->vec_scale_button);
-        gtk_widget_hide(d->scope_orient_button);
         gtk_widget_show(d->colorspace_button);
         _vectorscope_view_update(d);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
+        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+        wave_view->functions->mode_enter(wave_view);
         gtk_widget_show(d->button_box_rgb);
         gtk_widget_show(d->vec_scale_button);
-        gtk_widget_show(d->scope_orient_button);
         gtk_widget_show(d->colorspace_button);
-        _scope_orient_update(d);
         _vectorscope_view_update(d);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
       case DT_LIB_HISTOGRAM_SCOPE_N:
         dt_unreachable_codepath();
     }
 }
 
-static void _scope_type_changed(const dt_lib_histogram_t *d,
-                                const dt_scopes_mode_t *const prev_mode)
+static void _scope_type_changed(const dt_lib_histogram_t *d)
 {
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
   _scope_type_update(d);
 
-  // do we have at least some data to draw?
-  if(d->waveform_bins || d->vectorscope_radius != 0.f || d->histogram_max)
-  {
-    gtk_widget_queue_draw(d->scopes->scope_draw);
-  }
+  // even if no current data, GUI should still respond to update
+  gtk_widget_queue_draw(d->scopes->scope_draw);
+
   // generate data for changed scope and trigger widget redraw
-  if(!d->waveform_bins || d->vectorscope_radius == 0.f || !d->histogram_max)
+  dt_scopes_mode_t *cur_mode = d->scopes->cur_mode;
+  if((cur_mode && d->scopes->update_counter != cur_mode->update_counter)
+     || d->vectorscope_radius == 0.f)
   {
     if(dt_view_get_current() == DT_VIEW_DARKROOM)
       dt_dev_process_preview(darktable.develop);
@@ -1965,40 +1686,28 @@ static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
     (GTK_TOGGLE_BUTTON(d->scope_type_button[d->scope_type]), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
   const dt_lib_histogram_scope_type_t scope_type_old = d->scope_type;
-  const dt_scopes_mode_t *prev_mode = d->scopes->cur_mode;
   d->scope_type = i;
   // FIXME: hack, buttons should actually contain view # or pointer view/mode structure
   if(i == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM];
+  else if(i == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+  else if(i == DT_LIB_HISTOGRAM_SCOPE_PARADE)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_PARADE];
   else
     d->scopes->cur_mode = NULL;
-  // FIXME: implement switch code which uses counter of when view/mode last processed compared to module-wide counter of last input to process to determine when we need to request reprocessing
-  // waveform and RGB parade share underlying data so don't need to
-  // reprocess when shifting between them
   // split view shares data with waveform and vectorscope
-  const gboolean old_scope_wave =
-    (scope_type_old == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM
-     || scope_type_old == DT_LIB_HISTOGRAM_SCOPE_PARADE
-     || scope_type_old == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE);
-  const gboolean new_scope_wave =
-    (d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM
-     || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE
-     || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE);
   const gboolean old_scope_vec =
     (scope_type_old == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE
      || scope_type_old == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE);
   const gboolean new_scope_vec =
     (d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE
      || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE);
-  if(!old_scope_wave && new_scope_wave)
-    d->waveform_bins = 0;
   if(!old_scope_vec && new_scope_vec)
     d->vectorscope_radius = 0.f;
-  // FIXME: make an API function that returns current view ID
-  if(d->scopes->cur_mode == &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM])
-    d->scopes->cur_mode->functions->clear(d->scopes->cur_mode);
+
   // FIXME: _scope_type_changed() is only used here, just inline it
-  _scope_type_changed(d, prev_mode);
+  _scope_type_changed(d);
   return TRUE;
 }
 
@@ -2009,31 +1718,6 @@ static void _vec_scale_clicked(GtkWidget *button, dt_lib_histogram_t *d)
                      dt_lib_histogram_scale_names[d->vectorscope_scale]);
   _vectorscope_view_update(d);
 
-  // trigger new process from scratch
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_process_preview(darktable.develop);
-  else
-    dt_control_queue_redraw_center();
-}
-
-static void _scope_orient_clicked(GtkWidget *button, dt_lib_histogram_t *d)
-{
-  switch(d->scope_type)
-  {
-    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-    case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-    case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-      d->scope_orient = (d->scope_orient + 1) % DT_LIB_HISTOGRAM_ORIENT_N;
-      dt_conf_set_string("plugins/darkroom/histogram/orient",
-                         dt_lib_histogram_orient_names[d->scope_orient]);
-      d->waveform_bins = 0;
-      _scope_orient_update(d);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-    case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-    case DT_LIB_HISTOGRAM_SCOPE_N:
-      dt_unreachable_codepath();
-  }
   // trigger new process from scratch
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_process_preview(darktable.develop);
@@ -2321,10 +2005,16 @@ void gui_init(dt_lib_module_t *self)
 
   dt_scopes_t *const s = dt_calloc1_align_type(dt_scopes_t);
   d->scopes = s;
+  s->update_counter = 1;
+  // FIXME: is there a better way to init this?
   s->modes[DT_SCOPES_MODE_HISTOGRAM].functions = &dt_scopes_functions_histogram;
-  //s->view_functions[DT_SCOPES_VIEW_HISTOGRAM] = dt_scopes_functions_histogram;
+  s->modes[DT_SCOPES_MODE_WAVEFORM].functions = &dt_scopes_functions_waveform;
+  s->modes[DT_SCOPES_MODE_PARADE].functions = &dt_scopes_functions_parade;
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
+  {
+    s->modes[i].update_counter = 0;
     s->modes[i].functions->gui_init(&s->modes[i], s);
+  }
 
   dt_pthread_mutex_init(&d->lock, NULL);
 
@@ -2342,13 +2032,10 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: stopgap hack during transition
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM];
+  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
   else
     d->scopes->cur_mode = NULL;
-
-  str = dt_conf_get_string_const("plugins/darkroom/histogram/orient");
-  for(dt_lib_histogram_orient_t i=0; i<DT_LIB_HISTOGRAM_ORIENT_N; i++)
-    if(g_strcmp0(str, dt_lib_histogram_orient_names[i]) == 0)
-      d->scope_orient = i;
 
   str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope");
   for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
@@ -2362,51 +2049,6 @@ void gui_init(dt_lib_module_t *self)
 
   const int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = deg2rad(a);
-
-  d->histogram = dt_alloc_align_type(uint32_t, 4 * HISTOGRAM_BINS);
-  memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
-  d->histogram_max = 0;
-
-  // Waveform buffer doesn't need to be coupled with the histogram
-  // widget size. The waveform is almost always scaled when
-  // drawn. Choose buffer dimensions which produces workable detail,
-  // don't use too much CPU/memory, and allow reasonable gradations
-  // of tone.
-
-  // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
-  // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
-  // for mosaiced images), nor make it too slow to calculate
-  // (regardless of ppd). Try to get enough detail for a (default)
-  // 350px panel, possibly 2x that on hidpi.  The actual buffer
-  // width will vary with integral binning of image.
-  //
-  // FIXME: increasing waveform_max_bins increases processing speed
-  // less than increasing waveform_tones -- tune these better?
-  d->waveform_max_bins = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-  // initially no waveform to draw
-  d->waveform_bins = 0;
-  // Should be at least 100 (approx. # of tones the eye can see) and
-  // multiple of 16 (for optimization), larger #'s will make a more
-  // detailed scope display at cost of a bit of CPU/memory.
-  // 175 rows is the default histogram widget height. It's OK if the
-  // widget height changes from this, as the width will almost always
-  // be scaled. 175 rows is reasonable CPU usage and represents plenty
-  // of tonal gradation. 256 would match the # of bins in a regular
-  // histogram.
-  d->waveform_tones = 160;
-  // FIXME: combine waveform_8bit and vectorscope_graph, as only ever
-  // use one or the other
-  //
-  // FIXME: keep alignment instead via single alloc via
-  // dt_alloc_perthread()?
-  const size_t bytes_hori =
-    d->waveform_tones
-    * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins);
-  const size_t bytes_vert =
-    d->waveform_max_bins
-    * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
-  for(int ch=0; ch<3; ch++)
-    d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));
 
   // FIXME: what is the appropriate resolution for this: balance
   // memory use, processing speed, helpful resolution
@@ -2569,13 +2211,12 @@ void gui_init(dt_lib_module_t *self)
                    d->red_channel_button, &dt_action_def_toggle);
   gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
 
-  d->scope_orient_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  ac = dt_action_define(dark, NULL, N_("switch scope orientation"),
-                        d->scope_orient_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box_right), d->scope_orient_button, FALSE, FALSE, 0);
-
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
-    s->modes[i].functions->gui_init_options(&s->modes[i], dark, box_right);
+  {
+    dt_scopes_mode_t *mode = &s->modes[i];
+    if(mode->functions->gui_init_options)
+      mode->functions->gui_init_options(mode, dark, box_right);
+  }
 
   // a series of buttons for color harmony guide lines
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_MONOCHROMATIC;
@@ -2640,8 +2281,6 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->vec_scale_button), "clicked",
                    G_CALLBACK(_vec_scale_clicked), d);
-  g_signal_connect(G_OBJECT(d->scope_orient_button), "clicked",
-                   G_CALLBACK(_scope_orient_clicked), d);
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked",
                    G_CALLBACK(_colorspace_clicked), d);
 
@@ -2686,16 +2325,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
-    dt_scopes_mode_t *v = &d->scopes->modes[i];
-    if(v->functions->gui_cleanup)
-      v->functions->gui_cleanup(v);
+    dt_scopes_mode_t *mode = &d->scopes->modes[i];
+    if(mode->functions->gui_cleanup)
+      mode->functions->gui_cleanup(mode);
   }
   dt_free_align(d->scopes);
   d->scopes = NULL;
 
-  dt_free_align(d->histogram);
-  for(int ch=0; ch<3; ch++)
-    dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
   dt_free_align(d->vectorscope_bkgd);
   if(d->vectorscope_samples)

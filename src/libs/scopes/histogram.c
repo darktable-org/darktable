@@ -22,8 +22,9 @@
 #include "scopes.h"
 
 #define HISTOGRAM_BINS 256
+#define BLACK_POINT_REGION 0.2f
 
-const gchar *dt_hist_scale_names[DT_SCOPES_SCALE_N] =
+static const gchar *dt_hist_scale_names[DT_SCOPES_SCALE_N] =
   { "logarithmic",
     "linear"
   };
@@ -40,11 +41,11 @@ typedef struct dt_scopes_hist_t
 } dt_scopes_hist_t;
 
 
-static void _hist_process(dt_scopes_mode_t *const s,
+static void _hist_process(dt_scopes_mode_t *const self,
                                const float *const input,
                                const dt_histogram_roi_t *const roi)
 {
-  dt_scopes_hist_t *const d = s->data;
+  dt_scopes_hist_t *const d = self->data;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
   dt_dev_histogram_stats_t histogram_stats =
@@ -87,11 +88,10 @@ static void _hist_draw_highlight(const dt_scopes_mode_t *const self,
                                  const int width,
                                  const int height)
 {
-  // FIXME: move magic # 0.2 into const here and in next func
   if(highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT)
-    cairo_rectangle(cr, 0., 0., 0.2 * width, height);
+    cairo_rectangle(cr, 0., 0., BLACK_POINT_REGION * width, height);
   else if(highlight == DT_SCOPES_HIGHLIGHT_EXPOSURE)
-    cairo_rectangle(cr, 0.2 * width, 0., width, height);
+    cairo_rectangle(cr, BLACK_POINT_REGION * width, 0., width, height);
   if(highlight != DT_SCOPES_HIGHLIGHT_NONE)
     cairo_fill(cr);
 }
@@ -100,7 +100,8 @@ static dt_scopes_highlight_t _hist_get_highlight(const dt_scopes_mode_t *const s
                                                  const float posx,
                                                  const float posy)
 {
-  return posx < 0.2f ? DT_SCOPES_HIGHLIGHT_BLACK_POINT : DT_SCOPES_HIGHLIGHT_EXPOSURE;
+  return posx < BLACK_POINT_REGION
+         ? DT_SCOPES_HIGHLIGHT_BLACK_POINT : DT_SCOPES_HIGHLIGHT_EXPOSURE;
 }
 
 static double _hist_get_exposure_pos(const dt_scopes_mode_t *const self,
@@ -110,14 +111,15 @@ static double _hist_get_exposure_pos(const dt_scopes_mode_t *const self,
   return x;
 }
 
-static void _hist_draw(const dt_scopes_mode_t *const s,
+static void _hist_draw(const dt_scopes_mode_t *const self,
                        cairo_t *cr,
                        const int width,
                        const int height,
                        const scopes_channels_t channels)
 {
-  const dt_scopes_hist_t *const d = s->data;
+  const dt_scopes_hist_t *const d = self->data;
 
+  // FIXME: need this if we have a working update counter?
   if(!d->histogram_max) return;
 
   const float hist_max = d->scale == DT_SCOPES_SCALE_LINEAR
