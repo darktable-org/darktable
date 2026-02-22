@@ -1783,9 +1783,9 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
 
   dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE, export_masks,
-     DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
-     history_end);
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE,
+     export_masks, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL,
+     1, 1, NULL, history_end);
 
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, dat.head.width);
