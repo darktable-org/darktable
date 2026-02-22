@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@ G_BEGIN_DECLS
 typedef enum dt_scopes_mode_type_t
 {
   DT_SCOPES_MODE_HISTOGRAM = 0,
+  DT_SCOPES_MODE_WAVEFORM,
+  DT_SCOPES_MODE_PARADE, // must come after waveform, as it uses waveform data
   DT_SCOPES_MODE_N // needs to be the last one
 } dt_scopes_mode_type_t;
 
@@ -107,8 +109,8 @@ typedef struct dt_scopes_mode_t
 {
   const dt_scopes_functions_t *functions;
   void *data;
-  // FIXME: add a counter so we know if data is up to date
   // FIXME: include "dt_scopes_t *scopes;" here instead of asking each mode to have it in private data
+  int update_counter;
 } dt_scopes_mode_t;
 
 /** structure used to define internal storage for a scope */
@@ -117,9 +119,9 @@ typedef struct dt_scopes_t
   dt_scopes_mode_t *cur_mode;
   // FIXME: should this be a GList which is appended with scopes on module init?
   dt_scopes_mode_t modes[DT_SCOPES_MODE_N];
+  int update_counter;
   // depends on mouse position
   dt_scopes_highlight_t highlight;
-  // FIXME: add a counter so we know if each scope is up to date
   //const dt_scopes_functions_t *view_functions[DT_SCOPES_VIEW_N];
   //void *view_data[DT_SCOPES_VIEW_N];
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
@@ -130,6 +132,8 @@ typedef struct dt_scopes_t
 /** the scope-specific function tables */
 // FIXME: does this even need to be declared if it is set up within each scopes/*.c?
 extern const dt_scopes_functions_t dt_scopes_functions_histogram;
+extern const dt_scopes_functions_t dt_scopes_functions_waveform;
+extern const dt_scopes_functions_t dt_scopes_functions_parade;
 
 G_END_DECLS
 
