@@ -97,6 +97,7 @@ static gboolean _ensure_directory(const char *path)
 
 // --- Version Helpers ---
 
+#ifdef HAVE_AI_DOWNLOAD
 // Curl write callback that appends to a GString
 static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
@@ -402,6 +403,7 @@ static char *_fetch_asset_digest(
 
   return digest;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 // --- Core API ---
 
@@ -809,6 +811,7 @@ dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry, const char *mo
   return copy;
 }
 
+#ifdef HAVE_AI_DOWNLOAD
 // --- Download Implementation ---
 
 typedef struct dt_ai_download_data_t
@@ -901,6 +904,7 @@ static gboolean _verify_checksum(const char *filepath, const char *expected)
   g_checksum_free(checksum);
   return match;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 static gboolean _extract_zip(const char *zippath, const char *destdir)
 {
@@ -1040,6 +1044,28 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   return success;
 }
 
+// Install a local .dtmodel file (zip archive) into the models directory.
+// Returns error message (caller must free) or NULL on success.
+char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath)
+{
+  if(!registry || !filepath)
+    return g_strdup(_("invalid parameters"));
+
+  if(!g_file_test(filepath, G_FILE_TEST_IS_REGULAR))
+    return g_strdup_printf(_("file not found: %s"), filepath);
+
+  if(!_extract_zip(filepath, registry->models_dir))
+    return g_strdup(_("failed to extract model archive"));
+
+  // Rescan models directory to pick up newly installed model
+  dt_ai_models_refresh_status(registry);
+
+  dt_print(DT_DEBUG_AI, "[ai_models] Model installed from: %s", filepath);
+
+  return NULL; // Success
+}
+
+#ifdef HAVE_AI_DOWNLOAD
 // Synchronous download - returns error message or NULL on success
 char *dt_ai_models_download_sync(
   dt_ai_registry_t *registry,
@@ -1386,6 +1412,7 @@ gboolean dt_ai_models_download_all(
   g_list_free_full(ids, g_free);
   return any_started;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 static gboolean _rmdir_recursive(const char *path)
 {

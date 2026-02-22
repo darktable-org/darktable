@@ -454,6 +454,8 @@ foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2
 endforeach(lib)
 
 if(BUILD_AI)
+  option(BUILD_AI_DOWNLOAD "Enable downloading AI models from repository" ON)
+
   list(APPEND LIBS darktable_ai)
 
   FILE(GLOB SOURCE_FILES_AI
@@ -462,7 +464,12 @@ if(BUILD_AI)
   )
   set(SOURCES ${SOURCES} ${SOURCE_FILES_AI})
   add_definitions("-DHAVE_AI")
-  message(STATUS "AI features: enabled")
+  if(BUILD_AI_DOWNLOAD)
+    add_definitions("-DHAVE_AI_DOWNLOAD")
+    message(STATUS "AI features: enabled (with model download)")
+  else()
+    message(STATUS "AI features: enabled (without model download)")
+  endif()
 else(BUILD_AI)
   message(STATUS "AI features: disabled")
 endif(BUILD_AI)
