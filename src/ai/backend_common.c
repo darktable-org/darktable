@@ -310,16 +310,17 @@ dt_ai_context_t *dt_ai_load_model_ext(
   if(!env || !model_id)
     return NULL;
 
-  g_mutex_lock(&env->lock);
-
   // Resolve AUTO: re-read from config so preference changes take effect
-  // immediately without requiring app restart.
+  // immediately without requiring app restart.  Read config before acquiring
+  // env->lock to avoid lock-ordering issues with darktable's config lock.
   if(provider == DT_AI_PROVIDER_AUTO)
   {
     char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
     provider = dt_ai_provider_from_string(prov_str);
     g_free(prov_str);
   }
+
+  g_mutex_lock(&env->lock);
   const char *model_dir_orig
     = (const char *)g_hash_table_lookup(env->model_paths, model_id);
   char *model_dir = model_dir_orig ? g_strdup(model_dir_orig) : NULL;
