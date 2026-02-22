@@ -24,6 +24,52 @@
 #include <json-glib/json-glib.h>
 #include <string.h>
 
+// --- Provider Table ---
+
+// clang-format off
+const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
+  { DT_AI_PROVIDER_AUTO,     "auto",     "auto",
+    1 },
+  { DT_AI_PROVIDER_CPU,      "CPU",      "CPU",
+    1 },
+  { DT_AI_PROVIDER_COREML,   "CoreML",   "Apple CoreML",
+#if defined(__APPLE__)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_CUDA,     "CUDA",     "NVIDIA CUDA",
+#if defined(__linux__)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_MIGRAPHX, "MIGraphX", "AMD MIGraphX",
+#if defined(__linux__)
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_OPENVINO, "OpenVINO", "Intel OpenVINO",
+#if defined(__linux__) || (defined(__APPLE__) && defined(__x86_64__))
+    1
+#else
+    0
+#endif
+  },
+  { DT_AI_PROVIDER_DIRECTML, "DirectML", "Windows DirectML",
+#if defined(_WIN32)
+    1
+#else
+    0
+#endif
+  },
+};
+// clang-format on
+
 // --- Internal Structures ---
 
 struct dt_ai_environment_t
@@ -188,7 +234,10 @@ int dt_ai_get_model_count(dt_ai_environment_t *env)
 {
   if(!env)
     return 0;
-  return g_list_length(env->models);
+  g_mutex_lock(&env->lock);
+  int count = g_list_length(env->models);
+  g_mutex_unlock(&env->lock);
+  return count;
 }
 
 const dt_ai_model_info_t *
@@ -196,10 +245,11 @@ dt_ai_get_model_info_by_index(dt_ai_environment_t *env, int index)
 {
   if(!env)
     return NULL;
+  g_mutex_lock(&env->lock);
   GList *item = g_list_nth(env->models, index);
-  if(!item)
-    return NULL;
-  return (const dt_ai_model_info_t *)item->data;
+  const dt_ai_model_info_t *info = item ? (const dt_ai_model_info_t *)item->data : NULL;
+  g_mutex_unlock(&env->lock);
+  return info;
 }
 
 const dt_ai_model_info_t *
@@ -207,13 +257,19 @@ dt_ai_get_model_info_by_id(dt_ai_environment_t *env, const char *id)
 {
   if(!env || !id)
     return NULL;
+  g_mutex_lock(&env->lock);
+  const dt_ai_model_info_t *result = NULL;
   for(GList *l = env->models; l != NULL; l = l->next)
   {
     dt_ai_model_info_t *info = (dt_ai_model_info_t *)l->data;
     if(strcmp(info->id, id) == 0)
-      return info;
+    {
+      result = info;
+      break;
+    }
   }
-  return NULL;
+  g_mutex_unlock(&env->lock);
+  return result;
 }
 
 static void _free_model_info(gpointer data) { g_free(data); }

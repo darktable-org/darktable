@@ -48,52 +48,7 @@ typedef struct dt_ai_provider_desc_t {
   int available;
 } dt_ai_provider_desc_t;
 
-// clang-format off
-static const dt_ai_provider_desc_t dt_ai_providers[] = {
-  { DT_AI_PROVIDER_AUTO,     "auto",     "auto",
-    1 },
-  { DT_AI_PROVIDER_CPU,      "CPU",      "CPU",
-    1 },
-  { DT_AI_PROVIDER_COREML,   "CoreML",   "Apple CoreML",
-#if defined(__APPLE__)
-    1
-#else
-    0
-#endif
-  },
-  { DT_AI_PROVIDER_CUDA,     "CUDA",     "NVIDIA CUDA",
-#if defined(__linux__)
-    1
-#else
-    0
-#endif
-  },
-  { DT_AI_PROVIDER_MIGRAPHX, "MIGraphX", "AMD MIGraphX",
-#if defined(__linux__)
-    1
-#else
-    0
-#endif
-  },
-  { DT_AI_PROVIDER_OPENVINO, "OpenVINO", "Intel OpenVINO",
-#if defined(__linux__) || (defined(__APPLE__) && defined(__x86_64__))
-    1
-#else
-    0
-#endif
-  },
-  { DT_AI_PROVIDER_DIRECTML, "DirectML", "Windows DirectML",
-#if defined(_WIN32)
-    1
-#else
-    0
-#endif
-  },
-};
-// clang-format on
-
-_Static_assert(sizeof(dt_ai_providers) / sizeof(dt_ai_providers[0]) == DT_AI_PROVIDER_COUNT,
-               "dt_ai_providers table out of sync with dt_ai_provider_t enum");
+extern const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT];
 
 /** Config key for the AI execution provider preference */
 #define DT_AI_CONF_PROVIDER "plugins/ai/provider"
