@@ -1182,11 +1182,14 @@ char *dt_ai_models_download_sync(
     g_free(checksum_copy);
     checksum_copy = _fetch_asset_digest(repository, release_tag, asset);
     if(!checksum_copy)
-      dt_print(
-        DT_DEBUG_AI,
-        "[ai_models] WARNING: could not obtain checksum for %s — "
-        "download will proceed without integrity verification",
-        asset);
+    {
+      g_free(release_tag);
+      SET_STATUS_AND_RETURN(
+        DT_AI_MODEL_ERROR,
+        g_strdup_printf(_("could not obtain checksum for %s — "
+                          "refusing to download without integrity verification"),
+                        asset));
+    }
   }
 
   // Build GitHub download URL using local copies (not model pointer)
@@ -1295,10 +1298,14 @@ char *dt_ai_models_download_sync(
   }
   else
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] WARNING: no checksum available for %s — skipping verification",
-      asset);
+    // Should not reach here — checksum is now required before download
+    g_unlink(download_path);
+    g_free(download_path);
+    SET_STATUS_AND_RETURN(
+      DT_AI_MODEL_ERROR,
+      g_strdup_printf(_("no checksum available for %s — "
+                        "refusing to install without integrity verification"),
+                      asset));
   }
 
   // Extract to models directory (ZIP already contains model_id folder)
