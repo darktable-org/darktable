@@ -98,12 +98,14 @@ static gboolean _ensure_directory(const char *path)
 // --- Version Helpers ---
 
 #ifdef HAVE_AI_DOWNLOAD
-// Curl write callback that appends to a GString
+// Curl write callback that appends to a GString (capped at 1 MB)
 static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
   GString *buf = (GString *)userdata;
-  g_string_append_len(buf, (const char *)ptr, size * nmemb);
-  return size * nmemb;
+  const size_t bytes = size * nmemb;
+  if(buf->len + bytes > 1024 * 1024) return 0;  // abort transfer
+  g_string_append_len(buf, (const char *)ptr, bytes);
+  return bytes;
 }
 
 /**

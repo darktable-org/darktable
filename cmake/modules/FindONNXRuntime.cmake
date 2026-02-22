@@ -159,17 +159,71 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
   set(_ORT_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/_deps")
   set(_ORT_ARCHIVE "${_ORT_DOWNLOAD_DIR}/${_ORT_PACKAGE}")
 
-  # -- Fetch SHA256 digest from GitHub Releases API (non-NuGet only) --
-  # GitHub provides a "digest" field (sha256:...) for every release asset.
-  # NuGet packages don't have this; they are verified by HTTPS only.
+  # -- Fetch integrity hash from package repository --
+  # All auto-downloaded packages must be verified.  The hash is fetched from the
+  # repository API (GitHub Releases or NuGet catalog) and checked after download.
   set(_ORT_HASH "")
-  if(NOT _ORT_NUGET)
+  set(_ORT_HASH_ALGO "")
+  file(MAKE_DIRECTORY "${_ORT_DOWNLOAD_DIR}")
+
+  if(_ORT_NUGET)
+    # NuGet: fetch SHA512 from the catalog API (base64-encoded).
+    # Step 1: registration entry → catalog URL
+    set(_ORT_NUGET_ID "microsoft.ml.onnxruntime.directml")
+    set(_ORT_REG_JSON "${_ORT_DOWNLOAD_DIR}/nuget-reg-${_ORT_VER}.json")
+    set(_ORT_REG_URL "https://api.nuget.org/v3/registration5-semver1/${_ORT_NUGET_ID}/${_ORT_VER}.json")
+    if(NOT EXISTS "${_ORT_REG_JSON}")
+      message(STATUS "Fetching NuGet registration for ${_ORT_NUGET_ID} ${_ORT_VER}...")
+      file(DOWNLOAD "${_ORT_REG_URL}" "${_ORT_REG_JSON}" STATUS _ORT_REG_STATUS)
+      list(GET _ORT_REG_STATUS 0 _ORT_REG_CODE)
+      if(NOT _ORT_REG_CODE EQUAL 0)
+        file(REMOVE "${_ORT_REG_JSON}")
+      endif()
+    endif()
+    if(EXISTS "${_ORT_REG_JSON}")
+      file(READ "${_ORT_REG_JSON}" _ORT_REG_CONTENT)
+      string(REGEX MATCH "\"catalogEntry\" *: *\"([^\"]+)\"" _ORT_CAT_MATCH "${_ORT_REG_CONTENT}")
+      if(_ORT_CAT_MATCH)
+        set(_ORT_CAT_URL "${CMAKE_MATCH_1}")
+        # Step 2: catalog entry → packageHash (base64 SHA512)
+        set(_ORT_CAT_JSON "${_ORT_DOWNLOAD_DIR}/nuget-catalog-${_ORT_VER}.json")
+        if(NOT EXISTS "${_ORT_CAT_JSON}")
+          message(STATUS "Fetching NuGet catalog entry...")
+          file(DOWNLOAD "${_ORT_CAT_URL}" "${_ORT_CAT_JSON}" STATUS _ORT_CAT_STATUS)
+          list(GET _ORT_CAT_STATUS 0 _ORT_CAT_CODE)
+          if(NOT _ORT_CAT_CODE EQUAL 0)
+            file(REMOVE "${_ORT_CAT_JSON}")
+          endif()
+        endif()
+        if(EXISTS "${_ORT_CAT_JSON}")
+          file(READ "${_ORT_CAT_JSON}" _ORT_CAT_CONTENT)
+          string(REGEX MATCH "\"packageHash\" *: *\"([^\"]+)\"" _ORT_HASH_MATCH "${_ORT_CAT_CONTENT}")
+          if(_ORT_HASH_MATCH)
+            set(_ORT_B64_HASH "${CMAKE_MATCH_1}")
+            # Convert base64 SHA512 to hex via PowerShell (NuGet path is Windows-only)
+            execute_process(
+              COMMAND powershell -NoProfile -Command
+                "[BitConverter]::ToString([Convert]::FromBase64String('${_ORT_B64_HASH}')).Replace('-','').ToLower()"
+              OUTPUT_VARIABLE _ORT_HASH
+              OUTPUT_STRIP_TRAILING_WHITESPACE
+              RESULT_VARIABLE _ORT_PS_RESULT
+            )
+            if(_ORT_PS_RESULT EQUAL 0 AND _ORT_HASH)
+              set(_ORT_HASH_ALGO "SHA512")
+              message(STATUS "NuGet package ${_ORT_PACKAGE} SHA512: ${_ORT_HASH}")
+            else()
+              set(_ORT_HASH "")
+            endif()
+          endif()
+        endif()
+      endif()
+    endif()
+  else()
+    # GitHub: fetch SHA256 from the Releases API (hex-encoded digest field).
     set(_ORT_API_JSON "${_ORT_DOWNLOAD_DIR}/ort-release-${_ORT_VER}.json")
     set(_ORT_API_URL "https://api.github.com/repos/microsoft/onnxruntime/releases/tags/v${_ORT_VER}")
-
     if(NOT EXISTS "${_ORT_API_JSON}")
       message(STATUS "Fetching ONNX Runtime v${_ORT_VER} release metadata from GitHub API...")
-      file(MAKE_DIRECTORY "${_ORT_DOWNLOAD_DIR}")
       file(DOWNLOAD
         "${_ORT_API_URL}"
         "${_ORT_API_JSON}"
@@ -181,7 +235,6 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
         file(REMOVE "${_ORT_API_JSON}")
       endif()
     endif()
-
     if(EXISTS "${_ORT_API_JSON}")
       file(READ "${_ORT_API_JSON}" _ORT_API_CONTENT)
       # Two-step extraction: locate the package name, then find the first
@@ -196,58 +249,47 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
         string(REGEX MATCH "\"digest\" *: *\"sha256:([a-f0-9]+)\"" _ORT_DIGEST_MATCH "${_ORT_ASSET_TAIL}")
         if(_ORT_DIGEST_MATCH)
           set(_ORT_HASH "${CMAKE_MATCH_1}")
+          set(_ORT_HASH_ALGO "SHA256")
           message(STATUS "ONNX Runtime ${_ORT_PACKAGE} SHA256: ${_ORT_HASH}")
         endif()
       endif()
-      if(NOT _ORT_HASH)
-        message(WARNING
-          "Could not find SHA256 digest for ${_ORT_PACKAGE} in GitHub API response. "
-          "Download will proceed without integrity verification.")
-      endif()
-    else()
-      message(WARNING
-        "Could not fetch release metadata from GitHub API. "
-        "Download will proceed without integrity verification.")
     endif()
+  endif()
 
-    # -- Verify cached archive if it exists --
-    if(EXISTS "${_ORT_ARCHIVE}" AND _ORT_HASH)
-      file(SHA256 "${_ORT_ARCHIVE}" _ORT_CACHED_HASH)
-      if(NOT _ORT_CACHED_HASH STREQUAL "${_ORT_HASH}")
-        message(STATUS "Cached ONNX Runtime archive has wrong checksum, re-downloading...")
-        file(REMOVE "${_ORT_ARCHIVE}")
-      endif()
+  if(NOT _ORT_HASH)
+    message(WARNING
+      "Could not obtain integrity hash for ${_ORT_PACKAGE} from package repository. "
+      "Refusing to download without verification. "
+      "Install ONNX Runtime manually or set ONNXRUNTIME_OFFLINE=ON.")
+  else() # _ORT_HASH obtained — proceed with verified download
+
+  # -- Verify cached archive if it exists --
+  if(EXISTS "${_ORT_ARCHIVE}")
+    file(${_ORT_HASH_ALGO} "${_ORT_ARCHIVE}" _ORT_CACHED_HASH)
+    if(NOT _ORT_CACHED_HASH STREQUAL "${_ORT_HASH}")
+      message(STATUS "Cached ONNX Runtime archive has wrong checksum, re-downloading...")
+      file(REMOVE "${_ORT_ARCHIVE}")
     endif()
-  endif() # NOT _ORT_NUGET
+  endif()
 
   # -- Download --
   if(NOT EXISTS "${_ORT_ARCHIVE}")
     message(STATUS "Downloading ONNX Runtime ${_ORT_VER} (${_ORT_PACKAGE})...")
-    file(MAKE_DIRECTORY "${_ORT_DOWNLOAD_DIR}")
-    if(_ORT_HASH)
-      file(DOWNLOAD
-        "${_ORT_URL}"
-        "${_ORT_ARCHIVE}"
-        STATUS _ORT_DL_STATUS
-        SHOW_PROGRESS
-        EXPECTED_HASH "SHA256=${_ORT_HASH}"
-      )
-    else()
-      file(DOWNLOAD
-        "${_ORT_URL}"
-        "${_ORT_ARCHIVE}"
-        STATUS _ORT_DL_STATUS
-        SHOW_PROGRESS
-      )
-    endif()
+    file(DOWNLOAD
+      "${_ORT_URL}"
+      "${_ORT_ARCHIVE}"
+      STATUS _ORT_DL_STATUS
+      SHOW_PROGRESS
+      EXPECTED_HASH "${_ORT_HASH_ALGO}=${_ORT_HASH}"
+    )
     list(GET _ORT_DL_STATUS 0 _ORT_DL_CODE)
     list(GET _ORT_DL_STATUS 1 _ORT_DL_MSG)
     if(NOT _ORT_DL_CODE EQUAL 0)
       file(REMOVE "${_ORT_ARCHIVE}")
-      message(FATAL_ERROR
-        "Failed to download ONNX Runtime from ${_ORT_URL}\n"
-        "Error: ${_ORT_DL_MSG}\n"
-        "You can download manually from: https://github.com/microsoft/onnxruntime/releases")
+      message(WARNING
+        "Failed to download ONNX Runtime from ${_ORT_URL}: ${_ORT_DL_MSG}. "
+        "Install ONNX Runtime manually or download from: "
+        "https://github.com/microsoft/onnxruntime/releases")
     endif()
   endif()
 
@@ -309,6 +351,7 @@ if(NOT _ORT_HEADER OR NOT _ORT_LIBRARY)
     PATHS "${_ORT_ROOT}/lib"
     NO_DEFAULT_PATH
   )
+  endif() # _ORT_HASH
   endif() # NOT ONNXRUNTIME_OFFLINE
 endif()
 
