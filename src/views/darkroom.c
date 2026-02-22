@@ -4088,7 +4088,16 @@ static gboolean _second_window_buttons_enter_notify_callback(GtkWidget *widget,
                                                               GdkEventCrossing *event,
                                                               GtkWidget *button_box)
 {
-  gtk_widget_show(button_box);
+  // Make buttons visible and interactive.  Using opacity instead of hide/show
+  // keeps the GdkWindow (and its NSView tracking areas on macOS) always alive,
+  // which is required for GTK's tooltip mechanism to work correctly.
+  gtk_widget_set_opacity(button_box, 1.0);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
+                                       button_box, FALSE);
+  // GTK only shows tooltips for the focused window.  Focus the 2nd window when
+  // the pointer enters it so that tooltips work.  As a transient of the main
+  // window, the 2nd window always stays on top regardless of which has focus.
+  gtk_window_present_with_time(GTK_WINDOW(widget), event->time);
   return FALSE;
 }
 
@@ -4099,7 +4108,16 @@ static gboolean _second_window_buttons_leave_notify_callback(GtkWidget *widget,
   // GDK_NOTIFY_INFERIOR means the pointer moved into a child window (still
   // within the second window); keep the buttons visible in that case.
   if(event->detail != GDK_NOTIFY_INFERIOR)
-    gtk_widget_hide(button_box);
+  {
+    gtk_widget_set_opacity(button_box, 0.0);
+    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
+                                         button_box, TRUE);
+    // Return focus to the main window so keyboard shortcuts and other
+    // interactions work normally after leaving the 2nd window.
+    GtkWindow *main_window = gtk_window_get_transient_for(GTK_WINDOW(widget));
+    if(main_window)
+      gtk_window_present_with_time(main_window, event->time);
+  }
   return FALSE;
 }
 
@@ -4113,15 +4131,6 @@ static void _preview2_pin_button_clicked(GtkToggleButton *button,
                               is_pinned ? _("unpin image") : _("pin current image"));
 }
 
-static void _preview2_on_top_button_clicked(GtkToggleButton *button,
-                                            dt_develop_t *dev)
-{
-  gboolean is_on_top = gtk_toggle_button_get_active(button);
-  gtk_window_set_keep_above(GTK_WINDOW(dev->second_wnd), is_on_top);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button),
-                              is_on_top ? _("disable keep second window on top")
-                                        : _("keep second window on top"));
-}
 
 static void _darkroom_ui_second_window_init(GtkWidget *overlay,
                                             dt_develop_t *dev)
@@ -4134,13 +4143,8 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
   
-  // Group both overlay buttons in a vertical box positioned in the top-right corner.
-  // The box is hidden by default and shown/hidden based on mouse proximity.
+  // Group buttons in a vertical box for easy future expansion.
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_halign(button_box, GTK_ALIGN_END);
-  gtk_widget_set_valign(button_box, GTK_ALIGN_START);
-  gtk_widget_set_margin_top(button_box, 10);
-  gtk_widget_set_margin_end(button_box, 10);
 
   // Create the pin button
   GtkWidget *pin_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
@@ -4151,39 +4155,38 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
                    G_CALLBACK(_preview2_pin_button_clicked), dev);
   gtk_box_pack_start(GTK_BOX(button_box), pin_button, FALSE, FALSE, 0);
 
-  // Create keep-on-top button
-  GtkWidget *on_top_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
-  gtk_widget_set_name(on_top_button, "dt_window2_on_top_button");
-  gtk_widget_set_size_request(on_top_button, 24, 24);
-  gtk_widget_set_tooltip_text(on_top_button, _("keep second window on top"));
-  g_signal_connect(G_OBJECT(on_top_button), "toggled",
-                   G_CALLBACK(_preview2_on_top_button_clicked), dev);
-  gtk_box_pack_start(GTK_BOX(button_box), on_top_button, FALSE, FALSE, 0);
+  // Wrap the box in a GtkEventBox so that the overlay can toggle pass-through on
+  // a windowed widget, which enables tooltip rendering.
+  GtkWidget *event_box = gtk_event_box_new();
+  gtk_widget_set_halign(event_box, GTK_ALIGN_END);
+  gtk_widget_set_valign(event_box, GTK_ALIGN_START);
+  gtk_widget_set_margin_top(event_box, 10);
+  gtk_widget_set_margin_end(event_box, 10);
+  gtk_container_add(GTK_CONTAINER(event_box), button_box);
 
-  // Add the box as a single overlay widget and keep it hidden until the mouse enters.
-  // Show all children first so they are in the "shown" state; then hide the box.
-  // gtk_widget_set_no_show_all prevents gtk_widget_show_all from revealing it later.
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button_box);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), button_box, FALSE);
-  gtk_widget_show_all(button_box);
-  gtk_widget_set_no_show_all(button_box, TRUE);
-  gtk_widget_hide(button_box);
+  // Add the event box as a single overlay widget.  Start transparent and
+  // non-interactive; the enter/leave callbacks will toggle opacity and
+  // pass-through.  Keeping the widget always mapped (never hidden) preserves
+  // NSView tracking areas on macOS, which is required for GTK's tooltip
+  // mechanism to work.
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), event_box);
+  gtk_widget_show_all(event_box);
+  gtk_widget_set_opacity(event_box, 0.0);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), event_box, TRUE);
 
-  // GtkWindow does not have GDK_ENTER_NOTIFY_MASK by default; add it so crossing
-  // events are delivered.  Must be done before the window is realized (show_all).
+  // Needed to display/hide the widgets.
+  // Must be done before the window is realized.
   gtk_widget_add_events(window, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 
-  // Show buttons when the mouse enters the second window, hide when it leaves.
+  // Show / hide controls on enter/leave events.
   g_signal_connect(G_OBJECT(window), "enter-notify-event",
-                   G_CALLBACK(_second_window_buttons_enter_notify_callback), button_box);
+                   G_CALLBACK(_second_window_buttons_enter_notify_callback), event_box);
   g_signal_connect(G_OBJECT(window), "leave-notify-event",
-                   G_CALLBACK(_second_window_buttons_leave_notify_callback), button_box);
+                   G_CALLBACK(_second_window_buttons_leave_notify_callback), event_box);
 
   dev->preview2.pin_button = pin_button;
   
   dev->preview2.border_size = 0;
-
-  // Set window size and position
   gtk_window_set_default_size(GTK_WINDOW(window), width, height);
   gtk_window_move(GTK_WINDOW(window), x, y);
   gtk_window_resize(GTK_WINDOW(window), width, height);
@@ -4307,6 +4310,9 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     gtk_window_set_icon_name(GTK_WINDOW(dev->second_wnd), "darktable");
     gtk_window_set_title(GTK_WINDOW(dev->second_wnd), _("darktable - darkroom preview"));
+
+    gtk_window_set_transient_for(GTK_WINDOW(dev->second_wnd),
+                                 GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
 
     // Create the overlay for the window
     GtkWidget *overlay = gtk_overlay_new();
