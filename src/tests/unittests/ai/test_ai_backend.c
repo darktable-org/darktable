@@ -206,6 +206,158 @@ static void test_cleanup(void **state)
   dt_ai_unload_model(NULL);
 }
 
+/* ---- test: error paths — NULL and invalid arguments ---- */
+
+static void test_error_null_env(void **state)
+{
+  /* NULL env should return NULL / 0, not crash */
+  assert_null(dt_ai_load_model(NULL, "test-multiply", NULL, DT_AI_PROVIDER_CPU));
+  assert_int_equal(dt_ai_get_model_count(NULL), 0);
+  assert_null(dt_ai_get_model_info_by_index(NULL, 0));
+  assert_null(dt_ai_get_model_info_by_id(NULL, "test-multiply"));
+  assert_null(dt_ai_get_model_info_by_id(env, NULL));
+}
+
+static void test_error_bad_model_id(void **state)
+{
+  /* non-existent model ID */
+  dt_ai_context_t *ctx
+    = dt_ai_load_model(env, "no-such-model", NULL, DT_AI_PROVIDER_CPU);
+  assert_null(ctx);
+}
+
+static void test_error_bad_model_file(void **state)
+{
+  /* existing model ID but non-existent .onnx file */
+  dt_ai_context_t *ctx
+    = dt_ai_load_model(env, "test-multiply", "nonexistent.onnx", DT_AI_PROVIDER_CPU);
+  assert_null(ctx);
+}
+
+static void test_error_introspection_bounds(void **state)
+{
+  dt_ai_context_t *ctx
+    = dt_ai_load_model(env, "test-multiply", NULL, DT_AI_PROVIDER_CPU);
+  assert_non_null(ctx);
+
+  /* NULL context */
+  assert_int_equal(dt_ai_get_input_count(NULL), 0);
+  assert_int_equal(dt_ai_get_output_count(NULL), 0);
+  assert_null(dt_ai_get_input_name(NULL, 0));
+  assert_null(dt_ai_get_output_name(NULL, 0));
+
+  /* out-of-range index */
+  assert_null(dt_ai_get_input_name(ctx, 99));
+  assert_null(dt_ai_get_output_name(ctx, -1));
+
+  /* output shape with NULL shape array */
+  assert_int_equal(dt_ai_get_output_shape(ctx, 0, NULL, 0), -1);
+
+  /* output shape with too-small buffer */
+  int64_t shape[2];
+  const int ndim = dt_ai_get_output_shape(ctx, 0, shape, 2);
+  /* should return actual ndim (4) but only write 2 elements */
+  assert_int_equal(ndim, 4);
+
+  dt_ai_unload_model(ctx);
+}
+
+static void test_error_run_bad_args(void **state)
+{
+  /* dt_ai_run with NULL context */
+  float dummy[48];
+  int64_t shape[] = { 1, 3, 4, 4 };
+  dt_ai_tensor_t t = { .data = dummy, .type = DT_AI_FLOAT, .shape = shape, .ndim = 4 };
+  assert_int_not_equal(dt_ai_run(NULL, &t, 1, &t, 1), 0);
+}
+
+/* ---- test: provider string conversion ---- */
+
+static void test_provider_strings(void **state)
+{
+  /* round-trip all known providers */
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+  {
+    const char *str = dt_ai_providers[i].config_string;
+    dt_ai_provider_t parsed = dt_ai_provider_from_string(str);
+    assert_int_equal(parsed, dt_ai_providers[i].value);
+  }
+
+  /* display name lookup */
+  const char *cpu_name = dt_ai_provider_to_string(DT_AI_PROVIDER_CPU);
+  assert_non_null(cpu_name);
+  assert_string_equal(cpu_name, "CPU");
+
+  /* unknown string falls back to AUTO */
+  assert_int_equal(dt_ai_provider_from_string("bogus"), DT_AI_PROVIDER_AUTO);
+  assert_int_equal(dt_ai_provider_from_string(NULL), DT_AI_PROVIDER_AUTO);
+  assert_int_equal(dt_ai_provider_from_string(""), DT_AI_PROVIDER_AUTO);
+
+  /* provider table completeness */
+  assert_int_equal(dt_ai_providers[0].value, DT_AI_PROVIDER_AUTO);
+  assert_int_equal(dt_ai_providers[DT_AI_PROVIDER_COUNT - 1].value, DT_AI_PROVIDER_DIRECTML);
+}
+
+/* ---- test: env_refresh preserves discovered models ---- */
+
+static void test_env_refresh(void **state)
+{
+  const int before = dt_ai_get_model_count(env);
+  dt_ai_env_refresh(env);
+  const int after = dt_ai_get_model_count(env);
+  assert_int_equal(before, after);
+
+  /* model is still findable after refresh */
+  const dt_ai_model_info_t *info
+    = dt_ai_get_model_info_by_id(env, "test-multiply");
+  assert_non_null(info);
+  assert_string_equal(info->id, "test-multiply");
+}
+
+/* ---- test: load with optimization levels ---- */
+
+static void test_load_opt_levels(void **state)
+{
+  /* DT_AI_OPT_BASIC */
+  dt_ai_context_t *ctx_basic
+    = dt_ai_load_model_ext(env, "test-multiply", NULL,
+                           DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC, NULL, 0);
+  assert_non_null(ctx_basic);
+
+  /* verify inference still works with basic optimization */
+  float in[48], out[48];
+  for(int i = 0; i < 48; i++) in[i] = 3.0f;
+  int64_t shape[] = { 1, 3, 4, 4 };
+  dt_ai_tensor_t inp = { .data = in, .type = DT_AI_FLOAT, .shape = shape, .ndim = 4 };
+  dt_ai_tensor_t outp = { .data = out, .type = DT_AI_FLOAT, .shape = shape, .ndim = 4 };
+  assert_int_equal(dt_ai_run(ctx_basic, &inp, 1, &outp, 1), 0);
+  assert_float_equal(out[0], 6.0f, 1e-6f);
+  dt_ai_unload_model(ctx_basic);
+
+  /* DT_AI_OPT_DISABLED */
+  dt_ai_context_t *ctx_none
+    = dt_ai_load_model_ext(env, "test-multiply", NULL,
+                           DT_AI_PROVIDER_CPU, DT_AI_OPT_DISABLED, NULL, 0);
+  assert_non_null(ctx_none);
+  dt_ai_unload_model(ctx_none);
+}
+
+/* ---- test: env_init with empty/invalid path ---- */
+
+static void test_env_init_empty(void **state)
+{
+  /* non-existent path: should succeed with 0 models */
+  dt_ai_environment_t *e = dt_ai_env_init("/no/such/path/xyz");
+  assert_non_null(e);
+  assert_int_equal(dt_ai_get_model_count(e), 0);
+  dt_ai_env_destroy(e);
+
+  /* NULL path: still creates env (scans default dirs only) */
+  dt_ai_environment_t *e2 = dt_ai_env_init(NULL);
+  assert_non_null(e2);
+  dt_ai_env_destroy(e2);
+}
+
 /* ---- main ---- */
 
 int main(int argc, char *argv[])
@@ -219,6 +371,15 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_inference),
     cmocka_unit_test(test_provider_change),
     cmocka_unit_test(test_cleanup),
+    cmocka_unit_test(test_error_null_env),
+    cmocka_unit_test(test_error_bad_model_id),
+    cmocka_unit_test(test_error_bad_model_file),
+    cmocka_unit_test(test_error_introspection_bounds),
+    cmocka_unit_test(test_error_run_bad_args),
+    cmocka_unit_test(test_provider_strings),
+    cmocka_unit_test(test_env_refresh),
+    cmocka_unit_test(test_load_opt_levels),
+    cmocka_unit_test(test_env_init_empty),
   };
 
   return cmocka_run_group_tests(tests, group_setup, group_teardown);
