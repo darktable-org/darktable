@@ -323,10 +323,14 @@ static float _half_to_float(uint16_t h)
 // Try to find and call an ORT execution provider function at runtime via
 // dynamic symbol lookup (GModule/dlsym).  Returns TRUE if the provider was
 // enabled successfully, FALSE otherwise.
+// Most providers take (OrtSessionOptions*, uint32_t device_id), but OpenVINO
+// takes (OrtSessionOptions*, const char* device_type).  Pass device_type for
+// string-argument providers, NULL for integer-argument ones.
 static gboolean _try_provider(
   OrtSessionOptions *session_opts,
   const char *symbol_name,
-  const char *provider_name)
+  const char *provider_name,
+  const char *device_type)
 {
   OrtStatus *status = NULL;
   gboolean ok = FALSE;
@@ -356,10 +360,20 @@ static gboolean _try_provider(
 
   if(func_ptr)
   {
-    // All provider append functions take (OrtSessionOptions*, uint32_t/int)
-    typedef OrtStatus *(*ProviderAppender)(OrtSessionOptions *, uint32_t);
-    ProviderAppender appender = (ProviderAppender)func_ptr;
-    status = appender(session_opts, 0);
+    if(device_type)
+    {
+      // String-argument providers (e.g. OpenVINO)
+      typedef OrtStatus *(*ProviderAppenderStr)(OrtSessionOptions *, const char *);
+      ProviderAppenderStr appender = (ProviderAppenderStr)func_ptr;
+      status = appender(session_opts, device_type);
+    }
+    else
+    {
+      // Integer-argument providers (CUDA, CoreML, DML, MIGraphX, ROCm)
+      typedef OrtStatus *(*ProviderAppenderInt)(OrtSessionOptions *, uint32_t);
+      ProviderAppenderInt appender = (ProviderAppenderInt)func_ptr;
+      status = appender(session_opts, 0);
+    }
     if(!status)
     {
       dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully.", provider_name);
@@ -403,24 +417,24 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML");
+      "Apple CoreML", NULL);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] Apple CoreML not available on this platform");
 #endif
     break;
 
   case DT_AI_PROVIDER_CUDA:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA");
+    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL);
     break;
 
   case DT_AI_PROVIDER_MIGRAPHX:
     // Try MIGraphX first; fall back to ROCm for older ORT builds
-    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX"))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)");
+    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL))
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL);
     break;
 
   case DT_AI_PROVIDER_OPENVINO:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO");
+    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
@@ -428,7 +442,7 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML");
+      "Windows DirectML", NULL);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] Windows DirectML not available on this platform");
 #endif
@@ -441,27 +455,27 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML");
+      "Apple CoreML", NULL);
 #elif defined(_WIN32)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML");
+      "Windows DirectML", NULL);
 #elif defined(__linux__)
     // Try CUDA first, then MIGraphX
     if(!_try_provider(
          session_opts,
          "OrtSessionOptionsAppendExecutionProvider_CUDA",
-         "NVIDIA CUDA"))
+         "NVIDIA CUDA", NULL))
     {
       if(!_try_provider(
            session_opts,
            "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-           "AMD MIGraphX"))
+           "AMD MIGraphX", NULL))
         _try_provider(
           session_opts,
           "OrtSessionOptionsAppendExecutionProvider_ROCM",
-          "AMD ROCm (legacy)");
+          "AMD ROCm (legacy)", NULL);
     }
 #endif
     break;
@@ -499,20 +513,20 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   switch(provider)
   {
   case DT_AI_PROVIDER_COREML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL);
     break;
   case DT_AI_PROVIDER_CUDA:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL);
     break;
   case DT_AI_PROVIDER_MIGRAPHX:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX")
-      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL)
+      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL);
     break;
   case DT_AI_PROVIDER_OPENVINO:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
     break;
   case DT_AI_PROVIDER_DIRECTML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML", NULL);
     break;
   default:
     break;
