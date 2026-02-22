@@ -1667,12 +1667,17 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_lib_histogram_t *d)
 {
+  const float x_adjust =
+    d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE ? 2.0f : 1.0f;
+
   if(dt_key_modifier_state() & GDK_BUTTON1_MASK
      && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
       x = -y;
+    else
+      x *= x_adjust;
 
     dt_dev_exposure_handle_event(controller, 1, x, FALSE);
   }
@@ -1680,7 +1685,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(d->scope_draw, &allocation);
-    const float posx = x / (float)(allocation.width);
+    const float posx = x / (float)(allocation.width) * x_adjust;
     const float posy = y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
 
@@ -1707,7 +1712,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     else
     {
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE
-         && posx > 0.5f)
+         && posx > 1.0f)
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
       }
@@ -1758,6 +1763,8 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
        && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
       x = -y;
+    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+      x *= 2.0f;
 
     dt_dev_exposure_handle_event(gesture, n_press, x, d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
   }
