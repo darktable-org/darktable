@@ -116,6 +116,8 @@ static gpointer _init_ort_api(gpointer data)
 
   if(!api)
     dt_print(DT_DEBUG_AI, "[darktable_ai] Failed to init ONNX Runtime API");
+  else
+    g_ort = api;
   return (gpointer)api;
 }
 
@@ -140,6 +142,7 @@ static gpointer _init_ort_env(gpointer data)
     g_ort->ReleaseStatus(status);
     return NULL;
   }
+  g_env = env;
   return (gpointer)env;
 }
 
@@ -492,11 +495,9 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
 
   // Ensure ORT API is initialized
   g_once(&g_ort_once, _init_ort_api, NULL);
-  g_ort = (const OrtApi *)g_ort_once.retval;
   if(!g_ort) return 0;
 
   g_once(&g_env_once, _init_ort_env, NULL);
-  g_env = (OrtEnv *)g_env_once.retval;
   if(!g_env) return 0;
 
   // Create temporary session options for the probe
@@ -559,7 +560,6 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
 
   // Lazy init ORT API and shared environment on first load
   g_once(&g_ort_once, _init_ort_api, NULL);
-  g_ort = (const OrtApi *)g_ort_once.retval;
   if(!g_ort)
   {
     g_free(onnx_path);
@@ -567,7 +567,6 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
   }
 
   g_once(&g_env_once, _init_ort_env, NULL);
-  g_env = (OrtEnv *)g_env_once.retval;
   if(!g_env)
   {
     g_free(onnx_path);
