@@ -178,7 +178,8 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
   }
 }
 
-static void _gui_styles_select_all_items(dt_gui_styles_dialog_t *d, const gboolean active)
+static void _gui_styles_select_all_items(dt_gui_styles_dialog_t *d,
+                                         const gboolean active)
 {
   /* run through all items and set active status */
   GtkTreeView *items = (d->duplicate) ? d->items_new : d->items;
@@ -889,7 +890,9 @@ typedef struct _preview_data_t
   int psize;
 } _preview_data_t;
 
-static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _preview_draw(GtkWidget *widget,
+                              cairo_t *cr,
+                              gpointer user_data)
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
 
@@ -1024,9 +1027,9 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
     const int preview_mode = dt_conf_get_int("ui_last/styles_preview_mode");
     // style preview
-    if(preview_mode != DT_STYLE_PREVIEW_NO) 
+    if(preview_mode != DT_STYLE_PREVIEW_NO)
     {
-      if(preview_mode == DT_STYLE_PREVIEW_LARGE) 
+      if(preview_mode == DT_STYLE_PREVIEW_LARGE)
       {
         data.psize = dt_conf_get_int("ui/style/large_preview_size");
       }
@@ -1047,7 +1050,9 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   return ht;
 }
 
-cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name, const int psize)
+cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid,
+                                          const char *name,
+                                          const int psize)
 {
   cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);
   return surface;
