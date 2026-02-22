@@ -101,7 +101,7 @@ typedef struct dt_iop_agx_params_t
   float look_slope;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "slope"
   float look_brightness;             // $MIN: 0.f $MAX: 100.f $DEFAULT: 1.f $DESCRIPTION: "brightness"
   float look_saturation;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.f $DESCRIPTION: "saturation"
-  float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "preserve hue"
+  float look_original_hue_mix_ratio; // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.6f $DESCRIPTION: "preserve hue"
 
   // log mapping
   float range_black_relative_ev;  // $MIN: -20.f $MAX: -0.1f  $DEFAULT: -10.f $DESCRIPTION: "black relative exposure"
@@ -115,15 +115,15 @@ typedef struct dt_iop_agx_params_t
   // Corresponds to p_y, but not directly -- needs application of gamma
   float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
   // P_slope
-  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 2.8f $DESCRIPTION: "contrast"
+  float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 3.0f $DESCRIPTION: "contrast"
   // related to P_tlength; the number expresses the portion of the y range below the pivot
   float curve_linear_ratio_below_pivot;   // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "toe start"
   // related to P_slength; the number expresses the portion of the y range below the pivot
   float curve_linear_ratio_above_pivot;   // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "shoulder start"
   // t_p
-  float curve_toe_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.55f $DESCRIPTION: "toe power"
+  float curve_toe_power;                  // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.5f $DESCRIPTION: "toe power"
   // s_p
-  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.55f $DESCRIPTION: "shoulder power"
+  float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 3.3f $DESCRIPTION: "shoulder power"
   float curve_gamma;                      // $MIN: 0.01f $MAX: 100.f $DEFAULT: 2.2f $DESCRIPTION: "curve y gamma"
   gboolean auto_gamma;                    // $DEFAULT: FALSE $DESCRIPTION: "keep the pivot on the diagonal"
   // t_ly
@@ -2248,6 +2248,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
                                p->completely_reverse_primaries);
 
+  _update_redraw_dynamic_gui(self, g, p);
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -2480,26 +2482,28 @@ void gui_init(dt_iop_module_t *self)
   _create_primaries_page(self, g);
 }
 
-static void _set_shared_params(dt_iop_agx_params_t *p)
+static void _set_default_curve_and_look_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;
   p->look_brightness = 1.f;
   p->look_lift = 0.f;
   p->look_saturation = 1.f;
   // In Blender, a related param is set to 40%, but is actually used as 1 - param,
-  // so 60% would give almost identical results; however, Eary_Chow suggested
-  // that we leave this as 0, based on feedback he had received
-  p->look_original_hue_mix_ratio = 0.f;
+  // so 60% would give almost identical results
+  p->look_original_hue_mix_ratio = 0.6f;
 
   p->range_black_relative_ev = -10.f;
   p->range_white_relative_ev = 6.5f;
   p->dynamic_range_scaling = 0.1f;
 
-  p->curve_contrast_around_pivot = 2.8f;
+  // contrast, toe and shoulder power are about halfway between values required to match
+  // sigmoid'd scene-referred defaults and those used by its 'smooth' preset,
+  // giving a similar experience to what many users already know and expect
+  p->curve_contrast_around_pivot = 3.0f;
   p->curve_linear_ratio_below_pivot = 0.f;
   p->curve_linear_ratio_above_pivot = 0.f;
-  p->curve_toe_power = 1.55f;
-  p->curve_shoulder_power = 1.55f;
+  p->curve_toe_power = 1.50f;
+  p->curve_shoulder_power = 3.30f;
   p->curve_target_display_black_ratio = 0.f;
   p->curve_target_display_white_ratio = 1.f;
   p->auto_gamma = FALSE;
@@ -2510,19 +2514,19 @@ static void _set_shared_params(dt_iop_agx_params_t *p)
 
 static void _set_neutral_params(dt_iop_agx_params_t *p)
 {
-  _set_shared_params(p);
+  _set_default_curve_and_look_params(p);
   _set_unmodified_primaries(p);
 }
 
 void _set_smooth_params(dt_iop_agx_params_t *p)
 {
-  _set_shared_params(p);
+  _set_default_curve_and_look_params(p);
   _set_smooth_primaries(p);
 }
 
 static void _set_blenderlike_params(dt_iop_agx_params_t *p)
 {
-  _set_shared_params(p);
+  _set_default_curve_and_look_params(p);
   _set_blenderlike_primaries(p);
 
   // restore the original Blender settings
@@ -2542,7 +2546,7 @@ static void _set_blenderlike_params(dt_iop_agx_params_t *p)
 
 static void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
 {
-  _set_shared_params(p);
+  _set_default_curve_and_look_params(p);
   _set_blenderlike_primaries(p);
 }
 
@@ -2570,6 +2574,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   ///////////////////////
   // Blender-like presets
+  // Blender's tone curve has relatively low contrast, so a Blender-like 'punchy'
+  // variant is also provided
 
   _set_blenderlike_params(&p);
 
@@ -2579,6 +2585,40 @@ void init_presets(dt_iop_module_so_t *self)
 
   _make_punchy(&p);
   dt_gui_presets_add_generic(_("blender-like|punchy"),
+                             self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  ///////////////////////
+  // sigmoid-like presets, obtained by matching the curves
+  // these have quite high contrast already, so we omit the punchy variants
+
+  _set_default_curve_and_look_params(&p);
+  // sigmoid's defaults unmodified primaries, but in AgX, we want the AgX effect,
+  // so we only match the tone curve
+  _set_blenderlike_primaries(&p);
+
+  // sigmoid's default has 100% hue preservation
+  p.look_original_hue_mix_ratio = 1.0;
+
+  // tone curve
+  p.curve_contrast_around_pivot = 3.07f;
+  p.curve_toe_power = 1.40f;
+  p.curve_shoulder_power = 3.71f;
+
+  dt_gui_presets_add_generic(_("sigmoid-like|default"),
+                             self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  _set_smooth_primaries(&p);
+  // sigmoid|smooth has no hue preservation
+  p.look_original_hue_mix_ratio = 0.f;
+
+  // tone curve
+  p.curve_contrast_around_pivot = 2.98f;
+  p.curve_toe_power = 1.61f;
+  p.curve_shoulder_power = 3.02f;
+
+  dt_gui_presets_add_generic(_("sigmoid-like|smooth"),
                              self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
@@ -2605,15 +2645,11 @@ void init_presets(dt_iop_module_so_t *self)
   }
 
   /////////////////
-  // Smooth presets
+  // Smooth preset
 
   _set_smooth_params(&p);
 
-  dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p),
-                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  _make_punchy(&p);
-  dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p),
+  dt_gui_presets_add_generic(_("smooth"), self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
