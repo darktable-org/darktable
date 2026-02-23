@@ -19,11 +19,11 @@
 #include "common.h"
 
 
-float4
+static inline float4
 weight(const float4 c1, const float4 c2, const float sharpen)
 {
-  const float wc = dtcl_exp(-((c1.y - c2.y)*(c1.y - c2.y) + (c1.z - c2.z)*(c1.z - c2.z)) * sharpen);
-  const float wl = dtcl_exp(- (c1.x - c2.x)*(c1.x - c2.x) * sharpen);
+  float wc = dtcl_exp(-((c1.y - c2.y)*(c1.y - c2.y) + (c1.z - c2.z)*(c1.z - c2.z)) * sharpen);
+  float wl = dtcl_exp(- (c1.x - c2.x)*(c1.x - c2.x) * sharpen);
   return (float4)(wl, wc, wc, 1.0f);
 }
 
@@ -50,12 +50,9 @@ eaw_decompose(__read_only image2d_t in,
   float4 wgt = (float4)(0.0f);
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
-    const int xx = mad24(mult, i - 2, x);
-    const int yy = mad24(mult, j - 2, y);
-    const int k  = mad24(j, 5, i);
-
-    const float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
-    const float4 w = filter[k]*weight(pixel, px, sharpen);
+    const int2 pp = { mad24(mult, i - 2, x), mad24(mult, j - 2, y) };
+    const float4 px = read_imagef(in, sampleri, pp);
+    const float4 w = filter[mad24(j, 5, i)] * weight(pixel, px, sharpen);
 
     sum += w*px;
     wgt += w;

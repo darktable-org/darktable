@@ -1595,7 +1595,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
-      c = clamp(HSL.y, 0.0f, 1.0f); // no boost for HSL
+      c = clipf(HSL.y); // no boost for HSL
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
