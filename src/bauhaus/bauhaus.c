@@ -153,7 +153,7 @@ static const dt_action_def_t _action_def_slider, _action_def_combo,
 
 // INNER_PADDING is the horizontal space between slider and quad
 // and vertical space between labels and slider baseline
-static const double INNER_PADDING = 1.0;
+static double INNER_PADDING = 4.0;
 
 // fwd declare
 static void _popup_reject(void);
@@ -844,16 +844,29 @@ void dt_bauhaus_load_theme()
   bh->line_height = pango_height / PANGO_SCALE;
   bh->quad_width = bh->line_height;
 
-  // absolute size in Cairo unit:
-  bh->baseline_size = bh->line_height / 4.5f;
-  bh->border_width = 1.0f; // absolute size in Cairo unit
-  bh->marker_size = (bh->baseline_size + bh->border_width) * 1.20f;
-
   const char *shape = dt_conf_get_string_const("bauhaus/marker_shape");
-  bh->marker_shape = !g_strcmp0(shape, "circle") ? DT_BAUHAUS_MARKER_CIRCLE
-                   : !g_strcmp0(shape, "diamond") ? DT_BAUHAUS_MARKER_DIAMOND
-                   : !g_strcmp0(shape, "bar") ? DT_BAUHAUS_MARKER_BAR
-                   : DT_BAUHAUS_MARKER_TRIANGLE;
+  bh->marker_shape = !g_strcmp0(shape, "circle")    ? DT_BAUHAUS_MARKER_CIRCLE
+                     : !g_strcmp0(shape, "diamond") ? DT_BAUHAUS_MARKER_DIAMOND
+                     : !g_strcmp0(shape, "bar")     ? DT_BAUHAUS_MARKER_BAR
+                                                    : DT_BAUHAUS_MARKER_TRIANGLE;
+
+  // absolute size in Cairo unit:
+  if(dt_conf_get_bool("bauhaus/condensed"))
+  {
+    bh->baseline_size = bh->line_height / 4.5f;
+    bh->border_width = 1.0f; // absolute size in Cairo unit
+    bh->marker_size = (bh->baseline_size + bh->border_width)
+      * (bh->marker_shape == DT_BAUHAUS_MARKER_BAR
+        || bh->marker_shape == DT_BAUHAUS_MARKER_TRIANGLE
+        ? 1.2f
+        : 1.1f);
+  }
+  else
+  {
+    bh->baseline_size = bh->line_height / 3.0f;
+    bh->border_width = 2.0f;
+    bh->marker_size = (bh->baseline_size + bh->border_width) * 0.95f;
+  }
 }
 
 void dt_bauhaus_init()
@@ -861,6 +874,9 @@ void dt_bauhaus_init()
   darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
+
+  // honor the condensed setting
+  INNER_PADDING = dt_conf_get_bool("bauhaus/condensed") ? 1.0 : 4.0;
 
   bh->keys_cnt = 0;
   bh->current = NULL;

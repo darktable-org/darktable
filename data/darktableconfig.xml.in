@@ -154,6 +154,13 @@
     <shortdescription>marker shape</shortdescription>
     <longdescription>the shape of the slider marker</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface" common="yes" restart="true">
+    <name>themes/condensed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>condensed panel controls</shortdescription>
+    <longdescription>use condensed panel controls in darkroom and lighttable views</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database</name>
     <type>string</type>
@@ -2396,7 +2403,7 @@
     <type min="100" max="800">int</type>
     <default>500</default>
     <shortdescription/>
-  </dtconfig>  
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
