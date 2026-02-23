@@ -167,6 +167,7 @@ jobs:
           popd
       - name: Update Lensfun data
         run: |
+          sudo sed -i 's/lensfun.sourceforge.net/lensfun.github.io/' $(which lensfun-update-data)
           sudo lensfun-update-data
       - name: Build and Install
         run: |
