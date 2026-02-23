@@ -489,7 +489,8 @@ static int _guided_filter_cl_impl(int devid,
   const float advantage = hint > 1.0f ? 1.0f / hint : 0.1f;
   const gboolean possible = ((float)valid_rows / (float)tile_height) > advantage;
 
-  dt_print(DT_DEBUG_PIPE | DT_DEBUG_TILING,
+  if(tiling || (darktable.unmuted & DT_DEBUG_VERBOSE))
+    dt_print(DT_DEBUG_PIPE | DT_DEBUG_TILING,
       "[guided CL_%d filter] %s tile_height=%d tiles=%d valid=%d overlap=%d",
       devid,
       !possible ? "impossible" : (tiling ? "tiling" : "direct"),
@@ -549,7 +550,8 @@ static int _guided_filter_cl_impl(int devid,
     const int first_out = overlap - missing;
     const int out_height = t_height - first_out;
 
-    dt_print(DT_DEBUG_TILING,
+    if(tiling)
+      dt_print(DT_DEBUG_TILING,
             "[guided CL_%d filter] tile=%.3d/%.3d, group=%.4d first_in=%.4d last_in=%.4d outrows=%.4d trows=%.4d",
              devid, tile_nr, num_tiles, group, first_in, last_in, out_height, t_height);
 

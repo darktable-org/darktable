@@ -1249,6 +1249,17 @@ void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t 
   }
 }
 
+static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece)
+{
+  if(piece->pipe->bypass_blendif && dt_iop_has_focus(piece->module))
+    return FALSE;
+
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
+  if(!d || !(d->mask_mode & DEVELOP_MASK_ENABLED)) return FALSE;
+
+  return TRUE;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1526,9 +1537,12 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     return TRUE;
 
   /* process blending on CPU */
-  dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
-  *pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
-  *pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
+  if(_piece_wants_blending(piece))
+  {
+    dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
+    *pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
+    *pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
+  }
 
   return dt_pipe_shutdown(pipe);
 }
@@ -2414,12 +2428,12 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
 
         /* process blending */
-        if(success_opencl)
+        if(success_opencl && _piece_wants_blending(piece))
         {
           success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input,
                                                        *cl_mem_output, &roi_in, roi_out);
-          pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_GPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_CPU);
+          pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_GPU;
+          pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_CPU;
         }
 
         /* synchronization point for opencl pipe */
@@ -2617,11 +2631,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           return TRUE;
 
         /* do process blending on cpu (this is anyhow fast enough) */
-        if(success_opencl)
+        if(success_opencl && _piece_wants_blending(piece))
         {
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
-          pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
+          pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
+          pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
         }
 
         /* synchronization point for opencl pipe */
@@ -2835,7 +2849,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   dt_show_times_f
     (&start,
-     "[dev_pixelpipe]", "[%s] processed `%s%s' on %s%s%s, blended on %s",
+     "[dev_pixelpipe]", "[%s] processed `%s%s' on %s%s%s%s%s",
      dt_dev_pixelpipe_type_to_str(pipe->type), module->op, dt_iop_get_instance_id(module),
      pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU
           ? "GPU"
@@ -2845,6 +2859,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       && (piece->request_histogram & DT_REQUEST_ON))
           ? histogram_log
           : "",
+
+     _piece_wants_blending(piece) ? ", blended on " : "",
      pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "");
