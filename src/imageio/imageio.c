@@ -1287,10 +1287,10 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     height = pipe.processed_height;
   }
 
-  // note: not perfect but a reasonable good guess looking at overall pixelpipe requirements
-  // and specific stuff in finalscale.
+  // Upscaling in finalscale requires additional memory so the final image size is restricted to avoid dt oom killing
+  const double planesize = sizeof(float) * 4 * pipe.processed_width * pipe.processed_height;
   const double max_possible_scale = fmin(100.0, fmax(1.0, // keep maximum allowed scale as we had in 4.6
-      (double)dt_get_available_pipe_mem(&pipe) / (double)(1 + 64 * sizeof(float) * pipe.processed_width * pipe.processed_height)));
+      (double)dt_get_available_pipe_mem(&pipe) / (1.0 + 2.5 * planesize)));
 
   const gboolean doscale = upscale && ((width > 0 || height > 0) || is_scaling);
   const double max_scale = doscale ? max_possible_scale : 1.00;
