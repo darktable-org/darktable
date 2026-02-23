@@ -179,7 +179,7 @@ static void _request_focus(dt_bauhaus_widget_t *w)
 static float _widget_get_quad_width(const dt_bauhaus_widget_t *w)
 {
   if(w->show_quad)
-    return darktable.bauhaus->quad_width + INNER_PADDING;
+    return darktable.bauhaus->quad_width + INNER_PADDING * 4;
   else
     return .0f;
 }
@@ -2118,10 +2118,10 @@ static void _draw_quad(dt_bauhaus_widget_t *w,
     set_color(cr, sensitive && (w->quad_paint_flags & CPF_ACTIVE)
                 ? hovering ? bh->color_fg_hover : bh->color_fg
                 : hovering ? bh->color_fg       : bh->color_fg_insensitive);
-    w->quad_paint(cr, width + INNER_PADDING,   // x
-                      0.0,                     // y
-                      bh->quad_width,          // width
-                      bh->quad_width,          // height
+    w->quad_paint(cr, width + INNER_PADDING * 4,   // x
+                      0.0,                         // y
+                      bh->quad_width,              // width
+                      bh->quad_width,              // height
                       w->quad_paint_flags, w->quad_paint_data);
 
     cairo_restore(cr);
