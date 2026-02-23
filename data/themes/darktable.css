@@ -560,15 +560,6 @@ dialog .sidebar row:selected:hover label,
   background-color: @plugin_bg_color;
 }
 
-.dt_plugin_ui #bauhaus-combobox,
-.dt_plugin_ui #bauhaus-slider,
-.dt_plugin_ui checkbutton,
-.dt_plugin_ui button
-{
-  font-size: 85%;
-  margin-bottom: 0;
-}
-
 .dt_plugin_ui_main,
 #blending-box,
 #guides-module-combobox

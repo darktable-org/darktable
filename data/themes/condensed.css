@@ -1,0 +1,38 @@
+.dt_bauhaus,
+.dt_plugin_ui #bauhaus-combobox,
+.dt_plugin_ui #bauhaus-slider,
+.dt_plugin_ui checkbutton,
+.dt_plugin_ui label
+{
+  font-size: 0.85em;
+  margin-bottom: 0;
+}
+
+#history-number,
+#history-ui *,
+.dt_plugin_ui button,
+.dt_plugin_ui checkbutton label
+{
+  font-size: 0.98em;
+  padding: 0 1px 1px;
+}
+
+.dt_plugin_ui entry
+{
+  font-size: 0.95em;
+  padding: 0 2px 1px;
+  margin: 1px;
+}
+
+.dt_plugin_ui button
+{
+  margin: 1px;
+}
+
+.dt_plugin_ui checkbutton check
+{
+   padding: 1px;
+   min-width: 12px;
+   min-height: 12px;
+   font-size: 0.95em;
+}
