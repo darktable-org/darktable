@@ -2939,8 +2939,12 @@ int dt_opencl_read_host_from_device_raw(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_read_host_from_device_raw] could not read from device '%s' id=%d: %s",
+             "[dt_opencl_read_host_from_device_raw] could not read image from device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[dt_opencl_read_host_from_device_raw] read image from device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
 
   return err;
 }
@@ -2992,8 +2996,14 @@ int dt_opencl_write_host_to_device_raw(const int devid,
      rowpitch, 0, host, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_write_host_to_device_raw] could not write to device '%s' id=%d: %s",
+             "[dt_opencl_write_host_to_device_raw] could not write image to device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[dt_opencl_write_host_to_device_raw] wrote image to device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
+
   _check_clmem_err(devid, err);
   return err;
 }
@@ -3015,8 +3025,13 @@ int dt_opencl_enqueue_copy_image(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_image] could not copy on device '%s' id=%d: %s",
+             "[opencl copy_image] could not copy image on device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_image] copied image on device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   _check_clmem_err(devid, err);
   return err;
 }
@@ -3038,8 +3053,13 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_image_to_buffer] could not copy on device '%s' id=%d: %s",
+             "[opencl copy_image_to_buffer] could not copy image to buffer device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_image_to_buffer] copied image to buffer device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   _check_clmem_err(devid, err);
   return err;
 }
@@ -3061,8 +3081,13 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_buffer_to_image] could not copy on device '%s' id=%d: %s",
+             "[opencl copy_buffer_to_image] could not copy buffer to image on device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_buffer_to_image] copied buffer to image on device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   _check_clmem_err(devid, err);
   return err;
 }
@@ -3084,8 +3109,13 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid,
      dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_buffer_to_buffer] could not copy on device '%s' id=%d: %s",
+             "[opencl copy_buffer_to_buffer] could not copy buffer to buffer on device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_buffer_to_buffer] copied buffer to buffer on device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   _check_clmem_err(devid, err);
   return err;
 }
@@ -3109,8 +3139,13 @@ int dt_opencl_read_buffer_from_device(const int devid,
      offset, size, host, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl read_buffer_from_device] could not read from device '%s' id=%d: %s",
+             "[opencl read_buffer_from_device] could not read buffer from device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl read_buffer_from_device] read buffer from device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   return err;
 }
 
@@ -3134,8 +3169,12 @@ int dt_opencl_write_buffer_to_device(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl write_buffer_to_device] could not write to device '%s' id=%d: %s",
+             "[opencl write_buffer_to_device] could not write buffer to device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl write_buffer_to_device] wrote buffer to device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
   return err;
 }
 
@@ -3209,6 +3248,11 @@ static void *_opencl_copy_host_to_device_rowpitch(const int devid,
              "[opencl copy_host_to_device]"
              " could not alloc/copy img buffer on device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl copy_host_to_device]"
+             " did alloc/copy img buffer on device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3261,8 +3305,13 @@ void *dt_opencl_map_buffer(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl map buffer] could not map buffer on device '%s' id=%d: %s",
+             "[opencl map buffer] could not map buffer to device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl map buffer] mapped buffer to device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
+
   _check_clmem_err(devid, err);
   return ptr;
 }
@@ -3280,8 +3329,12 @@ int dt_opencl_unmap_mem_object(const int devid,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl unmap mem object] could not unmap mem object on device '%s' id=%d: %s",
+             "[opencl unmap mem object] could not unmap mem object from device '%s' id=%d: %s",
              darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+  else
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
+             "[opencl unmap mem object] unmapped mem object from device '%s' id=%d",
+             darktable.opencl->dev[devid].fullname, devid);
   return err;
 }
 
@@ -3397,12 +3450,12 @@ size_t dt_opencl_get_mem_object_size(const cl_mem mem)
 static int _opencl_get_mem_context_id(const cl_mem mem)
 {
   cl_context context;
-  if(mem == NULL) return -1;
+  if(mem == NULL) return DT_DEVICE_NONE;
 
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)
     (mem, CL_MEM_CONTEXT, sizeof(context), &context, NULL);
   if(err != CL_SUCCESS)
-    return -1;
+    return DT_DEVICE_NONE;
 
   for(int devid = 0; devid < darktable.opencl->num_devs; devid++)
   {
@@ -3410,7 +3463,7 @@ static int _opencl_get_mem_context_id(const cl_mem mem)
       return devid;
   }
 
-  return -1;
+  return DT_DEVICE_NONE;
 }
 
 int dt_opencl_get_image_width(const cl_mem mem)
@@ -3981,12 +4034,12 @@ static void _opencl_events_profiling(const int devid,
   for(int i = 1; i < items; i++)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds in %s",
-             (double)timings[i],
+             (double)fmaxf(0.0f, timings[i]),
              tags[i][0] == '\0' ? "<?>" : tags[i]);
     total += timings[i];
   }
   // aggregated timing info for items without tag (if any)
-  if(timings[0] != 0.0f)
+  if(timings[0] > 0.0f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds (unallocated)",
              (double)timings[0]);
