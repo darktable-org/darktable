@@ -3498,7 +3498,11 @@ void dt_gui_load_theme(const char *theme)
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  // main darktable theme
+  // We load the themes in this specific order:
+  //   1. The main darktable-*.css
+  //   2. condensed.css (if enabled)
+  //   3. OS specific tweaks (linux|macos|windows).css (if any)
+  //   4. user.css (if enabled)
 
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
   if (path_uri == NULL)
@@ -3515,7 +3519,15 @@ void dt_gui_load_theme(const char *theme)
     _add_theme_import(&themecss, datadir, "themes", "condensed.css");
   }
 
-  // we could add OS specific css here if needed
+  // load any OS specific themes tweak file to fix some platform specific issues
+
+#ifdef __APPLE__
+  _add_theme_import(&themecss, datadir, "themes", "macos.css");
+#elif defined(_WIN32)
+  _add_theme_import(&themecss, datadir, "themes", "windows.css");
+#else
+  _add_theme_import(&themecss, datadir, "themes", "linux.css");
+#endif
 
   // and finally user.css
 
