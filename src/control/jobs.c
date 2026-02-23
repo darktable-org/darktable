@@ -640,10 +640,6 @@ void dt_control_jobs_init()
     params->threadid = k;
     err |= dt_pthread_create(&control->thread_res[k], _control_work_res, params);
   }
-  /* create thread taking care of connecting gphoto2 devices */
-#ifdef HAVE_GPHOTO2
-  err |= dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
-#endif
 
   if(err != 0)
   {
