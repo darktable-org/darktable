@@ -447,6 +447,7 @@ static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_color
   }
 }
 
+/* we test in pixelpipe processing if this required */
 void dt_develop_blend_process(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid,
@@ -454,15 +455,8 @@ void dt_develop_blend_process(dt_iop_module_t *self,
                               const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out)
 {
-  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
-    return;
-
-  const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d) return;
-
+  dt_develop_blend_params_t *const d = piece->blendop_data;
   const dt_develop_mask_mode_t mask_mode = d->mask_mode;
-  // check if blend is disabled
-  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
   const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
   const gboolean mode_drawn = mask_mode & DEVELOP_MASK_MASK;
@@ -858,6 +852,7 @@ static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
   *b = tmp;
 }
 
+/* we test in pixelpipe processing if this required */
 gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      dt_dev_pixelpipe_iop_t *piece,
                                      cl_mem dev_in,
@@ -865,15 +860,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      const dt_iop_roi_t *roi_in,
                                      const dt_iop_roi_t *roi_out)
 {
-  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
-    return TRUE;
-
   dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d) return TRUE;
-
   const dt_develop_mask_mode_t mask_mode = d->mask_mode;
-  // check if blend is disabled: just return, output is already in dev_out
-  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
   const size_t ch = piece->colors;           // the number of channels in the buffer
   const int owidth = roi_out->width;
