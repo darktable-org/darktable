@@ -97,12 +97,15 @@ static gboolean _ensure_directory(const char *path)
 
 // --- Version Helpers ---
 
-// Curl write callback that appends to a GString
+#ifdef HAVE_AI_DOWNLOAD
+// Curl write callback that appends to a GString (capped at 1 MB)
 static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
   GString *buf = (GString *)userdata;
-  g_string_append_len(buf, (const char *)ptr, size * nmemb);
-  return size * nmemb;
+  const size_t bytes = size * nmemb;
+  if(buf->len + bytes > 1024 * 1024) return 0;  // abort transfer
+  g_string_append_len(buf, (const char *)ptr, bytes);
+  return bytes;
 }
 
 /**
@@ -402,6 +405,7 @@ static char *_fetch_asset_digest(
 
   return digest;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 // --- Core API ---
 
@@ -809,6 +813,7 @@ dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry, const char *mo
   return copy;
 }
 
+#ifdef HAVE_AI_DOWNLOAD
 // --- Download Implementation ---
 
 typedef struct dt_ai_download_data_t
@@ -901,6 +906,7 @@ static gboolean _verify_checksum(const char *filepath, const char *expected)
   g_checksum_free(checksum);
   return match;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 static gboolean _extract_zip(const char *zippath, const char *destdir)
 {
@@ -914,7 +920,7 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   archive_write_disk_set_options(
     ext,
     ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_SYMLINKS
-      | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
+      | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS);
 
   if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
   {
@@ -1040,6 +1046,28 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   return success;
 }
 
+// Install a local .dtmodel file (zip archive) into the models directory.
+// Returns error message (caller must free) or NULL on success.
+char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath)
+{
+  if(!registry || !filepath)
+    return g_strdup(_("invalid parameters"));
+
+  if(!g_file_test(filepath, G_FILE_TEST_IS_REGULAR))
+    return g_strdup_printf(_("file not found: %s"), filepath);
+
+  if(!_extract_zip(filepath, registry->models_dir))
+    return g_strdup(_("failed to extract model archive"));
+
+  // Rescan models directory to pick up newly installed model
+  dt_ai_models_refresh_status(registry);
+
+  dt_print(DT_DEBUG_AI, "[ai_models] Model installed from: %s", filepath);
+
+  return NULL; // Success
+}
+
+#ifdef HAVE_AI_DOWNLOAD
 // Synchronous download - returns error message or NULL on success
 char *dt_ai_models_download_sync(
   dt_ai_registry_t *registry,
@@ -1156,11 +1184,14 @@ char *dt_ai_models_download_sync(
     g_free(checksum_copy);
     checksum_copy = _fetch_asset_digest(repository, release_tag, asset);
     if(!checksum_copy)
-      dt_print(
-        DT_DEBUG_AI,
-        "[ai_models] WARNING: could not obtain checksum for %s — "
-        "download will proceed without integrity verification",
-        asset);
+    {
+      g_free(release_tag);
+      SET_STATUS_AND_RETURN(
+        DT_AI_MODEL_ERROR,
+        g_strdup_printf(_("could not obtain checksum for %s — "
+                          "refusing to download without integrity verification"),
+                        asset));
+    }
   }
 
   // Build GitHub download URL using local copies (not model pointer)
@@ -1269,10 +1300,14 @@ char *dt_ai_models_download_sync(
   }
   else
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] WARNING: no checksum available for %s — skipping verification",
-      asset);
+    // Should not reach here — checksum is now required before download
+    g_unlink(download_path);
+    g_free(download_path);
+    SET_STATUS_AND_RETURN(
+      DT_AI_MODEL_ERROR,
+      g_strdup_printf(_("no checksum available for %s — "
+                        "refusing to install without integrity verification"),
+                      asset));
   }
 
   // Extract to models directory (ZIP already contains model_id folder)
@@ -1386,6 +1421,7 @@ gboolean dt_ai_models_download_all(
   g_list_free_full(ids, g_free);
   return any_started;
 }
+#endif /* HAVE_AI_DOWNLOAD */
 
 static gboolean _rmdir_recursive(const char *path)
 {

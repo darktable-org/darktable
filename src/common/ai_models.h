@@ -140,6 +140,17 @@ dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry, int index);
 dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry,
                                        const char *model_id);
 
+// --- Install Operations ---
+
+/**
+ * @brief Install a model from a local .dtmodel file
+ * @param registry The registry
+ * @param filepath Path to the .dtmodel file (zip archive)
+ * @return Error message (caller must free) or NULL on success
+ */
+char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath);
+
+#ifdef HAVE_AI_DOWNLOAD
 // --- Download Operations ---
 
 /**
@@ -189,6 +200,7 @@ gboolean dt_ai_models_download_default(dt_ai_registry_t *registry,
 gboolean dt_ai_models_download_all(dt_ai_registry_t *registry,
                                    dt_ai_progress_callback callback,
                                    gpointer user_data);
+#endif /* HAVE_AI_DOWNLOAD */
 
 /**
  * @brief Delete a downloaded model

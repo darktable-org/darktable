@@ -101,14 +101,18 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *provider_status;
   GtkWidget *model_list;
   GtkListStore *model_store;
+#ifdef HAVE_AI_DOWNLOAD
   GtkWidget *download_selected_btn;
   GtkWidget *download_default_btn;
   GtkWidget *download_all_btn;
+#endif
+  GtkWidget *install_btn;
   GtkWidget *delete_selected_btn;
   GtkWidget *parent_dialog;
   GtkWidget *select_all_toggle;
 } dt_prefs_ai_data_t;
 
+#ifdef HAVE_AI_DOWNLOAD
 // Download dialog data
 typedef struct dt_download_dialog_t
 {
@@ -123,6 +127,7 @@ typedef struct dt_download_dialog_t
   gboolean cancelled;
   GMutex mutex;
 } dt_download_dialog_t;
+#endif /* HAVE_AI_DOWNLOAD */
 
 // Sort by task, then default (yes before no), then name
 static gint _model_sort_func(GtkTreeModel *model,
@@ -463,6 +468,7 @@ static GList *_get_selected_model_ids(dt_prefs_ai_data_t *data)
   return ids;
 }
 
+#ifdef HAVE_AI_DOWNLOAD
 // Progress callback called from download thread
 static void
 _download_progress_callback(const char *model_id, double progress, gpointer user_data)
@@ -709,6 +715,55 @@ static void _on_download_all(GtkButton *button, gpointer user_data)
     }
   }
   _refresh_model_list(data);
+}
+#endif /* HAVE_AI_DOWNLOAD */
+
+static void _on_install_model(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  GtkWidget *dialog = gtk_file_chooser_dialog_new(
+    _("install AI model"),
+    GTK_WINDOW(data->parent_dialog),
+    GTK_FILE_CHOOSER_ACTION_OPEN,
+    _("_cancel"), GTK_RESPONSE_CANCEL,
+    _("_open"), GTK_RESPONSE_ACCEPT,
+    NULL);
+
+  GtkFileFilter *filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(filter, _("AI model packages (*.dtmodel)"));
+  gtk_file_filter_add_pattern(filter, "*.dtmodel");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+    gtk_widget_destroy(dialog);
+
+    char *error = dt_ai_models_install_local(darktable.ai_registry, filepath);
+    if(error)
+    {
+      GtkWidget *err_dialog = gtk_message_dialog_new(
+        GTK_WINDOW(data->parent_dialog),
+        GTK_DIALOG_MODAL,
+        GTK_MESSAGE_ERROR,
+        GTK_BUTTONS_OK,
+        "%s", error);
+      gtk_dialog_run(GTK_DIALOG(err_dialog));
+      gtk_widget_destroy(err_dialog);
+      g_free(error);
+    }
+    else
+    {
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+      _refresh_model_list(data);
+    }
+    g_free(filepath);
+  }
+  else
+  {
+    gtk_widget_destroy(dialog);
+  }
 }
 
 static void _on_delete_selected(GtkButton *button, gpointer user_data)
@@ -1043,6 +1098,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_attach(GTK_GRID(models_grid), button_box, 0, row++, 1, 1);
 
+#ifdef HAVE_AI_DOWNLOAD
   // Download selected button
   data->download_selected_btn = gtk_button_new_with_label(_("download selected"));
   g_signal_connect(
@@ -1065,6 +1121,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   data->download_all_btn = gtk_button_new_with_label(_("download all"));
   g_signal_connect(data->download_all_btn, "clicked", G_CALLBACK(_on_download_all), data);
   gtk_box_pack_start(GTK_BOX(button_box), data->download_all_btn, FALSE, FALSE, 0);
+#endif /* HAVE_AI_DOWNLOAD */
+
+  // Install model button
+  data->install_btn = gtk_button_new_with_label(_("install model"));
+  g_signal_connect(data->install_btn, "clicked", G_CALLBACK(_on_install_model), data);
+  gtk_box_pack_start(GTK_BOX(button_box), data->install_btn, FALSE, FALSE, 0);
 
   // Delete selected button
   data->delete_selected_btn = gtk_button_new_with_label(_("delete selected"));
