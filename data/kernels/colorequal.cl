@@ -35,11 +35,6 @@ typedef enum dt_iop_colorequal_channel_t
 
 #define SATSIZE 4096.0f
 
-static inline float _interpolatef(const float a, const float b, const float c)
-{
-  return a * (b - c) + c;
-}
-
 static inline float _get_satweight(const float sat, global float *weights)
 {
   const float isat = SATSIZE * (1.0f + clamp(sat, -1.0f, 1.0f - (1.0f / SATSIZE)));
@@ -157,8 +152,8 @@ __kernel void apply_prefilter(global float2 *uv,
                              a[k].z * UV.x + a[k].w * UV.y + b[k].y);
 
   const float satweight = _get_satweight(saturation[k] - sat_shift, weights);
-  uv[k].x = _interpolatef(satweight, cv.x, UV.x);
-  uv[k].y = _interpolatef(satweight, cv.y, UV.y);
+  uv[k].x = mix(UV.x, cv.x, satweight);
+  uv[k].y = mix(UV.y, cv.y, satweight);
 }
 
 __kernel void prepare_correlations(global float2 *corrections,
@@ -263,9 +258,9 @@ __kernel void apply_guided(global float2 *uv,
   const float2 CV = { a[k].x * uv[k].x + a[k].y * uv[k].y + b[k].x,
                       a[k].z * uv[k].x + a[k].w * uv[k].y + b[k].y };
 
-  corrections[k].y = _interpolatef(_get_satweight(saturation[k] - sat_shift, weights), CV.x, 1.0f);
+  corrections[k].y = mix(1.0f, CV.x, _get_satweight(saturation[k] - sat_shift, weights));
   const float gradient_weight = 1.0f - clipf(scharr[k]);
-  b_corrections[k] = _interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift, weights), CV.y, 0.0f);
+  b_corrections[k] = mix(0.0f, CV.y, gradient_weight * _get_satweight(saturation[k] - bright_shift, weights));
 }
 
 __kernel void sample_input(__read_only image2d_t dev_in,

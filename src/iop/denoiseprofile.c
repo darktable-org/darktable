@@ -2526,9 +2526,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_denoiseprofile_synthesize, width, height,
                               CLARG(dev_buf1), CLARG(dev_detail[s]),
                               CLARG(dev_buf2), CLARG(width), CLARG(height),
-                              CLARG(thrs[0]), CLARG(thrs[1]), CLARG(thrs[2]),
-                              CLARG(thrs[3]), CLARG(boost[0]), CLARG(boost[1]),
-                              CLARG(boost[2]), CLARG(boost[3]));
+                              CLFLARRAY(4, thrs), CLFLARRAY(4, boost));
     if(err != CL_SUCCESS) goto error;
 
     // swap buffers
