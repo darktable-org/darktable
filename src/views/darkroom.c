@@ -3902,6 +3902,14 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                        port, DT_WINDOW_SECOND);
   }
+  else if(pinned_dev)
+  {
+    // Pinned image is still rendering - show the main dev's current backbuf as
+    // a fallback to prevent flickering while the new pixelpipe processes
+    if(dev->preview2.pipe && dev->preview2.pipe->backbuf)
+      _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
+                         &dev->preview2, DT_WINDOW_SECOND);
+  }
 
   // Request processing if needed
   if(pinned_dev && !pinned_dev->gui_leaving)
