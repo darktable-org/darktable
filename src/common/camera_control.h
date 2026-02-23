@@ -190,6 +190,7 @@ typedef struct dt_camctl_t
   const dt_camera_t *active_camera;
 
   gboolean import_ui;
+  gboolean changed_camera;
   int ticker;
   int tickmask;
 } dt_camctl_t;
@@ -271,8 +272,6 @@ typedef struct dt_camera_files_t
   time_t timestamp;
 } dt_camera_files_t;
 
-/** gphoto2 device updating function for thread */
-void *dt_update_cameras_thread(void *ptr);
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
 /** Destroys the camera control */
