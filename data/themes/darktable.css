@@ -1098,6 +1098,24 @@ treeview header label
 }
 
 /*-------------------------------------
+  - 2nd darkroom window options       -
+  -------------------------------------*/
+
+#dt_window2_pin_button {
+  background-color: @button_bg;
+  border: 0.08em solid transparent;
+}
+
+#dt_window2_pin_button:hover {
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: transparent;
+}
+
+#dt_window2_pin_button:checked {
+  border: 0.08em solid @button_fg;
+}
+
+/*-------------------------------------
   - Preferences dialog window options -
   -------------------------------------*/
 #preferences-box,

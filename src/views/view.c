@@ -1726,8 +1726,10 @@ void dt_view_paint_surface(cairo_t *cr,
                            int buf_height,
                            dt_dev_zoom_pos_t buf_zoom_pos)
 {
-  dt_develop_t *dev = darktable.develop;
-  dt_dev_pixelpipe_t *pp = dev->preview_pipe;
+  // Use the viewport's develop if available, otherwise fall back to global
+  dt_develop_t *dev = port->dev ? port->dev : darktable.develop;
+  // Preview pipe for fallback rendering - only available for main develop
+  dt_dev_pixelpipe_t *pp = darktable.develop->preview_pipe;
 
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
@@ -1803,20 +1805,27 @@ void dt_view_paint_surface(cairo_t *cr,
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
-  if(pp->output_imgid == dev->image_storage.id
+  // Check if we should use the preview pipe for fallback rendering
+  // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
+  const gboolean use_preview_fallback = 
+     (dev == darktable.develop)
+     && pp->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
          || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
-     && (port == &dev->full || port == &dev->preview2))
+     && (port == &dev->full || port == &dev->preview2);
+     
+  if(use_preview_fallback)
   {
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
     // draw preview
-    const float wd = processed_width * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
-    const float ht = processed_height * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const int full_pipe_width = dev->full.pipe ? dev->full.pipe->processed_width : 1;
+    const float wd = processed_width * pp->processed_width / MAX(1, full_pipe_width);
+    const float ht = processed_height * pp->processed_width / MAX(1, full_pipe_width);
 
     cairo_save(cr);
     cairo_scale(cr, zoom_scale, zoom_scale);
