@@ -32,6 +32,14 @@
 #define DT_OPENCL_CBUFFSIZE 1024
 #define DT_OPENCL_DEFAULT_HEADROOM 600
 
+/* The number of events handled by the driver is principally not limited.
+   If a device handler can't process a function handling an event it will return
+   an error codition that will be checked in darktable.
+   Still we don't want to stress the device resources too much so we try to keep
+   handled events in a safe range.
+*/
+#define DT_OPENCL_EVENTS 4096
+
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
@@ -180,13 +188,7 @@ typedef struct dt_opencl_device_t
   int clroundup_wd;
   int clroundup_ht;
 
-  // This defines how often should dt_opencl_events_get_slot do a
-  // dt_opencl_events_flush.  It should definitely le lower than the
-  // number of events that can be handled by the device/driver.
-  // FIXME we should be able to test for that with using >= OpenCl 2.0
-  int event_handles;
-
-  // opencl_events enabled for the device, set internally via event_handles
+  // opencl_events enabled for the device
   gboolean use_events;
 
   // async pixelpipe mode for device if set to TRUE OpenCL pixelpipe
