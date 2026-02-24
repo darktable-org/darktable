@@ -751,11 +751,11 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
   for(GList *l = forms; l; l = g_list_next(l))
   {
     dt_masks_form_t *f = l->data;
-    snprintf(f->name, sizeof(f->name), "ai object #%d", (int)path_nb++);
+    snprintf(f->name, sizeof(f->name), _("ai object #%d"), (int)path_nb++);
   }
 
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name, sizeof(grp->name), "ai object group #%d", (int)grp_nb);
+  snprintf(grp->name, sizeof(grp->name), _("ai object group #%d"), (int)grp_nb);
 
   // Register all path forms so they exist in dev->forms
   for(GList *l = forms; l; l = g_list_next(l))
@@ -930,7 +930,9 @@ static int _object_events_button_pressed(
         if(!mod_grp)
         {
           mod_grp = dt_masks_create(DT_MASKS_GROUP);
-          snprintf(mod_grp->name, sizeof(mod_grp->name), "grp %s", module->op);
+          gchar *module_label = dt_history_item_get_name(module);
+          snprintf(mod_grp->name, sizeof(mod_grp->name), _("group '%s'"), module_label);
+          g_free(module_label);
           dev->forms = g_list_append(dev->forms, mod_grp);
           module->blend_params->mask_id = mod_grp->formid;
         }
