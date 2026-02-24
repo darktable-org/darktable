@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -831,9 +831,9 @@ char *version = g_strdup_printf(
 #endif
 
 #ifdef HAVE_MAP
-               "  OSMGpsMap              -> ENABLED  - map view is available\n"
+               "  OSMGpsMap              -> ENABLED  - Map view is available\n"
 #else
-               "  OSMGpsMap              -> DISABLED - map view is NOT available\n"
+               "  OSMGpsMap              -> DISABLED - Map view is NOT available\n"
 #endif
 
 #ifdef HAVE_GMIC
