@@ -378,110 +378,113 @@ static GList *_duplicate_history_list(dt_develop_t *pinned_dev, GList *src_histo
   return new_history;
 }
 
-// Helper function to initialize a pinned develop structure
-static void _init_pinned_dev(dt_develop_t *pinned_dev, dt_develop_t *main_dev,
-                             const dt_imgid_t imgid)
+// Allocate a new pinned develop struct, initialise it without GUI, copy the
+// preview2 viewport from main_dev, and create the three pixelpipes.
+// Returns NULL on allocation failure; the caller must free on error paths.
+static dt_develop_t *_alloc_pinned_dev(dt_develop_t *main_dev)
 {
-  // Initialize without GUI to avoid GUI callbacks during module loading
+  dt_develop_t *pinned_dev = malloc(sizeof(dt_develop_t));
+  if(!pinned_dev) return NULL;
+
   dt_dev_init(pinned_dev, FALSE);
-  
-  // Copy viewport settings from main dev's preview2
-  pinned_dev->preview2.width = main_dev->preview2.width;
-  pinned_dev->preview2.height = main_dev->preview2.height;
-  pinned_dev->preview2.orig_width = main_dev->preview2.orig_width;
-  pinned_dev->preview2.orig_height = main_dev->preview2.orig_height;
-  pinned_dev->preview2.border_size = main_dev->preview2.border_size;
-  pinned_dev->preview2.dpi = main_dev->preview2.dpi;
-  pinned_dev->preview2.dpi_factor = main_dev->preview2.dpi_factor;
-  pinned_dev->preview2.ppd = main_dev->preview2.ppd;
+
+  pinned_dev->preview2.width            = main_dev->preview2.width;
+  pinned_dev->preview2.height           = main_dev->preview2.height;
+  pinned_dev->preview2.orig_width       = main_dev->preview2.orig_width;
+  pinned_dev->preview2.orig_height      = main_dev->preview2.orig_height;
+  pinned_dev->preview2.border_size      = main_dev->preview2.border_size;
+  pinned_dev->preview2.dpi              = main_dev->preview2.dpi;
+  pinned_dev->preview2.dpi_factor       = main_dev->preview2.dpi_factor;
+  pinned_dev->preview2.ppd              = main_dev->preview2.ppd;
   pinned_dev->preview2.color_assessment = main_dev->preview2.color_assessment;
-  pinned_dev->preview2.zoom = main_dev->preview2.zoom;
-  pinned_dev->preview2.closeup = main_dev->preview2.closeup;
-  pinned_dev->preview2.zoom_x = main_dev->preview2.zoom_x;
-  pinned_dev->preview2.zoom_y = main_dev->preview2.zoom_y;
-  pinned_dev->preview2.zoom_scale = main_dev->preview2.zoom_scale;
-  
-  // Share the widget reference for redraw triggers
-  pinned_dev->preview2.widget = main_dev->preview2.widget;
-  pinned_dev->preview2.pin_button = NULL;
-  
-  // Ensure the dev pointer is set to the pinned_dev
-  pinned_dev->preview2.dev = pinned_dev;
-  
-  // Manually create the pipes (since gui_attached=FALSE doesn't create them)
-  pinned_dev->full.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
-  pinned_dev->preview_pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+  pinned_dev->preview2.zoom             = main_dev->preview2.zoom;
+  pinned_dev->preview2.closeup          = main_dev->preview2.closeup;
+  pinned_dev->preview2.zoom_x           = main_dev->preview2.zoom_x;
+  pinned_dev->preview2.zoom_y           = main_dev->preview2.zoom_y;
+  pinned_dev->preview2.zoom_scale       = main_dev->preview2.zoom_scale;
+  pinned_dev->preview2.widget           = main_dev->preview2.widget;
+  pinned_dev->preview2.pin_button       = NULL;
+  pinned_dev->preview2.dev              = pinned_dev;
+
+  pinned_dev->full.pipe     = malloc(sizeof(dt_dev_pixelpipe_t));
+  pinned_dev->preview_pipe  = malloc(sizeof(dt_dev_pixelpipe_t));
   pinned_dev->preview2.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
   dt_dev_pixelpipe_init(pinned_dev->full.pipe);
   dt_dev_pixelpipe_init_preview(pinned_dev->preview_pipe);
   dt_dev_pixelpipe_init_preview2(pinned_dev->preview2.pipe);
-  
-  // Load raw image data
-  dt_lock_image(imgid);
-  _dt_dev_load_raw(pinned_dev, imgid);
-  pinned_dev->full.pipe->loading = FALSE;  // Mark full pipe as not loading to avoid blocking preview2
-  pinned_dev->preview_pipe->loading = FALSE;
-  pinned_dev->preview2.pipe->loading = TRUE;
-  pinned_dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
-  
-  // Load modules (gui_attached is FALSE so no GUI widgets created)
-  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
-  // Clone modules and forms from the main develop instance directly
-  // This ensures we get exactly what the user sees, including unsaved changes
-  // and specific history state, instead of reloading from database.
-  pinned_dev->iop = _duplicate_iop_list(pinned_dev, main_dev);
-  
-  // Reload defaults for all modules to ensure image-specific defaults (like orientation) 
-  // are set correctly based on the pinned image data.
-  for(GList *modules = pinned_dev->iop; modules; modules = g_list_next(modules))
-  {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-      dt_iop_reload_defaults(module);
-  }
 
-  pinned_dev->forms = dt_masks_dup_forms_deep(main_dev->forms, NULL);
-
-  pinned_dev->iop_instance = main_dev->iop_instance;
-  pinned_dev->history = _duplicate_history_list(pinned_dev, main_dev->history);
-  pinned_dev->history_end = main_dev->history_end;
-  pinned_dev->history_last_module = _find_cloned_module(pinned_dev, main_dev->history_last_module);
-  
-  // Copy iop order information
-  pinned_dev->iop_order_version = main_dev->iop_order_version;
-  pinned_dev->iop_order_list = dt_ioppr_iop_order_copy_deep(main_dev->iop_order_list);
-  
-  // Copy chroma state and handle module pointers
-  memcpy(&pinned_dev->chroma, &main_dev->chroma, sizeof(dt_dev_chroma_t));
-  pinned_dev->chroma.temperature = _find_cloned_module(pinned_dev, main_dev->chroma.temperature);
-  pinned_dev->chroma.adaptation = _find_cloned_module(pinned_dev, main_dev->chroma.adaptation);
-  
-  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
-  
-  dt_unlock_image(imgid);
+  return pinned_dev;
 }
 
+// Atomically install new_pinned_dev as the active pinned dev, clean up
+// the old one (if any), kick off processing, and sync the pin button.
+// Always leaves dev->preview2_pinned == TRUE.
+static void _activate_pinned_dev(dt_develop_t *dev, dt_develop_t *new_pinned_dev)
+{
+  new_pinned_dev->full.pipe->loading     = FALSE;
+  new_pinned_dev->preview_pipe->loading  = FALSE;
+  new_pinned_dev->preview2.pipe->loading = TRUE;
+  new_pinned_dev->preview2.pipe->status  = DT_DEV_PIXELPIPE_DIRTY;
+  new_pinned_dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+
+  dt_develop_t *old_pinned_dev  = dev->preview2_pinned_dev;
+  dev->preview2_pinned_dev = new_pinned_dev;
+  dev->preview2_pinned     = TRUE;
+
+  if(old_pinned_dev)
+    _cleanup_pinned_dev(old_pinned_dev);
+
+  dt_dev_process_preview2(new_pinned_dev);
+
+  // Update the pin button without re-firing its toggled callback, which would
+  // call dt_dev_toggle_preview2_pinned and undo the pin.
+  if(dev->preview2.pin_button)
+  {
+    g_signal_handlers_block_matched(G_OBJECT(dev->preview2.pin_button),
+                                    G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->preview2.pin_button), TRUE);
+    g_signal_handlers_unblock_matched(G_OBJECT(dev->preview2.pin_button),
+                                      G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
+  }
+
+  dt_toast_log(_("image pinned"));
+}
+
+// Pin the currently-edited image, cloning its in-memory pipeline state so
+// that unsaved edits are reflected immediately in the second window.
 static void _pin_image(dt_develop_t *dev)
 {
-  const dt_imgid_t pinned_imgid = dev->image_storage.id;
-  if(dev->preview2_pinned_dev)
-  {
-    _cleanup_pinned_dev(dev->preview2_pinned_dev);
-    dev->preview2_pinned_dev = NULL;
-  }
-  
-  dev->preview2_pinned_dev = malloc(sizeof(dt_develop_t));
-  if(!dev->preview2_pinned_dev)
+  dt_develop_t *pinned_dev = _alloc_pinned_dev(dev);
+  if(!pinned_dev)
   {
     dev->preview2_pinned = FALSE;
     dt_toast_log(_("failed to create pinned develop"));
     return;
   }
 
-  _init_pinned_dev(dev->preview2_pinned_dev, dev, pinned_imgid);
-  dev->preview2_pinned_dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->preview2_pinned_dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dt_dev_process_preview2(dev->preview2_pinned_dev);
-  dt_toast_log(_("image pinned"));
+  const dt_imgid_t imgid = dev->image_storage.id;
+  dt_lock_image(imgid);
+  _dt_dev_load_raw(pinned_dev, imgid);
+
+  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
+  pinned_dev->iop = _duplicate_iop_list(pinned_dev, dev);
+  for(GList *m = pinned_dev->iop; m; m = g_list_next(m))
+    dt_iop_reload_defaults((dt_iop_module_t *)m->data);
+  pinned_dev->forms              = dt_masks_dup_forms_deep(dev->forms, NULL);
+  pinned_dev->iop_instance       = dev->iop_instance;
+  pinned_dev->history            = _duplicate_history_list(pinned_dev, dev->history);
+  pinned_dev->history_end        = dev->history_end;
+  pinned_dev->history_last_module = _find_cloned_module(pinned_dev, dev->history_last_module);
+  pinned_dev->iop_order_version  = dev->iop_order_version;
+  pinned_dev->iop_order_list     = dt_ioppr_iop_order_copy_deep(dev->iop_order_list);
+  memcpy(&pinned_dev->chroma, &dev->chroma, sizeof(dt_dev_chroma_t));
+  pinned_dev->chroma.temperature = _find_cloned_module(pinned_dev, dev->chroma.temperature);
+  pinned_dev->chroma.adaptation  = _find_cloned_module(pinned_dev, dev->chroma.adaptation);
+  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
+
+  dt_unlock_image(imgid);
+
+  _activate_pinned_dev(dev, pinned_dev);
 }
 
 static void _unpin_image(dt_develop_t *dev)
@@ -527,6 +530,32 @@ void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
   // Force a redraw of the second window
   if(dev->preview2.widget)
     gtk_widget_queue_draw(dev->preview2.widget);
+}
+
+void dt_dev_pin_image(dt_develop_t *dev, const dt_imgid_t imgid)
+{
+  if(!dev || !dt_is_valid_imgid(imgid)) return;
+
+  // If pinning the currently-edited image, clone the in-memory pipeline so
+  // that the currently selected history point is respected (same as the
+  // regular pin button behaviour).
+  if(imgid == dev->image_storage.id)
+  {
+    _pin_image(dev);
+    return;
+  }
+
+  dt_develop_t *pinned_dev = _alloc_pinned_dev(dev);
+  if(!pinned_dev)
+  {
+    dt_toast_log(_("failed to create pinned develop"));
+    return;
+  }
+
+  // Load the image with its own history from the database
+  dt_dev_load_image(pinned_dev, imgid);
+
+  _activate_pinned_dev(dev, pinned_dev);
 }
 
 void dt_dev_invalidate_preview(dt_develop_t *dev)
