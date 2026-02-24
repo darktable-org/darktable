@@ -115,7 +115,14 @@ static void load_themes_dir(const char *basedir)
 
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-      darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    {
+      // we skip files with prefix "chunk-foo.css" as those are partial CSS
+      // files that are not meant to be used as themes, but only included in
+      // other CSS files. This allows us to have a modular structure for our CSS
+      // and avoid code duplication between themes.
+      if(!g_str_has_prefix(d_name, "chunk-"))
+        darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    }
     g_dir_close(dir);
   }
   g_free(themes_dir);
