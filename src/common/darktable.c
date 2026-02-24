@@ -825,9 +825,9 @@ char *version = g_strdup_printf(
 #endif
 
 #ifdef HAVE_GPHOTO2
-               "  gPhoto2                -> ENABLED\n"
+               "  gPhoto2                -> ENABLED  - Camera tethering is available\n"
 #else
-               "  gPhoto2                -> DISABLED - tethering is NOT available\n"
+               "  gPhoto2                -> DISABLED - Camera tethering is NOT available\n"
 #endif
 
 #ifdef HAVE_MAP
