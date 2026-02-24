@@ -345,7 +345,7 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].pinned_memory,
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
-    cl->dev[devid].event_handles,
+    cl->dev[devid].use_events ? DT_OPENCL_EVENTS : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
     0.0f, // dummy for now as we don't have the benching any more
@@ -383,20 +383,22 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(existing_device)
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int avoid_atomics;
+    int idummy;
     int micro_nap;
     int pinned_memory;
     int wd;
     int ht;
-    int event_handles;
+    int events;
     int asyncmode;
     int disabled;
     float dummy; // unused
     float advantage;
     float unified_fraction;
     sscanf(dat, "%i %i %i %i %i %i %i %i %f %f %f",
-           &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht,
-           &event_handles, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
+           &idummy, &micro_nap, &pinned_memory, &wd, &ht,
+           &events, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
+
+    cldid->use_events = events ? TRUE : FALSE;
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513) && (advantage >= 0.0f) && (advantage <= 10000.0f);
@@ -407,7 +409,6 @@ gboolean dt_opencl_read_device_config(const int devid)
       cldid->pinned_memory = pinned_memory;
       cldid->clroundup_wd = wd;
       cldid->clroundup_ht = ht;
-      cldid->event_handles = event_handles;
       cldid->asyncmode = asyncmode;
       cldid->disabled = disabled;
       cldid->advantage = advantage;
@@ -431,12 +432,9 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->clroundup_wd = 16;
   if((cldid->clroundup_ht < 2) || (cldid->clroundup_ht > 512))
     cldid->clroundup_ht = 16;
-  if(cldid->event_handles < 0)
-    cldid->event_handles = 0x40000000;
   if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
     cldid->advantage = 0.0f;
 
-  cldid->use_events = cldid->event_handles > 0;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
   cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
@@ -510,7 +508,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = TRUE;
-  cl->dev[dev].event_handles = 1024;
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
   cl->dev[dev].headroom = 0;
@@ -913,7 +910,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
+               "   EVENTS HANDLED:           %s\n", STR_YESNO(cl->dev[dev].use_events));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1653,18 +1650,14 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].totalevents)
         {
           dt_print_nts(DT_DEBUG_OPENCL,
-                       "[opencl_summary_statistics] device '%s' id=%d: %d"
-                       " out of %d events were "
-                       "successful and %d events lost. max event=%d%s%s\n",
-                       cl->dev[i].fullname, i, cl->dev[i].totalsuccess,
-                       cl->dev[i].totalevents, cl->dev[i].totallost,
+                       "[opencl_summary_statistics] device '%s' id=%d:"
+                       " %d out of %d events were "
+                       "successful and %d events lost. max event=%d%s\n",
+                       cl->dev[i].fullname, i,
+                       cl->dev[i].totalsuccess, cl->dev[i].totalevents,
+                       cl->dev[i].totallost,
                        cl->dev[i].maxeventslot,
-                       (cl->dev[i].maxeventslot > 1024)
-                         ? "\n *** Warning, slots > 1024"
-                         : "",
-                       cl->dev[i].clmem_error
-                         ? ", clmem runtime problem"
-                         : "");
+                       cl->dev[i].clmem_error ? ", clmem runtime problem" : "");
         }
         else
         {
@@ -3839,7 +3832,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
 
   // check if we would exceed the number of available event
   // handles. In that case first flush existing handles
-  if((*numevents - *eventsconsolidated + 1 > cl->dev[devid].event_handles)
+  if((*numevents - *eventsconsolidated + 1 > DT_OPENCL_EVENTS)
      || (*numevents == *maxevents))
     dt_opencl_events_flush(devid, FALSE);
 
