@@ -434,6 +434,8 @@ void dt_dev_pipe_synch_all(dt_develop_t *dev);
  * even when the user navigates to other images.
  */
 void dt_dev_toggle_preview2_pinned(dt_develop_t *dev);
+// Pin a specific image (by imgid) in the second window, loading its history from DB.
+void dt_dev_pin_image(dt_develop_t *dev, dt_imgid_t imgid);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
