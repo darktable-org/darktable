@@ -42,9 +42,10 @@
 #define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
 #define DEFAULT_OBJECT_MODEL_ID "mask-light-hq-sam"
 
-// Target resolution for SAM encoding (longest side in pixels).
-// Higher than preview pipe for better segmentation quality.
-#define SAM_ENCODE_TARGET 2048
+// Target resolution for segmentation encoding (longest side in pixels).
+// Matches the encoder input size (1024) — rendering higher just to
+// downscale in preprocessing wastes pipeline time with no quality gain.
+#define SEG_ENCODE_TARGET 1024
 
 // --- Per-session segmentation state (stored in gui->scratchpad) ---
 
@@ -208,8 +209,8 @@ static gpointer _encode_thread_func(gpointer data)
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight,
                                   &pipe.processed_width, &pipe.processed_height);
 
-  const double scale = fmin((double)SAM_ENCODE_TARGET / (double)pipe.processed_width,
-                            (double)SAM_ENCODE_TARGET / (double)pipe.processed_height);
+  const double scale = fmin((double)SEG_ENCODE_TARGET / (double)pipe.processed_width,
+                            (double)SEG_ENCODE_TARGET / (double)pipe.processed_height);
   const double final_scale = fmin(scale, 1.0); // don't upscale
   const int out_w = (int)(final_scale * pipe.processed_width);
   const int out_h = (int)(final_scale * pipe.processed_height);
@@ -276,7 +277,19 @@ static gpointer _encode_thread_func(gpointer data)
   d->encode_rgb_w = out_w;
   d->encode_rgb_h = out_h;
 
+  // Signal ready immediately so the user can start placing points.
+  // The warmup below continues on this background thread — if the user
+  // clicks before it finishes, ORT serializes concurrent Run() calls on
+  // the same session, so the decode simply waits for the warmup to
+  // complete first.  In practice, users need a moment to position their
+  // cursor, so the ~1 s warmup usually finishes before the first click.
   g_atomic_int_set(&d->encode_state, ok ? ENCODE_READY : ENCODE_ERROR);
+
+  // Warm up decoder with real encoder embeddings so the first user click
+  // doesn't pay ORT's lazy-init + arena-sizing cost on the main thread.
+  if(ok)
+    dt_seg_warmup_decoder(d->seg);
+
   return NULL;
 }
 
