@@ -750,7 +750,17 @@ void expose(dt_view_t *self,
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
+    // Clip to viewport (excluding border) so mask overlays don't
+    // bleed into the grey border when the image is zoomed in.
+    cairo_save(cri);
+    const float vp_w = (width - 2.0f * tb) / zoom_scale;
+    const float vp_h = (height - 2.0f * tb) / zoom_scale;
+    const float vp_x = (tb - 0.5f * width) / zoom_scale + 0.5f * wd + zoom_x * wd;
+    const float vp_y = (tb - 0.5f * height) / zoom_scale + 0.5f * ht + zoom_y * ht;
+    cairo_rectangle(cri, vp_x, vp_y, vp_w, vp_h);
+    cairo_clip(cri);
     dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    cairo_restore(cri);
   }
 
   // if dragging the rotation line, do it and nothing else
