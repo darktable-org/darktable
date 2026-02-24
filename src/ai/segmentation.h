@@ -48,6 +48,16 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env,
                               const char *model_id);
 
 /**
+ * @brief Warm up the decoder by running a single dummy inference.
+ *        ONNX Runtime lazily compiles kernels and allocates memory on the
+ *        first Run() call, which can take several seconds.  Calling this
+ *        on a background thread after dt_seg_load() moves that cost away
+ *        from the user's first click.
+ * @param ctx Segmentation context (NULL-safe, no-op if NULL).
+ */
+void dt_seg_warmup_decoder(dt_seg_context_t *ctx);
+
+/**
  * @brief Encode an image (run the SAM encoder once).
  *        The result is cached — subsequent calls with the same context
  *        skip re-encoding.

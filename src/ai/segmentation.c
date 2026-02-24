@@ -434,6 +434,145 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   return ctx;
 }
 
+// ONNX Runtime uses a two-phase initialization model:
+//   1. CreateSession() — parses the ONNX graph and builds internal IR.
+//      This is what dt_ai_load_model[_ext]() triggers.  Relatively fast.
+//   2. First Run() — lazily compiles operator kernels, plans memory arenas,
+//      and (on GPU providers) compiles shaders.  This can take seconds.
+//
+// The decoder session is created on a background thread inside
+// _encode_thread_func (object.c), but the first Run() would otherwise
+// happen on the **main GTK thread** when the user clicks to place a point,
+// visibly freezing the UI.
+//
+// This warmup forces phase-2 to happen on the background thread by running
+// a single dummy decode.  Call it after dt_seg_encode_image() so the real
+// encoder embeddings are used — a warmup with zero-filled dummy data only
+// partially warms ORT (kernel compilation) but still leaves a significant
+// first-run penalty when real data flows through (memory arena resizing,
+// CPU cache population).  Using the actual embeddings fully exercises the
+// decoder and eliminates the gap between first and subsequent decodes.
+//
+// The output is discarded and no context state is modified (prev_mask
+// stays zeroed, has_prev_mask stays FALSE).
+void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
+{
+  if(!ctx || !ctx->decoder) return;
+
+  dt_print(DT_DEBUG_AI, "[segmentation] Warming up decoder...");
+  const double t0 = dt_get_wtime();
+  const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
+  const int pm_dim = ctx->prev_mask_dim;
+  const int nm = ctx->num_masks;
+  const int dec_h = ctx->dec_mask_h;
+  const int dec_w = ctx->dec_mask_w;
+  const int total_points = is_sam ? 2 : 1;
+
+  // Use real encoder outputs when available (after dt_seg_encode_image),
+  // fall back to zero-filled dummies (after dt_seg_load only).
+  const gboolean use_real = ctx->image_encoded;
+
+  float *dummy_enc[MAX_ENCODER_OUTPUTS] = {NULL};
+  float *masks = NULL;
+  float *low_res = NULL;
+
+  if(!use_real)
+  {
+    for(int i = 0; i < ctx->n_enc_outputs; i++)
+    {
+      size_t n = 1;
+      for(int d = 0; d < ctx->enc_ndims[i]; d++)
+        n *= (size_t)ctx->enc_shapes[i][d];
+      dummy_enc[i] = g_try_malloc0(n * sizeof(float));
+      if(!dummy_enc[i]) goto cleanup;
+    }
+  }
+
+  masks = g_try_malloc((size_t)nm * dec_h * dec_w * sizeof(float));
+  if(!masks) goto cleanup;
+
+  if(is_sam)
+  {
+    low_res = g_try_malloc((size_t)nm * pm_dim * pm_dim * sizeof(float));
+    if(!low_res) goto cleanup;
+  }
+
+  // Single dummy decode: one foreground point at the origin, no previous mask.
+  {
+    float coords[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float labels[] = {1.0f, -1.0f};
+    const float has_mask = 0.0f;
+
+    int64_t coords_shape[3] = {1, total_points, 2};
+    int64_t labels_shape[2] = {1, total_points};
+    int64_t mask_in_shape[4] = {1, 1, pm_dim, pm_dim};
+    int64_t has_mask_shape[1] = {1};
+
+    dt_ai_tensor_t inputs[MAX_ENCODER_OUTPUTS + 4];
+    int ni = 0;
+
+    for(int i = 0; i < ctx->n_enc_outputs; i++)
+    {
+      const int ei = ctx->enc_order[i];
+      inputs[ni++] = (dt_ai_tensor_t){
+        .data = use_real ? ctx->enc_data[ei] : dummy_enc[ei],
+        .type = DT_AI_FLOAT,
+        .shape = ctx->enc_shapes[ei], .ndim = ctx->enc_ndims[ei]};
+    }
+
+    inputs[ni++] = (dt_ai_tensor_t){
+      .data = coords, .type = DT_AI_FLOAT, .shape = coords_shape, .ndim = 3};
+    inputs[ni++] = (dt_ai_tensor_t){
+      .data = labels, .type = DT_AI_FLOAT, .shape = labels_shape, .ndim = 2};
+    inputs[ni++] = (dt_ai_tensor_t){
+      .data = ctx->prev_mask, .type = DT_AI_FLOAT, .shape = mask_in_shape, .ndim = 4};
+
+    if(is_sam)
+      inputs[ni++] = (dt_ai_tensor_t){
+        .data = (void *)&has_mask, .type = DT_AI_FLOAT,
+        .shape = has_mask_shape, .ndim = 1};
+
+    int64_t masks_shape[4] = {1, nm, dec_h, dec_w};
+    float iou_buf[MAX_NUM_MASKS];
+
+    dt_ai_tensor_t outputs[3];
+    int n_out;
+
+    if(is_sam)
+    {
+      int64_t iou_shape[2] = {1, nm};
+      int64_t lr_shape[4] = {1, nm, pm_dim, pm_dim};
+
+      outputs[0] = (dt_ai_tensor_t){
+        .data = masks, .type = DT_AI_FLOAT, .shape = masks_shape, .ndim = 4};
+      outputs[1] = (dt_ai_tensor_t){
+        .data = iou_buf, .type = DT_AI_FLOAT, .shape = iou_shape, .ndim = 2};
+      outputs[2] = (dt_ai_tensor_t){
+        .data = low_res, .type = DT_AI_FLOAT, .shape = lr_shape, .ndim = 4};
+      n_out = 3;
+    }
+    else
+    {
+      outputs[0] = (dt_ai_tensor_t){
+        .data = masks, .type = DT_AI_FLOAT, .shape = masks_shape, .ndim = 4};
+      n_out = 1;
+    }
+
+    dt_ai_run(ctx->decoder, inputs, ni, outputs, n_out);
+  }
+
+cleanup:
+  g_free(low_res);
+  g_free(masks);
+  if(!use_real)
+    for(int i = 0; i < ctx->n_enc_outputs; i++)
+      g_free(dummy_enc[i]);
+
+  dt_print(DT_DEBUG_AI, "[segmentation] Decoder warmup done in %.3fs%s",
+           dt_get_wtime() - t0,
+           use_real ? " (real embeddings)" : " (dummy data)");
+}
+
 gboolean
 dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, int height)
 {
