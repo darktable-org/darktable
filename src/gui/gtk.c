@@ -3512,11 +3512,11 @@ void dt_gui_load_theme(const char *theme)
 
   gchar *themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
 
-  // condensed.css
+  // chunk-condensed.css
 
   if(dt_conf_get_bool("themes/condensed"))
   {
-    _add_theme_import(&themecss, datadir, "themes", "condensed.css");
+    _add_theme_import(&themecss, datadir, "themes", "chunk-condensed.css");
   }
 
   // load any OS specific themes tweak file to fix some platform specific issues
