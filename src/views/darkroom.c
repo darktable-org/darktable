@@ -4102,10 +4102,6 @@ static gboolean _second_window_buttons_enter_notify_callback(GtkWidget *widget,
   gtk_widget_set_opacity(button_box, 1.0);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
                                        button_box, FALSE);
-  // GTK only shows tooltips for the focused window.  Focus the 2nd window when
-  // the pointer enters it so that tooltips work.  As a transient of the main
-  // window, the 2nd window always stays on top regardless of which has focus.
-  gtk_window_present_with_time(GTK_WINDOW(widget), event->time);
   return FALSE;
 }
 
@@ -4120,11 +4116,6 @@ static gboolean _second_window_buttons_leave_notify_callback(GtkWidget *widget,
     gtk_widget_set_opacity(button_box, 0.0);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(gtk_widget_get_parent(button_box)),
                                          button_box, TRUE);
-    // Return focus to the main window so keyboard shortcuts and other
-    // interactions work normally after leaving the 2nd window.
-    GtkWindow *main_window = gtk_window_get_transient_for(GTK_WINDOW(widget));
-    if(main_window)
-      gtk_window_present_with_time(main_window, event->time);
   }
   return FALSE;
 }
@@ -4319,8 +4310,14 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     gtk_window_set_icon_name(GTK_WINDOW(dev->second_wnd), "darktable");
     gtk_window_set_title(GTK_WINDOW(dev->second_wnd), _("darktable - darkroom preview"));
 
+#ifndef GDK_WINDOWING_QUARTZ
+    // On macOS, transient_for is implemented via [NSWindow addChildWindow:ordered:],
+    // which constrains the child to the parent's screen and prevents it from being
+    // moved to a different monitor.  Use keep_above instead (see below, after show_all,
+    // where the NSWindow is already realized).
     gtk_window_set_transient_for(GTK_WINDOW(dev->second_wnd),
                                  GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+#endif
 
     // Create the overlay for the window
     GtkWidget *overlay = gtk_overlay_new();
@@ -4369,6 +4366,13 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
   // Show all widgets in the window
   gtk_widget_show_all(dev->second_wnd);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  // keep_above must be set after the window is realized (i.e. after show_all),
+  // because the Quartz backend applies the NSWindow level change only to an
+  // already-existing NSWindow object.
+  gtk_window_set_keep_above(GTK_WINDOW(dev->second_wnd), TRUE);
+#endif
 }
 
 // clang-format off
