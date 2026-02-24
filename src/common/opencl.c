@@ -386,8 +386,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     int idummy;
     int micro_nap;
     int pinned_memory;
-    int wd;
-    int ht;
     int events;
     int asyncmode;
     int disabled;
@@ -395,20 +393,18 @@ gboolean dt_opencl_read_device_config(const int devid)
     float advantage;
     float unified_fraction;
     sscanf(dat, "%i %i %i %i %i %i %i %i %f %f %f",
-           &idummy, &micro_nap, &pinned_memory, &wd, &ht,
+           &idummy, &micro_nap, &pinned_memory, &idummy, &idummy,
            &events, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
 
     cldid->use_events = events ? TRUE : FALSE;
 
     // some rudimentary safety checking if string seems to be ok
-    safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513) && (advantage >= 0.0f) && (advantage <= 10000.0f);
+    safety_ok = (advantage >= 0.0f) && (advantage <= 10000.0f);
 
     if(safety_ok)
     {
       cldid->micro_nap = micro_nap;
       cldid->pinned_memory = pinned_memory;
-      cldid->clroundup_wd = wd;
-      cldid->clroundup_ht = ht;
       cldid->asyncmode = asyncmode;
       cldid->disabled = disabled;
       cldid->advantage = advantage;
@@ -428,10 +424,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->unified_fraction = 0.25f;
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
-  if((cldid->clroundup_wd < 2) || (cldid->clroundup_wd > 512))
-    cldid->clroundup_wd = 16;
-  if((cldid->clroundup_ht < 2) || (cldid->clroundup_ht > 512))
-    cldid->clroundup_ht = 16;
   if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
     cldid->advantage = 0.0f;
 
@@ -907,7 +899,31 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                cl->dev[dev].atomic_support == DT_OPENCL_ATOMIC_NONE ? "none" : "",
                cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_INT32 ? "INT32 " : "",
                cl->dev[dev].atomic_support & DT_OPENCL_ATOMIC_FLOAT32 ? "FLOAT32 " : "");
-  dt_print_nts(DT_DEBUG_OPENCL,
+
+  /* The roundup data for width&height are mainly relevant for kernels called without locals
+     as good values improve performance.
+     Profiling this is simply not worth the effort, we can do a very good guess based on
+     maximum workgroup size for the device.
+     Tests to do this per kernel via dt_opencl_get_kernel_work_group_size() shows that the
+     overhead decreases performance for those simple kernels so we go the easy way.
+  */
+  if(cl->dev[dev].workgroup_size >= 1024)
+  {
+    cl->dev[dev].clroundup_wd = 32;
+    cl->dev[dev].clroundup_ht = 32;
+  }
+  else if(cl->dev[dev].workgroup_size >= 512)
+  {
+    cl->dev[dev].clroundup_wd = 32;
+    cl->dev[dev].clroundup_ht = 16;
+  }
+  else
+  {
+    cl->dev[dev].clroundup_wd = 16;
+    cl->dev[dev].clroundup_ht = 16;
+  }
+
+  dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   EVENTS HANDLED:           %s\n", STR_YESNO(cl->dev[dev].use_events));
