@@ -47,6 +47,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -1504,17 +1505,25 @@ static void _second_window_quickbutton_clicked(GtkWidget *w,
   if(dev->second_wnd && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
   {
     GtkWidget *wnd = dev->second_wnd;
-    
+
+    // Disable the button for the duration of close+destroy to fix possible
+    // race condition when re-opening the 2nd window while the cleanup code
+    // is still running.
+    gtk_widget_set_sensitive(w, FALSE);
+
     _darkroom_ui_second_window_write_config(wnd);
     dt_conf_set_bool("second_window/last_visible", FALSE);
     _darkroom_ui_second_window_cleanup(dev);
     gtk_widget_hide(wnd);
-    
+
     // Flush pending events to let macOS process the hide before destroy
     while(gtk_events_pending())
       gtk_main_iteration_do(FALSE);
-    
+
     gtk_widget_destroy(wnd);
+
+    // Re-enable the button when cleanup is done.
+    gtk_widget_set_sensitive(w, TRUE);
   }
   else if(dev->second_wnd == NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
     _darkroom_display_second_window(dev);
@@ -3904,11 +3913,18 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
   }
   else if(pinned_dev)
   {
-    // Pinned image is still rendering - show the main dev's current backbuf as
-    // a fallback to prevent flickering while the new pixelpipe processes
-    if(dev->preview2.pipe && dev->preview2.pipe->backbuf)
+    // Pinned image is still rendering.
+    // Only use the main dev's backbuf as a fallback when the pinned image is
+    // the same as the one in the main view — this avoids flickering when
+    // pinning the currently-edited image.
+    // For a different image, keep the black background rather than flashing
+    // the wrong image while the new pixelpipe processes.
+    if(pinned_dev->image_storage.id == dev->image_storage.id
+       && dev->preview2.pipe && dev->preview2.pipe->backbuf)
+    {
       _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                          &dev->preview2, DT_WINDOW_SECOND);
+    }
   }
 
   // Request processing if needed
@@ -4285,6 +4301,35 @@ static gboolean _second_window_delete_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static void _second_window_dnd_received(GtkWidget *widget,
+                                        GdkDragContext *context,
+                                        const gint x,
+                                        const gint y,
+                                        GtkSelectionData *selection_data,
+                                        const guint target_type,
+                                        const guint time,
+                                        gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  gboolean success = FALSE;
+
+  if(selection_data != NULL && target_type == DND_TARGET_IMGID)
+  {
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(dt_imgid_t);
+    if(imgs_nb)
+    {
+      const dt_imgid_t *imgs = (const dt_imgid_t *)gtk_selection_data_get_data(selection_data);
+      if(dt_is_valid_imgid(imgs[0]))
+      {
+        dt_dev_pin_image(dev, imgs[0]);
+        success = TRUE;
+      }
+    }
+  }
+
+  gtk_drag_finish(context, success, FALSE, time);
+}
+
 static void _darkroom_display_second_window(dt_develop_t *dev)
 {
   // Wait for any pending jobs and reset shutdown flag
@@ -4355,6 +4400,13 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
                      G_CALLBACK(_second_window_leave_callback), dev);
     g_signal_connect(G_OBJECT(dev->preview2.widget), "configure-event",
                      G_CALLBACK(_second_window_configure_callback), dev);
+
+    /* dropping a filmstrip thumbnail pins it in the 2nd window */
+    gtk_drag_dest_set(dev->preview2.widget, GTK_DEST_DEFAULT_ALL,
+                      target_list_internal, n_targets_internal,
+                      GDK_ACTION_COPY | GDK_ACTION_MOVE);
+    g_signal_connect(G_OBJECT(dev->preview2.widget), "drag-data-received",
+                     G_CALLBACK(_second_window_dnd_received), dev);
 
     g_signal_connect(G_OBJECT(dev->second_wnd), "delete-event",
                      G_CALLBACK(_second_window_delete_callback), dev);
