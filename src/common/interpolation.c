@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1382,15 +1382,15 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
   dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * height * 3, vmeta);
   if(dev_vmeta == NULL) goto error;
 
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out),
-                            CLARG(width), CLARG(height),
-                            CLARG(dev_hmeta), CLARG(dev_vmeta), CLARG(dev_hlength),
-                            CLARG(dev_vlength), CLARG(dev_hindex),
-                            CLARG(dev_vindex), CLARG(dev_hkernel), CLARG(dev_vkernel),
-                            CLARG(hmaxtaps), CLARG(taps), CLLOCAL(hmaxtaps * sizeof(float)),
-                            CLLOCAL(hmaxtaps * sizeof(int)),
-                            CLLOCAL(vblocksize * 4 * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, kernel, sizes, local,
+            CLARG(dev_in), CLARG(dev_out),
+            CLARG(width), CLARG(height),
+            CLARG(dev_hmeta), CLARG(dev_vmeta), CLARG(dev_hlength),
+            CLARG(dev_vlength), CLARG(dev_hindex),
+            CLARG(dev_vindex), CLARG(dev_hkernel), CLARG(dev_vkernel),
+            CLARG(hmaxtaps), CLARG(taps), CLLOCAL(hmaxtaps * sizeof(float)),
+            CLLOCAL(hmaxtaps * sizeof(int)),
+            CLLOCAL(vblocksize * 4 * sizeof(float)));
 
 error:
   if(err == CL_SUCCESS)

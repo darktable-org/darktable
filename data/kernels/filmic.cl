@@ -101,7 +101,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     maxRGB = maxRGB / grey;
     maxRGB = (maxRGB < noise) ? noise : maxRGB;
     maxRGB = (native_log2(maxRGB) - shadows_range) / dynamic_range;
-    maxRGB = clamp(maxRGB, 0.0f, 1.0f);
+    maxRGB = clipf(maxRGB);
 
     const float index = maxRGB;
 
@@ -205,7 +205,7 @@ static inline float filmic_desaturate_v1(const float x, const float sigma_toe, c
   const float key_toe = native_exp(-0.5f * radius_toe * radius_toe / sigma_toe);
   const float key_shoulder = native_exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
 
-  return 1.0f - clamp((key_toe + key_shoulder) / saturation, 0.0f, 1.0f);
+  return 1.0f - clipf((key_toe + key_shoulder) / saturation);
 }
 
 
@@ -303,7 +303,7 @@ static inline float log_tonemapping_v2(const float x,
                                        const float grey, const float black,
                                        const float dynamic_range)
 {
-  return clamp((native_log2(x / grey) - black) / dynamic_range, 0.f, 1.f);
+  return clipf((native_log2(x / grey) - black) / dynamic_range);
 }
 
 
@@ -896,7 +896,7 @@ static inline float4 filmic_chroma_v1(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  norm = dtcl_pow(clipf(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type)), output_power);
 
   return o * norm;
 }
@@ -1047,7 +1047,7 @@ filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
 
   const float pix_max = fmax(dtcl_sqrt(i2.x + i2.y + i2.z), 0.f);
   const float argument = -pix_max * normalize + feathering;
-  const float weight = clamp(1.0f / ( 1.0f + native_exp2(argument)), 0.f, 1.f);
+  const float weight = clipf(1.0f / ( 1.0f + native_exp2(argument)));
 
   if(4.f > argument) *is_clipped = 1;
 

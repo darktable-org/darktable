@@ -128,7 +128,7 @@ kernel void hazeremoval_transision_map(const int width, const int height, read_o
 
 kernel void hazeremoval_dehaze(const int width, const int height, read_only image2d_t in,
                                read_only image2d_t trans_map, write_only image2d_t out, const float t_min,
-                               const float A0_r, const float A0_g, const float A0_b)
+                               const float4 A0)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -136,7 +136,7 @@ kernel void hazeremoval_dehaze(const int width, const int height, read_only imag
 
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float t = fmax(read_imagef(trans_map, sampleri, (int2)(x, y)).x, t_min);
-  write_imagef(
-      out, (int2)(x, y),
-      (float4)((pixel.x - A0_r) / t + A0_r, (pixel.y - A0_g) / t + A0_g, (pixel.z - A0_b) / t + A0_b, pixel.w));
+
+  write_imagef(out, (int2)(x, y),
+      (float4)((pixel.x - A0.x) / t + A0.x, (pixel.y - A0.y) / t + A0.y, (pixel.z - A0.z) / t + A0.z, pixel.w));
 }

@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2016-2025 darktable developers.
+   Copyright (C) 2016-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -327,19 +327,20 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_thresholds = dt_opencl_copy_host_to_device_constant(devid, sizeof(unsigned int) * 4, (void *)d->threshold);
   if(dev_thresholds == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_args(devid, kernel, 0,
-    CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
-    CLARG(width), CLARG(height),
-    CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
-    CLARG(dev_thresholds));
-
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
-    dt_opencl_set_kernel_args(devid, kernel, 11, CLARG(dev_colors));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+              CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
+              CLARG(width), CLARG(height),
+              CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
+              CLARG(dev_thresholds),
+              CLARG(dev_colors));
   else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
-    dt_opencl_set_kernel_args(devid, kernel, 11, CLFLARRAY(4, color));
-
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+              CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
+              CLARG(width), CLARG(height),
+              CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
+              CLARG(dev_thresholds),
+              CLFLARRAY(4, color));
 
 error:
   dt_opencl_release_mem_object(dev_xtrans);

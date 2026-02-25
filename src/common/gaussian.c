@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -951,10 +951,9 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   // intermediate step: transpose dev_temp2 -> dev_temp1
   sizes[0] = bwidth;
   sizes[1] = bheight;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, kernel_gaussian_transpose, sizes, local,
+    CLARG(dev_temp2), CLARG(dev_temp1),
     CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
     return err;
 
@@ -970,10 +969,9 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   // transpose back dev_temp2 -> dev_temp1
   sizes[0] = bheight;
   sizes[1] = bwidth;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, kernel_gaussian_transpose, sizes, local,
+    CLARG(dev_temp2), CLARG(dev_temp1),
     CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
     return err;
 
@@ -1045,10 +1043,9 @@ cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev
   // intermediate step: transpose dev_temp2 -> dev_temp1
   sizes[0] = bwidth;
   sizes[1] = bheight;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, kernel_gaussian_transpose, sizes, local,
+    CLARG(dev_temp2), CLARG(dev_temp1),
     CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
     return err;
 
@@ -1065,10 +1062,9 @@ cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev
   // destination buffer
   sizes[0] = bheight;
   sizes[1] = bwidth;
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_out),
+  return dt_opencl_enqueue_kernel_2d_local_args(devid, kernel_gaussian_transpose, sizes, local,
+    CLARG(dev_temp2), CLARG(dev_out),
     CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
-  return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
 }
 
 cl_int dt_gaussian_fast_blur_cl_buffer(const int devid,

@@ -54,6 +54,9 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
   write_imagef(out, (int2)(col, row), (float4)(fmax(scale * rgb0[idx], 0.0f), fmax(scale * rgb1[idx], 0.0f), fmax(scale * rgb2[idx], 0.0f), 0.0f));
 }
 
+#define eps 1e-5f              // Tolerance to avoid dividing by zero
+#define epssq 1e-10f
+
 // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
 __kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global float *h_diff, const int w, const int height)
 {
@@ -75,10 +78,9 @@ __kernel void rcd_step_1_2 (global float *VH_dir, global float *v_diff, global f
   const int row = 2 + get_global_id(1);
   if((row > height - 3) || (col > w - 3)) return;
   const int idx = mad24(row, w, col);
-  const float eps = 1e-10f;
 
-  const float V_Stat = fmax(eps, v_diff[idx - w] + v_diff[idx] + v_diff[idx + w]);
-  const float H_Stat = fmax(eps, h_diff[idx - 1] + h_diff[idx] + h_diff[idx + 1]);
+  const float V_Stat = fmax(epssq, v_diff[idx - w] + v_diff[idx] + v_diff[idx + w]);
+  const float H_Stat = fmax(epssq, h_diff[idx - 1] + h_diff[idx] + h_diff[idx + 1]);
   VH_dir[idx] = V_Stat / (V_Stat + H_Stat);
 }
 
@@ -106,7 +108,6 @@ __kernel void rcd_step_3_1(global float *lpf, global float *cfa, global float *r
   const int w2 = 2 * w;
   const int w3 = 3 * w;
   const int w4 = 4 * w;
-  const float eps = 1e-5f;
 
   // Refined vertical and horizontal local discrimination
   const float VH_Central_Value   = VH_Dir[idx];
@@ -160,10 +161,9 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global fl
   const int idx2 = idx / 2;
   const int idx3 = (idx - w - 1) / 2;
   const int idx4 = (idx + w - 1) / 2;
-  const float eps = 1e-10f;
 
-  const float P_Stat = fmax(eps, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
-  const float Q_Stat = fmax(eps, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
+  const float P_Stat = fmax(epssq, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
+  const float Q_Stat = fmax(epssq, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
   PQ_dir[idx2] = P_Stat / (P_Stat + Q_Stat);
 }
 
@@ -186,7 +186,6 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   const int pqidx3 = (idx + w - 1) / 2;
   const int w2 = 2 * w;
   const int w3 = 3 * w;
-  const float eps = 1e-5f;
 
   const float PQ_Central_Value   = PQ_dir[pqidx];
   const float PQ_Neighbourhood_Value = 0.25f * (PQ_dir[pqidx2] + PQ_dir[pqidx2 + 1] + PQ_dir[pqidx3] + PQ_dir[pqidx3 + 1]);
@@ -218,7 +217,6 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   const int idx = mad24(row, w, col);
   const int w2 = 2 * w;
   const int w3 = 3 * w;
-  const float eps = 1e-5f;
 
   // Refined vertical and horizontal local discrimination
   const float VH_Central_Value   = VH_dir[idx];
@@ -265,6 +263,9 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
+#undef eps
+#undef epssq
+
 __kernel void write_blended_dual(__read_only image2d_t high,
                                  __read_only image2d_t low,
                                  __write_only image2d_t out,
@@ -282,21 +283,22 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   const float4 blender = clipf(mask[mad24(row, w, col)]);
   float4 data = mix(low_val, high_val, blender);
   data.w = showmask ? blender.x : 0.0f;
-  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
+  write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
+__kernel void calc_Y0_mask(global float *mask,
+                          __read_only image2d_t in,
+                          const int w,
+                          const int height,
+                          const float4 wb)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  const float4 pt = read_imagef(in, sampleri, (int2)(col, row));
-  const float val = fmax(pt.x / red, 0.0f)
-                  + fmax(pt.y / green, 0.0f)
-                  + fmax(pt.z / blue, 0.0f);
-  mask[idx] = dtcl_sqrt(val / 3.0f);
+  const float4 pt = wb * fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)));
+  mask[idx] = dtcl_sqrt(0.33333333f *(pt.x + pt.y + pt.z));
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
