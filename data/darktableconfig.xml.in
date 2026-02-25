@@ -3539,6 +3539,13 @@
     <longdescription>strength of edge-aware threshold boost. near strong image edges the binarization threshold is raised, snapping the mask boundary to object edges. 0 = disabled, 0.1-0.3 = typical values.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/object/brush_size</name>
+    <type min="0.005" max="0.5">float</type>
+    <default>0.03</default>
+    <shortdescription>AI mask brush size</shortdescription>
+    <longdescription>brush radius as a fraction of the shorter image dimension. used for the brush tool in the AI object mask to paint over the target object.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>
     <type>float</type>
     <default>20.0</default>
