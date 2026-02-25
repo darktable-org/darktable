@@ -2072,31 +2072,6 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
     cairo_stroke(cr);  // Hollow indicator to see a color through it (gradient sliders)
 
   cairo_restore(cr);
-
-  // now display the neutral point if it is not hidden by the indicator
-
-  const dt_bauhaus_slider_data_t *d = &w->slider;
-
-  if (d->hard_max != 180.0f && d->hard_max != 360.0f)
-  {
-    const float origin =
-        fmaxf(fminf((d->factor > 0
-                         ? -d->min - d->offset / d->factor
-                         : d->max + d->offset / d->factor) /
-                        (d->max - d->min),
-                    1.0f) *
-                  wd,
-              0.0f);
-
-    const float neutral_size = size / 4.0f;
-
-    set_color(cr, bh->color_fg);
-    cairo_arc(cr, origin,
-              bh->line_height + INNER_PADDING + bh->baseline_size / 2.0f - 4.0,
-              neutral_size,
-              0.0, 2.0 * M_PI);
-    cairo_fill(cr);
-  }
 }
 
 static void _draw_quad(dt_bauhaus_widget_t *w,
