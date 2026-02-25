@@ -499,22 +499,19 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
 kernel void
 denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail, write_only image2d_t out,
      const int width, const int height,
-     const float t0, const float t1, const float t2, const float t3,
-     const float b0, const float b1, const float b2, const float b3)
+     const float4 threshold, const float4 boost)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  const float4 threshold = (float4)(t0, t1, t2, t3);
-  const float4 boost     = (float4)(b0, b1, b2, b3);
   float4 c = read_imagef(coarse, sampleri, (int2)(x, y));
   float4 d = read_imagef(detail, sampleri, (int2)(x, y));
-  float4 amount = copysign(max((float4)(0.0f), fabs(d) - threshold), d);
+  float4 amount = copysign(fmax((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
   sum.w = c.w;
-  write_imagef (out, (int2)(x, y), sum);
+  write_imagef(out, (int2)(x, y), sum);
 }
 
 

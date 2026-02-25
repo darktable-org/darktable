@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2024 darktable developers.
+  Copyright (C) 2015-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -932,68 +932,63 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, const float threshold,
                                                          dt_iop_colorreconstruct_precedence_t precedence, const float *params)
 {
-  cl_int err = -666;
+  cl_int err = DT_OPENCL_PROCESS_CL;
   if(!b) return err;
   int pref = precedence;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_splat, 0, CLARG(in), CLARG(b->dev_grid),
+  err = dt_opencl_enqueue_kernel_2d_local_args(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local,
+    CLARG(in), CLARG(b->dev_grid),
     CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
     CLARG(b->sigma_r), CLARG(threshold), CLARG(pref), CLARRAY(4, params), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)),
     CLLOCAL(b->blocksizex * b->blocksizey * 4 * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local);
   return err;
 }
 
 static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_bilateral_cl_t *b)
 {
-  cl_int err = -666;
+  cl_int err = DT_OPENCL_PROCESS_CL;
   if(!b) return err;
-  size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
                                                 sizeof(float) * b->size_x * b->size_y * b->size_z * 4);
   if(err != CL_SUCCESS) return err;
 
-  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
   int stride1, stride2, stride3;
   stride1 = b->size_x * b->size_y;
   stride2 = b->size_x;
   stride3 = 1;
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp),
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_colorreconstruct_blur_line, b->size_z, b->size_y,
+    CLARG(b->dev_grid_tmp),
     CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y),
     CLARG(b->size_x));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
   stride1 = b->size_x * b->size_y;
   stride2 = 1;
   stride3 = b->size_x;
-  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_x, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid),
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_colorreconstruct_blur_line, b->size_z, b->size_x,
+    CLARG(b->dev_grid),
     CLARG(b->dev_grid_tmp), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x),
     CLARG(b->size_y));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
   stride1 = 1;
   stride2 = b->size_x;
   stride3 = b->size_x * b->size_y;
-  sizes[0] = ROUNDUPDWD(b->size_x, b->devid);
-  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp),
+
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_colorreconstruct_blur_line, b->size_x, b->size_y,
+    CLARG(b->dev_grid_tmp),
     CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y),
     CLARG(b->size_z));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
+
   return err;
 }
 
 static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, cl_mem out,
                                                          const float threshold, const dt_iop_roi_t *roi, const float iscale)
 {
-  cl_int err = -666;
+  cl_int err = DT_OPENCL_PROCESS_CL;
   if(!b) return err;
   const int bxy[2] = { b->x, b->y };
   const int roixy[2] = { roi->x, roi->y };
@@ -1020,7 +1015,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
 
-  cl_int err = -666;
+  cl_int err = DT_OPENCL_PROCESS_CL;
 
   dt_iop_colorreconstruct_bilateral_cl_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;

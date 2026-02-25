@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2013-2024 darktable developers.
+  Copyright (C) 2013-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -137,14 +137,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_lcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->lunbounded_coeffs);
   if(dev_lcoeffs == NULL) goto error;
 
-  size_t sizes[3];
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_colisa, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colisa, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width),
     CLARG(height), CLARG(saturation), CLARG(dev_cm), CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs));
-
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colisa, sizes);
 
 error:
   dt_opencl_release_mem_object(dev_lcoeffs);

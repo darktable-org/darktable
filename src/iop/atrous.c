@@ -442,7 +442,7 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_synthesize, width, height,
                               CLARG(dev_out), CLARG(pp_coarse), CLARG(dev_detail),
                               CLARG(width), CLARG(height),
-                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));
+                              CLFLARRAY(4, thrs[scale]), CLFLARRAY(4, boost[scale]));
     if(err != CL_SUCCESS) goto error;
 
     // swap scratch buffers but leave as is for the final round to keep pp_coarse correct
@@ -558,14 +558,14 @@ int process_cl(dt_iop_module_t *self,
                               CLARG(dev_tmp), CLARG(dev_out),
                               CLARG(dev_detail[scale]),
                               CLARG(width), CLARG(height),
-                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));  
+                              CLFLARRAY(4, thrs[scale]), CLFLARRAY(4, boost[scale]));
 
     else
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_synthesize, width, height,
                               CLARG(dev_out), CLARG(dev_tmp),
                               CLARG(dev_detail[scale]),
                               CLARG(width), CLARG(height),
-                              CLFLARRAY(4, &thrs[scale]), CLFLARRAY(4, &boost[scale]));  
+                              CLFLARRAY(4, thrs[scale]), CLFLARRAY(4, boost[scale]));
     if(err != CL_SUCCESS) goto error;
   }
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -243,8 +243,7 @@ int process_cl(dt_iop_module_t *self,
   dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
   if(dev_m == NULL) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_soften_overexposed,
-                                         width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_soften_overexposed, width, height,
     CLARG(dev_in), CLARG(dev_tmp),
     CLARG(width), CLARG(height), CLARG(saturation), CLARG(brightness));
   if(err != CL_SUCCESS) goto error;
@@ -258,12 +257,10 @@ int process_cl(dt_iop_module_t *self,
     local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_soften_hblur, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_soften_hblur, sizes, local,
                               CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m),
                               CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize),
                               CLLOCAL((hblocksize + 2 * wdh) * 4 * sizeof(float)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur,
-                                                 sizes, local);
     if(err != CL_SUCCESS) goto error;
 
 
@@ -274,9 +271,9 @@ int process_cl(dt_iop_module_t *self,
     local[0] = 1;
     local[1] = vblocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_soften_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_soften_vblur, sizes, local,
+      CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
       CLARG(wdh), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * wdh) * 4 * sizeof(float)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 

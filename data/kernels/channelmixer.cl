@@ -242,7 +242,7 @@ static inline float4 chroma_adapt_bradford(const float4 RGB,
 
   // Do white balance
   downscale_vector(&LMS, Y);
-    bradford_adapt_D50(&LMS, illuminant, p, full);
+  bradford_adapt_D50(&LMS, illuminant, p, full);
   upscale_vector(&LMS, Y);
 
   // Compute the 3D mix - this is a rotation + homothety of the vector base
@@ -266,7 +266,7 @@ static inline float4 chroma_adapt_CAT16(const float4 RGB,
 
   // Do white balance
   downscale_vector(&LMS, Y);
-    CAT16_adapt_D50(&LMS, illuminant, p, full); // force full-adaptation
+  CAT16_adapt_D50(&LMS, illuminant, p, full); // force full-adaptation
   upscale_vector(&LMS, Y);
 
   // Compute the 3D mix - this is a rotation + homothety of the vector base
@@ -285,7 +285,7 @@ static inline float4 chroma_adapt_XYZ(const float4 RGB,
 
   // Do white balance in XYZ
   downscale_vector(&XYZ_mixed, Y);
-    XYZ_adapt_D50(&XYZ_mixed, illuminant);
+  XYZ_adapt_D50(&XYZ_mixed, illuminant);
   upscale_vector(&XYZ_mixed, Y);
 
   // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base

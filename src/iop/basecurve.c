@@ -747,25 +747,20 @@ int process_cl_fusion(dt_iop_module_t *self,
     {
       const float mul = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
-      size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       if(d->preserve_colors == DT_RGB_NORM_NONE)
-      {
-        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_tmp1),
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_legacy_lut, width, height,
+          CLARG(dev_in), CLARG(dev_tmp1),
           CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
-        if(err != CL_SUCCESS) goto error;
-      }
       else
-      {
-        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width),
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_lut, width, height,
+          CLARG(dev_in), CLARG(dev_tmp1), CLARG(width),
           CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
           CLARG(dev_profile_lut), CLARG(use_work_profile));
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
-      }
+      if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_compute_features, 0, CLARG(dev_tmp1), CLARG(dev_col[0]),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_compute_features, width, height,
+        CLARG(dev_tmp1), CLARG(dev_col[0]),
         CLARG(width), CLARG(height));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
       if(err != CL_SUCCESS) goto error;
     }
 

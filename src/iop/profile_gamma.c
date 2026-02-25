@@ -221,18 +221,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_table = NULL;
   cl_mem dev_coeffs = NULL;
 
-
-  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
   if(d->mode == PROFILEGAMMA_LOG)
   {
     const float dynamic_range = d->dynamic_range;
     const float shadows_range = d->shadows_range;
     const float grey = d->grey_point / 100.0f;
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma_log, 0, CLARG(dev_in), CLARG(dev_out),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_profilegamma_log, width, height,
+      CLARG(dev_in), CLARG(dev_out),
       CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma_log, sizes);
   }
   else if(d->mode == PROFILEGAMMA_GAMMA)
   {
@@ -242,10 +238,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
     if(dev_coeffs == NULL) goto error;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_profilegamma, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width),
       CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma, sizes);
   }
 
 error:

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1023,7 +1023,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   if(clut && level)
   {
@@ -1042,13 +1041,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
        transform = FALSE;
     }
     if(transform)
-      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_out));
+      // FIXME OPENCL is this safe here ?
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+              CLARG(dev_out), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     else
-      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in));
-    dt_opencl_set_kernel_args(devid, kernel, 1, CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if(err != CL_SUCCESS)
-      goto cleanup;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+              CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
+
+    if(err != CL_SUCCESS) goto cleanup;
 
     if(transform)
     {
@@ -1059,9 +1059,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else
   { // no lut: identity kernel
-    dt_opencl_set_kernel_args(devid, gd->kernel_lut3d_none, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
-      CLARG(height));
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lut3d_none, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lut3d_none, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height));
   }
 
 cleanup:
