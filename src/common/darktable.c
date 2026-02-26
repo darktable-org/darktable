@@ -665,27 +665,32 @@ void dt_dump_pipe_diff_pfm(
   if(!mod) return;
   if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
 
-  const size_t pk = (size_t)ch * width * height;
-  float *o = dt_calloc_align_float(5 * pk);
+  const size_t pk = (size_t)ch * width * (height+20);
+  float *o = dt_alloc_align_float(6 * pk);
   if(!o) return;
 
+  dt_iop_image_fill(o, 1.0f, width, 6*(height+20), ch);
   DT_OMP_FOR()
   for(size_t p = 0; p < width * height; p++)
   {
     for(size_t c = 0; c < ch; c++)
     {
       const size_t k = ch * p +c;
+      /* top most images show cpu & gpu */
+      o[0*pk+k]      = 0.25f * b[k];
+      o[1*pk+k]      = 0.25f * a[k];
+
+      /* diffs and ratios are only shown if signal is above threshols */
       if(a[k] > NORM_MIN && b[k] > NORM_MIN)
       {
-        o[k]      = 0.25f * a[k];
-        o[1*pk+k] = CLIP(50.0f * CLIP(a[k] / b[k] - 1.0f));
-        o[2*pk+k] = CLIP(100.0f * (a[k] - b[k]));
-        o[3*pk+k] = CLIP(50.0f * CLIP(b[k] / a[k] - 1.0f));
-        o[4*pk+k] = CLIP(100.0f * (b[k] - a[k]));
+        o[2*pk+k] = CLIP(50.0f * CLIP(a[k] / b[k] - 1.0f));
+        o[3*pk+k] = CLIP(100.0f * (a[k] - b[k]));
+        o[4*pk+k] = CLIP(50.0f * CLIP(b[k] / a[k] - 1.0f));
+        o[5*pk+k] = CLIP(100.0f * (b[k] - a[k]));
       }
     }
   }
-  dt_dump_pfm_file(pipe, o, width, 5 * height, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  dt_dump_pfm_file(pipe, o, width, 6 * (height+20), ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
   dt_free_align(o);
 }
 
