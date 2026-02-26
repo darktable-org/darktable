@@ -87,11 +87,28 @@ typedef struct _object_data_t
   gboolean brush_used;              // TRUE after initial input — switches to +/- refinement mode
   dt_masks_dynbuf_t *brush_points;  // raw brush path (x,y pairs in preview space)
   int brush_points_count;
+  // Vectorization preview (auto-updated after each decode)
+  GList *preview_forms;             // GList of dt_masks_form_t* (mask-space pixel coords)
+  GList *preview_signs;             // parallel GList of sign values ('+' or '-')
+  int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
+  float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
 } _object_data_t;
 
 static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
 {
   return (gui && gui->scratchpad) ? (_object_data_t *)gui->scratchpad : NULL;
+}
+
+// Free vectorized preview forms (never registered in dev->forms)
+static void _free_preview_forms(_object_data_t *d)
+{
+  if(!d) return;
+  for(GList *l = d->preview_forms; l; l = g_list_next(l))
+    dt_masks_free_form(l->data);
+  g_list_free(d->preview_forms);
+  d->preview_forms = NULL;
+  g_list_free(d->preview_signs);
+  d->preview_signs = NULL;
 }
 
 // Free all resources in _object_data_t (must be called after thread has joined)
@@ -113,6 +130,7 @@ static void _destroy_data(_object_data_t *d)
   g_free(d->encode_rgb);
   if(d->brush_points)
     dt_masks_dynbuf_free(d->brush_points);
+  _free_preview_forms(d);
   g_free(d);
 }
 
@@ -737,34 +755,35 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   }
 }
 
-// Finalize: vectorize the mask and register as a group of path forms.
-// Returns the created group form, or NULL on failure.
-static dt_masks_form_t *
-_finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+// Run vectorization with current preview parameters, store result in scratchpad.
+// Called automatically after each decode and on scroll parameter changes.
+static void _update_preview(_object_data_t *d)
 {
-  _object_data_t *d = _get_data(gui);
-  if(!d || !d->mask)
-    return NULL;
+  _free_preview_forms(d);
+  if(!d->mask || d->mask_w <= 0 || d->mask_h <= 0)
+    return;
 
-  // Invert mask for potrace (potrace traces dark regions)
-  // Our mask: 1.0 = foreground; potrace expects: 0.0 = foreground
   const size_t n = (size_t)d->mask_w * d->mask_h;
   float *inv_mask = g_try_malloc(n * sizeof(float));
-  if(!inv_mask)
-    return NULL;
+  if(!inv_mask) return;
 
   for(size_t i = 0; i < n; i++)
     inv_mask[i] = 1.0f - d->mask[i];
 
-  // Pass NULL for image: the AI mask lives in preview backbuf pixel space.
-  // We backtransform through the pipeline to input image coords below.
-  const int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
-  const float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
-
-  GList *signs = NULL;
-  GList *forms
-    = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL, cleanup, (double)smoothing, &signs);
+  d->preview_forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
+                               d->preview_cleanup, (double)d->preview_smoothing,
+                               &d->preview_signs);
   g_free(inv_mask);
+}
+
+// Transform mask-space forms to input-normalized coords and register them.
+// Takes ownership of `forms` and `signs` lists (forms are appended to dev->forms).
+static dt_masks_form_t *
+_register_vectorized_forms(dt_iop_module_t *module,
+                           GList *forms, GList *signs,
+                           int mask_w, int mask_h)
+{
+  (void)module;
 
   // darktable mask coordinates are stored in input-image-normalized space:
   //   coord = backtransform(backbuf_pixel) / iwidth
@@ -775,8 +794,8 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
 
   // Vectorized coordinates are in mask space (encoding resolution).
   // dt_dev_distort_backtransform expects preview pipe pixel space.
-  const float msx = (d->mask_w > 0) ? wd / (float)d->mask_w : 1.0f;
-  const float msy = (d->mask_h > 0) ? ht / (float)d->mask_h : 1.0f;
+  const float msx = (mask_w > 0) ? wd / (float)mask_w : 1.0f;
+  const float msy = (mask_h > 0) ? ht / (float)mask_h : 1.0f;
 
   for(GList *l = forms; l; l = g_list_next(l))
   {
@@ -827,6 +846,7 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
   const int nbform = g_list_length(forms);
   if(nbform == 0)
   {
+    g_list_free_full(forms, (GDestroyNotify)dt_masks_free_form);
     g_list_free(signs);
     dt_control_log(_("no mask extracted from AI segmentation"));
     return NULL;
@@ -848,8 +868,6 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
   }
   grp_nb++;
   path_nb++;
-
-  // Name each path form
   for(GList *l = forms; l; l = g_list_next(l))
   {
     dt_masks_form_t *f = l->data;
@@ -882,10 +900,57 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
   // Register the group (history item added by caller after blend mask assignment)
   dev->forms = g_list_append(dev->forms, grp);
 
+  g_list_free(forms);
   g_list_free(signs);
 
   dt_print(DT_DEBUG_AI, "[object mask] created %d paths", nbform);
   return grp;
+}
+
+// Finalize using cached preview forms (steals ownership from scratchpad).
+static dt_masks_form_t *
+_finalize_from_preview(dt_iop_module_t *module, dt_masks_form_gui_t *gui)
+{
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->preview_forms)
+    return NULL;
+
+  GList *forms = d->preview_forms;
+  GList *signs = d->preview_signs;
+  const int mw = d->mask_w;
+  const int mh = d->mask_h;
+  d->preview_forms = NULL;
+  d->preview_signs = NULL;
+
+  return _register_vectorized_forms(module, forms, signs, mw, mh);
+}
+
+// Finalize: vectorize the mask and register as a group of path forms.
+// Fallback when no preview forms are available.
+static dt_masks_form_t *
+_finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+{
+  (void)form;
+  _object_data_t *d = _get_data(gui);
+  if(!d || !d->mask)
+    return NULL;
+
+  const size_t n = (size_t)d->mask_w * d->mask_h;
+  float *inv_mask = g_try_malloc(n * sizeof(float));
+  if(!inv_mask)
+    return NULL;
+
+  for(size_t i = 0; i < n; i++)
+    inv_mask[i] = 1.0f - d->mask[i];
+
+  const int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
+  const float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+  GList *signs = NULL;
+  GList *forms
+    = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL, cleanup, (double)smoothing, &signs);
+  g_free(inv_mask);
+
+  return _register_vectorized_forms(module, forms, signs, d->mask_w, d->mask_h);
 }
 
 // --- Mask Event Handlers ---
@@ -942,6 +1007,33 @@ static int _object_events_mouse_scrolled(
     return 1;
   }
 
+  // Vectorization parameter adjustment (after brush is used)
+  if(gui->creation && d && d->brush_used && d->mask)
+  {
+    if(dt_modifier_is(state, 0))
+    {
+      // Plain scroll: adjust cleanup (potrace turdsize)
+      d->preview_cleanup = CLAMP(d->preview_cleanup + (up ? 5 : -5), 0, 100);
+      dt_conf_set_int("plugins/darkroom/masks/object/cleanup", d->preview_cleanup);
+      _update_preview(d);
+      dt_toast_log(_("cleanup: %d"), d->preview_cleanup);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      // Shift+scroll: adjust smoothing (potrace alphamax)
+      d->preview_smoothing = CLAMP(d->preview_smoothing + (up ? 0.05f : -0.05f), 0.0f, 1.3f);
+      dt_conf_set_float("plugins/darkroom/masks/object/smoothing", d->preview_smoothing);
+      _update_preview(d);
+      dt_toast_log(_("smoothing: %3.2f"), d->preview_smoothing);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+  }
+
   // Opacity control (ctrl+scroll)
   if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
   {
@@ -976,12 +1068,13 @@ static void _clear_selection(dt_masks_form_gui_t *gui)
   if(d->seg)
     dt_seg_reset_prev_mask(d->seg);
 
-  // Reset brush state
+  // Reset brush and preview state
   d->brush_used = FALSE;
   d->brush_painting = FALSE;
   d->brush_points_count = 0;
   if(d->brush_points)
     dt_masks_dynbuf_reset(d->brush_points);
+  _free_preview_forms(d);
 
   dt_control_queue_redraw_center();
 }
@@ -1019,7 +1112,7 @@ static int _object_events_button_pressed(
   }
   else if(gui->creation && which == 1)
   {
-    // Only accept clicks after encoding is complete
+    // need valid scratchpad and completed encoding
     if(!d || d->encode_state != ENCODE_READY)
       return 1;
 
@@ -1036,7 +1129,6 @@ static int _object_events_button_pressed(
     d->drag_end_x = d->drag_start_x;
     d->drag_end_y = d->drag_start_y;
 
-    // Start brush painting if brush hasn't been used yet and no modifier
     if(!d->brush_used && !dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       d->brush_painting = TRUE;
@@ -1058,12 +1150,12 @@ static int _object_events_button_pressed(
     if(d && g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
       return 1;
 
-    // Right-click: finalize mask
+    // Right-click: finalize mask (prefer cached preview forms)
     dt_masks_form_t *new_grp = NULL;
-    if(gui->guipoints_count > 0)
-    {
+    if(d && d->preview_forms)
+      new_grp = _finalize_from_preview(module, gui);
+    else if(gui->guipoints_count > 0)
       new_grp = _finalize_mask(module, form, gui);
-    }
 
     // Add the new group to the module's blend mask group
     if(new_grp)
@@ -1100,6 +1192,8 @@ static int _object_events_button_pressed(
 
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
+
+    dt_control_hinter_message("");
 
     // Exit creation mode and select the new group.
     // dt_masks_set_edit_mode requires a non-NULL module (it returns
@@ -1150,7 +1244,6 @@ static int _object_events_button_released(
   const gboolean was_brush_painting = d->brush_painting;
   d->brush_painting = FALSE;
 
-  // Initialize point buffers if needed
   if(!gui->guipoints)
     gui->guipoints = dt_masks_dynbuf_init(200000, "object guipoints");
   if(!gui->guipoints)
@@ -1185,12 +1278,15 @@ static int _object_events_button_released(
       d->brush_used = TRUE;
   }
 
-  // Clean up brush path buffer
   if(d->brush_points)
     dt_masks_dynbuf_reset(d->brush_points);
   d->brush_points_count = 0;
 
   _run_decoder(gui);
+
+  // Auto-update vectorization preview after each decode
+  if(d->mask)
+    _update_preview(d);
 
   dt_control_queue_redraw_center();
   return 1;
@@ -1280,6 +1376,8 @@ static void _object_events_post_expose(
   {
     d = g_new0(_object_data_t, 1);
     d->brush_radius = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
+    d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
+    d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
     gui->scratchpad = d;
   }
 
@@ -1309,12 +1407,13 @@ static void _object_events_post_expose(
     d->encode_rgb = NULL;
     d->encode_rgb_w = d->encode_rgb_h = 0;
     d->encode_state = ENCODE_IDLE;
-    // Reset brush and point state so the new image starts fresh
+    // Reset brush, preview, and point state so the new image starts fresh
     d->brush_used = FALSE;
     d->brush_painting = FALSE;
     d->brush_points_count = 0;
     if(d->brush_points)
       dt_masks_dynbuf_reset(d->brush_points);
+    _free_preview_forms(d);
     if(gui->guipoints)
       dt_masks_dynbuf_reset(gui->guipoints);
     if(gui->guipoints_payload)
@@ -1437,6 +1536,49 @@ static void _object_events_post_expose(
     }
   }
 
+  // --- Draw vectorization preview (real path style with anchor dots) ---
+  if(d->preview_forms)
+  {
+    const float msx = (d->mask_w > 0) ? wd / (float)d->mask_w : 1.0f;
+    const float msy = (d->mask_h > 0) ? ht / (float)d->mask_h : 1.0f;
+
+    for(GList *fl = d->preview_forms; fl; fl = g_list_next(fl))
+    {
+      dt_masks_form_t *f = fl->data;
+      GList *pts = f->points;
+      if(!pts) continue;
+
+      dt_masks_point_path_t *first_pt = pts->data;
+      cairo_move_to(cr,
+                    first_pt->corner[0] * msx,
+                    first_pt->corner[1] * msy);
+
+      for(GList *p = g_list_next(pts); p; p = g_list_next(p))
+      {
+        dt_masks_point_path_t *pt = p->data;
+        cairo_curve_to(cr,
+                       pt->ctrl1[0] * msx, pt->ctrl1[1] * msy,
+                       pt->ctrl2[0] * msx, pt->ctrl2[1] * msy,
+                       pt->corner[0] * msx, pt->corner[1] * msy);
+      }
+
+      // Close path back to first point
+      cairo_curve_to(cr,
+                     first_pt->ctrl1[0] * msx, first_pt->ctrl1[1] * msy,
+                     first_pt->ctrl2[0] * msx, first_pt->ctrl2[1] * msy,
+                     first_pt->corner[0] * msx, first_pt->corner[1] * msy);
+
+      dt_masks_line_stroke(cr, FALSE, FALSE, FALSE, zoom_scale);
+
+      for(GList *p = pts; p; p = g_list_next(p))
+      {
+        dt_masks_point_path_t *pt = p->data;
+        dt_masks_draw_anchor(cr, FALSE, zoom_scale,
+                             pt->corner[0] * msx, pt->corner[1] * msy);
+      }
+    }
+  }
+
   // Query pointer modifier state reliably (gdk_keymap doesn't work on macOS)
   GtkWidget *cw = dt_ui_center(darktable.gui->ui);
   GdkWindow *win = gtk_widget_get_window(cw);
@@ -1467,7 +1609,6 @@ static void _object_events_post_expose(
       cairo_line_to(cr, bp[i * 2], bp[i * 2 + 1]);
     cairo_stroke(cr);
 
-    // Draw brush circle at current position
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
     cairo_set_line_width(cr, 3.0 / zoom_scale);
     cairo_arc(cr, gui->posx, gui->posy, radius, 0, 2.0 * M_PI);
@@ -1662,7 +1803,12 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
     lm,
     DT_MOUSE_ACTION_SCROLL,
     0,
-    _("[OBJECT] change brush size"));
+    _("[OBJECT] change brush size / cleanup"));
+  lm = dt_mouse_action_create_simple(
+    lm,
+    DT_MOUSE_ACTION_SCROLL,
+    GDK_SHIFT_MASK,
+    _("[OBJECT] change smoothing"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
@@ -1695,8 +1841,9 @@ static void _object_set_hint_message(
         msgbuf_len,
         _("<b>add</b>: click, <b>subtract</b>: shift+click, "
           "<b>clear</b>: alt+click, <b>apply</b>: right-click\n"
+          "<b>cleanup</b>: scroll (%d), <b>smoothing</b>: shift+scroll (%3.2f), "
           "<b>opacity</b>: ctrl+scroll (%d%%)"),
-        opacity);
+        d->preview_cleanup, d->preview_smoothing, opacity);
     else
       g_snprintf(
         msgbuf,
@@ -1729,27 +1876,54 @@ static void _object_modify_property(
 {
   (void)form;
 
-  if(prop != DT_MASKS_PROPERTY_SIZE) return;
-
-  const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   _object_data_t *d = gui ? _get_data(gui) : NULL;
 
-  if(gui && gui->creation)
-  {
-    float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-    // Only allow resizing before the first brush stroke
-    if(!d || !d->brush_used)
-    {
-      brush_size = CLAMP(brush_size * ratio, 0.005f, 0.5f);
-      dt_conf_set_float(CONF_OBJECT_BRUSH_SIZE_KEY, brush_size);
-      if(d) d->brush_radius = brush_size;
-    }
+  if(!gui || !gui->creation) return;
 
-    *sum += 2.0f * brush_size;
-    *max = fminf(*max, 0.5f / brush_size);
-    *min = fmaxf(*min, 0.005f / brush_size);
-    ++*count;
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:;
+      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
+      // Only allow resizing before the first brush stroke
+      if(!d || !d->brush_used)
+      {
+        brush_size = CLAMP(brush_size * ratio, 0.005f, 0.5f);
+        dt_conf_set_float(CONF_OBJECT_BRUSH_SIZE_KEY, brush_size);
+        if(d) d->brush_radius = brush_size;
+      }
+
+      *sum += 2.0f * brush_size;
+      *max = fminf(*max, 0.5f / brush_size);
+      *min = fmaxf(*min, 0.005f / brush_size);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_CLEANUP:;
+      int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
+      if(d && d->brush_used)
+      {
+        cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
+        dt_conf_set_int("plugins/darkroom/masks/object/cleanup", cleanup);
+        d->preview_cleanup = cleanup;
+        _update_preview(d);
+      }
+      *sum += cleanup;
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_SMOOTHING:;
+      float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+      if(d && d->brush_used)
+      {
+        smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
+        dt_conf_set_float("plugins/darkroom/masks/object/smoothing", smoothing);
+        d->preview_smoothing = smoothing;
+        _update_preview(d);
+      }
+      *sum += smoothing;
+      ++*count;
+      break;
+    default:;
   }
 }
 
