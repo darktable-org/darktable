@@ -1458,8 +1458,7 @@ void tiling_callback_blendop(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
   if(bldata)

@@ -399,8 +399,7 @@ void tiling_callback(dt_iop_module_t *self,
   const gboolean is_bayer = filters && (filters != 9u);
   const gboolean is_xtrans = filters && (filters == 9u);
 
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   tiling->overlap = 0;
   tiling->factor = 2.0f;
   tiling->factor_cl = 2.0f;
