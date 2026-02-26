@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,95 +23,4 @@
 /* hide selection frame in culling */
 @define-color culling_selected_border_color transparent;
 
-.dt_plugin_ui,
-.dt_bauhaus,
-.dt_bauhaus_popup,
-combobox,
-combobox *,
-togglebutton,
-togglebutton *,
-notebook,
-notebook *,
-notebook tab,
-notebook tab *,
-table,
-table *,
-row,
-row *,
-frame,
-frame *,
-alignment,
-entry,
-entry *,
-dialog,
-dialog *,
-colorswatch,
-colorswatch *,
-stack,
-stack *,
-scrollbar,
-scrollbar *,
-eventbox,
-eventbox *,
-scale,
-scale *,
-button,
-button *,
-treeview,
-treeview *,
-menu,
-menu *,
-separator,
-eventbox,
-eventbox *,
-box,
-box *
-{
-  font-family: "Roboto Light", "Roboto",                  /* best case scenario */
-               "Segoe UI",                                /* Windows 10 default */
-               "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
-               "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
-               "Cantarell",                               /* Gnome default */
-               "Arial Unicode MS",                        /* Unicode glyphs */
-                sans-serif;                               /* default default */
-}
-
-.dt_section_label:not(#blending-box),
-#blending-box .dt_section_label label,
-#blending-box .dt_section_label .dt_bauhaus
-{
-  font-family: "Roboto Medium", "Roboto",
-               "Segoe UI Semibold", "Segoe UI",
-               "SF Pro Display Medium", "SF Pro Display",
-               "Ubuntu Medium", "Ubuntu", "IPAPGothic",
-               "Cantarell",
-               "Arial Unicode MS",
-                sans-serif;
-}
-
-#iop-panel-label,
-#lib-panel-label
-{
-  font-family: "Roboto Condensed", "Roboto",
-               "Segoe UI Condensed", "Segoe UI",
-               "SF Pro Display", "SF Pro Display",
-               "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
-               "Cantarell",
-               "Arial Unicode MS",
-                sans-serif;
-}
-
-.active_menu_item *, /* needed for some Pango issues not rendering synthetic bold for all OS */
-notebook tabs,
-tooltip label,
-#blending-tabs,
-#modules-tabs
-{
-  font-family: "Roboto",
-               "Segoe UI",
-               "SF Pro Text",
-               "Ubuntu", "IPAPGothic",
-               "Cantarell",
-               "Arial Unicode MS",
-                sans-serif;
-}
+@import url("chunk-fonts.css");
