@@ -1535,8 +1535,7 @@ static void _tiling_callback_lf(dt_iop_module_t *self,
   tiling->maxbuf = 1.5f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   if(d->v_strength != 0.0f) tiling->factor += 1.0f;
 }
@@ -2598,8 +2597,7 @@ static void _tiling_callback_md(dt_iop_module_t *self,
   tiling->maxbuf = 1.5f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 static void _tiling_callback_vg(dt_iop_module_t *self,
@@ -2612,8 +2610,7 @@ static void _tiling_callback_vg(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 static gboolean _distort_transform_md(dt_iop_module_t *self,

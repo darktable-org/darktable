@@ -347,8 +347,7 @@ void tiling_callback(dt_iop_module_t *self,
   const dt_iop_colorequal_data_t *data = piece->data;
 
   tiling->maxbuf = 1.0f;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   tiling->overhead = (2 * SATSIZE + 4 * LUT_ELEM) * sizeof(float);
   const int maxradius = MAX(data->chroma_size, data->param_size);
   tiling->overlap = 16 + maxradius; // safe feathering

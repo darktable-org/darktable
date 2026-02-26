@@ -980,24 +980,19 @@ void tiling_callback(dt_iop_module_t *self,
 {
   dt_iop_basecurve_data_t *const d = piece->data;
 
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->align = 1;
+
   if(d->exposure_fusion)
   {
     const int rad = MIN(roi_in->width, (int)ceilf(256 * roi_in->scale / piece->iscale));
-
     tiling->factor = 6.666f;                 // in + out + col[] + comb[] + 2*tmp
-    tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
     tiling->overlap = rad;
   }
   else
   {
     tiling->factor = 2.0f;                   // in + out
-    tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
     tiling->overlap = 0;
   }
 }

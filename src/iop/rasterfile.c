@@ -616,8 +616,7 @@ void tiling_callback(dt_iop_module_t *self,
                      dt_develop_tiling_t *tiling)
 {
   tiling->maxbuf = 1.0f;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   tiling->overhead = 0;
   tiling->factor = 2.0f;
 }

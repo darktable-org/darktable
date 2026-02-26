@@ -36,11 +36,8 @@ typedef struct dt_develop_tiling_t
   unsigned overhead;
   /** overlap needed between tiles (in pixels) */
   unsigned overlap;
-  /** horizontal and vertical alignment requirement of upper left position
-      of tiles. set to a value of 1 for no alignment, or 2 to account for
-      Bayer pattern. */
-  unsigned xalign;
-  unsigned yalign;
+  /** horizontal and vertical alignment requirement of upper left position of tiles */
+  unsigned align;
 } dt_develop_tiling_t;
 
 int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,

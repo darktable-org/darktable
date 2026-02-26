@@ -538,9 +538,7 @@ void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece
       = (detail ? MAX(1.0f, (float)dt_bilateral_singlebuffer_size2(width, height, sigma_s, sigma_r) / basebuffer) : 1.0f);
   tiling->overhead = 0;
   tiling->overlap = (detail ? ceilf(4 * sigma_s) : 0);
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
