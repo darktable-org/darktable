@@ -62,6 +62,7 @@ void dt_color_harmony_set(const dt_imgid_t imgid,
   // by the color_harmony_insert trigger.
 }
 
+// FIXME: this is never called, remove from here and color_harmony.h?
 dt_harmony_guide_id_t dt_color_harmony_get_id(const dt_imgid_t imgid)
 {
   dt_harmony_guide_id_t id = -1;
