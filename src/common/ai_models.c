@@ -414,16 +414,12 @@ dt_ai_registry_t *dt_ai_models_init(void)
   dt_ai_registry_t *registry = g_new0(dt_ai_registry_t, 1);
   g_mutex_init(&registry->lock);
 
-  // Set up directories
-  char configdir[PATH_MAX] = {0};
+  // Set up directories — models use user data dir so they are shared
+  // across --configdir instances (not tied to a specific config)
   char cachedir[PATH_MAX] = {0};
-  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  // Models go alongside darktable config (respects --configdir).
-  // On Linux: ~/.config/darktable/models
-  // On Windows: %APPDATA%\darktable\models
-  registry->models_dir = g_build_filename(configdir, "models", NULL);
+  registry->models_dir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
   // Ensure directories exist
