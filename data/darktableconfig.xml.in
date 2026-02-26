@@ -158,8 +158,8 @@
     <name>themes/condensed</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>condensed panel controls</shortdescription>
-    <longdescription>use condensed panel controls in darkroom and lighttable views</longdescription>
+    <shortdescription>condensed panels' controls</shortdescription>
+    <longdescription>use condensed panels' controls in all views</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database</name>
