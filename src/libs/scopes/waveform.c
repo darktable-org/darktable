@@ -53,9 +53,15 @@ typedef struct dt_scopes_wave_t
 } dt_scopes_wave_t;
 
 
+const char* _wave_name(const dt_scopes_mode_t *const self)
+{
+  return N_("waveform");
+}
+
 static void _wave_process(dt_scopes_mode_t *const self,
                           const float *const input,
-                          const dt_histogram_roi_t *const roi)
+                          dt_histogram_roi_t *const roi,
+                          const dt_iop_order_iccprofile_info_t *vs_prof)
 {
   dt_scopes_wave_t *const d = self->data;
   // FIXME: for point sample, calculate whole graph and the point
@@ -288,8 +294,9 @@ static void _wave_clear(dt_scopes_mode_t *const self)
   d->waveform_bins = 0;
 }
 
-static void _wave_orient_update(const dt_scopes_wave_t *d)
+static void _wave_update_buttons(const dt_scopes_mode_t *const self)
 {
+  dt_scopes_wave_t *d = self->data;
   switch(d->orient)
   {
     case DT_WAVE_ORIENT_HORI:
@@ -311,7 +318,6 @@ static void _wave_mode_enter(const dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_show(d->orient_button);
-  _wave_orient_update(d);
 }
 
 static void _wave_mode_leave(const dt_scopes_mode_t *const self)
@@ -375,13 +381,15 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
     d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));  
 }
 
-static void _wave_orient_clicked(GtkWidget *button, dt_scopes_wave_t *const d)
+static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
 {
+  dt_scopes_wave_t *d = self->data;
+
   d->orient = (d->orient + 1) % DT_WAVE_ORIENT_N;
   dt_conf_set_string("plugins/darkroom/histogram/orient",
                      dt_wave_orient_names[d->orient]);
   d->waveform_bins = 0;
-  _wave_orient_update(d);
+  _wave_update_buttons(self);
 
   // FIXME: can we put in scopes.h a recalc function?
   // trigger new process from scratch
@@ -401,13 +409,9 @@ static void _wave_gui_init_options(dt_scopes_mode_t *const self,
   dt_action_define(dark, NULL, N_("switch scope orientation"),
                    d->orient_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(box), d->orient_button, FALSE, FALSE, 0);
-  
-  // initially set the orient icon
-  // FIXME: don't need to do this if called from mode_enter?
-  _wave_orient_update(d);
 
   g_signal_connect(G_OBJECT(d->orient_button), "clicked",
-                   G_CALLBACK(_wave_orient_clicked), d);
+                   G_CALLBACK(_wave_orient_clicked), self);
 }
 
 static void _wave_gui_cleanup(dt_scopes_mode_t *const self)
@@ -422,6 +426,7 @@ static void _wave_gui_cleanup(dt_scopes_mode_t *const self)
 
 // The function table for waveform mode. This must be public, i.e. no "static" keyword.
 const dt_scopes_functions_t dt_scopes_functions_waveform = {
+  .name = _wave_name,
   .process = _wave_process,
   .clear = _wave_clear,
   .draw_bkgd = _wave_draw_bkgd,
@@ -430,13 +435,20 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .draw_scope_channels = _wave_draw,
   .get_highlight = _wave_get_highlight,
   .get_exposure_pos = _wave_get_exposure_pos,
+  .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _wave_gui_init,
+  .gui_add_to_main = NULL,
   .gui_init_options = _wave_gui_init_options,
   .gui_cleanup = _wave_gui_cleanup
 };
 
+
+const char* _parade_name(const dt_scopes_mode_t *const self)
+{
+  return N_("RGB parade");
+}
 
 static void _parade_draw(const dt_scopes_mode_t *const self,
                          cairo_t *cr,
@@ -524,6 +536,7 @@ static void _parade_gui_cleanup(dt_scopes_mode_t *const self)
 // The function table for rgb parade, which is a minor display variation off waveform
 // FIXME: should rgb parade just be an option button for waveform?
 const dt_scopes_functions_t dt_scopes_functions_parade = {
+  .name = _parade_name,
   .process = _wave_process,
   .clear = _wave_clear,
   .draw_bkgd = _wave_draw_bkgd,
@@ -532,9 +545,12 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .draw_scope_channels = NULL,
   .get_highlight = _wave_get_highlight,
   .get_exposure_pos = _wave_get_exposure_pos,
+  .append_to_tooltip = NULL,
+  .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _parade_gui_init,
+  .gui_add_to_main = NULL,
   .gui_init_options = NULL,
   .gui_cleanup = _parade_gui_cleanup
 };

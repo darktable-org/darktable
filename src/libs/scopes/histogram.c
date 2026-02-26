@@ -41,9 +41,15 @@ typedef struct dt_scopes_hist_t
 } dt_scopes_hist_t;
 
 
+const char* _hist_name(const dt_scopes_mode_t *const self)
+{
+  return N_("histogram");
+}
+
 static void _hist_process(dt_scopes_mode_t *const self,
-                               const float *const input,
-                               const dt_histogram_roi_t *const roi)
+                          const float *const input,
+                          dt_histogram_roi_t *const roi,
+                          const dt_iop_order_iccprofile_info_t *vs_prof)
 {
   dt_scopes_hist_t *const d = self->data;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
@@ -188,8 +194,9 @@ static void _hist_gui_init(dt_scopes_mode_t *const self,
   d->histogram_max = 0;
 }
 
-static void _hist_scale_update(const dt_scopes_hist_t *d)
+static void _hist_update_buttons(const dt_scopes_mode_t *const self)
 {
+  dt_scopes_hist_t *d = self->data;
   switch(d->scale)
   {
     case DT_SCOPES_SCALE_LOGARITHMIC:
@@ -211,13 +218,15 @@ static void _hist_scale_update(const dt_scopes_hist_t *d)
     d->scale == DT_SCOPES_SCALE_LINEAR;
 }
 
-static void _hist_scale_clicked(GtkWidget *button, dt_scopes_hist_t *d)
+static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
 {
+  dt_scopes_hist_t *d = self->data;
+
   d->scale = (d->scale + 1) % DT_SCOPES_SCALE_N;
   // FIXME: rename to plugins/darkroom/scope/histogram/scale
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
                      dt_hist_scale_names[d->scale]);
-  _hist_scale_update(d);
+  _hist_update_buttons(self);
   // no need to reprocess data
   // FIXME: can we put in scopes.h a redraw function, which maybe doesn't use d->scopes but instead raises signal or such?
   gtk_widget_queue_draw(d->scopes->scope_draw);
@@ -232,11 +241,9 @@ static void _hist_gui_init_options(dt_scopes_mode_t *const self,
   dt_action_define(dark, NULL, N_("switch histogram scale"),
                    d->scale_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(box), d->scale_button, FALSE, FALSE, 0);
-  // initially set the scale icon
-  _hist_scale_update(d);
 
   g_signal_connect(G_OBJECT(d->scale_button), "clicked",
-                   G_CALLBACK(_hist_scale_clicked), d);
+                   G_CALLBACK(_hist_scale_clicked), self);
 }
 
 static void _hist_gui_cleanup(dt_scopes_mode_t *const self)
@@ -250,6 +257,7 @@ static void _hist_gui_cleanup(dt_scopes_mode_t *const self)
 
 // The function table for histogram mode. This must be public, i.e. no "static" keyword.
 const dt_scopes_functions_t dt_scopes_functions_histogram = {
+  .name = _hist_name,
   .process = _hist_process,
   .clear = _hist_clear,
   .draw_bkgd = _hist_draw_bkgd,
@@ -258,9 +266,12 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .draw_scope_channels = _hist_draw,
   .get_highlight = _hist_get_highlight,
   .get_exposure_pos = _hist_get_exposure_pos,
+  .append_to_tooltip = NULL,
+  .update_buttons = _hist_update_buttons,
   .mode_enter = _hist_mode_enter,
   .mode_leave = _hist_mode_leave,
   .gui_init = _hist_gui_init,
+  .gui_add_to_main = NULL,
   .gui_init_options = _hist_gui_init_options,
   .gui_cleanup = _hist_gui_cleanup
 };

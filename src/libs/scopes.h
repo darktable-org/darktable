@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 // FIXME: if we don't use histogram ROI this include can move to scopes/histogram.c
 #include "common/histogram.h"
+#include "common/iop_profile.h"
 #include "gui/gtk.h"
 
 G_BEGIN_DECLS
@@ -31,6 +32,7 @@ typedef enum dt_scopes_mode_type_t
   DT_SCOPES_MODE_HISTOGRAM = 0,
   DT_SCOPES_MODE_WAVEFORM,
   DT_SCOPES_MODE_PARADE, // must come after waveform, as it uses waveform data
+  DT_SCOPES_MODE_VECTORSCOPE,
   DT_SCOPES_MODE_N // needs to be the last one
 } dt_scopes_mode_type_t;
 
@@ -41,6 +43,7 @@ typedef enum dt_scopes_highlight_t
   DT_SCOPES_HIGHLIGHT_EXPOSURE
 } dt_scopes_highlight_t;
 
+// FIXME: move to histogram?
 typedef enum dt_scopes_scale_t
 {
   DT_SCOPES_SCALE_LOGARITHMIC = 0,
@@ -66,11 +69,14 @@ struct dt_scopes_mode_t;
 /** plus a few per-class descriptive data items */
 typedef struct dt_scopes_functions_t
 {
-  // FIXME: add a function which returns the (non-localized) name of the scope for storing in config
+  // name (untranslated) of the current view
+  // FIXME: use this to set conf value when change view, rather than hardcoded array
+  const char* (*name)(const struct dt_scopes_mode_t *const self);
   void (*process)(struct dt_scopes_mode_t *const self,
                   const float *const input,
                   // FIXME: should ROI by dt_histogram_roi_t or another type?
-                  const dt_histogram_roi_t *const roi);
+                  dt_histogram_roi_t *const roi,
+                  const dt_iop_order_iccprofile_info_t *vs_prof);
   // FIXME: do want a proper clear function or just tag as not up to date?
   void (*clear)(struct dt_scopes_mode_t *const self);
   void (*draw_bkgd)(const struct dt_scopes_mode_t *const self,
@@ -98,10 +104,31 @@ typedef struct dt_scopes_functions_t
   double (*get_exposure_pos)(const struct dt_scopes_mode_t *const self,
                              const double x,
                              const double y);
+  void (*append_to_tooltip)(const struct dt_scopes_mode_t *const self,
+                            gchar **tip);
+  void (*eventbox_scroll)(struct dt_scopes_mode_t *const self,
+                          GdkEventScroll *event);
+  void (*eventbox_motion)(struct dt_scopes_mode_t *const self,
+                          GtkWidget *widget,
+                          const GdkEventMotion *event);
+  // set option button icons to current state, updates tooltips
+  // accordingly, and if necessary update any state which depends on
+  // current option buttons
+  void (*update_buttons)(const struct dt_scopes_mode_t *const self);
+  // FIXME: add show_option_buttons() which shows the option buttons in the current view, and use it instead of mode_enter() when possible
+  // FIXME: add hide_option_buttons() which shows the option buttons in the current view, and use it instead of mode_leave() when possible
+  // FIXME: make mode_enter() really just set up the mode when there is a mode shift and only call it then
   void (*mode_enter)(const struct dt_scopes_mode_t *const self);
   void (*mode_leave)(const struct dt_scopes_mode_t *const self);
   void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
-  void (*gui_init_options)(struct dt_scopes_mode_t *const mode, dt_action_t *dark, GtkWidget *box);
+  // FIXME: s/gui_add_to_main/add_to_main_box/
+  void (*gui_add_to_main)(struct dt_scopes_mode_t *const self,
+                          dt_action_t *dark,
+                          GtkWidget *box);
+  // FIXME: s/gui_init_options/add_to_options_box/
+  void (*gui_init_options)(struct dt_scopes_mode_t *const mode,
+                           dt_action_t *dark,
+                           GtkWidget *box);
   void (*gui_cleanup)(struct dt_scopes_mode_t *const self);
 } dt_scopes_functions_t;
 
@@ -124,6 +151,7 @@ typedef struct dt_scopes_t
   dt_scopes_highlight_t highlight;
   //const dt_scopes_functions_t *view_functions[DT_SCOPES_VIEW_N];
   //void *view_data[DT_SCOPES_VIEW_N];
+  GtkWidget *button_box_main;          // GtkBox -- contains scope control buttons
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   // state set by buttons
   scopes_channels_t channels;
@@ -134,6 +162,18 @@ typedef struct dt_scopes_t
 extern const dt_scopes_functions_t dt_scopes_functions_histogram;
 extern const dt_scopes_functions_t dt_scopes_functions_waveform;
 extern const dt_scopes_functions_t dt_scopes_functions_parade;
+extern const dt_scopes_functions_t dt_scopes_functions_vectorscope;
+
+// FIXME: instead of making this extern & relying on linker (obscure?) make this part of dt_scopes_t?
+// FIXME: is there any reason this needs to be called with an argument?
+extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
+
+// FIXME: add a dt_scopes_call(scopes, func, args) macro which tests of cur_mode != NULL, tests if func != NULL, and if all OK calls scopes->cur_mode->func(args)
+// FIXME: once move over split view to modules, don't need to check if cur_mode != NULL for dt_scopes_call()
+// FIXME: add dt_scopes_call_if_exists() which is OK if no func(), and dt_scopes_call() which prints a warning if no func()?
+
+// FIXME: add an inline dt_scopes_refresh_scope(scopes) which refreshes the drawable (one line content) and replace the color harmony implementation with this and use it throughout
+// FIXME: add an inline dt_scopes_reprocess(scopes) which depending on current view reprocesses preview pixelpipe or updates tether view, and use that throughout
 
 G_END_DECLS
 
