@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-24 22:31+0100\n"
-"PO-Revision-Date: 2026-02-25 16:31+0100\n"
+"PO-Revision-Date: 2026-02-26 16:09+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -241,7 +241,7 @@ msgstr "Komma-separierte Tags, die beim Import hinzugefügt werden sollen"
 
 #: ../build/bin/conf_gen.h:1246
 msgid "import tags from XMP"
-msgstr "Tags aus XMP Datei importieren"
+msgstr "Tags aus XMP-Datei importieren"
 
 #: ../build/bin/conf_gen.h:1278
 msgid "initial rating"
@@ -249,15 +249,15 @@ msgstr "Bewertung beim Import"
 
 #: ../build/bin/conf_gen.h:1279
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "initiale Bewertung (Anzahl Sterne) aller Bilder in einer neu importierten Filmrolle"
+msgstr "Sternebewertung beim Import einer Filmrolle"
 
 #: ../build/bin/conf_gen.h:1286
 msgid "ignore EXIF rating"
-msgstr "Ignoriere Bewertung aus EXIF Daten"
+msgstr "EXIF-Bewertung ignorieren"
 
 #: ../build/bin/conf_gen.h:1287
 msgid "ignore EXIF rating. if not set and EXIF rating is found, it overrides 'initial rating'"
-msgstr "Ignoriere Bewertung aus EXIF Daten. Falls nicht gesetzt wird die Bewertung aus den EXIF Daten übernommen, sofern es dort gesetzt ist."
+msgstr "EXIF-Bewertung ignorieren. Falls nicht gesetzt, wird die Bewertung aus den EXIF-Daten übernommen, sofern es dort gesetzt ist."
 
 #: ../build/bin/conf_gen.h:1294
 msgid "import job"
@@ -793,7 +793,7 @@ msgstr "gleitend"
 
 #: ../build/bin/preferences_gen.h:80 ../build/bin/preferences_gen.h:120
 msgid "this setting has been modified"
-msgstr "Dieser Preset wurde angepasst"
+msgstr "dieses Preset wurde angepasst"
 
 #: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3061
 #: ../src/gui/gtk.c:3293 ../src/gui/preferences.c:528
@@ -918,7 +918,7 @@ msgstr "NEIN"
 
 #: ../build/bin/preferences_gen.h:2551
 msgid "keep original filename instead of a pattern while importing from camera or card"
-msgstr "den ursprünglichen Dateinamen erhalten statt Änderung gemäß Namensformat während Import von Kamera oder Karte"
+msgstr "Originaldateinamen beim Import von Kamera/Karte beibehalte"
 
 #: ../build/bin/preferences_gen.h:2560
 msgid "file naming pattern"
@@ -926,7 +926,7 @@ msgstr "Namensformat der Dateien"
 
 #: ../build/bin/preferences_gen.h:2573
 msgid "file naming pattern used for a import session"
-msgstr "Namensformat für Dateien beim Importieren"
+msgstr "Datei-Namensformat für Import-Sitzung"
 
 #: ../build/bin/preferences_gen.h:2583 ../src/gui/gtk.c:1552
 #: ../src/gui/preferences.c:618 ../src/libs/tools/lighttable.c:64
@@ -1000,7 +1000,7 @@ msgstr "Leuchttisch-Modul nach oben scrollen, wenn es ein-/ausgeblendet wird"
 
 #: ../build/bin/preferences_gen.h:2674 ../build/bin/preferences_gen.h:3204
 msgid "when this option is enabled then darktable will try to scroll the module to the top of the visible list"
-msgstr "Wenn diese Option aktiviert ist, wird versucht, das entsprechende Modul nach oben in den sichtbaren Bereich der Liste zu scrollen"
+msgstr "scrollt das Modul beim Einblenden nach oben"
 
 #: ../build/bin/preferences_gen.h:2683
 msgid "rating an image one star twice will not zero out the rating"
@@ -1016,7 +1016,7 @@ msgstr "zeige Scrollbalken für die mittlere Bildansicht"
 
 #: ../build/bin/preferences_gen.h:2708 ../build/bin/preferences_gen.h:3060
 msgid "defines whether scrollbars should be displayed"
-msgstr "Definiert, ob Scrollbalken angezeigt werden sollen"
+msgstr "definiert, ob Scrollbalken angezeigt werden sollen"
 
 #: ../build/bin/preferences_gen.h:2717
 msgid "show image time with milliseconds"
@@ -1024,7 +1024,7 @@ msgstr "Bildzeit mit Millisekunden anzeigen"
 
 #: ../build/bin/preferences_gen.h:2725
 msgid "defines whether time should be displayed with milliseconds"
-msgstr "Definiert, ob die Zeit mit Millisekunden angezeigt werden soll"
+msgstr "definiert, ob die Zeit mit Millisekunden angezeigt werden soll"
 
 #: ../build/bin/preferences_gen.h:2731
 msgid "thumbnails"
@@ -1263,7 +1263,7 @@ msgstr "Modul einblenden, wenn aktiv; ausblenden, wenn inaktiv"
 
 #: ../build/bin/preferences_gen.h:3187
 msgid "this option allows to expand or collapse automatically the module when it is enabled or disabled."
-msgstr "Diese Option erlaubt, Module automatisch ein- bzw. auszublenden wenn aktiviert bzw. deaktiviert."
+msgstr "blendet das Modul automatisch ein/aus, wenn es aktiviert/deaktiviert wird"
 
 #: ../build/bin/preferences_gen.h:3196
 msgid "scroll processing modules to the top when expanded"
@@ -1271,7 +1271,7 @@ msgstr "Dunkelkammer-Modul nach oben scrollen, wenn es ein-/ausgeblendet wird"
 
 #: ../build/bin/preferences_gen.h:3213
 msgid "swap the utility and processing modules panels"
-msgstr "Vertausche Panel für Bearbeitung- und Hilfsmodule"
+msgstr "Bearbeitungs- und Hilfsmodul-Panels tauschen"
 
 #: ../build/bin/preferences_gen.h:3221
 msgid "move the list of processing modules to the left of the screen"
@@ -1321,7 +1321,7 @@ msgstr "wenn aktiviert, wird bei jeder neuen Modulinstanz (entweder neue Instanz
 
 #: ../build/bin/preferences_gen.h:3282
 msgid "automatically update module name"
-msgstr "Ergänze Modulname um Preset- oder Instanznamen"
+msgstr "Modulname automatisch aktualisieren"
 
 #: ../build/bin/preferences_gen.h:3290
 msgid "if enabled, the module name will be automatically updated to match a preset name or a preset instance name if present."
@@ -1389,7 +1389,7 @@ msgstr "Dieser Ordner (und Unterordner) enthält PFM/PNG-Dateien, die vom Raster
 
 #: ../build/bin/preferences_gen.h:3416
 msgid "auto-apply pixel workflow defaults"
-msgstr "Arbeitsablauf-spezifische Einstellungen automatisch anwenden"
+msgstr "Pixel-Workflow-Standards automatisch anwenden"
 
 #: ../build/bin/preferences_gen.h:3425
 msgid ""
@@ -1569,7 +1569,7 @@ msgstr "fragen, bevor Bilder aus der Bibliothek entfernt werden"
 
 #: ../build/bin/preferences_gen.h:3756
 msgid "always ask the user before removing image information from the library"
-msgstr "Immer nachfragen, bevor Bildinformationen aus der Bibliothek gelöscht werden."
+msgstr "die Bilddatei auf der Festplatte bleibt dabei erhalten"
 
 #: ../build/bin/preferences_gen.h:3765
 msgid "ask before deleting images from disk"
@@ -1577,7 +1577,7 @@ msgstr "fragen, bevor Bilder von der Festplatte gelöscht werden"
 
 #: ../build/bin/preferences_gen.h:3773
 msgid "always ask the user before any image file is deleted"
-msgstr "Immer nachfragen, bevor eine Bilddatei von der Festplatte gelöscht wird"
+msgstr "ohne Papierkorb ist das Löschen unwiderruflich"
 
 #: ../build/bin/preferences_gen.h:3782
 msgid "ask before discarding history stack"
@@ -1585,7 +1585,7 @@ msgstr "fragen, bevor Verlaufsstapel von Bildern gelöscht werden"
 
 #: ../build/bin/preferences_gen.h:3790
 msgid "always ask the user before history stack is discarded on any image"
-msgstr "Immer nachfragen, bevor der Verlaufsstapel einer Bilddatei verworfen wird"
+msgstr "alle Bearbeitungsschritte gehen unwiderruflich verloren — auch bei Massenauswahl"
 
 #: ../build/bin/preferences_gen.h:3799
 msgid "try to use trash when deleting images"
@@ -1593,7 +1593,7 @@ msgstr "benutze den Papierkorb beim Löschen (wenn möglich)"
 
 #: ../build/bin/preferences_gen.h:3807
 msgid "send files to trash instead of permanently deleting files on system that supports it"
-msgstr "Verschiebe Bilder in den Papierkorb, statt sie permanent zu löschen, falls dies vom System unterstützt wird"
+msgstr "nicht von allen Dateisystemen unterstützt — ggf. wird dauerhaft gelöscht"
 
 #: ../build/bin/preferences_gen.h:3816
 msgid "ask before moving images from film roll folder"
@@ -1601,7 +1601,7 @@ msgstr "fragen, bevor Bilder aus dem Filmrollen-Ordner verschoben werden"
 
 #: ../build/bin/preferences_gen.h:3824
 msgid "always ask the user before any image file is moved."
-msgstr "Immer nachfragen, bevor eine Bilddatei verschoben wird."
+msgstr "betrifft das Verschieben per Drag-and-drop oder Kontextmenü in eine andere Filmrolle"
 
 #: ../build/bin/preferences_gen.h:3833
 msgid "ask before copying images to new film roll folder"
@@ -1609,7 +1609,7 @@ msgstr "fragen, bevor Bilder in einen neuen Filmrollen-Ordner kopiert werden"
 
 #: ../build/bin/preferences_gen.h:3841
 msgid "always ask the user before any image file is copied."
-msgstr "Immer nachfragen, bevor eine Bilddatei kopiert wird."
+msgstr "das Original bleibt am ursprünglichen Ort erhalten"
 
 #: ../build/bin/preferences_gen.h:3850
 msgid "ask before removing empty folders"
@@ -1618,8 +1618,8 @@ msgstr "fragen, bevor leere Ordner entfernt werden"
 #: ../build/bin/preferences_gen.h:3858
 msgid "always ask the user before removing any empty folder. this can happen after moving or deleting images."
 msgstr ""
-"Immer nachfragen, bevor leere Ordner gelöscht werden. \n"
-"Leere Ordner können entstehen, wenn Bilder verschoben oder gelöscht werden."
+"Leere Ordner entstehen automatisch, wenn alle enthaltenen Bilder\n"
+"verschoben oder gelöscht wurden"
 
 #: ../build/bin/preferences_gen.h:3867
 msgid "ask before deleting a tag"
@@ -1635,15 +1635,15 @@ msgstr "fragen, bevor ein Modul-Preset gelöscht wird"
 
 #: ../build/bin/preferences_gen.h:3907
 msgid "will ask for confirmation before deleting or overwriting a preset"
-msgstr "Immer nachfragen, bevor ein Modul-Preset gelöscht oder geändert wird."
+msgstr "gilt auch beim Überschreiben eines Presets durch Speichern unter demselben Namen"
 
 #: ../build/bin/preferences_gen.h:3916
 msgid "ask before exporting in overwrite mode"
-msgstr "fragen, im Überschreiben-Modus exportiert wird"
+msgstr "fragen, bevor im Überschreiben-Modus exportiert wird"
 
 #: ../build/bin/preferences_gen.h:3924
 msgid "will ask for confirmation before exporting files in overwrite mode"
-msgstr "Es wird immer nachgefragt, bevor im Überschreiben-Modus exportiert wird"
+msgstr "vorhandene Exportdateien werden sonst stillschweigend überschrieben"
 
 #: ../build/bin/preferences_gen.h:3930 ../src/libs/tools/viewswitcher.c:151
 msgid "other"
@@ -1724,11 +1724,11 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4080 ../src/libs/copy_history.c:148
 msgid "XMP sidecar files"
-msgstr "XMP Dateien"
+msgstr "XMP-Dateien"
 
 #: ../build/bin/preferences_gen.h:4090
 msgid "create XMP files"
-msgstr "XMP Dateien erzeugen"
+msgstr "XMP-Dateien erzeugen"
 
 #: ../build/bin/preferences_gen.h:4099
 msgid ""
@@ -1739,24 +1739,24 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"XMP Dateien enthalten Informationen über alle Entwicklungsschritte, um einen problemlosen Re-Import von Bilddateien zu ermöglichen.\n"
+"XMP-Dateien enthalten Informationen über alle Entwicklungsschritte, um einen problemlosen Re-Import von Bilddateien zu ermöglichen.\n"
 "\n"
-"Abhängig vom gewählten Modus werden XMP Dateien geschrieben:\n"
+"Abhängig vom gewählten Modus werden XMP-Dateien geschrieben:\n"
 " - „nie“: ausschließlich in die library.db Datenbank\n"
 " - „beim Import“: sofort nach dem Importieren des Bildes\n"
 " - „nach Bearbeitung“: nach jeder Benutzeränderung am Bild oder Tagging"
 
 #: ../build/bin/preferences_gen.h:4108
 msgid "store XMP tags in compressed format"
-msgstr "XMP Tags komprimiert speichern"
+msgstr "XMP-Tags komprimiert speichern"
 
 #: ../build/bin/preferences_gen.h:4117
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files.\n"
 "this option allows XMP tags to be compressed and save space."
 msgstr ""
-"Die Daten in einzelnen XMP Tags können recht groß werden, so dass die Größe des Verlaufsstapels den verfügbaren Speicherplatz in exportierten Dateien überschreitet. \n"
-"Diese Option erlaubt es, die Daten in den XMP Feldern zu komprimieren und so Speicherplatz zu sparen."
+"Die Daten in einzelnen XMP-Tags können recht groß werden, so dass die Größe des Verlaufsstapels den verfügbaren Speicherplatz in exportierten Dateien überschreitet. \n"
+"Diese Option erlaubt es, die Daten in den XMP-Feldern zu komprimieren und so Speicherplatz zu sparen."
 
 #: ../build/bin/preferences_gen.h:4126
 msgid "auto-save interval"
@@ -1768,11 +1768,11 @@ msgstr "Verlauf während der Bearbeitung periodisch speichern (Intervall in Seku
 
 #: ../build/bin/preferences_gen.h:4153
 msgid "look for updated XMP files on startup"
-msgstr "beim Start nach aktualisierten XMP Dateien suchen"
+msgstr "beim Start nach aktualisierten XMP-Dateien suchen"
 
 #: ../build/bin/preferences_gen.h:4161
 msgid "check file modification times of all XMP files on startup to check if any got updated in the meantime"
-msgstr "Prüfe die Zeitstempel aller XMP Dateien beim Start, um diejenigen zu finden, die zwischenzeitlich extern bearbeitet wurden."
+msgstr "Prüfe die Zeitstempel aller XMP-Dateien beim Start, um diejenigen zu finden, die zwischenzeitlich extern bearbeitet wurden."
 
 #: ../build/bin/preferences_gen.h:4171
 msgid "miscellaneous"
@@ -1788,7 +1788,7 @@ msgstr "Startdialog beim Programmstart anzeigen"
 
 #: ../build/bin/preferences_gen.h:4194
 msgid "display a small window showing the progress of darktable startup before the main window appears"
-msgstr "Startdialog anzeigen, der den Fortschritt zeigt, bevor das Hauptfenster erscheint"
+msgstr "zeigt den Fortschritt beim Start, bevor das Hauptfenster erscheint"
 
 #: ../build/bin/preferences_gen.h:4203
 msgid "load default shortcuts at startup"
@@ -1829,8 +1829,8 @@ msgstr "Mausrad blättert standardmäßig die Module der seitlichen Panel durch"
 #: ../build/bin/preferences_gen.h:4280
 msgid "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
-"Wenn aktiviert, bewirkt das Mausrad ein Scrollen der Module der seitlichen Panel und die Dateneingabe über das Mausrad erfolgt bei gleichzeitig gedrückter Tastenkombination Strg+Alt.\n"
-"Wenn deaktiviert, ist das Verhalten umgekehrt."
+"Mausrad scrollt das Modul-Panel; Strg+Alt für Dateneingabe per Mausrad\n"
+"Wenn deaktiviert ist das Verhalten umgekehrt"
 
 #: ../build/bin/preferences_gen.h:4289
 msgid "always show panels' scrollbars"
@@ -1870,7 +1870,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4370
 msgid "order or exclude MIDI devices"
-msgstr "MIDI Devices anordnen oder ausschließen"
+msgstr "MIDI-Devices anordnen oder ausschließen"
 
 #: ../build/bin/preferences_gen.h:4383
 msgid ""
@@ -1879,7 +1879,7 @@ msgid ""
 "prefix with '-' to ignore matching devices\n"
 "just '-' stops loading all further devices or on its own disables MIDI completely"
 msgstr ""
-"kommaseparierte Liste von MIDI Device-Namensfragmenten;\n"
+"kommaseparierte Liste von MIDI-Device Namensfragmenten;\n"
 "die ID ergibt sich anhand der Position in der Liste.\n"
 "Format: Gerät:ID,Gerät:ID:AnzahlKnöpfe (z. B. Loupedeck:127,BeatStep:63:16).\n"
 "Vorangestelltes - ignoriert das Gerät.\n"
@@ -1903,7 +1903,7 @@ msgid ""
 "when this option is checked darktable will only include their last part\n"
 "and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"Beim Erstellen der XMP Datei werden die hierarchischen Tags auch in einer einfachen flachen Liste \n"
+"Beim Erstellen der XMP-Datei werden die hierarchischen Tags auch in einer einfachen flachen Liste \n"
 "gespeichert, um die Kompatibilität mit einigen anderen Programmen zu verbessern. \n"
 "Wenn diese Option ausgewählt ist, wird nur das Tag der letzten Ebene genommen \n"
 "und der Rest ignoriert. Von „foo|bar|baz“ wird also nur „baz“ eingefügt."
@@ -2374,7 +2374,7 @@ msgstr "Sättigung"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:146
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:257
 msgid "preserve hue"
-msgstr "Hue erhalten"
+msgstr "Farbton erhalten"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:275
 #: ../build/lib/darktable/plugins/introspection_agx.c:518
@@ -6935,12 +6935,12 @@ msgstr "schneller belichtungsunabhängiger geführter Filter konnte keinen Speic
 #: ../src/common/exif.cc:6045
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
-msgstr "konnte XMP Datei „%s“ nicht lesen: „%s“"
+msgstr "konnte XMP-Datei „%s“ nicht lesen: „%s“"
 
 #: ../src/common/exif.cc:6104
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
-msgstr "konnte XMP Datei „%s“ nicht schreiben: „%s“"
+msgstr "konnte XMP-Datei „%s“ nicht schreiben: „%s“"
 
 #: ../src/common/fast_guided_filter.h:301
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -6971,7 +6971,7 @@ msgstr "Filmrolle kann nicht entfernt werden, solange lokale Kopien existieren, 
 #: ../src/common/gpx.c:259 ../src/control/jobs/control_jobs.c:1403
 #, c-format
 msgid "failed to parse GPX file"
-msgstr "Fehler beim lesen der GPX-Datei"
+msgstr "Fehler beim Lesen der GPX-Datei"
 
 #: ../src/common/history.c:924
 msgid "you need to copy history from an image before you paste it onto another"
@@ -7006,8 +7006,8 @@ msgstr[1] "Datum/Zeit für %d Bilder zurück gesetzt"
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
-msgstr[0] "setze Datum/Zeit für %d Bild wieder zugeordnet"
-msgstr[1] "setze Datum/Zeit für %d Bilder wieder zugeordnet"
+msgstr[0] "Datum/Zeit für %d Bild wiederhergestellt"
+msgstr[1] "Datum/Zeit für %d Bilder wiederhergestellt"
 
 #. FIXME make GIMP handle duplicates
 #: ../src/common/image.c:1326
@@ -7812,7 +7812,7 @@ msgstr "Pfad"
 
 #: ../src/control/crawler.c:772
 msgid "XMP timestamp"
-msgstr "XMP Zeitstempel"
+msgstr "XMP-Zeitstempel"
 
 #: ../src/control/crawler.c:777
 msgid "database timestamp"
@@ -7828,7 +7828,7 @@ msgstr "Zeitdifferenz"
 
 #: ../src/control/crawler.c:800
 msgid "updated XMP sidecar files found"
-msgstr "aktualisierte XMP Dateien gefunden"
+msgstr "aktualisierte XMP-Dateien gefunden"
 
 #: ../src/control/crawler.c:801
 msgid "_close"
@@ -7857,7 +7857,7 @@ msgstr "für Auswahl:"
 
 #: ../src/control/crawler.c:819
 msgid "keep the XMP edit"
-msgstr "XMP Bearbeitung behalten"
+msgstr "XMP-Bearbeitung behalten"
 
 #: ../src/control/crawler.c:820
 msgid "keep the database edit"
@@ -10212,7 +10212,7 @@ msgstr "Um Bewertungen, Farben, Stile usw. anzuwenden, Mauszeiger"
 
 #: ../src/dtgtk/thumbtable.c:1285
 msgid "make default raw development look more like your"
-msgstr "Um die Initiale Raw-Bearbeitung an das Kamera-JPEG"
+msgstr "Um die initiale RAW-Bearbeitung an das Kamera-JPEG"
 
 #: ../src/dtgtk/thumbtable.c:1286
 msgid "hover over any button for its description and shortcuts"
@@ -13215,7 +13215,7 @@ msgstr ""
 #. TODO
 #: ../src/gui/accelerators.c:3991
 msgid "ignoring shortcuts while blocking jobs running"
-msgstr "Tastenkürzel werden ignoriert, solange blockierende Aufgaben laufen"
+msgstr "Shortcuts werden ignoriert, solange blockierende Aufgaben laufen"
 
 #: ../src/gui/accelerators.c:4025
 #, c-format
@@ -13818,8 +13818,8 @@ msgid ""
 "CAUTION: not selected metadata are cleaned up when XMP file is updated."
 msgstr ""
 "Die ausgewählten Metadaten wurden aus dem Bild importiert.\n"
-"Dies steuert auch die Aktionen „nach aktualisierten XMP Dateien suchen“ und „XMP Datei laden“.\n"
-"Achtung: nicht ausgewählte Metadaten werden gelöscht, wenn die korrespondierende XMP Datei geändert wurde."
+"Dies steuert auch die Aktionen „nach aktualisierten XMP-Dateien suchen“ und „XMP-Datei laden“.\n"
+"Achtung: nicht ausgewählte Metadaten werden gelöscht, wenn die korrespondierende XMP-Datei geändert wurde."
 
 #. tags
 #: ../src/gui/import_metadata.c:512
@@ -24419,7 +24419,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:113
 msgid "open sidecar file"
-msgstr "XMP Datei öffnen"
+msgstr "XMP-Datei öffnen"
 
 #: ../src/libs/copy_history.c:165
 #, c-format
@@ -24483,19 +24483,19 @@ msgstr "Verlaufsstapel aller ausgewählten Bilder verwerfen"
 
 #: ../src/libs/copy_history.c:334
 msgid "load sidecar file..."
-msgstr "XMP Datei laden"
+msgstr "XMP-Datei laden"
 
 #: ../src/libs/copy_history.c:335
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"eine XMP Datei öffnen und auf\n"
+"eine XMP-Datei öffnen und auf\n"
 "die ausgewählten Bilder anwenden"
 
 #: ../src/libs/copy_history.c:340
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "Verlaufsstapel und Tags in XMP Datei schreiben"
+msgstr "Verlaufsstapel und Tags in XMP-Datei schreiben"
 
 #: ../src/libs/duplicate.c:59
 msgid "duplicate manager"
@@ -24794,7 +24794,7 @@ msgstr "Metadaten-Export bearbeiten"
 #. general info
 #: ../src/libs/export_metadata.c:176
 msgid "EXIF data"
-msgstr "EXIF Daten"
+msgstr "EXIF-Daten"
 
 #: ../src/libs/export_metadata.c:177
 msgid "export EXIF metadata"
@@ -24802,7 +24802,7 @@ msgstr "EXIF-Metadaten exportieren"
 
 #: ../src/libs/export_metadata.c:179
 msgid "export darktable XMP metadata (from metadata editor module)"
-msgstr "Exportiere darktable XMP Metadaten (aus dem Metadaten-Editor-Modul)"
+msgstr "Exportiere darktable XMP-Metadaten (aus dem Metadaten-Editor-Modul)"
 
 #: ../src/libs/export_metadata.c:184
 msgid "only embedded"
@@ -24815,8 +24815,8 @@ msgid ""
 "if remote storage doesn't understand darktable XMP metadata, you can use calculated metadata instead"
 msgstr ""
 "Standardmäßig sendet die Schnittstelle einige (begrenzte) Metadaten neben dem Bild an den Remote-Speicher.\n"
-"Um dies zu vermeiden und nur eingebettete darktable XMP Metadaten anzuzeigen, überprüfe dieses Kontrollkästchen.\n"
-"Wenn der Remote-Speicher darktable XMP Metadaten nicht versteht, können stattdessen berechnete Metadaten verwendet werden."
+"Um dies zu vermeiden und nur eingebettete darktable XMP-Metadaten anzuzeigen, überprüfe dieses Kontrollkästchen.\n"
+"Wenn der Remote-Speicher darktable XMP-Metadaten nicht versteht, können stattdessen berechnete Metadaten verwendet werden."
 
 #. just empty widget
 #: ../src/libs/export_metadata.c:193 ../src/libs/image.c:623
@@ -24869,7 +24869,7 @@ msgstr "Verlaufsstapel exportieren"
 
 #: ../src/libs/export_metadata.c:213
 msgid "export darktable development data (recovery purpose in case of loss of database or XMP file)"
-msgstr "Export von darktable Entwicklungsdaten (Wiederherstellung bei Verlust der Datenbank oder XMP Datei)"
+msgstr "Export von darktable Entwicklungsdaten (Wiederherstellung bei Verlust der Datenbank oder XMP-Datei)"
 
 #: ../src/libs/export_metadata.c:219
 msgid "redefined tag"
@@ -26054,7 +26054,7 @@ msgstr "Geändert"
 
 #: ../src/libs/import.c:1881
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
-msgstr "Änderungsdatum der Datei kann sich vom Änderungsdatum in den EXIF Daten unterscheiden"
+msgstr "Änderungsdatum der Datei kann sich vom Änderungsdatum in den EXIF-Daten unterscheiden"
 
 #: ../src/libs/import.c:1893
 msgid "show/hide thumbnails"
@@ -26521,7 +26521,7 @@ msgstr "Metadaten-Einstellungen"
 
 #: ../src/libs/metadata.c:886
 msgid "XMP tag name"
-msgstr "XMP Tag"
+msgstr "XMP-Tag"
 
 #: ../src/libs/metadata.c:892
 msgid "display name"
@@ -29436,91 +29436,3 @@ msgstr "Umschalten zum klassischen Fenster, das nach der Tastenbetätigung geöf
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "Mausaktionen"
-
-#~ msgctxt "preferences"
-#~ msgid "original"
-#~ msgstr "Original"
-
-#~ msgctxt "preferences"
-#~ msgid "to 1/2"
-#~ msgstr "auf die Hälfte"
-
-#~ msgctxt "preferences"
-#~ msgid "to 1/3"
-#~ msgstr "auf ein Drittel"
-
-#~ msgctxt "preferences"
-#~ msgid "to 1/4"
-#~ msgstr "auf ein Viertel"
-
-#~ msgid "darktable starting"
-#~ msgstr "darktable startet"
-
-#~ msgid "darktable shutdown"
-#~ msgstr "darktable abschalten"
-
-#~ msgid "darktable is now shutting down"
-#~ msgstr "darktable wird jetzt abgeschaltet"
-
-#~ msgid "please wait while background jobs finish"
-#~ msgstr "Bitte warten, während die Hintergrundaufgaben beendet werden"
-
-#~ msgid "encoding color profile"
-#~ msgstr "Encoder Farbprofil"
-
-#~ msgid ""
-#~ "the color profile used by the encoder\n"
-#~ "permit internal XYB color space conversion for more efficient lossy compression,\n"
-#~ "or ensure no conversion to keep original image color space (implied for lossless)"
-#~ msgstr ""
-#~ "vom Encoder verwendetes Farbprofil\n"
-#~ "ermöglicht die interne XYB-Farbraumkonvertierung für eine effizientere verlustbehaftete Komprimierung,\n"
-#~ "oder keine Konvertierung, um den Originalfarbraum des Bildes beizubehalten (implizit für verlustfreie Kompression)"
-
-#~ msgid "internal"
-#~ msgstr "intern"
-
-#~ msgid ""
-#~ "the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
-#~ "without inverting the shoulder (forcing it to bend upwards), it would be\n"
-#~ "impossible to reach target white with the selected contrast and pivot position.\n"
-#~ "increase contrast, move the pivot higher (increase pivot target output\n"
-#~ "or curve y gamma), or increase the distance between the pivot and the right\n"
-#~ "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
-#~ "increasing relative white exposure or move the black point closer to the pivot\n"
-#~ "by lowering relative black exposure)."
-#~ msgstr ""
-#~ "Die Kurve hat ihre „S“-Form verloren, die „Ausprägung Schulter“ kann nicht angewendet werden.\n"
-#~ "Ohne die Schulter umzukehren (und sie damit nach oben zu biegen), kann der Zielwert Weiß mit \n"
-#~ "dem gewählten Kontrast und der Pivot-Position nicht erreicht werden.\n"
-#~ "Erhöhe den Kontrast, verschiebe den Pivot nach oben (erhöhe „Pivot Ziel Output“ oder „Kurve Y-Gamma“), \n"
-#~ "oder vergrößere den Abstand zwischen Pivot und rechter Kante \n"
-#~ "(verkleinere die Pivot Verschiebung, verschiebe den Weißpunkt durch anheben der relativen Belichtung Weiß \n"
-#~ "weiter vom Pivot weg, oder verschiebe den Schwarzpunkt durch verringern der relativen Belichtung Schwarz näher an den Pivot)"
-
-#~ msgid ""
-#~ "the curve has lost its 'S' shape, toe power cannot be applied.\n"
-#~ "without inverting the toe (forcing it to bend downwards), it would be\n"
-#~ "impossible to reach target black with the selected contrast and pivot position.\n"
-#~ "increase contrast, move the pivot lower (reduce the pivot target output or\n"
-#~ "curve y gamma), or increase the distance between the pivot and the left edge\n"
-#~ "(increase the pivot shift, move the black point farther from the pivot by raising\n"
-#~ "the relative black exposure or move the white point closer to the pivot\n"
-#~ "by decreasing relative white exposure)."
-#~ msgstr ""
-#~ "Die Kurve hat ihre „S“-Form verloren, die Ausprägung Fuß kann nicht angewendet werden.\n"
-#~ "Ohne den Fuß umzukehren (und ihn damit nach unten zu biegen), kann der Zielwert Schwarz \n"
-#~ "mit dem gewählten Kontrast und der Pivot-Position nicht erreicht werden.\n"
-#~ "Erhöhe den Kontrast, verschiebe den Pivot nach unten (reduziere den Pivot Ziel Output oder Kurve Y-Gamma), \n"
-#~ "oder vergrößere den Abstand zwischen Pivot und linker Kante \n"
-#~ "(erhöhe die Pivot Verschiebung, verschiebe den Schwarzpunkt durch anheben der relativen Belichtung Schwarz \n"
-#~ "weiter vom Pivot weg, oder verschiebe den Weißpunkt durch verringern der relativen Belichtung Weiß näher an den Pivot.)"
-
-#~ msgid "smooth|base"
-#~ msgstr "gleichmäßig|Basis"
-
-#~ msgid "smooth|punchy"
-#~ msgstr "gleichmäßig|kräftig"
-
-#~ msgid "cycle histogram modes"
-#~ msgstr "Histogramm-Modi zyklisch wechseln"
