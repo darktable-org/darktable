@@ -129,8 +129,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->overhead = 0;
 
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 void distort_mask(dt_iop_module_t *self,

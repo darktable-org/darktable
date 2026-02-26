@@ -322,8 +322,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5 * radius; // This is a guess. TODO: check if that's sufficiently large
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   return;
 }
 

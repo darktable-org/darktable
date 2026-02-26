@@ -854,6 +854,8 @@ void tiling_callback(dt_iop_module_t *self,
 {
   dt_iop_denoiseprofile_params_t *d = piece->data;
 
+  tiling->align = 1;
+  tiling->overhead = 0;
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
     // pixel filter size:
@@ -868,10 +870,7 @@ void tiling_callback(dt_iop_module_t *self,
     // in + out + (2 + NUM_BUCKETS * 0.25) tmp:
     tiling->factor_cl = 4.0f + 0.25f * NUM_BUCKETS;
     tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
     tiling->overlap = P + K_scattered;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
   }
   else
   {
@@ -903,12 +902,8 @@ void tiling_callback(dt_iop_module_t *self,
     tiling->factor_cl = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
     tiling->maxbuf = 1.0f;
     tiling->maxbuf_cl = 1.0f;
-    tiling->overhead = 0;
     tiling->overlap = max_filter_radius;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
   }
-
 }
 
 static inline void precondition(const float *const in,

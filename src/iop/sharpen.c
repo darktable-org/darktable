@@ -240,7 +240,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  dt_iop_sharpen_data_t *d = piece->data;
+  const dt_iop_sharpen_data_t *d = piece->data;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
 
   tiling->factor = 2.1f; // in + out + tmprow
@@ -248,9 +248,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = rad;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,

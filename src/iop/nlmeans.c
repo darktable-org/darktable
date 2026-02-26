@@ -350,9 +350,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = P + K;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void process(

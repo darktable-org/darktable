@@ -388,8 +388,7 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->maxbuf_cl = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 void init_global(dt_iop_module_so_t *self)
