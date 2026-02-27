@@ -75,7 +75,7 @@ typedef struct _object_data_t
   int encode_rgb_w, encode_rgb_h;
   guint modifier_poll_id;   // timer to detect shift key changes
   GThread *encode_thread;   // background encoding thread
-  gboolean busy;            // TRUE if dt_control_busy_enter() was called
+  gboolean busy;            // TRUE if dt_gui_cursor_set_busy() was called
   gboolean dragging;        // TRUE between press and release during click/brush drag
   float drag_start_x;       // press position (preview pipe pixel space)
   float drag_start_y;
@@ -117,7 +117,7 @@ static void _destroy_data(_object_data_t *d)
   if(!d)
     return;
   if(d->busy)
-    dt_control_busy_leave();
+    dt_gui_cursor_clear_busy();
   if(d->modifier_poll_id)
     g_source_remove(d->modifier_poll_id);
   if(d->encode_thread)
@@ -673,6 +673,8 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   if(gui->guipoints_count <= 0)
     return;
 
+  dt_gui_cursor_set_busy();
+
   const float *gp = dt_masks_dynbuf_buffer(gui->guipoints);
   const float *gpp = dt_masks_dynbuf_buffer(gui->guipoints_payload);
 
@@ -753,6 +755,7 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     d->mask_w = mw;
     d->mask_h = mh;
   }
+  dt_gui_cursor_clear_busy();
 }
 
 // Run vectorization with current preview parameters, store result in scratchpad.
@@ -1394,7 +1397,7 @@ static void _object_events_post_expose(
     }
     if(d->busy)
     {
-      dt_control_busy_leave();
+      dt_gui_cursor_clear_busy();
       d->busy = FALSE;
     }
     if(d->seg)
@@ -1441,6 +1444,8 @@ static void _object_events_post_expose(
 
     d->encoded_imgid = cur_imgid;
     d->encode_state = ENCODE_RUNNING;
+    dt_gui_cursor_set_busy();
+    d->busy = TRUE;
     // Start poll timer BEFORE the thread — it will detect completion
     // and also tracks modifier keys once encoding is ready
     if(!d->modifier_poll_id)
@@ -1463,7 +1468,7 @@ static void _object_events_post_expose(
     d->encode_thread = NULL;
     if(d->busy)
     {
-      dt_control_busy_leave();
+      dt_gui_cursor_clear_busy();
       d->busy = FALSE;
     }
     dt_control_log_ack_all();
@@ -1481,7 +1486,7 @@ static void _object_events_post_expose(
     }
     if(d->busy)
     {
-      dt_control_busy_leave();
+      dt_gui_cursor_clear_busy();
       d->busy = FALSE;
     }
     return;
