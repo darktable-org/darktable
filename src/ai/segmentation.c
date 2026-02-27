@@ -30,17 +30,17 @@
 static const float IMG_MEAN[3] = {123.675f, 116.28f, 103.53f};
 static const float IMG_STD[3] = {58.395f, 57.12f, 57.375f};
 
-// Maximum number of dimensions for encoder output tensors
+// maximum number of dimensions for encoder output tensors
 #define MAX_TENSOR_DIMS 8
 
-// Maximum number of encoder output tensors
+// maximum number of encoder output tensors
 #define MAX_ENCODER_OUTPUTS 4
 
-// Maximum number of masks the decoder can produce per decode pass.
-// Stack buffers (iou_pred[]) are sized to this limit.
+// maximum number of masks the decoder can produce per decode pass.
+// stack buffers (iou_pred[]) are sized to this limit.
 #define MAX_NUM_MASKS 8
 
-// Model architecture type — determines preprocessing, decoder I/O, and refinement
+// model architecture type -- determines preprocessing, decoder I/O, and refinement
 typedef enum dt_seg_model_type_t
 {
   DT_SEG_MODEL_SAM,     // SAM/SAM2: multi-mask + IoU + low_res refinement
@@ -55,31 +55,31 @@ struct dt_seg_context_t
   dt_seg_model_type_t model_type;
   gboolean normalize;     // TRUE = apply ImageNet normalization in preprocessing
 
-  // Encoder output shapes (queried from model at load time)
+  // encoder output shapes (queried from model at load time)
   int n_enc_outputs;
   int64_t enc_shapes[MAX_ENCODER_OUTPUTS][MAX_TENSOR_DIMS];
   int enc_ndims[MAX_ENCODER_OUTPUTS];
 
-  // Decoder properties
+  // decoder properties
   int num_masks;            // masks per decode (1 = single-mask, 3-4 = multi-mask)
   int dec_mask_h, dec_mask_w; // decoder mask output dims (must be concrete)
 
-  // Encoder-to-decoder reorder map: decoder input i uses encoder output enc_order[i].
-  // Needed because encoder outputs may be in different order than decoder expects.
+  // encoder-to-decoder reorder map: decoder input i uses encoder output enc_order[i].
+  // needed because encoder outputs may be in different order than decoder expects.
   int enc_order[MAX_ENCODER_OUTPUTS];
 
-  // Cached encoder outputs
+  // cached encoder outputs
   float *enc_data[MAX_ENCODER_OUTPUTS];
   size_t enc_sizes[MAX_ENCODER_OUTPUTS];
 
-  // Previous mask for iterative refinement.
+  // previous mask for iterative refinement.
   // SAM: low-res [1][1][prev_mask_dim][prev_mask_dim] (typically 256x256)
   // SegNext: full-res [1][1][prev_mask_dim][prev_mask_dim] (typically 1024x1024)
   float *prev_mask;
   int prev_mask_dim;
   gboolean has_prev_mask;
 
-  // Image dimensions that were encoded
+  // image dimensions that were encoded
   int encoded_width;
   int encoded_height;
   float scale; // SAM_INPUT_SIZE / max(w, h)
@@ -88,11 +88,11 @@ struct dt_seg_context_t
 
 // --- Preprocessing ---
 
-// Resize RGB image so longest side = SAM_INPUT_SIZE, pad with zeros,
+// resize RGB image so longest side = SAM_INPUT_SIZE, pad with zeros,
 // convert HWC -> CHW.  When normalize=TRUE, applies ImageNet mean/std
 // (SAM models).  When FALSE, scales to [0,1] only (SegNext bakes
 // normalization into the ONNX encoder graph).
-// Output: float buffer [1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE]
+// output: float buffer [1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE]
 static float *
 _preprocess_image(const uint8_t *rgb_data, int width, int height,
                   gboolean normalize, float *out_scale)
@@ -109,7 +109,7 @@ _preprocess_image(const uint8_t *rgb_data, int width, int height,
   if(!output)
     return NULL;
 
-  // Bilinear resize + normalize + HWC->CHW in one pass
+  // bilinear resize + normalize + HWC->CHW in one pass
   for(int y = 0; y < new_h; y++)
   {
     const float src_y = (float)y / scale;
@@ -126,7 +126,7 @@ _preprocess_image(const uint8_t *rgb_data, int width, int height,
 
       for(int c = 0; c < 3; c++)
       {
-        // Bilinear interpolation
+        // bilinear interpolation
         const float v00 = rgb_data[(y0 * width + x0) * 3 + c];
         const float v01 = rgb_data[(y0 * width + x1) * 3 + c];
         const float v10 = rgb_data[(y1 * width + x0) * 3 + c];
@@ -135,7 +135,7 @@ _preprocess_image(const uint8_t *rgb_data, int width, int height,
         const float val = v00 * (1.0f - fx) * (1.0f - fy) + v01 * fx * (1.0f - fy)
           + v10 * (1.0f - fx) * fy + v11 * fx * fy;
 
-        // Write in CHW layout: offset = c * H * W + y * W + x
+        // write in CHW layout: offset = c * H * W + y * W + x
         const float pixel = normalize
           ? (val - IMG_MEAN[c]) / IMG_STD[c]  // ImageNet normalization (SAM)
           : val / 255.0f;                      // scale to [0,1] (SegNext)
@@ -143,14 +143,14 @@ _preprocess_image(const uint8_t *rgb_data, int width, int height,
       }
     }
   }
-  // Padded area is already zero from g_try_malloc0
+  // padded area is already zero from g_try_malloc0
 
   return output;
 }
 
-// --- Bilinear crop+resize helper ---
+// --- bilinear crop+resize helper ---
 
-// Crop the valid (non-padded) region from a SAM-space mask and bilinear
+// crop the valid (non-padded) region from a SAM-space mask and bilinear
 // resize to the encoded image dimensions.
 static void _crop_resize_mask(const float *src, int src_w, int src_h,
                                float *dst, int dst_w, int dst_h,
@@ -196,8 +196,8 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   if(!env || !model_id)
     return NULL;
 
-  // Provider is resolved from the environment (read from config at init time).
-  // Passing AUTO lets dt_ai_load_model resolve it.
+  // provider is resolved from the environment (read from config at init time).
+  // passing AUTO lets dt_ai_load_model resolve it.
   dt_ai_context_t *encoder
     = dt_ai_load_model(env, model_id, "encoder.onnx", DT_AI_PROVIDER_AUTO);
   if(!encoder)
@@ -206,7 +206,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
-  // Force CPU for the decoder — it's lightweight and hardware acceleration
+  // force CPU for the decoder -- it's lightweight and hardware acceleration
   // adds more overhead than it saves.  Also avoids ORT graph optimization
   // issues with some decoder graphs (e.g. SegNext's Concat→Reshape).
   dt_ai_context_t *decoder
@@ -223,7 +223,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   ctx->encoder = encoder;
   ctx->decoder = decoder;
 
-  // Query encoder output count and shapes from model metadata
+  // query encoder output count and shapes from model metadata
   ctx->n_enc_outputs = dt_ai_get_output_count(encoder);
   if(ctx->n_enc_outputs <= 0 || ctx->n_enc_outputs > MAX_ENCODER_OUTPUTS)
   {
@@ -248,8 +248,8 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     }
   }
 
-  // Build encoder-to-decoder reorder map by matching output/input names.
-  // Encoder outputs may be in different order than the decoder expects
+  // build encoder-to-decoder reorder map by matching output/input names.
+  // encoder outputs may be in different order than the decoder expects
   // (e.g. encoder: high_res_feats_0, high_res_feats_1, image_embeddings
   //  vs decoder: image_embed, high_res_feats_0, high_res_feats_1).
   for(int i = 0; i < ctx->n_enc_outputs; i++)
@@ -273,7 +273,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
         best = ei;
         break; // exact match
       }
-      // Substring fallback: e.g. decoder "image_embed" matches encoder
+      // substring fallback: e.g. decoder "image_embed" matches encoder
       // "image_embeddings".  Safe because exact matches are tried first
       // and used[] prevents double-assignment of the same encoder output.
       if(best < 0 && (strstr(enc_name, dec_name) || strstr(dec_name, enc_name)))
@@ -292,7 +292,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
            ctx->enc_order[0], ctx->enc_order[1], ctx->enc_order[2], ctx->enc_order[3],
            ctx->n_enc_outputs);
 
-  // Detect model type from decoder output count.
+  // detect model type from decoder output count.
   // SAM: 3+ outputs (masks, iou_predictions, low_res_masks)
   // SegNext: 1 output (mask)
   const int n_dec_outputs = dt_ai_get_output_count(decoder);
@@ -313,7 +313,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   // SAM requires external ImageNet normalization; SegNext bakes it into the encoder
   ctx->normalize = (ctx->model_type == DT_SEG_MODEL_SAM);
 
-  // Query decoder mask output shape: [1, N, H, W] (SAM) or [1, 1, H, W] (SegNext)
+  // query decoder mask output shape: [1, N, H, W] (SAM) or [1, 1, H, W] (SegNext)
   int64_t dec_out_shape[MAX_TENSOR_DIMS];
   const int dec_out_ndim = dt_ai_get_output_shape(decoder, 0, dec_out_shape, MAX_TENSOR_DIMS);
 
@@ -324,7 +324,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
 
     if(ctx->num_masks == 0)
     {
-      // Fallback: check iou_predictions shape [1, N]
+      // fallback: check iou_predictions shape [1, N]
       int64_t iou_shape[MAX_TENSOR_DIMS];
       const int iou_ndim = dt_ai_get_output_shape(decoder, 1, iou_shape, MAX_TENSOR_DIMS);
       ctx->num_masks = (iou_ndim >= 2 && iou_shape[1] > 0) ? (int)iou_shape[1] : 1;
@@ -337,11 +337,11 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       ctx->num_masks = MAX_NUM_MASKS;
     }
 
-    // Decoder mask output dimensions must be concrete
+    // decoder mask output dimensions must be concrete
     ctx->dec_mask_h = (dec_out_ndim >= 4 && dec_out_shape[2] > 0) ? (int)dec_out_shape[2] : -1;
     ctx->dec_mask_w = (dec_out_ndim >= 4 && dec_out_shape[3] > 0) ? (int)dec_out_shape[3] : -1;
 
-    // If decoder has dynamic output dims (e.g. symbolic "num_labels" dim),
+    // if decoder has dynamic output dims (e.g. symbolic "num_labels" dim),
     // reload with num_labels=1 override so ORT can resolve concrete shapes.
     if(ctx->dec_mask_h <= 0 || ctx->dec_mask_w <= 0)
     {
@@ -360,7 +360,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       }
       decoder = ctx->decoder;
 
-      // Re-query output shapes with concrete dims
+      // re-query output shapes with concrete dims
       const int new_ndim
         = dt_ai_get_output_shape(decoder, 0, dec_out_shape, MAX_TENSOR_DIMS);
       ctx->dec_mask_h = (new_ndim >= 4 && dec_out_shape[2] > 0) ? (int)dec_out_shape[2] : -1;
@@ -368,7 +368,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       if(new_ndim >= 4 && dec_out_shape[1] > 1)
         ctx->num_masks = MIN((int)dec_out_shape[1], MAX_NUM_MASKS);
 
-      // Re-query num_masks from iou output if still unresolved
+      // re-query num_masks from iou output if still unresolved
       if(ctx->num_masks <= 1)
       {
         int64_t iou_shape[MAX_TENSOR_DIMS];
@@ -383,8 +383,8 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
                ctx->dec_mask_h, ctx->dec_mask_w, ctx->num_masks);
     }
 
-    // If dims are still dynamic after override, fall back to SAM_INPUT_SIZE.
-    // The backend uses ORT-allocated outputs for dynamic shapes and reports
+    // if dims are still dynamic after override, fall back to SAM_INPUT_SIZE.
+    // the backend uses ORT-allocated outputs for dynamic shapes and reports
     // actual dims after inference via the shape array.
     if(ctx->dec_mask_h <= 0 || ctx->dec_mask_w <= 0)
     {
@@ -395,7 +395,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       ctx->dec_mask_w = SAM_INPUT_SIZE;
     }
 
-    // Query low_res mask spatial dimensions from decoder output 2
+    // query low_res mask spatial dimensions from decoder output 2
     ctx->prev_mask_dim = 256; // default
     {
       int64_t lr_shape[MAX_TENSOR_DIMS];
@@ -407,7 +407,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   else
   {
     // --- SegNext path ---
-    // Single mask output [1, 1, H, W]
+    // single mask output [1, 1, H, W]
     ctx->num_masks = 1;
     ctx->dec_mask_h = (dec_out_ndim >= 4 && dec_out_shape[2] > 0) ? (int)dec_out_shape[2] : SAM_INPUT_SIZE;
     ctx->dec_mask_w = (dec_out_ndim >= 4 && dec_out_shape[3] > 0) ? (int)dec_out_shape[3] : SAM_INPUT_SIZE;
@@ -416,7 +416,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     ctx->prev_mask_dim = ctx->dec_mask_h;
   }
 
-  // Allocate prev_mask buffer (used as decoder input for iterative refinement)
+  // allocate prev_mask buffer (used as decoder input for iterative refinement)
   const size_t pm_size = (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim;
   ctx->prev_mask = g_try_malloc0(pm_size * sizeof(float));
   if(!ctx->prev_mask)
@@ -435,25 +435,25 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
 }
 
 // ONNX Runtime uses a two-phase initialization model:
-//   1. CreateSession() — parses the ONNX graph and builds internal IR.
-//      This is what dt_ai_load_model[_ext]() triggers.  Relatively fast.
-//   2. First Run() — lazily compiles operator kernels, plans memory arenas,
+//   1. CreateSession() -- parses the ONNX graph and builds internal IR.
+//      this is what dt_ai_load_model[_ext]() triggers.  Relatively fast.
+//   2. First Run() -- lazily compiles operator kernels, plans memory arenas,
 //      and (on GPU providers) compiles shaders.  This can take seconds.
 //
-// The decoder session is created on a background thread inside
+// the decoder session is created on a background thread inside
 // _encode_thread_func (object.c), but the first Run() would otherwise
 // happen on the **main GTK thread** when the user clicks to place a point,
 // visibly freezing the UI.
 //
-// This warmup forces phase-2 to happen on the background thread by running
+// this warmup forces phase-2 to happen on the background thread by running
 // a single dummy decode.  Call it after dt_seg_encode_image() so the real
-// encoder embeddings are used — a warmup with zero-filled dummy data only
+// encoder embeddings are used -- a warmup with zero-filled dummy data only
 // partially warms ORT (kernel compilation) but still leaves a significant
 // first-run penalty when real data flows through (memory arena resizing,
 // CPU cache population).  Using the actual embeddings fully exercises the
 // decoder and eliminates the gap between first and subsequent decodes.
 //
-// The output is discarded and no context state is modified (prev_mask
+// the output is discarded and no context state is modified (prev_mask
 // stays zeroed, has_prev_mask stays FALSE).
 void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
 {
@@ -468,7 +468,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
   const int dec_w = ctx->dec_mask_w;
   const int total_points = is_sam ? 2 : 1;
 
-  // Use real encoder outputs when available (after dt_seg_encode_image),
+  // use real encoder outputs when available (after dt_seg_encode_image),
   // fall back to zero-filled dummies (after dt_seg_load only).
   const gboolean use_real = ctx->image_encoded;
 
@@ -497,7 +497,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
     if(!low_res) goto cleanup;
   }
 
-  // Single dummy decode: one foreground point at the origin, no previous mask.
+  // single dummy decode: one foreground point at the origin, no previous mask.
   {
     float coords[] = {0.0f, 0.0f, 0.0f, 0.0f};
     float labels[] = {1.0f, -1.0f};
@@ -579,7 +579,7 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
   if(!ctx || !rgb_data || width <= 0 || height <= 0)
     return FALSE;
 
-  // Skip if already encoded for this image
+  // skip if already encoded for this image
   if(ctx->image_encoded)
     return TRUE;
 
@@ -588,12 +588,12 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
   if(!preprocessed)
     return FALSE;
 
-  // Run encoder
+  // run encoder
   int64_t input_shape[4] = {1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE};
   dt_ai_tensor_t input
     = {.data = preprocessed, .type = DT_AI_FLOAT, .shape = input_shape, .ndim = 4};
 
-  // Allocate output buffers for all encoder outputs
+  // allocate output buffers for all encoder outputs
   float *enc_bufs[MAX_ENCODER_OUTPUTS] = {NULL};
   size_t enc_buf_sizes[MAX_ENCODER_OUTPUTS] = {0};
 
@@ -650,7 +650,7 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
     return FALSE;
   }
 
-  // Cache results
+  // cache results
   for(int i = 0; i < MAX_ENCODER_OUTPUTS; i++)
   {
     g_free(ctx->enc_data[i]);
@@ -685,7 +685,7 @@ float *dt_seg_compute_mask(
 
   const gboolean is_sam = (ctx->model_type == DT_SEG_MODEL_SAM);
 
-  // Build point prompts.
+  // build point prompts.
   // SAM ONNX requires a padding point (0,0) with label -1 appended
   // to every prompt (see SAM official onnx_model_example.ipynb).
   // SegNext does not need a padding point.
@@ -709,7 +709,7 @@ float *dt_seg_compute_mask(
 
   const int pm_dim = ctx->prev_mask_dim;
 
-  // Debug: log mask feedback state
+  // debug: log mask feedback state
   if(ctx->has_prev_mask)
   {
     float pm_min = ctx->prev_mask[0], pm_max = ctx->prev_mask[0];
@@ -729,7 +729,7 @@ float *dt_seg_compute_mask(
              n_points);
   }
 
-  // Build decoder inputs: encoder outputs first, then prompt tensors
+  // build decoder inputs: encoder outputs first, then prompt tensors
   int64_t coords_shape[3] = {1, total_points, 2};
   int64_t labels_shape[2] = {1, total_points};
   int64_t mask_in_shape[4] = {1, 1, pm_dim, pm_dim};
@@ -737,7 +737,7 @@ float *dt_seg_compute_mask(
   dt_ai_tensor_t inputs[MAX_ENCODER_OUTPUTS + 4];
   int ni = 0;
 
-  // Encoder outputs (reordered to match decoder input order)
+  // encoder outputs (reordered to match decoder input order)
   for(int i = 0; i < ctx->n_enc_outputs; i++)
   {
     const int ei = ctx->enc_order[i];
@@ -746,7 +746,7 @@ float *dt_seg_compute_mask(
       .shape = ctx->enc_shapes[ei], .ndim = ctx->enc_ndims[ei]};
   }
 
-  // Prompt inputs (shared: coords, labels, prev_mask)
+  // prompt inputs (shared: coords, labels, prev_mask)
   inputs[ni++] = (dt_ai_tensor_t){
     .data = point_coords, .type = DT_AI_FLOAT, .shape = coords_shape, .ndim = 3};
   inputs[ni++] = (dt_ai_tensor_t){
@@ -784,7 +784,7 @@ float *dt_seg_compute_mask(
 
   if(is_sam)
   {
-    // SAM: 3 outputs — masks [1,N,H,W], iou [1,N], low_res [1,N,pm_dim,pm_dim]
+    // SAM: 3 outputs -- masks [1,N,H,W], iou [1,N], low_res [1,N,pm_dim,pm_dim]
     const size_t low_res_per = (size_t)pm_dim * pm_dim;
     low_res = g_try_malloc((size_t)nm * low_res_per * sizeof(float));
     if(!low_res)
@@ -808,7 +808,7 @@ float *dt_seg_compute_mask(
   }
   else
   {
-    // SegNext: 1 output — mask [1, 1, H, W]
+    // SegNext: 1 output -- mask [1, 1, H, W]
     dec_outputs[0] = (dt_ai_tensor_t){
       .data = masks, .type = DT_AI_FLOAT, .shape = masks_shape, .ndim = 4};
     n_dec_out = 1;
@@ -829,7 +829,7 @@ float *dt_seg_compute_mask(
     return NULL;
   }
 
-  // Re-read actual mask dimensions — the backend updates the shape array
+  // re-read actual mask dimensions -- the backend updates the shape array
   // for dynamic-output models after ORT reports the real tensor shape.
   if(masks_shape[2] > 0 && masks_shape[3] > 0
      && ((int)masks_shape[2] != dec_h || (int)masks_shape[3] != dec_w))
@@ -842,7 +842,7 @@ float *dt_seg_compute_mask(
     per_mask = (size_t)dec_h * dec_w;
   }
 
-  // Select best mask and cache refinement data
+  // select best mask and cache refinement data
   int best = 0;
   if(is_sam)
   {
@@ -855,7 +855,7 @@ float *dt_seg_compute_mask(
     dt_print(DT_DEBUG_AI, "[segmentation] Mask computed (%.3fs), best=%d/%d IoU=%.3f",
              dec_elapsed, best, nm, iou_pred[best]);
 
-    // Cache the best low-res mask for iterative refinement
+    // cache the best low-res mask for iterative refinement
     const size_t low_res_per = (size_t)pm_dim * pm_dim;
     memcpy(ctx->prev_mask, low_res + (size_t)best * low_res_per,
            low_res_per * sizeof(float));
@@ -863,13 +863,13 @@ float *dt_seg_compute_mask(
   }
   else
   {
-    // SegNext: single mask — cache full-res output as prev_mask for refinement
+    // SegNext: single mask -- cache full-res output as prev_mask for refinement
     dt_print(DT_DEBUG_AI, "[segmentation] Mask computed (%.3fs)", dec_elapsed);
     memcpy(ctx->prev_mask, masks, per_mask * sizeof(float));
   }
   ctx->has_prev_mask = TRUE;
 
-  // Crop+resize from decoder resolution to encoded image dimensions
+  // crop+resize from decoder resolution to encoded image dimensions
   const int final_w = ctx->encoded_width;
   const int final_h = ctx->encoded_height;
   const size_t result_size = (size_t)final_w * final_h;

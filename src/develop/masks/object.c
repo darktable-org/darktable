@@ -42,12 +42,12 @@
 #define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
 #define CONF_OBJECT_BRUSH_SIZE_KEY "plugins/darkroom/masks/object/brush_size"
 
-// Target resolution for segmentation encoding (longest side in pixels).
-// Matches the encoder input size (1024) — rendering higher just to
+// target resolution for segmentation encoding (longest side in pixels).
+// matches the encoder input size (1024) -- rendering higher just to
 // downscale in preprocessing wastes pipeline time with no quality gain.
 #define SEG_ENCODE_TARGET 1024
 
-// --- Per-session segmentation state (stored in gui->scratchpad) ---
+// --- per-session segmentation state (stored in gui->scratchpad) ---
 
 typedef enum _encode_state_t
 {
@@ -58,7 +58,7 @@ typedef enum _encode_state_t
   ENCODE_RUNNING = 3,   // background thread in progress
 } _encode_state_t;
 
-// Minimum drag distance (preview pipe pixels) to distinguish click from brush stroke
+// minimum drag distance (preview pipe pixels) to distinguish click from brush stroke
 #define DRAG_THRESHOLD 5.0f
 
 typedef struct _object_data_t
@@ -80,13 +80,13 @@ typedef struct _object_data_t
   float drag_start_y;
   float drag_end_x;         // current drag position (updated in mouse_moved)
   float drag_end_y;
-  // Brush state
+  // brush state
   float brush_radius;               // normalized, 0..0.5 (fraction of MIN(iw,ih))
   gboolean brush_painting;          // TRUE during brush drag
-  gboolean brush_used;              // TRUE after initial input — switches to +/- refinement mode
+  gboolean brush_used;              // TRUE after initial input -- switches to +/- refinement mode
   dt_masks_dynbuf_t *brush_points;  // raw brush path (x,y pairs in preview space)
   int brush_points_count;
-  // Vectorization preview (auto-updated after each decode)
+  // vectorization preview (auto-updated after each decode)
   GList *preview_forms;             // GList of dt_masks_form_t* (mask-space pixel coords)
   GList *preview_signs;             // parallel GList of sign values ('+' or '-')
   int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
@@ -98,7 +98,7 @@ static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
   return (gui && gui->scratchpad) ? (_object_data_t *)gui->scratchpad : NULL;
 }
 
-// Free vectorized preview forms (never registered in dev->forms)
+// free vectorized preview forms (never registered in dev->forms)
 static void _free_preview_forms(_object_data_t *d)
 {
   if(!d) return;
@@ -110,7 +110,7 @@ static void _free_preview_forms(_object_data_t *d)
   d->preview_signs = NULL;
 }
 
-// Free all resources in _object_data_t (must be called after thread has joined)
+// free all resources in _object_data_t (must be called after thread has joined)
 static void _destroy_data(_object_data_t *d)
 {
   if(!d)
@@ -131,7 +131,7 @@ static void _destroy_data(_object_data_t *d)
   g_free(d);
 }
 
-// Idle callback for deferred cleanup when background thread was still running
+// idle callback for deferred cleanup when background thread was still running
 static gboolean _deferred_cleanup(gpointer data)
 {
   _object_data_t *d = data;
@@ -152,23 +152,23 @@ static void _free_data(dt_masks_form_gui_t *gui)
   const int state = g_atomic_int_get(&d->encode_state);
   if(state == ENCODE_RUNNING)
   {
-    // Thread still running — defer cleanup so we don't block the UI
+    // thread still running -- defer cleanup so we don't block the UI
     g_timeout_add(200, _deferred_cleanup, d);
     return;
   }
   _destroy_data(d);
 }
 
-// Data passed to the background encoding thread
+// data passed to the background encoding thread
 typedef struct _encode_thread_data_t
 {
   _object_data_t *d;
   dt_imgid_t imgid; // image to encode (thread renders via export pipe)
 } _encode_thread_data_t;
 
-// Background thread: loads model, renders image via export pipe, and encodes.
-// Does ZERO GLib/GTK calls — only computation + atomic state set.
-// The poll timer on the main thread detects completion.
+// background thread: loads model, renders image via export pipe, and encodes.
+// does ZERO GLib/GTK calls -- only computation + atomic state set.
+// the poll timer on the main thread detects completion.
 static gpointer _encode_thread_func(gpointer data)
 {
   _encode_thread_data_t *td = data;
@@ -176,7 +176,7 @@ static gpointer _encode_thread_func(gpointer data)
   const dt_imgid_t imgid = td->imgid;
   g_free(td);
 
-  // Load model if needed
+  // load model if needed
   if(!d->model_loaded)
   {
     if(!d->env)
@@ -194,7 +194,7 @@ static gpointer _encode_thread_func(gpointer data)
     d->model_loaded = TRUE;
   }
 
-  // Render image at high resolution via temporary export pipeline
+  // render image at high resolution via temporary export pipeline
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
@@ -243,7 +243,7 @@ static gpointer _encode_thread_func(gpointer data)
 
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, out_w, out_h, final_scale);
 
-  // backbuf is float RGBA after process_no_gamma — convert to uint8 RGB for SAM
+  // backbuf is float RGBA after process_no_gamma -- convert to uint8 RGB for SAM
   uint8_t *rgb = NULL;
   if(pipe.backbuf)
   {
@@ -271,14 +271,14 @@ static gpointer _encode_thread_func(gpointer data)
     return NULL;
   }
 
-  // Store encoding dimensions for coordinate mapping
+  // store encoding dimensions for coordinate mapping
   d->encode_w = out_w;
   d->encode_h = out_h;
 
-  // Encode the image
+  // encode the image
   gboolean ok = dt_seg_encode_image(d->seg, rgb, out_w, out_h);
 
-  // If accelerated encoding failed, fall back to CPU
+  // if accelerated encoding failed, fall back to CPU
   if(!ok)
   {
     dt_print(DT_DEBUG_AI, "[object mask] Encoding failed, retrying with CPU provider");
@@ -294,21 +294,21 @@ static gpointer _encode_thread_func(gpointer data)
       d->model_loaded = FALSE;
   }
 
-  // Store the RGB image for edge-aware mask refinement
+  // store the RGB image for edge-aware mask refinement
   g_free(d->encode_rgb);
   d->encode_rgb = rgb;
   d->encode_rgb_w = out_w;
   d->encode_rgb_h = out_h;
 
-  // Signal ready immediately so the user can start placing points.
-  // The warmup below continues on this background thread — if the user
+  // signal ready immediately so the user can start placing points.
+  // the warmup below continues on this background thread -- if the user
   // clicks before it finishes, ORT serializes concurrent Run() calls on
   // the same session, so the decode simply waits for the warmup to
   // complete first.  In practice, users need a moment to position their
   // cursor, so the ~1 s warmup usually finishes before the first click.
   g_atomic_int_set(&d->encode_state, ok ? ENCODE_READY : ENCODE_ERROR);
 
-  // Warm up decoder with real encoder embeddings so the first user click
+  // warm up decoder with real encoder embeddings so the first user click
   // doesn't pay ORT's lazy-init + arena-sizing cost on the main thread.
   if(ok)
     dt_seg_warmup_decoder(d->seg);
@@ -316,9 +316,9 @@ static gpointer _encode_thread_func(gpointer data)
   return NULL;
 }
 
-// Keep only the connected component containing the seed pixel (seed_x, seed_y).
-// If the seed is outside any foreground region, keep the largest component instead.
-// Operates in-place: non-selected foreground pixels are zeroed.
+// keep only the connected component containing the seed pixel (seed_x, seed_y).
+// if the seed is outside any foreground region, keep the largest component instead.
+// operates in-place: non-selected foreground pixels are zeroed.
 static void _keep_seed_component(float *mask, int w, int h, float threshold,
                                   int seed_x, int seed_y)
 {
@@ -392,7 +392,7 @@ static void _keep_seed_component(float *mask, int w, int h, float threshold,
     }
   }
 
-  // Prefer component containing the seed point; fall back to largest
+  // prefer component containing the seed point; fall back to largest
   const int16_t keep = (seed_label > 0) ? seed_label : best_label;
 
   if(keep > 0)
@@ -408,7 +408,7 @@ static void _keep_seed_component(float *mask, int w, int h, float threshold,
   g_free(labels);
 }
 
-// Morphological erode: output pixel is 1 only if all pixels in the
+// morphological erode: output pixel is 1 only if all pixels in the
 // square structuring element of given radius are 1.
 static void _morph_erode(const uint8_t *src, uint8_t *dst, int w, int h, int radius)
 {
@@ -429,7 +429,7 @@ static void _morph_erode(const uint8_t *src, uint8_t *dst, int w, int h, int rad
   }
 }
 
-// Morphological dilate: output pixel is 1 if any pixel in the
+// morphological dilate: output pixel is 1 if any pixel in the
 // square structuring element of given radius is 1.
 static void _morph_dilate(const uint8_t *src, uint8_t *dst, int w, int h, int radius)
 {
@@ -450,9 +450,9 @@ static void _morph_dilate(const uint8_t *src, uint8_t *dst, int w, int h, int ra
   }
 }
 
-// Morphological open+close on a float mask.
-// Open (erode->dilate) removes small protrusions/bridges.
-// Close (dilate->erode) fills small holes/gaps.
+// morphological open+close on a float mask.
+// open (erode->dilate) removes small protrusions/bridges.
+// close (dilate->erode) fills small holes/gaps.
 static void _morph_open_close(float *mask, int w, int h, float threshold, int radius)
 {
   if(radius <= 0) return;
@@ -467,19 +467,19 @@ static void _morph_open_close(float *mask, int w, int h, float threshold, int ra
     return;
   }
 
-  // Binarize
+  // binarize
   for(size_t i = 0; i < n; i++)
     bin[i] = mask[i] > threshold ? 1 : 0;
 
-  // Open: erode into tmp, then dilate back into bin
+  // open: erode into tmp, then dilate back into bin
   _morph_erode(bin, tmp, w, h, radius);
   _morph_dilate(tmp, bin, w, h, radius);
 
-  // Close: dilate into tmp, then erode back into bin
+  // close: dilate into tmp, then erode back into bin
   _morph_dilate(bin, tmp, w, h, radius);
   _morph_erode(tmp, bin, w, h, radius);
 
-  // Apply result back to float mask
+  // apply result back to float mask
   for(size_t i = 0; i < n; i++)
   {
     if(bin[i] && mask[i] <= threshold)
@@ -492,7 +492,7 @@ static void _morph_open_close(float *mask, int w, int h, float threshold, int ra
   g_free(tmp);
 }
 
-// Edge-aware threshold refinement: near strong image edges the binarization
+// edge-aware threshold refinement: near strong image edges the binarization
 // threshold is raised by up to edge_boost, snapping the mask boundary to
 // actual object contours.  Uses Scharr gradient of the stored RGB image.
 static void _edge_refine_threshold(float *mask, int mw, int mh,
@@ -506,7 +506,7 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
 
   const size_t npix = (size_t)mw * mh;
 
-  // Step 1: Convert uint8 RGB to float luminance (Rec.601)
+  // step 1: Convert uint8 RGB to float luminance (Rec.601)
   float *lum = g_try_malloc(npix * sizeof(float));
   if(!lum) return;
 
@@ -515,7 +515,7 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
             + 0.587f * (float)rgb[i * 3 + 1]
             + 0.114f * (float)rgb[i * 3 + 2]) / 255.0f;
 
-  // Step 2: Compute Scharr gradient magnitude, track max for normalization
+  // step 2: Compute Scharr gradient magnitude, track max for normalization
   float *grad = g_try_malloc(npix * sizeof(float));
   if(!grad)
   {
@@ -548,7 +548,7 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
 
   g_free(lum);
 
-  // Step 3: Normalize and apply spatially-varying threshold
+  // step 3: Normalize and apply spatially-varying threshold
   const float inv_max = (grad_max > 1e-6f) ? 1.0f / grad_max : 0.0f;
 
   for(size_t i = 0; i < npix; i++)
@@ -561,7 +561,7 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
   g_free(grad);
 }
 
-// Resample a raw brush path into evenly-spaced foreground points using
+// resample a raw brush path into evenly-spaced foreground points using
 // arc-length parameterization and add them to gui->guipoints.
 // brush_pts: x,y pairs in preview pipe space, n_pts: number of points.
 static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
@@ -570,7 +570,7 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
 {
   if(n_pts < 2) return;
 
-  // Compute total arc length
+  // compute total arc length
   float total_len = 0.0f;
   for(int i = 1; i < n_pts; i++)
   {
@@ -581,7 +581,7 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
 
   if(total_len < 1.0f)
   {
-    // Degenerate stroke — just add the first point
+    // degenerate stroke -- just add the first point
     dt_masks_dynbuf_reset(gui->guipoints);
     dt_masks_dynbuf_reset(gui->guipoints_payload);
     gui->guipoints_count = 0;
@@ -591,7 +591,7 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
     return;
   }
 
-  // Target N points: one per brush diameter, clamped to [3, 32]
+  // target N points: one per brush diameter, clamped to [3, 32]
   _object_data_t *d = _get_data(gui);
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
@@ -601,12 +601,12 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
   const float step = total_len / (float)(n_target - 1);
   float accum = 0.0f;
 
-  // Reset guipoints for brush output
+  // reset guipoints for brush output
   dt_masks_dynbuf_reset(gui->guipoints);
   dt_masks_dynbuf_reset(gui->guipoints_payload);
   gui->guipoints_count = 0;
 
-  // Always emit first point
+  // always emit first point
   dt_masks_dynbuf_add_2(gui->guipoints, brush_pts[0], brush_pts[1]);
   dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
   gui->guipoints_count++;
@@ -633,7 +633,7 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
       const float remaining = next_emit - accum;
       if(seg_pos + remaining <= seg_len)
       {
-        // Emit a point within this segment
+        // emit a point within this segment
         seg_pos += remaining;
         accum += remaining;
         const float t = seg_pos / seg_len;
@@ -646,14 +646,14 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
       }
       else
       {
-        // Rest of segment doesn't reach next emit point
+        // rest of segment doesn't reach next emit point
         accum += (seg_len - seg_pos);
         break;
       }
     }
   }
 
-  // Always emit last point
+  // always emit last point
   dt_masks_dynbuf_add_2(gui->guipoints,
                          brush_pts[(n_pts - 1) * 2],
                          brush_pts[(n_pts - 1) * 2 + 1]);
@@ -661,7 +661,7 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
   gui->guipoints_count++;
 }
 
-// Run the decoder with accumulated points and update the cached mask
+// run the decoder with accumulated points and update the cached mask
 static void _run_decoder(dt_masks_form_gui_t *gui)
 {
   _object_data_t *d = _get_data(gui);
@@ -675,16 +675,16 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   const float *gp = dt_masks_dynbuf_buffer(gui->guipoints);
   const float *gpp = dt_masks_dynbuf_buffer(gui->guipoints_payload);
 
-  // Points are stored in preview pipe pixel space — scale to encoding space
+  // points are stored in preview pipe pixel space -- scale to encoding space
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
   const float sx = (wd > 0) ? (float)d->encode_w / wd : 1.0f;
   const float sy = (ht > 0) ? (float)d->encode_h / ht : 1.0f;
 
-  // Always send all accumulated points.  On the first click reset the
+  // always send all accumulated points.  On the first click reset the
   // previous mask; on subsequent clicks keep it so the decoder gets
   // both all points AND the previous mask as boundary context.
-  // After brush decode, prev_mask carries brush context — don't reset it.
+  // after brush decode, prev_mask carries brush context -- don't reset it.
   const int n_prompt_points = gui->guipoints_count;
   if(gui->guipoints_count <= 1 && !d->brush_used)
     dt_seg_reset_prev_mask(d->seg);
@@ -697,7 +697,7 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     points[i].label = (int)gpp[i];
   }
 
-  // Find seed point for connected component filter:
+  // find seed point for connected component filter:
   // always search ALL accumulated points (not just prompt points)
   int seed_x = -1, seed_y = -1;
   for(int i = gui->guipoints_count - 1; i >= 0; i--)
@@ -711,7 +711,7 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     }
   }
 
-  // Multi-pass iterative refinement: run decoder multiple times,
+  // multi-pass iterative refinement: run decoder multiple times,
   // feeding back the low-res mask each time to tighten boundaries.
   const int n_passes = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_KEY), 1, 5);
   int mw = 0, mh = 0;
@@ -729,12 +729,12 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
 
   if(mask)
   {
-    // Remove disconnected blobs: keep only the component at the seed point
+    // remove disconnected blobs: keep only the component at the seed point
     seed_x = CLAMP(seed_x, 0, mw - 1);
     seed_y = CLAMP(seed_y, 0, mh - 1);
     const float threshold = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
 
-    // Edge-aware threshold refinement: snap mask boundary to image edges
+    // edge-aware threshold refinement: snap mask boundary to image edges
     const float edge_boost = CLAMP(dt_conf_get_float(CONF_OBJECT_EDGE_REFINE_KEY), 0.0f, 0.5f);
     if(edge_boost > 0.0f && d->encode_rgb)
       _edge_refine_threshold(mask, mw, mh,
@@ -743,7 +743,7 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
 
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
 
-    // Morphological open+close to remove small protrusions and fill holes
+    // morphological open+close to remove small protrusions and fill holes
     const int morph_radius = CLAMP(dt_conf_get_int(CONF_OBJECT_MORPH_KEY), 0, 5);
     _morph_open_close(mask, mw, mh, threshold, morph_radius);
 
@@ -755,8 +755,8 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   dt_gui_cursor_clear_busy();
 }
 
-// Run vectorization with current preview parameters, store result in scratchpad.
-// Called automatically after each decode and on scroll parameter changes.
+// run vectorization with current preview parameters, store result in scratchpad.
+// called automatically after each decode and on scroll parameter changes.
 static void _update_preview(_object_data_t *d)
 {
   _free_preview_forms(d);
@@ -776,8 +776,8 @@ static void _update_preview(_object_data_t *d)
   g_free(inv_mask);
 }
 
-// Transform mask-space forms to input-normalized coords and register them.
-// Takes ownership of `forms` and `signs` lists (forms are appended to dev->forms).
+// transform mask-space forms to input-normalized coords and register them.
+// takes ownership of `forms` and `signs` lists (forms are appended to dev->forms).
 static dt_masks_form_t *
 _register_vectorized_forms(dt_iop_module_t *module,
                            GList *forms, GList *signs,
@@ -787,12 +787,12 @@ _register_vectorized_forms(dt_iop_module_t *module,
 
   // darktable mask coordinates are stored in input-image-normalized space:
   //   coord = backtransform(backbuf_pixel) / iwidth
-  // This undoes all geometric pipeline transforms (crop, rotation, lens, etc.)
+  // this undoes all geometric pipeline transforms (crop, rotation, lens, etc.)
   // so that the mask can be applied at any point in the pipeline.
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
-  // Vectorized coordinates are in mask space (encoding resolution).
+  // vectorized coordinates are in mask space (encoding resolution).
   // dt_dev_distort_backtransform expects preview pipe pixel space.
   const float msx = (mask_w > 0) ? wd / (float)mask_w : 1.0f;
   const float msy = (mask_h > 0) ? ht / (float)mask_h : 1.0f;
@@ -804,8 +804,8 @@ _register_vectorized_forms(dt_iop_module_t *module,
     if(npts == 0)
       continue;
 
-    // Collect all coordinates into a flat array for batch backtransform.
-    // Each path point has 3 coordinate pairs: corner, ctrl1, ctrl2.
+    // collect all coordinates into a flat array for batch backtransform.
+    // each path point has 3 coordinate pairs: corner, ctrl1, ctrl2.
     float *pts = g_new(float, npts * 6);
     int i = 0;
     for(GList *p = f->points; p; p = g_list_next(p))
@@ -819,7 +819,7 @@ _register_vectorized_forms(dt_iop_module_t *module,
       pts[i++] = pt->ctrl2[1];
     }
 
-    // Scale from mask space (encoding resolution) to preview pipe space
+    // scale from mask space (encoding resolution) to preview pipe space
     for(int j = 0; j < npts * 6; j += 2)
     {
       pts[j + 0] *= msx;
@@ -828,7 +828,7 @@ _register_vectorized_forms(dt_iop_module_t *module,
 
     dt_dev_distort_backtransform(darktable.develop, pts, npts * 3);
 
-    // Write back and normalize by input image dimensions
+    // write back and normalize by input image dimensions
     i = 0;
     for(GList *p = f->points; p; p = g_list_next(p))
     {
@@ -852,9 +852,9 @@ _register_vectorized_forms(dt_iop_module_t *module,
     return NULL;
   }
 
-  // Always wrap paths in a group — holes use difference mode
+  // always wrap paths in a group -- holes use difference mode
 
-  // Count existing AI object groups/paths for numbering
+  // count existing AI object groups/paths for numbering
   dt_develop_t *dev = darktable.develop;
   guint grp_nb = 0;
   guint path_nb = 0;
@@ -877,14 +877,14 @@ _register_vectorized_forms(dt_iop_module_t *module,
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   snprintf(grp->name, sizeof(grp->name), _("ai object group #%d"), (int)grp_nb);
 
-  // Register all path forms so they exist in dev->forms
+  // register all path forms so they exist in dev->forms
   for(GList *l = forms; l; l = g_list_next(l))
   {
     dt_masks_form_t *f = l->data;
     dev->forms = g_list_append(dev->forms, f);
   }
 
-  // Add each path to the group; holes get difference mode
+  // add each path to the group; holes get difference mode
   GList *s = signs;
   for(GList *l = forms; l; l = g_list_next(l), s = s ? g_list_next(s) : NULL)
   {
@@ -897,7 +897,7 @@ _register_vectorized_forms(dt_iop_module_t *module,
     }
   }
 
-  // Register the group (history item added by caller after blend mask assignment)
+  // register the group (history item added by caller after blend mask assignment)
   dev->forms = g_list_append(dev->forms, grp);
 
   g_list_free(forms);
@@ -907,7 +907,7 @@ _register_vectorized_forms(dt_iop_module_t *module,
   return grp;
 }
 
-// Finalize using cached preview forms (steals ownership from scratchpad).
+// finalize using cached preview forms (steals ownership from scratchpad).
 static dt_masks_form_t *
 _finalize_from_preview(dt_iop_module_t *module, dt_masks_form_gui_t *gui)
 {
@@ -925,8 +925,8 @@ _finalize_from_preview(dt_iop_module_t *module, dt_masks_form_gui_t *gui)
   return _register_vectorized_forms(module, forms, signs, mw, mh);
 }
 
-// Finalize: vectorize the mask and register as a group of path forms.
-// Fallback when no preview forms are available.
+// finalize: vectorize the mask and register as a group of path forms.
+// fallback when no preview forms are available.
 static dt_masks_form_t *
 _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
 {
@@ -994,7 +994,7 @@ static int _object_events_mouse_scrolled(
 {
   _object_data_t *d = _get_data(gui);
 
-  // Brush size control (plain scroll, before brush is used)
+  // brush size control (plain scroll, before brush is used)
   if(gui->creation && d && !d->brush_used && dt_modifier_is(state, 0))
   {
     const float val = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
@@ -1007,12 +1007,12 @@ static int _object_events_mouse_scrolled(
     return 1;
   }
 
-  // Vectorization parameter adjustment (after brush is used)
+  // vectorization parameter adjustment (after brush is used)
   if(gui->creation && d && d->brush_used && d->mask)
   {
     if(dt_modifier_is(state, 0))
     {
-      // Plain scroll: adjust cleanup (potrace turdsize)
+      // plain scroll: adjust cleanup (potrace turdsize)
       d->preview_cleanup = CLAMP(d->preview_cleanup + (up ? 5 : -5), 0, 100);
       dt_conf_set_int("plugins/darkroom/masks/object/cleanup", d->preview_cleanup);
       _update_preview(d);
@@ -1023,7 +1023,7 @@ static int _object_events_mouse_scrolled(
     }
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      // Shift+scroll: adjust smoothing (potrace alphamax)
+      // shift+scroll: adjust smoothing (potrace alphamax)
       d->preview_smoothing = CLAMP(d->preview_smoothing + (up ? 0.05f : -0.05f), 0.0f, 1.3f);
       dt_conf_set_float("plugins/darkroom/masks/object/smoothing", d->preview_smoothing);
       _update_preview(d);
@@ -1034,7 +1034,7 @@ static int _object_events_mouse_scrolled(
     }
   }
 
-  // Opacity control (ctrl+scroll)
+  // opacity control (ctrl+scroll)
   if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
@@ -1048,7 +1048,7 @@ static int _object_events_mouse_scrolled(
   return 0;
 }
 
-// Clear accumulated points, mask preview, and iterative refinement state
+// clear accumulated points, mask preview, and iterative refinement state
 static void _clear_selection(dt_masks_form_gui_t *gui)
 {
   _object_data_t *d = _get_data(gui);
@@ -1068,7 +1068,7 @@ static void _clear_selection(dt_masks_form_gui_t *gui)
   if(d->seg)
     dt_seg_reset_prev_mask(d->seg);
 
-  // Reset brush and preview state
+  // reset brush and preview state
   d->brush_used = FALSE;
   d->brush_painting = FALSE;
   d->brush_points_count = 0;
@@ -1104,7 +1104,7 @@ static int _object_events_button_pressed(
 
   if(gui->creation && which == 1 && dt_modifier_is(state, GDK_MOD1_MASK))
   {
-    // Alt+click: clear selection
+    // alt+click: clear selection
     if(d && d->encode_state == ENCODE_READY
        && (gui->guipoints_count > 0 || d->mask || d->brush_used))
       _clear_selection(gui);
@@ -1116,10 +1116,10 @@ static int _object_events_button_pressed(
     if(!d || d->encode_state != ENCODE_READY)
       return 1;
 
-    // Dismiss the "ready" hint now that the user is interacting
+    // dismiss the "ready" hint now that the user is interacting
     dt_control_log_ack_all();
 
-    // Start drag tracking — actual point/brush/click is resolved on button release
+    // start drag tracking -- actual point/brush/click is resolved on button release
     float wd, ht, iwidth, iheight;
     dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
@@ -1146,18 +1146,18 @@ static int _object_events_button_pressed(
   }
   else if(gui->creation && which == 3)
   {
-    // Don't exit while background threads are running
+    // don't exit while background threads are running
     if(d && g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
       return 1;
 
-    // Right-click: finalize mask (prefer cached preview forms)
+    // right-click: finalize mask (prefer cached preview forms)
     dt_masks_form_t *new_grp = NULL;
     if(d && d->preview_forms)
       new_grp = _finalize_from_preview(module, gui);
     else if(gui->guipoints_count > 0)
       new_grp = _finalize_mask(module, form, gui);
 
-    // Add the new group to the module's blend mask group
+    // add the new group to the module's blend mask group
     if(new_grp)
     {
       dt_develop_t *dev = darktable.develop;
@@ -1181,7 +1181,7 @@ static int _object_events_button_pressed(
       dt_dev_add_masks_history_item(dev, module, TRUE);
     }
 
-    // Cleanup and exit creation mode
+    // cleanup and exit creation mode
     gui->creation = FALSE;
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -1196,7 +1196,7 @@ static int _object_events_button_pressed(
 
     dt_control_hinter_message("");
 
-    // Exit creation mode and select the new group.
+    // exit creation mode and select the new group.
     // dt_masks_set_edit_mode requires a non-NULL module (it returns
     // immediately otherwise), so clear the form directly when
     // module is NULL (standalone mask creation).
@@ -1261,7 +1261,7 @@ static int _object_events_button_released(
   if(was_brush_painting && dist >= DRAG_THRESHOLD
      && d->brush_points && d->brush_points_count >= 2)
   {
-    // Brush stroke: resample path into evenly-spaced foreground points
+    // brush stroke: resample path into evenly-spaced foreground points
     _resample_brush_to_points(gui,
                               dt_masks_dynbuf_buffer(d->brush_points),
                               d->brush_points_count);
@@ -1269,12 +1269,12 @@ static int _object_events_button_released(
   }
   else
   {
-    // Short click: single point (foreground or background)
+    // short click: single point (foreground or background)
     const float label = dt_modifier_is(state, GDK_SHIFT_MASK) ? 0.0f : 1.0f;
     dt_masks_dynbuf_add_2(gui->guipoints, d->drag_start_x, d->drag_start_y);
     dt_masks_dynbuf_add(gui->guipoints_payload, label);
     gui->guipoints_count++;
-    // A short click in brush mode (no shift) counts as a completed brush stroke
+    // a short click in brush mode (no shift) counts as a completed brush stroke
     if(was_brush_painting)
       d->brush_used = TRUE;
   }
@@ -1285,7 +1285,7 @@ static int _object_events_button_released(
 
   _run_decoder(gui);
 
-  // Auto-update vectorization preview after each decode
+  // auto-update vectorization preview after each decode
   if(d->mask)
     _update_preview(d);
 
@@ -1328,7 +1328,7 @@ static int _object_events_mouse_moved(
   {
     _object_data_t *d = _get_data(gui);
 
-    // Track drag position and collect brush path points
+    // track drag position and collect brush path points
     if(d && d->dragging)
     {
       float wd, ht, iwidth, iheight;
@@ -1349,7 +1349,7 @@ static int _object_events_mouse_moved(
   return 1;
 }
 
-// Timer callback: periodically redraw center so +/- cursor tracks shift key
+// timer callback: periodically redraw center so +/- cursor tracks shift key
 static gboolean _modifier_poll(gpointer data)
 {
   (void)data;
@@ -1371,7 +1371,7 @@ static void _object_events_post_expose(
   if(!gui->creation)
     return;
 
-  // Ensure scratchpad exists
+  // ensure scratchpad exists
   _object_data_t *d = _get_data(gui);
   if(!d)
   {
@@ -1382,7 +1382,7 @@ static void _object_events_post_expose(
     gui->scratchpad = d;
   }
 
-  // Detect image change: reset encoding if we switched to a different image
+  // detect image change: reset encoding if we switched to a different image
   const dt_imgid_t cur_imgid = darktable.develop->image_storage.id;
   const int cur_state = g_atomic_int_get(&d->encode_state);
   if((cur_state == ENCODE_READY || cur_state == ENCODE_ERROR)
@@ -1403,7 +1403,7 @@ static void _object_events_post_expose(
     d->encode_rgb = NULL;
     d->encode_rgb_w = d->encode_rgb_h = 0;
     d->encode_state = ENCODE_IDLE;
-    // Reset brush, preview, and point state so the new image starts fresh
+    // reset brush, preview, and point state so the new image starts fresh
     d->brush_used = FALSE;
     d->brush_painting = FALSE;
     d->brush_points_count = 0;
@@ -1417,7 +1417,7 @@ static void _object_events_post_expose(
     gui->guipoints_count = 0;
   }
 
-  // Eager encoding: load model and encode image as soon as tool opens
+  // eager encoding: load model and encode image as soon as tool opens
   if(d->encode_state == ENCODE_IDLE)
   {
     dt_control_log(_("object mask: analyzing image..."));
@@ -1428,8 +1428,8 @@ static void _object_events_post_expose(
 
   if(d->encode_state == ENCODE_MSG_SHOWN)
   {
-    // Frame 2: launch background thread to render and encode the image.
-    // The thread creates a temporary export pipe at high resolution
+    // frame 2: launch background thread to render and encode the image.
+    // the thread creates a temporary export pipe at high resolution
     // instead of using the low-res preview backbuf.
     _encode_thread_data_t *td = g_new(_encode_thread_data_t, 1);
     td->d = d;
@@ -1437,7 +1437,7 @@ static void _object_events_post_expose(
 
     d->encoded_imgid = cur_imgid;
     d->encode_state = ENCODE_RUNNING;
-    // Start poll timer BEFORE the thread — it will detect completion
+    // start poll timer BEFORE the thread -- it will detect completion
     // and also tracks modifier keys once encoding is ready
     if(!d->modifier_poll_id)
       d->modifier_poll_id = g_timeout_add(100, _modifier_poll, NULL);
@@ -1447,14 +1447,14 @@ static void _object_events_post_expose(
 
   if(g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
   {
-    // Keep the message visible while the thread is working
+    // keep the message visible while the thread is working
     dt_control_log(_("object mask: analyzing image..."));
     return;
   }
 
   if(g_atomic_int_get(&d->encode_state) == ENCODE_READY && d->encode_thread)
   {
-    // Thread finished (detected by poll timer redraw) — join it
+    // thread finished (detected by poll timer redraw) -- join it
     g_thread_join(d->encode_thread);
     d->encode_thread = NULL;
     dt_control_log_ack_all();
@@ -1467,7 +1467,7 @@ static void _object_events_post_expose(
     {
       g_thread_join(d->encode_thread);
       d->encode_thread = NULL;
-      // Log only once when the thread is first joined
+      // log only once when the thread is first joined
       dt_control_log(_("object mask preparation failed"));
     }
     return;
@@ -1522,7 +1522,7 @@ static void _object_events_post_expose(
     }
   }
 
-  // --- Draw vectorization preview (real path style with anchor dots) ---
+  // --- draw vectorization preview (real path style with anchor dots) ---
   if(d->preview_forms)
   {
     const float msx = (d->mask_w > 0) ? wd / (float)d->mask_w : 1.0f;
@@ -1548,7 +1548,7 @@ static void _object_events_post_expose(
                        pt->corner[0] * msx, pt->corner[1] * msy);
       }
 
-      // Close path back to first point
+      // close path back to first point
       cairo_curve_to(cr,
                      first_pt->ctrl1[0] * msx, first_pt->ctrl1[1] * msy,
                      first_pt->ctrl2[0] * msx, first_pt->ctrl2[1] * msy,
@@ -1565,7 +1565,7 @@ static void _object_events_post_expose(
     }
   }
 
-  // Query pointer position and modifier state directly from GDK so the
+  // query pointer position and modifier state directly from GDK so the
   // cursor/brush is drawn at the correct location even before the first
   // mouse_moved event fires.
   GtkWidget *cw = dt_ui_center(darktable.gui->ui);
@@ -1578,7 +1578,7 @@ static void _object_events_post_expose(
     gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
   const gboolean shift_held = (mod & GDK_SHIFT_MASK) != 0;
 
-  // Convert device coordinates to preview pipe pixel space
+  // convert device coordinates to preview pipe pixel space
   {
     float pzx, pzy, zs;
     dt_dev_get_pointer_zoom_pos(&darktable.develop->full,
@@ -1590,12 +1590,12 @@ static void _object_events_post_expose(
 
   if(d->brush_painting && d->brush_points && d->brush_points_count >= 2)
   {
-    // During brush painting: draw stroke path and circle at current position
+    // during brush painting: draw stroke path and circle at current position
     const float min_dim = MIN(iwidth, iheight);
     const float radius = d->brush_radius * min_dim;
     const float opacity = 0.5f;
 
-    // Draw brush stroke path (DT_GUI_COLOR_BRUSH_TRACE matches brush mask style)
+    // draw brush stroke path (DT_GUI_COLOR_BRUSH_TRACE matches brush mask style)
     const float *bp = dt_masks_dynbuf_buffer(d->brush_points);
     cairo_save(cr);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
@@ -1618,7 +1618,7 @@ static void _object_events_post_expose(
   }
   else if(!d->brush_used)
   {
-    // Before brush completed: draw brush circle cursor (same style as brush mask)
+    // before brush completed: draw brush circle cursor (same style as brush mask)
     const float min_dim = MIN(iwidth, iheight);
     const float radius = d->brush_radius * min_dim;
     const float opacity = 0.5f;
@@ -1634,20 +1634,20 @@ static void _object_events_post_expose(
   }
   else
   {
-    // After brush used: draw +/- cursor indicator for point refinement
+    // after brush used: draw +/- cursor indicator for point refinement
     const float r = DT_PIXEL_APPLY_DPI(8.0f) / zoom_scale;
     const float lw = DT_PIXEL_APPLY_DPI(2.0f) / zoom_scale;
     cairo_set_line_width(cr, lw);
     cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
 
-    // Horizontal line (common to both + and -)
+    // horizontal line (common to both + and -)
     cairo_move_to(cr, gui->posx - r, gui->posy);
     cairo_line_to(cr, gui->posx + r, gui->posy);
     cairo_stroke(cr);
 
     if(!shift_held)
     {
-      // Add mode: vertical line to form "+"
+      // add mode: vertical line to form "+"
       cairo_move_to(cr, gui->posx, gui->posy - r);
       cairo_line_to(cr, gui->posx, gui->posy + r);
       cairo_stroke(cr);
@@ -1656,7 +1656,7 @@ static void _object_events_post_expose(
 
 }
 
-// --- Stub functions (object is transient — result is path masks) ---
+// --- stub functions (object is transient -- result is path masks) ---
 
 static int _object_get_points(
   dt_develop_t *dev,
@@ -1887,7 +1887,7 @@ static void _object_modify_property(
     case DT_MASKS_PROPERTY_SIZE:;
       const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
       float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-      // Only allow resizing before the first brush stroke
+      // only allow resizing before the first brush stroke
       if(!d || !d->brush_used)
       {
         brush_size = CLAMP(brush_size * ratio, 0.005f, 0.5f);
@@ -1937,7 +1937,7 @@ _object_initial_source_pos(const float iwd, const float iht, float *x, float *y)
   (void)y;
 }
 
-// The function table for object masks
+// the function table for object masks
 const dt_masks_functions_t dt_masks_functions_object = {
   .point_struct_size = sizeof(struct dt_masks_point_object_t),
   .sanitize_config = _object_sanitize_config,
