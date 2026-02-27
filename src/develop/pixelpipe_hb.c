@@ -2309,17 +2309,18 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 && darktable.dump_diff_pipe
                 && !dt_pipe_shutdown(pipe))
             {
-              const int ch = dt_opencl_get_image_element_size(cl_mem_input) / sizeof(float);
+              const int ch = dt_opencl_get_image_element_size(cl_mem_input);
               const int cho = dt_opencl_get_image_element_size(*cl_mem_output) / sizeof(float);
-              if((ch == 1 || ch == 4)
-                  && (cho == 1 || cho == 4)
-                  && dt_str_commasubstring(darktable.dump_diff_pipe, module->op))
+              if((ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
+                  && (cho == 1 || cho == 4)       // output for 1/4 channel floats
+                  && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
+                      || dt_str_commasubstring(darktable.dump_diff_pipe, "complete")))
               {
                 const int ow = roi_out->width;
                 const int oh = roi_out->height;
                 const int iw = roi_in.width;
                 const int ih = roi_in.height;
-                float *clindata = dt_alloc_align_float((size_t)iw * ih * ch);
+                float *clindata = dt_alloc_aligned((size_t)iw * ih * ch);
                 float *cloutdata = dt_alloc_align_float((size_t)ow * oh * cho);
                 float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
                 if(clindata && cloutdata && cpudata)
@@ -2330,8 +2331,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                   if(terr == CL_SUCCESS)
                   {
                     terr = dt_opencl_copy_device_to_host(pipe->devid,
-                                                         clindata, cl_mem_input, iw, ih,
-                                                         ch * sizeof(float));
+                                                         clindata, cl_mem_input, iw, ih, ch);
                     if(terr == CL_SUCCESS)
                     {
                       module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
