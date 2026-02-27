@@ -1433,6 +1433,18 @@ static void skip_f_key_accel_callback(dt_action_t *action)
   _dev_jump_image(dt_action_view(action)->data, 1, TRUE);
 }
 
+// Toggles the pinned state in the 2nd window.  Has no effect if the 2nd
+// window is not open.
+static void _toggle_pin_second_window_action(dt_action_t *action)
+{
+  dt_view_t *self = dt_action_view(action);
+  dt_develop_t *dev = self->data;
+
+  if(!dev->second_wnd) return;
+
+  dt_dev_toggle_preview2_pinned(dev);
+}
+
 static void skip_b_key_accel_callback(dt_action_t *action)
 {
   _dev_jump_image(dt_action_view(action)->data, -1, TRUE);
@@ -2504,6 +2516,13 @@ void gui_init(dt_view_t *self)
                               _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    dev->second_wnd_button, DT_VIEW_DARKROOM);
+
+  /* Register a toggle-pin action for the second window as a command so the
+     shortcut works independently of the pin button widget.  The pin button
+     is wired to this same action in _darkroom_ui_second_window_init() for
+     right-click shortcut assignment and tooltip display. */
+  dt_action_register(DT_ACTION(self), N_("toggle pinned state in second window"),
+                     _toggle_pin_second_window_action, 0, 0);
 
   /* Enable color assessment conditions */
   {
@@ -4170,6 +4189,13 @@ static void _darkroom_ui_second_window_init(GtkWidget *overlay,
                    G_CALLBACK(_preview2_pin_button_clicked), dev);
   gtk_box_pack_start(GTK_BOX(button_box), pin_button, FALSE, FALSE, 0);
 
+  // Associate the pin button with the toggle COMMAND action registered in
+  // gui_init().  Passing action_def=NULL leaves the action type and callback
+  // unchanged, but sets the action quark on the widget so right-click
+  // shortcut assignment and shortcut tooltips work on the pin button itself.
+  dt_action_define(DT_ACTION(darktable.view_manager->current_view), NULL,
+                   N_("toggle pinned state in second window"), pin_button, NULL);
+
   // Wrap the box in a GtkEventBox so that the overlay can toggle pass-through on
   // a windowed widget, which enables tooltip rendering.
   GtkWidget *event_box = gtk_event_box_new();
@@ -4281,6 +4307,7 @@ static void _darkroom_ui_second_window_cleanup(dt_develop_t *dev)
 
   dev->second_wnd = NULL;
   dev->preview2.widget = NULL;
+  dev->preview2.pin_button = NULL;
 }
 
 static gboolean _second_window_delete_callback(GtkWidget *widget,
