@@ -44,7 +44,7 @@
 
 #ifdef HAVE_OPENCL
 /* greatest common divisor */
-static unsigned _gcd(const unsigned a, const unsigned b)
+static unsigned _gcd(unsigned a, unsigned b)
 {
   unsigned t;
   while(b != 0)
