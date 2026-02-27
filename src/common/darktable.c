@@ -663,34 +663,54 @@ void dt_dump_pipe_diff_pfm(
 {
   if(!darktable.dump_diff_pipe) return;
   if(!mod) return;
-  if(!dt_str_commasubstring(darktable.dump_diff_pipe, mod)) return;
 
-  const size_t pk = (size_t)ch * width * (height+20);
-  float *o = dt_alloc_align_float(6 * pk);
+  const size_t lfloats = (size_t)ch * width;
+  const size_t pk = lfloats * (height + 10);
+  const size_t border = lfloats * 5;
+  const size_t pixels = (size_t)width * height * ch;
+  float *o = dt_calloc_align_float(3 * pk);
   if(!o) return;
 
-  dt_iop_image_fill(o, 1.0f, width, 6*(height+20), ch);
-  DT_OMP_FOR()
-  for(size_t p = 0; p < width * height; p++)
+  float scale = 0.0f;
+  DT_OMP_FOR(reduction(max:scale))
+  for(size_t k = 0; k < pixels; k++)
   {
-    for(size_t c = 0; c < ch; c++)
-    {
-      const size_t k = ch * p +c;
-      /* top most images show cpu & gpu */
-      o[0*pk+k]      = 0.25f * b[k];
-      o[1*pk+k]      = 0.25f * a[k];
-
-      /* diffs and ratios are only shown if signal is above threshols */
-      if(a[k] > NORM_MIN && b[k] > NORM_MIN)
-      {
-        o[2*pk+k] = CLIP(50.0f * CLIP(a[k] / b[k] - 1.0f));
-        o[3*pk+k] = CLIP(100.0f * (a[k] - b[k]));
-        o[4*pk+k] = CLIP(50.0f * CLIP(b[k] / a[k] - 1.0f));
-        o[5*pk+k] = CLIP(100.0f * (b[k] - a[k]));
-      }
-    }
+    if(!dt_isnan(b[k]) && fabsf(b[k]) < 1e9)
+      scale = MAX(scale, b[k]);
   }
-  dt_dump_pfm_file(pipe, o, width, 6 * (height+20), ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, TRUE);
+  scale = 1.0f / scale;
+
+  int invalids = 0;
+  DT_OMP_FOR(reduction(+:invalids))
+  for(size_t k = 0; k < pixels; k++)
+  {
+    const gboolean any_nan = dt_isnan(a[k]) || dt_isnan(b[k]);
+    const gboolean good = !any_nan && a[k]>-FLT_MAX && a[k]<FLT_MAX && b[k]>-FLT_MAX && b[k]<FLT_MAX;
+    const size_t o1 = k + border;
+    const size_t o2 = k + pk;
+    /* we show a shaded image as background but mark NAN and inf locations */
+    const float shade = good ? 0.05f * sqrtf(CLIP(scale * fmaxf(0.0f, b[k]))) : 0.0f;
+    o[o1] = o[o2] = shade;
+    o[o2 + pk-border] = good ? shade : 1.0f;
+    /* diffs and ratios are only shown if signal is good */
+    if(good)
+    {
+      const float diff = scale * fabsf(a[k] - b[k]);
+      const float cval = scale * fabsf(b[k]);
+      const float gval = scale * fabsf(a[k]);
+      const float quot = cval > 1e-7 && gval > 1e-7
+                          ? ((cval > gval ? cval / gval : gval / cval) - 1.0f)
+                          : 0.0f;
+      if(diff > 1e-7)
+        o[o1] = 0.3f + CLIP(100.0f * sqrtf(diff));
+      if(quot > 1e-3)
+        o[o2] = 0.3f + CLIP(10.0f * quot);
+    }
+    else
+      invalids += 1;
+  }
+  const int out_lines = invalids ? 3 * height + 20 : 2 * height + 15;
+  dt_dump_pfm_file(pipe, o, width, out_lines, ch * sizeof(float), mod, "[dt_dump_CPU/GPU_diff_pfm]", TRUE, TRUE, FALSE);
   dt_free_align(o);
 }
 
