@@ -842,7 +842,6 @@ void dt_bauhaus_load_theme()
   cairo_surface_destroy(cst);
 
   bh->line_height = pango_height / PANGO_SCALE;
-  bh->quad_width = bh->line_height;
 
   const char *shape = dt_conf_get_string_const("bauhaus/marker_shape");
   bh->marker_shape = !g_strcmp0(shape, "circle")    ? DT_BAUHAUS_MARKER_CIRCLE
@@ -853,6 +852,7 @@ void dt_bauhaus_load_theme()
   // absolute size in Cairo unit:
   if(dt_conf_get_bool("bauhaus/condensed"))
   {
+    bh->quad_width = bh->line_height * 0.8;
     bh->baseline_size = bh->line_height / 4.5f;
     bh->border_width = 1.0f; // absolute size in Cairo unit
     bh->marker_size = (bh->baseline_size + bh->border_width)
@@ -863,6 +863,7 @@ void dt_bauhaus_load_theme()
   }
   else
   {
+    bh->quad_width = bh->line_height;
     bh->baseline_size = bh->line_height / 3.0f;
     bh->border_width = 2.0f;
     bh->marker_size = (bh->baseline_size + bh->border_width) * 0.95f;
