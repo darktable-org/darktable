@@ -42,6 +42,7 @@
    Needs to be increased if tiling fails due to insufficient buffer sizes. */
 #define RESERVE 5
 
+#ifdef HAVE_OPENCL
 /* greatest common divisor */
 static unsigned _gcd(unsigned a, unsigned b)
 {
@@ -60,6 +61,7 @@ static unsigned _lcm(unsigned a, unsigned b)
 {
   return (((unsigned long)a * b) / _gcd(a, b));
 }
+#endif
 
 static inline int _align_up(int n, int a)
 {
