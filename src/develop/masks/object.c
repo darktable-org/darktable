@@ -1185,6 +1185,10 @@ static int _object_events_button_pressed(
     }
 
     // Cleanup and exit creation mode
+    gui->creation = FALSE;
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
+
     _free_data(gui);
 
     dt_masks_dynbuf_free(gui->guipoints);
@@ -1192,9 +1196,6 @@ static int _object_events_button_pressed(
     gui->guipoints = NULL;
     gui->guipoints_payload = NULL;
     gui->guipoints_count = 0;
-
-    gui->creation_continuous = FALSE;
-    gui->creation_continuous_module = NULL;
 
     dt_control_hinter_message("");
 
