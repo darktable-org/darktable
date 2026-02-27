@@ -4160,9 +4160,6 @@ static void _preview2_pin_button_clicked(GtkToggleButton *button,
                                          dt_develop_t *dev)
 {
   dt_dev_toggle_preview2_pinned(dev);
-  gboolean is_pinned = gtk_toggle_button_get_active(button);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button),
-                              is_pinned ? _("unpin image") : _("pin current image"));
 }
 
 

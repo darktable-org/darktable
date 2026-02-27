@@ -445,6 +445,7 @@ static void _activate_pinned_dev(dt_develop_t *dev, dt_develop_t *new_pinned_dev
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->preview2.pin_button), TRUE);
     g_signal_handlers_unblock_matched(G_OBJECT(dev->preview2.pin_button),
                                       G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
+    gtk_widget_set_tooltip_text(dev->preview2.pin_button, _("unpin image"));
   }
 
   dt_toast_log(_("image pinned"));
@@ -497,6 +498,18 @@ static void _unpin_image(dt_develop_t *dev)
   // Force main dev's preview2 pipe to update
   dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
   dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
+
+  // Update the pin button without re-firing its toggled callback.
+  if(dev->preview2.pin_button)
+  {
+    g_signal_handlers_block_matched(G_OBJECT(dev->preview2.pin_button),
+                                    G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->preview2.pin_button), FALSE);
+    g_signal_handlers_unblock_matched(G_OBJECT(dev->preview2.pin_button),
+                                      G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
+    gtk_widget_set_tooltip_text(dev->preview2.pin_button, _("pin current image"));
+  }
+
   dt_toast_log(_("image unpinned"));
 }
 
