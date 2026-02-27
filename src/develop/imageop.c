@@ -1068,6 +1068,27 @@ static gboolean _gui_off_button_press(GtkButton *w,
   return FALSE;
 }
 
+static void _update_module_active_class(dt_iop_module_t *module)
+{
+  if(!module->expander) return;
+
+  GtkWidget *header_evb =
+    dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(module->expander));
+
+  if(module->enabled)
+  {
+    dt_gui_add_class(module->expander, "dt_module_active");
+    dt_gui_add_class(header_evb, "dt_module_active");
+    dt_gui_add_class(module->header, "dt_module_active");
+  }
+  else
+  {
+    dt_gui_remove_class(module->expander, "dt_module_active");
+    dt_gui_remove_class(header_evb, "dt_module_active");
+    dt_gui_remove_class(module->header, "dt_module_active");
+  }
+}
+
 static void _gui_off_callback(GtkToggleButton *togglebutton,
                               dt_iop_module_t *module)
 {
@@ -1128,6 +1149,8 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
+
+  _update_module_active_class(module);
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
@@ -1252,6 +1275,8 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 
     dt_iop_gui_set_enable_button_icon(GTK_WIDGET(module->off), module);
   }
+
+  _update_module_active_class(module);
 }
 
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
@@ -2405,6 +2430,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(out_focus_module));
     dt_gui_remove_class(iop_w, "dt_module_focus");
+    GtkWidget *hevb = dtgtk_expander_get_header_event_box(
+      DTGTK_EXPANDER(out_focus_module->expander));
+    dt_gui_remove_class(out_focus_module->expander, "dt_module_focus");
+    dt_gui_remove_class(hevb, "dt_module_focus");
+    dt_gui_remove_class(out_focus_module->header, "dt_module_focus");
   }
 
   /* set the focus on module */
@@ -2425,6 +2455,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     GtkWidget *iop_w =
       gtk_widget_get_parent(dt_iop_gui_get_pluginui(dev->gui_module));
     dt_gui_add_class(iop_w, "dt_module_focus");
+    GtkWidget *hevb = dtgtk_expander_get_header_event_box(
+      DTGTK_EXPANDER(dev->gui_module->expander));
+    dt_gui_add_class(dev->gui_module->expander, "dt_module_focus");
+    dt_gui_add_class(hevb, "dt_module_focus");
+    dt_gui_add_class(dev->gui_module->header, "dt_module_focus");
 
     // update last preset name to get the update preset entry
     gboolean writeprotect = FALSE;
