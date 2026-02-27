@@ -44,7 +44,7 @@
 
 #ifdef HAVE_OPENCL
 /* greatest common divisor */
-static unsigned _gcd(unsigned a, unsigned b)
+static unsigned _gcd(const unsigned a, const unsigned b)
 {
   unsigned t;
   while(b != 0)
@@ -57,21 +57,21 @@ static unsigned _gcd(unsigned a, unsigned b)
 }
 
 /* least common multiple */
-static unsigned _lcm(unsigned a, unsigned b)
+static unsigned _lcm(const unsigned a, const unsigned b)
 {
   return (((unsigned long)a * b) / _gcd(a, b));
 }
 #endif
 
-static inline int _align_up(int n, int a)
+static inline int _align_up(const int n, const int a)
 {
   return n + a - (n % a);
 }
-static inline int _align_down(int n, int a)
+static inline int _align_down(const int n, const int a)
 {
   return n - (n % a);
 }
-static inline int _align_close(int n, int a)
+static inline int _align_close(const int n, const int a)
 {
   const int off = n % a;
   const int shift = (off > a/2) ? a - off : -off;
