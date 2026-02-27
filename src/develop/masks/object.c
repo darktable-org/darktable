@@ -1585,15 +1585,28 @@ static void _object_events_post_expose(
     }
   }
 
-  // Query pointer modifier state reliably (gdk_keymap doesn't work on macOS)
+  // Query pointer position and modifier state directly from GDK so the
+  // cursor/brush is drawn at the correct location even before the first
+  // mouse_moved event fires.
   GtkWidget *cw = dt_ui_center(darktable.gui->ui);
   GdkWindow *win = gtk_widget_get_window(cw);
   GdkDevice *pointer
     = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
   GdkModifierType mod = 0;
+  int dev_x = 0, dev_y = 0;
   if(win && pointer)
-    gdk_window_get_device_position(win, pointer, NULL, NULL, &mod);
+    gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
   const gboolean shift_held = (mod & GDK_SHIFT_MASK) != 0;
+
+  // Convert device coordinates to preview pipe pixel space
+  {
+    float pzx, pzy, zs;
+    dt_dev_get_pointer_zoom_pos(&darktable.develop->full,
+                                (float)dev_x, (float)dev_y,
+                                &pzx, &pzy, &zs);
+    gui->posx = pzx * wd;
+    gui->posy = pzy * ht;
+  }
 
   if(d->brush_painting && d->brush_points && d->brush_points_count >= 2)
   {
@@ -1841,7 +1854,9 @@ static void _object_set_hint_message(
   if(gui->creation)
   {
     const _object_data_t *d = _get_data((dt_masks_form_gui_t *)gui);
-    if(d && d->brush_used)
+    if(!d || d->encode_state != ENCODE_READY)
+      return;  // no hints while encoding
+    if(d->brush_used)
       g_snprintf(
         msgbuf,
         msgbuf_len,
