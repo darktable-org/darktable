@@ -59,7 +59,7 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx);
 
 /**
  * @brief Encode an image (run the SAM encoder once).
- *        The result is cached — subsequent calls with the same context
+ *        The result is cached -- subsequent calls with the same context
  *        skip re-encoding.
  * @param ctx Segmentation context.
  * @param rgb_data RGB uint8 image data (HWC layout, 3 channels).
@@ -114,7 +114,7 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx);
 
 /**
  * @brief Reset the iterative mask refinement state.
- *        Keeps the image embeddings — only clears the previous low-res
+ *        Keeps the image embeddings -- only clears the previous low-res
  *        mask so the next dt_seg_compute_mask() starts fresh.
  * @param ctx Segmentation context (NULL-safe).
  */
