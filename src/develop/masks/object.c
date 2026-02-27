@@ -75,7 +75,6 @@ typedef struct _object_data_t
   int encode_rgb_w, encode_rgb_h;
   guint modifier_poll_id;   // timer to detect shift key changes
   GThread *encode_thread;   // background encoding thread
-  gboolean busy;            // TRUE if dt_gui_cursor_set_busy() was called
   gboolean dragging;        // TRUE between press and release during click/brush drag
   float drag_start_x;       // press position (preview pipe pixel space)
   float drag_start_y;
@@ -116,8 +115,6 @@ static void _destroy_data(_object_data_t *d)
 {
   if(!d)
     return;
-  if(d->busy)
-    dt_gui_cursor_clear_busy();
   if(d->modifier_poll_id)
     g_source_remove(d->modifier_poll_id);
   if(d->encode_thread)
@@ -1396,11 +1393,6 @@ static void _object_events_post_expose(
       g_thread_join(d->encode_thread);
       d->encode_thread = NULL;
     }
-    if(d->busy)
-    {
-      dt_gui_cursor_clear_busy();
-      d->busy = FALSE;
-    }
     if(d->seg)
       dt_seg_reset_encoding(d->seg);
     g_free(d->mask);
@@ -1445,8 +1437,6 @@ static void _object_events_post_expose(
 
     d->encoded_imgid = cur_imgid;
     d->encode_state = ENCODE_RUNNING;
-    dt_gui_cursor_set_busy();
-    d->busy = TRUE;
     // Start poll timer BEFORE the thread — it will detect completion
     // and also tracks modifier keys once encoding is ready
     if(!d->modifier_poll_id)
@@ -1467,11 +1457,6 @@ static void _object_events_post_expose(
     // Thread finished (detected by poll timer redraw) — join it
     g_thread_join(d->encode_thread);
     d->encode_thread = NULL;
-    if(d->busy)
-    {
-      dt_gui_cursor_clear_busy();
-      d->busy = FALSE;
-    }
     dt_control_log_ack_all();
     dt_control_log(_("brush over object to create mask"));
   }
@@ -1484,11 +1469,6 @@ static void _object_events_post_expose(
       d->encode_thread = NULL;
       // Log only once when the thread is first joined
       dt_control_log(_("object mask preparation failed"));
-    }
-    if(d->busy)
-    {
-      dt_gui_cursor_clear_busy();
-      d->busy = FALSE;
     }
     return;
   }
