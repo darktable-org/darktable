@@ -677,10 +677,17 @@ gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
                                      const int state)
 {
   if(!vm->current_view)
+  {
     return FALSE;
-  if(vm->current_view->gesture_pan)
+  }
+  else if(vm->current_view->gesture_pan)
+  {
     return vm->current_view->gesture_pan(vm->current_view, x, y, dx, dy, state);
-  return FALSE;
+  }
+  else
+  {
+    return FALSE;
+  }
 }
 
 gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
@@ -691,10 +698,17 @@ gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
                                        const int state)
 {
   if(!vm->current_view)
+  {
     return FALSE;
-  if(vm->current_view->gesture_pinch)
+  }
+  else if(vm->current_view->gesture_pinch)
+  {
     return vm->current_view->gesture_pinch(vm->current_view, x, y, phase, scale, state);
-  return FALSE;
+  }
+  else
+  {
+    return FALSE;
+  }
 }
 
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
