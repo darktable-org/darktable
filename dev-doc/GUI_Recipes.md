@@ -2,149 +2,11 @@
 
 Practical code patterns for common darktable IOP GUI tasks.
 
----
-
-## Recipe 1: Percentage Slider
-
-Internal range 0.0-1.0 displayed as 0%-100%:
-
-```c
-// In params_t:
-// float saturation; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
-
-g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
-dt_bauhaus_slider_set_factor(g->saturation, 100.0f);   // 1. Factor first
-dt_bauhaus_slider_set_format(g->saturation, " %");     // 2. Then format
-dt_bauhaus_slider_set_digits(g->saturation, 1);        // 3. Digits last
-```
+For slider configuration recipes (percentage, EV, degrees, radians, hue gradients, color pickers, manual sliders), see [sliders.md](sliders.md).
 
 ---
 
-## Recipe 2: EV (Exposure Value) Slider
-
-```c
-// In params_t:
-// float exposure; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0
-
-g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
-dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
-dt_bauhaus_slider_set_soft_range(g->exposure, -4.0, 4.0);  // Reasonable UI range
-dt_bauhaus_slider_set_digits(g->exposure, 2);
-```
-
----
-
-## Recipe 3: Angle/Rotation Slider (Degrees)
-
-```c
-// In params_t:
-// float rotation; // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0
-
-g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
-dt_bauhaus_slider_set_format(g->rotation, "°");
-dt_bauhaus_slider_set_digits(g->rotation, 1);
-```
-
----
-
-## Recipe 3b: Angle Slider (Radians Internal, Degrees Display)
-
-```c
-// In params_t (value stored in radians):
-// float angle; // $MIN: -3.14159 $MAX: 3.14159 $DEFAULT: 0.0
-
-g->angle = dt_bauhaus_slider_from_params(self, "angle");
-dt_bauhaus_slider_set_factor(g->angle, RAD_2_DEG);  // from common/math.h
-dt_bauhaus_slider_set_format(g->angle, "°");
-dt_bauhaus_slider_set_digits(g->angle, 1);
-// User sees -180° to 180°, internal value is -π to π
-```
-
----
-
-## Recipe 4: Hue Slider with Rainbow Gradient
-
-```c
-g->hue = dt_bauhaus_slider_from_params(self, "hue");
-dt_bauhaus_slider_set_feedback(g->hue, 0);  // No moving bar
-dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-dt_bauhaus_slider_set_format(g->hue, "°");
-
-// Rainbow gradient stops
-dt_bauhaus_slider_set_stop(g->hue, 0.000f, 1.0f, 0.0f, 0.0f);  // Red
-dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);  // Yellow
-dt_bauhaus_slider_set_stop(g->hue, 0.333f, 0.0f, 1.0f, 0.0f);  // Green
-dt_bauhaus_slider_set_stop(g->hue, 0.500f, 0.0f, 1.0f, 1.0f);  // Cyan
-dt_bauhaus_slider_set_stop(g->hue, 0.666f, 0.0f, 0.0f, 1.0f);  // Blue
-dt_bauhaus_slider_set_stop(g->hue, 0.833f, 1.0f, 0.0f, 1.0f);  // Magenta
-dt_bauhaus_slider_set_stop(g->hue, 1.000f, 1.0f, 0.0f, 0.0f);  // Red (wrap)
-```
-
----
-
-## Recipe 5: Slider with Color Picker
-
-```c
-// Create slider
-GtkWidget *slider = dt_bauhaus_slider_from_params(self, "white_point");
-dt_bauhaus_slider_set_format(slider, " EV");
-dt_bauhaus_slider_set_soft_range(slider, 1.0f, 10.0f);
-
-// Wrap with color picker - store the wrapper, not the slider
-g->white_point_picker = dt_color_picker_new(
-    self,
-    DT_COLOR_PICKER_AREA,
-    slider
-);
-
-// Set tooltip on the combined widget
-gtk_widget_set_tooltip_text(g->white_point_picker, _("white point exposure"));
-```
-
-Then in `color_picker_apply()`:
-```c
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
-{
-  if(picker == g->white_point_picker)
-  {
-    // self->picked_color[0..2] = RGB, self->picked_color[3] = luminance
-    p->white_point = log2f(self->picked_color[3]) + some_offset;
-  }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-```
-
----
-
-## Recipe 6: Manual Slider (Not Linked to Params)
-
-```c
-// Create without introspection
-g->extra = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0, 0.0, 2);
-dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra adjustment"));
-dt_gui_box_add(self->widget, g->extra);
-
-// Manual callback required
-g_signal_connect(G_OBJECT(g->extra), "value-changed",
-                 G_CALLBACK(extra_callback), self);
-```
-
-Callback:
-```c
-static void extra_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  float value = dt_bauhaus_slider_get(widget);
-  // Do something with value...
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-```
-
----
-
-## Recipe 7: Two-Tab Notebook UI
+## Recipe 1: Two-Tab Notebook UI
 
 ```c
 void gui_init(dt_iop_module_t *self)
@@ -184,7 +46,7 @@ void gui_init(dt_iop_module_t *self)
 
 ---
 
-## Recipe 8: Visual Section Labels
+## Recipe 2: Visual Section Labels
 
 ```c
 // Add a visual divider/header within a page
@@ -200,7 +62,7 @@ g->highlight_amount = dt_bauhaus_slider_from_params(self, "highlight_amount");
 
 ---
 
-## Recipe 9: Icon Toggle Button for Mask Display
+## Recipe 3: Icon Toggle Button for Mask Display
 
 ```c
 g->show_mask = dt_iop_togglebutton_new(
@@ -231,7 +93,7 @@ static void show_mask_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 ---
 
-## Recipe 10: Shortcut Sections for Organized Controls
+## Recipe 4: Shortcut Sections for Organized Controls
 
 ```c
 // Controls will be registered as "module/chroma/global", "module/chroma/shadows", etc.
@@ -249,7 +111,7 @@ g->saturation_global = dt_bauhaus_slider_from_params(sect_sat, "saturation_globa
 
 ---
 
-## Recipe 11: Array Parameter Sliders (RGB)
+## Recipe 5: Array Parameter Sliders (RGB)
 
 ```c
 // In params_t:
@@ -267,7 +129,7 @@ dt_bauhaus_widget_set_label(g->color_b, NULL, N_("blue"));
 
 ---
 
-## Recipe 12: Conditional Widget Visibility
+## Recipe 6: Conditional Widget Visibility
 
 Put all UI state logic (visibility, sensitivity, dynamic labels) in `gui_changed()`:
 
@@ -304,7 +166,7 @@ This pattern ensures all code paths that change params go through the same UI ad
 
 ---
 
-## Recipe 13: Creating Labels
+## Recipe 7: Creating Labels
 
 **Always** use `dt_ui_label_new()` instead of `gtk_label_new()` to ensure proper text ellipsization:
 
@@ -324,7 +186,7 @@ dt_gui_box_add(self->widget, dt_ui_section_label_new(_("Advanced Options")));
 
 ---
 
-## Recipe 14: Collapsible Section
+## Recipe 8: Collapsible Section
 
 ```c
 void gui_init(dt_iop_module_t *self)

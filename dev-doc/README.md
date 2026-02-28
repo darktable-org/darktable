@@ -7,18 +7,27 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 ### Module API
 | File | Description |
 |------|-------------|
-| **[IOP_Module_API.md](IOP_Module_API.md)** | Complete module API reference (required/optional functions) |
-| **[pixelpipe_architecture.md](pixelpipe_architecture.md)** | Pixelpipe architecture and data flow |
+| **[IOP_Module_API.md](IOP_Module_API.md)** | Module API reference: params_t vs data_t, processing, commit_params, lifecycle |
+| **[pixelpipe_architecture.md](pixelpipe_architecture.md)** | Pixelpipe data flow, caching, ROI, ordering asymmetry |
 | **[introspection.md](introspection.md)** | Introspection system for parameters and GUI |
+| **[Shortcuts.md](Shortcuts.md)** | The Action/Shortcut system and `dt_action_def_t` |
+| **[Module_Groups.md](Module_Groups.md)** | Module grouping explanation and `default_group()` |
+| **[maths.md](maths.md)** | Core Math, transposed matrices, and color science helpers |
+
 ### GUI Development
 | File | Description |
 |------|-------------|
-| **[imageop_gui.md](imageop_gui.md)** | Widget creation functions (`dt_bauhaus_*_from_params`, buttons) |
-| **[sliders.md](sliders.md)** | Detailed slider configuration (ranges, formatting, color stops) |
+| **[GUI.md](GUI.md)** | GUI architecture: UI construction, events/callbacks, thread safety, reparenting |
+| **[imageop_gui.md](imageop_gui.md)** | Widget creation functions (`dt_bauhaus_*_from_params`, buttons, sections) |
+| **[sliders.md](sliders.md)** | Slider configuration (ranges, formatting, color stops, recipes) |
 | **[Notebook_UI.md](Notebook_UI.md)** | Creating tabbed interfaces with `GtkNotebook` |
-| **[Containers and packing.md](Containers%20and%20packing.md)** | GTK container basics and widget packing |
-| **[self-widget.md](self-widget.md)** | Understanding `self->widget` and temporary reassignment |
-| **[GUI_Recipes.md](GUI_Recipes.md)** | Copy-paste patterns for common GUI tasks |
+| **[Quick_Access_Panel.md](Quick_Access_Panel.md)** | Quick Access Panel integration for widgets |
+| **[GUI_Recipes.md](GUI_Recipes.md)** | Copy-paste patterns for notebooks, sections, buttons, visibility |
+
+### Guides
+| File | Description |
+|------|-------------|
+| **[New_Module_Guide.md](New_Module_Guide.md)** | Step-by-step guide to creating a new IOP module |
 
 ---
 
@@ -32,66 +41,13 @@ This guide covers building Image Operation (IOP) modules for darktable's darkroo
 #include "develop/imageop_gui.h"      // Widget creation helpers (_from_params)
 #include "bauhaus/bauhaus.h"          // Slider/combobox configuration
 #include "gui/gtk.h"                  // Notebooks, sections, collapsibles
-#include "dtgtk/paint.h"              // Icon paint functions for buttons
+#include "dtgtk/paint.h"             // Icon paint functions for buttons
 #include "gui/color_picker_proxy.h"   // Color picker attachment
 
 // Processing
 #include "common/darktable.h"         // DT_OMP_FOR, copy_pixel, dt_alloc_align
 #include "common/imagebuf.h"          // dt_iop_alloc_image_buffers, dt_iop_copy_image_roi
 #include "develop/tiling.h"           // dt_develop_tiling_t (for tiling_callback)
-```
-
-### Widget Creation Cheat Sheet
-
-```c
-// Slider linked to params_t field
-GtkWidget *slider = dt_bauhaus_slider_from_params(self, "field_name");
-
-// Combobox linked to enum field
-GtkWidget *combo = dt_bauhaus_combobox_from_params(self, "enum_field");
-
-// Toggle button linked to gboolean field
-GtkWidget *toggle = dt_bauhaus_toggle_from_params(self, "bool_field");
-
-// Icon toggle button (manual callback)
-GtkWidget *btn = dt_iop_togglebutton_new(self, section, label, ctrl_label,
-                                         callback, local, key, mods, paint, box);
-
-// Regular icon button
-GtkWidget *btn = dt_iop_button_new(self, label, callback, local, key, mods,
-                                   paint, paintflags, box);
-```
-
-### Slider Configuration
-
-```c
-dt_bauhaus_slider_set_soft_range(slider, min, max);  // Default visible range
-dt_bauhaus_slider_set_hard_min(slider, val);         // Absolute minimum
-dt_bauhaus_slider_set_hard_max(slider, val);         // Absolute maximum
-dt_bauhaus_slider_set_digits(slider, 2);             // Decimal places
-dt_bauhaus_slider_set_format(slider, " EV");         // Unit suffix
-dt_bauhaus_slider_set_factor(slider, 100.0f);        // Display multiplier
-dt_bauhaus_slider_set_offset(slider, 0.0f);          // Display offset
-dt_bauhaus_slider_set_step(slider, 0.1f);            // Scroll/key step
-```
-
-### Notebooks (Tabbed UI)
-
-```c
-static dt_action_def_t notebook_def = { };
-g->notebook = dt_ui_notebook_new(&notebook_def);
-
-// Each page returns a container to pack widgets into
-GtkWidget *page1 = dt_ui_notebook_page(g->notebook, N_("basic"), _("Basic settings"));
-self->widget = page1;  // Temporarily redirect widget packing
-dt_bauhaus_slider_from_params(self, "param1");
-// ... add more widgets to page1 ...
-
-GtkWidget *page2 = dt_ui_notebook_page(g->notebook, N_("advanced"), _("Advanced settings"));
-self->widget = page2;
-// ... add widgets to page2 ...
-
-self->widget = main_container;  // Restore main container
 ```
 
 ### Processing Cheat Sheet
@@ -133,17 +89,7 @@ dt_iop_set_module_trouble_message(self, _("warning text"), _("tooltip"), NULL);
 if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL) { /* full view only */ }
 ```
 
-### Common Paint Functions
-
-From `dtgtk/paint.h`:
-- `dtgtk_cairo_paint_showmask` - Mask visibility toggle
-- `dtgtk_cairo_paint_eye` / `dtgtk_cairo_paint_eye_toggle` - Eye icon
-- `dtgtk_cairo_paint_colorpicker` - Color picker pipette
-- `dtgtk_cairo_paint_reset` - Reset/refresh icon
-- `dtgtk_cairo_paint_masks_brush` - Brush tool
-- `dtgtk_cairo_paint_masks_circle` - Circle mask
-- `dtgtk_cairo_paint_masks_ellipse` - Ellipse mask
-- `dtgtk_cairo_paint_flip` - Flip horizontal/vertical
+For widget creation, slider configuration, and notebook patterns, see [GUI.md](GUI.md), [sliders.md](sliders.md), and [GUI_Recipes.md](GUI_Recipes.md).
 
 ---
 
@@ -198,19 +144,7 @@ dt_dev_add_history_item() → commit_params() → process()
     to history stack       into piece->data     (data_t or params_t)
 ```
 
-### Recommended Pattern
-
-Always call `gui_changed()` at the end of `gui_update()`:
-```c
-void gui_update(dt_iop_module_t *self)
-{
-  // ... sync widgets from params ...
-
-  // Apply UI state adjustments (visibility, sensitivity, etc.)
-  gui_changed(self, NULL, NULL);
-}
-```
-This ensures all code paths that change underlying data go through the same UI adjustment phase, making the module easier to test and maintain.
+See [GUI.md](GUI.md) for the full event flow, callback patterns, and thread safety.
 
 ---
 
