@@ -19,6 +19,11 @@
 #include "color_conversion.h"
 #include "rgb_norms.h"
 
+/* 
+These coefficients are the Narkowicz ACES approximation. 
+They are widely used for their good balance between performance and visual accuracy. 
+You can find the reference here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/" 
+*/
 inline float _aces_tone_map(const float x)
 {
   const float a = 2.51f;
@@ -30,6 +35,13 @@ inline float _aces_tone_map(const float x)
   return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
 
+/*
+hese coefficients refer to the Fitted ACES (RRT+ODT) approximation, 
+which is more precise than the basic Narkowicz fit. 
+It is based on the curve fitting of the ACES 1.0/2.0 RRT/ODT transform.
+Reference: https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl 
+(or similar ACES fitted shaders used in cinematic rendering)."
+*/
 inline float _aces_20_tonemap(const float x)
 {
   const float a = 0.0245786f;
@@ -52,9 +64,15 @@ inline float _aces_20_tonemap(const float x)
   for exposure bracketing, and which may have had a camera-specific base curve applied.
 */
 kernel void
-basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const float mul, read_only image2d_t table, constant float *a, const int preserve_colors,
-              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+basecurve_lut(read_only image2d_t in, 
+              write_only image2d_t out, 
+              const int width, const int height,
+              const float mul, 
+              read_only image2d_t table, 
+              constant float *a, 
+              const int preserve_colors,
+              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, 
+              read_only image2d_t lut,
               const int use_work_profile)
 {
   const int x = get_global_id(0);
@@ -97,8 +115,11 @@ basecurve_zero(write_only image2d_t out, const int width, const int height)
   to take the risks of "artistic" impacts on their image.
 */
 kernel void
-basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                   const float mul, read_only image2d_t table, constant float *a)
+basecurve_legacy_lut(read_only image2d_t in, 
+                    write_only image2d_t out, 
+                    const int width, const int height,
+                    const float mul, read_only image2d_t table, 
+                    constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -322,9 +343,19 @@ basecurve_reconstruct(read_only image2d_t in, read_only image2d_t tmp, write_onl
 }
 
 kernel void
-basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only image2d_t out, const int width,
-                   const int height, const int workflow_mode, const float shadow_lift, const float highlight_gain,
-                   const float ucs_saturation_balance, const float gamut_strength, const float highlight_corr, const int target_gamut, const float look_opacity, const float16 look_mat, const float alpha)
+basecurve_finalize(read_only image2d_t in,
+                   read_only image2d_t comb, 
+                   write_only image2d_t out, 
+                   const int width,
+                   const int height, const int workflow_mode, 
+                   const float shadow_lift, 
+                   const float highlight_gain,
+                   const float ucs_saturation_balance, 
+                   const float gamut_strength, const float highlight_corr, 
+                   const int target_gamut, 
+                   const float look_opacity, 
+                   const float16 look_mat, 
+                   const float alpha)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -455,16 +486,16 @@ basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only 
       if(hl_mask > 0.0f && highlight_corr != 0.0f)
       {
         // 1. Soft symmetric desaturation (0.75 factor)
-        float desat = 1.0f - (fabs(highlight_corr) * hl_mask * 0.75f);
+        const float desat = 1.0f - (fabs(highlight_corr) * hl_mask * 0.75f);
         jab.y *= desat;
         jab.z *= desat;
 
         // 2. Controlled Hue Rotation (2.0 factor)
-        float angle = highlight_corr * hl_mask * 2.0f;
-        float ca = native_cos(angle);
-        float sa = native_sin(angle);
-        float az = jab.y;
-        float bz = jab.z;
+        const float angle = highlight_corr * hl_mask * 2.0f;
+        const float ca = native_cos(angle);
+        const float sa = native_sin(angle);
+        const float az = jab.y;
+        const float bz = jab.z;
 
         jab.y = az * ca - bz * sa;
         jab.z = az * sa + bz * ca;
@@ -489,13 +520,13 @@ basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only 
         pixel.y = -0.666684f * xyz.x + 1.616481f * xyz.y + 0.015768f * xyz.z;
         pixel.z =  0.017640f * xyz.x - 0.042771f * xyz.y + 0.942103f * xyz.z;
         
-        float min_val = fmin(pixel.x, fmin(pixel.y, pixel.z));
+        const float min_val = fmin(pixel.x, fmin(pixel.y, pixel.z));
         if(min_val < 0.0f)
         {
-          float lum = 0.2627f * pixel.x + 0.6780f * pixel.y + 0.0593f * pixel.z;
+          const float lum = 0.2627f * pixel.x + 0.6780f * pixel.y + 0.0593f * pixel.z;
           if(lum > 0.0f)
           {
-            float factor = lum / (lum - min_val);
+           const float factor = lum / (lum - min_val);
             pixel.xyz = lum + factor * (pixel.xyz - lum);
           }
         }
@@ -513,20 +544,20 @@ basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only 
       float effective_strength = gamut_strength * lum_weight;
 
       float limit = 0.90f;
-      if (target_gamut == 1) limit = 0.95f;
-      else if (target_gamut == 2) limit = 1.00f;
+      if(target_gamut == 1) limit = 0.95f;
+      else if(target_gamut == 2) limit = 1.00f;
 
       float threshold = limit * (1.0f - (effective_strength * 0.25f));
       float max_val = fmax(pixel.x, fmax(pixel.y, pixel.z));
 
-      if (max_val > threshold)
+      if(max_val > threshold)
       {
-        float range = limit - threshold;
-        float delta = max_val - threshold;
+        const float range = limit - threshold;
+        const float delta = max_val - threshold;
         const float compressed = threshold + range * delta / (delta + range);
         const float factor = compressed / max_val;
 
-        float range_blue = 1.1f * range;
+        const float range_blue = 1.1f * range;
         const float compressed_blue = threshold + range * delta / (delta + range_blue);
         const float factor_blue = compressed_blue / max_val;
 
@@ -543,12 +574,12 @@ basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only 
       const float luma = 0.2627f * pixel.x + 0.6780f * pixel.y + 0.0593f * pixel.z;
       const float target_luma = clamp(luma, 0.0f, 1.0f);
       float t = 1.0f;
-      if (pixel.x < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.x));
-      if (pixel.y < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.y));
-      if (pixel.z < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.z));
-      if (pixel.x > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.x - target_luma));
-      if (pixel.y > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.y - target_luma));
-      if (pixel.z > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.z - target_luma));
+      if(pixel.x < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.x));
+      if(pixel.y < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.y));
+      if(pixel.z < 0.0f) t = fmin(t, target_luma / (target_luma - pixel.z));
+      if(pixel.x > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.x - target_luma));
+      if(pixel.y > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.y - target_luma));
+      if(pixel.z > 1.0f) t = fmin(t, (1.0f - target_luma) / (pixel.z - target_luma));
       t = fmax(0.0f, t);
       pixel.xyz = target_luma + t * (pixel.xyz - target_luma);
     }

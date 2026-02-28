@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
     Copyright (C) 2010-2026 darktable developers.
-
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -254,6 +253,12 @@ int legacy_params(dt_iop_module_t *self,
     n->workflow_mode = 0;
     n->shadow_lift = 1.0f;
     n->highlight_gain = 1.0f;
+    n->ucs_saturation_balance = 0.2f;
+    n->gamut_strength = 0.0f;
+    n->highlight_corr = 0.0f;
+    n->target_gamut = 0;
+    n->color_look = 1;
+    n->look_opacity = 1.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_basecurve_params_t);
@@ -1335,11 +1340,11 @@ static inline void gauss_reduce(
 }
 
 static void process_lut(dt_iop_module_t *self,
-                 dt_dev_pixelpipe_iop_t *piece,
-                 const void *const ivoid,
-                 void *const ovoid,
-                 const dt_iop_roi_t *const roi_in,
-                 const dt_iop_roi_t *const roi_out)
+            dt_dev_pixelpipe_iop_t *piece,
+            const void *const ivoid,
+            void *const ovoid,
+            const dt_iop_roi_t *const roi_in,
+            const dt_iop_roi_t *const roi_out)
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -1371,9 +1376,9 @@ static void process_lut(dt_iop_module_t *self,
       b = fmaxf(-1e6f, fminf(b, 1e6f));
 
       // Apply Color Look
-      float tr = r * mat[0] + g * mat[1] + b * mat[2];
-      float tg = r * mat[3] + g * mat[4] + b * mat[5];
-      float tb = r * mat[6] + g * mat[7] + b * mat[8];
+      const float tr = r * mat[0] + g * mat[1] + b * mat[2];
+      const float tg = r * mat[3] + g * mat[4] + b * mat[5];
+      const float tb = r * mat[6] + g * mat[7] + b * mat[8];
 
       // Mix with opacity
       out[k]   = r * (1.0f - d->look_opacity) + tr * d->look_opacity;
@@ -1389,12 +1394,14 @@ static void process_lut(dt_iop_module_t *self,
       g = out[k+1];
       b = out[k+2];
 
-      if(d->highlight_gain != 1.0f) {
+      if(d->highlight_gain != 1.0f) 
+      {
         r *= d->highlight_gain;
         g *= d->highlight_gain;
         b *= d->highlight_gain;
       }
-      if(d->shadow_lift != 1.0f) {
+      if(d->shadow_lift != 1.0f) 
+      {
         r = powf(r, d->shadow_lift);
         g = powf(g, d->shadow_lift);
         b = powf(b, d->shadow_lift);
@@ -1522,11 +1529,11 @@ static void process_lut(dt_iop_module_t *self,
             jab[2] *= desat;
 
             // 2. Controlled Hue Rotation (2.0 factor)
-            float angle = d->highlight_corr * hl_mask * 2.0f;
-            float ca = cosf(angle);
-            float sa = sinf(angle);
-            float az = jab[1];
-            float bz = jab[2];
+            const float angle = d->highlight_corr * hl_mask * 2.0f;
+            const float ca = cosf(angle);
+            const float sa = sinf(angle);
+            const float az = jab[1];
+            const float bz = jab[2];
             jab[1] = az * ca - bz * sa;
             jab[2] = az * sa + bz * ca;
             modified = 1;
@@ -1578,20 +1585,20 @@ static void process_lut(dt_iop_module_t *self,
         const float effective_strength = d->gamut_strength * lum_weight;
 
         float limit = 0.90f;
-        if (d->target_gamut == 1) limit = 0.95f;
-        else if (d->target_gamut == 2) limit = 1.00f;
+        if(d->target_gamut == 1) limit = 0.95f;
+        else if(d->target_gamut == 2) limit = 1.00f;
 
         float gamut_threshold = limit * (1.0f - (effective_strength * 0.25f));
         float max_val = fmaxf(out[k], fmaxf(out[k+1], out[k+2]));
 
-        if (max_val > gamut_threshold)
+        if(max_val > gamut_threshold)
         {
-          float range = limit - gamut_threshold;
-          float delta = max_val - gamut_threshold;
+          const float range = limit - gamut_threshold;
+          const float delta = max_val - gamut_threshold;
           const float compressed = gamut_threshold + range * delta / (delta + range);
           const float factor = compressed / max_val;
 
-          float range_blue = 1.1f * range;
+          const float range_blue = 1.1f * range;
           const float compressed_blue = gamut_threshold + range * delta / (delta + range_blue);
           const float factor_blue = compressed_blue / max_val;
 
@@ -1611,12 +1618,12 @@ static void process_lut(dt_iop_module_t *self,
         const float luma = 0.2627f * out[k] + 0.6780f * out[k+1] + 0.0593f * out[k+2];
         const float target_luma = CLAMP(luma, 0.0f, 1.0f);
         float t = 1.0f;
-        if (out[k] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k]));
-        if (out[k+1] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+1]));
-        if (out[k+2] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+2]));
-        if (out[k] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k] - target_luma));
-        if (out[k+1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+1] - target_luma));
-        if (out[k+2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+2] - target_luma));
+        if(out[k] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k]));
+        if(out[k+1] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+1]));
+        if(out[k+2] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+2]));
+        if(out[k] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k] - target_luma));
+        if(out[k+1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+1] - target_luma));
+        if(out[k+2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+2] - target_luma));
         t = fmaxf(0.0f, t);
         out[k] = target_luma + t * (out[k] - target_luma);
         out[k+1] = target_luma + t * (out[k+1] - target_luma);
@@ -1913,16 +1920,16 @@ static void process_fusion(dt_iop_module_t *self,
           if(hl_mask > 0.0f)
           {
             // 1. Soft symmetric desaturation (0.75 factor)
-            float desat = 1.0f - (fabsf(d->highlight_corr) * hl_mask * 0.75f);
+            const float desat = 1.0f - (fabsf(d->highlight_corr) * hl_mask * 0.75f);
             jab[1] *= desat;
             jab[2] *= desat;
 
             // 2. Controlled Hue Rotation (2.0 factor)
-            float angle = d->highlight_corr * hl_mask * 2.0f;
-            float ca = cosf(angle);
-            float sa = sinf(angle);
-            float az = jab[1];
-            float bz = jab[2];
+            const float angle = d->highlight_corr * hl_mask * 2.0f;
+            const float ca = cosf(angle);
+            const float sa = sinf(angle);
+            const float az = jab[1];
+            const float bz = jab[2];
             jab[1] = az * ca - bz * sa;
             jab[2] = az * sa + bz * ca;
             modified = 1;
@@ -1974,13 +1981,13 @@ static void process_fusion(dt_iop_module_t *self,
         const float effective_strength = d->gamut_strength * lum_weight;
 
         float limit = 0.90f;
-        if (d->target_gamut == 1) limit = 0.95f;
-        else if (d->target_gamut == 2) limit = 1.00f;
+        if(d->target_gamut == 1) limit = 0.95f;
+        else if(d->target_gamut == 2) limit = 1.00f;
 
         float gamut_threshold = limit * (1.0f - (effective_strength * 0.25f));
         float max_val = fmaxf(val[0], fmaxf(val[1], val[2]));
 
-        if (max_val > gamut_threshold)
+        if(max_val > gamut_threshold)
         {
           float range = limit - gamut_threshold;
           float delta = max_val - gamut_threshold;
@@ -2007,12 +2014,12 @@ static void process_fusion(dt_iop_module_t *self,
         const float luma = 0.2627f * val[0] + 0.6780f * val[1] + 0.0593f * val[2];
         const float target_luma = CLAMP(luma, 0.0f, 1.0f);
         float t = 1.0f;
-        if (val[0] < 0.0f) t = fminf(t, target_luma / (target_luma - val[0]));
-        if (val[1] < 0.0f) t = fminf(t, target_luma / (target_luma - val[1]));
-        if (val[2] < 0.0f) t = fminf(t, target_luma / (target_luma - val[2]));
-        if (val[0] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[0] - target_luma));
-        if (val[1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[1] - target_luma));
-        if (val[2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[2] - target_luma));
+        if(val[0] < 0.0f) t = fminf(t, target_luma / (target_luma - val[0]));
+        if(val[1] < 0.0f) t = fminf(t, target_luma / (target_luma - val[1]));
+        if(val[2] < 0.0f) t = fminf(t, target_luma / (target_luma - val[2]));
+        if(val[0] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[0] - target_luma));
+        if(val[1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[1] - target_luma));
+        if(val[2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[2] - target_luma));
         t = fmaxf(0.0f, t);
         val[0] = target_luma + t * (val[0] - target_luma);
         val[1] = target_luma + t * (val[1] - target_luma);
