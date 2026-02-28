@@ -1516,13 +1516,6 @@ void dt_ai_models_set_enabled(
   g_free(conf_key);
 }
 
-// Legacy consumer config keys, used for first-run migration only
-static const char *_legacy_task_keys[][2] = {
-  {"mask", "plugins/darkroom/masks/object/model"},
-  {"denoise", "plugins/lighttable/denoise_ai/model"},
-  {NULL, NULL}
-};
-
 char *dt_ai_models_get_active_for_task(const char *task)
 {
   if(!task || !task[0])
@@ -1541,28 +1534,7 @@ char *dt_ai_models_get_active_for_task(const char *task)
   }
   g_free(conf_key);
 
-  // 2. Fall back to legacy consumer config key (first-run migration)
-  for(int i = 0; _legacy_task_keys[i][0]; i++)
-  {
-    if(strcmp(_legacy_task_keys[i][0], task) == 0)
-    {
-      const char *legacy_key = _legacy_task_keys[i][1];
-      if(dt_conf_key_exists(legacy_key))
-      {
-        char *model_id = dt_conf_get_string(legacy_key);
-        if(model_id && model_id[0])
-        {
-          // Migrate: persist to central key so we don't check legacy again
-          dt_ai_models_set_active_for_task(task, model_id);
-          return model_id;
-        }
-        g_free(model_id);
-      }
-      break;
-    }
-  }
-
-  // 3. Fall back to the default downloaded model for this task
+  // 2. Fall back to the default downloaded model for this task
   if(darktable.ai_registry)
   {
     char *result = NULL;
