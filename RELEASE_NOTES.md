@@ -63,6 +63,28 @@ changes (where available).
     - Toggle pinned state for currently developed image
     - Pin current image in second view
 
+- Allow switching between point/area color picker directly on canvas
+  with a simple Ctrl+Click.
+
+- When moving pictures from a collection we switch to the target
+  collection only if we did not change manually to another collection
+  during the move and the current collection is now empty.
+
+- When copying pictures from a collection we switch to the target
+  collection only if we did not change manually to another collection
+  during the copy.
+
+- In Color Calibration module the calibration box is now initialized
+  on the current bounding box. That is, if a zoom is effective the
+  calibration box will be fully visible and won't require to zoom out.
+
+- Make the slider background darker to gain some contrast making them
+  easier to differentiate from the other labels.
+
+- Introduce a condensed mode for the panel's controls widgets. This
+  mode is off by default ans can be select in miscellaneous interface
+  preference.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
@@ -88,6 +110,11 @@ changes (where available).
 
 - Improved debugging option --dump-diff-pipe for those of you
   interested in OpenCL code and debugging.
+
+- Added the possibility to vectorize the bitmap displayed in the
+  External Raster Mask module. The vectorized mask is added into the
+  Mask Manager module as a path object ready to be used as any other
+  masks.
 
 ## Bug Fixes
 
@@ -120,6 +147,24 @@ changes (where available).
 
 - Fix for usage of incorrect color profiles on secondary monitors on
   Windows.
+
+- Fixed unexpected localization of user's defined preset name and
+  properly localize the module name displayed in the preset dialog.
+
+- Fixed a possible transient display of the crawler dialog while the
+  splash screen is active.
+
+- Fixed improper mask mode displayed in the mask manager menu.
+
+- Fixed an issue where while creating a mask from mask manager and
+  still in creation mode the mask was not following the mouse when
+  moving over the darkroom. It was then not possible to place the mask
+  at the right position.
+
+- Fixed an issue of style migration. A style created before a new
+  module is introduced and integrating a specific module order was not
+  properly handled. We now properly migrate the embedded module order
+  to ensure all modules are described.
 
 ## Lua
 
