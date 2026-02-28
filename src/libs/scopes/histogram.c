@@ -78,7 +78,7 @@ static void _hist_process(dt_scopes_mode_t *const self,
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
-static void _hist_draw_bkgd(const dt_scopes_mode_t *const self,
+static void _hist_draw_grid(const dt_scopes_mode_t *const self,
                             cairo_t *cr,
                             const int width,
                             const int height)
@@ -103,8 +103,8 @@ static void _hist_draw_highlight(const dt_scopes_mode_t *const self,
 }
 
 static dt_scopes_highlight_t _hist_get_highlight(const dt_scopes_mode_t *const self,
-                                                 const float posx,
-                                                 const float posy)
+                                                 const double posx,
+                                                 const double posy)
 {
   return posx < BLACK_POINT_REGION
          ? DT_SCOPES_HIGHLIGHT_BLACK_POINT : DT_SCOPES_HIGHLIGHT_EXPOSURE;
@@ -163,7 +163,7 @@ static void _hist_clear(dt_scopes_mode_t *const self)
   d->histogram_max = 0;
 }
 
-static void _hist_mode_enter(const dt_scopes_mode_t *const self)
+static void _hist_mode_enter(dt_scopes_mode_t *const self)
 {
   dt_scopes_hist_t *d = self->data;
   gtk_widget_show(d->scale_button);
@@ -259,14 +259,18 @@ static void _hist_gui_cleanup(dt_scopes_mode_t *const self)
 const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .name = _hist_name,
   .process = _hist_process,
+  .update_counter_changed = NULL,
   .clear = _hist_clear,
-  .draw_bkgd = _hist_draw_bkgd,
+  .draw_bkgd = lib_histogram_draw_bkgd,
+  .draw_grid = _hist_draw_grid,
   .draw_highlight = _hist_draw_highlight,
   .draw_scope = NULL,
   .draw_scope_channels = _hist_draw,
   .get_highlight = _hist_get_highlight,
   .get_exposure_pos = _hist_get_exposure_pos,
   .append_to_tooltip = NULL,
+  .eventbox_scroll = NULL,
+  .eventbox_motion = NULL,
   .update_buttons = _hist_update_buttons,
   .mode_enter = _hist_mode_enter,
   .mode_leave = _hist_mode_leave,
