@@ -79,6 +79,9 @@ changes (where available).
   preview size in the tooltip. The available options are: no preview,
   default size, and large size.
 
+- Improved debugging option --dump-diff-pipe for those of you
+  interested in OpenCL code and debugging.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
