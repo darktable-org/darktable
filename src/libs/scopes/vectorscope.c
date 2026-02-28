@@ -1041,12 +1041,6 @@ static void _color_harmony_button_on(const dt_scopes_vec_t *const d)
   }
 }
 
-// FIXME: just call gtk_widget_draw() rather than make a special function here
-static void _color_harmony_changed(dt_scopes_vec_t *const d)
-{
-  gtk_widget_queue_draw(d->scopes->scope_draw);
-}
-
 static void _color_harmony_changed_record(dt_scopes_vec_t *const d)
 {
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
@@ -1060,17 +1054,14 @@ static void _color_harmony_changed_record(dt_scopes_vec_t *const d)
                     d->harmony_guide.rotation);
   }
 
-  _color_harmony_changed(d);
-
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-
   dt_image_t *img = dt_image_cache_get(imgid, 'w');
-
   memcpy(&img->color_harmony_guide,
          &d->harmony_guide,
          sizeof(dt_color_harmony_guide_t));
-
   dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
+
+  dt_scopes_refresh(d->scopes);
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,
@@ -1104,7 +1095,6 @@ static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
                                                      dt_scopes_vec_t *const d)
 {
   // find positions of entered button
-
   d->color_harmony_old = d->harmony_guide.type;
 
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
@@ -1114,7 +1104,7 @@ static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
       break;
     }
 
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
   return FALSE;
 }
 
@@ -1123,7 +1113,7 @@ static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
                                                      dt_scopes_vec_t *const d)
 {
   d->harmony_guide.type = d->color_harmony_old;
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
   return FALSE;
 }
 
@@ -1208,31 +1198,19 @@ static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
                      dt_scopes_vec_scale_names[d->vectorscope_scale]);
   _vec_update_buttons(self);
-
-  // trigger new process from scratch
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_process_preview(darktable.develop);
-  else
-    dt_control_queue_redraw_center();
+  dt_scopes_reprocess();
 }
 
 static void _vec_colorspace_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *d = self->data;
-
   d->vectorscope_type = (d->vectorscope_type + 1) % DT_SCOPES_VEC_VECTORSCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                      dt_scopes_vec_vectorscope_type_names[d->vectorscope_type]);
   // FIXME: if switching to RYB do need to call _update_color_harmony_gui() to pull in current settings?
   _vec_update_buttons(self);
   lib_histogram_update_tooltip(d->scopes);
-  // trigger new process from scratch depending on whether CIELuv or JzAzBz
-  // FIXME: it would be nice as with other scopes to make the initial
-  // processing independent of the view
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_process_preview(darktable.develop);
-  else
-    dt_control_queue_redraw_center();
+  dt_scopes_reprocess();
 }
 
 static void _update_color_harmony_gui(dt_scopes_vec_t *const d)
@@ -1258,7 +1236,7 @@ static void _update_color_harmony_gui(dt_scopes_vec_t *const d)
   }
 
   _color_harmony_button_on(d);
-  _color_harmony_changed(d);
+  dt_scopes_refresh(d->scopes);
 }
 
 #if 0

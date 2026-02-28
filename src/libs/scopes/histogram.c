@@ -228,8 +228,7 @@ static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
                      dt_hist_scale_names[d->scale]);
   _hist_update_buttons(self);
   // no need to reprocess data
-  // FIXME: can we put in scopes.h a redraw function, which maybe doesn't use d->scopes but instead raises signal or such?
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 }
 
 static void _hist_gui_init_options(dt_scopes_mode_t *const self,

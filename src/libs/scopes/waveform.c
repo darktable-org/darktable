@@ -391,19 +391,12 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
 static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
 {
   dt_scopes_wave_t *d = self->data;
-
   d->orient = (d->orient + 1) % DT_WAVE_ORIENT_N;
   dt_conf_set_string("plugins/darkroom/histogram/orient",
                      dt_wave_orient_names[d->orient]);
   d->waveform_bins = 0;
   _wave_update_buttons(self);
-
-  // FIXME: can we put in scopes.h a recalc function?
-  // trigger new process from scratch
-  if(dt_view_get_current() == DT_VIEW_DARKROOM)
-    dt_dev_process_preview(darktable.develop);
-  else
-    dt_control_queue_redraw_center();
+  dt_scopes_reprocess();
 }
 
 static void _wave_gui_init_options(dt_scopes_mode_t *const self,
