@@ -749,7 +749,21 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
 
-  if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
+#if 0
+  //  TODO: maybe rework this using scale-changed event.
+
+  // ==================================
+  GtkGesture *zoom_gesture = gtk_gesture_zoom_new();
+  gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(zoom_gesture));
+
+  // Connect to the "scale-changed" signal
+  g_signal_connect(zoom_gesture, "scale-changed", G_CALLBACK(on_zoom_gesture), NULL);
+
+  static void on_zoom_gesture(GtkGestureZoom *gesture, gdouble scale, gpointer user_data);
+  // ===================================
+
+  if(event->type == GDK_TOUCHPAD_PINCH
+     && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
     if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
@@ -765,6 +779,7 @@ static gboolean _scrolled(GtkWidget *widget,
       return TRUE;
     }
   }
+#endif
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
