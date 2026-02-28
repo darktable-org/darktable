@@ -1751,12 +1751,16 @@ void gui_init(dt_iop_module_t *self)
   const int xtranspos = dt_bauhaus_combobox_get_from_value(g->demosaic_method_bayer, DT_DEMOSAIC_XTRANS);
 
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, xtranspos);
-  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\n"
+                                                          "LMMSE is suited best for high ISO images.VNG4 is better suited for images\n"
+                                                          "with low-contrast areas, such as skies or snow fields.\n"
+                                                          "dual demosaicers increase processing time by blending a VNG4 variant in a second pass."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<xtranspos;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
   dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 7);
-  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\n"
+                                                           "dual demosaicers increase processing time by blending a VNG variant in a second pass."));
 
   g->demosaic_method_bayerfour = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, xtranspos);
@@ -1781,7 +1785,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
                                                 "set to 1.0 to ignore edges"));
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
-  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));
+  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\n"
+                                                 "refine adds some recalculation of red & blue channels"));
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
