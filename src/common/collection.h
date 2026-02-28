@@ -271,6 +271,9 @@ void dt_collection_shift_image_positions(const unsigned int length,
                                          const int64_t image_position,
                                          const int32_t tagid);
 
+/* sync custom order positions from the current sort order */
+void dt_collection_sync_custom_order(const dt_collection_t *collection);
+
 /* returns TRUE if the current collection uses property has part of the query */
 gboolean dt_collection_has_property(const dt_collection_properties_t property);
 
