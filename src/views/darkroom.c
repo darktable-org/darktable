@@ -3786,6 +3786,82 @@ void scrolled(dt_view_t *self,
   dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, up, x, y, constrained);
 }
 
+gboolean gesture_pan(dt_view_t *self,
+                     const double x,
+                     const double y,
+                     const double dx,
+                     const double dy,
+                     const int state)
+{
+  dt_develop_t *dev = self->data;
+  (void)x;
+  (void)y;
+  (void)state;
+  if(!dev) return FALSE;
+
+  // Mask editing (brush etc.) uses scroll for tool parameters.
+  if(dev->form_visible
+     && !darktable.develop->darkroom_skip_mouse_events)
+    return FALSE;
+
+  // Let active modules consume scroll for their own interactions (e.g. brush size).
+  if(dev->gui_module && dev->gui_module->scrolled
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
+     && dt_dev_modulegroups_test_activated(darktable.develop))
+    return FALSE;
+
+  if(dx == 0.0 && dy == 0.0) return FALSE;
+
+  dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, dx, dy, TRUE);
+  return TRUE;
+}
+
+gboolean gesture_pinch(dt_view_t *self,
+                       const double x,
+                       const double y,
+                       const int phase,
+                       const double scale,
+                       const int state)
+{
+  dt_develop_t *dev = self->data;
+  if(!dev) return FALSE;
+  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  const double pinch_step_ratio = 1.1;
+
+  static double pinch_last_scale = 0.0;
+
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    pinch_last_scale = scale > 0.0 ? scale : 1.0;
+    return TRUE;
+  }
+  else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+          || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    pinch_last_scale = 0.0;
+    return TRUE;
+  }
+
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
+  if(pinch_last_scale <= 0.0 || scale <= 0.0) return FALSE;
+
+  const double ratio = scale / pinch_last_scale;
+  int zoom_step = -1;
+  if(ratio > pinch_step_ratio)
+    zoom_step = 1;
+  else if(ratio < 1.0 / pinch_step_ratio)
+    zoom_step = 0;
+
+  if(zoom_step >= 0)
+  {
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
+    pinch_last_scale = scale;
+  }
+
+  return TRUE;
+}
+
 static void _change_slider_accel_precision(dt_action_t *action)
 {
   const int curr_precision = dt_conf_get_int("accel/slider_precision");

@@ -669,6 +669,48 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm,
     vm->current_view->scrolled(vm->current_view, x, y, up, state);
 }
 
+gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
+                                     const double x,
+                                     const double y,
+                                     const double dx,
+                                     const double dy,
+                                     const int state)
+{
+  if(!vm->current_view)
+  {
+    return FALSE;
+  }
+  else if(vm->current_view->gesture_pan)
+  {
+    return vm->current_view->gesture_pan(vm->current_view, x, y, dx, dy, state);
+  }
+  else
+  {
+    return FALSE;
+  }
+}
+
+gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
+                                       const double x,
+                                       const double y,
+                                       const int phase,
+                                       const double scale,
+                                       const int state)
+{
+  if(!vm->current_view)
+  {
+    return FALSE;
+  }
+  else if(vm->current_view->gesture_pinch)
+  {
+    return vm->current_view->gesture_pinch(vm->current_view, x, y, phase, scale, state);
+  }
+  else
+  {
+    return FALSE;
+  }
+}
+
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
                                        const double x,
                                        const double y)
