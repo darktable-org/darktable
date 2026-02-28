@@ -374,6 +374,27 @@
     <shortdescription>tags case sensitivity</shortdescription>
     <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/enabled</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable AI features</shortdescription>
+    <longdescription>enable AI-powered features such as denoising and upscaling using neural networks</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/provider</name>
+    <type>string</type>
+    <default>auto</default>
+    <shortdescription>AI execution provider</shortdescription>
+    <longdescription>select the hardware acceleration provider for AI inference. 'auto' will automatically detect the best available option for your system.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/repository</name>
+    <type>string</type>
+    <default>andriiryzhkov/darktable-ai</default>
+    <shortdescription>AI models GitHub repository</shortdescription>
+    <longdescription>GitHub repository for downloading AI models (format: owner/repo)</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
