@@ -75,6 +75,10 @@ changes (where available).
 
 - Removed `Neo` Intel GPU from the Windows blacklist.
 
+- In the styles module, a new option has been added to control the
+  preview size in the tooltip. The available options are: no preview,
+  default size, and large size.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
