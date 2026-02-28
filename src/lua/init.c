@@ -118,14 +118,7 @@ static int run_early_script(lua_State* L)
   char *luarc = g_build_filename(basedir, "luarc", NULL);
   dt_lua_check_print_error(L, luaL_dofile(L, luarc));
   g_free(luarc);
-  if(darktable.gui != NULL)
-  {
-    // run user init script
-    dt_loc_get_user_config_dir(basedir, sizeof(basedir));
-    luarc = g_build_filename(basedir, "luarc", NULL);
-    dt_lua_check_print_error(L, luaL_dofile(L, luarc));
-    g_free(luarc);
-  }
+
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);
     dt_lua_check_print_error(L,luaL_dostring(L,lua_command));
@@ -177,7 +170,11 @@ void dt_lua_init(lua_State *L, const char *lua_command)
   dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L, tmp_path);
   lua_pushstring(L, "/lua/?.lua");
-  lua_concat(L, 7);
+  lua_pushstring(L, ";");
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_pushstring(L, "/lua-scripts/?.lua");
+  lua_concat(L, 10);
   lua_setfield(L, -2, "path");
   lua_pop(L, 1);
 
