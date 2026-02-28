@@ -839,6 +839,34 @@ void dt_metadata_set_list_id(const GList *img,
   }
 }
 
+void dt_metadata_unset(const dt_imgid_t imgid, const char *key, const gboolean undo_on)
+{
+  if(!key || !dt_is_valid_imgid(imgid)) return;
+
+  int keyid = dt_metadata_get_keyid(key);
+  if(keyid == -1) return;
+
+  GList *imgs = NULL;
+  imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+  const gchar *ckey = g_strdup_printf("%d", keyid);
+  GList *metadata = NULL;
+  metadata = g_list_append(metadata, (gpointer)ckey);
+  metadata = g_list_append(metadata, NULL);
+
+  _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_REMOVE);
+
+  g_list_free_full(metadata, g_free);
+  g_list_free(imgs);
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+}
+
 gboolean dt_metadata_already_imported(const char *filename, const char *datetime)
 {
   if(!filename || !datetime)
