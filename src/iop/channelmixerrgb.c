@@ -636,7 +636,12 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   if(valid_chroma && changed_chroma)
   {
     for_four_channels(k)
-      out_correction_ratios[k] = (float)chr->D65coeffs[k] / chr->wb_coeffs[k];
+    {
+      if(chr->wb_coeffs[k] > 1e-6f)
+        out_correction_ratios[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+      else
+        out_correction_ratios[k] = 1.0f;
+    }
   }
   return FALSE;
 }
