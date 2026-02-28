@@ -55,6 +55,12 @@ changes (where available).
 
 - In the crop module, the crop aspect ratio is added to the dimensions
   in the crop area preview.
+- Added the ability to pin any image from the filmstrip in the second
+  darkroom window. Images can be pinned directly from the 2nd window,
+  via drag&drop from the filmstrip and via keyboard shortcuts.
+- Added two new actions:
+  - Toggle pinned state for currently developed image
+  - Pin current image in second view
 
 ## Performance Improvements
 
