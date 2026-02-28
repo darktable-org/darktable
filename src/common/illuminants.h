@@ -303,14 +303,20 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
     case DT_ILLUMINANT_CAMERA:
     {
       // Detect WB from RAW EXIF, correcting with D65/wb_coeff ratios
-      if(img)
-        if(find_temperature_from_as_shot_coeffs(img, correction_ratios, &x, &y)) break;
+      if(img && find_temperature_from_as_shot_coeffs(img, correction_ratios, &x, &y))
+        break;
+
+      // xy calculation failed
+      return FALSE;
     }
     case DT_ILLUMINANT_FROM_WB:
     {
       // Detect WB from user-provided coefficients
-      if(img)
-        if(find_temperature_from_wb_coeffs(img, wb_coeffs, &x, &y)) break;
+      if(img && find_temperature_from_wb_coeffs(img, wb_coeffs, &x, &y))
+        break;
+
+      // xy calculation failed
+      return FALSE;
     }
     case DT_ILLUMINANT_CUSTOM: // leave x and y as-is
     case DT_ILLUMINANT_DETECT_EDGES:
@@ -395,7 +401,7 @@ static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int si
     }
 }
 
-// returns TRUE is OK, FALSE if failed
+// returns TRUE if OK, FALSE if failed
 static gboolean get_CAM_to_XYZ(const dt_image_t * img, float(* CAM_to_XYZ)[3])
 {
   if(img == NULL || CAM_to_XYZ == NULL) return FALSE;
@@ -433,12 +439,22 @@ static gboolean get_CAM_to_XYZ(const dt_image_t * img, float(* CAM_to_XYZ)[3])
   return dt_is_valid_colormatrix(CAM_to_XYZ[0][0]);
 }
 
+static inline gboolean _wb_coeffs_invalid(const dt_aligned_pixel_t wb_coeffs, const int num_coeffs)
+{
+  for(int k = 0; k < num_coeffs; k++)
+    if(!dt_isnormal(wb_coeffs[k]) || wb_coeffs[k] == 0.0f) return TRUE;
+
+  return FALSE;
+}
+
 // returns FALSE if failed; TRUE if successful
 static gboolean find_temperature_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
                                             float *chroma_x, float *chroma_y)
 {
   if(img == NULL || wb_coeffs == NULL) return FALSE;
   if(!dt_image_is_matrix_correction_supported(img)) return FALSE;
+  // it's enough to check the first 3 here, as WB_coeffs_to_illuminant_xy only uses indices 0 to 2
+  if(_wb_coeffs_invalid(wb_coeffs, 3)) return FALSE;
 
   float CAM_to_XYZ[4][3];
   if(!get_CAM_to_XYZ(img, CAM_to_XYZ)) {
@@ -458,15 +474,9 @@ static gboolean find_temperature_from_as_shot_coeffs(const dt_image_t *img, cons
                                             float *chroma_x, float *chroma_y)
 {
   if(img == NULL) return FALSE;
-
-  gboolean has_valid_coeffs = TRUE;
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
 
-  // Check coeffs
-  for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
-    if(!dt_isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
-
-  if(!has_valid_coeffs) return FALSE;
+  if(_wb_coeffs_invalid(img->wb_coeffs, num_coeffs)) return FALSE;
 
   // Get as-shot white balance camera factors (from raw)
   // component wise raw-RGB * wb_coeffs should provide R=G=B for a neutral patch under
@@ -475,7 +485,7 @@ static gboolean find_temperature_from_as_shot_coeffs(const dt_image_t *img, cons
 
   // Adapt the camera coeffs with custom D65 coefficients if provided ('caveats' workaround)
   // this can deal with WB coeffs that don't use the input matrix reference
-  // adaptation_ratios[k] = chr->D65coeffs[k] / chr->wb_coeffs[k]
+  // correction_ratios[k] = chr->D65coeffs[k] / chr->wb_coeffs[k]
   if(correction_ratios)
     for(size_t k = 0; k < 4; k++) WB[k] *= correction_ratios[k];
   // for a neutral surface, raw RGB * img->wb_coeffs would produce neutral R=G=B
