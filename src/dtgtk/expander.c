@@ -70,6 +70,17 @@ static GtkWidget *_last_expanded = NULL;
 static GtkWidget *_drop_widget = NULL;
 static GtkAllocation _start_pos = {0};
 
+static void _set_last_expanded(GtkWidget *widget)
+{
+  if(_last_expanded)
+    g_object_remove_weak_pointer(G_OBJECT(_last_expanded), (gpointer *)&_last_expanded);
+
+  _last_expanded = widget;
+
+  if(_last_expanded)
+    g_object_add_weak_pointer(G_OBJECT(_last_expanded), (gpointer *)&_last_expanded);
+}
+
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
 {
   g_return_if_fail(DTGTK_IS_EXPANDER(expander));
@@ -82,7 +93,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
     if(expanded)
     {
-      _last_expanded = GTK_WIDGET(expander);
+      _set_last_expanded(GTK_WIDGET(expander));
       GtkWidget *sw = gtk_widget_get_ancestor(_last_expanded, GTK_TYPE_SCROLLED_WINDOW);
       if(sw)
       {
@@ -105,7 +116,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     // so that _expander_resize can scroll to this widget. This is
     // needed when navigating from the Quick Access Panel to a module
     // that was already expanded on the destination tab.
-    _last_expanded = GTK_WIDGET(expander);
+    _set_last_expanded(GTK_WIDGET(expander));
     GtkWidget *sw = gtk_widget_get_ancestor(GTK_WIDGET(expander), GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
     {
@@ -202,6 +213,8 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
   {
     const gboolean is_lib_gui_module = darktable.lib->gui_module
       && darktable.lib->gui_module->expander == widget;
+    const gboolean last_target_is_iop = _last_expanded
+      && !g_strcmp0("iop-expander", gtk_widget_get_name(_last_expanded));
 
     if(_last_expanded)
     {
@@ -210,7 +223,10 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
       // trigger scroll.  This prevents modules with stale
       // GTK_STATE_FLAG_SELECTED (left over from previous images or
       // sessions) from stealing the scroll target.
-      if(widget != _last_expanded && !is_lib_gui_module)
+      // For IOP targets, do not allow lib gui_module to steal the
+      // target on first allocations after image load.
+      if(widget != _last_expanded
+         && !(is_lib_gui_module && !last_target_is_iop))
         return;
 
       // Wait until the target widget has a valid layout (positive
@@ -223,7 +239,7 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
       // Clear _last_expanded so that, once the scroll animation
       // finishes and _scroll_widget becomes NULL, subsequent
       // size-allocate events do not re-trigger scrolling.
-      _last_expanded = NULL;
+      _set_last_expanded(NULL);
     }
     else
     {
@@ -262,7 +278,7 @@ void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean allo
   if(allow || below)
   {
     _drop_widget = widget;
-    _last_expanded = NULL;
+    _set_last_expanded(NULL);
     last_time = time;
 
     if(!allow)
