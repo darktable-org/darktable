@@ -85,6 +85,20 @@ changes (where available).
   mode is off by default ans can be select in miscellaneous interface
   preference.
 
+- Added a 2-up scope showing both the waveform and vectorscope. This
+  allows for a simultaneous understanding of both the lightness and
+  chromaticity of an image.
+
+- Support rendering and caching higher resolution (6K or 8K) thumbnail
+  or full-screen preview images in lighttable view. Previously, for
+  displays larger than a 4K, darktable would render a full-resolution
+  preview then downscale it. These higher resolution previews also
+  allow for less jumpy zooming in of high megapixel files.
+
+- Increase the resolution of the darkroom view's preview-resolution
+  images from 720x450 to 1440x900. This produces better data for
+  various situations, including in scopes and the color picker.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
@@ -115,6 +129,11 @@ changes (where available).
   External Raster Mask module. The vectorized mask is added into the
   Mask Manager module as a path object ready to be used as any other
   masks.
+
+- Remove the (unbound by default) keyboard shortcut to cycle through
+  each histogram mode, and within each mode to cycle through its
+  options. This was a relic of when there were fewer scopes and they
+  were not accessible by shortcuts.
 
 ## Bug Fixes
 
@@ -165,6 +184,14 @@ changes (where available).
   module is introduced and integrating a specific module order was not
   properly handled. We now properly migrate the embedded module order
   to ensure all modules are described.
+
+- Fixed an occasional bug that dragging exposure change regions in
+  histogram, waveform, or RGB parade scopes would adjust in the
+  opposite of the expected direction. This occurred when the user had
+  not yet selected a module group containing the exposure module.
+
+- Fixed a bug which showed an extraneous toast message in the center
+  view when dragging in the vectorscope.
 
 ## Lua
 
