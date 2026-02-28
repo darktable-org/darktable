@@ -4107,13 +4107,10 @@ void gui_changed(dt_iop_module_t *self,
       }
       if(*prev_illuminant == DT_ILLUMINANT_FROM_WB)
       {
-        // If illuminant was previously set with "as set in camera",
-        // when changing it, we need to ensure the temperature and
-        // chromaticity are inited with the correct values taken from
-        // camera EXIF.  Otherwise, if using a preset defining
-        // illuminant = "as set in camera", temperature and
-        // chromaticity are inited with the preset content when
-        // illuminant is changed.
+        // If illuminant was previously "as set in white balance module",
+        // (x, y) were computed at runtime from the WB module's coefficients
+        // and p->x, p->y may hold stale values. Recompute them now so
+        // the new illuminant mode starts from the correct chromaticity.
         find_temperature_from_wb_coeffs(&(self->dev->image_storage), self->dev->chroma.wb_coeffs,
                                          &(p->x), &(p->y));
         _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
@@ -4129,10 +4126,10 @@ void gui_changed(dt_iop_module_t *self,
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
       // Get camera WB and update illuminant
-      dt_aligned_pixel_t custom_wb;
-      _get_d65_correction_ratios(self, custom_wb);
+      dt_aligned_pixel_t correction_ratios;
+      _get_d65_correction_ratios(self, correction_ratios);
       const gboolean found = find_temperature_from_as_shot_coeffs(&(self->dev->image_storage),
-                                                         custom_wb, &(p->x), &(p->y));
+                                                         correction_ratios, &(p->x), &(p->y));
       _check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
