@@ -736,6 +736,7 @@ static gboolean _input_event(GtkWidget *widget,
 {
   (void)user_data;
 
+#ifdef GDK_WINDOWING_QUARTZ
   if(event->type == GDK_TOUCHPAD_PINCH)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
@@ -746,6 +747,7 @@ static gboolean _input_event(GtkWidget *widget,
       return TRUE;
     }
   }
+#endif
 
   return FALSE;
 }
@@ -756,6 +758,7 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
 
+#ifdef GDK_WINDOWING_QUARTZ
   if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop
      && (event->delta_x != 0.0 || event->delta_y != 0.0)
      && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
@@ -764,6 +767,7 @@ static gboolean _scrolled(GtkWidget *widget,
     gtk_widget_queue_draw(widget);
     return TRUE;
   }
+#endif
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
