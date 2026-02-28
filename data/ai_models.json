@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "mask-object-segnext-b2hq",
+      "name": "mask segnext vitb-sax2 hq",
+      "description": "SegNext ViT-B SAx2 HQ fine-tuned for interactive masking",
+      "task": "mask",
+      "github_asset": "mask-object-segnext-b2hq.dtmodel",
+      "default": true
+    }
+  ]
+}

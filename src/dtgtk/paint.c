@@ -628,6 +628,62 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+#ifdef HAVE_AI
+void dtgtk_cairo_paint_masks_object(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1.15, 1, 0, 0)
+
+  // scale down to match neighbouring icon heights
+  cairo_save(cr);
+  cairo_translate(cr, 0.10, 0.07);
+  cairo_scale(cr, 0.80, 0.86);
+
+  const double cx = 0.5;
+  const double cy = 0.5;
+  const double r  = 0.44;
+
+  // controls sparkle character
+  const double tip   = 1.00; // tip reach
+  const double pinch = 0.38; // inward side pull
+
+  cairo_new_path(cr);
+
+  // top
+  cairo_move_to(cr, cx, cy - r * tip);
+
+  // top → right
+  cairo_curve_to(cr,
+                 cx + r*0.25, cy - r*pinch,
+                 cx + r*pinch, cy - r*0.25,
+                 cx + r*tip, cy);
+
+  // right → bottom
+  cairo_curve_to(cr,
+                 cx + r*pinch, cy + r*0.25,
+                 cx + r*0.25, cy + r*pinch,
+                 cx, cy + r*tip);
+
+  // bottom → left
+  cairo_curve_to(cr,
+                 cx - r*0.25, cy + r*pinch,
+                 cx - r*pinch, cy + r*0.25,
+                 cx - r*tip, cy);
+
+  // left → top
+  cairo_curve_to(cr,
+                 cx - r*pinch, cy - r*0.25,
+                 cx - r*0.25, cy - r*pinch,
+                 cx, cy - r*tip);
+
+  cairo_close_path(cr);
+
+  cairo_restore(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+#endif
+
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
