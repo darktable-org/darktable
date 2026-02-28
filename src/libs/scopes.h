@@ -33,6 +33,7 @@ typedef enum dt_scopes_mode_type_t
   DT_SCOPES_MODE_WAVEFORM,
   DT_SCOPES_MODE_PARADE, // must come after waveform, as it uses waveform data
   DT_SCOPES_MODE_VECTORSCOPE,
+  DT_SCOPES_MODE_SPLIT, // must come after waveform and vectorscope
   DT_SCOPES_MODE_N // needs to be the last one
 } dt_scopes_mode_type_t;
 
@@ -77,9 +78,15 @@ typedef struct dt_scopes_functions_t
                   // FIXME: should ROI by dt_histogram_roi_t or another type?
                   dt_histogram_roi_t *const roi,
                   const dt_iop_order_iccprofile_info_t *vs_prof);
+  // called after process to write new update counter to other modes
+  void (*update_counter_changed)(struct dt_scopes_mode_t *const self);
   // FIXME: do want a proper clear function or just tag as not up to date?
   void (*clear)(struct dt_scopes_mode_t *const self);
   void (*draw_bkgd)(const struct dt_scopes_mode_t *const self,
+                    cairo_t *cr,
+                    const int width,
+                    const int height);
+  void (*draw_grid)(const struct dt_scopes_mode_t *const self,
                     cairo_t *cr,
                     const int width,
                     const int height);
@@ -99,8 +106,8 @@ typedef struct dt_scopes_functions_t
                               const scopes_channels_t channels);
   // FIXME: rename to something more sensible
   dt_scopes_highlight_t (*get_highlight)(const struct dt_scopes_mode_t *const self,
-                                         const float posx,
-                                         const float posy);
+                                         const double posx,
+                                         const double posy);
   double (*get_exposure_pos)(const struct dt_scopes_mode_t *const self,
                              const double x,
                              const double y);
@@ -118,7 +125,7 @@ typedef struct dt_scopes_functions_t
   // FIXME: add show_option_buttons() which shows the option buttons in the current view, and use it instead of mode_enter() when possible
   // FIXME: add hide_option_buttons() which shows the option buttons in the current view, and use it instead of mode_leave() when possible
   // FIXME: make mode_enter() really just set up the mode when there is a mode shift and only call it then
-  void (*mode_enter)(const struct dt_scopes_mode_t *const self);
+  void (*mode_enter)(struct dt_scopes_mode_t *const self);
   void (*mode_leave)(const struct dt_scopes_mode_t *const self);
   void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
   // FIXME: s/gui_add_to_main/add_to_main_box/
@@ -163,8 +170,13 @@ extern const dt_scopes_functions_t dt_scopes_functions_histogram;
 extern const dt_scopes_functions_t dt_scopes_functions_waveform;
 extern const dt_scopes_functions_t dt_scopes_functions_parade;
 extern const dt_scopes_functions_t dt_scopes_functions_vectorscope;
+extern const dt_scopes_functions_t dt_scopes_functions_split;
 
-// FIXME: instead of making this extern & relying on linker (obscure?) make this part of dt_scopes_t?
+// FIXME: instead of making these extern & relying on linker (obscure?) make them part of dt_scopes_t?
+extern void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
+                                    cairo_t *cr,
+                                    const int width,
+                                    const int height);
 // FIXME: is there any reason this needs to be called with an argument?
 extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
 

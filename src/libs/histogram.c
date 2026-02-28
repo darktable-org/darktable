@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-// FIXME: move this to scopes/?
+// FIXME: move this to scopes and/or cull as needed/possible
 #include "common/color_harmony.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -231,39 +231,15 @@ static void dt_lib_histogram_process
   dt_pthread_mutex_lock(&d->lock);
 
   s->update_counter++;
-  if(s->cur_mode)
-  {
-    // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
-    //   for calculating the vertex_rgb data.
-    s->cur_mode->functions->process(s->cur_mode, img_display, &roi,
-                                    profile_info_out->type ? profile_info_out : fallback);
-    s->cur_mode->update_counter = s->update_counter;
-    // waveform and rgb parade share underlying data, so updates to one update both
-    // FIXME: hacky
-    if(s->cur_mode == &s->modes[DT_SCOPES_MODE_WAVEFORM])
-      s->modes[DT_SCOPES_MODE_PARADE].update_counter = s->update_counter;
-    if(s->cur_mode == &s->modes[DT_SCOPES_MODE_PARADE])
-      s->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = s->update_counter;
-  }
-  else
-    switch(d->scope_type)
-    {
-      case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-        dt_scopes_mode_t *const vec_view = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-        wave_view->functions->process(wave_view, img_display, &roi, profile_info_out->type ? profile_info_out : fallback);
-        wave_view->update_counter = s->update_counter;
-        vec_view->functions->process(vec_view, img_display, &roi, profile_info_out->type ? profile_info_out : fallback);
-        vec_view->update_counter = s->update_counter;
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      case DT_LIB_HISTOGRAM_SCOPE_N:
-        dt_unreachable_codepath();
-        break;
-    }
+  // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
+  //   for calculating the vertex_rgb data.
+  s->cur_mode->functions->process(s->cur_mode, img_display, &roi,
+                                  profile_info_out->type ? profile_info_out : fallback);
+  // FIXME: counter work is effectively atomic as is within a mutex, so just append update_counter_changed() work to end of the process() code that needs it
+  s->cur_mode->update_counter = s->update_counter;
+  if(s->cur_mode->functions->update_counter_changed)
+     s->cur_mode->functions->update_counter_changed(s->cur_mode);
+
   dt_pthread_mutex_unlock(&d->lock);
   dt_free_align(img_display);
 
@@ -271,6 +247,19 @@ static void dt_lib_histogram_process
                   dt_lib_histogram_scope_type_names[d->scope_type]);
 }
 
+
+// FIXME: make this default in _drawable_draw_callback() and only if there is a draw_bkgd method do somethign else?
+void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
+                             cairo_t *cr,
+                             const int width,
+                             const int height)
+{
+  cairo_save(cr);
+  cairo_rectangle(cr, 0, 0, width, height);
+  set_color(cr, darktable.bauhaus->graph_bg);
+  cairo_fill(cr);
+  cairo_restore(cr);
+}
 
 // FIXME: have different drawable for each scope in a stack --
 // simplifies this function from being a swath of conditionals -- then
@@ -302,97 +291,34 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
   gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
-  const float bkgd_width =
-    d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE
-    ? width/2 : width;
-
-  // Draw frame and background
-  if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-  {
-    cairo_save(cr);
-    cairo_rectangle(cr, 0, 0, bkgd_width, height);
-    set_color(cr, darktable.bauhaus->graph_bg);
-    cairo_fill(cr);
-    cairo_restore(cr);
-  }
+  if(cur_mode && cur_mode->functions->draw_bkgd)
+    cur_mode->functions->draw_bkgd(cur_mode, cr, width, height);
 
   // exposure change regions
   // FIXME: should draw these if there is no data currently for this scope?
   set_color(cr, darktable.bauhaus->graph_overlay);
-  if(cur_mode && cur_mode->functions->draw_highlight)
+  if(cur_mode->functions->draw_highlight)
     cur_mode->functions->draw_highlight(cur_mode, cr, d->scopes->highlight, width, height);
-  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-  {
-    dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-    wave_view->functions->draw_highlight(wave_view, cr, d->scopes->highlight, bkgd_width, height);
-  }
 
   // draw grid
-  // FIXME: set this in individual draw vode
+  // FIXME: set this in individual draw code
   set_color(cr, darktable.bauhaus->graph_grid);
-  if(cur_mode && cur_mode->functions->draw_bkgd)
-    cur_mode->functions->draw_bkgd(cur_mode, cr, width, height);
-  else
-    switch(d->scope_type)
-    {
-      case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-        break;  // hack for now
-      case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-        wave_view->functions->draw_bkgd(wave_view, cr, bkgd_width, height);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      case DT_LIB_HISTOGRAM_SCOPE_N:
-        dt_unreachable_codepath();
-    }
+  if(cur_mode && cur_mode->functions->draw_grid)
+    cur_mode->functions->draw_grid(cur_mode, cr, width, height);
 
   // FIXME: should set histogram buffer to black if have just entered
   // tether view and nothing is displayed
   dt_pthread_mutex_lock(&d->lock);
   // darkroom view: draw scope so long as preview pipe is finished
   // tether view: draw whatever has come in from tether
-  if(dt_view_get_current() == DT_VIEW_TETHERING
-     || dev->image_storage.id == dev->preview_pipe->output_imgid)
+  if((dt_view_get_current() == DT_VIEW_TETHERING
+      || dev->image_storage.id == dev->preview_pipe->output_imgid)
+     && (cur_mode->update_counter == d->scopes->update_counter))
   {
-    if(cur_mode)
-    {
-      if(cur_mode->update_counter == d->scopes->update_counter)
-      {
-        if(cur_mode->functions->draw_scope_channels)
-          cur_mode->functions->draw_scope_channels(cur_mode, cr, width, height, d->scopes->channels);
-        else
-          cur_mode->functions->draw_scope(cur_mode, cr, width, height);
-      }
-    }
+    if(cur_mode->functions->draw_scope_channels)
+      cur_mode->functions->draw_scope_channels(cur_mode, cr, width, height, d->scopes->channels);
     else
-    {
-      switch(d->scope_type)
-      {
-        case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-          cairo_save(cr);
-          dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-          dt_scopes_mode_t *const vec_view = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-          wave_view->functions->draw_scope_channels(wave_view, cr,
-                                                    bkgd_width, height,
-                                                    d->scopes->channels);
-          cairo_translate(cr, bkgd_width, 0);
-          // clip so vectorscope background won't overlap waveform
-          cairo_rectangle(cr, 0, 0, bkgd_width, height);
-          cairo_clip(cr);
-          vec_view->functions->draw_scope(vec_view, cr,
-                                          bkgd_width, height);
-          cairo_restore(cr);
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-        case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-        case DT_LIB_HISTOGRAM_SCOPE_N:
-          dt_unreachable_codepath();
-      }
-    }
+      cur_mode->functions->draw_scope(cur_mode, cr, width, height);
   }
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -455,10 +381,10 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
       pos = cur_mode->functions->get_exposure_pos(cur_mode, x, y);
     else
     {
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-        pos = x * 2.0f;
-      else
-        pos = x;
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_drawable_motion] no %s get_exposure_pos at %f, %f\n",
+               cur_mode->functions->name(cur_mode), x, y);
+      pos = x;
     }
 
     dt_dev_exposure_handle_event(controller, 1, pos, FALSE);
@@ -467,28 +393,15 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
-    const float posx = x / (float)(allocation.width) * x_adjust;
-    const float posy = y / (float)(allocation.height);
+    const double posx = x / (double)(allocation.width);
+    const double posy = y / (double)(allocation.height);
     const dt_scopes_highlight_t prior_highlight = d->scopes->highlight;
 
     if(cur_mode && cur_mode->functions->get_highlight)
-    {
       d->scopes->highlight =
         cur_mode->functions->get_highlight(cur_mode, posx, posy);
-    }
-    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-    {
-      if(posx > 0.5f)
-        d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-      else
-        d->scopes->highlight =
-          d->scopes->modes[DT_SCOPES_MODE_WAVEFORM].functions->get_highlight(
-            &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM], posx*2.0f, posy);
-    }
     else
-    {
       d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-    }
 
     if(prior_highlight != d->scopes->highlight)
     {
@@ -516,13 +429,15 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
     double pos;
     dt_scopes_mode_t *const cur_mode = d->scopes->cur_mode;
     if(cur_mode && cur_mode->functions->get_exposure_pos)
+    {
       pos = cur_mode->functions->get_exposure_pos(cur_mode, x, y);
+    }
     else
     {
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-        pos = x * 2.0f;
-      else
-        pos = x;
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_drawable_button_press] no %s get_exposure_pos for highlight %d at %f, %f\n",
+               cur_mode->functions->name(cur_mode), d->scopes->highlight, x, y);
+      pos = x;
     }
 
     dt_dev_exposure_handle_event(gesture, n_press, pos, d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
@@ -591,34 +506,13 @@ static void _scope_type_update(const dt_lib_histogram_t *const d)
   }
 
   dt_scopes_mode_t *cur_mode = d->scopes->cur_mode;
-  if(cur_mode)
-  {
-    if(cur_mode->functions->draw_scope_channels)
-      gtk_widget_show(d->button_box_rgb);
-    else
-      gtk_widget_hide(d->button_box_rgb);
-    // FIXME: only call if actually entering this mode (cur_mode has changed) so don't re-initialize color harmony and lose mouseover display in drawable when on harmony buttons?
-    cur_mode->functions->mode_enter(cur_mode);
-    cur_mode->functions->update_buttons(cur_mode);
-  }
+  if(cur_mode->functions->draw_scope_channels)
+    gtk_widget_show(d->button_box_rgb);
   else
-    switch(d->scope_type)
-    {
-      case DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE:
-        dt_scopes_mode_t *const wave_view = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-        dt_scopes_mode_t *const vec_view = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-        wave_view->functions->mode_enter(wave_view);
-        wave_view->functions->update_buttons(wave_view);
-        vec_view->functions->mode_enter(vec_view);
-        vec_view->functions->update_buttons(vec_view);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      case DT_LIB_HISTOGRAM_SCOPE_N:
-        dt_unreachable_codepath();
-    }
+    gtk_widget_hide(d->button_box_rgb);
+  // FIXME: only call if actually entering this mode (cur_mode has changed) so don't re-initialize color harmony and lose mouseover display in drawable when on harmony buttons?
+  cur_mode->functions->mode_enter(cur_mode);
+  cur_mode->functions->update_buttons(cur_mode);
 }
 
 static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
@@ -647,8 +541,10 @@ static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_PARADE];
   else if(i == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
+  else if(i == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_SPLIT];
   else
-    d->scopes->cur_mode = NULL;
+    dt_unreachable_codepath();
 
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
@@ -660,7 +556,8 @@ static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
 
   // generate data for changed scope and trigger widget redraw
   dt_scopes_mode_t *cur_mode = d->scopes->cur_mode;
-  if(cur_mode && d->scopes->update_counter != cur_mode->update_counter)
+  // FIXME: does this comparison of update_counter need to be protected within a mutex
+  if(d->scopes->update_counter != cur_mode->update_counter)
   {
     if(dt_view_get_current() == DT_VIEW_DARKROOM)
       dt_dev_process_preview(darktable.develop);
@@ -808,6 +705,7 @@ void gui_init(dt_lib_module_t *self)
   s->modes[DT_SCOPES_MODE_WAVEFORM].functions = &dt_scopes_functions_waveform;
   s->modes[DT_SCOPES_MODE_PARADE].functions = &dt_scopes_functions_parade;
   s->modes[DT_SCOPES_MODE_VECTORSCOPE].functions = &dt_scopes_functions_vectorscope;
+  s->modes[DT_SCOPES_MODE_SPLIT].functions = &dt_scopes_functions_split;
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
     s->modes[i].update_counter = 0;
@@ -832,10 +730,15 @@ void gui_init(dt_lib_module_t *self)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM];
   else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_PARADE];
   else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
+  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
+    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_SPLIT];
   else
-    d->scopes->cur_mode = NULL;
+    dt_unreachable_codepath();
+  // FIXME: this crashes when starting mode is RGB parade
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -960,6 +863,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // will change visibility of buttons, hence must run after all buttons are declared
+  // FIMXME: can instead do something like:
+  // d->scopes->cur_mode->functions->update_buttons(d->scopes->cur_mode);
   _scope_type_update(d);
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?

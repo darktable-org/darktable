@@ -162,7 +162,7 @@ static void _wave_process(dt_scopes_mode_t *const self,
   dt_free_align(partial_binned);
 }
 
-static void _wave_draw_bkgd(const dt_scopes_mode_t *const self,
+static void _wave_draw_grid(const dt_scopes_mode_t *const self,
                             cairo_t *cr,
                             const int width,
                             const int height)
@@ -200,26 +200,6 @@ static void _wave_draw_highlight(const dt_scopes_mode_t *const self,
       dt_unreachable_codepath();
     cairo_fill(cr);
   }
-}
-
-static dt_scopes_highlight_t _wave_get_highlight(const dt_scopes_mode_t *const self,
-                                                 const float posx,
-                                                 const float posy)
-{
-  const dt_scopes_wave_t *const d = self->data;
-  if((posy > (1.0f - BLACK_POINT_REGION) && d->orient == DT_WAVE_ORIENT_HORI)
-     ||(posx < BLACK_POINT_REGION && d->orient == DT_WAVE_ORIENT_VERT))
-    return DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-  else
-    return DT_SCOPES_HIGHLIGHT_EXPOSURE;
-}
-
-static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                     const double x,
-                                     const double y)
-{
-  const dt_scopes_wave_t *const d = self->data;
-  return d->orient == DT_WAVE_ORIENT_HORI ? -y : x;
 }
 
 static void _wave_draw(const dt_scopes_mode_t *const self,
@@ -287,6 +267,33 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
   cairo_restore(cr);
 }
 
+static void _wave_update_counter_changed(dt_scopes_mode_t *const self)
+{
+  const dt_scopes_wave_t *const d = self->data;
+  // waveform and rgb parade share underlying data, so updates to one update both
+  d->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter = self->update_counter;
+}
+
+static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
+                                     const double x,
+                                     const double y)
+{
+  const dt_scopes_wave_t *const d = self->data;
+  return d->orient == DT_WAVE_ORIENT_HORI ? -y : x;
+}
+
+static dt_scopes_highlight_t _wave_get_highlight(const dt_scopes_mode_t *const self,
+                                                 const double posx,
+                                                 const double posy)
+{
+  const dt_scopes_wave_t *const d = self->data;
+  if((posy > (1.0f - BLACK_POINT_REGION) && d->orient == DT_WAVE_ORIENT_HORI)
+     ||(posx < BLACK_POINT_REGION && d->orient == DT_WAVE_ORIENT_VERT))
+    return DT_SCOPES_HIGHLIGHT_BLACK_POINT;
+  else
+    return DT_SCOPES_HIGHLIGHT_EXPOSURE;
+}
+
 static void _wave_clear(dt_scopes_mode_t *const self)
 {
   // FIXME: make sure this is actually called appropriately in histogram.c
@@ -314,7 +321,7 @@ static void _wave_update_buttons(const dt_scopes_mode_t *const self)
   }
 }
 
-static void _wave_mode_enter(const dt_scopes_mode_t *const self)
+static void _wave_mode_enter(dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_show(d->orient_button);
@@ -429,12 +436,17 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .name = _wave_name,
   .process = _wave_process,
   .clear = _wave_clear,
-  .draw_bkgd = _wave_draw_bkgd,
+  .update_counter_changed = _wave_update_counter_changed,
+  .draw_bkgd = lib_histogram_draw_bkgd,
+  .draw_grid = _wave_draw_grid,
   .draw_highlight = _wave_draw_highlight,
   .draw_scope = NULL,
   .draw_scope_channels = _wave_draw,
   .get_highlight = _wave_get_highlight,
   .get_exposure_pos = _wave_get_exposure_pos,
+  .append_to_tooltip = NULL,
+  .eventbox_scroll = NULL,
+  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
@@ -448,6 +460,13 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
 const char* _parade_name(const dt_scopes_mode_t *const self)
 {
   return N_("RGB parade");
+}
+
+static void _parade_update_counter_changed(dt_scopes_mode_t *const self)
+{
+  const dt_scopes_wave_t *const d = self->data;
+  // waveform and rgb parade share underlying data, so updates to one update both
+  d->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = self->update_counter;
 }
 
 static void _parade_draw(const dt_scopes_mode_t *const self,
@@ -539,13 +558,17 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .name = _parade_name,
   .process = _wave_process,
   .clear = _wave_clear,
-  .draw_bkgd = _wave_draw_bkgd,
+  .update_counter_changed = _parade_update_counter_changed,
+  .draw_bkgd = lib_histogram_draw_bkgd,
+  .draw_grid = _wave_draw_grid,
   .draw_highlight = _wave_draw_highlight,
   .draw_scope = _parade_draw,
   .draw_scope_channels = NULL,
   .get_highlight = _wave_get_highlight,
   .get_exposure_pos = _wave_get_exposure_pos,
   .append_to_tooltip = NULL,
+  .eventbox_scroll = NULL,
+  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,

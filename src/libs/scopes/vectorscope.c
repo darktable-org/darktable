@@ -1282,7 +1282,7 @@ void _vec_signal_image_changed(gpointer instance, dt_scopes_mode_t *const self)
   _update_color_harmony_gui(d);
 }
 
-static void _vec_mode_enter(const dt_scopes_mode_t *const self)
+static void _vec_mode_enter(dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
   gtk_widget_show(d->vec_scale_button);
@@ -1460,10 +1460,12 @@ static void _vec_gui_cleanup(dt_scopes_mode_t *const self)
 const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
   .name = _vec_name,
   .process = _vec_process,
+  .update_counter_changed = NULL,
   .clear = _vec_clear,
   // grid is drawn with scope, as it depends on chromaticity scale
   // FIXME: now that there is no auto-scale but logarithmic/linear, can draw grid here again?
   .draw_bkgd = NULL,
+  .draw_grid = NULL,
   .draw_highlight = NULL,
   .draw_scope = _vec_draw,
   .draw_scope_channels = NULL,
