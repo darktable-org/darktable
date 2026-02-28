@@ -97,6 +97,13 @@ changes (where available).
   file rather than upscale the embedded JPEG for higher resolution
   thumbnails/previews, use the new configuration option "auto".
 
+- In Quick Access Panel, "go to full version..." now reliably scrolls
+  to the correct module.
+
+- In filmstrip, keyboard shortcuts for rating/color labels/reject now
+  apply to the thumbnail under the cursor (including overlay elements)
+  instead of the currently opened image.
+
 - Fix for usage of incorrect color profiles on secondary monitors on
   Windows.
 
