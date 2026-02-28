@@ -85,6 +85,7 @@ typedef struct dt_lib_histogram_t
   GtkWidget *button_box_rgb;           // GtkBox -- contains RGB channels buttons
   GtkWidget *scope_type_button
     [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
+  // FIXME: make these an array[DT_SCOPES_RGB_N], make a single clicked function?
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
@@ -242,7 +243,7 @@ static void dt_lib_histogram_process
   dt_free_align(img_display);
 
   dt_show_times_f(&start, "[histogram]", "final %s",
-                  dt_lib_histogram_scope_type_names[d->scope_type]);
+                  dt_scopes_call(s->cur_mode, name));
 }
 
 
@@ -359,22 +360,12 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_lib_histogram_t *d)
 {
-  // FIXME: once module-ify, test here for if have get_exposure_pos()
   dt_scopes_mode_t *const cur_mode = d->scopes->cur_mode;
   if(dt_key_modifier_state() & GDK_BUTTON1_MASK
-     && d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+     && d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && dt_scopes_func_exists(cur_mode, get_exposure_pos))
   {
-    double pos;
-    if(dt_scopes_func_exists(cur_mode, get_exposure_pos))
-      pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
-    else
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_drawable_motion] no %s get_exposure_pos at %f, %f\n",
-               dt_scopes_call(cur_mode, name), x, y);
-      pos = x;
-    }
-
+    const double pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
     dt_dev_exposure_handle_event(controller, 1, pos, FALSE);
   }
   else
@@ -393,7 +384,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     if(prior_highlight != d->scopes->highlight)
     {
       lib_histogram_update_tooltip(d->scopes);
-      gtk_widget_queue_draw(d->scopes->scope_draw);
+      dt_scopes_refresh(d->scopes);
       if(d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE)
       {
         // FIXME: should really use named cursors, and differentiate
@@ -410,22 +401,12 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
                                    double y,
                                    dt_lib_histogram_t *d)
 {
-  // FIXME: once module-ify, test here for if have get_exposure_pos()
-  if(d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+  if(d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && dt_scopes_func_exists(d->scopes->cur_mode, get_exposure_pos))
   {
-    double pos;
-    dt_scopes_mode_t *const cur_mode = d->scopes->cur_mode;
-    if(dt_scopes_func_exists(cur_mode, get_exposure_pos))
-      pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
-    else
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_drawable_button_press] no %s get_exposure_pos for highlight %d at %f, %f\n",
-               dt_scopes_call(cur_mode, name), d->scopes->highlight, x, y);
-      pos = x;
-    }
-
-    dt_dev_exposure_handle_event(gesture, n_press, pos, d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
+    const double pos = dt_scopes_call(d->scopes->cur_mode, get_exposure_pos, x, y);
+    dt_dev_exposure_handle_event(gesture, n_press, pos,
+                                 d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
   }
 }
 
@@ -470,7 +451,7 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   {
     d->scopes->highlight = DT_SCOPES_HIGHLIGHT_NONE;
     dt_control_change_cursor(GDK_LEFT_PTR);
-    gtk_widget_queue_draw(d->scopes->scope_draw);
+    dt_scopes_refresh(d->scopes);
   }
 }
 
@@ -524,23 +505,16 @@ static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
     dt_unreachable_codepath();
 
   dt_conf_set_string("plugins/darkroom/histogram/mode",
-                     dt_lib_histogram_scope_type_names[d->scope_type]);
+                     dt_scopes_call(d->scopes->cur_mode, name));
   lib_histogram_update_tooltip(d->scopes);
   _scope_type_update(d);
 
   // even if no current data, GUI should still respond to update
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 
-  // generate data for changed scope and trigger widget redraw
-  dt_scopes_mode_t *cur_mode = d->scopes->cur_mode;
-  // FIXME: does this comparison of update_counter need to be protected within a mutex
-  if(d->scopes->update_counter != cur_mode->update_counter)
-  {
-    if(dt_view_get_current() == DT_VIEW_DARKROOM)
-      dt_dev_process_preview(darktable.develop);
-    else
-      dt_control_queue_redraw_center();
-  }
+  // FIXME: does this comparison of update_counter need to be protected within a mutex?
+  if(d->scopes->update_counter != d->scopes->cur_mode->update_counter)
+    dt_scopes_reprocess();
 
   return TRUE;
 }
@@ -552,7 +526,7 @@ static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_red",
                    d->scopes->channels[DT_SCOPES_RGB_RED]);
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 }
 
 static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
@@ -561,7 +535,7 @@ static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_green",
                    d->scopes->channels[DT_SCOPES_RGB_GREEN]);
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 }
 
 static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
@@ -570,7 +544,7 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue",
                    d->scopes->channels[DT_SCOPES_RGB_BLUE]);
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
@@ -638,7 +612,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance,
   // checking the pixelpipe to see if it has processed the current
   // image
   const dt_lib_histogram_t *d = self->data;
-  gtk_widget_queue_draw(d->scopes->scope_draw);
+  dt_scopes_refresh(d->scopes);
 }
 
 void view_enter(struct dt_lib_module_t *self,
@@ -673,17 +647,25 @@ void gui_init(dt_lib_module_t *self)
 
   dt_scopes_t *const s = dt_calloc1_align_type(dt_scopes_t);
   d->scopes = s;
+
+  const dt_scopes_functions_t *const dt_scopes_mode_func_tables[DT_SCOPES_MODE_N] =
+    { &dt_scopes_functions_histogram,
+      &dt_scopes_functions_waveform,
+      &dt_scopes_functions_parade,
+      &dt_scopes_functions_vectorscope,
+      &dt_scopes_functions_split };
+  const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   s->update_counter = 1;
+  s->cur_mode = &s->modes[DT_SCOPES_MODE_WAVEFORM];  // failsafe
+
   // FIXME: is there a better way to init this?
-  s->modes[DT_SCOPES_MODE_HISTOGRAM].functions = &dt_scopes_functions_histogram;
-  s->modes[DT_SCOPES_MODE_WAVEFORM].functions = &dt_scopes_functions_waveform;
-  s->modes[DT_SCOPES_MODE_PARADE].functions = &dt_scopes_functions_parade;
-  s->modes[DT_SCOPES_MODE_VECTORSCOPE].functions = &dt_scopes_functions_vectorscope;
-  s->modes[DT_SCOPES_MODE_SPLIT].functions = &dt_scopes_functions_split;
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
+    s->modes[i].functions = dt_scopes_mode_func_tables[i];
     s->modes[i].update_counter = 0;
     dt_scopes_call(&s->modes[i], gui_init, s);
+    if(g_strcmp0(str, dt_scopes_call(&s->modes[i], name)) == 0)
+      s->cur_mode = &s->modes[i];
   }
 
   dt_pthread_mutex_init(&d->lock, NULL);
@@ -695,24 +677,9 @@ void gui_init(dt_lib_module_t *self)
   d->scopes->channels[DT_SCOPES_RGB_BLUE]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
 
-  const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
       d->scope_type = i;
-  // FIXME: stopgap hack during transition
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM];
-  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_PARADE];
-  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-  else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_SPLIT];
-  else
-    dt_unreachable_codepath();
-  // FIXME: this crashes when starting mode is RGB parade
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram

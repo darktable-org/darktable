@@ -243,12 +243,7 @@ static void _split_mode_enter(dt_scopes_mode_t *const self)
   d->right->functions->mode_enter(d->right);
   self->update_counter = MAX(d->left->update_counter, d->right->update_counter);
   if(d->left->update_counter != d->right->update_counter)
-  {
-    if(dt_view_get_current() == DT_VIEW_DARKROOM)
-      dt_dev_process_preview(darktable.develop);
-    else
-      dt_control_queue_redraw_center();
-  }
+    dt_scopes_reprocess();
 }
 
 static void _split_mode_leave(const dt_scopes_mode_t *const self)

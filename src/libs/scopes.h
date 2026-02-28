@@ -156,8 +156,6 @@ typedef struct dt_scopes_t
   int update_counter;
   // depends on mouse position
   dt_scopes_highlight_t highlight;
-  //const dt_scopes_functions_t *view_functions[DT_SCOPES_VIEW_N];
-  //void *view_data[DT_SCOPES_VIEW_N];
   GtkWidget *button_box_main;          // GtkBox -- contains scope control buttons
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   // state set by buttons
@@ -186,7 +184,6 @@ extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
 #define dt_scopes_call(mode, func, ...) (mode)->functions->func(mode, ##__VA_ARGS__)
 
 // FIXME: can make this return a value?
-// FIXME: can make an if/else macro which runs different code when the function does or doesn't exist?
 #define dt_scopes_call_if_exists(mode, func, ...) \
     {                                             \
       dt_scopes_mode_t *m = mode;                 \
@@ -194,11 +191,18 @@ extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
         m->functions->func(m, ##__VA_ARGS__);     \
     }
 
-// FIXME: add a dt_scopes_call(scopes, func, args) macro which tests of cur_mode != NULL, tests if func != NULL, and if all OK calls scopes->cur_mode->func(args)
-// FIXME: once move over split view to modules, don't need to check if cur_mode != NULL for dt_scopes_call()
+static inline void dt_scopes_refresh(const dt_scopes_t *const scopes)
+{
+  gtk_widget_queue_draw(scopes->scope_draw);
+}
 
-// FIXME: add an inline dt_scopes_refresh_scope(scopes) which refreshes the drawable (one line content) and replace the color harmony implementation with this and use it throughout
-// FIXME: add an inline dt_scopes_reprocess(scopes) which depending on current view reprocesses preview pixelpipe or updates tether view, and use that throughout
+static inline void dt_scopes_reprocess()
+{
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
+    dt_dev_process_preview(darktable.develop);
+  else
+    dt_control_queue_redraw_center();
+}
 
 G_END_DECLS
 
