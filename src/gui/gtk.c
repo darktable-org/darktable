@@ -78,6 +78,7 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
+#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 
 #ifdef GDK_WINDOWING_QUARTZ
 // macOS has a fixed DPI of 72
@@ -501,8 +502,8 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event,
       if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
       {
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-        if(delta_x) *delta_x = event->delta_x / 50;
-        if(delta_y) *delta_y = event->delta_y / 50;
+        if(delta_x) *delta_x = event->delta_x / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+        if(delta_y) *delta_y = event->delta_y / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
 #else
          if(delta_x) *delta_x = event->delta_x;
          if(delta_y) *delta_y = event->delta_y;
@@ -575,8 +576,8 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
       // scroll, and only then tell caller that there is a scroll to
       // handle
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-      acc_x += event->delta_x / 50;
-      acc_y += event->delta_y / 50;
+      acc_x += event->delta_x / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+      acc_y += event->delta_y / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
 #else
       acc_x += event->delta_x;
       acc_y += event->delta_y;
@@ -736,7 +737,6 @@ static gboolean _input_event(GtkWidget *widget,
 {
   (void)user_data;
 
-#ifdef GDK_WINDOWING_QUARTZ
   if(event->type == GDK_TOUCHPAD_PINCH)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
@@ -747,7 +747,6 @@ static gboolean _input_event(GtkWidget *widget,
       return TRUE;
     }
   }
-#endif
 
   return FALSE;
 }
@@ -758,16 +757,22 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
 
-#ifdef GDK_WINDOWING_QUARTZ
-  if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop
-     && (event->delta_x != 0.0 || event->delta_y != 0.0)
-     && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
-                                    event->delta_x, event->delta_y, event->state & 0xf))
+  if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
-    gtk_widget_queue_draw(widget);
-    return TRUE;
+    gdouble delta_x = 0.0, delta_y = 0.0;
+    if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+      return TRUE;
+
+    delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    delta_y *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    if((delta_x != 0.0 || delta_y != 0.0)
+       && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
+                                      delta_x, delta_y, event->state & 0xf))
+    {
+      gtk_widget_queue_draw(widget);
+      return TRUE;
+    }
   }
-#endif
 
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))

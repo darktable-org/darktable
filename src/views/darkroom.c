@@ -3763,6 +3763,7 @@ gboolean gesture_pinch(dt_view_t *self,
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  const double pinch_step_ratio = 1.1;
 
   static double pinch_last_scale = 0.0;
 
@@ -3771,9 +3772,8 @@ gboolean gesture_pinch(dt_view_t *self,
     pinch_last_scale = scale > 0.0 ? scale : 1.0;
     return TRUE;
   }
-
-  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
-     || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  else if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+          || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
   {
     pinch_last_scale = 0.0;
     return TRUE;
@@ -3782,14 +3782,16 @@ gboolean gesture_pinch(dt_view_t *self,
   if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE) return FALSE;
   if(pinch_last_scale <= 0.0 || scale <= 0.0) return FALSE;
 
-  if(scale > pinch_last_scale)
+  const double ratio = scale / pinch_last_scale;
+  int zoom_step = -1;
+  if(ratio > pinch_step_ratio)
+    zoom_step = 1;
+  else if(ratio < 1.0 / pinch_step_ratio)
+    zoom_step = 0;
+
+  if(zoom_step >= 0)
   {
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, 1, x, y, constrained);
-    pinch_last_scale = scale;
-  }
-  else if(scale < pinch_last_scale)
-  {
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, 0, x, y, constrained);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
     pinch_last_scale = scale;
   }
 
