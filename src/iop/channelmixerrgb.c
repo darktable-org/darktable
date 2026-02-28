@@ -646,6 +646,23 @@ static gboolean _get_d65_correction_ratios(const dt_iop_module_t *self,
   return FALSE;
 }
 
+static void _get_corrected_illuminant_xy(const dt_iop_module_t *self,
+                                         const dt_iop_channelmixer_rgb_params_t *p,
+                                         float *x, float *y)
+{
+  dt_aligned_pixel_t correction_ratios;
+  _get_d65_correction_ratios(self, correction_ratios);
+  dt_aligned_pixel_t wb_coeffs = { 0.f };
+  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
+  {
+    for(int k = 0; k < 4; k++)
+      wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
+  }
+  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
+                   wb_coeffs, x, y, p->temperature, p->illum_fluo,
+                   p->illum_led);
+}
+
 
 DT_OMP_DECLARE_SIMD(aligned(input, output:16) uniform(compression, clip))
 static inline void _gamut_mapping(const dt_aligned_pixel_t input,
@@ -3183,17 +3200,7 @@ void commit_params(dt_iop_module_t *self,
   // find x y coordinates of illuminant for CIE 1931 2° observer
   float x = p->x;
   float y = p->y;
-  dt_aligned_pixel_t correction_ratios;
-  _get_d65_correction_ratios(self, correction_ratios);
-  dt_aligned_pixel_t wb_coeffs = {0.f};
-  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
-  {
-    for(int k = 0; k < 4; k++)
-       wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
-  }
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
-                   wb_coeffs, &x, &y, p->temperature, p->illum_fluo,
-                   p->illum_led);
+  _get_corrected_illuminant_xy(self, p, &x, &y);
 
   // if illuminant is from camera or user WB coefficients, x and y are set on-the-fly at
   // commit time, so we need to set adaptation too
@@ -3635,17 +3642,7 @@ static gboolean _illuminant_color_draw(GtkWidget *widget,
   float x = p->x;
   float y = p->y;
   dt_aligned_pixel_t RGB = { 0.f };
-  dt_aligned_pixel_t correction_ratios;
-  _get_d65_correction_ratios(self, correction_ratios);
-  dt_aligned_pixel_t wb_coeffs = { 0.f };
-  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
-  {
-    for(int k = 0; k < 4; k++)
-      wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
-  }
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
-                   wb_coeffs, &x, &y, p->temperature, p->illum_fluo,
-                   p->illum_led);
+  _get_corrected_illuminant_xy(self, p, &x, &y);
   illuminant_xy_to_RGB(x, y, RGB);
   cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
   cairo_rectangle(cr, INNER_PADDING, margin, width, height);
@@ -3745,17 +3742,7 @@ static void _update_approx_cct(const dt_iop_module_t *self)
 
   float x = p->x;
   float y = p->y;
-  dt_aligned_pixel_t correction_ratios;
-  _get_d65_correction_ratios(self, correction_ratios);
-  dt_aligned_pixel_t wb_coeffs = { 0.f };
-  if(p->illuminant == DT_ILLUMINANT_FROM_WB)
-  {
-    for(int k = 0; k < 4; k++)
-      wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
-  }
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
-                   wb_coeffs, &x, &y, p->temperature, p->illum_fluo,
-                   p->illum_led);
+  _get_corrected_illuminant_xy(self, p, &x, &y);
 
   dt_illuminant_t test_illuminant;
   float t = 5000.f;
@@ -4349,17 +4336,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     // find x y coordinates of illuminant for CIE 1931 2° observer
     float x = p->x;
     float y = p->y;
-    dt_aligned_pixel_t correction_ratios;
-    _get_d65_correction_ratios(self, correction_ratios);
-    dt_aligned_pixel_t wb_coeffs = { 0.f };
-    if(p->illuminant == DT_ILLUMINANT_FROM_WB)
-    {
-      for(int k = 0; k < 4; k++)
-        wb_coeffs[k] = self->dev->chroma.wb_coeffs[k];
-    }
-    illuminant_to_xy(p->illuminant, &(self->dev->image_storage), correction_ratios,
-                     wb_coeffs, &x, &y, p->temperature, p->illum_fluo,
-                     p->illum_led);
+    _get_corrected_illuminant_xy(self, p, &x, &y);
 
     dt_adaptation_t adaptation = p->adaptation;
 
