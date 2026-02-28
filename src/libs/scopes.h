@@ -180,9 +180,22 @@ extern void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
 // FIXME: is there any reason this needs to be called with an argument?
 extern void lib_histogram_update_tooltip(const dt_scopes_t *const scopes);
 
+#define dt_scopes_func_exists(mode, func) ((mode)->functions->func != NULL)
+
+// FIXME: print warning if func not defined in function table? -- but then how do we return a value?
+#define dt_scopes_call(mode, func, ...) (mode)->functions->func(mode, ##__VA_ARGS__)
+
+// FIXME: can make this return a value?
+// FIXME: can make an if/else macro which runs different code when the function does or doesn't exist?
+#define dt_scopes_call_if_exists(mode, func, ...) \
+    {                                             \
+      dt_scopes_mode_t *m = mode;                 \
+      if(m->functions->func)                      \
+        m->functions->func(m, ##__VA_ARGS__);     \
+    }
+
 // FIXME: add a dt_scopes_call(scopes, func, args) macro which tests of cur_mode != NULL, tests if func != NULL, and if all OK calls scopes->cur_mode->func(args)
 // FIXME: once move over split view to modules, don't need to check if cur_mode != NULL for dt_scopes_call()
-// FIXME: add dt_scopes_call_if_exists() which is OK if no func(), and dt_scopes_call() which prints a warning if no func()?
 
 // FIXME: add an inline dt_scopes_refresh_scope(scopes) which refreshes the drawable (one line content) and replace the color harmony implementation with this and use it throughout
 // FIXME: add an inline dt_scopes_reprocess(scopes) which depending on current view reprocesses preview pixelpipe or updates tether view, and use that throughout
