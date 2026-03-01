@@ -2583,7 +2583,7 @@ int mouse_moved(dt_iop_module_t *self,
   // to prevent hiding the spot behind it
   if(g->is_cursor_close)
   {
-    dt_control_change_cursor(GDK_BLANK_CURSOR);
+    dt_control_change_cursor("none");
   }
   else
   {

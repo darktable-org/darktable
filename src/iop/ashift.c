@@ -4820,7 +4820,7 @@ int button_pressed(dt_iop_module_t *self,
   // if we start to draw a straightening line
   if(!g->lines && which == GDK_BUTTON_SECONDARY)
   {
-    dt_control_change_cursor(GDK_CROSSHAIR);
+    dt_control_change_cursor("crosshair");
     g->straightening = TRUE;
     g->straighten_x = pzx;
     g->straighten_y = pzy;
@@ -4833,7 +4833,7 @@ int button_pressed(dt_iop_module_t *self,
     const dt_iop_ashift_params_t *p = self->params;
     if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
-      dt_control_change_cursor(GDK_HAND1);
+      dt_control_change_cursor("pointer");
       g->adjust_crop = TRUE;
 
       dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
@@ -4873,7 +4873,7 @@ int button_pressed(dt_iop_module_t *self,
     g->lasty = pzy;
 
     g->isbounding = (which == GDK_BUTTON_SECONDARY) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
-    dt_control_change_cursor(GDK_CROSS);
+    dt_control_change_cursor("crosshair");
 
     return TRUE;
   }
@@ -5017,12 +5017,12 @@ int button_pressed(dt_iop_module_t *self,
   // cases we hand over the event (for image panning)
   if((take_control || handled) && which == GDK_BUTTON_SECONDARY)
   {
-    dt_control_change_cursor(GDK_PIRATE);
+    dt_control_change_cursor("not-allowed");
     g->isdeselecting = 1;
   }
   else if(take_control || handled)
   {
-    dt_control_change_cursor(GDK_PLUS);
+    dt_control_change_cursor("cell");
     g->isselecting = 1;
   }
 
@@ -5047,7 +5047,7 @@ int button_released(dt_iop_module_t *self,
   float wd, ht;
   dt_dev_get_preview_size(self->dev, &wd, &ht);
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   // ends eventual line move
   if(g->draw_line_move >= 0)

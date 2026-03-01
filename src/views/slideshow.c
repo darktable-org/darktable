@@ -432,7 +432,7 @@ void enter(dt_view_t *self)
 {
   dt_slideshow_t *d = self->data;
 
-  dt_control_change_cursor(GDK_BLANK_CURSOR);
+  dt_control_change_cursor("none");
   d->mouse_timeout = 0;
   d->exporting = 0;
   d->id_displayed = -1;
@@ -519,7 +519,7 @@ void leave(dt_view_t *self)
 
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   d->mouse_timeout = 0;
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
   d->auto_advance = FALSE;
 
   // exporting could be in action, just wait for the last to finish
@@ -616,7 +616,7 @@ static gboolean _hide_mouse(gpointer user_data)
   dt_view_t *self = (dt_view_t *)user_data;
   dt_slideshow_t *d = self->data;
   d->mouse_timeout = 0;
-  dt_control_change_cursor(GDK_BLANK_CURSOR);
+  dt_control_change_cursor("none");
   return FALSE;
 }
 
@@ -632,7 +632,7 @@ void mouse_moved(dt_view_t *self,
   if(d->mouse_timeout > 0)
     g_source_remove(d->mouse_timeout);
   else
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   d->mouse_timeout = g_timeout_add_seconds(1, _hide_mouse, self);
 }
 
