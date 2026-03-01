@@ -1848,6 +1848,9 @@ static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table
     return;
 
   if(!darktable.view_manager->active_images) return;
+  if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+     && !dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+    return;
   const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
