@@ -1339,7 +1339,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
 
     _dev_change_image(dev, imgid);
     // move filmstrip
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+      dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
     // force redraw
     dt_control_queue_redraw();
   }
