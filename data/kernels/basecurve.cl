@@ -34,7 +34,6 @@ inline float _aces_tone_map(const float x)
 
   return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
-
 /*
 hese coefficients refer to the Fitted ACES (RRT+ODT) approximation, 
 which is more precise than the basic Narkowicz fit. 
@@ -516,9 +515,7 @@ basecurve_finalize(read_only image2d_t in,
         xyz = JzAzBz_2_XYZ(jab).xyz / 400.0f;
 
         // XYZ D65 to RGB Rec2020
-        pixel.x =  1.716651f * xyz.x - 0.355671f * xyz.y - 0.253366f * xyz.z;
-        pixel.y = -0.666684f * xyz.x + 1.616481f * xyz.y + 0.015768f * xyz.z;
-        pixel.z =  0.017640f * xyz.x - 0.042771f * xyz.y + 0.942103f * xyz.z;
+        pixel.xyz = XYZ_to_Rec2020(xyz);
         
         const float min_val = fmin(pixel.x, fmin(pixel.y, pixel.z));
         if(min_val < 0.0f)
