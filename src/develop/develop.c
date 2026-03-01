@@ -2279,6 +2279,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history deleted");
 
+    // reset shared WB state so _dt_dev_load_pipeline_defaults() below
+    // computes correct defaults for all modules (defaults of temperature
+    // must be propagated to channelmixerrgb)
+    dt_dev_reset_chroma(dev);
+
     // Make sure all modules default params are loaded to init
     // history. This is important as some modules have specific
     // defaults based on metadata.
