@@ -141,7 +141,7 @@ jobs:
           cd ..
       - name: Build and install a more recent version of exiv2
         run: |
-          git clone --branch v0.28.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          git clone --branch v0.28.8 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
           cd src-exiv2
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
