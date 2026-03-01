@@ -193,6 +193,10 @@ changes (where available).
 - Fixed a bug which showed an extraneous toast message in the center
   view when dragging in the vectorscope.
 
+- Fixed a wrong WB when reloading defaults after changing manually the
+  WB. This was due to a missing reset letting the Color Calibration
+  module starting with a wrong WB.
+
 ## Lua
 
 ### API Version
