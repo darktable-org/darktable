@@ -606,6 +606,21 @@ dialog .sidebar row:selected:hover label,
   padding: 0.5em;
 }
 
+#iop-expander.dt_module_active #module-header
+{
+  /* ACTIVE */
+}
+
+#iop-expander.dt_module_focus #module-header
+{
+  /* FOCUSED */
+}
+
+#iop-expander.dt_module_active.dt_module_focus #module-header
+{
+  /* FOCUSED AND ACTIVE */
+}
+
 /* Labels in modules */
 #iop-panel-label,
 #lib-panel-label
@@ -674,7 +689,8 @@ dialog .sidebar row:selected:hover label,
   background-color: shade(@collapsible_bg_color, 1.04);
 }
 
-.dt_section_expander {
+.dt_section_expander
+{
   padding: 0.07em 0 0.07em 1.7em;
 }
 
@@ -686,7 +702,8 @@ dialog .sidebar row:selected:hover label,
   margin-top: 0.14em;
 }
 
-.dt_section_expander label {
+.dt_section_expander label
+{
   padding: 0.07em 0;
 }
 
