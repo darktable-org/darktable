@@ -71,23 +71,23 @@ typedef struct dt_iop_basecurve_params_t
   float highlight_gain;   // $MIN: 0.25 $MAX: 1.75 $DEFAULT: 1.0 $DESCRIPTION: "highlight gain"
   float ucs_saturation_balance; // $MIN: -0.75 $MAX: 0.75 $DEFAULT: 0.2 $DESCRIPTION: "balance saturation ucs"
   float gamut_strength;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "gamut compression"
-  float highlight_corr;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Highlight Hue/Sat"
-  int target_gamut;       // $DEFAULT: 0 $DESCRIPTION: "target gamut"
+  float highlight_corr;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlight hue/sat"
+  int target_gamut;       // $DEFAULT: 2 $DESCRIPTION: "target gamut"
   int color_look;         // $DEFAULT: 1 $DESCRIPTION: "color look style"
   float look_opacity;     // $MIN: 0.1 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "look opacity"
 } dt_iop_basecurve_params_t;
 
 static const float color_looks[10][10] = {
-  {1.000f, 0.000f, 0.000f,  0.000f, 1.000f, 0.000f,  0.000f, 0.000f, 1.000f}, // 1. Neutral
-  {0.932f, 0.051f, 0.017f,  0.021f, 0.945f, 0.034f,  0.011f, 0.025f, 0.964f}, // 2. Natural look
-  {1.029f, -0.008f, -0.074f, -0.023f, 1.008f, 0.046f, -0.002f, 0.007f, 1.010f}, // 3. Portrait
-  {1.084f, -0.006f, -0.093f, -0.074f, 1.008f, 0.060f, -0.011f, 0.005f, 1.024f}, // 4. Nature
-  {1.074f, 0.006f, -0.103f, -0.054f, 1.009f, 0.060f, -0.071f, -0.059f, 1.086f}, // 5. Vibrant
-  {1.218f, 0.007f, -0.192f, -0.119f, 1.076f, 0.048f, -0.099f, -0.069f, 1.154f}, // 6. Blue Sky
-  {1.082f, -0.020f, 0.103f, -0.051f, 1.052f, 0.042f, -0.047f, -0.045f, 1.073f}, // 7. Soft Warm
-  {1.050f, 0.020f, -0.010f, -0.020f, 1.020f, 0.000f, -0.010f, -0.020f, 1.030f}, // 8. Soft
-  {0.980f, -0.010f, -0.010f,  0.000f, 1.050f, -0.020f,  0.020f, 0.010f, 1.100f}, // 9. Deep Cool
-  {1.020f, -0.010f, -0.010f, -0.030f, 1.040f, -0.010f, 0.000f, -0.030f, 1.030f}  // 10. Authentic Cinema
+  {1.000f, 0.000f, 0.000f,  0.000f, 1.000f, 0.000f,  0.000f, 0.000f, 1.000f}, // 1. neutral
+  {0.932f, 0.051f, 0.017f,  0.021f, 0.945f, 0.034f,  0.011f, 0.025f, 0.964f}, // 2. natural look
+  {1.029f, -0.008f, -0.074f, -0.023f, 1.008f, 0.046f, -0.002f, 0.007f, 1.010f}, // 3. portrait
+  {1.084f, -0.006f, -0.093f, -0.074f, 1.008f, 0.060f, -0.011f, 0.005f, 1.024f}, // 4. nature
+  {1.074f, 0.006f, -0.103f, -0.054f, 1.009f, 0.060f, -0.071f, -0.059f, 1.086f}, // 5. vibrant
+  {1.218f, 0.007f, -0.192f, -0.119f, 1.076f, 0.048f, -0.099f, -0.069f, 1.154f}, // 6. blue sky
+  {1.082f, -0.020f, 0.103f, -0.051f, 1.052f, 0.042f, -0.047f, -0.045f, 1.073f}, // 7. soft warm
+  {1.050f, 0.020f, -0.010f, -0.020f, 1.020f, 0.000f, -0.010f, -0.020f, 1.030f}, // 8. soft
+  {0.980f, -0.010f, -0.010f,  0.000f, 1.050f, -0.020f,  0.020f, 0.010f, 1.100f}, // 9. deep cool
+  {1.020f, -0.010f, -0.010f, -0.030f, 1.040f, -0.010f, 0.000f, -0.030f, 1.030f}  // 10. authentic cinema
 };
 
 int legacy_params(dt_iop_module_t *self,
@@ -256,7 +256,7 @@ int legacy_params(dt_iop_module_t *self,
     n->ucs_saturation_balance = 0.2f;
     n->gamut_strength = 0.0f;
     n->highlight_corr = 0.0f;
-    n->target_gamut = 0;
+    n->target_gamut = 2;
     n->color_look = 1;
     n->look_opacity = 1.0f;
 
@@ -581,6 +581,8 @@ void reload_defaults(dt_iop_module_t *self)
     d->exposure_stops = 1.0f;
     d->exposure_bias = 1.0f;
   }
+
+  d->target_gamut = 2;
 
   if(!dt_is_display_referred())
   {
@@ -1547,7 +1549,7 @@ static void process_lut(dt_iop_module_t *self,
           // XYZ D65 to RGB Rec2020
           out[k]   =  1.716651f * xyz[0] - 0.355671f * xyz[1] - 0.253366f * xyz[2];
           out[k+1] = -0.666684f * xyz[0] + 1.616481f * xyz[1] + 0.015768f * xyz[2];
-          out[k+2] =  0.017640f * xyz[0] - 0.042771f * xyz[1] + 0.942103f * xyz[2];
+          out[k+2] =  0.017640f * xyz[0] - 0.042770f * xyz[1] + 0.942103f * xyz[2];
 
           float min_val = fminf(out[k], fminf(out[k+1], out[k+2]));
           if(min_val < 0.0f)
@@ -1943,7 +1945,7 @@ static void process_fusion(dt_iop_module_t *self,
           // XYZ D65 to RGB Rec2020
           val[0] =  1.716651f * xyz[0] - 0.355671f * xyz[1] - 0.253366f * xyz[2];
           val[1] = -0.666684f * xyz[0] + 1.616481f * xyz[1] + 0.015768f * xyz[2];
-          val[2] =  0.017640f * xyz[0] - 0.042771f * xyz[1] + 0.942103f * xyz[2];
+          val[2] =  0.017640f * xyz[0] - 0.042770f * xyz[1] + 0.942103f * xyz[2];
 
           float min_val = fminf(val[0], fminf(val[1], val[2]));
           if(min_val < 0.0f)
@@ -2757,9 +2759,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
             p->look_opacity = 1.0f;
             dt_bauhaus_slider_set(g->look_opacity, 1.0f);
           }
-      gtk_widget_set_tooltip_text(g->fusion, _("Exposure fusion operates in linear scene-referred space as a luminance normalization step,\n"
+      gtk_widget_set_tooltip_text(g->fusion, _("exposure fusion operates in linear scene-referred space as a luminance normalization step,\n"
                                                "providing a stable radiometric reference prior to the final tone-mapping curve.\n"
-                                               "It does not perform HDR blending nor exposure compensation."));
+                                               "it does not perform HDR blending nor exposure compensation."));
           if(w == g->workflow_mode)
       {
         p->shadow_lift = 1.0f;
@@ -2875,37 +2877,37 @@ void gui_init(dt_iop_module_t *self)
 
   g->workflow_mode = dt_bauhaus_combobox_from_params(self, "workflow_mode");
   dt_bauhaus_combobox_add(g->workflow_mode, _("display"));
-  dt_bauhaus_combobox_add(g->workflow_mode, _("Kinematics (ACES-like)"));
-  dt_bauhaus_combobox_add(g->workflow_mode, _("Kinematics (Narkowicz)"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematics (ACES-like)"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematics (Narkowicz)"));
   gtk_widget_set_tooltip_text(g->workflow_mode, _("tone mapping method applied after the curve"));
   dt_gui_box_add(self->widget, g->workflow_mode);
 
   g->color_look = dt_bauhaus_combobox_from_params(self, "color_look");
-  dt_bauhaus_widget_set_label(g->color_look, NULL, _("Color Look"));
-  dt_bauhaus_combobox_add(g->color_look, "Neutral");
-  dt_bauhaus_combobox_add(g->color_look, "Natural look");
-  dt_bauhaus_combobox_add(g->color_look, "Portrait");
-  dt_bauhaus_combobox_add(g->color_look, "Vibrant");
-  dt_bauhaus_combobox_add(g->color_look, "Nature");
-  dt_bauhaus_combobox_add(g->color_look, "Blue Sky");
-  dt_bauhaus_combobox_add(g->color_look, "Soft Warm");
-  dt_bauhaus_combobox_add(g->color_look, "Soft");
-  dt_bauhaus_combobox_add(g->color_look, "Deep Cool");
-  dt_bauhaus_combobox_add(g->color_look, "Authentic Cinema");
-  gtk_widget_set_tooltip_text(g->color_look, _("Apply a color style: Neutral (none), Portrait (skin tones), Nature (landscapes), Blue Sky (depth), Soft (organic), or Warm/Cool artistic tints."));
+  dt_bauhaus_widget_set_label(g->color_look, NULL, _("color look"));
+  dt_bauhaus_combobox_add(g->color_look, "neutral");
+  dt_bauhaus_combobox_add(g->color_look, "natural look");
+  dt_bauhaus_combobox_add(g->color_look, "portrait");
+  dt_bauhaus_combobox_add(g->color_look, "vibrant");
+  dt_bauhaus_combobox_add(g->color_look, "nature");
+  dt_bauhaus_combobox_add(g->color_look, "blue sky");
+  dt_bauhaus_combobox_add(g->color_look, "soft warm");
+  dt_bauhaus_combobox_add(g->color_look, "soft");
+  dt_bauhaus_combobox_add(g->color_look, "deep cool");
+  dt_bauhaus_combobox_add(g->color_look, "authentic cinema");
+  gtk_widget_set_tooltip_text(g->color_look, _("apply a color style: neutral (none), portrait (skin tones), nature (landscapes), blue sky (depth), soft (organic), or warm/cool artistic tints."));
   dt_gui_box_add(self->widget, g->color_look);
 
   g->look_opacity = dt_bauhaus_slider_from_params(self, "look_opacity");
-  dt_bauhaus_widget_set_label(g->look_opacity, NULL, _("Look Opacity"));
+  dt_bauhaus_widget_set_label(g->look_opacity, NULL, _("look opacity"));
   dt_bauhaus_slider_set_format(g->look_opacity, "%");
   dt_bauhaus_slider_set_factor(g->look_opacity, 100.0);
-  gtk_widget_set_tooltip_text(g->look_opacity, _("Adjust the strength of the selected color style (10% to 100%)."));
+  gtk_widget_set_tooltip_text(g->look_opacity, _("adjust the strength of the selected color style (10% to 100%)."));
   dt_gui_box_add(self->widget, g->look_opacity);
 
   g->highlight_gain = dt_bauhaus_slider_from_params(self, "highlight_gain");
   dt_bauhaus_widget_set_label(g->highlight_gain, NULL, _("highlight gain"));
-  gtk_widget_set_tooltip_text(g->highlight_gain, _("Adjusts the gain before tone mapping.\n"
-                                                   "Higher values push more data into highlights compression."));
+  gtk_widget_set_tooltip_text(g->highlight_gain, _("adjusts the gain before tone mapping.\n"
+                                                   "higher values push more data into highlights compression."));
   dt_bauhaus_slider_set_soft_range(g->highlight_gain, 0.25, 1.75);
   dt_bauhaus_slider_set_format(g->highlight_gain, "%");
   dt_bauhaus_slider_set_factor(g->highlight_gain, 100.0);
@@ -2915,8 +2917,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->shadow_lift = dt_bauhaus_slider_from_params(self, "shadow_lift");
   dt_bauhaus_widget_set_label(g->shadow_lift, NULL, _("shadow lift"));
-  gtk_widget_set_tooltip_text(g->shadow_lift, _("Adjusts the shadows brightness.\n"
-                                                 "Positive values lift shadows,\n"
+  gtk_widget_set_tooltip_text(g->shadow_lift, _("adjusts the shadows brightness.\n"
+                                                 "positive values lift shadows,\n"
                                                  "while negative values darken them."));
   dt_bauhaus_slider_set_soft_range(g->shadow_lift, 0.25, 1.75);
   dt_bauhaus_slider_set_format(g->shadow_lift, "%");
@@ -2955,10 +2957,10 @@ void gui_init(dt_iop_module_t *self)
   g->ucs_saturation_balance = dt_bauhaus_slider_from_params(self, "ucs_saturation_balance");
   dt_bauhaus_widget_set_label(g->ucs_saturation_balance, NULL, _("balance saturation ucs"));
   gtk_widget_set_tooltip_text(g->ucs_saturation_balance,
-                              _("Balances saturation between shadows and highlights (JzAzBz space).\n"
-                                " Move right to boost shadow saturation while taming highlights.\n"
-                                " Move left to boost highlight saturation while taming shadows.\n"
-                                " Ideal for making dark colors pop without clipping speculars."));
+                              _("balances saturation between shadows and highlights (JzAzBz space).\n"
+                                " move right to boost shadow saturation while taming highlights.\n"
+                                " move left to boost highlight saturation while taming shadows.\n"
+                                " ideal for making dark colors pop without clipping speculars."));
   dt_bauhaus_slider_set_format(g->ucs_saturation_balance, "%");
   dt_bauhaus_slider_set_factor(g->ucs_saturation_balance, 100.0);
   dt_bauhaus_slider_set_soft_range(g->ucs_saturation_balance, -0.75, 0.75);
@@ -2966,7 +2968,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->ucs_saturation_balance);
 
   g->highlight_corr = dt_bauhaus_slider_from_params(self, "highlight_corr");
-  dt_bauhaus_widget_set_label(g->highlight_corr, NULL, _("Highlight Hue/Sat"));
+  dt_bauhaus_widget_set_label(g->highlight_corr, NULL, _("highlight hue/sat"));
   dt_bauhaus_slider_set_format(g->highlight_corr, "%");
   dt_bauhaus_slider_set_factor(g->highlight_corr, 100.0);
   dt_bauhaus_slider_set_digits(g->highlight_corr, 1);
@@ -2981,15 +2983,15 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->target_gamut, "sRGB (Rec.709)");
   dt_bauhaus_combobox_add(g->target_gamut, "AdobeRGB");
   dt_bauhaus_combobox_add(g->target_gamut, "Rec.2020");
-  gtk_widget_set_tooltip_text(g->target_gamut, _("Select the destination color space (sRGB, AdobeRGB,\n" 
-                                                  "or Rec.2020). This sets the legal boundary for color saturation."));
+  gtk_widget_set_tooltip_text(g->target_gamut, _("select the destination color space (sRGB, AdobeRGB,\n" 
+                                                  "or Rec.2020). this sets the legal boundary for color saturation."));
   dt_gui_box_add(self->widget, g->target_gamut);
 
   g->gamut_strength = dt_bauhaus_slider_from_params(self, "gamut_strength");
   dt_bauhaus_widget_set_label(g->gamut_strength, NULL, _("compression smoothness"));
   gtk_widget_set_tooltip_text(g->gamut_strength,
-                              _("Defines how high in the highlights the compression starts.\n"
-                                " Lower values keep more saturation but may clip;\n"
+                              _("defines how high in the highlights the compression starts.\n"
+                                " lower values keep more saturation but may clip;\n"
                                 " higher values create a professional roll-off\n"
                                 " in the brightest colors without affecting midtones."));
   dt_bauhaus_slider_set_format(g->gamut_strength, "%");
