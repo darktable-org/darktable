@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-26 19:01+0100\n"
-"PO-Revision-Date: 2026-02-27 11:42+0100\n"
+"PO-Revision-Date: 2026-03-02 13:36+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1075,7 +1075,7 @@ msgid ""
 "light table performance will be increased greatly when browsing a lot.\n"
 "to generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'."
 msgstr ""
-"falls aktiviert, werden die Vorschaubilder auf die Festplatte (.cache/darktable/) geschrieben, wenn sie aus dem Speicher-Cache entfernt werden.\n"
+"wenn aktiviert, werden die Vorschaubilder auf die Festplatte (.cache/darktable/) geschrieben, sobald sie aus dem Speicher-Cache entfernt werden.\n"
 "Dies kann sehr viel Speicherplatz beanspruchen (mehrere Gigabyte für 20k Bilder) und die im Cache gespeicherten Vorschaubilder werden nicht mehr gelöscht.\n"
 "Diese können jedoch bei Bedarf gefahrlos manuell gelöscht werden. \n"
 "Die Performance des Leuchttisches wird beim Sichten der Sammlung stark erhöht. \n"
@@ -1092,7 +1092,7 @@ msgid ""
 "it's safe though to delete these manually, if you want.\n"
 "light table performance will be increased greatly when zooming image in full preview mode."
 msgstr ""
-"falls aktiviert, werden Vorschaubilder in voller Größe auf die Festplatte (.cache/darktable/) geschrieben, wenn diese aus dem Speicher-Cache entfernt werden.\n"
+"wenn aktiviert, werden Vorschaubilder in voller Größe auf die Festplatte (.cache/darktable/) geschrieben, sobald diese aus dem Speicher-Cache entfernt werden.\n"
 "Dies kann sehr viel Speicherplatz beanspruchen (mehrere Gigabyte für 20k Bilder) und die im Cache gespeicherten Vorschaubilder werden nicht mehr gelöscht.\n"
 "Diese können jedoch bei Bedarf gefahrlos manuell gelöscht werden. \n"
 "Die Performance des Leuchttisches wird stark erhöht, wenn Bilder in der Voransicht betrachtet werden."
@@ -1106,8 +1106,8 @@ msgid ""
 "if enabled, scrolling the lighttable scrolls by some number of pixels, as expected with a touch pad.\n"
 "disabled, the lighttable scrolls full rows of thumbnails, as befits a scroll wheel."
 msgstr ""
-"Ist diese Option aktiviert, wird der Leuchttisch pixelweise gescrollt, wie es bei einem Touchpad erwartet wird.\n"
-"Ist sie deaktiviert, wird je Vorschaureihe gescrollt, wie es bei einem Scrollrad üblich ist."
+"wenn aktiviert, wird der Leuchttisch pixelweise gescrollt, wie es bei einem Touchpad erwartet wird.\n"
+"wenn deaktiviert, wird je Vorschaureihe gescrollt, wie es bei einem Scrollrad üblich ist."
 
 #: ../build/bin/preferences_gen.h:2846
 msgid "generate thumbnails in background"
@@ -1310,7 +1310,7 @@ msgstr "Anzeige Indikator für Maske in der Modul-Zeile"
 
 #: ../build/bin/preferences_gen.h:3274
 msgid "if enabled, an icon will be shown in the header of any processing modules that have a mask applied"
-msgstr "wenn ausgewählt wird in der Modul Zeile ein Icon eingeblendet, wenn dort eine Maske definiert ist"
+msgstr "wenn aktiviert wird in der Modul Zeile ein Icon eingeblendet, falls dort eine Maske definiert ist"
 
 #: ../build/bin/preferences_gen.h:3283
 msgid "prompt for name on addition of new instance"
@@ -9065,11 +9065,11 @@ msgstr "Anzeigen und Bearbeiten im eingeschränkten Modus (kein Verschieben/Grö
 #: ../src/develop/blend_gui.c:2789 ../src/libs/masks.c:1007
 #: ../src/libs/masks.c:1803 ../src/libs/masks.c:1807
 msgid "add gradient"
-msgstr "Verlauf hinzufügen"
+msgstr "Gradient hinzufügen"
 
 #: ../src/develop/blend_gui.c:2790
 msgid "add multiple gradients"
-msgstr "mehrere Verläufe hinzufügen"
+msgstr "mehrere Gradienten hinzufügen"
 
 #: ../src/develop/blend_gui.c:2797 ../src/iop/retouch.c:2446
 #: ../src/libs/masks.c:987 ../src/libs/masks.c:1835 ../src/libs/masks.c:1839
@@ -9719,7 +9719,7 @@ msgstr "[GRADIENT] Deckkraft ändern"
 #: ../src/develop/masks/gradient.c:1439
 #, c-format
 msgid "gradient #%d"
-msgstr "Verlauf #%d"
+msgstr "Gradient #%d"
 
 #: ../src/develop/masks/gradient.c:1450
 #, c-format
@@ -13284,11 +13284,11 @@ msgstr "darktable - Dunkelkammer Vorschau"
 
 #: ../src/gui/gtk.c:202
 msgid "tooltips off"
-msgstr "Kurzinfos aus"
+msgstr "Tooltips aus"
 
 #: ../src/gui/gtk.c:202
 msgid "tooltips on"
-msgstr "Kurzinfos an"
+msgstr "Tooltips an"
 
 #: ../src/gui/gtk.c:882
 msgid "closing darktable..."
@@ -13435,7 +13435,7 @@ msgstr "Alle unten"
 
 #: ../src/gui/gtk.c:1570
 msgid "toggle tooltip visibility"
-msgstr "Tooltip ein-/ausblenden"
+msgstr "Tooltips ein-/ausblenden"
 
 #: ../src/gui/gtk.c:1573
 msgid "reinitialise input devices"
@@ -13804,7 +13804,7 @@ msgstr "Kann keinen Verlauf aus unbearbeitetem Bild kopieren"
 #. grid headers
 #: ../src/gui/import_metadata.c:485
 msgid "metadata presets"
-msgstr "Voreinstellungen"
+msgstr "Presets"
 
 #: ../src/gui/import_metadata.c:488
 msgid ""
@@ -13814,7 +13814,7 @@ msgid ""
 msgstr ""
 "Metadaten, die standardmäßig angewendet werden sollen\n"
 "Doppelklick auf die Bezeichnung löscht den entsprechenden Eintrag\n"
-"Doppelklick auf „Voreinstellungen“ löscht alle Einträge"
+"Doppelklick auf „Presets“ löscht alle Einträge"
 
 #: ../src/gui/import_metadata.c:498
 msgid "from XMP"
@@ -14022,7 +14022,7 @@ msgstr "Ö_ffnen"
 
 #: ../src/gui/preferences.c:1224
 msgid "darktable preset files"
-msgstr "darktable Voreinstellungsdatei"
+msgstr "darktable Preset-Dateien"
 
 #: ../src/gui/preferences.c:1229 ../src/iop/lut3d.c:1603
 #: ../src/libs/copy_history.c:153 ../src/libs/geotagging.c:968
@@ -20541,11 +20541,11 @@ msgid ""
 "increase if at least one RGB channel is not clipped.\n"
 "decrease if all RGB channels are clipped over large areas."
 msgstr ""
-"Bestimmt, welche Methode zur Spitzlichtrekonstruktion bevorzugt wird:\n"
-"Ausfüllen mit glattem Farbübergang oder Rekonstruktion der Texturdetails.\n"
-"%0 entspricht einer Gleichgewichtung beider Methoden. Kann verringert werden,\n"
-"wenn wenigstens ein RGB-Komponenten nicht abgeschnitten wird, vergrößern,\n"
-"wenn alle RGB-Komponenten über größere Bildbereiche abgeschnitten werden."
+"bestimmt, welche Rekonstruktionsstrategie bevorzugt wird:\n"
+"glättender Farbverlauf oder Rekonstruktion der Texturdetails\n"
+"%0 entspricht einer Gleichgewichtung beider Methoden. \n"
+"Wert erhöhen, wenn mindestens ein RGB-Kanal nicht überbelichtet (geclippt) ist.\n"
+"Wert verringern, wenn alle RGB-Kanäle in großen Bereichen überbelichtet (geclippt) sind."
 
 #: ../src/iop/filmicrgb.c:4481
 #, no-c-format
@@ -20557,9 +20557,10 @@ msgid ""
 "increase if you want more details.\n"
 "decrease if you want more blur."
 msgstr ""
-"Bestimmt, welche Methode zur Spitzlichtrekonstruktion bevorzugt wird:\n"
-"Überstrahlung der Spitzlichter wie bei der Verwendung von Film oder Rekonstruktion der scharfen Details.\n"
-"%0 entspricht einer Gleichgewichtung beider Methoden. Für mehr Details Wert anheben, verringern für mehr Unschärfe."
+"bestimmt, welche Rekonstruktionsstrategie bevorzugt wird:\n"
+"Überstrahlung der Spitzlichter wie bei Analogfilm oder Rekonstruktion der scharfen Details.\n"
+"%0 entspricht einer Gleichgewichtung beider Methoden. \n"
+"Wert erhöhen für mehr Details; verringern für mehr Unschärfe."
 
 #: ../src/iop/filmicrgb.c:4493
 #, no-c-format
@@ -20571,11 +20572,11 @@ msgid ""
 "increase if you want more color.\n"
 "decrease if you see magenta or out-of-gamut highlights."
 msgstr ""
-"Bestimmt, welche Methode zur Spitzlichtrekonstruktion bevorzugt wird:\n"
+"bestimmt, welche Rekonstruktionsstrategie bevorzugt wird:\n"
 "Rekonstruktion einfarbiger Spitzlichter oder Rekonstruktion farbiger Spitzlichter.\n"
 "%0 entspricht einer Gleichgewichtung beider Methoden. \n"
-"Für mehr Farben Wert anheben, \n"
-"verringern falls Spitzlichter in Magenta oder außerhalb des Gamut auftreten."
+"Wert erhöhen für mehr Farben; verringern falls Spitzlichter \n"
+"in Magenta oder außerhalb des Gamut auftreten."
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:4501
@@ -23348,7 +23349,7 @@ msgstr ""
 
 #: ../src/iop/temperature.c:2131
 msgid "choose white balance setting"
-msgstr "Eine Weißabgleichsvoreinstellung auswählen."
+msgstr "Eine Weißabgleichseinstellung auswählen."
 
 #: ../src/iop/temperature.c:2135
 msgid "finetune"
@@ -28365,7 +28366,7 @@ msgstr "Dauer (s)"
 #: ../src/libs/tools/global_toolbox.c:443
 #: ../src/libs/tools/global_toolbox.c:469
 msgid "show tooltip"
-msgstr "zeige Bildinfos"
+msgstr "zeige Tooltips"
 
 #: ../src/libs/tools/global_toolbox.c:481
 msgid "help"
