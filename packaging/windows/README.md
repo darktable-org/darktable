@@ -1,6 +1,4 @@
-The steps to build darktable Windows executable and make installer (Windows 8.1 will need to have
-[UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c))
-are as follows:
+The steps to build the darktable Windows executable and make the installer are as follows:
 
 * Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
