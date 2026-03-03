@@ -48,6 +48,9 @@
 
 DT_MODULE(1)
 
+static const gchar *rgb_names[DT_SCOPES_RGB_N] =
+  { N_("red"), N_("green"), N_("blue") };
+
 typedef struct dt_lib_histogram_t
 {
   // FIXME: this will eventually become the data of this dt_lib_module_t
@@ -58,10 +61,9 @@ typedef struct dt_lib_histogram_t
   GtkWidget *button_box_rgb;           // GtkBox -- contains RGB channels buttons
   GtkWidget *scope_type_button
     [DT_SCOPES_MODE_N];                // Array of GtkToggleButton -- mode buttons
-  // FIXME: make these an array[DT_SCOPES_RGB_N], make a single clicked function?
-  GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
-  GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
-  GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
+  // FIXME: these are not currently used outside of gui_init(), so store?
+  GtkWidget *channel_buttons
+    [DT_SCOPES_RGB_N];                 // Array of GtkToggleButton -- RGB channel display
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -94,7 +96,7 @@ int position(const dt_lib_module_t *self)
 
 
 
-static void dt_lib_histogram_process
+static void _scope_process
   (struct dt_lib_module_t *self,
    const float *const input,
    int width,
@@ -458,32 +460,19 @@ static gboolean _scope_mode_clicked(GtkWidget *button,
   return TRUE;
 }
 
-// FIXME: these all could be the same function with different user_data
-static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+static void _channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
-  d->scopes->channels[DT_SCOPES_RGB_RED]
-    = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  dt_conf_set_bool("plugins/darkroom/histogram/show_red",
-                   d->scopes->channels[DT_SCOPES_RGB_RED]);
-  dt_scopes_refresh(d->scopes);
-}
-
-static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
-{
-  d->scopes->channels[DT_SCOPES_RGB_GREEN]
-    = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  dt_conf_set_bool("plugins/darkroom/histogram/show_green",
-                   d->scopes->channels[DT_SCOPES_RGB_GREEN]);
-  dt_scopes_refresh(d->scopes);
-}
-
-static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
-{
-  d->scopes->channels[DT_SCOPES_RGB_BLUE]
-    = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  dt_conf_set_bool("plugins/darkroom/histogram/show_blue",
-                   d->scopes->channels[DT_SCOPES_RGB_BLUE]);
-  dt_scopes_refresh(d->scopes);
+  for(int i = 0; i < DT_SCOPES_RGB_N; i++)
+    if(d->channel_buttons[i] == button)
+    {
+      char conf[48];
+      g_snprintf(conf, sizeof(conf),
+                 "plugins/darkroom/histogram/show_%s", rgb_names[i]);
+      d->scopes->channels[i]
+        = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+      dt_conf_set_bool(conf, d->scopes->channels[i]);
+      dt_scopes_refresh(d->scopes);
+    }
 }
 
 static gboolean _eventbox_scroll_callback(GtkWidget *widget,
@@ -640,7 +629,7 @@ void gui_init(dt_lib_module_t *self)
   // provide data for a histogram
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
-  darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
+  darktable.lib->proxy.histogram.process = _scope_process;
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
@@ -702,6 +691,7 @@ void gui_init(dt_lib_module_t *self)
       dtgtk_cairo_paint_histogram_scope };
   for(int i=0; i<DT_SCOPES_MODE_N; i++)
   {
+    // FIXME: make these GtkRadioButton?
     d->scope_type_button[i] =
       dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
     const char *const name = dt_scopes_call(&s->modes[i], name);
@@ -710,6 +700,7 @@ void gui_init(dt_lib_module_t *self)
     dt_action_define(dark, N_("modes"), name,
                      d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
+    // FIXME: use "clicked" event instead of "button-press-event"? do GtkDarktableToggleButton support clicked events?
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event",
                      G_CALLBACK(_scope_mode_clicked), d);
     if(s->cur_mode == &s->modes[i])
@@ -726,35 +717,22 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // red/green/blue channel on/off
-  d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  dt_gui_add_class(d->blue_channel_button, "rgb_toggle");
-  gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
-  gtk_widget_set_tooltip_text(d->blue_channel_button, _("toggle blue channel"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button),
-                               d->scopes->channels[DT_SCOPES_RGB_BLUE]);
-  dt_action_define(dark, N_("toggle colors"), N_("blue"),
-                   d->blue_channel_button, &dt_action_def_toggle);
-  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
-
-  d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  dt_gui_add_class(d->green_channel_button, "rgb_toggle");
-  gtk_widget_set_name(d->green_channel_button, "green-channel-button");
-  gtk_widget_set_tooltip_text(d->green_channel_button, _("toggle green channel"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->green_channel_button),
-                               d->scopes->channels[DT_SCOPES_RGB_GREEN]);
-  dt_action_define(dark, N_("toggle colors"), N_("green"),
-                   d->green_channel_button, &dt_action_def_toggle);
-  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->green_channel_button, FALSE, FALSE, 0);
-
-  d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  dt_gui_add_class(d->red_channel_button, "rgb_toggle");
-  gtk_widget_set_name(d->red_channel_button, "red-channel-button");
-  gtk_widget_set_tooltip_text(d->red_channel_button, _("toggle red channel"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button),
-                               d->scopes->channels[DT_SCOPES_RGB_RED]);
-  dt_action_define(dark, N_("toggle colors"), N_("red"),
-                   d->red_channel_button, &dt_action_def_toggle);
-  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
+  for(int i=DT_SCOPES_RGB_BLUE; i >= DT_SCOPES_RGB_RED; i--)
+  {
+    g_autofree char *name = g_strdup_printf("%s-channel-button", rgb_names[i]);
+    g_autofree char *tip = g_strdup_printf(_("toggle %s channel"), _(rgb_names[i]));
+    GtkWidget *btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_color,
+                                            CPF_NONE, NULL);
+    dt_gui_add_class(btn, "rgb_toggle");
+    gtk_widget_set_name(btn, name);
+    gtk_widget_set_tooltip_text(btn, tip);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
+                                 d->scopes->channels[i]);
+    dt_action_define(dark, N_("toggle colors"), rgb_names[i], btn, &dt_action_def_toggle);
+    gtk_box_pack_end(GTK_BOX(d->button_box_rgb), btn, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), d);
+    d->channel_buttons[i] = btn;
+  }
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
@@ -800,13 +778,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(d->red_channel_button), "toggled",
-                   G_CALLBACK(_red_channel_toggle), d);
-  g_signal_connect(G_OBJECT(d->green_channel_button), "toggled",
-                   G_CALLBACK(_green_channel_toggle), d);
-  g_signal_connect(G_OBJECT(d->blue_channel_button), "toggled",
-                   G_CALLBACK(_blue_channel_toggle), d);
-
   gtk_widget_add_events(d->scopes->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                                | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
