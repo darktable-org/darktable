@@ -29,12 +29,12 @@ G_BEGIN_DECLS
 // FIXME: instead of tracking these by an enum, just put their function tables in a GList and track sequence in that as needed
 typedef enum dt_scopes_mode_type_t
 {
-  DT_SCOPES_MODE_HISTOGRAM = 0,
+  DT_SCOPES_MODE_VECTORSCOPE = 0,
   DT_SCOPES_MODE_WAVEFORM,
-  DT_SCOPES_MODE_PARADE, // must come after waveform, as it uses waveform data
-  DT_SCOPES_MODE_VECTORSCOPE,
-  DT_SCOPES_MODE_SPLIT, // must come after waveform and vectorscope
-  DT_SCOPES_MODE_N // needs to be the last one
+  DT_SCOPES_MODE_SPLIT,      // must come after waveform and vectorscope
+  DT_SCOPES_MODE_PARADE,     // must come after waveform as uses waveform data
+  DT_SCOPES_MODE_HISTOGRAM,
+  DT_SCOPES_MODE_N           // needs to be the last one
 } dt_scopes_mode_type_t;
 
 typedef enum dt_scopes_highlight_t
