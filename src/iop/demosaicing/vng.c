@@ -25,7 +25,8 @@ static void lin_interpolate(float *out,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6])
 {
-  const int colors = (filters == 9) ? 3 : 4;
+  const gboolean is_xtrans = filters == 9;
+  const int colors = is_xtrans ? 3 : 4;
   // border interpolate
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)

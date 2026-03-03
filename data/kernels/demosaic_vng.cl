@@ -73,7 +73,6 @@ vng_lin_interpolate(read_only image2d_t in,
 
   const bool is_xtrans = filters == 9; 
   const int colors = is_xtrans ? 3 : 4;
-  const int av = is_xtrans ? 2 : 1;
   const int size = is_xtrans ? 6 : 16;
 
   float sum[4] = { 0.0f };
@@ -83,9 +82,9 @@ vng_lin_interpolate(read_only image2d_t in,
   if(x < 1 || x >= width-1 || y < 1 || y >= height-1)
   {
     int count[4] = { 0 };
-    for(int j = y-av; j <= y+av; j++)
+    for(int j = y-1; j <= y+1; j++)
     {
-      for(int i = x-av; i <= x+av; i++)
+      for(int i = x-1; i <= x+1; i++)
       {
         if(j >= 0 && i >= 0 && j < height && i < width)
         {
@@ -95,8 +94,17 @@ vng_lin_interpolate(read_only image2d_t in,
         }
       }
     }
+    const int f = fcol(y, x, filters, xtrans);
+    // for current cell, copy the current sensor's color data,
+    // interpolate the other two colors from surrounding pixels of
+    // their color
     for(int c = 0; c < colors; c++)
-      o[c] = sum[c] / fmax(1.0f, (float)count[c]);
+    {
+      if(c != f && count[c] != 0)
+        o[c] = sum[c] / count[c];
+      else
+        o[c] = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+    }
   }
   else // do the bilinear stuff
   {
@@ -185,7 +193,7 @@ vng_interpolate(read_only image2d_t in,
   // we don't touch data at the outermost 2 pixels
   if(x < 2 || x >= width-2 || y < 2 || y >= height-2)
   {
-    float4 val = fmax(-1.0f, read_imagef(in, sampleri, (int2)(x, y)));
+    float4 val = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
     if(!is_xtrans)
     {
       val.y = 0.5f * (val.y + val.w);
@@ -196,8 +204,6 @@ vng_interpolate(read_only image2d_t in,
   }
 
   const int colors = is_xtrans ? 3 : 4;
-  const int av = is_xtrans ? 2 : 1;
-
   const int prow = is_xtrans ? 6 : 8;
   const int pcol = is_xtrans ? 6 : 2;
 
