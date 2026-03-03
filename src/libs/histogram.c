@@ -48,33 +48,6 @@
 
 DT_MODULE(1)
 
-typedef enum dt_lib_histogram_scope_type_t
-{
-  DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE = 0,
-  DT_LIB_HISTOGRAM_SCOPE_WAVEFORM,
-  DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE,
-  DT_LIB_HISTOGRAM_SCOPE_PARADE,
-  DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM,
-  DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
-} dt_lib_histogram_scope_type_t;
-
-// FIXME: are these lists available from the enum/options in darktableconfig.xml?
-// FIXME: instead of defining these here, make each mode have a function which returns its name (not localized so that it can go into conf)
-const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
-{ N_("vectorscope"),
-  N_("waveform"),
-  N_("waveform/vectorscope"),
-  N_("RGB parade"),
-  N_("histogram")
-};
-
-const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
-  { dtgtk_cairo_paint_vectorscope,
-    dtgtk_cairo_paint_waveform_scope,
-    dtgtk_cairo_paint_split_waveform_vectorscope,
-    dtgtk_cairo_paint_rgb_parade,
-    dtgtk_cairo_paint_histogram_scope };
-
 typedef struct dt_lib_histogram_t
 {
   // FIXME: this will eventually become the data of this dt_lib_module_t
@@ -84,13 +57,11 @@ typedef struct dt_lib_histogram_t
   GtkWidget *button_box_opt;           // GtkBox -- contains options buttons
   GtkWidget *button_box_rgb;           // GtkBox -- contains RGB channels buttons
   GtkWidget *scope_type_button
-    [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
+    [DT_SCOPES_MODE_N];                // Array of GtkToggleButton -- mode buttons
   // FIXME: make these an array[DT_SCOPES_RGB_N], make a single clicked function?
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
-  // state set by buttons
-  dt_lib_histogram_scope_type_t scope_type;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -410,26 +381,6 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
   }
 }
 
-// FIXME: move down with the eventbox functions
-static gboolean _eventbox_scroll_callback(GtkWidget *widget,
-                                          // FIXME: is this GTK4 compatible?
-                                          GdkEventScroll *event,
-                                          dt_lib_histogram_t *d)
-{
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
-    // bubble to adjusting the overall widget size
-    gtk_widget_event(d->scopes->scope_draw, (GdkEvent*)event);
-  else if(d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-  {
-    const gboolean black = d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-    if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-    dt_dev_exposure_handle_event(event, 0, 0, black);
-  }
-  else
-    dt_scopes_call_if_exists(d->scopes->cur_mode, eventbox_scroll, event);
-  return TRUE;
-}
-
 static void _drawable_button_release(GtkGestureSingle *gesture,
                                      int n_press,
                                      double x,
@@ -473,37 +424,26 @@ static void _scope_type_update(const dt_lib_histogram_t *const d)
   dt_scopes_call(cur_mode, update_buttons);
 }
 
-static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
-                                              GdkEventButton *event,
-                                              dt_lib_histogram_t *d)
+static gboolean _scope_mode_clicked(GtkWidget *button,
+                                    GdkEventButton *event,
+                                    dt_lib_histogram_t *d)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
     return TRUE;
-  int i;
-  for(i = 0; i < DT_LIB_HISTOGRAM_SCOPE_N; i++) // find the position of the button
-    if(d->scope_type_button[i] == button) break;
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON(d->scope_type_button[d->scope_type]), FALSE);
+
+  dt_scopes_mode_t *prior_mode = d->scopes->cur_mode;
+  for(int i = 0; i < DT_SCOPES_MODE_N; i++) // find the position of the button
+  {
+    if(d->scope_type_button[i] == button)
+      d->scopes->cur_mode = &d->scopes->modes[i];
+    // FIXME: keep track of index of cur_mode so don't have to run full loop?
+    if(prior_mode == &d->scopes->modes[i])
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->scope_type_button[i]), FALSE);
+  }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-  //const dt_lib_histogram_scope_type_t scope_type_old = d->scope_type;
-  //dt_scopes_mode_t *prior_mode = d->scopes->cur_mode;
-  d->scope_type = i;
 
   // FIXME: before change mode, should call leave function from cur_mode, not later in _scope_type_changed()
-  // FIXME: hack, buttons should actually contain view # or pointer view/mode structure
-  if(i == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_HISTOGRAM];
-  else if(i == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
-  else if(i == DT_LIB_HISTOGRAM_SCOPE_PARADE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_PARADE];
-  else if(i == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-  else if(i == DT_LIB_HISTOGRAM_SCOPE_SPLIT_WAVEFORM_VECTORSCOPE)
-    d->scopes->cur_mode = &d->scopes->modes[DT_SCOPES_MODE_SPLIT];
-  else
-    dt_unreachable_codepath();
-
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_scopes_call(d->scopes->cur_mode, name));
   lib_histogram_update_tooltip(d->scopes);
@@ -511,7 +451,6 @@ static gboolean _scope_histogram_mode_clicked(GtkWidget *button,
 
   // even if no current data, GUI should still respond to update
   dt_scopes_refresh(d->scopes);
-
   // FIXME: does this comparison of update_counter need to be protected within a mutex?
   if(d->scopes->update_counter != d->scopes->cur_mode->update_counter)
     dt_scopes_reprocess();
@@ -545,6 +484,25 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue",
                    d->scopes->channels[DT_SCOPES_RGB_BLUE]);
   dt_scopes_refresh(d->scopes);
+}
+
+static gboolean _eventbox_scroll_callback(GtkWidget *widget,
+                                          // FIXME: is this GTK4 compatible?
+                                          GdkEventScroll *event,
+                                          dt_lib_histogram_t *d)
+{
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
+    // bubble to adjusting the overall widget size
+    gtk_widget_event(d->scopes->scope_draw, (GdkEvent*)event);
+  else if(d->scopes->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+  {
+    const gboolean black = d->scopes->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
+    if(black) { event->delta_x *= -1; event->delta_y *= -1; }
+    dt_dev_exposure_handle_event(event, 0, 0, black);
+  }
+  else
+    dt_scopes_call_if_exists(d->scopes->cur_mode, eventbox_scroll, event);
+  return TRUE;
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
@@ -648,12 +606,13 @@ void gui_init(dt_lib_module_t *self)
   dt_scopes_t *const s = dt_calloc1_align_type(dt_scopes_t);
   d->scopes = s;
 
+  // must match order of dt_scopes_mode_type_t
   const dt_scopes_functions_t *const dt_scopes_mode_func_tables[DT_SCOPES_MODE_N] =
-    { &dt_scopes_functions_histogram,
+    { &dt_scopes_functions_vectorscope,
       &dt_scopes_functions_waveform,
+      &dt_scopes_functions_split,
       &dt_scopes_functions_parade,
-      &dt_scopes_functions_vectorscope,
-      &dt_scopes_functions_split };
+      &dt_scopes_functions_histogram,};
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   s->update_counter = 1;
   s->cur_mode = &s->modes[DT_SCOPES_MODE_WAVEFORM];  // failsafe
@@ -676,10 +635,6 @@ void gui_init(dt_lib_module_t *self)
     = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->scopes->channels[DT_SCOPES_RGB_BLUE]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
-
-  for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
-    if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
-      d->scope_type = i;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -737,20 +692,30 @@ void gui_init(dt_lib_module_t *self)
   // (mouse enters scope widget) or change (mouse click) cause redraws
   // of the entire scope -- is there a way to avoid this?
 
-  for(int i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
+  // must match order of dt_scopes_mode_type_t
+  // FIXME: should these be defined in each scope mode, or in a register function call?
+  const void *dt_lib_histogram_scope_type_icons[DT_SCOPES_MODE_N] =
+    { dtgtk_cairo_paint_vectorscope,
+      dtgtk_cairo_paint_waveform_scope,
+      dtgtk_cairo_paint_split_waveform_vectorscope,
+      dtgtk_cairo_paint_rgb_parade,
+      dtgtk_cairo_paint_histogram_scope };
+  for(int i=0; i<DT_SCOPES_MODE_N; i++)
   {
     d->scope_type_button[i] =
       dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
+    const char *const name = dt_scopes_call(&s->modes[i], name);
     gtk_widget_set_tooltip_text(d->scope_type_button[i],
-                                _(dt_lib_histogram_scope_type_names[i]));
-    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
+                                _(name));
+    dt_action_define(dark, N_("modes"), name,
                      d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event",
-                     G_CALLBACK(_scope_histogram_mode_clicked), d);
+                     G_CALLBACK(_scope_mode_clicked), d);
+    if(s->cur_mode == &s->modes[i])
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->scope_type_button[i]), TRUE);
   }
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON(d->scope_type_button[d->scope_type]), TRUE);
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   if(teth)
