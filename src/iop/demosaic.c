@@ -51,11 +51,6 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
-#define DT_REDUCESIZE_MIN 64
-
-// these are highly depending on CPU architecture (cache size)
-#define DT_RCD_TILESIZE 112
-#define DT_LMMSE_TILESIZE 136
 
 typedef enum dt_iop_demosaic_method_t
 {
