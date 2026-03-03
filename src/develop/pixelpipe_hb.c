@@ -1236,7 +1236,8 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
 void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
 {
   dt_iop_module_t *module = piece->module;
-  if(module && module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW)
+  if(module && (module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW
+              || module->default_colorspace(module, piece->pipe, piece) == IOP_CS_RAW))
   {
     piece->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->dsc.filters, roi->x, roi->y);
     for(int ii = 0; ii < 6; ++ii)
