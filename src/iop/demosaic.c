@@ -52,6 +52,8 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 
+#define DT_VNG_SIMPLE FALSE     // If true avoid the second phase for the VNG
+
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
@@ -853,13 +855,13 @@ void process(dt_iop_module_t *self,
         else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
           xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes);
         else
-          vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
+          vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, DT_VNG_SIMPLE);
       }
       else
       {
         if(method == DT_IOP_DEMOSAIC_VNG4 || is_4bayer)
         {
-          vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
+          vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, DT_VNG_SIMPLE);
           if(is_4bayer)
           {
             dt_colorspaces_cygm_to_rgb(t_out, width * t_rows, d->CAM_to_RGB);
@@ -1130,7 +1132,7 @@ int process_cl(dt_iop_module_t *self,
       else if(method == DT_IOP_DEMOSAIC_RCD)
         err = process_rcd_cl(self, piece, t_in, t_high, iwidth, t_rows, filters);
       else if(method == DT_IOP_DEMOSAIC_VNG4 || method == DT_IOP_DEMOSAIC_VNG)
-        err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, FALSE);
+        err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows, filters, 0, DT_VNG_SIMPLE);
       else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
         err = process_markesteijn_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_rows);
 

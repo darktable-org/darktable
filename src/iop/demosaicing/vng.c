@@ -499,7 +499,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   if(only_vng_linear)
     goto finish;
 
-  // do full VNG interpolation; linear data is in dev_tmp
+  // do full VNG interpolation; linear data is in dev_tmp; don't touch outermost 2 pixels
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -511,7 +511,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_interpolate, sizes, local,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+        CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
 
