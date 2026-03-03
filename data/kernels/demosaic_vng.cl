@@ -28,7 +28,7 @@ vng_lin_interpolate(read_only image2d_t in,
                     global const unsigned char (*const xtrans)[6],
                     global const int (*const lookup)[16][32],
                     local float *buffer,
-                    const int equil)
+                    const int only_linear)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -121,9 +121,11 @@ vng_lin_interpolate(read_only image2d_t in,
     o[ip[0]] = buffer[0];
   }
 
-  if(!is_xtrans && equil)
+  if(only_linear)
   {
-    o[1] = 0.5f * (o[1] + o[3]);
+    o[0] = fmax(0.0f, o[0]);
+    o[1] = fmax(0.0f, is_xtrans ? o[1] : 0.5f * (o[1] + o[3]));
+    o[2] = fmax(0.0f, o[2]);
     o[3] = 0.0f;
   }
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
@@ -183,14 +185,13 @@ vng_interpolate(read_only image2d_t in,
   // we don't touch data at the outermost 2 pixels
   if(x < 2 || x >= width-2 || y < 2 || y >= height-2)
   {
-    float4 val = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+    float4 val = fmax(-1.0f, read_imagef(in, sampleri, (int2)(x, y)));
     if(!is_xtrans)
     {
       val.y = 0.5f * (val.y + val.w);
       val.w = 0.0f;
     }
-
-    write_imagef(out, (int2)(x, y), val);
+    write_imagef(out, (int2)(x, y), fmax(0.0f, val));
     return;
   }
 
@@ -244,14 +245,11 @@ vng_interpolate(read_only image2d_t in,
   float o[4] = { 0.0f };
   if(gmax == 0.0f)
   {
-    for(int c = 0; c < colors; c++)
-      o[c] = buffer[c];
-    if(!is_xtrans)
-    {
-      o[1] = 0.5f * (o[1] + o[3]);
-      o[3] = 0.0f;
-    }
-    write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
+    o[0] = buffer[0];
+    o[1] = is_xtrans ? buffer[1] : 0.5f * (buffer[1] + buffer[3]);
+    o[2] = buffer[2];
+    o[3] = 0.0f;
+    write_imagef(out, (int2)(x, y), fmax(0.0f, (float4)(o[0], o[1], o[2], o[3])));
     return;
   }
 
@@ -297,15 +295,12 @@ vng_interpolate(read_only image2d_t in,
   {
     float tot = buffer[color];
     if(c != color) tot += (sum[c] - sum[color]) / num;
-    o[c] = fmax(0.0f, tot);
+    o[c] = tot;
   }
 
-  if(!is_xtrans)
-  {
-    o[1] = 0.5f * (o[1] + o[3]);
-    o[3] = 0.0f;
-  }
-  write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], 0.0f));
+  o[1] = is_xtrans ? o[1] : 0.5f * (o[1] + o[3]);
+  o[3] = 0.0f;
+  write_imagef(out, (int2)(x, y), fmax(0.0f, (float4)(o[0], o[1], o[2], 0.0f)));
 }
 
 kernel void

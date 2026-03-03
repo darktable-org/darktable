@@ -178,7 +178,6 @@ static void vng_interpolate(float *out,
   float(*brow[4])[4];
   const gboolean is_xtrans = (filters == 9);
   const gboolean is_4bayer = FILTERS_ARE_4BAYER(filters);
-  const gboolean is_bayer = !(is_xtrans || is_4bayer);
   const int prow = is_xtrans ? 6 : 8;
   const int pcol = is_xtrans ? 6 : 2;
   const int colors = is_xtrans ? 3 : 4;
@@ -196,10 +195,7 @@ static void vng_interpolate(float *out,
 
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear)
-  {
-    if(is_bayer) goto bayer_greens;
-    else return;
-  }
+    goto finish;
 
   char *buffer = dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
@@ -314,12 +310,14 @@ static void vng_interpolate(float *out,
   _copy_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), width - 4);
   dt_free_align(buffer);
 
-bayer_greens:
-  if(is_bayer)
+finish:
+  DT_OMP_FOR()
+  for(size_t i = 0; i < (size_t)width * height * 4; i+=4)
   {
-    DT_OMP_FOR()
-    for(int i = 0; i < height * width; i++)
-      out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+    out[i] = fmaxf(0.0f, out[i]);
+    out[i+1] = fmaxf(0.0f, is_xtrans ? out[i+1] : 0.5f * (out[i+1] + out[i+3]));
+    out[i+2] = fmaxf(0.0f, out[i+2]);
+    out[i+3] = 0.0f;
   }
 }
 
