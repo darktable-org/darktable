@@ -723,11 +723,23 @@ static gboolean _draw(GtkWidget *da,
   return TRUE;
 }
 
-static gboolean _input_event(GtkWidget *widget,
-                             GdkEvent *event,
-                             gpointer user_data)
+static GdkDevice *_touchpad = NULL;
+
+static gboolean _touchpad_event(GtkWidget *widget,
+                                GdkEvent *event,
+                                gpointer user_data)
 {
   (void)user_data;
+
+  switch(event->type)
+  {
+    case GDK_TOUCHPAD_PINCH:
+    case GDK_TOUCHPAD_SWIPE:
+      _touchpad = gdk_event_get_source_device(event);
+      break;
+    default:
+      break;
+  }
 
   if(event->type == GDK_TOUCHPAD_PINCH)
   {
@@ -749,8 +761,7 @@ static gboolean _scrolled(GtkWidget *widget,
 {
   (void)user_data;
 
-  GdkDevice *device = gdk_event_get_source_device((const GdkEvent *)event);
-  if(device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
+  if(gdk_event_get_source_device((GdkEvent *)event) == _touchpad
      && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
@@ -1508,7 +1519,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     g_signal_connect(G_OBJECT(widget), "draw",
                     G_CALLBACK(_draw), NULL);
     g_signal_connect(G_OBJECT(widget), "event",
-                    G_CALLBACK(_input_event), NULL);
+                    G_CALLBACK(_touchpad_event), NULL);
     g_signal_connect(G_OBJECT(widget), "motion-notify-event",
                     G_CALLBACK(_mouse_moved), gui);
     g_signal_connect(G_OBJECT(widget), "leave-notify-event",
