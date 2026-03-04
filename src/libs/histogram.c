@@ -16,32 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-
-// FIXME: move this to scopes and/or cull as needed/possible
-#include "common/color_harmony.h"
 #include "common/darktable.h"
-#include "common/debug.h"
-#include "common/imagebuf.h"
-#include "common/image_cache.h"
-#include "common/math.h"
 #include "common/color_picker.h"
-#include "control/conf.h"
-#include "control/control.h"
-#include "develop/develop.h"
-#include "dtgtk/button.h"
-#include "dtgtk/drawingarea.h"
-#include "dtgtk/paint.h"
-#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
-#include "gui/color_picker_proxy.h"
-#include "gui/draw.h"
-#include "libs/lib.h"
-#include "libs/lib_api.h"
-#include "libs/colorpicker.h"
-#include "common/splines.h"
 #include "scopes.h"
 
+// FIXME: is this used?
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -395,24 +375,6 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   }
 }
 
-static void _scope_type_update(dt_scopes_t *const s)
-{
-  dt_scopes_mode_t *cur_mode = s->cur_mode;
-  // hide any other modes
-  // FIXME: hacky -- should just hide prior mode -- but as this is called at gui init and all buttons are shown by show_all(), this handles that case
-  for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
-  {
-    dt_scopes_mode_t *mode = &s->modes[i];
-    if(cur_mode != mode)
-      dt_scopes_call(mode, mode_leave);
-  }
-
-  gtk_widget_set_visible(s->button_box_rgb,
-                         dt_scopes_func_exists(cur_mode, draw_scope_channels));
-  dt_scopes_call(cur_mode, mode_enter);
-  dt_scopes_call(cur_mode, update_buttons);
-}
-
 static gboolean _scope_mode_clicked(GtkWidget *button,
                                     GdkEventButton *event,
                                     dt_scopes_t *s)
@@ -425,18 +387,21 @@ static gboolean _scope_mode_clicked(GtkWidget *button,
   {
     if(s->mode_button[i] == button)
       s->cur_mode = &s->modes[i];
-    // FIXME: keep track of index of cur_mode so don't have to run full loop?
     if(prior_mode == &s->modes[i])
       gtk_toggle_button_set_active
         (GTK_TOGGLE_BUTTON(s->mode_button[i]), FALSE);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
 
-  // FIXME: before change mode, should call leave function from cur_mode, not later in _scope_type_changed()
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_scopes_call(s->cur_mode, name));
   lib_histogram_update_tooltip(s);
-  _scope_type_update(s);
+
+  dt_scopes_call(prior_mode, mode_leave);
+  gtk_widget_set_visible(s->button_box_rgb,
+                         dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
+  dt_scopes_call(s->cur_mode, update_buttons);
+  dt_scopes_call(s->cur_mode, mode_enter);
 
   // even if no current data, GUI should still respond to update
   dt_scopes_refresh(s);
@@ -487,8 +452,14 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
 {
   // FIXME: do need to do this, or should this already be updated?
   lib_histogram_update_tooltip(s);
-  // FIXME: do need to call this, or should the right buttons already be displayed?
-  _scope_type_update(s);
+  // right after startup, vectorscope can display color harmony box,
+  // so be sure to hide non-current mode buttons
+  for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
+    if(s->cur_mode != &s->modes[i])
+      dt_scopes_call(&s->modes[i], mode_leave);
+  dt_scopes_call(s->cur_mode, mode_enter);
+  gtk_widget_set_visible(s->button_box_rgb,
+                         dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
   gtk_widget_show(s->button_box_main);
   gtk_widget_show(s->button_box_opt);
   return FALSE;
@@ -593,6 +564,7 @@ void gui_init(dt_lib_module_t *self)
   {
     s->modes[i].functions = dt_scopes_mode_func_tables[i];
     s->modes[i].update_counter = 0;
+    s->modes[i].scopes = s;
     dt_scopes_call(&s->modes[i], gui_init, s);
     if(g_strcmp0(str, dt_scopes_call(&s->modes[i], name)) == 0)
       s->cur_mode = &s->modes[i];
@@ -641,7 +613,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
     dt_scopes_call_if_exists(&s->modes[i],
-                             gui_add_to_main, dark, s->button_box_main);
+                             add_to_main_box, dark, s->button_box_main);
 
   s->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_class(s->button_box_opt, "button_box");
@@ -692,11 +664,9 @@ void gui_init(dt_lib_module_t *self)
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   if(teth)
-  {
     dt_action_register(teth, N_("hide histogram"),
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  }
 
   // red/green/blue channel on/off
   for(int i=DT_SCOPES_RGB_BLUE; i >= DT_SCOPES_RGB_RED; i--)
@@ -718,13 +688,9 @@ void gui_init(dt_lib_module_t *self)
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
-    dt_scopes_call_if_exists(&s->modes[i], gui_init_options, dark, box_right);
+    dt_scopes_call_if_exists(&s->modes[i], add_to_options_box, dark, box_right);
     dt_scopes_call_if_exists(&s->modes[i], update_buttons);
   }
-
-  // will change visibility of buttons, hence must run after all buttons are declared
-  // FIXMME: can instead do something like: dt_scopes_call(d->scopes->cur_mode, update_buttons)
-  _scope_type_update(s);
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
 

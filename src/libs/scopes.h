@@ -26,7 +26,6 @@
 
 G_BEGIN_DECLS
 
-// FIXME: instead of tracking these by an enum, just put their function tables in a GList and track sequence in that as needed
 typedef enum dt_scopes_mode_type_t
 {
   DT_SCOPES_MODE_VECTORSCOPE = 0,
@@ -44,14 +43,6 @@ typedef enum dt_scopes_highlight_t
   DT_SCOPES_HIGHLIGHT_EXPOSURE
 } dt_scopes_highlight_t;
 
-// FIXME: move to histogram?
-typedef enum dt_scopes_scale_t
-{
-  DT_SCOPES_SCALE_LOGARITHMIC = 0,
-  DT_SCOPES_SCALE_LINEAR,
-  DT_SCOPES_SCALE_N // needs to be the last one
-} dt_scopes_scale_t;
-
 typedef enum dt_scopes_rgb_t
 {
   DT_SCOPES_RGB_RED = 0,
@@ -66,12 +57,10 @@ struct dt_scopes_t;
 struct dt_scopes_mode_t;
 
 /** structure used to store pointers to the functions implementing scope modes */
-// FIXME: is this true?
 /** plus a few per-class descriptive data items */
 typedef struct dt_scopes_functions_t
 {
   // name (untranslated) of the current view
-  // FIXME: use this to set conf value when change view, rather than hardcoded array
   const char* (*name)(const struct dt_scopes_mode_t *const self);
   void (*process)(struct dt_scopes_mode_t *const self,
                   const float *const input,
@@ -122,20 +111,15 @@ typedef struct dt_scopes_functions_t
   // accordingly, and if necessary update any state which depends on
   // current option buttons
   void (*update_buttons)(const struct dt_scopes_mode_t *const self);
-  // FIXME: add show_option_buttons() which shows the option buttons in the current view, and use it instead of mode_enter() when possible
-  // FIXME: add hide_option_buttons() which shows the option buttons in the current view, and use it instead of mode_leave() when possible
-  // FIXME: make mode_enter() really just set up the mode when there is a mode shift and only call it then
   void (*mode_enter)(struct dt_scopes_mode_t *const self);
   void (*mode_leave)(const struct dt_scopes_mode_t *const self);
   void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
-  // FIXME: s/gui_add_to_main/add_to_main_box/
-  void (*gui_add_to_main)(struct dt_scopes_mode_t *const self,
+  void (*add_to_main_box)(struct dt_scopes_mode_t *const self,
                           dt_action_t *dark,
                           GtkWidget *box);
-  // FIXME: s/gui_init_options/add_to_options_box/
-  void (*gui_init_options)(struct dt_scopes_mode_t *const mode,
-                           dt_action_t *dark,
-                           GtkWidget *box);
+  void (*add_to_options_box)(struct dt_scopes_mode_t *const mode,
+                             dt_action_t *dark,
+                             GtkWidget *box);
   void (*gui_cleanup)(struct dt_scopes_mode_t *const self);
 } dt_scopes_functions_t;
 
@@ -143,8 +127,10 @@ typedef struct dt_scopes_mode_t
 {
   const dt_scopes_functions_t *functions;
   void *data;
-  // FIXME: include "dt_scopes_t *scopes;" here instead of asking each mode to have it in private data
   int update_counter;
+  // point back to parent
+  // FIXME: is this healthy?
+  struct dt_scopes_t *scopes;
 } dt_scopes_mode_t;
 
 /** structure used to define internal storage for a scope */

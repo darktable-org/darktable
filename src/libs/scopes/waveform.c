@@ -42,9 +42,6 @@ static const gchar *dt_wave_orient_names[DT_WAVE_ORIENT_N] =
 
 typedef struct dt_scopes_wave_t
 {
-  // point back to parent
-  // FIXME: is this healthy? is this needed?
-  dt_scopes_t *scopes;
   uint8_t *waveform_img[3];           // image per RGB channel
   int waveform_bins, waveform_tones, waveform_max_bins;
   GtkWidget *orient_button;           // GtkButton -- horizontal or vertical
@@ -212,7 +209,7 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
 
   // FIXME: need this if we have a working update counter?
   if(!d->waveform_bins) return;
-  
+
   // composite before scaling to screen dimensions, as scaling each
   // layer on draw causes a >2x slowdown
   const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
@@ -269,9 +266,8 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
 
 static void _wave_update_counter_changed(dt_scopes_mode_t *const self)
 {
-  const dt_scopes_wave_t *const d = self->data;
   // waveform and rgb parade share underlying data, so updates to one update both
-  d->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter = self->update_counter;
+  self->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter = self->update_counter;
 }
 
 static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
@@ -338,8 +334,6 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
 {
   dt_scopes_wave_t *d = dt_calloc1_align_type(dt_scopes_wave_t);
   self->data = (void *)d;
-  // FIXME: ideal this is an attribute of self set up by caller
-  d->scopes = scopes;
 
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/orient");
   for(dt_wave_orient_t i=0; i<DT_WAVE_ORIENT_N; i++)
@@ -385,7 +379,7 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
     d->waveform_max_bins
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
   for(int ch=0; ch<3; ch++)
-    d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));  
+    d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));
 }
 
 static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
@@ -399,9 +393,9 @@ static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self
   dt_scopes_reprocess();
 }
 
-static void _wave_gui_init_options(dt_scopes_mode_t *const self,
-                                   dt_action_t *dark,
-                                   GtkWidget *box)
+static void _wave_add_to_options_box(dt_scopes_mode_t *const self,
+                                     dt_action_t *dark,
+                                     GtkWidget *box)
 {
   dt_scopes_wave_t *const d = self->data;
 
@@ -444,8 +438,8 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _wave_gui_init,
-  .gui_add_to_main = NULL,
-  .gui_init_options = _wave_gui_init_options,
+  .add_to_main_box = NULL,
+  .add_to_options_box = _wave_add_to_options_box,
   .gui_cleanup = _wave_gui_cleanup
 };
 
@@ -457,9 +451,8 @@ const char* _parade_name(const dt_scopes_mode_t *const self)
 
 static void _parade_update_counter_changed(dt_scopes_mode_t *const self)
 {
-  const dt_scopes_wave_t *const d = self->data;
   // waveform and rgb parade share underlying data, so updates to one update both
-  d->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = self->update_counter;
+  self->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = self->update_counter;
 }
 
 static void _parade_draw(const dt_scopes_mode_t *const self,
@@ -566,8 +559,8 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _parade_gui_init,
-  .gui_add_to_main = NULL,
-  .gui_init_options = NULL,
+  .add_to_main_box = NULL,
+  .add_to_options_box = NULL,
   .gui_cleanup = _parade_gui_cleanup
 };
 

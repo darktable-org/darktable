@@ -69,7 +69,7 @@ dt_scopes_vec_color_harmony_t _vec_color_harmonies[DT_COLOR_HARMONY_N] =
   {N_("square"),                  4, { 0./12., 3./12.,  6./12., 9./12.}, {0.80, 0.50, 0.50, 0.50}},
 };
 
-const gchar *dt_scopes_vec_scale_names[DT_SCOPES_SCALE_N] =
+const gchar *dt_scopes_vec_scale_names[DT_SCOPES_VEC_SCALE_N] =
   { "logarithmic",
     "linear"
   };
@@ -92,10 +92,6 @@ const float dt_scopes_vec_color_harmony_width[DT_COLOR_HARMONY_WIDTH_N] =
 
 typedef struct dt_scopes_vec_t
 {
-  // point back to parent
-  // FIXME: is this healthy? is this needed?
-  dt_scopes_t *scopes;
-
   uint8_t *vectorscope_graph, *vectorscope_bkgd;
   float vectorscope_pt[2];            // point colorpicker position
   GSList *vectorscope_samples;        // live samples position
@@ -880,8 +876,8 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       graph_pat = cairo_pop_group(cr);
     }
 
-    // FIXME: move button_box_main to scopes -- but is there a less awkward way to check if the mouse is over this, or could this even be another widget in the overlay?
-    if(gtk_widget_get_visible(d->scopes->button_box_main))
+    // FIXME: is there a less awkward way to check if the mouse is over this, or could this even be another widget in the overlay?
+    if(gtk_widget_get_visible(self->scopes->button_box_main))
     {
       // draw information about current selected harmony
       PangoLayout *layout;
@@ -1027,7 +1023,6 @@ static void _vec_update_buttons(const dt_scopes_mode_t *const self)
   }
 }
 
-// FIXME: if we can inline this work, we can remove this function
 static void _color_harmony_button_on(const dt_scopes_vec_t *const d)
 {
   const dt_color_harmony_type_t on = d->harmony_guide.type;
@@ -1041,8 +1036,9 @@ static void _color_harmony_button_on(const dt_scopes_vec_t *const d)
   }
 }
 
-static void _color_harmony_changed_record(dt_scopes_vec_t *const d)
+static void _color_harmony_changed_record(dt_scopes_mode_t *const self)
 {
+  dt_scopes_vec_t *const d = self->data;
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
                      _vec_color_harmonies[d->harmony_guide.type].name);
   // if color harmony unset, still keep the rotation/width as default
@@ -1061,13 +1057,14 @@ static void _color_harmony_changed_record(dt_scopes_vec_t *const d)
          sizeof(dt_color_harmony_guide_t));
   dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
 
-  dt_scopes_refresh(d->scopes);
+  dt_scopes_refresh(self->scopes);
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,
                                        GdkEventButton *event,
-                                       dt_scopes_vec_t *const d)
+                                       dt_scopes_mode_t *const self)
 {
+  dt_scopes_vec_t *const d = self->data;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
   {
     // clicked on active button, we remove guidelines
@@ -1086,14 +1083,16 @@ static gboolean _color_harmony_clicked(GtkWidget *button,
     // FIXME: instead of calling _color_harmony_button_on() here, do this when are cycling through the buttons in the loop above
     _color_harmony_button_on(d);
   }
-  _color_harmony_changed_record(d);
+  _color_harmony_changed_record(self);
   return TRUE;
 }
 
 static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     dt_scopes_vec_t *const d)
+                                                     dt_scopes_mode_t *const self)
 {
+  dt_scopes_vec_t *const d = self->data;
+
   // find positions of entered button
   d->color_harmony_old = d->harmony_guide.type;
 
@@ -1104,16 +1103,17 @@ static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
       break;
     }
 
-  dt_scopes_refresh(d->scopes);
+  dt_scopes_refresh(self->scopes);
   return FALSE;
 }
 
 static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     dt_scopes_vec_t *const d)
+                                                     dt_scopes_mode_t *const self)
 {
+  dt_scopes_vec_t *const d = self->data;
   d->harmony_guide.type = d->color_harmony_old;
-  dt_scopes_refresh(d->scopes);
+  dt_scopes_refresh(self->scopes);
   return FALSE;
 }
 
@@ -1169,7 +1169,7 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
     if(a < 0) a += 360;
     d->harmony_guide.rotation = a;
   }
-  _color_harmony_changed_record(d);
+  _color_harmony_changed_record(self);
 }
 
 static void _vec_eventbox_motion(dt_scopes_mode_t *const self,
@@ -1209,12 +1209,14 @@ static void _vec_colorspace_clicked(GtkWidget *button, dt_scopes_mode_t *const s
                      dt_scopes_vec_vectorscope_type_names[d->vectorscope_type]);
   // FIXME: if switching to RYB do need to call _update_color_harmony_gui() to pull in current settings?
   _vec_update_buttons(self);
-  lib_histogram_update_tooltip(d->scopes);
+  lib_histogram_update_tooltip(self->scopes);
   dt_scopes_reprocess();
 }
 
-static void _update_color_harmony_gui(dt_scopes_vec_t *const d)
+static void _update_color_harmony_gui(dt_scopes_mode_t *const self)
 {
+  dt_scopes_vec_t *const d = self->data;
+
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   const dt_image_t *img = dt_image_cache_get(imgid, 'r');
 
@@ -1236,28 +1238,26 @@ static void _update_color_harmony_gui(dt_scopes_vec_t *const d)
   }
 
   _color_harmony_button_on(d);
-  dt_scopes_refresh(d->scopes);
+  dt_scopes_refresh(self->scopes);
 }
 
-#if 0
-// FIXME: enable when dt_scopes_t is the data for dt_lib_module_t, or alternately darktable.lib->proxy.histogram.scopes could point to self->data->scopes
 static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
 {
   const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
-  dt_lib_histogram_t *d = self->data;
-  dt_scopes_t = d->scopes;
+  dt_scopes_t *s = self->data;
+  // we might be called with current mode as split, but want action to happen on vectorscope
+  dt_scopes_mode_t *vec_mode = &s->modes[DT_SCOPES_MODE_VECTORSCOPE];
+  dt_scopes_vec_t *d = vec_mode->data;
 
   d->harmony_guide.type = (d->color_harmony_old + 1) % DT_COLOR_HARMONY_N;
   _color_harmony_button_on(d);
   d->color_harmony_old = d->harmony_guide.type;
-  _color_harmony_changed_record(d);
+  _color_harmony_changed_record(vec_mode);
 }
-#endif
 
 void _vec_signal_image_changed(gpointer instance, dt_scopes_mode_t *const self)
 {
-  dt_scopes_vec_t *const d = self->data;
-  _update_color_harmony_gui(d);
+  _update_color_harmony_gui(self);
 }
 
 static void _vec_mode_enter(dt_scopes_mode_t *const self)
@@ -1265,21 +1265,7 @@ static void _vec_mode_enter(dt_scopes_mode_t *const self)
   dt_scopes_vec_t *const d = self->data;
   gtk_widget_show(d->vec_scale_button);
   gtk_widget_show(d->colorspace_button);
-  // FIXME:
-  // 1) user mouses over a new harmony button which calls _color_harmony_enter_notify_callback() which sets d->harmony_guide.type to the button's type, then queues a scope redraw, which then previews that harmomny
-  // 2a) the next user mouse movement calls _eventbox_motion_notify_callback() in libs/histogram.c calls _scope_type_update() which calls mode_enter() which gets here
-  // 2b) we call _update_color_harmony_gui() which calls dt_color_harmony_init() which d->harmony_guide->type to the current image's saved harmony state
-  // 2c) which wipes out the harmony state set in 1)
-  // We really have at least two different purposes for mode_enter():
-  // a) make butons visible and set their icons and tooltips via _vec_update_buttons()
-  // b) update the harmony overlay/button state to that stored in the current image
-  // - On mouse movement may want to do a) but certainly not b)
-  // - Only when the user clicks a mode change (either colorspace to RYB or entering vectorscope with RYB colorspace) we want to update the harmony button/overlay to the current image.
-  // - Ideally on mouse movement we don't even have to update the buttons, but without doing this, mysteriously, the tooltips don't appear in the buttons and they get the overall histogram tooltip -- this is something to exam (does setting the tooltip for a widget trickle down to the sub-widgets, so once we set the overall tooltip widget, do we need to set the subwidget tooltips appropriately, or clear their container widget tooltips?)
-  // Queries:
-  // - Can we just synthesize a mode_enter() call when really enter a mode, or when scope widget tooltip changes (which will only be for exposure and black point change in other scopes) to preserve button tooltips?
-  // - Or can we make another function which sets button tooltips (and icons?) which is only called on gui_init or when tooltip overlays change?
-  _update_color_harmony_gui(d);
+  _update_color_harmony_gui(self);
 }
 
 static void _vec_mode_leave(const dt_scopes_mode_t *const self)
@@ -1295,8 +1281,6 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
 {
   dt_scopes_vec_t *d = dt_calloc1_align_type(dt_scopes_vec_t);
   self->data = (void *)d;
-  // FIXME: ideal this is an attribute of self set up by caller
-  d->scopes = scopes;
 
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope");
   for(dt_scopes_vec_vectorscope_type_t i=0; i<DT_SCOPES_VEC_VECTORSCOPE_N; i++)
@@ -1349,7 +1333,7 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
     dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
 }
 
-static void _vec_gui_add_to_main(dt_scopes_mode_t *const self,
+static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
                                  dt_action_t *dark,
                                  GtkWidget *box)
 {
@@ -1371,11 +1355,11 @@ static void _vec_gui_add_to_main(dt_scopes_mode_t *const self,
     dt_action_define(dark, N_("color harmonies"),
                      _vec_color_harmonies[i].name, rb, &dt_action_def_toggle);
     g_signal_connect(G_OBJECT(rb), "button-press-event",
-                     G_CALLBACK(_color_harmony_clicked), d);
+                     G_CALLBACK(_color_harmony_clicked), self);
     g_signal_connect(G_OBJECT(rb), "enter-notify-event",
-                     G_CALLBACK(_color_harmony_enter_notify_callback), d);
+                     G_CALLBACK(_color_harmony_enter_notify_callback), self);
     g_signal_connect(G_OBJECT(rb), "leave-notify-event",
-                     G_CALLBACK(_color_harmony_leave_notify_callback), d);
+                     G_CALLBACK(_color_harmony_leave_notify_callback), self);
 
     gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
     // FIXME: awkward to store this to skip DT_COLOR_HARMONY_NONE, just leave [0] blank?
@@ -1385,10 +1369,8 @@ static void _vec_gui_add_to_main(dt_scopes_mode_t *const self,
   _color_harmony_button_on(d);
 
   // FIXME: do we need this action, or is it vestigial?
-#if 0
   dt_action_register(dark, N_("cycle color harmonies"),
                      _lib_histogram_cycle_harmony_callback, 0, 0);
-#endif
 }
 
 // FIXME: s/gui_init_options/gui_add_to_options/
@@ -1456,8 +1438,8 @@ const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
   .mode_enter = _vec_mode_enter,
   .mode_leave = _vec_mode_leave,
   .gui_init = _vec_gui_init,
-  .gui_add_to_main = _vec_gui_add_to_main,
-  .gui_init_options = _vec_gui_init_options,
+  .add_to_main_box = _vec_add_to_main_box,
+  .add_to_options_box = _vec_gui_init_options,
   .gui_cleanup = _vec_gui_cleanup
 };
 
