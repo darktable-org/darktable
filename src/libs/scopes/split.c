@@ -291,8 +291,8 @@ const dt_scopes_functions_t dt_scopes_functions_split = {
   .mode_enter = _split_mode_enter,
   .mode_leave = _split_mode_leave,
   .gui_init = _split_gui_init,
-  .gui_add_to_main = NULL,
-  .gui_init_options = NULL,
+  .add_to_main_box = NULL,
+  .add_to_options_box = NULL,
   .gui_cleanup = _split_gui_cleanup
 };
 

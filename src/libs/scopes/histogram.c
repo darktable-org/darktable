@@ -24,19 +24,23 @@
 #define HISTOGRAM_BINS 256
 #define BLACK_POINT_REGION 0.2f
 
-static const gchar *dt_hist_scale_names[DT_SCOPES_SCALE_N] =
+typedef enum dt_hist_scale_t
+{
+  DT_HIST_SCALE_LOGARITHMIC = 0,
+  DT_HIST_SCALE_LINEAR,
+  DT_HIST_SCALE_N // needs to be the last one
+} dt_hist_scale_t;
+
+static const gchar *dt_hist_scale_names[DT_HIST_SCALE_N] =
   { "logarithmic",
     "linear"
   };
 
 typedef struct dt_scopes_hist_t
 {
-  // point back to parent
-  // FIXME: is this healthy? is this needed?
-  dt_scopes_t *scopes;
   uint32_t *histogram;
   uint32_t histogram_max;
-  dt_scopes_scale_t scale;
+  dt_hist_scale_t scale;
   GtkWidget *scale_button;        // GtkButton -- linear or logarithmic histogram
 } dt_scopes_hist_t;
 
@@ -128,7 +132,7 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
   // FIXME: need this if we have a working update counter?
   if(!d->histogram_max) return;
 
-  const float hist_max = d->scale == DT_SCOPES_SCALE_LINEAR
+  const float hist_max = d->scale == DT_HIST_SCALE_LINEAR
     ? d->histogram_max
     : logf(1.0 + d->histogram_max);
   // The alpha of each histogram channel is 1, hence the primaries and
@@ -149,7 +153,7 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
       // simplify things
       set_color(cr, darktable.bauhaus->graph_colors[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k,
-                          d->scale == DT_SCOPES_SCALE_LINEAR);
+                          d->scale == DT_HIST_SCALE_LINEAR);
     }
   cairo_pop_group_to_source(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -184,12 +188,11 @@ static void _hist_gui_init(dt_scopes_mode_t *const self,
 
   // FIXME: change to plugins/darkroom/scopes/histogram/mode
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/histogram");
-  for(dt_scopes_scale_t i=0; i<DT_SCOPES_SCALE_N; i++)
+  for(dt_hist_scale_t i=0; i<DT_HIST_SCALE_N; i++)
     if(g_strcmp0(str, dt_hist_scale_names[i]) == 0)
       d->scale = i;
-  darktable.lib->proxy.histogram.is_linear = d->scale == DT_SCOPES_SCALE_LINEAR;
+  darktable.lib->proxy.histogram.is_linear = d->scale == DT_HIST_SCALE_LINEAR;
 
-  d->scopes = scopes;
   d->histogram = dt_calloc_align_type(uint32_t, 4 * HISTOGRAM_BINS);
   d->histogram_max = 0;
 }
@@ -199,41 +202,41 @@ static void _hist_update_buttons(const dt_scopes_mode_t *const self)
   dt_scopes_hist_t *d = self->data;
   switch(d->scale)
   {
-    case DT_SCOPES_SCALE_LOGARITHMIC:
+    case DT_HIST_SCALE_LOGARITHMIC:
       gtk_widget_set_tooltip_text(d->scale_button, _("set scale to linear"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scale_button),
                              dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
       break;
-    case DT_SCOPES_SCALE_LINEAR:
+    case DT_HIST_SCALE_LINEAR:
       gtk_widget_set_tooltip_text(d->scale_button, _("set scale to logarithmic"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scale_button),
                              dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
-    case DT_SCOPES_SCALE_N:
+    case DT_HIST_SCALE_N:
       dt_unreachable_codepath();
   }
   // FIXME: this should really redraw current iop if its background is
   // a histogram (check request_histogram)
   darktable.lib->proxy.histogram.is_linear =
-    d->scale == DT_SCOPES_SCALE_LINEAR;
+    d->scale == DT_HIST_SCALE_LINEAR;
 }
 
 static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
 {
   dt_scopes_hist_t *d = self->data;
 
-  d->scale = (d->scale + 1) % DT_SCOPES_SCALE_N;
+  d->scale = (d->scale + 1) % DT_HIST_SCALE_N;
   // FIXME: rename to plugins/darkroom/scope/histogram/scale
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
                      dt_hist_scale_names[d->scale]);
   _hist_update_buttons(self);
   // no need to reprocess data
-  dt_scopes_refresh(d->scopes);
+  dt_scopes_refresh(self->scopes);
 }
 
-static void _hist_gui_init_options(dt_scopes_mode_t *const self,
-                                   dt_action_t *dark,
-                                   GtkWidget *box)
+static void _hist_add_to_options_box(dt_scopes_mode_t *const self,
+                                     dt_action_t *dark,
+                                     GtkWidget *box)
 {
   dt_scopes_hist_t *d = self->data;
   d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
@@ -274,8 +277,8 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .mode_enter = _hist_mode_enter,
   .mode_leave = _hist_mode_leave,
   .gui_init = _hist_gui_init,
-  .gui_add_to_main = NULL,
-  .gui_init_options = _hist_gui_init_options,
+  .add_to_main_box = NULL,
+  .add_to_options_box = _hist_add_to_options_box,
   .gui_cleanup = _hist_gui_cleanup
 };
 
