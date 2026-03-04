@@ -150,16 +150,21 @@ typedef struct dt_scopes_mode_t
 /** structure used to define internal storage for a scope */
 typedef struct dt_scopes_t
 {
-  dt_scopes_mode_t *cur_mode;
+  dt_scopes_mode_t *cur_mode;                   // scope currently displayed
   // FIXME: should this be a GList which is appended with scopes on module init?
-  dt_scopes_mode_t modes[DT_SCOPES_MODE_N];
-  int update_counter;
-  // depends on mouse position
-  dt_scopes_highlight_t highlight;
-  GtkWidget *button_box_main;          // GtkBox -- contains scope control buttons
-  GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
-  // state set by buttons
-  scopes_channels_t channels;
+  dt_scopes_mode_t modes[DT_SCOPES_MODE_N];     // all available modes
+  int update_counter;                           // most recent pixelpipe vs mode data
+  dt_scopes_highlight_t highlight;              // depends on mouse position
+  scopes_channels_t channels;                   // display state chosen by RGB buttons
+  // UI elements
+  GtkWidget *button_box_main;                   // GtkBox -- contains scope control buttons
+  GtkWidget *mode_button[DT_SCOPES_MODE_N];     // Array of GtkToggleButton -- mode buttons
+  GtkWidget *button_box_opt;                    // GtkBox -- contains options buttons
+  GtkWidget *button_box_rgb;                    // GtkBox -- contains RGB channels buttons
+  GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channel display
+  GtkWidget *scope_draw;                        // GtkDrawingArea -- scope, scale, draggable overlays
+  // for access to data during process/draw
+  dt_pthread_mutex_t lock;
 } dt_scopes_t;
 
 /** the scope-specific function tables */
