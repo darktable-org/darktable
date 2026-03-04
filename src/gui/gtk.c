@@ -725,9 +725,9 @@ static gboolean _draw(GtkWidget *da,
 
 static GdkDevice *_touchpad = NULL;
 
-static gboolean _touchpad_event(GtkWidget *widget,
-                                GdkEvent *event,
-                                gpointer user_data)
+static gboolean _input_event(GtkWidget *widget,
+                             GdkEvent *event,
+                             gpointer user_data)
 {
   (void)user_data;
 
@@ -1519,7 +1519,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     g_signal_connect(G_OBJECT(widget), "draw",
                     G_CALLBACK(_draw), NULL);
     g_signal_connect(G_OBJECT(widget), "event",
-                    G_CALLBACK(_touchpad_event), NULL);
+                    G_CALLBACK(_input_event), NULL);
     g_signal_connect(G_OBJECT(widget), "motion-notify-event",
                     G_CALLBACK(_mouse_moved), gui);
     g_signal_connect(G_OBJECT(widget), "leave-notify-event",
