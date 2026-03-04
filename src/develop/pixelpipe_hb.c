@@ -2336,6 +2336,17 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                     if(terr == CL_SUCCESS)
                     {
                       module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
+                      if(cst_out == IOP_CS_LAB)
+                      {
+                        for(size_t k = 0; k < (size_t)ow * oh * 4; k+=4)
+                        {
+                          dt_aligned_pixel_t XYZ;
+                          dt_Lab_to_XYZ(cpudata + k, XYZ);
+                          dt_XYZ_to_linearRGB(XYZ, cpudata + k);
+                          dt_Lab_to_XYZ(cloutdata + k, XYZ);
+                          dt_XYZ_to_linearRGB(XYZ, cloutdata + k);
+                        }
+                      }
                       dt_dump_pipe_diff_pfm(module->op, cloutdata, cpudata, ow, oh, cho,
                                             dt_dev_pixelpipe_type_to_str(pipe->type));                  }
                   }
