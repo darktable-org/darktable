@@ -41,17 +41,7 @@ static void _split_process(dt_scopes_mode_t *const self,
   dt_scopes_split_t *const d = self->data;
   d->left->functions->process(d->left, input, roi, vs_prof);
   d->right->functions->process(d->right, input, roi, vs_prof);
-}
-
-static void _split_update_counter_changed(dt_scopes_mode_t *const self)
-{
-  dt_scopes_split_t *const d = self->data;
-  d->left->update_counter = self->update_counter;
-  if(d->left->functions->update_counter_changed)
-    d->left->functions->update_counter_changed(d->left);
-  d->right->update_counter = self->update_counter;
-  if(d->right->functions->update_counter_changed)
-    d->right->functions->update_counter_changed(d->right);
+  self->update_counter = self->scopes->update_counter;
 }
 
 static void _split_draw_highlight(const dt_scopes_mode_t *const self,
@@ -275,7 +265,6 @@ static void _split_gui_cleanup(dt_scopes_mode_t *const self)
 const dt_scopes_functions_t dt_scopes_functions_split = {
   .name = _split_name,
   .process = _split_process,
-  .update_counter_changed = _split_update_counter_changed,
   .clear = _split_clear,
   .draw_grid = _split_draw_grid,
   .draw_bkgd = _split_draw_bkgd,

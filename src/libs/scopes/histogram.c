@@ -80,6 +80,7 @@ static void _hist_process(dt_scopes_mode_t *const self,
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE,
                       input, &d->histogram, histogram_max, FALSE, NULL);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
+  self->update_counter = self->scopes->update_counter;
 }
 
 static void _hist_draw_grid(const dt_scopes_mode_t *const self,
@@ -261,7 +262,6 @@ static void _hist_gui_cleanup(dt_scopes_mode_t *const self)
 const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .name = _hist_name,
   .process = _hist_process,
-  .update_counter_changed = NULL,
   .clear = _hist_clear,
   .draw_bkgd = lib_histogram_draw_bkgd,
   .draw_grid = _hist_draw_grid,

@@ -67,8 +67,6 @@ typedef struct dt_scopes_functions_t
                   // FIXME: should ROI by dt_histogram_roi_t or another type?
                   dt_histogram_roi_t *const roi,
                   const dt_iop_order_iccprofile_info_t *vs_prof);
-  // called after process to write new update counter to other modes
-  void (*update_counter_changed)(struct dt_scopes_mode_t *const self);
   // FIXME: do want a proper clear function or just tag as not up to date?
   void (*clear)(struct dt_scopes_mode_t *const self);
   void (*draw_bkgd)(const struct dt_scopes_mode_t *const self,
