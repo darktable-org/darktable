@@ -88,31 +88,41 @@ green_equilibration_lavg(read_only image2d_t in,
   const float maximum = 1.0f;
   float o = buffer[0];
 
-  if(c == 1 && (y & 1))
+  // check lines to be used as we do in cpu code
+  int oj = 2, oi = 2;
+  if(FC(oj, oi, filters) != GREEN) oj++;
+  if(FC(oj, oi, filters) != GREEN) oi++;
+  if(FC(oj, oi, filters) != GREEN) oj--;
+
+  // don't touch border
+  if(x >= oi && y >= oj && x < width -2 && y < height-2)
   {
-    const float o1_1 = buffer[-1 * stride - 1];
-    const float o1_2 = buffer[-1 * stride + 1];
-    const float o1_3 = buffer[ 1 * stride - 1];
-    const float o1_4 = buffer[ 1 * stride + 1];
-    const float o2_1 = buffer[-2 * stride + 0];
-    const float o2_2 = buffer[ 2 * stride + 0];
-    const float o2_3 = buffer[-2];
-    const float o2_4 = buffer[ 2];
-
-    const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
-    const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-
-    if ((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+    // only correct on even lines
+    if(c == GREEN && !(y & 1))
     {
-      const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
-      const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
+      const float o1_1 = buffer[-1 * stride - 1];
+      const float o1_2 = buffer[-1 * stride + 1];
+      const float o1_3 = buffer[ 1 * stride - 1];
+      const float o1_4 = buffer[ 1 * stride + 1];
+      const float o2_1 = buffer[-2 * stride + 0];
+      const float o2_2 = buffer[ 2 * stride + 0];
+      const float o2_3 = buffer[-2];
+      const float o2_4 = buffer[ 2];
 
-      if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
-        o *= m1/m2;
+      const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
+      const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
+
+      if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+      {
+        const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
+        const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
+
+        if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
+          o *= m1/m2;
+      }
     }
   }
-
-  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
+  write_imagef (out, (int2)(x, y), o);
 }
 
 
@@ -136,8 +146,8 @@ green_equilibration_favg_reduce_first(read_only image2d_t in,
   const int c = FC(y, x, filters);
 
   const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
-  const int isgreen1 = (c == 1 && !(y & 1));
-  const int isgreen2 = (c == 1 && (y & 1));
+  const int isgreen1 = c == GREEN && !(y & 1);
+  const int isgreen2 = c == GREEN && (y & 1);
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
@@ -219,11 +229,11 @@ green_equilibration_favg_apply(read_only image2d_t in,
 
   const int c = FC(y, x, filters);
 
-  const int isgreen1 = (c == 1 && !(y & 1));
+  const int isgreen1 = (c == GREEN && !(y & 1)); // on even lines
 
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 
-  write_imagef (out, (int2)(x, y), fmax(pixel, 0.0f));
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 #define SWAP(a, b)                \
