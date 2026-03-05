@@ -325,7 +325,11 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
 // 3x3 median filter
 // uses a sorting network to sort entirely in registers with no branches
 kernel void
-color_smoothing(read_only image2d_t in, write_only image2d_t out, const int width, const int height, local float4 *buffer)
+color_smoothing(read_only image2d_t in,
+                write_only image2d_t out,
+                const int width,
+                const int height,
+                local float4 *buffer)
 {
   const int lxid = get_local_id(0);
   const int lyid = get_local_id(1);
@@ -356,13 +360,18 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
-
   if(x >= width || y >= height) return;
 
   // re-position buffer
   buffer += (lyid + 1) * buffwd + lxid + 1;
 
   float4 o = buffer[0];
+  // don't touch outermost 1 pixels, just copy
+  if(x < 1 || x >= width-1 || y < 1 || y >= height-1)
+  {
+    write_imagef(out, (int2) (x, y), o);
+    return;
+  }
 
   // 3x3 median for R
   float s0 = buffer[-buffwd - 1].x - buffer[-buffwd - 1].y;
@@ -395,7 +404,7 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   cas(s6, s4);
   cas(s4, s2);
 
-  o.x = fmax(s4 + o.y, 0.0f);
+  o.x = s4 + o.y;
 
 
   // 3x3 median for B
@@ -429,9 +438,9 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   cas(s6, s4);
   cas(s4, s2);
 
-  o.z = fmax(s4 + o.y, 0.0f);
+  o.z = s4 + o.y;
 
-  write_imagef(out, (int2) (x, y), fmax(o, 0.0f));
+  write_imagef(out, (int2) (x, y), o);
 }
 #undef cas
 
