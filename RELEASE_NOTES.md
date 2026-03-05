@@ -99,6 +99,15 @@ changes (where available).
   images from 720x450 to 1440x900. This produces better data for
   various situations, including in scopes and the color picker.
 
+- Use darktable icon in desktop environment when running under Wayland
+  on a KDE-like system. Previously the window manager would use a
+  generic icon.
+
+- Use server-side decorations (SSD) for windows when the user's window
+  manager is capable of this, to make window decorations consistent
+  with other applications. If SSD is not implemented (Gnome/Mutter
+  under Wayland), use client-side decorations (CSD).
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
