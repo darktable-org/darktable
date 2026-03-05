@@ -672,6 +672,7 @@ static void _vec_process(dt_scopes_mode_t *const self,
     }
 
   dt_free_align(binned);
+  self->update_counter = self->scopes->update_counter;
 }
 
 static void _vec_clear(dt_scopes_mode_t *const self)
@@ -1380,15 +1381,15 @@ static void _vec_gui_init_options(dt_scopes_mode_t *const self,
 {
   dt_scopes_vec_t *const d = self->data;
 
-  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
-                   d->vec_scale_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->vec_scale_button, FALSE, FALSE, 0);
-
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("cycle vectorscope types"),
                    d->colorspace_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->colorspace_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), d->colorspace_button, FALSE, FALSE, 0);
+
+  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
+                   d->vec_scale_button, &dt_action_def_button);
+  gtk_box_pack_start(GTK_BOX(box), d->vec_scale_button, FALSE, FALSE, 0);
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->vec_scale_button), "clicked",
@@ -1420,7 +1421,6 @@ static void _vec_gui_cleanup(dt_scopes_mode_t *const self)
 const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
   .name = _vec_name,
   .process = _vec_process,
-  .update_counter_changed = NULL,
   .clear = _vec_clear,
   // grid is drawn with scope, as it depends on chromaticity scale
   // FIXME: now that there is no auto-scale but logarithmic/linear, can draw grid here again?

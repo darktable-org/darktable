@@ -176,9 +176,6 @@ static void _scope_process
   //   for calculating the vertex_rgb data.
   dt_scopes_call(s->cur_mode, process, img_display, &roi,
                  profile_info_out->type ? profile_info_out : fallback);
-  // FIXME: counter work is effectively atomic as is within a mutex, so just append update_counter_changed() work to end of the process() code that needs it
-  s->cur_mode->update_counter = s->update_counter;
-  dt_scopes_call_if_exists(s->cur_mode, update_counter_changed);
 
   dt_pthread_mutex_unlock(&s->lock);
   dt_free_align(img_display);

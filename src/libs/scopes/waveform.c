@@ -157,6 +157,11 @@ static void _wave_process(dt_scopes_mode_t *const self,
       }
 
   dt_free_align(partial_binned);
+
+  // waveform and rgb parade share underlying data, so updates to one update both
+  self->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter =
+    self->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter =
+      self->scopes->update_counter;
 }
 
 static void _wave_draw_grid(const dt_scopes_mode_t *const self,
@@ -262,12 +267,6 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
   cairo_paint(cr);
   cairo_surface_destroy(cst);
   cairo_restore(cr);
-}
-
-static void _wave_update_counter_changed(dt_scopes_mode_t *const self)
-{
-  // waveform and rgb parade share underlying data, so updates to one update both
-  self->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter = self->update_counter;
 }
 
 static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
@@ -423,7 +422,6 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .name = _wave_name,
   .process = _wave_process,
   .clear = _wave_clear,
-  .update_counter_changed = _wave_update_counter_changed,
   .draw_bkgd = lib_histogram_draw_bkgd,
   .draw_grid = _wave_draw_grid,
   .draw_highlight = _wave_draw_highlight,
@@ -447,12 +445,6 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
 const char* _parade_name(const dt_scopes_mode_t *const self)
 {
   return N_("RGB parade");
-}
-
-static void _parade_update_counter_changed(dt_scopes_mode_t *const self)
-{
-  // waveform and rgb parade share underlying data, so updates to one update both
-  self->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter = self->update_counter;
 }
 
 static void _parade_draw(const dt_scopes_mode_t *const self,
@@ -544,7 +536,6 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .name = _parade_name,
   .process = _wave_process,
   .clear = _wave_clear,
-  .update_counter_changed = _parade_update_counter_changed,
   .draw_bkgd = lib_histogram_draw_bkgd,
   .draw_grid = _wave_draw_grid,
   .draw_highlight = _wave_draw_highlight,
