@@ -99,6 +99,10 @@ changes (where available).
   images from 720x450 to 1440x900. This produces better data for
   various situations, including in scopes and the color picker.
 
+- Added touchpad gestures in darkroom, including pinch zoom in/out
+  and two-finger panning. Follow-up fixes refined input source
+  handling to keep panning limited to touchpad smooth-scroll input.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
