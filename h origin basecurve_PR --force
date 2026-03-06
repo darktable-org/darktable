@@ -1,0 +1,29 @@
+[33mcommit bed486a3bfd2384faba1c831ca9859a2bdb65efa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbasecurve_PR[m[33m)[m
+Author: Christian Bouhon <christian.bouhon@outlook.be>
+Date:   Fri Mar 6 16:54:47 2026 +0100
+
+    20260306 use of _args(), and use of CLARGFLOAT
+
+[33mcommit 2055e5f8e2fcbd5ee868774628c28fd59027a370[m
+Author: Christian Bouhon <christian.bouhon@outlook.be>
+Date:   Mon Mar 2 23:26:38 2026 +0100
+
+    20260301 no capital letters on default ui & Rec2020
+
+[33mcommit 42521946bad4e2e458a8e058b806aa123d5b6c69[m
+Author: Christian Bouhon <christian.bouhon@outlook.be>
+Date:   Sun Mar 1 13:48:15 2026 +0100
+
+    20260301 XYZ D65 to RGB Rec2020 is now sharing in color_convertion.h
+
+[33mcommit 7bb608c14cee36d42c6564523b98bc41faf52311[m
+Author: Christian Bouhon <christian.bouhon@outlook.be>
+Date:   Sat Feb 28 01:42:27 2026 +0100
+
+    20260228 Requested changes, const and final style adjustments
+
+[33mcommit 41423773369a6580d9feb243aca8529f97c1dd26[m
+Author: Christian Bouhon <christian.bouhon@outlook.be>
+Date:   Wed Feb 18 18:20:50 2026 +0100
+
+    20260218 implement adaptive JzAzBz shoulder extension
