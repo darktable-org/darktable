@@ -62,30 +62,6 @@ void dt_color_harmony_set(const dt_imgid_t imgid,
   // by the color_harmony_insert trigger.
 }
 
-// FIXME: this is never called, remove from here and color_harmony.h?
-dt_harmony_guide_id_t dt_color_harmony_get_id(const dt_imgid_t imgid)
-{
-  dt_harmony_guide_id_t id = -1;
-
-  sqlite3_stmt *stmt = NULL;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT imgid"
-     " FROM main.harmony_guide"
-     " WHERE imgid = ?1",
-     -1, &stmt, NULL);
-
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    id = sqlite3_column_int(stmt, 0);
-  }
-
-  return id;
-}
-
 gboolean dt_color_harmony_get(const dt_imgid_t imgid,
                               dt_color_harmony_guide_t *layout)
 {
