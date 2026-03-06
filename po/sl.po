@@ -9600,7 +9600,9 @@ msgid "boost factor"
 msgstr "faktor povečanja"
 
 #: ../src/develop/blend_gui.c:2676
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr "prilagodi faktor povečanja maske kanala"
 
 #: ../src/develop/blend_gui.c:2713

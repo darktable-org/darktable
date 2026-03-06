@@ -9433,8 +9433,12 @@ msgid "boost factor"
 msgstr "Boost factor"
 
 #: ../src/develop/blend_gui.c:2671
-msgid "adjust the boost factor of the channel mask"
-msgstr "Adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
+msgstr ""
+"Adjust the channel boost factor.\n"
+"Increase to allow matching values over 100%"
 
 #: ../src/develop/blend_gui.c:2708
 #, c-format

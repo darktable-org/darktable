@@ -6409,7 +6409,9 @@ msgid "boost factor"
 msgstr "hupstoot faktor"
 
 #: ../src/develop/blend_gui.c:2239
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr "pas die hupstootfaktor van die kanaalmasker aan"
 
 # not sure if this means X type of shape used, or x number of shapes used.

@@ -9035,7 +9035,9 @@ msgid "boost factor"
 msgstr "Aufhellungsfaktor"
 
 #: ../src/develop/blend_gui.c:2671
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr "Aufhellungsfaktor für die Kanalmasken einstellen"
 
 #: ../src/develop/blend_gui.c:2708

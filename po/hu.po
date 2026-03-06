@@ -9456,7 +9456,9 @@ msgid "boost factor"
 msgstr "gyorsítási tényező"
 
 #: ../src/develop/blend_gui.c:2676
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr "a csatorna maszkok gyorsítási tényezőjének állítása"
 
 #: ../src/develop/blend_gui.c:2713

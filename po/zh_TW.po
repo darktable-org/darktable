@@ -9324,7 +9324,9 @@ msgid "boost factor"
 msgstr "提升係數"
 
 #: ../src/develop/blend_gui.c:2676
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr ""
 "提高色版遮罩的數值範圍\n"
 "可針對場景參考色彩空間中亮度超過 100% 的範圍調整"

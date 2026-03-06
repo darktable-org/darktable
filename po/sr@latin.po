@@ -5848,7 +5848,9 @@ msgid "boost factor"
 msgstr "faktor pojačanja"
 
 #: ../src/develop/blend_gui.c:2054
-msgid "adjust the boost factor of the channel mask"
+msgid ""
+"adjust the channel boost factor.\n"
+"increase to allow matching values over 100%"
 msgstr "podešava faktor povećanja maske kanala"
 
 #: ../src/develop/blend_gui.c:2088
