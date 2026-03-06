@@ -3566,6 +3566,7 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   }
   else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
+    // FIXME: free event result of gtk_get_current_event(), see https://docs.gtk.org/gtk3/func.get_current_event.html, "The caller of the function takes ownership of the data, and is responsible for freeing it."  
     bh->opentime = gdk_event_get_time(gtk_get_current_event());
     bh->mouse_x = x;
     bh->mouse_y = y;
@@ -3649,6 +3650,7 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       const float scaled_step =
         width * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
       const float steps = floorf((x - bh->mouse_x) / scaled_step);
+      // FIXME: free event result of gtk_get_current_event(), see https://docs.gtk.org/gtk3/func.get_current_event.html, "The caller of the function takes ownership of the data, and is responsible for freeing it."  
       GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event(); // TODO cleanup
       _slider_add_step(widget, copysignf(1, d->factor) * steps, event->state, FALSE);
 

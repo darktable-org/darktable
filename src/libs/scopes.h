@@ -101,10 +101,13 @@ typedef struct dt_scopes_functions_t
   void (*append_to_tooltip)(const struct dt_scopes_mode_t *const self,
                             gchar **tip);
   void (*eventbox_scroll)(struct dt_scopes_mode_t *const self,
-                          GdkEventScroll *event);
+                          gdouble x, gdouble y,
+                          gdouble delta_x, gdouble delta_y,
+                          GdkModifierType state);
   void (*eventbox_motion)(struct dt_scopes_mode_t *const self,
-                          GtkWidget *widget,
-                          const GdkEventMotion *event);
+                          GtkEventControllerMotion *controller,
+                          double x,
+                          double y);
   // set option button icons to current state, updates tooltips
   // accordingly, and if necessary update any state which depends on
   // current option buttons

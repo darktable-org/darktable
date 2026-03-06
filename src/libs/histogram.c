@@ -292,6 +292,31 @@ void lib_histogram_update_tooltip(const dt_scopes_t *const scopes)
   g_free(tip);
 }
 
+static void _drawable_button_press(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_scopes_t *s)
+{
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
+  {
+    const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
+    dt_dev_exposure_handle_event(gesture, n_press, pos,
+                                 s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
+  }
+}
+
+static void _drawable_button_release(GtkGestureSingle *gesture,
+                                     int n_press,
+                                     double x,
+                                     double y,
+                                     dt_scopes_t *s)
+{
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+    dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
+}
+
 static void _drawable_motion(GtkEventControllerMotion *controller,
                              double x,
                              double y,
@@ -330,31 +355,6 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
       }
     }
   }
-}
-
-static void _drawable_button_press(GtkGestureSingle *gesture,
-                                   int n_press,
-                                   double x,
-                                   double y,
-                                   dt_scopes_t *s)
-{
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
-     && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
-  {
-    const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(gesture, n_press, pos,
-                                 s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
-  }
-}
-
-static void _drawable_button_release(GtkGestureSingle *gesture,
-                                     int n_press,
-                                     double x,
-                                     double y,
-                                     dt_scopes_t *s)
-{
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-    dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
 }
 
 static void _drawable_leave(GtkEventControllerMotion *controller,
@@ -424,28 +424,64 @@ static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
     }
 }
 
-static gboolean _eventbox_scroll_callback(GtkWidget *widget,
-                                          // FIXME: is this GTK4 compatible?
-                                          GdkEventScroll *event,
-                                          dt_scopes_t *s)
+static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
+                                      gdouble dx,
+                                      gdouble dy,
+                                      dt_scopes_t *s)
 {
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
-    // bubble to adjusting the overall widget size
-    gtk_widget_event(s->scope_draw, (GdkEvent*)event);
-  else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-  {
-    const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-    if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-    dt_dev_exposure_handle_event(event, 0, 0, black);
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  if(gdk_event_get_event_type(event) == GDK_SCROLL)
+    {
+    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can use gtk_get_current_event() and get flags -- make a helper function to do this
+    if(dt_modifier_is(event->scroll.state,
+                      GDK_SHIFT_MASK | GDK_MOD1_MASK))
+    {
+      // bubble to adjusting the overall widget size
+      // FIXME: use gtk_event_controller_handle_event()
+      gtk_widget_event(s->scope_draw, event);
+    }
+    else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+    {
+      // FIXME: should scroll for exposure change be handled by each scope, rather than here?
+      // FIXME: should handle horizontal scrolling as well?
+      // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox
+      const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
+      if(black)
+        event->scroll.delta_y *= -1;
+      // awkwardly, _exposure_proxy_handle_event() expects
+      // EventController, but passes scroll events on to bauhaus
+      // _widget_scroll() which expects an GdkEventScroll -- fix this
+      // when bauhaus can handle GtkEventControllerScroll
+      // FIXME: add handling of GtkEventControllerScroll to bauhaus, this code may be the thing holding that back
+      dt_dev_exposure_handle_event(&event->scroll, 0, 0, black);
+    }
+    else
+    {
+      // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox
+      dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll,
+                               event->scroll.x, event->scroll.y,
+                               dx, dy, event->scroll.state);
+    }
   }
-  else
-    dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll, event);
-  return TRUE;
+  gdk_event_free(event);
 }
 
-static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
-                                                GdkEventCrossing *event,
-                                                dt_scopes_t *s)
+static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             double x,
+                                             double y,
+                                             dt_scopes_t *s)
+{
+  // This is required in order to correctly display the button tooltips
+  // FIXME: it would seem possible that it is necessary to update button tooltips only when the main widget tooltip has changed, if the tooltip bubbled down, but calling this at the end of lib_histogram_update_tooltip() doesn't seem to help
+  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
+  dt_scopes_call_if_exists(s->cur_mode, eventbox_motion, controller, x, y);
+}
+
+static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller,
+                                            double x,
+                                            double y,
+                                            dt_scopes_t *s)
 {
   // FIXME: do need to do this, or should this already be updated?
   lib_histogram_update_tooltip(s);
@@ -459,32 +495,30 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
   gtk_widget_show(s->button_box_main);
   gtk_widget_show(s->button_box_opt);
-  return FALSE;
 }
 
-static gboolean _eventbox_motion_notify_callback(GtkWidget *widget,
-                                                 const GdkEventMotion *event,
-                                                 const dt_scopes_t *s)
+static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller,
+                                            dt_scopes_t *s)
 {
-  // This is required in order to correctly display the button tooltips
-  // FIXME: it would seem possible that it is necessary to update button tooltips only when the main widget tooltip has changed, if the tooltip bubbled down, but calling this at the end of lib_histogram_update_tooltip() doesn't seem to help
-  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
-  dt_scopes_call_if_exists(s->cur_mode, eventbox_motion, widget, event);
-
-  return FALSE;
-}
-
-static gboolean _eventbox_leave_notify_callback(GtkWidget *widget,
-                                                const GdkEventCrossing *event,
-                                                const dt_scopes_t *s)
-{
-  // when click between buttons on the buttonbox a leave event is generated -- ignore it
-  if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
+  // when click between buttons on the buttonbox a leave event is
+  // generated -- ignore it (for GTK 4, replace this with the simpler
+  // gtk_event_controller_get_current_event())
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
   {
-    gtk_widget_hide(s->button_box_main);
-    gtk_widget_hide(s->button_box_opt);
+    if(gdk_event_get_event_type(event) == GDK_LEAVE_NOTIFY)
+    {
+      const GdkEventCrossing *xc = &event->crossing;
+      if(xc->mode == GDK_CROSSING_UNGRAB && xc->detail == GDK_NOTIFY_INFERIOR)
+      {
+        gdk_event_free(event);
+        return;
+      }
+    }
+    gdk_event_free(event);
   }
-  return FALSE;
+  gtk_widget_hide(s->button_box_main);
+  gtk_widget_hide(s->button_box_opt);
 }
 
 static void _lib_histogram_collapse_callback(dt_action_t *action)
@@ -723,6 +757,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
+  // FIXME: do not have to explicitly add events as we are now using EventController interface
   gtk_widget_add_events(s->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
@@ -733,18 +768,20 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_connect_motion(s->scope_draw, _drawable_motion, NULL,
                         _drawable_leave, s);
 
-  gtk_widget_add_events
-    (eventbox,
-     GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
-     | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(eventbox), "scroll-event",
-                   G_CALLBACK(_eventbox_scroll_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
-                   G_CALLBACK(_eventbox_enter_notify_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
-                   G_CALLBACK(_eventbox_leave_notify_callback), s);
-  g_signal_connect(G_OBJECT(eventbox), "motion-notify-event",
-                   G_CALLBACK(_eventbox_motion_notify_callback), s);
+  //gtk_widget_add_events(eventbox, darktable.gui->scroll_mask);
+  // FIXME: make dt_gui_connect_scroll() function
+  GtkEventController *scroll_controller =
+    gtk_event_controller_scroll_new(eventbox, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+  g_object_weak_ref(G_OBJECT (eventbox), (GWeakNotify) g_object_unref, scroll_controller);
+  g_signal_connect(scroll_controller, "scroll", G_CALLBACK(_eventbox_scroll_callback), s);
+
+  // FIXME: add (optional) propagation phase argument to dt_gui_connect_motion()
+  GtkEventController *motion_controller =
+    dt_gui_connect_motion(eventbox, _eventbox_motion_notify_callback,
+                          _eventbox_enter_notify_callback,
+                          _eventbox_leave_notify_callback, s);
+  // necessary for catching motion events
+  gtk_event_controller_set_propagation_phase(motion_controller, GTK_PHASE_BUBBLE);
 
   gtk_widget_show_all(self->widget);
 }
