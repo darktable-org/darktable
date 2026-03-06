@@ -1793,25 +1793,25 @@ int mouse_moved(dt_iop_module_t *self,
     // hover over active borders, no button pressed
     // change mouse pointer
     if(grab == GRAB_LEFT)
-      dt_control_change_cursor(GDK_LEFT_SIDE);
+      dt_control_change_cursor("w-resize");
     else if(grab == GRAB_TOP)
-      dt_control_change_cursor(GDK_TOP_SIDE);
+      dt_control_change_cursor("n-resize");
     else if(grab == GRAB_RIGHT)
-      dt_control_change_cursor(GDK_RIGHT_SIDE);
+      dt_control_change_cursor("e-resize");
     else if(grab == GRAB_BOTTOM)
-      dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      dt_control_change_cursor("s-resize");
     else if(grab == GRAB_TOP_LEFT)
-      dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      dt_control_change_cursor("nw-resize");
     else if(grab == GRAB_TOP_RIGHT)
-      dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      dt_control_change_cursor("ne-resize");
     else if(grab == GRAB_BOTTOM_RIGHT)
-      dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      dt_control_change_cursor("se-resize");
     else if(grab == GRAB_BOTTOM_LEFT)
-      dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      dt_control_change_cursor("sw-resize");
     else if(grab == GRAB_NONE)
     {
       dt_control_hinter_message("");
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     if(grab != GRAB_NONE)
       dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"));
@@ -1819,7 +1819,7 @@ int mouse_moved(dt_iop_module_t *self,
   }
   else
   {
-    dt_control_change_cursor(GDK_FLEUR);
+    dt_control_change_cursor("move");
     g->cropping = GRAB_CENTER;
     dt_control_hinter_message(_("<b>move</b>: drag, <b>move vertically</b>: shift+drag, "
          "<b>move horizontally</b>: ctrl+drag"));
@@ -1845,7 +1845,7 @@ int button_released(dt_iop_module_t *self,
   g->ctrl_hold = FALSE;
   g->cropping = GRAB_CENTER;
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p, FALSE);

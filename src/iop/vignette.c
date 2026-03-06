@@ -550,7 +550,7 @@ int mouse_moved(dt_iop_module_t *self,
   {
     if(grab == 0) // pan the image
     {
-      dt_control_change_cursor(GDK_HAND1);
+      dt_control_change_cursor("pointer");
       return 0;
     }
     else if(grab == 1) // move the center
@@ -648,19 +648,19 @@ int mouse_moved(dt_iop_module_t *self,
   else if(grab)
   {
     if(grab == 1)
-      dt_control_change_cursor(GDK_FLEUR);
+      dt_control_change_cursor("move");
     else if(grab == 2)
-      dt_control_change_cursor(GDK_SB_H_DOUBLE_ARROW);
+      dt_control_change_cursor("ew-resize");
     else if(grab == 4)
-      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+      dt_control_change_cursor("ns-resize");
     else if(grab == 8)
-      dt_control_change_cursor(GDK_SB_H_DOUBLE_ARROW);
+      dt_control_change_cursor("ew-resize");
     else if(grab == 16)
-      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+      dt_control_change_cursor("ns-resize");
   }
   else
   {
-    if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
+    if(old_grab != grab) dt_control_change_cursor("default");
   }
   old_grab = grab;
   dt_control_queue_redraw_center();

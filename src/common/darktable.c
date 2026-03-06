@@ -2041,7 +2041,7 @@ int dt_init(int argc,
 
     // finally set the cursor to be the default.
     // for some reason this is needed on some systems to pick up the correctly themed cursor
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   free(config_info);
 
