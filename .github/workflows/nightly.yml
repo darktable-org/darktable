@@ -417,7 +417,6 @@ jobs:
           retention-days: 2
 
   upload_to_release:
-    if: github.ref_name == 'master'
     permissions:
       # We need write permission to update the nightly tag
       contents: write
@@ -426,14 +425,19 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v8
-      - name: Update nightly release
-        uses: andelf/nightly-release@main
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.20.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly
+          allowUpdates: true     # required to allow nightly release updates
+          removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
+          tag: nightly
           prerelease: true
-          name: 'Darktable nightly build $$'
+          # We don't want a stable release that is in the process of being prepared
+          # and not yet ready for publication to be visible
+          draft: ${{ startsWith(github.ref, 'refs/tags/') }}
+          name: 'Darktable nightly build'
           # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
@@ -451,7 +455,7 @@ jobs:
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
-          files: |
+          artifacts: |
             artifact-appimage-*/*
             artifact-windows-*/*
             artifact-macos-*/*
