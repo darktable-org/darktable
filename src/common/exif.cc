@@ -613,7 +613,6 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     if(version == -1 || version > 0)
     {
       dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      if(!exif_read) dt_metadata_clear(imgs, FALSE);
 
       for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
@@ -631,6 +630,12 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
           }
           dt_metadata_set_import(img->id, metadata->tagname, value);
           free(adr);
+        }
+        else if(!exif_read && strstr(metadata->tagname, "Xmp.") == metadata->tagname)
+        {
+          // Only remove Xmp. metadata fields, do not touch metadata from other
+          // sources (e.g. Exif.*).
+          dt_metadata_unset(img->id, metadata->tagname, FALSE);
         }
       }
       dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
@@ -2369,6 +2374,50 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         snprintf(img->exif_lens, sizeof(img->exif_lens), "%s", str.c_str());
       }
     };
+
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+      if(!FIND_EXIF_TAG(metadata->tagname))
+      {
+        continue;
+      }
+
+      int ival = pos->toLong();
+      std::string str = pos->print(&exifData);
+      char *value = g_locale_to_utf8(str.c_str(), str.length(), NULL, NULL, NULL);
+      if(value == NULL)
+      {
+        // need non-const char* for g_strstrip
+        value = g_strdup(str.c_str());
+      }
+      g_strstrip(value);
+
+      gchar *str_value = g_strdup_printf("(%d)", ival);
+      if(g_strcmp0(value, str_value) == 0)
+      {
+        // no string mapping available in exiv2, so we use exiv2's
+        // default string conversion.
+        g_free(value);
+        str = pos->toString();
+        // for consistency with the handling above. don't want to mix two
+        // allocators, that causes me headaches.
+        value = g_strdup(str.c_str());
+      }
+      g_free(str_value);
+
+      char *adr = value;
+      // Skip any lang="" or charset=xxx
+      while(!strncmp(value, "lang=", 5) || !strncmp(value, "charset=", 8))
+      {
+        while(*value != ' ' && *value) value++;
+        while(*value == ' ') value++;
+      }
+      dt_metadata_set_import(img->id, metadata->tagname, value);
+      g_free(adr);
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     img->exif_inited = TRUE;
     return true;
