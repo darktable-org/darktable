@@ -298,7 +298,8 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
       // Model valid for T in [1667 ; 25000] K
       CCT_to_xy_blackbody(t, &x, &y);
       if(y != 0.f && x != 0.f) break;
-      // else t is out of bounds -> use custom/original values (next case)
+      // else t is out of bounds -> use custom/original values
+      return FALSE;
     }
     case DT_ILLUMINANT_CAMERA:
     {
