@@ -1132,62 +1132,63 @@ static void _vec_append_to_tooltip(const dt_scopes_mode_t *const self,
 }
 
 static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
-                                 GdkEventScroll *event)
+                                 gdouble x, gdouble y,
+                                 gdouble delta_x, gdouble delta_y,
+                                 GdkModifierType state)
 {
   dt_scopes_vec_t *const d = self->data;
-  int delta_y = 0;
-  // FIXME: should only handle these events when in color harmony mode
-  if(!dt_gui_get_scroll_unit_delta(event, &delta_y) || delta_y == 0)
-    return;
 
-  if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
+  // FIXME: if have own drawable for vectorscope, we can use GTK_EVENT_CONTROLLER_SCROLL_DISCRETE and not have to accumulate this
+  static gdouble acc = 0.0;
+  // FIXME: non-discrete mouse scroll events can be > 1
+  acc += CLAMP(delta_y, -1.0, 1.0);
+  const gdouble amt = trunc(acc);
+  if(amt == 0)
+    return;
+  acc -= amt;
+  const int amt_i = amt;
+  if(dt_modifier_is(state, GDK_SHIFT_MASK)) //( SHIFT+SCROLL
   {
-    if(d->harmony_guide.width == 0 && delta_y < 0)
-      d->harmony_guide.width = DT_COLOR_HARMONY_WIDTH_N - 1;
-    else
-      d->harmony_guide.width = (d->harmony_guide.width +delta_y) % DT_COLOR_HARMONY_WIDTH_N;
+    d->harmony_guide.width = (d->harmony_guide.width + amt_i + DT_COLOR_HARMONY_WIDTH_N)
+                             % DT_COLOR_HARMONY_WIDTH_N;
   }
-  else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
+  else if(dt_modifier_is(state, GDK_MOD1_MASK)) // ALT+SCROLL
   {
-    if(d->color_harmony_old == DT_COLOR_HARMONY_NONE && delta_y < 0)
-      d->harmony_guide.type = DT_COLOR_HARMONY_N - 1;
-    else
-      d->harmony_guide.type = (d->color_harmony_old + delta_y) % DT_COLOR_HARMONY_N;
+    d->harmony_guide.type =
+      (d->color_harmony_old + amt_i + DT_COLOR_HARMONY_N) % DT_COLOR_HARMONY_N;
     _color_harmony_button_on(d);
     d->color_harmony_old = d->harmony_guide.type;
   }
   else
   {
-    int a;
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
-      a = d->harmony_guide.rotation + delta_y;
+    if(dt_modifier_is(state, GDK_CONTROL_MASK)) // CTRL+SCROLL
+      d->harmony_guide.rotation += amt_i;
     else // SCROLL
     {
-      d->harmony_guide.rotation = (int)(d->harmony_guide.rotation / 15.) * 15;
-      a = d->harmony_guide.rotation + 15 * delta_y;
+      d->harmony_guide.rotation = ((d->harmony_guide.rotation + 7) / 15) * 15;
+      d->harmony_guide.rotation += 15 * amt_i;
     }
-    a %= 360;
-    if(a < 0) a += 360;
-    d->harmony_guide.rotation = a;
+    d->harmony_guide.rotation = (d->harmony_guide.rotation + 360) % 360;
   }
   _color_harmony_changed_record(self);
 }
 
 static void _vec_eventbox_motion(dt_scopes_mode_t *const self,
-                                 GtkWidget *widget,
-                                 const GdkEventMotion *event)
+                                 GtkEventControllerMotion *controller,
+                                 double x,
+                                 double y)
 {
   dt_scopes_vec_t *const d = self->data;
   // FIXME: replace the color harmony box buttons with a widget with a combobox, then get rid of the eventbox motion callback
   // FIXME: this shouldn't do anything unless in RYB mode
-
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
   GtkAllocation fix_alloc;
   // FIXME: why use gtk_widget_get_allocation vs. gtk_widget_get_allocated_height?
   gtk_widget_get_allocation(d->color_harmony_fix, &fix_alloc);
   const int full_height = gtk_widget_get_allocated_height(widget);
   const int excess =
     gtk_widget_get_allocated_height(d->color_harmony_box) + fix_alloc.y - full_height;
-  const int shift = excess * MAX(event->y - fix_alloc.y, 0) / (full_height - fix_alloc.y);
+  const int shift = excess * MAX(y - fix_alloc.y, 0) / (full_height - fix_alloc.y);
   gtk_fixed_move(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, - MAX(shift, 0));
 }
 
