@@ -1339,12 +1339,12 @@ static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
                                  GtkWidget *box)
 {
   dt_scopes_vec_t *const d = self->data;
-  d->color_harmony_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  d->color_harmony_box = dt_gui_vbox();
   gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->color_harmony_box, GTK_ALIGN_START);
   d->color_harmony_fix = gtk_fixed_new();
   gtk_fixed_put(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, 0);
-  gtk_box_pack_start(GTK_BOX(box), d->color_harmony_fix, FALSE, FALSE, 0);
+  dt_gui_box_add(box, d->color_harmony_fix);
 
   // a series of buttons for color harmony guide lines
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_MONOCHROMATIC;
@@ -1362,7 +1362,7 @@ static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
     g_signal_connect(G_OBJECT(rb), "leave-notify-event",
                      G_CALLBACK(_color_harmony_leave_notify_callback), self);
 
-    gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
+    dt_gui_box_add(d->color_harmony_box, rb);
     // FIXME: awkward to store this to skip DT_COLOR_HARMONY_NONE, just leave [0] blank?
     d->color_harmony_button[i-1] = rb;
   }
@@ -1384,12 +1384,10 @@ static void _vec_gui_init_options(dt_scopes_mode_t *const self,
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("cycle vectorscope types"),
                    d->colorspace_button, &dt_action_def_button);
-  gtk_box_pack_start(GTK_BOX(box), d->colorspace_button, FALSE, FALSE, 0);
-
   d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("switch vectorscope scale"),
                    d->vec_scale_button, &dt_action_def_button);
-  gtk_box_pack_start(GTK_BOX(box), d->vec_scale_button, FALSE, FALSE, 0);
+  dt_gui_box_add(box, d->colorspace_button, d->vec_scale_button);
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->vec_scale_button), "clicked",

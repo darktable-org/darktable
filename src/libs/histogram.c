@@ -598,35 +598,30 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_events(s->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons, split in two button boxes, on left and right side
-  s->button_box_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  s->button_box_main = dt_gui_vbox();
   dt_gui_add_class(s->button_box_main, "button_box");
   gtk_widget_set_valign(s->button_box_main, GTK_ALIGN_START);
   gtk_widget_set_halign(s->button_box_main, GTK_ALIGN_START);
 
-  GtkWidget *box_left = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box_left = dt_gui_hbox();
   gtk_widget_set_valign(box_left, GTK_ALIGN_START);
   gtk_widget_set_halign(box_left, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(s->button_box_main), box_left, FALSE, FALSE, 0);
+  dt_gui_box_add(s->button_box_main, box_left);
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
     dt_scopes_call_if_exists(&s->modes[i],
                              add_to_main_box, dark, s->button_box_main);
 
-  s->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  s->button_box_opt = dt_gui_hbox();
   dt_gui_add_class(s->button_box_opt, "button_box");
   gtk_widget_set_valign(s->button_box_opt, GTK_ALIGN_START);
   gtk_widget_set_halign(s->button_box_opt, GTK_ALIGN_END);
 
   // this intermediate box is needed to make the actions on buttons work
-  GtkWidget *box_right = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box_right = dt_gui_hbox();
   gtk_widget_set_valign(box_right, GTK_ALIGN_START);
   gtk_widget_set_halign(box_right, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(s->button_box_opt), box_right, FALSE, FALSE, 0);
-
-  s->button_box_rgb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
-  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_END);
-  gtk_box_pack_end(GTK_BOX(box_right), s->button_box_rgb, FALSE, FALSE, 0);
+  dt_gui_box_add(s->button_box_opt, box_right);
 
   // FIXME: the button transitions when they appear on mouseover
   // (mouse enters scope widget) or change (mouse click) cause redraws
@@ -650,7 +645,7 @@ void gui_init(dt_lib_module_t *self)
                                 _(name));
     dt_action_define(dark, N_("modes"), name,
                      s->mode_button[i], &dt_action_def_toggle);
-    gtk_box_pack_start(GTK_BOX(box_left), s->mode_button[i], FALSE, FALSE, 0);
+    dt_gui_box_add(box_left, s->mode_button[i]);
     // FIXME: use "clicked" event instead of "button-press-event"? do GtkDarktableToggleButton support clicked events?
     g_signal_connect(G_OBJECT(s->mode_button[i]), "button-press-event",
                      G_CALLBACK(_scope_mode_clicked), s);
@@ -665,8 +660,12 @@ void gui_init(dt_lib_module_t *self)
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
+  s->button_box_rgb = dt_gui_hbox();
+  gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_END);
+
   // red/green/blue channel on/off
-  for(int i=DT_SCOPES_RGB_BLUE; i >= DT_SCOPES_RGB_RED; i--)
+  for(int i=DT_SCOPES_RGB_RED; i < DT_SCOPES_RGB_N; i++)
   {
     g_autofree char *name = g_strdup_printf("%s-channel-button", rgb_names[i]);
     g_autofree char *tip = g_strdup_printf(_("toggle %s channel"), _(rgb_names[i]));
@@ -678,7 +677,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                  s->channels[i]);
     dt_action_define(dark, N_("toggle colors"), rgb_names[i], btn, &dt_action_def_toggle);
-    gtk_box_pack_end(GTK_BOX(s->button_box_rgb), btn, FALSE, FALSE, 0);
+    dt_gui_box_add(s->button_box_rgb, btn);
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), s);
     s->channel_buttons[i] = btn;
   }
@@ -688,6 +687,7 @@ void gui_init(dt_lib_module_t *self)
     dt_scopes_call_if_exists(&s->modes[i], add_to_options_box, dark, box_right);
     dt_scopes_call_if_exists(&s->modes[i], update_buttons);
   }
+  dt_gui_box_add(box_right, s->button_box_rgb);
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
 
