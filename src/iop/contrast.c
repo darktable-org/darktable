@@ -811,8 +811,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_contrast_luma, width, height,
                                       CLARG(dev_in), CLARG(lum_pixel),
                                       CLARG(width), CLARG(height),
-                                      CLARG(color_impact),
-                                      CLARG(coeff_r), CLARG(coeff_g), CLARG(coeff_b)) != CL_SUCCESS)
+                                      CLARGFLOAT(color_impact),
+                                      CLARGFLOAT(coeff_r), CLARGFLOAT(coeff_g), CLARGFLOAT(coeff_b)) != CL_SUCCESS)
     goto error;
 
   // Note: Full guided filter pyramid implementation omitted for brevity in this patch.
@@ -824,18 +824,18 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   
   if(dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_contrast_finalize, width, height,
                                       CLARG(dev_in), CLARG(dev_out), CLARG(lum_pixel),
-                                      CLARG(params->micro_scale), CLARG(params->fine_scale),
-                                      CLARG(params->local_scale), CLARG(params->broad_scale),
-                                      CLARG(params->extended_scale), CLARG(params->noise_threshold),
-                                      CLARG(params->csf_adaptation), CLARG(params->colorful_contrast),
+                                      CLARGFLOAT(params->micro_scale), CLARGFLOAT(params->fine_scale),
+                                      CLARGFLOAT(params->local_scale), CLARGFLOAT(params->broad_scale),
+                                      CLARGFLOAT(params->extended_scale), CLARGFLOAT(params->noise_threshold),
+                                      CLARGFLOAT(params->csf_adaptation), CLARGFLOAT(params->colorful_contrast),
                                       CLARG(params->method), CLARG(params->iterations),
-                                      CLARG(params->color_balance), CLARG(params->contrast_balance),
+                                      CLARGFLOAT(params->color_balance), CLARGFLOAT(params->contrast_balance),
                                       CLARG(lum_pixel), // smoothed
                                       CLARG(lum_pixel), // extended
                                       CLARG(lum_pixel), // broad
                                       CLARG(lum_pixel), // fine
                                       CLARG(lum_pixel), // micro
-                                      CLARG(params->global_scale),
+                                      CLARGFLOAT(params->global_scale),
                                       CLARG(width), CLARG(height)) != CL_SUCCESS)
     goto error;
 
