@@ -243,8 +243,7 @@ static void _hist_add_to_options_box(dt_scopes_mode_t *const self,
   d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("switch histogram scale"),
                    d->scale_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->scale_button, FALSE, FALSE, 0);
-
+  dt_gui_box_add(box, d->scale_button);
   g_signal_connect(G_OBJECT(d->scale_button), "clicked",
                    G_CALLBACK(_hist_scale_clicked), self);
 }
