@@ -9434,9 +9434,7 @@ msgid "boost factor"
 msgstr "lyftfaktor"
 
 #: ../src/develop/blend_gui.c:2676
-msgid ""
-"adjust the channel boost factor.\n"
-"increase to allow matching values over 100%"
+msgid "adjust the boost factor of the channel mask"
 msgstr "justera lyftfaktorn på kanalmasken"
 
 #: ../src/develop/blend_gui.c:2713

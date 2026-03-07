@@ -8718,9 +8718,7 @@ msgid "boost factor"
 msgstr "artırma etkeni"
 
 #: ../src/develop/blend_gui.c:2698
-msgid ""
-"adjust the channel boost factor.\n"
-"increase to allow matching values over 100%"
+msgid "adjust the boost factor of the channel mask"
 msgstr "kanal maskesinin artırma etkenini ayarlayın"
 
 #: ../src/develop/blend_gui.c:2735

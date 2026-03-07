@@ -8084,9 +8084,7 @@ msgid "boost factor"
 msgstr "מקדם הגברה"
 
 #: ../src/develop/blend_gui.c:2645
-msgid ""
-"adjust the channel boost factor.\n"
-"increase to allow matching values over 100%"
+msgid "adjust the boost factor of the channel mask"
 msgstr "כוונן את מקדם ההגבר של מסיכת הערוץ"
 
 #: ../src/develop/blend_gui.c:2682

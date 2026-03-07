@@ -9395,9 +9395,7 @@ msgid "boost factor"
 msgstr "koeficienti i amplifikimit"
 
 #: ../src/develop/blend_gui.c:2676
-msgid ""
-"adjust the channel boost factor.\n"
-"increase to allow matching values over 100%"
+msgid "adjust the boost factor of the channel mask"
 msgstr "rregulloni koeficientin amplifikues për maskën e kanalit"
 
 #: ../src/develop/blend_gui.c:2713

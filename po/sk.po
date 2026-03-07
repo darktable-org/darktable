@@ -5606,9 +5606,7 @@ msgid "boost factor"
 msgstr "faktor zvýraznenia"
 
 #: ../src/develop/blend_gui.c:2068
-msgid ""
-"adjust the channel boost factor.\n"
-"increase to allow matching values over 100%"
+msgid "adjust the boost factor of the channel mask"
 msgstr "nastaviť faktor zvýraznenia pre masku kanála"
 
 #: ../src/develop/blend_gui.c:2102
