@@ -1061,32 +1061,52 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           const float grad_x = (LF[n7 + c] - LF[n1 + c]) * 0.5f;
           const float grad_y = (LF[n5 + c] - LF[n3 + c]) * 0.5f;
 
-          float magnitude_grad = sqrtf(sqf(grad_x) + sqf(grad_y));
+          const float gx2 = sqf(grad_x);
+          const float gy2 = sqf(grad_y);
+          const float m2_grad = gx2 + gy2;
+
+          const float magnitude_grad = sqrtf(m2_grad);
           c2[0][c] = -magnitude_grad * anisotropy[0];
           c2[2][c] = -magnitude_grad * anisotropy[2];
 
-          const float inv_magnitude_grad = (magnitude_grad != 0.f) ? 1.0f / magnitude_grad : 0.f;
-          const float grad_norm_0 = (magnitude_grad != 0.f) ? grad_x * inv_magnitude_grad : 1.f;
-          const float grad_norm_1 = grad_y * inv_magnitude_grad;
-
-          cos_theta_grad_sq[c] = sqf(grad_norm_0);
-          sin_theta_grad_sq[c] = sqf(grad_norm_1);
-          cos_theta_sin_theta_grad[c] = grad_norm_0 * grad_norm_1;
+          if(m2_grad > 0.f)
+          {
+            const float inv_m2_grad = 1.0f / m2_grad;
+            cos_theta_grad_sq[c] = gx2 * inv_m2_grad;
+            sin_theta_grad_sq[c] = gy2 * inv_m2_grad;
+            cos_theta_sin_theta_grad[c] = grad_x * grad_y * inv_m2_grad;
+          }
+          else
+          {
+            cos_theta_grad_sq[c] = 1.f;
+            sin_theta_grad_sq[c] = 0.f;
+            cos_theta_sin_theta_grad[c] = 0.f;
+          }
 
           const float lapl_x = (HF[n7 + c] - HF[n1 + c]) * 0.5f;
           const float lapl_y = (HF[n5 + c] - HF[n3 + c]) * 0.5f;
 
-          float magnitude_lapl = sqrtf(sqf(lapl_x) + sqf(lapl_y));
+          const float lx2 = sqf(lapl_x);
+          const float ly2 = sqf(lapl_y);
+          const float m2_lapl = lx2 + ly2;
+
+          const float magnitude_lapl = sqrtf(m2_lapl);
           c2[1][c] = -magnitude_lapl * anisotropy[1];
           c2[3][c] = -magnitude_lapl * anisotropy[3];
 
-          const float inv_magnitude_lapl = (magnitude_lapl != 0.f) ? 1.0f / magnitude_lapl : 0.f;
-          const float lapl_norm_0 = (magnitude_lapl != 0.f) ? lapl_x * inv_magnitude_lapl : 1.f;
-          const float lapl_norm_1 = lapl_y * inv_magnitude_lapl;
-
-          cos_theta_lapl_sq[c] = sqf(lapl_norm_0);
-          sin_theta_lapl_sq[c] = sqf(lapl_norm_1);
-          cos_theta_sin_theta_lapl[c] = lapl_norm_0 * lapl_norm_1;
+          if(m2_lapl > 0.f)
+          {
+            const float inv_m2_lapl = 1.0f / m2_lapl;
+            cos_theta_lapl_sq[c] = lx2 * inv_m2_lapl;
+            sin_theta_lapl_sq[c] = ly2 * inv_m2_lapl;
+            cos_theta_sin_theta_lapl[c] = lapl_x * lapl_y * inv_m2_lapl;
+          }
+          else
+          {
+            cos_theta_lapl_sq[c] = 1.f;
+            sin_theta_lapl_sq[c] = 0.f;
+            cos_theta_sin_theta_lapl[c] = 0.f;
+          }
         }
 
         // elements of c2 need to be expf(mag*anistropy), but we
