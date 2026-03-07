@@ -412,7 +412,7 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     /* xgettext:no-c-format */</xsl:text>
     </xsl:if>
       <xsl:text>
-    gtk_widget_set_tooltip_text(widget, _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"));</xsl:text>
+    gtk_widget_set_tooltip_markup(widget, _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"));</xsl:text>
   </xsl:if>
     <xsl:if test="@capability">
       <xsl:text>

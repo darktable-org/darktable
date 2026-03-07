@@ -69,6 +69,7 @@
 #include "gui/presets.h"
 #include "gui/styles.h"
 #include "gui/splash.h"
+#include "gui/welcome.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "lua/init.h"
@@ -2038,6 +2039,7 @@ int dt_init(int argc,
     dt_gui_gtk_load_config();
     dt_gui_process_events();
     dt_splash_screen_destroy();
+    dt_welcome_screen_run_if_needed();
 
     // finally set the cursor to be the default.
     // for some reason this is needed on some systems to pick up the correctly themed cursor
