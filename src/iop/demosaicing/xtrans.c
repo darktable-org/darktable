@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-// tile size, optimized to keep data in L2 cache
-#define TS 122
+#define TS DT_MARKESTEIJN_TS
 
 #define PAD_G1_G3 3
 #define PAD_G_INTERP 3
@@ -512,7 +511,7 @@ static void xtrans_markesteijn_interpolate(float *out,
 
 #undef TS
 
-#define TS 122
+#define TS DT_FDC_TS
 static void xtrans_fdc_interpolate(float *out,
                                    const float *const in,
                                    const int width,

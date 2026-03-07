@@ -249,6 +249,38 @@ char *dt_version_major_minor();
 #define INVPHI 0.61803398874989479F
 #endif
 
+
+/* Some CPU demosaicers do internal tiling, this decreases mem pressure while
+   increasing performance as processed data is available in cpu cache.
+   The default values have been calculated for a cachesize of 1MB per thread,
+   this is mostly still valid in 2026 but you may tune for performance.
+
+   Due to internal code AMAZETS should be a multiple of 32, for RCD and LMMSE
+   a multiple of 8.
+
+   Note: for the curious, if we calculate the tilesizes at runtime we loose the
+   performance gain as the compiler can't optimize that much.
+*/
+#ifndef DT_RCD_TILESIZE
+#define DT_RCD_TILESIZE 112
+#endif
+
+#ifndef DT_LMMSE_TILESIZE
+#define DT_LMMSE_TILESIZE 136
+#endif
+
+#ifndef AMAZETS
+#define AMAZETS 160
+#endif
+
+#ifndef DT_MARKESTEIJN_TS
+#define DT_MARKESTEIJN_TS 122
+#endif
+
+#ifndef DT_FDC_TS
+#define DT_FDC_TS 122
+#endif
+
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 

@@ -298,6 +298,7 @@ error:
   return err;
 }
 
+#define DT_REDUCESIZE_MIN 64
 static int green_equilibration_cl(const dt_iop_module_t *self,
                                   const dt_dev_pixelpipe_iop_t *piece,
                                   cl_mem dev_in,
