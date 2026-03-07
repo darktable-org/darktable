@@ -13,6 +13,26 @@ diffuse: stripped internal array allocations for `find_gradients` normalizations
 diffuse: unrolled `neighbour_pixel` loop initialization and spatial variance arrays into flat scalar gather structures to skip compiler bounds checking and iterator bloat
 40.024
 
+a6ac420eaa
+diffuse: eliminated intermediate neighbour_pixel_HF/LF[9] stack arrays, computing gradients/sums/variance directly from HF/LF source pointers via pre-computed offsets
+39.215
 
+f5c577ce59
+diffuse: compute cos²θ/sin²θ/cosθsinθ directly from squared magnitude (gx²/m², gy²/m², gx·gy/m²), reusing already-computed gx² and gy²
+38.847
 
+5f769efdcf
+diffuse: paired convolution loops for shared angle data — derivatives 0+2 (grad) and 1+3 (lapl) computed in 2 loops instead of 4, with correct per-derivative isotropy_type
+36.877
 
+3572c49e68
+diffuse: unrolled derivative accumulation k=0..3 loop into single for_each_channel expression, eliminating loop overhead and enabling better SIMD codegen
+36.231
+
+c01726d763
+diffuse: merged variance regularization into output loop, eliminating one for_each_channel pass
+35.972
+
+03809ba7d5
+diffuse: removed 0.5f scaling from gradient/laplacian, absorbing factor into half_anisotropy for magnitude
+35.599

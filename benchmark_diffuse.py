@@ -8,14 +8,14 @@ import os
 
 def run_test(mode="cpu"):
     cmd = [
-        "/home/test/darktable-build/bin/darktable-cli",
-        "/tmp/perftest/DSC_9034.NEF",
-        "/tmp/perftest/DSC_9034.NEF.xmp",
-        "/tmp/perftest",
+        os.path.expanduser("~/darktable-build/bin/darktable-cli"),
+        "/workspace/darktable/diffuse-perf-test-files/DSC_9034.NEF",
+        "/workspace/darktable/diffuse-perf-test-files/DSC_9034.NEF.xmp",
+        "/workspace/darktable/diffuse-perf-test-files",
         "--core",
         "-d", "perf",
         "-d", "opencl",
-        "--configdir", "/tmp/perftest/"
+        "--configdir", "/tmp/darktable-perftest/"
     ]
     if mode == "cpu":
         cmd.insert(5, "--disable-opencl")
@@ -30,7 +30,7 @@ def run_test(mode="cpu"):
             if m:
                 diffuse_times.append(float(m.group(1)))
                 
-    for f in glob.glob("/tmp/perftest/*.jpg"):
+    for f in glob.glob("/workspace/darktable/diffuse-perf-test-files/*.jpg"):
         try:
             os.remove(f)
         except OSError:
@@ -47,7 +47,7 @@ def main():
     
     baseline = None
     try:
-        with open("/home/test/darktable/diffuse-performance.log", "r") as f:
+        with open("/workspace/darktable/diffuse-performance.log", "r") as f:
             lines = f.read().strip().split('\n')
             if lines:
                 baseline = float(lines[-1].strip())

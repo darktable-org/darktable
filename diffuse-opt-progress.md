@@ -103,6 +103,10 @@
 * Outcome: **FAILED** (benchmark). Measured 36.201s vs 35.599s baseline — 1.69% regression. GCC was already performing CSE; explicit intermediates hurt register allocation. Reverted.
 
 ---
+* Idea: Pre-halve `cos_theta_sin_theta` (multiply by 0.5f) in the gradient/laplacian angle loop so the derivative computation can use it directly as `b11` without the `* 0.5f`. Saves one multiply per non-isotropic derivative per channel.
+* Outcome: **FAILED** (benchmark). Measured 36.323s vs 35.599s baseline — 2.03% regression. The extra `*0.5f` in the gradient loop (runs for ALL pixels) costs more than the savings in derivative b11 (only non-isotropic paths). Reverted.
+
+---
 
 # IN PROGRESS
 
@@ -112,10 +116,12 @@
     
 # UPCOMING
 
-1. **Pre-halve cos_theta_sin_theta at storage time**: Store `cos_theta_sin_theta_grad[c] = diff_gx * diff_gy * inv_m2 * 0.5f` in the gradient loop. Then b11 in derivative computation becomes `(c2-1) * half_cs` instead of `(c2-1) * cs * 0.5f`, saving 1 multiply per non-isotropic derivative × 4 derivatives × 4 channels = 16 ops, at cost of 8 extra ops in gradient loop. Net ~8 ops saved for all-anisotropic case.
-
-3. **Remove dead zero-initialization of `derivatives[4]`**: Currently `dt_aligned_pixel_t derivatives[4] = { { 0.f } }` zero-fills 64 bytes. All 4 derivatives are unconditionally written (either isotropic or anisotropic path) before being read. The zero-init is dead code that the compiler may not eliminate due to alignment attributes. Removing it saves a memset.
+1. **Remove dead zero-initialization of `derivatives[4]`**: Currently `dt_aligned_pixel_t derivatives[4] = { { 0.f } }` zero-fills 64 bytes. All 4 derivatives are unconditionally written (either isotropic or anisotropic path) before being read. The zero-init is dead code that the compiler may not eliminate due to alignment attributes. Removing it saves a memset.
 
 4. **Use `a11+a22 = 1+c2` identity for center weight only**: Replace `-2.0f * (a11 + a22)` with `-2.0f * (1.0f + c2[k][c])` in derivative output. Keeps a11/a22 computation unchanged (unlike the failed sin²θ attempt). Enables earlier computation of center weight since it only depends on c2 (available before a11/a22), potentially improving ILP.
 
 5. **Precompute `neg_magnitude` once in gradient loop**: Compute `neg_mag_grad = -sqrtf(m2_grad)` once, then `c2[0][c] = neg_mag_grad * half_anisotropy[0]; c2[2][c] = neg_mag_grad * half_anisotropy[2]`. Currently the compiler must negate the magnitude implicitly for each c2 assignment. Explicit precomputation ensures one negation instead of two per angle set.
+
+6. **Use `center_HF[c]` and `center_LF[c]` in output loop**: Replace `HF[index + c]` with `center_HF[c]` and `LF[index + c]` with `center_LF[c]` in the output computation. These values are already loaded during the sums loop. The compiler may not recognize that `index == n4` since they're computed via different arithmetic paths (`idx*4` vs `4*(i_neighbours[1]+j_neighbours[1])`), potentially causing redundant memory loads.
+
+7. **Precompute isotropic convolution results**: Compute `iso_LF[c]` and `iso_HF[c]` in a separate `for_each_channel` loop after sums, then use directly in derivative loops for isotropic branches (`derivatives[k][c] = iso_LF[c]`). Reduces derivative loop body complexity and avoids redundant isotropic formula computation when multiple derivatives sharing the same source are isotropic.
