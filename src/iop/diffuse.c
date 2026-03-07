@@ -1034,10 +1034,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
               j,                                          // y
               MIN((int)(j + mult * H), (int)width - 1) }; // y + mult
 
-        // fetch non-local pixels and store them locally and contiguously
-        dt_aligned_pixel_t neighbour_pixel_HF[9];
-        dt_aligned_pixel_t neighbour_pixel_LF[9];
-
+        // non-local neighbour pixel offsets into the source arrays
         const size_t n0 = 4 * (i_neighbours[0] + j_neighbours[0]);
         const size_t n1 = 4 * (i_neighbours[0] + j_neighbours[1]);
         const size_t n2 = 4 * (i_neighbours[0] + j_neighbours[2]);
@@ -1047,28 +1044,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         const size_t n6 = 4 * (i_neighbours[2] + j_neighbours[0]);
         const size_t n7 = 4 * (i_neighbours[2] + j_neighbours[1]);
         const size_t n8 = 4 * (i_neighbours[2] + j_neighbours[2]);
-
-        for_each_channel(c)
-        {
-          neighbour_pixel_HF[0][c] = HF[n0 + c];
-          neighbour_pixel_LF[0][c] = LF[n0 + c];
-          neighbour_pixel_HF[1][c] = HF[n1 + c];
-          neighbour_pixel_LF[1][c] = LF[n1 + c];
-          neighbour_pixel_HF[2][c] = HF[n2 + c];
-          neighbour_pixel_LF[2][c] = LF[n2 + c];
-          neighbour_pixel_HF[3][c] = HF[n3 + c];
-          neighbour_pixel_LF[3][c] = LF[n3 + c];
-          neighbour_pixel_HF[4][c] = HF[n4 + c];
-          neighbour_pixel_LF[4][c] = LF[n4 + c];
-          neighbour_pixel_HF[5][c] = HF[n5 + c];
-          neighbour_pixel_LF[5][c] = LF[n5 + c];
-          neighbour_pixel_HF[6][c] = HF[n6 + c];
-          neighbour_pixel_LF[6][c] = LF[n6 + c];
-          neighbour_pixel_HF[7][c] = HF[n7 + c];
-          neighbour_pixel_LF[7][c] = LF[n7 + c];
-          neighbour_pixel_HF[8][c] = HF[n8 + c];
-          neighbour_pixel_LF[8][c] = LF[n8 + c];
-        }
 
         // c² in https://www.researchgate.net/publication/220663968
         dt_aligned_pixel_t c2[4];
@@ -1083,8 +1058,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
 
         for_each_channel(c)
         {
-          const float grad_x = (neighbour_pixel_LF[7][c] - neighbour_pixel_LF[1][c]) * 0.5f;
-          const float grad_y = (neighbour_pixel_LF[5][c] - neighbour_pixel_LF[3][c]) * 0.5f;
+          const float grad_x = (LF[n7 + c] - LF[n1 + c]) * 0.5f;
+          const float grad_y = (LF[n5 + c] - LF[n3 + c]) * 0.5f;
 
           float magnitude_grad = sqrtf(sqf(grad_x) + sqf(grad_y));
           c2[0][c] = -magnitude_grad * anisotropy[0];
@@ -1098,8 +1073,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           sin_theta_grad_sq[c] = sqf(grad_norm_1);
           cos_theta_sin_theta_grad[c] = grad_norm_0 * grad_norm_1;
 
-          const float lapl_x = (neighbour_pixel_HF[7][c] - neighbour_pixel_HF[1][c]) * 0.5f;
-          const float lapl_y = (neighbour_pixel_HF[5][c] - neighbour_pixel_HF[3][c]) * 0.5f;
+          const float lapl_x = (HF[n7 + c] - HF[n1 + c]) * 0.5f;
+          const float lapl_y = (HF[n5 + c] - HF[n3 + c]) * 0.5f;
 
           float magnitude_lapl = sqrtf(sqf(lapl_x) + sqf(lapl_y));
           c2[1][c] = -magnitude_lapl * anisotropy[1];
@@ -1121,6 +1096,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           dt_vector_exp(c2[k], c2[k]);
         }
 
+        // compute sums and variance directly from source arrays
         dt_aligned_pixel_t diag_sum_LF = { 0.f }, diag_diff_LF = { 0.f };
         dt_aligned_pixel_t vert_sum_LF = { 0.f }, horiz_sum_LF = { 0.f }, center_LF = { 0.f };
         dt_aligned_pixel_t diag_sum_HF = { 0.f }, diag_diff_HF = { 0.f };
@@ -1129,21 +1105,28 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
 
         for_each_channel(c)
         {
-          diag_sum_LF[c] = neighbour_pixel_LF[0][c] + neighbour_pixel_LF[2][c] + neighbour_pixel_LF[6][c] + neighbour_pixel_LF[8][c];
-          diag_diff_LF[c] = neighbour_pixel_LF[0][c] - neighbour_pixel_LF[2][c] - neighbour_pixel_LF[6][c] + neighbour_pixel_LF[8][c];
-          vert_sum_LF[c] = neighbour_pixel_LF[1][c] + neighbour_pixel_LF[7][c];
-          horiz_sum_LF[c] = neighbour_pixel_LF[3][c] + neighbour_pixel_LF[5][c];
-          center_LF[c] = neighbour_pixel_LF[4][c];
+          const float lf0 = LF[n0 + c], lf2 = LF[n2 + c], lf6 = LF[n6 + c], lf8 = LF[n8 + c];
+          const float lf1 = LF[n1 + c], lf7 = LF[n7 + c];
+          const float lf3 = LF[n3 + c], lf5 = LF[n5 + c];
 
-          diag_sum_HF[c] = neighbour_pixel_HF[0][c] + neighbour_pixel_HF[2][c] + neighbour_pixel_HF[6][c] + neighbour_pixel_HF[8][c];
-          diag_diff_HF[c] = neighbour_pixel_HF[0][c] - neighbour_pixel_HF[2][c] - neighbour_pixel_HF[6][c] + neighbour_pixel_HF[8][c];
-          vert_sum_HF[c] = neighbour_pixel_HF[1][c] + neighbour_pixel_HF[7][c];
-          horiz_sum_HF[c] = neighbour_pixel_HF[3][c] + neighbour_pixel_HF[5][c];
-          center_HF[c] = neighbour_pixel_HF[4][c];
+          diag_sum_LF[c] = lf0 + lf2 + lf6 + lf8;
+          diag_diff_LF[c] = lf0 - lf2 - lf6 + lf8;
+          vert_sum_LF[c] = lf1 + lf7;
+          horiz_sum_LF[c] = lf3 + lf5;
+          center_LF[c] = LF[n4 + c];
 
-          variance[c] += sqf(neighbour_pixel_HF[0][c]) + sqf(neighbour_pixel_HF[1][c]) + sqf(neighbour_pixel_HF[2][c]) + \
-                         sqf(neighbour_pixel_HF[3][c]) + sqf(neighbour_pixel_HF[4][c]) + sqf(neighbour_pixel_HF[5][c]) + \
-                         sqf(neighbour_pixel_HF[6][c]) + sqf(neighbour_pixel_HF[7][c]) + sqf(neighbour_pixel_HF[8][c]);
+          const float hf0 = HF[n0 + c], hf2 = HF[n2 + c], hf6 = HF[n6 + c], hf8 = HF[n8 + c];
+          const float hf1 = HF[n1 + c], hf7 = HF[n7 + c];
+          const float hf3 = HF[n3 + c], hf5 = HF[n5 + c];
+          const float hf4 = HF[n4 + c];
+
+          diag_sum_HF[c] = hf0 + hf2 + hf6 + hf8;
+          diag_diff_HF[c] = hf0 - hf2 - hf6 + hf8;
+          vert_sum_HF[c] = hf1 + hf7;
+          horiz_sum_HF[c] = hf3 + hf5;
+          center_HF[c] = hf4;
+
+          variance[c] = sqf(hf0) + sqf(hf1) + sqf(hf2) + sqf(hf3) + sqf(hf4) + sqf(hf5) + sqf(hf6) + sqf(hf7) + sqf(hf8);
         }
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
