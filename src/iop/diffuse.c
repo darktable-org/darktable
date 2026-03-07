@@ -1010,6 +1010,11 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
   const float regularization_factor = regularization * current_radius_square / 9.f;
+  // Precompute half_anisotropy: the 0.5f central-difference scaling factor is removed
+  // from gradient/laplacian computation (it cancels in angle ratios) and absorbed here
+  // for the magnitude term, saving 4 multiplies per pixel per channel.
+  const dt_aligned_pixel_t half_anisotropy
+      = { anisotropy[0] * 0.5f, anisotropy[1] * 0.5f, anisotropy[2] * 0.5f, anisotropy[3] * 0.5f };
   DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
@@ -1058,23 +1063,23 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
 
         for_each_channel(c)
         {
-          const float grad_x = (LF[n7 + c] - LF[n1 + c]) * 0.5f;
-          const float grad_y = (LF[n5 + c] - LF[n3 + c]) * 0.5f;
+          const float diff_gx = LF[n7 + c] - LF[n1 + c];
+          const float diff_gy = LF[n5 + c] - LF[n3 + c];
 
-          const float gx2 = sqf(grad_x);
-          const float gy2 = sqf(grad_y);
+          const float gx2 = sqf(diff_gx);
+          const float gy2 = sqf(diff_gy);
           const float m2_grad = gx2 + gy2;
 
           const float magnitude_grad = sqrtf(m2_grad);
-          c2[0][c] = -magnitude_grad * anisotropy[0];
-          c2[2][c] = -magnitude_grad * anisotropy[2];
+          c2[0][c] = -magnitude_grad * half_anisotropy[0];
+          c2[2][c] = -magnitude_grad * half_anisotropy[2];
 
           if(m2_grad > 0.f)
           {
             const float inv_m2_grad = 1.0f / m2_grad;
             cos_theta_grad_sq[c] = gx2 * inv_m2_grad;
             sin_theta_grad_sq[c] = gy2 * inv_m2_grad;
-            cos_theta_sin_theta_grad[c] = grad_x * grad_y * inv_m2_grad;
+            cos_theta_sin_theta_grad[c] = diff_gx * diff_gy * inv_m2_grad;
           }
           else
           {
@@ -1083,23 +1088,23 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             cos_theta_sin_theta_grad[c] = 0.f;
           }
 
-          const float lapl_x = (HF[n7 + c] - HF[n1 + c]) * 0.5f;
-          const float lapl_y = (HF[n5 + c] - HF[n3 + c]) * 0.5f;
+          const float diff_lx = HF[n7 + c] - HF[n1 + c];
+          const float diff_ly = HF[n5 + c] - HF[n3 + c];
 
-          const float lx2 = sqf(lapl_x);
-          const float ly2 = sqf(lapl_y);
+          const float lx2 = sqf(diff_lx);
+          const float ly2 = sqf(diff_ly);
           const float m2_lapl = lx2 + ly2;
 
           const float magnitude_lapl = sqrtf(m2_lapl);
-          c2[1][c] = -magnitude_lapl * anisotropy[1];
-          c2[3][c] = -magnitude_lapl * anisotropy[3];
+          c2[1][c] = -magnitude_lapl * half_anisotropy[1];
+          c2[3][c] = -magnitude_lapl * half_anisotropy[3];
 
           if(m2_lapl > 0.f)
           {
             const float inv_m2_lapl = 1.0f / m2_lapl;
             cos_theta_lapl_sq[c] = lx2 * inv_m2_lapl;
             sin_theta_lapl_sq[c] = ly2 * inv_m2_lapl;
-            cos_theta_sin_theta_lapl[c] = lapl_x * lapl_y * inv_m2_lapl;
+            cos_theta_sin_theta_lapl[c] = diff_lx * diff_ly * inv_m2_lapl;
           }
           else
           {
