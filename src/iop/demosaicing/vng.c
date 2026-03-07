@@ -25,7 +25,8 @@ static void lin_interpolate(float *out,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6])
 {
-  const int colors = (filters == 9) ? 3 : 4;
+  const gboolean is_xtrans = filters == 9;
+  const int colors = is_xtrans ? 3 : 4;
   // border interpolate
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -178,7 +179,6 @@ static void vng_interpolate(float *out,
   float(*brow[4])[4];
   const gboolean is_xtrans = (filters == 9);
   const gboolean is_4bayer = FILTERS_ARE_4BAYER(filters);
-  const gboolean is_bayer = !(is_xtrans || is_4bayer);
   const int prow = is_xtrans ? 6 : 8;
   const int pcol = is_xtrans ? 6 : 2;
   const int colors = is_xtrans ? 3 : 4;
@@ -196,10 +196,7 @@ static void vng_interpolate(float *out,
 
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear)
-  {
-    if(is_bayer) goto bayer_greens;
-    else return;
-  }
+    goto finish;
 
   char *buffer = dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
@@ -314,12 +311,14 @@ static void vng_interpolate(float *out,
   _copy_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), width - 4);
   dt_free_align(buffer);
 
-bayer_greens:
-  if(is_bayer)
+finish:
+  DT_OMP_FOR()
+  for(size_t i = 0; i < (size_t)width * height * 4; i+=4)
   {
-    DT_OMP_FOR()
-    for(int i = 0; i < height * width; i++)
-      out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+    out[i] = fmaxf(0.0f, out[i]);
+    out[i+1] = fmaxf(0.0f, is_xtrans ? out[i+1] : 0.5f * (out[i+1] + out[i+3]));
+    out[i+2] = fmaxf(0.0f, out[i+2]);
+    out[i+3] = 0.0f;
   }
 }
 
@@ -499,7 +498,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   if(only_vng_linear)
     goto finish;
 
-  // do full VNG interpolation; linear data is in dev_tmp
+  // do full VNG interpolation; linear data is in dev_tmp; don't touch outermost 2 pixels
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -511,7 +510,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_interpolate, sizes, local,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+        CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
 

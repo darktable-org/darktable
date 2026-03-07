@@ -125,7 +125,7 @@ static void lmmse_demosaic(float *const restrict out,
                            const dt_iop_demosaic_lmmse_t mode,
                            const float scaler)
 {
-  rcd_ppg_border(out, in, width, height, filters, BORDER_AROUND);
+  demosaic_ppg(out, in, width, height, filters, 0.0f, BORDER_AROUND);
   if(width < 2 * BORDER_AROUND || height < 2 * BORDER_AROUND)
     return;
 

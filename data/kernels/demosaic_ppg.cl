@@ -88,31 +88,41 @@ green_equilibration_lavg(read_only image2d_t in,
   const float maximum = 1.0f;
   float o = buffer[0];
 
-  if(c == 1 && (y & 1))
+  // check lines to be used as we do in cpu code
+  int oj = 2, oi = 2;
+  if(FC(oj, oi, filters) != GREEN) oj++;
+  if(FC(oj, oi, filters) != GREEN) oi++;
+  if(FC(oj, oi, filters) != GREEN) oj--;
+
+  // don't touch border
+  if(x >= oi && y >= oj && x < width -2 && y < height-2)
   {
-    const float o1_1 = buffer[-1 * stride - 1];
-    const float o1_2 = buffer[-1 * stride + 1];
-    const float o1_3 = buffer[ 1 * stride - 1];
-    const float o1_4 = buffer[ 1 * stride + 1];
-    const float o2_1 = buffer[-2 * stride + 0];
-    const float o2_2 = buffer[ 2 * stride + 0];
-    const float o2_3 = buffer[-2];
-    const float o2_4 = buffer[ 2];
-
-    const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
-    const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-
-    if ((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+    // only correct on even lines
+    if(c == GREEN && !(y & 1))
     {
-      const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
-      const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
+      const float o1_1 = buffer[-1 * stride - 1];
+      const float o1_2 = buffer[-1 * stride + 1];
+      const float o1_3 = buffer[ 1 * stride - 1];
+      const float o1_4 = buffer[ 1 * stride + 1];
+      const float o2_1 = buffer[-2 * stride + 0];
+      const float o2_2 = buffer[ 2 * stride + 0];
+      const float o2_3 = buffer[-2];
+      const float o2_4 = buffer[ 2];
 
-      if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
-        o *= m1/m2;
+      const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
+      const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
+
+      if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+      {
+        const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
+        const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
+
+        if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
+          o *= m1/m2;
+      }
     }
   }
-
-  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
+  write_imagef (out, (int2)(x, y), o);
 }
 
 
@@ -136,8 +146,8 @@ green_equilibration_favg_reduce_first(read_only image2d_t in,
   const int c = FC(y, x, filters);
 
   const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
-  const int isgreen1 = (c == 1 && !(y & 1));
-  const int isgreen2 = (c == 1 && (y & 1));
+  const int isgreen1 = c == GREEN && !(y & 1);
+  const int isgreen2 = c == GREEN && (y & 1);
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
@@ -219,11 +229,11 @@ green_equilibration_favg_apply(read_only image2d_t in,
 
   const int c = FC(y, x, filters);
 
-  const int isgreen1 = (c == 1 && !(y & 1));
+  const int isgreen1 = (c == GREEN && !(y & 1)); // on even lines
 
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 
-  write_imagef (out, (int2)(x, y), fmax(pixel, 0.0f));
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 #define SWAP(a, b)                \
@@ -325,7 +335,11 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
 // 3x3 median filter
 // uses a sorting network to sort entirely in registers with no branches
 kernel void
-color_smoothing(read_only image2d_t in, write_only image2d_t out, const int width, const int height, local float4 *buffer)
+color_smoothing(read_only image2d_t in,
+                write_only image2d_t out,
+                const int width,
+                const int height,
+                local float4 *buffer)
 {
   const int lxid = get_local_id(0);
   const int lyid = get_local_id(1);
@@ -356,13 +370,18 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
-
   if(x >= width || y >= height) return;
 
   // re-position buffer
   buffer += (lyid + 1) * buffwd + lxid + 1;
 
   float4 o = buffer[0];
+  // don't touch outermost 1 pixels, just copy
+  if(x < 1 || x >= width-1 || y < 1 || y >= height-1)
+  {
+    write_imagef(out, (int2) (x, y), o);
+    return;
+  }
 
   // 3x3 median for R
   float s0 = buffer[-buffwd - 1].x - buffer[-buffwd - 1].y;
@@ -395,7 +414,7 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   cas(s6, s4);
   cas(s4, s2);
 
-  o.x = fmax(s4 + o.y, 0.0f);
+  o.x = s4 + o.y;
 
 
   // 3x3 median for B
@@ -429,9 +448,9 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
   cas(s6, s4);
   cas(s4, s2);
 
-  o.z = fmax(s4 + o.y, 0.0f);
+  o.z = s4 + o.y;
 
-  write_imagef(out, (int2) (x, y), fmax(o, 0.0f));
+  write_imagef(out, (int2) (x, y), o);
 }
 #undef cas
 
@@ -544,11 +563,16 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
  * in (float) or (float4).x -> out (float4)
  */
 kernel void
-ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const unsigned int filters, local float *buffer)
+ppg_demosaic_green (read_only image2d_t in,
+                    write_only image2d_t out,
+                    const int width,
+                    const int height,
+                    const unsigned int filters,
+                    local float *buffer,
+                    const int border)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -585,23 +609,22 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  // make sure we dont write the outermost 3 pixels
-  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
+  if(col >= width - 3 || col < 3 || row >= height - 3 || row < 3) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
+
   // process all non-green pixels
-  const int row = y;
-  const int col = x;
   const int c = FC(row, col, filters);
-  float4 color; // output color
+  float4 color = 0.0f; // output color
 
   const float pc = buffer[0];
 
-  if     (c == 0) color.x = pc; // red
-  else if(c == 1) color.y = pc; // green1
-  else if(c == 2) color.z = pc; // blue
+  if     (c == RED) color.x = pc;
+  else if(c == GREEN) color.y = pc;
+  else if(c == BLUE) color.z = pc;
   else            color.y = pc; // green2
 
   // fill green layer for red and blue pixels:
-  if(c == 0 || c == 2)
+  if(c == RED || c == BLUE)
   {
     // look up horizontal and vertical neighbours, sharpened weight:
     const float pym  = buffer[-1 * stride];
@@ -640,7 +663,7 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
       color.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), color);
 }
 
 
@@ -649,12 +672,17 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
  * in (float4) -> out (float4)
  */
 kernel void
-ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const unsigned int filters, local float4 *buffer)
+ppg_demosaic_redblue (read_only image2d_t in,
+                      write_only image2d_t out,
+                      const int width,
+                      const int height,
+                      const unsigned int filters,
+                      local float4 *buffer,
+                      const int border)
 {
   // image in contains full green and sparse r b
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -691,69 +719,66 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width || y >= height) return;
-  const int row = y;
-  const int col = x;
+  if(col >= width || row >= height) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
+
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
-  if(x == 0 || y == 0 || x == (width-1) || y == (height-1))
+  if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
   {
-    write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
-    return;
-  }
-
-  if(c == 1 || c == 3)
-  { // calculate red and blue for green pixels:
-    // need 4-nbhood:
-    const float4 nt = buffer[-stride];
-    const float4 nb = buffer[ stride];
-    const float4 nl = buffer[-1];
-    const float4 nr = buffer[ 1];
-    if(FC(row, col+1, filters) == 0) // red nb in same row
-    {
-      color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
-      color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
+    if(c == GREEN || c == 3)
+    { // calculate red and blue for green pixels:
+      // need 4-nbhood:
+      const float4 nt = buffer[-stride];
+      const float4 nb = buffer[ stride];
+      const float4 nl = buffer[-1];
+      const float4 nr = buffer[ 1];
+      if(FC(row, col+1, filters) == RED) // red nb in same row
+      {
+        color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
+        color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
+      }
+      else
+      { // blue nb
+        color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*0.5f;
+        color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*0.5f;
+      }
     }
     else
-    { // blue nb
-      color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*0.5f;
-      color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*0.5f;
-    }
-  }
-  else
-  {
-    // get 4-star-nbhood:
-    const float4 ntl = buffer[-stride - 1];
-    const float4 ntr = buffer[-stride + 1];
-    const float4 nbl = buffer[ stride - 1];
-    const float4 nbr = buffer[ stride + 1];
-
-    if(c == 0)
-    { // red pixel, fill blue:
-      const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
-      const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
-      const float diff2  = fabs(ntr.z - nbl.z) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
-      const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
-      if     (diff1 > diff2) color.z = guess2 * 0.5f;
-      else if(diff1 < diff2) color.z = guess1 * 0.5f;
-      else color.z = (guess1 + guess2)*0.25f;
-    }
-    else // c == 2, blue pixel, fill red:
     {
-      const float diff1  = fabs(ntl.x - nbr.x) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
-      const float guess1 = ntl.x + nbr.x + 2.0f*color.y - ntl.y - nbr.y;
-      const float diff2  = fabs(ntr.x - nbl.x) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
-      const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
-      if     (diff1 > diff2) color.x = guess2 * 0.5f;
-      else if(diff1 < diff2) color.x = guess1 * 0.5f;
-      else color.x = (guess1 + guess2)*0.25f;
+      // get 4-star-nbhood:
+      const float4 ntl = buffer[-stride - 1];
+      const float4 ntr = buffer[-stride + 1];
+      const float4 nbl = buffer[ stride - 1];
+      const float4 nbr = buffer[ stride + 1];
+
+      if(c == RED)
+      { // red pixel, fill blue:
+        const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
+        const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
+        const float diff2  = fabs(ntr.z - nbl.z) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
+        const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
+        if     (diff1 > diff2) color.z = guess2 * 0.5f;
+        else if(diff1 < diff2) color.z = guess1 * 0.5f;
+        else color.z = (guess1 + guess2)*0.25f;
+      }
+      else // c == 2, blue pixel, fill red:
+      {
+        const float diff1  = fabs(ntl.x - nbr.x) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
+        const float guess1 = ntl.x + nbr.x + 2.0f*color.y - ntl.y - nbr.y;
+        const float diff2  = fabs(ntr.x - nbl.x) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
+        const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
+        if     (diff1 > diff2) color.x = guess2 * 0.5f;
+        else if(diff1 < diff2) color.x = guess1 * 0.5f;
+        else color.x = (guess1 + guess2)*0.25f;
+      }
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), color);
 }
 
 /**
- * Demosaic image border
+ * Demosaic image border for the three outermost photosites
  */
 kernel void
 border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters)
@@ -762,27 +787,23 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-
-  const int avgwindow = 1;
-  const int border = 3;
-
-  if(x >= border && x < width-border && y >= border && y < height-border) return;
+  if(x >= 3 && x < width-3 && y >= 3 && y < height-3) return;
 
   float4 o;
   float sum[4] = { 0.0f };
   int count[4] = { 0 };
 
-  for (int j=y-avgwindow; j<=y+avgwindow; j++) for (int i=x-avgwindow; i<=x+avgwindow; i++)
+  for(int j=y-1; j<=y+1; j++) for (int i=x-1; i<=x+1; i++)
   {
-    if (j>=0 && i>=0 && j<height && i<width)
+    if(j>=0 && i>=0 && j<height && i<width)
     {
       const int f = FC(j,i,filters);
-      sum[f] += fmax(0.0f, read_imagef(in, sampleri, (int2)(i, j)).x);
+      sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
       count[f]++;
     }
   }
 
-  const float i = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
   o.x = count[0] > 0 ? sum[0]/count[0] : i;
   o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
   o.z = count[2] > 0 ? sum[2]/count[2] : i;
