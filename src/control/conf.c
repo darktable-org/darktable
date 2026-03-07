@@ -500,7 +500,10 @@ gchar *dt_conf_read_values(const char *filename,
   }
   else if(darktable.conf->x_confgen)
   {
-    // we initialize the conf table with default values
+    // We initialize the conf table with default values.
+    // For common keys, prefer the value already loaded from darktablerc-common
+    // (if present) over the confgen default, so that a freshly-created
+    // darktablerc inherits shared settings rather than resetting them.
     GHashTableIter iter;
     gpointer key, value;
 
@@ -508,6 +511,8 @@ gchar *dt_conf_read_values(const char *filename,
     while(g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *name = (const char *)key;
+      if(dt_confgen_is_common(name) && g_hash_table_lookup(darktable.conf->table, name))
+        continue;
       const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
       gchar *v = callback(name, entry->def);
       if(v)
@@ -932,6 +937,76 @@ void dt_conf_cleanup(dt_conf_t *cf)
   g_hash_table_unref(cf->override_entries);
   g_hash_table_unref(cf->x_confgen);
   dt_pthread_mutex_destroy(&darktable.conf->mutex);
+}
+
+// ── welcome-screen metadata ───────────────────────────────────────────────────
+
+int dt_confgen_get_welcome_pagenum(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+  return item ? item->welcome_pagenum : 0;
+}
+
+gboolean dt_confgen_get_welcome_dirchooser(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+  return item ? item->welcome_dirchooser : FALSE;
+}
+
+static gint _welcome_key_compare(gconstpointer a, gconstpointer b)
+{
+  const dt_confgen_value_t *ea =
+    g_hash_table_lookup(darktable.conf->x_confgen, (const char *)a);
+  const dt_confgen_value_t *eb =
+    g_hash_table_lookup(darktable.conf->x_confgen, (const char *)b);
+  if(!ea || !eb) return 0;
+  if(ea->welcome_pagenum != eb->welcome_pagenum)
+    return ea->welcome_pagenum - eb->welcome_pagenum;
+  return ea->welcome_questionnum - eb->welcome_questionnum;
+}
+
+GList *dt_confgen_get_welcome_keys(void)
+{
+  GList *result = NULL;
+  GHashTableIter iter;
+  gpointer key, value;
+  g_hash_table_iter_init(&iter, darktable.conf->x_confgen);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    const dt_confgen_value_t *entry = value;
+    if(entry->welcome_pagenum > 0)
+      result = g_list_prepend(result, g_strdup((const char *)key));
+  }
+  result = g_list_sort(result, _welcome_key_compare);
+
+  // validate page and question numbering: pages must start at 1 with no gaps;
+  // questions on each page must start at 1 with no gaps.
+  int expected_page = 1;
+  int expected_question = 1;
+  int cur_page = 0;
+  for(GList *l = result; l; l = l->next)
+  {
+    const char *k = l->data;
+    const dt_confgen_value_t *e = g_hash_table_lookup(darktable.conf->x_confgen, k);
+    if(!e) continue;
+
+    if(e->welcome_pagenum != cur_page)
+    {
+      if(e->welcome_pagenum != expected_page)
+        fprintf(stderr, "[confgen] welcome screen: expected page %d but got page %d (key: %s)\n",
+                expected_page, e->welcome_pagenum, k);
+      cur_page = e->welcome_pagenum;
+      expected_page = cur_page + 1;
+      expected_question = 1;
+    }
+
+    if(e->welcome_questionnum != expected_question)
+      fprintf(stderr, "[confgen] welcome screen: on page %d expected question %d but got %d (key: %s)\n",
+              cur_page, expected_question, e->welcome_questionnum, k);
+    expected_question = e->welcome_questionnum + 1;
+  }
+
+  return result;
 }
 
 // clang-format off

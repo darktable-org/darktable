@@ -2520,6 +2520,40 @@ Details :
     margin-bottom: 10pt;
 }
 
+/* welcome screen */
+#welcome-page
+{
+    padding: 16px;
+}
+
+#welcome-page > box
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#welcome-page > box > box
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#welcome-paragraph
+{
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#welcome-footer
+{
+    padding: 8px;
+}
+
+#welcome-prev,
+#welcome-next {
+  margin-right: .2em;
+}
+
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off
 {

@@ -108,6 +108,9 @@ changes (where available).
   with other applications. If SSD is not implemented (Gnome/Mutter
   under Wayland), use client-side decorations (CSD).
 
+- Added a welcome screen to help users understand and set the most
+  relevant configuration options on the first run.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.

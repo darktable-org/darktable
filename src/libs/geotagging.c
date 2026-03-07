@@ -28,6 +28,7 @@
 #include "dtgtk/button.h"
 #include "control/jobs.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include "libs/lib_api.h"
 #ifdef HAVE_MAP
 #include "views/view.h"
@@ -1812,7 +1813,7 @@ void gui_init(dt_lib_module_t *self)
 
   // time zone entry
   GtkWidget *label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
-  gtk_widget_set_tooltip_text(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
+  gtk_widget_set_tooltip_markup(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
 
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
