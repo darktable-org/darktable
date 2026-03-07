@@ -946,6 +946,47 @@ static inline void compute_kernel(const dt_aligned_pixel_t c2,
   }
 }
 
+static inline void compute_convolution(const dt_aligned_pixel_t c2,
+                                       const dt_aligned_pixel_t cos_theta_sin_theta,
+                                       const dt_aligned_pixel_t cos_theta2,
+                                       const dt_aligned_pixel_t sin_theta2,
+                                       const dt_isotropy_t isotropy_type,
+                                       const dt_aligned_pixel_t diag_sum,
+                                       const dt_aligned_pixel_t diag_diff,
+                                       const dt_aligned_pixel_t vert_sum,
+                                       const dt_aligned_pixel_t horiz_sum,
+                                       const dt_aligned_pixel_t center,
+                                       dt_aligned_pixel_t out)
+{
+  for_each_channel(c)
+  {
+    if (isotropy_type == DT_ISOTROPY_ISOTROPE)
+    {
+      out[c] = 0.25f * diag_sum[c] + 0.5f * vert_sum[c] + 0.5f * horiz_sum[c] - 3.f * center[c];
+    }
+    else
+    {
+      float a11, a22, a12;
+      if (isotropy_type == DT_ISOTROPY_ISOPHOTE)
+      {
+        a11 = cos_theta2[c] + c2[c] * sin_theta2[c];
+        a22 = c2[c] * cos_theta2[c] + sin_theta2[c];
+        a12 = (c2[c] - 1.0f) * cos_theta_sin_theta[c];
+      }
+      else // DT_ISOTROPY_GRADIENT
+      {
+        a11 = c2[c] * cos_theta2[c] + sin_theta2[c];
+        a22 = cos_theta2[c] + c2[c] * sin_theta2[c];
+        a12 = (1.0f - c2[c]) * cos_theta_sin_theta[c];
+      }
+
+      const float b11 = a12 / 2.0f;
+      const float b22 = -2.0f * (a11 + a22);
+      out[c] = b11 * diag_diff[c] + a22 * vert_sum[c] + a11 * horiz_sum[c] + b22 * center[c];
+    }
+  }
+}
+
 static inline void heat_PDE_diffusion(const float *const restrict high_freq,
                                       const float *const restrict low_freq,
                                       const uint8_t *const restrict mask,
@@ -1079,34 +1120,47 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           dt_vector_exp(c2[k], c2[k]);
         }
 
-        dt_aligned_pixel_t kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
-        compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq,
-                       sin_theta_grad_sq, isotropy_type[0],
-                       kern_first);
-        compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
-                       sin_theta_lapl_sq, isotropy_type[1],
-                       kern_second);
-        compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq,
-                       sin_theta_grad_sq, isotropy_type[2],
-                       kern_third);
-        compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
-                       sin_theta_lapl_sq, isotropy_type[3],
-                       kern_fourth);
+        dt_aligned_pixel_t diag_sum_LF = { 0.f }, diag_diff_LF = { 0.f };
+        dt_aligned_pixel_t vert_sum_LF = { 0.f }, horiz_sum_LF = { 0.f }, center_LF = { 0.f };
+        dt_aligned_pixel_t diag_sum_HF = { 0.f }, diag_diff_HF = { 0.f };
+        dt_aligned_pixel_t vert_sum_HF = { 0.f }, horiz_sum_HF = { 0.f }, center_HF = { 0.f };
+        dt_aligned_pixel_t variance = { 0.f };
+
+        for_each_channel(c)
+        {
+          diag_sum_LF[c] = neighbour_pixel_LF[0][c] + neighbour_pixel_LF[2][c] + neighbour_pixel_LF[6][c] + neighbour_pixel_LF[8][c];
+          diag_diff_LF[c] = neighbour_pixel_LF[0][c] - neighbour_pixel_LF[2][c] - neighbour_pixel_LF[6][c] + neighbour_pixel_LF[8][c];
+          vert_sum_LF[c] = neighbour_pixel_LF[1][c] + neighbour_pixel_LF[7][c];
+          horiz_sum_LF[c] = neighbour_pixel_LF[3][c] + neighbour_pixel_LF[5][c];
+          center_LF[c] = neighbour_pixel_LF[4][c];
+
+          diag_sum_HF[c] = neighbour_pixel_HF[0][c] + neighbour_pixel_HF[2][c] + neighbour_pixel_HF[6][c] + neighbour_pixel_HF[8][c];
+          diag_diff_HF[c] = neighbour_pixel_HF[0][c] - neighbour_pixel_HF[2][c] - neighbour_pixel_HF[6][c] + neighbour_pixel_HF[8][c];
+          vert_sum_HF[c] = neighbour_pixel_HF[1][c] + neighbour_pixel_HF[7][c];
+          horiz_sum_HF[c] = neighbour_pixel_HF[3][c] + neighbour_pixel_HF[5][c];
+          center_HF[c] = neighbour_pixel_HF[4][c];
+
+          for (size_t k = 0; k < 9; ++k)
+            variance[c] += sqf(neighbour_pixel_HF[k][c]);
+        }
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
-        dt_aligned_pixel_t variance = { 0.f };
-        // convolve filters and compute the variance and the regularization term
-        for(size_t k = 0; k < 9; k++)
-        {
-          for_each_channel(c,aligned(derivatives,neighbour_pixel_LF,kern_first,kern_second))
-          {
-            derivatives[0][c] += kern_first[k][c] * neighbour_pixel_LF[k][c];
-            derivatives[1][c] += kern_second[k][c] * neighbour_pixel_LF[k][c];
-            derivatives[2][c] += kern_third[k][c] * neighbour_pixel_HF[k][c];
-            derivatives[3][c] += kern_fourth[k][c] * neighbour_pixel_HF[k][c];
-            variance[c] += sqf(neighbour_pixel_HF[k][c]);
-          }
-        }
+        compute_convolution(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq,
+                            sin_theta_grad_sq, isotropy_type[0],
+                            diag_sum_LF, diag_diff_LF, vert_sum_LF, horiz_sum_LF, center_LF,
+                            derivatives[0]);
+        compute_convolution(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
+                            sin_theta_lapl_sq, isotropy_type[1],
+                            diag_sum_LF, diag_diff_LF, vert_sum_LF, horiz_sum_LF, center_LF,
+                            derivatives[1]);
+        compute_convolution(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq,
+                            sin_theta_grad_sq, isotropy_type[2],
+                            diag_sum_HF, diag_diff_HF, vert_sum_HF, horiz_sum_HF, center_HF,
+                            derivatives[2]);
+        compute_convolution(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
+                            sin_theta_lapl_sq, isotropy_type[3],
+                            diag_sum_HF, diag_diff_HF, vert_sum_HF, horiz_sum_HF, center_HF,
+                            derivatives[3]);
         // Regularize the variance taking into account the blurring scale.
         // This allows to keep the scene-referred variance roughly constant
         // regardless of the wavelet scale where we compute it.
