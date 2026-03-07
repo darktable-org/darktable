@@ -735,15 +735,15 @@ static dt_welcome_screen_t *_build_welcome_screen(void)
   int page_idx = dt_welcome_screen_add_page(ws);
 
   dt_welcome_screen_page_add_paragraph
-    (ws, page_idx, _("Let's set up a few options to get you started."), TRUE);
+    (ws, page_idx, _("let's set up a few options to get you started."), TRUE);
   dt_welcome_screen_page_add_paragraph
     (ws, page_idx,
-     _("If you are unsure, don't worry! Just go ahead with the default, "
+     _("if you are unsure, don't worry! just go ahead with the default, "
        "you can always change all values later in the <b>preferences</b>."),
      TRUE);
   dt_welcome_screen_page_add_paragraph
     (ws, page_idx,
-     _("You can close this window at any time, in which case the defaults will be applied."),
+     _("you can close this window at any time, in which case the defaults will be applied."),
      TRUE);
 
   // ── Dynamic conf pages (driven from darktableconfig.xml.in) ──────────────
