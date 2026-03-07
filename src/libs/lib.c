@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,14 +25,14 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/splash.h"
+#include <glib-2.0/glib.h>
+#include <string.h>
 #ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
 #endif
 #include <stdbool.h>
 #include <stdlib.h>
@@ -108,8 +108,38 @@ gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo)
   return name;
 }
 
-static void edit_preset(const char *name_in,
-                        dt_lib_module_info_t *minfo)
+// get dt_lib_module_info_t for a module. Must be freed by _free_module_info()
+static dt_lib_module_info_t *_get_module_info_for_module(dt_lib_module_t *module)
+{
+  dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
+
+  mi->plugin_name = g_strdup(module->plugin_name);
+  mi->version = module->version();
+  mi->module = module;
+  mi->params = module->get_params ? module->get_params(module, &mi->params_size) : NULL;
+  if(!mi->params)
+  {
+    // this is a valid case, for example in location.c when nothing got selected
+    // fprintf(stderr, "something went wrong: &params=%p, size=%i\n",
+    //         mi->params, mi->params_size);
+    mi->params_size = 0;
+  }
+  return mi;
+}
+
+static void _set_module_preset_label(dt_lib_module_t *module,
+                                     const gchar *preset_name)
+{
+  if(!module->expander || !module->has_preset_label(module)) return;
+
+  gchar *preset_label_text = (*preset_name == '\0')? g_strdup("")
+                                                   : g_strdup_printf("• %s", preset_name);
+  gtk_label_set_text(GTK_LABEL(module->preset_label), preset_label_text);
+  g_free(preset_label_text);
+}
+
+static void _edit_preset(const char *name_in,
+                         dt_lib_module_info_t *minfo)
 {
   // get the original name of the preset
   gchar *name = NULL;
@@ -148,8 +178,8 @@ static void edit_preset(const char *name_in,
     (name, rowid, NULL, NULL, TRUE, TRUE, FALSE, GTK_WINDOW(window));
 }
 
-static void menuitem_update_preset(GtkMenuItem *menuitem,
-                                   dt_lib_module_info_t *minfo)
+static void _menuitem_update_preset(GtkMenuItem *menuitem,
+                                    dt_lib_module_info_t *minfo)
 {
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
@@ -181,8 +211,8 @@ static void menuitem_update_preset(GtkMenuItem *menuitem,
   }
 }
 
-static void menuitem_new_preset(GtkMenuItem *menuitem,
-                                dt_lib_module_info_t *minfo)
+static void _menuitem_new_preset(GtkMenuItem *menuitem,
+                                 dt_lib_module_info_t *minfo)
 {
   dt_lib_presets_remove(_("new preset"), minfo->plugin_name, minfo->version);
 
@@ -212,23 +242,23 @@ static void menuitem_new_preset(GtkMenuItem *menuitem,
   dt_action_define_preset(&minfo->module->actions, _("new preset"));
 
   // then show edit dialog
-  edit_preset(_("new preset"), minfo);
+  _edit_preset(_("new preset"), minfo);
 }
 
-static void menuitem_edit_preset(GtkMenuItem *menuitem,
-                                 dt_lib_module_info_t *minfo)
+static void _menuitem_edit_preset(GtkMenuItem *menuitem,
+                                  dt_lib_module_info_t *minfo)
 {
-  edit_preset(NULL, minfo);
+  _edit_preset(NULL, minfo);
 }
 
-static void menuitem_manage_presets(GtkMenuItem *menuitem,
-                                    dt_lib_module_info_t *minfo)
+static void _menuitem_manage_presets(GtkMenuItem *menuitem,
+                                     dt_lib_module_info_t *minfo)
 {
   if(minfo->module->manage_presets) minfo->module->manage_presets(minfo->module);
 }
 
-static void menuitem_delete_preset(GtkMenuItem *menuitem,
-                                   dt_lib_module_info_t *minfo)
+static void _menuitem_delete_preset(GtkMenuItem *menuitem,
+                                    dt_lib_module_info_t *minfo)
 {
   gchar *name = dt_lib_get_active_preset_name(minfo);
   if(name == NULL) return;
@@ -241,6 +271,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem,
     dt_action_rename_preset(&minfo->module->actions, name, NULL);
 
     dt_lib_presets_remove(name, minfo->plugin_name, minfo->version);
+    _set_module_preset_label(minfo->module, "");
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
                             g_strdup(minfo->plugin_name));
@@ -360,6 +391,8 @@ gboolean dt_lib_presets_apply(const gchar *preset,
           dt_conf_set_string(tx, preset);
           g_free(tx);
           res = module->set_params(module, blob, length);
+          if(!res)
+            _set_module_preset_label(module, preset);
           break;
         }
       }
@@ -422,8 +455,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
   return TRUE;
 }
 
-static void free_module_info(GtkWidget *widget,
-                             gpointer user_data)
+static void _free_module_info(GtkWidget *widget,
+                              gpointer user_data)
 {
   dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
   g_free(minfo->plugin_name);
@@ -431,15 +464,15 @@ static void free_module_info(GtkWidget *widget,
   free(minfo);
 }
 
-static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
-                                           GtkWidget *w)
+static void _dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
+                                            GtkWidget *w)
 {
   GtkMenu *menu = GTK_MENU(gtk_menu_new());
 
   const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
 
-  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
+  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(_free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0;
@@ -539,7 +572,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
   if(minfo->module->manage_presets)
   {
     mi = gtk_menu_item_new_with_label(_("manage presets..."));
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_manage_presets), minfo);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_manage_presets), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
@@ -548,11 +581,11 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     if(!selected_writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), minfo);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_edit_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), minfo);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_delete_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       cnt++;
     }
@@ -566,7 +599,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
       gtk_widget_set_tooltip_text(mi, _("nothing to save"));
     }
     else
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_new_preset), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     if(darktable.gui->last_preset && found)
@@ -582,7 +615,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name",
                              g_strdup(darktable.gui->last_preset), g_free);
       g_signal_connect(G_OBJECT(mi), "activate",
-                       G_CALLBACK(menuitem_update_preset), minfo);
+                       G_CALLBACK(_menuitem_update_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
     }
@@ -634,6 +667,12 @@ uint32_t dt_lib_get_container(dt_lib_module_t *module)
   return container;
 }
 
+/* default has_preset_label  implementation */
+static gboolean default_has_preset_label(dt_lib_module_t *self)
+{
+  return FALSE;
+}
+
 /* default expandable implementation */
 static gboolean default_expandable(dt_lib_module_t *self)
 {
@@ -644,6 +683,11 @@ static gboolean default_expandable(dt_lib_module_t *self)
 static gboolean default_preset_autoapply(dt_lib_module_t *self)
 {
   return FALSE;
+}
+
+/* default gui_update implementation */
+static void default_gui_update(dt_lib_module_t *self)
+{
 }
 
 static int dt_lib_load_module(void *m,
@@ -678,6 +722,7 @@ static int dt_lib_load_module(void *m,
   module->widget = NULL;
   module->expander = NULL;
   module->arrow = NULL;
+  module->preset_label = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
 
@@ -864,10 +909,19 @@ void dt_lib_gui_queue_update(dt_lib_module_t *module)
 
 void dt_lib_gui_update(dt_lib_module_t *module)
 {
-  if(module && module->gui_update && !module->gui_uptodate)
+  if(module && !module->gui_uptodate)
   {
     module->gui_update(module);
     module->gui_uptodate = TRUE;
+  }
+
+  if(module->preset_label)
+  {
+    dt_lib_module_info_t *mi = _get_module_info_for_module(module);
+    gchar *active_preset_name = dt_lib_get_active_preset_name(mi);
+    _free_module_info(NULL, mi);
+    _set_module_preset_label(module, active_preset_name? active_preset_name : "");
+    g_free(active_preset_name);
   }
 }
 
@@ -893,9 +947,8 @@ static void dt_lib_init_module(void *m)
     if(module->widget)
     {
       g_object_ref_sink(module->widget);
-      if(module->gui_update)
-        g_signal_connect(G_OBJECT(module->widget), "draw",
-                         G_CALLBACK(_lib_draw_callback), module);
+      g_signal_connect(G_OBJECT(module->widget), "draw",
+                       G_CALLBACK(_lib_draw_callback), module);
     }
   }
 }
@@ -912,6 +965,7 @@ static gboolean _lib_gui_reset_callback(GtkButton *button,
 {
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
   module->gui_reset(module);
+  gtk_label_set_text(GTK_LABEL(module->preset_label), "");
   return TRUE;
 }
 
@@ -919,20 +973,8 @@ static gboolean _presets_popup_callback(GtkButton *button,
                                         GdkEventButton *e,
                                         dt_lib_module_t *module)
 {
-  dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
-
-  mi->plugin_name = g_strdup(module->plugin_name);
-  mi->version = module->version();
-  mi->module = module;
-  mi->params = module->get_params ? module->get_params(module, &mi->params_size) : NULL;
-  if(!mi->params)
-  {
-    // this is a valid case, for example in location.c when nothing got selected
-    // fprintf(stderr, "something went wrong: &params=%p, size=%i\n",
-    //         mi->params, mi->params_size);
-    mi->params_size = 0;
-  }
-  dt_lib_presets_popup_menu_show(mi, GTK_WIDGET(button));
+  dt_lib_module_info_t *mi = _get_module_info_for_module(module);
+  _dt_lib_presets_popup_menu_show(mi, GTK_WIDGET(button));
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
@@ -1295,6 +1337,14 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
+  /* add preset label */
+  module->preset_label = gtk_label_new(NULL);
+  gtk_widget_set_name(module->preset_label, "lib-module-name");
+  gtk_label_set_ellipsize(GTK_LABEL(module->preset_label), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_valign(module->preset_label, GTK_ALIGN_BASELINE);
+  g_object_set(G_OBJECT(module->preset_label), "xalign", 0.0, (gchar *)0);
+  gtk_box_pack_start(GTK_BOX(header), module->preset_label, FALSE, FALSE, 0);
+
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
@@ -1336,6 +1386,15 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;
 
+  // get active preset and set preset_label
+  dt_lib_module_info_t *mi = _get_module_info_for_module(module);
+  gchar *preset_name = dt_lib_get_active_preset_name(mi);
+  if(preset_name)
+  {
+    _set_module_preset_label(mi->module, preset_name);
+    g_free(preset_name);
+  }
+  _free_module_info(NULL, mi);
 
   return module->expander;
 }
@@ -1569,6 +1628,11 @@ dt_lib_module_t *dt_lib_get_module(const char *name)
 gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod)
 {
   return mod->preset_autoapply(mod);
+}
+
+void dt_lib_reset_preset_label(dt_lib_module_t *mod)
+{
+  gtk_label_set_text(GTK_LABEL(mod->preset_label), "");
 }
 
 static float _action_process(gpointer target,
