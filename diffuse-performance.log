@@ -1,0 +1,18 @@
+baseline
+49.775
+
+b28d7a3
+diffuse: inlined 9-element 3x3 convolution arrays into direct diagonal and cardinal scalar summations, reducing GCC memory penalties inside the evaluation loop by ~8.3%
+45.631
+
+d491c4d924
+diffuse: stripped internal array allocations for `find_gradients` normalizations, inlining arithmetic inside `heat_PDE_diffusion` for another 10.24% latency reduction
+40.958
+
+4cec72c550
+diffuse: unrolled `neighbour_pixel` loop initialization and spatial variance arrays into flat scalar gather structures to skip compiler bounds checking and iterator bloat
+40.024
+
+
+
+
