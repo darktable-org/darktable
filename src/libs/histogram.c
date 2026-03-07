@@ -302,7 +302,7 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
      && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
   {
     const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(gesture, n_press, pos,
+    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), n_press, pos, 0.0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
   }
 }
@@ -314,7 +314,7 @@ static void _drawable_button_release(GtkGestureSingle *gesture,
                                      dt_scopes_t *s)
 {
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-    dt_dev_exposure_handle_event(gesture, -n_press, x, FALSE);
+    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), -n_press, x, 0.0, FALSE);
 }
 
 static void _drawable_motion(GtkEventControllerMotion *controller,
@@ -328,7 +328,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
      && dt_scopes_func_exists(cur_mode, get_exposure_pos))
   {
     const double pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(controller, 1, pos, FALSE);
+    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(controller), 1, pos, 0.0, FALSE);
   }
   else
   {
@@ -447,18 +447,11 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
       // FIXME: should handle horizontal scrolling as well?
       // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox
       const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-      if(black)
-        event->scroll.delta_y *= -1;
-      // awkwardly, _exposure_proxy_handle_event() expects
-      // EventController, but passes scroll events on to bauhaus
-      // _widget_scroll() which expects an GdkEventScroll -- fix this
-      // when bauhaus can handle GtkEventControllerScroll
-      // FIXME: add handling of GtkEventControllerScroll to bauhaus, this code may be the thing holding that back
-      dt_dev_exposure_handle_event(&event->scroll, 0, 0, black);
+      dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(self), 0, 0, black ? -dy : dy, black);
     }
     else
     {
-      // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox
+      // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox? right now can scroll on buttons and it will change the vectorscope!
       dt_scopes_call_if_exists(s->cur_mode, eventbox_scroll,
                                event->scroll.x, event->scroll.y,
                                dx, dy, event->scroll.state);
@@ -768,13 +761,10 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_connect_motion(s->scope_draw, _drawable_motion, NULL,
                         _drawable_leave, s);
 
-  //gtk_widget_add_events(eventbox, darktable.gui->scroll_mask);
-  // FIXME: make dt_gui_connect_scroll() function
-  GtkEventController *scroll_controller =
-    gtk_event_controller_scroll_new(eventbox, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
-  g_object_weak_ref(G_OBJECT (eventbox), (GWeakNotify) g_object_unref, scroll_controller);
-  g_signal_connect(scroll_controller, "scroll", G_CALLBACK(_eventbox_scroll_callback), s);
-
+  // FIXME: scope implementation didn't setprop phase, maybe defaulted to bubble -- do we need to set this here?
+  dt_gui_connect_scroll(eventbox, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL
+                                  | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _eventbox_scroll_callback, s);
   // FIXME: add (optional) propagation phase argument to dt_gui_connect_motion()
   GtkEventController *motion_controller =
     dt_gui_connect_motion(eventbox, _eventbox_motion_notify_callback,
