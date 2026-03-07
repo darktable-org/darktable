@@ -114,6 +114,7 @@ jobs:
             git \
             gdb \
             intltool \
+            libarchive-dev \
             libatk1.0-dev \
             libavif-dev \
             libcairo2-dev \
@@ -245,6 +246,7 @@ jobs:
             iso-codes:p
             lcms2:p
             lensfun:p
+            libarchive:p
             libavif:p
             libgphoto2:p
             libheif:p
