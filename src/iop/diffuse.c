@@ -1246,11 +1246,11 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           variance[c] = variance_threshold + variance[c] * regularization_factor;
         }
         // compute the update
-        dt_aligned_pixel_t acc = { 0.f };
-        for(size_t k = 0; k < 4; k++)
+        dt_aligned_pixel_t acc;
+        for_each_channel(c, aligned(acc,derivatives,ABCD))
         {
-          for_each_channel(c, aligned(acc,derivatives,ABCD))
-            acc[c] += derivatives[k][c] * ABCD[k];
+          acc[c] = derivatives[0][c] * ABCD[0] + derivatives[1][c] * ABCD[1]
+                 + derivatives[2][c] * ABCD[2] + derivatives[3][c] * ABCD[3];
         }
         for_each_channel(c, aligned(acc,HF,LF,variance,out))
         {
