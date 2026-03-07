@@ -1150,22 +1150,93 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         }
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
-        compute_convolution(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq,
-                            sin_theta_grad_sq, isotropy_type[0],
-                            diag_sum_LF, diag_diff_LF, vert_sum_LF, horiz_sum_LF, center_LF,
-                            derivatives[0]);
-        compute_convolution(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
-                            sin_theta_lapl_sq, isotropy_type[1],
-                            diag_sum_LF, diag_diff_LF, vert_sum_LF, horiz_sum_LF, center_LF,
-                            derivatives[1]);
-        compute_convolution(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq,
-                            sin_theta_grad_sq, isotropy_type[2],
-                            diag_sum_HF, diag_diff_HF, vert_sum_HF, horiz_sum_HF, center_HF,
-                            derivatives[2]);
-        compute_convolution(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
-                            sin_theta_lapl_sq, isotropy_type[3],
-                            diag_sum_HF, diag_diff_HF, vert_sum_HF, horiz_sum_HF, center_HF,
-                            derivatives[3]);
+        // Pair convolutions sharing the same angle data (0+2 share grad, 1+3 share lapl)
+        for_each_channel(c)
+        {
+          // derivative 0: grad angles, LF sums, isotropy_type[0]
+          if(isotropy_type[0] == DT_ISOTROPY_ISOTROPE)
+            derivatives[0][c] = 0.25f * diag_sum_LF[c] + 0.5f * vert_sum_LF[c] + 0.5f * horiz_sum_LF[c] - 3.f * center_LF[c];
+          else
+          {
+            float a11, a22, b11;
+            if(isotropy_type[0] == DT_ISOTROPY_ISOPHOTE)
+            {
+              a11 = cos_theta_grad_sq[c] + c2[0][c] * sin_theta_grad_sq[c];
+              a22 = c2[0][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
+              b11 = (c2[0][c] - 1.0f) * cos_theta_sin_theta_grad[c] * 0.5f;
+            }
+            else
+            {
+              a11 = c2[0][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
+              a22 = cos_theta_grad_sq[c] + c2[0][c] * sin_theta_grad_sq[c];
+              b11 = (1.0f - c2[0][c]) * cos_theta_sin_theta_grad[c] * 0.5f;
+            }
+            derivatives[0][c] = b11 * diag_diff_LF[c] + a22 * vert_sum_LF[c] + a11 * horiz_sum_LF[c] + (-2.0f * (a11 + a22)) * center_LF[c];
+          }
+          // derivative 2: grad angles, HF sums, isotropy_type[2]
+          if(isotropy_type[2] == DT_ISOTROPY_ISOTROPE)
+            derivatives[2][c] = 0.25f * diag_sum_HF[c] + 0.5f * vert_sum_HF[c] + 0.5f * horiz_sum_HF[c] - 3.f * center_HF[c];
+          else
+          {
+            float a11, a22, b11;
+            if(isotropy_type[2] == DT_ISOTROPY_ISOPHOTE)
+            {
+              a11 = cos_theta_grad_sq[c] + c2[2][c] * sin_theta_grad_sq[c];
+              a22 = c2[2][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
+              b11 = (c2[2][c] - 1.0f) * cos_theta_sin_theta_grad[c] * 0.5f;
+            }
+            else
+            {
+              a11 = c2[2][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
+              a22 = cos_theta_grad_sq[c] + c2[2][c] * sin_theta_grad_sq[c];
+              b11 = (1.0f - c2[2][c]) * cos_theta_sin_theta_grad[c] * 0.5f;
+            }
+            derivatives[2][c] = b11 * diag_diff_HF[c] + a22 * vert_sum_HF[c] + a11 * horiz_sum_HF[c] + (-2.0f * (a11 + a22)) * center_HF[c];
+          }
+        }
+        for_each_channel(c)
+        {
+          // derivative 1: lapl angles, LF sums, isotropy_type[1]
+          if(isotropy_type[1] == DT_ISOTROPY_ISOTROPE)
+            derivatives[1][c] = 0.25f * diag_sum_LF[c] + 0.5f * vert_sum_LF[c] + 0.5f * horiz_sum_LF[c] - 3.f * center_LF[c];
+          else
+          {
+            float a11, a22, b11;
+            if(isotropy_type[1] == DT_ISOTROPY_ISOPHOTE)
+            {
+              a11 = cos_theta_lapl_sq[c] + c2[1][c] * sin_theta_lapl_sq[c];
+              a22 = c2[1][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
+              b11 = (c2[1][c] - 1.0f) * cos_theta_sin_theta_lapl[c] * 0.5f;
+            }
+            else
+            {
+              a11 = c2[1][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
+              a22 = cos_theta_lapl_sq[c] + c2[1][c] * sin_theta_lapl_sq[c];
+              b11 = (1.0f - c2[1][c]) * cos_theta_sin_theta_lapl[c] * 0.5f;
+            }
+            derivatives[1][c] = b11 * diag_diff_LF[c] + a22 * vert_sum_LF[c] + a11 * horiz_sum_LF[c] + (-2.0f * (a11 + a22)) * center_LF[c];
+          }
+          // derivative 3: lapl angles, HF sums, isotropy_type[3]
+          if(isotropy_type[3] == DT_ISOTROPY_ISOTROPE)
+            derivatives[3][c] = 0.25f * diag_sum_HF[c] + 0.5f * vert_sum_HF[c] + 0.5f * horiz_sum_HF[c] - 3.f * center_HF[c];
+          else
+          {
+            float a11, a22, b11;
+            if(isotropy_type[3] == DT_ISOTROPY_ISOPHOTE)
+            {
+              a11 = cos_theta_lapl_sq[c] + c2[3][c] * sin_theta_lapl_sq[c];
+              a22 = c2[3][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
+              b11 = (c2[3][c] - 1.0f) * cos_theta_sin_theta_lapl[c] * 0.5f;
+            }
+            else
+            {
+              a11 = c2[3][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
+              a22 = cos_theta_lapl_sq[c] + c2[3][c] * sin_theta_lapl_sq[c];
+              b11 = (1.0f - c2[3][c]) * cos_theta_sin_theta_lapl[c] * 0.5f;
+            }
+            derivatives[3][c] = b11 * diag_diff_HF[c] + a22 * vert_sum_HF[c] + a11 * horiz_sum_HF[c] + (-2.0f * (a11 + a22)) * center_HF[c];
+          }
+        }
         // Regularize the variance taking into account the blurring scale.
         // This allows to keep the scene-referred variance roughly constant
         // regardless of the wavelet scale where we compute it.
