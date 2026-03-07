@@ -108,20 +108,37 @@
 
 ---
 
+* Idea: Remove dead zero-initialization of `derivatives[4]` and intermediate sum arrays (`diag_sum_LF`, etc.). These 64-byte structures are unconditionally written in `for_each_channel` loops before being read. Removing the `{ { 0.f } }` initializers saves redundant memsets in the hot pixel loop.
+* Outcome: **FAILED** (benchmark). Measured 36.123s vs 36.053s baseline. No significant change (likely noise or compiler already optimizing). Reverted.
+
+---
+
+* Idea: Use `a11+a22 = 1+c2` identity for center weight. Currently `(-2.0f * (a11 + a22))` is computed for each derivative. Replacing this with `(-2.0f * (1.0f + c2[k][c]))` should save one addition and one multiplication (negation) inside the derivative loops, as `c2` is already available.
+* Outcome: **FAILED** (benchmark). Measured 36.473s vs 36.053s baseline. Regression of ~1.1%. Reverted.
+
+---
+
+* Idea: Precompute `neg_magnitude` once in gradient loop. Compute `neg_mag_grad = -sqrtf(m2_grad)` once, then `c2[0][c] = neg_mag_grad * half_anisotropy[0]; c2[2][c] = neg_mag_grad * half_anisotropy[2]`. Currently the compiler must negate the magnitude implicitly for each c2 assignment. Explicit precomputation ensures one negation instead of two per angle set.
+* Outcome: **FAILED** (benchmark). Measured 36.501s vs 36.053s baseline. Regression of ~1.2%. Reverted.
+
+---
+
+* Idea: Use `center_HF[c]` and `center_LF[c]` in output loop. Replace `HF[index + c]` with `center_HF[c]` and `LF[index + c]` with `center_LF[c]` in the final output computation. These values are already loaded into `dt_aligned_pixel_t` arrays during the sums loop. Reusing them avoids redundant memory loads from the source `LF` and `HF` pointers.
+* Outcome: **FAILED** (benchmark). Measured 36.397s vs 36.053s baseline. Regression of ~0.9%. Reverted.
+
+---
+
+* Idea: Precompute isotropic convolution results. Compute `iso_LF[c]` and `iso_HF[c]` in a separate `for_each_channel` loop after sums, then use directly in derivative loops for isotropic branches (`derivatives[k][c] = iso_LF[c]`). Reduces derivative loop body complexity and avoids redundant isotropic formula computation when multiple derivatives sharing the same source are isotropic.
+* Outcome: **FAILED** (benchmark). Measured 36.424s vs 36.053s baseline. Regression of ~1.0%. Reverted.
+
+---
+
 # IN PROGRESS
 
+* Idea: Investigate why simple algebraic and redundancy-removal optimizations are regressing. It is likely that the compiler (GCC 12+) is already performing many of these optimizations, and manual intervention is either redundant or disrupting the compiler's own ILP/vectorization heuristics. Focus on larger structural changes or memory layout improvements.
+* Baseline: 36.053s
 
-
-
-    
 # UPCOMING
 
-1. **Remove dead zero-initialization of `derivatives[4]`**: Currently `dt_aligned_pixel_t derivatives[4] = { { 0.f } }` zero-fills 64 bytes. All 4 derivatives are unconditionally written (either isotropic or anisotropic path) before being read. The zero-init is dead code that the compiler may not eliminate due to alignment attributes. Removing it saves a memset.
-
-4. **Use `a11+a22 = 1+c2` identity for center weight only**: Replace `-2.0f * (a11 + a22)` with `-2.0f * (1.0f + c2[k][c])` in derivative output. Keeps a11/a22 computation unchanged (unlike the failed sin²θ attempt). Enables earlier computation of center weight since it only depends on c2 (available before a11/a22), potentially improving ILP.
-
-5. **Precompute `neg_magnitude` once in gradient loop**: Compute `neg_mag_grad = -sqrtf(m2_grad)` once, then `c2[0][c] = neg_mag_grad * half_anisotropy[0]; c2[2][c] = neg_mag_grad * half_anisotropy[2]`. Currently the compiler must negate the magnitude implicitly for each c2 assignment. Explicit precomputation ensures one negation instead of two per angle set.
-
-6. **Use `center_HF[c]` and `center_LF[c]` in output loop**: Replace `HF[index + c]` with `center_HF[c]` and `LF[index + c]` with `center_LF[c]` in the output computation. These values are already loaded during the sums loop. The compiler may not recognize that `index == n4` since they're computed via different arithmetic paths (`idx*4` vs `4*(i_neighbours[1]+j_neighbours[1])`), potentially causing redundant memory loads.
-
-7. **Precompute isotropic convolution results**: Compute `iso_LF[c]` and `iso_HF[c]` in a separate `for_each_channel` loop after sums, then use directly in derivative loops for isotropic branches (`derivatives[k][c] = iso_LF[c]`). Reduces derivative loop body complexity and avoids redundant isotropic formula computation when multiple derivatives sharing the same source are isotropic.
+1. **Profile with perf**: Use `perf record` and `perf report` to identify the most expensive instructions in the `heat_PDE_diffusion` loop.
+2. **Consider tiling or better SIMD usage**: If register pressure is the issue, tiling might help. Alternatively, look at manual SIMD if auto-vectorization is reaching its limits.
