@@ -154,3 +154,14 @@ static inline float dt_camera_rgb_luminance(const float4 rgb)
   const float4 coeffs = { 0.2225045f, 0.7168786f, 0.0606169f, 0.0f };
   return dot(rgb, coeffs);
 }
+
+/* XYZ D65 to RGB Rec2020 (linear) */
+static inline float3 XYZ_to_Rec2020(const float3 xyz)
+{
+  float3 rgb;
+  // XYZ to Rec.2020 conversion matrix coefficients
+  rgb.x =  1.716651f * xyz.x - 0.355671f * xyz.y - 0.253366f * xyz.z;
+  rgb.y = -0.666684f * xyz.x + 1.616481f * xyz.y + 0.015768f * xyz.z;
+  rgb.z =  0.017640f * xyz.x - 0.042770f * xyz.y + 0.942103f * xyz.z;
+  return rgb;
+}
