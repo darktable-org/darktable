@@ -1761,7 +1761,7 @@
      <type>bool</type>
     <default>true</default>
     <shortdescription>prioritize the hovered image over the selected images</shortdescription>
-    <longdescription><![CDATA[in the lightroom, where culling takes place, you can apply actions (e.g., setting ratings) to the hovered image or to the selected ones\n\n<b>enabled</b> actions apply to the hovered image (less clicking)\n\n<b>disabled</b> actions apply to the current selection (less error prone)]]></longdescription>
+    <longdescription><![CDATA[in the lighttable, where culling takes place, you can apply actions (e.g., setting ratings) to the hovered image or to the selected ones\n\n<b>enabled</b> actions apply to the hovered image (less clicking)\n\n<b>disabled</b> actions apply to the current selection (less error prone)]]></longdescription>
     <welcomescreen pagenum="4" questionnum="1"/>
   </dtconfig>
   <dtconfig>
