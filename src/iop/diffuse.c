@@ -1237,14 +1237,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             derivatives[3][c] = b11 * diag_diff_HF[c] + a22 * vert_sum_HF[c] + a11 * horiz_sum_HF[c] + (-2.0f * (a11 + a22)) * center_HF[c];
           }
         }
-        // Regularize the variance taking into account the blurring scale.
-        // This allows to keep the scene-referred variance roughly constant
-        // regardless of the wavelet scale where we compute it.
-        // Prevents large scale halos when deblurring.
-        for_each_channel(c, aligned(variance))
-        {
-          variance[c] = variance_threshold + variance[c] * regularization_factor;
-        }
         // compute the update
         dt_aligned_pixel_t acc;
         for_each_channel(c, aligned(acc,derivatives,ABCD))
@@ -1252,11 +1244,15 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           acc[c] = derivatives[0][c] * ABCD[0] + derivatives[1][c] * ABCD[1]
                  + derivatives[2][c] * ABCD[2] + derivatives[3][c] * ABCD[3];
         }
+        // Regularize the variance taking into account the blurring scale.
+        // This allows to keep the scene-referred variance roughly constant
+        // regardless of the wavelet scale where we compute it.
+        // Prevents large scale halos when deblurring.
         for_each_channel(c, aligned(acc,HF,LF,variance,out))
         {
-          acc[c] = (HF[index + c] * strength + acc[c] / variance[c]);
+          const float var = variance_threshold + variance[c] * regularization_factor;
           // update the solution
-          out[index + c] = fmaxf(acc[c] + LF[index + c], 0.f);
+          out[index + c] = fmaxf(HF[index + c] * strength + acc[c] / var + LF[index + c], 0.f);
         }
       }
       else
