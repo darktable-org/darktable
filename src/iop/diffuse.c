@@ -1038,16 +1038,37 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         dt_aligned_pixel_t neighbour_pixel_HF[9];
         dt_aligned_pixel_t neighbour_pixel_LF[9];
 
-        for(size_t ii = 0; ii < 3; ii++)
-          for(size_t jj = 0; jj < 3; jj++)
-          {
-            size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
-            for_each_channel(c)
-            {
-              neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-              neighbour_pixel_LF[3 * ii + jj][c] = LF[neighbor + c];
-            }
-          }
+        const size_t n0 = 4 * (i_neighbours[0] + j_neighbours[0]);
+        const size_t n1 = 4 * (i_neighbours[0] + j_neighbours[1]);
+        const size_t n2 = 4 * (i_neighbours[0] + j_neighbours[2]);
+        const size_t n3 = 4 * (i_neighbours[1] + j_neighbours[0]);
+        const size_t n4 = 4 * (i_neighbours[1] + j_neighbours[1]);
+        const size_t n5 = 4 * (i_neighbours[1] + j_neighbours[2]);
+        const size_t n6 = 4 * (i_neighbours[2] + j_neighbours[0]);
+        const size_t n7 = 4 * (i_neighbours[2] + j_neighbours[1]);
+        const size_t n8 = 4 * (i_neighbours[2] + j_neighbours[2]);
+
+        for_each_channel(c)
+        {
+          neighbour_pixel_HF[0][c] = HF[n0 + c];
+          neighbour_pixel_LF[0][c] = LF[n0 + c];
+          neighbour_pixel_HF[1][c] = HF[n1 + c];
+          neighbour_pixel_LF[1][c] = LF[n1 + c];
+          neighbour_pixel_HF[2][c] = HF[n2 + c];
+          neighbour_pixel_LF[2][c] = LF[n2 + c];
+          neighbour_pixel_HF[3][c] = HF[n3 + c];
+          neighbour_pixel_LF[3][c] = LF[n3 + c];
+          neighbour_pixel_HF[4][c] = HF[n4 + c];
+          neighbour_pixel_LF[4][c] = LF[n4 + c];
+          neighbour_pixel_HF[5][c] = HF[n5 + c];
+          neighbour_pixel_LF[5][c] = LF[n5 + c];
+          neighbour_pixel_HF[6][c] = HF[n6 + c];
+          neighbour_pixel_LF[6][c] = LF[n6 + c];
+          neighbour_pixel_HF[7][c] = HF[n7 + c];
+          neighbour_pixel_LF[7][c] = LF[n7 + c];
+          neighbour_pixel_HF[8][c] = HF[n8 + c];
+          neighbour_pixel_LF[8][c] = LF[n8 + c];
+        }
 
         // c² in https://www.researchgate.net/publication/220663968
         dt_aligned_pixel_t c2[4];
@@ -1120,8 +1141,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           horiz_sum_HF[c] = neighbour_pixel_HF[3][c] + neighbour_pixel_HF[5][c];
           center_HF[c] = neighbour_pixel_HF[4][c];
 
-          for (size_t k = 0; k < 9; ++k)
-            variance[c] += sqf(neighbour_pixel_HF[k][c]);
+          variance[c] += sqf(neighbour_pixel_HF[0][c]) + sqf(neighbour_pixel_HF[1][c]) + sqf(neighbour_pixel_HF[2][c]) + \
+                         sqf(neighbour_pixel_HF[3][c]) + sqf(neighbour_pixel_HF[4][c]) + sqf(neighbour_pixel_HF[5][c]) + \
+                         sqf(neighbour_pixel_HF[6][c]) + sqf(neighbour_pixel_HF[7][c]) + sqf(neighbour_pixel_HF[8][c]);
         }
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
