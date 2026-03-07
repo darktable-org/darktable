@@ -135,14 +135,18 @@ static void _add_point(dt_masks_form_t *form,
   form->points = g_list_append(form->points, bzpt);
 }
 
-static uint32_t formnb = 0;
+static gint formnb = 0;
 
 GList *ras2forms(const float *mask,
                  const int width,
                  const int height,
-                 const dt_image_t *const image)
+                 const dt_image_t *const image,
+                 const int cleanup,
+                 const double smoothing,
+                 GList **out_signs)
 {
   GList *forms = NULL;
+  GList *signs = NULL;
 
   //  create bitmap mask for potrace
 
@@ -167,8 +171,8 @@ GList *ras2forms(const float *mask,
   }
 
   potrace_param_t *param = potrace_param_default();
-  // finer path possible
-  param->alphamax = 0.0f;
+  param->turdsize = cleanup;
+  param->alphamax = smoothing;
 
   potrace_state_t *st = potrace_trace(param, bm);
 
@@ -185,7 +189,8 @@ GList *ras2forms(const float *mask,
     const potrace_dpoint_t start = cv->c[n-1][2];
 
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
-    snprintf(form->name, sizeof(form->name), "path raster %d", ++formnb);
+    snprintf(form->name, sizeof(form->name), "path raster %d",
+             g_atomic_int_add(&formnb, 1) + 1);
 
     _add_point(form, image, width, height, start.x, start.y, -1, -1, -1, -1);
 
@@ -210,12 +215,15 @@ GList *ras2forms(const float *mask,
     }
 
     forms = g_list_prepend(forms, form);
+    if(out_signs)
+      signs = g_list_prepend(signs, GINT_TO_POINTER(p->sign));
   }
 
   potrace_state_free(st);
   potrace_param_free(param);
   _bm_free(bm);
 
+  if(out_signs) *out_signs = signs;
   return forms;
 }
 

@@ -41,6 +41,9 @@ typedef struct dt_lib_masks_t
 {
   /* vbox with managed history items */
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
+#ifdef HAVE_AI
+  GtkWidget *bt_object;
+#endif
   GtkWidget *treeview;
   dt_gui_collapsible_section_t cs;
   GtkWidget *property[DT_MASKS_PROPERTY_LAST];
@@ -110,6 +113,8 @@ const struct
       [ DT_MASKS_PROPERTY_ROTATION] = { N_("rotation"), "°", 0, 360, FALSE },
       [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", -1, 1, FALSE },
       [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE },
+      [ DT_MASKS_PROPERTY_CLEANUP] = { N_("cleanup"), "", 0, 100, FALSE },
+      [ DT_MASKS_PROPERTY_SMOOTHING] = { N_("smoothing"), "", 0, 1.3, FALSE },
 };
 
 gboolean _timeout_show_all_feathers(gpointer userdata)
@@ -281,6 +286,9 @@ static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_path), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_gradient), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_brush), FALSE);
+#ifdef HAVE_AI
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_object), FALSE);
+#endif
 }
 
 static void _tree_add_shape(GtkButton *button, gpointer shape)
@@ -315,6 +323,13 @@ static gboolean _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
+#ifdef HAVE_AI
+    if(GPOINTER_TO_INT(shape) == DT_MASKS_OBJECT && !dt_masks_object_available())
+    {
+      dt_control_log(_("AI model is not available. Check preferences > AI"));
+      return TRUE;
+    }
+#endif
     _tree_add_shape(NULL, shape);
 
     if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
@@ -1839,6 +1854,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
 
+#ifdef HAVE_AI
+  d->bt_object = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_object, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add object"),
+                   d->bt_object, &dt_action_def_toggle);
+  g_signal_connect(G_OBJECT(d->bt_object), "button-press-event",
+                   G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_OBJECT));
+  gtk_widget_set_tooltip_text(d->bt_object, _("add AI object"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_object), FALSE);
+#endif
 
   d->treeview = gtk_tree_view_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
@@ -1875,10 +1899,15 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->treeview, "button-press-event",
                    G_CALLBACK(_tree_button_pressed), self);
 
+  GtkWidget *shape_buttons = dt_gui_hbox
+    (dt_gui_expand(dt_ui_label_new(_("created shapes"))),
+     d->bt_brush, d->bt_circle, d->bt_ellipse, d->bt_path, d->bt_gradient);
+#ifdef HAVE_AI
+  dt_gui_box_add(shape_buttons, d->bt_object);
+#endif
+
   self->widget = dt_gui_vbox
-    (dt_gui_hbox
-      (dt_gui_expand(dt_ui_label_new(_("created shapes"))),
-       d->bt_brush, d->bt_circle, d->bt_ellipse, d->bt_path, d->bt_gradient),
+    (shape_buttons,
      dt_ui_resize_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"));
 
   dt_gui_new_collapsible_section

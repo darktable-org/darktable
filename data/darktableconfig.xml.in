@@ -374,6 +374,27 @@
     <shortdescription>tags case sensitivity</shortdescription>
     <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/enabled</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable AI features</shortdescription>
+    <longdescription>enable AI-powered features such as denoising and upscaling using neural networks</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/provider</name>
+    <type>string</type>
+    <default>auto</default>
+    <shortdescription>AI execution provider</shortdescription>
+    <longdescription>select the hardware acceleration provider for AI inference. 'auto' will automatically detect the best available option for your system.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/repository</name>
+    <type>string</type>
+    <default>andriiryzhkov/darktable-ai</default>
+    <shortdescription>AI models GitHub repository</shortdescription>
+    <longdescription>GitHub repository for downloading AI models (format: owner/repo)</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
@@ -3475,6 +3496,62 @@
     <default>300</default>
     <shortdescription>height of mask manager view window</shortdescription>
     <longdescription>maximum height the masks view in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/model</name>
+    <type>string</type>
+    <default>mask-object-segnext-b2hq</default>
+    <shortdescription>AI mask model</shortdescription>
+    <longdescription>model ID for AI object mask segmentation</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/cleanup</name>
+    <type min="0" max="100">int</type>
+    <default>10</default>
+    <shortdescription>AI mask cleanup</shortdescription>
+    <longdescription>area (in pixels²) of the largest speckle to suppress during AI mask vectorization. higher values remove more small artifacts.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/smoothing</name>
+    <type min="0.0" max="1.3">float</type>
+    <default>1.0</default>
+    <shortdescription>AI mask smoothing</shortdescription>
+    <longdescription>corner threshold for AI mask vectorization. 0 = all sharp corners (most points), 1.0 = balanced, 1.3 = maximum smoothing (fewest points).</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/refine_passes</name>
+    <type min="1" max="5">int</type>
+    <default>1</default>
+    <shortdescription>AI mask refinement passes</shortdescription>
+    <longdescription>number of iterative decoder passes. each pass feeds back the mask to tighten boundaries. higher values give tighter edges at the cost of more processing time.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/threshold</name>
+    <type min="0.3" max="0.9">float</type>
+    <default>0.5</default>
+    <shortdescription>AI mask binarization threshold</shortdescription>
+    <longdescription>sigmoid threshold for converting AI mask to binary. higher values (0.6-0.7) tighten boundaries, lower values include more area.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/morph_radius</name>
+    <type min="0" max="5">int</type>
+    <default>3</default>
+    <shortdescription>AI mask morphological cleanup radius</shortdescription>
+    <longdescription>radius of structuring element for morphological open+close cleanup. removes small protrusions and fills small holes in the mask. 0 = disabled, 1-3 = typical values.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/edge_refine</name>
+    <type min="0.0" max="0.5">float</type>
+    <default>0.2</default>
+    <shortdescription>AI mask edge refinement</shortdescription>
+    <longdescription>strength of edge-aware threshold boost. near strong image edges the binarization threshold is raised, snapping the mask boundary to object edges. 0 = disabled, 0.1-0.3 = typical values.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/brush_size</name>
+    <type min="0.005" max="0.5">float</type>
+    <default>0.03</default>
+    <shortdescription>AI mask brush size</shortdescription>
+    <longdescription>brush radius as a fraction of the shorter image dimension. used for the brush tool in the AI object mask to paint over the target object.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>
