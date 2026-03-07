@@ -367,7 +367,7 @@ static GtkWidget *_build_page_widget(_dt_page_t *pg)
       const char *curval = dt_conf_get_string_const(q->conf_key);
       for(int oi = 0; oi < q->n_options; oi++)
       {
-        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), _(q->options[oi]));
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), g_dpgettext2(NULL, "preferences", q->options[oi]));
         if(g_strcmp0(curval, q->options[oi]) == 0)
           gtk_combo_box_set_active(GTK_COMBO_BOX(combo), oi);
       }
@@ -678,13 +678,13 @@ void dt_welcome_screen_show(dt_welcome_screen_t *ws)
   }
 
   // Navigation buttons (right-aligned)
-  GtkWidget *btn_prev = gtk_button_new_with_mnemonic(_("_Prev"));
+  GtkWidget *btn_prev = gtk_button_new_with_mnemonic(_("_prev"));
   gtk_widget_set_name(btn_prev, "welcome-prev");
 
-  GtkWidget *btn_next = gtk_button_new_with_mnemonic(_("_Next"));
+  GtkWidget *btn_next = gtk_button_new_with_mnemonic(_("_next"));
   gtk_widget_set_name(btn_next, "welcome-next");
 
-  GtkWidget *btn_close = gtk_button_new_with_mnemonic(_("_Close"));
+  GtkWidget *btn_close = gtk_button_new_with_mnemonic(_("_close"));
   gtk_widget_set_name(btn_close, "welcome-close");
 
   dt_gui_box_add(GTK_BOX(footer), dt_gui_expand(progress_box),
