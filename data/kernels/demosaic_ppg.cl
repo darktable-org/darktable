@@ -74,7 +74,7 @@ green_equilibration_lavg(read_only image2d_t in,
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    buffer[bufidx] = readsingle(in, xx, yy);
   }
 
   // center buffer around current x,y-Pixel
@@ -88,7 +88,15 @@ green_equilibration_lavg(read_only image2d_t in,
   const float maximum = 1.0f;
   float o = buffer[0];
 
-  if(c == 1 && (y & 1))
+  // check lines to be used as we do in cpu code
+  int oj = 2, oi = 2;
+  if(FC(oj, oi, filters) != GREEN) oj++;
+  if(FC(oj, oi, filters) != GREEN) oi++;
+  if(FC(oj, oi, filters) != GREEN) oj--;
+
+  int row_ok = (oj & 1) == (y & 1);
+  int col_ok = (oi & 1) == (x & 1);
+  if(row_ok && col_ok && x >= 2 && y >= 2 && x < width -2 && y < height-2)
   {
     const float o1_1 = buffer[-1 * stride - 1];
     const float o1_2 = buffer[-1 * stride + 1];
@@ -102,17 +110,16 @@ green_equilibration_lavg(read_only image2d_t in,
     const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
 
-    if ((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
+    if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
     {
       const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
       const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
 
       if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
-        o *= m1/m2;
+          o *= m1/m2;
     }
   }
-
-  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
+  write_imagef (out, (int2)(x, y), o);
 }
 
 
@@ -135,11 +142,12 @@ green_equilibration_favg_reduce_first(read_only image2d_t in,
 
   const int c = FC(y, x, filters);
 
+  // make sure we add same number of greens for even and odd lines
   const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
-  const int isgreen1 = (c == 1 && !(y & 1));
-  const int isgreen2 = (c == 1 && (y & 1));
+  const int isgreen1 = c == GREEN && !(y & 1);
+  const int isgreen2 = c == GREEN && (y & 1);
 
-  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  float pixel = readsingle(in, x, y);
 
   buffer[l].x = isinimage && isgreen1 ? pixel : 0.0f;
   buffer[l].y = isinimage && isgreen2 ? pixel : 0.0f;
@@ -170,17 +178,19 @@ kernel void
 green_equilibration_favg_reduce_second(const global float2* input, global float2 *result, const int length, local float2 *buffer)
 {
   int x = get_global_id(0);
-  float2 sum = (float2)0.0f;
-
+  float m1 = 0.0f;
+  float m2 = 0.0f;
+  float sum1 = 0.0f;
+  float sum2 = 0.0f;
   while(x < length)
   {
-    sum += input[x];
-
+    Kahan_sum(sum1, m1, input[x].x);
+    Kahan_sum(sum2, m2, input[x].y);
     x += get_global_size(0);
   }
 
   int lid = get_local_id(0);
-  buffer[lid] = sum;
+  buffer[lid] = (float2)(sum1, sum2);
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -215,15 +225,15 @@ green_equilibration_favg_apply(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  float pixel = readsingle(in, x, y);
 
   const int c = FC(y, x, filters);
 
-  const int isgreen1 = (c == 1 && !(y & 1));
+  const int isgreen1 = (c == GREEN && !(y & 1)); // on even lines
 
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 
-  write_imagef (out, (int2)(x, y), fmax(pixel, 0.0f));
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 #define SWAP(a, b)                \
