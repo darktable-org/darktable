@@ -156,9 +156,9 @@ static void green_equilibration_lavg(float *out,
   const float maximum = 1.0f;
 
   int oj = 2, oi = 2;
-  if(FC(oj, oi, filters) != 1) oj++;
-  if(FC(oj, oi, filters) != 1) oi++;
-  if(FC(oj, oi, filters) != 1) oj--;
+  if(FC(oj, oi, filters) != GREEN) oj++;
+  if(FC(oj, oi, filters) != GREEN) oi++;
+  if(FC(oj, oi, filters) != GREEN) oj--;
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
@@ -190,7 +190,7 @@ static void green_equilibration_lavg(float *out,
                           + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
         if((in[j * width + i] < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
         {
-          out[j * width + i] = fmaxf(0.0f, in[j * width + i] * m1 / m2);
+          out[j * width + i] = in[j * width + i] * m1 / m2;
         }
       }
     }
@@ -230,7 +230,7 @@ static void green_equilibration_favg(float *out,
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)
     {
-      out[(size_t)j * width + i] = fmaxf(0.0f, in[(size_t)j * width + i] * gr_ratio);
+      out[(size_t)j * width + i] = in[(size_t)j * width + i] * gr_ratio;
     }
   }
 }
@@ -415,14 +415,15 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                             sizeof(float) * 2 * reducesize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    float sum1 = 0.0f, sum2 = 0.0f;
+    double sum1 = 0.0;
+    double sum2 = 0.0;
     for(int k = 0; k < reducesize; k++)
     {
-      sum1 += sumsum[2 * k];
-      sum2 += sumsum[2 * k + 1];
+      sum1 += (double)sumsum[2 * k];
+      sum2 += (double)sumsum[2 * k + 1];
     }
 
-    const float gr_ratio = (sum1 > 0.0f && sum2 > 0.0f) ? sum2 / sum1 : 1.0f;
+    const float gr_ratio = (sum1 > 0.0 && sum2 > 0.0) ? (float)(sum2 / sum1) : 1.0f;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_green_eq_favg_apply, width, height,
       CLARG(dev_in1), CLARG(dev_out1), CLARG(width), CLARG(height), CLARG(filters),
