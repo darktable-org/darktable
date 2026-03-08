@@ -333,7 +333,7 @@
     </type>
     <default>on import</default>
     <shortdescription>create XMP files</shortdescription>
-    <longdescription><![CDATA[XMP sidecar files store all editing steps, ratings, tags and color labels alongside your images in an open format readable by other applications, and provide an emergency backup if the databse and its backups are lost\n\n<b>never:</b> information is stored only in darktable's database; if it is lost or corrupted, your edits cannot be recovered from the files\n\n<b>after edit:</b> the XMP file is created after the first intentional (i.e., non auto-applied) edit and updated after each editing session\n\n<b>on import:</b> an XMP file is created when the image is imported, and updated after each change]]></longdescription>
+    <longdescription><![CDATA[XMP sidecar files store all editing steps, ratings, tags and color labels alongside your images in an open format readable by other applications, and provide an emergency backup if the database and its backups are lost\n\n<b>never:</b> information is stored only in darktable's database; if it is lost or corrupted, your edits cannot be recovered from the files\n\n<b>after edit:</b> the XMP file is created after the first intentional (i.e., non auto-applied) edit and updated after each editing session\n\n<b>on import:</b> an XMP file is created when the image is imported, and updated after each change]]></longdescription>
     <welcomescreen pagenum="3" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
