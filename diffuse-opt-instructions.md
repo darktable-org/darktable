@@ -27,6 +27,10 @@
 Optimize the CPU processing path of darktable's `diffuse` module to reduce execution time while preserving mathematical correctness and visual quality.
 You MUST leave the OpenCL path alone. In fact, always run darktable and darktable-cli with `--disable-opencl`. You are optimising the CPU path.
 
+## Scope of Code Changes
+
+You may modify `diffuse.c` **and** functions in other files, provided those functions are **exclusively used by `diffuse.c`**. You MUST NOT introduce regressions into other modules. Before modifying a function outside `diffuse.c`, verify that it has no callers outside of `diffuse.c` (use grep/clangd to confirm). If a function is shared with other modules, leave it as-is and find another approach.
+
 ## Measurement Protocol
 
 1. **Benchmark Script**: `python3 benchmark_diffuse.py`

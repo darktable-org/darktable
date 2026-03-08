@@ -36,3 +36,7 @@ diffuse: merged variance regularization into output loop, eliminating one for_ea
 03809ba7d5
 diffuse: removed 0.5f scaling from gradient/laplacian, absorbing factor into half_anisotropy for magnitude
 35.599
+
+21cdb39a6c
+diffuse: reorder sums loop before angle loop for L1 cache locality
+35.224

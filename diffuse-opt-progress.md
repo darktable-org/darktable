@@ -133,12 +133,25 @@
 
 ---
 
+* Idea: Add `#pragma GCC optimize("fast-math")` scoped to `heat_PDE_diffusion` to skip Newton-Raphson refinement after `vrsqrtps`/`vrcpps`, saving ~20 instructions (~3.5% of loop body).
+* Outcome: **FAILED** (no effect). Assembly analysis showed 578 vs 579 instructions — essentially identical. `-ffast-math` does NOT control NR refinement; that's governed by `-mrecip` (a machine flag, not an optimization flag). Benchmark: 35.704s vs 35.599s baseline (~0.3%, noise). Reverted.
+
+---
+
+* Idea: Swap sums and angle loop order. Move the sums+variance `for_each_channel` loop (which loads all 18 LF+HF neighbor pixels) before the gradient/laplacian angle loop. After sums runs, all pixel values are in L1 cache, so the angle loop's re-loads of n1,n3,n5,n7 are guaranteed cache hits.
+* Outcome: **SUCCESS**. Reduced baseline from 35.599s to 35.224s (~1.05% drop). Zero code logic change — purely a loop reorder that improves cache locality. (Committed)
+
+---
+
 # IN PROGRESS
 
-* Idea: Investigate why simple algebraic and redundancy-removal optimizations are regressing. It is likely that the compiler (GCC 12+) is already performing many of these optimizations, and manual intervention is either redundant or disrupting the compiler's own ILP/vectorization heuristics. Focus on larger structural changes or memory layout improvements.
-* Baseline: 36.053s
 
 # UPCOMING
 
-1. **Profile with perf**: Use `perf record` and `perf report` to identify the most expensive instructions in the `heat_PDE_diffusion` loop.
-2. **Consider tiling or better SIMD usage**: If register pressure is the issue, tiling might help. Alternatively, look at manual SIMD if auto-vectorization is reaching its limits.
+1. **Fuse `dt_vector_exp` into gradient/laplacian angle loop**: Inline the integer bit-trick (`0x3f800000 + (int)(x * 0x00B2F854)`) directly in the gradient/laplacian `for_each_channel` loop where c2 values are first computed, rather than calling `dt_vector_exp` in a separate `for(k=0..3)` loop. Eliminates separate exp loop overhead and reduces c2's live range on stack.
+
+3. **Reorder: sums before angles, then fuse angle+exp+derivatives**: Move sums+variance loop before gradient/laplacian angle loop. Then fuse angle computation + inline exp + derivative computation into two `for_each_channel` loops (grad derivatives 0+2, lapl derivatives 1+3). Eliminates 6 angle storage arrays (96 bytes stack) by consuming angles immediately. Sums are available when needed. Risk: larger loop body may hurt auto-vectorization (historical pattern).
+
+4. **Specialize `heat_PDE_diffusion` for `has_mask=false`**: Split inner pixel loop into two code paths: one without mask handling (eliminates mask byte load + `if(opacity)` branch per pixel) and one with. Select via loop-invariant `if(has_mask)` at function level. Common no-mask path gets tighter code without dead else-block.
+
+5. **Swap sums and angle loop order for cache friendliness**: Currently angle loop (loads LF/HF[n1,n3,n5,n7]) runs before sums loop (loads ALL n0-n8). Swapping to sums-first ensures angle loop's 4 loads per source are guaranteed L1 cache hits. Minimal code change (just reorder the two `for_each_channel` blocks). Risk: marginal effect, may be noise-level.
