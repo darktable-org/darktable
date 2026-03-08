@@ -1061,61 +1061,50 @@ static void _color_harmony_changed_record(dt_scopes_mode_t *const self)
   dt_scopes_refresh(self->scopes);
 }
 
-static gboolean _color_harmony_clicked(GtkWidget *button,
-                                       GdkEventButton *event,
-                                       dt_scopes_mode_t *const self)
+static void _color_harmony_clicked(GtkButton *button,
+                                   dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
-  {
+  if(d->color_harmony_old && d->harmony_guide.type == d->color_harmony_old)
     // clicked on active button, we remove guidelines
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
     d->harmony_guide.type = d->color_harmony_old = DT_COLOR_HARMONY_NONE;
-  }
   else
   {
+    if(d->color_harmony_old)
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(d->color_harmony_button[d->color_harmony_old-1]),
+         FALSE);
     // find positions of clicked button
     for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
-      if(d->color_harmony_button[i] == button)
-      {
+      if(d->color_harmony_button[i] == GTK_WIDGET(button))
         d->harmony_guide.type = d->color_harmony_old = i + 1;
-        break;
-      }
-    // FIXME: instead of calling _color_harmony_button_on() here, do this when are cycling through the buttons in the loop above
-    _color_harmony_button_on(d);
   }
   _color_harmony_changed_record(self);
-  return TRUE;
 }
 
-static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
-                                                     GdkEventCrossing *event,
-                                                     dt_scopes_mode_t *const self)
+static void _color_harmony_enter_notify_callback(GtkEventControllerMotion *controller,
+                                                 double x,
+                                                 double y,
+                                                 dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
+  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
 
   // find positions of entered button
   d->color_harmony_old = d->harmony_guide.type;
-
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_NONE; i < DT_COLOR_HARMONY_N - 1; i++)
     if(d->color_harmony_button[i] == widget)
-    {
       d->harmony_guide.type = i + 1;
-      break;
-    }
 
   dt_scopes_refresh(self->scopes);
-  return FALSE;
 }
 
-static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
-                                                     GdkEventCrossing *event,
-                                                     dt_scopes_mode_t *const self)
+static void _color_harmony_leave_notify_callback(GtkEventControllerMotion *controller,
+                                                 dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
   d->harmony_guide.type = d->color_harmony_old;
   dt_scopes_refresh(self->scopes);
-  return FALSE;
 }
 
 static void _vec_append_to_tooltip(const dt_scopes_mode_t *const self,
@@ -1354,21 +1343,21 @@ static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
   {
     GtkWidget *rb = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE,
                                            &(_vec_color_harmonies[i]));
+    if(d->harmony_guide.type == i)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb), TRUE);
     dt_action_define(dark, N_("color harmonies"),
                      _vec_color_harmonies[i].name, rb, &dt_action_def_toggle);
-    g_signal_connect(G_OBJECT(rb), "button-press-event",
+    g_signal_connect(G_OBJECT(rb), "clicked",
                      G_CALLBACK(_color_harmony_clicked), self);
-    g_signal_connect(G_OBJECT(rb), "enter-notify-event",
-                     G_CALLBACK(_color_harmony_enter_notify_callback), self);
-    g_signal_connect(G_OBJECT(rb), "leave-notify-event",
-                     G_CALLBACK(_color_harmony_leave_notify_callback), self);
+    dt_gui_connect_motion(rb, NULL, _color_harmony_enter_notify_callback,
+                          _color_harmony_leave_notify_callback, self);
 
     dt_gui_box_add(d->color_harmony_box, rb);
     // FIXME: awkward to store this to skip DT_COLOR_HARMONY_NONE, just leave [0] blank?
     d->color_harmony_button[i-1] = rb;
   }
   // FIXME: just do this work in loop above instead of looping again in the helper
-  _color_harmony_button_on(d);
+  //_color_harmony_button_on(d);
 
   // FIXME: do we need this action, or is it vestigial?
   dt_action_register(dark, N_("cycle color harmonies"),
