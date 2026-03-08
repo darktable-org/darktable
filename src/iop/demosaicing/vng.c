@@ -25,7 +25,8 @@ static void lin_interpolate(float *out,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6])
 {
-  const int colors = (filters == 9) ? 3 : 4;
+  const gboolean is_xtrans = filters == 9;
+  const int colors = is_xtrans ? 3 : 4;
   // border interpolate
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
@@ -41,7 +42,7 @@ static void lin_interpolate(float *out,
           if(y >= 0 && x >= 0 && y < height && x < width)
           {
             const int f = fcol(y, x, filters, xtrans);
-            sum[f] += fmaxf(0.0f, in[y * width + x]);
+            sum[f] += in[y * width + x];
             count[f]++;
           }
       const int f = fcol(row, col, filters, xtrans);
@@ -53,7 +54,7 @@ static void lin_interpolate(float *out,
         if(c != f && count[c] != 0)
           out[4 * (row * width + col) + c] = sum[c] / count[c];
         else
-          out[4 * (row * width + col) + c] = fmaxf(0.0f, in[row * width + col]);
+          out[4 * (row * width + col) + c] = in[row * width + col];
       }
     }
 
@@ -111,11 +112,11 @@ static void lin_interpolate(float *out,
       int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for(int i = *ip++; i--; ip += 3)
-        sum[ip[2]] += fmaxf(0.0f, buf_in[ip[0]]) * ip[1];
+        sum[ip[2]] += buf_in[ip[0]] * ip[1];
       // for each interpolated color, load it into the pixel
       for(int i = colors; --i; ip += 2)
         buf[*ip] = sum[ip[0]] / ip[1];
-      buf[*ip] = fmaxf(0.0f, *buf_in);
+      buf[*ip] = *buf_in;
       buf += 4;
       buf_in++;
     }
@@ -137,12 +138,6 @@ static void lin_interpolate(float *out,
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
 */
-static void _copy_abovezero(float *to, float *from, const int pixels)
-{
-  static dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f};
-  for(int i = 0; i < pixels; i++)
-    dt_vector_max(&to[i*4], zero, &from[i*4]);
-}
 
 static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -178,7 +173,6 @@ static void vng_interpolate(float *out,
   float(*brow[4])[4];
   const gboolean is_xtrans = (filters == 9);
   const gboolean is_4bayer = FILTERS_ARE_4BAYER(filters);
-  const gboolean is_bayer = !(is_xtrans || is_4bayer);
   const int prow = is_xtrans ? 6 : 8;
   const int pcol = is_xtrans ? 6 : 2;
   const int colors = is_xtrans ? 3 : 4;
@@ -196,10 +190,7 @@ static void vng_interpolate(float *out,
 
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear)
-  {
-    if(is_bayer) goto bayer_greens;
-    else return;
-  }
+    goto finish;
 
   char *buffer = dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
@@ -304,22 +295,24 @@ static void vng_interpolate(float *out,
       }
     }
     if(row > 3) /* Write buffer to image */
-      _copy_abovezero(out + 4 * ((row - 2) * width + 2), (float *)(brow[0] + 2), width - 4);
+      dt_iop_image_copy(out + 4 * ((row - 2) * width + 2), (float *)(brow[0] + 2), 4*(width - 4));
 
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  _copy_abovezero(out + (4 * ((height - 4) * width + 2)), (float *)(brow[0] + 2), width - 4);
-  _copy_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), width - 4);
+  dt_iop_image_copy(out + (4 * ((height - 4) * width + 2)), (float *)(brow[0] + 2), 4*(width - 4));
+  dt_iop_image_copy(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), 4*(width - 4));
   dt_free_align(buffer);
 
-bayer_greens:
-  if(is_bayer)
+finish:
+  DT_OMP_FOR()
+  for(size_t i = 0; i < (size_t)width * height * 4; i+=4)
   {
-    DT_OMP_FOR()
-    for(int i = 0; i < height * width; i++)
-      out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+    out[i] = out[i];
+    out[i+1] = is_xtrans ? out[i+1] : 0.5f * (out[i+1] + out[i+3]);
+    out[i+2] = out[i+2];
+    out[i+3] = 0.0f;
   }
 }
 
@@ -499,7 +492,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   if(only_vng_linear)
     goto finish;
 
-  // do full VNG interpolation; linear data is in dev_tmp
+  // do full VNG interpolation; linear data is in dev_tmp; don't touch outermost 2 pixels
   dt_opencl_local_buffer_t locopt
       = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
@@ -511,7 +504,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
   size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
   err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_vng_interpolate, sizes, local,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+        CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
 
