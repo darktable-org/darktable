@@ -159,3 +159,23 @@ static inline float clipf(const float a)
 {
   return clamp(a, 0.0f, 1.0f);
 }
+
+/* Some inline functions making life easier when reading photosites
+   or pixels from cl_mem images.
+   As we had images with NaNs in data and at least AMD systems suffered
+   as reading NaNs instead of falling back to 0 (nvidia seems to do do)
+   we always read data and make sure values are valid floats.
+*/
+static inline float readsingle(read_only image2d_t in, int col, int row)
+{
+  return fmax(-FLT_MAX, read_imagef(in, sampleri, (int2)(col, row)).x);
+}
+
+static inline float4 readpixel(read_only image2d_t in, int col, int row)
+{
+  return fmax(-FLT_MAX, read_imagef(in, sampleri, (int2)(col, row)));
+}
+static inline float readalpha(read_only image2d_t in, int col, int row)
+{
+  return clipf(read_imagef(in, sampleri, (int2)(col, row)).w);
+}
