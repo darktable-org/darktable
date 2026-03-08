@@ -111,6 +111,10 @@ changes (where available).
 - Added a welcome screen to help users understand and set the most
   relevant configuration options on the first run.
 
+- Added touchpad gestures in darkroom, including pinch zoom in/out
+  and two-finger panning. Follow-up fixes refined input source
+  handling to keep panning limited to touchpad smooth-scroll input.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
