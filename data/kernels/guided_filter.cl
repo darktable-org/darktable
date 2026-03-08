@@ -40,16 +40,6 @@ kernel void guided_filter_split_rgb_image(const int width,
 }
 
 
-// Kahan summation algorithm
-#define Kahan_sum(m, c, add)        \
-  {                                 \
-    const float t1 = (add) - (c);   \
-    const float t2 = (m) + t1;      \
-    c = (t2 - m) - t1;              \
-    m = t2;                         \
-  }
-
-
 kernel void guided_filter_box_mean_x(const int width,
                                      const int height,
                                      read_only image2d_t in,

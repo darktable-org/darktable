@@ -63,6 +63,15 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #pragma OPENCL FP_CONTRACT OFF
 #endif
 
+// Kahan summation algorithm
+#define Kahan_sum(m, c, add)        \
+  {                                 \
+    const float t1 = (add) - (c);   \
+    const float t2 = (m) + t1;      \
+    c = (t2 - m) - t1;              \
+    m = t2;                         \
+  }
+
 static inline int
 FC(const int row, const int col, const unsigned int filters)
 {
