@@ -111,8 +111,8 @@
     <name>ui/show_welcome_screen</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show welcome screen on first run</shortdescription>
-    <longdescription>display the welcome setup screen the first time darktable is launched</longdescription>
+    <shortdescription>show welcome screen on next run</shortdescription>
+    <longdescription>display the welcome setup screen the next time darktable is launched</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
