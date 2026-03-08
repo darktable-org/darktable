@@ -143,15 +143,22 @@
 
 ---
 
+* Idea: Fuse `dt_vector_exp` into gradient/laplacian angle loop. Inline the integer bit-trick directly in the `for_each_channel` where c2 values are computed, eliminating the separate `for(k=0..3) dt_vector_exp()` loop.
+* Outcome: **FAILED** (benchmark). Measured 35.655s vs 35.224s baseline — 1.22% regression. Mixing integer bit-trick operations (float-to-int conversion) with the float-heavy angle computation disrupted GCC auto-vectorization scheduling. Reverted.
+
+---
+
 # IN PROGRESS
 
 
 # UPCOMING
 
-1. **Fuse `dt_vector_exp` into gradient/laplacian angle loop**: Inline the integer bit-trick (`0x3f800000 + (int)(x * 0x00B2F854)`) directly in the gradient/laplacian `for_each_channel` loop where c2 values are first computed, rather than calling `dt_vector_exp` in a separate `for(k=0..3)` loop. Eliminates separate exp loop overhead and reduces c2's live range on stack.
+1. ~~**Fuse `dt_vector_exp` into gradient/laplacian angle loop** [MOVED TO IN PROGRESS]~~: Inline the integer bit-trick (`0x3f800000 + (int)(x * 0x00B2F854)`) directly in the gradient/laplacian `for_each_channel` loop where c2 values are first computed, rather than calling `dt_vector_exp` in a separate `for(k=0..3)` loop. Eliminates separate exp loop overhead and reduces c2's live range on stack.
 
-3. **Reorder: sums before angles, then fuse angle+exp+derivatives**: Move sums+variance loop before gradient/laplacian angle loop. Then fuse angle computation + inline exp + derivative computation into two `for_each_channel` loops (grad derivatives 0+2, lapl derivatives 1+3). Eliminates 6 angle storage arrays (96 bytes stack) by consuming angles immediately. Sums are available when needed. Risk: larger loop body may hurt auto-vectorization (historical pattern).
+2. **Fuse angle+exp+derivatives (eliminate angle storage arrays)**: Fuse gradient angle computation + inline exp + derivative 0+2 computation into a single `for_each_channel` loop. Do the same for laplacian angles + derivatives 1+3 in a second loop. Eliminates 6 angle storage arrays (96 bytes stack) by consuming angles immediately. Risk: larger loop body may hurt auto-vectorization.
 
-4. **Specialize `heat_PDE_diffusion` for `has_mask=false`**: Split inner pixel loop into two code paths: one without mask handling (eliminates mask byte load + `if(opacity)` branch per pixel) and one with. Select via loop-invariant `if(has_mask)` at function level. Common no-mask path gets tighter code without dead else-block.
+3. **Specialize `heat_PDE_diffusion` for `has_mask=false`**: Split inner pixel loop into two code paths: one without mask handling (eliminates mask byte load + `if(opacity)` branch per pixel) and one with. Select via loop-invariant `if(has_mask)` at function level. Common no-mask path gets tighter code without dead else-block.
 
-5. **Swap sums and angle loop order for cache friendliness**: Currently angle loop (loads LF/HF[n1,n3,n5,n7]) runs before sums loop (loads ALL n0-n8). Swapping to sums-first ensures angle loop's 4 loads per source are guaranteed L1 cache hits. Minimal code change (just reorder the two `for_each_channel` blocks). Risk: marginal effect, may be noise-level.
+4. **Use `__builtin_expect` on the `if(opacity)` branch**: Mark the opacity check with `__builtin_expect(opacity, 1)` to hint the compiler/CPU that this branch is almost always taken. May improve branch prediction and code layout, putting the hot path in the fall-through position.
+
+5. **Eliminate `diag_diff` arrays by recomputing inline in derivatives**: Currently `diag_diff_LF` and `diag_diff_HF` are stored in the sums loop and read once each in derivative computation (multiplied by `b11`). Since `diag_diff = n0 - n2 - n6 + n8` involves values already loaded in the sums loop, and it's only used once with a scalar multiply, we could pass the 4 raw corner values through instead, computing `b11 * (n0 - n2 - n6 + n8)` inline in the derivative loop. Saves 2 array writes (8 floats) at the cost of 4 extra loads (likely L1 hits from the sums loop). Reduces register pressure from fewer live arrays.
