@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-07 10:34-0300\n"
-"PO-Revision-Date: 2026-03-07 10:34-0300\n"
+"POT-Creation-Date: 2026-03-07 21:40-0300\n"
+"PO-Revision-Date: 2026-03-07 21:40-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1521,11 +1521,12 @@ msgstr "pasta raiz do LUT 3D"
 #: ../build/bin/preferences_gen.h:3405 ../build/bin/preferences_gen.h:3429
 #: ../src/control/jobs/control_jobs.c:2204
 #: ../src/control/jobs/control_jobs.c:2260 ../src/gui/preferences.c:1254
-#: ../src/gui/presets.c:429 ../src/imageio/storage/disk.c:199
-#: ../src/imageio/storage/disk.c:285 ../src/imageio/storage/gallery.c:148
-#: ../src/imageio/storage/gallery.c:207 ../src/imageio/storage/latex.c:144
-#: ../src/imageio/storage/latex.c:193 ../src/libs/import.c:1814
-#: ../src/libs/import.c:1926 ../src/libs/import.c:1984 ../src/libs/styles.c:456
+#: ../src/gui/presets.c:429 ../src/gui/welcome.c:159 ../src/gui/welcome.c:318
+#: ../src/imageio/storage/disk.c:199 ../src/imageio/storage/disk.c:285
+#: ../src/imageio/storage/gallery.c:148 ../src/imageio/storage/gallery.c:207
+#: ../src/imageio/storage/latex.c:144 ../src/imageio/storage/latex.c:193
+#: ../src/libs/import.c:1814 ../src/libs/import.c:1926
+#: ../src/libs/import.c:1984 ../src/libs/styles.c:456
 #: ../src/lua/preferences.c:673
 msgid "select directory"
 msgstr "selecione pasta"
@@ -5947,20 +5948,21 @@ msgstr "menu flutuante"
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1215
 #: ../src/gui/preferences.c:1255 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
-#: ../src/imageio/storage/disk.c:200 ../src/imageio/storage/gallery.c:149
-#: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1572
-#: ../src/iop/rasterfile.c:379 ../src/libs/collect.c:433
-#: ../src/libs/collect.c:3383 ../src/libs/copy_history.c:114
-#: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
-#: ../src/libs/import.c:1815 ../src/libs/import.c:1927
-#: ../src/libs/import.c:2019 ../src/libs/metadata.c:845
-#: ../src/libs/metadata_view.c:1464 ../src/libs/modulegroups.c:3630
-#: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
-#: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
-#: ../src/libs/tagging.c:1670 ../src/libs/tagging.c:1759
-#: ../src/libs/tagging.c:1851 ../src/libs/tagging.c:1980
-#: ../src/libs/tagging.c:2289 ../src/libs/tagging.c:2804
-#: ../src/libs/tagging.c:2846 ../src/libs/tagging.c:3944
+#: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
+#: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
+#: ../src/iop/lut3d.c:1572 ../src/iop/rasterfile.c:379
+#: ../src/libs/collect.c:433 ../src/libs/collect.c:3383
+#: ../src/libs/copy_history.c:114 ../src/libs/export_metadata.c:166
+#: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
+#: ../src/libs/import.c:1927 ../src/libs/import.c:2019
+#: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
+#: ../src/libs/modulegroups.c:3630 ../src/libs/recentcollect.c:232
+#: ../src/libs/styles.c:457 ../src/libs/styles.c:503 ../src/libs/styles.c:595
+#: ../src/libs/styles.c:656 ../src/libs/tagging.c:1670
+#: ../src/libs/tagging.c:1759 ../src/libs/tagging.c:1851
+#: ../src/libs/tagging.c:1980 ../src/libs/tagging.c:2289
+#: ../src/libs/tagging.c:2804 ../src/libs/tagging.c:2846
+#: ../src/libs/tagging.c:3944
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -8337,7 +8339,7 @@ msgstr "diferença de tempo"
 msgid "updated XMP sidecar files found"
 msgstr "arquivo auxiliar XMP atualizado não encontrado"
 
-#: ../src/control/crawler.c:801
+#: ../src/control/crawler.c:801 ../src/gui/welcome.c:687
 msgid "_close"
 msgstr "_fechar"
 
@@ -14693,9 +14695,10 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:1215 ../src/libs/collect.c:433
-#: ../src/libs/copy_history.c:114 ../src/libs/geotagging.c:953
-#: ../src/libs/import.c:1815 ../src/libs/import.c:1927 ../src/libs/styles.c:595
+#: ../src/gui/preferences.c:1215 ../src/gui/welcome.c:160
+#: ../src/libs/collect.c:433 ../src/libs/copy_history.c:114
+#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
+#: ../src/libs/import.c:1927 ../src/libs/styles.c:595
 msgid "_open"
 msgstr "_abrir"
 
@@ -15040,6 +15043,75 @@ msgstr "manter"
 #: ../src/gui/styles_dialog.c:839
 msgid "can't create style out of unaltered image"
 msgstr "não é possível criar estilo de uma imagem inalterada"
+
+#: ../src/gui/welcome.c:611 ../src/gui/welcome.c:631
+msgid "Welcome to darktable!"
+msgstr "Bem-vinda/Bem-vindo ao darktable!"
+
+#. Navigation buttons (right-aligned)
+#: ../src/gui/welcome.c:681
+msgid "_prev"
+msgstr "_prev"
+
+#: ../src/gui/welcome.c:684
+msgid "_next"
+msgstr "_next"
+
+#: ../src/gui/welcome.c:738
+msgid "let's set up a few options to get you started."
+msgstr "vamos configurar algumas opções para começar."
+
+#: ../src/gui/welcome.c:741
+msgid ""
+"if you are unsure, don't worry! just go ahead with the default, you can "
+"always change all values later in the <b>preferences</b>."
+msgstr ""
+"se não tiver certeza, não se preocupe! só prossiga com o padrão, você sempre "
+"pode mudar todos os valores depois nas <b>preferências</b>."
+
+#: ../src/gui/welcome.c:746
+msgid ""
+"you can close this window at any time, in which case the defaults will be "
+"applied."
+msgstr ""
+"você pode fechar esta janela a qualquer momento, e neste caso os padrões "
+"serão aplicados."
+
+#: ../src/gui/welcome.c:779
+msgid "<b>You are all set!</b>"
+msgstr "<b>Tudo pronto!</b>"
+
+#: ../src/gui/welcome.c:782
+msgid ""
+"darktable is extremely configurable and has a wealth of options. Here we "
+"covered just the most essential ones — make sure to explore the "
+"<b>preferences</b> to get the full picture."
+msgstr ""
+"o darktable é exteremamente configurável e tem muitas opçòes. Aqui somente "
+"cobrimos as mais essenciais -- certifique-se de explirar as <b>preferências</"
+"b> para ter a visão to todo."
+
+#. xgettext: %s is a URL; keep <a href="%s"> and </a> unchanged
+#: ../src/gui/welcome.c:789
+#, c-format
+msgid ""
+"Read the <a href=\"%s\">user manual</a> to learn more and make the most of "
+"darktable."
+msgstr ""
+"Leia o <a href=\"%s\">manual do usuário</a> para aprender mais e aproveitar "
+"o máximo do darktable.."
+
+#: ../src/gui/welcome.c:799
+msgid ""
+"And remember that you can always click on the <b>?</b> on the top toolbar to "
+"get help right where you need it."
+msgstr ""
+"E lembre-se que você sempre pode clicar em <b>?</b> na barra de ferramentas "
+"superior para obter ajuda onde precisar."
+
+#: ../src/gui/welcome.c:804
+msgid "Happy editing with darktable!"
+msgstr "Boas edições com o dartkable!"
 
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
