@@ -246,8 +246,13 @@ green_equilibration_favg_apply(read_only image2d_t in,
 constant int glim[5] = { 0, 1, 2, 1, 0 };
 
 kernel void
-pre_median(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-           const unsigned int filters, const float threshold, local float *buffer)
+pre_median(read_only image2d_t in,
+           write_only image2d_t out,
+           const int width,
+           const int height,
+           const unsigned int filters,
+           const float threshold,
+           local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -279,7 +284,7 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    buffer[bufidx] = readsingle(in, xx, yy);
   }
 
   // center buffer around current x,y-Pixel
@@ -317,7 +322,7 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
 
   float color = (c & 1) ? (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]) : buffer[0];
 
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(x, y), color);
 }
 #undef SWAP
 
