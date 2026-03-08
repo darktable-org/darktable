@@ -2972,11 +2972,11 @@ static inline float get_image_channel(read_only image2d_t in,
                                       const int c)
 {
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  if(c == 0)
+  if(c == RED)
     return pixel.x;
-  else if(c == 1)
+  else if(c == GREEN)
     return pixel.y;
-  else if(c == 2)
+  else if(c == BLUE)
     return pixel.z;
 
   return pixel.w;
@@ -3846,7 +3846,7 @@ interpolation_resample (read_only image2d_t in,
     for (int ix = 0; ix < hl && yvalid; ix++)
     {
       const int xx = lindex[ix];
-      float4 hpixel = read_imagef(in, sampleri,(int2)(xx, yy));
+      float4 hpixel = readpixel(in, xx, yy);
       vpixel += hpixel * lkernel[ix];
     }
 
@@ -3868,12 +3868,8 @@ interpolation_resample (read_only image2d_t in,
   }
 
   // store final result
-  if (iy == 0 && x < width && y < height)
-  {
-    // Clip negative RGB that may be produced by Lanczos undershooting
-    // Negative RGB are invalid values no matter the RGB space (light is positive)
-    write_imagef (out, (int2)(x, y), fmax(buffer[ylid], 0.f));
-  }
+  if(iy == 0 && x < width && y < height)
+    write_imagef(out, (int2)(x, y), buffer[ylid]);
 }
 
 /* kernel for the interpolation copy helper */
@@ -3890,7 +3886,7 @@ interpolation_copy(read_only image2d_t dev_in,
   const int ocol = get_global_id(0);
   const int orow = get_global_id(1);
 
-  if(ocol >= owidth || orow >= oheight) return;
+  if(ocol < 0 || ocol >= owidth || orow < 0 || orow >= oheight) return;
 
   float4 pix = (float4)( 0.0f, 0.0f, 0.0f, 0.0f );
 
@@ -3899,7 +3895,7 @@ interpolation_copy(read_only image2d_t dev_in,
 
   if(irow < iheight && irow >= 0 && icol < iwidth && icol >= 0)
   {
-    pix = read_imagef(dev_in, samplerA, (int2)(icol, irow));
+    pix = readpixel(dev_in, icol, irow);
   }
   write_imagef(dev_out, (int2)(ocol, orow), pix);
 }
