@@ -138,7 +138,7 @@ static void color_smoothing(float *out,
           SWAPmed(4, 2);
           SWAPmed(6, 4);
           SWAPmed(4, 2);
-          outp[c] = fmaxf(med[4] + outp[1], 0.0f);
+          outp[c] = med[4] + outp[1];
         }
       }
     }
@@ -266,10 +266,10 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
   cl_mem dev_t1 = dev_out;
   cl_mem dev_t2 = dev_tmp;
 
+  const size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+  const size_t local[] = { locopt.sizex, locopt.sizey, 1 };
   for(int pass = 0; pass < passes; pass++)
   {
-    const size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    const size_t local[] = { locopt.sizex, locopt.sizey, 1 };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_color_smoothing, sizes, local,
       CLARG(dev_t1), CLARG(dev_t2), CLARG(width),
       CLARG(height), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
