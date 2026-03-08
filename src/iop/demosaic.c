@@ -854,7 +854,7 @@ void process(dt_iop_module_t *self,
         if(method == DT_IOP_DEMOSAIC_FDC)
           xtrans_fdc_interpolate(t_out, t_in, width, t_rows, xtrans, exif_iso);
         else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes);
+          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes, filters);
         else
           vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
       }
