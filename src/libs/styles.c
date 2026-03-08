@@ -903,12 +903,10 @@ void gui_init(dt_lib_module_t *self)
                                _previewmode_combobox_changed, self,
                                N_("no"), N_("default"), N_("large"));  
 
-  GtkWidget *box = dt_gui_hbox();
-  dt_gui_box_add(box, d->duplicate);
   gtk_widget_set_halign(d->duplicate, GTK_ALIGN_START);
   gtk_widget_set_hexpand(d->duplicate, TRUE);
-  dt_gui_box_add(box, d->preview_mode);
-  gtk_widget_set_halign(d->preview_mode, GTK_ALIGN_END);
+
+  gtk_widget_set_hexpand(d->preview_mode, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
@@ -963,7 +961,9 @@ void gui_init(dt_lib_module_t *self)
   self->widget = dt_gui_vbox
     (d->entry,
      dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
-     box, d->applymode,
+     d->duplicate,
+     d->preview_mode,
+     d->applymode,
      dt_gui_hbox(d->create_button, d->edit_button, d->delete_button),
      dt_gui_hbox(d->import_button, d->export_button),
      d->apply_button);
