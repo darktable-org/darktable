@@ -372,12 +372,14 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   }
 }
 
-static gboolean _scope_mode_clicked(GtkWidget *button,
-                                    GdkEventButton *event,
-                                    dt_scopes_t *s)
+static void _scope_mode_clicked(GtkGestureSingle *self,
+                                gint n_press,
+                                gdouble x, gdouble y,
+                                dt_scopes_t *s)
 {
+  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(self));
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
-    return TRUE;
+    return;
 
   dt_scopes_mode_t *prior_mode = s->cur_mode;
   for(int i = 0; i < DT_SCOPES_MODE_N; i++) // find the position of the button
@@ -405,8 +407,6 @@ static gboolean _scope_mode_clicked(GtkWidget *button,
   // FIXME: does this comparison of update_counter need to be protected within a mutex?
   if(s->update_counter != s->cur_mode->update_counter)
     dt_scopes_reprocess();
-
-  return TRUE;
 }
 
 static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
@@ -673,9 +673,7 @@ void gui_init(dt_lib_module_t *self)
     dt_action_define(dark, N_("modes"), name,
                      s->mode_button[i], &dt_action_def_toggle);
     dt_gui_box_add(box_left, s->mode_button[i]);
-    // FIXME: use "clicked" event instead of "button-press-event"? do GtkDarktableToggleButton support clicked events?
-    g_signal_connect(G_OBJECT(s->mode_button[i]), "button-press-event",
-                     G_CALLBACK(_scope_mode_clicked), s);
+    dt_gui_connect_click(s->mode_button[i], _scope_mode_clicked, NULL, s);
     if(s->cur_mode == &s->modes[i])
       gtk_toggle_button_set_active
         (GTK_TOGGLE_BUTTON(s->mode_button[i]), TRUE);
@@ -750,9 +748,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
-  // FIXME: do not have to explicitly add events as we are now using EventController interface
-  gtk_widget_add_events(s->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(s->scope_draw),
                    "draw", G_CALLBACK(_drawable_draw_callback), s);
