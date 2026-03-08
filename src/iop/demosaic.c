@@ -52,6 +52,8 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 
+// #define DT_DEMOSAIC_POSITIVE
+
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
@@ -240,6 +242,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int show_blend_mask;
   int capture_result;
   int final_blend;
+  int image_positive;
   float *gauss_coeffs;
 } dt_iop_demosaic_global_data_t;
 
@@ -904,6 +907,13 @@ void process(dt_iop_module_t *self,
     dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, roi_in);
     dt_free_align(out);
   }
+
+#ifdef DT_DEMOSAIC_POSITIVE
+  float *oo = (float *)o;
+  DT_OMP_FOR_SIMD(aligned(oo : 64))
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k++)
+    oo[k] = fmaxf(0.0f, oo[k]);
+#endif
 }
 
 #ifdef HAVE_OPENCL
@@ -1201,7 +1211,13 @@ int process_cl(dt_iop_module_t *self,
   }
 
   if(!direct)
-     err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+
+#ifdef DT_DEMOSAIC_POSITIVE
+  if(err == CL_SUCCESS)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->image_positive, roi_out->width, roi_out->height,
+        CLARG(dev_out), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height));
+#endif
 
 finish:
   dt_opencl_release_mem_object(dev_xtrans);
@@ -1284,6 +1300,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
+  gd->image_positive  = dt_opencl_create_kernel(rcd, "image_positive");
 
   const int capt = 38; // capture.cl, from programs.conf
   gd->gaussian_9x9_mul = dt_opencl_create_kernel(capt, "kernel_9x9_mul");
@@ -1357,6 +1374,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->show_blend_mask);
   dt_opencl_free_kernel(gd->capture_result);
   dt_opencl_free_kernel(gd->final_blend);
+  dt_opencl_free_kernel(gd->image_positive);
   dt_free_align(gd->gauss_coeffs);
   free(self->data);
   self->data = NULL;
