@@ -760,8 +760,10 @@ static gboolean _scrolled(GtkWidget *widget,
                           gpointer user_data)
 {
   (void)user_data;
+  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
 
-  if(gdk_event_get_source_device((GdkEvent *)event) == _touchpad
+  if(((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
+      || device == _touchpad)
      && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
