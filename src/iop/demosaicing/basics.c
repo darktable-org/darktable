@@ -65,7 +65,7 @@ static void pre_median_b(float *out,
         for(int i = 0; i < 8; i++)
           for(int ii = i + 1; ii < 9; ii++)
             if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[0] = fmaxf(0.0f, (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]));
+        pixo[0] = cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2];
         // pixo[0] = med[(cnt-1)/2];
         pixo += 2;
         pixi += 2;
