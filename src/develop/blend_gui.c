@@ -2668,7 +2668,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
                                 N_("blend"), N_("boost factor"));
     dt_bauhaus_slider_set_soft_range(bd->channel_boost_factor_slider, 0.0, 3.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider,
-                                _("adjust the boost factor of the channel mask"));
+                                _("adjust the channel boost factor.\nincrease to allow matching values over 100%"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
 
     g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed",

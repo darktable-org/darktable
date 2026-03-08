@@ -30,6 +30,9 @@ typedef struct {
    const char *max;		// maximum value (optional, may be NULL or empty string)
    const char *shortdesc;	// short one-line description
    const char *longdesc;	// long, potentially multi-line description (optional)
+   const char *welcome_pagenum;      // "" or page number string for the welcome screen
+   const char *welcome_questionnum;  // sort order within the welcome page
+   const char *welcome_dirchooser;   // "yes" if a directory chooser should be used
 } _default_config_t;
 
 static void _clear_confgen_value(void *value)
@@ -46,6 +49,9 @@ static void _clear_confgen_value(void *value)
   s->shortdesc = NULL;
   g_free(s->longdesc);
   s->longdesc = NULL;
+  s->welcome_pagenum = 0;
+  s->welcome_questionnum = 0;
+  s->welcome_dirchooser = FALSE;
 }
 
 static void _free_confgen_value(void *value)
@@ -78,7 +84,23 @@ static _default_config_t _config_variables[] =
     <xsl:text>",&#xA;    </xsl:text>
     <xsl:apply-templates select="shortdescription"/>
     <xsl:text>,&#xA;    </xsl:text>
-    <xsl:apply-templates select="longdescription"/>
+    <xsl:choose>
+      <xsl:when test="longdescription">
+        <xsl:apply-templates select="longdescription"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>""</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>,&#xA;    </xsl:text>
+    <xsl:choose>
+      <xsl:when test="welcomescreen">
+        <xsl:apply-templates select="welcomescreen" mode="welcome"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>"", "", ""</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:text>&#xA;  },&#xA;</xsl:text>
   </xsl:for-each>
 
@@ -116,6 +138,9 @@ void dt_confgen_init()
      item->enum_values = _copy_string(var->enum_values);
      item->shortdesc = _copy_string(var->shortdesc);
      item->longdesc = _copy_string(var->longdesc);
+     item->welcome_pagenum     = var->welcome_pagenum ? atoi(var->welcome_pagenum) : 0;
+     item->welcome_questionnum = var->welcome_questionnum ? atoi(var->welcome_questionnum) : 0;
+     item->welcome_dirchooser = g_strcmp0(var->welcome_dirchooser, "yes") == 0;
      item->is_common = *var->is_common == 'y';
    }
 }
@@ -200,6 +225,12 @@ void dt_confgen_init()
       <xsl:text>"))&#xA;</xsl:text>
     </xsl:if>
   </xsl:for-each>
+</xsl:template>
+
+<xsl:template match="welcomescreen" mode="welcome">
+  <xsl:text>"</xsl:text><xsl:value-of select="@pagenum"/><xsl:text>", "</xsl:text>
+  <xsl:value-of select="@questionnum"/><xsl:text>", "</xsl:text>
+  <xsl:value-of select="@dirchooser"/><xsl:text>"</xsl:text>
 </xsl:template>
 
 </xsl:stylesheet>

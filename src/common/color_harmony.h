@@ -62,9 +62,6 @@ void dt_color_harmony_init(dt_color_harmony_guide_t *layout);
 void dt_color_harmony_set(const dt_imgid_t imgid,
                           const dt_color_harmony_guide_t layout);
 
-// get harmony id for the given image, -1 if there is no harmony recorded
-dt_harmony_guide_id_t dt_color_harmony_get_id(const dt_imgid_t imgid);
-
 // get color harmony for imgid, return FALSE if not found in db
 gboolean dt_color_harmony_get(const dt_imgid_t imgid,
                               dt_color_harmony_guide_t *layout);
