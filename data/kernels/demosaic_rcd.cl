@@ -297,8 +297,8 @@ __kernel void calc_Y0_mask(global float *mask,
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  const float4 pt = wb * fmax(0.0f, readpixel(in, col, row));
-  mask[idx] = dtcl_sqrt(0.33333333f * (pt.x + pt.y + pt.z));
+  const float4 pt = wb * readpixel(in, col, row);
+  mask[idx] = dtcl_sqrt(0.33333333f * fmax(0.0f, (pt.x + pt.y + pt.z)));
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
