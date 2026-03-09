@@ -1085,17 +1085,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           variance[c] = sqf(hf0) + sqf(hf1) + sqf(hf2) + sqf(hf3) + sqf(hf4) + sqf(hf5) + sqf(hf6) + sqf(hf7) + sqf(hf8);
         }
 
-        // c² in https://www.researchgate.net/publication/220663968
-        dt_aligned_pixel_t c2[4];
-
-        dt_aligned_pixel_t cos_theta_grad_sq;
-        dt_aligned_pixel_t sin_theta_grad_sq;
-        dt_aligned_pixel_t cos_theta_sin_theta_grad;
-
-        dt_aligned_pixel_t cos_theta_lapl_sq;
-        dt_aligned_pixel_t sin_theta_lapl_sq;
-        dt_aligned_pixel_t cos_theta_sin_theta_lapl;
-
+        // Fused gradient angle + exp + derivatives 0+2
+        // (eliminates 6 angle storage arrays by consuming angles immediately)
+        dt_aligned_pixel_t derivatives[4] = { { 0.f } };
         for_each_channel(c)
         {
           const float diff_gx = LF[n7 + c] - LF[n1 + c];
@@ -1106,60 +1098,24 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           const float m2_grad = gx2 + gy2;
 
           const float magnitude_grad = sqrtf(m2_grad);
-          c2[0][c] = -magnitude_grad * half_anisotropy[0];
-          c2[2][c] = -magnitude_grad * half_anisotropy[2];
+          const float c2_0 = dt_fast_expf(-magnitude_grad * half_anisotropy[0]);
+          const float c2_2 = dt_fast_expf(-magnitude_grad * half_anisotropy[2]);
 
+          float cos_theta_sq, sin_theta_sq, cos_theta_sin_theta;
           if(m2_grad > 0.f)
           {
             const float inv_m2_grad = 1.0f / m2_grad;
-            cos_theta_grad_sq[c] = gx2 * inv_m2_grad;
-            sin_theta_grad_sq[c] = gy2 * inv_m2_grad;
-            cos_theta_sin_theta_grad[c] = diff_gx * diff_gy * inv_m2_grad;
+            cos_theta_sq = gx2 * inv_m2_grad;
+            sin_theta_sq = gy2 * inv_m2_grad;
+            cos_theta_sin_theta = diff_gx * diff_gy * inv_m2_grad;
           }
           else
           {
-            cos_theta_grad_sq[c] = 1.f;
-            sin_theta_grad_sq[c] = 0.f;
-            cos_theta_sin_theta_grad[c] = 0.f;
+            cos_theta_sq = 1.f;
+            sin_theta_sq = 0.f;
+            cos_theta_sin_theta = 0.f;
           }
 
-          const float diff_lx = HF[n7 + c] - HF[n1 + c];
-          const float diff_ly = HF[n5 + c] - HF[n3 + c];
-
-          const float lx2 = sqf(diff_lx);
-          const float ly2 = sqf(diff_ly);
-          const float m2_lapl = lx2 + ly2;
-
-          const float magnitude_lapl = sqrtf(m2_lapl);
-          c2[1][c] = -magnitude_lapl * half_anisotropy[1];
-          c2[3][c] = -magnitude_lapl * half_anisotropy[3];
-
-          if(m2_lapl > 0.f)
-          {
-            const float inv_m2_lapl = 1.0f / m2_lapl;
-            cos_theta_lapl_sq[c] = lx2 * inv_m2_lapl;
-            sin_theta_lapl_sq[c] = ly2 * inv_m2_lapl;
-            cos_theta_sin_theta_lapl[c] = diff_lx * diff_ly * inv_m2_lapl;
-          }
-          else
-          {
-            cos_theta_lapl_sq[c] = 1.f;
-            sin_theta_lapl_sq[c] = 0.f;
-            cos_theta_sin_theta_lapl[c] = 0.f;
-          }
-        }
-
-        // elements of c2 need to be expf(mag*anistropy), but we
-        // haven't applied the expf() yet.  Do that now.
-        for(size_t k = 0; k < 4; k++)
-        {
-          dt_vector_exp(c2[k], c2[k]);
-        }
-
-        dt_aligned_pixel_t derivatives[4] = { { 0.f } };
-        // Pair convolutions sharing the same angle data (0+2 share grad, 1+3 share lapl)
-        for_each_channel(c)
-        {
           // derivative 0: grad angles, LF sums, isotropy_type[0]
           if(isotropy_type[0] == DT_ISOTROPY_ISOTROPE)
             derivatives[0][c] = 0.25f * diag_sum_LF[c] + 0.5f * vert_sum_LF[c] + 0.5f * horiz_sum_LF[c] - 3.f * center_LF[c];
@@ -1168,15 +1124,15 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             float a11, a22, b11;
             if(isotropy_type[0] == DT_ISOTROPY_ISOPHOTE)
             {
-              a11 = cos_theta_grad_sq[c] + c2[0][c] * sin_theta_grad_sq[c];
-              a22 = c2[0][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
-              b11 = (c2[0][c] - 1.0f) * cos_theta_sin_theta_grad[c] * 0.5f;
+              a11 = cos_theta_sq + c2_0 * sin_theta_sq;
+              a22 = c2_0 * cos_theta_sq + sin_theta_sq;
+              b11 = (c2_0 - 1.0f) * cos_theta_sin_theta * 0.5f;
             }
             else
             {
-              a11 = c2[0][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
-              a22 = cos_theta_grad_sq[c] + c2[0][c] * sin_theta_grad_sq[c];
-              b11 = (1.0f - c2[0][c]) * cos_theta_sin_theta_grad[c] * 0.5f;
+              a11 = c2_0 * cos_theta_sq + sin_theta_sq;
+              a22 = cos_theta_sq + c2_0 * sin_theta_sq;
+              b11 = (1.0f - c2_0) * cos_theta_sin_theta * 0.5f;
             }
             derivatives[0][c] = b11 * diag_diff_LF[c] + a22 * vert_sum_LF[c] + a11 * horiz_sum_LF[c] + (-2.0f * (a11 + a22)) * center_LF[c];
           }
@@ -1188,21 +1144,48 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             float a11, a22, b11;
             if(isotropy_type[2] == DT_ISOTROPY_ISOPHOTE)
             {
-              a11 = cos_theta_grad_sq[c] + c2[2][c] * sin_theta_grad_sq[c];
-              a22 = c2[2][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
-              b11 = (c2[2][c] - 1.0f) * cos_theta_sin_theta_grad[c] * 0.5f;
+              a11 = cos_theta_sq + c2_2 * sin_theta_sq;
+              a22 = c2_2 * cos_theta_sq + sin_theta_sq;
+              b11 = (c2_2 - 1.0f) * cos_theta_sin_theta * 0.5f;
             }
             else
             {
-              a11 = c2[2][c] * cos_theta_grad_sq[c] + sin_theta_grad_sq[c];
-              a22 = cos_theta_grad_sq[c] + c2[2][c] * sin_theta_grad_sq[c];
-              b11 = (1.0f - c2[2][c]) * cos_theta_sin_theta_grad[c] * 0.5f;
+              a11 = c2_2 * cos_theta_sq + sin_theta_sq;
+              a22 = cos_theta_sq + c2_2 * sin_theta_sq;
+              b11 = (1.0f - c2_2) * cos_theta_sin_theta * 0.5f;
             }
             derivatives[2][c] = b11 * diag_diff_HF[c] + a22 * vert_sum_HF[c] + a11 * horiz_sum_HF[c] + (-2.0f * (a11 + a22)) * center_HF[c];
           }
         }
+        // Fused laplacian angle + exp + derivatives 1+3
         for_each_channel(c)
         {
+          const float diff_lx = HF[n7 + c] - HF[n1 + c];
+          const float diff_ly = HF[n5 + c] - HF[n3 + c];
+
+          const float lx2 = sqf(diff_lx);
+          const float ly2 = sqf(diff_ly);
+          const float m2_lapl = lx2 + ly2;
+
+          const float magnitude_lapl = sqrtf(m2_lapl);
+          const float c2_1 = dt_fast_expf(-magnitude_lapl * half_anisotropy[1]);
+          const float c2_3 = dt_fast_expf(-magnitude_lapl * half_anisotropy[3]);
+
+          float cos_theta_sq, sin_theta_sq, cos_theta_sin_theta;
+          if(m2_lapl > 0.f)
+          {
+            const float inv_m2_lapl = 1.0f / m2_lapl;
+            cos_theta_sq = lx2 * inv_m2_lapl;
+            sin_theta_sq = ly2 * inv_m2_lapl;
+            cos_theta_sin_theta = diff_lx * diff_ly * inv_m2_lapl;
+          }
+          else
+          {
+            cos_theta_sq = 1.f;
+            sin_theta_sq = 0.f;
+            cos_theta_sin_theta = 0.f;
+          }
+
           // derivative 1: lapl angles, LF sums, isotropy_type[1]
           if(isotropy_type[1] == DT_ISOTROPY_ISOTROPE)
             derivatives[1][c] = 0.25f * diag_sum_LF[c] + 0.5f * vert_sum_LF[c] + 0.5f * horiz_sum_LF[c] - 3.f * center_LF[c];
@@ -1211,15 +1194,15 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             float a11, a22, b11;
             if(isotropy_type[1] == DT_ISOTROPY_ISOPHOTE)
             {
-              a11 = cos_theta_lapl_sq[c] + c2[1][c] * sin_theta_lapl_sq[c];
-              a22 = c2[1][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
-              b11 = (c2[1][c] - 1.0f) * cos_theta_sin_theta_lapl[c] * 0.5f;
+              a11 = cos_theta_sq + c2_1 * sin_theta_sq;
+              a22 = c2_1 * cos_theta_sq + sin_theta_sq;
+              b11 = (c2_1 - 1.0f) * cos_theta_sin_theta * 0.5f;
             }
             else
             {
-              a11 = c2[1][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
-              a22 = cos_theta_lapl_sq[c] + c2[1][c] * sin_theta_lapl_sq[c];
-              b11 = (1.0f - c2[1][c]) * cos_theta_sin_theta_lapl[c] * 0.5f;
+              a11 = c2_1 * cos_theta_sq + sin_theta_sq;
+              a22 = cos_theta_sq + c2_1 * sin_theta_sq;
+              b11 = (1.0f - c2_1) * cos_theta_sin_theta * 0.5f;
             }
             derivatives[1][c] = b11 * diag_diff_LF[c] + a22 * vert_sum_LF[c] + a11 * horiz_sum_LF[c] + (-2.0f * (a11 + a22)) * center_LF[c];
           }
@@ -1231,15 +1214,15 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             float a11, a22, b11;
             if(isotropy_type[3] == DT_ISOTROPY_ISOPHOTE)
             {
-              a11 = cos_theta_lapl_sq[c] + c2[3][c] * sin_theta_lapl_sq[c];
-              a22 = c2[3][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
-              b11 = (c2[3][c] - 1.0f) * cos_theta_sin_theta_lapl[c] * 0.5f;
+              a11 = cos_theta_sq + c2_3 * sin_theta_sq;
+              a22 = c2_3 * cos_theta_sq + sin_theta_sq;
+              b11 = (c2_3 - 1.0f) * cos_theta_sin_theta * 0.5f;
             }
             else
             {
-              a11 = c2[3][c] * cos_theta_lapl_sq[c] + sin_theta_lapl_sq[c];
-              a22 = cos_theta_lapl_sq[c] + c2[3][c] * sin_theta_lapl_sq[c];
-              b11 = (1.0f - c2[3][c]) * cos_theta_sin_theta_lapl[c] * 0.5f;
+              a11 = c2_3 * cos_theta_sq + sin_theta_sq;
+              a22 = cos_theta_sq + c2_3 * sin_theta_sq;
+              b11 = (1.0f - c2_3) * cos_theta_sin_theta * 0.5f;
             }
             derivatives[3][c] = b11 * diag_diff_HF[c] + a22 * vert_sum_HF[c] + a11 * horiz_sum_HF[c] + (-2.0f * (a11 + a22)) * center_HF[c];
           }
