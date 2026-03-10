@@ -1037,13 +1037,6 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
- <dtconfig>
-    <name>ui_last/styles_preview_mode</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
   <dtconfig>
     <name>ui_last/metadata_dialog_width</name>
     <type>int</type>

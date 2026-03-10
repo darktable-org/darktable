@@ -772,12 +772,6 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
 }
 
-/* static void _preview_size_combobox_changed(GtkWidget *widget, gpointer user_data)
-{
-  const int size = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/lighttable/style/preview_size", size);
-}  */
-
 void gui_update(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = self->data;
@@ -912,19 +906,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
   gtk_widget_set_no_show_all(d->duplicate, TRUE);                              
-
-/*   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->preview_mode, self, NULL, N_("preview"),
-                               _("change size or hide preview on tooltip of style"),
-                               dt_conf_get_int("ui_last/styles_preview_mode"),
-                               _previewmode_combobox_changed, self,
-                               N_("no"), N_("default"), N_("large"));  
- */
-/*   GtkWidget *box = dt_gui_hbox();
-  dt_gui_box_add(box, d->duplicate);
-  gtk_widget_set_halign(d->duplicate, GTK_ALIGN_START);
-  gtk_widget_set_hexpand(d->duplicate, TRUE);
-  dt_gui_box_add(box, d->preview_mode);
-  gtk_widget_set_halign(d->preview_mode, GTK_ALIGN_END); */
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
