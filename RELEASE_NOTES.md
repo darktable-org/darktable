@@ -154,6 +154,8 @@ changes (where available).
 - Increased the limit on the number of offset days in geotagging module
   to correct an incorrect camera timestamps from 99 to 9999 days.
 
+- Added a new collection filter for image duplicates.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
