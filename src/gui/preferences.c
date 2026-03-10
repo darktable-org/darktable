@@ -1371,7 +1371,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
                                    const gboolean swap)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1429,7 +1429,7 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid,
                                   const guint line)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1470,7 +1470,7 @@ GtkWidget *dt_gui_preferences_enum(dt_action_t *action,
                                                  : DT_BAUHAUS_COMBOBOX_ALIGN_LEFT;
   dt_bauhaus_combobox_set_selected_text_align(w, align);
   if(action)
-    gtk_widget_set_tooltip_text(w, _(dt_confgen_get_tooltip(key)));
+    gtk_widget_set_tooltip_markup(w, _(dt_confgen_get_tooltip(key)));
 
   const char *values = dt_confgen_get(key, DT_VALUES);
   const char *defstr = dt_confgen_get(key, DT_DEFAULT);
@@ -1540,7 +1540,7 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid,
                                      const guint line)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);

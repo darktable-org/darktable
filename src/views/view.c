@@ -344,6 +344,28 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   }
 
   /* change current view to the new view */
+
+  /* 
+     Race Condition
+ 
+     the current view is set to the new view prior to
+     initializing.  Plugins are initialized according to
+     the current view, so it must be set prior.
+
+     If a Lua script tries to register a lib, it checks the
+     current view to see if is lighttable.  If the current
+     view is lighttable then the lib tries to install.
+
+     If the current view is set to lighttable, but the
+     view hasn't completely initialized, and Lua attempts
+     to install the lib the result will be a hang.
+
+     There is a work around in the Lua initialization code,
+     data/luarc, to check that the initialization is complete
+     and set a flag, darktable_gui_safe, when it is safe to
+     register libs
+  */
+
   vm->current_view = new_view;
 
   dt_view_type_flags_t view_type = new_view->view(new_view);

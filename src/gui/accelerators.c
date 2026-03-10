@@ -1200,7 +1200,9 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
     GtkWidget *label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), markup_text);
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-    if(original_markup && !strchr(original_markup,'\n'))
+    // Set a preferred width for tooltips that have no manual line breaks,
+    // or that contain markup tags (which tend to produce long runs of text).
+    if(original_markup && (!strchr(original_markup, '\n') || strchr(original_markup, '<')))
       gtk_label_set_max_width_chars(GTK_LABEL(label), 70);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
 

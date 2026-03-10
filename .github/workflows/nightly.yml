@@ -173,7 +173,7 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage-${{ runner.arch }}
@@ -326,7 +326,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
@@ -341,7 +341,7 @@ jobs:
       matrix:
         build:
           - { os: macos-14,       xcode: 16.2, deployment: 14.0 } # AppleClang 16, arm64
-          - { os: macos-15-intel, xcode: 26.2, deployment: 15.0 } # AppleClang 17, x86_64
+          - { os: macos-15-intel, xcode: 26.3, deployment: 15.0 } # AppleClang 17, x86_64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -410,30 +410,58 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
           retention-days: 2
 
   upload_to_release:
-    if: github.ref_name == 'master'
     permissions:
       # We need write permission to update the nightly tag
       contents: write
     runs-on: ubuntu-latest
     needs: [AppImage, Windows, macOS]
     steps:
+      - name: Checkout master to update 'nightly' tag
+        if: github.ref_name == 'master' # will be true only for nightly builds
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          submodules: false
+          path: src
+          fetch-depth: 1
+      - name: Force move 'nightly' tag
+        if: github.ref_name == 'master' # will be true only for nightly builds
+        run: |
+          pushd src
+          git tag --force nightly
+          git push origin nightly --force
+          popd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Download artifacts
-        uses: actions/download-artifact@v7
-      - name: Update nightly release
-        uses: andelf/nightly-release@main
+        uses: actions/download-artifact@v8
+      - name: Get current date and set as environment variable
+        run: |
+          # Format date as YYYYMMDD
+          NOW=$(date +'%Y%m%d')
+          # Set the environment variable for subsequent steps
+          echo "RELEASE_DATE=$NOW" >> $GITHUB_ENV
+        shell: bash
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.20.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly
+          allowUpdates: true     # required to allow nightly release updates
+          removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
+          tag: nightly
           prerelease: true
-          name: 'Darktable nightly build $$'
+          # We don't want a stable release that is in the process of being prepared
+          # and not yet ready for publication to be visible
+          draft: ${{ startsWith(github.ref, 'refs/tags/') }}
+          name: 'Darktable nightly build ${{ env.RELEASE_DATE }}'
           # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
@@ -451,7 +479,7 @@ jobs:
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
-          files: |
+          artifacts: |
             artifact-appimage-*/*
             artifact-windows-*/*
             artifact-macos-*/*

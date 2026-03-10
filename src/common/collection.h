@@ -119,6 +119,8 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_EXPOSURE_BIAS,
 
+  DT_COLLECTION_PROP_DUPLICATES,
+
   // all new collection types need to be added before DT_COLLECTION_PROP_LAST,
   // which separates actual collection types from special flag values
   DT_COLLECTION_PROP_LAST,
