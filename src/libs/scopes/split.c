@@ -30,7 +30,7 @@ typedef struct dt_scopes_split_t
 const char* _split_name(const dt_scopes_mode_t *const self)
 {
   // FIXME: this could depend on values of left/right scopes
-  return N_("waveform/vectorscope");
+  return N_("split");
 }
 
 static void _split_process(dt_scopes_mode_t *const self,

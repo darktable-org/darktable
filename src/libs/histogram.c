@@ -372,25 +372,36 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
   }
 }
 
-static void _scope_mode_clicked(GtkGestureSingle *self,
-                                gint n_press,
-                                gdouble x, gdouble y,
-                                dt_scopes_t *s)
+static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
 {
-  GtkWidget *button = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(self));
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
-    return;
-
+  // create radio-button-like behavior for choosing scope modes with a
+  // GtkDarktableToggleButton group, using signal blocking to avoid
+  // re-entering this signal handler
   dt_scopes_mode_t *prior_mode = s->cur_mode;
-  for(int i = 0; i < DT_SCOPES_MODE_N; i++) // find the position of the button
+  for(int i = 0; i < DT_SCOPES_MODE_N; i++)
   {
-    if(s->mode_button[i] == button)
+    if(s->modes[i].button_activate == button)
+    {
+      // clicking on current mode button leaves it on
+      if(s->cur_mode == &s->modes[i]
+         && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+      {
+        g_signal_handler_block(button, s->modes[i].toggle_signal_handler);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[i].button_activate), TRUE);
+        g_signal_handler_unblock(button, s->modes[i].toggle_signal_handler);
+        return;
+      }
       s->cur_mode = &s->modes[i];
-    if(prior_mode == &s->modes[i])
-      gtk_toggle_button_set_active
-        (GTK_TOGGLE_BUTTON(s->mode_button[i]), FALSE);
+    }
+    else if(prior_mode == &s->modes[i])
+    {
+      // user clicked on a different mode button, set the prior mode
+      // toggle button to inactive
+      g_signal_handler_block(s->modes[i].button_activate, s->modes[i].toggle_signal_handler);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[i].button_activate), FALSE);
+      g_signal_handler_unblock(s->modes[i].button_activate, s->modes[i].toggle_signal_handler);
+    }
   }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
 
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_scopes_call(s->cur_mode, name));
@@ -664,19 +675,18 @@ void gui_init(dt_lib_module_t *self)
       dtgtk_cairo_paint_histogram_scope };
   for(int i=0; i<DT_SCOPES_MODE_N; i++)
   {
-    // FIXME: make these GtkRadioButton?
-    s->mode_button[i] =
+    // FIXME: can use use GtkNotebook with gtk_notebook_set_show_tabs() to FALSE to handle mode-switching behavior?
+    s->modes[i].button_activate =
       dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
     const char *const name = dt_scopes_call(&s->modes[i], name);
-    gtk_widget_set_tooltip_text(s->mode_button[i],
-                                _(name));
+    gtk_widget_set_tooltip_text(s->modes[i].button_activate, _(name));
     dt_action_define(dark, N_("modes"), name,
-                     s->mode_button[i], &dt_action_def_toggle);
-    dt_gui_box_add(box_left, s->mode_button[i]);
-    dt_gui_connect_click(s->mode_button[i], _scope_mode_clicked, NULL, s);
-    if(s->cur_mode == &s->modes[i])
-      gtk_toggle_button_set_active
-        (GTK_TOGGLE_BUTTON(s->mode_button[i]), TRUE);
+                     s->modes[i].button_activate, &dt_action_def_toggle);
+    dt_gui_box_add(box_left, s->modes[i].button_activate);
+    // GTK4: use gtk_toggle_button_set_group(), GTK3: handle in callback
+    s->modes[i].toggle_signal_handler =
+      g_signal_connect_data(G_OBJECT(s->modes[i].button_activate), "toggled",
+                            G_CALLBACK(_mode_toggle), s, NULL, 0);
   }
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
@@ -711,6 +721,9 @@ void gui_init(dt_lib_module_t *self)
   {
     dt_scopes_call_if_exists(&s->modes[i], add_to_options_box, dark, box_right);
     dt_scopes_call_if_exists(&s->modes[i], update_buttons);
+    if(s->cur_mode == &s->modes[i])
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(s->modes[i].button_activate), TRUE);
   }
   dt_gui_box_add(box_right, s->button_box_rgb);
 
