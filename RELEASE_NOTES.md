@@ -151,6 +151,9 @@ changes (where available).
   options. This was a relic of when there were fewer scopes and they
   were not accessible by shortcuts.
 
+- Increased the limit on the number of offset days in geotagging module
+  to correct an incorrect camera timestamps from 99 to 9999 days.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
