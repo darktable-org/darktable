@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1232,7 +1232,7 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
   {
     const gboolean neg = offset_int < 0;
     gtk_label_set_text(GTK_LABEL(d->of.sign), neg ? "- " : "");
-    char text[4];
+    char text[5];
     GTimeSpan off = neg ? -offset_int : offset_int;
     off2 = off / 1000;  // skip microseconds
     off = off2;
@@ -1252,8 +1252,8 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
     snprintf(text, sizeof(text), "%02d", (int)(off - off2 * 24));
     gtk_entry_set_text(GTK_ENTRY(d->of.widget[3]), text);
     off = off2;
-    off2 = off / 100;
-    snprintf(text, sizeof(text), "%02d", (int)(off - off2 * 100));
+    off2 = off / 10000;
+    snprintf(text, sizeof(text), "%04d", (int)(off - off2 * 10000));
     gtk_entry_set_text(GTK_ENTRY(d->of.widget[2]), text);
   }
   if(!valid || off2)
@@ -1496,8 +1496,13 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
 }
 
 // type 0 date/time, 1 original date/time, 2 offset
-static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self,
-                                    GtkSizeGroup *group, GtkWidget *button, gchar *tip)
+static GtkWidget *_gui_init_datetime(gchar *text,
+                                     dt_lib_datetime_t *dt,
+                                     const int type,
+                                     dt_lib_module_t *self,
+                                     GtkSizeGroup *group,
+                                     GtkWidget *button,
+                                     gchar *tip)
 {
   GtkWidget *flow = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(flow), 2);
@@ -1526,7 +1531,13 @@ static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const i
     }
     if(i >= 2 || type != 2)
     {
-      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4 : i == 6 ? 3 : 2);
+      // 1st field of dates (offset line is excluded by "if" above) is year, so 4 digits
+      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4
+      // 7th field (optional, may be hidden) is msec, so 3 digits
+                                             : i == 6 ? 3
+      // 2nd widget of offset line should accommodate offsets up to 9999 days, so 4 digits
+      // all other fields for 2 digit numbers
+                                                      : ((type == 2) && (i == 2)) ? 4 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
@@ -1794,7 +1805,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
-  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
+  gtk_widget_set_tooltip_text(d->lock_offset,
+                              _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
   g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
 
@@ -1818,7 +1830,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   d->timezone = dt_ui_entry_new(0);
-  gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappears"));
+  gtk_widget_set_tooltip_text(d->timezone,
+                              _("start typing to show a list of permitted values and select your timezone.\n"
+                                "press enter to confirm, so that the asterisk * disappears"));
   d->timezone_changed = dt_ui_label_new("");
 
   GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
