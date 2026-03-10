@@ -128,6 +128,8 @@ typedef struct dt_scopes_mode_t
 {
   const dt_scopes_functions_t *functions;
   void *data;
+  GtkWidget *button_activate;                   // GtkDarktableToggleButton which activates mode
+  gulong toggle_signal_handler;
   int update_counter;
   // point back to parent
   // FIXME: is this healthy?
@@ -145,7 +147,6 @@ typedef struct dt_scopes_t
   scopes_channels_t channels;                   // display state chosen by RGB buttons
   // UI elements
   GtkWidget *button_box_main;                   // GtkBox -- contains scope control buttons
-  GtkWidget *mode_button[DT_SCOPES_MODE_N];     // Array of GtkToggleButton -- mode buttons
   GtkWidget *button_box_opt;                    // GtkBox -- contains options buttons
   GtkWidget *button_box_rgb;                    // GtkBox -- contains RGB channels buttons
   GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channel display
