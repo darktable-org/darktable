@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1232,7 +1232,7 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
   {
     const gboolean neg = offset_int < 0;
     gtk_label_set_text(GTK_LABEL(d->of.sign), neg ? "- " : "");
-    char text[4];
+    char text[5];
     GTimeSpan off = neg ? -offset_int : offset_int;
     off2 = off / 1000;  // skip microseconds
     off = off2;
@@ -1252,8 +1252,8 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
     snprintf(text, sizeof(text), "%02d", (int)(off - off2 * 24));
     gtk_entry_set_text(GTK_ENTRY(d->of.widget[3]), text);
     off = off2;
-    off2 = off / 100;
-    snprintf(text, sizeof(text), "%02d", (int)(off - off2 * 100));
+    off2 = off / 10000;
+    snprintf(text, sizeof(text), "%04d", (int)(off - off2 * 10000));
     gtk_entry_set_text(GTK_ENTRY(d->of.widget[2]), text);
   }
   if(!valid || off2)
@@ -1526,7 +1526,7 @@ static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const i
     }
     if(i >= 2 || type != 2)
     {
-      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4 : i == 6 ? 3 : 2);
+      dt->widget[i] = dt_ui_entry_new(i == 0 ? 4 : i == 6 ? 3 : ((type == 2) && (i == 2)) ? 4 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
