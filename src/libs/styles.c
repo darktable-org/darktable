@@ -45,7 +45,6 @@ typedef struct dt_lib_styles_t
   GtkTreeView *tree;
   GtkWidget *create_button, *edit_button, *delete_button;
   GtkWidget *import_button, *export_button, *applymode, *apply_button;
-  GtkWidget *preview_mode;
   GtkWidget *hide_preview;
 } dt_lib_styles_t;
 
@@ -773,11 +772,11 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
 }
 
-/* static void _previewmode_combobox_changed(GtkWidget *widget, gpointer user_data)
+static void _preview_size_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  const int mode = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("ui_last/styles_preview_mode", mode);
-} */
+  const int size = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/lighttable/style/preview_size", size);
+} 
 
 void gui_update(dt_lib_module_t *self)
 {
@@ -1038,7 +1037,30 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("cancel"), GTK_RESPONSE_NONE,
                                                  _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);                                                 
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  
+  GtkWidget *preview_size;
+  const int size = dt_conf_get_int("plugins/lighttable/style/preview_size");
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(preview_size, self, NULL, N_("preview size"),
+                            _("change size of preview on tooltip of style"),
+                            size,
+                            _preview_size_combobox_changed, self,
+                            N_("default"), N_("large"));  
+
+  dt_gui_dialog_add(GTK_DIALOG(dialog), preview_size);         
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));      
+  if(res == GTK_RESPONSE_NONE)
+  {
+    // user clicked cancel -> restore previous value
+    dt_conf_set_int("plugins/lighttable/style/preview_size", size);
+  }
+  gtk_widget_destroy(dialog);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)

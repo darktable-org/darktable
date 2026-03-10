@@ -15,7 +15,7 @@
 <!ATTLIST dtconfig
 	prefs IDREF #IMPLIED
         section IDREF #IMPLIED
-        dialog (collect|recentcollect|import|tagging) #IMPLIED
+        dialog (collect|recentcollect|import|tagging|style) #IMPLIED
         ui (yes|no) #IMPLIED
         restart (true|false) #IMPLIED
         common (yes|no) #IMPLIED
