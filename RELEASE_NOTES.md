@@ -134,9 +134,10 @@ changes (where available).
 
 - Removed `Neo` Intel GPU from the Windows blacklist.
 
-- In the styles module, a new option has been added to control the
-  preview size in the tooltip. The available options are: no preview,
-  default size, and large size.
+- In the styles module, a new option has been added to hide the
+  preview in the tooltip. Additionally, a module preference now allows
+  you to change the preview size, with two options available: default 
+  and large.
 
 - Improved debugging option --dump-diff-pipe for those of you
   interested in OpenCL code and debugging.
