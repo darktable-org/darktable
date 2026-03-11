@@ -343,6 +343,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_shapes[DEVELOP_MASKS_NB_SHAPES];
   int masks_type[DEVELOP_MASKS_NB_SHAPES];
   GtkWidget *masks_edit;
+  GtkWidget *masks_edit_mode;
   GtkWidget *masks_polarity;
   int *masks_combo_ids;
   dt_masks_edit_mode_t masks_shown;
