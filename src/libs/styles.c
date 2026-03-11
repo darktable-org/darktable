@@ -894,7 +894,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->hide_preview),
                                dt_conf_get_bool("ui_last/styles_hide_preview"));
   gtk_widget_set_tooltip_text(d->hide_preview,
-                              _("hide preview of style applied to image"));
+                              _("hide preview of style on tooltip"));
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
@@ -1016,8 +1016,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("style preview settings"), GTK_WINDOW(win),
                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                 _("cancel"), GTK_RESPONSE_NONE,
-                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
+                                                 _("_cancel"), GTK_RESPONSE_NONE,
+                                                 _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);                                                 
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   
