@@ -1710,6 +1710,8 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
     gtk_toggle_button_set_active
       (GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+    gtk_toggle_button_set_active
+      (GTK_TOGGLE_BUTTON(bd->masks_edit_mode), bd->masks_shown == DT_MASKS_EDIT_RESTRICTED);      
     dt_masks_set_edit_mode(self, bd->masks_shown);
 
     // set all add shape buttons to inactive
