@@ -45,7 +45,7 @@ typedef struct dt_lib_styles_t
   GtkTreeView *tree;
   GtkWidget *create_button, *edit_button, *delete_button;
   GtkWidget *import_button, *export_button, *applymode, *apply_button;
-  GtkWidget *preview_mode;
+  GtkWidget *hide_preview;
 } dt_lib_styles_t;
 
 const char *name(dt_lib_module_t *self)
@@ -760,16 +760,16 @@ static void _duplicate_callback(GtkWidget *widget, dt_lib_styles_t *d)
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 }
 
+static void _hide_preview_callback(GtkWidget *widget, dt_lib_styles_t *d)
+{
+  dt_conf_set_bool("ui_last/styles_hide_preview",
+                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->hide_preview)));
+}
+
 static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
-}
-
-static void _previewmode_combobox_changed(GtkWidget *widget, gpointer user_data)
-{
-  const int mode = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("ui_last/styles_preview_mode", mode);
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -886,6 +886,16 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->entry, "changed", G_CALLBACK(_entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(_entry_activated), d);
 
+  d->hide_preview = gtk_check_button_new_with_label(_("hide preview"));
+  dt_action_define(DT_ACTION(self), NULL, N_("hide preview"),
+                   d->hide_preview, &dt_action_def_toggle);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->hide_preview))), PANGO_ELLIPSIZE_START);
+  g_signal_connect(d->hide_preview, "toggled", G_CALLBACK(_hide_preview_callback), d);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->hide_preview),
+                               dt_conf_get_bool("ui_last/styles_hide_preview"));
+  gtk_widget_set_tooltip_text(d->hide_preview,
+                              _("hide preview of style on tooltip"));
+
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   dt_action_define(DT_ACTION(self), NULL, N_("create duplicate"),
                    d->duplicate, &dt_action_def_toggle);
@@ -896,19 +906,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->duplicate,
                               _("creates a duplicate of the image before applying style"));
   gtk_widget_set_no_show_all(d->duplicate, TRUE);                              
-
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->preview_mode, self, NULL, N_("preview"),
-                               _("change size or hide preview on tooltip of style"),
-                               dt_conf_get_int("ui_last/styles_preview_mode"),
-                               _previewmode_combobox_changed, self,
-                               N_("no"), N_("default"), N_("large"));  
-
-  GtkWidget *box = dt_gui_hbox();
-  dt_gui_box_add(box, d->duplicate);
-  gtk_widget_set_halign(d->duplicate, GTK_ALIGN_START);
-  gtk_widget_set_hexpand(d->duplicate, TRUE);
-  dt_gui_box_add(box, d->preview_mode);
-  gtk_widget_set_halign(d->preview_mode, GTK_ALIGN_END);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
                                _("how to handle existing history"),
@@ -963,7 +960,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = dt_gui_vbox
     (d->entry,
      dt_ui_resize_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
-     box, d->applymode,
+     d->hide_preview, d->duplicate, d->applymode,
      dt_gui_hbox(d->create_button, d->edit_button, d->delete_button),
      dt_gui_hbox(d->import_button, d->export_button),
      d->apply_button);
@@ -1011,6 +1008,46 @@ void gui_reset(dt_lib_module_t *self)
   g_list_free_full(all_styles, dt_style_free);
   dt_database_release_transaction(darktable.db);
   dt_lib_gui_queue_update(self);
+}
+
+void _menuitem_preferences(GtkMenuItem *menuitem,
+                           dt_lib_module_t *self)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("style preview settings"), GTK_WINDOW(win),
+                                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                 _("_cancel"), GTK_RESPONSE_NONE,
+                                                 _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);                                                 
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  
+  GtkWidget *preview_size;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(preview_size, self, NULL, N_("preview size"),
+                            _("change size of preview on tooltip of style"),
+                            dt_conf_get_int("plugins/lighttable/style/preview_size"),
+                            NULL, self,
+                            N_("default"), N_("large"));  
+
+  dt_gui_dialog_add(GTK_DIALOG(dialog), preview_size);         
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));      
+  if(res == GTK_RESPONSE_ACCEPT)
+  {
+    const int size = dt_bauhaus_combobox_get(preview_size);
+    dt_conf_set_int("plugins/lighttable/style/preview_size", size);
+  }
+  gtk_widget_destroy(dialog);
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 
