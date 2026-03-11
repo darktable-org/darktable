@@ -148,17 +148,39 @@
 
 ---
 
+* Idea: **Specialize `heat_PDE_diffusion` for `has_mask=false`**: Split inner pixel loop into two code paths: one without mask handling (eliminates mask byte load + `if(opacity)` branch per pixel) and one with. Select via loop-invariant `if(has_mask)` at function level. Common no-mask path gets tighter code without dead else-block.
+* Outcome: **FAILED**. Measured 35.584s vs 35.224s baseline — 1.02% regression. Specializing heat_PDE_diffusion for has_mask=false path provided no benefit. Reverted.
+
+---
+* Idea: **Eliminate `diag_diff` arrays by recomputing inline in derivatives**: Currently `diag_diff_LF` and `diag_diff_HF` are stored in the sums loop and read once each in derivative computation (multiplied by `b11`). Since `diag_diff = n0 - n2 - n6 + n8` involves values already loaded in the sums loop, and it's only used once with a scalar multiply, we could pass the 4 raw corner values through instead, computing `b11 * (n0 - n2 - n6 + n8)` inline in the derivative loop. Saves 2 array writes (8 floats) at the cost of 4 extra loads (likely L1 hits from the sums loop). Reduces register pressure from fewer live arrays.
+* Outcome: **FAILED**. Measured 38.151s vs 35.224s baseline — -8.31% regression. Reverted.
+
+---
+* Idea: **Precompute 0.25f * diag_sum and -3.f * center once, reuse in isotropic branches.** Currently the isotropic formula 0.25f * diag_sum + 0.5f * vert_sum + 0.5f * horiz_sum - 3.f * center is computed up to 4 times (once per isotropic derivative).
+* Outcome: **FAILED**. Measured 35.817s vs 35.224s baseline — -1.68% regression. Reverted.
+
+---
+* Idea: **Fuse angle+exp+derivatives (eliminate angle storage arrays)**: Fuse gradient angle computation + inline exp + derivative 0+2 computation into a single `for_each_channel` loop. Do the same for laplacian angles + derivatives 1+3 in a second loop. Eliminates 6 angle storage arrays (96 bytes stack) by consuming angles immediately. Risk: larger loop body may hurt auto-vectorization.
+* Outcome: **FAILED**. Measured 35.497s vs 35.224s baseline — -0.78% regression. Reverted.
+
+# LEARNED PATTERNS
+
+*   **SUCCESS: Mathematical Simplifications:** Algebraic reductions that eliminate unnecessary operations without changing the result (e.g., removing `0.5f` scaling factors that cancel out later in angle ratios, computing `cos²θ`/`sin²θ` directly from gradients instead of computing angles first).
+*   **SUCCESS: Eliminating Intermediate Arrays:** Removing small stack-allocated arrays in favor of direct inline computation (e.g., stripping `kernel` matrices, eliminating `neighbour_pixel` arrays). This reduces stack memory traffic and register spilling.
+*   **SUCCESS: Judicious Loop Pairing/Unrolling:** Combining loops that do similar, independent work over the same dimensions (pairing `compute_convolution` calls, unrolling short derivative accumulation loops) helps vectorization and instruction-level parallelism.
+*   **FAIL: Over-merging Loops:** Trying to fuse fundamentally different stages (e.g., merging gradient computation with sums/variance, or merging accumulation directly into output) consistently fails. This likely causes register spilling, breaks the compiler's auto-vectorizer, or destroys cache locality by requiring too many concurrent data streams.
+*   **FAIL: Conditional Branching in Inner Loops:** Adding `if` statements to skip work based on conditions (e.g., `has_mask=false`, conditional DCE, skipping isotropic branches) consistently fails. Branching destroys SIMD vectorization efficiency and pipeline predictability.
+*   **FAIL: Fast-Math/Precision Reductions:** Attempts to use lower-precision intrinsics (`dt_fast_inv_sqrtf`, `native_rsqrt`) or `#pragma GCC optimize("fast-math")` likely cause regression test failures due to the strict numerical precision required by the PDE diffusion mathematical model.
+
+---
+* Idea: **Add `__restrict` qualifiers to intermediate pointers:** Ensure that all temporary buffer pointers and input/output pointers passed into `heat_PDE_diffusion` (or defined within) are explicitly marked with `__restrict`. This guarantees to the compiler that memory regions do not overlap, enabling more aggressive auto-vectorization and load/store reordering.
+* Outcome: **FAILED**. Measured 35.793s vs 35.224s baseline — -1.62% regression. Reverted.
+
 # IN PROGRESS
 
 
 # UPCOMING
 
-1. ~~**Fuse `dt_vector_exp` into gradient/laplacian angle loop** [MOVED TO IN PROGRESS]~~: Inline the integer bit-trick (`0x3f800000 + (int)(x * 0x00B2F854)`) directly in the gradient/laplacian `for_each_channel` loop where c2 values are first computed, rather than calling `dt_vector_exp` in a separate `for(k=0..3)` loop. Eliminates separate exp loop overhead and reduces c2's live range on stack.
-
-2. **Fuse angle+exp+derivatives (eliminate angle storage arrays)**: Fuse gradient angle computation + inline exp + derivative 0+2 computation into a single `for_each_channel` loop. Do the same for laplacian angles + derivatives 1+3 in a second loop. Eliminates 6 angle storage arrays (96 bytes stack) by consuming angles immediately. Risk: larger loop body may hurt auto-vectorization.
-
-3. **Specialize `heat_PDE_diffusion` for `has_mask=false`**: Split inner pixel loop into two code paths: one without mask handling (eliminates mask byte load + `if(opacity)` branch per pixel) and one with. Select via loop-invariant `if(has_mask)` at function level. Common no-mask path gets tighter code without dead else-block.
-
-4. **Use `__builtin_expect` on the `if(opacity)` branch**: Mark the opacity check with `__builtin_expect(opacity, 1)` to hint the compiler/CPU that this branch is almost always taken. May improve branch prediction and code layout, putting the hot path in the fall-through position.
-
-5. **Eliminate `diag_diff` arrays by recomputing inline in derivatives**: Currently `diag_diff_LF` and `diag_diff_HF` are stored in the sums loop and read once each in derivative computation (multiplied by `b11`). Since `diag_diff = n0 - n2 - n6 + n8` involves values already loaded in the sums loop, and it's only used once with a scalar multiply, we could pass the 4 raw corner values through instead, computing `b11 * (n0 - n2 - n6 + n8)` inline in the derivative loop. Saves 2 array writes (8 floats) at the cost of 4 extra loads (likely L1 hits from the sums loop). Reduces register pressure from fewer live arrays.
+2. **Align local stack arrays to SIMD boundaries:** Explicitly align the remaining stack-allocated arrays (like `derivatives`, `ABCD`, etc.) to 32-byte or 64-byte boundaries using `__attribute__((aligned(64)))`. This ensures the compiler can confidently emit aligned AVX/AVX-512 load/store instructions instead of slower unaligned variants or fallback scalar code.
+3. **Refactor expressions to maximize Fused Multiply-Add (FMA):** Review the inner arithmetic of the derivative and convolution loops to rewrite expressions in the form `(a * b) + c` rather than `(a + c) * b` or other factorizations. While mathematically equivalent, exposing explicit FMA patterns helps the compiler map the math directly to single-cycle hardware FMA instructions.
+4. **Split complex structures into SoA (Structure of Arrays):** If any remaining localized structs or array-of-structs patterns exist for storing temporary pixel data across channels, refactor them into separate flat arrays per channel. The vectorizer handles separate contiguous memory streams (SoA) much better than interleaved data (AoS).
