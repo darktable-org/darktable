@@ -509,6 +509,30 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr, const gint x, const gint y, const 
   FINISH
 }
 
+void dtgtk_cairo_paint_masks_restricted_edit(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  const double dashed[] = { 0.2, 0.2 };
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
+  cairo_set_dash(cr, dashed, len, 0);
+
+  cairo_arc(cr, 0.75, 0.75, 0.75, 2.8, 4.7124);
+  cairo_stroke(cr);
+
+  // Adding the lock body
+  cairo_rectangle(cr, 0.25, 0.5, .5, .45);
+  cairo_fill(cr);
+
+  // Adding the lock shank
+  cairo_translate(cr, .5, .5);
+  cairo_scale(cr, .2, .4);
+  cairo_arc(cr, 0, 0, 1, M_PI, 0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_masks_circle(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
