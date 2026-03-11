@@ -19,10 +19,11 @@
 #include "color_conversion.h"
 #include "rgb_norms.h"
 
-/* 
-These coefficients are the Narkowicz ACES approximation. 
-They are widely used for their good balance between performance and visual accuracy. 
-You can find the reference here: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/" 
+/*
+  Narkowicz (2016) rational approximation of the ACES RRT+ODT curve for sRGB output.
+  Widely used in real-time rendering for its simplicity and visual quality.
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 */
 inline float _aces_tone_map(const float x)
 {
@@ -35,11 +36,11 @@ inline float _aces_tone_map(const float x)
   return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
 /*
-hese coefficients refer to the Fitted ACES (RRT+ODT) approximation, 
-which is more precise than the basic Narkowicz fit. 
-It is based on the curve fitting of the ACES 1.0/2.0 RRT/ODT transform.
-Reference: https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl 
-(or similar ACES fitted shaders used in cinematic rendering)."
+  Narkowicz & Filiberto (2021) rational approximation of the ACES 2.0 RRT curve.
+  More precise than the basic Narkowicz 2016 fit, with a softer shoulder.
+  The pre-scale factor (x * 1.680) in the caller adjusts the exposure point.
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://github.com/h3r2tic/tony-mc-mapface (Narkowicz/Filiberto fit)
 */
 inline float _aces_20_tonemap(const float x)
 {
@@ -416,7 +417,7 @@ basecurve_finalize(read_only image2d_t in,
       if(workflow_mode == 1)
         y_out = _aces_tone_map(x_scaled) * k;
       else
-        y_out = _aces_20_tonemap(x_scaled * 1.257f) * k;
+        y_out = _aces_20_tonemap(x_scaled * 1.680f) * k;
     }
 
     float gain = y_out / fmax(y_in, 1e-6f);

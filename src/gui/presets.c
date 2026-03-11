@@ -1205,17 +1205,21 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
      "  OR (name = ?13)) AND op_version = ?14"
      " ORDER BY writeprotect ASC, rowid DESC",
      format_filter,
-     is_display_referred?"":"basecurve");
+     "");  // The basecurve is no longer excluded in non-display mode.
   // clang-format on
 
   g_free(format_filter);
 
   sqlite3_stmt *stmt;
+  // display-referred : legacy curve
+  // scene-referred    : preset "display-referred default"
   const char *workflow_preset = has_matrix && is_display_referred
                                 ? BUILTIN_PRESET("display-referred default")
                                 : (has_matrix && is_scene_referred
                                    ? BUILTIN_PRESET("scene-referred default")
-                                   : "\t\n");
+                                   : (has_matrix
+                                      ? BUILTIN_PRESET("display-referred default")
+                                      : "\t\n"));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);

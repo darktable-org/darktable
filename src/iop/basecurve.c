@@ -73,8 +73,8 @@ typedef struct dt_iop_basecurve_params_t
   float gamut_strength;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "gamut compression"
   float highlight_corr;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlight hue/sat"
   int target_gamut;       // $DEFAULT: 2 $DESCRIPTION: "target gamut"
-  int color_look;         // $DEFAULT: 1 $DESCRIPTION: "color look style"
-  float look_opacity;     // $MIN: 0.1 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "look opacity"
+  int color_look;         // $DEFAULT: 0 $DESCRIPTION: "color look style"
+  float look_opacity;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "look opacity"
 } dt_iop_basecurve_params_t;
 
 static const float color_looks[10][10] = {
@@ -257,7 +257,7 @@ int legacy_params(dt_iop_module_t *self,
     n->gamut_strength = 0.0f;
     n->highlight_corr = 0.0f;
     n->target_gamut = 2;
-    n->color_look = 1;
+    n->color_look = 0;
     n->look_opacity = 1.0f;
 
     *new_params = n;
@@ -287,6 +287,8 @@ typedef struct dt_iop_basecurve_gui_data_t
   GtkWidget *target_gamut;
   GtkWidget *color_look;
   GtkWidget *look_opacity;
+  int last_workflow_mode;
+  gboolean look_selected_first_time;
 } dt_iop_basecurve_gui_data_t;
 
 typedef struct basecurve_preset_t
@@ -586,7 +588,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(!dt_is_display_referred())
   {
-    // Force ACES defaults on top of whatever curve was found
+    // Force kinematic defaults for scene-referred workflow:
     d->workflow_mode = 1;
     d->shadow_lift = 1.0f;
     d->highlight_gain = 1.0f;
@@ -616,6 +618,20 @@ void init_presets(dt_iop_module_so_t *self)
   self->pref_based_presets = TRUE;
 
   const gboolean is_display_referred = dt_is_display_referred();
+
+  if(!is_display_referred)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
+                                 self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
 
   if(is_display_referred)
   {
@@ -960,7 +976,7 @@ int process_cl_fusion(dt_iop_module_t *self,
   }
 
   // copy output buffer
-  // Apply ACES/shadow_lift here if needed
+  // Apply shadow_lift and tone mapping here if needed
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_finalize, width, height,
       CLARG(dev_in), CLARG(dev_comb[0]), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->workflow_mode),
       CLARGFLOAT(d->shadow_lift), CLARGFLOAT(d->highlight_gain), CLARGFLOAT(d->ucs_saturation_balance),
@@ -1116,7 +1132,12 @@ void tiling_callback(dt_iop_module_t *self,
     tiling->overlap = 0;
   }
 }
-
+/*
+  Narkowicz (2016) rational approximation of the ACES RRT+ODT curve for sRGB output.
+  Widely used in real-time rendering for its simplicity and visual quality.
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+*/
 static inline float _aces_tone_map(const float x)
 {
   const float a = 2.51f;
@@ -1127,7 +1148,13 @@ static inline float _aces_tone_map(const float x)
 
   return CLAMP((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
-
+/*
+  Narkowicz & Filiberto (2021) rational approximation of the ACES 2.0 RRT curve.
+  More precise than the basic Narkowicz 2016 fit, with a softer shoulder.
+  The pre-scale factor (x * 1.680) in the caller adjusts the exposure point (0.75EV).
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://github.com/h3r2tic/tony-mc-mapface (Narkowicz/Filiberto fit)
+*/
 static inline float _aces_20_tonemap(const float x)
 {
   const float a = 0.0245786f;
@@ -1446,7 +1473,7 @@ static void process_lut(dt_iop_module_t *self,
         if(d->workflow_mode == 1)
           y_out = _aces_tone_map(x_scaled) * k_scale;
         else /* workflow_mode == 2 */
-          y_out = _aces_20_tonemap(x_scaled * 1.257f) * k_scale;
+          y_out = _aces_20_tonemap(x_scaled * 1.680f) * k_scale; //CB 20260307 1.680 (0.75ev) to better match ACES 1.0 tonemap at mid-tones
       }
 
       float gain = y_out / fmaxf(y_in, 1e-6f);
@@ -1613,6 +1640,7 @@ static void process_lut(dt_iop_module_t *self,
         out[k+1] = orig_g * (1.0f - effective_strength) + out[k+1] * effective_strength;
         out[k+2] = orig_b * (1.0f - effective_strength) + out[k+2] * effective_strength;
       }
+      }
 
       // Final gamut check to preserve hue (exact color)
       if(out[k] < 0.0f || out[k] > 1.0f || out[k+1] < 0.0f || out[k+1] > 1.0f || out[k+2] < 0.0f || out[k+2] > 1.0f)
@@ -1630,7 +1658,6 @@ static void process_lut(dt_iop_module_t *self,
         out[k] = target_luma + t * (out[k] - target_luma);
         out[k+1] = target_luma + t * (out[k+1] - target_luma);
         out[k+2] = target_luma + t * (out[k+2] - target_luma);
-      }
       }
     }
   }
@@ -1786,7 +1813,7 @@ static void process_fusion(dt_iop_module_t *self,
     val[1] = fminf(val[1], 1e6f);
     val[2] = fminf(val[2], 1e6f);
 
-    // If using ACES workflow, we apply shadow lift and tone mapping here, after fusion
+    // If using scene-referred workflow
     if(d->workflow_mode > 0)
     {
       // Apply Color Look
@@ -1844,7 +1871,7 @@ static void process_fusion(dt_iop_module_t *self,
         if(d->workflow_mode == 1)
           y_out = _aces_tone_map(x_scaled) * k_scale;
         else
-          y_out = _aces_20_tonemap(x_scaled * 1.257f) * k_scale;
+          y_out = _aces_20_tonemap(x_scaled * 1.680f) * k_scale; //CB 20260307 1.680 (0.75ev) to better match ACES 1.0 tonemap at mid-tones
       }
 
       float gain = y_out / fmaxf(y_in, 1e-6f);
@@ -2009,6 +2036,7 @@ static void process_fusion(dt_iop_module_t *self,
         val[1] = orig_g * (1.0f - effective_strength) + val[1] * effective_strength;
         val[2] = orig_b * (1.0f - effective_strength) + val[2] * effective_strength;
       }
+      }
 
       // Final gamut check to preserve hue (exact color)
       if(val[0] < 0.0f || val[0] > 1.0f || val[1] < 0.0f || val[1] > 1.0f || val[2] < 0.0f || val[2] > 1.0f)
@@ -2026,7 +2054,6 @@ static void process_fusion(dt_iop_module_t *self,
         val[0] = target_luma + t * (val[0] - target_luma);
         val[1] = target_luma + t * (val[1] - target_luma);
         val[2] = target_luma + t * (val[2] - target_luma);
-      }
       }
     }
 
@@ -2074,6 +2101,7 @@ void commit_params(dt_iop_module_t *self,
   d->exposure_bias = p->exposure_bias;
   d->preserve_colors = p->preserve_colors;
   d->workflow_mode = p->workflow_mode;
+  // Intentional inversion: slider to the right (>1.0) -> exponent < 1.0 -> lightens shadows
   d->shadow_lift = 2.0f - p->shadow_lift;
   d->highlight_gain = p->highlight_gain;
   d->ucs_saturation_balance = p->ucs_saturation_balance;
@@ -2755,7 +2783,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       gtk_widget_set_visible(g->highlight_corr, TRUE);
       gtk_widget_set_visible(g->target_gamut, TRUE);
       gtk_widget_set_visible(g->color_look, TRUE);
-      gtk_widget_set_visible(g->look_opacity, TRUE);
+      gtk_widget_set_visible(g->look_opacity, p->color_look > 0);
       gtk_widget_set_sensitive(g->shadow_lift, TRUE);
       gtk_widget_set_sensitive(g->highlight_gain, TRUE);
       gtk_widget_set_sensitive(g->ucs_saturation_balance, TRUE);
@@ -2764,33 +2792,43 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       gtk_widget_set_sensitive(g->target_gamut, TRUE);
       gtk_widget_set_sensitive(g->color_look, TRUE);
       gtk_widget_set_sensitive(g->look_opacity, p->color_look > 0);
-          if(w == g->color_look)
-          {
-            p->look_opacity = 1.0f;
-            dt_bauhaus_slider_set(g->look_opacity, 1.0f);
-          }
+      if(w == g->color_look)
+      {
+        // Only reset opacity to 100% if a look is selected for the first time.
+        if(p->color_look > 0 && !g->look_selected_first_time)
+        {
+          p->look_opacity = 1.0f;
+          dt_bauhaus_slider_set(g->look_opacity, 1.0f);
+          g->look_selected_first_time = TRUE;
+        }
+      }
+    
       gtk_widget_set_tooltip_text(g->fusion, _("exposure fusion operates in linear scene-referred space as a luminance normalization step,\n"
                                                "providing a stable radiometric reference prior to the final tone-mapping curve.\n"
                                                "it does not perform HDR blending nor exposure compensation."));
           if(w == g->workflow_mode)
       {
-        p->shadow_lift = 1.0f;
-        dt_bauhaus_slider_set(g->shadow_lift, 1.0f);
-        p->highlight_gain = 1.0f;
-        dt_bauhaus_slider_set(g->highlight_gain, 1.0f);
-        p->ucs_saturation_balance = 0.2f;
-        dt_bauhaus_slider_set(g->ucs_saturation_balance, 0.2f);
-        // Set default color look when switching to this workflow
-        p->color_look = 1; // Natural look
-        dt_bauhaus_combobox_set(g->color_look, 1);
-        p->look_opacity = 1.0f;
-        dt_bauhaus_slider_set(g->look_opacity, 1.0f);
-        p->basecurve_type[0] = CUBIC_SPLINE;
-        p->basecurve_nodes[0] = 2;
-        p->basecurve[0][0].x = 0.0f; p->basecurve[0][0].y = 0.0f;
-        p->basecurve[0][1].x = 1.0f; p->basecurve[0][1].y = 1.0f;
+        if(!((p->workflow_mode == 1 && g->last_workflow_mode == 2) || (p->workflow_mode == 2 && g->last_workflow_mode == 1)))
+        {
+          p->shadow_lift = 1.0f;
+          dt_bauhaus_slider_set(g->shadow_lift, 1.0f);
+          p->highlight_gain = 1.0f;
+          dt_bauhaus_slider_set(g->highlight_gain, 1.0f);
+          p->ucs_saturation_balance = 0.2f;
+          dt_bauhaus_slider_set(g->ucs_saturation_balance, 0.2f);
+          // Set default color look when switching to this workflow
+          p->color_look = 0; // Neutral look
+          dt_bauhaus_combobox_set(g->color_look, 0);
+          p->look_opacity = 1.0f;
+          dt_bauhaus_slider_set(g->look_opacity, 1.0f);
+          p->basecurve_type[0] = CUBIC_SPLINE;
+          p->basecurve_nodes[0] = 2;
+          p->basecurve[0][0].x = 0.0f; p->basecurve[0][0].y = 0.0f;
+          p->basecurve[0][1].x = 1.0f; p->basecurve[0][1].y = 1.0f;
 
-        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+          gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        }
+        g->last_workflow_mode = p->workflow_mode;
       }
     }
     else
@@ -2847,6 +2885,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->ucs_saturation_balance, p->ucs_saturation_balance);
   dt_bauhaus_combobox_set(g->color_look, p->color_look);
   dt_bauhaus_slider_set(g->look_opacity, p->look_opacity);
+  g->last_workflow_mode = p->workflow_mode;
+  g->look_selected_first_time = (p->color_look != 0);
   gui_changed(self, NULL, NULL);
 
   // gui curve is read directly from params during expose event.
@@ -2873,6 +2913,7 @@ void gui_init(dt_iop_module_t *self)
   g->mouse_x = g->mouse_y = -1.0;
   g->selected = -1;
   g->loglogscale = 0;
+  g->look_selected_first_time = FALSE;
 
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, DT_PIXEL_APPLY_DPI(100), "plugins/darkroom/basecurve/graph_height"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("abscissa: input, ordinate: output. works on RGB channels"));
@@ -2883,14 +2924,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  dt_gui_box_add(self->widget, g->cmb_preserve_colors);
 
   g->workflow_mode = dt_bauhaus_combobox_from_params(self, "workflow_mode");
   dt_bauhaus_combobox_add(g->workflow_mode, _("display"));
-  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematics (ACES-like)"));
-  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematics (Narkowicz)"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematic"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("dynamic"));
   gtk_widget_set_tooltip_text(g->workflow_mode, _("tone mapping method applied after the curve"));
-  dt_gui_box_add(self->widget, g->workflow_mode);
 
   g->color_look = dt_bauhaus_combobox_from_params(self, "color_look");
   dt_bauhaus_widget_set_label(g->color_look, NULL, _("color look"));
@@ -2905,14 +2944,12 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->color_look, "deep cool");
   dt_bauhaus_combobox_add(g->color_look, "authentic cinema");
   gtk_widget_set_tooltip_text(g->color_look, _("apply a color style: neutral (none), portrait (skin tones), nature (landscapes), blue sky (depth), soft (organic), or warm/cool artistic tints."));
-  dt_gui_box_add(self->widget, g->color_look);
 
   g->look_opacity = dt_bauhaus_slider_from_params(self, "look_opacity");
   dt_bauhaus_widget_set_label(g->look_opacity, NULL, _("look opacity"));
   dt_bauhaus_slider_set_format(g->look_opacity, "%");
   dt_bauhaus_slider_set_factor(g->look_opacity, 100.0);
   gtk_widget_set_tooltip_text(g->look_opacity, _("adjust the strength of the selected color style (10% to 100%)."));
-  dt_gui_box_add(self->widget, g->look_opacity);
 
   g->highlight_gain = dt_bauhaus_slider_from_params(self, "highlight_gain");
   dt_bauhaus_widget_set_label(g->highlight_gain, NULL, _("highlight gain"));
@@ -2923,7 +2960,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->highlight_gain, 100.0);
   dt_bauhaus_slider_set_offset(g->highlight_gain, -100.0);
   dt_bauhaus_slider_set_default(g->highlight_gain, 1.0);
-  dt_gui_box_add(self->widget, g->highlight_gain);
 
   g->shadow_lift = dt_bauhaus_slider_from_params(self, "shadow_lift");
   dt_bauhaus_widget_set_label(g->shadow_lift, NULL, _("shadow lift"));
@@ -2935,7 +2971,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->shadow_lift, 100.0);
   dt_bauhaus_slider_set_offset(g->shadow_lift, -100.0);
   dt_bauhaus_slider_set_default(g->shadow_lift, 1.0);
-  dt_gui_box_add(self->widget, g->shadow_lift);
 
   g->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
   dt_bauhaus_combobox_add(g->fusion, _("none"));
@@ -2944,14 +2979,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
   gtk_widget_set_margin_bottom(g->fusion, DT_PIXEL_APPLY_DPI(10));
-  dt_gui_box_add(self->widget, g->fusion);
 
   g->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
   dt_bauhaus_slider_set_digits(g->exposure_step, 3);
   gtk_widget_set_tooltip_text(g->exposure_step, _("how many stops to shift the individual exposures apart"));
   gtk_widget_set_no_show_all(g->exposure_step, TRUE);
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
-  dt_gui_box_add(self->widget, g->exposure_step);
 
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
@@ -2962,7 +2995,6 @@ void gui_init(dt_iop_module_t *self)
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(g->exposure_bias, TRUE);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
-  dt_gui_box_add(self->widget, g->exposure_bias);
 
   g->ucs_saturation_balance = dt_bauhaus_slider_from_params(self, "ucs_saturation_balance");
   dt_bauhaus_widget_set_label(g->ucs_saturation_balance, NULL, _("balance saturation ucs"));
@@ -2975,7 +3007,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->ucs_saturation_balance, 100.0);
   dt_bauhaus_slider_set_soft_range(g->ucs_saturation_balance, -0.75, 0.75);
   dt_bauhaus_slider_set_default(g->ucs_saturation_balance, 0.2);
-  dt_gui_box_add(self->widget, g->ucs_saturation_balance);
 
   g->highlight_corr = dt_bauhaus_slider_from_params(self, "highlight_corr");
   dt_bauhaus_widget_set_label(g->highlight_corr, NULL, _("highlight hue/sat"));
@@ -2987,7 +3018,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->highlight_corr, 0.001);
   gtk_widget_set_tooltip_text(g->highlight_corr, _("corrects hue and saturation in highlights to mitigate color shifts\n"
                                                    "(e.g. salmon sunsets or magenta blues)"));
-  dt_gui_box_add(self->widget, g->highlight_corr);
 
   g->target_gamut = dt_bauhaus_combobox_from_params(self, "target_gamut");
   dt_bauhaus_combobox_add(g->target_gamut, "sRGB (Rec.709)");
@@ -2995,7 +3025,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->target_gamut, "Rec.2020");
   gtk_widget_set_tooltip_text(g->target_gamut, _("select the destination color space (sRGB, AdobeRGB,\n" 
                                                   "or Rec.2020). this sets the legal boundary for color saturation."));
-  dt_gui_box_add(self->widget, g->target_gamut);
 
   g->gamut_strength = dt_bauhaus_slider_from_params(self, "gamut_strength");
   dt_bauhaus_widget_set_label(g->gamut_strength, NULL, _("compression smoothness"));
@@ -3009,13 +3038,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->gamut_strength, 1);
   dt_bauhaus_slider_set_step(g->gamut_strength, 0.001);
   dt_bauhaus_slider_set_soft_range(g->gamut_strength, 0.0, 1.0);
-  dt_gui_box_add(self->widget, g->gamut_strength);
 
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
   g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
-  dt_gui_box_add(self->widget, g->logbase);
-
+  
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
