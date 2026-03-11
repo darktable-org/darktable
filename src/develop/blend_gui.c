@@ -1711,7 +1711,7 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
     gtk_toggle_button_set_active
       (GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
     if(bd->masks_shown == DT_MASKS_EDIT_RESTRICTED)
-      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_edit), dtgtk_cairo_paint_lock, 0, NULL);
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_edit), dtgtk_cairo_paint_masks_restricted_edit, 0, NULL);
     else
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_edit), dtgtk_cairo_paint_masks_eye, 0, NULL);  
     dt_masks_set_edit_mode(self, bd->masks_shown);
