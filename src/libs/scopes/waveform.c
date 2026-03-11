@@ -397,12 +397,10 @@ static void _wave_add_to_options_box(dt_scopes_mode_t *const self,
                                      GtkWidget *box)
 {
   dt_scopes_wave_t *const d = self->data;
-
   d->orient_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("switch scope orientation"),
                    d->orient_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(box), d->orient_button, FALSE, FALSE, 0);
-
+  dt_gui_box_add(box, d->orient_button);
   g_signal_connect(G_OBJECT(d->orient_button), "clicked",
                    G_CALLBACK(_wave_orient_clicked), self);
 }

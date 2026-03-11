@@ -3071,41 +3071,54 @@ static void _slider_add_step(GtkWidget *widget,
     dt_bauhaus_slider_set(widget, CLAMP(value + delta, d->min, d->max));
 }
 
-static gboolean _widget_scroll(GtkWidget *widget,
-                               GdkEventScroll *event)
+static void _widget_scroll(GtkEventControllerScroll *controller,
+                           double dx, double dy,
+                           GtkWidget *widget)
 {
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
-  // handle speed adjustment in mapping mode in dispatcher
-  if(darktable.control->mapping_widget)
-    return dt_shortcut_dispatcher(widget, (GdkEvent*)event, NULL);
-
-  gtk_widget_grab_focus(widget);
-
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  GdkEvent *event = gtk_get_current_event();
+  if(!event || gdk_event_get_event_type(event) != GDK_SCROLL)
   {
-    if(delta_y == 0) return TRUE;
+    // NOP, should not happen
+  }
+  if(dt_gui_ignore_scroll(&event->scroll))
+  {
+    // hack: GTK3 event controller handlers can't return GDK_EVENT_PROPAGATE
+    GtkWidget *sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
+    if(sw)
+      gtk_widget_event(sw, event);
+  }
+  else if(darktable.control->mapping_widget)
+  {
+    // handle speed adjustment in mapping mode in dispatcher
+    dt_shortcut_dispatcher(widget, (GdkEvent*)event, NULL);
+  }
+  else
+  {
+    gtk_widget_grab_focus(widget);
 
-    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-    _request_focus(w);
-
-    if(w->type == DT_BAUHAUS_SLIDER)
+    int delta = dx + dy;
+    if(delta != 0)
     {
-      const gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
-                          && event->window == gtk_widget_get_window(widget);
-      if(force && dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+      dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+      _request_focus(w);
+
+      if(w->type == DT_BAUHAUS_SLIDER)
       {
-        _slider_zoom_range(w, delta_y);
-        _slider_zoom_toast(w);
+        const gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
+                            && event->scroll.window == gtk_widget_get_window(widget);
+        if(force && dt_modifier_is(event->scroll.state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+        {
+          _slider_zoom_range(w, delta);
+          _slider_zoom_toast(w);
+        }
+        else
+          _slider_add_step(widget, - delta, event->scroll.state, force);
       }
       else
-        _slider_add_step(widget, - delta_y, event->state, force);
+        _combobox_next_sensitive(w, delta, 0, FALSE);
     }
-    else
-      _combobox_next_sensitive(w, delta_y, 0, FALSE);
   }
-  return TRUE; // Ensure that scrolling the combobox cannot move side panel
+  gdk_event_free(event);
 }
 
 static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
@@ -3566,7 +3579,9 @@ static void _widget_button_press(GtkGestureSingle *gesture,
   }
   else if(button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
-    bh->opentime = gdk_event_get_time(gtk_get_current_event());
+    GdkEvent *const event = gtk_get_current_event();
+    bh->opentime = gdk_event_get_time(event);
+    gdk_event_free(event);
     bh->mouse_x = x;
     bh->mouse_y = y;
     _popup_show(widget);
@@ -3649,8 +3664,10 @@ static void _widget_motion(GtkEventControllerMotion *controller,
       const float scaled_step =
         width * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
       const float steps = floorf((x - bh->mouse_x) / scaled_step);
-      GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event(); // TODO cleanup
-      _slider_add_step(widget, copysignf(1, d->factor) * steps, event->state, FALSE);
+      GdkEvent *const event = gtk_get_current_event(); // TODO cleanup
+      _slider_add_step(widget, copysignf(1, d->factor) * steps,
+                       event->motion.state, FALSE);
+      gdk_event_free(event);
 
       bh->mouse_x += steps * scaled_step;
     }
@@ -3681,7 +3698,6 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
   widget_class->draw = _widget_draw;
   // widget_class->snapshot = _widget_snapshot;
-  widget_class->scroll_event = _widget_scroll;
   widget_class->key_press_event = _widget_key_press;
   widget_class->get_preferred_width = _widget_get_preferred_width;
   widget_class->get_preferred_height = _widget_get_preferred_height;
@@ -3709,7 +3725,8 @@ static void dt_bh_init(DtBauhausWidget *w)
   w->show_label = TRUE;
 
   GtkWidget *widget = GTK_WIDGET(w);
-  gtk_widget_add_events(widget, GDK_FOCUS_CHANGE_MASK | darktable.gui->scroll_mask);
+  // FIXME: needed?
+  gtk_widget_add_events(widget, GDK_FOCUS_CHANGE_MASK);
 
   GtkGestureSingle *gesture =
     dt_gui_connect_click(w, _widget_button_press, _widget_button_release, widget);
@@ -3718,9 +3735,9 @@ static void dt_bh_init(DtBauhausWidget *w)
 
   dt_gui_connect_motion(w, _widget_motion, _widget_enter, _widget_leave, widget);
 
-  // GtkEventController *controller = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE);
-  // gtk_widget_add_controller(GTK_WIDGET(w), GTK_EVENT_CONTROLLER(controller));
-  // g_signal_connect(controller, "scroll", G_CALLBACK(_widget_scroll), w);
+  dt_gui_connect_scroll(w, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                           | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                        _widget_scroll, widget);
 
   gtk_widget_set_can_focus(widget, TRUE);
   dt_gui_add_class(widget, "dt_bauhaus");

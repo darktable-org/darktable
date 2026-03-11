@@ -101,10 +101,13 @@ typedef struct dt_scopes_functions_t
   void (*append_to_tooltip)(const struct dt_scopes_mode_t *const self,
                             gchar **tip);
   void (*eventbox_scroll)(struct dt_scopes_mode_t *const self,
-                          GdkEventScroll *event);
+                          gdouble x, gdouble y,
+                          gdouble delta_x, gdouble delta_y,
+                          GdkModifierType state);
   void (*eventbox_motion)(struct dt_scopes_mode_t *const self,
-                          GtkWidget *widget,
-                          const GdkEventMotion *event);
+                          GtkEventControllerMotion *controller,
+                          double x,
+                          double y);
   // set option button icons to current state, updates tooltips
   // accordingly, and if necessary update any state which depends on
   // current option buttons
@@ -125,6 +128,8 @@ typedef struct dt_scopes_mode_t
 {
   const dt_scopes_functions_t *functions;
   void *data;
+  GtkWidget *button_activate;                   // GtkDarktableToggleButton which activates mode
+  gulong toggle_signal_handler;
   int update_counter;
   // point back to parent
   // FIXME: is this healthy?
@@ -142,7 +147,6 @@ typedef struct dt_scopes_t
   scopes_channels_t channels;                   // display state chosen by RGB buttons
   // UI elements
   GtkWidget *button_box_main;                   // GtkBox -- contains scope control buttons
-  GtkWidget *mode_button[DT_SCOPES_MODE_N];     // Array of GtkToggleButton -- mode buttons
   GtkWidget *button_box_opt;                    // GtkBox -- contains options buttons
   GtkWidget *button_box_rgb;                    // GtkBox -- contains RGB channels buttons
   GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channel display
