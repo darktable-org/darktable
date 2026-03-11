@@ -55,7 +55,6 @@ Contrast is modeled through three complementary components:
 #include "common/fast_guided_filter.h"
 #include "common/eigf.h"
 #include "common/luminance_mask.h"
-#include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -143,17 +142,6 @@ typedef struct dt_iop_contrast_data_t
   float colorful_contrast;
   dt_iop_luminance_mask_method_t method;
 } dt_iop_contrast_data_t;
-
-typedef struct dt_iop_contrast_global_data_t
-{
-  int kernel_contrast_luma;
-  int kernel_contrast_box_blur_h;
-  int kernel_contrast_box_blur_v;
-  int kernel_contrast_square;
-  int kernel_contrast_calc_ab;
-  int kernel_contrast_apply_guided;
-  int kernel_contrast_finalize;
-} dt_iop_contrast_global_data_t;
 
 
 typedef enum dt_iop_contrast_mask_t
@@ -426,23 +414,18 @@ static inline void apply_local_contrast(const float *const restrict in,
 
     const float L_final = lum_pixel * multiplier;
 
-    const int use_luminance_mode = 1;
-    if(use_luminance_mode)
+    float ratio = L_final / fmaxf(lum_pixel, 1e-6f);
+    ratio = fminf(ratio, 8.0f);
+    for_each_channel(c)
+        out[4 * k + c] = in[4 * k + c] * ratio;
+
+    // Slight saturation boost tied to CSF weight, active only above 50% of the slider.
+    // The boost starts at zero at 50% and grows progressively — no abrupt jump.
+    if(d->csf_adaptation > 0.5f)
     {
-        float ratio = L_final / fmaxf(lum_pixel, 1e-6f);
-        ratio = fminf(ratio, 8.0f);
-        for_each_channel(c) {
-            out[4 * k + c] = in[4 * k + c] * ratio;
-        }
-    }
-    else
-    {
-        const float ratio = L_final / fmaxf(lum_pixel, 1e-6f);
-        float saturation_boost = 1.0f;
-        if (d->csf_adaptation > 1.0f) {
-            saturation_boost = 1.0f + (d->csf_adaptation - 1.0f) * csf_weight * 0.1f;
-        }
-        for_each_channel(c) { out[4 * k + c] = in[4 * k + c] * ratio * saturation_boost; }
+        const float saturation_boost = 1.0f + (d->csf_adaptation - 0.5f) * csf_weight * 0.1f;
+        for_each_channel(c)
+            out[4 * k + c] *= saturation_boost;
     }
 
     if (fabsf(d->colorful_contrast) > 0.001f) {
@@ -762,91 +745,14 @@ static void pyramidal_contrast_process(dt_iop_module_t *self,
 
 void init_global(dt_iop_module_so_t *self)
 {
-  // Note: You must add 'contrast.cl' to data/kernels/programs.conf
-  // and update this ID to match its position. Assuming 40 for now.
-  const int program = 40;
-  dt_iop_contrast_global_data_t *gd = malloc(sizeof(dt_iop_contrast_global_data_t));
-  self->data = gd;
-  gd->kernel_contrast_luma = dt_opencl_create_kernel(program, "contrast_luma");
-  gd->kernel_contrast_box_blur_h = dt_opencl_create_kernel(program, "contrast_box_blur_h");
-  gd->kernel_contrast_box_blur_v = dt_opencl_create_kernel(program, "contrast_box_blur_v");
-  gd->kernel_contrast_square = dt_opencl_create_kernel(program, "contrast_square");
-  gd->kernel_contrast_calc_ab = dt_opencl_create_kernel(program, "contrast_calc_ab");
-  gd->kernel_contrast_apply_guided = dt_opencl_create_kernel(program, "contrast_apply_guided");
-  gd->kernel_contrast_finalize = dt_opencl_create_kernel(program, "contrast_finalize");
+  self->data = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_contrast_global_data_t *gd = self->data;
-  dt_opencl_free_kernel(gd->kernel_contrast_luma);
-  dt_opencl_free_kernel(gd->kernel_contrast_box_blur_h);
-  dt_opencl_free_kernel(gd->kernel_contrast_box_blur_v);
-  dt_opencl_free_kernel(gd->kernel_contrast_square);
-  dt_opencl_free_kernel(gd->kernel_contrast_calc_ab);
-  dt_opencl_free_kernel(gd->kernel_contrast_apply_guided);
-  dt_opencl_free_kernel(gd->kernel_contrast_finalize);
-  free(self->data);
   self->data = NULL;
 }
 
-#ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_contrast_data_t *const params = piece->data;
-  const dt_iop_contrast_global_data_t *gd = self->global_data;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  const int devid = piece->pipe->devid;
-  cl_mem lum_pixel = NULL;
-
-  lum_pixel = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
-  if (!lum_pixel) goto error;
-
-  float coeff_r = 0.2627f, coeff_g = 0.6780f, coeff_b = 0.0593f; // Rec2020
-  float color_impact = params->color_balance * 0.5f;
-
-  if(dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_contrast_luma, width, height,
-                                      CLARG(dev_in), CLARG(lum_pixel),
-                                      CLARG(width), CLARG(height),
-                                      CLARGFLOAT(color_impact),
-                                      CLARGFLOAT(coeff_r), CLARGFLOAT(coeff_g), CLARGFLOAT(coeff_b)) != CL_SUCCESS)
-    goto error;
-
-  // Note: Full guided filter pyramid implementation omitted for brevity in this patch.
-  // Using lum_pixel for all scales as placeholder to ensure pipeline connectivity.
-
-  // Assuming global_scale is 1.0f as it was missing in previous context, or retrieved from params if available.
-  // Using params->global_scale if it exists in struct, otherwise 1.0f.
-  // Based on struct definition, global_scale exists.
-  
-  if(dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_contrast_finalize, width, height,
-                                      CLARG(dev_in), CLARG(dev_out), CLARG(lum_pixel),
-                                      CLARGFLOAT(params->micro_scale), CLARGFLOAT(params->fine_scale),
-                                      CLARGFLOAT(params->local_scale), CLARGFLOAT(params->broad_scale),
-                                      CLARGFLOAT(params->extended_scale), CLARGFLOAT(params->noise_threshold),
-                                      CLARGFLOAT(params->csf_adaptation), CLARGFLOAT(params->colorful_contrast),
-                                      CLARG(params->method), CLARG(params->iterations),
-                                      CLARGFLOAT(params->color_balance), CLARGFLOAT(params->contrast_balance),
-                                      CLARG(lum_pixel), // smoothed
-                                      CLARG(lum_pixel), // extended
-                                      CLARG(lum_pixel), // broad
-                                      CLARG(lum_pixel), // fine
-                                      CLARG(lum_pixel), // micro
-                                      CLARGFLOAT(params->global_scale),
-                                      CLARG(width), CLARG(height)) != CL_SUCCESS)
-    goto error;
-
-  dt_opencl_release_mem_object(lum_pixel);
-  return CL_SUCCESS;
-
-error:
-  dt_opencl_release_mem_object(lum_pixel);
-  return DT_OPENCL_DEFAULT_ERROR;
-}
-#endif
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
