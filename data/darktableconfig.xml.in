@@ -1037,13 +1037,6 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
- <dtconfig>
-    <name>ui_last/styles_preview_mode</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
   <dtconfig>
     <name>ui_last/metadata_dialog_width</name>
     <type>int</type>
@@ -3978,6 +3971,13 @@
     <default>400</default>
     <shortdescription>height of the styles list</shortdescription>
     <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/style/preview_size</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>preview size on tooltip</shortdescription>
+    <longdescription>size of the preview on the tooltip</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/toneequal/gui_page</name>
