@@ -218,6 +218,9 @@ changes (where available).
   WB. This was due to a missing reset letting the Color Calibration
   module starting with a wrong WB.
 
+- Avoid speckles when creating drawn masks using the vectorize option
+  in the Raster File module.
+
 ## Lua
 
 ### API Version
