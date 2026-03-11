@@ -30,7 +30,7 @@ typedef struct dt_scopes_split_t
 const char* _split_name(const dt_scopes_mode_t *const self)
 {
   // FIXME: this could depend on values of left/right scopes
-  return N_("waveform/vectorscope");
+  return N_("split");
 }
 
 static void _split_process(dt_scopes_mode_t *const self,
@@ -195,28 +195,31 @@ static void _split_clear(dt_scopes_mode_t *const self)
 }
 
 static void _split_eventbox_scroll(dt_scopes_mode_t *const self,
-                                   GdkEventScroll *event)
+                                   gdouble x, gdouble y,
+                                   gdouble delta_x, gdouble delta_y,
+                                   GdkModifierType state)
 {
   dt_scopes_split_t *const d = self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
-  if((event->x < allocation.width/2) && d->left->functions->eventbox_scroll)
-    d->left->functions->eventbox_scroll(d->left, event);
-  if((event->x >= allocation.width/2) && d->right->functions->eventbox_scroll)
-    d->right->functions->eventbox_scroll(d->right, event);
+  if((x < allocation.width/2) && d->left->functions->eventbox_scroll)
+    d->left->functions->eventbox_scroll(d->left, x, y, delta_x, delta_y, state);
+  if((x >= allocation.width/2) && d->right->functions->eventbox_scroll)
+    d->right->functions->eventbox_scroll(d->right, x, y, delta_x, delta_y, state);
 }
 
 static void _split_eventbox_motion(dt_scopes_mode_t *const self,
-                                   GtkWidget *widget,
-                                   const GdkEventMotion *event)
+                                   GtkEventControllerMotion *controller,
+                                   double x,
+                                   double y)
 {
   dt_scopes_split_t *const d = self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
-  if((event->x < allocation.width/2) && d->left->functions->eventbox_motion)
-    d->left->functions->eventbox_motion(d->left, widget, event);
-  if((event->x >= allocation.width/2) && d->right->functions->eventbox_motion)
-    d->right->functions->eventbox_motion(d->right, widget, event);
+  if((x < allocation.width/2) && d->left->functions->eventbox_motion)
+    d->left->functions->eventbox_motion(d->left, controller, x, y);
+  if((x >= allocation.width/2) && d->right->functions->eventbox_motion)
+    d->right->functions->eventbox_motion(d->right, controller, x, y);
 }
 
 static void _split_update_buttons(const dt_scopes_mode_t *const self)
