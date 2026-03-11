@@ -1710,8 +1710,10 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
     gtk_toggle_button_set_active
       (GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
-    gtk_toggle_button_set_active
-      (GTK_TOGGLE_BUTTON(bd->masks_edit_mode), bd->masks_shown == DT_MASKS_EDIT_RESTRICTED);      
+    if(bd->masks_shown == DT_MASKS_EDIT_RESTRICTED)
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_edit), dtgtk_cairo_paint_lock, 0, NULL);
+    else
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_edit), dtgtk_cairo_paint_masks_eye, 0, NULL);  
     dt_masks_set_edit_mode(self, bd->masks_shown);
 
     // set all add shape buttons to inactive
@@ -2779,12 +2781,6 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     dt_gui_add_class(bd->masks_polarity, "dt_ignore_fg_state");
 
     GtkWidget *abox = dt_gui_hbox();
-    bd->masks_edit_mode = dt_iop_togglebutton_new(module, "blend`tools",
-                                             N_("mask edit mode"),
-                                             N_("mask edit mode"),
-                                             G_CALLBACK(_blendop_masks_show_and_edit),
-                                             FALSE, 0, 0,
-                                             dtgtk_cairo_paint_lock, abox);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools",
                                              N_("show and edit mask elements"),
                                              N_("show and edit in restricted mode (no moving/resizing of shapes)"),
