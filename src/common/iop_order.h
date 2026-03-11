@@ -230,6 +230,9 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev,
 void dt_ioppr_resync_modules_order(struct dt_develop_t *dev);
 void dt_ioppr_resync_iop_list(struct dt_develop_t *dev);
 
+void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list);
+/** ensure that iop_order_list contains all supported modules */
+
 /** update target_iop_order_list to ensure that modules in
     iop_order_list are in target_iop_order_list note that
     iop_order_list contains a set of dt_iop_order_entry_t where order
@@ -269,7 +272,7 @@ gboolean dt_ioppr_check_so_iop_order(GList *iop_list,
                                      GList *iop_order_list);
 
 /* returns a list of dt_iop_order_rule_t with the current iop order rules */
-GList *dt_ioppr_get_iop_order_rules();
+GList *dt_ioppr_get_iop_order_rules(void);
 
 /** returns a duplicate of iop_order_list */
 GList *dt_ioppr_iop_order_copy_deep(GList *iop_order_list);

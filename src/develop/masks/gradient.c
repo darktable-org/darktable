@@ -1485,48 +1485,57 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
 
   switch(prop)
   {
-    case DT_MASKS_PROPERTY_CURVATURE:;
-      float curvature = gradient
-        ? gradient->curvature
-        : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
-      curvature = CLAMP(curvature + new_val - old_val, -2.0f, 2.0f);
+    case DT_MASKS_PROPERTY_CURVATURE:
+      {
+        float curvature = gradient
+          ? gradient->curvature
+          : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
+        curvature = CLAMP(curvature + 2.0f * (new_val - old_val), -2.0f, 2.0f);
 
-      if(gradient) gradient->curvature = curvature;
-      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
+        if(gradient) gradient->curvature = curvature;
+        dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
 
-      *sum += curvature * 0.5;
-      *max = fminf(*max,  1.0f - 0.5 * curvature);
-      *min = fmaxf(*min, -1.0f - 0.5 * curvature);
-      ++*count;
+        *sum += curvature * 0.5;
+        *max = fminf(*max,  1.0f - 0.5 * curvature);
+        *min = fmaxf(*min, -1.0f - 0.5 * curvature);
+        ++*count;
+      }
       break;
-    case DT_MASKS_PROPERTY_COMPRESSION:;
-      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
-      float compression = gradient
-        ? gradient->compression
-        : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));
-      compression = CLAMP(compression * ratio, 0.001f, 1.0f);
 
-      if(gradient) gradient->compression = compression;
-      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
+    case DT_MASKS_PROPERTY_COMPRESSION:
+      {
+        const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+        float compression = gradient
+          ? gradient->compression
+          : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));
+        compression = CLAMP(compression * ratio, 0.001f, 1.0f);
 
-      *sum += compression;
-      *max = fminf(*max, 1.0f / compression);
-      *min = fmaxf(*min, 0.0005f / compression);
-      ++*count;
+        if(gradient) gradient->compression = compression;
+        dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
+
+        *sum += compression;
+        *max = fminf(*max, 1.0f / compression);
+        *min = fmaxf(*min, 0.0005f / compression);
+        ++*count;
+      }
       break;
-    case DT_MASKS_PROPERTY_ROTATION:;
-      float rotation = gradient
-        ? gradient->rotation
-        : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
-      rotation = fmodf(rotation - new_val + old_val + 360.0f, 360.0f);
 
-      if(gradient) gradient->rotation = rotation;
-      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, rotation), rotation);
+    case DT_MASKS_PROPERTY_ROTATION:
+      {
+        float rotation = gradient
+          ? gradient->rotation
+          : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
+        rotation = fmodf(rotation - new_val + old_val + 360.0f, 360.0f);
 
-      *sum += 360.0f - rotation;
-      ++*count;
+        if(gradient) gradient->rotation = rotation;
+        dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, rotation), rotation);
+
+        *sum += 360.0f - rotation;
+        ++*count;
+      }
       break;
-    default:;
+
+    default: {}
   }
 }
 

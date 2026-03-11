@@ -142,18 +142,15 @@ static void _init_picker(dt_iop_color_picker_t *picker,
   DT_IOP_SECTION_FOR_PARAMS_UNWIND(module);
 
   // module is NULL if primary colorpicker
-  picker->module     = module;
-  picker->flags      = flags;
-  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL)
-                              : IOP_CS_NONE;
-  picker->colorpick  = button;
-  picker->changed    = FALSE;
-  picker->fixed_cst  = FALSE;
+  picker->module      = module;
+  picker->flags       = flags;
+  picker->picker_cst  = module ? module->default_colorspace(module, NULL, NULL)
+                               : IOP_CS_NONE;
+  picker->colorpick   = button;
+  picker->changed     = FALSE;
+  picker->fixed_cst   = FALSE;
+  picker->initialized = FALSE;
 
-  // default values
-  picker->pick_box[0] = picker->pick_box[1] = 0.0f;
-  picker->pick_box[2] = picker->pick_box[3] = 1.0f;
-  picker->pick_pos[0] = picker->pick_pos[1] = 0.0f;
   _color_picker_reset(picker);
 }
 
@@ -183,11 +180,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
   dt_iop_color_picker_flags_t flags = self->flags;
 
   // setup if a new picker or switching between point/area mode
-  if(prior_picker != self
-     || (((flags & DT_COLOR_PICKER_POINT_AREA) == DT_COLOR_PICKER_POINT_AREA)
-         && (to_area_mode !=
-             (darktable.lib->proxy.colorpicker.primary_sample->size ==
-              DT_LIB_COLORPICKER_SIZE_BOX))))
+  if(prior_picker != self)
   {
     darktable.lib->proxy.colorpicker.picker_proxy = self;
 
@@ -201,25 +194,20 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
     // pull picker's last recorded positions
     if(kind & DT_COLOR_PICKER_AREA)
     {
-      if(   self->pick_box[0] == 0.0f && self->pick_box[1] == 0.0f
-         && self->pick_box[2] == 1.0f && self->pick_box[3] == 1.0f)
-      {
-        dt_boundingbox_t reset = { 0.02f, 0.02f, 0.98f, 0.98f };
-        dt_color_picker_backtransform_box(darktable.develop, 2, reset, self->pick_box);
-      }
+      if(!self->initialized)
+        dt_lib_colorpicker_reset_box_area(self->pick_box);
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     }
     else if(kind & DT_COLOR_PICKER_POINT)
     {
-      if(self->pick_pos[0] == 0.0f && self->pick_pos[1] == 0.0f)
-      {
-        dt_boundingbox_t middle = { 0.5f, 0.5f };
-        dt_color_picker_backtransform_box(darktable.develop, 1, middle, self->pick_pos);
-      }
+      if(!self->initialized)
+        dt_lib_colorpicker_reset_point(self->pick_pos);
       dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     }
     else
       dt_unreachable_codepath();
+
+    self->initialized = TRUE;
 
     dt_lib_colorpicker_setup(darktable.lib,
                              flags & DT_COLOR_PICKER_DENOISE,

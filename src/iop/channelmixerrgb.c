@@ -2042,7 +2042,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
-      _dev_is_D65_chroma(dev) ? "YES" : "NO",
+      STR_YESNO(_dev_is_D65_chroma(dev)),
       chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2],
       chr->as_shot[0], chr->as_shot[1], chr->as_shot[2],
       img->id);
@@ -2463,20 +2463,51 @@ static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 {
   if(!g->checker_ready)
   {
+    const float handle_offset = 10.0f;
+
+    dt_develop_t *dev = darktable.develop;
+    dt_dev_viewport_t *port = &dev->full;
+
+    float x1 = handle_offset;
+    float y1 = handle_offset;
+    float x2 = width - handle_offset;
+    float y2 = height - handle_offset;
+
+    float zoom_x, zoom_y, boxw, boxh;
+
+    if(dt_dev_get_zoom_bounds(port, &zoom_x, &zoom_y, &boxw, &boxh))
+    {
+      // size of the view box
+      const float h_box = width * boxw;
+      const float v_box = height * boxh;
+      // size of the non visible borders
+      const float h_border = width - h_box;
+      const float v_border = height - v_box;
+
+      const float offx = (h_border / 2.0f) + (zoom_x * width);
+      const float offy = (v_border / 2.0f) + (zoom_y * height);
+
+      x1 = offx + handle_offset;
+      y1 = offy + handle_offset;
+      x2 = offx + h_box - handle_offset;
+      y2 = offy + v_box - handle_offset;
+    }
+
     // top left
-    g->box[0].x = g->box[0].y = 10.;
+    g->box[0].x = x1;
+    g->box[0].y = y1;
 
     // top right
-    g->box[1].x = (width - 10.);
-    g->box[1].y = g->box[0].y;
+    g->box[1].x = x2;
+    g->box[1].y = y1;
 
     // bottom right
-    g->box[2].x = g->box[1].x;
-    g->box[2].y = (width - 10.) * g->checker->ratio;
+    g->box[2].x = x2;
+    g->box[2].y = y2;
 
     // bottom left
-    g->box[3].x = g->box[0].x;
-    g->box[3].y = g->box[2].y;
+    g->box[3].x = x1;
+    g->box[3].y = y2;
 
     g->checker_ready = TRUE;
   }
@@ -2874,7 +2905,6 @@ static void _start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *
 }
 
 static void _run_profile_callback(GtkWidget *widget,
-                                 GdkEventButton *event,
                                  dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2888,7 +2918,6 @@ static void _run_profile_callback(GtkWidget *widget,
 }
 
 static void _run_validation_callback(GtkWidget *widget,
-                                    GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2902,7 +2931,6 @@ static void _run_validation_callback(GtkWidget *widget,
 }
 
 static void _commit_profile_callback(GtkWidget *widget,
-                                     GdkEventButton *event,
                                      dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -4693,7 +4721,7 @@ void gui_init(dt_iop_module_t *self)
   g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("accept"),
                        g->button_commit, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_commit), "button-press-event",
+  g_signal_connect(G_OBJECT(g->button_commit), "clicked",
                    G_CALLBACK(_commit_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_commit,
                               _("accept the computed profile and set it in the module"));
@@ -4701,14 +4729,14 @@ void gui_init(dt_iop_module_t *self)
   g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("recompute"),
                        g->button_profile, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_profile), "button-press-event",
+  g_signal_connect(G_OBJECT(g->button_profile), "clicked",
                    G_CALLBACK(_run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
 
   g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
   dt_action_define_iop(self, N_("calibrate"), N_("validate"),
                        g->button_validate, &dt_action_def_button);
-  g_signal_connect(G_OBJECT(g->button_validate), "button-press-event",
+  g_signal_connect(G_OBJECT(g->button_validate), "clicked",
                    G_CALLBACK(_run_validation_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
 

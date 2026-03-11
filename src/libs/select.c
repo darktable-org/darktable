@@ -259,7 +259,7 @@ static int lua_register_selection(lua_State *L)
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
   data->key = strdup(name);
   data->self = self;
-  gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+  gulong s = g_signal_connect_data(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data, NULL, 0);
 
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);

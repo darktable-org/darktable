@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
 #include "gui/color_picker_proxy.h"
+#include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 
 #include <assert.h>
 #include <stdint.h>
@@ -1232,6 +1233,33 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
   return stopper != DT_DEV_PIXELPIPE_STOP_NO;
 }
 
+void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
+{
+  dt_iop_module_t *module = piece->module;
+  if(module && module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW)
+  {
+    piece->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->dsc.filters, roi->x, roi->y);
+    for(int ii = 0; ii < 6; ++ii)
+    {
+      for(int jj = 0; jj < 6; ++jj)
+      {
+        piece->xtrans[jj][ii] = piece->pipe->dsc.xtrans[(jj + roi->y) % 6][(ii + roi->x) % 6];
+      }
+    }
+  }
+}
+
+static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece)
+{
+  if(piece->pipe->bypass_blendif && dt_iop_has_focus(piece->module))
+    return FALSE;
+
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
+  if(!d || !(d->mask_mode & DEVELOP_MASK_ENABLED)) return FALSE;
+
+  return TRUE;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1278,6 +1306,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   const int cst_to = module->input_colorspace(module, pipe, piece);
   const int cst_out = module->output_colorspace(module, pipe, piece);
 
+  dt_dev_prepare_piece_cfa(piece, roi_in);
+
   if(cst_from != cst_to)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
@@ -1286,8 +1316,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                   dt_iop_colorspace_to_name(cst_from),
                   dt_iop_colorspace_to_name(cst_to),
                   work_profile
-                    ? dt_colorspaces_get_name(work_profile->type,
-                                              work_profile->filename)
+                    ? dt_colorspaces_get_name(work_profile->type, work_profile->filename)
                     : "no work profile");
   }
 
@@ -1508,9 +1537,12 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     return TRUE;
 
   /* process blending on CPU */
-  dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
-  *pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
-  *pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
+  if(_piece_wants_blending(piece))
+  {
+    dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
+    *pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
+    *pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
+  }
 
   return dt_pipe_shutdown(pipe);
 }
@@ -1724,15 +1756,81 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
         const gboolean valid_bpp = (bpp == 4 * sizeof(float));
-
+        const gboolean gamma = dev->image_storage.colorspace != DT_IMAGE_COLORSPACE_NONE;
+#ifdef HAVE_OPENCL
+        const size_t in_size = bpp * roi_in.width * roi_in.height;
+        const gboolean cl_scale_possible = ((2 * in_size) < dt_opencl_get_device_available(pipe->devid))
+                                            && roi_out->width < roi_in.width
+                                            && roi_out->height < roi_in.height;
+#else
+        const gboolean cl_scale_possible = FALSE;
+#endif
         dt_print_pipe(DT_DEBUG_PIPE,
                       "pipe data: clip&zoom",
-                      pipe, module, DT_DEVICE_CPU, &roi_in, roi_out, "%s%s",
-                      valid_bpp ? "" : "requires 4 floats data",
-                      aligned_input ? "" : "non-aligned input buffer");
+                      pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s%s",
+                      valid_bpp ? "" : "requires 4 floats data ",
+                      aligned_input ? "" : "non-aligned input buffer ",
+                      cl_scale_possible ? "OpenCL scaling " : "",
+                      gamma ? "gamma corrected" : "");
 
         if(valid_bpp && aligned_input)
-          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+        {
+#ifdef HAVE_OPENCL
+          gboolean done = FALSE;
+          if(cl_scale_possible)
+          {
+            cl_mem tmp_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp);
+            cl_mem linear_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, bpp);
+            cl_mem tmp_output = NULL;
+            cl_mem linear_output = NULL;
+            if(tmp_input && linear_input)
+            {
+              cl_int err = dt_opencl_write_host_to_device(pipe->devid, pipe->input, tmp_input, roi_in.width, roi_in.height, bpp);
+              if(err == CL_SUCCESS)
+              {
+                const float fgamma = 2.4f;
+                err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_in.width, roi_in.height,
+                        CLARG(tmp_input), CLARG(linear_input), CLARG(roi_in.width), CLARG(roi_in.height), CLARG(fgamma));
+                dt_opencl_release_mem_object(tmp_input);
+                tmp_input = NULL;
+              }
+              if(err == CL_SUCCESS)
+              {
+                linear_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+                if(!linear_output) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+                if(err == CL_SUCCESS)
+                  err = dt_iop_clip_and_zoom_cl(pipe->devid, linear_output, linear_input, roi_out, &roi_in);
+                dt_opencl_release_mem_object(linear_input);
+                linear_input = NULL;
+              }
+              if(err == CL_SUCCESS)
+              {
+                tmp_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+                if(!tmp_output) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+                const float fgamma = 1.0f / 2.4f;
+                if(err == CL_SUCCESS)
+                  err = dt_opencl_enqueue_kernel_2d_args(pipe->devid, darktable.opencl->colorspaces->kernel_colorspaces_gamma, roi_out->width, roi_out->height,
+                    CLARG(linear_output), CLARG(tmp_output), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(fgamma));
+              }
+              if(err == CL_SUCCESS)
+                err = dt_opencl_copy_device_to_host(pipe->devid, *output, tmp_output, roi_out->width, roi_out->height, bpp);
+              if(err == CL_SUCCESS)
+                done = TRUE;
+              else
+                dt_print(DT_DEBUG_PIPE | DT_DEBUG_OPENCL, "OpenCL pipe data: clip&zoom failed");
+            }
+            dt_opencl_release_mem_object(tmp_input);
+            dt_opencl_release_mem_object(tmp_output);
+            dt_opencl_release_mem_object(linear_input);
+            dt_opencl_release_mem_object(linear_output);
+          }
+
+          if(!done)
+            dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, gamma);
+#else
+         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, gamma);
+#endif
+        }
         else
         {
           memset(*output, 0, (size_t)roi_out->width * roi_out->height * bpp);
@@ -1877,9 +1975,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     /* aggregate in structure tiling */
     tiling.factor = MAX(tiling.factor, tiling_blendop.factor);
-    tiling.factor_cl = MAX(tiling.factor_cl, tiling_blendop.factor);
+    tiling.factor_cl = MAX(tiling.factor_cl, tiling_blendop.factor_cl);
     tiling.maxbuf = MAX(tiling.maxbuf, tiling_blendop.maxbuf);
-    tiling.maxbuf_cl = MAX(tiling.maxbuf_cl, tiling_blendop.maxbuf);
+    tiling.maxbuf_cl = MAX(tiling.maxbuf_cl, tiling_blendop.maxbuf_cl);
     tiling.overhead = MAX(tiling.overhead, tiling_blendop.overhead);
     tiling.overlap = MAX(tiling.overlap, tiling_blendop.overlap);
   }
@@ -2097,6 +2195,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(dt_pipe_shutdown(pipe))
           return TRUE;
 
+        dt_dev_prepare_piece_cfa(piece, &roi_in);
+
         /* now call process_cl of module; module should emit
            meaningful messages in case of error */
         if(success_opencl)
@@ -2209,17 +2309,18 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 && darktable.dump_diff_pipe
                 && !dt_pipe_shutdown(pipe))
             {
-              const int ch = dt_opencl_get_image_element_size(cl_mem_input) / sizeof(float);
+              const int ch = dt_opencl_get_image_element_size(cl_mem_input);
               const int cho = dt_opencl_get_image_element_size(*cl_mem_output) / sizeof(float);
-              if((ch == 1 || ch == 4)
-                  && (cho == 1 || cho == 4)
-                  && dt_str_commasubstring(darktable.dump_diff_pipe, module->op))
+              if((ch == 4 || ch == 16 || ch == 2) // input supports 1/4 channel floats and 1ch uint16
+                  && (cho == 1 || cho == 4)       // output for 1/4 channel floats
+                  && (dt_str_commasubstring(darktable.dump_diff_pipe, module->op)
+                      || dt_str_commasubstring(darktable.dump_diff_pipe, "complete")))
               {
                 const int ow = roi_out->width;
                 const int oh = roi_out->height;
                 const int iw = roi_in.width;
                 const int ih = roi_in.height;
-                float *clindata = dt_alloc_align_float((size_t)iw * ih * ch);
+                float *clindata = dt_alloc_aligned((size_t)iw * ih * ch);
                 float *cloutdata = dt_alloc_align_float((size_t)ow * oh * cho);
                 float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
                 if(clindata && cloutdata && cpudata)
@@ -2230,8 +2331,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                   if(terr == CL_SUCCESS)
                   {
                     terr = dt_opencl_copy_device_to_host(pipe->devid,
-                                                         clindata, cl_mem_input, ow, oh,
-                                                         ch * sizeof(float));
+                                                         clindata, cl_mem_input, iw, ih, ch);
                     if(terr == CL_SUCCESS)
                     {
                       module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
@@ -2328,12 +2428,12 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
 
         /* process blending */
-        if(success_opencl)
+        if(success_opencl && _piece_wants_blending(piece))
         {
           success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input,
                                                        *cl_mem_output, &roi_in, roi_out);
-          pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_GPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_CPU);
+          pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_GPU;
+          pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_CPU;
         }
 
         /* synchronization point for opencl pipe */
@@ -2531,11 +2631,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           return TRUE;
 
         /* do process blending on cpu (this is anyhow fast enough) */
-        if(success_opencl)
+        if(success_opencl && _piece_wants_blending(piece))
         {
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
-          pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
+          pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
+          pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
         }
 
         /* synchronization point for opencl pipe */
@@ -2749,7 +2849,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   dt_show_times_f
     (&start,
-     "[dev_pixelpipe]", "[%s] processed `%s%s' on %s%s%s, blended on %s",
+     "[dev_pixelpipe]", "[%s] processed `%s%s' on %s%s%s%s%s",
      dt_dev_pixelpipe_type_to_str(pipe->type), module->op, dt_iop_get_instance_id(module),
      pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU
           ? "GPU"
@@ -2759,6 +2859,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       && (piece->request_histogram & DT_REQUEST_ON))
           ? histogram_log
           : "",
+
+     _piece_wants_blending(piece) ? ", blended on " : "",
      pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "");
@@ -3515,14 +3617,12 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
 
   const dt_aligned_pixel_t wb =
-      { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
-        wboff ? 1.0f : p->dsc.temperature.coeffs[1],
-        wboff ? 1.0f : p->dsc.temperature.coeffs[2] };
+      { wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[0],
+        wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[1],
+        wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[2], 1.0f };
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid,
-     darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
-     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height),
-     CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
+     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLFLARRAY(4, wb));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid,

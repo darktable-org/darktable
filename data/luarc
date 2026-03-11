@@ -20,6 +20,12 @@ ipairs = function(t)
   end
 end
 
+-- global flag indicating darktable has completed gui initialization and it is safe 
+-- to register a lib in lighttable view
+-- fixes issue #19197
+
+darktable_gui_safe = false
+
 -- script installer
 
 local _scripts_install = {}
@@ -28,6 +34,27 @@ _scripts_install.module_installed = false
 _scripts_install.event_registered = false
 
 _scripts_install.dt = require 'darktable'
+
+-- catch the view changed event from none to lighttable to ensure that
+-- darktable gui initialization is complete
+
+_scripts_install.dt.register_event(
+  "_scripts_install_test", "view-changed",
+  function(event, old_view, new_view)
+    ov = nil
+    if not old_view then
+      ov = "none"
+    else
+      ov = old_view.id
+    end
+    if ov == "none" and new_view.id == "lighttable" then
+      darktable_gui_safe = true
+    end
+  end
+)
+
+
+
 
 -- check for gui so that we don't hang darktable-cli
 
@@ -359,7 +386,7 @@ if _scripts_install.dt.configuration.has_gui  then
 
       -- _scripts_install.dt.print_log("installing library")
 
-      if _scripts_install.dt.gui.current_view().id == "lighttable" then
+      if _scripts_install.dt.gui.current_view().id == "lighttable" and darktable_gui_safe then
         _scripts_install.install_module()
       else
         if not _scripts_install.event_registered then

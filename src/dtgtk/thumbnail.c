@@ -467,7 +467,7 @@ static void _get_dimensions_for_img_to_fit(const dt_thumbnail_t *thumb,
   // decimal, so not enough accurate so we compute it from the larger
   // available mipmap
   float ar = 0.0f;
-  for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
+  for(int k = DT_MIPMAP_LDR_MAX; k >= DT_MIPMAP_0; k--)
   {
     dt_mipmap_buffer_t tmp;
     dt_mipmap_cache_get(&tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
@@ -1119,7 +1119,12 @@ static void _dt_image_info_changed_callback(gpointer instance,
   {
     if(GPOINTER_TO_INT(i->data) == thumb->imgid)
     {
-      dt_thumbnail_update_infos(thumb);
+      if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+        || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+        dt_thumbnail_reload_infos(thumb);
+      else
+        dt_thumbnail_update_infos(thumb);
       break;
     }
   }
@@ -1245,14 +1250,8 @@ static gboolean _event_box_enter_leave(GtkWidget *widget,
                                        gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
 
-  if(!thumb->mouse_over
-     && event->type == GDK_ENTER_NOTIFY
-     && !thumb->disable_mouseover)
+  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
@@ -1267,9 +1266,7 @@ static gboolean _event_image_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  // we ensure that the image has mouse over
-  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY
-     && !thumb->disable_mouseover)
+  if(event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT,
@@ -1283,23 +1280,25 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  darktable.control->element =
-    (event->type == GDK_ENTER_NOTIFY && widget == thumb->w_reject)
-    ? DT_VIEW_REJECT
-    : -1;
-
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
-
-  if(thumb->disable_actions)
-    return TRUE;
   if(event->type == GDK_ENTER_NOTIFY)
   {
+    if(widget == thumb->w_reject)
+      darktable.control->element = DT_VIEW_REJECT;
+
+    if(thumb->disable_actions)
+      return TRUE;
+
+    if(!thumb->disable_mouseover)
+      dt_control_set_mouse_over_id(thumb->imgid);
     _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
     _thumb_update_tags_tooltip(thumb);
   }
+  else if(event->type == GDK_LEAVE_NOTIFY)
+  {
+    if(widget == thumb->w_reject)
+      darktable.control->element = -1;
+  }
+
   return FALSE;
 }
 
@@ -1309,7 +1308,8 @@ static gboolean _event_star_enter(GtkWidget *widget,
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(thumb->disable_actions) return TRUE;
-  if(!thumb->mouse_over && !thumb->disable_mouseover)
+
+  if(!thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
 
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
@@ -1334,10 +1334,6 @@ static gboolean _event_star_leave(GtkWidget *widget,
                                   gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY
-     && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(NO_IMGID);
 
   if(thumb->disable_actions) return TRUE;
   for(int i = 0; i < MAX_STARS; i++)
@@ -1346,15 +1342,6 @@ static gboolean _event_star_leave(GtkWidget *widget,
     gtk_widget_queue_draw(thumb->w_stars[i]);
   }
   return TRUE;
-}
-
-static gboolean _event_main_leave(GtkWidget *widget,
-                                  GdkEventCrossing *event,
-                                  gpointer user_data)
-{
-  // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
-  return FALSE;
 }
 
 // we only want to specify that the mouse is hovereing the thumbnail
@@ -1434,8 +1421,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_widget_set_name(thumb->w_back, "thumb-back");
     g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event",
                      G_CALLBACK(_event_main_motion), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_back), "leave-notify-event",
-                     G_CALLBACK(_event_main_leave), thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
@@ -2229,6 +2214,7 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb,
                               const dt_thumbnail_overlay_t over,
                               const int timeout)
 {
+  if(!thumb) return;
   // if no change...
   if(thumb->over == over)
   {
@@ -2337,6 +2323,8 @@ float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
 // force the reload of image infos
 void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 {
+  if(!thumb) return;
+
   const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
@@ -2381,6 +2369,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
 {
+  if(!thumb) return;
   // we need to check also the reference count to be sure the surface
   // is not in an intermediate state
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
@@ -2392,7 +2381,7 @@ void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
 void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
                                 const gboolean selected)
 {
-  if(thumb->selected == selected)
+  if(!thumb || thumb->selected == selected)
     return;
 
   thumb->selected = selected;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2025 darktable developers.
+    Copyright (C) 2013-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -317,6 +317,20 @@ static dt_masks_form_t *_group_from_module(const dt_develop_t *dev,
                                            const dt_iop_module_t *module)
 {
   return dt_masks_get_from_id(dev, module->blend_params->mask_id);
+}
+
+void dt_masks_register_forms(dt_develop_t *dev,
+                             GList *forms)
+{
+  for(GList *l = forms;
+      l;
+      l = g_list_next(l))
+  {
+    dt_masks_form_t *form = l->data;
+    dev->forms = g_list_append(dev->forms, form);
+  }
+
+  dt_dev_add_masks_history_item(dev, NULL, TRUE);
 }
 
 void dt_masks_gui_form_save_creation(dt_develop_t *dev,
@@ -1112,7 +1126,8 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
     2. the mask manager and it is not expanded
 */
   const gboolean skipped = (module && !module->enabled)
-                        || (!module && !dt_lib_gui_get_expanded(dt_lib_get_module("masks")));
+                        && !dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+
   dt_print(DT_DEBUG_VERBOSE,
     "[dt_masks_events_mouse_moved] %s %s",
     module ? module->so->op : "mask manager",

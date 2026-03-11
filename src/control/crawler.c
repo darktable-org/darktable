@@ -106,7 +106,7 @@ static void _set_modification_time(char *filename,
   if(info) g_clear_object(&info);
 }
 
-// pregress update intervals in seconds
+// progress update intervals in seconds
 #define FAST_UPDATE 0.2
 #define SLOW_UPDATE 1.0
 
@@ -159,14 +159,15 @@ GList *dt_control_crawler_run(void)
     int flags = sqlite3_column_int(stmt, 4);
     ++image_count;
 
-    // update the progress message - five times per second for first four seconds, then once per second
+    // update the progress message - five times per second for first
+    // four seconds, then once per second.
     const double curr_time = dt_get_wtime();
     if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
     {
       const double fraction = image_count / (double)total_images;
-      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
-                                                   fraction,
-                                                   curr_time - start_time);
+      dt_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                            fraction,
+                                            curr_time - start_time);
       last_time = curr_time;
     }
 
@@ -861,7 +862,7 @@ static inline gboolean _lighttable_silent(void)
 
 static inline gboolean _valid_mip(dt_mipmap_size_t mip)
 {
-  return mip > DT_MIPMAP_0 && mip < DT_MIPMAP_8;
+  return mip > DT_MIPMAP_0 && mip < DT_MIPMAP_LDR_MAX;
 }
 
 static inline gboolean _still_thumbing(void)
@@ -990,7 +991,7 @@ void dt_update_thumbs_thread(void *p)
   }
 
   // return if any thumbcache dir is not writable
-  for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_7; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_1; k <= DT_MIPMAP_LDR_MAX-1; k++)
   {
     char dirname[PATH_MAX] = { 0 };
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);

@@ -362,9 +362,7 @@ void tiling_callback(dt_iop_module_t *self,
   }
   tiling->overhead = 0;
   tiling->overlap = ceilf(4 * sigma);
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void process(dt_iop_module_t *self,

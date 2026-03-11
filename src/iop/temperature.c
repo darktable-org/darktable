@@ -536,75 +536,75 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const uint32_t filters = piece->pipe->dsc.filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+  const uint32_t filters = piece->filters;
+  const uint8_t(*const xtrans)[6] = piece->xtrans;
   const dt_iop_temperature_data_t *const d = piece->data;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
   const float *const d_coeffs = d->coeffs;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
 
   if(filters == 9u)
   { // xtrans float mosaiced
     DT_OMP_FOR()
-    for(int j = 0; j < roi_out->height; j++)
+    for(int j = 0; j < height; j++)
     {
       const float DT_ALIGNED_PIXEL coeffs[3][4] =
       {
-        { d_coeffs[FCxtrans(j, 0, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 1, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 2, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 3, roi_out, xtrans)] },
-        { d_coeffs[FCxtrans(j, 4, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 5, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 6, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 7, roi_out, xtrans)] },
-        { d_coeffs[FCxtrans(j, 8, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 9, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 10, roi_out, xtrans)],
-          d_coeffs[FCxtrans(j, 11, roi_out, xtrans)] },
+        { d_coeffs[FCNxtrans(j, 0, xtrans)],
+          d_coeffs[FCNxtrans(j, 1, xtrans)],
+          d_coeffs[FCNxtrans(j, 2, xtrans)],
+          d_coeffs[FCNxtrans(j, 3, xtrans)] },
+        { d_coeffs[FCNxtrans(j, 4, xtrans)],
+          d_coeffs[FCNxtrans(j, 5, xtrans)],
+          d_coeffs[FCNxtrans(j, 6, xtrans)],
+          d_coeffs[FCNxtrans(j, 7, xtrans)] },
+        { d_coeffs[FCNxtrans(j, 8, xtrans)],
+          d_coeffs[FCNxtrans(j, 9, xtrans)],
+          d_coeffs[FCNxtrans(j, 10, xtrans)],
+          d_coeffs[FCNxtrans(j, 11, xtrans)] },
       };
       // process sensels four at a time (note that attempting to
       //ensure alignment for this main loop actually slowed things
       //down marginally)
       int i = 0;
-      for(int coeff = 0; i + 4 < roi_out->width; i += 4, coeff = (coeff+1)%3)
+      for(int coeff = 0; i + 4 < width; i += 4, coeff = (coeff+1)%3)
       {
-        const size_t p = (size_t)j * roi_out->width + i;
+        const size_t p = (size_t)j * width + i;
         for_four_channels(c) // in and out are NOT aligned when width is not a multiple of 4
           out[p+c] = in[p+c] * coeffs[coeff][c];
       }
       // process the leftover sensels
-      for(; i < roi_out->width; i++)
+      for(; i < width; i++)
       {
-        const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = in[p] * d_coeffs[FCxtrans(j, i, roi_out, xtrans)];
+        const size_t p = (size_t)j * width + i;
+        out[p] = in[p] * d_coeffs[FCNxtrans(j, i, xtrans)];
       }
     }
   }
   else if(filters)
   { // bayer float mosaiced
-    const int width = roi_out->width;
     DT_OMP_FOR()
-    for(int j = 0; j < roi_out->height; j++)
+    for(int j = 0; j < height; j++)
     {
       int i = 0;
 
       const int alignment = 3 & (4 - ((j*width) & 3));
-      const int offset_j = j + roi_out->y;
 
       // process the unaligned sensels at the start of the row (when
       // width is not a multiple of 4)
       for(; i < alignment; i++)
       {
         const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
+        out[p] = in[p] * d_coeffs[FC(j, i, filters)];
       }
       const dt_aligned_pixel_t coeffs =
-        { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
-          d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
-          d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
-          d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
+        { d_coeffs[FC(j, i, filters)],
+          d_coeffs[FC(j, i + 1,filters)],
+          d_coeffs[FC(j, i + 2, filters)],
+          d_coeffs[FC(j, i + 3, filters)] };
 
       // process sensels four at a time
       for(; i < width - 4; i += 4)
@@ -617,13 +617,13 @@ void process(dt_iop_module_t *self,
       for(; i < width; i++)
       {
         const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
+        out[p] = in[p] * d_coeffs[FC(j, i, filters)];
       }
     }
   }
   else
   { // non-mosaiced
-    const size_t npixels = roi_out->width * (size_t)roi_out->height;
+    const size_t npixels = (size_t)height * width;
 
     DT_OMP_FOR()
     for(size_t k = 0; k < 4*npixels; k += 4)
@@ -651,7 +651,7 @@ int process_cl(dt_iop_module_t *self,
   dt_dev_pixelpipe_t *pipe = piece->pipe;
 
   const int devid = pipe->devid;
-  const uint32_t filters = pipe->dsc.filters;
+  const uint32_t filters = piece->filters;
   cl_mem dev_coeffs = NULL;
   cl_mem dev_xtrans = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -662,7 +662,7 @@ int process_cl(dt_iop_module_t *self,
 
   if(filters == 9u)
   {
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
@@ -672,8 +672,7 @@ int process_cl(dt_iop_module_t *self,
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_in->width, roi_in->height,
                                          CLARG(dev_in), CLARG(dev_out),
                                          CLARG(roi_in->width), CLARG(roi_in->height),
-                                         CLARG(dev_coeffs), CLARG(filters),
-                                         CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
+                                         CLARG(dev_coeffs), CLARG(filters), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
   _publish_chroma(piece);
@@ -1596,9 +1595,9 @@ void reload_defaults(dt_iop_module_t *self)
 
   dt_print(DT_DEBUG_PARAMS,
     "[dt_iop_reload_defaults] scene=%s, modern=%s, CAT=%s. D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
-    dt_is_scene_referred() ? "YES" : "NO",
-    is_modern ? "YES" : "NO",
-    another_cat_defined ? "YES" : "NO",
+    STR_YESNO(dt_is_scene_referred()),
+    STR_YESNO(is_modern),
+    STR_YESNO(another_cat_defined),
     daylights[0], daylights[1], daylights[2], as_shot[0], as_shot[1], as_shot[2]);
 
   d->preset = p->preset = DT_IOP_TEMP_AS_SHOT;
@@ -2011,9 +2010,9 @@ static void _gui_sliders_update(dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->scale_y), (img->flags & DT_IMAGE_4BAYER));
 }
 
-static void temp_label_click(GtkWidget *label,
-                             GdkEventButton *event,
-                             dt_iop_module_t *self)
+static gboolean temp_label_click(GtkWidget *label,
+                                 GdkEventButton *event,
+                                 dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -2043,6 +2042,7 @@ static void temp_label_click(GtkWidget *label,
   _color_temptint_sliders(self);
   _color_rgb_sliders(self);
   _color_finetuning_slider(self);
+  return TRUE;
 }
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)

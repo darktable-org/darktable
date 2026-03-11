@@ -2007,13 +2007,8 @@ static void _blendif_hide_output_channels(GtkMenuItem *menuitem,
 }
 
 static void _blendif_options_callback(GtkButton *button,
-                                      GdkEventButton *event,
                                       dt_iop_module_t *module)
 {
-  if(event->button != 1
-     && event->button != 2)
-    return;
-
   const dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   if(!bd
@@ -2673,7 +2668,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
                                 N_("blend"), N_("boost factor"));
     dt_bauhaus_slider_set_soft_range(bd->channel_boost_factor_slider, 0.0, 3.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider,
-                                _("adjust the boost factor of the channel mask"));
+                                _("adjust the channel boost factor.\nincrease to allow matching values over 100%"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
 
     g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed",
@@ -3476,7 +3471,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_tooltip_text(presets_button, _("blending options"));
     if(bd->blendif_support)
     {
-      g_signal_connect(G_OBJECT(presets_button), "button-press-event",
+      g_signal_connect(G_OBJECT(presets_button), "clicked",
                        G_CALLBACK(_blendif_options_callback), module);
     }
     else

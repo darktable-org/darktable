@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
+#include "common/math.h"             // for dt_vector_powf
 #include "develop/imageop.h"         // for dt_iop_roi_t
 #include "develop/imageop_math.h"
 #include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
@@ -144,15 +145,35 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i,
   }
 }
 
-// apply clip and zoom on parts of a supplied full image.
-// roi_in and roi_out define which part to work on.
+/* apply clip and zoom on parts of a supplied full image, roi_in and roi_out define which part to work on.
+    gamma correction around scaling supported.
+    We don't do full RGB->linear and transformation but only use a gamma as that is fully sufficient
+    for scaling.
+*/
 void dt_iop_clip_and_zoom(float *out,
                           const float *const in,
                           const dt_iop_roi_t *const roi_out,
-                          const dt_iop_roi_t *const roi_in)
+                          const dt_iop_roi_t *const roi_in,
+                          const gboolean gamma)
 {
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample(itor, out, roi_out, in, roi_in);
+  float *linear = gamma ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
+  if(!linear)
+    return dt_interpolation_resample(itor, out, roi_out, in, roi_in);
+
+  static const dt_aligned_pixel_t two_point_four = { 2.4f, 2.4f, 2.4f, 2.4f };
+  static const dt_aligned_pixel_t rev_two_point_four = { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f };
+
+  DT_OMP_SIMD(aligned(in, linear : 16))
+  for(size_t k = 0; k < (size_t)roi_in->width * roi_in->height*4; k += 4)
+    dt_vector_powf(&in[k], two_point_four, &linear[k]);
+
+  dt_interpolation_resample(itor, out, roi_out, linear, roi_in);
+  dt_free_align(linear);
+
+  DT_OMP_SIMD(aligned(out : 16))
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
+    dt_vector_powf(&out[k], rev_two_point_four, &out[k]);
 }
 
 // apply clip and zoom on the image region supplied in the input buffer.

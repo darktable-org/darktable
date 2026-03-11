@@ -94,6 +94,7 @@ static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, con
   }
 }
 
+#define	G_CALLBACK(f)			 ((GCallback) (f))
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   [DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE] = { "dt-global-mouse-over-image-change",
@@ -262,7 +263,7 @@ static gboolean _signal_raise(gpointer user_data)
   for(int i = 0; i <= params->n_params; i++) g_value_unset(&params->instance_and_params[i]);
   free(params->instance_and_params);
   free(params);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 typedef struct async_com_data
@@ -270,6 +271,7 @@ typedef struct async_com_data
   GCond end_cond;
   GMutex end_mutex;
   gpointer user_data;
+  gboolean finished;
 } async_com_data;
 
 gboolean _async_com_callback(gpointer data)
@@ -278,9 +280,10 @@ gboolean _async_com_callback(gpointer data)
   g_mutex_lock(&communication->end_mutex);
   _signal_raise(communication->user_data);
 
+  communication->finished = TRUE;
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static void _print_trace(int signal, dt_debug_signal_action_t action, const char* op)
@@ -376,13 +379,14 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
     }
     else
     {
-      async_com_data communication;
+      async_com_data communication = {};
       g_mutex_init(&communication.end_mutex);
       g_cond_init(&communication.end_cond);
-      g_mutex_lock(&communication.end_mutex);
       communication.user_data = params;
       g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, _async_com_callback,&communication, NULL);
-      g_cond_wait(&communication.end_cond,&communication.end_mutex);
+      g_mutex_lock(&communication.end_mutex);
+      while(!communication.finished)
+        g_cond_wait(&communication.end_cond,&communication.end_mutex);
       g_mutex_unlock(&communication.end_mutex);
       g_mutex_clear(&communication.end_mutex);
     }
@@ -394,7 +398,7 @@ void dt_control_signal_connect(const dt_control_signal_t *ctlsig, dt_signal_t si
 {
   _print_trace(signal, DT_DEBUG_SIGNAL_ACT_CONNECT, "connect");
 
-  g_signal_connect(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data);
+  g_signal_connect_data(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data, NULL, 0);
 }
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)

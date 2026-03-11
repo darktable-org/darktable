@@ -773,7 +773,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   switch(d->mode)
   {
@@ -795,10 +794,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                   grey = d->grey / 100.0f,
                   saturation = d->saturation;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorbalance, width, height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(width),
         CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma_inv), CLARG(saturation), CLARG(contrast),
         CLARG(grey));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance, sizes);
       if(err != CL_SUCCESS) goto error;
       return CL_SUCCESS;
 
@@ -823,10 +822,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                   saturation = d->saturation,
                   saturation_out = d->saturation_out;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_lgg, 0, CLARG(dev_in), CLARG(dev_out),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorbalance_lgg, width, height,
+        CLARG(dev_in), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma_inv), CLARG(saturation), CLARG(contrast),
         CLARG(grey), CLARG(saturation_out));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_lgg, sizes);
       if(err != CL_SUCCESS) goto error;
       return CL_SUCCESS;
 
@@ -851,10 +850,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                   saturation = d->saturation,
                   saturation_out = d->saturation_out;
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_cdl, 0, CLARG(dev_in), CLARG(dev_out),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorbalance_cdl, width, height,
+        CLARG(dev_in), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma), CLARG(saturation), CLARG(contrast),
         CLARG(grey), CLARG(saturation_out));
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_cdl, sizes);
       if(err != CL_SUCCESS) goto error;
       return CL_SUCCESS;
 
@@ -1798,7 +1797,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   if(old_container) gtk_widget_show(new_container);
 }
 
-static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
 {
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
@@ -1809,6 +1808,7 @@ static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_i
   g_free(layout);
 
   _configure_slider_blocks(NULL, self);
+  return TRUE;
 }
 
 #define HSL_CALLBACK(which)                                                             \

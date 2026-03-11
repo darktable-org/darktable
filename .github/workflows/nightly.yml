@@ -13,14 +13,18 @@ jobs:
   AppImage:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable AppImage
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        compiler:
-          - { compiler: GNU12, CC: gcc-12, CXX: g++-12, packages: gcc-12 g++-12 }
+        os: [ubuntu-22.04, ubuntu-24.04-arm]
         branch:
           - { code: master, label: gitmaster }
+        include:
+          - os: ubuntu-22.04
+            compiler: { compiler: GNU12, CC: gcc-12, CXX: g++-12, packages: gcc-12 g++-12 }
+          - os: ubuntu-24.04-arm
+            compiler: { compiler: GNU14, CC: gcc-14, CXX: g++-14, packages: gcc-14 g++-14 }
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -72,6 +76,7 @@ jobs:
             libpango1.0-dev \
             libpng-dev \
             libportmidi-dev \
+            libpotrace-dev \
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
@@ -118,7 +123,7 @@ jobs:
             libxfixes-dev
       - name: Build and install fresh libheif with built-in decoders
         run: |
-          git clone --branch v1.21.1 --depth 1 https://github.com/strukturag/libheif src-libheif
+          git clone --branch v1.21.2 --depth 1 https://github.com/strukturag/libheif src-libheif
           cd src-libheif
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -136,7 +141,7 @@ jobs:
           cd ..
       - name: Build and install a more recent version of exiv2
         run: |
-          git clone --branch v0.28.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          git clone --branch v0.28.8 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
           cd src-exiv2
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -168,7 +173,7 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
           name: artifact-appimage-${{ runner.arch }}
@@ -177,7 +182,7 @@ jobs:
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable Windows
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
@@ -185,11 +190,17 @@ jobs:
           - Release
         msystem:
           - UCRT64
+          - CLANGARM64
         target:
           - skiptest
         generator:
           - Ninja
         eco: [-DBINARY_PACKAGE_BUILD=ON]
+        include:
+          - msystem: UCRT64
+            os: windows-latest
+          - msystem: CLANGARM64
+            os: windows-11-arm
     defaults:
       run:
         shell: msys2 {0}
@@ -214,7 +225,6 @@ jobs:
             cmake:p
             libxslt:p
             ninja:p
-            nsis:p
             python-jsonschema:p
             curl:p
             drmingw:p
@@ -245,6 +255,7 @@ jobs:
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
+            potrace:p
             pugixml:p
             SDL2:p
             sqlite3:p
@@ -289,18 +300,24 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+      - name: Create multi-resolution icon file
+        run: |
+          # Create multi-resolution .ico file expected by the .iss script for use as setup file icon.
+          # Use MSYS2 ImageMagick as pre-installed IM is not working on the WoA runner.
+          pacboy --noconfirm -S --needed imagemagick:p
+          magick "${SRC_DIR}"/data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" "${INSTALL_PREFIX}"/dt_logo_multiresolution.ico
       - name: Create Inno Setup installer
         shell: pwsh
         run: |
           choco upgrade innosetup --no-progress
           cd ${{ env.INSTALL_PREFIX }}
           cp ${{ env.BUILD_DIR }}/darktable.iss ./
-          # Create multi-resolution .ico file expected by the .iss script for use as setup file icon.
-          magick ${{ env.SRC_DIR }}/data/pixmaps/256x256/darktable.png -define icon:auto-resize="256,128,64,48,32,16" dt_logo_multiresolution.ico
           iscc "darktable.iss"
           mv Output/*.exe ${{ env.BUILD_DIR }}/
       - name: Create NSIS installer
+        if: runner.arch != 'ARM64'
         run: |
+          pacboy --noconfirm -S --needed nsis:p
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
@@ -309,7 +326,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
@@ -323,8 +340,8 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-14,       xcode: 16.2,   deployment: 14.0 } # AppleClang 16, arm64
-          - { os: macos-15-intel, xcode: 26.1.1, deployment: 15.0 } # AppleClang 17, x86_64
+          - { os: macos-14,       xcode: 16.2, deployment: 14.0 } # AppleClang 16, arm64
+          - { os: macos-15-intel, xcode: 26.3, deployment: 15.0 } # AppleClang 17, x86_64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -393,7 +410,7 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
@@ -406,16 +423,45 @@ jobs:
     runs-on: ubuntu-latest
     needs: [AppImage, Windows, macOS]
     steps:
+      - name: Checkout master to update 'nightly' tag
+        if: github.ref_name == 'master' # will be true only for nightly builds
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          submodules: false
+          path: src
+          fetch-depth: 1
+      - name: Force move 'nightly' tag
+        if: github.ref_name == 'master' # will be true only for nightly builds
+        run: |
+          pushd src
+          git tag --force nightly
+          git push origin nightly --force
+          popd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Download artifacts
-        uses: actions/download-artifact@v7
-      - name: Update nightly release
-        uses: andelf/nightly-release@main
+        uses: actions/download-artifact@v8
+      - name: Get current date and set as environment variable
+        run: |
+          # Format date as YYYYMMDD
+          NOW=$(date +'%Y%m%d')
+          # Set the environment variable for subsequent steps
+          echo "RELEASE_DATE=$NOW" >> $GITHUB_ENV
+        shell: bash
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.20.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: nightly
+          allowUpdates: true     # required to allow nightly release updates
+          removeArtifacts: true  # we don't want to pile up old artifacts in the nightly release
+          tag: nightly
           prerelease: true
-          name: 'Darktable nightly build $$'
+          # We don't want a stable release that is in the process of being prepared
+          # and not yet ready for publication to be visible
+          draft: ${{ startsWith(github.ref, 'refs/tags/') }}
+          name: 'Darktable nightly build ${{ env.RELEASE_DATE }}'
           # Please do not modify the body text by adding line breaks in paragraphs, as this text should display well on screens of different widths
           body: |
             This is a nightly build of Darktable.
@@ -424,16 +470,16 @@ jobs:
 
             Also, new versions can make changes to the database schema, so it's best to run them with a separate library.
 
-            The AppImage package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible.
+            The `*-x86_64.AppImage` package is compatible with distribution releases that have glibc version 2.35 or higher. For example, if we consider some popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer releases are compatible. The `*-aarch64.AppImage` package requires glibc 2.39 or higher (e.g. Ubuntu 24.04, Debian 13, Fedora 40 and newer).
 
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
-            The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
+            The Windows package `*-win64.exe` requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c). The `*-woa64.exe` package requires at least Windows 11.
 
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma). The `*-x86_64.dmg` package requires at least macOS 15.0 (Sequoia).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
-          files: |
+          artifacts: |
             artifact-appimage-*/*
             artifact-windows-*/*
             artifact-macos-*/*

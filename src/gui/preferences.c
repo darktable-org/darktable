@@ -115,7 +115,14 @@ static void load_themes_dir(const char *basedir)
 
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-      darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    {
+      // we skip files with prefix "chunk-foo.css" as those are partial CSS
+      // files that are not meant to be used as themes, but only included in
+      // other CSS files. This allows us to have a modular structure for our CSS
+      // and avoid code duplication between themes.
+      if(!g_str_has_prefix(d_name, "chunk-"))
+        darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    }
     g_dir_close(dir);
   }
   g_free(themes_dir);
@@ -569,6 +576,7 @@ static void init_tab_general(GtkWidget *dialog,
 
 void dt_gui_preferences_show()
 {
+  dt_stop_backthumbs_crawler(FALSE);
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog =
     gtk_dialog_new_with_buttons(_("darktable preferences"), win,
@@ -581,11 +589,13 @@ void dt_gui_preferences_show()
 #endif
   gtk_widget_set_name(_preferences_dialog, "preferences-notebook");
 
-  //grab the content area of the dialog
-  GtkWidget *box = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
-  gtk_widget_set_name(box, "preferences-box");
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
+  gtk_widget_set_name(content, "preferences-box");
+  // changing orientation of content area to horizontal causes wide (empty) action-box
+  // so insert an hbox instead
+  GtkWidget *box = dt_gui_hbox();
   gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(box), GTK_ORIENTATION_HORIZONTAL);
+  dt_gui_box_add(content, box);
 
   //create stack and sidebar and pack into the box
   GtkWidget *stack = gtk_stack_new();
@@ -631,6 +641,7 @@ void dt_gui_preferences_show()
   if(restart_required)
     dt_control_log(_("darktable needs to be restarted for settings to take effect"));
 
+  dt_start_backthumbs_crawler();
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
@@ -1360,7 +1371,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
                                    const gboolean swap)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1418,7 +1429,7 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid,
                                   const guint line)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1459,7 +1470,7 @@ GtkWidget *dt_gui_preferences_enum(dt_action_t *action,
                                                  : DT_BAUHAUS_COMBOBOX_ALIGN_LEFT;
   dt_bauhaus_combobox_set_selected_text_align(w, align);
   if(action)
-    gtk_widget_set_tooltip_text(w, _(dt_confgen_get_tooltip(key)));
+    gtk_widget_set_tooltip_markup(w, _(dt_confgen_get_tooltip(key)));
 
   const char *values = dt_confgen_get(key, DT_VALUES);
   const char *defstr = dt_confgen_get(key, DT_DEFAULT);
@@ -1529,7 +1540,7 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid,
                                      const guint line)
 {
   GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_tooltip_markup(w_label, _(dt_confgen_get_tooltip(key)));
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);

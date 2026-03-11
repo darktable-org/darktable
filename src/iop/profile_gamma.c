@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -221,18 +221,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_table = NULL;
   cl_mem dev_coeffs = NULL;
 
-
-  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
   if(d->mode == PROFILEGAMMA_LOG)
   {
     const float dynamic_range = d->dynamic_range;
     const float shadows_range = d->shadows_range;
     const float grey = d->grey_point / 100.0f;
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma_log, 0, CLARG(dev_in), CLARG(dev_out),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_profilegamma_log, width, height,
+      CLARG(dev_in), CLARG(dev_out),
       CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma_log, sizes);
   }
   else if(d->mode == PROFILEGAMMA_GAMMA)
   {
@@ -242,10 +238,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
     if(dev_coeffs == NULL) goto error;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_profilegamma, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width),
       CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma, sizes);
   }
 
 error:
@@ -330,7 +325,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float grey = max3f(self->picked_color);
+  const float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   ++darktable.gui->reset;
@@ -346,10 +341,10 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Black
-  float black = max3f(self->picked_color_min);
+  const float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -368,13 +363,13 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Black
   float EVmin = p->shadows_range;
 
   // White
-  float white = max3f(self->picked_color_max);
+  const float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -392,19 +387,19 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
 
   // Grey
-  float grey = max3f(self->picked_color);
+  const float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   // Black
-  float black = max3f(self->picked_color_min);
+  const float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
-  float white = max3f(self->picked_color_max);
+  const float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -439,8 +434,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
   else if(w == g->security_factor)
   {
-    float prev = *(float *)previous;
-    float ratio = (p->security_factor - prev) / (prev + 100.0f);
+    const float prev = *(float *)previous;
+    const float ratio = (p->security_factor - prev) / (prev + 100.0f);
 
     float EVmin = p->shadows_range;
     EVmin = EVmin + ratio * EVmin;

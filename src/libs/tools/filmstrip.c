@@ -85,6 +85,26 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static void _filmstrip_pin_in_second_window(dt_action_t *action)
+{
+  if(dt_view_get_current() != DT_VIEW_DARKROOM) return;
+
+  dt_develop_t *dev = darktable.develop;
+  if(!dev) return;
+
+  // Use the hovered filmstrip image; fall back to the currently edited image
+  dt_imgid_t imgid = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(imgid))
+    imgid = dev->image_storage.id;
+  if(!dt_is_valid_imgid(imgid)) return;
+
+  // Open the 2nd window if it is not already visible
+  if(!dev->second_wnd && dev->second_wnd_button)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), TRUE);
+
+  dt_dev_pin_image(dev, imgid);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* creating container area */
@@ -96,6 +116,14 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize view manager proxy */
   darktable.view_manager->proxy.filmstrip.module = self;
+
+
+  /* register action and attach it to self->widget so the quick-shortcut
+     button can discover it by hovering anywhere over the filmstrip */
+  dt_action_register(DT_ACTION(self), N_("pin in second window"),
+                     _filmstrip_pin_in_second_window, 0, 0);
+  dt_action_define(DT_ACTION(self), NULL, N_("pin in second window"),
+                   self->widget, NULL);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

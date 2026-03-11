@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   const int color = FC(row, col, filters);
 
   global float *rgbcol = rgb0;
-  if(color == 1) rgbcol = rgb1;
-  else if(color == 2) rgbcol = rgb2;
+  if(color == GREEN) rgbcol = rgb1;
+  else if(color == BLUE) rgbcol = rgb2;
 
   const int idx = mad24(row, w, col);
   cfa[idx] = rgbcol[idx] = val;
@@ -53,6 +53,9 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
 
   write_imagef(out, (int2)(col, row), (float4)(fmax(scale * rgb0[idx], 0.0f), fmax(scale * rgb1[idx], 0.0f), fmax(scale * rgb2[idx], 0.0f), 0.0f));
 }
+
+#define eps 1e-5f              // Tolerance to avoid dividing by zero
+#define epssq 1e-10f
 
 // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
 __kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global float *h_diff, const int w, const int height)
@@ -75,10 +78,9 @@ __kernel void rcd_step_1_2 (global float *VH_dir, global float *v_diff, global f
   const int row = 2 + get_global_id(1);
   if((row > height - 3) || (col > w - 3)) return;
   const int idx = mad24(row, w, col);
-  const float eps = 1e-10f;
 
-  const float V_Stat = fmax(eps, v_diff[idx - w] + v_diff[idx] + v_diff[idx + w]);
-  const float H_Stat = fmax(eps, h_diff[idx - 1] + h_diff[idx] + h_diff[idx + 1]);
+  const float V_Stat = fmax(epssq, v_diff[idx - w] + v_diff[idx] + v_diff[idx + w]);
+  const float H_Stat = fmax(epssq, h_diff[idx - 1] + h_diff[idx] + h_diff[idx + 1]);
   VH_dir[idx] = V_Stat / (V_Stat + H_Stat);
 }
 
@@ -106,7 +108,6 @@ __kernel void rcd_step_3_1(global float *lpf, global float *cfa, global float *r
   const int w2 = 2 * w;
   const int w3 = 3 * w;
   const int w4 = 4 * w;
-  const float eps = 1e-5f;
 
   // Refined vertical and horizontal local discrimination
   const float VH_Central_Value   = VH_Dir[idx];
@@ -160,10 +161,9 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global fl
   const int idx2 = idx / 2;
   const int idx3 = (idx - w - 1) / 2;
   const int idx4 = (idx + w - 1) / 2;
-  const float eps = 1e-10f;
 
-  const float P_Stat = fmax(eps, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
-  const float Q_Stat = fmax(eps, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
+  const float P_Stat = fmax(epssq, p_diff[idx3]     + p_diff[idx2] + p_diff[idx4 + 1]);
+  const float Q_Stat = fmax(epssq, q_diff[idx3 + 1] + q_diff[idx2] + q_diff[idx4]);
   PQ_dir[idx2] = P_Stat / (P_Stat + Q_Stat);
 }
 
@@ -177,8 +177,8 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   const int color = 2 - FC(row, col, filters);
 
   global float *rgbc = rgb0;
-  if(color == 1) rgbc = rgb1;
-  else if(color == 2) rgbc = rgb2;
+  if(color == GREEN) rgbc = rgb1;
+  else if(color == BLUE) rgbc = rgb2;
 
   const int idx = mad24(row, w, col);
   const int pqidx = idx / 2;
@@ -186,7 +186,6 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   const int pqidx3 = (idx + w - 1) / 2;
   const int w2 = 2 * w;
   const int w3 = 3 * w;
-  const float eps = 1e-5f;
 
   const float PQ_Central_Value   = PQ_dir[pqidx];
   const float PQ_Neighbourhood_Value = 0.25f * (PQ_dir[pqidx2] + PQ_dir[pqidx2 + 1] + PQ_dir[pqidx3] + PQ_dir[pqidx3 + 1]);
@@ -218,7 +217,6 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   const int idx = mad24(row, w, col);
   const int w2 = 2 * w;
   const int w3 = 3 * w;
-  const float eps = 1e-5f;
 
   // Refined vertical and horizontal local discrimination
   const float VH_Central_Value   = VH_dir[idx];
@@ -239,7 +237,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
 
   for(int c = 0; c <= 2; c += 2)
   {
-    global float *rgbc = (c == 0) ? rgb0 : rgb2;
+    global float *rgbc = (c == RED) ? rgb0 : rgb2;
 
     const float SNabs = fabs(rgbc[idx - w] - rgbc[idx + w]);
     const float EWabs = fabs(rgbc[idx - 1] - rgbc[idx + 1]);
@@ -265,6 +263,9 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
+#undef eps
+#undef epssq
+
 __kernel void write_blended_dual(__read_only image2d_t high,
                                  __read_only image2d_t low,
                                  __write_only image2d_t out,
@@ -276,33 +277,28 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
 
   const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
   const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-  const float4 blender = mask[idx];
+  const float4 blender = clipf(mask[mad24(row, w, col)]);
   float4 data = mix(low_val, high_val, blender);
-
-  if(showmask)
-    data.w = mask[idx];
-  else
-    data.w = 0.0f;
-
-  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
+  data.w = showmask ? blender.x : 0.0f;
+  write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
+__kernel void calc_Y0_mask(global float *mask,
+                          __read_only image2d_t in,
+                          const int w,
+                          const int height,
+                          const float4 wb)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  const float4 pt = read_imagef(in, sampleri, (int2)(col, row));
-  const float val = fmax(pt.x / red, 0.0f)
-                  + fmax(pt.y / green, 0.0f)
-                  + fmax(pt.z / blue, 0.0f);
-  mask[idx] = dtcl_sqrt(val / 3.0f);
+  const float4 pt = wb * fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)));
+  mask[idx] = dtcl_sqrt(0.33333333f *(pt.x + pt.y + pt.z));
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
@@ -338,8 +334,8 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                     const unsigned int filters, local float *buffer, const int border)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -376,24 +372,22 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
-  if(x >= border && x < width - border && y >= border && y < height - border) return;
+  if(col >= width - 3 || col < 3 || row >= height - 3 || row < 3) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
 
   // process all non-green pixels
-  const int row = y;
-  const int col = x;
   const int c = FC(row, col, filters);
   float4 color = 0.0f; // output color
 
   const float pc = buffer[0];
 
-  if     (c == 0) color.x = pc; // red
-  else if(c == 1) color.y = pc; // green1
-  else if(c == 2) color.z = pc; // blue
+  if     (c == RED) color.x = pc;
+  else if(c == GREEN) color.y = pc;
+  else if(c == BLUE) color.z = pc;
   else            color.y = pc; // green2
 
   // fill green layer for red and blue pixels:
-  if(c == 0 || c == 2)
+  if(c == RED || c == BLUE)
   {
     // look up horizontal and vertical neighbours, sharpened weight:
     const float pym  = buffer[-1 * stride];
@@ -432,14 +426,14 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
       color.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
 }
 kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const unsigned int filters, local float4 *buffer, const int border)
 {
   // image in contains full green and sparse r b
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
   const int xlsz = get_local_size(0);
   const int ylsz = get_local_size(1);
   const int xlid = get_local_id(0);
@@ -476,23 +470,21 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width || y >= height) return;
-  if(x >= border && x < width - border && y >= border && y < height - border) return;
+  if(col >= width || row >= height) return;
+  if(col >= border && col < width - border && row >= border && row < height - border) return;
 
-  const int row = y;
-  const int col = x;
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
   if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
   {
-    if(c == 1 || c == 3)
+    if(c == GREEN || c == 3)
     { // calculate red and blue for green pixels:
       // need 4-nbhood:
       const float4 nt = buffer[-stride];
       const float4 nb = buffer[ stride];
       const float4 nl = buffer[-1];
       const float4 nr = buffer[ 1];
-      if(FC(row, col+1, filters) == 0) // red nb in same row
+      if(FC(row, col+1, filters) == RED) // red nb in same row
       {
         color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
         color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
@@ -511,7 +503,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
       const float4 nbl = buffer[ stride - 1];
       const float4 nbr = buffer[ stride + 1];
 
-      if(c == 0)
+      if(c == RED)
       { // red pixel, fill blue:
         const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
         const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
@@ -533,7 +525,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
       }
     }
   }
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
 }
 
 kernel void demosaic_box3(read_only image2d_t in,
@@ -554,8 +546,8 @@ kernel void demosaic_box3(read_only image2d_t in,
     {
       if(x >= 0 && y >= 0 && x < width && y < height)
       {
-        const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
-        sum[color] += fmax(0.0f, read_imagef(in, samplerA, (int2)(x, y)).x);
+        const int color = fcol(y, x, filters, xtrans);
+        sum[color] += fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
         cnt[color] += 1.0f;
       }
     }

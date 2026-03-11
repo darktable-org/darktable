@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
+#include <wayland-client.h>
 #endif
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
@@ -77,6 +78,7 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
+#define DT_UI_SCROLL_SMOOTH_DELTA_SCALE 50.0
 
 #ifdef GDK_WINDOWING_QUARTZ
 // macOS has a fixed DPI of 72
@@ -204,10 +206,7 @@ static void _toggle_tooltip_visibility(dt_action_t *action)
 static inline void _update_focus_peaking_button()
 {
   // read focus peaking global state and update toggle button accordingly
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   const gboolean state = darktable.gui->show_focus_peaking;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.gui->focus_peaking_button),
                                state);
 }
@@ -216,17 +215,12 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
                                                  gpointer user_data)
 {
   // button method
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   const gboolean state_memory = darktable.gui->show_focus_peaking;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   const gboolean state_new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 
   if(state_memory == state_new) return; // nothing to change, bypass
 
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
   darktable.gui->show_focus_peaking = state_new;
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   gtk_widget_queue_draw(button);
 
@@ -500,8 +494,8 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event,
       if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
       {
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-        if(delta_x) *delta_x = event->delta_x / 50;
-        if(delta_y) *delta_y = event->delta_y / 50;
+        if(delta_x) *delta_x = event->delta_x / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+        if(delta_y) *delta_y = event->delta_y / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
 #else
          if(delta_x) *delta_x = event->delta_x;
          if(delta_y) *delta_y = event->delta_y;
@@ -574,8 +568,8 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event,
       // scroll, and only then tell caller that there is a scroll to
       // handle
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-      acc_x += event->delta_x / 50;
-      acc_y += event->delta_y / 50;
+      acc_x += event->delta_x / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+      acc_y += event->delta_y / DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
 #else
       acc_x += event->delta_x;
       acc_y += event->delta_y;
@@ -729,10 +723,64 @@ static gboolean _draw(GtkWidget *da,
   return TRUE;
 }
 
+static GdkDevice *_touchpad = NULL;
+
+static gboolean _input_event(GtkWidget *widget,
+                             GdkEvent *event,
+                             gpointer user_data)
+{
+  (void)user_data;
+
+  switch(event->type)
+  {
+    case GDK_TOUCHPAD_PINCH:
+    case GDK_TOUCHPAD_SWIPE:
+      _touchpad = gdk_event_get_source_device(event);
+      break;
+    default:
+      break;
+  }
+
+  if(event->type == GDK_TOUCHPAD_PINCH)
+  {
+    const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+    if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
+                                     pinch->phase, pinch->scale, pinch->state & 0xf))
+    {
+      gtk_widget_queue_draw(widget);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 static gboolean _scrolled(GtkWidget *widget,
                           const GdkEventScroll *event,
                           gpointer user_data)
 {
+  (void)user_data;
+  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
+
+  if(((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
+      || device == _touchpad)
+     && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
+  {
+    gdouble delta_x = 0.0, delta_y = 0.0;
+    if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+      return TRUE;
+
+    delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    delta_y *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
+    if((delta_x != 0.0 || delta_y != 0.0)
+       && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
+                                      delta_x, delta_y, event->state & 0xf))
+    {
+      gtk_widget_queue_draw(widget);
+      return TRUE;
+    }
+  }
+
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
@@ -755,10 +803,10 @@ static gboolean _borders_scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _scrollbar_changed(GtkWidget *widget,
-                                   gpointer user_data)
+static void _scrollbar_changed(GtkWidget *widget,
+                               gpointer user_data)
 {
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset) return;
 
   GtkAdjustment *adjustment_x =
     gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar));
@@ -769,8 +817,6 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   const gdouble value_y = gtk_adjustment_get_value(adjustment_y);
 
   dt_view_manager_scrollbar_changed(darktable.view_manager, value_x, value_y);
-
-  return TRUE;
 }
 
 gboolean _valid_window_placement(const gint saved_x,
@@ -811,8 +857,6 @@ gboolean _valid_window_placement(const gint saved_x,
 
 int dt_gui_gtk_load_config()
 {
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
-
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   const int width = dt_conf_get_int("ui_last/window_w");
   const int height = dt_conf_get_int("ui_last/window_h");
@@ -843,15 +887,11 @@ int dt_gui_gtk_load_config()
   else
     darktable.gui->show_focus_peaking = FALSE;
 
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
-
   return 0;
 }
 
 int dt_gui_gtk_write_config()
 {
-  dt_pthread_mutex_lock(&darktable.gui->mutex);
-
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gint x, y, width, height;
   // Use gtk_window_get_size() instead of gtk_widget_get_allocation() to get
@@ -871,8 +911,6 @@ int dt_gui_gtk_write_config()
                    (gdk_window_get_state(gtk_widget_get_window(widget))
                     & GDK_WINDOW_STATE_FULLSCREEN));
   dt_conf_set_bool("ui/show_focus_peaking", darktable.gui->show_focus_peaking);
-
-  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   return 0;
 }
@@ -1004,6 +1042,47 @@ dt_gui_session_type_t dt_gui_get_session_type(void)
 #else
   return DT_GUI_SESSION_UNKNOWN;
 #endif
+}
+
+#ifdef GDK_WINDOWING_WAYLAND
+static gboolean _wayland_ssd_support;
+
+static void _reg_global(void *data, struct wl_registry *reg,
+                       uint32_t name, const char *iface, uint32_t version)
+{
+  if (g_strcmp0(iface, "zxdg_decoration_manager_v1") == 0)
+    _wayland_ssd_support = TRUE;
+}
+
+static const struct wl_registry_listener reg_listener = {
+  .global = _reg_global,
+  // it is highly unlikely that decoration manager will disappear
+  .global_remove = NULL
+};
+#endif
+
+// does display server suport windows with server-side decorations (SSD)?
+static gboolean _check_ssd_support(void)
+{
+#ifdef GDK_WINDOWING_WAYLAND
+  // servers which support SSD (e.g. Plasma/KWin but not Gnome/Mutter)
+  // have xdg-decoration-unstable-v1 protocol in registery
+  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  {
+    GdkDisplay* disp = gdk_display_get_default();
+    struct wl_display *wd = gdk_wayland_display_get_wl_display(disp);
+    struct wl_registry *reg = wl_display_get_registry(wd);
+    wl_registry_add_listener(reg, &reg_listener, NULL);
+    // receive the globals
+    wl_display_roundtrip(wd);
+    return _wayland_ssd_support;
+  }
+  else
+#endif
+  {
+    // X11, MacOS, and Windows can handle SSD
+    return TRUE;
+  }
 }
 
 static gboolean _configure(GtkWidget *da,
@@ -1278,11 +1357,6 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui)
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
-  /* lets zero mem */
-  memset(gui, 0, sizeof(dt_gui_gtk_t));
-
-  dt_pthread_mutex_init(&gui->mutex, NULL);
-
   // force gtk3 to use normal scroll bars instead of the popup
   // thing. they get in the way of controls the alternative would be
   // to gtk_scrolled_window_set_overlay_scrolling(..., FALSE); every
@@ -1381,10 +1455,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtkosx_application_set_window_menu(OSXApp, GTK_MENU_ITEM(window_root_menu));
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
-                   G_CALLBACK(_osx_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile",
-                   G_CALLBACK(_osx_openfile_callback), NULL);
+  g_signal_connect_data(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
+                        G_CALLBACK(_osx_quit_callback), NULL, NULL, 0);
+  g_signal_connect_data(G_OBJECT(OSXApp), "NSApplicationOpenFile",
+                        G_CALLBACK(_osx_openfile_callback), NULL, NULL, 0);
 #endif
 
 #ifdef _WIN32
@@ -1441,10 +1515,13 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     gtk_widget_add_events(widget,
                           GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                           | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                          | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+                          | GDK_LEAVE_NOTIFY_MASK | GDK_TOUCHPAD_GESTURE_MASK
+                          | darktable.gui->scroll_mask);
 
     g_signal_connect(G_OBJECT(widget), "draw",
                     G_CALLBACK(_draw), NULL);
+    g_signal_connect(G_OBJECT(widget), "event",
+                    G_CALLBACK(_input_event), NULL);
     g_signal_connect(G_OBJECT(widget), "motion-notify-event",
                     G_CALLBACK(_mouse_moved), gui);
     g_signal_connect(G_OBJECT(widget), "leave-notify-event",
@@ -1625,7 +1702,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(dt_control_all_running())
+  if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
@@ -1748,24 +1825,24 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
-#ifdef GDK_WINDOWING_WAYLAND
-  if(dt_gui_get_session_type() == DT_GUI_SESSION_WAYLAND)
+  if(!_check_ssd_support())
   {
-    // On Wayland, use NORMAL hint to allow proper window resizing
-    gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
-
+    // if must use client-side decoration (CSD), set up custom
+    // titlebar which allows for hiding that titlebar in maximized
+    // windows when using an extensions such as Unite
     GtkWidget *header_bar = gtk_header_bar_new();
     gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
     gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
     gtk_widget_show(header_bar);
   }
-#endif
 
   dt_configure_ppd_dpi(gui);
 
   gtk_window_set_default_size(GTK_WINDOW(widget),
                               DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
+  // allows for proper window resizing
+  gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
   gtk_window_set_title(GTK_WINDOW(widget), "darktable");
@@ -3083,7 +3160,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
-  darktable_splash_screen_destroy();
+  dt_splash_screen_destroy();
 
   gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
   gtk_main();
@@ -3398,6 +3475,31 @@ void dt_gui_show_help(GtkWidget *widget)
   }
 }
 
+void _add_theme_import(char **themecss,
+                       const char *configdir,
+                       const char *dirname,
+                       const char *css_name)
+{
+  GError *error = NULL;
+
+  gchar *csspath = g_build_filename(configdir,
+                                    dirname ? dirname : "", css_name, NULL);
+
+  gchar *csspath_uri = g_filename_to_uri(csspath, NULL, &error);
+  if (csspath_uri == NULL)
+    dt_print(DT_DEBUG_ALWAYS,
+             "%s: could not convert path %s to URI. Error: %s",
+             G_STRFUNC, csspath, error->message);
+
+  if (g_file_test(csspath, G_FILE_TEST_EXISTS))
+  {
+    *themecss = g_strconcat(*themecss,
+                           "@import url('", csspath_uri, "');", NULL);
+  }
+  g_free(csspath);
+  g_free(csspath_uri);
+}
+
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
@@ -3423,13 +3525,12 @@ void dt_gui_load_theme(const char *theme)
     g_free(font_name);
   }
 
-  gchar *path, *usercsspath;
   char datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
   // user dir theme
-  path = g_build_filename(configdir, "themes", theme_css, NULL);
+  gchar *path = g_build_filename(configdir, "themes", theme_css, NULL);
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     // dt dir theme
@@ -3455,37 +3556,46 @@ void dt_gui_load_theme(const char *theme)
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  usercsspath = g_build_filename(configdir, "user.css", NULL);
+  // We load the themes in this specific order:
+  //   1. The main darktable-*.css
+  //   2. condensed.css (if enabled)
+  //   3. OS specific tweaks (linux|macos|windows).css (if any)
+  //   4. user.css (if enabled)
 
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
-  if(path_uri == NULL)
+  if (path_uri == NULL)
     dt_print(DT_DEBUG_ALWAYS,
              "%s: could not convert path %s to URI. Error: %s",
              G_STRFUNC, path, error->message);
 
-  gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
-  if(usercsspath_uri == NULL)
-    dt_print(DT_DEBUG_ALWAYS,
-             "%s: could not convert path %s to URI. Error: %s",
-             G_STRFUNC, usercsspath, error->message);
+  gchar *themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
 
-  gchar *themecss = NULL;
-  if(dt_conf_get_bool("themes/usercss")
-     && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
+  // chunk-condensed.css
+
+  if(dt_conf_get_bool("themes/condensed"))
   {
-    themecss = g_strjoin(NULL,
-                         "@import url('", path_uri,
-                         "'); @import url('", usercsspath_uri, "');", NULL);
+    _add_theme_import(&themecss, datadir, "themes", "chunk-condensed.css");
   }
-  else
+
+  // load any OS specific themes tweak file to fix some platform specific issues
+
+#ifdef __APPLE__
+  _add_theme_import(&themecss, datadir, "themes", "macos.css");
+#elif defined(_WIN32)
+  _add_theme_import(&themecss, datadir, "themes", "windows.css");
+#else
+  _add_theme_import(&themecss, datadir, "themes", "linux.css");
+#endif
+
+  // and finally user.css
+
+  if (dt_conf_get_bool("themes/usercss"))
   {
-    themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
+    _add_theme_import(&themecss, configdir, NULL, "user.css");
   }
 
   g_free(path_uri);
-  g_free(usercsspath_uri);
   g_free(path);
-  g_free(usercsspath);
 
   if(dt_conf_get_bool("ui/hide_tooltips"))
   {
@@ -4470,10 +4580,10 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   // GTK4 GtkGesture *gesture = gtk_gesture_click_new();
   //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
 
-  if(pressed) g_signal_connect(gesture, "pressed", pressed, data);
+  if(pressed) g_signal_connect(gesture, "pressed", G_CALLBACK(pressed), data);
   if(released)
   {
-    g_signal_connect(gesture, "released", released, data);
+    g_signal_connect(gesture, "released", G_CALLBACK(released), data);
     g_signal_connect(gesture, "cancel", G_CALLBACK(_gesture_cancel), NULL);
   }
 
@@ -4493,9 +4603,9 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
 
   gtk_widget_add_events(widget, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK); // still needed for now by _main_do_event_keymap
 
-  if(motion) g_signal_connect(controller, "motion", motion, data);
-  if(enter) g_signal_connect(controller, "enter", enter, data);
-  if(leave) g_signal_connect(controller, "leave", leave, data);
+  if(motion) g_signal_connect(controller, "motion", G_CALLBACK(motion), data);
+  if(enter) g_signal_connect(controller, "enter", G_CALLBACK(enter), data);
+  if(leave) g_signal_connect(controller, "leave", G_CALLBACK(leave), data);
 
   return controller;
 }
@@ -4541,7 +4651,6 @@ void dt_gui_cursor_clear_busy()
       GtkWidget *toplevel = darktable.gui->ui->main_window;
       GdkWindow *window = gtk_widget_get_window(toplevel);
       gdk_window_set_cursor(window, busy_prev_cursor);
-      dt_gui_process_events();
       g_object_unref(busy_prev_cursor);
       busy_prev_cursor = NULL;
       dt_control_allow_change_cursor();
@@ -4554,7 +4663,7 @@ void dt_gui_process_events()
 {
   // process pending Gtk/GDK events; we need to limit the total calls because once the LUA
   // interpreeter starts the script installer we would end up in an infinite loop
-  unsigned max_iter = 200;
+  unsigned max_iter = 1000;
   while(g_main_context_iteration(NULL, FALSE) && --max_iter > 0)
     continue;
 }

@@ -852,7 +852,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
 
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_has_mono_preview] testing `%s', monochrome=%s, %ix%i",
-           filename, mono ? "YES" : "FALSE", thumb_width, thumb_height);
+           filename, STR_YESNO(mono), thumb_width, thumb_height);
   dt_free_align(tmp);
   return mono;
 }
@@ -1145,6 +1145,28 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
+    if(style_items)
+    {
+      // now let's deal with the iop-order (possibly merging style & dev lists)
+      GList *iop_list = dt_styles_module_order_list(format_params->style);
+
+      if(iop_list)
+      {
+        // the style has an iop-order, we need to merge the
+        // multi-instance from dev image. Get dev image iop-order:
+        GList *img_iop_order_list = dev.iop_order_list;;
+        // Get multi-instance modules if any:
+        GList *mi = dt_ioppr_extract_multi_instances_list(img_iop_order_list);
+        // If some where found merge them with the style list
+        if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+        // finally we have the final list for the image, use it:
+        dev.iop_order_list = iop_list;
+
+        g_list_free_full(img_iop_order_list, g_free);
+        g_list_free_full(mi, g_free);
+      }
+    }
+
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = st_items->data;
@@ -1265,10 +1287,10 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     height = pipe.processed_height;
   }
 
-  // note: not perfect but a reasonable good guess looking at overall pixelpipe requirements
-  // and specific stuff in finalscale.
+  // Upscaling in finalscale requires additional memory so the final image size is restricted to avoid dt oom killing
+  const double planesize = sizeof(float) * 4 * pipe.processed_width * pipe.processed_height;
   const double max_possible_scale = fmin(100.0, fmax(1.0, // keep maximum allowed scale as we had in 4.6
-      (double)dt_get_available_pipe_mem(&pipe) / (double)(1 + 64 * sizeof(float) * pipe.processed_width * pipe.processed_height)));
+      (double)dt_get_available_pipe_mem(&pipe) / (1.0 + 2.5 * planesize)));
 
   const gboolean doscale = upscale && ((width > 0 || height > 0) || is_scaling);
   const double max_scale = doscale ? max_possible_scale : 1.00;
@@ -1294,6 +1316,10 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   const int processed_width = floor(scale * pipe.processed_width);
   const int processed_height = floor(scale * pipe.processed_height);
+  if(scale == max_possible_scale && !thumbnail_export)
+    dt_control_log(_("export reduced to %dx%d because of memory restrictions"),
+            processed_width, processed_height);
+
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
@@ -1302,8 +1328,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
            processed_width, processed_height, scale, max_scale,
-           upscale ? "yes" : "no",
-           high_quality_processing || scale > 1.0f ? "yes" : "no",
+           STR_YESNO(upscale),
+           STR_YESNO(high_quality_processing || scale > 1.0f),
            dt_check_gimpmode("file") ? " GIMP" : "");
 
   const int bpp = format->bpp(format_params);
@@ -1757,9 +1783,9 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
 
   dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE, export_masks,
-     DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
-     history_end);
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE,
+     export_masks, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL,
+     1, 1, NULL, history_end);
 
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, dat.head.width);

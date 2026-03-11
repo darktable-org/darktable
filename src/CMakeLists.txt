@@ -74,6 +74,7 @@ FILE(GLOB SOURCE_FILES
   "common/presets.c"
   "common/pwstorage/backend_kwallet.c"
   "common/pwstorage/pwstorage.c"
+  "common/ras2vect.c"
   "common/ratings.c"
   "common/resource_limits.c"
   "common/selection.c"
@@ -147,6 +148,7 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"
   "gui/presets.c"
   "gui/splash.c"
+  "gui/welcome.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
   "imageio/imageio_jpeg.c"
@@ -306,6 +308,10 @@ find_package(LibXml2 2.6 REQUIRED)
 include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
+
+# Check for potrace
+find_package(Potrace REQUIRED)
+list(APPEND LIBS ${POTRACE_LIBRARY})
 
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2 2.5)
@@ -930,7 +936,7 @@ file(GLOB darktable_STYLES
 add_custom_command(
   DEPENDS ${darktable_STYLES} ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
-  COMMAND ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh ${DARKTABLE_DATADIR}/styles ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh ${DARKTABLE_DATADIR}/styles ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
   COMMENT "Generating styles strings for translation"
 )
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2020 Aldric Renaudin.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** a class to manage a collection of zoomable thumbnails for culling or full preview.  */
+
+/** a class to manage a collection of zoomable thumbnails for culling
+ * or full preview.  */
 #include "dtgtk/thumbnail.h"
 #include "views/view.h"
 #include <gtk/gtk.h>
@@ -79,34 +81,41 @@ typedef struct dt_culling_t
   dt_imgid_t selection; // image selected inside culling (used with selection act_on algorithm)
 } dt_culling_t;
 
-dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
+dt_culling_t *dt_culling_new(const dt_culling_mode_t mode);
 // reload all thumbs from scratch.
-void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
-// initialise culling offset/navigation mode, etc before entering.
-// if offset is > 0 it'll be used as offset, otherwise offset will be determined by other means
+void dt_culling_full_redraw(dt_culling_t *table,
+                            const gboolean force);
+// initialise culling offset/navigation mode, etc before entering.  if
+// offset is > 0 it'll be used as offset, otherwise offset will be
+// determined by other means
 void dt_culling_init(dt_culling_t *table,
                      const int offset,
                      const dt_lighttable_culling_restriction_t restriction);
 // move by key actions.
 // this key accels are not managed here but inside view
-gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
+gboolean dt_culling_key_move(dt_culling_t *table,
+                             const dt_culling_move_t move);
 
-// change the offset imgid. This will recompute everything even if offset doesn't change
-// because this may means that other images have changed
-void dt_culling_change_offset_image(dt_culling_t *table, int offset);
+// change the offset imgid. This will recompute everything even if
+// offset doesn't change because this may means that other images have
+// changed
+void dt_culling_change_offset_image(dt_culling_t *table,
+                                    const int offset);
 
 void dt_culling_zoom_max(dt_culling_t *table);
 void dt_culling_zoom_fit(dt_culling_t *table);
 
 // set the overlays type
-void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over);
-void dt_culling_force_overlay(dt_culling_t *table, const gboolean force);
+void dt_culling_set_overlays_mode(dt_culling_t *table,
+                                  const dt_thumbnail_overlay_t over);
+void dt_culling_force_overlay(dt_culling_t *table,
+                              const gboolean force);
 
 // update active images list
 void dt_culling_update_active_images_list(dt_culling_t *table);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2022 darktable developers.
+    copyright (c) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,11 +140,11 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color collapsible_bg_color @grey_25;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg alpha(@bg_color, 0.55);
+@define-color bauhaus_bg shade(@plugin_bg_color,0.75);
+@define-color bauhaus_fill shade(@plugin_label_color,0.95);
 @define-color bauhaus_fg @fg_color;       /* needed to correctly display color pickers in all states, even if they inherit @fg_color by default */
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
-@define-color bauhaus_fill @grey_40;
 @define-color bauhaus_bg_hover @grey_60;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
@@ -341,7 +341,7 @@ undershoot,
 /* Allow to resize all windows */
 decoration
 {
-  margin: 1px; /* need to remains as px as just minimum size needed, no need to be scalable */
+  margin: 5px; /* need to remains as px as just minimum size needed, no need to be scalable */
 }
 
 /* Default Gtk buttons and other entries */
@@ -606,6 +606,21 @@ dialog .sidebar row:selected:hover label,
   padding: 0.5em;
 }
 
+#iop-expander.dt_module_active #module-header
+{
+  /* ACTIVE */
+}
+
+#iop-expander.dt_module_focus #module-header
+{
+  /* FOCUSED */
+}
+
+#iop-expander.dt_module_active.dt_module_focus #module-header
+{
+  /* FOCUSED AND ACTIVE */
+}
+
 /* Labels in modules */
 #iop-panel-label,
 #lib-panel-label
@@ -674,7 +689,8 @@ dialog .sidebar row:selected:hover label,
   background-color: shade(@collapsible_bg_color, 1.04);
 }
 
-.dt_section_expander {
+.dt_section_expander
+{
   padding: 0.07em 0 0.07em 1.7em;
 }
 
@@ -686,7 +702,8 @@ dialog .sidebar row:selected:hover label,
   margin-top: 0.14em;
 }
 
-.dt_section_expander label {
+.dt_section_expander label
+{
   padding: 0.07em 0;
 }
 
@@ -881,7 +898,7 @@ menuitem > arrow
 /* then spacing around bauhaus widgets */
 .dt_bauhaus
 {
-  margin: 0.14em 0;
+  margin: 0.2em 0;
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */
@@ -1095,6 +1112,24 @@ treeview header label
    font-weight: bold;
    font-size: 1.1em;
    padding: 0.7em 0;
+}
+
+/*-------------------------------------
+  - 2nd darkroom window options       -
+  -------------------------------------*/
+
+#dt_window2_pin_button {
+  background-color: @button_bg;
+  border: 0.08em solid transparent;
+}
+
+#dt_window2_pin_button:hover {
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: transparent;
+}
+
+#dt_window2_pin_button:checked {
+  border: 0.08em solid @button_fg;
 }
 
 /*-------------------------------------
@@ -2410,19 +2445,6 @@ Details :
     min-width: 720px;
 }
 
-#splashscreen-header
-{
-    padding: 0;
-    margin: 0;
-}
-
-#splashscreen-header label
-{
-    font-size: 1%;
-    padding: 0;
-    margin: 0;
-}
-
 #splashscreen-logo
 {
     margin-left: 30px;
@@ -2480,7 +2502,7 @@ Details :
     background-color: transparent;
     margin-left: 30pt;
     margin-top: 10pt;
-    margin-bottom: 5pt;
+    margin-bottom: 2em;
 }
 
 /* time remaining */
@@ -2488,6 +2510,7 @@ Details :
 {
     color: @grey_60;
     font-size: 10pt;
+    padding-bottom: 1em;
 }
 
 /* style the message on the exit screen */
@@ -2495,6 +2518,40 @@ Details :
 {
     font-size: 15pt;
     margin-bottom: 10pt;
+}
+
+/* welcome screen */
+#welcome-page
+{
+    padding: 16px;
+}
+
+#welcome-page > box
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#welcome-page > box > box
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#welcome-paragraph
+{
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#welcome-footer
+{
+    padding: 8px;
+}
+
+#welcome-prev,
+#welcome-next {
+  margin-right: .2em;
 }
 
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */

@@ -242,12 +242,10 @@ void dt_write_pfm(const char *filename,
 
   if(bpp == 2)
     fprintf(f, "P5\n%d %d\n", (int)width, (int)height);
+  else if(bpp == 4)
+    fprintf(f, "Pf\n%d %d\n-1.0\n", (int)width, (int)height);
   else
-    fprintf(f,
-            "P%s\n%d %d\n-1.0\n",
-            (bpp == sizeof(float)) ? "f" : "F",
-            (int)width,
-            (int)height);
+    fprintf(f, "PF\n%d %d\n-1.0\n", (int)width, (int)height);
 
   void *buf_line = dt_alloc_align_float(width * 4);
   for(size_t row = 0; row < height; row++)

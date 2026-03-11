@@ -1160,6 +1160,18 @@ static void _check_highlight_preservation(Exiv2::ExifData &exifData,
        else if(state == 2)
 	  img->exif_highlight_preservation = 0.66f;	// estimated strength for Strong
     }
+    else if(FIND_EXIF_TAG("Exif.CanonLiOp.AutoLightingOptimizer"))
+    {
+       // Canon CR3 contains another tag, but same enum values
+       // [0] state - 0=standard, 1=low, 2=strong, 3=off
+       const long state = pos->toLong(0);
+       if(state == 0)
+          img->exif_highlight_preservation = 0.50f;     // estimated strength for Standard
+       else if(state == 1)
+          img->exif_highlight_preservation = 0.33f;     // estimated strength for Low
+       else if(state == 2)
+          img->exif_highlight_preservation = 0.66f;     // estimated strength for Strong
+    }
     else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
        || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
     {
@@ -1895,18 +1907,21 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       g_free(pretty);
     }
 
-    // Capitalize Nikon Z-mount lenses properly for UI presentation.
-    if(g_str_has_prefix(img->exif_lens, "NIKKOR")
-       || g_str_has_prefix(img->exif_lens, "TAMRON"))
+    // Capitalize lenses properly for UI presentation, e.g.
+    // Nikon Z-mount: Nikkor, Tamron
+    // Leica L-mount: Viltrox
+    if(g_str_has_prefix(img->exif_lens, "NIKKOR ")
+       || g_str_has_prefix(img->exif_lens, "TAMRON ")
+       || g_str_has_prefix(img->exif_lens, "VILTROX"))
     {
-      for(size_t i = 1; i <= 5; ++i)
+      for(size_t i = 1; i <= 6; ++i)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
     // Handle Sigma lenses on modern bodies (e.g. Nikon Z) using already clean
     // Exif.Photo.LensMake and Exif.Photo.LensModel.
-    if(g_ascii_strcasecmp(img->exif_lens, "Sigma") && FIND_EXIF_TAG("Exif.Photo.LensMake")
-       && pos->toString() == "SIGMA")
+    if(FIND_EXIF_TAG("Exif.Photo.LensMake") && pos->toString() == "SIGMA"
+       && g_ascii_strcasecmp(img->exif_lens, "Sigma"))
     {
       char *pretty;
       pretty = g_strconcat("Sigma ", img->exif_lens, (char *)NULL);

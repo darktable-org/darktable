@@ -217,6 +217,10 @@ void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
 void dt_lib_colorpicker_set_point(dt_lib_t *lib,
                                   const float pos[2]);
 
+/* reset color picker pos to default */
+void dt_lib_colorpicker_reset_box_area(dt_pickerbox_t box);
+void dt_lib_colorpicker_reset_point(dt_pickerpoint_t pos);
+
 /** setup colorpicker options */
 void dt_lib_colorpicker_setup(dt_lib_t *lib,
                               const gboolean denoise,

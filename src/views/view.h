@@ -248,26 +248,14 @@ typedef struct dt_view_manager_t
   // toggle button for guides (in the module toolbox)
   GtkWidget *guides_toggle, *guides, *guides_colors, *guides_contrast, *guides_popover;
 
+  // toolbox containers
+  GtkWidget *module_toolbox, *view_toolbox;
+
   /*
    * Proxy
    */
   struct
   {
-
-    /* view toolbox proxy object */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *, GtkWidget *, dt_view_type_flags_t );
-    } view_toolbox;
-
-    /* module toolbox proxy object */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *, GtkWidget *, dt_view_type_flags_t);
-    } module_toolbox;
-
     /* filter toolbox proxy object */
     struct
     {
@@ -417,7 +405,6 @@ typedef struct dt_view_manager_t
 } dt_view_manager_t;
 
 void dt_view_manager_init(dt_view_manager_t *vm);
-void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
@@ -466,6 +453,18 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm,
                               const double y,
                               const int up,
                               const int state);
+gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
+                                     const double x,
+                                     const double y,
+                                     const double dx,
+                                     const double dy,
+                                     const int state);
+gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
+                                       const double x,
+                                       const double y,
+                                       const int phase,
+                                       const double scale,
+                                       const int state);
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
                                        const double x,
                                        const double y);

@@ -58,10 +58,10 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "ubuntu:25.10"
+          - "ubuntu:26.04"
         compiler:
-          - { compiler: GNU15,  CC: gcc-15,   CXX: g++-15,     packages: gcc-15 g++-15 }
-          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1-21 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
+          - { compiler: GNU16,  CC: gcc-16,   CXX: g++-16,     packages: gcc-16 g++-16 }
+          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
         btype:
           - Release
         target:
@@ -71,9 +71,9 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "ubuntu:25.10"
+          - distro: "ubuntu:26.04"
             btype: Debug
-            compiler: { compiler: GNU15, CC: gcc-15, CXX: g++-15, packages: gcc-15 g++-15 }
+            compiler: { compiler: GNU16, CC: gcc-16, CXX: g++-16, packages: gcc-16 g++-16 }
             target: skiptest
             generator: Ninja
             eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
@@ -140,6 +140,7 @@ jobs:
             libpango1.0-dev \
             libpng-dev \
             libportmidi-dev \
+            libpotrace-dev \
             libpugixml-dev \
             libraw-dev \
             librsvg2-dev \
@@ -262,6 +263,7 @@ jobs:
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
+            potrace:p
             pugixml:p
             SDL2:p
             sqlite3:p
@@ -309,7 +311,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-15,    xcode: 16.3,   deployment: 15.0 } # AppleClang 17, arm64
+          - { os: macos-15, xcode: 26.3, deployment: 15.0 } # AppleClang 17, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]

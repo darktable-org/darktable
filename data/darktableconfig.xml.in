@@ -107,6 +107,13 @@
     <shortdescription>show splash screen at startup</shortdescription>
     <longdescription>display a small window showing the progress of darktable startup before the main window appears</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface" common="yes">
+    <name>ui/show_welcome_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show welcome screen on next run</shortdescription>
+    <longdescription>display the welcome setup screen the next time darktable is launched</longdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
     <type>bool</type>
@@ -153,6 +160,13 @@
     <default>triangle</default>
     <shortdescription>marker shape</shortdescription>
     <longdescription>the shape of the slider marker</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface" common="yes" restart="true">
+    <name>themes/condensed</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>condensed panels' controls</shortdescription>
+    <longdescription>use condensed panels' controls in all views</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database</name>
@@ -319,7 +333,8 @@
     </type>
     <default>on import</default>
     <shortdescription>create XMP files</shortdescription>
-    <longdescription>XMP sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be created:\n - 'never': all development information will be stored only in the library database\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image or adding tags.</longdescription>
+    <longdescription><![CDATA[XMP sidecar files store all editing steps, ratings, tags and color labels alongside your images in an open format readable by other applications, and provide an emergency backup if the database and its backups are lost\n\n<b>never:</b> information is stored only in darktable's database; if it is lost or corrupted, your edits cannot be recovered from the files\n\n<b>after edit:</b> the XMP file is created after the first intentional (i.e., non auto-applied) edit and updated after each editing session\n\n<b>on import:</b> an XMP file is created when the image is imported, and updated after each change]]></longdescription>
+    <welcomescreen pagenum="3" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
@@ -577,9 +592,16 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/filtering/sortorder0</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>first sort order</shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/filtering/string0</name>
     <type>string</type>
-    <default>%</default>
+    <default></default>
     <shortdescription>first filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -649,7 +671,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/string2</name>
     <type>string</type>
-    <default>%%</default>
+    <default></default>
     <shortdescription>third filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -1015,6 +1037,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+ <dtconfig>
+    <name>ui_last/styles_preview_mode</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/metadata_dialog_width</name>
     <type>int</type>
@@ -1332,7 +1361,7 @@
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_raw_min_level</name>
-   <type>
+    <type>
       <enum>
         <option>always</option>
         <option>small</option>
@@ -1342,12 +1371,15 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
         <option>never</option>
+        <option>auto</option>
       </enum>
     </type>
     <default>never</default>
-    <shortdescription>use raw file instead of embedded JPEG from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
+    <shortdescription>for unaltered images, use raw file instead of embedded JPEG from size</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the 'always' option.\nfor the quickest display, choose the 'never' option\nthe 'auto' option prefers the embedded JPEG except when the thumb size exceeds the resolution of the embedded JPEG\n(more details in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
@@ -1361,12 +1393,14 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
         <option>never</option>
       </enum>
     </type>
     <default>720p</default>
     <shortdescription>high quality processing from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the 'always' option.\n(more details in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>cache_disk_backend</name>
@@ -1401,6 +1435,8 @@
         <option>WQXGA</option>
         <option>4K</option>
         <option>5K</option>
+        <option>6K</option>
+        <option>8K</option>
       </enum>
     </type>
     <default>never</default>
@@ -1559,7 +1595,8 @@
     <type>string</type>
     <default>$(PICTURES_FOLDER)/Darktable</default>
     <shortdescription>base filmroll's directory</shortdescription>
-    <longdescription>directory where new imported filmrolls are created</longdescription>
+    <longdescription><![CDATA[directory where newly imported filmrolls are stored; the default uses <b>$(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/Pictures</i> on macOS and Linux, <i>C:/Users/username/Pictures</i> on Windows]]></longdescription>
+    <welcomescreen pagenum="2" questionnum="1" dirchooser="yes"/>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
@@ -1724,7 +1761,8 @@
      <type>bool</type>
     <default>true</default>
     <shortdescription>prioritize the hovered image over the selected images</shortdescription>
-    <longdescription>this defines how the list of images to act on is constructed.</longdescription>
+    <longdescription><![CDATA[in the lighttable, where culling takes place, you can apply actions (e.g., setting ratings) to the hovered image or to the selected ones\n\n<b>enabled</b> actions apply to the hovered image (less clicking)\n\n<b>disabled</b> actions apply to the current selection (less error prone)]]></longdescription>
+    <welcomescreen pagenum="4" questionnum="1"/>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
@@ -2321,7 +2359,8 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
-    <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
+    <longdescription><![CDATA[in darktable's darkroom, where you do your edits, all controls are listed on a panel on the right; you can choose whether you want to use the scroll wheel or scroll gesture on your touchpad to scroll the panel, or to change the values of the control under the pointer; this latter modality enables faster editing, but this can be dangerous because you can change the values ​​of the module controls without noticing if you are not used to it\n\n<b>enabled:</b> the mouse wheel scrolls the modules panel and with <i>Ctrl+Alt</i> adjusts a control's value\n\n<b>disabled:</b> the mouse wheel adjusts the control under the pointer and with <i>Ctrl+Alt</i> scrolls the panel.]]></longdescription>
+    <welcomescreen pagenum="5" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
@@ -2369,6 +2408,12 @@
     <type min="100" max="500">int</type>
     <default>250</default>
     <shortdescription>max style preview size</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>ui/style/large_preview_size</name>
+    <type min="100" max="800">int</type>
+    <default>500</default>
+    <shortdescription/>
   </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
@@ -2507,20 +2552,6 @@
     <default>false</default>
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>preview_downsampling</name>
-    <type>
-      <enum>
-        <option>original</option>
-        <option>to 1/2</option>
-        <option>to 1/3</option>
-        <option>to 1/4</option>
-      </enum>
-    </type>
-    <default>original</default>
-    <shortdescription>reduce resolution of preview image</shortdescription>
-    <longdescription>decrease to speed up preview rendering, hinders accurate masking, pickers and some module algorithm</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/loading_screen</name>
@@ -3179,6 +3210,7 @@
       <enum>
         <option>vectorscope</option>
         <option>waveform</option>
+        <option>waveform/vectorscope</option>
         <option>RGB parade</option>
         <option>histogram</option>
       </enum>
@@ -3606,7 +3638,7 @@
     <type>dir</type>
     <default>$(home)</default>
     <shortdescription>raster mask files root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains PFM files used by the raster mask import module. (restart required)</longdescription>
+    <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
@@ -3621,7 +3653,8 @@
     </type>
     <default>scene-referred (sigmoid)</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
-    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic or sigmoid, color calibration and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve, white balance and the legacy module pipe order.</longdescription>
+    <longdescription><![CDATA[selects which workflow will be used by default in the darkroom\n\n<b>scene-referred (sigmoid)</b> modern workflow, fewer tonemapper controls\n\n<b>scene-referred (filmic)</b> modern workflow, more tone mapping controls\n\n<b>scene-referred (AgX)</b> modern workflow, maximum tone mapping control\n\n<b>display-referred (legacy)</b> legacy workflow (not recommended)\n\n<b>none</b> do not use a predefined workflow]]></longdescription>
+    <welcomescreen pagenum="1" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
@@ -4007,6 +4040,6 @@
     <type>string</type>
     <default></default>
     <shortdescription>order or exclude MIDI devices</shortdescription>
-    <longdescription>comma-separated list of device name fragments that if matched load MIDI device at id given by location in list\nor if preceded by '-' prevent matching devices from loading. add encoding and number of knobs like 'BeatStep:63:16'</longdescription>
+    <longdescription>comma-separated list of device name fragments that if matched load MIDI device at id given by location in list\nadd encoding and number of knobs like 'Loupedeck:127,BeatStep:63:16'\nprefix with '-' to ignore matching devices\njust '-' stops loading all further devices or on its own disables MIDI completely</longdescription>
   </dtconfig>
 </dtconfiglist>

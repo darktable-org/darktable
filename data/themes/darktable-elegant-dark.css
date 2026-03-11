@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2021 Nicolas Auffray
+    Copyright (C) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-@import url("darktable-elegant-darker.css");
+@import url("darktable.css");
+@import url("chunk-fonts.css");
 
 /* This has been tested with GTK 3.24 on Gnome */
 

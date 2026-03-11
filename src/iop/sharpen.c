@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,7 +171,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1 << 16, .sizey = 1 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_hblur, &hlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_hblur, &hlocopt) == CL_SUCCESS)
     hblocksize = hlocopt.sizex;
   else
     hblocksize = 1;
@@ -182,7 +182,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                   .cellsize = sizeof(float), .overhead = 0,
                                   .sizex = 1, .sizey = 1 << 16 };
 
-  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_vblur, &vlocopt))
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_sharpen_vblur, &vlocopt) == CL_SUCCESS)
     vblocksize = vlocopt.sizey;
   else
     vblocksize = 1;
@@ -203,34 +203,29 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   /* horizontal blur */
   sizes[0] = bwidth;
   sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
   local[0] = hblocksize;
   local[1] = 1;
   local[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_hblur, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_m),
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_sharpen_hblur, sizes, local,
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_m),
     CLARG(rad), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * rad) * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_sharpen_hblur, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
   /* vertical blur */
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = bheight;
-  sizes[2] = 1;
   local[0] = 1;
   local[1] = vblocksize;
   local[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_sharpen_vblur, sizes, local,
+    CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
     CLARG(rad), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * rad) * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_sharpen_vblur, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
   /* mixing tmp and in -> out */
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDHT(height, devid);
-  sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sharpen_mix, width, height,
+    CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
 
 error:
   dt_opencl_release_mem_object(dev_m);
@@ -245,7 +240,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  dt_iop_sharpen_data_t *d = piece->data;
+  const dt_iop_sharpen_data_t *d = piece->data;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
 
   tiling->factor = 2.1f; // in + out + tmprow
@@ -253,9 +248,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = rad;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,

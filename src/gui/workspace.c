@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2025 darktable developers.
+    Copyright (C) 2025-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,7 +128,9 @@ static void _workspace_new_db(GtkWidget *button, dt_workspace_t *session)
   _workspace_screen_destroy(session);
 }
 
-static GtkBox *_insert_button(dt_workspace_t *session, const char *label)
+static GtkBox *_insert_button(dt_workspace_t *session,
+                              const char *label,
+                              const gboolean with_del)
 {
   GtkBox *box = GTK_BOX(dt_gui_hbox());
   GtkWidget *b = gtk_button_new_with_label(label);
@@ -136,6 +138,16 @@ static GtkBox *_insert_button(dt_workspace_t *session, const char *label)
   dt_gui_box_add(box, b);
   g_signal_connect(G_OBJECT(b), "clicked",
                    G_CALLBACK(_workspace_select_db), session);
+
+  if(with_del)
+  {
+    GtkWidget *del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    g_signal_connect(G_OBJECT(del), "clicked",
+                     G_CALLBACK(_workspace_delete_db), session);
+    g_object_set_data(G_OBJECT(del), "db", b);
+    dt_gui_box_add(box, del);
+  }
+
   dt_gui_dialog_add(session->db_screen, box);
   return box;
 }
@@ -170,56 +182,35 @@ gboolean dt_workspace_create(const char *datadir)
 
   gtk_window_set_position(GTK_WINDOW(session->db_screen), GTK_WIN_POS_CENTER);
 
-  GList *dbs = dt_read_file_pattern(datadir, "library*.db");
+  GList *dbs = dt_read_file_pattern(datadir, "library-*.db");
 
   GtkWidget *l1 = gtk_label_new(_("select an existing workspace"));
   dt_gui_dialog_add(session->db_screen, l1);
 
   const char *current_db =  dt_conf_get_string("database");
-  gboolean current_db_found = FALSE;
+  gboolean current_db_found = strcmp("default", current_db) == 0 ? TRUE : FALSE;
 
+  // add default workspace
+  GtkBox *box = _insert_button(session, _("default"), FALSE);
+  // add a memory workspace just after default one
+  box = _insert_button(session, _("memory"), FALSE);
+
+  // add now only the non default libraries
   for(GList *l = g_list_first(dbs); l; l = g_list_next(l))
   {
     char *name = (char *)l->data;
-    const gboolean is_default = strcmp(name, "library.db") == 0;
-    GtkBox *box = NULL;
 
-    if(is_default)
-    {
-      box = _insert_button(session, _("default"));
-    }
-    else if(g_str_has_prefix(name, "library-"))
-    {
-      // skip "library-" prefix
-      char *f = name + strlen("library") + 1;
-      // end with the dot
-      char *e = f;
-      while(*e != '.') e++;
-      *e = '\0';
+    // skip "library-" prefix
+    char *f = name + strlen("library") + 1;
+    // end with the dot
+    char *e = f;
+    while(*e != '.') e++;
+    *e = '\0';
 
-      box = _insert_button(session, f);
-    }
+    box = _insert_button(session, f, TRUE);
 
     if(strcmp(name, current_db) == 0)
       current_db_found = TRUE;
-
-    if(is_default)
-    {
-      // add a memory workspace just after default one
-      box = _insert_button(session, _("memory"));
-    }
-    else if(!is_default)
-    {
-      GList *bc = gtk_container_get_children(GTK_CONTAINER(box));
-      GtkWidget *b = (GtkWidget *)g_list_first(bc)->data;
-      g_list_free(bc);
-
-      GtkWidget *del = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-      g_signal_connect(G_OBJECT(del), "clicked",
-                       G_CALLBACK(_workspace_delete_db), session);
-      g_object_set_data(G_OBJECT(del), "db", b);
-      dt_gui_box_add(box, del);
-    }
   }
 
   g_list_free_full(dbs, g_free);
@@ -233,7 +224,7 @@ gboolean dt_workspace_create(const char *datadir)
 
   GtkWidget *l2 = gtk_label_new(_("or create a new one"));
 
-  GtkBox *box = GTK_BOX(dt_gui_hbox());
+  box = GTK_BOX(dt_gui_hbox());
   session->entry = gtk_entry_new();
   g_signal_connect(G_OBJECT(session->entry),
                    "changed", G_CALLBACK(_workspace_entry_changed), session);

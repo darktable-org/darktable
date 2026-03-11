@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -249,7 +249,7 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
 
   const int devid = piece->pipe->devid;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
@@ -259,11 +259,8 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
                                   .cellsize = 4 * sizeof(float), .overhead = 0,
                                   .sizex = 1 << 8, .sizey = 1 << 8 };
 
-  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt))
-  {
-    err = CL_INVALID_WORK_DIMENSION;
-    goto error;
-  }
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt);
+  if(err != CL_SUCCESS) goto error;
 
   // two buffer references for our ping-pong
   cl_mem dev_t1 = dev_out;
@@ -273,10 +270,9 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
   {
     const size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     const size_t local[] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_color_smoothing, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_color_smoothing, sizes, local,
       CLARG(dev_t1), CLARG(dev_t2), CLARG(width),
       CLARG(height), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
     // swap dev_t1 and dev_t2
@@ -360,11 +356,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = 2 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 4, .sizey = 1 << 4 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt);
+    if(err != CL_SUCCESS) goto error;
 
     const size_t bwidth = ROUNDUP(width, flocopt.sizex);
     const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -380,11 +373,10 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
 
     const size_t fsizes[3] = { bwidth, bheight, 1 };
     const size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_first, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_green_eq_favg_reduce_first, fsizes, flocal,
       CLARG(dev_in1), CLARG(width),
       CLARG(height), CLARG(dev_m), CLARG(filters),
       CLLOCAL(sizeof(float) * 2 * flocopt.sizex * flocopt.sizey));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes, flocal);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_local_buffer_t slocopt
@@ -392,11 +384,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = sizeof(float) * 2, .overhead = 0,
                                     .sizex = 1 << 16, .sizey = 1 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt);
+    if(err != CL_SUCCESS) goto error;
 
     const int reducesize = MIN(DT_REDUCESIZE_MIN, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -409,10 +398,9 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
 
     const size_t ssizes[3] = { (size_t)reducesize * slocopt.sizex, 1, 1 };
     const size_t slocal[3] = { slocopt.sizex, 1, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_second, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_green_eq_favg_reduce_second, ssizes, slocal,
       CLARG(dev_m), CLARG(dev_r),
       CLARG(bufsize), CLLOCAL(sizeof(float) * 2 * slocopt.sizex));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_second, ssizes, slocal);
     if(err != CL_SUCCESS) goto error;
 
     sumsum = dt_alloc_align_float((size_t)2 * reducesize);
@@ -451,19 +439,15 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                     .cellsize = 1 * sizeof(float), .overhead = 0,
                                     .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt))
-    {
-      err = CL_INVALID_WORK_DIMENSION;
-      goto error;
-    }
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt);
+    if(err != CL_SUCCESS) goto error;
 
     const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_lavg, 0,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_green_eq_lavg, sizes, local,
       CLARG(dev_in2), CLARG(dev_out2),
       CLARG(width), CLARG(height), CLARG(filters),
       CLARG(threshold), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_lavg, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -519,10 +503,8 @@ static int process_default_cl(const dt_iop_module_t *self,
       }
 
       {
-        const int myborder = 3;
-        // manage borders
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters), CLARG(myborder));
+          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters));
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -540,18 +522,14 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = 1 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_pre_median, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pre_median, sizes, local,
           CLARG(dev_in), CLARG(dev_med), CLARG(width),
           CLARG(height), CLARG(filters), CLARG(d->median_thrs), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pre_median, sizes, local);
         if(err != CL_SUCCESS) goto error;
         dev_in = dev_out;
       }
@@ -563,19 +541,14 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = sizeof(float) * 1, .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_green, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
           CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
           CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)));
-
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -585,19 +558,14 @@ static int process_default_cl(const dt_iop_module_t *self,
                                         .cellsize = 4 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt))
-        {
-          err = CL_INVALID_WORK_DIMENSION;
-          goto error;
-        }
+        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
+        if(err != CL_SUCCESS) goto error;
 
         const size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_redblue, 0,
+        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
           CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
           CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
-
-        err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
     }

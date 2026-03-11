@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -340,7 +340,7 @@ static float _maketaps_lanczos(float *taps,
     dt_aligned_pixel_t sign;
     for_four_channels(c)
     {
-      int a = (int)vt[c];
+      const int a = (int)vt[c];
       r[c] = vt[c] - (float)a;
       sign[c] = (a & 1) ? -1.0f : 1.0f;
     }
@@ -429,7 +429,7 @@ static inline float _compute_upsampling_kernel(const dt_interpolation_t *itor,
   // yielding an incorrect result for the slightly-negative positions
   // that can occur at the top and left edges when doing perspective
   // correction
-  int f = (int)floorf(t) - itor->width + 1;
+  const int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
     *first = f;
@@ -474,10 +474,10 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
   }
 
   // Compute first interpolator parameter
-  float t = xin * outoinratio - (float)xout;
+  const float t = xin * outoinratio - (float)xout;
 
   // Compute all filter taps
-  int num_taps = *taps = (int)((w - t) / outoinratio);
+  const int num_taps = *taps = (int)((w - t) / outoinratio);
   itor->maketaps(kernel, num_taps, itor->width, t, outoinratio);
   // compute the kernel norm if requested
   if(norm)
@@ -510,8 +510,8 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
   float DT_ALIGNED_ARRAY kernelv[MAX_KERNEL_REQ];
 
   // Compute both horizontal and vertical kernels
-  float normh = _compute_upsampling_kernel(itor, kernelh, NULL, x);
-  float normv = _compute_upsampling_kernel(itor, kernelv, NULL, y);
+  const float normh = _compute_upsampling_kernel(itor, kernelh, NULL, x);
+  const float normv = _compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   int ix = (int)x;
   int iy = (int)y;
@@ -544,7 +544,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       s += kernelv[i] * h;
       in += linestride;
     }
-    r = fmaxf(0.0f, s / (normh * normv));
+    r = s / (normh * normv);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -582,14 +582,14 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       s += kernelv[i] * h;
     }
 
-    r = fmaxf(0.0f, s / (normh * normv));
+    r = s / (normh * normv);
   }
   else
   {
     // invalid coordinate
     r = 0.0f;
   }
-  return r;
+  return fmaxf(0.0f, r); // make sure we don't push NaNs
 }
 
 /* --------------------------------------------------------------------------
@@ -612,8 +612,8 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
   float DT_ALIGNED_ARRAY kernelv[MAX_KERNEL_REQ];
 
   // Compute both horizontal and vertical kernels
-  float normh = _compute_upsampling_kernel(itor, kernelh, NULL, x);
-  float normv = _compute_upsampling_kernel(itor, kernelv, NULL, y);
+  const float normh = _compute_upsampling_kernel(itor, kernelh, NULL, x);
+  const float normv = _compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   // Precompute the inverse of the filter norm for later use
   const float oonorm = (1.f / (normh * normv));
@@ -1102,7 +1102,7 @@ void dt_interpolation_resample(const dt_interpolation_t *itor,
     int hkidx = 0; // H(orizontal) K(ernel) I(n)d(e)x
 
     // Number of lines contributing to the output line
-    int vl = vlength[vlidx++]; // V(ertical) L(ength)
+    const int vl = vlength[vlidx++]; // V(ertical) L(ength)
 
     // Process each output column
     for(size_t ox = 0; ox < (size_t)roi_out->width; ox++)
@@ -1111,12 +1111,12 @@ void dt_interpolation_resample(const dt_interpolation_t *itor,
       dt_aligned_pixel_t vs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       // Number of horizontal samples contributing to the output
-      int hl = hlength[hlidx++]; // H(orizontal) L(ength)
+      const int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
       for(size_t iy = 0; iy < vl; iy++)
       {
         // This is our input line
-        size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
+        const size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
         dt_aligned_pixel_t vhs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -1146,7 +1146,7 @@ void dt_interpolation_resample(const dt_interpolation_t *itor,
       // Negative RGB are invalid values no matter the RGB space (light is positive)
       dt_aligned_pixel_t pixel;
       for_each_channel(c, aligned(vs:16))
-        pixel[c] = MAX(vs[c], 0.f);
+        pixel[c] = fmaxf(0.0f, vs[c]);
       copy_pixel_nontemporal(out + baseidx, pixel);
 
       // Reset vertical resampling context
@@ -1335,7 +1335,7 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
           .sizex = 1,
           .sizey = (1 << 16) * taps };
 
-  if(dt_opencl_local_buffer_opt(devid, kernel, &locopt))
+  if(dt_opencl_local_buffer_opt(devid, kernel, &locopt) == CL_SUCCESS)
     vblocksize = locopt.sizey;
   else
     vblocksize = 1;
@@ -1382,15 +1382,15 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
   dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * height * 3, vmeta);
   if(dev_vmeta == NULL) goto error;
 
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out),
-                            CLARG(width), CLARG(height),
-                            CLARG(dev_hmeta), CLARG(dev_vmeta), CLARG(dev_hlength),
-                            CLARG(dev_vlength), CLARG(dev_hindex),
-                            CLARG(dev_vindex), CLARG(dev_hkernel), CLARG(dev_vkernel),
-                            CLARG(hmaxtaps), CLARG(taps), CLLOCAL(hmaxtaps * sizeof(float)),
-                            CLLOCAL(hmaxtaps * sizeof(int)),
-                            CLLOCAL(vblocksize * 4 * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, kernel, sizes, local,
+            CLARG(dev_in), CLARG(dev_out),
+            CLARG(width), CLARG(height),
+            CLARG(dev_hmeta), CLARG(dev_vmeta), CLARG(dev_hlength),
+            CLARG(dev_vlength), CLARG(dev_hindex),
+            CLARG(dev_vindex), CLARG(dev_hkernel), CLARG(dev_vkernel),
+            CLARG(hmaxtaps), CLARG(taps), CLLOCAL(hmaxtaps * sizeof(float)),
+            CLLOCAL(hmaxtaps * sizeof(int)),
+            CLLOCAL(vblocksize * 4 * sizeof(float)));
 
 error:
   if(err == CL_SUCCESS)
@@ -1565,7 +1565,7 @@ void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
       // Output pixel is ready
       float *o = (float *)((char *)out + (size_t)oy * out_stride
                            + (size_t)ox * sizeof(float));
-      *o = vs;
+      *o = fmaxf(0.0f, vs);
 
       // Reset vertical resampling context
       viidx -= vl;

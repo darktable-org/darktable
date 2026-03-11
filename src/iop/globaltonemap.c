@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -383,11 +383,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                       .cellsize = sizeof(float), .overhead = 0,
                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finally;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt);
+      if(err != CL_SUCCESS) goto finally;
 
       const size_t bwidth = ROUNDUP(width, flocopt.sizex);
       const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -399,11 +396,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                       .cellsize = sizeof(float), .overhead = 0,
                                       .sizex = 1 << 16, .sizey = 1 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finally;
-      }
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt);
+      if(err != CL_SUCCESS) goto finally;
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -418,24 +412,22 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
       sizes[0] = bwidth;
       sizes[1] = bheight;
-      sizes[2] = 1;
       local[0] = flocopt.sizex;
       local[1] = flocopt.sizey;
       local[2] = 1;
-      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_first, 0, CLARG(dev_in), CLARG(width), CLARG(height),
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pixelmax_first, sizes, local,
+        CLARG(dev_in), CLARG(width), CLARG(height),
         CLARG(dev_m), CLLOCAL(sizeof(float) * flocopt.sizex * flocopt.sizey));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
       if(err != CL_SUCCESS) goto finally;
 
       sizes[0] = (size_t)reducesize * slocopt.sizex;
       sizes[1] = 1;
-      sizes[2] = 1;
       local[0] = slocopt.sizex;
       local[1] = 1;
       local[2] = 1;
-      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_second, 0, CLARG(dev_m), CLARG(dev_r), CLARG(bufsize),
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pixelmax_second, sizes, local,
+        CLARG(dev_m), CLARG(dev_r), CLARG(bufsize),
         CLLOCAL(sizeof(float) * slocopt.sizex));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto finally;
 
       maximum = dt_alloc_align_float((size_t)reducesize);
@@ -546,9 +538,7 @@ void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece
       = (detail ? MAX(1.0f, (float)dt_bilateral_singlebuffer_size2(width, height, sigma_s, sigma_r) / basebuffer) : 1.0f);
   tiling->overhead = 0;
   tiling->overlap = (detail ? ceilf(4 * sigma_s) : 0);
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+  tiling->align = 1;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,

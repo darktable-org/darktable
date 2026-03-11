@@ -254,6 +254,8 @@ void tiling_callback(dt_iop_module_t *self,
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
 
+  tiling->align = 1;
+  tiling->overhead = 0;
   if(d->mode == s_mode_bilateral)
   {
     // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
@@ -270,10 +272,7 @@ void tiling_callback(dt_iop_module_t *self,
     tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
     tiling->maxbuf
         = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
-    tiling->overhead = 0;
     tiling->overlap = ceilf(4 * sigma_s);
-    tiling->xalign = 1;
-    tiling->yalign = 1;
   }
   else  // mode == s_mode_local_laplacian
   {
@@ -287,10 +286,7 @@ void tiling_callback(dt_iop_module_t *self,
     tiling->factor = 2.0f + (float)local_laplacian_memory_use(width, height) / basebuffer;
     tiling->maxbuf
         = fmax(1.0f, (float)local_laplacian_singlebuffer_size(width, height) / basebuffer);
-    tiling->overhead = 0;
     tiling->overlap = rad;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
   }
 }
 

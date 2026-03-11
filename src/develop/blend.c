@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -447,6 +447,7 @@ static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_color
   }
 }
 
+/* we test in pixelpipe processing if this required */
 void dt_develop_blend_process(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid,
@@ -454,15 +455,8 @@ void dt_develop_blend_process(dt_iop_module_t *self,
                               const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out)
 {
-  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
-    return;
-
-  const dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d) return;
-
+  dt_develop_blend_params_t *const d = piece->blendop_data;
   const dt_develop_mask_mode_t mask_mode = d->mask_mode;
-  // check if blend is disabled
-  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
   const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
   const gboolean mode_drawn = mask_mode & DEVELOP_MASK_MASK;
@@ -858,6 +852,7 @@ static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
   *b = tmp;
 }
 
+/* we test in pixelpipe processing if this required */
 gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      dt_dev_pixelpipe_iop_t *piece,
                                      cl_mem dev_in,
@@ -865,15 +860,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      const dt_iop_roi_t *roi_in,
                                      const dt_iop_roi_t *roi_out)
 {
-  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
-    return TRUE;
-
   dt_develop_blend_params_t *const d = piece->blendop_data;
-  if(!d) return TRUE;
-
   const dt_develop_mask_mode_t mask_mode = d->mask_mode;
-  // check if blend is disabled: just return, output is already in dev_out
-  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
   const size_t ch = piece->colors;           // the number of channels in the buffer
   const int owidth = roi_out->width;
@@ -1470,8 +1458,7 @@ void tiling_callback_blendop(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 
   dt_develop_blend_params_t *const bldata = piece->blendop_data;
   if(bldata)
@@ -1485,10 +1472,23 @@ void tiling_callback_blendop(dt_iop_module_t *self,
         tiling->factor = 0.5f * (float)(details->roi.width * details->roi.height) / (roi_in->width * roi_in->height);
      }
 
-    if(bldata->feathering_radius > 0.1f)
-      tiling->factor = MAX(tiling->factor, 4.5f); // we need all intermediate guided filter mask buffers
+    if(bldata->feathering_radius > 0.1f) // we don't feather below that
+    {
+      const int devid = piece->pipe->devid;
+      if(devid > DT_DEVICE_CPU)
+      {
+        /* OpenCL feathering does simple internal tiling for less mem pressure,
+           we still need some mem here for this. 
+        */
+        tiling->factor_cl = MAX(tiling->factor, 1.0f);
+      }
+      tiling->factor = MAX(tiling->factor, 18.0f * 0.25f); // we need all 18 intermediate guided filter mask buffers
+    }
   }
-  tiling->factor += 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
+  const float outnorm = (float)(roi_out->width * roi_out->height) / (roi_in->width * roi_in->height);
+  const float basic = 2.5f + outnorm; // in + out + (guide, tmp) + two quarter buffers for the mask
+  tiling->factor += basic;
+  tiling->factor_cl += basic;
 }
 
 /** check if content of params is all zero, indicating a

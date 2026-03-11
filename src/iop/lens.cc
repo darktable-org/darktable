@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2025 darktable developers.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1535,8 +1535,7 @@ static void _tiling_callback_lf(dt_iop_module_t *self,
   tiling->maxbuf = 1.5f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   if(d->v_strength != 0.0f) tiling->factor += 1.0f;
 }
@@ -2598,8 +2597,7 @@ static void _tiling_callback_md(dt_iop_module_t *self,
   tiling->maxbuf = 1.5f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 static void _tiling_callback_vg(dt_iop_module_t *self,
@@ -2612,8 +2610,7 @@ static void _tiling_callback_vg(dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
+  tiling->align = 1;
 }
 
 static gboolean _distort_transform_md(dt_iop_module_t *self,
@@ -4050,6 +4047,9 @@ static void _lens_set(dt_iop_module_t *self,
   char txt[30];
 
   // focal length
+  /* For prime lenses (single focal length), auto-select the only available value */
+  if(lens->MinFocal >= lens->MaxFocal) p->focal = lens->MinFocal;
+
   w = g->focal_length;
   dt_bauhaus_widget_set_label(w, NULL, N_("mm"));
   dt_bauhaus_combobox_clear(w);

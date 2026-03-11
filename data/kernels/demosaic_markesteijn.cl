@@ -50,7 +50,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
   const int f = FCxtrans(y, x, xtrans);
 
-  const float p = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float p = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
 
   for(int c = 0; c < 3; c++)
     pix[c] = (c == f) ? p : 0.0f;
@@ -112,7 +112,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
-  if(f == 1) return;
+  if(f == GREEN) return;
 
   // get min/max of *this* pixel
   float gmin = FLT_MAX;
@@ -205,7 +205,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
   const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
-  if(f == 1) return;
+  if(f == GREEN) return;
 
 
   // receive min/max of this pixel
@@ -364,7 +364,7 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
   const int f = FCxtrans(y, x, xtrans);
 
   // we only work on non-green pixels
-  if(f == 1) return;
+  if(f == GREEN) return;
 
   // receive min/max of this pixel
   const float gmin = (gminmax + 2 * mad24(y, width, x))[0];
@@ -445,7 +445,7 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   const int f = 2 -  FCxtrans(y, x, xtrans);
 
   // we don't work on green pixels
-  if(f == 1) return;
+  if(f == GREEN) return;
 
   // center rgb around current pixel
   rgb += 4 * mad24(y, width, x);

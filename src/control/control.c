@@ -203,7 +203,6 @@ void dt_control_init(const gboolean withgui)
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->quitting, 0);
   dt_atomic_set_int(&s->pending_jobs, 0);
-  dt_atomic_set_int(&s->running_jobs, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -221,7 +220,6 @@ void dt_control_init(const gboolean withgui)
   // same thread as init
   s->gui_thread = pthread_self();
 
-  // s->last_expose_time = dt_get_wtime();
   s->log_pos = s->log_ack = 0;
   s->busy = 0;
   s->log_message_timeout_id = 0;
@@ -517,7 +515,7 @@ static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
   const char *mode = (const char*)user_data;
   _dt_ctl_switch_mode_prepare();
   dt_view_manager_switch(darktable.view_manager, mode);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
@@ -525,7 +523,7 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
   const dt_view_t *view = (const dt_view_t*)user_data;
   _dt_ctl_switch_mode_prepare();
   dt_view_manager_switch_by_view(darktable.view_manager, view);
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 void dt_ctl_switch_mode_to(const char *mode)
@@ -558,6 +556,13 @@ void dt_ctl_switch_mode()
   dt_ctl_switch_mode_to(mode);
 }
 
+static void _control_log_redraw()
+{
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
+}
+
+
 static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 {
   dt_control_t *dc = darktable.control;
@@ -565,8 +570,14 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
   dc->log_ack = dc->log_pos;
   dc->log_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&dc->log_mutex);
-  dt_control_log_redraw();
+  _control_log_redraw();
   return FALSE;
+}
+
+static void _control_toast_redraw()
+{
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
 static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
@@ -576,7 +587,7 @@ static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
   dc->toast_ack = dc->toast_pos;
   dc->toast_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&dc->log_mutex);
-  dt_control_toast_redraw();
+  _control_toast_redraw();
   return FALSE;
 }
 
@@ -642,8 +653,8 @@ void dt_control_button_pressed(double x,
 
 static gboolean _redraw_center(gpointer user_data)
 {
-  dt_control_log_redraw();
-  dt_control_toast_redraw();
+  _control_log_redraw();
+  _control_toast_redraw();
   return FALSE; // don't call this again
 }
 
@@ -745,29 +756,20 @@ void dt_control_busy_leave()
 
 void dt_control_queue_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_ALL);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_navigation_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
-}
-
-void dt_control_log_redraw()
-{
   if(dt_control_running())
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
-}
-
-void dt_control_toast_redraw()
-{
-  if(dt_control_running())
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
 }
 
 static int _widget_queue_draw(void *widget)

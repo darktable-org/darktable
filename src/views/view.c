@@ -85,19 +85,13 @@ void dt_view_manager_init(dt_view_manager_t *vm)
                               "   AND id != ?2",
                               -1, &vm->statements.get_grouped, NULL);
 
+  vm->module_toolbox = dt_gui_hbox();
+  vm->view_toolbox = dt_gui_hbox();
+
   dt_view_manager_load_modules(vm);
 
   vm->current_view = NULL;
   vm->audio.audio_player_id = -1;
-}
-
-void dt_view_manager_gui_init(dt_view_manager_t *vm)
-{
-  for(GList *iter = vm->views; iter; iter = g_list_next(iter))
-  {
-    dt_view_t *view = iter->data;
-    if(view->gui_init) view->gui_init(view);
-  }
 }
 
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
@@ -187,6 +181,7 @@ static int dt_view_load_module(void *v,
                                      module->module_name,
                                      module->name(module) };
     dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
+    if(module->gui_init) module->gui_init(module);
   }
 
   return 0;
@@ -202,9 +197,12 @@ static void dt_view_unload_module(dt_view_t *view)
     g_module_close(view->module);
 }
 
-void dt_vm_remove_child(GtkWidget *widget, gpointer data)
+static void _show_hide_toolbox_widget(GtkWidget *widget,
+                                      gpointer data)
 {
-  gtk_container_remove(GTK_CONTAINER(data), widget);
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_widget_set_visible(widget,
+    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "views")) & GPOINTER_TO_INT(data));
 }
 
 gboolean dt_view_manager_switch(dt_view_manager_t *vm,
@@ -307,8 +305,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   // show we are busy changing views
   dt_control_change_cursor(GDK_WATCH);
-  if(new_view != old_view)
-    dt_gui_process_events();
+  gdk_display_sync(gdk_display_get_default());
 
   /* cleanup current view before initialization of new  */
   if(old_view)
@@ -347,6 +344,28 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   }
 
   /* change current view to the new view */
+
+  /* 
+     Race Condition
+ 
+     the current view is set to the new view prior to
+     initializing.  Plugins are initialized according to
+     the current view, so it must be set prior.
+
+     If a Lua script tries to register a lib, it checks the
+     current view to see if is lighttable.  If the current
+     view is lighttable then the lib tries to install.
+
+     If the current view is set to lighttable, but the
+     view hasn't completely initialized, and Lua attempts
+     to install the lib the result will be a hang.
+
+     There is a work around in the Lua initialization code,
+     data/luarc, to check that the initialization is complete
+     and set a flag, darktable_gui_safe, when it is safe to
+     register libs
+  */
+
   vm->current_view = new_view;
 
   dt_view_type_flags_t view_type = new_view->view(new_view);
@@ -407,8 +426,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     if(!strcmp(plugin->plugin_name,"module_toolbox")
       || !strcmp(plugin->plugin_name,"view_toolbox"))
     {
+      gtk_container_foreach(GTK_CONTAINER(w), _show_hide_toolbox_widget, GINT_TO_POINTER(view_type));
       if(view_type == DT_VIEW_LIGHTTABLE)
-                       dt_gui_add_help_link(w, "lighttable_mode");
+        dt_gui_add_help_link(w, "lighttable_mode");
       if(view_type == DT_VIEW_DARKROOM)
         dt_gui_add_help_link(w, "darkroom_bottom_panel");
     }
@@ -669,6 +689,48 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm,
     return;
   if(vm->current_view->scrolled)
     vm->current_view->scrolled(vm->current_view, x, y, up, state);
+}
+
+gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
+                                     const double x,
+                                     const double y,
+                                     const double dx,
+                                     const double dy,
+                                     const int state)
+{
+  if(!vm->current_view)
+  {
+    return FALSE;
+  }
+  else if(vm->current_view->gesture_pan)
+  {
+    return vm->current_view->gesture_pan(vm->current_view, x, y, dx, dy, state);
+  }
+  else
+  {
+    return FALSE;
+  }
+}
+
+gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
+                                       const double x,
+                                       const double y,
+                                       const int phase,
+                                       const double scale,
+                                       const int state)
+{
+  if(!vm->current_view)
+  {
+    return FALSE;
+  }
+  else if(vm->current_view->gesture_pinch)
+  {
+    return vm->current_view->gesture_pinch(vm->current_view, x, y, phase, scale, state);
+  }
+  else
+  {
+    return FALSE;
+  }
 }
 
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
@@ -1111,16 +1173,16 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,
                                       GtkWidget *tool,
                                       const dt_view_type_flags_t views)
 {
-  if(vm->proxy.view_toolbox.module)
-    vm->proxy.view_toolbox.add(vm->proxy.view_toolbox.module, tool, views);
+  g_object_set_data(G_OBJECT(tool), "views", GINT_TO_POINTER(views));
+  dt_gui_box_add(vm->view_toolbox, tool);
 }
 
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,
                                         GtkWidget *tool,
                                         const dt_view_type_flags_t views)
 {
-  if(vm->proxy.module_toolbox.module)
-    vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
+  g_object_set_data(G_OBJECT(tool), "views", GINT_TO_POINTER(views));
+  dt_gui_box_add(vm->module_toolbox, tool);
 }
 
 dt_darkroom_layout_t dt_view_darkroom_get_layout(const dt_view_manager_t *vm)
@@ -1445,7 +1507,6 @@ static void _accels_window_destroy(GtkWidget *widget, dt_view_manager_t *vm)
 }
 
 static void _accels_window_sticky(GtkWidget *widget,
-                                  GdkEventButton *event,
                                   dt_view_manager_t *vm)
 {
   if(!vm->accels_window.window) return;
@@ -1501,7 +1562,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   vm->accels_window.sticky_btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   gtk_widget_set_tooltip_text(vm->accels_window.sticky_btn,
                               _("switch to a classic window which will stay open after key release"));
-  g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event",
+  g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "clicked",
                    G_CALLBACK(_accels_window_sticky),
                    vm);
   dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
@@ -1729,8 +1790,10 @@ void dt_view_paint_surface(cairo_t *cr,
                            int buf_height,
                            dt_dev_zoom_pos_t buf_zoom_pos)
 {
-  dt_develop_t *dev = darktable.develop;
-  dt_dev_pixelpipe_t *pp = dev->preview_pipe;
+  // Use the viewport's develop if available, otherwise fall back to global
+  dt_develop_t *dev = port->dev ? port->dev : darktable.develop;
+  // Preview pipe for fallback rendering - only available for main develop
+  dt_dev_pixelpipe_t *pp = darktable.develop->preview_pipe;
 
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
@@ -1806,20 +1869,27 @@ void dt_view_paint_surface(cairo_t *cr,
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
-  if(pp->output_imgid == dev->image_storage.id
+  // Check if we should use the preview pipe for fallback rendering
+  // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
+  const gboolean use_preview_fallback = 
+     (dev == darktable.develop)
+     && pp->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
          || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
-     && (port == &dev->full || port == &dev->preview2))
+     && (port == &dev->full || port == &dev->preview2);
+     
+  if(use_preview_fallback)
   {
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
     // draw preview
-    const float wd = processed_width * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
-    const float ht = processed_height * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const int full_pipe_width = dev->full.pipe ? dev->full.pipe->processed_width : 1;
+    const float wd = processed_width * pp->processed_width / MAX(1, full_pipe_width);
+    const float ht = processed_height * pp->processed_width / MAX(1, full_pipe_width);
 
     cairo_save(cr);
     cairo_scale(cr, zoom_scale, zoom_scale);

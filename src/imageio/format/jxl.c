@@ -476,7 +476,8 @@ void *get_params(dt_imageio_module_format_t *self)
   d->bpp = dt_conf_get_int("plugins/imageio/format/jxl/bpp");
   d->pixel_type = dt_conf_get_bool("plugins/imageio/format/jxl/pixel_type") & 1;
   d->quality = dt_conf_get_int("plugins/imageio/format/jxl/quality");
-  d->original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1;
+  /* (see below)
+    d->original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1; */
   d->effort = dt_conf_get_int("plugins/imageio/format/jxl/effort");
   d->tier = dt_conf_get_int("plugins/imageio/format/jxl/tier");
 
@@ -498,7 +499,8 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   dt_bauhaus_combobox_set(g->bpp, _bpp_to_enum(d->bpp));
   dt_bauhaus_combobox_set(g->pixel_type, d->pixel_type & 1);
   dt_bauhaus_slider_set(g->quality, d->quality);
-  dt_bauhaus_combobox_set(g->original, d->original & 1);
+  /* (see below)
+    dt_bauhaus_combobox_set(g->original, d->original & 1); */
   dt_bauhaus_slider_set(g->effort, d->effort);
   dt_bauhaus_slider_set(g->tier, d->tier);
 
@@ -548,8 +550,10 @@ static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   const int quality = (int)dt_bauhaus_slider_get(widget);
   dt_conf_set_int("plugins/imageio/format/jxl/quality", quality);
 
+  /* see below
   const gboolean lossless = quality == 100;
   gtk_widget_set_visible(gui->original, !lossless);
+  */
 }
 
 /*
@@ -680,9 +684,11 @@ void gui_reset(dt_imageio_module_format_t *self)
      dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
   dt_bauhaus_slider_set
     (gui->quality, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT));
+/* see above
   dt_bauhaus_combobox_set
     (gui->original,
      dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
+*/
   dt_bauhaus_slider_set
     (gui->effort, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT));
   dt_bauhaus_slider_set

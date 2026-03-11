@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,12 +50,17 @@
         will fill in the zeros / DT_DISTANCE_TRANSFORM_MAX
    The returned float of this function is the maximum calculated distance
 */
+
 #include <math.h>
 #include "common/math.h"
 #include "common/distance_transform.h"
 #include "common/imagebuf.h"
 
-static void _image_distance_transform(const float *f, float *z, float *d, int *v, const int n)
+static void _image_distance_transform(const float *f,
+                                      float *z,
+                                      float *d,
+                                      int *v,
+                                      const int n)
 {
   int k = 0;
   v[0] = 0;
@@ -103,13 +108,14 @@ float dt_image_distance_transform(float *const src,
       break;
     default:
       dt_iop_image_fill(out, 0.0f, width, height, 1);
-      dt_print(DT_DEBUG_ALWAYS,"[dt_image_distance_transform] called with unsupported mode %i", mode);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_image_distance_transform] called with unsupported mode %i", mode);
       return 0.0f;
   }
 
   const size_t maxdim = MAX(width, height);
   float max_distance = 0.0f;
-  DT_OMP_PRAGMA(parallel reduction(max : max_distance) 
+  DT_OMP_PRAGMA(parallel reduction(max : max_distance)
                 dt_omp_firstprivate(out, maxdim, width, height))
   {
     float *f = dt_alloc_align_float(maxdim);
@@ -153,4 +159,3 @@ float dt_image_distance_transform(float *const src,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

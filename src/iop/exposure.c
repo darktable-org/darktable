@@ -849,6 +849,17 @@ static void _exposure_proxy_handle_event(gpointer controller,
     if(!n_press)
       darktable.bauhaus->scroll(widget, controller);
     else
+    {
+      // ignores the quad width, but is accurate enough
+      const int slider_width = gtk_widget_get_allocated_width(widget);
+      // FIXME: it would be nice to fetch scope_height when using waveform
+      const int scope_width =
+        gtk_widget_get_allocated_width(darktable.lib->proxy.histogram.module->widget);
+      // bauhaus scales motion to slider widget, but we want to scale
+      // proportional to the scope widget, particularly when the
+      // slider has not been allocated and has a width of 1 (which can
+      // happen if its module group has not yet been displayed)
+      x = x * slider_width / scope_width;
       if(GTK_IS_GESTURE_SINGLE(controller))
         if(n_press > 0)
           darktable.bauhaus->press(controller, n_press, x, 0, widget);
@@ -856,6 +867,7 @@ static void _exposure_proxy_handle_event(gpointer controller,
           darktable.bauhaus->release(controller, -n_press, x, 0, widget);
       else
         darktable.bauhaus->motion(controller, x, 0, widget);
+    }
 
     gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
     dt_action_widget_toast(DT_ACTION(self), widget, "%s", text);

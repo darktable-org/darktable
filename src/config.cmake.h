@@ -78,12 +78,13 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 
 /******************************************************************************
  * OpenCL target settings
+ * OpenCL 1.2 is the version supported by Apple, otherwise we use 3.0
  *****************************************************************************/
-
-// OpenCL 1.2 is the highest version supported by Nvidia drivers as of end 2019
-// we force use it because we don't have time to support every (vendor driver × OpenCL version)
-#define CL_TARGET_OPENCL_VERSION 120
-
+#ifdef HAVE_APPLE_KEYCHAIN
+ #define CL_TARGET_OPENCL_VERSION 120
+#else
+ #define CL_TARGET_OPENCL_VERSION 300
+#endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

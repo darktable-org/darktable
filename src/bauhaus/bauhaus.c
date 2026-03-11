@@ -153,7 +153,7 @@ static const dt_action_def_t _action_def_slider, _action_def_combo,
 
 // INNER_PADDING is the horizontal space between slider and quad
 // and vertical space between labels and slider baseline
-static const double INNER_PADDING = 4.0;
+static double INNER_PADDING = 4.0;
 
 // fwd declare
 static void _popup_reject(void);
@@ -179,7 +179,7 @@ static void _request_focus(dt_bauhaus_widget_t *w)
 static float _widget_get_quad_width(const dt_bauhaus_widget_t *w)
 {
   if(w->show_quad)
-    return darktable.bauhaus->quad_width + INNER_PADDING;
+    return darktable.bauhaus->quad_width + INNER_PADDING * 4;
   else
     return .0f;
 }
@@ -842,18 +842,32 @@ void dt_bauhaus_load_theme()
   cairo_surface_destroy(cst);
 
   bh->line_height = pango_height / PANGO_SCALE;
-  bh->quad_width = bh->line_height;
-
-  // absolute size in Cairo unit:
-  bh->baseline_size = bh->line_height / 2.5f;
-  bh->border_width = 2.0f; // absolute size in Cairo unit
-  bh->marker_size = (bh->baseline_size + bh->border_width) * 0.9f;
 
   const char *shape = dt_conf_get_string_const("bauhaus/marker_shape");
-  bh->marker_shape = !g_strcmp0(shape, "circle") ? DT_BAUHAUS_MARKER_CIRCLE
-                   : !g_strcmp0(shape, "diamond") ? DT_BAUHAUS_MARKER_DIAMOND
-                   : !g_strcmp0(shape, "bar") ? DT_BAUHAUS_MARKER_BAR
-                   : DT_BAUHAUS_MARKER_TRIANGLE;
+  bh->marker_shape = !g_strcmp0(shape, "circle")    ? DT_BAUHAUS_MARKER_CIRCLE
+                     : !g_strcmp0(shape, "diamond") ? DT_BAUHAUS_MARKER_DIAMOND
+                     : !g_strcmp0(shape, "bar")     ? DT_BAUHAUS_MARKER_BAR
+                                                    : DT_BAUHAUS_MARKER_TRIANGLE;
+
+  // absolute size in Cairo unit:
+  if(dt_conf_get_bool("bauhaus/condensed"))
+  {
+    bh->quad_width = bh->line_height * 0.8;
+    bh->baseline_size = bh->line_height / 4.5f;
+    bh->border_width = 1.0f; // absolute size in Cairo unit
+    bh->marker_size = (bh->baseline_size + bh->border_width)
+      * (bh->marker_shape == DT_BAUHAUS_MARKER_BAR
+        || bh->marker_shape == DT_BAUHAUS_MARKER_TRIANGLE
+        ? 1.2f
+        : 1.1f);
+  }
+  else
+  {
+    bh->quad_width = bh->line_height;
+    bh->baseline_size = bh->line_height / 3.0f;
+    bh->border_width = 2.0f;
+    bh->marker_size = (bh->baseline_size + bh->border_width) * 0.95f;
+  }
 }
 
 void dt_bauhaus_init()
@@ -861,6 +875,9 @@ void dt_bauhaus_init()
   darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_popup_t *pop = &bh->popup;
+
+  // honor the condensed setting
+  INNER_PADDING = dt_conf_get_bool("bauhaus/condensed") ? 1.0 : 4.0;
 
   bh->keys_cnt = 0;
   bh->current = NULL;
@@ -1115,10 +1132,12 @@ void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget,
 
 static float _widget_width(const dt_bauhaus_widget_t *w)
 {
-  return gtk_widget_get_allocated_width(GTK_WIDGET(w))
-         - w->margin.left - w->padding.left
-         - w->margin.right - w->padding.right
-         - _widget_get_quad_width(w);
+  // unallocated widgets have a width of 1, and should keep that width
+  // even when accounting for the quad width
+  return MAX(1.0f, gtk_widget_get_allocated_width(GTK_WIDGET(w))
+                   - w->margin.left - w->padding.left
+                   - w->margin.right - w->padding.right
+                   - _widget_get_quad_width(w));
 }
 
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
@@ -2034,7 +2053,7 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
   cairo_scale(cr, 1.0f, -1.0f);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  // draw the outer triangle
+  // draw the outer marker
   _draw_indicator_shape(cr, size);
   cairo_set_line_width(cr, border_width);
   set_color(cr, border_color);
@@ -2043,7 +2062,7 @@ static void _draw_indicator(dt_bauhaus_widget_t *w,
   _draw_indicator_shape(cr, size - border_width);
   cairo_clip(cr);
 
-  // draw the inner triangle
+  // draw the inner marker
   _draw_indicator_shape(cr, size - border_width);
   set_color(cr, fg_color);
   cairo_set_line_width(cr, border_width);
@@ -2075,10 +2094,10 @@ static void _draw_quad(dt_bauhaus_widget_t *w,
     set_color(cr, sensitive && (w->quad_paint_flags & CPF_ACTIVE)
                 ? hovering ? bh->color_fg_hover : bh->color_fg
                 : hovering ? bh->color_fg       : bh->color_fg_insensitive);
-    w->quad_paint(cr, width + INNER_PADDING,   // x
-                      0.0,                     // y
-                      bh->quad_width,          // width
-                      bh->quad_width,          // height
+    w->quad_paint(cr, width + INNER_PADDING * 4,   // x
+                      0.0,                         // y
+                      bh->quad_width,              // width
+                      bh->quad_width,              // height
                       w->quad_paint_flags, w->quad_paint_data);
 
     cairo_restore(cr);
@@ -2189,6 +2208,8 @@ static void _draw_color_wheel(dt_bauhaus_widget_t *w,
     _show_pango_text(w, c, cr, "-90°",  tp,   -th/2, 0, TRUE,  FALSE, 0, FALSE, FALSE, NULL, NULL);
     _show_pango_text(w, c, cr,  "90°", -tp,   -th/2, 0, FALSE, FALSE, 0, FALSE, FALSE, NULL, NULL);
     _show_pango_text(w, c, cr, "180°", -tw/2, -tp,   0, FALSE, FALSE, 0, FALSE, FALSE, NULL, NULL);
+
+    cairo_set_source_rgba(cr, fg_color->red, fg_color->green, fg_color->blue, fg_color->alpha * .5);
   }
   cairo_arc(cr, .0, .0, r * .5, 0, 2.0 * M_PI);
   cairo_fill(cr);
@@ -2211,7 +2232,7 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
 
   dt_bauhaus_t *bh = darktable.bauhaus;
   cairo_save(cr);
-  dt_bauhaus_slider_data_t *d = &w->slider;
+  const dt_bauhaus_slider_data_t *d = &w->slider;
 
   // pos of baseline
   const float htm = bh->line_height + INNER_PADDING;
@@ -2258,9 +2279,10 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
 
   // get the reference of the slider aka the position of the 0 value
   const float origin =
-    fmaxf(fminf((d->factor > 0 ? -d->min - d->offset/d->factor
+    fmaxf(fminf((d->factor > 0
+                 ? -d->min - d->offset/d->factor
                  :  d->max + d->offset/d->factor)
-                / (d->max - d->min), 1.0f) * slider_width, 0.0f);
+                    / (d->max - d->min), 1.0f) * slider_width, 0.0f);
   const float position = d->pos * slider_width;
   const float delta = position - origin;
 
@@ -2273,31 +2295,8 @@ static void _draw_baseline(dt_bauhaus_widget_t *w,
     set_color(cr, bh->color_fill);
     cairo_rectangle(cr, origin, htm, delta, htM);
     cairo_fill(cr);
-
-    // change back to default cairo operator:
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   }
 
-  // draw the 0 reference graduation if it's different than the bounds of the slider
-  const float graduation_top = htm + htM + 2.0f * bh->border_width;
-  const float graduation_height = bh->border_width / 2.0f;
-  set_color(cr, bh->color_fg);
-
-  // If the max of the slider is 180 or 360, it is likely a hue slider in degrees
-  // a zero in periodic stuff has not much meaning so we skip it
-  if(d->hard_max != 180.0f && d->hard_max != 360.0f)
-  {
-    // translate the dot if it overflows the widget frame
-    if(origin < graduation_height)
-      cairo_arc(cr, graduation_height, graduation_top, graduation_height, 0, 2 * M_PI);
-    else if(origin > slider_width - graduation_height)
-      cairo_arc(cr, slider_width - graduation_height,
-                graduation_top, graduation_height, 0, 2 * M_PI);
-    else
-      cairo_arc(cr, origin, graduation_top, graduation_height, 0, 2 * M_PI);
-  }
-
-  cairo_fill(cr);
   cairo_restore(cr);
 
   if(d->grad_cnt > 0) cairo_pattern_destroy(gradient);

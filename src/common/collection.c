@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-2025 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -652,6 +652,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("geotagging");
     case DT_COLLECTION_PROP_GROUP_ID:
       return N_("group");
+    case DT_COLLECTION_PROP_DUPLICATES:
+      return N_("duplicates");
     case DT_COLLECTION_PROP_LOCAL_COPY:
       return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
@@ -1572,6 +1574,36 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
 
+    case DT_COLLECTION_PROP_DUPLICATES: // duplicates
+      if(!g_strcmp0(escaped_text, _("images with duplicates"))
+         || !g_strcmp0(escaped_text, "$IMGS_WITH_DUPLICATES"))
+      {
+        query = g_strdup
+          ("(mi.id IN ("
+           "   SELECT i.id"
+           "   FROM main.images i"
+           "   JOIN ("
+           "     SELECT film_id"
+           "          , filename"
+           "     FROM main.images"
+           "     GROUP BY film_id"
+           "            , filename"
+           "     HAVING COUNT(*) > 1"
+           "   ) dups ON i.film_id = dups.film_id AND i.filename = dups.filename)) ");
+      }
+      else if(!g_strcmp0(escaped_text, _("duplicates only"))
+         || !g_strcmp0(escaped_text, "$DUPLICATES_ONLY"))
+      {
+        query = g_strdup
+          ("(mi.version > (SELECT MIN(version) FROM main.images"
+           "               WHERE film_id = mi.film_id AND filename = mi.filename)) ");
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
+      break;
+
     case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
     {
       gchar *operator, *number1, *number2;
@@ -2349,16 +2381,60 @@ void dt_collection_sort_serialize(char *buf, int bufsize)
   }
 }
 
+char *dt_collection_checksum(const gboolean filtering)
+{
+  const char *plugin_name = filtering
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
+  char confname[200];
+
+  snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+  const int num_rules = dt_conf_get_int(confname);
+
+  GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+  g_checksum_update(checksum, (const guchar *)&num_rules, sizeof(int));
+
+  for(int k = 0; k < num_rules; k++)
+  {
+    snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
+    const int mode = dt_conf_get_int(confname);
+    g_checksum_update(checksum, (const guchar *)&mode, sizeof(int));
+
+    snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
+    const int item = dt_conf_get_int(confname);
+    g_checksum_update(checksum, (const guchar *)&item, sizeof(int));
+
+    if(filtering)
+    {
+      snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+      const int off = dt_conf_get_int(confname);
+      g_checksum_update(checksum, (const guchar *)&off, sizeof(int));
+
+      snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+      const int top = dt_conf_get_int(confname);
+      g_checksum_update(checksum, (const guchar *)&top, sizeof(int));
+    }
+
+    snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
+    const char *str = dt_conf_get_string_const(confname);
+    g_checksum_update(checksum, (const guchar *)str, strlen(str));
+  }
+
+  char *chk = g_strdup(g_checksum_get_string(checksum));
+  g_checksum_free(checksum);
+  return chk;
+}
+
 int dt_collection_serialize(char *buf, int bufsize,
                             const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
-  int c;
   snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
   const int num_rules = dt_conf_get_int(confname);
-  c = snprintf(buf, bufsize, "%d:", num_rules);
+  int c = snprintf(buf, bufsize, "%d:", num_rules);
   buf += c;
   bufsize -= c;
   for(int k = 0; k < num_rules; k++)
@@ -2401,7 +2477,8 @@ int dt_collection_serialize(char *buf, int bufsize,
 void dt_collection_deserialize(const char *buf, const gboolean filtering)
 {
   const char *plugin_name = filtering
-    ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+    ? "plugins/lighttable/filtering"
+    : "plugins/lighttable/collect";
   char confname[200];
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);

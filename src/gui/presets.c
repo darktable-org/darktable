@@ -46,13 +46,13 @@ const char *dt_gui_presets_exposure_value_str[]
         "1/125", "1/60",   "1/30",   "1/15",   "1/8",    "1/4",   "1/2",
         "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",  "60\"",  "+" };
 
-const int dt_gui_presets_aperture_value_cnt = 19;
+const int dt_gui_presets_aperture_value_cnt = 21;
 const float dt_gui_presets_aperture_value[]
-    = { 0,     1.0,  1.4,  1.8,  2.0,  2.4,  2.8,  4.0,   5.6,
-        8.0,  11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
+    = { 0,   0.95,  1.0,  1.2,  1.4,  1.8,  2.0,  2.4,   2.8,  4.0,   5.6,
+        8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
 const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0", "f/1.0", "f/1.4", "f/1.8", "f/2",  "f/2.4", "f/2.8", "f/4",   "f/5.6",
-        "f/8", "f/11",  "f/16",  "f/22",  "f/32", "f/45",  "f/64",  "f/90",  "f/128", "f/+" };
+    = { "f/0", "f/0.95", "f/1.0", "f/1.2", "f/1.4", "f/1.8",  "f/2", "f/2.4", "f/2.8", "f/4", "f/5.6",
+        "f/8",   "f/11",  "f/16",  "f/22",  "f/32",  "f/45", "f/64",  "f/90", "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
 static const char *_gui_presets_format_value_str[5]
@@ -987,7 +987,7 @@ static void _edit_preset(const char *name_in, dt_iop_module_t *module)
     name = g_strdup(name_in);
 
   dt_gui_presets_show_iop_edit_dialog
-    (name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
+    (name, module, G_CALLBACK(_edit_preset_final_callback), NULL, TRUE, TRUE,
      FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_free(name);
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2024 darktable developers.
+    Copyright (C) 2017-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -598,11 +598,8 @@ static cl_int dwt_subtract_layer_cl(cl_mem bl, cl_mem bh, dwt_params_cl_t *const
   const int kernel = p->global->kernel_dwt_subtract_layer;
 
   const float lpass_mult = (1.f / 16.f);
-  const int width = p->width;
-  const int height = p->height;
-
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-    CLARG(bl), CLARG(bh), CLARG((width)), CLARG((height)), CLARG(lpass_mult));
+    CLARG(bl), CLARG(bh), CLARG(p->width), CLARG(p->height), CLARG(lpass_mult));
 }
 
 static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const p, const int n_scale)
@@ -610,12 +607,8 @@ static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_add_img_to_layer;
 
-
-  const int width = p->width;
-  const int height = p->height;
-
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-    CLARG(img), CLARG(layers), CLARG((width)), CLARG((height)));
+    CLARG(img), CLARG(layers), CLARG(p->width), CLARG(p->height));
 }
 
 static cl_int dwt_get_image_layer_cl(cl_mem layer, dwt_params_cl_t *const p)
@@ -662,16 +655,9 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   if(layers == NULL) goto cleanup;
 
   // init layer buffer
-  {
-    const int kernel = p->global->kernel_dwt_init_buffer;
-
-    const int width = p->width;
-    const int height = p->height;
-
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-      CLARG(layers), CLARG((width)), CLARG((height)));
-    if(err != CL_SUCCESS) goto cleanup;
-  }
+  err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_init_buffer, p->width, p->height,
+      CLARG(layers), CLARG(p->width), CLARG(p->height));
+  if(err != CL_SUCCESS) goto cleanup;
 
   if(p->merge_from_scale > 0)
   {
@@ -679,16 +665,9 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     if(merged_layers == NULL) goto cleanup;
 
     // init reconstruct buffer
-    {
-      const int kernel = p->global->kernel_dwt_init_buffer;
-
-      const int width = p->width;
-      const int height = p->height;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-        CLARG(merged_layers), CLARG((width)), CLARG((height)));
-      if(err != CL_SUCCESS) goto cleanup;
-    }
+    err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_init_buffer, p->width, p->height,
+        CLARG(merged_layers), CLARG(p->width), CLARG(p->height));
+    if(err != CL_SUCCESS) goto cleanup;
   }
 
   // iterate over wavelet scales
@@ -705,28 +684,24 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
 
     // hat transform by row
     {
-      const int kernel = p->global->kernel_dwt_hat_transform_row;
-
       int sc = 1 << lev;
       sc = (int)(sc * p->preview_scale);
       if(sc > p->width) sc = p->width;
 
-      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-        CLARG(temp), CLARG((buffer[hpass])), CLARG((p->width)), CLARG((p->height)), CLARG(sc));
+      err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_hat_transform_row, p->width, p->height,
+        CLARG(temp), CLARG((buffer[hpass])), CLARG(p->width), CLARG(p->height), CLARG(sc));
       if(err != CL_SUCCESS) goto cleanup;
     }
 
     // hat transform by col
     {
-      const int kernel = p->global->kernel_dwt_hat_transform_col;
-
       int sc = 1 << lev;
       sc = (int)(sc * p->preview_scale);
       if(sc > p->height) sc = p->height;
       const float lpass_mult = (1.f / 16.f);
 
-      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
-        CLARG(temp), CLARG((p->width)), CLARG((p->height)), CLARG(sc), CLARG((buffer[lpass])), CLARG(lpass_mult));
+      err = dt_opencl_enqueue_kernel_2d_args(devid, p->global->kernel_dwt_hat_transform_col, p->width, p->height,
+        CLARG(temp), CLARG(p->width), CLARG(p->height), CLARG(sc), CLARG((buffer[lpass])), CLARG(lpass_mult));
       if(err != CL_SUCCESS) goto cleanup;
     }
 

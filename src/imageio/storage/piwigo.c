@@ -1253,7 +1253,7 @@ static gboolean _finalize_store(gpointer user_data)
   _piwigo_refresh_albums(g, last_album);
   g_free(last_album);
 
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 void finalize_store(struct dt_imageio_module_storage_t *self,

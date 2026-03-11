@@ -171,7 +171,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, GtkLabel *l)
+static gboolean _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, GtkLabel *l)
 {
   /* if not active view lets highlight */
   if(e->type == GDK_ENTER_NOTIFY &&
@@ -179,6 +179,7 @@ static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEvent
     gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
     gtk_widget_unset_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_PRELIGHT);
+  return FALSE;
 }
 
 static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_view_t *old_view,

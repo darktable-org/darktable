@@ -37,6 +37,7 @@
               pkg-config
               wrapGAppsHook3
               saxon # Use Saxon instead of libxslt to fix XSLT generate-id() consistency issues
+              potrace
             ];
 
             buildInputs =

@@ -43,6 +43,12 @@ typedef enum dt_style_applymode_t
   DT_STYLE_HISTORY_OVERWRITE = 1
 } dt_style_applymode_t;
 
+typedef enum dt_style_previewmode_t {
+  DT_STYLE_PREVIEW_NO,
+  DT_STYLE_PREVIEW_DEFAULT,
+  DT_STYLE_PREVIEW_LARGE
+} dt_style_previewmode;
+
 typedef struct dt_style_item_t
 {
   int num, selimg_num, enabled, multi_priority;
@@ -59,7 +65,8 @@ typedef struct dt_style_item_t
 void dt_style_free(gpointer data);
 void dt_style_item_free(gpointer data);
 
-/** creates a new style from specified image, items are the history stack number of items to include in style
+/** creates a new style from specified image, items are the history
+ * stack number of items to include in style
  */
 gboolean dt_styles_create_from_image(const char *name,
                                      const char *description,
@@ -70,7 +77,8 @@ gboolean dt_styles_create_from_image(const char *name,
 /** creates styles from selection */
 void dt_styles_create_from_list(const GList *list);
 
-/** creates a new style from specified style, items are the style number of items to include in style */
+/** creates a new style from specified style, items are the style
+ * number of items to include in style */
 void dt_styles_create_from_style(const char *name,
                                  const char *newname,
                                  const char *description,
@@ -107,7 +115,9 @@ void dt_styles_apply_to_image(const char *name,
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid);
 
 /** delete a style by name */
-void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut);
+void dt_styles_delete_by_name_adv(const char *name,
+                                  const gboolean raise,
+                                  const gboolean shortcut);
 
 /** delete a style by name, raise signal */
 void dt_styles_delete_by_name(const char *name);
@@ -120,14 +130,17 @@ gboolean dt_styles_exists(const char *name);
 
 /** returns TRUE if the style has a module order defined */
 gboolean dt_styles_has_module_order(const char *name);
+/** the returned iop order list is migrated to the current version ensuring
+ *  that all modules are listed */
+GList *dt_styles_module_order_list(const char *name);
 
 /** get a list of styles based on filter string */
 GList *dt_styles_get_list(const char *filter);
 
-/** get a list of items for a named style
-    if dt_is_valid_imgid(imgid), then styles from the corresponding image are also reported if they are
-    not already part of the style. If with_multi_name is TRUE the name field will contains
-    the multi_name.
+/** get a list of items for a named style if dt_is_valid_imgid(imgid),
+    then styles from the corresponding image are also reported if they
+    are not already part of the style. If with_multi_name is TRUE the
+    name field will contains the multi_name.
 */
 GList *dt_styles_get_item_list(const char *name,
                                const gboolean localized,

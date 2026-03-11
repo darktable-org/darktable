@@ -17,7 +17,7 @@ are as follows:
 
 * Install required and recommended dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,portmidi,pugixml,SDL2,sqlite3,webp-pixbuf-loader,zlib}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,portmidi,potrace,pugixml,SDL2,sqlite3,webp-pixbuf-loader,zlib}
     ```
 
 * Install the optional tool for building an installer image (currently x64 only):

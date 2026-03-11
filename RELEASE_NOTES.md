@@ -53,19 +53,170 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- In the crop module, the crop aspect ratio is added to the dimensions
+  in the crop area preview.
+
+- Added the ability to pin any image from the filmstrip in the second
+  darkroom window. Images can be pinned directly from the 2nd window,
+  via drag&drop from the filmstrip and via keyboard shortcuts. Two
+  new actions are the added:
+    - Toggle pinned state for currently developed image
+    - Pin current image in second view
+
+- Allow switching between point/area color picker directly on canvas
+  with a simple Ctrl+Click.
+
+- When moving pictures from a collection we switch to the target
+  collection only if we did not change manually to another collection
+  during the move and the current collection is now empty.
+
+- When copying pictures from a collection we switch to the target
+  collection only if we did not change manually to another collection
+  during the copy.
+
+- In Color Calibration module the calibration box is now initialized
+  on the current bounding box. That is, if a zoom is effective the
+  calibration box will be fully visible and won't require to zoom out.
+
+- Make the slider background darker to gain some contrast making them
+  easier to differentiate from the other labels.
+
+- Introduce a condensed mode for the panel's controls widgets. This
+  mode is off by default ans can be select in miscellaneous interface
+  preference.
+
+- Added a 2-up scope showing both the waveform and vectorscope. This
+  allows for a simultaneous understanding of both the lightness and
+  chromaticity of an image.
+
+- Support rendering and caching higher resolution (6K or 8K) thumbnail
+  or full-screen preview images in lighttable view. Previously, for
+  displays larger than a 4K, darktable would render a full-resolution
+  preview then downscale it. These higher resolution previews also
+  allow for less jumpy zooming in of high megapixel files.
+
+- Increase the resolution of the darkroom view's preview-resolution
+  images from 720x450 to 1440x900. This produces better data for
+  various situations, including in scopes and the color picker.
+
+- Use darktable icon in desktop environment when running under Wayland
+  on a KDE-like system. Previously the window manager would use a
+  generic icon.
+
+- Use server-side decorations (SSD) for windows when the user's window
+  manager is capable of this, to make window decorations consistent
+  with other applications. If SSD is not implemented (Gnome/Mutter
+  under Wayland), use client-side decorations (CSD).
+
+- Added a welcome screen to help users understand and set the most
+  relevant configuration options on the first run.
+
+- Added touchpad gestures in darkroom, including pinch zoom in/out
+  and two-finger panning. Follow-up fixes refined input source
+  handling to keep panning limited to touchpad smooth-scroll input.
 
 ## Performance Improvements
 
-- N/A
+- Increased performance for OpenCL guided filter by internal tiling.
 
 ## Other Changes
 
-- N/A
+- Enabled shortcuts for some existing buttons in duplicate manager,
+  snapshots, and AgX modules.
+
+- Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
+  presets dialogue.
+
+- Added Canon Automatic Lighting Optimizer support for CR3-format
+  images.
+
+- Added PNG support (8/16-bit) for external raster masks.
+
+- Removed `Neo` Intel GPU from the Windows blacklist.
+
+- In the styles module, a new option has been added to control the
+  preview size in the tooltip. The available options are: no preview,
+  default size, and large size.
+
+- Improved debugging option --dump-diff-pipe for those of you
+  interested in OpenCL code and debugging.
+
+- Added the possibility to vectorize the bitmap displayed in the
+  External Raster Mask module. The vectorized mask is added into the
+  Mask Manager module as a path object ready to be used as any other
+  masks.
+
+- Remove the (unbound by default) keyboard shortcut to cycle through
+  each histogram mode, and within each mode to cycle through its
+  options. This was a relic of when there were fewer scopes and they
+  were not accessible by shortcuts.
+
+- Increased the limit on the number of offset days in geotagging module
+  to correct an incorrect camera timestamps from 99 to 9999 days.
+
+- Added a new collection filter for image duplicates.
 
 ## Bug Fixes
 
-- N/A
+- Properly apply the iop-order when applying a style at export
+  time. This also fixes the style preview when flying over styles in
+  the style module.
+
+- If a tag category is marked as private, all tags and subcategories
+  under it are also treated as private.
+
+- Fix occasional geolocation assignment errors in darktable's locations
+  module involving polygon-shaped locations
+
+- Prefetch correctly sized thumbnails when user has display scaling
+  enabled.
+
+- Honor the default configuration preference "never" for "use raw
+  instead of jpeg from size": for unaltered images, always generate
+  thumbnails/previews from embedded JPEGs rather than processing the
+  raw file. If you prefer the prior behavior, which processed the raw
+  file rather than upscale the embedded JPEG for higher resolution
+  thumbnails/previews, use the new configuration option "auto".
+
+- In Quick Access Panel, "go to full version..." now reliably scrolls
+  to the correct module.
+
+- In filmstrip, keyboard shortcuts for rating/color labels/reject now
+  apply to the thumbnail under the cursor (including overlay elements)
+  instead of the currently opened image.
+
+- Fix for usage of incorrect color profiles on secondary monitors on
+  Windows.
+
+- Fixed unexpected localization of user's defined preset name and
+  properly localize the module name displayed in the preset dialog.
+
+- Fixed a possible transient display of the crawler dialog while the
+  splash screen is active.
+
+- Fixed improper mask mode displayed in the mask manager menu.
+
+- Fixed an issue where while creating a mask from mask manager and
+  still in creation mode the mask was not following the mouse when
+  moving over the darkroom. It was then not possible to place the mask
+  at the right position.
+
+- Fixed an issue of style migration. A style created before a new
+  module is introduced and integrating a specific module order was not
+  properly handled. We now properly migrate the embedded module order
+  to ensure all modules are described.
+
+- Fixed an occasional bug that dragging exposure change regions in
+  histogram, waveform, or RGB parade scopes would adjust in the
+  opposite of the expected direction. This occurred when the user had
+  not yet selected a module group containing the exposure module.
+
+- Fixed a bug which showed an extraneous toast message in the center
+  view when dragging in the vectorscope.
+
+- Fixed a wrong WB when reloading defaults after changing manually the
+  WB. This was due to a missing reset letting the Color Calibration
+  module starting with a wrong WB.
 
 ## Lua
 
@@ -95,14 +246,15 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 5.4, Intel Macs and macOS versions older than 14.0
-  are no longer supported.
+- Starting with release 5.4, macOS versions older than 14.0 are no
+  longer supported on Apple Silicon Macs, nor older than macOS 15 on
+  Intel Macs.
 
 ## Changed Dependencies
 
 ### Mandatory
 
-- N/A
+- potrace 1.16 is a new requirement
 
 ### Optional
 
@@ -134,7 +286,8 @@ changes (where available).
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Phase One other than IIQ L
-- Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C) and ARW 6.0 lossy
+- Sony ARW 4.0/5.0 downsized lossless ("M" for full-frame, "S" for full-frame & APS-C)
+- Sony ARW 6.0 compressed and compressed (HQ)
 
 ### Suspended Support
 

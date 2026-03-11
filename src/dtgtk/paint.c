@@ -1163,6 +1163,49 @@ void dtgtk_cairo_paint_vectorscope(cairo_t *cr, const gint x, const gint y, cons
   FINISH
 }
 
+void dtgtk_cairo_paint_split_waveform_vectorscope(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  double r, g, b, a;
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
+
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, r, g, b, a * 0.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.2, r, g, b, a * 0.1);
+  cairo_pattern_add_color_stop_rgba(pat, 0.5, r, g, b, a * 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.6, r, g, b, a * 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, r, g, b, a * 0.1);
+
+  cairo_rectangle(cr, 0.0, 0.0, 0.125, 0.8);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+
+  cairo_save(cr);
+  cairo_scale(cr, 1.0, -1.0);
+  cairo_translate(cr, 0.0, -1.0);
+  cairo_rectangle(cr, 0.1, 0.0, 0.3, 0.9);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+  cairo_restore(cr);
+
+  cairo_rectangle(cr, 0.35, 0.0, 0.1, 0.7);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+
+  cairo_pattern_destroy(pat);
+
+  cairo_move_to(cr, 0.55, 0.48);
+  cairo_curve_to(cr, 0.64, 0.06, 0.95, 0.15, 0.95, 0.46);
+  cairo_curve_to(cr, 0.95, 0.68, 0.74, 0.83, 0.55, 0.48);
+  cairo_fill(cr);
+
+final:
+  FINISH
+}
+
 void dtgtk_cairo_paint_linear_scale(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
