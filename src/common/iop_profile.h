@@ -19,6 +19,7 @@
 #ifndef DT_IOP_PROFILE_H
 #define DT_IOP_PROFILE_H
 
+#include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
 #include "common/file_location.h"
@@ -400,6 +401,22 @@ static inline void dt_ioppr_rgb_matrix_to_lab(const dt_aligned_pixel_t rgb,
   dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in_transposed, lut_in,
                              unbounded_coeffs_in, lutsize, nonlinearlut);
   dt_XYZ_to_Lab(xyz, lab);
+}
+
+// Convert a pixel from the pipe's working RGB space to darktable UCS JCH.
+// Takes the pre-transposed working-space → XYZ D50 matrix (available as
+// work_profile->matrix_in_transposed) and L_white (from Y_to_dt_UCS_L_star(1.f)).
+// Assumes input is already clipped to non-negative values.
+static inline void dt_ioppr_rgb_matrix_to_dt_UCS_JCH(const float *const in,
+                                                       dt_aligned_pixel_t jch,
+                                                       const dt_colormatrix_t matrix_in_transposed,
+                                                       const float L_white)
+{
+  dt_aligned_pixel_t xyz_d50, xyz_d65, xyY;
+  dt_apply_transposed_color_matrix(in, matrix_in_transposed, xyz_d50);
+  XYZ_D50_to_D65(xyz_d50, xyz_d65);
+  dt_D65_XYZ_to_xyY(xyz_d65, xyY);
+  xyY_to_dt_UCS_JCH(xyY, L_white, jch);
 }
 
 static inline float dt_ioppr_get_profile_info_middle_grey
