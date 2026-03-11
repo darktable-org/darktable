@@ -520,6 +520,9 @@ void dtgtk_cairo_paint_masks_restricted_edit(cairo_t *cr, const gint x, const gi
   cairo_arc(cr, 0.75, 0.75, 0.75, 2.8, 4.7124);
   cairo_stroke(cr);
 
+  cairo_save(cr);
+  cairo_translate(cr, 0.15, 0); 
+
   // Adding the lock body
   cairo_rectangle(cr, 0.25, 0.5, .5, .45);
   cairo_fill(cr);
@@ -527,8 +530,11 @@ void dtgtk_cairo_paint_masks_restricted_edit(cairo_t *cr, const gint x, const gi
   // Adding the lock shank
   cairo_translate(cr, .5, .5);
   cairo_scale(cr, .2, .4);
+  cairo_set_line_width(cr, 0.2); 
   cairo_arc(cr, 0, 0, 1, M_PI, 0);
   cairo_stroke(cr);
+
+  cairo_restore(cr);
 
   FINISH
 }
