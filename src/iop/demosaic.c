@@ -51,11 +51,8 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
-#define DT_REDUCESIZE_MIN 64
 
-// these are highly depending on CPU architecture (cache size)
-#define DT_RCD_TILESIZE 112
-#define DT_LMMSE_TILESIZE 136
+// #define DT_DEMOSAIC_POSITIVE
 
 typedef enum dt_iop_demosaic_method_t
 {
@@ -235,8 +232,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_4_2;
   int kernel_rcd_step_5_1;
   int kernel_rcd_step_5_2;
-  int kernel_rcd_border_redblue;
-  int kernel_rcd_border_green;
   int kernel_demosaic_box3;
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
@@ -247,6 +242,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int show_blend_mask;
   int capture_result;
   int final_blend;
+  int image_positive;
   float *gauss_coeffs;
 } dt_iop_demosaic_global_data_t;
 
@@ -726,7 +722,10 @@ void process(dt_iop_module_t *self,
   const gboolean do_capture = !passthru &&  !is_4bayer && !show_dual && !run_fast && d->cs_enabled;
   const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking && !run_fast && !true_monochrome;
 
-  const float procmax = dt_iop_get_processed_maximum(piece);
+  float procmax = dt_iop_get_processed_maximum(piece);
+  if(procmax < 1.5f) procmax = 2.0f;
+  else if(procmax < 3.0f) procmax = 4.0f;
+  else procmax = 8.0f;
   const float procmin = dt_iop_get_processed_minimum(piece);
   const int exif_iso = img->exif_iso;
 
@@ -858,7 +857,7 @@ void process(dt_iop_module_t *self,
         if(method == DT_IOP_DEMOSAIC_FDC)
           xtrans_fdc_interpolate(t_out, t_in, width, t_rows, xtrans, exif_iso);
         else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes);
+          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes, filters);
         else
           vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
       }
@@ -878,7 +877,7 @@ void process(dt_iop_module_t *self,
         else if(method == DT_IOP_DEMOSAIC_LMMSE)
           lmmse_demosaic(t_out, t_in, width, t_rows, filters, d->lmmse_refine, procmax);
         else if(method != DT_IOP_DEMOSAIC_AMAZE)
-          demosaic_ppg(t_out, t_in, width, t_rows, filters, d->median_thrs);
+          demosaic_ppg(t_out, t_in, width, t_rows, filters, d->median_thrs, 100000);
         else
           amaze_demosaic(t_in, t_out, width, t_rows, filters, procmin);
       }
@@ -908,6 +907,13 @@ void process(dt_iop_module_t *self,
     dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, roi_in);
     dt_free_align(out);
   }
+
+#ifdef DT_DEMOSAIC_POSITIVE
+  float *oo = (float *)o;
+  DT_OMP_FOR_SIMD(aligned(oo : 64))
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k++)
+    oo[k] = fmaxf(0.0f, oo[k]);
+#endif
 }
 
 #ifdef HAVE_OPENCL
@@ -1205,7 +1211,13 @@ int process_cl(dt_iop_module_t *self,
   }
 
   if(!direct)
-     err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+
+#ifdef DT_DEMOSAIC_POSITIVE
+  if(err == CL_SUCCESS)
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->image_positive, roi_out->width, roi_out->height,
+        CLARG(dev_out), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height));
+#endif
 
 finish:
   dt_opencl_release_mem_object(dev_xtrans);
@@ -1286,10 +1298,9 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rcd_step_4_2 = dt_opencl_create_kernel(rcd, "rcd_step_4_2");
   gd->kernel_rcd_step_5_1 = dt_opencl_create_kernel(rcd, "rcd_step_5_1");
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
-  gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
-  gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
   gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
+  gd->image_positive  = dt_opencl_create_kernel(rcd, "image_positive");
 
   const int capt = 38; // capture.cl, from programs.conf
   gd->gaussian_9x9_mul = dt_opencl_create_kernel(capt, "kernel_9x9_mul");
@@ -1353,8 +1364,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_2);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_1);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
-  dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
-  dt_opencl_free_kernel(gd->kernel_rcd_border_green);
   dt_opencl_free_kernel(gd->kernel_demosaic_box3);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
@@ -1365,6 +1374,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->show_blend_mask);
   dt_opencl_free_kernel(gd->capture_result);
   dt_opencl_free_kernel(gd->final_blend);
+  dt_opencl_free_kernel(gd->image_positive);
   dt_free_align(gd->gauss_coeffs);
   free(self->data);
   self->data = NULL;

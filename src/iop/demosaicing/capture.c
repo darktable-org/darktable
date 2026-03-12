@@ -1045,10 +1045,10 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
-  dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
-                                 wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[1] : CAPTURE_CFACLIP,
-                                 wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[2] : CAPTURE_CFACLIP,
-                                 0.0f };
+  const dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
+                                       wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[1] : CAPTURE_CFACLIP,
+                                       wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[2] : CAPTURE_CFACLIP,
+                                       0.0f };
 
   cl_mem gcoeffs = NULL;
   cl_mem gauss_idx = NULL;
@@ -1058,10 +1058,9 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   cl_mem luminance = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp2 = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp1 = dt_opencl_alloc_device_buffer(devid, bsize);
-  cl_mem whites = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), icoeffs);
   cl_mem dev_rgb = dt_opencl_duplicate_image(devid, dev_out);
 
-  if(!blendmask || !luminance || !tmp2 || !tmp1 || !whites || !dev_rgb) goto finish;
+  if(!blendmask || !luminance || !tmp2 || !tmp1 || !dev_rgb) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prefill_clip_mask, width, height,
           CLARG(tmp2), CLARG(width), CLARG(height));
@@ -1069,7 +1068,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,
           CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(tmp2), CLARG(tmp1),
-          CLARG(whites), CLARG(width), CLARG(height));
+          CLARG(icoeffs), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->modify_blend, width, height,
@@ -1140,7 +1139,6 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(tmp2);
   dt_opencl_release_mem_object(tmp1);
   dt_opencl_release_mem_object(luminance);
-  dt_opencl_release_mem_object(whites);
 
   return err;
 }

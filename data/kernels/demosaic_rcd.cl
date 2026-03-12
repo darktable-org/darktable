@@ -32,7 +32,7 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if(col >= w || row >= height) return;
-  const float val = scale * fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
+  const float val = scale * fmax(0.0f, readsingle(in, col, row));
   const int color = FC(row, col, filters);
 
   global float *rgbcol = rgb0;
@@ -51,7 +51,7 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
   if(!(col >= border && col < w - border && row >= border && row < height - border)) return;
   const int idx = mad24(row, w, col);
 
-  write_imagef(out, (int2)(col, row), (float4)(fmax(scale * rgb0[idx], 0.0f), fmax(scale * rgb1[idx], 0.0f), fmax(scale * rgb2[idx], 0.0f), 0.0f));
+  write_imagef(out, (int2)(col, row), (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f));
 }
 
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
@@ -278,9 +278,9 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
-  const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-  const float4 blender = clipf(mask[mad24(row, w, col)]);
+  const float4 high_val = readpixel(high, col, row);
+  const float4 low_val = readpixel(low, col, row);
+  const float4 blender = (float4)clipf(mask[mad24(row, w, col)]);
   float4 data = mix(low_val, high_val, blender);
   data.w = showmask ? blender.x : 0.0f;
   write_imagef(out, (int2)(col, row), data);
@@ -297,8 +297,8 @@ __kernel void calc_Y0_mask(global float *mask,
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  const float4 pt = wb * fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)));
-  mask[idx] = dtcl_sqrt(0.33333333f *(pt.x + pt.y + pt.z));
+  const float4 pt = wb * readpixel(in, col, row);
+  mask[idx] = dtcl_sqrt(0.33333333f * fmax(0.0f, (pt.x + pt.y + pt.z)));
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
@@ -331,203 +331,6 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
   out[idx] = detail ? blend : 1.0f - blend;
 }
 
-kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const unsigned int filters, local float *buffer, const int border)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  const int xlsz = get_local_size(0);
-  const int ylsz = get_local_size(1);
-  const int xlid = get_local_id(0);
-  const int ylid = get_local_id(1);
-  const int xgid = get_group_id(0);
-  const int ygid = get_group_id(1);
-
-  // individual control variable in this work group and the work group size
-  const int l = mad24(ylid, xlsz, xlid);
-  const int lsz = mul24(xlsz, ylsz);
-
-  // stride and maximum capacity of local buffer
-  // cells of 1*float per pixel with a surrounding border of 3 cells
-  const int stride = xlsz + 2*3;
-  const int maxbuf = mul24(stride, ylsz + 2*3);
-
-  // coordinates of top left pixel of buffer
-  // this is 3 pixel left and above of the work group origin
-  const int xul = mul24(xgid, xlsz) - 3;
-  const int yul = mul24(ygid, ylsz) - 3;
-
-  // populate local memory buffer
-  for(int n = 0; n <= maxbuf/lsz; n++)
-  {
-    const int bufidx = mad24(n, lsz, l);
-    if(bufidx >= maxbuf) continue;
-    const int xx = xul + bufidx % stride;
-    const int yy = yul + bufidx / stride;
-    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
-  }
-
-  // center buffer around current x,y-Pixel
-  buffer += mad24(ylid + 3, stride, xlid + 3);
-
-  barrier(CLK_LOCAL_MEM_FENCE);
-
-  if(col >= width - 3 || col < 3 || row >= height - 3 || row < 3) return;
-  if(col >= border && col < width - border && row >= border && row < height - border) return;
-
-  // process all non-green pixels
-  const int c = FC(row, col, filters);
-  float4 color = 0.0f; // output color
-
-  const float pc = buffer[0];
-
-  if     (c == RED) color.x = pc;
-  else if(c == GREEN) color.y = pc;
-  else if(c == BLUE) color.z = pc;
-  else            color.y = pc; // green2
-
-  // fill green layer for red and blue pixels:
-  if(c == RED || c == BLUE)
-  {
-    // look up horizontal and vertical neighbours, sharpened weight:
-    const float pym  = buffer[-1 * stride];
-    const float pym2 = buffer[-2 * stride];
-    const float pym3 = buffer[-3 * stride];
-    const float pyM  = buffer[ 1 * stride];
-    const float pyM2 = buffer[ 2 * stride];
-    const float pyM3 = buffer[ 3 * stride];
-    const float pxm  = buffer[-1];
-    const float pxm2 = buffer[-2];
-    const float pxm3 = buffer[-3];
-    const float pxM  = buffer[ 1];
-    const float pxM2 = buffer[ 2];
-    const float pxM3 = buffer[ 3];
-    const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
-    const float diffx  = (fabs(pxm2 - pc) +
-                          fabs(pxM2 - pc) +
-                          fabs(pxm  - pxM)) * 3.0f +
-                         (fabs(pxM3 - pxM) + fabs(pxm3 - pxm)) * 2.0f;
-    const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
-    const float diffy  = (fabs(pym2 - pc) +
-                          fabs(pyM2 - pc) +
-                          fabs(pym  - pyM)) * 3.0f +
-                         (fabs(pyM3 - pyM) + fabs(pym3 - pym)) * 2.0f;
-    if(diffx > diffy)
-    {
-      // use guessy
-      const float m = fmin(pym, pyM);
-      const float M = fmax(pym, pyM);
-      color.y = fmax(fmin(guessy*0.25f, M), m);
-    }
-    else
-    {
-      const float m = fmin(pxm, pxM);
-      const float M = fmax(pxm, pxM);
-      color.y = fmax(fmin(guessx*0.25f, M), m);
-    }
-  }
-  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
-}
-kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const unsigned int filters, local float4 *buffer, const int border)
-{
-  // image in contains full green and sparse r b
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  const int xlsz = get_local_size(0);
-  const int ylsz = get_local_size(1);
-  const int xlid = get_local_id(0);
-  const int ylid = get_local_id(1);
-  const int xgid = get_group_id(0);
-  const int ygid = get_group_id(1);
-
-  // individual control variable in this work group and the work group size
-  const int l = mad24(ylid, xlsz, xlid);
-  const int lsz = mul24(xlsz, ylsz);
-
-  // stride and maximum capacity of local buffer
-  // cells of float4 per pixel with a surrounding border of 1 cell
-  const int stride = xlsz + 2;
-  const int maxbuf = mul24(stride, ylsz + 2);
-
-  // coordinates of top left pixel of buffer
-  // this is 1 pixel left and above of the work group origin
-  const int xul = mul24(xgid, xlsz) - 1;
-  const int yul = mul24(ygid, ylsz) - 1;
-
-  // populate local memory buffer
-  for(int n = 0; n <= maxbuf/lsz; n++)
-  {
-    const int bufidx = mad24(n, lsz, l);
-    if(bufidx >= maxbuf) continue;
-    const int xx = xul + bufidx % stride;
-    const int yy = yul + bufidx / stride;
-    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)));
-  }
-
-  // center buffer around current x,y-Pixel
-  buffer += mad24(ylid + 1, stride, xlid + 1);
-
-  barrier(CLK_LOCAL_MEM_FENCE);
-
-  if(col >= width || row >= height) return;
-  if(col >= border && col < width - border && row >= border && row < height - border) return;
-
-  const int c = FC(row, col, filters);
-  float4 color = buffer[0];
-  if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
-  {
-    if(c == GREEN || c == 3)
-    { // calculate red and blue for green pixels:
-      // need 4-nbhood:
-      const float4 nt = buffer[-stride];
-      const float4 nb = buffer[ stride];
-      const float4 nl = buffer[-1];
-      const float4 nr = buffer[ 1];
-      if(FC(row, col+1, filters) == RED) // red nb in same row
-      {
-        color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
-        color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
-      }
-      else
-      { // blue nb
-        color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*0.5f;
-        color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*0.5f;
-      }
-    }
-    else
-    {
-      // get 4-star-nbhood:
-      const float4 ntl = buffer[-stride - 1];
-      const float4 ntr = buffer[-stride + 1];
-      const float4 nbl = buffer[ stride - 1];
-      const float4 nbr = buffer[ stride + 1];
-
-      if(c == RED)
-      { // red pixel, fill blue:
-        const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
-        const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
-        const float diff2  = fabs(ntr.z - nbl.z) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
-        const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
-        if     (diff1 > diff2) color.z = guess2 * 0.5f;
-        else if(diff1 < diff2) color.z = guess1 * 0.5f;
-        else color.z = (guess1 + guess2)*0.25f;
-      }
-      else // c == 2, blue pixel, fill red:
-      {
-        const float diff1  = fabs(ntl.x - nbr.x) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
-        const float guess1 = ntl.x + nbr.x + 2.0f*color.y - ntl.y - nbr.y;
-        const float diff2  = fabs(ntr.x - nbl.x) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
-        const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
-        if     (diff1 > diff2) color.x = guess2 * 0.5f;
-        else if(diff1 < diff2) color.x = guess1 * 0.5f;
-        else color.x = (guess1 + guess2)*0.25f;
-      }
-    }
-  }
-  write_imagef (out, (int2)(col, row), fmax(color, 0.0f));
-}
-
 kernel void demosaic_box3(read_only image2d_t in,
                           write_only image2d_t out,
                           const int width,
@@ -547,12 +350,24 @@ kernel void demosaic_box3(read_only image2d_t in,
       if(x >= 0 && y >= 0 && x < width && y < height)
       {
         const int color = fcol(y, x, filters, xtrans);
-        sum[color] += fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+        sum[color] += readsingle(in, x, y);
         cnt[color] += 1.0f;
       }
     }
   }
   const float4 rgb = { sum[0]/fmax(1.0f, cnt[0]), sum[1]/fmax(1.0f, cnt[1]), sum[2]/fmax(1.0f, cnt[2]), 0.0f};
   write_imagef(out, (int2)(col, row), rgb);
+}
+
+kernel void
+image_positive(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = fmax(0.0f, readpixel(in, x, y));
+  write_imagef(out, (int2)(x, y), pixel);
 }
 

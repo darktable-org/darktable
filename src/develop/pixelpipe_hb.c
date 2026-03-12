@@ -1236,7 +1236,8 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
 void dt_dev_prepare_piece_cfa(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi)
 {
   dt_iop_module_t *module = piece->module;
-  if(module && module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW)
+  if(module && (module->input_colorspace(module, piece->pipe, piece) == IOP_CS_RAW
+              || module->default_colorspace(module, piece->pipe, piece) == IOP_CS_RAW))
   {
     piece->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->dsc.filters, roi->x, roi->y);
     for(int ii = 0; ii < 6; ++ii)
@@ -2335,6 +2336,17 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                     if(terr == CL_SUCCESS)
                     {
                       module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
+                      if(cst_out == IOP_CS_LAB)
+                      {
+                        for(size_t k = 0; k < (size_t)ow * oh * 4; k+=4)
+                        {
+                          dt_aligned_pixel_t XYZ;
+                          dt_Lab_to_XYZ(cpudata + k, XYZ);
+                          dt_XYZ_to_linearRGB(XYZ, cpudata + k);
+                          dt_Lab_to_XYZ(cloutdata + k, XYZ);
+                          dt_XYZ_to_linearRGB(XYZ, cloutdata + k);
+                        }
+                      }
                       dt_dump_pipe_diff_pfm(module->op, cloutdata, cpudata, ow, oh, cho,
                                             dt_dev_pixelpipe_type_to_str(pipe->type));                  }
                   }
@@ -3622,7 +3634,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
         wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[2], 1.0f };
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
-     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLFLARRAY(4, wb));
+     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLARG(wb));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid,

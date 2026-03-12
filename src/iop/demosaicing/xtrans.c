@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-// tile size, optimized to keep data in L2 cache
-#define TS 122
+#define TS DT_MARKESTEIJN_TS
 
 #define PAD_G1_G3 3
 #define PAD_G_INTERP 3
@@ -48,7 +47,8 @@ static void xtrans_markesteijn_interpolate(float *out,
                                            const int width,
                                            const int height,
                                            const uint8_t (*const xtrans)[6],
-                                           const int passes)
+                                           const int passes,
+                                           const uint32_t filters)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -178,7 +178,8 @@ static void xtrans_markesteijn_interpolate(float *out,
         }
 
       // duplicate rgb[0] to rgb[1], rgb[2], and rgb[3]
-      for(int c = 1; c <= 3; c++) memcpy(rgb[c], rgb[0], sizeof(*rgb));
+      for(int c = 1; c <= 3; c++)
+        dt_iop_image_copy((float*)rgb[c], (float*)rgb[0], sizeof(*rgb) / sizeof(float));
 
       // note that successive calculations are inset within the tile
       // so as to give enough border data, and there needs to be a 6
@@ -503,16 +504,17 @@ static void xtrans_markesteijn_interpolate(float *out,
             }
           }
           for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] = MAX(0.0f, avg[c]/avg[3]);
+            out[4 * (width * (row + top) + col + left) + c] = avg[c]/avg[3];
         }
     }
   }
   dt_free_align(all_buffers);
+  _vng_lininterpolate(out, in, width, height, filters, xtrans, pad_tile);
 }
 
 #undef TS
 
-#define TS 122
+#define TS DT_FDC_TS
 static void xtrans_fdc_interpolate(float *out,
                                    const float *const in,
                                    const int width,
