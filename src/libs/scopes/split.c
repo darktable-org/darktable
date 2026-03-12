@@ -20,9 +20,6 @@
 
 typedef struct dt_scopes_split_t
 {
-  // point back to parent
-  // FIXME: is this healthy? is this needed?
-  dt_scopes_t *scopes;
   dt_scopes_mode_t *left;
   dt_scopes_mode_t *right;
 } dt_scopes_split_t;
@@ -54,11 +51,11 @@ static void _split_draw_highlight(const dt_scopes_mode_t *const self,
   const int half_width = width / 2;
   cairo_save(cr);
   if(d->left->functions->draw_highlight)
-    d->left->functions->draw_highlight(d->left, cr, d->scopes->highlight,
+    d->left->functions->draw_highlight(d->left, cr, self->scopes->highlight,
                                        half_width, height);
   cairo_translate(cr, half_width, 0);
   if(d->right->functions->draw_highlight)
-    d->right->functions->draw_highlight(d->right, cr, d->scopes->highlight,
+    d->right->functions->draw_highlight(d->right, cr, self->scopes->highlight,
                                         half_width, height);
   cairo_restore(cr);
 }
@@ -104,7 +101,7 @@ static void _split_draw(const dt_scopes_mode_t *const self,
   const dt_scopes_split_t *const d = self->data;
   const int half_width = width / 2;
 
-  if(d->left->update_counter == d->scopes->update_counter)
+  if(d->left->update_counter == self->scopes->update_counter)
   {
     cairo_save(cr);
     cairo_rectangle(cr, 0, 0, half_width, height);
@@ -112,13 +109,14 @@ static void _split_draw(const dt_scopes_mode_t *const self,
     if(d->left->functions->draw_scope_channels)
       d->left->functions->draw_scope_channels(d->left, cr,
                                               half_width, height,
-                                              d->scopes->channels);
+                                              self->scopes->channels);
     else
       d->left->functions->draw_scope(d->left, cr,
                                      half_width, height);
     cairo_restore(cr);
   }
-  if(d->right->update_counter == d->scopes->update_counter)
+  // FIXME: make slight gap/line between two scopes, as it is crammed, especially visibile in RYB vectorscope where color harmony name is awkwardly close to waveform
+  if(d->right->update_counter == self->scopes->update_counter)
   {
     cairo_save(cr);
     cairo_translate(cr, half_width, 0);
@@ -127,7 +125,7 @@ static void _split_draw(const dt_scopes_mode_t *const self,
     if(d->right->functions->draw_scope_channels)
       d->right->functions->draw_scope_channels(d->right, cr,
                                                half_width, height,
-                                               d->scopes->channels);
+                                               self->scopes->channels);
     else
       d->right->functions->draw_scope(d->right, cr,
                                       half_width, height);
@@ -151,7 +149,7 @@ static double _split_get_exposure_pos(const dt_scopes_mode_t *const self,
 {
   const dt_scopes_split_t *const d = self->data;
   GtkAllocation allocation;
-  gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
+  gtk_widget_get_allocation(self->scopes->scope_draw, &allocation);
   if(x < allocation.width/2.0)
   {
     if(d->left->functions->get_exposure_pos)
@@ -201,25 +199,11 @@ static void _split_eventbox_scroll(dt_scopes_mode_t *const self,
 {
   dt_scopes_split_t *const d = self->data;
   GtkAllocation allocation;
-  gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
+  gtk_widget_get_allocation(self->scopes->scope_draw, &allocation);
   if((x < allocation.width/2) && d->left->functions->eventbox_scroll)
     d->left->functions->eventbox_scroll(d->left, x, y, delta_x, delta_y, state);
   if((x >= allocation.width/2) && d->right->functions->eventbox_scroll)
     d->right->functions->eventbox_scroll(d->right, x, y, delta_x, delta_y, state);
-}
-
-static void _split_eventbox_motion(dt_scopes_mode_t *const self,
-                                   GtkEventControllerMotion *controller,
-                                   double x,
-                                   double y)
-{
-  dt_scopes_split_t *const d = self->data;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(d->scopes->scope_draw, &allocation);
-  if((x < allocation.width/2) && d->left->functions->eventbox_motion)
-    d->left->functions->eventbox_motion(d->left, controller, x, y);
-  if((x >= allocation.width/2) && d->right->functions->eventbox_motion)
-    d->right->functions->eventbox_motion(d->right, controller, x, y);
 }
 
 static void _split_update_buttons(const dt_scopes_mode_t *const self)
@@ -251,11 +235,8 @@ static void _split_gui_init(dt_scopes_mode_t *const self,
 {
   dt_scopes_split_t *d = dt_calloc1_align_type(dt_scopes_split_t);
   self->data = (void *)d;
-  // FIXME: ideal this is an attribute of self set up by caller
-  d->scopes = scopes;
-
-  d->left = &d->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
-  d->right = &d->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+  d->left = &self->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
+  d->right = &self->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
 }
 
 static void _split_gui_cleanup(dt_scopes_mode_t *const self)
@@ -278,13 +259,11 @@ const dt_scopes_functions_t dt_scopes_functions_split = {
   .get_exposure_pos = _split_get_exposure_pos,
   .append_to_tooltip = _split_append_to_tooltip,
   .eventbox_scroll = _split_eventbox_scroll,
-  .eventbox_motion = _split_eventbox_motion,
   .update_buttons = _split_update_buttons,
   .mode_enter = _split_mode_enter,
   .mode_leave = _split_mode_leave,
   .gui_init = _split_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = NULL,
+  .add_options = NULL,
   .gui_cleanup = _split_gui_cleanup
 };
 

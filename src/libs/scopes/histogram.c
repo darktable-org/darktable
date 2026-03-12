@@ -235,15 +235,14 @@ static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
   dt_scopes_refresh(self->scopes);
 }
 
-static void _hist_add_to_options_box(dt_scopes_mode_t *const self,
-                                     dt_action_t *dark,
-                                     GtkWidget *box)
+static void _hist_add_options(dt_scopes_mode_t *const self, dt_action_t *dark,
+                              GtkWidget *box_right, GtkWidget *box_opt)
 {
   dt_scopes_hist_t *d = self->data;
   d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("switch histogram scale"),
                    d->scale_button, &dt_action_def_button);
-  dt_gui_box_add(box, d->scale_button);
+  dt_gui_box_add(box_opt, d->scale_button);
   g_signal_connect(G_OBJECT(d->scale_button), "clicked",
                    G_CALLBACK(_hist_scale_clicked), self);
 }
@@ -271,13 +270,11 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .get_exposure_pos = _hist_get_exposure_pos,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _hist_update_buttons,
   .mode_enter = _hist_mode_enter,
   .mode_leave = _hist_mode_leave,
   .gui_init = _hist_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = _hist_add_to_options_box,
+  .add_options = _hist_add_options,
   .gui_cleanup = _hist_gui_cleanup
 };
 

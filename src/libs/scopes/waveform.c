@@ -392,15 +392,14 @@ static void _wave_orient_clicked(GtkWidget *button, dt_scopes_mode_t *const self
   dt_scopes_reprocess();
 }
 
-static void _wave_add_to_options_box(dt_scopes_mode_t *const self,
-                                     dt_action_t *dark,
-                                     GtkWidget *box)
+static void _wave_add_options(dt_scopes_mode_t *const self, dt_action_t *dark,
+                              GtkWidget *box_right, GtkWidget *box_opt)
 {
   dt_scopes_wave_t *const d = self->data;
   d->orient_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("switch scope orientation"),
                    d->orient_button, &dt_action_def_button);
-  dt_gui_box_add(box, d->orient_button);
+  dt_gui_box_add(box_opt, d->orient_button);
   g_signal_connect(G_OBJECT(d->orient_button), "clicked",
                    G_CALLBACK(_wave_orient_clicked), self);
 }
@@ -429,13 +428,11 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .get_exposure_pos = _wave_get_exposure_pos,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _wave_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = _wave_add_to_options_box,
+  .add_options = _wave_add_options,
   .gui_cleanup = _wave_gui_cleanup
 };
 
@@ -543,13 +540,11 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .get_exposure_pos = _wave_get_exposure_pos,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
-  .eventbox_motion = NULL,
   .update_buttons = _wave_update_buttons,
   .mode_enter = _wave_mode_enter,
   .mode_leave = _wave_mode_leave,
   .gui_init = _parade_gui_init,
-  .add_to_main_box = NULL,
-  .add_to_options_box = NULL,
+  .add_options = NULL,
   .gui_cleanup = _parade_gui_cleanup
 };
 
