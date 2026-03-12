@@ -2793,8 +2793,18 @@ void dt_masks_line_stroke(cairo_t *cr,
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
+  double dashed2[] = { DT_PIXEL_APPLY_DPI(8.0), DT_PIXEL_APPLY_DPI(12.0) };
+  dashed2[0] /= zoom_scale;
+  dashed2[1] /= zoom_scale;
+
+  const gboolean restricted = dt_masks_is_restricted_mode();
+
   // first the background draw, darker
-  dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
+  if(restricted && !border)
+    dt_draw_set_color_overlay(cr, FALSE, 0.1);
+  else
+    dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
+
   cairo_set_dash(cr, dashed, border ? len : 0, 0);
 
   const double lwidth = (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
@@ -2809,8 +2819,16 @@ void dt_masks_line_stroke(cairo_t *cr,
   // second the foreground draw, lighter (same size as darker if selected)
   cairo_set_line_width(cr, (line_width / (selected && !border ? 1.0 : 2.0)));
 
-  dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
-  cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  if(restricted && !border)
+  {
+    cairo_set_dash(cr, dashed2, len, 4);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+  }
+  else if(!source)
+  {
+    dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
+    cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  }
 
   cairo_stroke(cr);
 }
