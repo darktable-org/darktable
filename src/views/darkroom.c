@@ -3376,7 +3376,7 @@ void mouse_leave(dt_view_t *self)
     handled = dev->gui_module->mouse_leave(dev->gui_module);
 
   // reset any changes the selected plugin might have made.
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 }
 
 void mouse_enter(dt_view_t *self)
@@ -3503,7 +3503,7 @@ int button_released(dt_view_t *self,
 
   if(darktable.develop->darkroom_skip_mouse_events && which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     return 1;
   }
 
@@ -3515,7 +3515,7 @@ int button_released(dt_view_t *self,
     {
       dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     return 1;
   }
@@ -3546,7 +3546,7 @@ int button_released(dt_view_t *self,
                                                which, state, zoom_scale);
     if(handled) return handled;
   }
-  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor(GDK_LEFT_PTR);
+  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor("default");
 
   return 1;
 }
@@ -3570,7 +3570,7 @@ int button_pressed(dt_view_t *self,
     if(which == GDK_BUTTON_PRIMARY)
     {
       if(type == GDK_2BUTTON_PRESS) return 0;
-      dt_control_change_cursor(GDK_HAND1);
+      dt_control_change_cursor("pointer");
       return 1;
     }
     else if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
@@ -3642,7 +3642,7 @@ int button_pressed(dt_view_t *self,
                                           zoom_y + dy };
           dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
         }
-        dt_control_change_cursor(GDK_FLEUR);
+        dt_control_change_cursor("move");
       }
 
       dt_color_picker_backtransform_box(dev, 1, sample->point, sample->point);
@@ -3727,7 +3727,7 @@ int button_pressed(dt_view_t *self,
   if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
   if(which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
     return 1;
   }
 

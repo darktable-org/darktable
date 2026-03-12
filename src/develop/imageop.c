@@ -2484,7 +2484,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   // update guides button state
   dt_guides_update_button_state();
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
   dt_control_queue_redraw_center();
 }
 
