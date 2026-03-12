@@ -52,6 +52,7 @@ jobs:
             git \
             gdb \
             intltool \
+            libarchive-dev \
             libatk1.0-dev \
             libcairo2-dev \
             libcolord-dev \
