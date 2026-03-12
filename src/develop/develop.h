@@ -103,7 +103,7 @@ typedef struct dt_dev_proxy_exposure_t
   float (*get_exposure)(struct dt_iop_module_t *exp);
   float (*get_effective_exposure)(struct dt_iop_module_t *exp);
   float (*get_black)(struct dt_iop_module_t *exp);
-  void (*handle_event)(gpointer, int, gdouble, const gboolean);
+  void (*handle_event)(GtkEventController*, int, gdouble, gdouble, const gboolean);
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
@@ -495,7 +495,9 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
-void dt_dev_exposure_handle_event(gpointer controller, int n_press, gdouble x, const gboolean blackwhite);
+void dt_dev_exposure_handle_event(GtkEventController *controller,
+                                  int n_press, gdouble x, gdouble delta,
+                                  const gboolean blackwhite);
 
 /*
  * modulegroups plugin hooks
