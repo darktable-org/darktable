@@ -304,7 +304,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   }
 
   // show we are busy changing views
-  dt_control_change_cursor(GDK_WATCH);
+  dt_control_change_cursor("wait");
   gdk_display_sync(gdk_display_get_default());
 
   /* cleanup current view before initialization of new  */
@@ -462,7 +462,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
 
   // reset the cursor to the default one
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   return FALSE;
 }

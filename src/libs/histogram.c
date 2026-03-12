@@ -351,7 +351,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
       {
         // FIXME: should really use named cursors, and differentiate
         // between "grab" and "grabbing"
-        dt_control_change_cursor(GDK_HAND1);
+        dt_control_change_cursor("pointer");
       }
     }
   }
@@ -367,7 +367,7 @@ static void _drawable_leave(GtkEventControllerMotion *controller,
      && s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
   {
     s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     dt_scopes_refresh(s);
   }
 }

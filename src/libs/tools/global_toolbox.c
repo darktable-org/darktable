@@ -597,7 +597,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
         if(dt_gui_get_help_url(event_widget))
         {
           // TODO: find a better way to tell the user that the hovered widget has a help link
-          dt_cursor_t cursor = event->type == GDK_ENTER_NOTIFY ? GDK_QUESTION_ARROW : GDK_X_CURSOR;
+          const char *cursor = event->type == GDK_ENTER_NOTIFY ? "help" : "not-allowed";
           dt_control_allow_change_cursor();
           dt_control_change_cursor(cursor);
           dt_control_forbid_change_cursor();
@@ -762,14 +762,14 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
-    dt_control_change_cursor(GDK_X_CURSOR);
+    dt_control_change_cursor("not-allowed");
     dt_control_forbid_change_cursor();
     gdk_event_handler_set(_main_do_event_help, user_data, NULL);
   }
   else
   {
     dt_control_allow_change_cursor();
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
   }
 }
@@ -786,7 +786,7 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     darktable.control->mapping_widget = NULL;
     dt_control_allow_change_cursor();
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
   }
 }

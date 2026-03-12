@@ -674,7 +674,7 @@ int button_pressed(dt_view_t *self,
     cam->live_view_pan = TRUE;
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
     return 1;
   }
   else if((which == GDK_BUTTON_MIDDLE
@@ -701,7 +701,7 @@ int button_released(dt_view_t *self,
   if(which == GDK_BUTTON_PRIMARY)
   {
     cam->live_view_pan = FALSE;
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     return 1;
   }
   return 0;

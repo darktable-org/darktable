@@ -2742,7 +2742,7 @@ int mouse_moved(dt_iop_module_t *self,
   {
     // second mouse button, straighten activated:
     g->straightening = 1;
-    dt_control_change_cursor(GDK_CROSSHAIR);
+    dt_control_change_cursor("crosshair");
     dt_control_queue_redraw_center();
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
@@ -2989,25 +2989,25 @@ int mouse_moved(dt_iop_module_t *self,
     // hover over active borders, no button pressed
     // change mouse pointer
     if(grab == GRAB_LEFT)
-      dt_control_change_cursor(GDK_LEFT_SIDE);
+      dt_control_change_cursor("w-resize");
     else if(grab == GRAB_TOP)
-      dt_control_change_cursor(GDK_TOP_SIDE);
+      dt_control_change_cursor("n-resize");
     else if(grab == GRAB_RIGHT)
-      dt_control_change_cursor(GDK_RIGHT_SIDE);
+      dt_control_change_cursor("e-resize");
     else if(grab == GRAB_BOTTOM)
-      dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      dt_control_change_cursor("s-resize");
     else if(grab == GRAB_TOP_LEFT)
-      dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      dt_control_change_cursor("nw-resize");
     else if(grab == GRAB_TOP_RIGHT)
-      dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      dt_control_change_cursor("ne-resize");
     else if(grab == GRAB_BOTTOM_RIGHT)
-      dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      dt_control_change_cursor("se-resize");
     else if(grab == GRAB_BOTTOM_LEFT)
-      dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      dt_control_change_cursor("sw-resize");
     else if(grab == GRAB_NONE)
     {
       dt_control_hinter_message(_("<b>commit</b>: double-click, <b>straighten</b>: right-drag"));
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     if(grab != GRAB_NONE)
       dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
@@ -3017,7 +3017,7 @@ int mouse_moved(dt_iop_module_t *self,
   else
   {
     // somewhere besides borders. maybe rotate?
-    dt_control_change_cursor(GDK_FLEUR);
+    dt_control_change_cursor("move");
     g->straightening = g->cropping = 0;
     // or maybe keystone
     const float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
@@ -3052,18 +3052,18 @@ int mouse_moved(dt_iop_module_t *self,
       if(g->k_selected >= 0)
       {
         dt_control_hinter_message(_("<b>move control point</b>: drag"));
-        dt_control_change_cursor(GDK_CROSS);
+        dt_control_change_cursor("crosshair");
       }
       else if(g->k_selected_segment >= 0)
       {
         dt_control_hinter_message(_("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
-        dt_control_change_cursor(GDK_CROSS);
+        dt_control_change_cursor("crosshair");
       }
       else
       {
         dt_control_hinter_message(_("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
                                                        "<b>move line/control point</b>: drag"));
-        dt_control_change_cursor(GDK_FLEUR);
+        dt_control_change_cursor("move");
       }
     }
     else
@@ -3151,7 +3151,7 @@ int button_released(dt_iop_module_t *self,
     if(a > 180.f) a -= 360.f;
 
     dt_bauhaus_slider_set(g->angle, a);
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   if(g->k_drag) g->k_drag = FALSE;
 

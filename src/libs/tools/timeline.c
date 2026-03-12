@@ -1281,22 +1281,22 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   {
     strip->stop_x = e->x;
     strip->stop_t = _time_get_from_pos(e->x, strip);
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   else
   {
     // we change the cursor if we are close enough of a selection limit
     if(e->x - strip->start_x < 2 && e->x - strip->start_x > -2)
     {
-      dt_control_change_cursor(GDK_LEFT_SIDE);
+      dt_control_change_cursor("w-resize");
     }
     else if(e->x - strip->stop_x < 2 && e->x - strip->stop_x > -2)
     {
-      dt_control_change_cursor(GDK_RIGHT_SIDE);
+      dt_control_change_cursor("e-resize");
     }
     else
     {
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
   }
   gtk_widget_queue_draw(strip->timeline);

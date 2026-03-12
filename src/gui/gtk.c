@@ -2649,12 +2649,12 @@ static gboolean _panel_handle_cursor_callback(GtkWidget *w,
 {
   if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
     dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY)
-                             ? GDK_SB_V_DOUBLE_ARROW
-                             : GDK_LEFT_PTR);
+                             ? "ns-resize"
+                             : "default");
   else
     dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY)
-                             ? GDK_SB_H_DOUBLE_ARROW
-                             : GDK_LEFT_PTR);
+                             ? "ew-resize"
+                             : "default");
   return TRUE;
 }
 static gboolean _panel_handle_motion_callback(GtkWidget *w,
@@ -4199,11 +4199,11 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
           && event->window == gtk_widget_get_window(widget)
           && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
   {
-    dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+    dt_control_change_cursor("ns-resize");
     return TRUE;
   }
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
   return FALSE;
 }
 
@@ -4215,7 +4215,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
      && event->type == GDK_BUTTON_RELEASE)
   {
     _resize_wrap_dragging = FALSE;
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     return TRUE;
   }
   else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
@@ -4243,7 +4243,7 @@ static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
   if(event->mode == GDK_CROSSING_GTK_UNGRAB)
     _resize_wrap_dragging = FALSE;
   if(!_resize_wrap_dragging)
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
 
   return FALSE;
 }
@@ -4639,7 +4639,10 @@ void dt_gui_cursor_set_busy()
     GdkWindow *window = gtk_widget_get_window(toplevel);
     busy_prev_cursor = gdk_window_get_cursor(window);
     g_object_ref(busy_prev_cursor);
-    GdkCursor *watch = gdk_cursor_new_for_display(gtk_widget_get_display(toplevel), GDK_WATCH);
+    GdkDisplay *display = gtk_widget_get_display(toplevel);
+    GdkCursor *watch = gdk_cursor_new_from_name(display, "wait");
+    // TODO(GTK4): remove fallback when migrating to GTK4
+    if(!watch) watch = gdk_cursor_new_for_display(display, GDK_WATCH);
     gdk_window_set_cursor(window, watch);
     g_object_unref(watch);
     // since the main reason for calling this function is that we won't be running the Gtk main

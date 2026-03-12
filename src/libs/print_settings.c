@@ -633,7 +633,7 @@ static void _page_new_area_clicked(GtkWidget *widget, dt_lib_module_t *self)
     return;
   }
 
-  dt_control_change_cursor(GDK_PLUS);
+  dt_control_change_cursor("cell");
   ps->creation = TRUE;
   ps->has_changed = TRUE;
 }
@@ -1612,7 +1612,7 @@ int mouse_moved(struct dt_lib_module_t *self,
   gboolean expose = FALSE;
 
   if(ps->creation)
-    dt_control_change_cursor(GDK_PLUS);
+    dt_control_change_cursor("cell");
 
   if(ps->creation && ps->dragging)
   {
@@ -1750,7 +1750,7 @@ int button_released(struct dt_lib_module_t *self,
   ps->creation = FALSE;
   ps->dragging = FALSE;
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 
   return 0;
 }
@@ -1803,7 +1803,7 @@ int button_pressed(struct dt_lib_module_t *self,
 
     _get_control(ps, x, y);
 
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
   }
   else if(ps->selected != -1 && which == GDK_BUTTON_SECONDARY)
   {
