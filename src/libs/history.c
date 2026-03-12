@@ -672,7 +672,7 @@ static void _lib_history_will_change_callback(gpointer instance,
 
     if(darktable.develop->gui_module)
     {
-      hist->mask_edit_mode = dt_masks_get_edit_mode(darktable.develop->gui_module);
+      hist->mask_edit_mode = dt_masks_get_edit_mode();
       hist->request_mask_display = darktable.develop->gui_module->request_mask_display;
     }
     else

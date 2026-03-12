@@ -1404,7 +1404,7 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
-dt_masks_edit_mode_t dt_masks_get_edit_mode(dt_iop_module_t *module)
+dt_masks_edit_mode_t dt_masks_get_edit_mode(void)
 {
   return darktable.develop->form_gui
     ? darktable.develop->form_gui->edit_mode
