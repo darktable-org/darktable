@@ -28,7 +28,7 @@ export DESTDIR=../AppDir
 # features. For example, you can easily build darktable with support for
 # ImageMagick instead of GraphicsMagick by running this script with the
 # parameters `--disable-graphicsmagick --enable-imagemagick`
-./build.sh --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+./build.sh --enable-ai --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
 
 # Sanitize path to executable in the .desktop (it will be handled by AppImage).
 # In reality, most .desktop files do not include the full path to the program
