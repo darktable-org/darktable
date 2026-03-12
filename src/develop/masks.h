@@ -614,6 +614,7 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton,
 void dt_masks_iop_value_changed_callback(GtkWidget *widget,
                                          struct dt_iop_module_t *module);
 dt_masks_edit_mode_t dt_masks_get_edit_mode(void);
+gboolean dt_masks_is_restricted_mode(void);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
                             const dt_masks_edit_mode_t value);
 void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,

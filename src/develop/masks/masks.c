@@ -1411,6 +1411,11 @@ dt_masks_edit_mode_t dt_masks_get_edit_mode(void)
     : DT_MASKS_EDIT_OFF;
 }
 
+gboolean dt_masks_is_restricted_mode(void)
+{
+  return dt_masks_get_edit_mode() == DT_MASKS_EDIT_RESTRICTED;
+}
+
 void dt_masks_set_edit_mode(dt_iop_module_t *module,
                             const dt_masks_edit_mode_t value)
 {
