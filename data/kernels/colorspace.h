@@ -182,7 +182,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
 
   const float L = (var_Max + var_Min) / 2.0f;
 
-  if(fabs(del_Max) > 1e-6f && fabs(del_Max) > 1e-6)
+  if(fabs(var_Max) > 1e-6f && fabs(del_Max) > 1e-6)
   {
     if (L < 0.5f) S = del_Max / (var_Max + var_Min);
     else          S = del_Max / (2.0f - var_Max - var_Min);
@@ -195,8 +195,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
     else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
     else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
 
-    if (H < 0.0f) H += 1.0f;
-    if (H > 1.0f) H -= 1.0f;
+    H -= floor(H);
   }
 
   return (float4)(H, S, L, RGB.w);
@@ -206,8 +205,7 @@ static inline float4 RGB_2_HSL(const float4 RGB)
 
 static inline float Hue_2_RGB(float v1, float v2, float vH)
 {
-  if (vH < 0.0f) vH += 1.0f;
-  if (vH > 1.0f) vH -= 1.0f;
+  vH = vH - floor(vH);
   if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
   if ((2.0f * vH) < 1.0f) return (v2);
   if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
@@ -277,8 +275,7 @@ static inline float4 RGB_2_HSV(const float4 RGB)
 
   HSV.x /= 6.0f;
 
-  if(HSV.x < 0)
-    HSV.x += 1.0f;
+  HSV.x -= floor(HSV.x);
 
   return HSV;
 }
