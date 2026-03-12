@@ -23,7 +23,7 @@
 #include <json-glib/json-glib.h>
 #include <string.h>
 
-// --- Provider Table ---
+// provider table
 
 // clang-format off
 const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
@@ -69,26 +69,22 @@ const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
 };
 // clang-format on
 
-// --- Internal Structures ---
-
 struct dt_ai_environment_t
 {
-  GList *models;           // List of dt_ai_model_info_t*
-  GHashTable *model_paths; // ID -> Path (string)
+  GList *models;           // list of dt_ai_model_info_t*
+  GHashTable *model_paths; // id -> path (string)
 
-  // To keep pointers in dt_ai_model_info_t valid
-  GList *string_storage; // List of char*
+  // to keep pointers in dt_ai_model_info_t valid
+  GList *string_storage; // list of char*
 
-  // Remembered for refresh
+  // remembered for refresh
   char *search_paths;
 
-  // Default execution provider (read from config at init, override with dt_ai_env_set_provider)
+  // default execution provider (read from config at init, override with dt_ai_env_set_provider)
   dt_ai_provider_t provider; // DT_AI_PROVIDER_AUTO = platform auto-detect
 
-  GMutex lock; // Thread safety for model list access
+  GMutex lock; // thread safety for model list access
 };
-
-// --- Helper Functions ---
 
 static void _store_string(dt_ai_environment_t *env, const char *str, const char **out_ptr)
 {
@@ -135,10 +131,10 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
 
           if(id && name)
           {
-            // Skip duplicate model IDs (first discovered wins)
+            // skip duplicate model IDs (first discovered wins)
             if(g_hash_table_contains(env->model_paths, id))
             {
-              dt_print(DT_DEBUG_AI, "[darktable_ai] Skipping duplicate model ID: %s", id);
+              dt_print(DT_DEBUG_AI, "[darktable_ai] skipping duplicate model ID: %s", id);
             }
             else
             {
@@ -158,18 +154,15 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
                 g_strdup(info->id),
                 g_strdup(full_path));
 
-              dt_print(
-                DT_DEBUG_AI,
-                "[darktable_ai] Discovered: %s (%s, backend=%s)",
-                name,
-                id,
-                backend);
+              dt_print(DT_DEBUG_AI,
+                       "[darktable_ai] discovered: %s (%s, backend=%s)",
+                       name, id, backend);
             }
           }
         }
         else
         {
-          dt_print(DT_DEBUG_AI, "[darktable_ai] Parse error: %s", error->message);
+          dt_print(DT_DEBUG_AI, "[darktable_ai] parse error: %s", error->message);
           g_error_free(error);
         }
         g_object_unref(parser);
@@ -181,7 +174,7 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
   g_dir_close(dir);
 }
 
-// Scan custom search_paths + default config/data directories
+// scan custom search_paths + default config/data directories
 static void _scan_all_paths(dt_ai_environment_t *env)
 {
   if(env->search_paths)
@@ -200,7 +193,7 @@ static void _scan_all_paths(dt_ai_environment_t *env)
   g_free(datadir);
 }
 
-// --- API Implementation ---
+// API implementation
 
 dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
 {
@@ -211,7 +204,7 @@ dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
   env->model_paths = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   env->search_paths = g_strdup(search_paths);
 
-  // Read user's preferred execution provider from config
+  // read user's preferred execution provider from config
   char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   env->provider = dt_ai_provider_from_string(prov_str);
   g_free(prov_str);
@@ -273,9 +266,9 @@ void dt_ai_env_refresh(dt_ai_environment_t *env)
 
   g_mutex_lock(&env->lock);
 
-  dt_print(DT_DEBUG_AI, "[darktable_ai] Refreshing model list");
+  dt_print(DT_DEBUG_AI, "[darktable_ai] refreshing model list");
 
-  // Clear existing data
+  // clear existing data
   g_list_free_full(env->models, _free_model_info);
   env->models = NULL;
 
@@ -286,10 +279,9 @@ void dt_ai_env_refresh(dt_ai_environment_t *env)
 
   _scan_all_paths(env);
 
-  dt_print(
-    DT_DEBUG_AI,
-    "[darktable_ai] Refresh complete, found %d models",
-    g_list_length(env->models));
+  dt_print(DT_DEBUG_AI,
+           "[darktable_ai] refresh complete, found %d models",
+           g_list_length(env->models));
 
   g_mutex_unlock(&env->lock);
 }
@@ -327,40 +319,38 @@ dt_ai_provider_t dt_ai_env_get_provider(dt_ai_environment_t *env)
   return p;
 }
 
-// --- Backend-specific load (defined in backend_onnx.c) ---
+// =backend-specific load (defined in backend_onnx.c)
 
 extern dt_ai_context_t *
 dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                     dt_ai_provider_t provider, dt_ai_opt_level_t opt_level,
                     const dt_ai_dim_override_t *dim_overrides, int n_overrides);
 
-// --- Model Loading with Backend Dispatch ---
+// model loading with backend dispatch
 
-dt_ai_context_t *dt_ai_load_model(
-  dt_ai_environment_t *env,
-  const char *model_id,
-  const char *model_file,
-  dt_ai_provider_t provider)
+dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
+                                  const char *model_id,
+                                  const char *model_file,
+                                  dt_ai_provider_t provider)
 {
   return dt_ai_load_model_ext(env, model_id, model_file, provider,
-                               DT_AI_OPT_ALL, NULL, 0);
+                              DT_AI_OPT_ALL, NULL, 0);
 }
 
-dt_ai_context_t *dt_ai_load_model_ext(
-  dt_ai_environment_t *env,
-  const char *model_id,
-  const char *model_file,
-  dt_ai_provider_t provider,
-  dt_ai_opt_level_t opt_level,
-  const dt_ai_dim_override_t *dim_overrides,
-  int n_overrides)
+dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
+                                      const char *model_id,
+                                      const char *model_file,
+                                      dt_ai_provider_t provider,
+                                      dt_ai_opt_level_t opt_level,
+                                      const dt_ai_dim_override_t *dim_overrides,
+                                      int n_overrides)
 {
   if(!env || !model_id)
     return NULL;
 
-  // Resolve AUTO: re-read from config so preference changes take effect
+  // resolve AUTO: re-read from config so preference changes take effect
   // immediately without requiring app restart.  Read config before acquiring
-  // env->lock to avoid lock-ordering issues with darktable's config lock.
+  // env->lock to avoid lock-ordering issues with darktable's config lock
   if(provider == DT_AI_PROVIDER_AUTO)
   {
     char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
@@ -402,11 +392,9 @@ dt_ai_context_t *dt_ai_load_model_ext(
   }
   else
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[darktable_ai] Unknown backend '%s' for model '%s'",
-      backend_copy,
-      model_id);
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] unknown backend '%s' for model '%s'",
+             backend_copy, model_id);
   }
 
   g_free(model_dir);
@@ -414,7 +402,7 @@ dt_ai_context_t *dt_ai_load_model_ext(
   return ctx;
 }
 
-// --- Provider String Conversion ---
+// provider string conversion
 
 const char *dt_ai_provider_to_string(dt_ai_provider_t provider)
 {
@@ -431,7 +419,7 @@ dt_ai_provider_t dt_ai_provider_from_string(const char *str)
   if(!str)
     return DT_AI_PROVIDER_AUTO;
 
-  // Match against config_string (primary) and display_name
+  // match against config_string (primary) and display_name
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
     if(g_ascii_strcasecmp(str, dt_ai_providers[i].config_string) == 0)
@@ -440,7 +428,7 @@ dt_ai_provider_t dt_ai_provider_from_string(const char *str)
       return dt_ai_providers[i].value;
   }
 
-  // Legacy alias: ROCm was renamed to MIGraphX
+  // legacy alias: ROCm was renamed to MIGraphX
   if(g_ascii_strcasecmp(str, "ROCm") == 0)
     return DT_AI_PROVIDER_MIGRAPHX;
 

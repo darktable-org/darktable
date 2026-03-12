@@ -31,7 +31,7 @@
 #include <string.h>
 
 #ifdef _WIN32
-// Windows doesn't have realpath, use _fullpath instead
+// windows doesn't have realpath, use _fullpath instead
 static inline char *realpath(const char *path, char *resolved_path)
 {
   (void)resolved_path; // ignored, always allocate
@@ -39,13 +39,11 @@ static inline char *realpath(const char *path, char *resolved_path)
 }
 #endif
 
-// Config keys
+// config keys
 #define CONF_AI_ENABLED "plugins/ai/enabled"
 #define CONF_AI_REPOSITORY "plugins/ai/repository"
 #define CONF_MODEL_ENABLED_PREFIX "plugins/ai/models/"
 #define CONF_ACTIVE_MODEL_PREFIX "plugins/ai/models/active/"
-
-// --- Internal Helpers ---
 
 static void _model_free(dt_ai_model_t *model)
 {
@@ -95,10 +93,8 @@ static gboolean _ensure_directory(const char *path)
   return g_mkdir_with_parents(path, 0755) == 0;
 }
 
-// --- Version Helpers ---
-
 #ifdef HAVE_AI_DOWNLOAD
-// Curl write callback that appends to a GString (capped at 1 MB)
+// curl write callback that appends to a GString (capped at 1 MB)
 static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
   GString *buf = (GString *)userdata;
@@ -109,12 +105,12 @@ static size_t _curl_write_string(void *ptr, size_t size, size_t nmemb, void *use
 }
 
 /**
- * @brief Extract "major.minor.patch" from darktable_package_version.
+ * @brief extract "major.minor.patch" from darktable_package_version.
  *
  * darktable_package_version looks like "5.5.0+156~gabcdef-dirty" or "5.4.0".
- * We extract the leading "X.Y.Z" portion.
+ * we extract the leading "X.Y.Z" portion.
  *
- * @return Newly allocated string "X.Y.Z", or NULL on parse failure.
+ * @return newly allocated string "X.Y.Z", or NULL on parse failure.
  */
 static char *_get_darktable_version_prefix(void)
 {
@@ -125,14 +121,14 @@ static char *_get_darktable_version_prefix(void)
 }
 
 /**
- * @brief Query the GitHub API to find the latest model release compatible
+ * @brief query the github api to find the latest model release compatible
  *        with the current darktable version.
  *
- * Looks for releases tagged "vX.Y.Z" or "vX.Y.Z.N" where X.Y.Z matches
- * the darktable version. Returns the tag with the highest revision number.
+ * looks for releases tagged "vX.Y.Z" or "vX.Y.Z.N" where X.Y.Z matches
+ * the darktable version. returns the tag with the highest revision number.
  *
- * @param repository  GitHub "owner/repo" string
- * @return Newly allocated tag string (e.g. "v5.5.0.2"), or NULL if none found.
+ * @param repository  github "owner/repo" string
+ * @return newly allocated tag string (e.g. "v5.5.0.2"), or NULL if none found.
  */
 static char *_find_latest_compatible_release(const char *repository, char **error_msg)
 {
@@ -174,11 +170,9 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
 
   if(res != CURLE_OK || http_code != 200)
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] GitHub API request failed: curl=%d, http=%ld",
-      res,
-      http_code);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] github api request failed: curl=%d, http=%ld",
+             res, http_code);
     if(error_msg)
     {
       if(res != CURLE_OK)
@@ -195,7 +189,7 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
     return NULL;
   }
 
-  // Parse JSON array of releases
+  // parse json array of releases
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_data(parser, response->str, response->len, NULL))
   {
@@ -214,7 +208,7 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
     return NULL;
   }
 
-  // Build prefix to match: accept both "vX.Y.Z" and "X.Y.Z" tag formats
+  // build prefix to match: accept both "vX.Y.Z" and "X.Y.Z" tag formats
   size_t ver_len = strlen(dt_version);
 
   char *best_tag = NULL;
@@ -235,7 +229,7 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
     if(!tag)
       continue;
 
-    // Skip any non-digit prefix (e.g. "v", "release-") to extract X.Y.Z.W
+    // skip any non-digit prefix (e.g. "v", "release-") to extract X.Y.Z.W
     const char *ver_part = tag;
     while(*ver_part && !g_ascii_isdigit(*ver_part))
       ver_part++;
@@ -245,7 +239,7 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
     if(strncmp(ver_part, dt_version, ver_len) != 0)
       continue;
 
-    // Tag matches version prefix. Check what follows:
+    // tag matches version prefix. check what follows:
     // "X.Y.Z" (exact) -> revision = 0
     // "X.Y.Z.N"       -> revision = N
     const char *suffix = ver_part + ver_len;
@@ -275,26 +269,27 @@ static char *_find_latest_compatible_release(const char *repository, char **erro
   g_object_unref(parser);
 
   if(best_tag)
-    dt_print(DT_DEBUG_AI, "[ai_models] Found compatible release: %s", best_tag);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] found compatible release: %s",
+             best_tag);
   else
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] No compatible release found for darktable %s",
-      darktable_package_version);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] no compatible release found for darktable %s",
+             darktable_package_version);
 
   return best_tag;
 }
 
 /**
- * @brief Fetch the SHA256 digest for a release asset from the GitHub API.
+ * @brief fetch the SHA256 digest for a release asset from the GitHub API
  *
- * Queries /repos/{repo}/releases/tags/{tag}, iterates the assets array,
- * and returns the "digest" field for the asset whose "name" matches.
+ * queries /repos/{repo}/releases/tags/{tag}, iterates the assets array,
+ * and returns the "digest" field for the asset whose "name" matches
  *
- * @param repository  GitHub "owner/repo" string
- * @param release_tag Release tag (e.g. "5.5.0.1")
- * @param asset_name  Asset filename (e.g. "denoise-nafnet.zip")
- * @return Newly allocated string "sha256:...", or NULL if not found.
+ * @param repository  github "owner/repo" string
+ * @param release_tag release tag (e.g. "5.5.0.1")
+ * @param asset_name  asset filename (e.g. "denoise-nafnet.zip")
+ * @return newly allocated string "SHA256:...", or NULL if not found
  */
 static char *_fetch_asset_digest(
   const char *repository,
@@ -304,7 +299,8 @@ static char *_fetch_asset_digest(
   char *api_url = g_strdup_printf(
     "https://api.github.com/repos/%s/releases/tags/%s",
     repository,
-    release_tag);
+    release_tag
+  );
 
   CURL *curl = curl_easy_init();
   if(!curl)
@@ -333,16 +329,14 @@ static char *_fetch_asset_digest(
 
   if(res != CURLE_OK || http_code != 200)
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] Failed to fetch release metadata: curl=%d, http=%ld",
-      res,
-      http_code);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to fetch release metadata: curl=%d, http=%ld",
+             res, http_code);
     g_string_free(response, TRUE);
     return NULL;
   }
 
-  // Parse the release JSON object
+  // parse the release json object
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_data(parser, response->str, response->len, NULL))
   {
@@ -388,7 +382,7 @@ static char *_fetch_asset_digest(
       if(d && g_str_has_prefix(d, "sha256:"))
       {
         digest = g_strdup(d);
-        dt_print(DT_DEBUG_AI, "[ai_models] Asset %s digest: %s", asset_name, digest);
+        dt_print(DT_DEBUG_AI, "[ai_models] asset %s digest: %s", asset_name, digest);
       }
     }
     break;
@@ -397,24 +391,22 @@ static char *_fetch_asset_digest(
   g_object_unref(parser);
 
   if(!digest)
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] No digest found for asset %s in release %s",
-      asset_name,
-      release_tag);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] no digest found for asset %s in release %s",
+             asset_name, release_tag);
 
   return digest;
 }
-#endif /* HAVE_AI_DOWNLOAD */
+#endif // HAVE_AI_DOWNLOAD
 
-// --- Core API ---
+// core API
 
 dt_ai_registry_t *dt_ai_models_init(void)
 {
   dt_ai_registry_t *registry = g_new0(dt_ai_registry_t, 1);
   g_mutex_init(&registry->lock);
 
-  // Set up directories — models use user data dir so they are shared
+  // set up directories — models use user data dir so they are shared
   // across --configdir instances (not tied to a specific config)
   char cachedir[PATH_MAX] = {0};
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
@@ -422,22 +414,20 @@ dt_ai_registry_t *dt_ai_models_init(void)
   registry->models_dir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
-  // Ensure directories exist
+  // ensure directories exist
   _ensure_directory(registry->models_dir);
   _ensure_directory(registry->cache_dir);
 
-  // Load settings from config
+  // load settings from config
   registry->ai_enabled = dt_conf_get_bool(CONF_AI_ENABLED);
 
   char *provider_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
   registry->provider = dt_ai_provider_from_string(provider_str);
   g_free(provider_str);
 
-  dt_print(
-    DT_DEBUG_AI,
-    "[ai_models] Initialized: models_dir=%s, cache_dir=%s",
-    registry->models_dir,
-    registry->cache_dir);
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] initialized: models_dir=%s, cache_dir=%s",
+           registry->models_dir, registry->cache_dir);
 
   return registry;
 }
@@ -470,14 +460,14 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
   if(!registry)
     return FALSE;
 
-  // Find the registry JSON file in the data directory
+  // find the registry json file in the data directory
   char datadir[PATH_MAX] = {0};
   dt_loc_get_datadir(datadir, sizeof(datadir));
   char *registry_path = g_build_filename(datadir, "ai_models.json", NULL);
 
   if(!g_file_test(registry_path, G_FILE_TEST_EXISTS))
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Registry file not found: %s", registry_path);
+    dt_print(DT_DEBUG_AI, "[ai_models] registry file not found: %s", registry_path);
     g_free(registry_path);
     return FALSE;
   }
@@ -487,9 +477,8 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
 
   if(!json_parser_load_from_file(parser, registry_path, &error))
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] Failed to parse registry: %s",
+    dt_print(DT_DEBUG_AI,
+      "[ai_models] failed to parse registry: %s",
       error ? error->message : "unknown error");
     if(error)
       g_error_free(error);
@@ -501,7 +490,7 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
   JsonNode *root = json_parser_get_root(parser);
   if(!JSON_NODE_HOLDS_OBJECT(root))
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Registry root is not an object");
+    dt_print(DT_DEBUG_AI, "[ai_models] registry root is not an object");
     g_object_unref(parser);
     g_free(registry_path);
     return FALSE;
@@ -511,23 +500,22 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
 
   g_mutex_lock(&registry->lock);
 
-  // Clear existing models
+  // clear existing models
   g_list_free_full(registry->models, (GDestroyNotify)_model_free);
   registry->models = NULL;
 
-  // Parse repository - config overrides JSON default
+  // parse repository - config overrides json default
   g_free(registry->repository);
   registry->repository = NULL;
 
   if(dt_conf_key_exists(CONF_AI_REPOSITORY))
     registry->repository = dt_conf_get_string(CONF_AI_REPOSITORY);
 
-  dt_print(
-    DT_DEBUG_AI,
-    "[ai_models] Using repository: %s",
-    registry->repository ? registry->repository : "(none)");
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] using repository: %s",
+           registry->repository ? registry->repository : "(none)");
 
-  // Parse models array
+  // parse models array
   if(json_object_has_member(root_obj, "models"))
   {
     JsonArray *models_arr = json_object_get_array_member(root_obj, "models");
@@ -542,7 +530,7 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
       dt_ai_model_t *model = _parse_model_json(json_node_get_object(node));
       if(model)
       {
-        // Load enabled state from user config
+        // load enabled state from user config
         char *conf_key
           = g_strdup_printf("%s%s/enabled", CONF_MODEL_ENABLED_PREFIX, model->id);
         if(dt_conf_key_exists(conf_key))
@@ -550,45 +538,41 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
         g_free(conf_key);
 
         registry->models = g_list_prepend(registry->models, model);
-        dt_print(
-          DT_DEBUG_AI,
-          "[ai_models] Loaded model: %s (%s)",
-          model->name,
-          model->id);
+        dt_print(DT_DEBUG_AI,
+                 "[ai_models] loaded model: %s (%s)",
+                 model->name, model->id);
       }
     }
   }
 
-  // Reverse to restore original JSON order (we used prepend for O(1) insertion)
+  // reverse to restore original json order (we used prepend for O(1) insertion)
   registry->models = g_list_reverse(registry->models);
 
   const int model_count = g_list_length(registry->models);
 
   g_mutex_unlock(&registry->lock);
 
-  dt_print(
-    DT_DEBUG_AI,
-    "[ai_models] Registry loaded: %d models from %s",
-    model_count,
-    registry_path);
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] registry loaded: %d models from %s",
+           model_count, registry_path);
 
   g_object_unref(parser);
   g_free(registry_path);
 
-  // Check which models are actually downloaded
+  // check which models are actually downloaded
   dt_ai_models_refresh_status(registry);
 
   return TRUE;
 }
 
-// Validate that a model_id is a plain directory name with no path separators
-// or ".." components that could escape the models directory.
+// validate that a model_id is a plain directory name with no path separators
+// or ".." components that could escape the models directory
 static gboolean _valid_model_id(const char *model_id);
 static dt_ai_model_t *_find_model_unlocked(dt_ai_registry_t *registry,
                                             const char *model_id);
 
-// Parse a local model's config.json into a dt_ai_model_t.
-// Uses directory name as fallback for id/name. No github_asset or checksum.
+// parse a local model's config.json into a dt_ai_model_t
+// uses directory name as fallback for id/name. no github_asset or checksum
 static dt_ai_model_t *_parse_local_model_config(const char *config_path,
                                                  const char *dir_name)
 {
@@ -597,7 +581,7 @@ static dt_ai_model_t *_parse_local_model_config(const char *config_path,
 
   if(!json_parser_load_from_file(parser, config_path, &error))
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Failed to parse %s: %s",
+    dt_print(DT_DEBUG_AI, "[ai_models] failed to parse %s: %s",
              config_path, error ? error->message : "unknown");
     if(error) g_error_free(error);
     g_object_unref(parser);
@@ -633,7 +617,7 @@ static dt_ai_model_t *_parse_local_model_config(const char *config_path,
   if(json_object_has_member(obj, "task"))
     model->task = g_strdup(json_object_get_string_member(obj, "task"));
 
-  // No github_asset, no checksum — local-only model
+  // no github_asset, no checksum — local-only model
   model->enabled = TRUE;
 
   g_object_unref(parser);
@@ -658,8 +642,8 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
 
   g_mutex_lock(&registry->lock);
 
-  // --- Remove previously-discovered local models (no github_asset) ---
-  // These will be re-discovered from disk below if still present.
+  // remove previously-discovered local models (no github_asset)
+  // these will be re-discovered from disk below if still present
   GList *l = registry->models;
   while(l)
   {
@@ -673,16 +657,16 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
     l = next;
   }
 
-  // --- Pass 1: Update status for registry models ---
+  // pass 1: update status for registry models
   for(GList *l2 = registry->models; l2; l2 = g_list_next(l2))
   {
     dt_ai_model_t *model = (dt_ai_model_t *)l2->data;
 
-    // Skip models with invalid IDs (path traversal protection)
+    // skip models with invalid ids (path traversal protection)
     if(!_valid_model_id(model->id))
       continue;
 
-    // Check if model directory exists and contains required files
+    // check if model directory exists and contains required files
     char *model_dir = g_build_filename(registry->models_dir, model->id, NULL);
     char *config_path = g_build_filename(model_dir, "config.json", NULL);
 
@@ -700,7 +684,7 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
     g_free(model_dir);
   }
 
-  // --- Pass 2: Discover locally-installed models not in registry ---
+  // pass 2: discover locally-installed models not in registry
   if(registry->models_dir)
   {
     GDir *dir = g_dir_open(registry->models_dir, 0, NULL);
@@ -712,7 +696,7 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
         if(!_valid_model_id(entry_name))
           continue;
 
-        // Skip if already in registry (e.g. downloaded via ai_models.json)
+        // skip if already in registry (e.g. downloaded via ai_models.json)
         if(_find_model_unlocked(registry, entry_name))
           continue;
 
@@ -728,7 +712,7 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
             model->status = DT_AI_MODEL_DOWNLOADED;
             registry->models = g_list_append(registry->models, model);
             dt_print(DT_DEBUG_AI,
-                     "[ai_models] Discovered local model: %s (%s)",
+                     "[ai_models] discovered local model: %s (%s)",
                      model->name, model->id);
           }
         }
@@ -761,10 +745,8 @@ void dt_ai_models_cleanup(dt_ai_registry_t *registry)
   g_free(registry);
 }
 
-// --- Model Access ---
-
-// Internal: find model by ID without locking. Caller must hold registry->lock.
-// Returns direct pointer to registry-owned model (not a copy).
+// internal: find model by id without locking. caller must hold registry->lock
+// returns direct pointer to registry-owned model (not a copy)
 static dt_ai_model_t *
 _find_model_unlocked(dt_ai_registry_t *registry, const char *model_id)
 {
@@ -810,16 +792,15 @@ dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry, const char *mo
 }
 
 #ifdef HAVE_AI_DOWNLOAD
-// --- Download Implementation ---
 
 typedef struct dt_ai_download_data_t
 {
   dt_ai_registry_t *registry;
-  char *model_id; // Owned copy of model ID (safe to use without lock)
+  char *model_id; // owned copy of model id (safe to use without lock)
   dt_ai_progress_callback callback;
   gpointer user_data;
   FILE *file;
-  const gboolean *cancel_flag; // Optional: set to non-NULL to enable cancellation
+  const gboolean *cancel_flag; // optional: set to non-NULL to enable cancellation
 } dt_ai_download_data_t;
 
 static size_t _curl_write_callback(void *ptr, size_t size, size_t nmemb, void *data)
@@ -837,15 +818,15 @@ static int _curl_progress_callback(
 {
   dt_ai_download_data_t *dl = (dt_ai_download_data_t *)clientp;
 
-  // Check for cancellation
+  // check for cancellation
   if(dl->cancel_flag && g_atomic_int_get(dl->cancel_flag))
-    return 1; // Non-zero aborts the transfer
+    return 1; // non-zero aborts the transfer
 
   if(dltotal > 0)
   {
     double progress = (double)dlnow / (double)dltotal;
 
-    // Update model progress under lock
+    // update model progress under lock
     g_mutex_lock(&dl->registry->lock);
     dt_ai_model_t *m = _find_model_unlocked(dl->registry, dl->model_id);
     if(m)
@@ -862,21 +843,21 @@ static gboolean _verify_checksum(const char *filepath, const char *expected)
 {
   if(!expected || !g_str_has_prefix(expected, "sha256:"))
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] No valid checksum provided - rejecting download");
-    return FALSE; // Reject files without a valid checksum
+    dt_print(DT_DEBUG_AI, "[ai_models] no valid checksum provided - rejecting download");
+    return FALSE; // reject files without a valid checksum
   }
 
-  const char *expected_hash = expected + 7; // Skip "sha256:"
+  const char *expected_hash = expected + 7; // skip "sha256:"
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
   if(!checksum)
     return FALSE;
 
-  // Stream file in chunks to avoid loading entire file into memory
+  // stream file in chunks to avoid loading entire file into memory
   FILE *f = g_fopen(filepath, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Failed to open file for checksum: %s", filepath);
+    dt_print(DT_DEBUG_AI, "[ai_models] failed to open file for checksum: %s", filepath);
     g_checksum_free(checksum);
     return FALSE;
   }
@@ -892,17 +873,15 @@ static gboolean _verify_checksum(const char *filepath, const char *expected)
 
   if(!match)
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] Checksum mismatch: expected %s, got %s",
-      expected_hash,
-      computed);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] checksum mismatch: expected %s, got %s",
+             expected_hash, computed);
   }
 
   g_checksum_free(checksum);
   return match;
 }
-#endif /* HAVE_AI_DOWNLOAD */
+#endif //HAVE_AI_DOWNLOAD
 
 static gboolean _extract_zip(const char *zippath, const char *destdir)
 {
@@ -920,10 +899,9 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
 
   if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
   {
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] Failed to open archive: %s",
-      archive_error_string(a));
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] failed to open archive: %s",
+             archive_error_string(a));
     archive_read_free(a);
     archive_write_free(ext);
     return FALSE;
@@ -931,11 +909,11 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
 
   _ensure_directory(destdir);
 
-  // Resolve destdir to a canonical path for path traversal validation
+  // resolve destdir to a canonical path for path traversal validation
   char *real_destdir = realpath(destdir, NULL);
   if(!real_destdir)
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Failed to resolve destdir: %s", destdir);
+    dt_print(DT_DEBUG_AI, "[ai_models] failed to resolve destdir: %s", destdir);
     archive_read_close(a);
     archive_read_free(a);
     archive_write_free(ext);
@@ -948,22 +926,21 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   {
     const char *entry_name = archive_entry_pathname(entry);
 
-    // Reject entries with path traversal components
+    // reject entries with path traversal components
     if(g_strstr_len(entry_name, -1, "..") != NULL)
     {
-      dt_print(
-        DT_DEBUG_AI,
-        "[ai_models] Skipping suspicious archive entry: %s",
-        entry_name);
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] skipping suspicious archive entry: %s",
+               entry_name);
       continue;
     }
 
-    // Build full path in destination
+    // build full path in destination
     char *full_path = g_build_filename(real_destdir, entry_name, NULL);
 
-    // Verify the resolved path is within destdir
+    // verify the resolved path is within destdir
     char *real_full_path = realpath(full_path, NULL);
-    // For new files, realpath returns NULL; check the parent directory instead
+    // for new files, realpath returns NULL; check the parent directory instead
     if(!real_full_path)
     {
       char *parent = g_path_get_dirname(full_path);
@@ -975,7 +952,7 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
         || (real_parent[destdir_len] != '/' && real_parent[destdir_len] != '\\'
             && real_parent[destdir_len] != '\0'))
       {
-        dt_print(DT_DEBUG_AI, "[ai_models] Path traversal blocked: %s", entry_name);
+        dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
         free(real_parent);
         g_free(full_path);
         continue;
@@ -989,7 +966,7 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
         || (real_full_path[destdir_len] != '/' && real_full_path[destdir_len] != '\\'
             && real_full_path[destdir_len] != '\0'))
       {
-        dt_print(DT_DEBUG_AI, "[ai_models] Path traversal blocked: %s", entry_name);
+        dt_print(DT_DEBUG_AI, "[ai_models] path traversal blocked: %s", entry_name);
         free(real_full_path);
         g_free(full_path);
         continue;
@@ -1010,7 +987,7 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
       {
         if(archive_write_data_block(ext, buff, size, offset) != ARCHIVE_OK)
         {
-          dt_print(DT_DEBUG_AI, "[ai_models] Write error: %s", archive_error_string(ext));
+          dt_print(DT_DEBUG_AI, "[ai_models] write error: %s", archive_error_string(ext));
           success = FALSE;
           break;
         }
@@ -1020,10 +997,9 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
     }
     else
     {
-      dt_print(
-        DT_DEBUG_AI,
-        "[ai_models] Write header error: %s",
-        archive_error_string(ext));
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] write header error: %s",
+               archive_error_string(ext));
       success = FALSE;
     }
 
@@ -1042,8 +1018,8 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   return success;
 }
 
-// Install a local .dtmodel file (zip archive) into the models directory.
-// Returns error message (caller must free) or NULL on success.
+// install a local .dtmodel file (zip archive) into the models directory.
+// returns error message (caller must free) or NULL on success.
 char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath)
 {
   if(!registry || !filepath)
@@ -1055,16 +1031,16 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepat
   if(!_extract_zip(filepath, registry->models_dir))
     return g_strdup(_("failed to extract model archive"));
 
-  // Rescan models directory to pick up newly installed model
+  // rescan models directory to pick up newly installed model
   dt_ai_models_refresh_status(registry);
 
-  dt_print(DT_DEBUG_AI, "[ai_models] Model installed from: %s", filepath);
+  dt_print(DT_DEBUG_AI, "[ai_models] model installed from: %s", filepath);
 
-  return NULL; // Success
+  return NULL; // success
 }
 
 #ifdef HAVE_AI_DOWNLOAD
-// Synchronous download - returns error message or NULL on success
+// synchronous download - returns error message or NULL on success
 char *dt_ai_models_download_sync(
   dt_ai_registry_t *registry,
   const char *model_id,
@@ -1072,15 +1048,14 @@ char *dt_ai_models_download_sync(
   gpointer user_data,
   const gboolean *cancel_flag)
 {
-  dt_print(
-    DT_DEBUG_AI,
-    "[ai_models] Download requested for: %s",
-    model_id ? model_id : "(null)");
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] download requested for: %s",
+           model_id ? model_id : "(null)");
 
   if(!registry || !model_id)
     return g_strdup(_("invalid parameters"));
 
-  // Lock once to validate, copy immutable fields, and set status
+  // lock once to validate, copy immutable fields, and set status
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *model = _find_model_unlocked(registry, model_id);
   if(!model)
@@ -1095,7 +1070,7 @@ char *dt_ai_models_download_sync(
     return g_strdup(_("model has no download asset defined"));
   }
 
-  // Validate asset filename: reject path separators and query strings
+  // validate asset filename: reject path separators and query strings
   if(
     strchr(model->github_asset, '/') || strchr(model->github_asset, '\\')
     || strchr(model->github_asset, '?') || strchr(model->github_asset, '#')
@@ -1113,14 +1088,14 @@ char *dt_ai_models_download_sync(
   model->status = DT_AI_MODEL_DOWNLOADING;
   model->download_progress = 0.0;
 
-  // Copy fields we need outside the lock (repository can be replaced by reload)
+  // copy fields we need outside the lock (repository can be replaced by reload)
   char *asset = g_strdup(model->github_asset);
   char *checksum_copy = g_strdup(model->checksum);
   char *repository = g_strdup(registry->repository);
   g_mutex_unlock(&registry->lock);
 
-// Helper macro: set model status under lock and return error
-// Uses _find_model_unlocked to avoid keeping a stale pointer
+// helper macro: set model status under lock and return error
+// uses _find_model_unlocked to avoid keeping a stale pointer
 #define SET_STATUS_AND_RETURN(status_val, err_expr)                                      \
   do                                                                                     \
   {                                                                                      \
@@ -1135,7 +1110,7 @@ char *dt_ai_models_download_sync(
     return (err_expr);                                                                   \
   } while(0)
 
-  // Validate repository format (must be "owner/repo" with safe characters)
+  // validate repository format (must be "owner/repo" with safe characters)
   if(
     !repository
     || !g_regex_match_simple("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repository, 0, 0))
@@ -1145,16 +1120,14 @@ char *dt_ai_models_download_sync(
 
   {
     char *ver = _get_darktable_version_prefix();
-    dt_print(DT_DEBUG_AI, "[ai_models] Repository: %s", repository);
-    dt_print(
-      DT_DEBUG_AI,
-      "[ai_models] darktable version: %s (full: %s)",
-      ver ? ver : "unknown",
-      darktable_package_version);
+    dt_print(DT_DEBUG_AI, "[ai_models] repository: %s", repository);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] darktable version: %s (full: %s)",
+             ver ? ver : "unknown", darktable_package_version);
     g_free(ver);
   }
 
-  // Find the latest compatible release for this darktable version
+  // find the latest compatible release for this darktable version
   char *release_error = NULL;
   char *release_tag = _find_latest_compatible_release(repository, &release_error);
   if(!release_tag)
@@ -1167,14 +1140,14 @@ char *dt_ai_models_download_sync(
     {
       char *dt_ver = _get_darktable_version_prefix();
       char *err = g_strdup_printf(
-        _("no compatible AI model release found for darktable %s"),
+        _("no compatible ai model release found for darktable %s"),
         dt_ver ? dt_ver : darktable_package_version);
       g_free(dt_ver);
       SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, err);
     }
   }
 
-  // Fetch SHA256 digest from GitHub Releases API if not already known
+  // fetch sha256 digest from github releases api if not already known
   if(!checksum_copy || !g_str_has_prefix(checksum_copy, "sha256:"))
   {
     g_free(checksum_copy);
@@ -1190,7 +1163,7 @@ char *dt_ai_models_download_sync(
     }
   }
 
-  // Build GitHub download URL using local copies (not model pointer)
+  // build github download url using local copies (not model pointer)
   char *url = g_strdup_printf(
     "https://github.com/%s/releases/download/%s/%s",
     repository,
@@ -1200,12 +1173,12 @@ char *dt_ai_models_download_sync(
 
   if(!url)
   {
-    SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("failed to build download URL")));
+    SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("failed to build download url")));
   }
 
-  dt_print(DT_DEBUG_AI, "[ai_models] Downloading: %s", url);
+  dt_print(DT_DEBUG_AI, "[ai_models] downloading: %s", url);
 
-  // Prepare download path using local copy
+  // prepare download path using local copy
   char *download_path = g_build_filename(registry->cache_dir, asset, NULL);
 
   FILE *file = g_fopen(download_path, "wb");
@@ -1217,7 +1190,7 @@ char *dt_ai_models_download_sync(
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, err);
   }
 
-  // Set up download data (uses model_id copy, not model pointer)
+  // set up download data (uses model_id copy, not model pointer)
   dt_ai_download_data_t dl = {
     .registry = registry,
     .model_id = (char *)model_id,
@@ -1226,7 +1199,7 @@ char *dt_ai_models_download_sync(
     .file = file,
     .cancel_flag = cancel_flag};
 
-  // Initialize curl
+  // initialize curl
   CURL *curl = curl_easy_init();
   if(!curl)
   {
@@ -1262,13 +1235,13 @@ char *dt_ai_models_download_sync(
   }
   else
   {
-    // Check HTTP response code
+    // check http response code
     long http_code = 0;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
     if(http_code != 200)
     {
-      error = g_strdup_printf(_("HTTP error: %ld"), http_code);
+      error = g_strdup_printf(_("http error: %ld"), http_code);
       g_unlink(download_path);
     }
   }
@@ -1282,7 +1255,7 @@ char *dt_ai_models_download_sync(
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, error);
   }
 
-  // Verify checksum if available (fetched from GitHub API or stored in registry)
+  // verify checksum if available (fetched from github api or stored in registry)
   if(checksum_copy && g_str_has_prefix(checksum_copy, "sha256:"))
   {
     if(!_verify_checksum(download_path, checksum_copy))
@@ -1296,7 +1269,7 @@ char *dt_ai_models_download_sync(
   }
   else
   {
-    // Should not reach here — checksum is now required before download
+    // should not reach here — checksum is now required before download
     g_unlink(download_path);
     g_free(download_path);
     SET_STATUS_AND_RETURN(
@@ -1306,7 +1279,7 @@ char *dt_ai_models_download_sync(
                       asset));
   }
 
-  // Extract to models directory (ZIP already contains model_id folder)
+  // extract to models directory (zip already contains model_id folder)
   if(!_extract_zip(download_path, registry->models_dir))
   {
     g_unlink(download_path);
@@ -1314,11 +1287,11 @@ char *dt_ai_models_download_sync(
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("failed to extract archive")));
   }
 
-  // Clean up downloaded zip
+  // clean up downloaded zip
   g_unlink(download_path);
   g_free(download_path);
 
-  // Mark success
+  // mark success
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *m = _find_model_unlocked(registry, model_id);
   if(m)
@@ -1328,9 +1301,9 @@ char *dt_ai_models_download_sync(
   }
   g_mutex_unlock(&registry->lock);
 
-  dt_print(DT_DEBUG_AI, "[ai_models] Download complete: %s", model_id);
+  dt_print(DT_DEBUG_AI, "[ai_models] download complete: %s", model_id);
 
-  // Final callback
+  // final callback
   if(callback)
     callback(model_id, 1.0, user_data);
 
@@ -1340,10 +1313,10 @@ char *dt_ai_models_download_sync(
 
 #undef SET_STATUS_AND_RETURN
 
-  return NULL; // Success
+  return NULL; // success
 }
 
-// Wrapper that returns boolean for compatibility
+// wrapper that returns boolean for compatibility
 gboolean dt_ai_models_download(
   dt_ai_registry_t *registry,
   const char *model_id,
@@ -1353,7 +1326,7 @@ gboolean dt_ai_models_download(
   char *error = dt_ai_models_download_sync(registry, model_id, callback, user_data, NULL);
   if(error)
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] Download error: %s", error);
+    dt_print(DT_DEBUG_AI, "[ai_models] download error: %s", error);
     g_free(error);
     return FALSE;
   }
@@ -1368,7 +1341,7 @@ gboolean dt_ai_models_download_default(
   if(!registry)
     return FALSE;
 
-  // Collect IDs while holding lock, then download without lock
+  // collect ids while holding lock, then download without lock
   GList *ids = NULL;
   g_mutex_lock(&registry->lock);
   for(GList *l = registry->models; l; l = g_list_next(l))
@@ -1397,7 +1370,7 @@ gboolean dt_ai_models_download_all(
   if(!registry)
     return FALSE;
 
-  // Collect IDs while holding lock, then download without lock
+  // collect ids while holding lock, then download without lock
   GList *ids = NULL;
   g_mutex_lock(&registry->lock);
   for(GList *l = registry->models; l; l = g_list_next(l))
@@ -1417,7 +1390,7 @@ gboolean dt_ai_models_download_all(
   g_list_free_full(ids, g_free);
   return any_started;
 }
-#endif /* HAVE_AI_DOWNLOAD */
+#endif // HAVE_AI_DOWNLOAD
 
 static gboolean _rmdir_recursive(const char *path)
 {
@@ -1436,7 +1409,7 @@ static gboolean _rmdir_recursive(const char *path)
   {
     char *child = g_build_filename(path, name, NULL);
     if(g_file_test(child, G_FILE_TEST_IS_SYMLINK))
-      g_unlink(child); // Remove the symlink itself, never follow
+      g_unlink(child); // remove the symlink itself, never follow
     else if(g_file_test(child, G_FILE_TEST_IS_DIR))
       _rmdir_recursive(child);
     else
@@ -1452,7 +1425,7 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   if(!registry || !_valid_model_id(model_id))
     return FALSE;
 
-  // Check model exists
+  // check model exists
   g_mutex_lock(&registry->lock);
   dt_ai_model_t *model = _find_model_unlocked(registry, model_id);
   if(!model)
@@ -1478,7 +1451,7 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   }
   g_mutex_unlock(&registry->lock);
 
-  // Clear active status if this was the active model for its task
+  // clear active status if this was the active model for its task
   if(task_copy)
   {
     char *active = dt_ai_models_get_active_for_task(task_copy);
@@ -1491,7 +1464,7 @@ gboolean dt_ai_models_delete(dt_ai_registry_t *registry, const char *model_id)
   return TRUE;
 }
 
-// --- Configuration ---
+// configuration
 
 void dt_ai_models_set_enabled(
   dt_ai_registry_t *registry,
@@ -1510,7 +1483,7 @@ void dt_ai_models_set_enabled(
   if(!model)
     return;
 
-  // Persist to config
+  // persist to config
   char *conf_key = g_strdup_printf("%s%s/enabled", CONF_MODEL_ENABLED_PREFIX, model_id);
   dt_conf_set_bool(conf_key, enabled);
   g_free(conf_key);
@@ -1521,7 +1494,7 @@ char *dt_ai_models_get_active_for_task(const char *task)
   if(!task || !task[0])
     return NULL;
 
-  // 1. Check central config key
+  // 1. check central config key
   char *conf_key = g_strdup_printf("%s%s", CONF_ACTIVE_MODEL_PREFIX, task);
   if(dt_conf_key_exists(conf_key))
   {
@@ -1534,7 +1507,7 @@ char *dt_ai_models_get_active_for_task(const char *task)
   }
   g_free(conf_key);
 
-  // 2. Fall back to the default downloaded model for this task
+  // 2. fall back to the default downloaded model for this task
   if(darktable.ai_registry)
   {
     char *result = NULL;
