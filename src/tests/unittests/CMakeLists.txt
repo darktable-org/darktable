@@ -1,8 +1,8 @@
 add_subdirectory(iop)
 
-if(BUILD_AI)
+if(USE_AI)
   add_subdirectory(ai)
-endif(BUILD_AI)
+endif(USE_AI)
 
 add_cmocka_test(test_sample
                 SOURCES test_sample.c
