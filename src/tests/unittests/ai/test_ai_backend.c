@@ -16,6 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * how to run these tests:
+ *
+ *   cmake -B build -DBUILD_AI=ON
+ *   cmake --build build --target test_ai_backend
+ *   cd build && ctest -R test_ai_backend -V
+ *
+ * TEST_MODEL_DIR is set automatically by CMake to point at the test
+ * fixtures directory containing sample ONNX models
+ */
+
 #include <limits.h>
 #include <setjmp.h>
 #include <stdarg.h>
@@ -31,10 +42,10 @@
 #error "TEST_MODEL_DIR must be defined by CMake"
 #endif
 
-/* Shared environment for all tests */
+// shared environment for all tests
 static dt_ai_environment_t *env;
 
-/* ---- setup / teardown ---- */
+// setup / teardown
 
 static int group_setup(void **state)
 {
@@ -50,14 +61,14 @@ static int group_teardown(void **state)
   return 0;
 }
 
-/* ---- test: environment init ---- */
+// test: environment init
 
 static void test_env_init(void **state)
 {
   assert_non_null(env);
 }
 
-/* ---- test: model discovery ---- */
+// test: model discovery
 
 static void test_model_discovery(void **state)
 {
@@ -73,7 +84,7 @@ static void test_model_discovery(void **state)
   assert_int_equal(info->num_inputs, 1);
 }
 
-/* ---- test: model lookup by ID ---- */
+// test: model lookup by ID
 
 static void test_model_lookup(void **state)
 {
@@ -82,13 +93,13 @@ static void test_model_lookup(void **state)
   assert_non_null(info);
   assert_string_equal(info->id, "test-multiply");
 
-  /* non-existent model */
+  // non-existent model
   const dt_ai_model_info_t *none
     = dt_ai_get_model_info_by_id(env, "does-not-exist");
   assert_null(none);
 }
 
-/* ---- test: model load ---- */
+// test: model load
 
 static void test_model_load(void **state)
 {
@@ -98,7 +109,7 @@ static void test_model_load(void **state)
   dt_ai_unload_model(ctx);
 }
 
-/* ---- test: I/O introspection ---- */
+// test: I/O introspection
 
 static void test_introspection(void **state)
 {
@@ -126,7 +137,7 @@ static void test_introspection(void **state)
   dt_ai_unload_model(ctx);
 }
 
-/* ---- test: inference ---- */
+// test: inference
 
 static void test_inference(void **state)
 {
@@ -134,7 +145,7 @@ static void test_inference(void **state)
     = dt_ai_load_model(env, "test-multiply", NULL, DT_AI_PROVIDER_CPU);
   assert_non_null(ctx);
 
-  /* input: all 1.0 */
+  // input: all 1.0
   const int n = 1 * 3 * 4 * 4;
   float input_data[48];  /* 1*3*4*4 = 48 */
   for(int i = 0; i < n; i++) input_data[i] = 1.0f;
@@ -147,7 +158,7 @@ static void test_inference(void **state)
     .ndim = 4
   };
 
-  /* output buffer */
+  // output buffer
   float output_data[48];
   memset(output_data, 0, sizeof(output_data));
 
@@ -162,7 +173,7 @@ static void test_inference(void **state)
   const int ret = dt_ai_run(ctx, &input, 1, &output, 1);
   assert_int_equal(ret, 0);
 
-  /* y = x * 2 → all outputs should be 2.0 */
+  // y = x * 2 → all outputs should be 2.0
   for(int i = 0; i < n; i++)
   {
     assert_float_equal(output_data[i], 2.0f, 1e-6f);
@@ -171,27 +182,27 @@ static void test_inference(void **state)
   dt_ai_unload_model(ctx);
 }
 
-/* ---- test: provider setting ---- */
+// test: provider setting
 
 static void test_provider_change(void **state)
 {
-  /* stub returns "cpu" → init should have set CPU */
+  // stub returns "cpu" → init should have set CPU
   assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_CPU);
 
-  /* change to CoreML */
+  // change to CoreML
   dt_ai_env_set_provider(env, DT_AI_PROVIDER_COREML);
   assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_COREML);
 
-  /* change to AUTO */
+  // change to AUTO
   dt_ai_env_set_provider(env, DT_AI_PROVIDER_AUTO);
   assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_AUTO);
 
-  /* restore CPU for remaining tests */
+  // restore CPU for remaining tests
   dt_ai_env_set_provider(env, DT_AI_PROVIDER_CPU);
   assert_int_equal(dt_ai_env_get_provider(env), DT_AI_PROVIDER_CPU);
 }
 
-/* ---- test: unload + cleanup ---- */
+// test: unload + cleanup
 
 static void test_cleanup(void **state)
 {
@@ -199,18 +210,18 @@ static void test_cleanup(void **state)
     = dt_ai_load_model(env, "test-multiply", NULL, DT_AI_PROVIDER_CPU);
   assert_non_null(ctx);
 
-  /* unload should not crash */
+  // unload should not crash
   dt_ai_unload_model(ctx);
 
-  /* double-unload NULL should be safe */
+  // double-unload NULL should be safe
   dt_ai_unload_model(NULL);
 }
 
-/* ---- test: error paths — NULL and invalid arguments ---- */
+// test: error paths — NULL and invalid arguments
 
 static void test_error_null_env(void **state)
 {
-  /* NULL env should return NULL / 0, not crash */
+  // NULL env should return NULL / 0, not crash
   assert_null(dt_ai_load_model(NULL, "test-multiply", NULL, DT_AI_PROVIDER_CPU));
   assert_int_equal(dt_ai_get_model_count(NULL), 0);
   assert_null(dt_ai_get_model_info_by_index(NULL, 0));
@@ -220,7 +231,7 @@ static void test_error_null_env(void **state)
 
 static void test_error_bad_model_id(void **state)
 {
-  /* non-existent model ID */
+  // non-existent model ID
   dt_ai_context_t *ctx
     = dt_ai_load_model(env, "no-such-model", NULL, DT_AI_PROVIDER_CPU);
   assert_null(ctx);
@@ -228,7 +239,7 @@ static void test_error_bad_model_id(void **state)
 
 static void test_error_bad_model_file(void **state)
 {
-  /* existing model ID but non-existent .onnx file */
+  // existing model ID but non-existent .onnx file
   dt_ai_context_t *ctx
     = dt_ai_load_model(env, "test-multiply", "nonexistent.onnx", DT_AI_PROVIDER_CPU);
   assert_null(ctx);
@@ -240,20 +251,20 @@ static void test_error_introspection_bounds(void **state)
     = dt_ai_load_model(env, "test-multiply", NULL, DT_AI_PROVIDER_CPU);
   assert_non_null(ctx);
 
-  /* NULL context */
+  // NULL context
   assert_int_equal(dt_ai_get_input_count(NULL), 0);
   assert_int_equal(dt_ai_get_output_count(NULL), 0);
   assert_null(dt_ai_get_input_name(NULL, 0));
   assert_null(dt_ai_get_output_name(NULL, 0));
 
-  /* out-of-range index */
+  // out-of-range index
   assert_null(dt_ai_get_input_name(ctx, 99));
   assert_null(dt_ai_get_output_name(ctx, -1));
 
-  /* output shape with NULL shape array */
+  // output shape with NULL shape array
   assert_int_equal(dt_ai_get_output_shape(ctx, 0, NULL, 0), -1);
 
-  /* output shape with too-small buffer */
+  // output shape with too-small buffer
   int64_t shape[2];
   const int ndim = dt_ai_get_output_shape(ctx, 0, shape, 2);
   /* should return actual ndim (4) but only write 2 elements */
@@ -264,18 +275,18 @@ static void test_error_introspection_bounds(void **state)
 
 static void test_error_run_bad_args(void **state)
 {
-  /* dt_ai_run with NULL context */
+  // dt_ai_run with NULL context
   float dummy[48];
   int64_t shape[] = { 1, 3, 4, 4 };
   dt_ai_tensor_t t = { .data = dummy, .type = DT_AI_FLOAT, .shape = shape, .ndim = 4 };
   assert_int_not_equal(dt_ai_run(NULL, &t, 1, &t, 1), 0);
 }
 
-/* ---- test: provider string conversion ---- */
+// test: provider string conversion
 
 static void test_provider_strings(void **state)
 {
-  /* round-trip all known providers */
+  // round-trip all known providers
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
     const char *str = dt_ai_providers[i].config_string;
@@ -283,22 +294,22 @@ static void test_provider_strings(void **state)
     assert_int_equal(parsed, dt_ai_providers[i].value);
   }
 
-  /* display name lookup */
+  // display name lookup
   const char *cpu_name = dt_ai_provider_to_string(DT_AI_PROVIDER_CPU);
   assert_non_null(cpu_name);
   assert_string_equal(cpu_name, "CPU");
 
-  /* unknown string falls back to AUTO */
+  // unknown string falls back to AUTO
   assert_int_equal(dt_ai_provider_from_string("bogus"), DT_AI_PROVIDER_AUTO);
   assert_int_equal(dt_ai_provider_from_string(NULL), DT_AI_PROVIDER_AUTO);
   assert_int_equal(dt_ai_provider_from_string(""), DT_AI_PROVIDER_AUTO);
 
-  /* provider table completeness */
+  // provider table completeness
   assert_int_equal(dt_ai_providers[0].value, DT_AI_PROVIDER_AUTO);
   assert_int_equal(dt_ai_providers[DT_AI_PROVIDER_COUNT - 1].value, DT_AI_PROVIDER_DIRECTML);
 }
 
-/* ---- test: env_refresh preserves discovered models ---- */
+// test: env_refresh preserves discovered models ----
 
 static void test_env_refresh(void **state)
 {
@@ -307,24 +318,24 @@ static void test_env_refresh(void **state)
   const int after = dt_ai_get_model_count(env);
   assert_int_equal(before, after);
 
-  /* model is still findable after refresh */
+  // model is still findable after refresh
   const dt_ai_model_info_t *info
     = dt_ai_get_model_info_by_id(env, "test-multiply");
   assert_non_null(info);
   assert_string_equal(info->id, "test-multiply");
 }
 
-/* ---- test: load with optimization levels ---- */
+// test: load with optimization levels
 
 static void test_load_opt_levels(void **state)
 {
-  /* DT_AI_OPT_BASIC */
+  // DT_AI_OPT_BASIC
   dt_ai_context_t *ctx_basic
     = dt_ai_load_model_ext(env, "test-multiply", NULL,
                            DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC, NULL, 0);
   assert_non_null(ctx_basic);
 
-  /* verify inference still works with basic optimization */
+  // verify inference still works with basic optimization
   float in[48], out[48];
   for(int i = 0; i < 48; i++) in[i] = 3.0f;
   int64_t shape[] = { 1, 3, 4, 4 };
@@ -334,7 +345,7 @@ static void test_load_opt_levels(void **state)
   assert_float_equal(out[0], 6.0f, 1e-6f);
   dt_ai_unload_model(ctx_basic);
 
-  /* DT_AI_OPT_DISABLED */
+  // DT_AI_OPT_DISABLED
   dt_ai_context_t *ctx_none
     = dt_ai_load_model_ext(env, "test-multiply", NULL,
                            DT_AI_PROVIDER_CPU, DT_AI_OPT_DISABLED, NULL, 0);
@@ -342,23 +353,21 @@ static void test_load_opt_levels(void **state)
   dt_ai_unload_model(ctx_none);
 }
 
-/* ---- test: env_init with empty/invalid path ---- */
+// test: env_init with empty/invalid path
 
 static void test_env_init_empty(void **state)
 {
-  /* non-existent path: should succeed with 0 models */
+  // non-existent path: should succeed with 0 models
   dt_ai_environment_t *e = dt_ai_env_init("/no/such/path/xyz");
   assert_non_null(e);
   assert_int_equal(dt_ai_get_model_count(e), 0);
   dt_ai_env_destroy(e);
 
-  /* NULL path: still creates env (scans default dirs only) */
+  // NULL path: still creates env (scans default dirs only)
   dt_ai_environment_t *e2 = dt_ai_env_init(NULL);
   assert_non_null(e2);
   dt_ai_env_destroy(e2);
 }
-
-/* ---- main ---- */
 
 int main(int argc, char *argv[])
 {
