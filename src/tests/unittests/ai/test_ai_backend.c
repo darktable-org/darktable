@@ -19,7 +19,7 @@
 /*
  * how to run these tests:
  *
- *   cmake -B build -DBUILD_AI=ON
+ *   cmake -B build -DUSE_AI=ON
  *   cmake --build build --target test_ai_backend
  *   cd build && ctest -R test_ai_backend -V
  *
