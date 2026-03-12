@@ -104,7 +104,7 @@ typedef struct dt_scopes_vec_t
   double vectorscope_radius;
 
   GtkWidget *color_harmony_box;        // GtkBox -- contains color harmony buttons
-  GtkWidget *color_harmony_fix;        // GtkFixed -- contains moveable color harmony buttons
+  GtkWidget *harmony_viewport;         // GtkViewport -- contains moveable color harmony buttons
   GtkWidget *vec_scale_button;         // GtkButton -- linear or logarithmic vectorscope
   GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   GtkWidget *color_harmony_button
@@ -882,8 +882,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       graph_pat = cairo_pop_group(cr);
     }
 
-    // FIXME: is there a less awkward way to check if the mouse is over this, or could this even be another widget in the overlay?
-    if(gtk_widget_get_visible(self->scopes->button_box_main))
+    if(gtk_widget_get_visible(self->scopes->button_box_right))
     {
       // draw information about current selected harmony
       PangoLayout *layout;
@@ -894,7 +893,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
-      pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+      pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
 
       gchar *text = g_strdup_printf("%d°\n%s", d->harmony_guide.rotation, _(hm.name));
 
@@ -903,8 +902,7 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       pango_layout_get_pixel_extents(layout, NULL, &ink);
       cairo_scale(cr, 1., -1.);
       cairo_rotate(cr, -d->vectorscope_angle);
-      cairo_move_to(cr,
-                    0.48f * width - ink.width - ink.x,
+      cairo_move_to(cr, -0.48 * width - ink.x,
                     0.48 * height - ink.height - ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
@@ -1070,14 +1068,6 @@ static void _color_harmony_state_changed(GtkWidget *widget,
         d->ignore_prelight = DT_COLOR_HARMONY_NONE;
       }
   }
-  else
-  {
-    // FIXME: ideal would be to leave harmony preview on until leave
-    // the container of harmony buttons, so don't flicker as move
-    // between buttons
-    d->harmony_prelight = DT_COLOR_HARMONY_NONE;
-    d->ignore_prelight = DT_COLOR_HARMONY_NONE;
-  }
   if(d->harmony_prelight != prior)
     dt_scopes_refresh(self->scopes);
 }
@@ -1116,6 +1106,7 @@ static void _color_harmony_toggled(GtkButton *button,
           g_signal_handler_unblock(d->color_harmony_button[prior], d->toggle_signal_handler[prior]);
         }
         d->harmony_guide.type = i;
+        d->harmony_prelight = i;  // in case is a scroll event
         d->ignore_prelight = DT_COLOR_HARMONY_NONE;
       }
     }
@@ -1178,23 +1169,44 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
   _color_harmony_changed_record(self);
 }
 
-static void _vec_eventbox_motion(dt_scopes_mode_t *const self,
-                                 GtkEventControllerMotion *controller,
-                                 double x,
-                                 double y)
+static void _harmony_adjust_page(GtkWidget *widget,
+                                 GtkAllocation* alloc, dt_scopes_mode_t *self)
 {
   dt_scopes_vec_t *const d = self->data;
-  // FIXME: replace the color harmony box buttons with a widget with a combobox, then get rid of the eventbox motion callback
-  // FIXME: this shouldn't do anything unless in RYB mode
-  GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
-  GtkAllocation fix_alloc;
-  // FIXME: why use gtk_widget_get_allocation vs. gtk_widget_get_allocated_height?
-  gtk_widget_get_allocation(d->color_harmony_fix, &fix_alloc);
-  const int full_height = gtk_widget_get_allocated_height(widget);
-  const int excess =
-    gtk_widget_get_allocated_height(d->color_harmony_box) + fix_alloc.y - full_height;
-  const int shift = excess * MAX(y - fix_alloc.y, 0) / (full_height - fix_alloc.y);
-  gtk_fixed_move(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, - MAX(shift, 0));
+  // size adjustment page to options buttons box which, in turn,
+  // changes height with the resizeable scopes widget
+  // FIXME: when user resizes scope vertically, next time mouse moves, the buttons widget jumps to new position, so should recalculate its position here based on mouse position during resize
+  gtk_adjustment_set_page_size
+    (gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(d->harmony_viewport)),
+     alloc->height - gtk_widget_get_allocated_height(self->scopes->button_box_left));
+}
+
+static void _harmony_motion(GtkEventControllerMotion *controller,
+                            double x,
+                            double y,
+                            dt_scopes_mode_t *const self)
+{
+  // harmony type buttons scroll as mouse ranges from below the top
+  // buttons to the scope bottom less resize handle
+  dt_scopes_vec_t *const d = self->data;
+  // FIXME: replace the color harmony box buttons with a widget with a combobox, then get rid of the complicated code to support the custom scrolling widgets
+  GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(d->harmony_viewport));
+  const double scrollable_area = gtk_adjustment_get_page_size(vadj);
+  const double max_val = gtk_adjustment_get_upper(vadj) - scrollable_area;
+  const double val = max_val * y / (scrollable_area - DT_RESIZE_HANDLE_SIZE);
+  gtk_adjustment_set_value(vadj, val);
+}
+
+static void _harmony_leave(GtkEventControllerMotion *controller,
+                           dt_scopes_mode_t *const self)
+{
+  dt_scopes_vec_t *const d = self->data;
+  d->ignore_prelight = DT_COLOR_HARMONY_NONE;
+  if(d->harmony_prelight != DT_COLOR_HARMONY_NONE)
+  {
+    d->harmony_prelight = DT_COLOR_HARMONY_NONE;
+    dt_scopes_refresh(self->scopes);
+  }
 }
 
 static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
@@ -1348,17 +1360,28 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
   d->harmony_prelight = d->ignore_prelight = DT_COLOR_HARMONY_NONE;
 }
 
-static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
-                                 dt_action_t *dark,
-                                 GtkWidget *box)
+static void _vec_add_options(dt_scopes_mode_t *const self, dt_action_t *dark,
+                             GtkWidget *box_right, GtkWidget *box_opt)
 {
   dt_scopes_vec_t *const d = self->data;
+
+  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(dark, NULL, N_("cycle vectorscope types"),
+                   d->colorspace_button, &dt_action_def_button);
+  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
+                   d->vec_scale_button, &dt_action_def_button);
+  dt_gui_box_add(box_opt, d->vec_scale_button, d->colorspace_button);
+
+  d->harmony_viewport = gtk_viewport_new(NULL, NULL);
+  gtk_widget_set_halign(d->harmony_viewport, GTK_ALIGN_END);
+  dt_gui_box_add(box_right, d->harmony_viewport);
+  g_signal_connect(G_OBJECT(box_right), "size-allocate",
+                   G_CALLBACK(_harmony_adjust_page), self);
+
   d->color_harmony_box = dt_gui_vbox();
   gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->color_harmony_box, GTK_ALIGN_START);
-  d->color_harmony_fix = gtk_fixed_new();
-  gtk_fixed_put(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, 0);
-  dt_gui_box_add(box, d->color_harmony_fix);
 
   // a series of buttons for color harmony guide lines
   for(dt_color_harmony_type_t i = DT_COLOR_HARMONY_MONOCHROMATIC;
@@ -1378,32 +1401,18 @@ static void _vec_add_to_main_box(dt_scopes_mode_t *const self,
     dt_gui_box_add(d->color_harmony_box, rb);
     d->color_harmony_button[i] = rb;
   }
+  gtk_container_add(GTK_CONTAINER(d->harmony_viewport), d->color_harmony_box);
 
   // FIXME: do we need this action, or is it vestigial?
   dt_action_register(dark, N_("cycle color harmonies"),
                      _lib_histogram_cycle_harmony_callback, 0, 0);
-}
-
-// FIXME: s/gui_init_options/gui_add_to_options/
-static void _vec_gui_init_options(dt_scopes_mode_t *const self,
-                                  dt_action_t *dark,
-                                  GtkWidget *box)
-{
-  dt_scopes_vec_t *const d = self->data;
-
-  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("cycle vectorscope types"),
-                   d->colorspace_button, &dt_action_def_button);
-  d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("switch vectorscope scale"),
-                   d->vec_scale_button, &dt_action_def_button);
-  dt_gui_box_add(box, d->colorspace_button, d->vec_scale_button);
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->vec_scale_button), "clicked",
                    G_CALLBACK(_vec_scale_clicked), self);
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked",
                    G_CALLBACK(_vec_colorspace_clicked), self);
+  dt_gui_connect_motion(d->harmony_viewport, _harmony_motion, NULL, _harmony_leave, self);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _vec_signal_image_changed);
 }
@@ -1441,13 +1450,11 @@ const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
   .get_exposure_pos = NULL,
   .append_to_tooltip = _vec_append_to_tooltip,
   .eventbox_scroll = _vec_eventbox_scroll,
-  .eventbox_motion = _vec_eventbox_motion,
   .update_buttons = _vec_update_buttons,
   .mode_enter = _vec_mode_enter,
   .mode_leave = _vec_mode_leave,
   .gui_init = _vec_gui_init,
-  .add_to_main_box = _vec_add_to_main_box,
-  .add_to_options_box = _vec_gui_init_options,
+  .add_options = _vec_add_options,
   .gui_cleanup = _vec_gui_cleanup
 };
 

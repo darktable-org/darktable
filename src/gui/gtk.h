@@ -661,6 +661,7 @@ static inline GCallback G_CALLBACK(void *f) { return (GCallback)f; } // as a mac
     BOOLSIGNAL(signal, popup-menu) \
     BOOLSIGNAL(signal, query-tooltip) \
     BOOLSIGNAL(signal, match-selected) \
+    BOOLSIGNAL(signal, get-child-position) \
     ) == _Generic((DISABLINGPREFIX##c_handler), gboolean(*)(): TRUE, default: FALSE), \
     "signal " signal " return type does not match specified handler " #c_handler); \
   g_signal_connect_data((instance), (signal), (GCallback)(c_handler), (user_data), NULL, (GConnectFlags) 0); } while(0)
