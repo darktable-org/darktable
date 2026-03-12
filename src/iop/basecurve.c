@@ -783,7 +783,7 @@ int process_cl_fusion(dt_iop_module_t *self,
   // Prepare Color Look matrix (9 floats packed into float16 for OpenCL)
   float look_mat_buf[16] = {0.0f};
   for(int i=0; i<9; i++) look_mat_buf[i] = color_looks[d->color_look][i];
-  const float alpha = 0.5f;
+  const float alpha = 0.6f;
 
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
   const int preserve_colors = d->preserve_colors;
@@ -1045,7 +1045,7 @@ int process_cl_lut(dt_iop_module_t *self,
 
   float look_mat_buf[16] = {0.0f};
   for(int i=0; i<9; i++) look_mat_buf[i] = color_looks[d->color_look][i];
-  const float alpha = 0.75f;
+  const float alpha = 0.6f;
 
   if(d->workflow_mode > 0)
   {
@@ -1369,11 +1369,11 @@ static inline void gauss_reduce(
 }
 
 static void process_lut(dt_iop_module_t *self,
-            dt_dev_pixelpipe_iop_t *piece,
-            const void *const ivoid,
-            void *const ovoid,
-            const dt_iop_roi_t *const roi_in,
-            const dt_iop_roi_t *const roi_out)
+                        dt_dev_pixelpipe_iop_t *piece,
+                        const void *const ivoid,
+                        void *const ovoid,
+                        const dt_iop_roi_t *const roi_in,
+                        const dt_iop_roi_t *const roi_out)
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -1465,7 +1465,7 @@ static void process_lut(dt_iop_module_t *self,
         dt_XYZ_2_JzAzBz(xyz_scaled, jab);
 
         const float L = fminf(fmaxf(jab[0], 0.0f), 1.0f);
-        const float alpha = 0.75f;
+        const float alpha = 0.6f;
         const float k_scale = 1.0f + alpha * L * L;
 
         // scale luminance, apply selected tonemap, then undo scaling
@@ -1729,6 +1729,17 @@ static void process_fusion(dt_iop_module_t *self,
     for(size_t k = 0; k < 4ul * wd * ht; k += 4)
       col[0][k + 3] *= .1f + sqrtf(out[k] * out[k] + out[k + 1] * out[k + 1] + out[k + 2] * out[k + 2]);
 
+// #define DEBUG_VIS2
+#ifdef DEBUG_VIS2 // transform weights in channels
+    for(size_t k = 0; k < 4ul * w * h; k += 4) col[0][k + e] = col[0][k + 3];
+#endif
+
+// #define DEBUG_VIS
+#ifdef DEBUG_VIS // DEBUG visualise weight buffer
+    for(size_t k = 0; k < 4ul * w * h; k += 4) comb[0][k + e] = col[0][k + 3];
+    continue;
+#endif
+
     for(int k = 1; k < num_levels; k++)
     {
       gauss_reduce(col[k - 1], col[k], 0, w, h);
@@ -1864,7 +1875,7 @@ static void process_fusion(dt_iop_module_t *self,
         dt_XYZ_2_JzAzBz(xyz_scaled_local, jab_local);
 
         const float L = fminf(fmaxf(jab_local[0], 0.0f), 1.0f);
-        const float alpha = 0.5f;
+        const float alpha = 0.6f;
         const float k_scale = 1.0f + alpha * L * L;
 
         const float x_scaled = y_in / k_scale;
@@ -1924,7 +1935,9 @@ static void process_fusion(dt_iop_module_t *self,
           const float fulcrum = 0.5f;
           const float n = (L - fulcrum) / fulcrum;
           const float mask_shadow = 1.0f / (1.0f + expf(n * 4.0f));
-          const float sat_factor = 1.0f + effective_saturation * (2.0f * mask_shadow - 1.0f);
+          float sat_adjust = effective_saturation * (2.0f * mask_shadow - 1.0f);
+          sat_adjust *= fminf(L * 4.0f, 1.0f);
+          const float sat_factor = 1.0f + sat_adjust;
           jab[1] *= sat_factor;
           jab[2] *= sat_factor;
           modified = 1;
@@ -3042,6 +3055,7 @@ void gui_init(dt_iop_module_t *self)
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
   g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->logbase, TRUE, TRUE, 0); 
   
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
