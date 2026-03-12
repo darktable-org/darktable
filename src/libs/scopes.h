@@ -104,10 +104,6 @@ typedef struct dt_scopes_functions_t
                           gdouble x, gdouble y,
                           gdouble delta_x, gdouble delta_y,
                           GdkModifierType state);
-  void (*eventbox_motion)(struct dt_scopes_mode_t *const self,
-                          GtkEventControllerMotion *controller,
-                          double x,
-                          double y);
   // set option button icons to current state, updates tooltips
   // accordingly, and if necessary update any state which depends on
   // current option buttons
@@ -115,12 +111,8 @@ typedef struct dt_scopes_functions_t
   void (*mode_enter)(struct dt_scopes_mode_t *const self);
   void (*mode_leave)(const struct dt_scopes_mode_t *const self);
   void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
-  void (*add_to_main_box)(struct dt_scopes_mode_t *const self,
-                          dt_action_t *dark,
-                          GtkWidget *box);
-  void (*add_to_options_box)(struct dt_scopes_mode_t *const mode,
-                             dt_action_t *dark,
-                             GtkWidget *box);
+  void (*add_options)(struct dt_scopes_mode_t *const mode, dt_action_t *dark,
+                      GtkWidget *box_right, GtkWidget *box_opt);
   void (*gui_cleanup)(struct dt_scopes_mode_t *const self);
 } dt_scopes_functions_t;
 
@@ -128,7 +120,7 @@ typedef struct dt_scopes_mode_t
 {
   const dt_scopes_functions_t *functions;
   void *data;
-  GtkWidget *button_activate;                   // GtkDarktableToggleButton which activates mode
+  GtkWidget *button_activate;                   // GtkDarktableToggleButton to activate
   gulong toggle_signal_handler;
   int update_counter;
   // point back to parent
@@ -146,11 +138,11 @@ typedef struct dt_scopes_t
   dt_scopes_highlight_t highlight;              // depends on mouse position
   scopes_channels_t channels;                   // display state chosen by RGB buttons
   // UI elements
-  GtkWidget *button_box_main;                   // GtkBox -- contains scope control buttons
-  GtkWidget *button_box_opt;                    // GtkBox -- contains options buttons
+  GtkWidget *button_box_left;                   // GtkBox -- contains scope mode buttons
+  GtkWidget *button_box_right;                  // GtkBox -- contains option buttons
   GtkWidget *button_box_rgb;                    // GtkBox -- contains RGB channels buttons
-  GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channel display
-  GtkWidget *scope_draw;                        // GtkDrawingArea -- scope, scale, draggable overlays
+  GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channels
+  GtkWidget *scope_draw;                        // GtkDrawingArea -- scope & resize
   // for access to data during process/draw
   dt_pthread_mutex_t lock;
 } dt_scopes_t;
