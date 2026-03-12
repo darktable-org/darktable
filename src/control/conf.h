@@ -47,6 +47,9 @@ typedef struct dt_confgen_value_t
   char *shortdesc;
   char *longdesc;
   gboolean is_common;
+  int    welcome_pagenum;      // 0 = not on welcome screen; >0 = page number
+  int    welcome_questionnum;  // sort order within page
+  gboolean welcome_dirchooser; // TRUE to use a directory chooser widget
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
@@ -139,6 +142,13 @@ const char *dt_confgen_get(const char *name,
 
 const char *dt_confgen_get_label(const char *name);
 const char *dt_confgen_get_tooltip(const char *name);
+
+// welcome-screen metadata
+int         dt_confgen_get_welcome_pagenum(const char *name);
+gboolean    dt_confgen_get_welcome_dirchooser(const char *name);
+// Returns a newly-allocated GList of g_strdup'd conf keys with welcome_pagenum > 0,
+// sorted by (pagenum, questionnum).
+GList      *dt_confgen_get_welcome_keys(void);
 
 gboolean dt_conf_is_default(const char *name);
 gchar* dt_conf_expand_default_dir(const char *dir);

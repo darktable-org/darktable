@@ -567,6 +567,14 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(leave, void(*)(GtkEventControllerMotion *, __typeof__(data))), \
   dt_gui_connect_motion(GTK_WIDGET(widget), G_CALLBACK(motion), G_CALLBACK(enter), G_CALLBACK(leave), (data)))
 
+GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
+					    GtkEventControllerScrollFlags flags,
+                                            GCallback scroll,
+                                            gpointer data);
+#define dt_gui_connect_scroll(widget, flags, scroll, data) ( \
+  ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
+  dt_gui_connect_scroll(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
+
 // GTK4 gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 #define dt_modifier_eq(controller, mask)\
   dt_modifier_is(dt_key_modifier_state(), mask)

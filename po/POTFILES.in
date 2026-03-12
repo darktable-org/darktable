@@ -205,6 +205,7 @@ src/gui/preferences.c
 src/gui/presets.c
 src/gui/splash.c
 src/gui/styles_dialog.c
+src/gui/welcome.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
@@ -339,6 +340,7 @@ src/libs/filtering.c
 src/libs/filters/aperture.c
 src/libs/filters/colors.c
 src/libs/filters/date.c
+src/libs/filters/duplicates.c
 src/libs/filters/exposure.c
 src/libs/filters/exposure_bias.c
 src/libs/filters/filename.c

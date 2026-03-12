@@ -99,6 +99,22 @@ changes (where available).
   images from 720x450 to 1440x900. This produces better data for
   various situations, including in scopes and the color picker.
 
+- Use darktable icon in desktop environment when running under Wayland
+  on a KDE-like system. Previously the window manager would use a
+  generic icon.
+
+- Use server-side decorations (SSD) for windows when the user's window
+  manager is capable of this, to make window decorations consistent
+  with other applications. If SSD is not implemented (Gnome/Mutter
+  under Wayland), use client-side decorations (CSD).
+
+- Added a welcome screen to help users understand and set the most
+  relevant configuration options on the first run.
+
+- Added touchpad gestures in darkroom, including pinch zoom in/out
+  and two-finger panning. Follow-up fixes refined input source
+  handling to keep panning limited to touchpad smooth-scroll input.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
@@ -118,9 +134,10 @@ changes (where available).
 
 - Removed `Neo` Intel GPU from the Windows blacklist.
 
-- In the styles module, a new option has been added to control the
-  preview size in the tooltip. The available options are: no preview,
-  default size, and large size.
+- In the styles module, a new option has been added to hide the
+  preview in the tooltip. Additionally, a module preference now allows
+  you to change the preview size, with two options available: default 
+  and large.
 
 - Improved debugging option --dump-diff-pipe for those of you
   interested in OpenCL code and debugging.
@@ -134,6 +151,11 @@ changes (where available).
   each histogram mode, and within each mode to cycle through its
   options. This was a relic of when there were fewer scopes and they
   were not accessible by shortcuts.
+
+- Increased the limit on the number of offset days in geotagging module
+  to correct an incorrect camera timestamps from 99 to 9999 days.
+
+- Added a new collection filter for image duplicates.
 
 ## Bug Fixes
 
@@ -196,6 +218,9 @@ changes (where available).
 - Fixed a wrong WB when reloading defaults after changing manually the
   WB. This was due to a missing reset letting the Color Calibration
   module starting with a wrong WB.
+
+- Avoid speckles when creating drawn masks using the vectorize option
+  in the Raster File module.
 
 ## Lua
 
