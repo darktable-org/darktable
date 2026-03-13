@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,11 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
-#include "common/debug.h"
 #include "common/exif.h"
 #include "common/metadata.h"
 #include "common/datetime.h"
@@ -29,7 +27,6 @@
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
-#include "dtgtk/expander.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -186,6 +183,10 @@ const char *name(dt_lib_module_t *self)
   return _("import");
 }
 
+gboolean has_preset_label(dt_lib_module_t *self)
+{
+  return TRUE;
+}
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
