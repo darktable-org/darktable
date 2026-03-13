@@ -1170,7 +1170,8 @@ static void _vec_eventbox_scroll(dt_scopes_mode_t *const self,
 }
 
 static void _harmony_adjust_page(GtkWidget *widget,
-                                 GtkAllocation* alloc, dt_scopes_mode_t *self)
+                                 GtkAllocation* alloc,
+                                 dt_scopes_mode_t *self)
 {
   dt_scopes_vec_t *const d = self->data;
   // size adjustment page to options buttons box which, in turn,
@@ -1209,7 +1210,8 @@ static void _harmony_leave(GtkEventControllerMotion *controller,
   }
 }
 
-static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
+static void _vec_scale_clicked(GtkWidget *button,
+                               dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *d = self->data;
 
@@ -1220,7 +1222,8 @@ static void _vec_scale_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
   dt_scopes_reprocess();
 }
 
-static void _vec_colorspace_clicked(GtkWidget *button, dt_scopes_mode_t *const self)
+static void _vec_colorspace_clicked(GtkWidget *button,
+                                    dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *d = self->data;
   d->vectorscope_type = (d->vectorscope_type + 1) % DT_SCOPES_VEC_VECTORSCOPE_N;
@@ -1249,7 +1252,8 @@ static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
   _color_harmony_changed_record(vec_mode);
 }
 
-void _vec_signal_image_changed(gpointer instance, dt_scopes_mode_t *const self)
+void _vec_signal_image_changed(gpointer instance,
+                               dt_scopes_mode_t *const self)
 {
   dt_scopes_vec_t *const d = self->data;
   dt_color_harmony_guide_t new_guide;
@@ -1360,8 +1364,10 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
   d->harmony_prelight = d->ignore_prelight = DT_COLOR_HARMONY_NONE;
 }
 
-static void _vec_add_options(dt_scopes_mode_t *const self, dt_action_t *dark,
-                             GtkWidget *box_right, GtkWidget *box_opt)
+static void _vec_add_options(dt_scopes_mode_t *const self,
+                             dt_action_t *dark,
+                             GtkWidget *box_right,
+                             GtkWidget *box_opt)
 {
   dt_scopes_vec_t *const d = self->data;
 
@@ -1435,7 +1441,8 @@ static void _vec_gui_cleanup(dt_scopes_mode_t *const self)
 }
 
 // The function table for vectorscope mode. This must be public, i.e. no "static" keyword.
-const dt_scopes_functions_t dt_scopes_functions_vectorscope = {
+const dt_scopes_functions_t dt_scopes_functions_vectorscope =
+{
   .name = _vec_name,
   .process = _vec_process,
   .clear = _vec_clear,

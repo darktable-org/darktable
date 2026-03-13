@@ -34,7 +34,6 @@ static const gchar *rgb_names[DT_SCOPES_RGB_N] =
     N_("blue")
   };
 
-
 const char *name(dt_lib_module_t *self)
 {
   return _("scopes");
@@ -62,8 +61,6 @@ int position(const dt_lib_module_t *self)
 {
   return 1000;
 }
-
-
 
 static void _scope_process
   (struct dt_lib_module_t *self,
@@ -577,8 +574,10 @@ void view_leave(struct dt_lib_module_t *self,
   DT_CONTROL_SIGNAL_DISCONNECT(_lib_histogram_preview_updated_callback, self);
 }
 
-static gboolean _overlay_size_child_to_main(GtkOverlay *overlay, GtkWidget *child,
-                                            GdkRectangle *alloc, GtkWidget *match)
+static gboolean _overlay_size_child_to_main(GtkOverlay *overlay,
+                                            GtkWidget *child,
+                                            GdkRectangle *alloc,
+                                            GtkWidget *match)
 {
   // GtkOverlay clips main child to its parent widget size, but not
   // other children. Make sure that we clip match.
