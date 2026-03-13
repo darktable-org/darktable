@@ -135,6 +135,7 @@ jobs:
             liblcms2-dev \
             liblensfun-dev \
             liblua5.4-dev \
+            libonnxruntime-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
