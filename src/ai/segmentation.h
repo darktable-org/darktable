@@ -30,8 +30,9 @@ typedef struct dt_seg_context_t dt_seg_context_t;
 /**
  * @brief A point prompt for the segmentation decoder.
  */
-typedef struct dt_seg_point_t {
-  float x, y;  ///< Pixel coordinates in the original image space
+typedef struct dt_seg_point_t
+{
+  float x, y;  ///< pixel coordinates in the original image space
   int label;   ///< 1 = foreground (include), 0 = background (exclude)
 } dt_seg_point_t;
 
