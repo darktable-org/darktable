@@ -389,6 +389,7 @@ jobs:
           brew reinstall --build-from-source --force graphicsmagick
 
           # handle keg-only libs
+          brew link --force lua@5.4
           brew link --force libomp
           brew link --force libsoup
       - name: Cancel workflow if job fails
