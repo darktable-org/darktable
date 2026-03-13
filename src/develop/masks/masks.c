@@ -2793,9 +2793,9 @@ void dt_masks_line_stroke(cairo_t *cr,
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
-  double dashed2[] = { DT_PIXEL_APPLY_DPI(8.0), DT_PIXEL_APPLY_DPI(12.0) };
-  dashed2[0] /= zoom_scale;
-  dashed2[1] /= zoom_scale;
+  double dashed_restricted[] = { DT_PIXEL_APPLY_DPI(8.0), DT_PIXEL_APPLY_DPI(12.0) };
+  dashed_restricted[0] /= zoom_scale;
+  dashed_restricted[1] /= zoom_scale;
 
   const gboolean restricted = dt_masks_is_restricted_mode();
 
@@ -2821,7 +2821,7 @@ void dt_masks_line_stroke(cairo_t *cr,
 
   if(restricted && !border)
   {
-    cairo_set_dash(cr, dashed2, len, 4);
+    cairo_set_dash(cr, dashed_restricted, len, 4);
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
   }
   else if(!source)
