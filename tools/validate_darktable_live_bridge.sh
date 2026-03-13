@@ -16,7 +16,7 @@ if [[ ${1:-} != "--inner" ]]; then
 fi
 shift
 
-asset_path=${DARKTABLE_LIVE_BRIDGE_ASSET:-/home/cgasgarth/Documents/projects/aiPhotoEditing/darktableAI/assets/_DSC8809.ARW}
+source_asset_path=${DARKTABLE_LIVE_BRIDGE_ASSET:-/home/cgasgarth/Documents/projects/aiPhotoEditing/darktableAI/assets/_DSC8809.ARW}
 requested_exposure=${DARKTABLE_LIVE_BRIDGE_EXPOSURE:-1.25}
 darktable_bin=${DARKTABLE_LIVE_BRIDGE_DARKTABLE:-/usr/bin/darktable}
 bridge_bin=${DARKTABLE_LIVE_BRIDGE_HELPER:-$repo_root/build/bin/darktable-live-bridge}
@@ -33,8 +33,8 @@ if [[ ! -x "$bridge_bin" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$asset_path" ]]; then
-  echo "missing asset: $asset_path" >&2
+if [[ ! -f "$source_asset_path" ]]; then
+  echo "missing asset: $source_asset_path" >&2
   exit 1
 fi
 
@@ -43,10 +43,14 @@ config_dir="$run_root/config"
 cache_dir="$run_root/cache"
 tmp_dir="$run_root/tmp"
 runtime_dir="$run_root/runtime"
+asset_dir="$run_root/asset"
 library_path="$run_root/library.db"
 darktable_log="$run_root/darktable.log"
-mkdir -p "$config_dir" "$cache_dir" "$tmp_dir" "$runtime_dir"
+mkdir -p "$config_dir" "$cache_dir" "$tmp_dir" "$runtime_dir" "$asset_dir"
 chmod 700 "$runtime_dir"
+
+asset_path="$asset_dir/$(basename "$source_asset_path")"
+cp -- "$source_asset_path" "$asset_path"
 
 cleanup() {
   tmux -L "$tmux_socket" kill-session -t "$tmux_session" 2>/dev/null || true
@@ -188,6 +192,10 @@ def expect_close(name, value, target):
 expect_ok('initial', initial)
 expect_ok('set-exposure', set_payload)
 expect_ok('post-set', post_set)
+initial_current = (initial.get('exposure') or {}).get('current')
+if isinstance(initial_current, (int, float)) and not math.isnan(initial_current):
+    if abs(initial_current - requested) <= 1e-6:
+        raise SystemExit(f'initial exposure already equals requested exposure {requested}: {initial}')
 expect_close('set-exposure requested', (set_payload.get('exposure') or {}).get('requested'), requested)
 expect_close('set-exposure current', (set_payload.get('exposure') or {}).get('current'), requested)
 expect_close('post-set current', (post_set.get('exposure') or {}).get('current'), requested)
