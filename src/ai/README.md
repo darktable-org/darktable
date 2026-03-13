@@ -445,3 +445,71 @@ All decoders must follow the interface described above:
 3. Use `dt_ai_run()` for inference with `dt_ai_tensor_t` arrays
 4. Set `"task": "newtask"` in the model's `config.json`
 5. Add the new files to `src/ai/CMakeLists.txt`
+
+---
+
+## AI Payload Acceptance Contract
+
+This contract defines how darktable accepts generated persistence artifacts (`.xmp` and `.dtstyle`) and what output is guaranteed when payload content is imperfect.
+
+### XMP Sidecar (`.xmp`)
+
+| Payload state | Source-backed branch | Result | Behavior | Evidence in code |
+|---|---|---|---|---|
+| `write_sidecar_files` missing/unknown | default in `dt_image_get_xmp_mode()` | `ALWAYS` (for writes) | Missing/invalid config is normalized to `on import` | `src/common/image.c:351-377` |
+| `write_sidecar_files = "on import"` | `DT_WRITE_XMP_ALWAYS` | Accept write target | `dt_image_write_sidecar_file()` always calls `dt_exif_xmp_write()` | `src/common/image.c:2993-2997` |
+| `write_sidecar_files = "after edit"` + altered data OR user tags | `DT_WRITE_XMP_LAZY` + `_any_altered_data()` | Attempt write | `src/common/image.c:2993-2995` |
+| `write_sidecar_files = "after edit"` + no altered data/user tags | `DT_WRITE_XMP_LAZY` | Existing sidecar is deleted | `src/common/image.c:2998-3004` |
+| `write_sidecar_files = "never"` | `DT_WRITE_XMP_NEVER` | No sidecar write/delete action | `src/common/image.c:2992-3005` |
+| write path success | `dt_exif_xmp_write()` | success | Returns `FALSE` on success | `src/common/exif.cc:6008-6110` |
+| write path failure | file cannot be opened, EXIF encode exception | reject write attempt | Returns `TRUE` (error) | `src/common/exif.cc:6093-6118` |
+| no change vs existing sidecar | sidecar hash equals computed old+new hash | skip rewrite | Still updates DB timestamp as success | `src/common/exif.cc:6074-6110` |
+
+Notes:
+- Darktable writes sidecars as `<?xml version="1.0" encoding="UTF-8"?>` followed by the compact packet.
+- `dt_exif_xmp_write()` writes sidecars as version `DT_XMP_EXIF_VERSION` (`5`) through `_exif_xmp_read_data`.
+
+### XMP Import and History Semantics
+
+| Payload field / shape | Source-backed branch | Deterministic outcome | Evidence in code |
+|---|---|---|---|
+| `Xmp.darktable.xmp_version > 5` | `dt_exif_xmp_read()` | Hard reject (`TRUE`) | `src/common/exif.cc:4206-4214` |
+| `xmp_version = 5` and history entry keys complete | `_read_history_v2()` | Full history + masks imported | `src/common/exif.cc:3528-3682`, `4301-4399`, `4400-4538` |
+| `xmp_version = 4/3/2` and history index is malformed (`[a/b]` parse failure) | `_read_history_v2()` | History parsing aborts to empty list (`history_entries = NULL`); DB import continues with empty history unless later DB steps fail | `src/common/exif.cc:3550-3571`, `4301-4538` |
+| `xmp_version = 4/3/2` with a missing required field (`operation`/`modversion`/`params`) on any history entry | `_read_history_v2()` final sanity check | Whole history list is discarded (`history_entries = NULL`), then import proceeds without history unless DB write fails | `src/common/exif.cc:3669-3678`, `4301-4538` |
+| `xmp_version = 1` / `0` | legacy path `_read_history_v1()` + possible fallback | Legacy history parser used | `src/common/exif.cc:4192-4205` |
+| `xmp_version` missing | non-versioned XMP path | Metadata decode still runs, and `DT_IMAGE_NO_LEGACY_PRESETS` is set | `src/common/exif.cc:4048-4092`, `4085-4088` |
+| `Xmp.darktable.history` present with malformed hex params | `dt_exif_xmp_decode()` | Blob decode returns `NULL`, DB bind can write NULL and import may still succeed | `src/common/exif.cc:3230-3256`, `3630-3660`, `4332-4351` |
+| `xmp_version < 5`, `rawprepare` exists, no `highlights` entry | `_read_history_v2()` compat shim | synthetic highlights module added to history | `src/common/exif.cc:4233-4297` |
+
+### DTStyle (`.dtstyle`)
+
+| Payload state | Source-backed branch | Deterministic outcome | Evidence in code |
+|---|---|---|---|
+| XML not well formed | `g_markup_parse_context_parse()`/`end_parse()` | Import aborts with no DB write | `src/common/styles.c:1647-1671` |
+| Empty `<name>` text | name text handler | Name defaults to `imported-style` | `src/common/styles.c:1477-1487` |
+| Duplicate style name | `dt_styles_create_style_header()` | Insert is skipped; no item insertion | `src/common/styles.c:247-257`, `1603-1610` |
+| Missing `<plugin>` numeric fields (`module`, `num`, `enabled`, etc.) | `dt_style_start/tag/text handlers` with `atoi()` defaults | Stored as `0` (or existing defaults) and style is still imported | `src/common/styles.c:1456-1544` |
+| Plugin payload text not in expected encoding | `dt_exif_xmp_decode()` in `dt_style_plugin_save()` | Decodes to `NULL`; insert uses NULL blob payloads | `src/common/styles.c:1575-1597` |
+| Missing style root schema checks (only permissive XML parser path) | parser + save path | No schema/version enforcement before DB import | `src/common/styles.c:1623-1679` |
+
+### Validation checklist for AI output
+
+1. **Write-side contract check (for generated `.xmp`)**
+   - Confirm payload includes `Xmp.darktable.xmp_version` as integer `2..5` (prefer `5`).
+   - Confirm each relevant `history` entry (v2+) has `darktable:operation`, `darktable:modversion`, and `darktable:params`.
+   - Confirm encoded payloads are either `gzNN...` base64+zlib or lowercase hex (`[0-9a-f]`) and decode successfully with `dt_exif_xmp_decode` semantics.
+2. **Import-path behavior check**
+   - Feed the file through XMP import and verify `dt_exif_xmp_read()` returns success (`FALSE`).
+   - If it returns error (`TRUE`), treat payload as hard-reject and inspect reason:
+     - unsupported `xmp_version > 5`, or malformed file/Exif exception path.
+3. **Style payload check (`.dtstyle`)**
+   - Validate XML well-formedness before import.
+   - Verify root element is `darktable_style` and plugin blocks are present if expected.
+   - Validate numeric nodes can be parsed (`atoi` equivalent) and defaulting behavior is acceptable.
+   - Decode all blob fields with dt-style decode rules and check for NULL; NULL is accepted but loses params.
+4. **Partial acceptance expectations**
+   - `.xmp`: missing history entries/fields can still import image metadata with reduced edit history (partial success).
+   - `.dtstyle`: malformed/partial plugin fields can import with defaulted/empty values; only parse failures, duplicate name, or duplicate style header prevents insertion.
+5. **Version drift check**
+   - `dt_exif_xmp_write()` outputs `xmp_version = 5` and writes `<?xml version="1.0" encoding="UTF-8"?>` before payload. Reject generators that emit a different darktable version unless explicitly intended for compatibility.

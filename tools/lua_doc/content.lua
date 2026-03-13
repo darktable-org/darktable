@@ -1027,8 +1027,19 @@ local widget = dt.new_widget("button"){
 	events["intermediate-export-image"].callback:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage used to export the image (can be nil).]])
 	events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
+	events["camera-image-downloaded"]:set_text([[This event is called each time a camera image is downloaded from a tethered capture or imported directly from camera.
 
-	events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
+	The call is blocking and receives camera path metadata as strings.]])
+	events["camera-image-downloaded"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+	events["camera-image-downloaded"].callback:add_parameter("camera_model","string",[[The camera model string used by darktable, or empty string if unknown.]])
+	events["camera-image-downloaded"].callback:add_parameter("camera_port","string",[[The camera port string used by darktable, or empty string if unknown.]])
+	events["camera-image-downloaded"].callback:add_parameter("in_path","string",[[The source folder/path on the camera for imported images, or empty string if not known.]])
+	events["camera-image-downloaded"].callback:add_parameter("in_filename","string",[[The source filename on the camera for imported images, or empty string if not known.]])
+	events["camera-image-downloaded"].callback:add_parameter("filename","string",[[The local path where the file was written after download.]])
+	events["camera-image-downloaded"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
+
+  events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
 
 	This event can be registered multiple times, all callbacks will be called. The call is blocking.]])
 	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])

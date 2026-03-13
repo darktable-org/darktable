@@ -23,6 +23,11 @@
 #include "imageio/imageio_jpeg.h"
 #include <gphoto2/gphoto2-file.h>
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#endif
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -2403,6 +2408,23 @@ static void _dispatch_camera_image_downloaded(const dt_camctl_t *c,
       lstnr->image_downloaded(camera, in_path, in_filename, filename, lstnr->data);
   }
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
+
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "camera-image-downloaded",
+      LUA_ASYNC_TYPENAME_WITH_FREE, "char*", g_strdup(camera && camera->model ? camera->model : ""),
+      g_cclosure_new(G_CALLBACK(&free), NULL, NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE, "char*", g_strdup(camera && camera->port ? camera->port : ""),
+      g_cclosure_new(G_CALLBACK(&free), NULL, NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE, "char*", g_strdup(in_path ? in_path : ""),
+      g_cclosure_new(G_CALLBACK(&free), NULL, NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE, "char*", g_strdup(in_filename ? in_filename : ""),
+      g_cclosure_new(G_CALLBACK(&free), NULL, NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE, "char*", g_strdup(filename ? filename : ""),
+      g_cclosure_new(G_CALLBACK(&free), NULL, NULL),
+      LUA_ASYNC_DONE);
+#endif
 }
 
 static void _dispatch_control_status(const dt_camctl_t *c,

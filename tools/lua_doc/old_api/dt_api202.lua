@@ -3188,6 +3188,64 @@ defaults to darktable.debug.known if not set]],
 },
 },
 },
+["camera-image-downloaded"] = {
+["__text"] = [[This event is called each time a camera image is downloaded from a tethered capture or imported directly from camera.
+
+The call is blocking and receives camera path metadata as strings.]],
+["__attributes"] = {
+["reported_type"] = [[event]],
+},
+["callback"] = {
+["__text"] = [[]],
+["__attributes"] = {
+["reported_type"] = [[function]],
+["signature"] = {
+["1"] = {
+["__text"] = [[The name of the event that triggered the callback.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+["2"] = {
+["__text"] = [[The camera model string used by darktable, or empty string if unknown.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+["3"] = {
+["__text"] = [[The camera port string used by darktable, or empty string if unknown.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+["4"] = {
+["__text"] = [[The source folder/path on the camera for imported images, or empty string if not known.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+["5"] = {
+["__text"] = [[The source filename on the camera for imported images, or empty string if not known.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+["6"] = {
+["__text"] = [[The local path where the file was written after download.]],
+["__attributes"] = {
+["reported_type"] = [[string]],
+},
+},
+},
+},
+},
+["extra_registration_parameters"] = {
+["__text"] = [[This event has no extra registration parameters.]],
+["__attributes"] = {
+["reported_type"] = [[documentation node]],
+},
+},
+},
 ["post-import-image"] = {
 ["__text"] = [[This event is triggered whenever a new image is imported into the database.
 
