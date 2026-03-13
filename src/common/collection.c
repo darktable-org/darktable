@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-2025 darktable developers.
+    Copyright (C) 2024-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -652,6 +652,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("geotagging");
     case DT_COLLECTION_PROP_GROUP_ID:
       return N_("group");
+    case DT_COLLECTION_PROP_DUPLICATES:
+      return N_("duplicates");
     case DT_COLLECTION_PROP_LOCAL_COPY:
       return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
@@ -1565,6 +1567,36 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
               || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
       {
         query = g_strdup_printf("(flags & %d) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
+      break;
+
+    case DT_COLLECTION_PROP_DUPLICATES: // duplicates
+      if(!g_strcmp0(escaped_text, _("images with duplicates"))
+         || !g_strcmp0(escaped_text, "$IMGS_WITH_DUPLICATES"))
+      {
+        query = g_strdup
+          ("(mi.id IN ("
+           "   SELECT i.id"
+           "   FROM main.images i"
+           "   JOIN ("
+           "     SELECT film_id"
+           "          , filename"
+           "     FROM main.images"
+           "     GROUP BY film_id"
+           "            , filename"
+           "     HAVING COUNT(*) > 1"
+           "   ) dups ON i.film_id = dups.film_id AND i.filename = dups.filename)) ");
+      }
+      else if(!g_strcmp0(escaped_text, _("duplicates only"))
+         || !g_strcmp0(escaped_text, "$DUPLICATES_ONLY"))
+      {
+        query = g_strdup
+          ("(mi.version > (SELECT MIN(version) FROM main.images"
+           "               WHERE film_id = mi.film_id AND filename = mi.filename)) ");
       }
       else // by default, we select all the images
       {

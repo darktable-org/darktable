@@ -107,6 +107,13 @@
     <shortdescription>show splash screen at startup</shortdescription>
     <longdescription>display a small window showing the progress of darktable startup before the main window appears</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface" common="yes">
+    <name>ui/show_welcome_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show welcome screen on next run</shortdescription>
+    <longdescription>display the welcome setup screen the next time darktable is launched</longdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
     <type>bool</type>
@@ -326,7 +333,8 @@
     </type>
     <default>on import</default>
     <shortdescription>create XMP files</shortdescription>
-    <longdescription>XMP sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be created:\n - 'never': all development information will be stored only in the library database\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image or adding tags.</longdescription>
+    <longdescription><![CDATA[XMP sidecar files store all editing steps, ratings, tags and color labels alongside your images in an open format readable by other applications, and provide an emergency backup if the database and its backups are lost\n\n<b>never:</b> information is stored only in darktable's database; if it is lost or corrupted, your edits cannot be recovered from the files\n\n<b>after edit:</b> the XMP file is created after the first intentional (i.e., non auto-applied) edit and updated after each editing session\n\n<b>on import:</b> an XMP file is created when the image is imported, and updated after each change]]></longdescription>
+    <welcomescreen pagenum="3" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
@@ -1029,13 +1037,6 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
- <dtconfig>
-    <name>ui_last/styles_preview_mode</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
   <dtconfig>
     <name>ui_last/metadata_dialog_width</name>
     <type>int</type>
@@ -1587,7 +1588,8 @@
     <type>string</type>
     <default>$(PICTURES_FOLDER)/Darktable</default>
     <shortdescription>base filmroll's directory</shortdescription>
-    <longdescription>directory where new imported filmrolls are created</longdescription>
+    <longdescription><![CDATA[directory where newly imported filmrolls are stored; the default uses <b>$(PICTURES_FOLDER)</b>, which expands to your system's pictures folder: <i>~/Pictures</i> on macOS and Linux, <i>C:/Users/username/Pictures</i> on Windows]]></longdescription>
+    <welcomescreen pagenum="2" questionnum="1" dirchooser="yes"/>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
@@ -1752,7 +1754,8 @@
      <type>bool</type>
     <default>true</default>
     <shortdescription>prioritize the hovered image over the selected images</shortdescription>
-    <longdescription>this defines how the list of images to act on is constructed.</longdescription>
+    <longdescription><![CDATA[in the lighttable, where culling takes place, you can apply actions (e.g., setting ratings) to the hovered image or to the selected ones\n\n<b>enabled</b> actions apply to the hovered image (less clicking)\n\n<b>disabled</b> actions apply to the current selection (less error prone)]]></longdescription>
+    <welcomescreen pagenum="4" questionnum="1"/>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
@@ -2349,7 +2352,8 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
-    <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
+    <longdescription><![CDATA[in darktable's darkroom, where you do your edits, all controls are listed on a panel on the right; you can choose whether you want to use the scroll wheel or scroll gesture on your touchpad to scroll the panel, or to change the values of the control under the pointer; this latter modality enables faster editing, but this can be dangerous because you can change the values ​​of the module controls without noticing if you are not used to it\n\n<b>enabled:</b> the mouse wheel scrolls the modules panel and with <i>Ctrl+Alt</i> adjusts a control's value\n\n<b>disabled:</b> the mouse wheel adjusts the control under the pointer and with <i>Ctrl+Alt</i> scrolls the panel.]]></longdescription>
+    <welcomescreen pagenum="5" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
@@ -3199,7 +3203,7 @@
       <enum>
         <option>vectorscope</option>
         <option>waveform</option>
-        <option>waveform/vectorscope</option>
+        <option>split</option>
         <option>RGB parade</option>
         <option>histogram</option>
       </enum>
@@ -3642,7 +3646,8 @@
     </type>
     <default>scene-referred (sigmoid)</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
-    <longdescription>scene-referred workflow is based on linear modules and will auto-apply the corresponding tone mapper (shown in parenthesis), color calibration and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve, white balance and the legacy module pipe order.</longdescription>
+    <longdescription><![CDATA[selects which workflow will be used by default in the darkroom\n\n<b>scene-referred (sigmoid)</b> modern workflow, fewer tonemapper controls\n\n<b>scene-referred (filmic)</b> modern workflow, more tone mapping controls\n\n<b>scene-referred (AgX)</b> modern workflow, maximum tone mapping control\n\n<b>display-referred (legacy)</b> legacy workflow (not recommended)\n\n<b>none</b> do not use a predefined workflow]]></longdescription>
+    <welcomescreen pagenum="1" questionnum="1"/>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
@@ -3966,6 +3971,13 @@
     <default>400</default>
     <shortdescription>height of the styles list</shortdescription>
     <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/style/preview_size</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>preview size on tooltip</shortdescription>
+    <longdescription>size of the preview on the tooltip</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/toneequal/gui_page</name>

@@ -169,6 +169,10 @@ GList *ras2forms(const float *mask,
   potrace_param_t *param = potrace_param_default();
   // finer path possible
   param->alphamax = 0.0f;
+  param->turdsize = 50; // ignore area whose size are < 50
+  param->turnpolicy = POTRACE_TURNPOLICY_MINORITY;
+  param->opticurve = 1;
+  param->opttolerance = 0.8;
 
   potrace_state_t *st = potrace_trace(param, bm);
 

@@ -148,6 +148,7 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"
   "gui/presets.c"
   "gui/splash.c"
+  "gui/welcome.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
   "imageio/imageio_jpeg.c"
@@ -935,7 +936,7 @@ file(GLOB darktable_STYLES
 add_custom_command(
   DEPENDS ${darktable_STYLES} ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
-  COMMAND ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh ${DARKTABLE_DATADIR}/styles ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh ${DARKTABLE_DATADIR}/styles ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
   COMMENT "Generating styles strings for translation"
 )
 

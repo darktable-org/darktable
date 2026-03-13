@@ -159,7 +159,7 @@ typedef struct dt_bauhaus_t
   void (*press)(GtkGestureSingle*, int, double, double, GtkWidget*);
   void (*release)(GtkGestureSingle*, int, double, double, GtkWidget*);
   void (*motion)(GtkEventControllerMotion*, double, double, GtkWidget*);
-  gboolean (*scroll)(GtkWidget*, GdkEventScroll*);
+  void (*scroll)(GtkEventControllerScroll*, double, double, GtkWidget*);
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0
