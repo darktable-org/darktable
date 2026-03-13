@@ -24,6 +24,29 @@
 #define HISTOGRAM_BINS 256
 #define BLACK_POINT_REGION 0.2f
 
+// Tunable thresholds for histogram tooltip analysis
+#define HIST_SHADOW_EDGE_BINS 16
+#define HIST_HIGHLIGHT_EDGE_BINS 16
+#define HIST_CLIP_THRESHOLD_PCT 0.5f
+#define HIST_CROWD_THRESHOLD_PCT 5.0f
+#define HIST_DARK_MEAN 85.0f
+#define HIST_BRIGHT_MEAN 170.0f
+#define HIST_LOW_CONTRAST_SPAN 128
+#define HIST_COLOR_SKEW 15.0f
+
+typedef enum _hist_issue_t
+{
+  HIST_ISSUE_HIGHLIGHT_CLIP = 0,
+  HIST_ISSUE_SHADOW_CLIP,
+  HIST_ISSUE_HIGHLIGHT_CROWD,
+  HIST_ISSUE_SHADOW_CROWD,
+  HIST_ISSUE_TOO_BRIGHT,
+  HIST_ISSUE_TOO_DARK,
+  HIST_ISSUE_LOW_CONTRAST,
+  HIST_ISSUE_COLOR_CAST,
+  HIST_ISSUE_N
+} _hist_issue_t;
+
 typedef enum dt_hist_scale_t
 {
   DT_HIST_SCALE_LOGARITHMIC = 0,
@@ -248,6 +271,179 @@ static void _hist_add_to_options_box(dt_scopes_mode_t *const self,
                    G_CALLBACK(_hist_scale_clicked), self);
 }
 
+static void _hist_append_to_tooltip(const dt_scopes_mode_t *const self,
+                                    gchar **tip)
+{
+  const dt_scopes_hist_t *const d = self->data;
+  if(!d->histogram_max) return;
+
+  uint64_t total[3] = { 0 };
+  uint64_t weighted_sum[3] = { 0 };
+  uint64_t shadow_edge[3] = { 0 };
+  uint64_t highlight_edge[3] = { 0 };
+  uint64_t shadow_near[3] = { 0 };
+  uint64_t highlight_near[3] = { 0 };
+  int first_bin = HISTOGRAM_BINS, last_bin = -1;
+
+  for(int i = 0; i < HISTOGRAM_BINS; i++)
+  {
+    gboolean any = FALSE;
+    for(int ch = 0; ch < 3; ch++)
+    {
+      const uint32_t c = d->histogram[4 * i + ch];
+      total[ch] += c;
+      weighted_sum[ch] += (uint64_t)i * c;
+      if(i == 0)
+        shadow_edge[ch] = c;
+      if(i == HISTOGRAM_BINS - 1)
+        highlight_edge[ch] = c;
+      if(i < HIST_SHADOW_EDGE_BINS)
+        shadow_near[ch] += c;
+      if(i >= HISTOGRAM_BINS - HIST_HIGHLIGHT_EDGE_BINS)
+        highlight_near[ch] += c;
+      if(c) any = TRUE;
+    }
+    if(any)
+    {
+      if(i < first_bin) first_bin = i;
+      last_bin = i;
+    }
+  }
+
+  const uint64_t max_total = MAX(MAX(total[0], total[1]), total[2]);
+  if(max_total == 0) return;
+
+  const float inv_total = 100.0f / (float)max_total;
+
+  const float shadow_edge_pct
+    = inv_total * (float)MAX(MAX(shadow_edge[0], shadow_edge[1]),
+                             shadow_edge[2]);
+  const float highlight_edge_pct
+    = inv_total * (float)MAX(MAX(highlight_edge[0], highlight_edge[1]),
+                             highlight_edge[2]);
+  const float shadow_near_pct
+    = inv_total * (float)MAX(MAX(shadow_near[0], shadow_near[1]),
+                             shadow_near[2]);
+  const float highlight_near_pct
+    = inv_total * (float)MAX(MAX(highlight_near[0], highlight_near[1]),
+                             highlight_near[2]);
+
+  float ch_mean[3];
+  for(int ch = 0; ch < 3; ch++)
+    ch_mean[ch] = total[ch] > 0
+      ? (float)weighted_sum[ch] / (float)total[ch] : 128.0f;
+  const float lum_mean = (ch_mean[0] + ch_mean[1] + ch_mean[2]) / 3.0f;
+
+  const int span = last_bin >= first_bin ? last_bin - first_bin : 0;
+  const float max_ch_delta
+    = MAX(MAX(fabsf(ch_mean[0] - ch_mean[1]),
+              fabsf(ch_mean[1] - ch_mean[2])),
+          fabsf(ch_mean[0] - ch_mean[2]));
+
+  // Score each potential issue; zero means not triggered
+  float sev[HIST_ISSUE_N];
+  memset(sev, 0, sizeof(sev));
+
+  if(highlight_edge_pct > HIST_CLIP_THRESHOLD_PCT)
+    sev[HIST_ISSUE_HIGHLIGHT_CLIP] = highlight_edge_pct;
+
+  if(shadow_edge_pct > HIST_CLIP_THRESHOLD_PCT)
+    sev[HIST_ISSUE_SHADOW_CLIP] = shadow_edge_pct;
+
+  // Crowding only fires when exact-edge clipping is below threshold
+  if(highlight_near_pct > HIST_CROWD_THRESHOLD_PCT
+     && sev[HIST_ISSUE_HIGHLIGHT_CLIP] == 0.0f)
+    sev[HIST_ISSUE_HIGHLIGHT_CROWD] = highlight_near_pct;
+
+  if(shadow_near_pct > HIST_CROWD_THRESHOLD_PCT
+     && sev[HIST_ISSUE_SHADOW_CLIP] == 0.0f)
+    sev[HIST_ISSUE_SHADOW_CROWD] = shadow_near_pct;
+
+  // Brightness only fires when the matching edge issue did not
+  if(lum_mean > HIST_BRIGHT_MEAN
+     && sev[HIST_ISSUE_HIGHLIGHT_CLIP] == 0.0f
+     && sev[HIST_ISSUE_HIGHLIGHT_CROWD] == 0.0f)
+    sev[HIST_ISSUE_TOO_BRIGHT] = lum_mean - HIST_BRIGHT_MEAN;
+
+  if(lum_mean < HIST_DARK_MEAN
+     && sev[HIST_ISSUE_SHADOW_CLIP] == 0.0f
+     && sev[HIST_ISSUE_SHADOW_CROWD] == 0.0f)
+    sev[HIST_ISSUE_TOO_DARK] = HIST_DARK_MEAN - lum_mean;
+
+  if(span > 0 && span < HIST_LOW_CONTRAST_SPAN)
+    sev[HIST_ISSUE_LOW_CONTRAST] = (float)(HIST_LOW_CONTRAST_SPAN - span);
+
+  if(max_ch_delta > HIST_COLOR_SKEW)
+    sev[HIST_ISSUE_COLOR_CAST] = max_ch_delta - HIST_COLOR_SKEW;
+
+  // Rank issues by severity (insertion sort, descending)
+  int ranked[HIST_ISSUE_N];
+  for(int i = 0; i < HIST_ISSUE_N; i++) ranked[i] = i;
+  for(int i = 1; i < HIST_ISSUE_N; i++)
+    for(int j = i; j > 0 && sev[ranked[j]] > sev[ranked[j - 1]]; j--)
+    {
+      const int tmp = ranked[j];
+      ranked[j] = ranked[j - 1];
+      ranked[j - 1] = tmp;
+    }
+
+  // Emit each triggered issue as a direct suggestion, highest severity first
+  int n_suggestions = 0;
+  for(int r = 0; r < HIST_ISSUE_N && n_suggestions < 3; r++)
+  {
+    if(sev[ranked[r]] <= 0.0f) break;
+    const int issue = ranked[r];
+    const char *text = NULL;
+    switch(issue)
+    {
+      case HIST_ISSUE_HIGHLIGHT_CLIP:
+        text = _("Highlights are clipping — lower exposure");
+        break;
+      case HIST_ISSUE_SHADOW_CLIP:
+        text = _("Shadows are clipping — raise exposure "
+                 "or lower the black point");
+        break;
+      case HIST_ISSUE_HIGHLIGHT_CROWD:
+        text = _("Bright tones bunched at the right edge "
+                 "— lower exposure slightly");
+        break;
+      case HIST_ISSUE_SHADOW_CROWD:
+        text = _("Dark tones bunched at the left edge "
+                 "— raise exposure slightly");
+        break;
+      case HIST_ISSUE_TOO_BRIGHT:
+        text = _("Image looks overexposed — lower exposure");
+        break;
+      case HIST_ISSUE_TOO_DARK:
+        text = _("Image looks underexposed — raise exposure");
+        break;
+      case HIST_ISSUE_LOW_CONTRAST:
+        text = _("Low contrast — try tone curve or levels");
+        break;
+      case HIST_ISSUE_COLOR_CAST:
+      {
+        const float r_excess = ch_mean[0] - lum_mean;
+        const float b_excess = ch_mean[2] - lum_mean;
+        text = r_excess > b_excess
+          ? _("Warm color cast — adjust white balance")
+          : _("Cool color cast — adjust white balance");
+        break;
+      }
+      default:
+        break;
+    }
+    if(text)
+    {
+      dt_util_str_cat(tip, "\n%s", text);
+      n_suggestions++;
+    }
+  }
+
+  if(n_suggestions == 0)
+    dt_util_str_cat(tip, "\n%s",
+                    _("Exposure and contrast look balanced"));
+}
+
 static void _hist_gui_cleanup(dt_scopes_mode_t *const self)
 {
   dt_scopes_hist_t *d = self->data;
@@ -269,7 +465,7 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .draw_scope_channels = _hist_draw,
   .get_highlight = _hist_get_highlight,
   .get_exposure_pos = _hist_get_exposure_pos,
-  .append_to_tooltip = NULL,
+  .append_to_tooltip = _hist_append_to_tooltip,
   .eventbox_scroll = NULL,
   .eventbox_motion = NULL,
   .update_buttons = _hist_update_buttons,
