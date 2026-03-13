@@ -169,8 +169,8 @@ static void _scope_process
   dt_pthread_mutex_lock(&s->lock);
 
   s->update_counter++;
-  // if using a non-rgb profile_info_out as in cmyk softproofing we pass DT_COLORSPACE_LIN_REC2020
-  //   for calculating the vertex_rgb data.
+  // if using a non-rgb profile_info_out as in cmyk softproofing we pass
+  // DT_COLORSPACE_LIN_REC2020 for calculating the vertex_rgb data.
   dt_scopes_call(s->cur_mode, process, img_display, &roi,
                  profile_info_out->type ? profile_info_out : fallback);
 
@@ -182,7 +182,8 @@ static void _scope_process
 }
 
 
-// FIXME: make this default in _drawable_draw_callback() and only if there is a draw_bkgd method do somethign else?
+// FIXME: make this default in _drawable_draw_callback() and only if there is a
+// draw_bkgd method do somethign else?
 void lib_histogram_draw_bkgd(const dt_scopes_mode_t *const self,
                              cairo_t *cr,
                              const int width,
@@ -412,7 +413,8 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
 
   // even if no current data, GUI should still respond to update
   dt_scopes_refresh(s);
-  // FIXME: does this comparison of update_counter need to be protected within a mutex?
+  // FIXME: does this comparison of update_counter need to be protected within a
+  // mutex?
   if(s->update_counter != s->cur_mode->update_counter)
     dt_scopes_reprocess();
 }
@@ -441,7 +443,9 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
   if(!event) return;
   if(gdk_event_get_event_type(event) == GDK_SCROLL)
   {
-    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can use gtk_get_current_event() and get flags -- make a helper function to do this
+    // FIXME: so long as we have event, test its flags -- and for GTK 4 we can
+    // use gtk_get_current_event() and get flags -- make a helper function to do
+    // this.
     if(dt_modifier_is(event->scroll.state,
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
@@ -453,7 +457,8 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
     {
       // FIXME: should scroll for exposure change be handled by each scope, rather than here?
       // FIXME: should handle horizontal scrolling as well?
-      // FIXME: should scrolling of scope be handled in the drawable rather than the eventbox
+      // FIXME: should scrolling of scope be handled in the drawable rather than
+      //        the eventbox.
       const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
       dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(self), 0, 0, black ? -dy : dy, black);
     }
@@ -494,7 +499,11 @@ static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controlle
                                              dt_scopes_t *s)
 {
   // This is required in order to correctly display the button tooltips
-  // FIXME: it would seem possible that it is necessary to update button tooltips only when the main widget tooltip has changed, if the tooltip bubbled down, but calling this at the end of lib_histogram_update_tooltip() doesn't seem to help
+  //
+  // FIXME: it would seem possible that it is necessary to update button
+  // tooltips only when the main widget tooltip has changed, if the tooltip
+  // bubbled down, but calling this at the end of lib_histogram_update_tooltip()
+  // doesn't seem to help
   dt_scopes_call_if_exists(s->cur_mode, update_buttons);
   // On GTK3/X11, GDK_ENTER_NOTIFY events are not bubbled through GTK's event
   // propagation, so a BUBBLE-phase GtkEventControllerMotion on the eventbox
@@ -550,7 +559,9 @@ static void _lib_histogram_preview_updated_callback(gpointer instance,
   // other way to assure that the histogram image is current besides
   // checking the pixelpipe to see if it has processed the current
   // image
-  // FIXME: now that have update_counter can we do this? and get rid of catching DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED?
+  //
+  // FIXME: now that have update_counter can we do this? and get rid of catching
+  // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED?
   const dt_scopes_t *s = self->data;
   dt_scopes_refresh(s);
 }
