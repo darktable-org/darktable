@@ -68,7 +68,7 @@ RUN apt-get update && apt-get install -y \
     sudo \
     # AppImage building tools
     desktop-file-utils \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/*
 
 # Set the working directory
 WORKDIR /workspace
