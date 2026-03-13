@@ -18,6 +18,7 @@ shift
 
 source_asset_path=${DARKTABLE_LIVE_BRIDGE_ASSET:-/home/cgasgarth/Documents/projects/aiPhotoEditing/darktableAI/assets/_DSC8809.ARW}
 requested_exposure=${DARKTABLE_LIVE_BRIDGE_EXPOSURE:-1.25}
+requested_control_exposure=${DARKTABLE_LIVE_BRIDGE_CONTROL_EXPOSURE:-0.5}
 darktable_bin=${DARKTABLE_LIVE_BRIDGE_DARKTABLE:-/usr/bin/darktable}
 bridge_bin=${DARKTABLE_LIVE_BRIDGE_HELPER:-$repo_root/build/bin/darktable-live-bridge}
 tmux_session=${DARKTABLE_LIVE_BRIDGE_TMUX_SESSION:-darktable-live-validate-$$}
@@ -127,24 +128,42 @@ run_bridge() {
   timeout --signal=KILL "${helper_timeout_seconds}s" "$bridge_bin" "$@"
 }
 
+run_remote_lua() {
+  gdbus call \
+    --session \
+    --timeout 1 \
+    --dest org.darktable.service \
+    --object-path /darktable \
+    --method org.darktable.service.Remote.Lua \
+    "$1"
+}
+
+switch_to_lighttable() {
+  run_remote_lua "local dt = require 'darktable'; dt.gui.current_view(dt.gui.views.lighttable); return tostring(dt.gui.current_view())" >/dev/null
+}
+
+switch_to_darkroom() {
+  run_remote_lua "local dt = require 'darktable'; dt.gui.current_view(dt.gui.views.darkroom); return tostring(dt.gui.current_view())" >/dev/null
+}
+
 wait_for_session_payload() {
   local attempts=$1
-  local expected_mode=$2
+  local expected_exposure=${2:-}
   local attempt json
   for attempt in $(seq 1 "$attempts"); do
     ensure_tmux_session_alive
     if json=$(run_bridge get-session 2>/dev/null); then
-      if python3 - "$json" "$asset_path" "$expected_mode" "$requested_exposure" <<'PY'
+      if python3 - "$json" "$asset_path" "$expected_exposure" <<'PY'
 import json, math, os, sys
 payload = json.loads(sys.argv[1])
 asset = os.path.realpath(sys.argv[2])
-mode = sys.argv[3]
-requested = float(sys.argv[4])
+expected_exposure = sys.argv[3]
 active = payload.get('activeImage') or {}
 source = active.get('sourceAssetPath')
 if payload.get('status') != 'ok' or not source or os.path.realpath(source) != asset:
     raise SystemExit(1)
-if mode == 'post-set':
+if expected_exposure:
+    requested = float(expected_exposure)
     exposure = (payload.get('exposure') or {}).get('current')
     if not isinstance(exposure, (int, float)) or math.isnan(exposure) or abs(exposure - requested) > 1e-6:
         raise SystemExit(1)
@@ -157,7 +176,7 @@ PY
     fi
     sleep 1
   done
-  if [[ "$expected_mode" == "post-set" ]]; then
+  if [[ -n "$expected_exposure" ]]; then
     fail "timed out waiting for post-set exposure readback"
   fi
   fail "timed out waiting for active darkroom session"
@@ -166,17 +185,50 @@ PY
 start_darktable_host
 wait_for_remote_lua
 
-initial_json=$(wait_for_session_payload "$ready_attempts" initial)
+initial_json=$(wait_for_session_payload "$ready_attempts")
+list_json=$(run_bridge list-controls)
+get_control_json=$(run_bridge get-control exposure.exposure)
 set_json=$(run_bridge set-exposure "$requested_exposure")
-post_set_json=$(wait_for_session_payload "$post_set_attempts" post-set)
+post_set_exposure_json=$(wait_for_session_payload "$post_set_attempts" "$requested_exposure")
+set_control_json=$(run_bridge set-control exposure.exposure "$requested_control_exposure")
+post_set_control_json=$(wait_for_session_payload "$post_set_attempts" "$requested_control_exposure")
+unsupported_control_json=$(run_bridge get-control unsupported.control)
 
-python3 - "$initial_json" "$set_json" "$post_set_json" "$requested_exposure" "$asset_path" <<'PY'
+switch_to_lighttable
+unsupported_view_get_control_json=$(run_bridge get-control exposure.exposure)
+unsupported_view_set_control_json=$(run_bridge set-control exposure.exposure "$requested_control_exposure")
+switch_to_darkroom
+wait_for_session_payload "$ready_attempts" >/dev/null
+
+if run_bridge set-control exposure.exposure '{"invalid":true}' >/dev/null 2>&1; then
+  fail "set-control accepted non-numeric JSON"
+fi
+
+if run_bridge set-control exposure.exposure 4.5 >/dev/null 2>&1; then
+  fail "set-control accepted out-of-range exposure"
+fi
+
+if run_bridge set-exposure 4.5 >/dev/null 2>&1; then
+  fail "set-exposure accepted out-of-range exposure"
+fi
+
+python3 - "$initial_json" "$list_json" "$get_control_json" "$set_json" "$post_set_exposure_json" "$set_control_json" "$post_set_control_json" "$unsupported_control_json" "$unsupported_view_get_control_json" "$unsupported_view_set_control_json" "$requested_exposure" "$requested_control_exposure" "$asset_path" <<'PY'
 import json, math, os, sys
 initial = json.loads(sys.argv[1])
-set_payload = json.loads(sys.argv[2])
-post_set = json.loads(sys.argv[3])
-requested = float(sys.argv[4])
-asset = os.path.realpath(sys.argv[5])
+listed = json.loads(sys.argv[2])
+get_control = json.loads(sys.argv[3])
+set_payload = json.loads(sys.argv[4])
+post_set_exposure = json.loads(sys.argv[5])
+set_control = json.loads(sys.argv[6])
+post_set_control = json.loads(sys.argv[7])
+unsupported = json.loads(sys.argv[8])
+unsupported_view_get = json.loads(sys.argv[9])
+unsupported_view_set = json.loads(sys.argv[10])
+requested = float(sys.argv[11])
+requested_control = float(sys.argv[12])
+asset = os.path.realpath(sys.argv[13])
+
+EXPECTED_CONTROL_ID = 'exposure.exposure'
 
 def expect_ok(name, payload):
     if payload.get('status') != 'ok':
@@ -189,18 +241,73 @@ def expect_close(name, value, target):
     if not isinstance(value, (int, float)) or math.isnan(value) or abs(value - target) > 1e-6:
         raise SystemExit(f'{name} expected {target}, got {value}')
 
+def expect_control_metadata(name, control):
+    if control.get('id') != EXPECTED_CONTROL_ID:
+        raise SystemExit(f'{name} control id mismatch: {control}')
+    if control.get('module') != 'exposure' or control.get('control') != 'exposure':
+        raise SystemExit(f'{name} control metadata mismatch: {control}')
+    if control.get('operations') != ['get', 'set']:
+        raise SystemExit(f'{name} operations mismatch: {control}')
+    value_type = control.get('valueType') or {}
+    if value_type.get('type') != 'number' or value_type.get('minimum') != -3 or value_type.get('maximum') != 4:
+        raise SystemExit(f'{name} valueType mismatch: {control}')
+    requires = control.get('requires') or {}
+    if requires.get('view') != 'darkroom' or requires.get('activeImage') is not True:
+        raise SystemExit(f'{name} requires mismatch: {control}')
+
 expect_ok('initial', initial)
+if listed.get('status') != 'ok':
+    raise SystemExit(f'list-controls status not ok: {listed}')
+controls = listed.get('controls')
+if not isinstance(controls, list) or len(controls) != 1:
+    raise SystemExit(f'list-controls unexpected controls: {listed}')
+expect_control_metadata('list-controls', controls[0])
+expect_ok('get-control', get_control)
+expect_control_metadata('get-control', get_control.get('control') or {})
 expect_ok('set-exposure', set_payload)
-expect_ok('post-set', post_set)
+expect_ok('post-set-exposure', post_set_exposure)
+expect_ok('set-control', set_control)
+expect_ok('post-set-control', post_set_control)
 initial_current = (initial.get('exposure') or {}).get('current')
 if isinstance(initial_current, (int, float)) and not math.isnan(initial_current):
     if abs(initial_current - requested) <= 1e-6:
         raise SystemExit(f'initial exposure already equals requested exposure {requested}: {initial}')
+expect_close('get-control current', (get_control.get('control') or {}).get('value'), initial_current)
 expect_close('set-exposure requested', (set_payload.get('exposure') or {}).get('requested'), requested)
 expect_close('set-exposure current', (set_payload.get('exposure') or {}).get('current'), requested)
-expect_close('post-set current', (post_set.get('exposure') or {}).get('current'), requested)
+expect_close('post-set-exposure current', (post_set_exposure.get('exposure') or {}).get('current'), requested)
+expect_control_metadata('set-control', set_control.get('control') or {})
+change = set_control.get('change') or {}
+expect_close('set-control previous', change.get('previous'), requested)
+expect_close('set-control requested', change.get('requested'), requested_control)
+expect_close('set-control current', change.get('current'), requested_control)
+expect_close('set-control control.value', (set_control.get('control') or {}).get('value'), requested_control)
+expect_close('post-set-control current', (post_set_control.get('exposure') or {}).get('current'), requested_control)
+if unsupported.get('status') != 'unavailable' or unsupported.get('reason') != 'unsupported-control':
+    raise SystemExit(f'unsupported control response mismatch: {unsupported}')
+if unsupported.get('requestedControlId') != 'unsupported.control':
+    raise SystemExit(f'unsupported control id mismatch: {unsupported}')
+if unsupported.get('session', {}).get('view') != 'darkroom':
+    raise SystemExit(f'unsupported control session mismatch: {unsupported}')
+for name, payload in (
+    ('unsupported-view get-control', unsupported_view_get),
+    ('unsupported-view set-control', unsupported_view_set),
+):
+    if payload.get('status') != 'unavailable' or payload.get('reason') != 'unsupported-view':
+        raise SystemExit(f'{name} response mismatch: {payload}')
+    if payload.get('requestedControlId') != EXPECTED_CONTROL_ID:
+        raise SystemExit(f'{name} requested control mismatch: {payload}')
+    if payload.get('session', {}).get('view') != 'lighttable':
+        raise SystemExit(f'{name} session mismatch: {payload}')
 print('initial:', json.dumps(initial, separators=(",", ":")))
+print('list-controls:', json.dumps(listed, separators=(",", ":")))
+print('get-control:', json.dumps(get_control, separators=(",", ":")))
 print('set-exposure:', json.dumps(set_payload, separators=(",", ":")))
-print('post-set:', json.dumps(post_set, separators=(",", ":")))
-print('result: post-set get-session reports requested exposure')
+print('post-set-exposure:', json.dumps(post_set_exposure, separators=(",", ":")))
+print('set-control:', json.dumps(set_control, separators=(",", ":")))
+print('post-set-control:', json.dumps(post_set_control, separators=(",", ":")))
+print('unsupported-control:', json.dumps(unsupported, separators=(",", ":")))
+print('unsupported-view-get-control:', json.dumps(unsupported_view_get, separators=(",", ":")))
+print('unsupported-view-set-control:', json.dumps(unsupported_view_set, separators=(",", ":")))
+print('result: post-set get-session reports both requested exposure targets')
 PY

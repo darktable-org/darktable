@@ -29,15 +29,21 @@
 #define DT_LIVE_BRIDGE_SERVICE "org.darktable.service"
 #define DT_LIVE_BRIDGE_PATH "/darktable"
 #define DT_LIVE_BRIDGE_INTERFACE "org.darktable.service.Remote"
+#define DT_LIVE_BRIDGE_CACHE_KEY "__darktable_live_bridge_v1_controls"
+#define DT_LIVE_BRIDGE_EXPOSURE_MIN -3.0
+#define DT_LIVE_BRIDGE_EXPOSURE_MAX 4.0
 
 static void usage(FILE *stream, const char *progname)
 {
   fprintf(stream,
           "Usage:\n"
           "  %s get-session\n"
+          "  %s list-controls\n"
+          "  %s get-control <control-id>\n"
+          "  %s set-control <control-id> <value-json>\n"
           "  %s set-exposure <EV>\n"
           "  %s --help\n",
-          progname, progname, progname);
+          progname, progname, progname, progname, progname, progname);
 }
 
 static gboolean print_json_only(const gchar *json, GError **error)
@@ -74,10 +80,100 @@ static gboolean call_lua(const gchar *lua_source, gchar **json_result, GError **
   return TRUE;
 }
 
-static gchar *build_lua_command(const gchar *command, gboolean have_exposure, double exposure)
+static gchar *lua_string_literal(const gchar *value)
+{
+  GString *literal = g_string_new("'");
+
+  for(const guchar *cursor = (const guchar *)value; cursor != NULL && *cursor != '\0'; cursor++)
+  {
+    switch(*cursor)
+    {
+      case '\\':
+        g_string_append(literal, "\\\\");
+        break;
+      case '\'':
+        g_string_append(literal, "\\\'");
+        break;
+      case '\n':
+        g_string_append(literal, "\\n");
+        break;
+      case '\r':
+        g_string_append(literal, "\\r");
+        break;
+      case '\t':
+        g_string_append(literal, "\\t");
+        break;
+      default:
+        if(*cursor < 0x20)
+          g_string_append_printf(literal, "\\%03u", (unsigned int)*cursor);
+        else
+          g_string_append_c(literal, (gchar)*cursor);
+        break;
+    }
+  }
+
+  g_string_append_c(literal, '\'');
+  return g_string_free(literal, FALSE);
+}
+
+static gboolean parse_json_number_literal(const gchar *json_text, double *value_out, GError **error)
+{
+  g_autoptr(JsonParser) parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, json_text, -1, error)) return FALSE;
+
+  JsonNode *root = json_parser_get_root(parser);
+  if(root == NULL || !JSON_NODE_HOLDS_VALUE(root))
+  {
+    g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT,
+                        "control value must be a JSON number literal");
+    return FALSE;
+  }
+
+  const GType value_type = json_node_get_value_type(root);
+  if(value_type != G_TYPE_DOUBLE && value_type != G_TYPE_INT64 && value_type != G_TYPE_INT
+     && value_type != G_TYPE_UINT64 && value_type != G_TYPE_UINT && value_type != G_TYPE_LONG
+     && value_type != G_TYPE_ULONG)
+  {
+    g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT,
+                        "control value must be a JSON number literal");
+    return FALSE;
+  }
+
+  const double value = json_node_get_double(root);
+  if(!isfinite(value))
+  {
+    g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT,
+                        "control value must be finite");
+    return FALSE;
+  }
+
+  *value_out = value;
+  return TRUE;
+}
+
+static gboolean validate_json_literal(const gchar *json_text, GError **error)
+{
+  g_autoptr(JsonParser) parser = json_parser_new();
+  return json_parser_load_from_data(parser, json_text, -1, error);
+}
+
+static gboolean validate_exposure_value(const double value, const gchar *label, GError **error)
+{
+  if(value < DT_LIVE_BRIDGE_EXPOSURE_MIN || value > DT_LIVE_BRIDGE_EXPOSURE_MAX)
+  {
+    g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "%s must be between %.0f and %.0f",
+                label, DT_LIVE_BRIDGE_EXPOSURE_MIN, DT_LIVE_BRIDGE_EXPOSURE_MAX);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+static gchar *build_lua_command(const gchar *command, const gchar *control_id,
+                                gboolean have_numeric_value, double numeric_value)
 {
   const char *lua_template =
-    "local bridge = rawget(_G, '__darktable_live_bridge_v1')\n"
+    "local bridge = rawget(_G, '" DT_LIVE_BRIDGE_CACHE_KEY "')\n"
     "if not bridge then\n"
     "  local darktable = require 'darktable'\n"
     "  bridge = {\n"
@@ -199,13 +295,15 @@ static gchar *build_lua_command(const gchar *command, gboolean have_exposure, do
     "    }\n"
     "  end\n"
     "\n"
-    "  local function unavailable(reason)\n"
-    "    return {\n"
+    "  local function unavailable(reason, requested_control_id)\n"
+    "    local payload = {\n"
     "      bridgeVersion = bridge.bridgeVersion,\n"
     "      reason = reason,\n"
     "      session = session_object(),\n"
     "      status = 'unavailable'\n"
     "    }\n"
+    "    if requested_control_id ~= nil then payload.requestedControlId = requested_control_id end\n"
+    "    return payload\n"
     "  end\n"
     "\n"
     "  local function numbers_equal(left, right)\n"
@@ -327,6 +425,123 @@ static gchar *build_lua_command(const gchar *command, gboolean have_exposure, do
     "    return payload\n"
     "  end\n"
     "\n"
+    "  local function exposure_control_metadata()\n"
+    "    return {\n"
+    "      control = 'exposure',\n"
+    "      id = 'exposure.exposure',\n"
+    "      module = 'exposure',\n"
+    "      operations = { 'get', 'set' },\n"
+    "      requires = { activeImage = true, view = 'darkroom' },\n"
+    "      valueType = { maximum = 4, minimum = -3, type = 'number' }\n"
+    "    }\n"
+    "  end\n"
+    "\n"
+    "  local function exposure_control_object()\n"
+    "    local control = exposure_control_metadata()\n"
+    "    control.value = exposure_position_to_ev(read_exposure_action(bridge.exposure_action()))\n"
+    "    return control\n"
+    "  end\n"
+    "\n"
+    "  local function set_exposure_control(requested)\n"
+    "    local image, reason = current_image()\n"
+    "    if not image then return unavailable(reason) end\n"
+    "\n"
+    "    local action = bridge.exposure_action()\n"
+    "    local previous_position = read_exposure_action(action)\n"
+    "    local current_position = previous_position\n"
+    "    local requested_position = exposure_ev_to_position(requested)\n"
+    "\n"
+    "    local sequence_before = bridge.renderSequence\n"
+    "    local history_before = bridge.historyChangeSequence\n"
+    "    if not numbers_equal(exposure_position_to_ev(previous_position), requested) then\n"
+    "      write_exposure_action(action, requested)\n"
+    "    end\n"
+    "\n"
+    "    local requested_render_sequence\n"
+    "    current_position, requested_render_sequence = wait_for_exposure_settle(image.id, action, requested_position, sequence_before, history_before)\n"
+    "    if requested_render_sequence == nil then requested_render_sequence = bridge.renderSequence end\n"
+    "\n"
+    "    local control = exposure_control_metadata()\n"
+    "    control.value = exposure_position_to_ev(current_position)\n"
+    "\n"
+    "    return {\n"
+    "      activeImage = active_image_object(image),\n"
+    "      bridgeVersion = bridge.bridgeVersion,\n"
+    "      change = {\n"
+    "        current = exposure_position_to_ev(current_position),\n"
+    "        previous = exposure_position_to_ev(previous_position),\n"
+    "        requested = requested,\n"
+    "        requestedRenderSequence = requested_render_sequence\n"
+    "      },\n"
+    "      control = control,\n"
+    "      session = session_object(),\n"
+    "      status = 'ok'\n"
+    "    }\n"
+    "  end\n"
+    "\n"
+    "  local function exposure_control_adapter()\n"
+    "    return {\n"
+    "      get = function()\n"
+    "        local image, reason = current_image()\n"
+    "        if not image then return unavailable(reason) end\n"
+    "        return {\n"
+    "          activeImage = active_image_object(image),\n"
+    "          bridgeVersion = bridge.bridgeVersion,\n"
+    "          control = exposure_control_object(),\n"
+    "          session = session_object(),\n"
+    "          status = 'ok'\n"
+    "        }\n"
+    "      end,\n"
+    "      list = function()\n"
+    "        return exposure_control_metadata()\n"
+    "      end,\n"
+    "      set = function(value)\n"
+    "        return set_exposure_control(value)\n"
+    "      end\n"
+    "    }\n"
+    "  end\n"
+    "\n"
+    "  local function control_registry()\n"
+    "    return { ['exposure.exposure'] = exposure_control_adapter() }\n"
+    "  end\n"
+    "\n"
+    "  local function lookup_control(control_id)\n"
+    "    return control_registry()[control_id]\n"
+    "  end\n"
+    "\n"
+    "  local function list_controls()\n"
+    "    local controls = {}\n"
+    "    for _, control_id in ipairs({ 'exposure.exposure' }) do\n"
+    "      controls[#controls + 1] = control_registry()[control_id].list()\n"
+    "    end\n"
+    "    return {\n"
+    "      bridgeVersion = bridge.bridgeVersion,\n"
+    "      controls = controls,\n"
+    "      session = session_object(),\n"
+    "      status = 'ok'\n"
+    "    }\n"
+    "  end\n"
+    "\n"
+    "  local function get_control(control_id)\n"
+    "    local adapter = lookup_control(control_id)\n"
+    "    if not adapter then return unavailable('unsupported-control', control_id) end\n"
+    "    local response = adapter.get()\n"
+    "    if response and response.status == 'unavailable' and response.requestedControlId == nil then\n"
+    "      response.requestedControlId = control_id\n"
+    "    end\n"
+    "    return response\n"
+    "  end\n"
+    "\n"
+    "  local function set_control(control_id, value)\n"
+    "    local adapter = lookup_control(control_id)\n"
+    "    if not adapter then return unavailable('unsupported-control', control_id) end\n"
+    "    local response = adapter.set(value)\n"
+    "    if response and response.status == 'unavailable' and response.requestedControlId == nil then\n"
+    "      response.requestedControlId = control_id\n"
+    "    end\n"
+    "    return response\n"
+    "  end\n"
+    "\n"
     "  local function on_view_changed(_, _, new_view)\n"
     "    bridge.view = new_view and tostring(new_view) or ''\n"
     "  end\n"
@@ -362,39 +577,46 @@ static gchar *build_lua_command(const gchar *command, gboolean have_exposure, do
     "  bridge.exposure_action = exposure_action\n"
     "  bridge.session_object = session_object\n"
     "  bridge.get_session = get_session\n"
+    "  bridge.list_controls = list_controls\n"
+    "  bridge.get_control = get_control\n"
+    "  bridge.set_control = set_control\n"
     "  bridge.set_exposure = set_exposure\n"
     "  bridge.json_encode = json_encode\n"
     "  bridge.update_view()\n"
-    "  rawset(_G, '__darktable_live_bridge_v1', bridge)\n"
+    "  rawset(_G, '" DT_LIVE_BRIDGE_CACHE_KEY "', bridge)\n"
     "end\n"
     "\n"
     "local command = %s\n"
+    "local control_id = %s\n"
+    "local numeric_value = %s\n"
     "local response\n"
     "if command == 'get-session' then\n"
     "  response = bridge.get_session()\n"
+    "elseif command == 'list-controls' then\n"
+    "  response = bridge.list_controls()\n"
+    "elseif command == 'get-control' then\n"
+    "  response = bridge.get_control(control_id)\n"
+    "elseif command == 'set-control' then\n"
+    "  response = bridge.set_control(control_id, numeric_value)\n"
     "elseif command == 'set-exposure' then\n"
-    "  response = bridge.set_exposure(%s)\n"
+    "  response = bridge.set_exposure(numeric_value)\n"
     "else\n"
     "  error('unknown command: ' .. tostring(command))\n"
     "end\n"
     "return bridge.json_encode(response)\n";
 
-  const char *command_literal = NULL;
-  const char *exposure_literal = "nil";
-  gchar exposure_buffer[G_ASCII_DTOSTR_BUF_SIZE] = { 0 };
+  g_autofree gchar *command_literal = lua_string_literal(command);
+  g_autofree gchar *control_literal = control_id != NULL ? lua_string_literal(control_id) : g_strdup("nil");
+  const char *numeric_literal = "nil";
+  gchar numeric_buffer[G_ASCII_DTOSTR_BUF_SIZE] = { 0 };
 
-  if(g_strcmp0(command, "get-session") == 0)
-    command_literal = "'get-session'";
-  else if(g_strcmp0(command, "set-exposure") == 0)
-    command_literal = "'set-exposure'";
-
-  if(have_exposure)
+  if(have_numeric_value)
   {
-    g_ascii_dtostr(exposure_buffer, sizeof(exposure_buffer), exposure);
-    exposure_literal = exposure_buffer;
+    g_ascii_dtostr(numeric_buffer, sizeof(numeric_buffer), numeric_value);
+    numeric_literal = numeric_buffer;
   }
 
-  return g_strdup_printf(lua_template, command_literal, exposure_literal);
+  return g_strdup_printf(lua_template, command_literal, control_literal, numeric_literal);
 }
 
 int main(int argc, char **argv)
@@ -408,25 +630,74 @@ int main(int argc, char **argv)
   }
 
   const gchar *command = NULL;
-  gboolean have_exposure = FALSE;
-  double exposure = 0.0;
+  const gchar *control_id = NULL;
+  gboolean have_numeric_value = FALSE;
+  double numeric_value = 0.0;
 
   if(argc == 2 && !strcmp(argv[1], "get-session"))
   {
     command = "get-session";
   }
+  else if(argc == 2 && !strcmp(argv[1], "list-controls"))
+  {
+    command = "list-controls";
+  }
+  else if(argc == 3 && !strcmp(argv[1], "get-control"))
+  {
+    command = "get-control";
+    control_id = argv[2];
+  }
+  else if(argc == 4 && !strcmp(argv[1], "set-control"))
+  {
+    g_autoptr(GError) parse_error = NULL;
+    if(!validate_json_literal(argv[3], &parse_error))
+    {
+      fprintf(stderr, "%s\n", parse_error != NULL ? parse_error->message : "invalid control value json");
+      return 1;
+    }
+
+    control_id = argv[2];
+    if(g_strcmp0(control_id, "exposure.exposure") == 0)
+    {
+      g_clear_error(&parse_error);
+      if(!parse_json_number_literal(argv[3], &numeric_value, &parse_error))
+      {
+        fprintf(stderr, "%s\n", parse_error != NULL ? parse_error->message : "invalid control value json");
+        return 1;
+      }
+
+      g_clear_error(&parse_error);
+      if(!validate_exposure_value(numeric_value, "exposure control value", &parse_error))
+      {
+        fprintf(stderr, "%s\n", parse_error != NULL ? parse_error->message : "invalid control value json");
+        return 1;
+      }
+
+      have_numeric_value = TRUE;
+    }
+
+    command = "set-control";
+  }
   else if(argc == 3 && !strcmp(argv[1], "set-exposure"))
   {
     char *endptr = NULL;
     errno = 0;
-    exposure = g_ascii_strtod(argv[2], &endptr);
-    if(errno != 0 || endptr == argv[2] || (endptr && *endptr != '\0') || !isfinite(exposure))
+    numeric_value = g_ascii_strtod(argv[2], &endptr);
+    if(errno != 0 || endptr == argv[2] || (endptr && *endptr != '\0') || !isfinite(numeric_value))
     {
       fprintf(stderr, "invalid exposure value\n");
       return 1;
     }
+
+    g_autoptr(GError) parse_error = NULL;
+    if(!validate_exposure_value(numeric_value, "exposure value", &parse_error))
+    {
+      fprintf(stderr, "%s\n", parse_error != NULL ? parse_error->message : "invalid exposure value");
+      return 1;
+    }
+
     command = "set-exposure";
-    have_exposure = TRUE;
+    have_numeric_value = TRUE;
   }
   else
   {
@@ -434,7 +705,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  g_autofree gchar *lua_source = build_lua_command(command, have_exposure, exposure);
+  g_autofree gchar *lua_source = build_lua_command(command, control_id, have_numeric_value, numeric_value);
   if(lua_source == NULL)
   {
     fprintf(stderr, "failed to build Lua command\n");
