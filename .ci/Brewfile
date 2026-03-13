@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    Copyright (C) 2016-2024 darktable developers.
+#    Copyright (C) 2016-2026 darktable developers.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ brew 'libraw'
 brew 'librsvg'
 brew 'libsecret'
 brew 'little-cms2'
-brew 'lua'
+brew 'lua@5.4'
 brew 'libomp'
 brew 'ninja'
 brew 'openexr'
