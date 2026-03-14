@@ -14910,7 +14910,7 @@ msgstr "Tâche"
 
 #: ../src/gui/preferences_ai.c:1053
 msgid "enabled"
-msgstr "Activer"
+msgstr "Activé"
 
 #: ../src/gui/preferences_ai.c:1063
 msgid "status"
