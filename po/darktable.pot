@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 11:33+0100\n"
+"POT-Creation-Date: 2026-03-14 20:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -104,7 +104,7 @@ msgid "on import"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1737
-#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4758
+#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4821
 #: ../build/bin/preferences_gen.h:3272
 msgctxt "preferences"
 msgid "always"
@@ -172,7 +172,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1013 ../build/bin/conf_gen.h:2742
 #: ../build/bin/conf_gen.h:3696 ../build/bin/conf_gen.h:4124
-#: ../build/bin/conf_gen.h:4517
+#: ../build/bin/conf_gen.h:4580
 msgctxt "preferences"
 msgid "none"
 msgstr ""
@@ -341,7 +341,7 @@ msgid "8K"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:1748 ../build/bin/conf_gen.h:3695
-#: ../build/bin/conf_gen.h:4761 ../build/bin/preferences_gen.h:3990
+#: ../build/bin/conf_gen.h:4824 ../build/bin/preferences_gen.h:3990
 msgctxt "preferences"
 msgid "auto"
 msgstr ""
@@ -680,122 +680,122 @@ msgctxt "preferences"
 msgid "line"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4354
+#: ../build/bin/conf_gen.h:4417
 msgctxt "preferences"
 msgid "mm"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4355
+#: ../build/bin/conf_gen.h:4418
 msgctxt "preferences"
 msgid "cm"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4356
+#: ../build/bin/conf_gen.h:4419
 msgctxt "preferences"
 msgid "inch"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4411 ../build/bin/preferences_gen.h:4428
+#: ../build/bin/conf_gen.h:4474 ../build/bin/preferences_gen.h:4428
 msgctxt "preferences"
 msgid "all"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4412
+#: ../build/bin/conf_gen.h:4475
 msgctxt "preferences"
 msgid "xatom"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4413
+#: ../build/bin/conf_gen.h:4476
 msgctxt "preferences"
 msgid "colord"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4513 ../build/bin/preferences_gen.h:3458
+#: ../build/bin/conf_gen.h:4576 ../build/bin/preferences_gen.h:3458
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4514
+#: ../build/bin/conf_gen.h:4577
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4515
+#: ../build/bin/conf_gen.h:4578
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4516
+#: ../build/bin/conf_gen.h:4579
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4663
+#: ../build/bin/conf_gen.h:4726
 msgid "camera time zone"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4664
+#: ../build/bin/conf_gen.h:4727
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4680
+#: ../build/bin/conf_gen.h:4743
 msgctxt "preferences"
 msgid "no color"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4681
+#: ../build/bin/conf_gen.h:4744
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4682
+#: ../build/bin/conf_gen.h:4745
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4746
+#: ../build/bin/conf_gen.h:4809
 msgctxt "preferences"
 msgid "list"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4747
+#: ../build/bin/conf_gen.h:4810
 msgctxt "preferences"
 msgid "tabs"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4748
+#: ../build/bin/conf_gen.h:4811
 msgctxt "preferences"
 msgid "columns"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4759
+#: ../build/bin/conf_gen.h:4822
 msgctxt "preferences"
 msgid "active"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4760
+#: ../build/bin/conf_gen.h:4823
 msgctxt "preferences"
 msgid "dim"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4762
+#: ../build/bin/conf_gen.h:4825
 msgctxt "preferences"
 msgid "fade"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4763
+#: ../build/bin/conf_gen.h:4826
 msgctxt "preferences"
 msgid "fit"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4764
+#: ../build/bin/conf_gen.h:4827
 msgctxt "preferences"
 msgid "smooth"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:4765
+#: ../build/bin/conf_gen.h:4828
 msgctxt "preferences"
 msgid "glide"
 msgstr ""
@@ -9676,7 +9676,7 @@ msgstr ""
 #: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/object.c:1005 ../src/develop/masks/path.c:1885
+#: ../src/develop/masks/object.c:1009 ../src/develop/masks/path.c:1885
 #, c-format
 msgid "size: %3.2f%%"
 msgstr ""
@@ -9882,84 +9882,82 @@ msgstr ""
 msgid "no mask extracted from AI segmentation"
 msgstr ""
 
-#: ../src/develop/masks/object.c:875
-#, c-format
-msgid "ai object #%d"
+#: ../src/develop/masks/object.c:860
+msgid "ai object group"
 msgstr ""
 
-#: ../src/develop/masks/object.c:879
-#, c-format
-msgid "ai object group #%d"
+#: ../src/develop/masks/object.c:861
+msgid "ai object"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1020
+#: ../src/develop/masks/object.c:1024
 #, c-format
 msgid "cleanup: %d"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1031
+#: ../src/develop/masks/object.c:1035
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1044
+#: ../src/develop/masks/object.c:1048
 #, c-format
 msgid "opacity: %d%%"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1173
+#: ../src/develop/masks/object.c:1177
 #, c-format
 msgid "group '%s'"
 msgstr ""
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1424 ../src/develop/masks/object.c:1452
+#: ../src/develop/masks/object.c:1428 ../src/develop/masks/object.c:1456
 msgid "object mask: analyzing image..."
 msgstr ""
 
-#: ../src/develop/masks/object.c:1462
+#: ../src/develop/masks/object.c:1466
 msgid "brush over object to create mask"
 msgstr ""
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1472
+#: ../src/develop/masks/object.c:1476
 msgid "object mask preparation failed"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1786
+#: ../src/develop/masks/object.c:1790
 msgid "[OBJECT] brush over object"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1791
+#: ../src/develop/masks/object.c:1795
 msgid "[OBJECT] add foreground point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1796
+#: ../src/develop/masks/object.c:1800
 msgid "[OBJECT] add background point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1801
+#: ../src/develop/masks/object.c:1805
 msgid "[OBJECT] apply mask"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1806
+#: ../src/develop/masks/object.c:1810
 msgid "[OBJECT] change brush size / cleanup"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1811
+#: ../src/develop/masks/object.c:1815
 msgid "[OBJECT] change smoothing"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1816
+#: ../src/develop/masks/object.c:1820
 msgid "[OBJECT] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1824
+#: ../src/develop/masks/object.c:1828
 #, c-format
 msgid "object #%d"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1843
+#: ../src/develop/masks/object.c:1847
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: alt+click, "
@@ -9968,7 +9966,7 @@ msgid ""
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1851
+#: ../src/develop/masks/object.c:1855
 #, c-format
 msgid ""
 "<b>brush</b>: drag, <b>size</b>: scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
