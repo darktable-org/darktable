@@ -63,7 +63,7 @@ elseif(APPLE)
   file(GLOB _ORT_DYLIB "${ONNXRuntime_LIB_DIR}/libonnxruntime.*.dylib")
   if(_ORT_DYLIB)
     install(FILES ${_ORT_DYLIB}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable
     )
   endif()
 elseif(WIN32)
