@@ -143,6 +143,11 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
               _store_string(env, name, &info->name);
               _store_string(env, desc, &info->description);
               _store_string(env, task, &info->task_type);
+
+              const char *arch = json_object_has_member(obj, "arch")
+                ? json_object_get_string_member(obj, "arch")
+                : "";
+              _store_string(env, arch, &info->arch);
               _store_string(env, backend, &info->backend);
               info->num_inputs = json_object_has_member(obj, "num_inputs")
                 ? (int)json_object_get_int_member(obj, "num_inputs")
