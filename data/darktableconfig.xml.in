@@ -3661,6 +3661,7 @@
         <option>scene-referred (sigmoid)</option>
         <option>scene-referred (filmic)</option>
         <option>scene-referred (AgX)</option>
+        <option>scene-referred (basecurve)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>

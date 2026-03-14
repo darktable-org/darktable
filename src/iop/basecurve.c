@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
     Copyright (C) 2010-2026 darktable developers.
-
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -48,7 +47,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(6, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -63,14 +62,33 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_basecurve_node_t basecurve[3][MAXNODES];
   int basecurve_nodes[3]; // $MIN: 0 $MAX: MAXNODES $DEFAULT: 0
   int basecurve_type[3];  // $MIN: 0 $MAX: MONOTONE_HERMITE $DEFAULT: MONOTONE_HERMITE
-  int exposure_fusion;    /* number of exposure fusion steps
-                             $DEFAULT: 0 $DESCRIPTION: "fusion" */
-  float exposure_stops;   /* number of stops between fusion images
-                             $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift" */
-  float exposure_bias;    /* whether to do exposure-fusion with over or under-exposure
-                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure bias" */
+  int exposure_fusion;    // number of exposure fusion steps $DEFAULT: 0 $DESCRIPTION: "fusion"
+  float exposure_stops;   // number of stops between fusion images $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift"
+  float exposure_bias;    // whether to do exposure-fusion with over or under-exposure $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure bias"
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
+  int workflow_mode;      // $DEFAULT: 1
+  float shadow_lift;      // $MIN: 0.25 $MAX: 1.75 $DEFAULT: 1.0 $DESCRIPTION: "shadow correction"
+  float highlight_gain;   // $MIN: 0.25 $MAX: 1.75 $DEFAULT: 1.0 $DESCRIPTION: "highlight gain"
+  float ucs_saturation_balance; // $MIN: -0.75 $MAX: 0.75 $DEFAULT: 0.2 $DESCRIPTION: "balance saturation ucs"
+  float gamut_strength;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "gamut compression"
+  float highlight_corr;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlight hue/sat"
+  int target_gamut;       // $DEFAULT: 2 $DESCRIPTION: "target gamut"
+  int color_look;         // $DEFAULT: 0 $DESCRIPTION: "color look style"
+  float look_opacity;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "look opacity"
 } dt_iop_basecurve_params_t;
+
+static const float color_looks[10][10] = {
+  {1.000f, 0.000f, 0.000f,  0.000f, 1.000f, 0.000f,  0.000f, 0.000f, 1.000f}, // 1. neutral
+  {0.932f, 0.051f, 0.017f,  0.021f, 0.945f, 0.034f,  0.011f, 0.025f, 0.964f}, // 2. natural look
+  {1.029f, -0.008f, -0.074f, -0.023f, 1.008f, 0.046f, -0.002f, 0.007f, 1.010f}, // 3. portrait
+  {1.084f, -0.006f, -0.093f, -0.074f, 1.008f, 0.060f, -0.011f, 0.005f, 1.024f}, // 4. nature
+  {1.074f, 0.006f, -0.103f, -0.054f, 1.009f, 0.060f, -0.071f, -0.059f, 1.086f}, // 5. vibrant
+  {1.218f, 0.007f, -0.192f, -0.119f, 1.076f, 0.048f, -0.099f, -0.069f, 1.154f}, // 6. blue sky
+  {1.082f, -0.020f, 0.103f, -0.051f, 1.052f, 0.042f, -0.047f, -0.045f, 1.073f}, // 7. soft warm
+  {1.050f, 0.020f, -0.010f, -0.020f, 1.020f, 0.000f, -0.010f, -0.020f, 1.030f}, // 8. soft
+  {0.980f, -0.010f, -0.010f,  0.000f, 1.050f, -0.020f,  0.020f, 0.010f, 1.100f}, // 9. deep cool
+  {1.020f, -0.010f, -0.010f, -0.030f, 1.040f, -0.010f, 0.000f, -0.030f, 1.030f}  // 10. authentic cinema
+};
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -227,6 +245,26 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 6;
     return 0;
   }
+  if(old_version == 6)
+  {
+    const dt_iop_basecurve_params_v6_t *o = (dt_iop_basecurve_params_v6_t *)old_params;
+    dt_iop_basecurve_params_t *n = calloc(1, sizeof(dt_iop_basecurve_params_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params_v6_t));
+    n->workflow_mode = 0;
+    n->shadow_lift = 1.0f;
+    n->highlight_gain = 1.0f;
+    n->ucs_saturation_balance = 0.2f;
+    n->gamut_strength = 0.0f;
+    n->highlight_corr = 0.0f;
+    n->target_gamut = 2;
+    n->color_look = 0;
+    n->look_opacity = 1.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_basecurve_params_t);
+    *new_version = 7;
+    return 0;
+  }
   return 1;
 }
 
@@ -234,18 +272,23 @@ typedef struct dt_iop_basecurve_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   int minmax_curve_type, minmax_curve_nodes;
-  GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *fusion, *exposure_step, *exposure_bias;
+  GtkWidget *fusion, *exposure_step, *exposure_bias, *shadow_lift, *highlight_gain;
   GtkWidget *cmb_preserve_colors;
+  GtkWidget *workflow_mode;
   double mouse_x, mouse_y;
   int selected;
-  double selected_offset, selected_y, selected_min, selected_max;
-  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
-  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
-  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+  float draw_ys[DT_IOP_TONECURVE_RES];
   float loglogscale;
   GtkWidget *logbase;
+  GtkWidget *ucs_saturation_balance;
+  GtkWidget *gamut_strength;
+  GtkWidget *highlight_corr;
+  GtkWidget *target_gamut;
+  GtkWidget *color_look;
+  GtkWidget *look_opacity;
+  int last_workflow_mode;
+  gboolean look_selected_first_time;
 } dt_iop_basecurve_gui_data_t;
 
 typedef struct basecurve_preset_t
@@ -335,6 +378,15 @@ typedef struct dt_iop_basecurve_data_t
   float exposure_stops;
   float exposure_bias;
   int preserve_colors;
+  int workflow_mode;
+  float shadow_lift;
+  float highlight_gain;
+  float ucs_saturation_balance;
+  float gamut_strength;
+  float highlight_corr;
+  int target_gamut;
+  int color_look;
+  float look_opacity;
 } dt_iop_basecurve_data_t;
 
 typedef struct dt_iop_basecurve_global_data_t
@@ -370,8 +422,8 @@ const char **description(dt_iop_module_t *self)
      _("apply a view transform based on personal or camera maker look,\n"
        "for corrective purposes, to prepare images for display"),
      _("corrective"),
-     _("linear, RGB, display-referred"),
-     _("non-linear, RGB"),
+     _("linear, RGB, scene-referred"),
+     _("linear, non-linear, RGB"),
      _("non-linear, RGB, display-referred"));
 }
 
@@ -490,6 +542,8 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *const d = self->default_params;
 
+  *d = basecurve_presets[0].params;
+
   if(self->multi_priority == 0)
   {
     const dt_image_t *const image = &(self->dev->image_storage);
@@ -529,6 +583,24 @@ void reload_defaults(dt_iop_module_t *self)
     d->exposure_stops = 1.0f;
     d->exposure_bias = 1.0f;
   }
+
+  d->target_gamut = 2;
+
+  if(!dt_is_display_referred())
+  {
+    // Force kinematic defaults for scene-referred workflow:
+    d->workflow_mode = 1;
+    d->shadow_lift = 1.0f;
+    d->highlight_gain = 1.0f;
+    d->ucs_saturation_balance = 0.2f;
+    d->color_look = 0; // Neutral look
+    d->look_opacity = 1.0f;
+
+    d->basecurve_nodes[0] = 2;
+    d->basecurve_type[0] = CUBIC_SPLINE;
+    d->basecurve[0][0].x = 0.0f; d->basecurve[0][0].y = 0.0f;
+    d->basecurve[0][1].x = 1.0f; d->basecurve[0][1].y = 1.0f;
+  }
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -546,6 +618,20 @@ void init_presets(dt_iop_module_so_t *self)
   self->pref_based_presets = TRUE;
 
   const gboolean is_display_referred = dt_is_display_referred();
+
+  if(!is_display_referred)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
+                                 self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
 
   if(is_display_referred)
   {
@@ -583,12 +669,12 @@ int gauss_blur_cl(dt_iop_module_t *self,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
-  /* horizontal blur */
+  //horizontal blur
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blur_h, width, height,
     CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) return FALSE;
 
-  /* vertical blur */
+  // vertical blur
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blur_v, width, height,
     CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) return FALSE;
@@ -687,11 +773,17 @@ int process_cl_fusion(dt_iop_module_t *self,
 
   cl_mem *dev_col = calloc(num_levels_max, sizeof(cl_mem));
   cl_mem *dev_comb = calloc(num_levels_max, sizeof(cl_mem));
+  if(!dev_col || !dev_comb) goto error;
 
   cl_mem dev_tmp1 = NULL;
   cl_mem dev_tmp2 = NULL;
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
+
+  // Prepare Color Look matrix (9 floats packed into float16 for OpenCL)
+  float look_mat_buf[16] = {0.0f};
+  for(int i=0; i<9; i++) look_mat_buf[i] = color_looks[d->color_look][i];
+  const float alpha = 0.6f;
 
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
   const int preserve_colors = d->preserve_colors;
@@ -743,24 +835,27 @@ int process_cl_fusion(dt_iop_module_t *self,
 
   for(int e = 0; e < d->exposure_fusion + 1; e++)
   {
-    // for every exposure fusion image: push by some ev, apply base curve and compute features
     {
       const float mul = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
       if(d->preserve_colors == DT_RGB_NORM_NONE)
+      {
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_legacy_lut, width, height,
-          CLARG(dev_in), CLARG(dev_tmp1),
-          CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
+                                               CLARG(dev_in), CLARG(dev_tmp1), CLARG(width), CLARG(height),
+                                               CLARGFLOAT(mul), CLARG(dev_m), CLARG(dev_coeffs));
+        if(err != CL_SUCCESS) goto error;
+      }
       else
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_lut, width, height,
-          CLARG(dev_in), CLARG(dev_tmp1), CLARG(width),
-          CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
-          CLARG(dev_profile_lut), CLARG(use_work_profile));
-      if(err != CL_SUCCESS) goto error;
+      {
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_lut, width, height, CLARG(dev_in),
+                                               CLARG(dev_tmp1), CLARG(width), CLARG(height), CLARGFLOAT(mul),
+                                               CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors),
+                                               CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+        if(err != CL_SUCCESS) goto error;
+      }
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_compute_features, width, height,
-        CLARG(dev_tmp1), CLARG(dev_col[0]),
-        CLARG(width), CLARG(height));
+                                             CLARG(dev_tmp1), CLARG(dev_col[0]), CLARG(width), CLARG(height));
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -881,8 +976,12 @@ int process_cl_fusion(dt_iop_module_t *self,
   }
 
   // copy output buffer
+  // Apply shadow_lift and tone mapping here if needed
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_finalize, width, height,
-      CLARG(dev_in), CLARG(dev_comb[0]), CLARG(dev_out), CLARG(width), CLARG(height));
+      CLARG(dev_in), CLARG(dev_comb[0]), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->workflow_mode),
+      CLARGFLOAT(d->shadow_lift), CLARGFLOAT(d->highlight_gain), CLARGFLOAT(d->ucs_saturation_balance),
+      CLARGFLOAT(d->gamut_strength), CLARGFLOAT(d->highlight_corr), CLARG(d->target_gamut), CLARGFLOAT(d->look_opacity),
+      CLARG(look_mat_buf), CLARGFLOAT(alpha));
 
 error:
   for(int k = 0; k < num_levels_max; k++)
@@ -915,7 +1014,8 @@ int process_cl_lut(dt_iop_module_t *self,
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_mem dev_tmp = NULL;
 
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
@@ -928,28 +1028,61 @@ int process_cl_lut(dt_iop_module_t *self,
   const int height = roi_in->height;
   const int preserve_colors = d->preserve_colors;
 
+  const float mul = 1.0f;
+
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
-  if(!dev_m || !dev_coeffs) goto error;
+  if(dev_m == NULL) goto error;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
+
+  if(dev_coeffs == NULL) goto error;
+
+  cl_mem dev_dest = dev_out;
+
+  float look_mat_buf[16] = {0.0f};
+  for(int i=0; i<9; i++) look_mat_buf[i] = color_looks[d->color_look][i];
+  const float alpha = 0.6f;
+
+  if(d->workflow_mode > 0)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    if(dev_tmp == NULL) goto error;
+    dev_dest = dev_tmp;
+  }
+
   // read data/kernels/basecurve.cl for a description of "legacy" vs current
   // Conditional is moved outside of the OpenCL operations for performance.
   if(d->preserve_colors == DT_RGB_NORM_NONE)
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_legacy_lut, width, height,
-          CLARG(dev_in), CLARG(dev_out),
-          CLARG(width), CLARG(height), CLARGFLOAT(1.0f), CLARG(dev_m), CLARG(dev_coeffs));
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_legacy_lut, width, height, CLARG(dev_in),
+                                           CLARG(dev_dest), CLARG(width), CLARG(height), CLARGFLOAT(mul), CLARG(dev_m),
+                                           CLARG(dev_coeffs));
+  }
   else
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_lut, width, height,
-      CLARG(dev_in), CLARG(dev_out),
-      CLARG(width), CLARG(height),
-      CLARGFLOAT(1.0f), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
-      CLARG(dev_profile_lut), CLARG(use_work_profile));
+  {
+    //FIXME:  There are still conditionals on d->preserve_colors within this flow that could impact performance
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_lut, width, height, CLARG(dev_in),
+                                           CLARG(dev_dest), CLARG(width), CLARG(height), CLARGFLOAT(mul), CLARG(dev_m),
+                                           CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
+                                           CLARG(dev_profile_lut), CLARG(use_work_profile));
+  }
+
+  if(d->workflow_mode > 0)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_finalize, width, height,
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->workflow_mode),
+        CLARGFLOAT(d->shadow_lift), CLARGFLOAT(d->highlight_gain), CLARGFLOAT(d->ucs_saturation_balance),
+        CLARGFLOAT(d->gamut_strength), CLARGFLOAT(d->highlight_corr), CLARG(d->target_gamut),
+        CLARGFLOAT(d->look_opacity), CLARG(look_mat_buf), CLARGFLOAT(alpha));
+    if(err != CL_SUCCESS) goto error;
+  }
 
 error:
+  dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
@@ -980,21 +1113,57 @@ void tiling_callback(dt_iop_module_t *self,
 {
   dt_iop_basecurve_data_t *const d = piece->data;
 
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->align = 1;
-
   if(d->exposure_fusion)
   {
     const int rad = MIN(roi_in->width, (int)ceilf(256 * roi_in->scale / piece->iscale));
+
     tiling->factor = 6.666f;                 // in + out + col[] + comb[] + 2*tmp
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->align = 1;
     tiling->overlap = rad;
   }
   else
   {
     tiling->factor = 2.0f;                   // in + out
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->align = 1;
     tiling->overlap = 0;
   }
+}
+/*
+  Narkowicz (2016) rational approximation of the ACES RRT+ODT curve for sRGB output.
+  Widely used in real-time rendering for its simplicity and visual quality.
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+*/
+static inline float _aces_tone_map(const float x)
+{
+  const float a = 2.51f;
+  const float b = 0.03f;
+  const float c = 2.43f;
+  const float d = 0.59f;
+  const float e = 0.14f;
+
+  return CLAMP((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
+}
+/*
+  Narkowicz & Filiberto (2021) rational approximation of the ACES 2.0 RRT curve.
+  More precise than the basic Narkowicz 2016 fit, with a softer shoulder.
+  The pre-scale factor (x * 1.680) in the caller adjusts the exposure point (0.75EV).
+  Does NOT implement the full ACES pipeline (no color space transform, no D60 whitepoint).
+  Reference: https://github.com/h3r2tic/tony-mc-mapface (Narkowicz/Filiberto fit)
+*/
+static inline float _aces_20_tonemap(const float x)
+{
+  const float a = 0.0245786f;
+  const float b = 0.000090537f;
+  const float c = 0.983729f;
+  const float d = 0.4329510f;
+  const float e = 0.238081f;
+
+  return CLAMP((x * (x + a) - b) / (x * (c * x + d) + e), 0.0f, 1.0f);
 }
 
 // See comments of opencl version in data/kernels/basecurve.cl for description of the meaning of "legacy"
@@ -1013,12 +1182,16 @@ static inline void apply_legacy_curve(
   {
     for(int i = 0; i < 3; i++)
     {
-      const float f = in[k+i] * mul;
+      float f = in[k+i] * mul;
+
+      float val;
       // use base curve for values < 1, else use extrapolation.
       if(f < 1.0f)
-        out[k+i] = fmaxf(table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)], 0.f);
+        val = fmaxf(table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)], 0.f);
       else
-        out[k+i] = fmaxf(dt_iop_eval_exp(unbounded_coeffs, f), 0.f);
+        val = fmaxf(dt_iop_eval_exp(unbounded_coeffs, f), 0.f);
+
+      out[k+i] = val;
     }
     out[k+3] = in[k+3];
   }
@@ -1049,6 +1222,7 @@ static inline void apply_curve(
       const float curve_lum = (lum < 1.0f)
         ? table[CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
         : dt_iop_eval_exp(unbounded_coeffs, lum);
+
       ratio = mul * curve_lum / lum;
     }
     for(size_t c = 0; c < 3; c++)
@@ -1194,7 +1368,302 @@ static inline void gauss_reduce(
   }
 }
 
-void process_fusion(dt_iop_module_t *self,
+static void process_lut(dt_iop_module_t *self,
+                        dt_dev_pixelpipe_iop_t *piece,
+                        const void *const ivoid,
+                        void *const ovoid,
+                        const dt_iop_roi_t *const roi_in,
+                        const dt_iop_roi_t *const roi_out)
+{
+  const float *const in = (const float *)ivoid;
+  float *const out = (float *)ovoid;
+  dt_iop_basecurve_data_t *const d = piece->data;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+
+  const int wd = roi_in->width, ht = roi_in->height;
+
+  if(d->preserve_colors == DT_RGB_NORM_NONE)
+    apply_legacy_curve(in, out, wd, ht, 1.0, d->table, d->unbounded_coeffs);
+  else
+    apply_curve(in, out, wd, ht, d->preserve_colors, 1.0, d->table, d->unbounded_coeffs, work_profile);
+
+  if(d->workflow_mode > 0)
+  {
+    const float *mat = color_looks[d->color_look];
+
+    const size_t npixels = (size_t)wd * ht;
+    DT_OMP_FOR()
+    for(size_t k = 0; k < 4 * npixels; k += 4)
+    {
+      float r = out[k];
+      float g = out[k+1];
+      float b = out[k+2];
+
+      // Sanitize to avoid Inf/NaN issues
+      r = fmaxf(-1e6f, fminf(r, 1e6f));
+      g = fmaxf(-1e6f, fminf(g, 1e6f));
+      b = fmaxf(-1e6f, fminf(b, 1e6f));
+
+      // Apply Color Look
+      const float tr = r * mat[0] + g * mat[1] + b * mat[2];
+      const float tg = r * mat[3] + g * mat[4] + b * mat[5];
+      const float tb = r * mat[6] + g * mat[7] + b * mat[8];
+
+      // Mix with opacity
+      out[k]   = r * (1.0f - d->look_opacity) + tr * d->look_opacity;
+      out[k+1] = g * (1.0f - d->look_opacity) + tg * d->look_opacity;
+      out[k+2] = b * (1.0f - d->look_opacity) + tb * d->look_opacity;
+
+      out[k]   = fmaxf(out[k], 0.0f);
+      out[k+1] = fmaxf(out[k+1], 0.0f);
+      out[k+2] = fmaxf(out[k+2], 0.0f);
+
+      // Reload for next steps
+      r = out[k];
+      g = out[k+1];
+      b = out[k+2];
+
+      if(d->highlight_gain != 1.0f) 
+      {
+        r *= d->highlight_gain;
+        g *= d->highlight_gain;
+        b *= d->highlight_gain;
+      }
+      if(d->shadow_lift != 1.0f) 
+      {
+        r = powf(r, d->shadow_lift);
+        g = powf(g, d->shadow_lift);
+        b = powf(b, d->shadow_lift);
+      }
+
+      const float r_coeff = 0.2627f, g_coeff = 0.6780f, b_coeff = 0.0593f;
+      float y_in = r * r_coeff + g * g_coeff + b * b_coeff;
+      float y_out = y_in;
+
+      /* Scene-referred: apply luminance-adaptive shoulder extension for
+         ACES-like tonemapping. Compute perceptual luminance Jz from RGB
+         and derive scale k = 1 + alpha * L^2 where L = clamp(Jz,0,1).
+         Then tone-map x_scaled = y_in / k and rescale result by k to
+         extend the shoulder progressively. Keep alpha constant and
+         avoid changing UI or legacy/display-referred behavior. */
+      if(d->workflow_mode == 1 || d->workflow_mode == 2)
+      {
+        // compute Jz from current RGB (Rec2020 -> XYZ -> JzAzBz)
+        float xyz[3];
+        xyz[0] = 0.636958f * r + 0.144617f * g + 0.168881f * b;
+        xyz[1] = 0.262700f * r + 0.677998f * g + 0.059302f * b;
+        xyz[2] = 0.000000f * r + 0.028073f * g + 1.060985f * b;
+        for(int i=0;i<3;i++) xyz[i] = fmaxf(xyz[i], 0.0f);
+
+        float xyz_scaled[4];
+        xyz_scaled[0] = xyz[0] * 400.0f;
+        xyz_scaled[1] = xyz[1] * 400.0f;
+        xyz_scaled[2] = xyz[2] * 400.0f;
+        xyz_scaled[3] = 0.0f;
+
+        float jab[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        dt_XYZ_2_JzAzBz(xyz_scaled, jab);
+
+        const float L = fminf(fmaxf(jab[0], 0.0f), 1.0f);
+        const float alpha = 0.6f;
+        const float k_scale = 1.0f + alpha * L * L;
+
+        // scale luminance, apply selected tonemap, then undo scaling
+        const float x_scaled = y_in / k_scale;
+        if(d->workflow_mode == 1)
+          y_out = _aces_tone_map(x_scaled) * k_scale;
+        else /* workflow_mode == 2 */
+          y_out = _aces_20_tonemap(x_scaled * 1.680f) * k_scale; //CB 20260307 1.680 (0.75ev) to better match ACES 1.0 tonemap at mid-tones
+      }
+
+      float gain = y_out / fmaxf(y_in, 1e-6f);
+
+      out[k] = r * gain;
+      out[k+1] = g * gain;
+      out[k+2] = b * gain;
+
+      const float threshold = 0.80f;
+      if(y_out > threshold)
+      {
+        float factor = (y_out - threshold) / (1.0f - threshold);
+        factor = CLAMP(factor, 0.0f, 1.0f);
+        out[k] = out[k] * (1.0f - factor) + y_out * factor;
+        out[k+1] = out[k+1] * (1.0f - factor) + y_out * factor;
+        out[k+2] = out[k+2] * (1.0f - factor) + y_out * factor;
+      }
+
+      if(d->ucs_saturation_balance != 0.0f || d->gamut_strength > 0.0f || d->highlight_corr != 0.0f)
+      {
+        // RGB Rec2020 to XYZ D65
+        float xyz[4];
+        xyz[0] = 0.636958f * out[k] + 0.144617f * out[k+1] + 0.168881f * out[k+2];
+        xyz[1] = 0.262700f * out[k] + 0.677998f * out[k+1] + 0.059302f * out[k+2];
+        xyz[2] = 0.000000f * out[k] + 0.028073f * out[k+1] + 1.060985f * out[k+2];
+
+        for(int i=0; i<3; i++) xyz[i] = fmaxf(xyz[i], 0.0f);
+
+        // XYZ to JzAzBz
+        float jab[4];
+        float xyz_scaled[4];
+        for(int i=0; i<3; i++) xyz_scaled[i] = xyz[i] * 400.0f; // Scale to 400 nits for JzAzBz
+        dt_XYZ_2_JzAzBz(xyz_scaled, jab);
+
+        int modified = 0;
+
+        if(d->ucs_saturation_balance != 0.0f)
+        {
+          // Chroma-based modulation for saturation balance
+          const float r_sat = out[k];
+          const float g_sat = out[k+1];
+          const float b_sat = out[k+2];
+          const float chroma = fmaxf(fmaxf(r_sat, g_sat), b_sat) - fminf(fminf(r_sat, g_sat), b_sat);
+          const float effective_saturation = d->ucs_saturation_balance * fminf(chroma * 2.0f, 1.0f);
+
+          // Apply saturation balance
+          // Use Rec2020 Luminance Y for mask
+          const float Y = xyz[1];
+          const float L = powf(fmaxf(Y, 0.0f), 0.5f);
+          const float fulcrum = 0.5f;
+          const float n = (L - fulcrum) / fulcrum;
+          const float mask_shadow = 1.0f / (1.0f + expf(n * 4.0f));
+          float sat_adjust = effective_saturation * (2.0f * mask_shadow - 1.0f);
+          sat_adjust *= fminf(L * 4.0f, 1.0f);
+          const float sat_factor = 1.0f + sat_adjust;
+          jab[1] *= sat_factor;
+          jab[2] *= sat_factor;
+          modified = 1;
+        }
+
+        if(d->gamut_strength > 0.0f)
+        {
+          const float Y = xyz[1];
+          const float L = powf(fmaxf(Y, 0.0f), 0.5f);
+          const float chroma_factor = 1.0f - d->gamut_strength * (0.2f + 0.2f * L);
+          jab[1] *= chroma_factor;
+          jab[2] *= chroma_factor;
+          modified = 1;
+        }
+
+        if(d->highlight_corr != 0.0f)
+        {
+          // HIGHLIGHT HUE AND SATURATION CORRECTION (sync with OpenCL)
+          // Mask starts at Jz = 0.20 and is full at Jz = 0.90. Linear transition.
+          float hl_mask = CLAMP((jab[0] - 0.20f) / 0.70f, 0.0f, 1.0f);
+
+          if(hl_mask > 0.0f)
+          {
+            // 1. Soft symmetric desaturation (0.75 factor)
+            float desat = 1.0f - (fabsf(d->highlight_corr) * hl_mask * 0.75f);
+            jab[1] *= desat;
+            jab[2] *= desat;
+
+            // 2. Controlled Hue Rotation (2.0 factor)
+            const float angle = d->highlight_corr * hl_mask * 2.0f;
+            const float ca = cosf(angle);
+            const float sa = sinf(angle);
+            const float az = jab[1];
+            const float bz = jab[2];
+            jab[1] = az * ca - bz * sa;
+            jab[2] = az * sa + bz * ca;
+            modified = 1;
+          }
+        }
+
+        if(jab[0] > 0.95f)
+        {
+          const float desat = CLAMP((1.0f - jab[0]) * 20.0f, 0.0f, 1.0f);
+          jab[1] *= desat;
+          jab[2] *= desat;
+          modified = 1;
+        }
+
+        if(modified)
+        {
+          // JzAzBz to XYZ
+          dt_JzAzBz_2_XYZ(jab, xyz_scaled);
+          for(int i=0; i<3; i++) xyz[i] = xyz_scaled[i] / 400.0f;
+
+          // XYZ D65 to RGB Rec2020
+          out[k]   =  1.716651f * xyz[0] - 0.355671f * xyz[1] - 0.253366f * xyz[2];
+          out[k+1] = -0.666684f * xyz[0] + 1.616481f * xyz[1] + 0.015768f * xyz[2];
+          out[k+2] =  0.017640f * xyz[0] - 0.042770f * xyz[1] + 0.942103f * xyz[2];
+
+          float min_val = fminf(out[k], fminf(out[k+1], out[k+2]));
+          if(min_val < 0.0f)
+          {
+            float lum = 0.2627f * out[k] + 0.6780f * out[k+1] + 0.0593f * out[k+2];
+            if(lum > 0.0f)
+            {
+              float factor = lum / (lum - min_val);
+              out[k] = lum + factor * (out[k] - lum);
+              out[k+1] = lum + factor * (out[k+1] - lum);
+              out[k+2] = lum + factor * (out[k+2] - lum);
+            }
+          }
+        }
+
+      if(d->gamut_strength > 0.0f)
+      {
+        const float orig_r = out[k];
+        const float orig_g = out[k+1];
+        const float orig_b = out[k+2];
+
+        const float Y = 0.2126f * orig_r + 0.7152f * orig_g + 0.0722f * orig_b;
+        float lum_weight = CLAMP((Y - 0.3f) / (0.8f - 0.3f), 0.0f, 1.0f);
+        lum_weight = lum_weight * lum_weight * (3.0f - 2.0f * lum_weight);
+        const float effective_strength = d->gamut_strength * lum_weight;
+
+        float limit = 0.90f;
+        if(d->target_gamut == 1) limit = 0.95f;
+        else if(d->target_gamut == 2) limit = 1.00f;
+
+        float gamut_threshold = limit * (1.0f - (effective_strength * 0.25f));
+        float max_val = fmaxf(out[k], fmaxf(out[k+1], out[k+2]));
+
+        if(max_val > gamut_threshold)
+        {
+          const float range = limit - gamut_threshold;
+          const float delta = max_val - gamut_threshold;
+          const float compressed = gamut_threshold + range * delta / (delta + range);
+          const float factor = compressed / max_val;
+
+          const float range_blue = 1.1f * range;
+          const float compressed_blue = gamut_threshold + range * delta / (delta + range_blue);
+          const float factor_blue = compressed_blue / max_val;
+
+          out[k] *= factor;
+          out[k+1] *= factor;
+          out[k+2] *= factor_blue;
+        }
+
+        out[k] = orig_r * (1.0f - effective_strength) + out[k] * effective_strength;
+        out[k+1] = orig_g * (1.0f - effective_strength) + out[k+1] * effective_strength;
+        out[k+2] = orig_b * (1.0f - effective_strength) + out[k+2] * effective_strength;
+      }
+      }
+
+      // Final gamut check to preserve hue (exact color)
+      if(out[k] < 0.0f || out[k] > 1.0f || out[k+1] < 0.0f || out[k+1] > 1.0f || out[k+2] < 0.0f || out[k+2] > 1.0f)
+      {
+        const float luma = 0.2627f * out[k] + 0.6780f * out[k+1] + 0.0593f * out[k+2];
+        const float target_luma = CLAMP(luma, 0.0f, 1.0f);
+        float t = 1.0f;
+        if(out[k] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k]));
+        if(out[k+1] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+1]));
+        if(out[k+2] < 0.0f) t = fminf(t, target_luma / (target_luma - out[k+2]));
+        if(out[k] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k] - target_luma));
+        if(out[k+1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+1] - target_luma));
+        if(out[k+2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (out[k+2] - target_luma));
+        t = fmaxf(0.0f, t);
+        out[k] = target_luma + t * (out[k] - target_luma);
+        out[k+1] = target_luma + t * (out[k+1] - target_luma);
+        out[k+2] = target_luma + t * (out[k+2] - target_luma);
+      }
+    }
+  }
+}
+
+static void process_fusion(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     const void *const ivoid,
                     void *const ovoid,
@@ -1297,14 +1766,10 @@ void process_fusion(dt_iop_module_t *self,
       {
         // blend images into output pyramid
         if(k == num_levels - 1) // blend gaussian base
-#ifdef DEBUG_VIS2
-          ;
-#else
         {
         for(int c = 0; c < 3; c++)
           comb[k][x + c] += col[k][x + 3] * col[k][x + c];
         }
-#endif
         else // laplacian
         {
           for(int c = 0; c < 3; c++)
@@ -1315,7 +1780,6 @@ void process_fusion(dt_iop_module_t *self,
     }
   }
 
-#ifndef DEBUG_VIS // DEBUG: switch off when visualising weight buf
   // normalise and reconstruct output pyramid buffer coarse to fine
   for(int k = num_levels - 1; k >= 0; k--)
   {
@@ -1344,14 +1808,269 @@ void process_fusion(dt_iop_module_t *self,
         }
     }
   }
-#endif
+
   // copy output buffer
+  const float *mat = color_looks[d->color_look];
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
-    out[k + 0] = fmaxf(comb[0][k + 0], 0.f);
-    out[k + 1] = fmaxf(comb[0][k + 1], 0.f);
-    out[k + 2] = fmaxf(comb[0][k + 2], 0.f);
+    float val[3];
+    val[0] = fmaxf(comb[0][k + 0], 0.f);
+    val[1] = fmaxf(comb[0][k + 1], 0.f);
+    val[2] = fmaxf(comb[0][k + 2], 0.f);
+
+    // Sanitize to avoid Inf/NaN issues
+    val[0] = fminf(val[0], 1e6f);
+    val[1] = fminf(val[1], 1e6f);
+    val[2] = fminf(val[2], 1e6f);
+
+    // If using scene-referred workflow
+    if(d->workflow_mode > 0)
+    {
+      // Apply Color Look
+      float r = val[0], g = val[1], b = val[2];
+      float tr = r * mat[0] + g * mat[1] + b * mat[2];
+      float tg = r * mat[3] + g * mat[4] + b * mat[5];
+      float tb = r * mat[6] + g * mat[7] + b * mat[8];
+
+      // Mix with opacity
+      val[0] = r * (1.0f - d->look_opacity) + tr * d->look_opacity;
+      val[1] = g * (1.0f - d->look_opacity) + tg * d->look_opacity;
+      val[2] = b * (1.0f - d->look_opacity) + tb * d->look_opacity;
+
+      val[0] = fmaxf(val[0], 0.0f);
+      val[1] = fmaxf(val[1], 0.0f);
+      val[2] = fmaxf(val[2], 0.0f);
+
+      if(d->highlight_gain != 1.0f) {
+        val[0] *= d->highlight_gain;
+        val[1] *= d->highlight_gain;
+        val[2] *= d->highlight_gain;
+      }
+      if(d->shadow_lift != 1.0f) {
+        val[0] = powf(val[0], d->shadow_lift);
+        val[1] = powf(val[1], d->shadow_lift);
+        val[2] = powf(val[2], d->shadow_lift);
+      }
+
+      const float r_coeff = 0.2627f, g_coeff = 0.6780f, b_coeff = 0.0593f;
+      float y_in = val[0] * r_coeff + val[1] * g_coeff + val[2] * b_coeff;
+      float y_out = y_in;
+
+      if(d->workflow_mode == 1 || d->workflow_mode == 2)
+      {
+        float xyz_local[3];
+        xyz_local[0] = 0.636958f * val[0] + 0.144617f * val[1] + 0.168881f * val[2];
+        xyz_local[1] = 0.262700f * val[0] + 0.677998f * val[1] + 0.059302f * val[2];
+        xyz_local[2] = 0.000000f * val[0] + 0.028073f * val[1] + 1.060985f * val[2];
+        for(int i=0;i<3;i++) xyz_local[i] = fmaxf(xyz_local[i], 0.0f);
+
+        float xyz_scaled_local[4];
+        xyz_scaled_local[0] = xyz_local[0] * 400.0f;
+        xyz_scaled_local[1] = xyz_local[1] * 400.0f;
+        xyz_scaled_local[2] = xyz_local[2] * 400.0f;
+        xyz_scaled_local[3] = 0.0f;
+
+        float jab_local[4] = {0.0f,0.0f,0.0f,0.0f};
+        dt_XYZ_2_JzAzBz(xyz_scaled_local, jab_local);
+
+        const float L = fminf(fmaxf(jab_local[0], 0.0f), 1.0f);
+        const float alpha = 0.6f;
+        const float k_scale = 1.0f + alpha * L * L;
+
+        const float x_scaled = y_in / k_scale;
+        if(d->workflow_mode == 1)
+          y_out = _aces_tone_map(x_scaled) * k_scale;
+        else
+          y_out = _aces_20_tonemap(x_scaled * 1.680f) * k_scale; //CB 20260307 1.680 (0.75ev) to better match ACES 1.0 tonemap at mid-tones
+      }
+
+      float gain = y_out / fmaxf(y_in, 1e-6f);
+
+      val[0] *= gain;
+      val[1] *= gain;
+      val[2] *= gain;
+
+      const float threshold = 0.80f;
+      if(y_out > threshold)
+      {
+        float factor = (y_out - threshold) / (1.0f - threshold);
+        factor = CLAMP(factor, 0.0f, 1.0f);
+        val[0] = val[0] * (1.0f - factor) + y_out * factor;
+        val[1] = val[1] * (1.0f - factor) + y_out * factor;
+        val[2] = val[2] * (1.0f - factor) + y_out * factor;
+      }
+
+      if(d->ucs_saturation_balance != 0.0f || d->gamut_strength > 0.0f || d->highlight_corr != 0.0f)
+      {
+        // RGB Rec2020 to XYZ D65
+        float xyz[4];
+        xyz[0] = 0.636958f * val[0] + 0.144617f * val[1] + 0.168881f * val[2];
+        xyz[1] = 0.262700f * val[0] + 0.677998f * val[1] + 0.059302f * val[2];
+        xyz[2] = 0.000000f * val[0] + 0.028073f * val[1] + 1.060985f * val[2];
+
+        for(int i=0; i<3; i++) xyz[i] = fmaxf(xyz[i], 0.0f);
+
+        // XYZ to JzAzBz
+        float jab[4];
+        float xyz_scaled[4];
+        for(int i=0; i<3; i++) xyz_scaled[i] = xyz[i] * 400.0f; // Scale to 400 nits for JzAzBz
+        dt_XYZ_2_JzAzBz(xyz_scaled, jab);
+
+        int modified = 0;
+
+        if(d->ucs_saturation_balance != 0.0f)
+        {
+          // Chroma-based modulation for saturation balance
+          const float r_sat = val[0];
+          const float g_sat = val[1];
+          const float b_sat = val[2];
+          const float chroma = fmaxf(fmaxf(r_sat, g_sat), b_sat) - fminf(fminf(r_sat, g_sat), b_sat);
+          const float effective_saturation = d->ucs_saturation_balance * fminf(chroma * 2.0f, 1.0f);
+
+          // Apply saturation balance
+          // Use Rec2020 Luminance Y for mask
+          const float Y = xyz[1];
+          const float L = powf(fmaxf(Y, 0.0f), 0.5f);
+          const float fulcrum = 0.5f;
+          const float n = (L - fulcrum) / fulcrum;
+          const float mask_shadow = 1.0f / (1.0f + expf(n * 4.0f));
+          float sat_adjust = effective_saturation * (2.0f * mask_shadow - 1.0f);
+          sat_adjust *= fminf(L * 4.0f, 1.0f);
+          const float sat_factor = 1.0f + sat_adjust;
+          jab[1] *= sat_factor;
+          jab[2] *= sat_factor;
+          modified = 1;
+        }
+
+        if(d->gamut_strength > 0.0f)
+        {
+          const float Y = xyz[1];
+          const float L = powf(fmaxf(Y, 0.0f), 0.5f);
+          const float chroma_factor = 1.0f - d->gamut_strength * (0.2f + 0.2f * L);
+          jab[1] *= chroma_factor;
+          jab[2] *= chroma_factor;
+          modified = 1;
+        }
+
+        if(d->highlight_corr != 0.0f)
+        {
+          // HIGHLIGHT HUE AND SATURATION CORRECTION (sync with OpenCL)
+          // Mask starts at Jz = 0.20 and is full at Jz = 0.90. Linear transition.
+          float hl_mask = CLAMP((jab[0] - 0.20f) / 0.70f, 0.0f, 1.0f);
+
+          if(hl_mask > 0.0f)
+          {
+            // 1. Soft symmetric desaturation (0.75 factor)
+            const float desat = 1.0f - (fabsf(d->highlight_corr) * hl_mask * 0.75f);
+            jab[1] *= desat;
+            jab[2] *= desat;
+
+            // 2. Controlled Hue Rotation (2.0 factor)
+            const float angle = d->highlight_corr * hl_mask * 2.0f;
+            const float ca = cosf(angle);
+            const float sa = sinf(angle);
+            const float az = jab[1];
+            const float bz = jab[2];
+            jab[1] = az * ca - bz * sa;
+            jab[2] = az * sa + bz * ca;
+            modified = 1;
+          }
+        }
+
+        if(jab[0] > 0.95f)
+        {
+          const float desat = CLAMP((1.0f - jab[0]) * 20.0f, 0.0f, 1.0f);
+          jab[1] *= desat;
+          jab[2] *= desat;
+          modified = 1;
+        }
+
+        if(modified)
+        {
+          // JzAzBz to XYZ
+          dt_JzAzBz_2_XYZ(jab, xyz_scaled);
+          for(int i=0; i<3; i++) xyz[i] = xyz_scaled[i] / 400.0f;
+
+          // XYZ D65 to RGB Rec2020
+          val[0] =  1.716651f * xyz[0] - 0.355671f * xyz[1] - 0.253366f * xyz[2];
+          val[1] = -0.666684f * xyz[0] + 1.616481f * xyz[1] + 0.015768f * xyz[2];
+          val[2] =  0.017640f * xyz[0] - 0.042770f * xyz[1] + 0.942103f * xyz[2];
+
+          float min_val = fminf(val[0], fminf(val[1], val[2]));
+          if(min_val < 0.0f)
+          {
+            float lum = 0.2627f * val[0] + 0.6780f * val[1] + 0.0593f * val[2];
+            if(lum > 0.0f)
+            {
+              float factor = lum / (lum - min_val);
+              val[0] = lum + factor * (val[0] - lum);
+              val[1] = lum + factor * (val[1] - lum);
+              val[2] = lum + factor * (val[2] - lum);
+            }
+          }
+        }
+
+      if(d->gamut_strength > 0.0f)
+      {
+        const float orig_r = val[0];
+        const float orig_g = val[1];
+        const float orig_b = val[2];
+
+        const float Y = 0.2126f * orig_r + 0.7152f * orig_g + 0.0722f * orig_b;
+        float lum_weight = CLAMP((Y - 0.3f) / (0.8f - 0.3f), 0.0f, 1.0f);
+        lum_weight = lum_weight * lum_weight * (3.0f - 2.0f * lum_weight);
+        const float effective_strength = d->gamut_strength * lum_weight;
+
+        float limit = 0.90f;
+        if(d->target_gamut == 1) limit = 0.95f;
+        else if(d->target_gamut == 2) limit = 1.00f;
+
+        float gamut_threshold = limit * (1.0f - (effective_strength * 0.25f));
+        float max_val = fmaxf(val[0], fmaxf(val[1], val[2]));
+
+        if(max_val > gamut_threshold)
+        {
+          float range = limit - gamut_threshold;
+          float delta = max_val - gamut_threshold;
+          const float compressed = gamut_threshold + range * delta / (delta + range);
+          const float factor = compressed / max_val;
+
+          float range_blue = 1.1f * range;
+          const float compressed_blue = gamut_threshold + range * delta / (delta + range_blue);
+          const float factor_blue = compressed_blue / max_val;
+
+          val[0] *= factor;
+          val[1] *= factor;
+          val[2] *= factor_blue;
+        }
+
+        val[0] = orig_r * (1.0f - effective_strength) + val[0] * effective_strength;
+        val[1] = orig_g * (1.0f - effective_strength) + val[1] * effective_strength;
+        val[2] = orig_b * (1.0f - effective_strength) + val[2] * effective_strength;
+      }
+      }
+
+      // Final gamut check to preserve hue (exact color)
+      if(val[0] < 0.0f || val[0] > 1.0f || val[1] < 0.0f || val[1] > 1.0f || val[2] < 0.0f || val[2] > 1.0f)
+      {
+        const float luma = 0.2627f * val[0] + 0.6780f * val[1] + 0.0593f * val[2];
+        const float target_luma = CLAMP(luma, 0.0f, 1.0f);
+        float t = 1.0f;
+        if(val[0] < 0.0f) t = fminf(t, target_luma / (target_luma - val[0]));
+        if(val[1] < 0.0f) t = fminf(t, target_luma / (target_luma - val[1]));
+        if(val[2] < 0.0f) t = fminf(t, target_luma / (target_luma - val[2]));
+        if(val[0] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[0] - target_luma));
+        if(val[1] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[1] - target_luma));
+        if(val[2] > 1.0f) t = fminf(t, (1.0f - target_luma) / (val[2] - target_luma));
+        t = fmaxf(0.0f, t);
+        val[0] = target_luma + t * (val[0] - target_luma);
+        val[1] = target_luma + t * (val[1] - target_luma);
+        val[2] = target_luma + t * (val[2] - target_luma);
+      }
+    }
+
+    for(int i = 0; i < 3; i++) out[k + i] = val[i];
     out[k + 3] = in[k + 3]; // pass on 4th channel
   }
 
@@ -1365,32 +2084,6 @@ cleanup:
   free(col);
   free(comb);
 }
-
-void process_lut(dt_iop_module_t *self,
-                 dt_dev_pixelpipe_iop_t *piece,
-                 const void *const ivoid,
-                 void *const ovoid,
-                 const dt_iop_roi_t *const roi_in,
-                 const dt_iop_roi_t *const roi_out)
-{
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
-  //const int ch = piece->colors; <-- it appears someone was trying to make this handle monochrome data,
-  //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
-  //configurations we might encounter here and handle those too
-  dt_iop_basecurve_data_t *const d = piece->data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
-
-  const int wd = roi_in->width, ht = roi_in->height;
-
-  // Compared to previous implementation, we've at least moved this conditional outside of the image processing loops
-  // so that it is evaluated only once.  See FIXME comments in apply_curve for more potential performance improvements
-  if(d->preserve_colors == DT_RGB_NORM_NONE)
-    apply_legacy_curve(in, out, wd, ht, 1.0, d->table, d->unbounded_coeffs);
-  else
-    apply_curve(in, out, wd, ht, d->preserve_colors, 1.0, d->table, d->unbounded_coeffs, work_profile);
-}
-
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
@@ -1420,6 +2113,16 @@ void commit_params(dt_iop_module_t *self,
   d->exposure_stops = p->exposure_stops;
   d->exposure_bias = p->exposure_bias;
   d->preserve_colors = p->preserve_colors;
+  d->workflow_mode = p->workflow_mode;
+  // Intentional inversion: slider to the right (>1.0) -> exponent < 1.0 -> lightens shadows
+  d->shadow_lift = 2.0f - p->shadow_lift;
+  d->highlight_gain = p->highlight_gain;
+  d->ucs_saturation_balance = p->ucs_saturation_balance;
+  d->gamut_strength = p->gamut_strength;
+  d->highlight_corr = p->highlight_corr;
+  d->target_gamut = p->target_gamut;
+  d->color_look = p->color_look;
+  d->look_opacity = p->look_opacity;
 
   const int ch = 0;
   // take care of possible change of curve type or number of nodes (not yet implemented in UI)
@@ -1474,18 +2177,6 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-  dt_iop_basecurve_params_t *p = self->params;
-  dt_iop_basecurve_gui_data_t *g = self->gui_data;
-
-  gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
-  gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
-
-  // gui curve is read directly from params during expose event.
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
 static float eval_grey(float x)
 {
   // "log base" is a combined scaling and offset change so that x->[0,1], with
@@ -1499,6 +2190,8 @@ void init(dt_iop_module_t *self)
   dt_iop_basecurve_params_t *d = self->default_params;
   d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
   d->basecurve_nodes[0] = 2;
+  d->shadow_lift = 1.0f;
+  d->highlight_gain = 1.0f;
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -1594,7 +2287,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
       dt_draw_curve_set_point(g->minmax_curve, k, p->basecurve[0][k].x, p->basecurve[0][k].y);
   }
   dt_draw_curve_t *minmax_curve = g->minmax_curve;
-  dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, g->draw_xs, g->draw_ys);
+  dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, NULL, g->draw_ys);
 
   float unbounded_coeffs[3];
   const float xm = basecurve[nodes - 1].x;
@@ -1818,7 +2511,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
     // got a vertex selected:
     if(g->selected >= 0)
     {
-      // this is used to translate mause position in loglogscale to make this behavior unified with linear scale.
+      // this is used to translate mouse position in loglogscale to make this behavior unified with linear scale.
       const float translate_mouse_x = old_m_x / width - to_log(basecurve[g->selected].x, g->loglogscale);
       const float translate_mouse_y = 1 - old_m_y / height - to_log(basecurve[g->selected].y, g->loglogscale);
       // dx & dy are in linear coordinates
@@ -1936,12 +2629,22 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     else if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset current curve
-      p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
-      p->basecurve_type[ch] = d->basecurve_type[ch];
-      for(int k = 0; k < d->basecurve_nodes[ch]; k++)
+      if(p->workflow_mode > 0)
       {
-        p->basecurve[ch][k].x = d->basecurve[ch][k].x;
-        p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+        p->basecurve_nodes[ch] = 2;
+        p->basecurve_type[ch] = CUBIC_SPLINE;
+        p->basecurve[ch][0].x = 0.0f; p->basecurve[ch][0].y = 0.0f;
+        p->basecurve[ch][1].x = 1.0f; p->basecurve[ch][1].y = 1.0f;
+      }
+      else
+      {
+        p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
+        p->basecurve_type[ch] = d->basecurve_type[ch];
+        for(int k = 0; k < d->basecurve_nodes[ch]; k++)
+        {
+          p->basecurve[ch][k].x = d->basecurve[ch][k].x;
+          p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+        }
       }
       g->selected = -2; // avoid motion notify re-inserting immediately.
       dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
@@ -2078,6 +2781,129 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       gtk_widget_set_visible(g->exposure_bias, FALSE);
     }
   }
+
+      if(!w || w == g->workflow_mode || w == g->color_look)
+  {
+    if(p->workflow_mode == 1 || p->workflow_mode == 2)
+    {
+      gtk_widget_set_visible(g->cmb_preserve_colors, FALSE);
+      if(p->preserve_colors != DT_RGB_NORM_NONE)
+        dt_bauhaus_combobox_set(g->cmb_preserve_colors, DT_RGB_NORM_NONE);
+      gtk_widget_set_visible(g->shadow_lift, TRUE);
+      gtk_widget_set_visible(g->highlight_gain, TRUE);
+      gtk_widget_set_visible(g->ucs_saturation_balance, TRUE);
+      gtk_widget_set_visible(g->gamut_strength, TRUE);
+      gtk_widget_set_visible(g->highlight_corr, TRUE);
+      gtk_widget_set_visible(g->target_gamut, TRUE);
+      gtk_widget_set_visible(g->color_look, TRUE);
+      gtk_widget_set_visible(g->look_opacity, p->color_look > 0);
+      gtk_widget_set_sensitive(g->shadow_lift, TRUE);
+      gtk_widget_set_sensitive(g->highlight_gain, TRUE);
+      gtk_widget_set_sensitive(g->ucs_saturation_balance, TRUE);
+      gtk_widget_set_sensitive(g->gamut_strength, TRUE);
+      gtk_widget_set_sensitive(g->highlight_corr, TRUE);
+      gtk_widget_set_sensitive(g->target_gamut, TRUE);
+      gtk_widget_set_sensitive(g->color_look, TRUE);
+      gtk_widget_set_sensitive(g->look_opacity, p->color_look > 0);
+      if(w == g->color_look)
+      {
+        // Only reset opacity to 100% if a look is selected for the first time.
+        if(p->color_look > 0 && !g->look_selected_first_time)
+        {
+          p->look_opacity = 1.0f;
+          dt_bauhaus_slider_set(g->look_opacity, 1.0f);
+          g->look_selected_first_time = TRUE;
+        }
+      }
+    
+      gtk_widget_set_tooltip_text(g->fusion, _("exposure fusion operates in linear scene-referred space as a luminance normalization step,\n"
+                                               "providing a stable radiometric reference prior to the final tone-mapping curve.\n"
+                                               "it does not perform HDR blending nor exposure compensation."));
+          if(w == g->workflow_mode)
+      {
+        if(!((p->workflow_mode == 1 && g->last_workflow_mode == 2) || (p->workflow_mode == 2 && g->last_workflow_mode == 1)))
+        {
+          p->shadow_lift = 1.0f;
+          dt_bauhaus_slider_set(g->shadow_lift, 1.0f);
+          p->highlight_gain = 1.0f;
+          dt_bauhaus_slider_set(g->highlight_gain, 1.0f);
+          p->ucs_saturation_balance = 0.2f;
+          dt_bauhaus_slider_set(g->ucs_saturation_balance, 0.2f);
+          // Set default color look when switching to this workflow
+          p->color_look = 0; // Neutral look
+          dt_bauhaus_combobox_set(g->color_look, 0);
+          p->look_opacity = 1.0f;
+          dt_bauhaus_slider_set(g->look_opacity, 1.0f);
+          p->basecurve_type[0] = CUBIC_SPLINE;
+          p->basecurve_nodes[0] = 2;
+          p->basecurve[0][0].x = 0.0f; p->basecurve[0][0].y = 0.0f;
+          p->basecurve[0][1].x = 1.0f; p->basecurve[0][1].y = 1.0f;
+
+          gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        }
+        g->last_workflow_mode = p->workflow_mode;
+      }
+    }
+    else
+    {
+      gtk_widget_set_visible(g->cmb_preserve_colors, TRUE);
+      gtk_widget_set_visible(g->shadow_lift, FALSE);
+      gtk_widget_set_visible(g->highlight_gain, FALSE);
+      gtk_widget_set_visible(g->ucs_saturation_balance, FALSE);
+      gtk_widget_set_visible(g->gamut_strength, FALSE);
+      gtk_widget_set_visible(g->highlight_corr, FALSE);
+      gtk_widget_set_visible(g->target_gamut, FALSE);
+      gtk_widget_set_visible(g->color_look, FALSE);
+      gtk_widget_set_visible(g->look_opacity, FALSE);
+      gtk_widget_set_sensitive(g->shadow_lift, FALSE);
+      gtk_widget_set_sensitive(g->highlight_gain, FALSE);
+      gtk_widget_set_sensitive(g->ucs_saturation_balance, FALSE);
+      gtk_widget_set_sensitive(g->gamut_strength, FALSE);
+      gtk_widget_set_sensitive(g->highlight_corr, FALSE);
+      gtk_widget_set_sensitive(g->target_gamut, FALSE);
+      gtk_widget_set_sensitive(g->color_look, FALSE);
+      gtk_widget_set_sensitive(g->look_opacity, FALSE);
+      gtk_widget_set_tooltip_text(g->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
+                                               "compress high dynamic range. expose for the highlights before use."));
+    }
+  }
+
+  if(!w || w == g->workflow_mode)
+  {
+    if(p->workflow_mode != 0)
+    {
+      gtk_widget_hide(g->logbase);
+    }
+    else
+    {
+      gtk_widget_show(g->logbase);
+    }
+  }
+}
+
+void gui_update(dt_iop_module_t *self)
+{
+  dt_iop_basecurve_params_t *p = self->params;
+  dt_iop_basecurve_gui_data_t *g = self->gui_data;
+
+  gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
+  gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
+
+  dt_bauhaus_slider_set(g->gamut_strength, p->gamut_strength);
+  dt_bauhaus_slider_set(g->highlight_corr, p->highlight_corr);
+  dt_bauhaus_combobox_set(g->target_gamut, p->target_gamut);
+  dt_bauhaus_combobox_set(g->workflow_mode, p->workflow_mode);
+  dt_bauhaus_slider_set(g->shadow_lift, p->shadow_lift);
+  dt_bauhaus_slider_set(g->highlight_gain, p->highlight_gain);
+  dt_bauhaus_slider_set(g->ucs_saturation_balance, p->ucs_saturation_balance);
+  dt_bauhaus_combobox_set(g->color_look, p->color_look);
+  dt_bauhaus_slider_set(g->look_opacity, p->look_opacity);
+  g->last_workflow_mode = p->workflow_mode;
+  g->look_selected_first_time = (p->color_look != 0);
+  gui_changed(self, NULL, NULL);
+
+  // gui curve is read directly from params during expose event.
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2100,16 +2926,64 @@ void gui_init(dt_iop_module_t *self)
   g->mouse_x = g->mouse_y = -1.0;
   g->selected = -1;
   g->loglogscale = 0;
+  g->look_selected_first_time = FALSE;
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, DT_PIXEL_APPLY_DPI(100), "plugins/darkroom/basecurve/graph_height"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("abscissa: input, ordinate: output. works on RGB channels"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
 
-  self->widget = dt_gui_vbox(g->area);
+  self->widget = dt_gui_vbox(GTK_WIDGET(g->area));
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+
+  g->workflow_mode = dt_bauhaus_combobox_from_params(self, "workflow_mode");
+  dt_bauhaus_combobox_add(g->workflow_mode, _("display"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("kinematic"));
+  dt_bauhaus_combobox_add(g->workflow_mode, _("dynamic"));
+  gtk_widget_set_tooltip_text(g->workflow_mode, _("tone mapping method applied after the curve"));
+
+  g->color_look = dt_bauhaus_combobox_from_params(self, "color_look");
+  dt_bauhaus_widget_set_label(g->color_look, NULL, _("color look"));
+  dt_bauhaus_combobox_add(g->color_look, "neutral");
+  dt_bauhaus_combobox_add(g->color_look, "natural look");
+  dt_bauhaus_combobox_add(g->color_look, "portrait");
+  dt_bauhaus_combobox_add(g->color_look, "vibrant");
+  dt_bauhaus_combobox_add(g->color_look, "nature");
+  dt_bauhaus_combobox_add(g->color_look, "blue sky");
+  dt_bauhaus_combobox_add(g->color_look, "soft warm");
+  dt_bauhaus_combobox_add(g->color_look, "soft");
+  dt_bauhaus_combobox_add(g->color_look, "deep cool");
+  dt_bauhaus_combobox_add(g->color_look, "authentic cinema");
+  gtk_widget_set_tooltip_text(g->color_look, _("apply a color style: neutral (none), portrait (skin tones), nature (landscapes), blue sky (depth), soft (organic), or warm/cool artistic tints."));
+
+  g->look_opacity = dt_bauhaus_slider_from_params(self, "look_opacity");
+  dt_bauhaus_widget_set_label(g->look_opacity, NULL, _("look opacity"));
+  dt_bauhaus_slider_set_format(g->look_opacity, "%");
+  dt_bauhaus_slider_set_factor(g->look_opacity, 100.0);
+  gtk_widget_set_tooltip_text(g->look_opacity, _("adjust the strength of the selected color style (10% to 100%)."));
+
+  g->highlight_gain = dt_bauhaus_slider_from_params(self, "highlight_gain");
+  dt_bauhaus_widget_set_label(g->highlight_gain, NULL, _("highlight gain"));
+  gtk_widget_set_tooltip_text(g->highlight_gain, _("adjusts the gain before tone mapping.\n"
+                                                   "higher values push more data into highlights compression."));
+  dt_bauhaus_slider_set_soft_range(g->highlight_gain, 0.25, 1.75);
+  dt_bauhaus_slider_set_format(g->highlight_gain, "%");
+  dt_bauhaus_slider_set_factor(g->highlight_gain, 100.0);
+  dt_bauhaus_slider_set_offset(g->highlight_gain, -100.0);
+  dt_bauhaus_slider_set_default(g->highlight_gain, 1.0);
+
+  g->shadow_lift = dt_bauhaus_slider_from_params(self, "shadow_lift");
+  dt_bauhaus_widget_set_label(g->shadow_lift, NULL, _("shadow lift"));
+  gtk_widget_set_tooltip_text(g->shadow_lift, _("adjusts the shadows brightness.\n"
+                                                 "positive values lift shadows,\n"
+                                                 "while negative values darken them."));
+  dt_bauhaus_slider_set_soft_range(g->shadow_lift, 0.25, 1.75);
+  dt_bauhaus_slider_set_format(g->shadow_lift, "%");
+  dt_bauhaus_slider_set_factor(g->shadow_lift, 100.0);
+  dt_bauhaus_slider_set_offset(g->shadow_lift, -100.0);
+  dt_bauhaus_slider_set_default(g->shadow_lift, 1.0);
 
   g->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
   dt_bauhaus_combobox_add(g->fusion, _("none"));
@@ -2117,6 +2991,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->fusion, _("three exposures"));
   gtk_widget_set_tooltip_text(g->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
+  gtk_widget_set_margin_bottom(g->fusion, DT_PIXEL_APPLY_DPI(10));
 
   g->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
   dt_bauhaus_slider_set_digits(g->exposure_step, 3);
@@ -2134,11 +3009,54 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->exposure_bias, TRUE);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
 
+  g->ucs_saturation_balance = dt_bauhaus_slider_from_params(self, "ucs_saturation_balance");
+  dt_bauhaus_widget_set_label(g->ucs_saturation_balance, NULL, _("balance saturation ucs"));
+  gtk_widget_set_tooltip_text(g->ucs_saturation_balance,
+                              _("balances saturation between shadows and highlights (JzAzBz space).\n"
+                                " move right to boost shadow saturation while taming highlights.\n"
+                                " move left to boost highlight saturation while taming shadows.\n"
+                                " ideal for making dark colors pop without clipping speculars."));
+  dt_bauhaus_slider_set_format(g->ucs_saturation_balance, "%");
+  dt_bauhaus_slider_set_factor(g->ucs_saturation_balance, 100.0);
+  dt_bauhaus_slider_set_soft_range(g->ucs_saturation_balance, -0.75, 0.75);
+  dt_bauhaus_slider_set_default(g->ucs_saturation_balance, 0.2);
+
+  g->highlight_corr = dt_bauhaus_slider_from_params(self, "highlight_corr");
+  dt_bauhaus_widget_set_label(g->highlight_corr, NULL, _("highlight hue/sat"));
+  dt_bauhaus_slider_set_format(g->highlight_corr, "%");
+  dt_bauhaus_slider_set_factor(g->highlight_corr, 100.0);
+  dt_bauhaus_slider_set_digits(g->highlight_corr, 1);
+  dt_bauhaus_slider_set_soft_range(g->highlight_corr, -1.0, 1.0);
+  dt_bauhaus_slider_set_default(g->highlight_corr, 0.0);
+  dt_bauhaus_slider_set_step(g->highlight_corr, 0.001);
+  gtk_widget_set_tooltip_text(g->highlight_corr, _("corrects hue and saturation in highlights to mitigate color shifts\n"
+                                                   "(e.g. salmon sunsets or magenta blues)"));
+
+  g->target_gamut = dt_bauhaus_combobox_from_params(self, "target_gamut");
+  dt_bauhaus_combobox_add(g->target_gamut, "sRGB (Rec.709)");
+  dt_bauhaus_combobox_add(g->target_gamut, "AdobeRGB");
+  dt_bauhaus_combobox_add(g->target_gamut, "Rec.2020");
+  gtk_widget_set_tooltip_text(g->target_gamut, _("select the destination color space (sRGB, AdobeRGB,\n" 
+                                                  "or Rec.2020). this sets the legal boundary for color saturation."));
+
+  g->gamut_strength = dt_bauhaus_slider_from_params(self, "gamut_strength");
+  dt_bauhaus_widget_set_label(g->gamut_strength, NULL, _("compression smoothness"));
+  gtk_widget_set_tooltip_text(g->gamut_strength,
+                              _("defines how high in the highlights the compression starts.\n"
+                                " lower values keep more saturation but may clip;\n"
+                                " higher values create a professional roll-off\n"
+                                " in the brightest colors without affecting midtones."));
+  dt_bauhaus_slider_set_format(g->gamut_strength, "%");
+  dt_bauhaus_slider_set_factor(g->gamut_strength, 100.0);
+  dt_bauhaus_slider_set_digits(g->gamut_strength, 1);
+  dt_bauhaus_slider_set_step(g->gamut_strength, 0.001);
+  dt_bauhaus_slider_set_soft_range(g->gamut_strength, 0.0, 1.0);
+
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
   g_signal_connect(G_OBJECT(g->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
-  dt_gui_box_add(self->widget, g->logbase);
-
+  gtk_box_pack_start(GTK_BOX(self->widget), g->logbase, TRUE, TRUE, 0); 
+  
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
