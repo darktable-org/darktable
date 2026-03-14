@@ -408,9 +408,9 @@ static inline void dt_ioppr_rgb_matrix_to_lab(const dt_aligned_pixel_t rgb,
 // work_profile->matrix_in_transposed) and L_white (from Y_to_dt_UCS_L_star(1.f)).
 // Assumes input is already clipped to non-negative values.
 static inline void dt_ioppr_rgb_matrix_to_dt_UCS_JCH(const float *const in,
-                                                       dt_aligned_pixel_t jch,
-                                                       const dt_colormatrix_t matrix_in_transposed,
-                                                       const float L_white)
+                                                     dt_aligned_pixel_t jch,
+                                                     const dt_colormatrix_t matrix_in_transposed,
+                                                     const float L_white)
 {
   dt_aligned_pixel_t xyz_d50, xyz_d65, xyY;
   dt_apply_transposed_color_matrix(in, matrix_in_transposed, xyz_d50);
