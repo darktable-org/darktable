@@ -18,6 +18,22 @@
       "min_version": "1.0",
       "github_asset": "mask-object-segnext-b2hq.dtmodel",
       "default": false
+    },
+    {
+      "id": "denoise-nind",
+      "name": "denoise nind",
+      "description": "UNet denoiser trained on NIND dataset",
+      "task": "denoise",
+      "github_asset": "denoise-nind.dtmodel",
+      "default": true
+    },
+    {
+      "id": "upscale-bsrgan",
+      "name": "upscale bsrgan",
+      "description": "BSRGAN 2x and 4x blind super-resolution",
+      "task": "upscale",
+      "github_asset": "upscale-bsrgan.dtmodel",
+      "default": true
     }
   ]
 }
