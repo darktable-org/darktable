@@ -155,6 +155,7 @@ add_iop(sigmoid "sigmoid.c")
 add_iop(agx "agx.c")
 add_iop(primaries "primaries.c")
 add_iop(colorequal "colorequal.c")
+add_iop(contrast "contrast.c")
 add_iop(rasterfile "rasterfile.c")
 
 if(Rsvg2_FOUND)
