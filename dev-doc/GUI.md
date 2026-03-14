@@ -252,6 +252,31 @@ For modules with canvas interaction (crop, masks):
 - `mouse_moved()`, `button_pressed()`, `button_released()`, `scrolled()` — return 1 if event handled
 - `gui_post_expose()` — draw overlays on the center view with Cairo
 
+### Cursor Management
+
+Use `dt_control_change_cursor()` to set the mouse cursor shape during interaction. This function uses **CSS cursor names**.
+
+```c
+// Example: set to crosshair during interaction
+dt_control_change_cursor("crosshair");
+```
+
+Commonly used CSS cursor names in darktable:
+- `"default"`: standard arrow
+- `"pointer"`: clickable or draggable element
+- `"move"`: dragging an object
+- `"crosshair"`: precise selection/cropping
+- `"wait"`: busy state (replaces legacy `GDK_WATCH`)
+- `"not-allowed"`: invalid target or help-mode deselect
+- `"help"`: help mode
+- `"none"`: hidden cursor
+- `"w-resize"`, `"e-resize"`, `"n-resize"`, `"s-resize"`: cardinal resizing
+- `"nw-resize"`, `"ne-resize"`, `"se-resize"`, `"sw-resize"`: corner resizing
+- `"ew-resize"`, `"ns-resize"`: bidirectional resizing
+
+Refer to `src/control/control.c` for the implementation of fallbacks for backends with incomplete CSS support.
+
+
 ---
 
 ## 3. Thread Safety — Updating GUI from `process()`
