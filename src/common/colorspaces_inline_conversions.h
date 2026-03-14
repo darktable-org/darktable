@@ -1430,6 +1430,13 @@ static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L
   dt_xyY_to_XYZ(xyY, XYZ);
 }
 
+static inline void dt_UCS_JCH_to_XYZ(const dt_aligned_pixel_t JCH, const float L_w, dt_aligned_pixel_t XYZ)
+{
+  dt_aligned_pixel_t xyY = { 0.f };
+  dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
+  dt_xyY_to_XYZ(xyY, XYZ);
+}
+
 #undef DT_RESTRICT
 
 // clang-format off
