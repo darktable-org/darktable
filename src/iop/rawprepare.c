@@ -28,6 +28,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "develop/imageop_math.h"
 #include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "iop/iop_api.h"
 
@@ -79,14 +80,20 @@ typedef struct dt_iop_rawprepare_data_t
   gboolean apply_gainmaps;
   // GainMap for each filter of RGGB Bayer pattern
   dt_dng_gain_map_t *gainmaps[4];
+
+  // alternative: single GainMap with 3 RGB planes (DJI-style)
+  gboolean apply_gainmap_rgb;
+  dt_dng_gain_map_t *gainmap_rgb;
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
 {
   int kernel_rawprepare_1f;
   int kernel_rawprepare_1f_gainmap;
+  int kernel_rawprepare_1f_gainmap_rgb;
   int kernel_rawprepare_1f_unnormalized;
   int kernel_rawprepare_1f_unnormalized_gainmap;
+  int kernel_rawprepare_1f_unnormalized_gainmap_rgb;
   int kernel_rawprepare_4f;
 } dt_iop_rawprepare_global_data_t;
 
@@ -440,6 +447,51 @@ void process(dt_iop_module_t *self,
     }
   }
 
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && d->apply_gainmap_rgb)
+  {
+    const dt_dng_gain_map_t *gm = d->gainmap_rgb;
+    const uint32_t map_w = gm->map_points_h;
+    const uint32_t map_h = gm->map_points_v;
+    const uint32_t nplanes = gm->map_planes;
+    const float im_to_rel_x = 1.0f / piece->buf_in.width;
+    const float im_to_rel_y = 1.0f / piece->buf_in.height;
+    const float rel_to_map_x = 1.0f / gm->map_spacing_h;
+    const float rel_to_map_y = 1.0f / gm->map_spacing_v;
+    const float map_origin_h = gm->map_origin_h;
+    const float map_origin_v = gm->map_origin_v;
+
+    // build mapping from _BL() index (0-3) to RGB plane (0=R, 1=G, 2=B)
+    const uint32_t filters = piece->pipe->dsc.filters;
+    int bl_to_plane[4];
+    for(int bl = 0; bl < 4; bl++)
+    {
+      const int fc = FC(bl >> 1, bl & 1, filters);
+      bl_to_plane[bl] = (fc == 3) ? 1 : fc; // map second-green (3) to green plane (1)
+    }
+
+    DT_OMP_FOR()
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      const float y_map = CLAMP(((roi_out->y + csy + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
+      const uint32_t y_i0 = MIN(y_map, map_h - 1);
+      const uint32_t y_i1 = MIN(y_i0 + 1, map_h - 1);
+      const float y_frac = y_map - y_i0;
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const int plane = bl_to_plane[_BL(roi_out, d, j, i)];
+        const float x_map = CLAMP(((roi_out->x + csx + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
+        const uint32_t x_i0 = MIN(x_map, map_w - 1);
+        const uint32_t x_i1 = MIN(x_i0 + 1, map_w - 1);
+        const float x_frac = x_map - x_i0;
+        const float gain_top    = (1.0f - x_frac) * gm->map_gain[(y_i0 * map_w + x_i0) * nplanes + plane]
+                                +          x_frac  * gm->map_gain[(y_i0 * map_w + x_i1) * nplanes + plane];
+        const float gain_bottom = (1.0f - x_frac) * gm->map_gain[(y_i1 * map_w + x_i0) * nplanes + plane]
+                                +          x_frac  * gm->map_gain[(y_i1 * map_w + x_i1) * nplanes + plane];
+        out[j * roi_out->width + i] *= (1.0f - y_frac) * gain_top + y_frac * gain_bottom;
+      }
+    }
+  }
+
   const gboolean color_sraw = !(dt_image_is_raw(&piece->pipe->image) ||  dt_image_is_mono_sraw(&piece->pipe->image));
   if(color_sraw && piece->pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
@@ -462,10 +514,13 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {NULL};
+  cl_mem dev_gainmap_rgb[3] = {NULL};
+  float *gainmap_rgb_plane[3] = {NULL};
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
+  gboolean gainmap_rgb_args = FALSE;
 
   if(piece->pipe->dsc.filters
      && piece->dsc_in.channels == 1
@@ -475,6 +530,11 @@ int process_cl(dt_iop_module_t *self,
     {
       kernel = gd->kernel_rawprepare_1f_gainmap;
       gainmap_args = TRUE;
+    }
+    else if(d->apply_gainmap_rgb)
+    {
+      kernel = gd->kernel_rawprepare_1f_gainmap_rgb;
+      gainmap_rgb_args = TRUE;
     }
     else
     {
@@ -489,6 +549,11 @@ int process_cl(dt_iop_module_t *self,
     {
       kernel = gd->kernel_rawprepare_1f_unnormalized_gainmap;
       gainmap_args = TRUE;
+    }
+    else if(d->apply_gainmap_rgb)
+    {
+      kernel = gd->kernel_rawprepare_1f_unnormalized_gainmap_rgb;
+      gainmap_rgb_args = TRUE;
     }
     else
     {
@@ -539,6 +604,45 @@ int process_cl(dt_iop_module_t *self,
        CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]), CLARG(dev_gainmap[3]),
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
+  else if(gainmap_rgb_args)
+  {
+    const dt_dng_gain_map_t *gm = d->gainmap_rgb;
+    const int map_size[2] = { gm->map_points_h, gm->map_points_v };
+    const int map_n = map_size[0] * map_size[1];
+    const float im_to_rel[2] = { 1.0f / piece->buf_in.width, 1.0f / piece->buf_in.height };
+    const float rel_to_map[2] = { 1.0f / gm->map_spacing_h, 1.0f / gm->map_spacing_v };
+    const float map_origin[2] = { gm->map_origin_h, gm->map_origin_v };
+
+    // de-interleave the 3-plane gain data into separate per-plane arrays
+    for(int p = 0; p < 3; p++)
+    {
+      gainmap_rgb_plane[p] = dt_alloc_align_float(map_n);
+      if(gainmap_rgb_plane[p] == NULL) goto finish;
+      for(int i = 0; i < map_n; i++)
+        gainmap_rgb_plane[p][i] = gm->map_gain[i * 3 + p];
+
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      dev_gainmap_rgb[p] = dt_opencl_alloc_device(devid, map_size[0], map_size[1], sizeof(float));
+      if(dev_gainmap_rgb[p] == NULL) goto finish;
+      err = dt_opencl_write_host_to_device(devid, gainmap_rgb_plane[p], dev_gainmap_rgb[p],
+                                           map_size[0], map_size[1], sizeof(float));
+      if(err != CL_SUCCESS) goto finish;
+    }
+
+    // build BL-index to RGB-plane mapping from filter pattern
+    const uint32_t filters = piece->pipe->dsc.filters;
+    int bl_to_plane[4];
+    for(int bl = 0; bl < 4; bl++)
+    {
+      const int fc = FC(bl >> 1, bl & 1, filters);
+      bl_to_plane[bl] = (fc == 3) ? 1 : fc;
+    }
+
+    dt_opencl_set_kernel_args(devid, kernel, 10,
+       CLARG(dev_gainmap_rgb[0]), CLARG(dev_gainmap_rgb[1]), CLARG(dev_gainmap_rgb[2]),
+       CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin),
+       CLARG(bl_to_plane));
+  }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 
 finish:
@@ -547,6 +651,11 @@ finish:
 
   for(int i = 0; i < 4; i++)
     dt_opencl_release_mem_object(dev_gainmap[i]);
+  for(int p = 0; p < 3; p++)
+  {
+    dt_opencl_release_mem_object(dev_gainmap_rgb[p]);
+    dt_free_align(gainmap_rgb_plane[p]);
+  }
 
   if(err == CL_SUCCESS)
   {
@@ -629,7 +738,12 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
   dt_dng_gain_map_t *gainmaps[4] = {0};
 
   if(g_list_length(image->dng_gain_maps) != 4)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+      "[rawprepare] _check_gain_maps: found %u GainMaps, need exactly 4",
+      g_list_length(image->dng_gain_maps));
     return FALSE;
+  }
 
   // FIXME checks for width / height might be wrong
   for(int i = 0; i < 4; i++)
@@ -649,7 +763,22 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
        || g->left > 1
        || g->bottom != image->height
        || g->right != image->width)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+        "[rawprepare] _check_gain_maps: map[%d] rejected: "
+        "top=%u left=%u bottom=%u right=%u (image %ux%u) "
+        "plane=%u planes=%u row_pitch=%u col_pitch=%u "
+        "map_points_v=%u map_points_h=%u map_planes=%u",
+        i,
+        g ? g->top : 0, g ? g->left : 0,
+        g ? g->bottom : 0, g ? g->right : 0,
+        image->width, image->height,
+        g ? g->plane : 0, g ? g->planes : 0,
+        g ? g->row_pitch : 0, g ? g->col_pitch : 0,
+        g ? g->map_points_v : 0, g ? g->map_points_h : 0,
+        g ? g->map_planes : 0);
       return FALSE;
+    }
 
     const uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
     gainmaps[filter] = g;
@@ -657,7 +786,11 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
 
   // check that there is a GainMap for each filter of the Bayer pattern
   if(gainmaps[0] == NULL || gainmaps[1] == NULL || gainmaps[2] == NULL || gainmaps[3] == NULL)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+      "[rawprepare] _check_gain_maps: not all 4 Bayer filters covered by GainMaps");
     return FALSE;
+  }
 
   // check that each GainMap has the same shape
   for(int i = 1; i < 4; i++)
@@ -668,13 +801,52 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
        || gainmaps[i]->map_spacing_v != gainmaps[0]->map_spacing_v
        || gainmaps[i]->map_origin_h != gainmaps[0]->map_origin_h
        || gainmaps[i]->map_origin_v != gainmaps[0]->map_origin_v)
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+        "[rawprepare] _check_gain_maps: map[%d] shape mismatch vs map[0]", i);
       return FALSE;
+    }
   }
 
   if(gainmaps_out)
     memcpy(gainmaps_out, gainmaps, sizeof(gainmaps));
 
   return TRUE;
+}
+
+// check for a single RGB GainMap (DJI-style: 1 map, planes=3, row_pitch=1, col_pitch=1)
+static dt_dng_gain_map_t *_check_gain_map_rgb(dt_iop_module_t *self)
+{
+  const dt_image_t *const image = &(self->dev->image_storage);
+
+  if(g_list_length(image->dng_gain_maps) != 1)
+    return NULL;
+
+  dt_dng_gain_map_t *g = g_list_nth_data(image->dng_gain_maps, 0);
+  if(g == NULL
+     || g->plane != 0
+     || g->planes != 3
+     || g->map_planes != 3
+     || g->row_pitch != 1
+     || g->col_pitch != 1
+     || g->map_points_v < 2
+     || g->map_points_h < 2
+     || g->bottom != image->height
+     || g->right != image->width)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+      "[rawprepare] _check_gain_map_rgb: map rejected: "
+      "plane=%u planes=%u map_planes=%u row_pitch=%u col_pitch=%u "
+      "map_points_v=%u map_points_h=%u bottom=%u right=%u (image %ux%u)",
+      g ? g->plane : 0, g ? g->planes : 0, g ? g->map_planes : 0,
+      g ? g->row_pitch : 0, g ? g->col_pitch : 0,
+      g ? g->map_points_v : 0, g ? g->map_points_h : 0,
+      g ? g->bottom : 0, g ? g->right : 0,
+      image->width, image->height);
+    return NULL;
+  }
+
+  return g;
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -724,9 +896,17 @@ void commit_params(dt_iop_module_t *self,
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
+  {
     d->apply_gainmaps = _check_gain_maps(self, d->gainmaps);
+    d->gainmap_rgb = d->apply_gainmaps ? NULL : _check_gain_map_rgb(self);
+    d->apply_gainmap_rgb = (d->gainmap_rgb != NULL);
+  }
   else
+  {
     d->apply_gainmaps = FALSE;
+    d->apply_gainmap_rgb = FALSE;
+    d->gainmap_rgb = NULL;
+  }
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
@@ -756,7 +936,12 @@ void reload_defaults(dt_iop_module_t *self)
   const dt_image_t *const image = &(self->dev->image_storage);
 
   // if there are embedded GainMaps, they should be applied by default to avoid uneven color cast
-  const gboolean has_gainmaps = _check_gain_maps(self, NULL);
+  const gboolean has_gainmaps = _check_gain_maps(self, NULL) || (_check_gain_map_rgb(self) != NULL);
+
+  dt_print(DT_DEBUG_IMAGEIO,
+    "[rawprepare] reload_defaults: has_gainmaps=%s, flat_field default=%s",
+    has_gainmaps ? "YES" : "NO",
+    has_gainmaps ? "EMBEDDED" : "OFF");
 
   *d = (dt_iop_rawprepare_params_t){.left = image->crop_x,
                                     .top = image->crop_y,
@@ -784,8 +969,10 @@ void init_global(dt_iop_module_so_t *self)
   dt_iop_rawprepare_global_data_t *gd = self->data;
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
   gd->kernel_rawprepare_1f_gainmap = dt_opencl_create_kernel(program, "rawprepare_1f_gainmap");
+  gd->kernel_rawprepare_1f_gainmap_rgb = dt_opencl_create_kernel(program, "rawprepare_1f_gainmap_rgb");
   gd->kernel_rawprepare_1f_unnormalized = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized");
   gd->kernel_rawprepare_1f_unnormalized_gainmap = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized_gainmap");
+  gd->kernel_rawprepare_1f_unnormalized_gainmap_rgb = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized_gainmap_rgb");
   gd->kernel_rawprepare_4f = dt_opencl_create_kernel(program, "rawprepare_4f");
 }
 
@@ -794,9 +981,11 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_iop_rawprepare_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_rawprepare_4f);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized_gainmap);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized_gainmap_rgb);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f_gainmap);
-  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized_gainmap);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_gainmap_rgb);
   free(self->data);
   self->data = NULL;
 }
@@ -837,7 +1026,7 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_widget_set_visible(g->black_level_separate[3], !(is_monochrome || is_sraw));
 
-  gtk_widget_set_visible(g->flat_field, _check_gain_maps(self, NULL));
+  gtk_widget_set_visible(g->flat_field, _check_gain_maps(self, NULL) || (_check_gain_map_rgb(self) != NULL));
   dt_bauhaus_combobox_set(g->flat_field, p->flat_field);
 }
 
