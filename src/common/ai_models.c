@@ -769,7 +769,8 @@ int dt_ai_models_get_count(dt_ai_registry_t *registry)
   return count;
 }
 
-dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry, int index)
+dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry,
+                                         const int index)
 {
   if(!registry || index < 0)
     return NULL;
@@ -780,7 +781,8 @@ dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry, int index)
   return copy;
 }
 
-dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry, const char *model_id)
+dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry,
+                                      const char *model_id)
 {
   if(!registry || !model_id)
     return NULL;
@@ -803,18 +805,20 @@ typedef struct dt_ai_download_data_t
   const gboolean *cancel_flag; // optional: set to non-NULL to enable cancellation
 } dt_ai_download_data_t;
 
-static size_t _curl_write_callback(void *ptr, size_t size, size_t nmemb, void *data)
+static size_t _curl_write_callback(void *ptr,
+                                   size_t size,
+                                   size_t nmemb,
+                                   void *data)
 {
   dt_ai_download_data_t *dl = (dt_ai_download_data_t *)data;
   return fwrite(ptr, size, nmemb, dl->file);
 }
 
-static int _curl_progress_callback(
-  void *clientp,
-  curl_off_t dltotal,
-  curl_off_t dlnow,
-  curl_off_t ultotal,
-  curl_off_t ulnow)
+static int _curl_progress_callback(void *clientp,
+                                   curl_off_t dltotal,
+                                   curl_off_t dlnow,
+                                   curl_off_t ultotal,
+                                   curl_off_t ulnow)
 {
   dt_ai_download_data_t *dl = (dt_ai_download_data_t *)clientp;
 
@@ -839,11 +843,13 @@ static int _curl_progress_callback(
   return 0;
 }
 
-static gboolean _verify_checksum(const char *filepath, const char *expected)
+static gboolean _verify_checksum(const char *filepath,
+                                 const char *expected)
 {
   if(!expected || !g_str_has_prefix(expected, "sha256:"))
   {
-    dt_print(DT_DEBUG_AI, "[ai_models] no valid checksum provided - rejecting download");
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] no valid checksum provided - rejecting download");
     return FALSE; // reject files without a valid checksum
   }
 
@@ -883,7 +889,8 @@ static gboolean _verify_checksum(const char *filepath, const char *expected)
 }
 #endif //HAVE_AI_DOWNLOAD
 
-static gboolean _extract_zip(const char *zippath, const char *destdir)
+static gboolean _extract_zip(const char *zippath,
+                             const char *destdir)
 {
   struct archive *a = archive_read_new();
   struct archive *ext = archive_write_disk_new();
@@ -894,7 +901,9 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
   archive_read_support_format_zip(a);
   archive_write_disk_set_options(
     ext,
-    ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_SYMLINKS
+    ARCHIVE_EXTRACT_TIME
+      | ARCHIVE_EXTRACT_PERM
+      | ARCHIVE_EXTRACT_SECURE_SYMLINKS
       | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
 
   if((r = archive_read_open_filename(a, zippath, 10240)) != ARCHIVE_OK)
@@ -1020,7 +1029,8 @@ static gboolean _extract_zip(const char *zippath, const char *destdir)
 
 // install a local .dtmodel file (zip archive) into the models directory.
 // returns error message (caller must free) or NULL on success.
-char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepath)
+char *dt_ai_models_install_local(dt_ai_registry_t *registry,
+                                 const char *filepath)
 {
   if(!registry || !filepath)
     return g_strdup(_("invalid parameters"));
@@ -1041,12 +1051,11 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepat
 
 #ifdef HAVE_AI_DOWNLOAD
 // synchronous download - returns error message or NULL on success
-char *dt_ai_models_download_sync(
-  dt_ai_registry_t *registry,
-  const char *model_id,
-  dt_ai_progress_callback callback,
-  gpointer user_data,
-  const gboolean *cancel_flag)
+char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
+                                 const char *model_id,
+                                 dt_ai_progress_callback callback,
+                                 gpointer user_data,
+                                 const gboolean *cancel_flag)
 {
   dt_print(DT_DEBUG_AI,
            "[ai_models] download requested for: %s",
@@ -1071,9 +1080,10 @@ char *dt_ai_models_download_sync(
   }
 
   // validate asset filename: reject path separators and query strings
-  if(
-    strchr(model->github_asset, '/') || strchr(model->github_asset, '\\')
-    || strchr(model->github_asset, '?') || strchr(model->github_asset, '#')
+  if(strchr(model->github_asset, '/')
+    || strchr(model->github_asset, '\\')
+    || strchr(model->github_asset, '?')
+    || strchr(model->github_asset, '#')
     || strstr(model->github_asset, ".."))
   {
     g_mutex_unlock(&registry->lock);
@@ -1111,8 +1121,7 @@ char *dt_ai_models_download_sync(
   } while(0)
 
   // validate repository format (must be "owner/repo" with safe characters)
-  if(
-    !repository
+  if(!repository
     || !g_regex_match_simple("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repository, 0, 0))
   {
     SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, g_strdup(_("invalid repository format")));
@@ -1317,11 +1326,10 @@ char *dt_ai_models_download_sync(
 }
 
 // wrapper that returns boolean for compatibility
-gboolean dt_ai_models_download(
-  dt_ai_registry_t *registry,
-  const char *model_id,
-  dt_ai_progress_callback callback,
-  gpointer user_data)
+gboolean dt_ai_models_download(dt_ai_registry_t *registry,
+                               const char *model_id,
+                               dt_ai_progress_callback callback,
+                               gpointer user_data)
 {
   char *error = dt_ai_models_download_sync(registry, model_id, callback, user_data, NULL);
   if(error)
@@ -1362,10 +1370,9 @@ gboolean dt_ai_models_download_default(
   return any_started;
 }
 
-gboolean dt_ai_models_download_all(
-  dt_ai_registry_t *registry,
-  dt_ai_progress_callback callback,
-  gpointer user_data)
+gboolean dt_ai_models_download_all(dt_ai_registry_t *registry,
+                                   dt_ai_progress_callback callback,
+                                   gpointer user_data)
 {
   if(!registry)
     return FALSE;
