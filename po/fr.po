@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:21+0100\n"
-"PO-Revision-Date: 2026-03-13 18:43+0100\n"
+"POT-Creation-Date: 2026-03-14 10:05+0100\n"
+"PO-Revision-Date: 2026-03-14 10:17+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6172,6 +6172,116 @@ msgstr "Extension inconnue « .%s »"
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Impossible d’obtenir les paramètres du module de format, export abandonné."
+
+#: ../src/common/ai_models.c:179
+#, c-format
+msgid "network error: %s"
+msgstr "Erreur réseau : « %s »"
+
+#: ../src/common/ai_models.c:181
+#, c-format
+msgid "model repository \"%s\" not found"
+msgstr "Répertoire de modèle « %s » non trouvé"
+
+#: ../src/common/ai_models.c:183
+msgid "GitHub API rate limit exceeded, try again later"
+msgstr "Quota API GitHub dépassé, réessayer plus tard"
+
+#: ../src/common/ai_models.c:185
+#, c-format
+msgid "GitHub API error (HTTP %ld)"
+msgstr "Erreur API GitHub (HTTP %ld) "
+
+#: ../src/common/ai_models.c:1036 ../src/common/ai_models.c:1065
+msgid "invalid parameters"
+msgstr "Paramètres invalides"
+
+#: ../src/common/ai_models.c:1039
+#, c-format
+msgid "file not found: %s"
+msgstr "Fichier non trouvé : « %s »"
+
+#: ../src/common/ai_models.c:1042
+msgid "failed to extract model archive"
+msgstr "Échec lors de l’extraction de l’archive du modèle"
+
+#: ../src/common/ai_models.c:1073
+msgid "model not found in registry"
+msgstr "Modèle non trouvé dans le registre"
+
+#: ../src/common/ai_models.c:1079
+msgid "model has no download asset defined"
+msgstr "Aucun téléchargement défini pour le modèle"
+
+#: ../src/common/ai_models.c:1090
+msgid "invalid asset filename"
+msgstr "Nom de ficher incorrect"
+
+#: ../src/common/ai_models.c:1096
+msgid "model is already downloading"
+msgstr "Téléchargement du modèle déjà en cours"
+
+#: ../src/common/ai_models.c:1127
+msgid "invalid repository format"
+msgstr "Format de dépôt incorrect"
+
+#: ../src/common/ai_models.c:1152
+#, c-format
+msgid "no compatible ai model release found for darktable %s"
+msgstr "Pas de modèle IA compatible trouvé pour Darktable « %s » "
+
+#: ../src/common/ai_models.c:1169
+#, c-format
+msgid ""
+"could not obtain checksum for %s — refusing to download without integrity "
+"verification"
+msgstr ""
+"Impossible de récupérer la signature pour « %s » - téléchargement refusé sans "
+"vérification d’intégrité"
+
+#: ../src/common/ai_models.c:1185
+msgid "failed to build download url"
+msgstr "Échec de construction de l’URL à télécharger"
+
+#: ../src/common/ai_models.c:1196
+#, c-format
+msgid "failed to create file: %s"
+msgstr "Impossible de créer le fichier : « %s »"
+
+#: ../src/common/ai_models.c:1220
+msgid "failed to initialize download"
+msgstr "Échec de l’initialisation du téléchargement"
+
+#: ../src/common/ai_models.c:1240
+msgid "download cancelled"
+msgstr "Téléchargement annulé"
+
+#: ../src/common/ai_models.c:1242
+#, c-format
+msgid "download failed: %s"
+msgstr "Téléchargement en échec : « %s »"
+
+#: ../src/common/ai_models.c:1253
+#, c-format
+msgid "http error: %ld"
+msgstr "Erreur HTTP : %ld"
+
+#: ../src/common/ai_models.c:1276
+msgid "checksum verification failed"
+msgstr "Échec de vérification de la signature"
+
+#: ../src/common/ai_models.c:1286
+#, c-format
+msgid ""
+"no checksum available for %s — refusing to install without integrity "
+"verification"
+msgstr ""
+"Pas de signature de vérification disponible pour « %s » - installation "
+"refusée sans vérification d’intégrité"
+
+#: ../src/common/ai_models.c:1296
+msgid "failed to extract archive"
+msgstr "Impossible d’extraire l’archive"
 
 #: ../src/common/camera_control.c:205
 #, c-format
@@ -25506,7 +25616,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Pilotage du boîtier"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:699
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
 msgid "modes"
 msgstr "Modes"
 
@@ -27083,47 +27193,47 @@ msgid ""
 msgstr ""
 "Profil d’histogramme sélectionné non supporté, remplacé par linéaire Rec2020"
 
-#: ../src/libs/histogram.c:276
+#: ../src/libs/histogram.c:277
 msgid "use buttons at top of graph to change type"
 msgstr "Utiliser les boutons en haut du graphe pour changer le type"
 
-#: ../src/libs/histogram.c:277
+#: ../src/libs/histogram.c:278
 msgid "click on ❓ and then graph for documentation"
 msgstr "Cliquer sur ❓ et sur le graphique pour la documentation"
 
-#: ../src/libs/histogram.c:278
+#: ../src/libs/histogram.c:279
 msgid "use color picker module to restrict area"
 msgstr "Utiliser le module « Pipette de couleur » pour restreindre la zone"
 
 # bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
-#: ../src/libs/histogram.c:281
+#: ../src/libs/histogram.c:282
 msgid "drag to change black point"
 msgstr "Glisser pour changer le point noir"
 
 # bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
-#: ../src/libs/histogram.c:282 ../src/libs/histogram.c:286
+#: ../src/libs/histogram.c:283 ../src/libs/histogram.c:287
 msgid "double-click resets"
 msgstr "Double clic pour réinitialiser"
 
 # bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
-#: ../src/libs/histogram.c:285
+#: ../src/libs/histogram.c:286
 msgid "drag to change exposure"
 msgstr "Glisser pour changer l’exposition"
 
-#: ../src/libs/histogram.c:644
+#: ../src/libs/histogram.c:660
 msgid "histogram"
 msgstr "Histogramme"
 
-#: ../src/libs/histogram.c:650 ../src/libs/histogram.c:710
+#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
 msgid "hide histogram"
 msgstr "Cacher l’histogramme"
 
-#: ../src/libs/histogram.c:723
+#: ../src/libs/histogram.c:739
 #, c-format
 msgid "toggle %s channel"
 msgstr "Basculer le canal %s"
 
-#: ../src/libs/histogram.c:731
+#: ../src/libs/histogram.c:747
 msgid "toggle colors"
 msgstr "Basculer les couleurs"
 
@@ -36890,9 +37000,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "google authentication"
 #~ msgstr "Authentification google photos"
-
-#~ msgid "verification code:"
-#~ msgstr "Code de vérification"
 
 #~ msgid "please enter the verification code"
 #~ msgstr "Merci d’entrer le code de vérification"
