@@ -437,8 +437,13 @@ jobs:
         if: github.ref_name == 'master' # will be true only for nightly builds
         run: |
           pushd src
-          git tag --force nightly
-          git push origin nightly --force
+          # Delete and recreate nightly tag instead of just force retargeting.
+          # This updates the tag creation date. Without this, the github-shown
+          # releaase date will be stuck on the date the tag was created.
+          git tag -d nightly || true
+          git push origin --delete nightly
+          git tag nightly
+          git push origin nightly
           popd
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
