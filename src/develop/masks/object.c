@@ -238,7 +238,7 @@ static gpointer _encode_thread_func(gpointer data)
   const int out_w = (int)(final_scale * pipe.processed_width);
   const int out_h = (int)(final_scale * pipe.processed_height);
 
-  dt_print(DT_DEBUG_AI, 
+  dt_print(DT_DEBUG_AI,
            "[object mask] rendering %dx%d (scale=%.3f) for encoding...",
            out_w, out_h, final_scale);
 
@@ -857,14 +857,17 @@ _register_vectorized_forms(dt_iop_module_t *module,
 
   // count existing AI object groups/paths for numbering
   dt_develop_t *dev = darktable.develop;
+  const char *group_prefix = _("ai object group");
+  const char *path_prefix = _("ai object");
+
   guint grp_nb = 0;
   guint path_nb = 0;
   for(GList *l = dev->forms; l; l = g_list_next(l))
   {
     const dt_masks_form_t *f = l->data;
-    if(strncmp(f->name, "ai object group", 15) == 0)
+    if(strncmp(f->name, group_prefix, strlen(group_prefix)) == 0)
       grp_nb++;
-    if(strncmp(f->name, "ai object #", 11) == 0)
+    if(strncmp(f->name, path_prefix, strlen(path_prefix)) == 0)
       path_nb++;
   }
   grp_nb++;
@@ -872,11 +875,12 @@ _register_vectorized_forms(dt_iop_module_t *module,
   for(GList *l = forms; l; l = g_list_next(l))
   {
     dt_masks_form_t *f = l->data;
-    snprintf(f->name, sizeof(f->name), _("ai object #%d"), (int)path_nb++);
+    snprintf(f->name, sizeof(f->name),
+             "%s #%d", path_prefix, (int)path_nb++);
   }
 
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name, sizeof(grp->name), _("ai object group #%d"), (int)grp_nb);
+  snprintf(grp->name, sizeof(grp->name), "%s #%d", group_prefix, (int)grp_nb);
 
   // register all path forms so they exist in dev->forms
   for(GList *l = forms; l; l = g_list_next(l))
