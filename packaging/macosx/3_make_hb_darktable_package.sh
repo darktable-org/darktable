@@ -246,22 +246,10 @@ for dtSharedObj in $dtSharedObjDirs; do
     cp -LR "$homebrewHome"/lib/"$dtSharedObj"/"$dtSharedObjVersion"/* "$dtResourcesDir"/lib/"$dtSharedObj"
 done
 
-# Add ONNX Runtime (for AI support)
-if ! ls "$dtResourcesDir"/lib/darktable/libonnxruntime.*.dylib &>/dev/null \
-   && ! ls "$dtResourcesDir"/lib/libonnxruntime.*.dylib &>/dev/null; then
-    ortLibDir=""
-    if [[ -d "$buildDir/_deps/onnxruntime/lib" ]]; then
-        ortLibDir="$buildDir/_deps/onnxruntime/lib"
-    elif [[ -d "../../src/external/onnxruntime/lib" ]]; then
-        ortLibDir="../../src/external/onnxruntime/lib"
-    fi
-    if [[ -n "$ortLibDir" ]]; then
-        echo "Installing ONNX Runtime from $ortLibDir"
-        ortDylib=$(find "$ortLibDir" -maxdepth 1 -name 'libonnxruntime.*.dylib' | head -1)
-        if [[ -n "$ortDylib" ]]; then
-            cp -L "$ortDylib" "$dtResourcesDir/lib/$(basename "$ortDylib")"
-        fi
-    fi
+# Handle ONNX Runtime (for AI support)
+# TODO: this is only a hack to deal with the downloaded onnxruntime
+if ls "$dtResourcesDir"/lib/darktable/libonnxruntime.*.dylib &>/dev/null; then
+  mv "$dtResourcesDir"/lib/darktable/libonnxruntime.*.dylib "$dtResourcesDir"/lib
 fi
 
 # Add homebrew translations
