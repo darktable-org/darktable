@@ -94,8 +94,11 @@ struct dt_seg_context_t
 // normalization into the ONNX encoder graph).
 // output: float buffer [1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE]
 static float *
-_preprocess_image(const uint8_t *rgb_data, int width, int height,
-                  gboolean normalize, float *out_scale)
+_preprocess_image(const uint8_t *rgb_data,
+                  const int width,
+                  const int height,
+                  const gboolean normalize,
+                  float *out_scale)
 {
   const int target = SAM_INPUT_SIZE;
   const float scale = (float)target / (float)(width > height ? width : height);
@@ -152,9 +155,14 @@ _preprocess_image(const uint8_t *rgb_data, int width, int height,
 
 // crop the valid (non-padded) region from a SAM-space mask and bilinear-
 // resize to the encoded image dimensions
-static void _crop_resize_mask(const float *src, int src_w, int src_h,
-                              float *dst, int dst_w, int dst_h,
-                              float scale, gboolean apply_sigmoid)
+static void _crop_resize_mask(const float *src,
+                              const int src_w,
+                              const int src_h,
+                              float *dst,
+                              const int dst_w,
+                              const int dst_h,
+                              const float scale,
+                              const gboolean apply_sigmoid)
 {
   const int valid_w = MIN((int)(dst_w * scale + 0.5f), src_w);
   const int valid_h = MIN((int)(dst_h * scale + 0.5f), src_h);
@@ -574,7 +582,10 @@ cleanup:
 }
 
 gboolean
-dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, int height)
+dt_seg_encode_image(dt_seg_context_t *ctx,
+                    const uint8_t *rgb_data,
+                    const int width,
+                    const int height)
 {
   if(!ctx || !rgb_data || width <= 0 || height <= 0)
     return FALSE;
@@ -591,7 +602,10 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
   // run encoder
   int64_t input_shape[4] = {1, 3, SAM_INPUT_SIZE, SAM_INPUT_SIZE};
   dt_ai_tensor_t input
-    = {.data = preprocessed, .type = DT_AI_FLOAT, .shape = input_shape, .ndim = 4};
+    = { .data = preprocessed,
+       .type  = DT_AI_FLOAT,
+       .shape = input_shape,
+       .ndim  = 4};
 
   // allocate output buffers for all encoder outputs
   float *enc_bufs[MAX_ENCODER_OUTPUTS] = {NULL};
@@ -627,8 +641,10 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
   for(int i = 0; i < ctx->n_enc_outputs; i++)
   {
     outputs[i] = (dt_ai_tensor_t){
-      .data = enc_bufs[i], .type = DT_AI_FLOAT,
-      .shape = ctx->enc_shapes[i], .ndim = ctx->enc_ndims[i]};
+      .data  = enc_bufs[i],
+      .type  = DT_AI_FLOAT,
+      .shape = ctx->enc_shapes[i],
+      .ndim  = ctx->enc_ndims[i]};
   }
 
   dt_print(DT_DEBUG_AI,
@@ -670,12 +686,11 @@ dt_seg_encode_image(dt_seg_context_t *ctx, const uint8_t *rgb_data, int width, i
   return TRUE;
 }
 
-float *dt_seg_compute_mask(
-  dt_seg_context_t *ctx,
-  const dt_seg_point_t *points,
-  int n_points,
-  int *out_width,
-  int *out_height)
+float *dt_seg_compute_mask(dt_seg_context_t *ctx,
+                           const dt_seg_point_t *points,
+                           const int n_points,
+                           int *out_width,
+                           int *out_height)
 {
   if(!ctx || !ctx->image_encoded || !points || n_points <= 0)
     return NULL;
