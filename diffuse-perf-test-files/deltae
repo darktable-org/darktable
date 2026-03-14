@@ -1,0 +1,83 @@
+#!/tmp/testenv/bin/python
+
+# Requires:
+#   python3-scipy >= 1.1.0
+#   python3-six
+#   python3-pillow (or python3-Pillow, or python3-pil)
+#   python3-imageio
+#     or install the latest from PyPi if not provided as system package:
+#       pip3 install imageio
+#   python3-colour-science >= 0.3.14
+#     or install the latest from PyPi if not provided as system package:
+#       pip3 install colour-science
+
+# Maximum delta allowed, above this value the difference can be detected
+MAX_DELTA_E = 2.3
+MAX_AVG_DELTA_E = MAX_DELTA_E / 3.
+
+from packaging import version
+import colour
+import numpy
+import sys
+
+if "delta_E" not in dir(colour):
+    print("  Unable to compute delta-E, please upgrade python3-colour-science")
+    exit(0)
+
+expected = sys.argv[1]
+output = sys.argv[2]
+
+expected_rgb = colour.read_image(expected, method="Imageio")
+output_rgb = colour.read_image(output, method="Imageio")
+
+if version.parse(colour.__version__) > version.parse("0.3"):
+    expected_lab = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(expected_rgb,
+                                                        chromatic_adaptation_transform="Bradford"))
+    output_lab = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(output_rgb,
+                                                      chromatic_adaptation_transform="Bradford"))
+else:
+    expected_lab = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(expected_rgb,
+                                                        chromatic_adaptation_method="Bradford"))
+    output_lab = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(output_rgb,
+                                                      chromatic_adaptation_method="Bradford"))
+
+delta_E = colour.delta_E(expected_lab, output_lab, method="CIE 2000")
+
+num_elem = delta_E.size
+
+max_dE = numpy.amax(delta_E)
+mean_dE = numpy.mean(delta_E)
+std_dE = numpy.std(delta_E)
+
+print("      ----------------------------------")
+print("      Max dE                   : %.5f" % max_dE)
+print("      Avg dE                   : %.5f" % mean_dE)
+print("      Std dE                   : %.5f" % std_dE)
+print("      ----------------------------------")
+
+count_below_avg = numpy.sum(delta_E <= mean_dE)
+print("      Pixels below avg + 0 std : %.2f %%" % (count_below_avg / num_elem * 100.))
+
+count_below_avg = numpy.sum(delta_E <= mean_dE + std_dE)
+print("      Pixels below avg + 1 std : %.2f %%" % (count_below_avg / num_elem * 100.))
+
+count_below_avg = numpy.sum(delta_E <= mean_dE + 3. * std_dE)
+print("      Pixels below avg + 3 std : %.2f %%" % (count_below_avg / num_elem * 100.))
+
+count_below_avg = numpy.sum(delta_E <= mean_dE + 6. * std_dE)
+print("      Pixels below avg + 6 std : %.2f %%" % (count_below_avg / num_elem * 100.))
+
+count_below_avg = numpy.sum(delta_E <= mean_dE + 9. * std_dE)
+print("      Pixels below avg + 9 std : %.2f %%" % (count_below_avg / num_elem * 100.))
+
+print("      ----------------------------------")
+
+count_above = numpy.sum(delta_E >= MAX_DELTA_E)
+print("      Pixels above tolerance   : %.2f %%" % (count_above / num_elem * 100.))
+
+if(max_dE > MAX_DELTA_E or mean_dE > MAX_AVG_DELTA_E):
+    exit(2)
+elif(max_dE < 0.01):
+    exit(0)
+else:
+    exit(1)

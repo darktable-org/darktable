@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 4.4.0-Exiv2">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+   xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
+   xmlns:darktable="http://darktable.sf.net/"
+   xmpMM:DerivedFrom="DSC_9034.NEF"
+   darktable:xmp_version="4"
+   darktable:raw_params="0"
+   darktable:auto_presets_applied="1">
+   <darktable:history>
+    <rdf:Seq>
+     <rdf:li
+      darktable:num="0"
+      darktable:operation="diffuse"
+      darktable:enabled="1"
+      darktable:modversion="2"
+      darktable:params="140000000ad7a33c0400000000006040000000000000a040000020400000f0400000803f00000000cdcc4cbdcdcc4cbdcdcc4cbdcdcc4cbd02000000"
+      darktable:multi_name=""
+      darktable:multi_priority="0"
+      darktable:blendop_version="11"
+      darktable:blendop_params="gz12eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQkA5qIZBA=="/>
+    </rdf:Seq>
+   </darktable:history>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
