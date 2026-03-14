@@ -439,7 +439,7 @@ jobs:
           pushd src
           # Delete and recreate nightly tag instead of just force retargeting.
           # This updates the tag creation date. Without this, the github-shown
-          # releaase date will be stuck on the date the tag was created.
+          # release date will be stuck on the date the tag was created.
           git tag -d nightly || true
           git push origin --delete nightly
           git tag nightly
