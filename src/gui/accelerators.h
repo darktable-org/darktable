@@ -126,6 +126,7 @@ extern const gchar *dt_action_effect_toggle[];
 extern const gchar *dt_action_effect_hold[];
 extern const gchar *dt_action_effect_activate[];
 extern const gchar *dt_action_effect_presets[];
+extern const gchar *dt_action_effect_cycle[];
 
 typedef struct dt_action_element_def_t
 {
