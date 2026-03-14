@@ -113,6 +113,13 @@ if(CUPS_FOUND)
   set(MODULES ${MODULES} print_settings)
 endif(CUPS_FOUND)
 
+# AI neural restore module
+if(USE_AI)
+  add_library(neural_restore MODULE "neural_restore.c")
+  target_link_libraries(neural_restore TIFF::TIFF)
+  set(MODULES ${MODULES} neural_restore)
+endif(USE_AI)
+
 # Add libs references
 foreach(module ${MODULES})
   target_link_libraries(${module} lib_darktable)
