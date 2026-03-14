@@ -33,7 +33,8 @@
 /**
  * @brief Model download/availability status
  */
-typedef enum dt_ai_model_status_t {
+typedef enum dt_ai_model_status_t
+{
   DT_AI_MODEL_NOT_DOWNLOADED = 0,
   DT_AI_MODEL_DOWNLOADING,
   DT_AI_MODEL_DOWNLOADED,
@@ -43,7 +44,8 @@ typedef enum dt_ai_model_status_t {
 /**
  * @brief Information about a single AI model
  */
-typedef struct dt_ai_model_t {
+typedef struct dt_ai_model_t
+{
   char *id;              // Unique identifier (e.g. "nafnet-sidd-width32")
   char *name;            // Display name
   char *description;     // Short description
@@ -62,14 +64,16 @@ typedef struct dt_ai_model_t {
  * @param progress Download progress 0.0 to 1.0
  * @param user_data User-provided data
  */
-typedef void (*dt_ai_progress_callback)(const char *model_id, double progress,
+typedef void (*dt_ai_progress_callback)(const char *model_id,
+                                        const double progress,
                                         gpointer user_data);
 
 /**
  * @brief AI Models Registry
  * Central registry for managing AI models
  */
-typedef struct dt_ai_registry_t {
+typedef struct dt_ai_registry_t
+{
   GList *models;           // List of dt_ai_model_t*
   char *repository;        // GitHub repository (e.g. "darktable-org/darktable-ai")
   char *models_dir;        // Path to user's models directory
@@ -129,7 +133,8 @@ int dt_ai_models_get_count(dt_ai_registry_t *registry);
  * @param index Index 0 to count-1
  * @return Model copy (caller owns), or NULL
  */
-dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry, int index);
+dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry,
+                                         const int index);
 
 /**
  * @brief Get model by ID (returns a copy, caller must free with dt_ai_model_free)
@@ -138,7 +143,7 @@ dt_ai_model_t *dt_ai_models_get_by_index(dt_ai_registry_t *registry, int index);
  * @return Model copy (caller owns), or NULL
  */
 dt_ai_model_t *dt_ai_models_get_by_id(dt_ai_registry_t *registry,
-                                       const char *model_id);
+                                      const char *model_id);
 
 // --- Install Operations ---
 
