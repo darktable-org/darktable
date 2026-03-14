@@ -300,20 +300,20 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
            ctx->enc_order[0], ctx->enc_order[1], ctx->enc_order[2], ctx->enc_order[3],
            ctx->n_enc_outputs);
 
-  // detect model type from decoder output count
-  // SAM: 3+ outputs (masks, iou_predictions, low_res_masks)
-  // SegNext: 1 output (mask)
-  const int n_dec_outputs = dt_ai_get_output_count(decoder);
+  // detect model type from arch field in model registry
+  const dt_ai_model_info_t *minfo
+    = dt_ai_get_model_info_by_id(env, model_id);
+  const char *arch = minfo ? minfo->arch : "";
 
-  if(n_dec_outputs >= 3)
+  if(strcmp(arch, "sam2") == 0)
     ctx->model_type = DT_SEG_MODEL_SAM;
-  else if(n_dec_outputs == 1)
+  else if(strcmp(arch, "segnext") == 0)
     ctx->model_type = DT_SEG_MODEL_SEGNEXT;
   else
   {
     dt_print(DT_DEBUG_AI,
-             "[segmentation] decoder has %d outputs, unsupported for %s",
-             n_dec_outputs, model_id);
+             "[segmentation] unknown arch '%s' for %s",
+             arch, model_id);
     dt_seg_free(ctx);
     return NULL;
   }

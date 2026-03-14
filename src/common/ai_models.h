@@ -46,7 +46,7 @@ typedef enum dt_ai_model_status_t
  */
 typedef struct dt_ai_model_t
 {
-  char *id;              // Unique identifier (e.g. "nafnet-sidd-width32")
+  char *id;              // Unique identifier (e.g. "mask-object-segnext-b2hq")
   char *name;            // Display name
   char *description;     // Short description
   char *task;            // Task type: "denoise", "upscale", etc.

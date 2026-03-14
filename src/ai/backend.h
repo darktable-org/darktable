@@ -93,10 +93,11 @@ typedef struct dt_ai_context_t dt_ai_context_t;
  * @brief Model Metadata (ReadOnly)
  */
 typedef struct dt_ai_model_info_t {
-  const char *id;          ///< Unique ID (e.g. "nafnet-sidd")
+  const char *id;          ///< Unique ID (e.g. "mask-object-segnext-b2hq")
   const char *name;        ///< Display name
   const char *description; ///< Short description
-  const char *task_type;   ///< e.g. "denoise", "inpainting"
+  const char *task_type;   ///< e.g. "mask", "denoise"
+  const char *arch;        ///< e.g. "sam2", "segnext"
   const char *backend;     ///< Backend type (e.g. "onnx")
   int num_inputs;          ///< Number of model inputs (default 1)
 } dt_ai_model_info_t;
