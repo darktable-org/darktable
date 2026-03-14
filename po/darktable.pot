@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:21+0100\n"
+"POT-Creation-Date: 2026-03-14 10:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5804,6 +5804,112 @@ msgstr ""
 
 #: ../src/cli/main.c:761
 msgid "failed to get parameters from format module, aborting export ..."
+msgstr ""
+
+#: ../src/common/ai_models.c:179
+#, c-format
+msgid "network error: %s"
+msgstr ""
+
+#: ../src/common/ai_models.c:181
+#, c-format
+msgid "model repository \"%s\" not found"
+msgstr ""
+
+#: ../src/common/ai_models.c:183
+msgid "GitHub API rate limit exceeded, try again later"
+msgstr ""
+
+#: ../src/common/ai_models.c:185
+#, c-format
+msgid "GitHub API error (HTTP %ld)"
+msgstr ""
+
+#: ../src/common/ai_models.c:1036 ../src/common/ai_models.c:1065
+msgid "invalid parameters"
+msgstr ""
+
+#: ../src/common/ai_models.c:1039
+#, c-format
+msgid "file not found: %s"
+msgstr ""
+
+#: ../src/common/ai_models.c:1042
+msgid "failed to extract model archive"
+msgstr ""
+
+#: ../src/common/ai_models.c:1073
+msgid "model not found in registry"
+msgstr ""
+
+#: ../src/common/ai_models.c:1079
+msgid "model has no download asset defined"
+msgstr ""
+
+#: ../src/common/ai_models.c:1090
+msgid "invalid asset filename"
+msgstr ""
+
+#: ../src/common/ai_models.c:1096
+msgid "model is already downloading"
+msgstr ""
+
+#: ../src/common/ai_models.c:1127
+msgid "invalid repository format"
+msgstr ""
+
+#: ../src/common/ai_models.c:1152
+#, c-format
+msgid "no compatible ai model release found for darktable %s"
+msgstr ""
+
+#: ../src/common/ai_models.c:1169
+#, c-format
+msgid ""
+"could not obtain checksum for %s — refusing to download without integrity "
+"verification"
+msgstr ""
+
+#: ../src/common/ai_models.c:1185
+msgid "failed to build download url"
+msgstr ""
+
+#: ../src/common/ai_models.c:1196
+#, c-format
+msgid "failed to create file: %s"
+msgstr ""
+
+#: ../src/common/ai_models.c:1220
+msgid "failed to initialize download"
+msgstr ""
+
+#: ../src/common/ai_models.c:1240
+msgid "download cancelled"
+msgstr ""
+
+#: ../src/common/ai_models.c:1242
+#, c-format
+msgid "download failed: %s"
+msgstr ""
+
+#: ../src/common/ai_models.c:1253
+#, c-format
+msgid "http error: %ld"
+msgstr ""
+
+#: ../src/common/ai_models.c:1276
+msgid "checksum verification failed"
+msgstr ""
+
+#: ../src/common/ai_models.c:1286
+#, c-format
+msgid ""
+"no checksum available for %s — refusing to install without integrity "
+"verification"
+msgstr ""
+
+#: ../src/common/ai_models.c:1296
+msgid "failed to extract archive"
 msgstr ""
 
 #: ../src/common/camera_control.c:205
@@ -23270,7 +23376,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr ""
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:699
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
 msgid "modes"
 msgstr ""
 
@@ -24668,44 +24774,44 @@ msgid ""
 "Rec2020"
 msgstr ""
 
-#: ../src/libs/histogram.c:276
+#: ../src/libs/histogram.c:277
 msgid "use buttons at top of graph to change type"
 msgstr ""
 
-#: ../src/libs/histogram.c:277
+#: ../src/libs/histogram.c:278
 msgid "click on ❓ and then graph for documentation"
 msgstr ""
 
-#: ../src/libs/histogram.c:278
+#: ../src/libs/histogram.c:279
 msgid "use color picker module to restrict area"
 msgstr ""
 
-#: ../src/libs/histogram.c:281
+#: ../src/libs/histogram.c:282
 msgid "drag to change black point"
 msgstr ""
 
-#: ../src/libs/histogram.c:282 ../src/libs/histogram.c:286
+#: ../src/libs/histogram.c:283 ../src/libs/histogram.c:287
 msgid "double-click resets"
 msgstr ""
 
-#: ../src/libs/histogram.c:285
+#: ../src/libs/histogram.c:286
 msgid "drag to change exposure"
 msgstr ""
 
-#: ../src/libs/histogram.c:644
+#: ../src/libs/histogram.c:660
 msgid "histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:650 ../src/libs/histogram.c:710
+#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
 msgid "hide histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:723
+#: ../src/libs/histogram.c:739
 #, c-format
 msgid "toggle %s channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:731
+#: ../src/libs/histogram.c:747
 msgid "toggle colors"
 msgstr ""
 
