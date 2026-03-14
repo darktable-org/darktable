@@ -1614,9 +1614,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->sync_to_vectorscope), "toggled",
                    G_CALLBACK(_sync_to_vectorscope_toggled), self);
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)))
-    _sync_to_vectorscope_toggled(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope), self);
-
   g->set_from_vectorscope = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(g->set_from_vectorscope,
     _("import the harmony rule and anchor hue currently displayed in the vectorscope.\n"
