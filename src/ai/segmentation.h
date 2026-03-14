@@ -70,7 +70,8 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx);
  */
 gboolean dt_seg_encode_image(dt_seg_context_t *ctx,
                              const uint8_t *rgb_data,
-                             int width, int height);
+                             const int width,
+                             const int height);
 
 /**
  * @brief Compute a segmentation mask from point prompts.
@@ -86,8 +87,10 @@ gboolean dt_seg_encode_image(dt_seg_context_t *ctx,
  *         Values are in [0,1] range (sigmoid output). NULL on error.
  */
 float *dt_seg_compute_mask(dt_seg_context_t *ctx,
-                           const dt_seg_point_t *points, int n_points,
-                           int *out_width, int *out_height);
+                           const dt_seg_point_t *points,
+                           const int n_points,
+                           int *out_width,
+                           int *out_height);
 
 /**
  * @brief Check if the image has been encoded.

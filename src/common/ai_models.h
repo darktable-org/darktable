@@ -168,9 +168,9 @@ char *dt_ai_models_install_local(dt_ai_registry_t *registry, const char *filepat
  * @return Error message (caller must free) or NULL on success
  */
 char *dt_ai_models_download_sync(dt_ai_registry_t *registry, const char *model_id,
-                                  dt_ai_progress_callback callback,
-                                  gpointer user_data,
-                                  const gboolean *cancel_flag);
+                                 dt_ai_progress_callback callback,
+                                 gpointer user_data,
+                                 const gboolean *cancel_flag);
 
 /**
  * @brief Download a specific model (convenience wrapper)
@@ -180,7 +180,8 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry, const char *model_i
  * @param user_data Data for callback
  * @return TRUE on success
  */
-gboolean dt_ai_models_download(dt_ai_registry_t *registry, const char *model_id,
+gboolean dt_ai_models_download(dt_ai_registry_t *registry,
+                               const char *model_id,
                                dt_ai_progress_callback callback,
                                gpointer user_data);
 
