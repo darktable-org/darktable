@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:21+0100\n"
-"PO-Revision-Date: 2026-03-13 20:40+0200\n"
+"POT-Creation-Date: 2026-03-14 10:05+0100\n"
+"PO-Revision-Date: 2026-03-14 12:40+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6146,6 +6146,115 @@ msgstr "Невідоме розширення '.%s'"
 #: ../src/cli/main.c:761
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "Не вдалося отримати параметри з модуля формату, скасування експорту..."
+
+#: ../src/common/ai_models.c:179
+#, c-format
+msgid "network error: %s"
+msgstr "Помилка мережі: %s"
+
+#: ../src/common/ai_models.c:181
+#, c-format
+msgid "model repository \"%s\" not found"
+msgstr "Репозиторій моделі \"%s\" не знайдено"
+
+#: ../src/common/ai_models.c:183
+msgid "GitHub API rate limit exceeded, try again later"
+msgstr "Перевищено ліміт темпу запитів до API GitHub, спробуйте пізніше."
+
+#: ../src/common/ai_models.c:185
+#, c-format
+msgid "GitHub API error (HTTP %ld)"
+msgstr "Помилка API GitHub (HTTP %ld)"
+
+#: ../src/common/ai_models.c:1036 ../src/common/ai_models.c:1065
+msgid "invalid parameters"
+msgstr "Недійсні параметри"
+
+#: ../src/common/ai_models.c:1039
+#, c-format
+msgid "file not found: %s"
+msgstr "Файл не знайдено: %s"
+
+#: ../src/common/ai_models.c:1042
+msgid "failed to extract model archive"
+msgstr "Не вдалося розпакувати архів моделі"
+
+#: ../src/common/ai_models.c:1073
+msgid "model not found in registry"
+msgstr "Модель не знайдено в реєстрі"
+
+#: ../src/common/ai_models.c:1079
+msgid "model has no download asset defined"
+msgstr "У моделі не визначено ресурс для завантаження"
+
+#: ../src/common/ai_models.c:1090
+msgid "invalid asset filename"
+msgstr "Недійсна назва файлу ресурсу"
+
+#: ../src/common/ai_models.c:1096
+msgid "model is already downloading"
+msgstr "Модель вже завантажується"
+
+#: ../src/common/ai_models.c:1127
+msgid "invalid repository format"
+msgstr "Недійсний формат репозиторію"
+
+#: ../src/common/ai_models.c:1152
+#, c-format
+msgid "no compatible ai model release found for darktable %s"
+msgstr "Не знайдено сумісного випуску ШІ моделі для Darktable %s"
+
+#: ../src/common/ai_models.c:1169
+#, c-format
+msgid ""
+"could not obtain checksum for %s — refusing to download without integrity "
+"verification"
+msgstr ""
+"Не вдалося отримати контрольну суму для %s — відмова від завантаження без "
+"перевірки цілісності"
+
+#: ../src/common/ai_models.c:1185
+msgid "failed to build download url"
+msgstr "Не вдалося створити URL-адресу завантаження"
+
+#: ../src/common/ai_models.c:1196
+#, c-format
+msgid "failed to create file: %s"
+msgstr "Не вдалося створити файл: %s"
+
+#: ../src/common/ai_models.c:1220
+msgid "failed to initialize download"
+msgstr "Не вдалося ініціалізувати завантаження"
+
+#: ../src/common/ai_models.c:1240
+msgid "download cancelled"
+msgstr "Завантаження скасовано"
+
+#: ../src/common/ai_models.c:1242
+#, c-format
+msgid "download failed: %s"
+msgstr "Не вдалося завантажити: %s"
+
+#: ../src/common/ai_models.c:1253
+#, c-format
+msgid "http error: %ld"
+msgstr "Помилка HTTP: %ld"
+
+#: ../src/common/ai_models.c:1276
+msgid "checksum verification failed"
+msgstr "Невдала перевірка контрольної суми"
+
+#: ../src/common/ai_models.c:1286
+#, c-format
+msgid ""
+"no checksum available for %s — refusing to install without integrity "
+"verification"
+msgstr ""
+"Немає контрольної суми для %s — відмова в установці без перевірки цілісності"
+
+#: ../src/common/ai_models.c:1296
+msgid "failed to extract archive"
+msgstr "Не вдалося розпакувати архів"
 
 #: ../src/common/camera_control.c:205
 #, c-format
@@ -25404,7 +25513,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Керування камерою"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:699
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
 msgid "modes"
 msgstr "Режими"
 
@@ -26971,44 +27080,44 @@ msgstr ""
 "Для гістограми вибрано непідтримуваний профіль, його буде замінено лінійним "
 "Rec2020"
 
-#: ../src/libs/histogram.c:276
+#: ../src/libs/histogram.c:277
 msgid "use buttons at top of graph to change type"
 msgstr "Використовуйте кнопки у верхній частині графіка, щоб змінити його тип"
 
-#: ../src/libs/histogram.c:277
+#: ../src/libs/histogram.c:278
 msgid "click on ❓ and then graph for documentation"
 msgstr "Натисніть на ❓, а потім на графік для документації"
 
-#: ../src/libs/histogram.c:278
+#: ../src/libs/histogram.c:279
 msgid "use color picker module to restrict area"
 msgstr "Використовуйте модуль Піпетки кольорів для обмеження області"
 
-#: ../src/libs/histogram.c:281
+#: ../src/libs/histogram.c:282
 msgid "drag to change black point"
 msgstr "Перетягніть, щоб змінити точку чорного"
 
-#: ../src/libs/histogram.c:282 ../src/libs/histogram.c:286
+#: ../src/libs/histogram.c:283 ../src/libs/histogram.c:287
 msgid "double-click resets"
 msgstr "Подвійний клік для скидання"
 
-#: ../src/libs/histogram.c:285
+#: ../src/libs/histogram.c:286
 msgid "drag to change exposure"
 msgstr "Перетягніть, щоб змінити експозицію"
 
-#: ../src/libs/histogram.c:644
+#: ../src/libs/histogram.c:660
 msgid "histogram"
 msgstr "Гістограма"
 
-#: ../src/libs/histogram.c:650 ../src/libs/histogram.c:710
+#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
 msgid "hide histogram"
 msgstr "Приховати гістограму"
 
-#: ../src/libs/histogram.c:723
+#: ../src/libs/histogram.c:739
 #, c-format
 msgid "toggle %s channel"
 msgstr "Перемикає видимість каналу: %s"
 
-#: ../src/libs/histogram.c:731
+#: ../src/libs/histogram.c:747
 msgid "toggle colors"
 msgstr "Перемикає кольори"
 

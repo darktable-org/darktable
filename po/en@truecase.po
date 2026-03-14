@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-13 17:21+0100\n"
-"PO-Revision-Date: 2026-03-13 20:15+0200\n"
+"POT-Creation-Date: 2026-03-14 10:05+0100\n"
+"PO-Revision-Date: 2026-03-14 12:18+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -6086,6 +6086,116 @@ msgstr "Unknown extension '.%s'"
 #: ../src/cli/main.c:761
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "Failed to get parameters from format module, aborting export ..."
+
+#: ../src/common/ai_models.c:179
+#, c-format
+msgid "network error: %s"
+msgstr "Network error: %s"
+
+#: ../src/common/ai_models.c:181
+#, c-format
+msgid "model repository \"%s\" not found"
+msgstr "Model repository \"%s\" not found"
+
+#: ../src/common/ai_models.c:183
+msgid "GitHub API rate limit exceeded, try again later"
+msgstr "GitHub API rate limit exceeded, try again later"
+
+#: ../src/common/ai_models.c:185
+#, c-format
+msgid "GitHub API error (HTTP %ld)"
+msgstr "GitHub API error (HTTP %ld)"
+
+#: ../src/common/ai_models.c:1036 ../src/common/ai_models.c:1065
+msgid "invalid parameters"
+msgstr "Invalid parameters"
+
+#: ../src/common/ai_models.c:1039
+#, c-format
+msgid "file not found: %s"
+msgstr "File not found: %s"
+
+#: ../src/common/ai_models.c:1042
+msgid "failed to extract model archive"
+msgstr "Failed to extract model archive"
+
+#: ../src/common/ai_models.c:1073
+msgid "model not found in registry"
+msgstr "Model not found in registry"
+
+#: ../src/common/ai_models.c:1079
+msgid "model has no download asset defined"
+msgstr "Model has no download asset defined"
+
+#: ../src/common/ai_models.c:1090
+msgid "invalid asset filename"
+msgstr "Invalid asset filename"
+
+#: ../src/common/ai_models.c:1096
+msgid "model is already downloading"
+msgstr "Model is already downloading"
+
+#: ../src/common/ai_models.c:1127
+msgid "invalid repository format"
+msgstr "Invalid repository format"
+
+#: ../src/common/ai_models.c:1152
+#, c-format
+msgid "no compatible ai model release found for darktable %s"
+msgstr "No compatible AI model release found for Darktable %s"
+
+#: ../src/common/ai_models.c:1169
+#, c-format
+msgid ""
+"could not obtain checksum for %s — refusing to download without integrity "
+"verification"
+msgstr ""
+"Could not obtain checksum for %s — refusing to download without integrity "
+"verification"
+
+#: ../src/common/ai_models.c:1185
+msgid "failed to build download url"
+msgstr "Failed to build download URL"
+
+#: ../src/common/ai_models.c:1196
+#, c-format
+msgid "failed to create file: %s"
+msgstr "Failed to create file: %s"
+
+#: ../src/common/ai_models.c:1220
+msgid "failed to initialize download"
+msgstr "Failed to initialize download"
+
+#: ../src/common/ai_models.c:1240
+msgid "download cancelled"
+msgstr "Download cancelled"
+
+#: ../src/common/ai_models.c:1242
+#, c-format
+msgid "download failed: %s"
+msgstr "Download failed: %s"
+
+#: ../src/common/ai_models.c:1253
+#, c-format
+msgid "http error: %ld"
+msgstr "HTTP error: %ld"
+
+#: ../src/common/ai_models.c:1276
+msgid "checksum verification failed"
+msgstr "Checksum verification failed"
+
+#: ../src/common/ai_models.c:1286
+#, c-format
+msgid ""
+"no checksum available for %s — refusing to install without integrity "
+"verification"
+msgstr ""
+"No checksum available for %s — refusing to install without integrity "
+"verification"
+
+#: ../src/common/ai_models.c:1296
+msgid "failed to extract archive"
+msgstr "Failed to extract archive"
 
 #: ../src/common/camera_control.c:205
 #, c-format
@@ -25059,7 +25169,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Camera control"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:699
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
 msgid "modes"
 msgstr "Modes"
 
@@ -26612,44 +26722,44 @@ msgstr ""
 "Unsupported profile selected for histogram, it will be replaced with linear "
 "Rec2020"
 
-#: ../src/libs/histogram.c:276
+#: ../src/libs/histogram.c:277
 msgid "use buttons at top of graph to change type"
 msgstr "Use buttons at top of graph to change type"
 
-#: ../src/libs/histogram.c:277
+#: ../src/libs/histogram.c:278
 msgid "click on ❓ and then graph for documentation"
 msgstr "Click on ❓ and then graph for documentation"
 
-#: ../src/libs/histogram.c:278
+#: ../src/libs/histogram.c:279
 msgid "use color picker module to restrict area"
 msgstr "Use color picker module to restrict area"
 
-#: ../src/libs/histogram.c:281
+#: ../src/libs/histogram.c:282
 msgid "drag to change black point"
 msgstr "Drag to change black point"
 
-#: ../src/libs/histogram.c:282 ../src/libs/histogram.c:286
+#: ../src/libs/histogram.c:283 ../src/libs/histogram.c:287
 msgid "double-click resets"
 msgstr "Double-click resets"
 
-#: ../src/libs/histogram.c:285
+#: ../src/libs/histogram.c:286
 msgid "drag to change exposure"
 msgstr "Drag to change exposure"
 
-#: ../src/libs/histogram.c:644
+#: ../src/libs/histogram.c:660
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../src/libs/histogram.c:650 ../src/libs/histogram.c:710
+#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
 msgid "hide histogram"
 msgstr "Hide histogram"
 
-#: ../src/libs/histogram.c:723
+#: ../src/libs/histogram.c:739
 #, c-format
 msgid "toggle %s channel"
 msgstr "Toggle %s channel"
 
-#: ../src/libs/histogram.c:731
+#: ../src/libs/histogram.c:747
 msgid "toggle colors"
 msgstr "Toggle colors"
 
