@@ -461,6 +461,7 @@ if(USE_AI)
 
   FILE(GLOB SOURCE_FILES_AI
     "common/ai_models.c"
+    "develop/masks/object.c"
     "gui/preferences_ai.c"
   )
   set(SOURCES ${SOURCES} ${SOURCE_FILES_AI})
