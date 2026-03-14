@@ -54,6 +54,7 @@ hbDependencies="adwaita-icon-theme \
     llvm \
     lua@5.4 \
     ninja \
+    onnxruntime \
     openexr \
     openjpeg \
     osm-gps-map \
