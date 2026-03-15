@@ -312,6 +312,7 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
      && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
   {
+    dt_control_change_cursor("grabbing");
     const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
     dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), n_press, pos, 0.0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
@@ -325,7 +326,10 @@ static void _drawable_button_release(GtkGestureSingle *gesture,
                                      dt_scopes_t *s)
 {
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
+  {
+    dt_control_change_cursor("grab");
     dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), -n_press, x, 0.0, FALSE);
+  }
 }
 
 static void _drawable_motion(GtkEventControllerMotion *controller,
@@ -358,12 +362,10 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
     {
       lib_histogram_update_tooltip(s);
       dt_scopes_refresh(s);
-      if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-      {
-        // FIXME: should really use named cursors, and differentiate
-        // between "grab" and "grabbing"
-        dt_control_change_cursor("pointer");
-      }
+      if(s->highlight == DT_SCOPES_HIGHLIGHT_NONE)
+        dt_control_change_cursor("default");
+      else
+        dt_control_change_cursor("grab");
     }
   }
 }
