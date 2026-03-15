@@ -16,6 +16,8 @@ pkg_check_modules(JSON_GLIB REQUIRED json-glib-1.0)
 # GTK3/RSVG needed for headers only (common/darktable.h -> utility.h -> gtk/gtk.h, librsvg/rsvg.h)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(RSVG2 REQUIRED librsvg-2.0)
+# lcms2 needed for headers (common/colorspaces.h included via darktable.h)
+pkg_check_modules(LCMS2 REQUIRED lcms2)
 
 # Include current directory for header
 target_include_directories(darktable_ai PUBLIC
@@ -26,6 +28,7 @@ target_include_directories(darktable_ai PUBLIC
   ${JSON_GLIB_INCLUDE_DIRS}
   ${GTK3_INCLUDE_DIRS}
   ${RSVG2_INCLUDE_DIRS}
+  ${LCMS2_INCLUDE_DIRS}
 )
 
 target_link_directories(darktable_ai PUBLIC
