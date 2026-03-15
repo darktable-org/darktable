@@ -801,8 +801,8 @@ void gui_init(dt_lib_module_t *self)
                                     | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                           _eventbox_scroll_callback, s);
   gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_CAPTURE);
-  // use (default) GTK_PHASE_TARGET to capture enter/leave events, as
-  // apparently GDK_ENTER_NOTIFY events are not bubbled
+  // use GTK_PHASE_TARGET to capture enter/leave events, as
+  // enter/leave events apparently not bubbled in GTK < 3.24.43.
   dt_gui_connect_motion(eventbox, NULL,
                         _eventbox_enter_notify_callback,
                         _eventbox_leave_notify_callback, s);
