@@ -31,7 +31,8 @@
 
    architecture
    ------------
-   the module has three main subsystems:
+   the core AI inference, tiling, and detail recovery logic lives in
+   src/ai/restore.c (the darktable_ai library). this module handles:
 
    1. preview (interactive, single-image)
       triggered by clicking the preview widget or switching tabs.
@@ -39,7 +40,7 @@
         - exports the selected image at reduced resolution via the
           darktable export pipeline (captures fully-processed pixels)
         - crops a patch matching the widget aspect ratio
-        - runs AI inference on the patch via _run_patch()
+        - runs AI inference on the patch via dt_restore_run_patch()
         - delivers before/after buffers to the main thread via g_idle_add
       the preview widget draws a split before/after view with a draggable
       divider. for denoise, DWT-filtered detail is pre-computed so the
@@ -52,32 +53,19 @@
       for each selected image:
         - exports via the darktable pipeline with a custom format module
           that intercepts the pixel buffer in _ai_write_image()
-        - tiles the full-resolution image (_process_tiled) with overlap
-          to avoid seam artifacts. tile size is chosen based on available
-          memory (_select_tile_size)
-        - writes output as 32-bit float TIFF via libtiff (scanline I/O
-          to avoid buffering the entire output in memory for upscale)
+        - for denoise with detail recovery: buffers the full output via
+          dt_restore_process_tiled(), applies dt_restore_apply_detail_recovery(),
+          then writes TIFF
+        - for plain denoise/upscale: streams tiles directly to TIFF via
+          _process_tiled_tiff() to avoid buffering the full output
+        - output TIFF embeds linear Rec.709 ICC profile and source EXIF
         - imports the result into the darktable library and groups it
           with the source image
-      for denoise with detail recovery > 0, the full denoised result is
-      buffered in memory so _apply_detail_recovery() can blend wavelet-
-      filtered texture back from the original.
 
-   3. detail recovery (denoise only)
-      uses wavelet (DWT) decomposition to separate noise from texture
-      in the luminance residual (original - denoised). fine wavelet bands
-      are aggressively thresholded to remove noise; coarser bands are
-      preserved to retain texture. the filtered residual is blended back
-      into the denoised output, controlled by the detail recovery slider.
-      see _dwt_detail_noise[] for per-band thresholds.
-
-   pixel pipeline
-   --------------
-   input pixels arrive as linear Rec.709 RGB from the dt export pipeline.
-   models expect sRGB, so _run_patch() converts linear->sRGB before
-   inference and sRGB->linear after. the model operates in planar NCHW
-   layout; _process_tiled() handles interleaved-to-planar conversion
-   during tile extraction, with mirror padding at image boundaries.
+   3. output parameters (collapsible section)
+      - bit depth: 8/16/32-bit TIFF (default 16-bit)
+      - add to catalog: auto-import output into darktable library
+      - output directory: supports darktable variables (e.g. $(FILE_FOLDER))
 
    threading
    ---------
@@ -100,18 +88,20 @@
 
    preferences
    -----------
-   CONF_DETAIL_RECOVERY — persisted detail recovery slider value
-   CONF_ACTIVE_PAGE     — last active notebook tab (restored on startup)
+   CONF_DETAIL_RECOVERY — detail recovery slider value
+   CONF_ACTIVE_PAGE     — last active notebook tab
+   CONF_BIT_DEPTH       — output TIFF bit depth (0=8, 1=16, 2=32)
+   CONF_ADD_CATALOG     — auto-import output into library
+   CONF_OUTPUT_DIR      — output directory pattern (supports variables)
+   CONF_EXPAND_OUTPUT   — output section collapsed/expanded state
 */
 
-#include "ai/backend.h"
+#include "ai/restore.h"
 #include "bauhaus/bauhaus.h"
 #include "common/act_on.h"
-#include "common/ai_models.h"
 #include "common/collection.h"
 #include "common/variables.h"
 #include "common/colorspaces.h"
-#include "common/dwt.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
@@ -130,14 +120,8 @@
 
 DT_MODULE(1)
 
-#define AI_TASK_DENOISE "denoise"
-#define AI_TASK_UPSCALE "upscale"
-
 #define PREVIEW_SIZE 256
 #define PREVIEW_EXPORT_SIZE 1024
-#define OVERLAP_DENOISE 64
-#define OVERLAP_UPSCALE 16
-#define MAX_MODEL_INPUTS 4
 // warn the user when upscaled output exceeds this many megapixels
 #define LARGE_OUTPUT_MP 60.0
 
@@ -148,16 +132,6 @@ DT_MODULE(1)
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
 
-// wavelet denoise parameters for detail recovery
-// fine scales capture noise, coarser scales capture texture
-#define DWT_DETAIL_BANDS 5
-static const float _dwt_detail_noise[DWT_DETAIL_BANDS] = {
-  0.04f,    // band 0 (finest): aggressive — mostly noise
-  0.008f,   // band 1: moderate
-  0.002f,   // band 2: light — texture lives here
-  0.0005f,  // band 3: very light
-  0.0001f   // band 4 (coarsest): preserve almost everything
-};
 typedef enum dt_neural_task_t
 {
   NEURAL_TASK_DENOISE = 0,
@@ -185,7 +159,7 @@ typedef struct dt_lib_neural_restore_t
   char warning_text[128];
   GtkWidget *recovery_slider;
   dt_neural_task_t task;
-  dt_ai_environment_t *env;
+  dt_restore_env_t *env;
   gboolean model_available;
   gboolean job_running;
   float *preview_before;
@@ -215,15 +189,12 @@ typedef struct dt_lib_neural_restore_t
 typedef struct dt_neural_job_t
 {
   dt_neural_task_t task;
-  char *model_id;
-  char *model_file;
-  dt_ai_environment_t *env;
+  dt_restore_env_t *env;
   GList *images;
   dt_job_t *control_job;
-  dt_ai_context_t *ctx;
+  dt_restore_context_t *ctx;
   int scale;
   float detail_recovery;
-  dt_ai_provider_t provider;
   dt_lib_module_t *self;
   dt_neural_bpp_t bpp;
   gboolean add_to_catalog;
@@ -250,10 +221,7 @@ typedef struct dt_neural_preview_data_t
   dt_imgid_t imgid;
   dt_neural_task_t task;
   int scale;
-  char *model_id;
-  char *model_file;
-  dt_ai_environment_t *env;
-  dt_ai_provider_t provider;
+  dt_restore_env_t *env;
   int sequence;
   int preview_w;
   int preview_h;
@@ -327,13 +295,6 @@ static inline float _linear_to_srgb(float v)
   return (v <= 0.0031308f) ? 12.92f * v : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
 }
 
-static inline float _srgb_to_linear(float v)
-{
-  if(v <= 0.0f) return 0.0f;
-  if(v >= 1.0f) return 1.0f;
-  return (v <= 0.04045f) ? v / 12.92f : powf((v + 0.055f) / 1.055f, 2.4f);
-}
-
 // convert float RGB (3ch interleaved, linear) to cairo RGB24 surface data
 static void _float_rgb_to_cairo(const float *const restrict src,
                                 unsigned char *const restrict dst,
@@ -373,134 +334,7 @@ static void _nn_upscale(const float *const restrict src,
     }
   }
 }
-static int _run_patch(dt_ai_context_t *ctx,
-                      const float *in_patch,
-                      int w, int h,
-                      float *out_patch,
-                      int scale)
-{
-  const int in_pixels = w * h * 3;
-  const int out_w = w * scale;
-  const int out_h = h * scale;
-  const int out_pixels = out_w * out_h * 3;
 
-  // convert to sRGB in a scratch buffer to avoid mutating input
-  float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
-  if(!srgb_in) return 1;
-
-  for(int i = 0; i < in_pixels; i++)
-  {
-    float v = in_patch[i];
-    if(v < 0.0f) v = 0.0f;
-    if(v > 1.0f) v = 1.0f;
-    srgb_in[i] = _linear_to_srgb(v);
-  }
-
-  const int num_inputs = dt_ai_get_input_count(ctx);
-  if(num_inputs > MAX_MODEL_INPUTS)
-  {
-    g_free(srgb_in);
-    return 1;
-  }
-
-  int64_t input_shape[] = {1, 3, h, w};
-  dt_ai_tensor_t inputs[MAX_MODEL_INPUTS];
-  memset(inputs, 0, sizeof(inputs));
-  inputs[0] = (dt_ai_tensor_t){
-    .data = (void *)srgb_in,
-    .shape = input_shape,
-    .ndim = 4,
-    .type = DT_AI_FLOAT};
-
-  // noise level map for multi-input models
-  float *noise_map = NULL;
-  int64_t noise_shape[] = {1, 1, h, w};
-  if(num_inputs >= 2)
-  {
-    const size_t map_size = (size_t)w * h;
-    noise_map = g_try_malloc(map_size * sizeof(float));
-    if(!noise_map)
-    {
-      g_free(srgb_in);
-      return 1;
-    }
-    // default sigma
-    const float sigma_norm = 25.0f / 255.0f;
-    for(size_t i = 0; i < map_size; i++)
-      noise_map[i] = sigma_norm;
-    inputs[1] = (dt_ai_tensor_t){
-      .data = (void *)noise_map,
-      .shape = noise_shape,
-      .ndim = 4,
-      .type = DT_AI_FLOAT};
-  }
-
-  int64_t output_shape[] = {1, 3, out_h, out_w};
-  dt_ai_tensor_t output = {
-    .data = (void *)out_patch,
-    .shape = output_shape,
-    .ndim = 4,
-    .type = DT_AI_FLOAT};
-
-  int ret = dt_ai_run(ctx, inputs, num_inputs, &output, 1);
-  g_free(srgb_in);
-  g_free(noise_map);
-  if(ret != 0) return ret;
-
-  // sRGB -> linear
-  for(int i = 0; i < out_pixels; i++)
-    out_patch[i] = _srgb_to_linear(out_patch[i]);
-
-  return 0;
-}
-static inline int _mirror(int v, int max)
-{
-  if(v < 0) v = -v;
-  if(v >= max) v = 2 * max - 2 - v;
-  if(v < 0) return 0;
-  if(v >= max) return max - 1;
-  return v;
-}
-
-static int _select_tile_size(int scale)
-{
-  // output tile is scale^2 times the input memory for upscale
-  static const int candidates_1x[] = {2048, 1536, 1024, 768, 512, 384, 256};
-  static const int n_1x = 7;
-  static const int candidates_sr[] = {512, 384, 256, 192};
-  static const int n_sr = 4;
-
-  const int *candidates = (scale > 1) ? candidates_sr : candidates_1x;
-  const int n_candidates = (scale > 1) ? n_sr : n_1x;
-
-  const size_t avail = dt_get_available_mem();
-  const size_t budget = avail / 4;
-
-  for(int i = 0; i < n_candidates; i++)
-  {
-    const size_t T = (size_t)candidates[i];
-    const size_t T_out = T * scale;
-    const size_t tile_in = T * T * 3 * sizeof(float);
-    const size_t tile_out = T_out * T_out * 3 * sizeof(float);
-    // RRDBNet ~50x overhead, UNet ~100x
-    const size_t ort_factor = (scale > 1) ? 50 : 100;
-    const size_t ort_overhead = T_out * T_out * 3 * sizeof(float) * ort_factor;
-    const size_t total = tile_in + tile_out + ort_overhead;
-
-    if(total <= budget)
-    {
-      dt_print(DT_DEBUG_AI,
-               "[neural_restore] tile size %d (scale=%d, need %zuMB, budget %zuMB)",
-               candidates[i], scale, total / (1024 * 1024), budget / (1024 * 1024));
-      return candidates[i];
-    }
-  }
-
-  dt_print(DT_DEBUG_AI,
-           "[neural_restore] using minimum tile size %d (budget %zuMB)",
-           candidates[n_candidates - 1], budget / (1024 * 1024));
-  return candidates[n_candidates - 1];
-}
 // write a float 3ch scanline to TIFF, converting to the
 // target bit depth. scratch must be at least width*3*4 bytes
 static int _write_tiff_scanline(TIFF *tif,
@@ -534,261 +368,78 @@ static int _write_tiff_scanline(TIFF *tif,
   return TIFFWriteScanline(tif, dst, row, 0);
 }
 
-static int _process_tiled(dt_ai_context_t *ctx,
-                          const float *in_data,
-                          int width, int height,
-                          int scale,
-                          int bpp,
-                          TIFF *tif,
-                          float *out_buf,
-                          dt_job_t *control_job,
-                          int tile_size)
+// load the right model for a task
+static dt_restore_context_t *_load_for_task(
+  dt_restore_env_t *env,
+  dt_neural_task_t task)
 {
-  const int T = tile_size;
-  const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
-  const int step = T - 2 * O;
-
-  const int S = scale;
-  const int T_out = T * S;
-  const int O_out = O * S;
-  const int step_out = step * S;
-  const int out_w = width * S;
-
-  const size_t in_plane = (size_t)T * T;
-  const size_t out_plane = (size_t)T_out * T_out;
-
-  const int cols = (width + step - 1) / step;
-  const int rows = (height + step - 1) / step;
-  const int total_tiles = cols * rows;
-
-  dt_print(DT_DEBUG_AI,
-           "[neural_restore] tiling %dx%d (scale=%d)"
-           " -> %dx%d, %dx%d grid (%d tiles, T=%d)",
-           width, height, S, out_w, height * S, cols, rows, total_tiles, T);
-
-  float *tile_in = g_try_malloc(in_plane * 3 * sizeof(float));
-  float *tile_out = g_try_malloc(out_plane * 3 * sizeof(float));
-  float *row_buf = g_try_malloc((size_t)out_w * step_out * 3 * sizeof(float));
-  // scratch for bpp conversion (worst case: 16-bit = 2 bytes * 3ch)
-  void *scratch = (tif && bpp < 32)
-    ? g_try_malloc((size_t)out_w * 3 * sizeof(uint16_t))
-    : NULL;
-  if(!tile_in || !tile_out || !row_buf
-     || (tif && bpp < 32 && !scratch))
+  switch(task)
   {
-    g_free(tile_in);
-    g_free(tile_out);
-    g_free(row_buf);
-    g_free(scratch);
-    return 1;
+    case NEURAL_TASK_DENOISE:
+      return dt_restore_load_denoise(env);
+    case NEURAL_TASK_UPSCALE_2X:
+      return dt_restore_load_upscale_x2(env);
+    case NEURAL_TASK_UPSCALE_4X:
+      return dt_restore_load_upscale_x4(env);
+    default:
+      return NULL;
   }
-
-  int res = 0;
-  int tile_count = 0;
-
-  for(int ty = 0; ty < rows; ty++)
-  {
-    const int y = ty * step;
-    const int valid_h = (y + step > height) ? height - y : step;
-    const int valid_h_out = valid_h * S;
-
-    memset(row_buf, 0, (size_t)out_w * valid_h_out * 3 * sizeof(float));
-
-    for(int tx = 0; tx < cols; tx++)
-    {
-      if(dt_control_job_get_state(control_job) == DT_JOB_STATE_CANCELLED)
-      {
-        dt_print(DT_DEBUG_AI,
-                 "[neural_restore] cancelled at tile %d/%d", tile_count, total_tiles);
-        res = 1;
-        goto cleanup;
-      }
-
-      const int x = tx * step;
-      const int in_x = x - O;
-      const int in_y = y - O;
-
-      const int needs_mirror
-        = (in_x < 0 || in_y < 0 || in_x + T > width || in_y + T > height);
-
-      // interleaved RGBx -> planar RGB
-      if(needs_mirror)
-      {
-        for(int dy = 0; dy < T; ++dy)
-        {
-          const int sy = _mirror(in_y + dy, height);
-          for(int dx = 0; dx < T; ++dx)
-          {
-            const int sx = _mirror(in_x + dx, width);
-            const size_t po = (size_t)dy * T + dx;
-            const size_t si = ((size_t)sy * width + sx) * 4;
-            tile_in[po] = in_data[si + 0];
-            tile_in[po + in_plane] = in_data[si + 1];
-            tile_in[po + 2 * in_plane] = in_data[si + 2];
-          }
-        }
-      }
-      else
-      {
-        for(int dy = 0; dy < T; ++dy)
-        {
-          const float *row = in_data + ((size_t)(in_y + dy) * width + in_x) * 4;
-          const size_t ro = (size_t)dy * T;
-          for(int dx = 0; dx < T; ++dx)
-          {
-            tile_in[ro + dx] = row[dx * 4 + 0];
-            tile_in[ro + dx + in_plane] = row[dx * 4 + 1];
-            tile_in[ro + dx + 2 * in_plane] = row[dx * 4 + 2];
-          }
-        }
-      }
-
-      if(_run_patch(ctx, tile_in, T, T, tile_out, S) != 0)
-      {
-        dt_print(DT_DEBUG_AI,
-                 "[neural_restore] inference failed at tile %d,%d", x, y);
-        res = 1;
-        goto cleanup;
-      }
-
-      // valid region -> row buffer
-      const int valid_w = (x + step > width) ? width - x : step;
-      const int valid_w_out = valid_w * S;
-
-      for(int dy = 0; dy < valid_h_out; ++dy)
-      {
-        const size_t src_row = (size_t)(O_out + dy) * T_out + O_out;
-        const size_t dst_row = ((size_t)dy * out_w + x * S) * 3;
-        for(int dx = 0; dx < valid_w_out; ++dx)
-        {
-          row_buf[dst_row + dx * 3 + 0] = tile_out[src_row + dx];
-          row_buf[dst_row + dx * 3 + 1] = tile_out[src_row + dx + out_plane];
-          row_buf[dst_row + dx * 3 + 2] = tile_out[src_row + dx + 2 * out_plane];
-        }
-      }
-
-      tile_count++;
-      if(control_job)
-        dt_control_job_set_progress(control_job, (double)tile_count / total_tiles);
-    }
-
-    // flush tile row
-    for(int dy = 0; dy < valid_h_out; dy++)
-    {
-      float *src = row_buf + (size_t)dy * out_w * 3;
-      if(out_buf)
-      {
-        float *dst = out_buf + ((size_t)(y * S + dy) * out_w) * 4;
-        for(int bx = 0; bx < out_w; bx++)
-        {
-          dst[bx * 4 + 0] = src[bx * 3 + 0];
-          dst[bx * 4 + 1] = src[bx * 3 + 1];
-          dst[bx * 4 + 2] = src[bx * 3 + 2];
-          dst[bx * 4 + 3] = 0.0f;
-        }
-      }
-      else if(tif)
-      {
-        if(_write_tiff_scanline(tif, src, out_w, bpp,
-                                y * S + dy, scratch) < 0)
-        {
-          dt_print(DT_DEBUG_AI,
-                   "[neural_restore] TIFF write error at scanline %d",
-                   y * S + dy);
-          res = 1;
-          goto cleanup;
-        }
-      }
-    }
-  }
-
-cleanup:
-  g_free(tile_in);
-  g_free(tile_out);
-  g_free(row_buf);
-  g_free(scratch);
-  return res;
-}
-// compute DWT-filtered luminance detail from 3ch interleaved before/after buffers.
-// returns a newly allocated 1ch float array (width*height), or NULL on failure.
-// the returned array contains the wavelet-filtered luminance residual:
-// noise removed at fine scales, texture preserved at coarser scales
-static float *_compute_dwt_detail(const float *const restrict before_3ch,
-                                  const float *const restrict after_3ch,
-                                  int width, int height)
-{
-  const size_t npix = (size_t)width * height;
-  float *lum_residual = dt_alloc_align_float(npix);
-  if(!lum_residual) return NULL;
-
-  for(size_t i = 0; i < npix; i++)
-  {
-    const size_t si = i * 3;
-    const float lum_orig = 0.2126f * before_3ch[si + 0]
-                         + 0.7152f * before_3ch[si + 1]
-                         + 0.0722f * before_3ch[si + 2];
-    const float lum_den  = 0.2126f * after_3ch[si + 0]
-                         + 0.7152f * after_3ch[si + 1]
-                         + 0.0722f * after_3ch[si + 2];
-    lum_residual[i] = lum_orig - lum_den;
-  }
-
-  // wavelet denoise: remove noise from fine scales, preserve texture at coarser scales
-  dwt_denoise(lum_residual, width, height, DWT_DETAIL_BANDS, _dwt_detail_noise);
-
-  return lum_residual;
 }
 
-// recover fine detail lost by AI denoising using wavelet decomposition.
-// extracts luminance residual (original - denoised), filters it with DWT
-// to remove noise while preserving texture, then blends back into denoised
-static void _apply_detail_recovery(const float *const restrict original_4ch,
-                                   float *const restrict denoised_4ch,
-                                   int width, int height,
-                                   float alpha)
+// check if a model is available for a task
+static gboolean _task_model_available(
+  dt_restore_env_t *env,
+  dt_neural_task_t task)
 {
-  const size_t npix = (size_t)width * height;
-
-  // extract luminance residual (1ch)
-  float *const restrict lum_residual = dt_alloc_align_float(npix);
-  if(!lum_residual) return;
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(original_4ch, denoised_4ch, lum_residual, npix) \
-  schedule(simd:static) aligned(original_4ch, denoised_4ch, lum_residual:64)
-#endif
-  for(size_t i = 0; i < npix; i++)
+  switch(task)
   {
-    const size_t p = i * 4;
-    const float lum_orig = 0.2126f * original_4ch[p + 0]
-                         + 0.7152f * original_4ch[p + 1]
-                         + 0.0722f * original_4ch[p + 2];
-    const float lum_den  = 0.2126f * denoised_4ch[p + 0]
-                         + 0.7152f * denoised_4ch[p + 1]
-                         + 0.0722f * denoised_4ch[p + 2];
-    lum_residual[i] = lum_orig - lum_den;
+    case NEURAL_TASK_DENOISE:
+      return dt_restore_denoise_available(env);
+    default:
+      return dt_restore_upscale_available(env);
   }
+}
 
-  // wavelet denoise: remove noise from fine scales, preserve texture at coarser scales
-  dwt_denoise(lum_residual, width, height, DWT_DETAIL_BANDS, _dwt_detail_noise);
+// row writer: copy 3ch float scanline to float4 RGBA buffer
+typedef struct _buf_writer_data_t
+{
+  float *out_buf;
+  int out_w;
+} _buf_writer_data_t;
 
-  // blend filtered detail back into denoised image
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(denoised_4ch, lum_residual, npix, alpha) \
-  schedule(simd:static) aligned(denoised_4ch, lum_residual:64)
-#endif
-  for(size_t i = 0; i < npix; i++)
+static int _buf_row_writer(const float *scanline,
+                           int out_w, int y,
+                           void *user_data)
+{
+  _buf_writer_data_t *wd = (_buf_writer_data_t *)user_data;
+  float *dst = wd->out_buf + (size_t)y * wd->out_w * 4;
+  for(int x = 0; x < out_w; x++)
   {
-    const size_t p = i * 4;
-    const float d = alpha * lum_residual[i];
-    denoised_4ch[p + 0] += d;
-    denoised_4ch[p + 1] += d;
-    denoised_4ch[p + 2] += d;
+    dst[x * 4 + 0] = scanline[x * 3 + 0];
+    dst[x * 4 + 1] = scanline[x * 3 + 1];
+    dst[x * 4 + 2] = scanline[x * 3 + 2];
+    dst[x * 4 + 3] = 0.0f;
   }
+  return 0;
+}
 
-  dt_free_align(lum_residual);
+// row writer: convert and write 3ch float scanline to TIFF
+typedef struct _tiff_writer_data_t
+{
+  TIFF *tif;
+  int bpp;
+  void *scratch; // bpp conversion buffer
+} _tiff_writer_data_t;
+
+static int _tiff_row_writer(const float *scanline,
+                            int out_w, int y,
+                            void *user_data)
+{
+  _tiff_writer_data_t *wd = (_tiff_writer_data_t *)user_data;
+  return (_write_tiff_scanline(wd->tif, scanline,
+                               out_w, wd->bpp,
+                               y, wd->scratch) < 0)
+    ? 1 : 0;
 }
 
 static int _ai_write_image(dt_imageio_module_data_t *data,
@@ -808,8 +459,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(!job->ctx)
   {
     dt_print(DT_DEBUG_AI, "[neural_restore] reloading model for next image");
-    job->ctx = dt_ai_load_model(job->env, job->model_id,
-                                job->model_file, job->provider);
+    job->ctx = _load_for_task(job->env, job->task);
   }
   if(!job->ctx)
     return 1;
@@ -872,7 +522,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     }
   }
 
-  const int tile_size = _select_tile_size(S);
+  const int tile_size = dt_restore_select_tile_size(S);
   const float recovery_alpha = job->detail_recovery / 100.0f;
   const gboolean need_buffer = (recovery_alpha > 0.0f && S == 1);
 
@@ -888,13 +538,17 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
       return 1;
     }
 
-    res = _process_tiled(job->ctx, in_data, width, height, S,
-                         bpp, NULL, out_4ch, job->control_job,
-                         tile_size);
+    _buf_writer_data_t bwd = { .out_buf = out_4ch,
+                               .out_w = out_w };
+    res = dt_restore_process_tiled(job->ctx, in_data,
+                                   width, height, S,
+                                   _buf_row_writer, &bwd,
+                                   job->control_job,
+                                   tile_size);
 
     if(res == 0)
     {
-      _apply_detail_recovery(in_data, out_4ch, width, height, recovery_alpha);
+      dt_restore_apply_detail_recovery(in_data, out_4ch, width, height, recovery_alpha);
 
       // write buffered result to TIFF
       const size_t row_bytes = (size_t)out_w * 3 * sizeof(float);
@@ -914,8 +568,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
         if(_write_tiff_scanline(tif, scan, out_w, bpp, y, cvt) < 0)
         {
           dt_print(DT_DEBUG_AI,
-                   "[neural_restore] TIFF write error"
-                   " at scanline %d", y);
+                   "[neural_restore] TIFF write error at scanline %d", y);
           res = 1;
         }
       }
@@ -926,8 +579,19 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   }
   else
   {
-    res = _process_tiled(job->ctx, in_data, width, height, S,
-                         bpp, tif, NULL, job->control_job, tile_size);
+    void *scratch = (bpp < 32)
+      ? g_try_malloc((size_t)out_w * 3 * sizeof(uint16_t))
+      : NULL;
+    _tiff_writer_data_t twd = { .tif = tif,
+                                .bpp = bpp,
+                                .scratch = scratch };
+    res = dt_restore_process_tiled(job->ctx, in_data,
+                                   width, height, S,
+                                   _tiff_row_writer,
+                                   &twd,
+                                   job->control_job,
+                                   tile_size);
+    g_free(scratch);
   }
 
   TIFFClose(tif);
@@ -936,8 +600,9 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(res == 0 && exif && exif_len > 0)
     dt_exif_write_blob(exif, exif_len, filename, 0);
 
-  // free runtime memory between images
-  dt_ai_unload_model(job->ctx);
+  // free runtime memory between images (context is
+  // recreated via dt_restore_load on the next image)
+  dt_restore_free(job->ctx);
   job->ctx = NULL;
 
   if(res != 0)
@@ -990,16 +655,6 @@ static int _task_scale(dt_neural_task_t task)
   }
 }
 
-static const char *_task_model_file(dt_neural_task_t task)
-{
-  switch(task)
-  {
-    case NEURAL_TASK_UPSCALE_2X: return "model_x2.onnx";
-    case NEURAL_TASK_UPSCALE_4X: return "model_x4.onnx";
-    default:                     return NULL; // use default model file
-  }
-}
-
 static void _update_button_sensitivity(dt_lib_neural_restore_t *d);
 
 static gboolean _job_finished_idle(gpointer data)
@@ -1017,10 +672,7 @@ static gboolean _job_finished_idle(gpointer data)
 static void _job_cleanup(void *param)
 {
   dt_neural_job_t *job = (dt_neural_job_t *)param;
-  if(job->ctx)
-    dt_ai_unload_model(job->ctx);
-  g_free(job->model_id);
-  g_free(job->model_file);
+  dt_restore_free(job->ctx);
   g_free(job->output_dir);
   g_list_free(job->images);
   g_free(job);
@@ -1037,18 +689,17 @@ static int32_t _process_job_run(dt_job_t *job)
   dt_control_job_set_progress_message(job, msg);
 
   j->control_job = job;
-  j->ctx = dt_ai_load_model(j->env, j->model_id, j->model_file, j->provider);
+  j->ctx = _load_for_task(j->env, j->task);
 
   if(!j->ctx)
   {
-    dt_control_log(_("failed to load AI model: %s"), j->model_id);
+    dt_control_log(_("failed to load AI %s model"), task_name);
     return 1;
   }
 
   dt_print(DT_DEBUG_AI,
-           "[neural_restore] job started: model=%s, file=%s, scale=%d, images=%d",
-           j->model_id, j->model_file ? j->model_file : "(default)", j->scale,
-           g_list_length(j->images));
+           "[neural_restore] job started: task=%s, scale=%d, images=%d",
+           task_name, j->scale, g_list_length(j->images));
 
   dt_imageio_module_format_t fmt = {
     .mime = _ai_get_mime,
@@ -1098,11 +749,9 @@ static int32_t _process_job_run(dt_job_t *job)
     // build base path without .tif for collision loop
     char base[PATH_MAX];
     if(has_suffix)
-      snprintf(base, sizeof(base),
-               "%s/%s", out_dir, basename);
+      snprintf(base, sizeof(base), "%s/%s", out_dir, basename);
     else
-      snprintf(base, sizeof(base),
-               "%s/%s%s", out_dir, basename, suffix);
+      snprintf(base, sizeof(base), "%s/%s%s", out_dir, basename, suffix);
 
     g_free(out_dir);
     g_free(basename);
@@ -1196,25 +845,11 @@ static int32_t _process_job_run(dt_job_t *job)
   return 0;
 }
 
-static const char *_task_ai_key(dt_neural_task_t task)
+static gboolean _check_model_available(
+  dt_lib_neural_restore_t *d,
+  dt_neural_task_t task)
 {
-  return (task == NEURAL_TASK_DENOISE) ? AI_TASK_DENOISE : AI_TASK_UPSCALE;
-}
-
-static gboolean _check_model_available(dt_lib_neural_restore_t *d, dt_neural_task_t task)
-{
-  if(!d->env) return FALSE;
-
-  char *model_id = dt_ai_models_get_active_for_task(_task_ai_key(task));
-  if(!model_id || !model_id[0])
-  {
-    g_free(model_id);
-    return FALSE;
-  }
-
-  const dt_ai_model_info_t *info = dt_ai_get_model_info_by_id(d->env, model_id);
-  g_free(model_id);
-  return (info != NULL);
+  return _task_model_available(d->env, task);
 }
 
 static void _update_button_sensitivity(dt_lib_neural_restore_t *d)
@@ -1352,8 +987,8 @@ static gboolean _preview_result_idle(gpointer data)
   d->preview_h = res->height;
 
   // pre-compute DWT-filtered luminance detail for instant slider response
-  d->preview_detail = _compute_dwt_detail(res->before, res->after,
-                                          res->width, res->height);
+  d->preview_detail = dt_restore_compute_dwt_detail(res->before, res->after,
+                                                    res->width, res->height);
 
   // rebuild cached cairo surface data
   g_free(d->cairo_before);
@@ -1423,7 +1058,7 @@ static gpointer _preview_thread(gpointer data)
   const int ph = pd->preview_h;
   const int crop_w = pw / pd->scale;
   const int crop_h = ph / pd->scale;
-  const int overlap = (pd->scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
+  const int overlap = dt_restore_get_overlap(pd->scale);
   const int padded_w = crop_w + 2 * overlap;
   const int padded_h = crop_h + 2 * overlap;
   // center crop in image
@@ -1501,21 +1136,20 @@ static gpointer _preview_thread(gpointer data)
   }
 
   // load model and run inference
-  dt_ai_context_t *ctx = dt_ai_load_model(pd->env, pd->model_id, 
-                                          pd->model_file, pd->provider);
+  dt_restore_context_t *ctx
+    = _load_for_task(pd->env, pd->task);
   if(!ctx)
   {
     dt_print(DT_DEBUG_AI,
-             "[neural_restore] preview: failed to load %s",
-             pd->model_id);
+             "[neural_restore] preview: failed to load model");
     g_free(patch_in);
     g_free(patch_out);
     g_free(crop_rgb);
     goto cleanup;
   }
 
-  const int ret = _run_patch(ctx, patch_in, padded_w, padded_h, patch_out, pd->scale);
-  dt_ai_unload_model(ctx);
+  const int ret = dt_restore_run_patch(ctx, patch_in, padded_w, padded_h, patch_out, pd->scale);
+  dt_restore_free(ctx);
   g_free(patch_in);
 
   if(ret != 0)
@@ -1568,8 +1202,6 @@ static gpointer _preview_thread(gpointer data)
   g_idle_add(_preview_result_idle, result);
 
 cleanup:
-  g_free(pd->model_id);
-  g_free(pd->model_file);
   g_free(pd);
   return NULL;
 }
@@ -1607,21 +1239,11 @@ static void _trigger_preview(dt_lib_module_t *self)
 
   if(!dt_is_valid_imgid(imgid)) return;
 
-  char *model_id = dt_ai_models_get_active_for_task(_task_ai_key(d->task));
-  if(!model_id || !model_id[0])
-  {
-    g_free(model_id);
-    return;
-  }
-
   // compute preview dimensions matching widget aspect ratio
   const int widget_w = gtk_widget_get_allocated_width(d->preview_area);
   const int widget_h = gtk_widget_get_allocated_height(d->preview_area);
   if(widget_w <= 0 || widget_h <= 0)
-  {
-    g_free(model_id);
     return;
-  }
 
   const int scale = _task_scale(d->task);
   int pw, ph;
@@ -1639,10 +1261,7 @@ static void _trigger_preview(dt_lib_module_t *self)
   pw = (pw / scale) * scale;
   ph = (ph / scale) * scale;
   if(pw < scale || ph < scale)
-  {
-    g_free(model_id);
     return;
-  }
 
   d->preview_generating = TRUE;
 
@@ -1651,12 +1270,7 @@ static void _trigger_preview(dt_lib_module_t *self)
   pd->imgid = imgid;
   pd->task = d->task;
   pd->scale = scale;
-  pd->model_id = model_id;
-  pd->model_file = g_strdup(_task_model_file(d->task));
   pd->env = d->env;
-  g_mutex_lock(&darktable.ai_registry->lock);
-  pd->provider = darktable.ai_registry->provider;
-  g_mutex_unlock(&darktable.ai_registry->lock);
   pd->sequence = g_atomic_int_get(&d->preview_sequence);
   pd->preview_w = pw;
   pd->preview_h = ph;
@@ -1736,19 +1350,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   if(!images)
     return;
 
-  char *model_id = dt_ai_models_get_active_for_task(_task_ai_key(d->task));
-  if(!model_id || !model_id[0])
-  {
-    g_free(model_id);
-    g_list_free(images);
-    return;
-  }
-
   dt_neural_job_t *job_data = g_new0(dt_neural_job_t, 1);
   job_data->task = d->task;
   job_data->env = d->env;
-  job_data->model_id = model_id; // takes ownership
-  job_data->model_file = g_strdup(_task_model_file(d->task));
   job_data->images = images;
   job_data->scale = _task_scale(d->task);
   job_data->detail_recovery = dt_conf_get_float(CONF_DETAIL_RECOVERY);
@@ -1763,9 +1367,6 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->output_dir
     = (out_dir && out_dir[0]) ? out_dir : NULL;
   if(!job_data->output_dir) g_free(out_dir);
-  g_mutex_lock(&darktable.ai_registry->lock);
-  job_data->provider = darktable.ai_registry->provider;
-  g_mutex_unlock(&darktable.ai_registry->lock);
   job_data->self = self;
 
   d->job_running = TRUE;
@@ -2058,7 +1659,7 @@ static void _ai_models_changed_callback(gpointer instance, dt_lib_module_t *self
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
   if(d->env)
-    dt_ai_env_refresh(d->env);
+    dt_restore_env_refresh(d->env);
 
   d->model_available = _check_model_available(d, d->task);
   _update_info_label(d);
@@ -2121,7 +1722,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = g_new0(dt_lib_neural_restore_t, 1);
   self->data = d;
-  d->env = dt_ai_env_init(NULL);
+  d->env = dt_restore_env_init();
   d->split_pos = 0.5f;
 
   // notebook tabs (denoise / upscale)
@@ -2191,7 +1792,7 @@ void gui_init(dt_lib_module_t *self)
                              d->preview_area,
                              d->process_button);
 
-  // output settings — collapsible, below the button
+  // output settings
   dt_gui_new_collapsible_section(&d->cs_output,
                                  CONF_EXPAND_OUTPUT,
                                  _("output parameters"),
@@ -2288,7 +1889,7 @@ void gui_cleanup(dt_lib_module_t *self)
     g_free(d->cairo_before);
     g_free(d->cairo_after);
     if(d->env)
-      dt_ai_env_destroy(d->env);
+      dt_restore_env_destroy(d->env);
     g_free(d);
   }
   self->data = NULL;
