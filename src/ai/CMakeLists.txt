@@ -35,13 +35,13 @@ target_link_directories(darktable_ai PUBLIC
   ${JSON_GLIB_LIBRARY_DIRS}
 )
 
-if(ONNXRuntime_SYSTEM_PACKAGE AND UNIX AND NOT APPLE)
-  # Ubuntu/Debian's libonnxruntime links against the system libonnx, so both
-  # register the same ONNX schemas at library load time, producing harmless but
-  # noisy "already registered" warnings on stderr.  Suppress them by lazy-loading
-  # ORT at runtime via g_module_open, with stderr temporarily redirected, instead
-  # of having libonnxruntime.so as a direct ELF dependency of libdarktable.so.
-  # ONNXRuntime_LIBRARIES is set by FindONNXRuntime.cmake to the .so path.
+if(UNIX AND NOT APPLE)
+  # Always lazy-load ORT on Linux via g_module_open to avoid loading
+  # libonnxruntime.so (and its GPU provider libs) at process startup.
+  # Without this, MIGraphX/ROCm initialization can abort() the process
+  # before darktable has a chance to check the AI-enabled preference.
+  # Also suppresses harmless "already registered" ONNX schema warnings
+  # from system packages that link against libonnx.
   target_compile_definitions(darktable_ai PRIVATE
     ORT_LAZY_LOAD=1
     ORT_LIBRARY_PATH="${ONNXRuntime_LIBRARIES}")
