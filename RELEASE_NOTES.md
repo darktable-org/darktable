@@ -49,7 +49,19 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- Added optional AI subsystem (build with `-DUSE_AI=ON`). AI features
+  are disabled by default in preferences and can be enabled at runtime
+  without restarting. When disabled, no ONNX Runtime libraries are
+  loaded and no AI-related activity occurs. Models are downloaded from
+  a configurable repository and managed through the AI preferences tab.
+
+- Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
+  and SegNext models for interactive object segmentation — click on an
+  object to generate a precise mask. Supports both foreground and
+  background prompt points with iterative refinement. The encoder runs
+  once per image (with optional GPU acceleration via CoreML, CUDA,
+  MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
+  produces masks interactively.
 
 ## UI/UX Improvements
 
@@ -262,7 +274,9 @@ changes (where available).
 
 ### Optional
 
-- N/A
+- ONNX Runtime 1.17+ for AI features
+
+- libarchive for AI model extraction
 
 ## RawSpeed changes
 
