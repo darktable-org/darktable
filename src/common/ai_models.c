@@ -1164,11 +1164,12 @@ char *dt_ai_models_download_sync(dt_ai_registry_t *registry,
     if(!checksum_copy)
     {
       g_free(release_tag);
-      SET_STATUS_AND_RETURN(
-        DT_AI_MODEL_ERROR,
-        g_strdup_printf(_("could not obtain checksum for %s — "
-                          "refusing to download without integrity verification"),
-                        asset));
+
+      char *msg = g_strdup_printf(_("could not obtain checksum for %s — "
+                                    "refusing to download without integrity verification"),
+                                  asset);
+
+      SET_STATUS_AND_RETURN(DT_AI_MODEL_ERROR, msg);
     }
   }
 
