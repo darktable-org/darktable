@@ -65,6 +65,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
   DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
   DT_IOP_DEMOSAIC_LMMSE = 6, // $DESCRIPTION: "LMMSE"
+  DT_IOP_DEMOSAIC_MENON = 8, // $DESCRIPTION: "Menon"
   DT_IOP_DEMOSAIC_RCD_DUAL = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD (dual)"
   DT_IOP_DEMOSAIC_AMAZE_DUAL = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_AMAZE, // $DESCRIPTION: "AMaZE (dual)""
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome)"
@@ -95,6 +96,8 @@ static const char *_method_str(const int method)
       return "RCD";
     case DT_IOP_DEMOSAIC_LMMSE:
       return "LMMSE";
+    case DT_IOP_DEMOSAIC_MENON:
+      return "MENON";
     case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
       return "PASSTHROUGH_MONOCHROME";
     case DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR:
@@ -311,6 +314,7 @@ void amaze_demosaic(const float *const in,
 #include "iop/demosaicing/ppg.c"
 #include "iop/demosaicing/rcd.c"
 #include "iop/demosaicing/lmmse.c"
+#include "iop/demosaicing/menon.c"
 #include "iop/demosaicing/capture.c"
 #include "iop/demosaicing/dual.c"
 
@@ -583,6 +587,10 @@ static gboolean _tiling_requirements(dt_iop_module_t *self,
     case DT_IOP_DEMOSAIC_LMMSE:
       perpix = 2;
       border = 10;
+      break;
+    case DT_IOP_DEMOSAIC_MENON:
+      perpix = 12;
+      border = 8;
       break;
     case DT_IOP_DEMOSAIC_PPG:
       perpix = 4;
@@ -873,6 +881,8 @@ void process(dt_iop_module_t *self,
             dt_colorspaces_cygm_to_rgb(pipe->dsc.processed_maximum, 1, d->CAM_to_RGB);
           }
         }
+        else if(method == DT_IOP_DEMOSAIC_MENON)
+          menon_demosaic(t_out, t_in, width, t_rows, filters);
         else if(method == DT_IOP_DEMOSAIC_RCD)
           rcd_demosaic(t_out, t_in, width, t_rows, filters, procmax);
         else if(method == DT_IOP_DEMOSAIC_LMMSE)
@@ -1447,6 +1457,9 @@ void commit_params(dt_iop_module_t *self,
     case DT_IOP_DEMOSAIC_FDC:
       piece->process_cl_ready = FALSE;
       break;
+    case DT_IOP_DEMOSAIC_MENON:
+      piece->process_cl_ready = FALSE;
+      break;
     default:
       piece->process_cl_ready = TRUE;
   }
@@ -1751,7 +1764,7 @@ void gui_init(dt_iop_module_t *self)
   const int xtranspos = dt_bauhaus_combobox_get_from_value(g->demosaic_method_bayer, DT_DEMOSAIC_XTRANS);
 
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, xtranspos);
-  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE, LMMSE and Menon are slow.\nLMMSE is suited best for high ISO images.\nMenon uses directional filtering with a posteriori decision.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<xtranspos;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
@@ -1761,7 +1774,7 @@ void gui_init(dt_iop_module_t *self)
   g->demosaic_method_bayerfour = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, xtranspos);
   for(int i=0;i<2;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, 0);
-  for(int i=0;i<4;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, 1);
+  for(int i=0;i<5;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, 1);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayerfour, _("Bayer4 sensor demosaicing methods."));
 
   g->demosaic_method_mono = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
