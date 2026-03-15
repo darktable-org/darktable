@@ -24,6 +24,7 @@
 #include "gui/accelerators.h"
 #include "libs/colorpicker.h"
 #include "scopes.h"
+#include "scopes/vectorscope.h"
 
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate cases: curve to blue primary in
@@ -1540,14 +1541,15 @@ void dt_vec_set_harmony(dt_scopes_mode_t *mode, const dt_color_harmony_guide_t *
 }
 
 void dt_vec_set_harmony_changed_callback(dt_scopes_mode_t *mode,
-    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data)
+                                         void (*cb)(const dt_color_harmony_guide_t *, void *),
+                                         void *user_data)
 {
   dt_scopes_vec_t *const d = mode->data;
   d->harmony_changed_cb = cb;
   d->harmony_changed_user_data = user_data;
 }
 
-void dt_vec_set_vectorscope_type(dt_scopes_mode_t *mode, int type)
+void dt_vec_set_vectorscope_type(dt_scopes_mode_t *mode, const int type)
 {
   dt_scopes_vec_t *const d = mode->data;
   if(d->vectorscope_type == (dt_scopes_vec_vectorscope_type_t)type) return;
@@ -1560,8 +1562,10 @@ void dt_vec_set_vectorscope_type(dt_scopes_mode_t *mode, int type)
 
 // Returns the absolute RYB hue positions (normalized turns [0,1)) of the sectors
 // for the given predefined harmony type and rotation. n is set to the sector count.
-void dt_vec_get_sector_angles(dt_color_harmony_type_t type, int rotation,
-                              float *angles, int *n)
+void dt_vec_get_sector_angles(const dt_color_harmony_type_t type,
+                              const int rotation,
+                              float *angles,
+                              int *n)
 {
   dt_color_harmony_get_sector_angles(type, rotation, angles, n);
 }

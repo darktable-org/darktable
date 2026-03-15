@@ -20,6 +20,7 @@
 #include "common/color_picker.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
+#include "scopes/vectorscope.h"
 
 // FIXME: is this used?
 #ifdef GDK_WINDOWING_QUARTZ
@@ -34,16 +35,11 @@ static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope);
 static void _lib_histogram_set_type(dt_lib_module_t *self, int type);
 static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
     void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data);
-static void _lib_histogram_get_sector_angles(dt_lib_module_t *self, dt_color_harmony_type_t type,
-                                             int rotation, float *angles, int *n);
-
-extern void dt_vec_get_harmony(dt_scopes_mode_t *mode, dt_color_harmony_guide_t *guide);
-extern void dt_vec_set_harmony(dt_scopes_mode_t *mode, const dt_color_harmony_guide_t *guide);
-extern void dt_vec_set_vectorscope_type(dt_scopes_mode_t *mode, int type);
-extern void dt_vec_get_sector_angles(dt_color_harmony_type_t type, int rotation,
-                                     float *angles, int *n);
-extern void dt_vec_set_harmony_changed_callback(dt_scopes_mode_t *mode,
-    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data);
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n);
 
 static const gchar *rgb_names[DT_SCOPES_RGB_N] =
   { N_("red"),
@@ -897,8 +893,11 @@ static void _lib_histogram_set_type(dt_lib_module_t *self, int type)
   }
 }
 
-static void _lib_histogram_get_sector_angles(dt_lib_module_t *self, dt_color_harmony_type_t type,
-                                             int rotation, float *angles, int *n)
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n)
 {
   dt_vec_get_sector_angles(type, rotation, angles, n);
 }

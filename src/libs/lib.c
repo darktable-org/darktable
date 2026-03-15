@@ -1584,8 +1584,11 @@ void dt_lib_histogram_set_type(dt_lib_t *lib, int type)
   lib->proxy.histogram.set_type(lib->proxy.histogram.module, type);
 }
 
-void dt_lib_histogram_get_sector_angles(dt_lib_t *lib, dt_color_harmony_type_t type,
-                                        int rotation, float *angles, int *n)
+void dt_lib_histogram_get_sector_angles(dt_lib_t *lib,
+                                        const dt_color_harmony_type_t type,
+                                        const int rotation,
+                                        float *angles,
+                                        int *n)
 {
   if(n) *n = 0;
   if(!lib || !lib->proxy.histogram.module || !lib->proxy.histogram.get_sector_angles) return;

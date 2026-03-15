@@ -81,8 +81,11 @@ typedef struct dt_lib_t
       void (*set_harmony)(struct dt_lib_module_t *self, const dt_color_harmony_guide_t *guide);
       void (*set_scope)(struct dt_lib_module_t *self, int scope);
       void (*set_type)(struct dt_lib_module_t *self, int type);
-      void (*get_sector_angles)(struct dt_lib_module_t *self, dt_color_harmony_type_t type,
-                                int rotation, float *angles, int *n);
+      void (*get_sector_angles)(struct dt_lib_module_t *self,
+                                const dt_color_harmony_type_t type,
+                                const int rotation,
+                                float *angles,
+                                int *n);
       void (*set_harmony_callback)(struct dt_lib_module_t *self,
                                    void (*cb)(const dt_color_harmony_guide_t *, void *),
                                    void *user_data);
@@ -240,8 +243,11 @@ void dt_lib_histogram_set_scope(dt_lib_t *lib, int scope);
 void dt_lib_histogram_set_type(dt_lib_t *lib, int type);
 
 /** get the absolute RYB sector angles for a predefined harmony type and rotation */
-void dt_lib_histogram_get_sector_angles(dt_lib_t *lib, dt_color_harmony_type_t type,
-                                        int rotation, float *angles, int *n);
+void dt_lib_histogram_get_sector_angles(dt_lib_t *lib,
+                                        const dt_color_harmony_type_t type,
+                                        const int rotation,
+                                        float *angles,
+                                        int *n);
 
 /* reset color picker pos to default */
 void dt_lib_colorpicker_reset_box_area(dt_pickerbox_t box);

@@ -59,8 +59,11 @@ void dt_gaussian_fast_blur(float *in, float *out, const int width, const int hei
 
 // Convenience in-place Gaussian blur for IOP processing buffers.
 // Uses unbounded signal range; works for arbitrary channel counts (1, 2, or 4).
-static inline void dt_gaussian_mean_blur(float *const buf, const int width, const int height,
-                                          const int ch, const float sigma)
+static inline void dt_gaussian_mean_blur(float *const buf,
+                                         const int width,
+                                         const int height,
+                                         const int ch,
+                                         const float sigma)
 {
   const float range = 1.0e9f;
   const dt_aligned_pixel_t max = { range, range, range, range };
@@ -113,9 +116,12 @@ cl_int dt_gaussian_fast_blur_cl_buffer(const int devid, cl_mem dev_in, cl_mem de
 void dt_gaussian_free_cl(dt_gaussian_cl_t *g);
 
 // OpenCL counterpart of dt_gaussian_mean_blur for GPU buffers.
-static inline int dt_gaussian_mean_blur_cl(const int devid, cl_mem buf,
-                                           const int width, const int height,
-                                           const int ch, const float sigma)
+static inline int dt_gaussian_mean_blur_cl(const int devid,
+                                           cl_mem buf,
+                                           const int width,
+                                           const int height,
+                                           const int ch,
+                                           const float sigma)
 {
   const float range = 1.0e9f;
   const dt_aligned_pixel_t max = { range, range, range, range };

@@ -1430,11 +1430,28 @@ static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L
   dt_xyY_to_XYZ(xyY, XYZ);
 }
 
-static inline void dt_UCS_JCH_to_XYZ(const dt_aligned_pixel_t JCH, const float L_w, dt_aligned_pixel_t XYZ)
+static inline void dt_UCS_JCH_to_XYZ(const dt_aligned_pixel_t JCH,
+                                     const float L_w,
+                                     dt_aligned_pixel_t XYZ)
 {
   dt_aligned_pixel_t xyY = { 0.f };
   dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
   dt_xyY_to_XYZ(xyY, XYZ);
+}
+
+// Convert a darktable UCS JCH pixel to gamma-corrected sRGB.
+// Chain: JCH → XYZ(D65) → linear sRGB → sRGB gamma
+// Uses the native D65 sRGB matrix; skips the unnecessary D65→D50 adaptation step.
+static inline void dt_UCS_JCH_to_sRGB(const dt_aligned_pixel_t JCH,
+                                      const float L_w,
+                                      dt_aligned_pixel_t sRGB)
+{
+  dt_aligned_pixel_t XYZ_D65, linear;
+  dt_UCS_JCH_to_XYZ(JCH, L_w, XYZ_D65);
+  dt_XYZ_to_Rec709_D65(XYZ_D65, linear);
+  for_each_channel(c)
+    sRGB[c] = linear[c] <= 0.0031308f ? 12.92f * linear[c]
+                                      : 1.055f * powf(linear[c], 1.f / 2.4f) - 0.055f;
 }
 
 #undef DT_RESTRICT

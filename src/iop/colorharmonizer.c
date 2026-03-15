@@ -49,7 +49,7 @@
 static float s_ucs_to_ryb_lut[COLORHARMONIZER_RYB_INVERSE_STEPS];
 static float s_ryb_to_ucs_lut[COLORHARMONIZER_RYB_INVERSE_STEPS];
 
-DT_MODULE_INTROSPECTION(6, dt_iop_colorharmonizer_params_t)
+DT_MODULE_INTROSPECTION(1, dt_iop_colorharmonizer_params_t)
 
 typedef enum dt_iop_colorharmonizer_rule_t
 {
@@ -111,6 +111,12 @@ typedef struct dt_iop_colorharmonizer_global_data_t
   int kernel_colorharmonizer_apply;
 } dt_iop_colorharmonizer_global_data_t;
 
+static float _ucs_hue_to_ryb_hue(const float ucs_hue);
+static float _ucs_to_ryb_fast(const float ucs);
+static float _ryb_to_ucs_fast(const float yrb);
+static void _sync_custom_sliders(const dt_iop_colorharmonizer_params_t *p,
+                                 dt_iop_colorharmonizer_gui_data_t *g);
+
 const char *name()
 {
   return _("color harmonizer");
@@ -145,129 +151,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void **new_params,
-                  int32_t *new_params_size,
-                  int *new_version)
-{
-  if(old_version == 2)
-  {
-    typedef struct
-    {
-      dt_iop_colorharmonizer_rule_t rule;
-      float anchor_hue;
-      float pull_strength;
-      float neutral_protection;
-      float pull_width;
-    } v2_params_t;
-
-    typedef struct
-    {
-      dt_iop_colorharmonizer_rule_t rule;
-      float anchor_hue;
-      float pull_strength;
-      float neutral_protection;
-      float pull_width;
-      float custom_hue[4];
-    } v3_params_t;
-
-    const v2_params_t *o = old_params;
-    v3_params_t *n = malloc(sizeof(v3_params_t));
-    if(!n) return 1;
-
-    n->rule            = o->rule;
-    n->anchor_hue      = o->anchor_hue;
-    n->pull_strength = o->pull_strength;
-    n->neutral_protection = o->neutral_protection;
-    n->pull_width      = o->pull_width;
-    n->custom_hue[0]   = 0.0f;
-    n->custom_hue[1]   = 0.25f;
-    n->custom_hue[2]   = 0.5f;
-    n->custom_hue[3]   = 0.75f;
-
-    *new_params      = n;
-    *new_params_size = sizeof(v3_params_t);
-    *new_version     = 3;
-    return 0;
-  }
-  if(old_version == 3)
-  {
-    typedef struct
-    {
-      dt_iop_colorharmonizer_rule_t rule;
-      float anchor_hue;
-      float pull_strength;
-      float neutral_protection;
-      float pull_width;
-      float custom_hue[4];
-    } v3_params_t;
-
-    const v3_params_t *o = old_params;
-    dt_iop_colorharmonizer_params_t *n = malloc(sizeof(dt_iop_colorharmonizer_params_t));
-    if(!n) return 1;
-
-    n->rule             = o->rule;
-    n->anchor_hue       = o->anchor_hue;
-    n->pull_strength  = o->pull_strength;
-    n->neutral_protection  = o->neutral_protection;
-    n->pull_width       = o->pull_width;
-    for(int i = 0; i < 4; i++) n->custom_hue[i] = o->custom_hue[i];
-    n->num_custom_nodes = 4;
-    for(int i = 0; i < 4; i++) n->node_saturation[i] = 1.0f;
-
-    *new_params      = n;
-    *new_params_size = sizeof(dt_iop_colorharmonizer_params_t);
-    *new_version     = 5;
-    return 0;
-  }
-  if(old_version == 4)
-  {
-    typedef struct
-    {
-      dt_iop_colorharmonizer_rule_t rule;
-      float anchor_hue;
-      float pull_strength;
-      float neutral_protection;
-      float pull_width;
-      float custom_hue[4];
-      int   num_custom_nodes;
-    } v4_params_t;
-
-    const v4_params_t *o = old_params;
-    dt_iop_colorharmonizer_params_t *n = malloc(sizeof(dt_iop_colorharmonizer_params_t));
-    if(!n) return 1;
-
-    n->rule             = o->rule;
-    n->anchor_hue       = o->anchor_hue;
-    n->pull_strength  = o->pull_strength;
-    n->neutral_protection  = o->neutral_protection;
-    n->pull_width       = o->pull_width;
-    for(int i = 0; i < 4; i++) n->custom_hue[i] = o->custom_hue[i];
-    n->num_custom_nodes = o->num_custom_nodes;
-    for(int i = 0; i < 4; i++) n->node_saturation[i] = 1.0f;
-
-    *new_params      = n;
-    *new_params_size = sizeof(dt_iop_colorharmonizer_params_t);
-    *new_version     = 5;
-    return 0;
-  }
-  if(old_version == 5)
-  {
-    dt_iop_colorharmonizer_params_t *n = malloc(sizeof(dt_iop_colorharmonizer_params_t));
-    if(!n) return 1;
-    memcpy(n, old_params, sizeof(dt_iop_colorharmonizer_params_t) - sizeof(float));
-    n->smoothing = 0.0f;
-
-    *new_params      = n;
-    *new_params_size = sizeof(dt_iop_colorharmonizer_params_t);
-    *new_version     = 6;
-    return 0;
-  }
-  return 1;
-}
-
 // Compute a hue shift toward the nearest harmony node, scaled by Gaussian proximity.
 //
 // We use the nearest-node's angular difference (diff_winning) multiplied by
@@ -281,9 +164,12 @@ int legacy_params(dt_iop_module_t *self,
 //   Default zone (1):  Gaussian tapers to ~14 % at the midpoint between nodes.
 //   Wide zone   (> 1): Gaussian stays high across the full hue circle → broad,
 //                       global correction; all hues are pulled noticeably.
-static inline float get_weighted_hue_shift(float px_hue, const float *nodes, int num_nodes,
-                                           float pull_width_factor,
-                                           int *out_winning_idx, float *out_max_weight)
+static inline float get_weighted_hue_shift(const float px_hue,
+                                           const float *nodes,
+                                           const int num_nodes,
+                                           const float pull_width_factor,
+                                           int *out_winning_idx,
+                                           float *out_max_weight)
 {
   if(num_nodes <= 0)
   {
@@ -328,16 +214,13 @@ static inline float wrap_hue(float h)
   return h;
 }
 
-// Forward declarations: defined later in the file, needed here for get_harmony_nodes.
-static float _ucs_hue_to_ryb_hue(float ucs_hue);
-static float _ucs_to_ryb_fast(float ucs);
-static float _ryb_to_ucs_fast(float yrb);
 // Compute harmony node positions in UCS hue space [0,1).
 // For predefined rules the geometry comes from dt_color_harmony_get_sector_angles()
 // (color_harmony.h) so that the nodes used for processing are exactly aligned
 // with the guide overlay shown in the vectorscope.
-static inline void get_harmony_nodes(dt_iop_colorharmonizer_rule_t rule, float anchor_hue,
-                                     const float *custom_hue, int custom_n,
+static inline void get_harmony_nodes(const dt_iop_colorharmonizer_rule_t rule,
+                                     const float anchor_hue,
+                                     const float *custom_hue, const int custom_n,
                                      float *nodes, int *num_nodes)
 {
   if(rule == DT_COLORHARMONIZER_CUSTOM)
@@ -372,7 +255,10 @@ void commit_params(dt_iop_module_t *self,
                     d->nodes, &d->num_nodes);
 }
 
-static void _update_histogram(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *ivoid, const dt_iop_roi_t *roi_in)
+static void _update_histogram(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              const float *ivoid,
+                              const dt_iop_roi_t *roi_in)
 {
   if(!self->gui_data || !((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW))
     return;
@@ -599,19 +485,23 @@ void cleanup(dt_iop_module_t *self)
   dt_iop_default_cleanup(self);
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorharmonizer_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
 // Linearly interpolate between two hue values on the circle, returning a result in [0,1).
-static inline float _hue_lerp(float a, float b, float t)
+static inline float _hue_lerp(float a, float b, const float t)
 {
   if(b - a >  0.5f) b -= 1.0f;
   else if(a - b >  0.5f) a -= 1.0f;
@@ -621,7 +511,7 @@ static inline float _hue_lerp(float a, float b, float t)
 }
 
 // O(1) UCS→RYB lookup with linear interpolation between table entries.
-static inline float _ucs_to_ryb_fast(float ucs)
+static inline float _ucs_to_ryb_fast(const float ucs)
 {
   const float pos  = ucs * COLORHARMONIZER_RYB_INVERSE_STEPS;
   const int   i0   = (int)pos % COLORHARMONIZER_RYB_INVERSE_STEPS;
@@ -630,7 +520,7 @@ static inline float _ucs_to_ryb_fast(float ucs)
 }
 
 // O(1) RYB→UCS lookup with linear interpolation between table entries.
-static inline float _ryb_to_ucs_fast(float ryb)
+static inline float _ryb_to_ucs_fast(const float ryb)
 {
   const float pos  = ryb * COLORHARMONIZER_RYB_INVERSE_STEPS;
   const int   i0   = (int)pos % COLORHARMONIZER_RYB_INVERSE_STEPS;
@@ -684,7 +574,8 @@ void cleanup_global(dt_iop_module_so_t *self)
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
-               cl_mem dev_in, cl_mem dev_out,
+               cl_mem dev_in,
+               cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
@@ -792,19 +683,6 @@ error:
 }
 #endif
 
-// Convert a darktable UCS JCH pixel to gamma-corrected sRGB.
-// Chain: JCH → XYZ(D65) → linear sRGB → sRGB gamma
-// Uses the native D65 sRGB matrix; skips the unnecessary D65→D50 adaptation step.
-static inline void _jch_to_srgb(const dt_aligned_pixel_t JCH, const float L_white,
-                                 dt_aligned_pixel_t sRGB)
-{
-  dt_aligned_pixel_t XYZ_D65, linear;
-  dt_UCS_JCH_to_XYZ(JCH, L_white, XYZ_D65);
-  dt_XYZ_to_Rec709_D65(XYZ_D65, linear);
-  for_each_channel(c)
-    sRGB[c] = linear[c] <= 0.0031308f ? 12.92f * linear[c]
-                                      : 1.055f * powf(linear[c], 1.f / 2.4f) - 0.055f;
-}
 
 // Find the maximum sRGB-safe chroma for a UCS hue [0,1) at J = 0.65 (mid-brightness).
 // Uses 16 iterations of binary search; result fits within [0, 1] sRGB without clamping.
@@ -820,7 +698,7 @@ static float _find_max_chroma(const float hue)
     const float C_mid = (C_lo + C_hi) * 0.5f;
     dt_aligned_pixel_t JCH = { J, C_mid, H, 0.f };
     dt_aligned_pixel_t sRGB;
-    _jch_to_srgb(JCH, L_white, sRGB);
+    dt_UCS_JCH_to_sRGB(JCH, L_white, sRGB);
     if(sRGB[0] >= 0.f && sRGB[1] >= 0.f && sRGB[2] >= 0.f
        && sRGB[0] <= 1.f && sRGB[1] <= 1.f && sRGB[2] <= 1.f)
       C_lo = C_mid;
@@ -832,7 +710,10 @@ static float _find_max_chroma(const float hue)
 
 // Render a normalized UCS hue value [0,1) to display sRGB at mid-brightness.
 // Backs off 15% from the gamut boundary so swatches look vivid but not clipped.
-static void _hue_to_srgb(float hue, float *r, float *g, float *b)
+static void _hue_to_srgb(const float hue,
+                         float *r,
+                         float *g,
+                         float *b)
 {
   const float L_white = Y_to_dt_UCS_L_star(1.0f);
   const float H = hue * 2.f * M_PI_F - M_PI_F;
@@ -840,7 +721,7 @@ static void _hue_to_srgb(float hue, float *r, float *g, float *b)
 
   dt_aligned_pixel_t JCH = { J, _find_max_chroma(hue) * 0.85f, H, 0.f };
   dt_aligned_pixel_t sRGB;
-  _jch_to_srgb(JCH, L_white, sRGB);
+  dt_UCS_JCH_to_sRGB(JCH, L_white, sRGB);
   *r = CLAMP(sRGB[0], 0.f, 1.f);
   *g = CLAMP(sRGB[1], 0.f, 1.f);
   *b = CLAMP(sRGB[2], 0.f, 1.f);
@@ -887,7 +768,7 @@ static void _paint_sat_slider(GtkWidget *slider, const float hue)
                                  : C_swatch + (stop - 0.5f) * 2.f * (C_lo - C_swatch);
     dt_aligned_pixel_t JCH = { J, C, H, 0.f };
     dt_aligned_pixel_t sRGB;
-    _jch_to_srgb(JCH, L_white, sRGB);
+    dt_UCS_JCH_to_sRGB(JCH, L_white, sRGB);
     dt_bauhaus_slider_set_stop(slider, stop,
                                CLAMP(sRGB[0], 0.f, 1.f),
                                CLAMP(sRGB[1], 0.f, 1.f),
@@ -897,7 +778,7 @@ static void _paint_sat_slider(GtkWidget *slider, const float hue)
 }
 
 static void _paint_all_sat_sliders(const dt_iop_colorharmonizer_gui_data_t *const g,
-                                    const dt_iop_colorharmonizer_params_t *const p)
+                                   const dt_iop_colorharmonizer_params_t *const p)
 {
   float nodes[COLORHARMONIZER_MAX_NODES];
   int num_nodes = 0;
@@ -919,7 +800,6 @@ static float _ucs_hue_to_ryb_hue(const float ucs_hue)
   dt_RGB_2_HCV(lrgb, HCV);
   return dt_rgb_hue_to_ryb_hue(HCV[0]);
 }
-
 
 static void _push_to_vectorscope(dt_iop_module_t *self)
 {
@@ -961,9 +841,9 @@ static void _anchor_hue_slider_changed(GtkWidget *widget, dt_iop_module_t *self)
 // Apply a vectorscope harmony guide (rule + rotation) to params and refresh the GUI.
 // Precondition: guide->type != DT_COLOR_HARMONY_NONE.
 static void _apply_harmony_guide(dt_iop_module_t *self,
-                                  dt_iop_colorharmonizer_params_t *p,
-                                  dt_iop_colorharmonizer_gui_data_t *g,
-                                  const dt_color_harmony_guide_t *guide)
+                                 dt_iop_colorharmonizer_params_t *p,
+                                 dt_iop_colorharmonizer_gui_data_t *g,
+                                 const dt_color_harmony_guide_t *guide)
 {
   p->rule      = (dt_iop_colorharmonizer_rule_t)(guide->type - 1);
   p->anchor_hue = _ryb_to_ucs_fast(guide->rotation / 360.0f);
@@ -976,9 +856,6 @@ static void _apply_harmony_guide(dt_iop_module_t *self,
   gui_changed(self, NULL, NULL);
   dt_dev_add_history_item(self->dev, self, TRUE);
 }
-
-static void _sync_custom_sliders(dt_iop_colorharmonizer_gui_data_t *g,
-                                  dt_iop_colorharmonizer_params_t *p);
 
 static void _on_vectorscope_harmony_changed(const dt_color_harmony_guide_t *guide, void *user_data)
 {
@@ -996,7 +873,7 @@ static void _on_vectorscope_harmony_changed(const dt_color_harmony_guide_t *guid
     const int n = MIN(guide->custom_n, p->num_custom_nodes);
     for(int i = 0; i < n; i++)
       p->custom_hue[i] = _ryb_to_ucs_fast(guide->custom_angles[i]);
-    _sync_custom_sliders(g, p);
+    _sync_custom_sliders(p, g);
     for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
     {
       gtk_widget_queue_draw(g->custom_swatch[i]);
@@ -1044,7 +921,9 @@ static void _sync_to_vectorscope_toggled(GtkToggleButton *button, dt_iop_module_
     gtk_widget_set_sensitive(g->set_from_vectorscope, !active);
 }
 
-static gboolean _swatch_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _swatch_draw_callback(GtkWidget *widget,
+                                      cairo_t *cr,
+                                      gpointer user_data)
 {
   dt_iop_module_t *self = user_data;
   dt_iop_colorharmonizer_params_t *p = self->params;
@@ -1117,9 +996,9 @@ static void _node_saturation_changed(GtkWidget *widget, dt_iop_module_t *self)
 // Initialize custom nodes when switching from a predefined rule to custom mode.
 // Reads the current vectorscope guide's sector positions and converts them to UCS.
 static void _init_custom_nodes_from_rule(dt_iop_module_t *self,
-                                          dt_iop_colorharmonizer_gui_data_t *g,
-                                          dt_iop_colorharmonizer_params_t *p,
-                                          dt_iop_colorharmonizer_rule_t old_rule)
+                                         const dt_iop_colorharmonizer_rule_t old_rule,
+                                         dt_iop_colorharmonizer_gui_data_t *g,
+                                         dt_iop_colorharmonizer_params_t *p)
 {
   dt_color_harmony_guide_t guide;
   dt_lib_histogram_get_harmony(darktable.lib, &guide);
@@ -1148,9 +1027,9 @@ static void _init_custom_nodes_from_rule(dt_iop_module_t *self,
 }
 
 // Update widget visibility based on current mode (custom vs. predefined) and node count.
-static void _update_visibility(dt_iop_colorharmonizer_gui_data_t *g,
-                               dt_iop_colorharmonizer_params_t *p,
-                               gboolean is_custom)
+static void _update_visibility(const dt_iop_colorharmonizer_params_t *p,
+                               const gboolean is_custom,
+                               dt_iop_colorharmonizer_gui_data_t *g)
 {
   gtk_widget_set_visible(g->anchor_hue, !is_custom);
   gtk_widget_set_visible(g->swatches_area, !is_custom);
@@ -1180,8 +1059,8 @@ static void _update_visibility(dt_iop_colorharmonizer_gui_data_t *g,
 }
 
 // Sync custom hue slider display values from params.
-static void _sync_custom_sliders(dt_iop_colorharmonizer_gui_data_t *g,
-                                  dt_iop_colorharmonizer_params_t *p)
+static void _sync_custom_sliders(const dt_iop_colorharmonizer_params_t *p,
+                                 dt_iop_colorharmonizer_gui_data_t *g)
 {
   ++darktable.gui->reset;
   for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
@@ -1192,8 +1071,8 @@ static void _sync_custom_sliders(dt_iop_colorharmonizer_gui_data_t *g,
 // Push the current harmony to the vectorscope if sync is enabled and the changed
 // widget is one that affects the harmony guide (rule, hue sliders, or full refresh).
 static void _sync_vectorscope_if_enabled(dt_iop_module_t *self,
-                                          dt_iop_colorharmonizer_gui_data_t *g,
-                                          GtkWidget *widget)
+                                         dt_iop_colorharmonizer_gui_data_t *g,
+                                         GtkWidget *widget)
 {
   if(!g->sync_to_vectorscope
      || !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->sync_to_vectorscope)))
@@ -1227,10 +1106,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
   {
     const dt_iop_colorharmonizer_rule_t old_rule = *(dt_iop_colorharmonizer_rule_t *)previous;
     if(old_rule != DT_COLORHARMONIZER_CUSTOM)
-      _init_custom_nodes_from_rule(self, g, p, old_rule);
+      _init_custom_nodes_from_rule(self, old_rule, g, p);
   }
 
-  _update_visibility(g, p, is_custom);
+  _update_visibility(p, is_custom, g);
 
   for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
   {
@@ -1239,7 +1118,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
   }
 
   if(is_custom)
-    _sync_custom_sliders(g, p);
+    _sync_custom_sliders(p, g);
 
   _paint_all_hue_sliders(g);
   _paint_all_sat_sliders(g, p);
@@ -1270,7 +1149,9 @@ void gui_update(dt_iop_module_t *self)
 
 // Convert a picked pixel color (pipeline RGB) to a normalized darktable UCS hue [0, 1).
 // Returns FALSE only if the work profile is unavailable.
-static gboolean _picked_color_to_hue(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, float *out_hue)
+static gboolean _picked_color_to_hue(dt_iop_module_t *self,
+                                     dt_dev_pixelpipe_t *pipe,
+                                     float *out_hue)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = pipe->work_profile_info;
   if(!work_profile) return FALSE;
@@ -1295,7 +1176,9 @@ static gboolean _picked_color_to_hue(dt_iop_module_t *self, dt_dev_pixelpipe_t *
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
   dt_iop_colorharmonizer_params_t *p = self->params;
@@ -1341,8 +1224,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 // Returns a coverage fraction in [0,1]: the fraction of chromatic energy that
 // falls within the Gaussian attraction zones of the harmony nodes.
 // Uses the same sigma formula as the main algorithm (pull_width_factor = 1.0).
-static float _score_harmony(const float *histo, int num_bins,
-                              dt_iop_colorharmonizer_rule_t rule, float anchor_hue)
+static float _score_harmony(const float *histo,
+                            const int num_bins,
+                            const dt_iop_colorharmonizer_rule_t rule,
+                            const float anchor_hue)
 {
   float nodes[COLORHARMONIZER_MAX_NODES];
   int num_nodes = 1;
@@ -1379,9 +1264,10 @@ static float _score_harmony(const float *histo, int num_bins,
 // Analyse a chroma-weighted hue histogram and return the harmony rule and
 // anchor hue that best explain the existing color distribution (i.e. the
 // combination that already covers the most chromatic energy).
-static void _auto_detect_harmony(const float *histo, int num_bins,
-                                  dt_iop_colorharmonizer_rule_t *best_rule,
-                                  float *best_anchor)
+static void _auto_detect_harmony(const float *histo,
+                                 const int num_bins,
+                                 dt_iop_colorharmonizer_rule_t *best_rule,
+                                 float *best_anchor)
 {
   // Smooth the histogram with three passes of a circular box filter to
   // suppress noise from individual pixels before scoring.
@@ -1474,7 +1360,7 @@ static void _set_from_vectorscope_callback(GtkButton *button, dt_iop_module_t *s
 }
 
 // Create a colored hue swatch (24×24 drawing area) with the standard draw callback.
-static GtkWidget *_create_swatch(int index, dt_iop_module_t *self)
+static GtkWidget *_create_swatch(dt_iop_module_t *self, const int index)
 {
   GtkWidget *swatch = gtk_drawing_area_new();
   gtk_widget_set_size_request(swatch, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
@@ -1558,7 +1444,7 @@ void gui_init(dt_iop_module_t *self)
   g->swatches_area = dt_gui_hbox();
   for(int i = 0; i < COLORHARMONIZER_MAX_NODES; i++)
   {
-    g->node_swatch[i] = _create_swatch(i, self);
+    g->node_swatch[i] = _create_swatch(self, i);
     gtk_widget_set_hexpand(g->node_swatch[i], TRUE);
     dt_gui_box_add(g->swatches_area, g->node_swatch[i]);
   }
@@ -1570,7 +1456,7 @@ void gui_init(dt_iop_module_t *self)
     GtkWidget *row = dt_gui_hbox();
 
     // Color swatch (small square showing the node's hue)
-    g->custom_swatch[i] = _create_swatch(i, self);
+    g->custom_swatch[i] = _create_swatch(self, i);
     dt_gui_box_add(row, g->custom_swatch[i]);
 
     // Hue slider with color picker

@@ -74,9 +74,9 @@ G_END_DECLS
 // harmony type and anchor rotation (integer degrees). n is set to the node count.
 // This is the single authoritative geometry table used by both the vectorscope overlay
 // and the processing pipeline; keeping it here avoids duplicating angle definitions.
-static inline void dt_color_harmony_get_sector_angles(dt_color_harmony_type_t type,
-                                                       int rotation,
-                                                       float *angles, int *n)
+static inline void dt_color_harmony_get_sector_angles(const dt_color_harmony_type_t type,
+                                                      const int rotation,
+                                                      float *angles, int *n)
 {
   static const struct { int n; float offsets[4]; } table[DT_COLOR_HARMONY_N] = {
     { 0, {  0.f                                          } }, // NONE
