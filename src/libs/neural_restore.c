@@ -109,12 +109,17 @@
 #include "common/act_on.h"
 #include "common/ai_models.h"
 #include "common/collection.h"
+#include "common/variables.h"
+#include "common/colorspaces.h"
 #include "common/dwt.h"
+#include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
 #include "common/mipmap_cache.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
@@ -138,6 +143,10 @@ DT_MODULE(1)
 
 #define CONF_DETAIL_RECOVERY "plugins/lighttable/neural_restore/detail_recovery"
 #define CONF_ACTIVE_PAGE "plugins/lighttable/neural_restore/active_page"
+#define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
+#define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
+#define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
+#define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
 
 // wavelet denoise parameters for detail recovery
 // fine scales capture noise, coarser scales capture texture
@@ -149,14 +158,19 @@ static const float _dwt_detail_noise[DWT_DETAIL_BANDS] = {
   0.0005f,  // band 3: very light
   0.0001f   // band 4 (coarsest): preserve almost everything
 };
-
-
 typedef enum dt_neural_task_t
 {
   NEURAL_TASK_DENOISE = 0,
   NEURAL_TASK_UPSCALE_2X,
   NEURAL_TASK_UPSCALE_4X,
 } dt_neural_task_t;
+
+typedef enum dt_neural_bpp_t
+{
+  NEURAL_BPP_8 = 0,   // $DESCRIPTION: "8 bit"
+  NEURAL_BPP_16 = 1,  // $DESCRIPTION: "16 bit"
+  NEURAL_BPP_32 = 2,  // $DESCRIPTION: "32 bit (float)"
+} dt_neural_bpp_t;
 
 typedef struct dt_lib_neural_restore_t
 {
@@ -176,20 +190,26 @@ typedef struct dt_lib_neural_restore_t
   gboolean job_running;
   float *preview_before;
   float *preview_after;
-  float *preview_detail;  // DWT-filtered 1ch luminance residual for preview
+  float *preview_detail;
   int preview_w;
   int preview_h;
   float split_pos;
   gboolean preview_ready;
-  gboolean preview_requested;  // user explicitly asked for preview
+  gboolean preview_requested;
   gboolean dragging_split;
   gboolean preview_generating;
-  GThread *preview_thread;  // current preview thread (joined on cleanup)
-  gint preview_sequence;    // atomic — accessed from preview thread
-  // cached cairo surface data, rebuilt when preview changes
+  GThread *preview_thread;
+  gint preview_sequence;
   unsigned char *cairo_before;
   unsigned char *cairo_after;
   int cairo_stride;
+
+  // output settings (collapsible)
+  dt_gui_collapsible_section_t cs_output;
+  GtkWidget *bpp_combo;
+  GtkWidget *catalog_toggle;
+  GtkWidget *output_dir_entry;
+  GtkWidget *output_dir_button;
 } dt_lib_neural_restore_t;
 
 typedef struct dt_neural_job_t
@@ -205,6 +225,9 @@ typedef struct dt_neural_job_t
   float detail_recovery;
   dt_ai_provider_t provider;
   dt_lib_module_t *self;
+  dt_neural_bpp_t bpp;
+  gboolean add_to_catalog;
+  char *output_dir;  // NULL = same as source
 } dt_neural_job_t;
 
 typedef struct dt_neural_format_params_t
@@ -245,8 +268,6 @@ typedef struct dt_neural_preview_result_t
   int width;
   int height;
 } dt_neural_preview_result_t;
-
-
 const char *name(dt_lib_module_t *self) { return _("neural restore"); }
 
 const char *description(dt_lib_module_t *self)
@@ -265,8 +286,6 @@ uint32_t container(dt_lib_module_t *self)
 }
 
 int position(const dt_lib_module_t *self) { return 799; }
-
-
 static int _ai_check_bpp(dt_imageio_module_data_t *data) { return 32; }
 
 static int _ai_check_levels(dt_imageio_module_data_t *data)
@@ -354,8 +373,6 @@ static void _nn_upscale(const float *const restrict src,
     }
   }
 }
-
-
 static int _run_patch(dt_ai_context_t *ctx,
                       const float *in_patch,
                       int w, int h,
@@ -436,8 +453,6 @@ static int _run_patch(dt_ai_context_t *ctx,
 
   return 0;
 }
-
-
 static inline int _mirror(int v, int max)
 {
   if(v < 0) v = -v;
@@ -486,12 +501,44 @@ static int _select_tile_size(int scale)
            candidates[n_candidates - 1], budget / (1024 * 1024));
   return candidates[n_candidates - 1];
 }
+// write a float 3ch scanline to TIFF, converting to the
+// target bit depth. scratch must be at least width*3*4 bytes
+static int _write_tiff_scanline(TIFF *tif,
+                                const float *src,
+                                int width,
+                                int bpp,
+                                int row,
+                                void *scratch)
+{
+  if(bpp == 32)
+    return TIFFWriteScanline(tif, (void *)src, row, 0);
 
+  if(bpp == 16)
+  {
+    uint16_t *dst = (uint16_t *)scratch;
+    for(int i = 0; i < width * 3; i++)
+    {
+      float v = CLAMPF(src[i], 0.0f, 1.0f);
+      dst[i] = (uint16_t)(v * 65535.0f + 0.5f);
+    }
+    return TIFFWriteScanline(tif, dst, row, 0);
+  }
+
+  // 8 bit
+  uint8_t *dst = (uint8_t *)scratch;
+  for(int i = 0; i < width * 3; i++)
+  {
+    float v = CLAMPF(src[i], 0.0f, 1.0f);
+    dst[i] = (uint8_t)(v * 255.0f + 0.5f);
+  }
+  return TIFFWriteScanline(tif, dst, row, 0);
+}
 
 static int _process_tiled(dt_ai_context_t *ctx,
                           const float *in_data,
                           int width, int height,
                           int scale,
+                          int bpp,
                           TIFF *tif,
                           float *out_buf,
                           dt_job_t *control_job,
@@ -522,11 +569,17 @@ static int _process_tiled(dt_ai_context_t *ctx,
   float *tile_in = g_try_malloc(in_plane * 3 * sizeof(float));
   float *tile_out = g_try_malloc(out_plane * 3 * sizeof(float));
   float *row_buf = g_try_malloc((size_t)out_w * step_out * 3 * sizeof(float));
-  if(!tile_in || !tile_out || !row_buf)
+  // scratch for bpp conversion (worst case: 16-bit = 2 bytes * 3ch)
+  void *scratch = (tif && bpp < 32)
+    ? g_try_malloc((size_t)out_w * 3 * sizeof(uint16_t))
+    : NULL;
+  if(!tile_in || !tile_out || !row_buf
+     || (tif && bpp < 32 && !scratch))
   {
     g_free(tile_in);
     g_free(tile_out);
     g_free(row_buf);
+    g_free(scratch);
     return 1;
   }
 
@@ -636,10 +689,12 @@ static int _process_tiled(dt_ai_context_t *ctx,
       }
       else if(tif)
       {
-        if(TIFFWriteScanline(tif, src, y * S + dy, 0) < 0)
+        if(_write_tiff_scanline(tif, src, out_w, bpp,
+                                y * S + dy, scratch) < 0)
         {
           dt_print(DT_DEBUG_AI,
-                   "[neural_restore] TIFF write error at scanline %d", y * S + dy);
+                   "[neural_restore] TIFF write error at scanline %d",
+                   y * S + dy);
           res = 1;
           goto cleanup;
         }
@@ -651,10 +706,9 @@ cleanup:
   g_free(tile_in);
   g_free(tile_out);
   g_free(row_buf);
+  g_free(scratch);
   return res;
 }
-
-
 // compute DWT-filtered luminance detail from 3ch interleaved before/after buffers.
 // returns a newly allocated 1ch float array (width*height), or NULL on failure.
 // the returned array contains the wavelet-filtered luminance residual:
@@ -754,7 +808,8 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(!job->ctx)
   {
     dt_print(DT_DEBUG_AI, "[neural_restore] reloading model for next image");
-    job->ctx = dt_ai_load_model(job->env, job->model_id, job->model_file, job->provider);
+    job->ctx = dt_ai_load_model(job->env, job->model_id,
+                                job->model_file, job->provider);
   }
   if(!job->ctx)
     return 1;
@@ -783,14 +838,39 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     return 1;
   }
 
+  const int bpp = (job->bpp == NEURAL_BPP_8) ? 8
+    : (job->bpp == NEURAL_BPP_16) ? 16 : 32;
+  const int sample_fmt = (bpp == 32)
+    ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT;
+
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, out_w);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, out_h);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bpp);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
+  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, sample_fmt);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
+               TIFFDefaultStripSize(tif, 0));
+
+  // embed linear Rec.709 ICC profile
+  const dt_colorspaces_color_profile_t *cp
+    = dt_colorspaces_get_output_profile(imgid, DT_COLORSPACE_LIN_REC709, NULL);
+  if(cp && cp->profile)
+  {
+    uint32_t icc_len = 0;
+    cmsSaveProfileToMem(cp->profile, NULL, &icc_len);
+    if(icc_len > 0)
+    {
+      uint8_t *icc_buf = g_malloc(icc_len);
+      if(icc_buf)
+      {
+        cmsSaveProfileToMem(cp->profile, icc_buf, &icc_len);
+        TIFFSetField(tif, TIFFTAG_ICCPROFILE, icc_len, icc_buf);
+        g_free(icc_buf);
+      }
+    }
+  }
 
   const int tile_size = _select_tile_size(S);
   const float recovery_alpha = job->detail_recovery / 100.0f;
@@ -809,14 +889,19 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     }
 
     res = _process_tiled(job->ctx, in_data, width, height, S,
-                         NULL, out_4ch, job->control_job, tile_size);
+                         bpp, NULL, out_4ch, job->control_job,
+                         tile_size);
 
     if(res == 0)
     {
       _apply_detail_recovery(in_data, out_4ch, width, height, recovery_alpha);
 
       // write buffered result to TIFF
-      float *scan = g_malloc((size_t)out_w * 3 * sizeof(float));
+      const size_t row_bytes = (size_t)out_w * 3 * sizeof(float);
+      float *scan = g_malloc(row_bytes);
+      void *cvt = (bpp < 32)
+        ? g_malloc((size_t)out_w * 3 * sizeof(uint16_t))
+        : NULL;
       for(int y = 0; y < out_h && res == 0; y++)
       {
         const float *row = out_4ch + (size_t)y * out_w * 4;
@@ -826,24 +911,30 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
           scan[x * 3 + 1] = row[x * 4 + 1];
           scan[x * 3 + 2] = row[x * 4 + 2];
         }
-        if(TIFFWriteScanline(tif, scan, y, 0) < 0)
+        if(_write_tiff_scanline(tif, scan, out_w, bpp, y, cvt) < 0)
         {
-          dt_print(DT_DEBUG_AI, "[neural_restore] TIFF write error at scanline %d", y);
+          dt_print(DT_DEBUG_AI,
+                   "[neural_restore] TIFF write error"
+                   " at scanline %d", y);
           res = 1;
         }
       }
+      g_free(cvt);
       g_free(scan);
     }
     g_free(out_4ch);
   }
   else
   {
-    res = _process_tiled(
-      job->ctx, in_data, width, height, S,
-      tif, NULL, job->control_job, tile_size);
+    res = _process_tiled(job->ctx, in_data, width, height, S,
+                         bpp, tif, NULL, job->control_job, tile_size);
   }
 
   TIFFClose(tif);
+
+  // write EXIF metadata from source image
+  if(res == 0 && exif && exif_len > 0)
+    dt_exif_write_blob(exif, exif_len, filename, 0);
 
   // free runtime memory between images
   dt_ai_unload_model(job->ctx);
@@ -930,6 +1021,7 @@ static void _job_cleanup(void *param)
     dt_ai_unload_model(job->ctx);
   g_free(job->model_id);
   g_free(job->model_file);
+  g_free(job->output_dir);
   g_list_free(job->images);
   g_free(job);
 }
@@ -976,23 +1068,65 @@ static int32_t _process_job_run(dt_job_t *job)
       break;
 
     dt_imgid_t imgid = GPOINTER_TO_INT(iter->data);
+    char srcpath[PATH_MAX];
+    dt_image_full_path(imgid, srcpath, sizeof(srcpath), NULL);
+
+    // build base name (strip extension)
+    char *basename = g_path_get_basename(srcpath);
+    char *dot = strrchr(basename, '.');
+    if(dot) *dot = '\0';
+
+    // expand output directory variables (e.g. $(FILE_FOLDER))
+    char *dir_pattern = (j->output_dir && j->output_dir[0])
+      ? j->output_dir : "$(FILE_FOLDER)";
+    dt_variables_params_t *vp = NULL;
+    dt_variables_params_init(&vp);
+    vp->filename = srcpath;
+    vp->imgid = imgid;
+    char *out_dir = dt_variables_expand(vp,
+                                        (gchar *)dir_pattern,
+                                        FALSE);
+    dt_variables_params_destroy(vp);
+
+    // if basename already ends with the suffix, don't
+    // append it again (e.g. re-processing a denoised file)
+    const size_t blen = strlen(basename);
+    const size_t slen = strlen(suffix);
+    const gboolean has_suffix
+      = (blen >= slen) && strcmp(basename + blen - slen, suffix) == 0;
+
+    // build base path without .tif for collision loop
+    char base[PATH_MAX];
+    if(has_suffix)
+      snprintf(base, sizeof(base),
+               "%s/%s", out_dir, basename);
+    else
+      snprintf(base, sizeof(base),
+               "%s/%s%s", out_dir, basename, suffix);
+
+    g_free(out_dir);
+    g_free(basename);
+
+    // ensure output directory exists
+    char *out_dir_resolved = g_path_get_dirname(base);
+    if(g_mkdir_with_parents(out_dir_resolved, 0750) != 0)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[neural_restore] failed to create output directory: %s",
+               out_dir_resolved);
+      dt_control_log(_("neural restore: cannot create output directory"));
+      g_free(out_dir_resolved);
+      dt_control_job_set_progress(job, (double)++count / total);
+      continue;
+    }
+    g_free(out_dir_resolved);
+
+    // find unique filename: base.tif, base_1.tif, ...
     char filename[PATH_MAX];
-    dt_image_full_path(imgid, filename, sizeof(filename), NULL);
+    snprintf(filename, sizeof(filename), "%s.tif", base);
 
-    // output filename
-    char *ext = strrchr(filename, '.');
-    if(ext) *ext = '\0';
-    g_strlcat(filename, suffix, sizeof(filename));
-    g_strlcat(filename, ".tif", sizeof(filename));
-
-    // collision avoidance
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
-      char base[PATH_MAX];
-      g_strlcpy(base, filename, sizeof(base));
-      char *tif_ext = strrchr(base, '.');
-      if(tif_ext) *tif_ext = '\0';
-
       gboolean found = FALSE;
       for(int s = 1; s < 10000; s++)
       {
@@ -1006,8 +1140,9 @@ static int32_t _process_job_run(dt_job_t *job)
       if(!found)
       {
         dt_print(DT_DEBUG_AI,
-                 "[neural_restore] could not find unique filename for imgid %d", imgid);
-        dt_control_log(_("neural restore: too many existing output files"));
+                 "[neural_restore] could not find unique filename for imgid %d",
+                 imgid);
+        dt_control_log(_("neural restore: too many output files"));
         dt_control_job_set_progress(job, (double)++count / total);
         continue;
       }
@@ -1022,26 +1157,26 @@ static int32_t _process_job_run(dt_job_t *job)
              count + 1, total);
     dt_control_job_set_progress_message(job, msg);
 
-    const int export_err = dt_imageio_export_with_flags(
-      imgid,
-      filename,
-      &fmt,
-      (dt_imageio_module_data_t *)&fmt_params,
-      TRUE,   // ignore_exif
-      FALSE,  // display_byteorder
-      TRUE,   // high_quality
-      TRUE,   // upscale
-      FALSE,  // is_scaling
-      1.0,    // scale_factor
-      FALSE,  // thumbnail_export
-      NULL,   // filter
-      FALSE,  // copy_metadata
-      FALSE,  // export_masks
-      DT_COLORSPACE_LIN_REC709,
-      NULL,
-      DT_INTENT_PERCEPTUAL,
-      NULL, NULL,
-      count, total, NULL, -1);
+    const int export_err
+      = dt_imageio_export_with_flags(imgid,
+                                     filename,
+                                     &fmt,
+                                     (dt_imageio_module_data_t *)&fmt_params,
+                                     FALSE,  // ignore_exif — pass EXIF to write_image
+                                     FALSE,  // display_byteorder
+                                     TRUE,   // high_quality
+                                     TRUE,   // upscale
+                                     FALSE,  // is_scaling
+                                     1.0,    // scale_factor
+                                     FALSE,  // thumbnail_export
+                                     NULL,   // filter
+                                     FALSE,  // copy_metadata
+                                     FALSE,  // export_masks
+                                     DT_COLORSPACE_LIN_REC709,
+                                     NULL,
+                                     DT_INTENT_PERCEPTUAL,
+                                     NULL, NULL,
+                                     count, total, NULL, -1);
 
     if(export_err)
     {
@@ -1052,7 +1187,8 @@ static int32_t _process_job_run(dt_job_t *job)
       continue;
     }
 
-    _import_image(filename, imgid);
+    if(j->add_to_catalog)
+      _import_image(filename, imgid);
     dt_control_job_set_progress(job, (double)++count / total);
   }
 
@@ -1115,8 +1251,7 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
       const int out_h = fh * scale;
       const double in_mp = (double)fw * fh / 1e6;
       const double out_mp = (double)out_w * out_h / 1e6;
-      const size_t est_mb
-        = (size_t)out_w * out_h * 3 * 4 / (1024 * 1024);
+      const size_t est_mb = (size_t)out_w * out_h * 3 * 4 / (1024 * 1024);
       snprintf(d->info_text_left, sizeof(d->info_text_left),
                "%.0fMP", in_mp);
       snprintf(d->info_text_right, sizeof(d->info_text_right),
@@ -1254,25 +1389,24 @@ static gpointer _preview_thread(gpointer data)
     .bpp = _ai_check_bpp,
     .write_image = _preview_capture_write_image};
 
-  dt_imageio_export_with_flags(
-    pd->imgid,
-    "unused",
-    &fmt,
-    (dt_imageio_module_data_t *)&cap,
-    TRUE,   // ignore_exif
-    FALSE,  // display_byteorder
-    TRUE,   // high_quality
-    FALSE,  // upscale
-    FALSE,  // is_scaling
-    1.0,    // scale_factor
-    FALSE,  // thumbnail_export
-    NULL,   // filter
-    FALSE,  // copy_metadata
-    FALSE,  // export_masks
-    DT_COLORSPACE_LIN_REC709,
-    NULL,
-    DT_INTENT_PERCEPTUAL,
-    NULL, NULL, 1, 1, NULL, -1);
+  dt_imageio_export_with_flags(pd->imgid,
+                               "unused",
+                               &fmt,
+                               (dt_imageio_module_data_t *)&cap,
+                               TRUE,   // ignore_exif
+                               FALSE,  // display_byteorder
+                               TRUE,   // high_quality
+                               FALSE,  // upscale
+                               FALSE,  // is_scaling
+                               1.0,    // scale_factor
+                               FALSE,  // thumbnail_export
+                               NULL,   // filter
+                               FALSE,  // copy_metadata
+                               FALSE,  // export_masks
+                               DT_COLORSPACE_LIN_REC709,
+                               NULL,
+                               DT_INTENT_PERCEPTUAL,
+                               NULL, NULL, 1, 1, NULL, -1);
 
   if(!cap.pixels || pd->sequence != g_atomic_int_get(&d->preview_sequence))
   {
@@ -1301,8 +1435,7 @@ static gpointer _preview_thread(gpointer data)
   if(pad_x < 0 || pad_y < 0)
   {
     dt_print(DT_DEBUG_AI,
-             "[neural_restore] preview: image too small"
-             " for crop (%dx%d < %dx%d)",
+             "[neural_restore] preview: image too small for crop (%dx%d < %dx%d)",
              cap.cap_w, cap.cap_h, padded_w, padded_h);
     g_free(cap.pixels);
     goto cleanup;
@@ -1328,7 +1461,7 @@ static gpointer _preview_thread(gpointer data)
     {
       const size_t si = ((size_t)(pad_y + y) * cap.cap_w + (pad_x + x)) * 4;
       const size_t po = (size_t)y * padded_w + x;
-      patch_in[po]              = cap.pixels[si + 0];
+      patch_in[po]                 = cap.pixels[si + 0];
       patch_in[po + pad_plane]     = cap.pixels[si + 1];
       patch_in[po + 2 * pad_plane] = cap.pixels[si + 2];
     }
@@ -1368,8 +1501,8 @@ static gpointer _preview_thread(gpointer data)
   }
 
   // load model and run inference
-  dt_ai_context_t *ctx = dt_ai_load_model(
-    pd->env, pd->model_id, pd->model_file, pd->provider);
+  dt_ai_context_t *ctx = dt_ai_load_model(pd->env, pd->model_id, 
+                                          pd->model_file, pd->provider);
   if(!ctx)
   {
     dt_print(DT_DEBUG_AI,
@@ -1619,6 +1752,17 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->images = images;
   job_data->scale = _task_scale(d->task);
   job_data->detail_recovery = dt_conf_get_float(CONF_DETAIL_RECOVERY);
+  job_data->bpp = dt_conf_key_exists(CONF_BIT_DEPTH)
+    ? dt_conf_get_int(CONF_BIT_DEPTH)
+    : NEURAL_BPP_16;
+  job_data->add_to_catalog
+    = dt_conf_key_exists(CONF_ADD_CATALOG)
+      ? dt_conf_get_bool(CONF_ADD_CATALOG)
+      : TRUE;
+  char *out_dir = dt_conf_get_string(CONF_OUTPUT_DIR);
+  job_data->output_dir
+    = (out_dir && out_dir[0]) ? out_dir : NULL;
+  if(!job_data->output_dir) g_free(out_dir);
   g_mutex_lock(&darktable.ai_registry->lock);
   job_data->provider = darktable.ai_registry->provider;
   g_mutex_unlock(&darktable.ai_registry->lock);
@@ -1920,7 +2064,58 @@ static void _ai_models_changed_callback(gpointer instance, dt_lib_module_t *self
   _update_info_label(d);
   _update_button_sensitivity(d);
 }
+static void _bpp_combo_changed(GtkWidget *w,
+                               dt_lib_module_t *self)
+{
+  const int idx = dt_bauhaus_combobox_get(w);
+  dt_conf_set_int(CONF_BIT_DEPTH, idx);
+}
 
+static void _catalog_toggle_changed(GtkWidget *w,
+                                    dt_lib_module_t *self)
+{
+  const gboolean active
+    = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_conf_set_bool(CONF_ADD_CATALOG, active);
+}
+
+static void _output_dir_changed(GtkEditable *editable,
+                                dt_lib_module_t *self)
+{
+  dt_conf_set_string(CONF_OUTPUT_DIR,
+                     gtk_entry_get_text(GTK_ENTRY(editable)));
+}
+
+static void _output_dir_browse(GtkWidget *button,
+                               dt_lib_module_t *self)
+{
+  dt_lib_neural_restore_t *d
+    = (dt_lib_neural_restore_t *)self->data;
+  GtkWidget *dialog
+    = gtk_file_chooser_dialog_new(_("select output folder"),
+                                  GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
+                                  GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                  _("_cancel"), GTK_RESPONSE_CANCEL,
+                                  _("_select"), GTK_RESPONSE_ACCEPT,
+                                  NULL);
+
+  const char *current
+    = gtk_entry_get_text(GTK_ENTRY(d->output_dir_entry));
+  if(current && current[0])
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), current);
+
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+    if(folder)
+    {
+      gtk_entry_set_text(GTK_ENTRY(d->output_dir_entry), folder);
+      dt_conf_set_string(CONF_OUTPUT_DIR, folder);
+      g_free(folder);
+    }
+  }
+  gtk_widget_destroy(dialog);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -1936,18 +2131,20 @@ void gui_init(dt_lib_module_t *self)
                    GTK_WIDGET(d->notebook), &notebook_def);
 
   d->denoise_page = dt_ui_notebook_page(d->notebook, N_("denoise"),
-                                         _("AI denoising"));
+                                        _("AI denoising"));
   d->upscale_page = dt_ui_notebook_page(d->notebook, N_("upscale"),
-                                         _("AI upscaling"));
+                                        _("AI upscaling"));
 
   // denoise page: detail recovery slider
   const float saved_recovery = dt_conf_get_float(CONF_DETAIL_RECOVERY);
-  d->recovery_slider = dt_bauhaus_slider_new_action(
-    DT_ACTION(self), 0.0f, 100.0f, 1.0f, saved_recovery, 0);
+  d->recovery_slider = dt_bauhaus_slider_new_action(DT_ACTION(self),
+                                                    0.0f, 100.0f, 1.0f,
+                                                    saved_recovery, 0);
   dt_bauhaus_widget_set_label(d->recovery_slider, NULL, N_("detail recovery"));
   dt_bauhaus_slider_set_format(d->recovery_slider, "%");
   gtk_widget_set_tooltip_text(d->recovery_slider,
-    _("recover fine texture lost during denoising while suppressing noise"));
+                              _("recover fine texture lost during denoising "
+                                "while suppressing noise"));
   g_signal_connect(G_OBJECT(d->recovery_slider), "value-changed",
                    G_CALLBACK(_recovery_slider_changed), self);
   dt_gui_box_add(d->denoise_page, d->recovery_slider);
@@ -1970,7 +2167,9 @@ void gui_init(dt_lib_module_t *self)
   d->preview_area = gtk_drawing_area_new();
   gtk_widget_set_size_request(d->preview_area, -1, 200);
   gtk_widget_add_events(d->preview_area,
-    GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+                        GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_POINTER_MOTION_MASK);
   g_signal_connect(d->preview_area, "draw",
                    G_CALLBACK(_preview_draw), self);
   g_signal_connect(d->preview_area, "button-press-event",
@@ -1985,13 +2184,70 @@ void gui_init(dt_lib_module_t *self)
                                            _process_clicked, self,
                                            _("process selected images"), 0, 0);
 
-  // main layout: notebook on top, then shared widgets below
+  // main layout: notebook, preview, button, output (collapsible)
   gtk_widget_set_vexpand(d->preview_area, TRUE);
   gtk_widget_set_margin_top(d->process_button, 4);
-  self->widget = dt_gui_vbox(
-    GTK_WIDGET(d->notebook),
-    d->preview_area,
-    d->process_button);
+  self->widget = dt_gui_vbox(GTK_WIDGET(d->notebook),
+                             d->preview_area,
+                             d->process_button);
+
+  // output settings — collapsible, below the button
+  dt_gui_new_collapsible_section(&d->cs_output,
+                                 CONF_EXPAND_OUTPUT,
+                                 _("output parameters"),
+                                 GTK_BOX(self->widget),
+                                 DT_ACTION(self));
+
+  GtkWidget *cs_box = GTK_WIDGET(d->cs_output.container);
+
+  // bit depth
+  const int saved_bpp = dt_conf_key_exists(CONF_BIT_DEPTH)
+    ? dt_conf_get_int(CONF_BIT_DEPTH)
+    : NEURAL_BPP_16;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->bpp_combo, self, NULL, N_("bit depth"),
+                               _("output TIFF bit depth"),
+                               saved_bpp, _bpp_combo_changed, self,
+                               N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
+  dt_gui_box_add(cs_box, d->bpp_combo);
+
+  // add to catalog
+  GtkWidget *catalog_box = dt_gui_hbox();
+  d->catalog_toggle = gtk_check_button_new_with_label(_("add to catalog"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->catalog_toggle),
+                               dt_conf_key_exists(CONF_ADD_CATALOG)
+                                 ? dt_conf_get_bool(CONF_ADD_CATALOG)
+                                 : TRUE);
+  gtk_widget_set_tooltip_text(d->catalog_toggle,
+                              _("automatically import output image into the"
+                                " darktable library"));
+  g_signal_connect(d->catalog_toggle, "toggled",
+                   G_CALLBACK(_catalog_toggle_changed), self);
+  dt_gui_box_add(catalog_box, d->catalog_toggle);
+  dt_gui_box_add(cs_box, catalog_box);
+
+  // output directory
+  GtkWidget *dir_box = dt_gui_hbox();
+  d->output_dir_entry = gtk_entry_new();
+  char *saved_dir = dt_conf_get_string(CONF_OUTPUT_DIR);
+  gtk_entry_set_text(GTK_ENTRY(d->output_dir_entry),
+                     (saved_dir && saved_dir[0])
+                       ? saved_dir : "$(FILE_FOLDER)");
+  g_free(saved_dir);
+  gtk_widget_set_tooltip_text(d->output_dir_entry,
+                              _("output folder — supports darktable variables\n"
+                                "$(FILE_FOLDER) = source image folder"));
+  gtk_widget_set_hexpand(d->output_dir_entry, TRUE);
+  g_signal_connect(d->output_dir_entry, "changed",
+                   G_CALLBACK(_output_dir_changed), self);
+
+  d->output_dir_button = dtgtk_button_new(dtgtk_cairo_paint_directory, 0, NULL);
+  gtk_widget_set_tooltip_text(d->output_dir_button, _("select output folder"));
+  g_signal_connect(d->output_dir_button, "clicked",
+                   G_CALLBACK(_output_dir_browse), self);
+
+  dt_gui_box_add(dir_box, d->output_dir_entry);
+  dt_gui_box_add(dir_box, d->output_dir_button);
+  dt_gui_box_add(cs_box, dir_box);
 
   g_signal_connect(d->notebook, "switch-page",
                    G_CALLBACK(_notebook_page_changed), self);
