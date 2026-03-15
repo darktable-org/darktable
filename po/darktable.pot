@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 20:04+0100\n"
+"POT-Creation-Date: 2026-03-15 08:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2832,7 +2832,7 @@ msgstr ""
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
-#: ../src/libs/print_settings.c:1176
+#: ../src/libs/print_settings.c:1176 ../src/libs/scopes/vectorscope.c:60
 msgid "none"
 msgstr ""
 
@@ -16726,6 +16726,7 @@ msgstr ""
 
 #: ../src/iop/borders.c:955 ../src/iop/clipping.c:2127 ../src/iop/crop.c:1259
 #: ../src/libs/filtering.c:312 ../src/libs/filters/ratio.c:124
+#: ../src/libs/scopes/vectorscope.c:69
 msgid "square"
 msgstr ""
 
@@ -23483,7 +23484,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr ""
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:709
 msgid "modes"
 msgstr ""
 
@@ -24905,20 +24906,20 @@ msgstr ""
 msgid "drag to change exposure"
 msgstr ""
 
-#: ../src/libs/histogram.c:660
+#: ../src/libs/histogram.c:654 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
+#: ../src/libs/histogram.c:660 ../src/libs/histogram.c:720
 msgid "hide histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:733
 #, c-format
 msgid "toggle %s channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:747
+#: ../src/libs/histogram.c:741
 msgid "toggle colors"
 msgstr ""
 
@@ -26681,6 +26682,124 @@ msgstr ""
 
 #: ../src/libs/recentcollect.c:230
 msgid "recent collections settings"
+msgstr ""
+
+#: ../src/libs/scopes/histogram.c:207 ../src/libs/scopes/vectorscope.c:993
+msgid "set scale to linear"
+msgstr ""
+
+#: ../src/libs/scopes/histogram.c:212 ../src/libs/scopes/vectorscope.c:998
+msgid "set scale to logarithmic"
+msgstr ""
+
+#: ../src/libs/scopes/histogram.c:243
+msgid "switch histogram scale"
+msgstr ""
+
+#. FIXME: this could depend on values of left/right scopes
+#: ../src/libs/scopes/split.c:30
+msgid "split"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:61
+msgid "monochromatic"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:62
+msgid "analogous"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:63
+msgid "analogous complementary"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:64
+msgid "complementary"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:65
+msgid "split complementary"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:66
+msgid "dyad"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:67
+msgid "triad"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:68
+msgid "tetrad"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:129
+msgid "vectorscope"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1008
+msgid "set view to AzBz"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1014
+msgid "set view to RYB"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1020
+msgid "set view to u*v*"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1124
+msgid "scroll to coarse-rotate"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1125
+msgid "ctrl+scroll to fine rotate"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1126
+msgid "shift+scroll to change width"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1127
+msgid "alt+scroll to cycle"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1375
+msgid "cycle vectorscope types"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1378
+msgid "switch vectorscope scale"
+msgstr ""
+
+#: ../src/libs/scopes/vectorscope.c:1399
+msgid "color harmonies"
+msgstr ""
+
+#. FIXME: do we need this action, or is it vestigial?
+#: ../src/libs/scopes/vectorscope.c:1413
+msgid "cycle color harmonies"
+msgstr ""
+
+#: ../src/libs/scopes/waveform.c:55
+msgid "waveform"
+msgstr ""
+
+#: ../src/libs/scopes/waveform.c:305
+msgid "set scope to vertical"
+msgstr ""
+
+#: ../src/libs/scopes/waveform.c:310
+msgid "set scope to horizontal"
+msgstr ""
+
+#: ../src/libs/scopes/waveform.c:400
+msgid "switch scope orientation"
+msgstr ""
+
+#: ../src/libs/scopes/waveform.c:442
+msgid "RGB parade"
 msgstr ""
 
 #: ../src/libs/select.c:45
