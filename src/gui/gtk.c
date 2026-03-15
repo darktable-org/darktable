@@ -4153,6 +4153,21 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
 
 static gboolean _resize_wrap_dragging = FALSE;
 static GtkWidget *_resize_wrap_hovered = NULL;
+static GdkCursor *_resize_wrap_prev_cursor = NULL;
+
+static void _resize_wrap_restore_cursor()
+{
+  if(_resize_wrap_prev_cursor)
+  {
+    GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+    if(window)
+    {
+      gdk_window_set_cursor(window, _resize_wrap_prev_cursor);
+      g_object_unref(_resize_wrap_prev_cursor);
+      _resize_wrap_prev_cursor = NULL;
+    }
+  }
+}
 
 static gboolean _resize_wrap_draw_handle(GtkWidget *w,
                                          void *cr,
@@ -4199,11 +4214,20 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
           && event->window == gtk_widget_get_window(widget)
           && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
   {
+    if(!_resize_wrap_prev_cursor)
+    {
+      GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+      if(window)
+      {
+        _resize_wrap_prev_cursor = gdk_window_get_cursor(window);
+        g_object_ref(_resize_wrap_prev_cursor);
+      }
+    }
     dt_control_change_cursor("ns-resize");
     return TRUE;
   }
 
-  dt_control_change_cursor("default");
+  _resize_wrap_restore_cursor();
   return FALSE;
 }
 
@@ -4215,7 +4239,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
      && event->type == GDK_BUTTON_RELEASE)
   {
     _resize_wrap_dragging = FALSE;
-    dt_control_change_cursor("default");
+    _resize_wrap_restore_cursor();
     return TRUE;
   }
   else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
@@ -4242,8 +4266,6 @@ static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
 
   if(event->mode == GDK_CROSSING_GTK_UNGRAB)
     _resize_wrap_dragging = FALSE;
-  if(!_resize_wrap_dragging)
-    dt_control_change_cursor("default");
 
   return FALSE;
 }
