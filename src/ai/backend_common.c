@@ -202,6 +202,14 @@ static void _scan_all_paths(dt_ai_environment_t *env)
 
 dt_ai_environment_t *dt_ai_env_init(const char *search_paths)
 {
+  // refuse to initialize when AI is disabled in preferences
+  if(!dt_conf_get_bool("plugins/ai/enabled"))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] AI subsystem is disabled");
+    return NULL;
+  }
+
   dt_print(DT_DEBUG_AI, "[darktable_ai] dt_ai_env_init start.");
 
   dt_ai_environment_t *env = g_new0(dt_ai_environment_t, 1);
@@ -352,6 +360,13 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
 {
   if(!env || !model_id)
     return NULL;
+
+  if(!dt_conf_get_bool("plugins/ai/enabled"))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] AI subsystem is disabled");
+    return NULL;
+  }
 
   // resolve AUTO: re-read from config so preference changes take effect
   // immediately without requiring app restart.  Read config before acquiring

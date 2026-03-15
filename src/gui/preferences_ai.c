@@ -29,24 +29,7 @@
 // non-default indicator
 #define NON_DEF_CHAR "\xe2\x97\x8f"
 
-// update the non-default indicator dot for a boolean preference
-static void _update_bool_indicator(GtkWidget *indicator, const char *confkey)
-{
-  const gboolean current = dt_conf_get_bool(confkey);
-  const gboolean def = dt_confgen_get_bool(confkey, DT_DEFAULT);
-  if(current == def)
-  {
-    gtk_label_set_text(GTK_LABEL(indicator), "");
-    gtk_widget_set_tooltip_text(indicator, NULL);
-  }
-  else
-  {
-    gtk_label_set_text(GTK_LABEL(indicator), NON_DEF_CHAR);
-    gtk_widget_set_tooltip_text(indicator, _("this setting has been modified"));
-  }
-}
-
-// update the non-default indicator dot for a string preference
+// update the non-default indicator dot for a preference
 static void _update_string_indicator(GtkWidget *indicator, const char *confkey)
 {
   const gboolean is_default = dt_conf_is_default(confkey);
@@ -96,6 +79,7 @@ enum
 typedef struct dt_prefs_ai_data_t
 {
   GtkWidget *enable_toggle;
+  GtkWidget *enable_indicator;
   GtkWidget *provider_combo;
   GtkWidget *provider_indicator;
   GtkWidget *provider_status;
@@ -110,6 +94,7 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *delete_selected_btn;
   GtkWidget *parent_dialog;
   GtkWidget *select_all_toggle;
+  GtkWidget *controls_box;  // container for all controls below the enable toggle
 } dt_prefs_ai_data_t;
 
 #ifdef HAVE_AI_DOWNLOAD
@@ -242,7 +227,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
 
 static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *indicator = GTK_WIDGET(user_data);
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   const gboolean enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_conf_set_bool("plugins/ai/enabled", enabled);
   if(darktable.ai_registry)
@@ -250,8 +235,26 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
     g_mutex_lock(&darktable.ai_registry->lock);
     darktable.ai_registry->ai_enabled = enabled;
     g_mutex_unlock(&darktable.ai_registry->lock);
+
+    // lazy-init directories + models on first enable
+    if(enabled)
+    {
+      dt_ai_models_init_lazy(darktable.ai_registry);
+      _refresh_model_list(data);
+    }
   }
-  _update_bool_indicator(indicator, "plugins/ai/enabled");
+
+  // notify modules so reload_defaults can show/hide
+  // AI-dependent features without requiring image switch
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
+
+  // grey out all AI controls when disabled
+  if(data->controls_box)
+    gtk_widget_set_sensitive(data->controls_box, enabled);
+
+  // update non-default indicator dot
+  _update_string_indicator(data->enable_indicator,
+                           "plugins/ai/enabled");
 }
 
 // map combo box index to provider table index (skipping unavailable providers)
@@ -284,6 +287,14 @@ static int _provider_to_combo_idx(dt_ai_provider_t provider)
 static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t provider)
 {
   if(!data->provider_status) return;
+
+  // don't probe GPU providers when AI is disabled —
+  // initializing MIGraphX/ROCm on unsupported GPUs can abort()
+  if(!darktable.ai_registry || !darktable.ai_registry->ai_enabled)
+  {
+    gtk_label_set_text(GTK_LABEL(data->provider_status), "");
+    return;
+  }
 
   if(provider == DT_AI_PROVIDER_AUTO || provider == DT_AI_PROVIDER_CPU
      || dt_ai_probe_provider(provider))
@@ -866,7 +877,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_container_add(GTK_CONTAINER(enable_labelev), enable_label);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(enable_labelev), FALSE);
 
-  GtkWidget *enable_indicator = _create_indicator("plugins/ai/enabled");
+  data->enable_indicator = _create_indicator("plugins/ai/enabled");
   data->enable_toggle = gtk_check_button_new();
   gtk_toggle_button_set_active(
     GTK_TOGGLE_BUTTON(data->enable_toggle),
@@ -875,15 +886,32 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data->enable_toggle,
     "toggled",
     G_CALLBACK(_on_enable_toggled),
-    enable_indicator);
+    data);
   g_signal_connect(
     enable_labelev,
     "button-press-event",
     G_CALLBACK(_reset_enable_click),
     data->enable_toggle);
   gtk_grid_attach(GTK_GRID(general_grid), enable_labelev, 0, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), enable_indicator, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(general_grid), data->enable_indicator, 1, row, 1, 1);
   gtk_grid_attach(GTK_GRID(general_grid), data->enable_toggle, 2, row++, 1, 1);
+
+  dt_gui_box_add(main_box, general_grid);
+
+  // all controls below are inside controls_box —
+  // greyed out when AI is disabled
+  data->controls_box = dt_gui_vbox();
+  const gboolean ai_on = dt_conf_get_bool("plugins/ai/enabled");
+  gtk_widget_set_sensitive(data->controls_box, ai_on);
+  dt_gui_box_add(main_box, data->controls_box);
+
+  // provider section grid
+  GtkWidget *provider_grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(provider_grid),
+                           DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(GTK_GRID(provider_grid),
+                              DT_PIXEL_APPLY_DPI(5));
+  row = 0;
 
   // provider dropdown
   GtkWidget *provider_label = gtk_label_new(_("execution provider"));
@@ -929,12 +957,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_label_set_use_markup(GTK_LABEL(data->provider_status), TRUE);
   gtk_widget_set_halign(data->provider_status, GTK_ALIGN_START);
 
-  gtk_grid_attach(GTK_GRID(general_grid), provider_labelev, 0, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), data->provider_indicator, 1, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), data->provider_combo, 2, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), data->provider_status, 3, row++, 1, 1);
+  gtk_grid_attach(GTK_GRID(provider_grid), provider_labelev, 0, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_indicator, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_combo, 2, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_status, 3, row++, 1, 1);
 
-  dt_gui_box_add(main_box, general_grid);
+  dt_gui_box_add(data->controls_box, provider_grid);
 
   // "models" section with its own grid
   GtkWidget *models_grid = gtk_grid_new();
@@ -1138,7 +1166,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   g_signal_connect(refresh_btn, "clicked", G_CALLBACK(_on_refresh), data);
   dt_gui_box_add(button_box, refresh_btn);
 
-  dt_gui_box_add(main_box, models_grid);
+  dt_gui_box_add(data->controls_box, models_grid);
 
   // wrap in a scrolled container like other tabs
   GtkWidget *main_scroll = dt_gui_scroll_wrap(main_box);
