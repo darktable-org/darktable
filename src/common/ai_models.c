@@ -401,35 +401,53 @@ static char *_fetch_asset_digest(
 
 // core API
 
+// set up directories and provider config
+// no-ops if already initialized (models_dir != NULL)
+static void _setup_registry(dt_ai_registry_t *registry)
+{
+  if(registry->models_dir) return;
+
+  char cachedir[PATH_MAX] = {0};
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  registry->models_dir = g_build_filename(g_get_user_data_dir(), 
+                                          "darktable", "models", NULL);
+  registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
+
+  _ensure_directory(registry->models_dir);
+  _ensure_directory(registry->cache_dir);
+
+  char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  registry->provider = dt_ai_provider_from_string(prov_str);
+  g_free(prov_str);
+
+  dt_print(DT_DEBUG_AI,
+           "[ai_models] initialized: models_dir=%s, cache_dir=%s",
+           registry->models_dir, registry->cache_dir);
+}
+
 dt_ai_registry_t *dt_ai_models_init(void)
 {
   dt_ai_registry_t *registry = g_new0(dt_ai_registry_t, 1);
   g_mutex_init(&registry->lock);
 
-  // set up directories — models use user data dir so they are shared
-  // across --configdir instances (not tied to a specific config)
-  char cachedir[PATH_MAX] = {0};
-  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
-
-  registry->models_dir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
-  registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
-
-  // ensure directories exist
-  _ensure_directory(registry->models_dir);
-  _ensure_directory(registry->cache_dir);
-
-  // load settings from config
   registry->ai_enabled = dt_conf_get_bool(CONF_AI_ENABLED);
 
-  char *provider_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-  registry->provider = dt_ai_provider_from_string(provider_str);
-  g_free(provider_str);
-
-  dt_print(DT_DEBUG_AI,
-           "[ai_models] initialized: models_dir=%s, cache_dir=%s",
-           registry->models_dir, registry->cache_dir);
+  if(registry->ai_enabled)
+    _setup_registry(registry);
 
   return registry;
+}
+
+void dt_ai_models_init_lazy(dt_ai_registry_t *registry)
+{
+  if(!registry || registry->models_dir) return;
+
+  g_mutex_lock(&registry->lock);
+  _setup_registry(registry);
+  g_mutex_unlock(&registry->lock);
+
+  dt_ai_models_load_registry(registry);
 }
 
 static dt_ai_model_t *_parse_model_json(JsonObject *obj)
@@ -457,7 +475,7 @@ static dt_ai_model_t *_parse_model_json(JsonObject *obj)
 
 gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
 {
-  if(!registry)
+  if(!registry || !registry->ai_enabled)
     return FALSE;
 
   // find the registry json file in the data directory
@@ -539,7 +557,7 @@ gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry)
 
         registry->models = g_list_prepend(registry->models, model);
         dt_print(DT_DEBUG_AI,
-                 "[ai_models] loaded model: %s (%s)",
+                 "[ai_models] registered model: %s (%s)",
                  model->name, model->id);
       }
     }

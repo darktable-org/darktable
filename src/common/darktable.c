@@ -1664,7 +1664,11 @@ int dt_init(int argc,
   // initialize AI models registry
   darktable.ai_registry = dt_ai_models_init();
   if(darktable.ai_registry)
+  {
     dt_ai_models_load_registry(darktable.ai_registry);
+    if(!darktable.ai_registry->ai_enabled)
+      dt_print(DT_DEBUG_AI, "[darktable_ai] AI subsystem is disabled");
+  }
 #endif
 
   // initialize datetime data
