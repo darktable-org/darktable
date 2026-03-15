@@ -408,10 +408,12 @@ dt_ai_registry_t *dt_ai_models_init(void)
 
   // set up directories — models use user data dir so they are shared
   // across --configdir instances (not tied to a specific config)
+  char configdir[PATH_MAX] = {0};
   char cachedir[PATH_MAX] = {0};
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  registry->models_dir = g_build_filename(g_get_user_data_dir(), "darktable", "models", NULL);
+  registry->models_dir = g_build_filename(configdir, "darktable", "models", NULL);
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
   // ensure directories exist
