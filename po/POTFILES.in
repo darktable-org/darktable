@@ -376,6 +376,10 @@ src/libs/navigation.c
 src/libs/print_settings.c
 src/libs/recentcollect.c
 src/libs/recentcollect.c
+src/libs/scopes/histogram.c
+src/libs/scopes/split.c
+src/libs/scopes/vectorscope.c
+src/libs/scopes/waveform.c
 src/libs/select.c
 src/libs/session.c
 src/libs/snapshots.c
