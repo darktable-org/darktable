@@ -29,9 +29,7 @@
 // non-default indicator
 #define NON_DEF_CHAR "\xe2\x97\x8f"
 
-// update the non-default indicator dot for a boolean preference
-
-// update the non-default indicator dot for a string preference
+// update the non-default indicator dot for a preference
 static void _update_string_indicator(GtkWidget *indicator, const char *confkey)
 {
   const gboolean is_default = dt_conf_is_default(confkey);
@@ -81,6 +79,7 @@ enum
 typedef struct dt_prefs_ai_data_t
 {
   GtkWidget *enable_toggle;
+  GtkWidget *enable_indicator;
   GtkWidget *provider_combo;
   GtkWidget *provider_indicator;
   GtkWidget *provider_status;
@@ -236,11 +235,26 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
     g_mutex_lock(&darktable.ai_registry->lock);
     darktable.ai_registry->ai_enabled = enabled;
     g_mutex_unlock(&darktable.ai_registry->lock);
+
+    // lazy-init directories + models on first enable
+    if(enabled)
+    {
+      dt_ai_models_init_lazy(darktable.ai_registry);
+      _refresh_model_list(data);
+    }
   }
+
+  // notify modules so reload_defaults can show/hide
+  // AI-dependent features without requiring image switch
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
 
   // grey out all AI controls when disabled
   if(data->controls_box)
     gtk_widget_set_sensitive(data->controls_box, enabled);
+
+  // update non-default indicator dot
+  _update_string_indicator(data->enable_indicator,
+                           "plugins/ai/enabled");
 }
 
 // map combo box index to provider table index (skipping unavailable providers)
@@ -863,7 +877,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_container_add(GTK_CONTAINER(enable_labelev), enable_label);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(enable_labelev), FALSE);
 
-  GtkWidget *enable_indicator = _create_indicator("plugins/ai/enabled");
+  data->enable_indicator = _create_indicator("plugins/ai/enabled");
   data->enable_toggle = gtk_check_button_new();
   gtk_toggle_button_set_active(
     GTK_TOGGLE_BUTTON(data->enable_toggle),
@@ -879,7 +893,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_CALLBACK(_reset_enable_click),
     data->enable_toggle);
   gtk_grid_attach(GTK_GRID(general_grid), enable_labelev, 0, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), enable_indicator, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(general_grid), data->enable_indicator, 1, row, 1, 1);
   gtk_grid_attach(GTK_GRID(general_grid), data->enable_toggle, 2, row++, 1, 1);
 
   dt_gui_box_add(main_box, general_grid);

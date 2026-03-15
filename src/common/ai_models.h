@@ -99,6 +99,21 @@ dt_ai_registry_t *dt_ai_models_init(void);
 gboolean dt_ai_models_load_registry(dt_ai_registry_t *registry);
 
 /**
+ * @brief Lazy-initialize AI registry at runtime
+ *
+ * When AI was disabled at startup, the registry is created
+ * without directories or models. This function performs
+ * the deferred initialization: creates directories, reads
+ * provider config, loads the model registry and scans for
+ * locally installed models.
+ *
+ * Safe to call multiple times — no-ops if already initialized.
+ *
+ * @param registry The registry to initialize
+ */
+void dt_ai_models_init_lazy(dt_ai_registry_t *registry);
+
+/**
  * @brief Scan models directory and update download status
  * @param registry The registry to update
  */
