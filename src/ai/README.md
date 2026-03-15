@@ -182,9 +182,9 @@ Models are discovered by scanning for `config.json` files in subdirectories of:
 
 1. Custom paths passed to `dt_ai_env_init()` (semicolon-separated)
 2. `<darktable_configdir>/models/` — darktable's own config directory (respects `--configdir`)
-   - Linux: `~/.config/darktable/models/`
+   - Linux: `~/.local/share/darktable/models/`
    - Windows: `%APPDATA%\darktable\models\`
-   - macOS: `~/.config/darktable/models/`
+   - macOS: `~/.local/share/darktable/models/`
 
 First discovered model ID wins (duplicates are skipped).
 
