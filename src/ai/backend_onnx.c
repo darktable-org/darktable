@@ -18,6 +18,7 @@
 
 #include "backend.h"
 #include "common/darktable.h"
+#include "control/conf.h"
 #include <glib.h>
 #include <onnxruntime_c_api.h>
 #include <inttypes.h>
@@ -483,6 +484,10 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   // AUTO and CPU are always available
   if(provider == DT_AI_PROVIDER_AUTO || provider == DT_AI_PROVIDER_CPU)
     return 1;
+
+  // refuse to probe when AI is disabled
+  if(!dt_conf_get_bool("plugins/ai/enabled"))
+    return 0;
 
   // ensure ORT API is initialized
   g_once(&g_ort_once, _init_ort_api, NULL);
