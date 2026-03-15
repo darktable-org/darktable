@@ -1622,6 +1622,7 @@ void init_presets(dt_lib_module_t *self)
   AM("nlmeans");
   AM("rasterfile");
   AM("rawdenoise");
+  AM("rawdenoisebm3d");
   AM("retouch");
   AM("rotatepixels");
   AM("scalepixels");
