@@ -116,6 +116,7 @@ static float _ucs_to_ryb_fast(const float ucs);
 static float _ryb_to_ucs_fast(const float yrb);
 static void _sync_custom_sliders(const dt_iop_colorharmonizer_params_t *p,
                                  dt_iop_colorharmonizer_gui_data_t *g);
+static gboolean _auto_detect_button_enable_idle(gpointer user_data);
 
 const char *name()
 {
@@ -291,10 +292,17 @@ static void _update_histogram(dt_iop_module_t *self,
     }
   }
 
+  const gboolean was_invalid = !g->histogram_valid;
   g_mutex_lock(&g->histogram_lock);
   memcpy(g->hue_histogram, local_histo, sizeof(local_histo));
   g->histogram_valid = TRUE;
   g_mutex_unlock(&g->histogram_lock);
+
+  if(was_invalid)
+  {
+    g_object_ref(g->auto_detect);
+    gdk_threads_add_idle(_auto_detect_button_enable_idle, g->auto_detect);
+  }
 }
 
 void process(dt_iop_module_t *self,
@@ -1310,19 +1318,31 @@ static void _auto_detect_harmony(const float *histo,
   }
 }
 
+static gboolean _auto_detect_button_enable_idle(gpointer user_data)
+{
+  GtkWidget *btn = GTK_WIDGET(user_data);
+  gtk_widget_set_sensitive(btn, TRUE);
+  gtk_widget_set_tooltip_text(btn,
+    _("analyze the image's hue distribution and automatically suggest the harmony rule\n"
+      "and anchor hue that best match its existing color palette.\n"
+      "\n"
+      "the detection scores every rule and anchor combination against a chroma-weighted\n"
+      "histogram of the preview image, then selects the combination that already covers\n"
+      "the most chromatic energy — i.e. requires the least correction.\n"
+      "\n"
+      "the result replaces the current rule and anchor hue. use pull strength to control\n"
+      "how strongly the remaining off-palette colors are pulled toward the detected palette."));
+  g_object_unref(btn);
+  return G_SOURCE_REMOVE;
+}
+
 static void _auto_detect_callback(GtkButton *button, dt_iop_module_t *self)
 {
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
   dt_iop_colorharmonizer_params_t   *p = self->params;
 
-  g_mutex_lock(&g->histogram_lock);
-  if(!g->histogram_valid)
-  {
-    g_mutex_unlock(&g->histogram_lock);
-    dt_control_log(_("no histogram available yet — wait for the preview to finish processing"));
-    return;
-  }
   float histo[COLORHARMONIZER_HUE_BINS];
+  g_mutex_lock(&g->histogram_lock);
   memcpy(histo, g->hue_histogram, sizeof(histo));
   g_mutex_unlock(&g->histogram_lock);
 
@@ -1382,16 +1402,9 @@ void gui_init(dt_iop_module_t *self)
   self->widget = main_box;
 
   g->auto_detect = dtgtk_button_new(dtgtk_cairo_paint_camera, CPF_NONE, NULL);
+  gtk_widget_set_sensitive(g->auto_detect, FALSE);
   gtk_widget_set_tooltip_text(g->auto_detect,
-    _("analyze the image's hue distribution and automatically suggest the harmony rule\n"
-      "and anchor hue that best match its existing color palette.\n"
-      "\n"
-      "the detection scores every rule and anchor combination against a chroma-weighted\n"
-      "histogram of the preview image, then selects the combination that already covers\n"
-      "the most chromatic energy — i.e. requires the least correction.\n"
-      "\n"
-      "the result replaces the current rule and anchor hue. use pull strength to control\n"
-      "how strongly the remaining off-palette colors are pulled toward the detected palette."));
+    _("not yet available — wait for the preview to finish processing."));
   g_signal_connect(G_OBJECT(g->auto_detect), "clicked", G_CALLBACK(_auto_detect_callback), self);
   dt_gui_box_add(rule_row, g->auto_detect);
 
