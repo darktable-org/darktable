@@ -413,7 +413,7 @@ dt_ai_registry_t *dt_ai_models_init(void)
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  registry->models_dir = g_build_filename(configdir, "darktable", "models", NULL);
+  registry->models_dir = g_build_filename(configdir, "models", NULL);
   registry->cache_dir = g_build_filename(cachedir, "ai_downloads", NULL);
 
   // ensure directories exist
