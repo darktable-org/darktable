@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 20:04+0100\n"
-"PO-Revision-Date: 2026-03-14 20:05+0100\n"
+"POT-Creation-Date: 2026-03-15 08:07+0100\n"
+"PO-Revision-Date: 2026-03-15 08:07+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3177,7 +3177,7 @@ msgstr "Préserver les couleurs"
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
-#: ../src/libs/print_settings.c:1176
+#: ../src/libs/print_settings.c:1176 ../src/libs/scopes/vectorscope.c:60
 msgid "none"
 msgstr "Sans"
 
@@ -17926,6 +17926,7 @@ msgstr "5:4 (8x10)"
 
 #: ../src/iop/borders.c:955 ../src/iop/clipping.c:2127 ../src/iop/crop.c:1259
 #: ../src/libs/filtering.c:312 ../src/libs/filters/ratio.c:124
+#: ../src/libs/scopes/vectorscope.c:69
 msgid "square"
 msgstr "Carré"
 
@@ -25729,7 +25730,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Pilotage du boîtier"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:709
 msgid "modes"
 msgstr "Modes"
 
@@ -27333,20 +27334,20 @@ msgstr "Double clic pour réinitialiser"
 msgid "drag to change exposure"
 msgstr "Glisser pour changer l’exposition"
 
-#: ../src/libs/histogram.c:660
+#: ../src/libs/histogram.c:654 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "Histogramme"
 
-#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
+#: ../src/libs/histogram.c:660 ../src/libs/histogram.c:720
 msgid "hide histogram"
 msgstr "Cacher l’histogramme"
 
-#: ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:733
 #, c-format
 msgid "toggle %s channel"
 msgstr "Basculer le canal %s"
 
-#: ../src/libs/histogram.c:747
+#: ../src/libs/histogram.c:741
 msgid "toggle colors"
 msgstr "Basculer les couleurs"
 
@@ -29244,6 +29245,124 @@ msgstr " sauf "
 #: ../src/libs/recentcollect.c:230
 msgid "recent collections settings"
 msgstr "Préférences des collections récentes"
+
+#: ../src/libs/scopes/histogram.c:207 ../src/libs/scopes/vectorscope.c:993
+msgid "set scale to linear"
+msgstr "Afficher en mode linéaire"
+
+#: ../src/libs/scopes/histogram.c:212 ../src/libs/scopes/vectorscope.c:998
+msgid "set scale to logarithmic"
+msgstr "Afficher en mode logarithmique"
+
+#: ../src/libs/scopes/histogram.c:243
+msgid "switch histogram scale"
+msgstr "Changer l’échelle de l’histogramme"
+
+#. FIXME: this could depend on values of left/right scopes
+#: ../src/libs/scopes/split.c:30
+msgid "split"
+msgstr "Séparé"
+
+#: ../src/libs/scopes/vectorscope.c:61
+msgid "monochromatic"
+msgstr "Monochromatique"
+
+#: ../src/libs/scopes/vectorscope.c:62
+msgid "analogous"
+msgstr "Analogue"
+
+#: ../src/libs/scopes/vectorscope.c:63
+msgid "analogous complementary"
+msgstr "Complémentaire analogue"
+
+#: ../src/libs/scopes/vectorscope.c:64
+msgid "complementary"
+msgstr "Complémentaire"
+
+#: ../src/libs/scopes/vectorscope.c:65
+msgid "split complementary"
+msgstr "Complémentaire divisé"
+
+#: ../src/libs/scopes/vectorscope.c:66
+msgid "dyad"
+msgstr "Dyade"
+
+#: ../src/libs/scopes/vectorscope.c:67
+msgid "triad"
+msgstr "Triade"
+
+#: ../src/libs/scopes/vectorscope.c:68
+msgid "tetrad"
+msgstr "Tétrade"
+
+#: ../src/libs/scopes/vectorscope.c:129
+msgid "vectorscope"
+msgstr "Vectorscope"
+
+#: ../src/libs/scopes/vectorscope.c:1008
+msgid "set view to AzBz"
+msgstr "Afficher en mode AzBz"
+
+#: ../src/libs/scopes/vectorscope.c:1014
+msgid "set view to RYB"
+msgstr "Afficher en mode RJB"
+
+#: ../src/libs/scopes/vectorscope.c:1020
+msgid "set view to u*v*"
+msgstr "Afficher en mode u*v*"
+
+#: ../src/libs/scopes/vectorscope.c:1124
+msgid "scroll to coarse-rotate"
+msgstr "Molette pour pivoter"
+
+#: ../src/libs/scopes/vectorscope.c:1125
+msgid "ctrl+scroll to fine rotate"
+msgstr "Ctrl+molette pour pivoter finement"
+
+#: ../src/libs/scopes/vectorscope.c:1126
+msgid "shift+scroll to change width"
+msgstr "Maj+molette pour changer la largeur"
+
+#: ../src/libs/scopes/vectorscope.c:1127
+msgid "alt+scroll to cycle"
+msgstr "Alt+molette pour parcourir"
+
+#: ../src/libs/scopes/vectorscope.c:1375
+msgid "cycle vectorscope types"
+msgstr "Parcourir les modes du vectorscope"
+
+#: ../src/libs/scopes/vectorscope.c:1378
+msgid "switch vectorscope scale"
+msgstr "Changer l’échelle du vectorscope"
+
+#: ../src/libs/scopes/vectorscope.c:1399
+msgid "color harmonies"
+msgstr "Harmonies des couleurs"
+
+#. FIXME: do we need this action, or is it vestigial?
+#: ../src/libs/scopes/vectorscope.c:1413
+msgid "cycle color harmonies"
+msgstr "Parcourir les harmonie des couleurs"
+
+#: ../src/libs/scopes/waveform.c:55
+msgid "waveform"
+msgstr "Forme d’onde"
+
+#: ../src/libs/scopes/waveform.c:305
+msgid "set scope to vertical"
+msgstr "Afficher verticalement"
+
+#: ../src/libs/scopes/waveform.c:310
+msgid "set scope to horizontal"
+msgstr "Afficher horizontalement"
+
+#: ../src/libs/scopes/waveform.c:400
+msgid "switch scope orientation"
+msgstr "Modifie l’orientation du scope"
+
+#: ../src/libs/scopes/waveform.c:442
+msgid "RGB parade"
+msgstr "Parade RVB"
 
 #: ../src/libs/select.c:45
 msgid ""
@@ -31295,98 +31414,14 @@ msgstr "Actions de la souris"
 #~ msgid "adjust the boost factor of the channel mask"
 #~ msgstr "Ajuster le facteur de renforcement du masque"
 
-#~ msgid "monochromatic"
-#~ msgstr "Monochromatique"
-
-#~ msgid "analogous"
-#~ msgstr "Analogue"
-
-#~ msgid "analogous complementary"
-#~ msgstr "Complémentaire analogue"
-
-#~ msgid "complementary"
-#~ msgstr "Complémentaire"
-
-#~ msgid "split complementary"
-#~ msgstr "Complémentaire divisé"
-
-#~ msgid "dyad"
-#~ msgstr "Dyade"
-
-#~ msgid "triad"
-#~ msgstr "Triade"
-
-#~ msgid "tetrad"
-#~ msgstr "Tétrade"
-
-#~ msgid "vectorscope"
-#~ msgstr "Vectorscope"
-
-#~ msgid "waveform"
-#~ msgstr "Forme d’onde"
-
 #~ msgid "waveform/vectorscope"
 #~ msgstr "Forme d'onde / Vectorscope"
-
-#~ msgid "RGB parade"
-#~ msgstr "Parade RVB"
-
-#~ msgid "scroll to coarse-rotate"
-#~ msgstr "Molette pour pivoter"
-
-#~ msgid "ctrl+scroll to fine rotate"
-#~ msgstr "Ctrl+molette pour pivoter finement"
-
-#~ msgid "shift+scroll to change width"
-#~ msgstr "Maj+molette pour changer la largeur"
-
-#~ msgid "alt+scroll to cycle"
-#~ msgstr "Alt+molette pour parcourir"
-
-#~ msgid "set scale to linear"
-#~ msgstr "Afficher en mode linéaire"
-
-#~ msgid "set scale to logarithmic"
-#~ msgstr "Afficher en mode logarithmique"
-
-#~ msgid "set scope to vertical"
-#~ msgstr "Afficher verticalement"
-
-#~ msgid "set scope to horizontal"
-#~ msgstr "Afficher horizontalement"
-
-#~ msgid "set view to AzBz"
-#~ msgstr "Afficher en mode AzBz"
-
-#~ msgid "set view to RYB"
-#~ msgstr "Afficher en mode RJB"
-
-#~ msgid "set view to u*v*"
-#~ msgstr "Afficher en mode u*v*"
-
-#~ msgid "switch vectorscope scale"
-#~ msgstr "Changer l’échelle du vectorscope"
-
-#~ msgid "cycle vectorscope types"
-#~ msgstr "Parcourir les modes du vectorscope"
 
 #~ msgid "toggle blue channel"
 #~ msgstr "Basculer le canal bleu"
 
 #~ msgid "toggle green channel"
 #~ msgstr "Basculer le canal vert"
-
-#~ msgid "switch scope orientation"
-#~ msgstr "Modifie l’orientation du scope"
-
-#~ msgid "switch histogram scale"
-#~ msgstr "Changer l’échelle de l’histogramme"
-
-#~ msgid "color harmonies"
-#~ msgstr "Harmonies des couleurs"
-
-#~ msgid "cycle color harmonies"
-#~ msgstr "Parcourir les harmonie des couleurs"
 
 #~ msgid "smooth|base"
 #~ msgstr "Doux|Base"
