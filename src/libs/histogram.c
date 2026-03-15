@@ -474,6 +474,19 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
   gdk_event_free(event);
 }
 
+static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
+                                             double x,
+                                             double y,
+                                             dt_scopes_t *s)
+{
+  // This is required in order to correctly display the button tooltips
+  //
+  // FIXME: it should be ok to update button tooltips only when the
+  // main widget tooltip has changed, but calling this only at the end
+  // of lib_histogram_update_tooltip() doesn't work
+  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
+}
+
 static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller,
                                             double x,
                                             double y,
@@ -491,25 +504,6 @@ static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
   gtk_widget_show(s->button_box_left);
   gtk_widget_show(s->button_box_right);
-}
-
-static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
-                                             double x,
-                                             double y,
-                                             dt_scopes_t *s)
-{
-  // This is required in order to correctly display the button tooltips
-  //
-  // FIXME: it would seem possible that it is necessary to update button
-  // tooltips only when the main widget tooltip has changed, if the tooltip
-  // bubbled down, but calling this at the end of lib_histogram_update_tooltip()
-  // doesn't seem to help
-  dt_scopes_call_if_exists(s->cur_mode, update_buttons);
-  // On GTK3/X11, GDK_ENTER_NOTIFY events are not bubbled through GTK's event
-  // propagation, so a BUBBLE-phase GtkEventControllerMotion on the eventbox
-  // never receives the enter signal. Use motion as a fallback to show buttons.
-  if(!gtk_widget_get_visible(s->button_box_left))
-    _eventbox_enter_notify_callback(controller, x, y, s);
 }
 
 static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller,
@@ -807,12 +801,17 @@ void gui_init(dt_lib_module_t *self)
                                     | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
                           _eventbox_scroll_callback, s);
   gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_CAPTURE);
-  GtkEventController *motion_controller =
+  // use GTK_PHASE_TARGET to capture enter/leave events, as
+  // enter/leave events apparently not bubbled in GTK < 3.24.43.
+  dt_gui_connect_motion(eventbox, NULL,
+                        _eventbox_enter_notify_callback,
+                        _eventbox_leave_notify_callback, s);
+  // but need GTK_PHASE_BUBBLE to capture motion events
+  GtkEventController *eventbox_motion_controller =
     dt_gui_connect_motion(eventbox, _eventbox_motion_notify_callback,
-                          _eventbox_enter_notify_callback,
-                          _eventbox_leave_notify_callback, s);
-  // necessary for catching motion events
-  gtk_event_controller_set_propagation_phase(motion_controller, GTK_PHASE_BUBBLE);
+                          NULL, NULL, s);
+  gtk_event_controller_set_propagation_phase
+    (eventbox_motion_controller, GTK_PHASE_BUBBLE);
 
   gtk_widget_show_all(self->widget);
 }
