@@ -1507,6 +1507,13 @@
     <shortdescription>middle mouse button zooms to 200%</shortdescription>
     <longdescription>if enabled, the zoom level will cycle between 100%, 200% and fit to viewport on middle mouse clicks. if disabled, it will toggle between viewport size and 100%, and the 'ctrl' key can be used to control the zoom level.</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>darkroom/mouse/scroll_zoom_limit_100</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>limit scroll zoom to 100%</shortdescription>
+    <longdescription>if enabled, scrolling to zoom in will stop at 100% (1:1). if disabled, you can zoom beyond 100% up to 1600% using the scroll wheel.</longdescription>
+  </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
     <type>

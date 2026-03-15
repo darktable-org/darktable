@@ -2874,6 +2874,7 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   float tscalemax, tscalemin;            // the zoom soft limits
   const float tscaletop = 16.0f; // the zoom hard limits
   const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
+  const gboolean limit_100 = dt_conf_get_bool("darkroom/mouse/scroll_zoom_limit_100");
 
   switch (image_size) // here we set the logic of zoom limits
     {
@@ -2881,7 +2882,7 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
       tscalemax = constrained
         ? (tscaleold > 2.0f
            ? tscaletop
-           : (tscaleold > 1.0f ? 2.0f : 1.0f))
+           : (tscaleold > 1.0f ? 2.0f : (limit_100 ? 1.0f : tscaletop)))
         : tscaletop;
       tscalemin = constrained
         ? (tscaleold < tscalefit
