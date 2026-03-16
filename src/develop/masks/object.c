@@ -1294,6 +1294,11 @@ static int _object_events_button_released(
   if(d->mask)
     _update_preview(d);
 
+  // refresh mask properties panel so sliders update for
+  // the current creation step (size vs cleanup/smoothing)
+  if(darktable.develop->proxy.masks.module)
+    darktable.develop->proxy.masks.list_change(darktable.develop->proxy.masks.module);
+
   dt_control_queue_redraw_center();
   return 1;
 }
@@ -1884,47 +1889,50 @@ static void _object_modify_property(dt_masks_form_t *const form,
 
   if(!gui || !gui->creation) return;
 
+  // show different sliders depending on creation step:
+  // before first brush stroke: size only
+  // after first brush stroke: cleanup + smoothing only
+  const gboolean brushing_done = d && d->brush_used;
+
   switch(prop)
   {
-    case DT_MASKS_PROPERTY_SIZE:;
-      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
-      float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-      // only allow resizing before the first brush stroke
-      if(!d || !d->brush_used)
+    case DT_MASKS_PROPERTY_SIZE:
+      if(!brushing_done)
       {
+        const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+        float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
         brush_size = CLAMP(brush_size * ratio, 0.005f, 0.5f);
         dt_conf_set_float(CONF_OBJECT_BRUSH_SIZE_KEY, brush_size);
         if(d) d->brush_radius = brush_size;
+        *sum += 2.0f * brush_size;
+        *max = fminf(*max, 0.5f / brush_size);
+        *min = fmaxf(*min, 0.005f / brush_size);
+        ++*count;
       }
-
-      *sum += 2.0f * brush_size;
-      *max = fminf(*max, 0.5f / brush_size);
-      *min = fmaxf(*min, 0.005f / brush_size);
-      ++*count;
       break;
-    case DT_MASKS_PROPERTY_CLEANUP:;
-      int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
-      if(d && d->brush_used)
+    case DT_MASKS_PROPERTY_CLEANUP:
+      if(brushing_done)
       {
+        int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
         cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
         dt_conf_set_int("plugins/darkroom/masks/object/cleanup", cleanup);
         d->preview_cleanup = cleanup;
         _update_preview(d);
+        *sum += cleanup;
+        ++*count;
       }
-      *sum += cleanup;
-      ++*count;
       break;
-    case DT_MASKS_PROPERTY_SMOOTHING:;
-      float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
-      if(d && d->brush_used)
+    case DT_MASKS_PROPERTY_SMOOTHING:
+      if(brushing_done)
       {
+        float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
         smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
         dt_conf_set_float("plugins/darkroom/masks/object/smoothing", smoothing);
         d->preview_smoothing = smoothing;
         _update_preview(d);
+        *sum += smoothing;
+        ++*count;
       }
-      *sum += smoothing;
-      ++*count;
       break;
     default:;
   }
