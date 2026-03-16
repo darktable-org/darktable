@@ -562,14 +562,36 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
   g_free(grad);
 }
 
-// resample a raw brush path into evenly-spaced foreground points using
-// arc-length parameterization and add them to gui->guipoints,
-// brush_pts: x,y pairs in preview pipe space, n_pts: number of points
+// emit a single foreground point if it's inside image bounds
+static inline void _emit_point(dt_masks_form_gui_t *gui,
+                               float px, float py,
+                               float wd, float ht)
+{
+  if(px >= 0.0f && px <= wd && py >= 0.0f && py <= ht)
+  {
+    dt_masks_dynbuf_add_2(gui->guipoints, px, py);
+    dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
+    gui->guipoints_count++;
+  }
+}
+
+// resample a raw brush path into foreground points that fill
+// the brush circle. points are placed in a hex grid pattern
+// across the brush width at each sample along the stroke.
+// brush_pts: x,y pairs in preview pipe space, n_pts: count
 static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
                                        const float *brush_pts,
                                        const int n_pts)
 {
   if(n_pts < 2) return;
+
+  _object_data_t *d = _get_data(gui);
+  float wd, ht, iwidth, iheight;
+  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
+  const float radius = (d ? d->brush_radius : 0.03f) * MIN(iwidth, iheight);
+  // point spacing: ~1/3 of brush diameter gives good coverage
+  const float spacing = MAX(radius * 0.667f, 2.0f);
 
   // compute total arc length
   float total_len = 0.0f;
@@ -580,42 +602,40 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
     total_len += sqrtf(dx * dx + dy * dy);
   }
 
-  if(total_len < 1.0f)
-  {
-    // degenerate stroke, just add the first point
-    dt_masks_dynbuf_reset(gui->guipoints);
-    dt_masks_dynbuf_reset(gui->guipoints_payload);
-    gui->guipoints_count = 0;
-    dt_masks_dynbuf_add_2(gui->guipoints, brush_pts[0], brush_pts[1]);
-    dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
-    gui->guipoints_count++;
-    return;
-  }
-
-  // target N points: one per brush diameter, clamped to [3, 32]
-  _object_data_t *d = _get_data(gui);
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-  const float brush_diam = 2.0f * (d ? d->brush_radius : 0.03f) * MIN(iwidth, iheight);
-  const int n_target = CLAMP((int)(total_len / MAX(brush_diam, 1.0f)), 3, 32);
-
-  const float step = total_len / (float)(n_target - 1);
-  float accum = 0.0f;
-
   // reset guipoints for brush output
   dt_masks_dynbuf_reset(gui->guipoints);
   dt_masks_dynbuf_reset(gui->guipoints_payload);
   gui->guipoints_count = 0;
 
-  // always emit first point
-  dt_masks_dynbuf_add_2(gui->guipoints, brush_pts[0], brush_pts[1]);
-  dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
-  gui->guipoints_count++;
+  if(total_len < 1.0f)
+  {
+    // degenerate stroke: fill a single circle at the start
+    _emit_point(gui, brush_pts[0], brush_pts[1], wd, ht);
+    for(float r = spacing; r < radius; r += spacing)
+    {
+      const int n_ring = MAX((int)(2.0f * M_PI * r / spacing), 4);
+      for(int j = 0; j < n_ring; j++)
+      {
+        const float a = 2.0f * M_PI * j / n_ring;
+        _emit_point(gui,
+                    brush_pts[0] + r * cosf(a),
+                    brush_pts[1] + r * sinf(a),
+                    wd, ht);
+      }
+    }
+    return;
+  }
 
-  float next_emit = step;
-  accum = 0.0f;
+  // walk along the stroke, emitting point clusters at each
+  // sample position spaced by brush diameter
+  const float along_step = MAX(2.0f * radius, spacing);
+  float accum = 0.0f;
+  float next_emit = 0.0f;
 
-  for(int i = 1; i < n_pts && gui->guipoints_count < n_target - 1; i++)
+  // previous emit direction for computing normals
+  float prev_nx = 0.0f, prev_ny = 1.0f;
+
+  for(int i = 1; i < n_pts; i++)
   {
     const float x0 = brush_pts[(i - 1) * 2];
     const float y0 = brush_pts[(i - 1) * 2 + 1];
@@ -624,42 +644,68 @@ static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
     const float dx = x1 - x0;
     const float dy = y1 - y0;
     const float seg_len = sqrtf(dx * dx + dy * dy);
-
     if(seg_len < 1e-6f) continue;
 
-    float seg_pos = 0.0f;  // position within this segment
+    // stroke direction and normal
+    const float dirx = dx / seg_len;
+    const float diry = dy / seg_len;
+    // normal: perpendicular to stroke direction
+    const float nx = -diry;
+    const float ny = dirx;
+    prev_nx = nx;
+    prev_ny = ny;
 
-    while(seg_pos < seg_len && gui->guipoints_count < n_target - 1)
+    float seg_pos = 0.0f;
+
+    while(seg_pos < seg_len)
     {
       const float remaining = next_emit - accum;
       if(seg_pos + remaining <= seg_len)
       {
-        // emit a point within this segment
         seg_pos += remaining;
         accum += remaining;
+
         const float t = seg_pos / seg_len;
-        const float px = x0 + t * dx;
-        const float py = y0 + t * dy;
-        dt_masks_dynbuf_add_2(gui->guipoints, px, py);
-        dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
-        gui->guipoints_count++;
-        next_emit += step;
+        const float cx = x0 + t * dx;
+        const float cy = y0 + t * dy;
+
+        // emit center point
+        _emit_point(gui, cx, cy, wd, ht);
+
+        // emit points across brush width (perpendicular)
+        for(float off = spacing; off < radius; off += spacing)
+        {
+          _emit_point(gui,
+                      cx + nx * off,
+                      cy + ny * off,
+                      wd, ht);
+          _emit_point(gui,
+                      cx - nx * off,
+                      cy - ny * off,
+                      wd, ht);
+        }
+
+        next_emit += along_step;
       }
       else
       {
-        // rest of segment doesn't reach next emit point
         accum += (seg_len - seg_pos);
         break;
       }
     }
   }
 
-  // always emit last point
-  dt_masks_dynbuf_add_2(gui->guipoints,
-                         brush_pts[(n_pts - 1) * 2],
-                         brush_pts[(n_pts - 1) * 2 + 1]);
-  dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
-  gui->guipoints_count++;
+  // always emit a cluster at the end point
+  const float ex = brush_pts[(n_pts - 1) * 2];
+  const float ey = brush_pts[(n_pts - 1) * 2 + 1];
+  _emit_point(gui, ex, ey, wd, ht);
+  for(float off = spacing; off < radius; off += spacing)
+  {
+    _emit_point(gui, ex + prev_nx * off,
+                ey + prev_ny * off, wd, ht);
+    _emit_point(gui, ex - prev_nx * off,
+                ey - prev_ny * off, wd, ht);
+  }
 }
 
 // run the decoder with accumulated points and update the cached mask
