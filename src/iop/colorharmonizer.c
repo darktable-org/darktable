@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include "libs/lib.h"
+#include "libs/scopes.h"
 #include "common/color_harmony.h"
 #include "common/color_ryb.h"
 #include "common/opencl.h"
@@ -831,8 +832,17 @@ static void _push_to_vectorscope(dt_iop_module_t *self)
     guide.custom_n    = 0;
   }
 
-  dt_lib_histogram_set_scope(darktable.lib, 0); // 0 = DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE
-  dt_lib_histogram_set_type(darktable.lib, 2);  // 2 = DT_LIB_HISTOGRAM_VECTORSCOPE_RYB
+  // If the scopes panel is in split mode, respect that — just ensure the
+  // vectorscope side uses RYB. Otherwise switch to the full vectorscope view.
+  gboolean in_split = FALSE;
+  if(darktable.lib->proxy.histogram.module)
+  {
+    const dt_scopes_t *s = (dt_scopes_t *)darktable.lib->proxy.histogram.module->data;
+    in_split = (s->cur_mode == &s->modes[DT_SCOPES_MODE_SPLIT]);
+  }
+  if(!in_split)
+    dt_lib_histogram_set_scope(darktable.lib, 0); // 0 = DT_SCOPES_MODE_VECTORSCOPE
+  dt_lib_histogram_set_type(darktable.lib, 2);    // 2 = DT_LIB_HISTOGRAM_VECTORSCOPE_RYB
   dt_lib_histogram_set_harmony(darktable.lib, &guide);
 }
 
