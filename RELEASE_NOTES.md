@@ -62,7 +62,7 @@ changes (where available).
   once per image (with optional GPU acceleration via CoreML, CUDA,
   MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
   produces masks interactively.
-  
+
 - Added `colorharmonizer` module that applies color harmony
   corrections in UCS color space, rotating hues toward a target
   harmony structure (complementary, split-complementary, triadic,
@@ -160,7 +160,7 @@ changes (where available).
 
 - In the styles module, a new option has been added to hide the
   preview in the tooltip. Additionally, a module preference now allows
-  you to change the preview size, with two options available: default 
+  you to change the preview size, with two options available: default
   and large.
 
 - Improved debugging option --dump-diff-pipe for those of you
@@ -180,6 +180,9 @@ changes (where available).
   to correct an incorrect camera timestamps from 99 to 9999 days.
 
 - Added a new collection filter for image duplicates.
+
+- The masks in restricted edit mode are now displayed on-canvas as
+  dashed lines to ensure proper feedback.
 
 ## Bug Fixes
 
