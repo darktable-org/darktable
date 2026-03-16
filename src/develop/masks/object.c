@@ -1158,7 +1158,13 @@ static int _object_events_button_pressed(
     // alt+click: clear selection
     if(d && d->encode_state == ENCODE_READY
        && (gui->guipoints_count > 0 || d->mask || d->brush_used))
+    {
       _clear_selection(gui);
+      // refresh sliders back to step 1 (size only)
+      if(darktable.develop->proxy.masks.module)
+        darktable.develop->proxy.masks.list_change(
+          darktable.develop->proxy.masks.module);
+    }
     return 1;
   }
   else if(gui->creation && which == 1)
