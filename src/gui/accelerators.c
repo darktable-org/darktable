@@ -134,6 +134,10 @@ const gchar *dt_action_effect_value[]
       N_("set"),
       NULL };
 
+const gchar *dt_action_effect_cycle[] = { N_("toggle"),        N_("previous module"),
+                                          N_("next module"),   N_("previous instance"),
+                                          N_("next instance"), NULL };
+
 const gchar *dt_action_effect_selection[]
   = { N_("popup"),
       N_("next"),
