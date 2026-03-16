@@ -365,7 +365,8 @@ basecurve_finalize(read_only image2d_t in,
   float4 pixel = read_imagef(comb, sampleri, (int2)(x, y));
 
   // Sanitize to avoid Inf/NaN propagation
-  pixel.xyz = clamp(pixel.xyz, -1e6f, 1e6f);
+  pixel.xyz = fmax(pixel.xyz, 0.0f);
+  pixel.xyz = fmin(pixel.xyz, (float3)(1e6f));
 
   if(workflow_mode > 0)
   {
