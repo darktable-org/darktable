@@ -49,7 +49,17 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- Added `colorharmonizer` module that applies color harmony
+  corrections in UCS color space, rotating hues toward a target
+  harmony structure (complementary, split-complementary, triadic,
+  tetradic, etc.). The saturation of target hues can be controlled,
+  and custom-defined harmonies with an arbitrary number of anchor nodes
+  at any angle are also supported. Options are provided to control the
+  intensity of the effect, protect neutral colors, and apply a Gaussian
+  filter to smooth harsh transitions. The module can be synced with the
+  vectorscope in RYB mode, with harmony and rotation angles controllable
+  directly from the vectorscope. Both CPU and OpenCL (GPU) implementations
+  are provided.
 
 ## UI/UX Improvements
 
