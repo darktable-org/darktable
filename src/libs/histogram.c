@@ -20,6 +20,7 @@
 #include "common/color_picker.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
+#include "scopes/vectorscope.h"
 
 // FIXME: is this used?
 #ifdef GDK_WINDOWING_QUARTZ
@@ -27,6 +28,18 @@
 #endif
 
 DT_MODULE(1)
+
+static void _lib_histogram_get_harmony(dt_lib_module_t *self, dt_color_harmony_guide_t *guide);
+static void _lib_histogram_set_harmony(dt_lib_module_t *self, const dt_color_harmony_guide_t *guide);
+static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope);
+static void _lib_histogram_set_type(dt_lib_module_t *self, int type);
+static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
+    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data);
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n);
 
 static const gchar *rgb_names[DT_SCOPES_RGB_N] =
   { N_("red"),
@@ -647,6 +660,12 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
   darktable.lib->proxy.histogram.process = _scope_process;
+  darktable.lib->proxy.histogram.get_harmony = _lib_histogram_get_harmony;
+  darktable.lib->proxy.histogram.set_harmony = _lib_histogram_set_harmony;
+  darktable.lib->proxy.histogram.set_scope = _lib_histogram_set_scope;
+  darktable.lib->proxy.histogram.set_type = _lib_histogram_set_type;
+  darktable.lib->proxy.histogram.get_sector_angles = _lib_histogram_get_sector_angles;
+  darktable.lib->proxy.histogram.set_harmony_callback = _lib_histogram_set_harmony_callback;
 
   // create widgets
   dt_action_t *dark =
@@ -826,6 +845,61 @@ void gui_cleanup(dt_lib_module_t *self)
 
   dt_free_align(self->data);
   self->data = NULL;
+}
+
+static void _lib_histogram_get_harmony(dt_lib_module_t *self, dt_color_harmony_guide_t *guide)
+{
+  if(self && guide)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_get_harmony(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], guide);
+  }
+}
+
+static void _lib_histogram_set_harmony(dt_lib_module_t *self, const dt_color_harmony_guide_t *guide)
+{
+  if(self && guide)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_harmony(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], guide);
+  }
+}
+
+static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
+    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data)
+{
+  if(self)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_harmony_changed_callback(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], cb, user_data);
+  }
+}
+
+static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope)
+{
+  if(self && scope >= 0 && scope < DT_SCOPES_MODE_N)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->modes[scope].button_activate), TRUE);
+  }
+}
+
+static void _lib_histogram_set_type(dt_lib_module_t *self, int type)
+{
+  if(self && type >= 0)
+  {
+    dt_scopes_t *s = (dt_scopes_t *)self->data;
+    dt_vec_set_vectorscope_type(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], type);
+  }
+}
+
+static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
+                                             const dt_color_harmony_type_t type,
+                                             const int rotation,
+                                             float *angles,
+                                             int *n)
+{
+  dt_vec_get_sector_angles(type, rotation, angles, n);
 }
 
 // clang-format off
