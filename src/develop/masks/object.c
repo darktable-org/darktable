@@ -564,8 +564,8 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
 
 // emit a single foreground point if it's inside image bounds
 static inline void _emit_point(dt_masks_form_gui_t *gui,
-                               float px, float py,
-                               float wd, float ht)
+                               const float px, const float py,
+                               const float wd, const float ht)
 {
   if(px >= 0.0f && px <= wd && py >= 0.0f && py <= ht)
   {
