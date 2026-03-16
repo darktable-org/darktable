@@ -2908,7 +2908,7 @@ static void _cycle_module_groups(const gboolean down, dt_lib_module_t *self)
   if(next)
   {
     gtk_button_clicked(GTK_BUTTON(next));
-    dt_toast_log(_("module group: [%s]"), _get_current_group_name(self));
+    dt_toast_log(_("module group: '%s'"), _get_current_group_name(self));
   }
 }
 
@@ -2926,7 +2926,7 @@ static float _action_callback_cycle_module_groups(gpointer target,
     {
       dt_lib_modulegroups_t *d = self->data;
       gtk_button_clicked(GTK_BUTTON(d->active_btn));
-      dt_toast_log(_("module group: [%s]"), _get_current_group_name(self));
+      dt_toast_log(_("module group: '%s'"), _get_current_group_name(self));
     }
     else
       _cycle_module_groups(effect == DT_ACTION_EFFECT_DEFAULT_DOWN, self);

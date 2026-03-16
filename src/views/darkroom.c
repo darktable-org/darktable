@@ -2528,9 +2528,9 @@ static void _cycle_modules(const gboolean down)
   const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
   const gchar *module_name = dt_iop_get_localized_name(module_to_focus->op);
   if(strlen(instance_name) > 0)
-    dt_toast_log(_("focused instance [%s] of module [%s]"), instance_name, module_name);
+    dt_toast_log(_("focused instance '%s' of '%s'"), instance_name, module_name);
   else
-    dt_toast_log(_("focused default instance of module [%s]"), module_name);
+    dt_toast_log(_("focused module '%s'"), module_name);
   g_list_free(modules);
 }
 
@@ -2540,7 +2540,7 @@ static void _enable_focused_module(void)
   if(!module)
     dt_toast_log(_("no focused module"));
   else if(module->hide_enable_button)
-    dt_toast_log(_("[%s] cannot be enabled or disabled"), dt_iop_get_localized_name(module->op));
+    dt_toast_log(_("'%s' cannot be enabled or disabled"), dt_iop_get_localized_name(module->op));
   else if(module->off)
   {
     const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
@@ -2550,16 +2550,16 @@ static void _enable_focused_module(void)
     if(strlen(instance_name) > 0)
     {
       if(!active)
-        dt_toast_log(_("enabled [%s] - [%s]"), module_name, instance_name);
+        dt_toast_log(_("enabled instance '%s' of '%s'"), instance_name, module_name);
       else
-        dt_toast_log(_("disabled [%s] - [%s]"), module_name, instance_name);
+        dt_toast_log(_("disabled instance '%s' of '%s'"), instance_name, module_name);
     }
     else
     {
       if(!active)
-        dt_toast_log(_("enabled default instance of module [%s]"), module_name);
+        dt_toast_log(_("enabled module '%s'"), module_name);
       else
-        dt_toast_log(_("disabled default instance of module [%s]"), module_name);
+        dt_toast_log(_("disabled module '%s'"), module_name);
     }
   }
 }
@@ -2579,7 +2579,7 @@ static void _new_instance_focused_module(void)
   if(!module)
     dt_toast_log(_("no focused module"));
   else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
-    dt_toast_log(_("[%s] does not support multiple instances"),
+    dt_toast_log(_("'%s' does not support multiple instances"),
                  dt_iop_get_localized_name(module->op));
   else
   {
@@ -2588,11 +2588,11 @@ static void _new_instance_focused_module(void)
     {
       const gchar *instance_name = dt_iop_get_instance_name(new_module);
       if(strlen(instance_name) > 0)
-        dt_toast_log(_("added instance [%s] of [%s]"),
+        dt_toast_log(_("added instance '%s' of '%s'"),
                      instance_name,
                      dt_iop_get_localized_name(new_module->op));
       else
-        dt_toast_log(_("added instance of [%s]"), dt_iop_get_localized_name(new_module->op));
+        dt_toast_log(_("added instance of '%s'"), dt_iop_get_localized_name(new_module->op));
     }
   }
 }
@@ -2603,7 +2603,7 @@ static void _delete_focused_module_instance(void)
   if(!module)
     dt_toast_log(_("no focused module"));
   else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
-    dt_toast_log(_("[%s] does not support multiple instances"),
+    dt_toast_log(_("'%s' does not support multiple instances"),
                  dt_iop_get_localized_name(module->op));
   else
   {
@@ -2611,9 +2611,9 @@ static void _delete_focused_module_instance(void)
     gchar *instance_name = g_strdup(dt_iop_get_instance_name(module));
     dt_iop_gui_delete(module);
     if(strlen(instance_name) > 0)
-      dt_toast_log(_("deleted instance [%s] of [%s]"), instance_name, localized);
+      dt_toast_log(_("deleted instance '%s' of '%s'"), instance_name, localized);
     else
-      dt_toast_log(_("deleted instance of [%s]"), localized);
+      dt_toast_log(_("deleted instance of '%s'"), localized);
     g_free(instance_name);
   }
 }
@@ -2660,7 +2660,7 @@ static void _cycle_instances(const gboolean down)
   if(!instances || !instances->next)
   {
     g_list_free(instances);
-    dt_toast_log(_("only one instance of [%s]"), dt_iop_get_localized_name(current_module->op));
+    dt_toast_log(_("only one instance of '%s'"), dt_iop_get_localized_name(current_module->op));
     return;
   }
 
@@ -2683,11 +2683,11 @@ static void _cycle_instances(const gboolean down)
   dt_iop_gui_set_expanded(module_to_focus, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
   const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
   if(strlen(instance_name) > 0)
-    dt_toast_log(_("focused instance [%s] of module [%s]"),
+    dt_toast_log(_("focused instance '%s' of '%s'"),
                  instance_name,
                  dt_iop_get_localized_name(module_to_focus->op));
   else
-    dt_toast_log(_("focused module [%s]"), dt_iop_get_localized_name(module_to_focus->op));
+    dt_toast_log(_("focused module '%s'"), dt_iop_get_localized_name(module_to_focus->op));
   g_list_free(instances);
 }
 
