@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2025 darktable developer.
+    copyright (c) 2026 darktable developer.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ __kernel void prepare_blend(__read_only image2d_t cfa,
                             global const unsigned char (*const xtrans)[6],
                             global float *mask,
                             global float *Yold,
-                            global float *whites,
+                            const float4 wb,
                             const int w,
                             const int height)
 {
@@ -193,7 +193,9 @@ __kernel void prepare_blend(__read_only image2d_t cfa,
   const int row = get_global_id(1);
   if(col >= w || row >= height) return;
 
-  float4 rgb = read_imagef(dev_out, samplerA, (int2)(col, row));
+  float whites[4] = { wb.x, wb.y, wb.z, wb.w };
+
+  float4 rgb = readpixel(dev_out, col, row);
   // Photometric/digital ITU BT.709
   const float4 flum = (float4)( 0.212671f, 0.715160f, 0.072169f, 0.0f );
   rgb *= flum;
@@ -205,7 +207,7 @@ __kernel void prepare_blend(__read_only image2d_t cfa,
   {
     const int w2 = 2 * w;
     const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-    const float val = read_imagef(cfa, samplerA, (int2)(col, row)).x;
+    const float val = Areadsingle(cfa, col, row);
     if(val > whites[color] || Y < CAPTURE_YMIN)
     {
       mask[k-w2-1] = mask[k-w2]  = mask[k-w2+1] =
@@ -257,10 +259,10 @@ __kernel void modify_blend(global float *blend,
 
   const int k = mad24(irow, width, icol);
   const float sum_of_squares = fmax(0.0f, sum_sq - fsquare(sum) / 21.0f);
-  const float std_deviation = dtcl_sqrt(sum_of_squares / 21.0f);
-  const float modified_coef_variation = std_deviation / dtcl_sqrt(fmax(NORM_MIN, sum / 21.0f));
-  const float t = dtcl_log(1.0f + modified_coef_variation);
-  const float weight = 1.0f / (1.0f + dtcl_exp(offset - tscale * t));
+  const float std_deviation = sqrt(sum_of_squares / 21.0f);
+  const float modified_coef_variation = std_deviation / sqrt(fmax(NORM_MIN, sum / 21.0f));
+  const float t = log(1.0f + modified_coef_variation);
+  const float weight = 1.0f / (1.0f + exp(offset - tscale * t));
   blend[k] = clipf(blend[k] * 1.01011f * (weight - 0.01f));
   luminance[k] = Yold[k];
 }
@@ -273,7 +275,7 @@ __kernel void final_blend(global float *blendmask,
   if(k >= pixels) return;
 
   const float diff = unblurred[k] - blendmask[k];
-  const float w_tmp2 = 1.0f / (1.0f + dtcl_exp(5.0f - 10.0f * diff));
+  const float w_tmp2 = 1.0f / (1.0f + exp(5.0f - 10.0f * diff));
   blendmask[k] = clipf(w_tmp2 * unblurred[k] + (1.0f - w_tmp2) * blendmask[k]);
 }
 
@@ -289,7 +291,7 @@ __kernel void show_blend_mask(__read_only image2d_t in,
   const int row = get_global_id(1);
   if(col >= width || row >= height) return;
 
-  float4 pix = read_imagef(in, samplerA, (int2)(col, row));
+  float4 pix = readpixel(in, col, row);
   const float blend = blender ? blend_mask[mad24(row, width, col)]
                               : (float)sigma_mask[mad24(row, width, col)] / 255.0f;
   pix.w = blend;
@@ -308,7 +310,7 @@ __kernel void capture_result( __read_only image2d_t in,
   const int row = get_global_id(1);
   if(col >= width || row >= height) return;
 
-  float4 pix = read_imagef(in, samplerA, (int2)(col, row));
+  float4 pix = readpixel(in, col, row);
   const int k = mad24(row, width, col);
 
   if(blendmask[k] > 0.0f)
