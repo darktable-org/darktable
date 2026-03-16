@@ -796,6 +796,11 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
   return module;
 }
 
+void dt_iop_gui_delete(dt_iop_module_t *module)
+{
+  _gui_delete_callback(NULL, module);
+}
+
 static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
 {
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, FALSE);
