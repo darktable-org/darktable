@@ -50,7 +50,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
   const int f = FCxtrans(y, x, xtrans);
 
-  const float p = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+  const float p = readsingle(in, x, y);
 
   for(int c = 0; c < 3; c++)
     pix[c] = (c == f) ? p : 0.0f;
@@ -897,7 +897,7 @@ markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float 
 
   const int glidx = mad24(y, width, x);
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   float4 add = vload4(glidx, rgb);
   add.w = 1.0f;
 
@@ -918,11 +918,11 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
   // take sufficient border into account
   if(x < border || x >= width-border || y < border || y >= height-border) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
   pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
   pixel.w = 0.0f;
 
-  write_imagef(out, (int2)(x, y), fmax(0.0f, pixel));
+  write_imagef(out, (int2)(x, y), fmax(DEMOSAIC_OUTMIN, pixel));
 }
 
