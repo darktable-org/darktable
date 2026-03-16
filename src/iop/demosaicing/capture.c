@@ -1045,10 +1045,10 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
-  dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
-                                 wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[1] : CAPTURE_CFACLIP,
-                                 wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[2] : CAPTURE_CFACLIP,
-                                 0.0f };
+  const dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
+                                       wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[1] : CAPTURE_CFACLIP,
+                                       wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[2] : CAPTURE_CFACLIP,
+                                       0.0f };
 
   cl_mem gcoeffs = NULL;
   cl_mem gauss_idx = NULL;
@@ -1068,7 +1068,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,
           CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(tmp2), CLARG(tmp1),
-          CLFLARRAY(4, icoeffs), CLARG(width), CLARG(height));
+          CLARG(icoeffs), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->modify_blend, width, height,

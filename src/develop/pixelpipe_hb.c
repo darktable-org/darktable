@@ -3634,7 +3634,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
         wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[2], 1.0f };
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
-     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLFLARRAY(4, wb));
+     CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLARG(wb));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid,
