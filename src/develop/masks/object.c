@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ai/segmentation.h"
+#include "common/ai/segmentation.h"
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
