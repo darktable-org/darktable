@@ -96,7 +96,7 @@
    CONF_EXPAND_OUTPUT   — output section collapsed/expanded state
 */
 
-#include "ai/restore.h"
+#include "common/ai/restore.h"
 #include "bauhaus/bauhaus.h"
 #include "common/act_on.h"
 #include "common/collection.h"
