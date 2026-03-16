@@ -457,7 +457,7 @@ jobs:
           echo "RELEASE_DATE=$NOW" >> $GITHUB_ENV
         shell: bash
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
