@@ -1601,6 +1601,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorout");
   AM("colorzones");
   AM("colorequal");
+  AM("colorharmonizer");
   AM("lut3d");
   AM("monochrome");
   AM("profile");
@@ -1765,6 +1766,7 @@ void init_presets(dt_lib_module_t *self)
   AM("channelmixerrgb");
   AM("colorbalancergb");
   AM("colorequal");
+  AM("colorharmonizer");
   AM("primaries");
 
   SMG(C_("modulegroup", "correct"), "correct");

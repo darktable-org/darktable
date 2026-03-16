@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 11:33+0100\n"
-"PO-Revision-Date: 2026-03-14 17:38+0200\n"
+"POT-Creation-Date: 2026-03-15 08:07+0100\n"
+"PO-Revision-Date: 2026-03-16 10:49+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -104,7 +104,7 @@ msgid "on import"
 msgstr "On import"
 
 #: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1737
-#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4758
+#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4821
 #: ../build/bin/preferences_gen.h:3272
 msgctxt "preferences"
 msgid "always"
@@ -172,7 +172,7 @@ msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:1013 ../build/bin/conf_gen.h:2742
 #: ../build/bin/conf_gen.h:3696 ../build/bin/conf_gen.h:4124
-#: ../build/bin/conf_gen.h:4517
+#: ../build/bin/conf_gen.h:4580
 msgctxt "preferences"
 msgid "none"
 msgstr "None"
@@ -349,7 +349,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1748 ../build/bin/conf_gen.h:3695
-#: ../build/bin/conf_gen.h:4761 ../build/bin/preferences_gen.h:3990
+#: ../build/bin/conf_gen.h:4824 ../build/bin/preferences_gen.h:3990
 msgctxt "preferences"
 msgid "auto"
 msgstr "Auto"
@@ -694,61 +694,61 @@ msgctxt "preferences"
 msgid "line"
 msgstr "Line"
 
-#: ../build/bin/conf_gen.h:4354
+#: ../build/bin/conf_gen.h:4417
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:4355
+#: ../build/bin/conf_gen.h:4418
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:4356
+#: ../build/bin/conf_gen.h:4419
 msgctxt "preferences"
 msgid "inch"
 msgstr "inch"
 
-#: ../build/bin/conf_gen.h:4411 ../build/bin/preferences_gen.h:4428
+#: ../build/bin/conf_gen.h:4474 ../build/bin/preferences_gen.h:4428
 msgctxt "preferences"
 msgid "all"
 msgstr "All"
 
-#: ../build/bin/conf_gen.h:4412
+#: ../build/bin/conf_gen.h:4475
 msgctxt "preferences"
 msgid "xatom"
 msgstr "Xatom"
 
-#: ../build/bin/conf_gen.h:4413
+#: ../build/bin/conf_gen.h:4476
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4513 ../build/bin/preferences_gen.h:3458
+#: ../build/bin/conf_gen.h:4576 ../build/bin/preferences_gen.h:3458
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Scene-referred (Sigmoid)"
 
-#: ../build/bin/conf_gen.h:4514
+#: ../build/bin/conf_gen.h:4577
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Scene-referred (Filmic)"
 
-#: ../build/bin/conf_gen.h:4515
+#: ../build/bin/conf_gen.h:4578
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "Scene-referred (AgX)"
 
-#: ../build/bin/conf_gen.h:4516
+#: ../build/bin/conf_gen.h:4579
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "Display-referred (legacy)"
 
-#: ../build/bin/conf_gen.h:4663
+#: ../build/bin/conf_gen.h:4726
 msgid "camera time zone"
 msgstr "Camera time zone"
 
-#: ../build/bin/conf_gen.h:4664
+#: ../build/bin/conf_gen.h:4727
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone so "
 "the GPX data can be correctly matched"
@@ -756,62 +756,62 @@ msgstr ""
 "Most cameras don't store the time zone in EXIF. Give the correct time zone so "
 "the GPX data can be correctly matched"
 
-#: ../build/bin/conf_gen.h:4680
+#: ../build/bin/conf_gen.h:4743
 msgctxt "preferences"
 msgid "no color"
 msgstr "No color"
 
-#: ../build/bin/conf_gen.h:4681
+#: ../build/bin/conf_gen.h:4744
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Illuminant color"
 
-#: ../build/bin/conf_gen.h:4682
+#: ../build/bin/conf_gen.h:4745
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Effect emulation"
 
-#: ../build/bin/conf_gen.h:4746
+#: ../build/bin/conf_gen.h:4809
 msgctxt "preferences"
 msgid "list"
 msgstr "List"
 
-#: ../build/bin/conf_gen.h:4747
+#: ../build/bin/conf_gen.h:4810
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Tabs"
 
-#: ../build/bin/conf_gen.h:4748
+#: ../build/bin/conf_gen.h:4811
 msgctxt "preferences"
 msgid "columns"
 msgstr "Columns"
 
-#: ../build/bin/conf_gen.h:4759
+#: ../build/bin/conf_gen.h:4822
 msgctxt "preferences"
 msgid "active"
 msgstr "Active"
 
-#: ../build/bin/conf_gen.h:4760
+#: ../build/bin/conf_gen.h:4823
 msgctxt "preferences"
 msgid "dim"
 msgstr "Dim"
 
-#: ../build/bin/conf_gen.h:4762
+#: ../build/bin/conf_gen.h:4825
 msgctxt "preferences"
 msgid "fade"
 msgstr "Fade"
 
-#: ../build/bin/conf_gen.h:4763
+#: ../build/bin/conf_gen.h:4826
 msgctxt "preferences"
 msgid "fit"
 msgstr "Fit"
 
-#: ../build/bin/conf_gen.h:4764
+#: ../build/bin/conf_gen.h:4827
 msgctxt "preferences"
 msgid "smooth"
 msgstr "Smooth"
 
-#: ../build/bin/conf_gen.h:4765
+#: ../build/bin/conf_gen.h:4828
 msgctxt "preferences"
 msgid "glide"
 msgstr "Glide"
@@ -3101,7 +3101,7 @@ msgstr "Preserve colors"
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
-#: ../src/libs/print_settings.c:1176
+#: ../src/libs/print_settings.c:1176 ../src/libs/scopes/vectorscope.c:60
 msgid "none"
 msgstr "None"
 
@@ -10179,7 +10179,7 @@ msgstr "Hardness: %3.2f%%"
 #: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/object.c:1005 ../src/develop/masks/path.c:1885
+#: ../src/develop/masks/object.c:1009 ../src/develop/masks/path.c:1885
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Size: %3.2f%%"
@@ -10398,84 +10398,82 @@ msgstr "Masks can not contain themselves"
 msgid "no mask extracted from AI segmentation"
 msgstr "No mask extracted from AI segmentation"
 
-#: ../src/develop/masks/object.c:875
-#, c-format
-msgid "ai object #%d"
-msgstr "AI object #%d"
+#: ../src/develop/masks/object.c:860
+msgid "ai object group"
+msgstr "AI object group"
 
-#: ../src/develop/masks/object.c:879
-#, c-format
-msgid "ai object group #%d"
-msgstr "AI object group #%d"
+#: ../src/develop/masks/object.c:861
+msgid "ai object"
+msgstr "AI object"
 
-#: ../src/develop/masks/object.c:1020
+#: ../src/develop/masks/object.c:1024
 #, c-format
 msgid "cleanup: %d"
 msgstr "Cleanup: %d"
 
-#: ../src/develop/masks/object.c:1031
+#: ../src/develop/masks/object.c:1035
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Smoothing: %3.2f"
 
-#: ../src/develop/masks/object.c:1044
+#: ../src/develop/masks/object.c:1048
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Opacity: %d%%"
 
-#: ../src/develop/masks/object.c:1173
+#: ../src/develop/masks/object.c:1177
 #, c-format
 msgid "group '%s'"
 msgstr "Group '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1424 ../src/develop/masks/object.c:1452
+#: ../src/develop/masks/object.c:1428 ../src/develop/masks/object.c:1456
 msgid "object mask: analyzing image..."
 msgstr "Object mask: analyzing image..."
 
-#: ../src/develop/masks/object.c:1462
+#: ../src/develop/masks/object.c:1466
 msgid "brush over object to create mask"
 msgstr "Brush over object to create mask"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1472
+#: ../src/develop/masks/object.c:1476
 msgid "object mask preparation failed"
 msgstr "Object mask preparation failed"
 
-#: ../src/develop/masks/object.c:1786
+#: ../src/develop/masks/object.c:1790
 msgid "[OBJECT] brush over object"
 msgstr "[OBJECT] Brush over object"
 
-#: ../src/develop/masks/object.c:1791
+#: ../src/develop/masks/object.c:1795
 msgid "[OBJECT] add foreground point"
 msgstr "[OBJECT] Add foreground point"
 
-#: ../src/develop/masks/object.c:1796
+#: ../src/develop/masks/object.c:1800
 msgid "[OBJECT] add background point"
 msgstr "[OBJECT] Add background point"
 
-#: ../src/develop/masks/object.c:1801
+#: ../src/develop/masks/object.c:1805
 msgid "[OBJECT] apply mask"
 msgstr "[OBJECT] Apply mask"
 
-#: ../src/develop/masks/object.c:1806
+#: ../src/develop/masks/object.c:1810
 msgid "[OBJECT] change brush size / cleanup"
 msgstr "[OBJECT] Change brush size / Cleanup"
 
-#: ../src/develop/masks/object.c:1811
+#: ../src/develop/masks/object.c:1815
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJECT] Change smoothing"
 
-#: ../src/develop/masks/object.c:1816
+#: ../src/develop/masks/object.c:1820
 msgid "[OBJECT] change opacity"
 msgstr "[OBJECT] Change opacity"
 
-#: ../src/develop/masks/object.c:1824
+#: ../src/develop/masks/object.c:1828
 #, c-format
 msgid "object #%d"
 msgstr "Object #%d"
 
-#: ../src/develop/masks/object.c:1843
+#: ../src/develop/masks/object.c:1847
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: alt+click, "
@@ -10488,7 +10486,7 @@ msgstr ""
 "<b>Cleanup</b>: scroll (%d), <b>Smoothing</b>: Shift+scroll (%3.2f), "
 "<b>Opacity</b>: Ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1851
+#: ../src/develop/masks/object.c:1855
 #, c-format
 msgid ""
 "<b>brush</b>: drag, <b>size</b>: scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
@@ -17651,6 +17649,7 @@ msgstr "5:4 (8x10)"
 
 #: ../src/iop/borders.c:955 ../src/iop/clipping.c:2127 ../src/iop/crop.c:1259
 #: ../src/libs/filtering.c:312 ../src/libs/filters/ratio.c:124
+#: ../src/libs/scopes/vectorscope.c:69
 msgid "square"
 msgstr "Square"
 
@@ -25283,7 +25282,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Camera control"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:709
 msgid "modes"
 msgstr "Modes"
 
@@ -26860,20 +26859,20 @@ msgstr "Double-click resets"
 msgid "drag to change exposure"
 msgstr "Drag to change exposure"
 
-#: ../src/libs/histogram.c:660
+#: ../src/libs/histogram.c:654 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
+#: ../src/libs/histogram.c:660 ../src/libs/histogram.c:720
 msgid "hide histogram"
 msgstr "Hide histogram"
 
-#: ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:733
 #, c-format
 msgid "toggle %s channel"
 msgstr "Toggle %s channel"
 
-#: ../src/libs/histogram.c:747
+#: ../src/libs/histogram.c:741
 msgid "toggle colors"
 msgstr "Toggle colors"
 
@@ -28726,6 +28725,124 @@ msgstr " but not "
 #: ../src/libs/recentcollect.c:230
 msgid "recent collections settings"
 msgstr "Recent collections settings"
+
+#: ../src/libs/scopes/histogram.c:207 ../src/libs/scopes/vectorscope.c:993
+msgid "set scale to linear"
+msgstr "Set scale to linear"
+
+#: ../src/libs/scopes/histogram.c:212 ../src/libs/scopes/vectorscope.c:998
+msgid "set scale to logarithmic"
+msgstr "Set scale to logarithmic"
+
+#: ../src/libs/scopes/histogram.c:243
+msgid "switch histogram scale"
+msgstr "Switch histogram scale"
+
+#. FIXME: this could depend on values of left/right scopes
+#: ../src/libs/scopes/split.c:30
+msgid "split"
+msgstr "Split"
+
+#: ../src/libs/scopes/vectorscope.c:61
+msgid "monochromatic"
+msgstr "Monochromatic"
+
+#: ../src/libs/scopes/vectorscope.c:62
+msgid "analogous"
+msgstr "Analogous"
+
+#: ../src/libs/scopes/vectorscope.c:63
+msgid "analogous complementary"
+msgstr "Analogous complementary"
+
+#: ../src/libs/scopes/vectorscope.c:64
+msgid "complementary"
+msgstr "Complementary"
+
+#: ../src/libs/scopes/vectorscope.c:65
+msgid "split complementary"
+msgstr "Split complementary"
+
+#: ../src/libs/scopes/vectorscope.c:66
+msgid "dyad"
+msgstr "Dyad"
+
+#: ../src/libs/scopes/vectorscope.c:67
+msgid "triad"
+msgstr "Triad"
+
+#: ../src/libs/scopes/vectorscope.c:68
+msgid "tetrad"
+msgstr "Tetrad"
+
+#: ../src/libs/scopes/vectorscope.c:129
+msgid "vectorscope"
+msgstr "Vectorscope"
+
+#: ../src/libs/scopes/vectorscope.c:1008
+msgid "set view to AzBz"
+msgstr "Set view to AzBz"
+
+#: ../src/libs/scopes/vectorscope.c:1014
+msgid "set view to RYB"
+msgstr "Set view to RYB"
+
+#: ../src/libs/scopes/vectorscope.c:1020
+msgid "set view to u*v*"
+msgstr "Set view to u*v*"
+
+#: ../src/libs/scopes/vectorscope.c:1124
+msgid "scroll to coarse-rotate"
+msgstr "Scroll to coarse-rotate"
+
+#: ../src/libs/scopes/vectorscope.c:1125
+msgid "ctrl+scroll to fine rotate"
+msgstr "Ctrl+scroll to fine rotate"
+
+#: ../src/libs/scopes/vectorscope.c:1126
+msgid "shift+scroll to change width"
+msgstr "Shift+scroll to change width"
+
+#: ../src/libs/scopes/vectorscope.c:1127
+msgid "alt+scroll to cycle"
+msgstr "Alt+scroll to cycle"
+
+#: ../src/libs/scopes/vectorscope.c:1375
+msgid "cycle vectorscope types"
+msgstr "Cycle vectorscope types"
+
+#: ../src/libs/scopes/vectorscope.c:1378
+msgid "switch vectorscope scale"
+msgstr "Switch vectorscope scale"
+
+#: ../src/libs/scopes/vectorscope.c:1399
+msgid "color harmonies"
+msgstr "Color harmonies"
+
+#. FIXME: do we need this action, or is it vestigial?
+#: ../src/libs/scopes/vectorscope.c:1413
+msgid "cycle color harmonies"
+msgstr "Cycle color harmonies"
+
+#: ../src/libs/scopes/waveform.c:55
+msgid "waveform"
+msgstr "Waveform"
+
+#: ../src/libs/scopes/waveform.c:305
+msgid "set scope to vertical"
+msgstr "Set scope to vertical"
+
+#: ../src/libs/scopes/waveform.c:310
+msgid "set scope to horizontal"
+msgstr "Set scope to horizontal"
+
+#: ../src/libs/scopes/waveform.c:400
+msgid "switch scope orientation"
+msgstr "Switch scope orientation"
+
+#: ../src/libs/scopes/waveform.c:442
+msgid "RGB parade"
+msgstr "RGB parade"
 
 #: ../src/libs/select.c:45
 msgid ""
@@ -30697,6 +30814,10 @@ msgstr "Switch to a classic window which will stay open after key release"
 msgid "mouse actions"
 msgstr "Mouse actions"
 
+#, c-format
+#~ msgid "ai object #%d"
+#~ msgstr "AI object #%d"
+
 #~ msgctxt "preferences"
 #~ msgid "waveform/vectorscope"
 #~ msgstr "Waveform/Vectorscope"
@@ -30750,98 +30871,14 @@ msgstr "Mouse actions"
 #~ msgid "adjust the boost factor of the channel mask"
 #~ msgstr "Adjust the boost factor of the channel mask"
 
-#~ msgid "monochromatic"
-#~ msgstr "Monochromatic"
-
-#~ msgid "analogous"
-#~ msgstr "Analogous"
-
-#~ msgid "analogous complementary"
-#~ msgstr "Analogous complementary"
-
-#~ msgid "complementary"
-#~ msgstr "Complementary"
-
-#~ msgid "split complementary"
-#~ msgstr "Split complementary"
-
-#~ msgid "dyad"
-#~ msgstr "Dyad"
-
-#~ msgid "triad"
-#~ msgstr "Triad"
-
-#~ msgid "tetrad"
-#~ msgstr "Tetrad"
-
-#~ msgid "vectorscope"
-#~ msgstr "Vectorscope"
-
-#~ msgid "waveform"
-#~ msgstr "Waveform"
-
 #~ msgid "waveform/vectorscope"
 #~ msgstr "Waveform/Vectorscope"
-
-#~ msgid "RGB parade"
-#~ msgstr "RGB parade"
-
-#~ msgid "scroll to coarse-rotate"
-#~ msgstr "Scroll to coarse-rotate"
-
-#~ msgid "ctrl+scroll to fine rotate"
-#~ msgstr "Ctrl+scroll to fine rotate"
-
-#~ msgid "shift+scroll to change width"
-#~ msgstr "Shift+scroll to change width"
-
-#~ msgid "alt+scroll to cycle"
-#~ msgstr "Alt+scroll to cycle"
-
-#~ msgid "set scale to linear"
-#~ msgstr "Set scale to linear"
-
-#~ msgid "set scale to logarithmic"
-#~ msgstr "Set scale to logarithmic"
-
-#~ msgid "set scope to vertical"
-#~ msgstr "Set scope to vertical"
-
-#~ msgid "set scope to horizontal"
-#~ msgstr "Set scope to horizontal"
-
-#~ msgid "set view to AzBz"
-#~ msgstr "Set view to AzBz"
-
-#~ msgid "set view to RYB"
-#~ msgstr "Set view to RYB"
-
-#~ msgid "set view to u*v*"
-#~ msgstr "Set view to u*v*"
-
-#~ msgid "switch vectorscope scale"
-#~ msgstr "Switch vectorscope scale"
-
-#~ msgid "cycle vectorscope types"
-#~ msgstr "Cycle vectorscope types"
 
 #~ msgid "toggle blue channel"
 #~ msgstr "Toggle blue channel"
 
 #~ msgid "toggle green channel"
 #~ msgstr "Toggle green channel"
-
-#~ msgid "switch scope orientation"
-#~ msgstr "Switch scope orientation"
-
-#~ msgid "switch histogram scale"
-#~ msgstr "Switch histogram scale"
-
-#~ msgid "color harmonies"
-#~ msgstr "Color harmonies"
-
-#~ msgid "cycle color harmonies"
-#~ msgstr "Cycle color harmonies"
 
 #~ msgid "smooth|base"
 #~ msgstr "Smooth|Base"

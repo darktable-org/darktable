@@ -16,8 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "segmentation.h"
-#include "backend.h"
+#include "common/ai/segmentation.h"
+#include "ai/backend.h"
 #include "common/darktable.h"
 #include <inttypes.h>
 #include <math.h>
