@@ -16,13 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "restore.h"
-#include "backend.h"
+#include "common/ai/restore.h"
+#include "ai/backend.h"
 #include "common/darktable.h"
 #include "common/ai_models.h"
-#include "common/dwt.h"
 #include "common/imagebuf.h"
 #include "control/jobs.h"
+
+// forward-declare to avoid pulling in dwt.h (which
+// includes OpenCL types when HAVE_OPENCL is defined)
+extern void dwt_denoise(float *buf, int width, int height,
+                        int bands, const float *noise);
 #include <math.h>
 #include <string.h>
 
