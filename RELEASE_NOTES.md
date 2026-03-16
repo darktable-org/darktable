@@ -249,6 +249,9 @@ changes (where available).
 - Avoid speckles when creating drawn masks using the vectorize option
   in the Raster File module.
 
+- Fixed spurious export size is reduced because of memory restrictions
+  issue.
+
 ## Lua
 
 ### API Version
