@@ -1636,7 +1636,7 @@ static void _object_events_post_expose(
     const float cy = inside ? gui->posy : ht * 0.5f;
     const float min_dim = MIN(iwidth, iheight);
     const float radius = d->brush_radius * min_dim;
-    const float opacity = 0.5f;
+    const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 
     cairo_save(cr);
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
