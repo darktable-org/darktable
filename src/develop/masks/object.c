@@ -1628,7 +1628,12 @@ static void _object_events_post_expose(
   }
   else if(!d->brush_used)
   {
-    // before brush completed: draw brush circle cursor (same style as brush mask)
+    // before brush completed: draw brush circle cursor
+    // center on image when cursor is outside the canvas
+    const gboolean inside = gui->posx >= 0.0f && gui->posx <= wd
+                            && gui->posy >= 0.0f && gui->posy <= ht;
+    const float cx = inside ? gui->posx : wd * 0.5f;
+    const float cy = inside ? gui->posy : ht * 0.5f;
     const float min_dim = MIN(iwidth, iheight);
     const float radius = d->brush_radius * min_dim;
     const float opacity = 0.5f;
@@ -1636,13 +1641,14 @@ static void _object_events_post_expose(
     cairo_save(cr);
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
     cairo_set_line_width(cr, 3.0 / zoom_scale);
-    cairo_arc(cr, gui->posx, gui->posy, radius, 0, 2.0 * M_PI);
+    cairo_arc(cr, cx, cy, radius, 0, 2.0 * M_PI);
     cairo_fill_preserve(cr);
     cairo_set_source_rgba(cr, 0.8, 0.8, 0.8, 0.8);
     cairo_stroke(cr);
     cairo_restore(cr);
   }
-  else
+  else if(gui->posx >= 0.0f && gui->posx <= wd
+          && gui->posy >= 0.0f && gui->posy <= ht)
   {
     // after brush used: draw +/- cursor indicator for point refinement
     const float r = DT_PIXEL_APPLY_DPI(8.0f) / zoom_scale;
