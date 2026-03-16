@@ -1901,7 +1901,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *shape_buttons = dt_gui_hbox
     (dt_gui_expand(dt_ui_label_new(_("created shapes"))),
-     d->bt_brush, d->bt_circle, d->bt_ellipse, d->bt_path, d->bt_gradient);
+     d->bt_circle, d->bt_ellipse, d->bt_path, d->bt_brush, d->bt_gradient);
 #ifdef HAVE_AI
   dt_gui_box_add(shape_buttons, d->bt_object);
 #endif
