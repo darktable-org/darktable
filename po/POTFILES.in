@@ -98,10 +98,10 @@ build/lib/darktable/plugins/introspection_zonesystem.c
 build/share/darktable/org.darktable.darktable.desktop.in
 data/org.darktable.darktable.appdata.xml.in
 data/org.darktable.darktable.desktop.in
-src/ai/segmentation.c
 src/bauhaus/bauhaus.c
 src/chart/main.c
 src/cli/main.c
+src/common/ai/segmentation.c
 src/common/ai_models.c
 src/common/camera_control.c
 src/common/collection.c
