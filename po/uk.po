@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 11:33+0100\n"
-"PO-Revision-Date: 2026-03-14 18:09+0200\n"
+"POT-Creation-Date: 2026-03-15 08:07+0100\n"
+"PO-Revision-Date: 2026-03-16 10:51+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -105,7 +105,7 @@ msgid "on import"
 msgstr "при імпорті"
 
 #: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1737
-#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4758
+#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:4821
 #: ../build/bin/preferences_gen.h:3272
 msgctxt "preferences"
 msgid "always"
@@ -173,7 +173,7 @@ msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:1013 ../build/bin/conf_gen.h:2742
 #: ../build/bin/conf_gen.h:3696 ../build/bin/conf_gen.h:4124
-#: ../build/bin/conf_gen.h:4517
+#: ../build/bin/conf_gen.h:4580
 msgctxt "preferences"
 msgid "none"
 msgstr "немає"
@@ -350,7 +350,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1748 ../build/bin/conf_gen.h:3695
-#: ../build/bin/conf_gen.h:4761 ../build/bin/preferences_gen.h:3990
+#: ../build/bin/conf_gen.h:4824 ../build/bin/preferences_gen.h:3990
 msgctxt "preferences"
 msgid "auto"
 msgstr "авто"
@@ -695,61 +695,61 @@ msgctxt "preferences"
 msgid "line"
 msgstr "лінія"
 
-#: ../build/bin/conf_gen.h:4354
+#: ../build/bin/conf_gen.h:4417
 msgctxt "preferences"
 msgid "mm"
 msgstr "мм"
 
-#: ../build/bin/conf_gen.h:4355
+#: ../build/bin/conf_gen.h:4418
 msgctxt "preferences"
 msgid "cm"
 msgstr "см"
 
-#: ../build/bin/conf_gen.h:4356
+#: ../build/bin/conf_gen.h:4419
 msgctxt "preferences"
 msgid "inch"
 msgstr "дюйм"
 
-#: ../build/bin/conf_gen.h:4411 ../build/bin/preferences_gen.h:4428
+#: ../build/bin/conf_gen.h:4474 ../build/bin/preferences_gen.h:4428
 msgctxt "preferences"
 msgid "all"
 msgstr "всі"
 
-#: ../build/bin/conf_gen.h:4412
+#: ../build/bin/conf_gen.h:4475
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:4413
+#: ../build/bin/conf_gen.h:4476
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4513 ../build/bin/preferences_gen.h:3458
+#: ../build/bin/conf_gen.h:4576 ../build/bin/preferences_gen.h:3458
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "на основі сцен (Сигмоїда)"
 
-#: ../build/bin/conf_gen.h:4514
+#: ../build/bin/conf_gen.h:4577
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "на основі сцен (Filmic)"
 
-#: ../build/bin/conf_gen.h:4515
+#: ../build/bin/conf_gen.h:4578
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "на основі сцен (AgX)"
 
-#: ../build/bin/conf_gen.h:4516
+#: ../build/bin/conf_gen.h:4579
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "на основі відображення (застаріло)"
 
-#: ../build/bin/conf_gen.h:4663
+#: ../build/bin/conf_gen.h:4726
 msgid "camera time zone"
 msgstr "Часовий пояс камери"
 
-#: ../build/bin/conf_gen.h:4664
+#: ../build/bin/conf_gen.h:4727
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone so "
 "the GPX data can be correctly matched"
@@ -757,62 +757,62 @@ msgstr ""
 "Більшість камер на записує часовий пояс в EXIF. Вкажіть правильний часовий "
 "пояс, щоб дані з GPX були застосовані коректно."
 
-#: ../build/bin/conf_gen.h:4680
+#: ../build/bin/conf_gen.h:4743
 msgctxt "preferences"
 msgid "no color"
 msgstr "не змінювати"
 
-#: ../build/bin/conf_gen.h:4681
+#: ../build/bin/conf_gen.h:4744
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "колір джерела світла"
 
-#: ../build/bin/conf_gen.h:4682
+#: ../build/bin/conf_gen.h:4745
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "емуляція ефекту"
 
-#: ../build/bin/conf_gen.h:4746
+#: ../build/bin/conf_gen.h:4809
 msgctxt "preferences"
 msgid "list"
 msgstr "список"
 
-#: ../build/bin/conf_gen.h:4747
+#: ../build/bin/conf_gen.h:4810
 msgctxt "preferences"
 msgid "tabs"
 msgstr "вкладки"
 
-#: ../build/bin/conf_gen.h:4748
+#: ../build/bin/conf_gen.h:4811
 msgctxt "preferences"
 msgid "columns"
 msgstr "колонки"
 
-#: ../build/bin/conf_gen.h:4759
+#: ../build/bin/conf_gen.h:4822
 msgctxt "preferences"
 msgid "active"
 msgstr "при наведенні"
 
-#: ../build/bin/conf_gen.h:4760
+#: ../build/bin/conf_gen.h:4823
 msgctxt "preferences"
 msgid "dim"
 msgstr "підсвічувати тьмяні"
 
-#: ../build/bin/conf_gen.h:4762
+#: ../build/bin/conf_gen.h:4825
 msgctxt "preferences"
 msgid "fade"
 msgstr "поступово прибирати"
 
-#: ../build/bin/conf_gen.h:4763
+#: ../build/bin/conf_gen.h:4826
 msgctxt "preferences"
 msgid "fit"
 msgstr "пріоритет імені модуля"
 
-#: ../build/bin/conf_gen.h:4764
+#: ../build/bin/conf_gen.h:4827
 msgctxt "preferences"
 msgid "smooth"
 msgstr "гасити одночасно при недостатній ширині"
 
-#: ../build/bin/conf_gen.h:4765
+#: ../build/bin/conf_gen.h:4828
 msgctxt "preferences"
 msgid "glide"
 msgstr "витісняти при недостатній ширині"
@@ -3158,7 +3158,7 @@ msgstr "Метод збереження кольорів"
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
-#: ../src/libs/print_settings.c:1176
+#: ../src/libs/print_settings.c:1176 ../src/libs/scopes/vectorscope.c:60
 msgid "none"
 msgstr "Немає"
 
@@ -10322,7 +10322,7 @@ msgstr "Жорсткість: %3.2f%%"
 #: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/object.c:1005 ../src/develop/masks/path.c:1885
+#: ../src/develop/masks/object.c:1009 ../src/develop/masks/path.c:1885
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Розмір: %3.2f%%"
@@ -10543,84 +10543,82 @@ msgstr "Маски не можуть містити себе"
 msgid "no mask extracted from AI segmentation"
 msgstr "Маску не витягнуто з сегментації ШІ"
 
-#: ../src/develop/masks/object.c:875
-#, c-format
-msgid "ai object #%d"
-msgstr "Об'єкт ШІ #%d"
+#: ../src/develop/masks/object.c:860
+msgid "ai object group"
+msgstr "Група об'єктів ШІ"
 
-#: ../src/develop/masks/object.c:879
-#, c-format
-msgid "ai object group #%d"
-msgstr "Група об'єктів ШІ #%d"
+#: ../src/develop/masks/object.c:861
+msgid "ai object"
+msgstr "Об'єкт ШІ"
 
-#: ../src/develop/masks/object.c:1020
+#: ../src/develop/masks/object.c:1024
 #, c-format
 msgid "cleanup: %d"
 msgstr "Очищення: %d"
 
-#: ../src/develop/masks/object.c:1031
+#: ../src/develop/masks/object.c:1035
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Згладжування: %3.2f"
 
-#: ../src/develop/masks/object.c:1044
+#: ../src/develop/masks/object.c:1048
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Непрозорість: %d%%"
 
-#: ../src/develop/masks/object.c:1173
+#: ../src/develop/masks/object.c:1177
 #, c-format
 msgid "group '%s'"
 msgstr "Група '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1424 ../src/develop/masks/object.c:1452
+#: ../src/develop/masks/object.c:1428 ../src/develop/masks/object.c:1456
 msgid "object mask: analyzing image..."
 msgstr "Маска об'єкта: аналіз зображення..."
 
-#: ../src/develop/masks/object.c:1462
+#: ../src/develop/masks/object.c:1466
 msgid "brush over object to create mask"
 msgstr "Проведіть пензлем по об'єкту, щоб створити маску"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1472
+#: ../src/develop/masks/object.c:1476
 msgid "object mask preparation failed"
 msgstr "Підготовка маски об'єкта не вдалася"
 
-#: ../src/develop/masks/object.c:1786
+#: ../src/develop/masks/object.c:1790
 msgid "[OBJECT] brush over object"
 msgstr "[ОБ'ЄКТ] Пензлем по об'єкту"
 
-#: ../src/develop/masks/object.c:1791
+#: ../src/develop/masks/object.c:1795
 msgid "[OBJECT] add foreground point"
 msgstr "[ОБ'ЄКТ] Додати точку переднього плану"
 
-#: ../src/develop/masks/object.c:1796
+#: ../src/develop/masks/object.c:1800
 msgid "[OBJECT] add background point"
 msgstr "[ОБ'ЄКТ] Додати точку тла"
 
-#: ../src/develop/masks/object.c:1801
+#: ../src/develop/masks/object.c:1805
 msgid "[OBJECT] apply mask"
 msgstr "[ОБ'ЄКТ] Застосувати маску"
 
-#: ../src/develop/masks/object.c:1806
+#: ../src/develop/masks/object.c:1810
 msgid "[OBJECT] change brush size / cleanup"
 msgstr "[ОБ'ЄКТ] Змінити розмір пензля / Очищення"
 
-#: ../src/develop/masks/object.c:1811
+#: ../src/develop/masks/object.c:1815
 msgid "[OBJECT] change smoothing"
 msgstr "[ОБ'ЄКТ] Змінити згладжування"
 
-#: ../src/develop/masks/object.c:1816
+#: ../src/develop/masks/object.c:1820
 msgid "[OBJECT] change opacity"
 msgstr "[ОБ'ЄКТ] Змінити непрозорість"
 
-#: ../src/develop/masks/object.c:1824
+#: ../src/develop/masks/object.c:1828
 #, c-format
 msgid "object #%d"
 msgstr "Об'єкт #%d"
 
-#: ../src/develop/masks/object.c:1843
+#: ../src/develop/masks/object.c:1847
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: alt+click, "
@@ -10633,7 +10631,7 @@ msgstr ""
 "<b>Очищення</b>: прокрутка (%d), <b>Згладжування</b>: Shift+прокрутка "
 "(%3.2f), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/object.c:1851
+#: ../src/develop/masks/object.c:1855
 #, c-format
 msgid ""
 "<b>brush</b>: drag, <b>size</b>: scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
@@ -17874,6 +17872,7 @@ msgstr "5:4 (8x10)"
 
 #: ../src/iop/borders.c:955 ../src/iop/clipping.c:2127 ../src/iop/crop.c:1259
 #: ../src/libs/filtering.c:312 ../src/libs/filters/ratio.c:124
+#: ../src/libs/scopes/vectorscope.c:69
 msgid "square"
 msgstr "Квадрат"
 
@@ -25628,7 +25627,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Керування камерою"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:715
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:709
 msgid "modes"
 msgstr "Режими"
 
@@ -27219,20 +27218,20 @@ msgstr "Подвійний клік для скидання"
 msgid "drag to change exposure"
 msgstr "Перетягніть, щоб змінити експозицію"
 
-#: ../src/libs/histogram.c:660
+#: ../src/libs/histogram.c:654 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "Гістограма"
 
-#: ../src/libs/histogram.c:666 ../src/libs/histogram.c:726
+#: ../src/libs/histogram.c:660 ../src/libs/histogram.c:720
 msgid "hide histogram"
 msgstr "Приховати гістограму"
 
-#: ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:733
 #, c-format
 msgid "toggle %s channel"
 msgstr "Перемикає видимість каналу: %s"
 
-#: ../src/libs/histogram.c:747
+#: ../src/libs/histogram.c:741
 msgid "toggle colors"
 msgstr "Перемикає кольори"
 
@@ -29100,6 +29099,124 @@ msgstr " але не "
 #: ../src/libs/recentcollect.c:230
 msgid "recent collections settings"
 msgstr "Налаштування недавно використаних колекцій"
+
+#: ../src/libs/scopes/histogram.c:207 ../src/libs/scopes/vectorscope.c:993
+msgid "set scale to linear"
+msgstr "Встановити лінійну шкалу"
+
+#: ../src/libs/scopes/histogram.c:212 ../src/libs/scopes/vectorscope.c:998
+msgid "set scale to logarithmic"
+msgstr "Встановити логарифмічну шкалу"
+
+#: ../src/libs/scopes/histogram.c:243
+msgid "switch histogram scale"
+msgstr "Перемикач масштабу гістограми"
+
+#. FIXME: this could depend on values of left/right scopes
+#: ../src/libs/scopes/split.c:30
+msgid "split"
+msgstr "Розділений вигляд"
+
+#: ../src/libs/scopes/vectorscope.c:61
+msgid "monochromatic"
+msgstr "Монохроматична"
+
+#: ../src/libs/scopes/vectorscope.c:62
+msgid "analogous"
+msgstr "Аналогова"
+
+#: ../src/libs/scopes/vectorscope.c:63
+msgid "analogous complementary"
+msgstr "Аналогова комплементарна"
+
+#: ../src/libs/scopes/vectorscope.c:64
+msgid "complementary"
+msgstr "Комплементарна"
+
+#: ../src/libs/scopes/vectorscope.c:65
+msgid "split complementary"
+msgstr "Спліт-комплементарна"
+
+#: ../src/libs/scopes/vectorscope.c:66
+msgid "dyad"
+msgstr "Діада"
+
+#: ../src/libs/scopes/vectorscope.c:67
+msgid "triad"
+msgstr "Тріада"
+
+#: ../src/libs/scopes/vectorscope.c:68
+msgid "tetrad"
+msgstr "Тетрада"
+
+#: ../src/libs/scopes/vectorscope.c:129
+msgid "vectorscope"
+msgstr "Вектороскоп"
+
+#: ../src/libs/scopes/vectorscope.c:1008
+msgid "set view to AzBz"
+msgstr "Встановити тип перегляду на AzBz"
+
+#: ../src/libs/scopes/vectorscope.c:1014
+msgid "set view to RYB"
+msgstr "Встановити тип перегляду на RYB"
+
+#: ../src/libs/scopes/vectorscope.c:1020
+msgid "set view to u*v*"
+msgstr "Встановити тип перегляду на u*v*"
+
+#: ../src/libs/scopes/vectorscope.c:1124
+msgid "scroll to coarse-rotate"
+msgstr "Прокрутка для грубого обертання"
+
+#: ../src/libs/scopes/vectorscope.c:1125
+msgid "ctrl+scroll to fine rotate"
+msgstr "Ctrl+прокрутка для точного обертання"
+
+#: ../src/libs/scopes/vectorscope.c:1126
+msgid "shift+scroll to change width"
+msgstr "Shift+прокрутка для зміни ширини"
+
+#: ../src/libs/scopes/vectorscope.c:1127
+msgid "alt+scroll to cycle"
+msgstr "Alt+прокрутка для перебору опцій"
+
+#: ../src/libs/scopes/vectorscope.c:1375
+msgid "cycle vectorscope types"
+msgstr "Перебирати типи вектороскопа"
+
+#: ../src/libs/scopes/vectorscope.c:1378
+msgid "switch vectorscope scale"
+msgstr "Перемикач масштабу вектороскопа"
+
+#: ../src/libs/scopes/vectorscope.c:1399
+msgid "color harmonies"
+msgstr "Гармонії кольорів"
+
+#. FIXME: do we need this action, or is it vestigial?
+#: ../src/libs/scopes/vectorscope.c:1413
+msgid "cycle color harmonies"
+msgstr "Перебирання гармоній кольорів"
+
+#: ../src/libs/scopes/waveform.c:55
+msgid "waveform"
+msgstr "Waveform"
+
+#: ../src/libs/scopes/waveform.c:305
+msgid "set scope to vertical"
+msgstr "Встановити гістограму вертикально"
+
+#: ../src/libs/scopes/waveform.c:310
+msgid "set scope to horizontal"
+msgstr "Встановити гістограму горизонтально"
+
+#: ../src/libs/scopes/waveform.c:400
+msgid "switch scope orientation"
+msgstr "Перемикач орієнтації гістограми"
+
+#: ../src/libs/scopes/waveform.c:442
+msgid "RGB parade"
+msgstr "RGB-парад"
 
 #: ../src/libs/select.c:45
 msgid ""
@@ -31094,6 +31211,10 @@ msgstr ""
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
 
+#, c-format
+#~ msgid "ai object #%d"
+#~ msgstr "Об'єкт ШІ #%d"
+
 #~ msgctxt "preferences"
 #~ msgid "waveform/vectorscope"
 #~ msgstr "Waveform/Vectorscope"
@@ -31154,98 +31275,14 @@ msgstr "Дії за допомогою миші"
 #~ msgid "adjust the boost factor of the channel mask"
 #~ msgstr "Відрегулювати коефіцієнт посилення маски каналу"
 
-#~ msgid "monochromatic"
-#~ msgstr "Монохроматична"
-
-#~ msgid "analogous"
-#~ msgstr "Аналогова"
-
-#~ msgid "analogous complementary"
-#~ msgstr "Аналогова комплементарна"
-
-#~ msgid "complementary"
-#~ msgstr "Комплементарна"
-
-#~ msgid "split complementary"
-#~ msgstr "Спліт-комплементарна"
-
-#~ msgid "dyad"
-#~ msgstr "Діада"
-
-#~ msgid "triad"
-#~ msgstr "Тріада"
-
-#~ msgid "tetrad"
-#~ msgstr "Тетрада"
-
-#~ msgid "vectorscope"
-#~ msgstr "Вектороскоп"
-
-#~ msgid "waveform"
-#~ msgstr "Waveform"
-
 #~ msgid "waveform/vectorscope"
 #~ msgstr "Waveform/Vectorscope"
-
-#~ msgid "RGB parade"
-#~ msgstr "RGB-парад"
-
-#~ msgid "scroll to coarse-rotate"
-#~ msgstr "Прокрутка для грубого обертання"
-
-#~ msgid "ctrl+scroll to fine rotate"
-#~ msgstr "Ctrl+прокрутка для точного обертання"
-
-#~ msgid "shift+scroll to change width"
-#~ msgstr "Shift+прокрутка для зміни ширини"
-
-#~ msgid "alt+scroll to cycle"
-#~ msgstr "Alt+прокрутка для перебору опцій"
-
-#~ msgid "set scale to linear"
-#~ msgstr "Встановити лінійну шкалу"
-
-#~ msgid "set scale to logarithmic"
-#~ msgstr "Встановити логарифмічну шкалу"
-
-#~ msgid "set scope to vertical"
-#~ msgstr "Встановити гістограму вертикально"
-
-#~ msgid "set scope to horizontal"
-#~ msgstr "Встановити гістограму горизонтально"
-
-#~ msgid "set view to AzBz"
-#~ msgstr "Встановити тип перегляду на AzBz"
-
-#~ msgid "set view to RYB"
-#~ msgstr "Встановити тип перегляду на RYB"
-
-#~ msgid "set view to u*v*"
-#~ msgstr "Встановити тип перегляду на u*v*"
-
-#~ msgid "switch vectorscope scale"
-#~ msgstr "Перемикач масштабу вектороскопа"
-
-#~ msgid "cycle vectorscope types"
-#~ msgstr "Перебирати типи вектороскопа"
 
 #~ msgid "toggle blue channel"
 #~ msgstr "Перемикає видимість каналу синього"
 
 #~ msgid "toggle green channel"
 #~ msgstr "Перемикає видимість каналу зеленого"
-
-#~ msgid "switch scope orientation"
-#~ msgstr "Перемикач орієнтації гістограми"
-
-#~ msgid "switch histogram scale"
-#~ msgstr "Перемикач масштабу гістограми"
-
-#~ msgid "color harmonies"
-#~ msgstr "Гармонії кольорів"
-
-#~ msgid "cycle color harmonies"
-#~ msgstr "Перебирання гармоній кольорів"
 
 #~ msgid "smooth|base"
 #~ msgstr "Smooth|Base"

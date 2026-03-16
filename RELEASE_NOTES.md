@@ -62,6 +62,18 @@ changes (where available).
   once per image (with optional GPU acceleration via CoreML, CUDA,
   MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
   produces masks interactively.
+  
+- Added `colorharmonizer` module that applies color harmony
+  corrections in UCS color space, rotating hues toward a target
+  harmony structure (complementary, split-complementary, triadic,
+  tetradic, etc.). The saturation of target hues can be controlled,
+  and custom-defined harmonies with an arbitrary number of anchor nodes
+  at any angle are also supported. Options are provided to control the
+  intensity of the effect, protect neutral colors, and apply a Gaussian
+  filter to smooth harsh transitions. The module can be synced with the
+  vectorscope in RYB mode, with harmony and rotation angles controllable
+  directly from the vectorscope. Both CPU and OpenCL (GPU) implementations
+  are provided.
 
 ## UI/UX Improvements
 

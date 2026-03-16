@@ -25,32 +25,9 @@ For more places to discuss darktable, [see here for more information](https://ww
 
 ### Coding style
 
-We like our code to be properly formatted. We have a well-defined coding style, 
-and [.clang-format](.clang-format) style file represents it fully.
-You can enforce your commits to follow it:
+We like our code to be properly formatted, and we have a well-defined coding style that is enforced at
+PR review time.
 
-1. Install [clang-format](http://clang.llvm.org/docs/ClangFormat.html) clang tool. Probably, any version will be ok, but the newer the better.
-2. You'll need to integrate `git` and `clang-format`.
-  * For that, you will need to download `git-clang-format` from [here](https://github.com/llvm-mirror/clang/blob/master/tools/clang-format/git-clang-format) or [here](https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/git-clang-format).
-  * Read it to check for nastiness.
-  * Warning: apparently, it only works with Python2, and does not work with Python3!
-  * Put it somewhere in your path (e.g. `~/bin` or `/usr/local/bin`) and ensure that it is executable (`chmod +x`).
-3. Now, step into your local clone of repository:
-  * `cd darktable/.git/hooks`
-  * If you previously did not have a `pre-commit` hook:
-    * `cp pre-commit.sample pre-commit && chmod +x pre-commit`
-  * Open `pre-commit` with your favourite text editor, and append before the last block, here is how the end should look:
-```
-# format everything
-res=$(git clang-format --diff | wc -l)
-if [ $res -ne 1 ]
-then
-	git clang-format
-	echo "Commit did not match clang-format"
-	exit 1;
-fi
-
-# If there are whitespace errors, print the offending file names and fail.
-exec git diff-index --check --cached $against --
-```
-* Also, there is a [Developer's Guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide) on our GitHub wiki, which includues some [Coding Style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style) guidelines.
+See the [Coding Style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style)
+section in the [Developer's Guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
+on our GitHub wiki.

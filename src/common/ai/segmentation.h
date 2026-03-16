@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "backend.h"
+#include "ai/backend.h"
 #include <glib.h>
 
 /**
