@@ -137,6 +137,7 @@ typedef struct dt_scopes_t
   int update_counter;                           // most recent pixelpipe vs mode data
   dt_scopes_highlight_t highlight;              // depends on mouse position
   scopes_channels_t channels;                   // display state chosen by RGB buttons
+  gboolean dragging;                            // pre-GtkGestureDrag hack
   // UI elements
   GtkWidget *button_box_left;                   // GtkBox -- contains scope mode buttons
   GtkWidget *button_box_right;                  // GtkBox -- contains option buttons

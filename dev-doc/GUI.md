@@ -276,6 +276,11 @@ Commonly used CSS cursor names in darktable:
 
 Refer to `src/control/control.c` for the implementation of fallbacks for backends with incomplete CSS support.
 
+Use `dt_control_set_temp_cursor()` to set the mouse cursor shape temporarily. Follow this up with `dt_control_clear_temp_cursor()` to restore the cursor to the shape set by the most recent call to `dt_control_change_cursor()`.
+
+Use `dt_gui_cursor_set_busy()` to set a UI-wide busy cursor. This is meant to be used for modal operations which can only be halted by clicking cancel in the job progress widget. Remove the busy cursor with `dt_gui_cursor_clear_busy()`.
+
+In general, darktable widgets do not set per-widget cursors. If a widget needs to display a particular cursor, it must catch enter/leave events and make appropriate calls to `dt_control_change_cursor()`. This allows for the busy cursor to override any per-widget cursors.
 
 ---
 
