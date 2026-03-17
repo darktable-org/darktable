@@ -254,35 +254,80 @@ void dt_control_allow_change_cursor()
   darktable.control->lock_cursor_shape = FALSE;
 }
 
-void dt_control_change_cursor(const char *cursor_name)
+
+static GdkCursor* temp_prev_cursor = NULL;
+
+void _change_cursor_with_fallback(const char *cursor_name,
+                                  gboolean keep)
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(!darktable.control->lock_cursor_shape && window)
+  if(!window) return;
+  GdkDisplay *display = gdk_window_get_display(window);
+  GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+
+  // GTK3 fallback: some CSS cursor names are not supported by all
+  // backends (e.g. "wait" and "help" are missing from the GTK3 Win32
+  // mapping table despite Windows having IDC_WAIT and IDC_HELP;
+  // "none" is missing from both the Win32 and X11 backends).
+  // Fall back to the legacy GdkCursorType enum API for these cases.
+  // TODO(GTK4): remove this fallback when migrating to GTK4, where
+  // all backends support the full CSS cursor name spec.
+  if(!cursor)
   {
-    GdkDisplay *display = gdk_window_get_display(window);
-    GdkCursor *cursor = gdk_cursor_new_from_name(display, cursor_name);
+    GdkCursorType type = GDK_LEFT_PTR;
+    if(!strcmp(cursor_name, "none"))           type = GDK_BLANK_CURSOR;
+    else if(!strcmp(cursor_name, "wait"))      type = GDK_WATCH;
+    else if(!strcmp(cursor_name, "grab"))      type = GDK_HAND1;
+    else if(!strcmp(cursor_name, "cell"))      type = GDK_PLUS;
+    else if(!strcmp(cursor_name, "help"))      type = GDK_QUESTION_ARROW;
+    else if(!strcmp(cursor_name, "ns-resize")) type = GDK_DOUBLE_ARROW;
+    cursor = gdk_cursor_new_for_display(display, type);
+  }
 
-    // GTK3 fallback: some CSS cursor names are not supported by all
-    // backends (e.g. "wait" and "help" are missing from the GTK3 Win32
-    // mapping table despite Windows having IDC_WAIT and IDC_HELP;
-    // "none" is missing from both the Win32 and X11 backends).
-    // Fall back to the legacy GdkCursorType enum API for these cases.
-    // TODO(GTK4): remove this fallback when migrating to GTK4, where
-    // all backends support the full CSS cursor name spec.
-    if(!cursor)
-    {
-      GdkCursorType type = GDK_LEFT_PTR;
-      if(!strcmp(cursor_name, "none"))          type = GDK_BLANK_CURSOR;
-      else if(!strcmp(cursor_name, "wait"))     type = GDK_WATCH;
-      else if(!strcmp(cursor_name, "grab"))     type = GDK_HAND1;
-      else if(!strcmp(cursor_name, "cell"))     type = GDK_PLUS;
-      else if(!strcmp(cursor_name, "help"))     type = GDK_QUESTION_ARROW;
-      cursor = gdk_cursor_new_for_display(display, type);
-    }
+  if(keep)
+  {
+    if(temp_prev_cursor) g_object_unref(temp_prev_cursor);
+    temp_prev_cursor = g_object_ref(cursor);
+  }
 
+  if(!darktable.control->lock_cursor_shape)
+  {
     gdk_window_set_cursor(window, cursor);
     g_object_unref(cursor);
   }
+}
+
+void dt_control_set_temp_cursor(const char *cursor_name)
+{
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(window)
+  {
+    if(!temp_prev_cursor)
+    {
+      temp_prev_cursor = gdk_window_get_cursor(window);
+      g_object_ref(temp_prev_cursor);
+    }
+    _change_cursor_with_fallback(cursor_name, FALSE);
+    dt_control_forbid_change_cursor();
+  }
+}
+
+void dt_control_clear_temp_cursor()
+{
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(temp_prev_cursor)
+  {
+    if(window)
+      gdk_window_set_cursor(window, temp_prev_cursor);
+    g_object_unref(temp_prev_cursor);
+    temp_prev_cursor = NULL;
+    dt_control_allow_change_cursor();
+  }
+}
+
+void dt_control_change_cursor(const char *cursor_name)
+{
+  _change_cursor_with_fallback(cursor_name, TRUE);
 }
 
 /* Some implementation and how-to use notes about control->running

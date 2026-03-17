@@ -313,6 +313,7 @@ static void _drawable_button_press(GtkGestureSingle *gesture,
      && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
   {
     dt_control_change_cursor("grabbing");
+    s->dragging = (n_press == 1);
     const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
     dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), n_press, pos, 0.0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
@@ -328,6 +329,7 @@ static void _drawable_button_release(GtkGestureSingle *gesture,
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
   {
     dt_control_change_cursor("grab");
+    s->dragging = FALSE;
     dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), -n_press, x, 0.0, FALSE);
   }
 }
@@ -338,7 +340,7 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              dt_scopes_t *s)
 {
   dt_scopes_mode_t *const cur_mode = s->cur_mode;
-  if(dt_key_modifier_state() & GDK_BUTTON1_MASK
+  if(s->dragging
      && s->highlight != DT_SCOPES_HIGHLIGHT_NONE
      && dt_scopes_func_exists(cur_mode, get_exposure_pos))
   {
@@ -635,6 +637,7 @@ void gui_init(dt_lib_module_t *self)
       &dt_scopes_functions_histogram,};
   const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   s->update_counter = 1;
+  s->dragging = FALSE;
   s->cur_mode = &s->modes[DT_SCOPES_MODE_WAVEFORM];  // failsafe
 
   // FIXME: is there a better way to init this?

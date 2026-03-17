@@ -152,9 +152,15 @@ static double _split_get_exposure_pos(const dt_scopes_mode_t *const self,
     if(d->right->functions->get_exposure_pos)
       return dt_scopes_call(d->right, get_exposure_pos, x*2.0-allocation.width, y);
     else
+    {
       dt_print(DT_DEBUG_ALWAYS,
                "[_split_get_exposure_pos] no %s (right) get_exposure_pos at %f, %f",
                dt_scopes_call(d->right, name), x, y);
+      // hack to handle user starting drag in left side and to right side
+      // FIXME: making each side of split in own widget will handle this
+      if(d->left->functions->get_exposure_pos)
+        return dt_scopes_call(d->left, get_exposure_pos, x*2.0, y);
+    }
   }
   return x;
 }

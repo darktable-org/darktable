@@ -4153,21 +4153,6 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
 
 static gboolean _resize_wrap_dragging = FALSE;
 static GtkWidget *_resize_wrap_hovered = NULL;
-static GdkCursor *_resize_wrap_prev_cursor = NULL;
-
-static void _resize_wrap_restore_cursor()
-{
-  if(_resize_wrap_prev_cursor)
-  {
-    GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-    if(window)
-    {
-      gdk_window_set_cursor(window, _resize_wrap_prev_cursor);
-      g_object_unref(_resize_wrap_prev_cursor);
-      _resize_wrap_prev_cursor = NULL;
-    }
-  }
-}
 
 static gboolean _resize_wrap_draw_handle(GtkWidget *w,
                                          void *cr,
@@ -4196,16 +4181,19 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
 {
   if(_resize_wrap_dragging)
   {
+    // keeps resize box from shrinking when user clicks above very
+    // bottom of handle
+    const int new_height = round(event->y + 0.5*DT_RESIZE_HANDLE_SIZE);
     if(DTGTK_IS_DRAWING_AREA(widget))
     {
       // enforce configuration limits
-      dt_conf_set_int(config_str, event->y);
+      dt_conf_set_int(config_str, new_height);
       const int height = dt_conf_get_int(config_str);
       dtgtk_drawing_area_set_height(widget, height);
     }
     else
     {
-      dt_conf_set_int(config_str, event->y);
+      dt_conf_set_int(config_str, new_height);
       gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(widget)))));
     }
     return TRUE;
@@ -4214,20 +4202,11 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
           && event->window == gtk_widget_get_window(widget)
           && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
   {
-    if(!_resize_wrap_prev_cursor)
-    {
-      GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-      if(window)
-      {
-        _resize_wrap_prev_cursor = gdk_window_get_cursor(window);
-        g_object_ref(_resize_wrap_prev_cursor);
-      }
-    }
-    dt_control_change_cursor("ns-resize");
+    dt_control_set_temp_cursor("ns-resize");
     return TRUE;
   }
 
-  _resize_wrap_restore_cursor();
+  dt_control_clear_temp_cursor();
   return FALSE;
 }
 
@@ -4239,7 +4218,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
      && event->type == GDK_BUTTON_RELEASE)
   {
     _resize_wrap_dragging = FALSE;
-    _resize_wrap_restore_cursor();
+    dt_control_clear_temp_cursor();
     return TRUE;
   }
   else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
@@ -4647,7 +4626,6 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
 
 
 static int busy_nest_count = 0;
-static GdkCursor* busy_prev_cursor = NULL;
 
 void dt_gui_cursor_set_busy()
 {
@@ -4657,16 +4635,7 @@ void dt_gui_cursor_set_busy()
     // this is not a nested call, so store the current mouse cursor and set it to be the
     // "watch" cursor
     dt_control_forbid_change_cursor();
-    GtkWidget *toplevel = darktable.gui->ui->main_window;
-    GdkWindow *window = gtk_widget_get_window(toplevel);
-    busy_prev_cursor = gdk_window_get_cursor(window);
-    g_object_ref(busy_prev_cursor);
-    GdkDisplay *display = gtk_widget_get_display(toplevel);
-    GdkCursor *watch = gdk_cursor_new_from_name(display, "wait");
-    // TODO(GTK4): remove fallback when migrating to GTK4
-    if(!watch) watch = gdk_cursor_new_for_display(display, GDK_WATCH);
-    gdk_window_set_cursor(window, watch);
-    g_object_unref(watch);
+    dt_control_set_temp_cursor("wait");
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
     dt_gui_process_events();
@@ -4686,11 +4655,7 @@ void dt_gui_cursor_clear_busy()
     {
       // we've matched the last of the pending set_busy calls, so it is now time
       // to restore the original mouse cursor
-      GtkWidget *toplevel = darktable.gui->ui->main_window;
-      GdkWindow *window = gtk_widget_get_window(toplevel);
-      gdk_window_set_cursor(window, busy_prev_cursor);
-      g_object_unref(busy_prev_cursor);
-      busy_prev_cursor = NULL;
+      dt_control_clear_temp_cursor();
       dt_control_allow_change_cursor();
       gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
     }
