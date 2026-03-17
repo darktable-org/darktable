@@ -108,10 +108,12 @@ static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
   for(GList *l = dev->history; l; l = g_list_next(l))
   {
     const dt_dev_history_item_t *item = l->data;
-    if(!item->enabled || !item->module
-       || !item->module->distort_transform)
-      continue;
-    hash = dt_hash(hash, item->params, item->module->params_size);
+    if(item->enabled
+       && item->module
+       && item->module->distort_transform)
+    {
+      hash = dt_hash(hash, item->params, item->module->params_size);
+    }
   }
   return hash;
 }
