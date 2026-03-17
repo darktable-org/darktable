@@ -74,7 +74,7 @@ elseif(WIN32)
     )
   endif()
 elseif(UNIX)
-  file(GLOB _ORT_SO "${ONNXRuntime_LIB_DIR}/libonnxruntime*.so*")
+  file(GLOB _ORT_SO "${ONNXRuntime_LIB_DIR}/libonnxruntime.so*")
   if(_ORT_SO)
     install(FILES ${_ORT_SO}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable
