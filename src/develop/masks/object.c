@@ -70,6 +70,7 @@ typedef struct _object_data_t
   gboolean model_loaded;    // whether the model was loaded
   int encode_state;         // uses _encode_state_t values (atomic access)
   dt_imgid_t encoded_imgid; // image ID that was encoded
+  dt_hash_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
   int encode_w, encode_h;   // encoding resolution (for coordinate mapping)
   uint8_t *encode_rgb;      // stored RGB from encoding (uint8, HWC, 3ch)
   int encode_rgb_w, encode_rgb_h;
@@ -96,6 +97,25 @@ typedef struct _object_data_t
 static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
 {
   return (gui && gui->scratchpad) ? (_object_data_t *)gui->scratchpad : NULL;
+}
+
+// compute a hash of all distortion module parameters
+// from a develop history — changes on crop/rotate/perspective/lens
+// but NOT on exposure/color/masks
+static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
+{
+  dt_hash_t hash = DT_INITHASH;
+  for(GList *l = dev->history; l; l = g_list_next(l))
+  {
+    const dt_dev_history_item_t *item = l->data;
+    if(item->enabled
+       && item->module
+       && item->module->distort_transform)
+    {
+      hash = dt_hash(hash, item->params, item->module->params_size);
+    }
+  }
+  return hash;
 }
 
 // free vectorized preview forms (never registered in dev->forms)
@@ -163,7 +183,8 @@ static void _free_data(dt_masks_form_gui_t *gui)
 typedef struct _encode_thread_data_t
 {
   _object_data_t *d;
-  dt_imgid_t imgid; // image to encode (thread renders via export pipe)
+  dt_imgid_t imgid;        // image to encode (thread renders via export pipe)
+  int32_t history_end;     // darkroom history_end (may be ahead of database)
 } _encode_thread_data_t;
 
 // background thread: loads model, renders image via export pipe, and encodes,
@@ -174,6 +195,7 @@ static gpointer _encode_thread_func(gpointer data)
   _encode_thread_data_t *td = data;
   _object_data_t *d = td->d;
   const dt_imgid_t imgid = td->imgid;
+  const int32_t td_history_end = td->history_end;
   g_free(td);
 
   // load model if needed
@@ -198,6 +220,12 @@ static gpointer _encode_thread_func(gpointer data)
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
+
+  // the database's history_end may lag behind the darkroom's
+  // in-memory state (crop/rotate not flushed yet), override
+  // so synch_all applies all current edits
+  if(td_history_end > 0 && td_history_end > dev.history_end)
+    dev.history_end = td_history_end;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
@@ -1444,11 +1472,13 @@ static void _object_events_post_expose(
     gui->scratchpad = d;
   }
 
-  // detect image change: reset encoding if we switched to a different image
+  // detect image or distortion change: reset encoding if we switched
+  // to a different image or if crop/rotate/perspective changed
   const dt_imgid_t cur_imgid = darktable.develop->image_storage.id;
   const int cur_state = g_atomic_int_get(&d->encode_state);
   if((cur_state == ENCODE_READY || cur_state == ENCODE_ERROR)
-     && d->encoded_imgid != cur_imgid)
+     && (d->encoded_imgid != cur_imgid
+         || d->encoded_distort_hash != _compute_distort_hash(darktable.develop)))
   {
     if(d->encode_thread)
     {
@@ -1493,11 +1523,17 @@ static void _object_events_post_expose(
     // frame 2: launch background thread to render and encode the image.
     // the thread creates a temporary export pipe at high resolution
     // instead of using the low-res preview backbuf.
+    // flush history to database so the encode thread's dt_dev_load_image
+    // sees the current edits (crop/rotate may not be flushed yet)
+    dt_dev_write_history(darktable.develop);
+
     _encode_thread_data_t *td = g_new(_encode_thread_data_t, 1);
     td->d = d;
     td->imgid = cur_imgid;
+    td->history_end = darktable.develop->history_end;
 
     d->encoded_imgid = cur_imgid;
+    d->encoded_distort_hash = _compute_distort_hash(darktable.develop);
     d->encode_state = ENCODE_RUNNING;
     // start poll timer BEFORE the thread, it will detect completion
     // and also tracks modifier keys once encoding is ready
