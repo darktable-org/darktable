@@ -723,8 +723,6 @@ void process(dt_iop_module_t *self,
   const gboolean do_capture = !passthru &&  !is_4bayer && !show_dual && !run_fast && d->cs_enabled;
   const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking && !run_fast && !true_monochrome;
 
-  const float procmax = dt_iop_get_processed_maximum(piece);
-  const float procmin = dt_iop_get_processed_minimum(piece);
   const int exif_iso = img->exif_iso;
 
   if(do_capture)
@@ -871,13 +869,13 @@ void process(dt_iop_module_t *self,
           }
         }
         else if(method == DT_IOP_DEMOSAIC_RCD)
-          rcd_demosaic(t_out, t_in, width, t_rows, filters, procmax);
+          rcd_demosaic(t_out, t_in, width, t_rows, filters);
         else if(method == DT_IOP_DEMOSAIC_LMMSE)
-          lmmse_demosaic(t_out, t_in, width, t_rows, filters, d->lmmse_refine, procmax);
+          lmmse_demosaic(t_out, t_in, width, t_rows, filters, d->lmmse_refine, dt_iop_get_processed_maximum(piece));
         else if(method != DT_IOP_DEMOSAIC_AMAZE)
           demosaic_ppg(t_out, t_in, width, t_rows, filters, d->median_thrs, 100000);
         else
-          amaze_demosaic(t_in, t_out, width, t_rows, filters, procmin);
+          amaze_demosaic(t_in, t_out, width, t_rows, filters, dt_iop_get_processed_minimum(piece));
       }
 
       if(do_capture)

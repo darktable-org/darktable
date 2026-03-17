@@ -27,12 +27,12 @@ static inline float calcBlendFactor(float val, float threshold)
 }
 
 // Populate cfa and rgb data by normalized input
-__kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters, const float scale)
+__kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if(col >= w || row >= height) return;
-  const float val = scale * fmax(0.0f, readsingle(in, col, row));
+  const float val = fmax(0.0f, readsingle(in, col, row));
   const int color = FC(row, col, filters);
 
   global float *rgbcol = rgb0;
@@ -44,14 +44,14 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
 }
 
 // Write back-normalized data in rgb channels to output
-__kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const float scale, const int border)
+__kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const int border)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if(!(col >= border && col < w - border && row >= border && row < height - border)) return;
   const int idx = mad24(row, w, col);
 
-  write_imagef(out, (int2)(col, row), fmax(DEMOSAIC_OUTMIN, (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f)));
+  write_imagef(out, (int2)(col, row), fmax(DEMOSAIC_OUTMIN, (float4)(rgb0[idx], rgb1[idx], rgb2[idx], 0.0f)));
 }
 
 #define eps 1e-5f              // Tolerance to avoid dividing by zero

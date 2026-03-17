@@ -74,12 +74,6 @@
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
 #define epssq 1e-10f
 
-// We might have negative data in input and also want to normalise
-static inline float _safe_in(float a, float scale)
-{
-  return fmaxf(0.0f, a) * scale;
-}
-
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
 static void demosaic_box3(float *const restrict out,
                           const float *const restrict in,
@@ -118,19 +112,16 @@ static void rcd_demosaic(float *const restrict out,
                          const float *const restrict in,
                          const int width,
                          const int height,
-                         const uint32_t filters,
-                         const float scaler)
+                         const uint32_t filters)
 {
   demosaic_ppg(out, in, width, height, filters, 0.0f, RCD_BORDER);
   if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
     return;
 
-  const float revscaler = 1.0f / scaler;
-
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
   const int num_horizontal = 1 + (width - 2 * RCD_BORDER -1) / RCD_TILEVALID;
 
-  DT_OMP_PRAGMA(parallel firstprivate(width, height, filters, out, in, scaler, revscaler))
+  DT_OMP_PRAGMA(parallel firstprivate(width, height, filters, out, in))
   {
     // ensure that border elements which are read but never actually set below are zeroed out so use calloc
     float *const VH_Dir = dt_calloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE);
@@ -173,7 +164,7 @@ static void rcd_demosaic(float *const restrict out,
           const int c1 = FC(row, colStart + 1, filters);
           for(int col = colStart, indx = (row - rowStart) * DT_RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
           {
-            cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = _safe_in(in[in_indx], revscaler);
+            cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = fmaxf(0.0f, in[in_indx]);
           }
         }
 
@@ -370,9 +361,9 @@ static void rcd_demosaic(float *const restrict out,
               col < colEnd - RCD_BORDER;
               col++, o_idx += 4, idx++)
           {
-            out[o_idx]   = fmaxf(DEMOSAIC_OUTMIN, scaler * rgb[0][idx]);
-            out[o_idx+1] = fmaxf(DEMOSAIC_OUTMIN, scaler * rgb[1][idx]);
-            out[o_idx+2] = fmaxf(DEMOSAIC_OUTMIN, scaler * rgb[2][idx]);
+            out[o_idx]   = fmaxf(DEMOSAIC_OUTMIN, rgb[0][idx]);
+            out[o_idx+1] = fmaxf(DEMOSAIC_OUTMIN, rgb[1][idx]);
+            out[o_idx+2] = fmaxf(DEMOSAIC_OUTMIN, rgb[2][idx]);
             out[o_idx+3] = 0.0f;
           }
         }
@@ -475,11 +466,9 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
     goto error;
 
   // populate data
-  const float scaler = dt_iop_get_processed_maximum(piece);
-  const float revscaler = 1.0f / scaler;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
         CLARG(dev_in), CLARG(cfa), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height),
-        CLARG(filters), CLARG(revscaler));
+        CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
   // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
@@ -524,7 +513,7 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
 
   // write output
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
-        CLARG(dev_out), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler), CLARGINT(RCD_BORDER));
+        CLARG(dev_out), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARGINT(RCD_BORDER));
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
