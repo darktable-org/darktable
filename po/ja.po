@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-16 20:07+0100\n"
-"PO-Revision-Date: 2026-03-17 21:09+0900\n"
+"PO-Revision-Date: 2026-03-17 21:44+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1547,16 +1547,12 @@ msgid "raster mask files root folder"
 msgstr "ラスターマスクファイルのルートフォルダ"
 
 #: ../build/bin/preferences_gen.h:3442
-#, fuzzy
-#| msgid ""
-#| "this folder (and sub-folders) contains PFM files used by the raster mask "
-#| "import module. (restart required)"
 msgid ""
 "this folder (and sub-folders) contains PFM/PNG files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
 "このフォルダ（およびサブフォルダ）に、ラスターマスクインポートモジュールが使用"
-"するPFMファイルが含まれます（要再起動）"
+"するPFM/PNGファイルが含まれます（要再起動）"
 
 #: ../build/bin/preferences_gen.h:3451
 msgid "auto-apply pixel workflow defaults"
@@ -1996,7 +1992,7 @@ msgstr "XMPサイドカーファイル"
 
 #: ../build/bin/preferences_gen.h:4125
 msgid "create XMP files"
-msgstr "XMPファイルを作成"
+msgstr "XMPファイルの作成"
 
 #: ../build/bin/preferences_gen.h:4134
 msgid ""
@@ -2088,16 +2084,12 @@ msgstr ""
 "します"
 
 #: ../build/bin/preferences_gen.h:4238
-#, fuzzy
-#| msgid "show splash screen at startup"
 msgid "show welcome screen on next run"
-msgstr "起動時にスプラッシュスクリーンを表示する"
+msgstr "次回起動時にウェルカムスクリーンを表示する"
 
 #: ../build/bin/preferences_gen.h:4246
-#, fuzzy
-#| msgid "lua scripts will not run the next time darktable is started"
 msgid "display the welcome setup screen the next time darktable is launched"
-msgstr "luaスクリプトは次回のdarktable起動時には実行されません"
+msgstr "次回のdarktable起動時にウェルカムセットアップスクリーンを表示します"
 
 #: ../build/bin/preferences_gen.h:4255
 msgid "load default shortcuts at startup"
@@ -6262,10 +6254,9 @@ msgid "network error: %s"
 msgstr "ネットワークエラー：%s"
 
 #: ../src/common/ai_models.c:181
-#, fuzzy, c-format
-#| msgid "color not found"
+#, c-format
 msgid "model repository \"%s\" not found"
-msgstr "色が見つかりません"
+msgstr "モデルリポジトリ\"%s\"が見つかりませんでした"
 
 #: ../src/common/ai_models.c:183
 msgid "GitHub API rate limit exceeded, try again later"
@@ -6277,10 +6268,8 @@ msgid "GitHub API error (HTTP %ld)"
 msgstr "GitHub APIエラー (HTTP %ld)"
 
 #: ../src/common/ai_models.c:1054 ../src/common/ai_models.c:1083
-#, fuzzy
-#| msgid "invalid crop parameters"
 msgid "invalid parameters"
-msgstr "無効なトリミングのパラメータ"
+msgstr "無効なパラメータ"
 
 #: ../src/common/ai_models.c:1057
 #, c-format
@@ -6289,7 +6278,7 @@ msgstr "ファイルが見つかりません：%s"
 
 #: ../src/common/ai_models.c:1060
 msgid "failed to extract model archive"
-msgstr ""
+msgstr "モデルアーカイブの展開に失敗しました"
 
 #: ../src/common/ai_models.c:1091
 msgid "model not found in registry"
@@ -6300,25 +6289,21 @@ msgid "model has no download asset defined"
 msgstr "モデルに定義されたダウンロードアセットがありません"
 
 #: ../src/common/ai_models.c:1108
-#, fuzzy
-#| msgid "invalid paper size"
 msgid "invalid asset filename"
-msgstr "無効な用紙のサイズです"
+msgstr "無効なアセットファイル名"
 
 #: ../src/common/ai_models.c:1114
 msgid "model is already downloading"
 msgstr "モデルはすでにダウンロード中です"
 
 #: ../src/common/ai_models.c:1145
-#, fuzzy
-#| msgid "invalid override date/time format"
 msgid "invalid repository format"
-msgstr "無効な上書き日時の形式です"
+msgstr "無効なリポジトリ形式"
 
 #: ../src/common/ai_models.c:1170
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
-msgstr ""
+msgstr "darktable %sと互換性のあるAIモデルのリリースが見つかりませんでした"
 
 #: ../src/common/ai_models.c:1186
 #, c-format
@@ -6326,6 +6311,8 @@ msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
 "verification"
 msgstr ""
+"%sのチェックサムを取得することが出来ませんでした。整合性の確認ができないため、"
+"ダウンロードを中止します"
 
 #: ../src/common/ai_models.c:1204
 #, fuzzy
@@ -6334,10 +6321,9 @@ msgid "failed to build download url"
 msgstr "スクリプトのダウンロードが出来ませんでした"
 
 #: ../src/common/ai_models.c:1215
-#, fuzzy, c-format
-#| msgid "failed to create session path %s."
+#, c-format
 msgid "failed to create file: %s"
-msgstr "セッションパス %s の作成失敗"
+msgstr "ファイル%sの作成失敗"
 
 #: ../src/common/ai_models.c:1239
 #, fuzzy
@@ -6350,10 +6336,9 @@ msgid "download cancelled"
 msgstr "ダウンロードがキャンセルされました"
 
 #: ../src/common/ai_models.c:1261
-#, fuzzy, c-format
-#| msgid "loader: %s"
+#, c-format
 msgid "download failed: %s"
-msgstr "ローダ：%s"
+msgstr "ダウンロード失敗：%s"
 
 #: ../src/common/ai_models.c:1272
 #, c-format
@@ -6361,10 +6346,8 @@ msgid "http error: %ld"
 msgstr "httpエラー：%ld"
 
 #: ../src/common/ai_models.c:1295
-#, fuzzy
-#| msgid "verification code:"
 msgid "checksum verification failed"
-msgstr "識別コード:"
+msgstr "チェックサム検証失敗"
 
 #: ../src/common/ai_models.c:1305
 #, c-format
@@ -6372,10 +6355,12 @@ msgid ""
 "no checksum available for %s — refusing to install without integrity "
 "verification"
 msgstr ""
+"%sのチェックサムが利用出来ません。整合性の確認ができないため、インストールを中"
+"止します"
 
 #: ../src/common/ai_models.c:1315
 msgid "failed to extract archive"
-msgstr ""
+msgstr "アーカイブの展開に失敗しました"
 
 #: ../src/common/camera_control.c:205
 #, c-format
@@ -8693,11 +8678,8 @@ msgid "import images from camera"
 msgstr "カメラから画像をインポートします"
 
 #: ../src/control/jobs/control_jobs.c:214
-#, fuzzy
-#| msgid "failed to create film roll for destination directory, aborting move.."
 msgid "failed to create film roll for destination directory, aborting move."
-msgstr ""
-"送り先ディレクトリのフィルムロール作成に失敗しました。移動を中止します.."
+msgstr "送り先ディレクトリのフィルムロール作成に失敗しました。移動を中止します"
 
 #: ../src/control/jobs/control_jobs.c:363
 #, c-format
@@ -9159,20 +9141,18 @@ msgid "apply style(s)"
 msgstr "スタイルを適用"
 
 #: ../src/control/jobs/control_jobs.c:2585
-#, fuzzy, c-format
-#| msgid "failed to get parameters from storage module `%s', aborting export.."
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export."
 msgstr ""
 "ストレージモジュール`%s'からパラメータを取得することが出来ません。エクスポート"
-"を中止しています.."
+"を中止しています"
 
 #: ../src/control/jobs/control_jobs.c:2597
-#, fuzzy, c-format
-#| msgid "failed to get parameters from storage module `%s', aborting export.."
+#, c-format
 msgid "failed to get parameters from format module `%s', aborting export."
 msgstr ""
-"ストレージモジュール`%s'からパラメータを取得することが出来ません。エクスポート"
-"を中止しています.."
+"フォーマットモジュール`%s'からパラメータを取得することが出来ません。エクスポー"
+"トを中止しています"
 
 #: ../src/control/jobs/control_jobs.c:2617
 msgid "export images"
@@ -10177,7 +10157,7 @@ msgstr "開く画像がありません！"
 
 #: ../src/develop/develop.c:531
 msgid "please wait for image to load"
-msgstr ""
+msgstr "画像の読み込みが完了するまでお待ちください"
 
 #: ../src/develop/develop.c:1096
 msgid ""
@@ -10703,16 +10683,12 @@ msgid "[OBJECT] change brush size / cleanup"
 msgstr "[OBJECT] ブラシサイズ／クリーンアップを変更"
 
 #: ../src/develop/masks/object.c:1815
-#, fuzzy
-#| msgid "[PATH] change size"
 msgid "[OBJECT] change smoothing"
-msgstr "【パス】 サイズを変更する"
+msgstr "[OBJECT] 平滑化を変更"
 
 #: ../src/develop/masks/object.c:1820
-#, fuzzy
-#| msgid "[PATH] change opacity"
 msgid "[OBJECT] change opacity"
-msgstr "【パス】 不透明度を変更する"
+msgstr "[OBJECT] 不透明度を変更"
 
 #: ../src/develop/masks/object.c:1828
 #, c-format
@@ -15148,7 +15124,7 @@ msgstr "読み取られた時のID"
 
 #: ../src/gui/preferences_ai.c:307
 msgid "<i>not available, will fall back to CPU</i>"
-msgstr ""
+msgstr "<i>利用出来ません、CPUへフォールバックします</i>"
 
 #: ../src/gui/preferences_ai.c:566
 #, fuzzy
@@ -15172,12 +15148,11 @@ msgid "AI model packages (*.dtmodel)"
 msgstr "AIモデルパッケージ（*.dtmodel）"
 
 #: ../src/gui/preferences_ai.c:815
-#, fuzzy, c-format
-#| msgid "delete duplicate?"
+#, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
-msgstr[0] "複製を削除しますか？"
-msgstr[1] "複製を削除しますか？"
+msgstr[0] "選択した%d個のモデルを削除しますか？"
+msgstr[1] "選択した%d個のモデルを削除しますか？"
 
 #. enable AI toggle
 #: ../src/gui/preferences_ai.c:873
@@ -20032,10 +20007,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/colorharmonizer.c:1417
-#, fuzzy
-#| msgid "wait for the preview to finish recomputing"
 msgid "not yet available — wait for the preview to finish processing."
-msgstr "プレビューが再計算を終えるまでお待ちください"
+msgstr "まだ利用できません。プレビューの処理が完了するまでお待ちください"
 
 #: ../src/iop/colorharmonizer.c:1422
 msgid ""
@@ -20936,10 +20909,8 @@ msgid "how many color smoothing median steps after demosaicing"
 msgstr "デモザイク後のカラー平滑化のメディアンステップ数"
 
 #: ../src/iop/demosaic.c:1785
-#, fuzzy
-#| msgid "green channels matching method"
 msgid "green channels matching method. only applies for some old sensors"
-msgstr "緑チャンネルのマッチング方式"
+msgstr "緑チャンネルのマッチング方式。一部の古いセンサーにのみ適用"
 
 #: ../src/iop/demosaic.c:1788
 msgid ""
@@ -24243,13 +24214,15 @@ msgid ""
 "no mask extracted from the raster file\n"
 "make sure the masks have proper contrast"
 msgstr ""
+"ラスターファイルからマスクが抽出されませんでした\n"
+"マスクのコントラストが適切であることを確認してください"
 
 #: ../src/iop/rasterfile.c:179
 #, c-format
 msgid "%d mask extracted from the raster file"
 msgid_plural "%d masks extracted from the raster file"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ラスターファイルから%d 個のマスクを抽出しました"
+msgstr[1] "ラスターファイルから%d 個のマスクを抽出しました"
 
 #: ../src/iop/rasterfile.c:206 ../src/iop/rasterfile.c:217
 #: ../src/iop/rasterfile.c:225 ../src/iop/rasterfile.c:236
@@ -25423,7 +25396,7 @@ msgstr "補間が不安定です。カーブの平滑化を弱めてください
 
 #: ../src/iop/toneequal.c:1807 ../src/iop/toneequal.c:1873
 msgid "wait for the preview to finish recomputing"
-msgstr "プレビューが再計算を終えるまでお待ちください"
+msgstr "プレビューの再計算が完了するまでお待ちください"
 
 #: ../src/iop/toneequal.c:2014 ../src/iop/toneequal.c:2565
 msgid ""
