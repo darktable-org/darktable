@@ -255,8 +255,6 @@ static gpointer _encode_thread_func(gpointer data)
     return NULL;
   }
 
-  dt_ioppr_resync_modules_order(&dev);
-
   dt_dev_pixelpipe_set_icc(&pipe, DT_COLORSPACE_SRGB, NULL, DT_INTENT_PERCEPTUAL);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf,
                              buf.width, buf.height, buf.iscale);
