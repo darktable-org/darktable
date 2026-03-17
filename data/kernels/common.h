@@ -18,7 +18,7 @@
 
 #pragma once
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
-
+#define DEMOSAIC_OUTMIN 0.0f
 
 constant sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
@@ -155,7 +155,41 @@ static inline float fsquare(const float a)
   return (a * a);
 }
 
+static inline float fcube(const float a)
+{
+  return (a * a * a);
+}
+
 static inline float clipf(const float a)
 {
   return clamp(a, 0.0f, 1.0f);
+}
+
+/* Some inline functions making life easier when reading photosites
+   or pixels from cl_mem images.
+  The variants with a leading A use the faster samplerA interpolater, only
+  to be used with safe positions as otherwise the read value will be undefined,
+  (on AMD possibly NaN).
+*/
+static inline float readsingle(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, sampleri, (int2)(col, row)).x;
+}
+static inline float Areadsingle(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, samplerA, (int2)(col, row)).x;
+}
+
+static inline float4 readpixel(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, sampleri, (int2)(col, row));
+}
+static inline float4 Areadpixel(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, samplerA, (int2)(col, row));
+}
+
+static inline float readalpha(read_only image2d_t in, int col, int row)
+{
+  return clipf(read_imagef(in, sampleri, (int2)(col, row)).w);
 }

@@ -125,7 +125,7 @@ static void lmmse_demosaic(float *const restrict out,
                            const dt_iop_demosaic_lmmse_t mode,
                            const float scaler)
 {
-  rcd_ppg_border(out, in, width, height, filters, BORDER_AROUND);
+  demosaic_ppg(out, in, width, height, filters, 0.0f, BORDER_AROUND);
   if(width < 2 * BORDER_AROUND || height < 2 * BORDER_AROUND)
     return;
 
@@ -557,9 +557,9 @@ static void lmmse_demosaic(float *const restrict out,
           float *col2 = qix[2] + idx;
           for(int col = first_horizontal; col < last_horizontal; col++, dest +=4, col0++, col1++, col2++)
           {
-            dest[0] = scaler * _calc_gamma(col0[0], lmmse_gamma_out);
-            dest[1] = scaler * _calc_gamma(col1[0], lmmse_gamma_out);
-            dest[2] = scaler * _calc_gamma(col2[0], lmmse_gamma_out);
+            dest[0] = fmaxf(DEMOSAIC_OUTMIN, scaler * _calc_gamma(col0[0], lmmse_gamma_out));
+            dest[1] = fmaxf(DEMOSAIC_OUTMIN, scaler * _calc_gamma(col1[0], lmmse_gamma_out));
+            dest[2] = fmaxf(DEMOSAIC_OUTMIN, scaler * _calc_gamma(col2[0], lmmse_gamma_out));
             dest[3] = 0.0f;
           }
         }

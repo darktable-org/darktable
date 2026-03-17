@@ -52,6 +52,10 @@ DT_MODULE_INTROSPECTION(6, dt_iop_demosaic_params_t)
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 
+// with current pipeline code/interpolators we make sure the output of interpolators is
+// always non-negative
+#define DEMOSAIC_OUTMIN 0.0f
+
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
@@ -230,8 +234,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_4_2;
   int kernel_rcd_step_5_1;
   int kernel_rcd_step_5_2;
-  int kernel_rcd_border_redblue;
-  int kernel_rcd_border_green;
   int kernel_demosaic_box3;
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
@@ -873,7 +875,7 @@ void process(dt_iop_module_t *self,
         else if(method == DT_IOP_DEMOSAIC_LMMSE)
           lmmse_demosaic(t_out, t_in, width, t_rows, filters, d->lmmse_refine, procmax);
         else if(method != DT_IOP_DEMOSAIC_AMAZE)
-          demosaic_ppg(t_out, t_in, width, t_rows, filters, d->median_thrs);
+          demosaic_ppg(t_out, t_in, width, t_rows, filters, d->median_thrs, 100000);
         else
           amaze_demosaic(t_in, t_out, width, t_rows, filters, procmin);
       }
@@ -1281,8 +1283,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rcd_step_4_2 = dt_opencl_create_kernel(rcd, "rcd_step_4_2");
   gd->kernel_rcd_step_5_1 = dt_opencl_create_kernel(rcd, "rcd_step_5_1");
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
-  gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
-  gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
   gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
 
@@ -1348,8 +1348,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_2);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_1);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
-  dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
-  dt_opencl_free_kernel(gd->kernel_rcd_border_green);
   dt_opencl_free_kernel(gd->kernel_demosaic_box3);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
