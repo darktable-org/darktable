@@ -760,11 +760,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "",
       unified_memory ? ", unified mem" : ", dedicated mem" );
 
-  if((is_cpu_device || is_custom_device) && newdevice)
+  if(is_custom_device && newdevice)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
-                 "   *** discarding new %s ***\n",
-                 is_cpu_device ? "device as emulated by CPU" : "custom device");
+                 "   *** discarding new custom device ***\n");
     cl->dev[dev].disabled |= TRUE;
     res = TRUE;
     goto end;
