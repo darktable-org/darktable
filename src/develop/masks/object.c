@@ -70,7 +70,7 @@ typedef struct _object_data_t
   gboolean model_loaded;    // whether the model was loaded
   int encode_state;         // uses _encode_state_t values (atomic access)
   dt_imgid_t encoded_imgid; // image ID that was encoded
-  uint32_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
+  dt_hash_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
   int encode_w, encode_h;   // encoding resolution (for coordinate mapping)
   uint8_t *encode_rgb;      // stored RGB from encoding (uint8, HWC, 3ch)
   int encode_rgb_w, encode_rgb_h;
@@ -102,22 +102,16 @@ static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
 // compute a hash of all distortion module parameters
 // from a develop history — changes on crop/rotate/perspective/lens
 // but NOT on exposure/color/masks
-static uint32_t _compute_distort_hash(dt_develop_t *dev)
+static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
 {
-  uint32_t hash = 2166136261u; // FNV-1a seed
+  dt_hash_t hash = DT_INITHASH;
   for(GList *l = dev->history; l; l = g_list_next(l))
   {
     const dt_dev_history_item_t *item = l->data;
     if(!item->enabled || !item->module
        || !item->module->distort_transform)
       continue;
-    const uint8_t *p = (const uint8_t *)item->params;
-    const int sz = item->module->params_size;
-    for(int i = 0; i < sz; i++)
-    {
-      hash ^= p[i];
-      hash *= 16777619u;
-    }
+    hash = dt_hash(hash, item->params, item->module->params_size);
   }
   return hash;
 }
