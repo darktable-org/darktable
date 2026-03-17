@@ -1169,9 +1169,43 @@ static inline void dt_masks_get_image_size(float *width,
                                            float *iwidth,
                                            float *iheight)
 {
-  dt_dev_pixelpipe_t *preview = darktable.develop->preview_pipe;
-  if(width  ) *width   = preview->backbuf_width;
-  if(height ) *height  = preview->backbuf_height;
+  // Use full.pipe dimensions divided by iscale to obtain floating-point preview
+  // coordinates that exactly match the Cairo coordinate system used by the darkroom
+  // canvas (wd = full.pipe->processed_width / iscale, see dt_dev_get_preview_size).
+  // The integer-truncated backbuf_width / preview->iwidth values differ by up to
+  // one pixel from these floats, which causes a scale error that becomes a visible
+  // misalignment (~50-60 px) at high zoom levels for non-round image dimensions
+  // (e.g. 6022×4024 with iscale=6 → 1003.67 vs 1003).
+  // Use full.pipe dimensions divided by iscale to obtain floating-point preview
+  // coordinates that exactly match the Cairo coordinate system used by the darkroom
+  // canvas (wd = full.pipe->processed_width / iscale, see dt_dev_get_preview_size).
+  // The integer-truncated backbuf_width values differ by up to one pixel from these
+  // floats, which causes a scale error that becomes a visible misalignment at high
+  // zoom levels for non-round image dimensions.
+  //
+  // iwidth/iheight must match preview->iwidth/iheight (= pipe->iwidth/iheight used
+  // by _path_get_pts_border to scale corner coordinates before distort_transform).
+  // Using full.pipe->iwidth / iscale instead gives a non-integer value that does NOT
+  // match pipe->iwidth due to iscale rounding, causing a mismatch between the forward
+  // (display) and backward (drag normalization) coordinate transforms.
+  const dt_develop_t *dev = darktable.develop;
+  const dt_dev_pixelpipe_t *preview = dev->preview_pipe;
+  const float iscale = preview->iscale > 0.f ? preview->iscale : 1.f;
+
+  if(dev->full.pipe && dev->full.pipe->processed_width > 0)
+  {
+    if(width  ) *width   = dev->full.pipe->processed_width  / iscale;
+    if(height ) *height  = dev->full.pipe->processed_height / iscale;
+  }
+  else
+  {
+    if(width  ) *width   = preview->backbuf_width;
+    if(height ) *height  = preview->backbuf_height;
+  }
+
+  // iwidth/iheight must equal pipe->iwidth/iheight (the pipeline input dimensions
+  // used to scale corners in _path_get_pts_border / other mask get_points_border
+  // functions), so that backtransform(corner * pipe->iwidth) / iwidth = corner.
   if(iwidth ) *iwidth  = preview->iwidth;
   if(iheight) *iheight = preview->iheight;
 }

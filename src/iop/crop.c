@@ -441,17 +441,35 @@ static gboolean _set_max_clip(dt_iop_module_t *self)
   return TRUE;
 }
 
+// Compute the crop offset (left, top) that modify_roi_out would produce for this piece.
+// Uses a scale factor on preview pipes to reduce integer-truncation rounding errors
+// (same approach as clipping.c), and naturally captures any alignment correction that
+// modify_roi_out adds for fixed-ratio export crops.
+static void _get_crop_offset(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              float *crop_left,
+                              float *crop_top)
+{
+  float factor = 1.0f;
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
+
+  dt_iop_roi_t roi_in = piece->buf_in, roi_out;
+  roi_in.width  = (int)(piece->buf_in.width  * factor);
+  roi_in.height = (int)(piece->buf_in.height * factor);
+  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+
+  *crop_left = roi_out.x / factor;
+  *crop_top  = roi_out.y / factor;
+}
+
 gboolean distort_transform(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
                            float *const restrict points,
                            size_t points_count)
 {
-  dt_iop_crop_data_t *d = piece->data;
+  float crop_left, crop_top;
+  _get_crop_offset(self, piece, &crop_left, &crop_top);
 
-  const float crop_top = piece->buf_in.height * d->cy;
-  const float crop_left = piece->buf_in.width * d->cx;
-
-  // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
@@ -471,12 +489,9 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *const restrict points,
                                size_t points_count)
 {
-  dt_iop_crop_data_t *d = piece->data;
+  float crop_left, crop_top;
+  _get_crop_offset(self, piece, &crop_left, &crop_top);
 
-  const float crop_top = piece->buf_in.height * d->cy;
-  const float crop_left = piece->buf_in.width * d->cx;
-
-  // nothing to be done if parameters are set to neutral values (no top/left border)
   if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
