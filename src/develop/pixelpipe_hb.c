@@ -18,6 +18,7 @@
 
 #include "common/color_picker.h"
 #include "common/colorspaces.h"
+#include "common/hdr_viewer.h"
 #include "common/histogram.h"
 #include "common/opencl.h"
 #include "common/iop_order.h"
@@ -3009,6 +3010,37 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            roi_in.width, roi_in.height,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
+
+    // HDR viewer: forward float pixels to the external HDR preview app (if running).
+    // input is float RGBA in the display profile colorspace; values above 1.0 represent
+    // HDR signal that GTK would otherwise clip to uint8.
+    // Only attempt this when the preference is enabled (or always try; the connect()
+    // call returns immediately with -1 when the viewer is not running).
+    if(dt_conf_get_bool("plugins/darkroom/hdr_viewer_enabled"))
+    {
+      const int w = roi_in.width;
+      const int h = roi_in.height;
+      const float *const rgba = (const float *const)input;
+      // Strip alpha channel: RGBA float → RGB float (packed, row-major)
+      float *rgb = dt_alloc_align_float((size_t)w * h * 3);
+      if(rgb)
+      {
+        DT_OMP_FOR()
+        for(int k = 0; k < w * h; k++)
+        {
+          rgb[k * 3 + 0] = rgba[k * 4 + 0];
+          rgb[k * 3 + 1] = rgba[k * 4 + 1];
+          rgb[k * 3 + 2] = rgba[k * 4 + 2];
+        }
+        int viewer_fd = dt_hdr_viewer_connect();
+        if(viewer_fd >= 0)
+        {
+          dt_hdr_viewer_send_frame(viewer_fd, (uint32_t)w, (uint32_t)h, rgb);
+          dt_hdr_viewer_disconnect(viewer_fd);
+        }
+        dt_free_align(rgb);
+      }
+    }
   }
   return dt_pipe_shutdown(pipe);
 }
