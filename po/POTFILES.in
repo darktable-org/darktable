@@ -25,6 +25,7 @@ build/lib/darktable/plugins/introspection_colorbalancergb.c
 build/lib/darktable/plugins/introspection_colorchecker.c
 build/lib/darktable/plugins/introspection_colorcontrast.c
 build/lib/darktable/plugins/introspection_colorcorrection.c
+build/lib/darktable/plugins/introspection_colorharmonizer.c
 build/lib/darktable/plugins/introspection_colorequal.c
 build/lib/darktable/plugins/introspection_colorin.c
 build/lib/darktable/plugins/introspection_colorize.c
@@ -100,6 +101,8 @@ data/org.darktable.darktable.desktop.in
 src/bauhaus/bauhaus.c
 src/chart/main.c
 src/cli/main.c
+src/common/ai/segmentation.c
+src/common/ai_models.c
 src/common/camera_control.c
 src/common/collection.c
 src/common/color_harmony.c
@@ -159,6 +162,7 @@ src/develop/masks/gradient.c
 src/develop/masks/group.c
 src/develop/masks/masks.c
 src/develop/masks/masks.c
+src/develop/masks/object.c
 src/develop/masks/path.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
@@ -202,6 +206,7 @@ src/gui/hist_dialog.c
 src/gui/import_metadata.c
 src/gui/metadata_tags.c
 src/gui/preferences.c
+src/gui/preferences_ai.c
 src/gui/presets.c
 src/gui/splash.c
 src/gui/styles_dialog.c
@@ -251,6 +256,7 @@ src/iop/colorbalancergb.c
 src/iop/colorchecker.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
+src/iop/colorharmonizer.c
 src/iop/colorequal.c
 src/iop/colorin.c
 src/iop/colorize.c
@@ -372,6 +378,10 @@ src/libs/navigation.c
 src/libs/print_settings.c
 src/libs/recentcollect.c
 src/libs/recentcollect.c
+src/libs/scopes/histogram.c
+src/libs/scopes/split.c
+src/libs/scopes/vectorscope.c
+src/libs/scopes/waveform.c
 src/libs/select.c
 src/libs/session.c
 src/libs/snapshots.c

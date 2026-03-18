@@ -49,7 +49,31 @@ The following is a summary of the main features added to darktable
 5.6. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- Added optional AI subsystem (build with `-DUSE_AI=ON`). AI features
+  are disabled by default in preferences and can be enabled at runtime
+  without restarting. When disabled, no ONNX Runtime libraries are
+  loaded and no AI-related activity occurs. Models are downloaded from
+  a configurable repository and managed through the AI preferences tab.
+
+- Added AI object mask tool in the darkroom mask manager. Uses SAM2.1
+  and SegNext models for interactive object segmentation — click on an
+  object to generate a precise mask. Supports both foreground and
+  background prompt points with iterative refinement. The encoder runs
+  once per image (with optional GPU acceleration via CoreML, CUDA,
+  MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
+  produces masks interactively.
+
+- Added `colorharmonizer` module that applies color harmony
+  corrections in UCS color space, rotating hues toward a target
+  harmony structure (complementary, split-complementary, triadic,
+  tetradic, etc.). The saturation of target hues can be controlled,
+  and custom-defined harmonies with an arbitrary number of anchor nodes
+  at any angle are also supported. Options are provided to control the
+  intensity of the effect, protect neutral colors, and apply a Gaussian
+  filter to smooth harsh transitions. The module can be synced with the
+  vectorscope in RYB mode, with harmony and rotation angles controllable
+  directly from the vectorscope. Both CPU and OpenCL (GPU) implementations
+  are provided.
 
 ## UI/UX Improvements
 
@@ -115,14 +139,17 @@ changes (where available).
   and two-finger panning. Follow-up fixes refined input source
   handling to keep panning limited to touchpad smooth-scroll input.
 
+- Enabled shortcuts for some existing buttons in duplicate manager,
+  snapshots, and AgX modules.
+
+- Enabled shortcuts to cycle through module groups, modules and
+  module instances.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
 
 ## Other Changes
-
-- Enabled shortcuts for some existing buttons in duplicate manager,
-  snapshots, and AgX modules.
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
@@ -136,7 +163,7 @@ changes (where available).
 
 - In the styles module, a new option has been added to hide the
   preview in the tooltip. Additionally, a module preference now allows
-  you to change the preview size, with two options available: default 
+  you to change the preview size, with two options available: default
   and large.
 
 - Improved debugging option --dump-diff-pipe for those of you
@@ -157,11 +184,19 @@ changes (where available).
 
 - Added a new collection filter for image duplicates.
 
+- The masks in restricted edit mode are now displayed on-canvas as
+  dashed lines to ensure proper feedback.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
   time. This also fixes the style preview when flying over styles in
   the style module.
+
+- Drawn mask fixes:
+  - Masks do not shift position when crop is toggled on/off.
+  - Pixel-perfect node hovering and editing up to maximum (16x)
+    magnification.
 
 - If a tag category is marked as private, all tags and subcategories
   under it are also treated as private.
@@ -222,6 +257,9 @@ changes (where available).
 - Avoid speckles when creating drawn masks using the vectorize option
   in the Raster File module.
 
+- Fixed spurious export size is reduced because of memory restrictions
+  issue.
+
 ## Lua
 
 ### API Version
@@ -262,7 +300,9 @@ changes (where available).
 
 ### Optional
 
-- N/A
+- ONNX Runtime 1.17+ for AI features
+
+- libarchive for AI model extraction
 
 ## RawSpeed changes
 

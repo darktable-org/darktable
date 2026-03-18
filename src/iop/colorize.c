@@ -174,8 +174,12 @@ void process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorize_data_t *data = piece->data;
   dt_iop_colorize_global_data_t *gd = self->global_data;
@@ -229,7 +233,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+void color_picker_apply(dt_iop_module_t *self,
+                        GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_colorize_gui_data_t *g = self->gui_data;
@@ -266,7 +271,9 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)p1;
@@ -299,12 +306,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->mix = p->source_lightness_mix / 100.0f;
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorize_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;

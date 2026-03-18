@@ -53,6 +53,9 @@
 #include "common/undo.h"
 #include "common/gimp.h"
 #include "common/pfm.h"
+#ifdef HAVE_AI
+#include "common/ai_models.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -1144,6 +1147,7 @@ int dt_init(int argc,
           !strcmp(darg, "pipe") ? DT_DEBUG_PIPE :
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
+          !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1564,9 +1568,6 @@ int dt_init(int argc,
   // set the interface language and prepare selection for prefs & confgen
   darktable.l10n = dt_l10n_init(init_gui);
 
-  const int last_configure_version =
-    dt_conf_get_int("performance_configuration_version_completed");
-
   gboolean has_workspace = FALSE;
 
   // we need this REALLY early so that error messages can be shown,
@@ -1649,12 +1650,25 @@ int dt_init(int argc,
   {
     dt_splash_screen_create(FALSE);
   }
+  const int last_configure_version =
+    dt_conf_get_int("performance_configuration_version_completed");
 
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();
 
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
+
+#ifdef HAVE_AI
+  // initialize AI models registry
+  darktable.ai_registry = dt_ai_models_init();
+  if(darktable.ai_registry)
+  {
+    dt_ai_models_load_registry(darktable.ai_registry);
+    if(!darktable.ai_registry->ai_enabled)
+      dt_print(DT_DEBUG_AI, "[darktable_ai] AI subsystem is disabled");
+  }
+#endif
 
   // initialize datetime data
   dt_datetime_init();
@@ -2043,7 +2057,7 @@ int dt_init(int argc,
 
     // finally set the cursor to be the default.
     // for some reason this is needed on some systems to pick up the correctly themed cursor
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
   }
   free(config_info);
 
@@ -2199,6 +2213,10 @@ void dt_cleanup()
   dt_mipmap_cache_cleanup();
 
   dt_colorspaces_cleanup(darktable.color_profiles);
+#ifdef HAVE_AI
+  dt_ai_models_cleanup(darktable.ai_registry);
+  darktable.ai_registry = NULL;
+#endif
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   darktable.conf = NULL;
@@ -2576,6 +2594,16 @@ void dt_configure_runtime_performance(const int old, char *info)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL mandatory timeout has been updated to 1000.\n\n"), DT_PERF_INFOSIZE);
+  }
+
+  if(old == 18)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' settings have changed.\n\n"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cldevice_v6_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' 'unified_fraction'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
   #undef INFO_HEADER

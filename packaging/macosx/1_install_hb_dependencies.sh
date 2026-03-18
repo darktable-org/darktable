@@ -44,6 +44,7 @@ hbDependencies="adwaita-icon-theme \
     json-glib \
     lensfun \
     libavif \
+    libarchive \
     libheif \
     libomp \
     libraw \
@@ -51,7 +52,7 @@ hbDependencies="adwaita-icon-theme \
     libsecret \
     little-cms2 \
     llvm \
-    lua \
+    lua@5.4 \
     ninja \
     openexr \
     openjpeg \
@@ -103,5 +104,6 @@ if [ "${notfound}" ]; then
 fi
 
 # link keg-only packages
+brew link --force lua@5.4
 brew link --force libomp
 brew link --force libsoup

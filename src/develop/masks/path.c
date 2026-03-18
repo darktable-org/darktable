@@ -1534,7 +1534,8 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_free_align(border_init);
     return 1;
   }
-  else if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction,
+  // Note: the if(source) branch above always returns, so this is not really an else-if.
+  if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction,
                                         *points, *points_count))
   {
     if(!border

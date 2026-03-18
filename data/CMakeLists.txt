@@ -165,6 +165,14 @@ endif()
 FILE(COPY wb_presets.json DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES wb_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
+if(USE_AI)
+  #
+  # Install AI models registry
+  #
+  FILE(COPY ai_models.json DESTINATION "${DARKTABLE_DATADIR}")
+  install(FILES ai_models.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+endif(USE_AI)
+
 #
 # Transform darktableconfig.xml into darktablerc
 #

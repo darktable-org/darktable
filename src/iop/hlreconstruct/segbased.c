@@ -88,8 +88,6 @@ The chosen segmentation algorithm works like this:
 #define HL_FLOAT_PLANES 8
 #define HL_BORDER 8
 
-#define HL_POWERF 3.0f
-
 static inline float _local_std_deviation(const float *p, const int w)
 {
   const int w2 = 2*w;
@@ -214,13 +212,13 @@ static inline float _calc_refavg(const float *in,
     }
   }
   for_each_channel(c)
-    mean[c] = (cnt[c] > 0.0f) ? powf((correction[c] * mean[c]) / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? cbrtf((correction[c] * mean[c]) / cnt[c]) : 0.0f;
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]),
                                             0.5f * (mean[0] + mean[2]),
                                             0.5f * (mean[0] + mean[1]),
                                             0.0f};
-  return (linear) ? powf(croot_refavg[color], HL_POWERF) : croot_refavg[color];
+  return (linear) ? fcube(croot_refavg[color]) : croot_refavg[color];
 }
 
 static void _initial_gradients(const size_t w,
@@ -464,7 +462,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
-  const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
+  const dt_aligned_pixel_t cube_coeffs = {cbrtf(clips[0]), cbrtf(clips[1]), cbrtf(clips[2]), 0.0f};
 
   const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
   const gboolean late = chr->late_correction;
@@ -543,7 +541,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         }
 
         for_each_channel(c)
-          mean[c] = (cnt[c] > 0.0f) ? powf(correction[c] * mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+          mean[c] = (cnt[c] > 0.0f) ? cbrtf(correction[c] * mean[c] / cnt[c]) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]),
                                                  0.5f * (mean[0] + mean[2]),
                                                  0.5f * (mean[0] + mean[1]),
@@ -612,7 +610,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           {
             const float cand_reference = isegments[color].val2[pid];
             const float refavg_here = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, FALSE);
-            const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
+            const float oval = fcube(refavg_here + candidate - cand_reference);
             tmpout[idx] = plane[color][o] = fmaxf(inval, oval);
           }
         }

@@ -196,7 +196,7 @@ typedef int32_t dt_mask_id_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 18
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 19
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -249,6 +249,38 @@ char *dt_version_major_minor();
 #define INVPHI 0.61803398874989479F
 #endif
 
+
+/* Some CPU demosaicers do internal tiling, this decreases mem pressure while
+   increasing performance as processed data is available in cpu cache.
+   The default values have been calculated for a cachesize of 1MB per thread,
+   this is mostly still valid in 2026 but you may tune for performance.
+
+   Due to internal code AMAZETS should be a multiple of 32, for RCD and LMMSE
+   a multiple of 8.
+
+   Note: for the curious, if we calculate the tilesizes at runtime we loose the
+   performance gain as the compiler can't optimize that much.
+*/
+#ifndef DT_RCD_TILESIZE
+#define DT_RCD_TILESIZE 112
+#endif
+
+#ifndef DT_LMMSE_TILESIZE
+#define DT_LMMSE_TILESIZE 136
+#endif
+
+#ifndef AMAZETS
+#define AMAZETS 160
+#endif
+
+#ifndef DT_MARKESTEIJN_TS
+#define DT_MARKESTEIJN_TS 122
+#endif
+
+#ifndef DT_FDC_TS
+#define DT_FDC_TS 122
+#endif
+
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
@@ -281,6 +313,19 @@ struct dt_bauhaus_t;
 struct dt_undo_t;
 struct dt_colorspaces_t;
 struct dt_l10n_t;
+#ifdef HAVE_AI
+struct dt_ai_registry_t;
+struct dt_ai_environment_t;
+struct dt_seg_context_t;
+
+typedef struct dt_ai_seg_t
+{
+  struct dt_ai_environment_t *env;
+  struct dt_seg_context_t *ctx;
+  gboolean model_loaded;
+  gboolean signal_connected;
+} dt_ai_seg_t;
+#endif
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
 typedef float dt_pickerbox_t[8];
@@ -318,6 +363,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PIPE           = 1 << 25,
   DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_PICKER         = 1 << 27,
+  DT_DEBUG_AI             = 1 << 28,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
@@ -430,6 +476,10 @@ typedef struct darktable_t
   struct dt_backthumb_t backthumbs;
   struct dt_gimp_t gimp;
   struct dt_splash_t splash;
+#ifdef HAVE_AI
+  struct dt_ai_registry_t *ai_registry;
+  dt_ai_seg_t ai_seg;
+#endif
 } darktable_t;
 
 typedef struct

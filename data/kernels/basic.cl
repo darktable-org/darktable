@@ -273,7 +273,7 @@ kernel void
 highlights_1f_clip (read_only image2d_t in, write_only image2d_t out,
                     const int iwidth, const int iheight,
                     const int owidth, const int oheight,
-                    global float *clips, const int dx, const int dy,
+                    const float4 clip, const int dx, const int dy,
                     const int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -284,13 +284,14 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out,
   const int irow = y + dy;
   const int icol = x + dx;
   float pixel = 0.0f;
+  float clips[4] = { clip.x, clip.y, clip.z, clip.w};
   if((icol >= 0) && (irow >= 0) && (irow < iheight) && (icol < iwidth))
   {
     const int color = fcol(irow, icol, filters, xtrans);
-    pixel = read_imagef(in, sampleri, (int2)(icol, irow)).x;
+    pixel = readsingle(in, icol, irow);
     pixel = fmin(clips[color], pixel);
   }
-  write_imagef (out, (int2)(x, y), pixel);
+  write_imagef(out, (int2)(x, y), pixel);
 }
 
 kernel void highlights_false_color(
@@ -304,7 +305,7 @@ kernel void highlights_false_color(
         const int dy,
         const unsigned int filters,
         global const unsigned char (*const xtrans)[6],
-        global const float *clips)
+        const float4 clip)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -314,10 +315,11 @@ kernel void highlights_false_color(
   const int irow = y + dy;
   const int icol = x + dx;
   float oval = 0.0f;
+  float clips[4] = { clip.x, clip.y, clip.z, clip.w};
 
   if((irow >= 0) && (icol >= 0) && (icol < iwidth) && (irow < iheight))
   {
-    const float ival = read_imagef(in, sampleri, (int2)(icol, irow)).x;
+    const float ival = readsingle(in, icol, irow);
     const int c = fcol(irow, icol, filters, xtrans);
     oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
   }
@@ -347,7 +349,7 @@ static float _calc_refavg(
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
-      const float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(dx, dy)).x);
+      const float val = fmax(0.0f, readsingle(in, dx, dy));
       const int c = fcol(dy, dx, filters, xtrans);
       sum[c] += val;
       cnt[c] += 1.0f;
@@ -355,11 +357,11 @@ static float _calc_refavg(
   }
 
   for(int c = 0; c < 3; c++)
-    mean[c] = (cnt[c] > 0.0f) ? dtcl_pow((correction[c] * sum[c]) / cnt[c], 0.33333333333f) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? cbrt((correction[c] * sum[c]) / cnt[c]) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   const int color = fcol(row, col, filters, xtrans);
-  return dtcl_pow(croot_refavg[color], 3.0f);
+  return fcube(croot_refavg[color]);
 }
 
 kernel void highlights_initmask(
@@ -494,7 +496,7 @@ kernel void highlights_chroma(
   {
     const int idx = mad24(row, width, col);
     const int color = fcol(row, col, filters, xtrans);
-    const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
+    const float inval = readsingle(in, col, row);
     const int px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
@@ -542,7 +544,7 @@ kernel void highlights_opposed(
 
   if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
   {
-    val = fmax(0.0f, read_imagef(in, sampleri, (int2)(icol, irow)).x);
+    val = readsingle(in, icol, irow);
 
     if(!fastcopymode)
     {

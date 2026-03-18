@@ -133,6 +133,50 @@ static void _get_zoom_pos(dt_dev_viewport_t *port,
   }
 }
 
+/* Compute the correction (zoom_x_preview - zoom_x_full) to add to a full-pipe
+   normalized zoom position to get the equivalent preview-pipe position.
+   Mask overlay points live in preview-pipe output space while _get_zoom_pos()
+   and dt_dev_get_viewport_params() use the full pipe; applying this correction
+   makes mouse positions match mask point coordinates when crop (or similar
+   modules) rounds pixel counts differently in the two pipes. */
+static void _preview_pipe_zoom_correction(dt_develop_t *dev, float *cx, float *cy)
+{
+  *cx = *cy = 0.f;
+  if(!dev->preview_pipe || !dev->full.pipe) return;
+
+  const float full_iw = (float)dev->full.pipe->iwidth;
+  const float full_ih = (float)dev->full.pipe->iheight;
+  if(full_iw <= 0 || full_ih <= 0) return;
+
+  const float pp_wd   = (float)dev->preview_pipe->processed_width;
+  const float pp_ht   = (float)dev->preview_pipe->processed_height;
+  const float full_wd = (float)dev->full.pipe->processed_width;
+  const float full_ht = (float)dev->full.pipe->processed_height;
+  if(pp_wd <= 0 || pp_ht <= 0 || full_wd <= 0 || full_ht <= 0) return;
+
+  // Full-pipe viewport centre in normalised coords
+  float full_pts[2] = { dev->full.zoom_x, dev->full.zoom_y };
+  dt_dev_distort_transform_plus(dev, dev->full.pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, full_pts, 1);
+  const float zoom_x_full = full_pts[0] / full_wd - 0.5f;
+  const float zoom_y_full = full_pts[1] / full_ht - 0.5f;
+
+  // Preview-pipe viewport centre in normalised coords
+  const float prev_iw = (float)dev->preview_pipe->iwidth;
+  const float prev_ih = (float)dev->preview_pipe->iheight;
+  float prev_pts[2] = {
+    dev->full.zoom_x * prev_iw / full_iw,
+    dev->full.zoom_y * prev_ih / full_ih
+  };
+  dt_dev_distort_transform_plus(dev, dev->preview_pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, prev_pts, 1);
+  const float zoom_x_vp = prev_pts[0] / pp_wd - 0.5f;
+  const float zoom_y_vp = prev_pts[1] / pp_ht - 0.5f;
+
+  *cx = zoom_x_vp - zoom_x_full;
+  *cy = zoom_y_vp - zoom_y_full;
+}
+
 static void _get_zoom_pos_bnd(dt_dev_viewport_t *port,
                               const double x,
                               const double y,
@@ -698,6 +742,29 @@ void expose(dt_view_t *self,
   float pzx = FLT_MAX, pzy = 0.0f;
   float zoom_scale = dt_dev_get_zoom_scale(&dev->full, port->zoom, 1 << port->closeup, TRUE);
 
+  // Compute viewport center through the preview pipe. port->zoom_x is in full-pipe input
+  // space; scale to preview-pipe input space before forward-transforming. Mask overlay
+  // points live in preview-pipe output space, so the Cairo viewport must use the same
+  // coordinate origin — using the full-pipe result causes a sub-pixel divergence that
+  // becomes a visible shift at high zoom when crop changes the pipe aspect ratio.
+  const float full_iw = dev->full.pipe ? (float)dev->full.pipe->iwidth  : 1.f;
+  const float full_ih = dev->full.pipe ? (float)dev->full.pipe->iheight : 1.f;
+  const float prev_iw = dev->preview_pipe ? (float)dev->preview_pipe->iwidth  : 1.f;
+  const float prev_ih = dev->preview_pipe ? (float)dev->preview_pipe->iheight : 1.f;
+  float prev_pts[2] = {
+    port->zoom_x * prev_iw / full_iw,
+    port->zoom_y * prev_ih / full_ih
+  };
+  dt_dev_distort_transform_plus(dev, dev->preview_pipe,
+                                0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, prev_pts, 1);
+  const float pp_wd = dev->preview_pipe->processed_width;
+  const float pp_ht = dev->preview_pipe->processed_height;
+  float zoom_x_vp = pp_wd > 0 ? prev_pts[0] / pp_wd - 0.5f : 0.f;
+  float zoom_y_vp = pp_ht > 0 ? prev_pts[1] / pp_ht - 0.5f : 0.f;
+  // apply same clamping as zoom_x/zoom_y (image fits nearly entirely in view)
+  if(boxw > 0.95f) zoom_x_vp = 0.f;
+  if(boxh > 0.95f) zoom_y_vp = 0.f;
+
   // don't draw guides and color pickers on image margins
   cairo_rectangle(cri, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
 
@@ -754,7 +821,21 @@ void expose(dt_view_t *self,
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
+    // Clip to viewport (excluding border) so mask overlays don't
+    // bleed into the grey border when the image is zoomed in.
+    cairo_save(cri);
+    const float vp_w = (width - 2.0f * tb) / zoom_scale;
+    const float vp_h = (height - 2.0f * tb) / zoom_scale;
+    const float vp_x = (tb - 0.5f * width) / zoom_scale + 0.5f * wd + zoom_x * wd;
+    const float vp_y = (tb - 0.5f * height) / zoom_scale + 0.5f * ht + zoom_y * ht;
+    cairo_rectangle(cri, vp_x, vp_y, vp_w, vp_h);
+    cairo_clip(cri);
+    // Mask overlay points are in preview-pipe output space; shift the
+    // coordinate origin by the sub-pixel difference between full-pipe
+    // and preview-pipe viewport centres so overlays land on the image.
+    cairo_translate(cri, (zoom_x - zoom_x_vp) * wd, (zoom_y - zoom_y_vp) * ht);
     dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
+    cairo_restore(cri);
   }
 
   // if dragging the rotation line, do it and nothing else
@@ -1329,7 +1410,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
 
     _dev_change_image(dev, imgid);
     // move filmstrip
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+      dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
     // force redraw
     dt_control_queue_redraw();
   }
@@ -2470,6 +2552,258 @@ void connect_button_press_release(GtkWidget *w, GtkWidget *p)
                    G_CALLBACK(_quickbutton_press_release), p);
 }
 
+// cycle modules begins
+
+static void _cycle_modules(const gboolean down)
+{
+  GList *modules = NULL;
+  for(GList *l = darktable.develop->iop; l; l = l->next)
+  {
+    dt_iop_module_t *m = l->data;
+    if(m->expander && gtk_widget_is_visible(m->expander))
+    {
+      modules = g_list_prepend(modules, m);
+    }
+  }
+
+  GList *current_item = g_list_find(modules, dt_dev_gui_module());
+  GList *next_item = NULL;
+  if(!modules)
+  {
+    dt_toast_log(_("no visible modules"));
+    return;
+  }
+  else if(!modules->next)
+  {
+    next_item = modules;
+  }
+  else
+  {
+    if(!current_item)
+      current_item = g_list_first(modules);
+    if(down)
+    {
+      next_item = g_list_next(current_item);
+      if(!next_item)
+        next_item = g_list_first(modules);
+    }
+    else
+    {
+      next_item = g_list_previous(current_item);
+      if(!next_item)
+        next_item = g_list_last(modules);
+    }
+  }
+
+  dt_iop_module_t *module_to_focus = (dt_iop_module_t *)next_item->data;
+  dt_iop_gui_set_expanded(module_to_focus, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+  const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
+  const gchar *module_name = dt_iop_get_localized_name(module_to_focus->op);
+  if(strlen(instance_name) > 0)
+    dt_toast_log(_("focused instance '%s' of '%s'"), instance_name, module_name);
+  else
+    dt_toast_log(_("focused module '%s'"), module_name);
+  g_list_free(modules);
+}
+
+static void _enable_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->hide_enable_button)
+    dt_toast_log(_("'%s' cannot be enabled or disabled"), dt_iop_get_localized_name(module->op));
+  else if(module->off)
+  {
+    const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+    const gchar *instance_name = dt_iop_get_instance_name(module);
+    const gchar *module_name = dt_iop_get_localized_name(module->op);
+    if(strlen(instance_name) > 0)
+    {
+      if(!active)
+        dt_toast_log(_("enabled instance '%s' of '%s'"), instance_name, module_name);
+      else
+        dt_toast_log(_("disabled instance '%s' of '%s'"), instance_name, module_name);
+    }
+    else
+    {
+      if(!active)
+        dt_toast_log(_("enabled module '%s'"), module_name);
+      else
+        dt_toast_log(_("disabled module '%s'"), module_name);
+    }
+  }
+}
+
+static void _show_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else
+    dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+}
+
+static void _new_instance_focused_module(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    dt_toast_log(_("'%s' does not support multiple instances"),
+                 dt_iop_get_localized_name(module->op));
+  else
+  {
+    dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
+    if(new_module)
+    {
+      const gchar *instance_name = dt_iop_get_instance_name(new_module);
+      if(strlen(instance_name) > 0)
+        dt_toast_log(_("added instance '%s' of '%s'"),
+                     instance_name,
+                     dt_iop_get_localized_name(new_module->op));
+      else
+        dt_toast_log(_("added instance of '%s'"), dt_iop_get_localized_name(new_module->op));
+    }
+  }
+}
+
+static void _delete_focused_module_instance(void)
+{
+  dt_iop_module_t *module = dt_dev_gui_module();
+  if(!module)
+    dt_toast_log(_("no focused module"));
+  else if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    dt_toast_log(_("'%s' does not support multiple instances"),
+                 dt_iop_get_localized_name(module->op));
+  else
+  {
+    const gchar *localized = dt_iop_get_localized_name(module->op);
+    gchar *instance_name = g_strdup(dt_iop_get_instance_name(module));
+    dt_iop_gui_delete(module);
+    if(strlen(instance_name) > 0)
+      dt_toast_log(_("deleted instance '%s' of '%s'"), instance_name, localized);
+    else
+      dt_toast_log(_("deleted instance of '%s'"), localized);
+    g_free(instance_name);
+  }
+}
+
+static void _action_enable_focused(dt_action_t *action)
+{
+  _enable_focused_module();
+}
+
+static void _action_show_focused(dt_action_t *action)
+{
+  _show_focused_module();
+}
+
+static void _action_new_instance_focused(dt_action_t *action)
+{
+  _new_instance_focused_module();
+}
+
+static void _action_delete_instance_focused(dt_action_t *action)
+{
+  _delete_focused_module_instance();
+}
+
+static void _cycle_instances(const gboolean down)
+{
+  dt_iop_module_t *current_module = dt_dev_gui_module();
+  if(!current_module)
+  {
+    dt_toast_log(_("no focused module"));
+    return;
+  }
+
+  GList *instances = NULL;
+  for(GList *l = darktable.develop->iop; l; l = l->next)
+  {
+    dt_iop_module_t *m = l->data;
+    if(!strcmp(m->op, current_module->op) && m->expander && gtk_widget_is_visible(m->expander))
+    {
+      instances = g_list_prepend(instances, m);
+    }
+  }
+
+  if(!instances || !instances->next)
+  {
+    g_list_free(instances);
+    dt_toast_log(_("only one instance of '%s'"), dt_iop_get_localized_name(current_module->op));
+    return;
+  }
+
+  GList *current_item = g_list_find(instances, current_module);
+  GList *next_item = NULL;
+  if(down)
+  {
+    next_item = g_list_next(current_item);
+    if(!next_item)
+      next_item = g_list_first(instances);
+  }
+  else
+  {
+    next_item = g_list_previous(current_item);
+    if(!next_item)
+      next_item = g_list_last(instances);
+  }
+
+  dt_iop_module_t *module_to_focus = (dt_iop_module_t *)next_item->data;
+  dt_iop_gui_set_expanded(module_to_focus, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+  const gchar *instance_name = dt_iop_get_instance_name(module_to_focus);
+  if(strlen(instance_name) > 0)
+    dt_toast_log(_("focused instance '%s' of '%s'"),
+                 instance_name,
+                 dt_iop_get_localized_name(module_to_focus->op));
+  else
+    dt_toast_log(_("focused module '%s'"), dt_iop_get_localized_name(module_to_focus->op));
+  g_list_free(instances);
+}
+
+static float _action_callback_cycle_modules(gpointer widget,
+                                            dt_action_element_t element,
+                                            const dt_action_effect_t effect,
+                                            const float move_size)
+{
+  if(DT_PERFORM_ACTION(move_size))
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_DEFAULT_KEY:
+      _enable_focused_module();
+      break;
+    case DT_ACTION_EFFECT_DEFAULT_UP:
+      _cycle_modules(FALSE);
+      break;
+    case DT_ACTION_EFFECT_DEFAULT_DOWN:
+      _cycle_modules(TRUE);
+      break;
+    case DT_ACTION_EFFECT_CYCLE_PREVIOUS_INSTANCE:
+      _cycle_instances(FALSE);
+      break;
+    case DT_ACTION_EFFECT_CYCLE_NEXT_INSTANCE:
+      _cycle_instances(TRUE);
+      break;
+    }
+    return 0;
+  }
+  return DT_ACTION_NOT_VALID;
+}
+
+static const dt_action_element_def_t _action_elements_cycle_modules[]
+  = { { NULL, dt_action_effect_cycle } };
+
+static const dt_action_def_t _action_def_cycle_modules
+  = { N_("cycle modules"),
+      _action_callback_cycle_modules,
+      _action_elements_cycle_modules,
+      NULL, TRUE };
+
+// cycle modules ends
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = self->data;
@@ -2523,6 +2857,20 @@ void gui_init(dt_view_t *self)
      right-click shortcut assignment and tooltip display. */
   dt_action_register(DT_ACTION(self), N_("toggle pinned state in second window"),
                      _toggle_pin_second_window_action, 0, 0);
+
+  /* cycle through visible modules and their instances */
+  dt_action_define(sa, NULL, N_("cycle modules"), NULL, &_action_def_cycle_modules);
+
+  /* global <focused> shortcuts */
+  dt_action_register(&darktable.control->actions_focus, N_("enable"), _action_enable_focused, 0, 0);
+  dt_action_register(&darktable.control->actions_focus, N_("show"), _action_show_focused, 0, 0);
+  dt_action_register(
+    &darktable.control->actions_focus, N_("new instance"), _action_new_instance_focused, 0, 0);
+  dt_action_register(&darktable.control->actions_focus,
+                     N_("delete instance"),
+                     _action_delete_instance_focused,
+                     0,
+                     0);
 
   /* Enable color assessment conditions */
   {
@@ -3376,7 +3724,7 @@ void mouse_leave(dt_view_t *self)
     handled = dev->gui_module->mouse_leave(dev->gui_module);
 
   // reset any changes the selected plugin might have made.
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
 }
 
 void mouse_enter(dt_view_t *self)
@@ -3449,7 +3797,9 @@ void mouse_moved(dt_view_t *self,
      && !dt_iop_color_picker_is_visible(dev))
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_mouse_moved(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_mouse_moved(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                           pressure, which, zoom_scale);
   }
 
@@ -3503,7 +3853,7 @@ int button_released(dt_view_t *self,
 
   if(darktable.develop->darkroom_skip_mouse_events && which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_change_cursor("default");
     return 1;
   }
 
@@ -3515,7 +3865,7 @@ int button_released(dt_view_t *self,
     {
       dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
-      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_change_cursor("default");
     }
     return 1;
   }
@@ -3533,7 +3883,9 @@ int button_released(dt_view_t *self,
   if(dev->form_visible)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_button_released(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_button_released(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                               which, state, zoom_scale);
     if(handled) return handled;
   }
@@ -3546,7 +3898,7 @@ int button_released(dt_view_t *self,
                                                which, state, zoom_scale);
     if(handled) return handled;
   }
-  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor(GDK_LEFT_PTR);
+  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor("default");
 
   return 1;
 }
@@ -3570,7 +3922,7 @@ int button_pressed(dt_view_t *self,
     if(which == GDK_BUTTON_PRIMARY)
     {
       if(type == GDK_2BUTTON_PRESS) return 0;
-      dt_control_change_cursor(GDK_HAND1);
+      dt_control_change_cursor("pointer");
       return 1;
     }
     else if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
@@ -3642,7 +3994,7 @@ int button_pressed(dt_view_t *self,
                                           zoom_y + dy };
           dt_color_picker_backtransform_box(dev, 2, fbox, sample->box);
         }
-        dt_control_change_cursor(GDK_FLEUR);
+        dt_control_change_cursor("move");
       }
 
       dt_color_picker_backtransform_box(dev, 1, sample->point, sample->point);
@@ -3710,7 +4062,9 @@ int button_pressed(dt_view_t *self,
   if(dev->form_visible)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_button_pressed(dev->gui_module, zoom_x, zoom_y,
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_button_pressed(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
                                              pressure, which, type, state);
     if(handled) return handled;
   }
@@ -3727,7 +4081,7 @@ int button_pressed(dt_view_t *self,
   if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
   if(which == GDK_BUTTON_PRIMARY)
   {
-    dt_control_change_cursor(GDK_HAND1);
+    dt_control_change_cursor("pointer");
     return 1;
   }
 
@@ -3766,7 +4120,10 @@ void scrolled(dt_view_t *self,
      && !darktable.develop->darkroom_skip_mouse_events)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
-    handled = dt_masks_events_mouse_scrolled(dev->gui_module, zoom_x, zoom_y, up, state);
+    float corr_x, corr_y;
+    _preview_pipe_zoom_correction(dev, &corr_x, &corr_y);
+    handled = dt_masks_events_mouse_scrolled(dev->gui_module, zoom_x + corr_x, zoom_y + corr_y,
+                                             up, state);
     if(handled) return;
   }
 

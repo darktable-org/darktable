@@ -285,7 +285,10 @@ static inline float sqf(const float x)
 {
   return x * x;
 }
-
+static inline float fcube(const float a)
+{
+  return (a * a * a);
+}
 
 DT_OMP_DECLARE_SIMD(aligned(p:16))
 static inline float median9f(const float *p)

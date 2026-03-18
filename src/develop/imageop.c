@@ -796,6 +796,11 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
   return module;
 }
 
+void dt_iop_gui_delete(dt_iop_module_t *module)
+{
+  _gui_delete_callback(NULL, module);
+}
+
 static void _gui_copy_callback(GtkButton *button, dt_iop_module_t *base)
 {
   dt_iop_module_t *module = dt_iop_gui_duplicate(base, FALSE);
@@ -2484,7 +2489,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   // update guides button state
   dt_guides_update_button_state();
 
-  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor("default");
   dt_control_queue_redraw_center();
 }
 

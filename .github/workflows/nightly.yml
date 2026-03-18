@@ -52,6 +52,7 @@ jobs:
             git \
             gdb \
             intltool \
+            libarchive-dev \
             libatk1.0-dev \
             libcairo2-dev \
             libcolord-dev \
@@ -388,6 +389,7 @@ jobs:
           brew reinstall --build-from-source --force graphicsmagick
 
           # handle keg-only libs
+          brew link --force lua@5.4
           brew link --force libomp
           brew link --force libsoup
       - name: Cancel workflow if job fails
@@ -435,8 +437,13 @@ jobs:
         if: github.ref_name == 'master' # will be true only for nightly builds
         run: |
           pushd src
-          git tag --force nightly
-          git push origin nightly --force
+          # Delete and recreate nightly tag instead of just force retargeting.
+          # This updates the tag creation date. Without this, the github-shown
+          # release date will be stuck on the date the tag was created.
+          git tag -d nightly || true
+          git push origin --delete nightly
+          git tag nightly
+          git push origin nightly
           popd
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -450,7 +457,7 @@ jobs:
           echo "RELEASE_DATE=$NOW" >> $GITHUB_ENV
         shell: bash
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

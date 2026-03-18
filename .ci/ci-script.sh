@@ -19,7 +19,7 @@
 # This script is supposed to be run by Travis CI or GitHub workflow.
 # It expects a few env variables to be set:
 #   BUILD_DIR - the working directory where the program will be built
-#   INSTALL_DIR - the installation prefix
+#   INSTALL_PREFIX - the installation prefix
 #   SRC_DIR - directory with the source code to be compiled
 #   CC, CXX, CFLAGS, CXXFLAGS are optional, but make sense for build
 #   TARGET - either build or skiptest
@@ -84,6 +84,7 @@ case "$TARGET" in
       -DVALIDATE_APPDATA_FILE=ON \
       -DBUILD_TESTING=ON \
       -DTESTBUILD_OPENCL_PROGRAMS=ON \
+      -DUSE_AI=ON \
       $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_build
     ;;
@@ -91,6 +92,7 @@ case "$TARGET" in
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
       -G"$GENERATOR" \
       -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+      -DUSE_AI=ON \
       $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_notest
     ;;

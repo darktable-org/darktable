@@ -371,6 +371,8 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
 /* duplicate module and return new instance */
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
                                       const gboolean copy_params);
+/* delete module instance */
+void dt_iop_gui_delete(dt_iop_module_t *module);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 

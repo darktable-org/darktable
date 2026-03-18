@@ -43,8 +43,6 @@ G_BEGIN_DECLS
 
 struct dt_lib_backgroundjob_element_t;
 
-typedef GdkCursorType dt_cursor_t;
-
 // called from gui
 void dt_control_expose(GtkWidget *widget, cairo_t *cr);
 gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
@@ -55,6 +53,7 @@ void dt_control_mouse_leave(void);
 void dt_control_mouse_enter(void);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_control_log_ack_all(void);
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_busy_enter();
@@ -64,7 +63,7 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 void dt_control_forbid_change_cursor(void);
 // enable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_allow_change_cursor(void);
-void dt_control_change_cursor(dt_cursor_t cursor);
+void dt_control_change_cursor(const char *cursor_name);
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
 
