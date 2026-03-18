@@ -31,6 +31,7 @@
 #include "develop/pixelpipe_hb.h"
 #include "gui/gtk.h"
 #include "imageio/imageio_common.h"
+#include "views/view.h"
 
 #include <math.h>
 #include <string.h>
@@ -41,6 +42,7 @@
 #define CONF_OBJECT_MORPH_KEY "plugins/darkroom/masks/object/morph_radius"
 #define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
 #define CONF_OBJECT_BRUSH_SIZE_KEY "plugins/darkroom/masks/object/brush_size"
+#define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 
 // target resolution for segmentation encoding (longest side in pixels),
 // matches the encoder input size (1024) -- rendering higher just to
@@ -118,6 +120,38 @@ static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
   return hash;
 }
 
+static void _on_view_changed(gpointer instance,
+                             dt_view_t *old_view,
+                             dt_view_t *new_view,
+                             gpointer user_data)
+{
+  (void)instance;
+  (void)new_view;
+  (void)user_data;
+
+  // free persistent model when leaving darkroom
+  if(old_view && old_view->view(old_view) == DT_VIEW_DARKROOM)
+  {
+    dt_ai_seg_t *seg = &darktable.ai_seg;
+    if(seg->ctx)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[object mask] freeing persistent model");
+      dt_seg_free(seg->ctx);
+      seg->ctx = NULL;
+    }
+    if(seg->env)
+    {
+      dt_ai_env_destroy(seg->env);
+      seg->env = NULL;
+    }
+    seg->model_loaded = FALSE;
+
+    DT_CONTROL_SIGNAL_DISCONNECT(_on_view_changed, NULL);
+    seg->signal_connected = FALSE;
+  }
+}
+
 // free vectorized preview forms (never registered in dev->forms)
 static void _free_preview_forms(_object_data_t *d)
 {
@@ -130,7 +164,8 @@ static void _free_preview_forms(_object_data_t *d)
   d->preview_signs = NULL;
 }
 
-// free all resources in _object_data_t (must be called after thread has joined)
+// free all resources in _object_data_t (must be called after thread has joined),
+// preserves seg+env in persistent statics so the model stays loaded
 static void _destroy_data(_object_data_t *d)
 {
   if(!d)
@@ -139,10 +174,30 @@ static void _destroy_data(_object_data_t *d)
     g_source_remove(d->modifier_poll_id);
   if(d->encode_thread)
     g_thread_join(d->encode_thread);
-  if(d->seg)
-    dt_seg_free(d->seg);
-  if(d->env)
-    dt_ai_env_destroy(d->env);
+
+  // save model to persistent storage -- keeps it loaded across
+  // mask sessions, disk cache handles embedding persistence.
+  // only persist if nobody already claimed the slot (guards
+  // against deferred cleanup racing with a new session)
+  dt_ai_seg_t *ps = &darktable.ai_seg;
+  const gboolean persist = dt_conf_get_bool(CONF_OBJECT_PERSIST_KEY);
+  if(persist && !ps->ctx && d->seg)
+  {
+    dt_seg_reset_encoding(d->seg);
+    ps->env = d->env;
+    ps->ctx = d->seg;
+    ps->model_loaded = d->model_loaded;
+    d->env = NULL;
+    d->seg = NULL;
+  }
+  else
+  {
+    if(d->seg) dt_seg_free(d->seg);
+    if(d->env) dt_ai_env_destroy(d->env);
+    d->seg = NULL;
+    d->env = NULL;
+  }
+
   g_free(d->mask);
   g_free(d->encode_rgb);
   if(d->brush_points)
@@ -266,6 +321,30 @@ static gpointer _encode_thread_func(gpointer data)
   const int out_w = (int)(final_scale * pipe.processed_width);
   const int out_h = (int)(final_scale * pipe.processed_height);
 
+  // try disk cache - distort hash mismatch means re-encode needed
+  const dt_hash_t distort_hash = _compute_distort_hash(&dev);
+  {
+    uint8_t *cached_rgb = NULL;
+    int cached_rgb_w = 0, cached_rgb_h = 0;
+    if(dt_seg_disk_cache_load(d->seg, imgid, distort_hash,
+                              &cached_rgb,
+                              &cached_rgb_w, &cached_rgb_h))
+    {
+      dt_dev_pixelpipe_cleanup(&pipe);
+      dt_mipmap_cache_release(&buf);
+      dt_dev_cleanup(&dev);
+      d->encode_w = cached_rgb_w;
+      d->encode_h = cached_rgb_h;
+      g_free(d->encode_rgb);
+      d->encode_rgb = cached_rgb;
+      d->encode_rgb_w = cached_rgb_w;
+      d->encode_rgb_h = cached_rgb_h;
+      g_atomic_int_set(&d->encode_state, ENCODE_READY);
+      dt_seg_warmup_decoder(d->seg);
+      return NULL;
+    }
+  }
+
   dt_print(DT_DEBUG_AI,
            "[object mask] rendering %dx%d (scale=%.3f) for encoding...",
            out_w, out_h, final_scale);
@@ -328,6 +407,11 @@ static gpointer _encode_thread_func(gpointer data)
   d->encode_rgb = rgb;
   d->encode_rgb_w = out_w;
   d->encode_rgb_h = out_h;
+
+  // save to disk cache for future sessions
+  if(ok)
+    dt_seg_disk_cache_save(d->seg, imgid, distort_hash,
+                           rgb, out_w, out_h);
 
   // signal ready immediately so the user can start placing points,
   // the warmup below continues on this background thread -- if the user
@@ -1469,6 +1553,43 @@ static void _object_events_post_expose(
     d->brush_radius = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
     d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
     d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+
+    // restore persistent model (stays loaded across mask sessions)
+    // if the active model changed in preferences, discard the old one
+    {
+      dt_ai_seg_t *ps = &darktable.ai_seg;
+      char *active = dt_ai_models_get_active_for_task("mask");
+      const char *persistent_id = dt_seg_get_model_id(ps->ctx);
+      if(ps->ctx && active
+         && g_strcmp0(active, persistent_id) != 0)
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[object mask] model changed (%s -> %s), "
+                 "discarding persistent model",
+                 persistent_id, active);
+        dt_seg_free(ps->ctx);
+        ps->ctx = NULL;
+        dt_ai_env_destroy(ps->env);
+        ps->env = NULL;
+        ps->model_loaded = FALSE;
+      }
+      g_free(active);
+      d->env = ps->env;
+      d->seg = ps->ctx;
+      d->model_loaded = ps->model_loaded;
+      ps->env = NULL;
+      ps->ctx = NULL;
+      ps->model_loaded = FALSE;
+
+      // connect view-change signal once to free model on darkroom exit
+      if(!ps->signal_connected)
+      {
+        DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                                  _on_view_changed, NULL);
+        ps->signal_connected = TRUE;
+      }
+    }
+
     gui->scratchpad = d;
   }
 
