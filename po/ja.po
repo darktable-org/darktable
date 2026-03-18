@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-16 20:07+0100\n"
-"PO-Revision-Date: 2026-03-18 18:06+0900\n"
+"PO-Revision-Date: 2026-03-18 18:13+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -24304,10 +24304,8 @@ msgstr "マスクファイルのパスは画像の履歴とともに保存され
 
 #. Vectorize button
 #: ../src/iop/rasterfile.c:761
-#, fuzzy
-#| msgid "colorize"
 msgid "vectorize"
-msgstr "着色"
+msgstr "ベクトル化"
 
 #: ../src/iop/rasterfile.c:764
 msgid ""
