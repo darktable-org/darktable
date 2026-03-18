@@ -110,7 +110,7 @@ static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
     const dt_dev_history_item_t *item = l->data;
     if(item->enabled
        && item->module
-       && item->module->distort_transform)
+       && (item->module->operation_tags() & IOP_TAG_DISTORT))
     {
       hash = dt_hash(hash, item->params, item->module->params_size);
     }
