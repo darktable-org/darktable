@@ -19,6 +19,7 @@
 #pragma once
 
 #include "ai/backend.h"
+#include "common/darktable.h"
 #include <glib.h>
 
 /**
@@ -123,6 +124,49 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx);
  * @param ctx Segmentation context (NULL-safe).
  */
 void dt_seg_reset_prev_mask(dt_seg_context_t *ctx);
+
+/* --- disk cache for encoder embeddings --- */
+
+/**
+ * @brief Save current encoder embeddings + RGB to disk cache.
+ *        No-op if no active encoding.
+ * @param ctx Segmentation context with active encoding.
+ * @param imgid Image ID (used as filename key).
+ * @param distort_hash Hash of distortion module params (invalidation).
+ * @param rgb RGB image (uint8, HWC, 3ch) for edge refinement.
+ * @param rgb_w RGB width.
+ * @param rgb_h RGB height.
+ * @return TRUE on success.
+ */
+gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
+                                int32_t imgid,
+                                dt_hash_t distort_hash,
+                                const uint8_t *rgb,
+                                int rgb_w, int rgb_h);
+
+/**
+ * @brief Load encoder embeddings + RGB from disk cache.
+ *        Validates that the cached data matches the loaded model
+ *        and that distort_hash matches (geometry unchanged).
+ * @param ctx Segmentation context with model loaded.
+ * @param imgid Image ID to look up.
+ * @param distort_hash Current distortion module param hash.
+ * @param out_rgb Set to allocated RGB buffer (caller frees).
+ * @param out_rgb_w Set to RGB width.
+ * @param out_rgb_h Set to RGB height.
+ * @return TRUE on cache hit, FALSE on miss or mismatch.
+ */
+gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
+                                int32_t imgid,
+                                dt_hash_t distort_hash,
+                                uint8_t **out_rgb,
+                                int *out_rgb_w,
+                                int *out_rgb_h);
+
+/**
+ * @brief Return the model ID string for this context (NULL-safe).
+ */
+const char *dt_seg_get_model_id(const dt_seg_context_t *ctx);
 
 /**
  * @brief Free the segmentation context and all cached data.
