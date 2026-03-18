@@ -99,6 +99,11 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
+int operation_tags()
+{
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
+}
+
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
