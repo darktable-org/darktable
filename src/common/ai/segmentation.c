@@ -990,7 +990,7 @@ static void _get_cache_dir(char *out, size_t size)
 }
 
 gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
-                                const int32_t imgid,
+                                const dt_imgid_t imgid,
                                 const dt_hash_t distort_hash,
                                 const uint8_t *rgb,
                                 const int rgb_w,
@@ -1079,7 +1079,7 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
 }
 
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
-                                const int32_t imgid,
+                                const dt_imgid_t imgid,
                                 const dt_hash_t distort_hash,
                                 uint8_t **out_rgb,
                                 int *out_rgb_w,
