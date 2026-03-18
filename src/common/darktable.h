@@ -315,6 +315,16 @@ struct dt_colorspaces_t;
 struct dt_l10n_t;
 #ifdef HAVE_AI
 struct dt_ai_registry_t;
+struct dt_ai_environment_t;
+struct dt_seg_context_t;
+
+typedef struct dt_ai_seg_t
+{
+  struct dt_ai_environment_t *env;
+  struct dt_seg_context_t *ctx;
+  gboolean model_loaded;
+  gboolean signal_connected;
+} dt_ai_seg_t;
 #endif
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
@@ -468,6 +478,7 @@ typedef struct darktable_t
   struct dt_splash_t splash;
 #ifdef HAVE_AI
   struct dt_ai_registry_t *ai_registry;
+  dt_ai_seg_t ai_seg;
 #endif
 } darktable_t;
 
