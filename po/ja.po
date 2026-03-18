@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-16 20:07+0100\n"
-"PO-Revision-Date: 2026-03-18 18:13+0900\n"
+"PO-Revision-Date: 2026-03-18 18:32+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -15135,7 +15135,7 @@ msgstr "実行プロバイダー"
 #. populate from central provider table, skipping unavailable providers
 #: ../src/gui/preferences_ai.c:928
 msgid "select hardware acceleration for AI inference:"
-msgstr ""
+msgstr "AI推論に使用するハードウェアアクセラレーションを選択してください："
 
 #: ../src/gui/preferences_ai.c:976
 msgid "models"
