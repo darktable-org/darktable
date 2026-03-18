@@ -441,25 +441,23 @@ static gboolean _set_max_clip(dt_iop_module_t *self)
   return TRUE;
 }
 
-// Compute the crop offset (left, top) that modify_roi_out would produce for this piece.
-// Uses a scale factor on preview pipes to reduce integer-truncation rounding errors
-// (same approach as clipping.c), and naturally captures any alignment correction that
-// modify_roi_out adds for fixed-ratio export crops.
+// Compute the crop offset (left, top) that the pipeline actually uses for this piece.
+// Use factor=1 (buf_in dimensions without scaling) so the resulting integer crop_left/crop_top
+// exactly matches the roi_out.x/y produced by modify_roi_out during normal pipeline processing.
+// This ensures the mask overlay aligns pixel-accurately with the actual image buffer.
+// (A factor=100 scaling was previously used here to reduce float truncation error, but it
+// produced non-integer offsets like 446.69 while the pipeline crops at integer pixel 446,
+// causing a ~0.7 pixel misalignment visible as ~11 screen pixels at 1600% zoom.)
 static void _get_crop_offset(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               float *crop_left,
                               float *crop_top)
 {
-  float factor = 1.0f;
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
-
   dt_iop_roi_t roi_in = piece->buf_in, roi_out;
-  roi_in.width  = (int)(piece->buf_in.width  * factor);
-  roi_in.height = (int)(piece->buf_in.height * factor);
   self->modify_roi_out(self, piece, &roi_out, &roi_in);
 
-  *crop_left = roi_out.x / factor;
-  *crop_top  = roi_out.y / factor;
+  *crop_left = roi_out.x;
+  *crop_top  = roi_out.y;
 }
 
 gboolean distort_transform(dt_iop_module_t *self,
