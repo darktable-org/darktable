@@ -682,6 +682,44 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
 #endif
   }
 
+  // if session creation failed with graph optimization,
+  // retry with reduced optimization levels
+  {
+    const GraphOptimizationLevel fallbacks[] = { ORT_ENABLE_BASIC, ORT_DISABLE_ALL };
+    const char *fallback_names[] = { "basic", "disabled" };
+    const int n_fallbacks = sizeof(fallbacks) / sizeof(fallbacks[0]);
+    for(int fb = 0; fb < n_fallbacks && status; fb++)
+    {
+      if(fallbacks[fb] >= ort_opt) continue;
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] session failed: %s "
+               "-- retrying with optimization %s",
+               g_ort->GetErrorMessage(status), fallback_names[fb]);
+      g_ort->ReleaseStatus(status);
+      g_ort->ReleaseSessionOptions(session_opts);
+
+      status = g_ort->CreateSessionOptions(&session_opts);
+      if(status) break;
+      OrtStatus *s1 = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
+      if(s1) g_ort->ReleaseStatus(s1);
+      OrtStatus *s2 = g_ort->SetSessionGraphOptimizationLevel(
+        session_opts, fallbacks[fb]);
+      if(s2) g_ort->ReleaseStatus(s2);
+      for(int i = 0; i < n_overrides; i++)
+      {
+        if(!dim_overrides[i].name) continue;
+        OrtStatus *s = g_ort->AddFreeDimensionOverrideByName(
+          session_opts, dim_overrides[i].name, dim_overrides[i].value);
+        if(s) g_ort->ReleaseStatus(s);
+      }
+#ifdef _WIN32
+      status = g_ort->CreateSession(g_env, onnx_path_wide, session_opts, &ctx->session);
+#else
+      status = g_ort->CreateSession(g_env, onnx_path, session_opts, &ctx->session);
+#endif
+    }
+  }
+
 #ifdef _WIN32
   g_free(onnx_path_wide);
 #endif
@@ -1135,6 +1173,29 @@ int dt_ai_run(
                  "[darktable_ai] output[%d] shape mismatch: ORT has %zu elements, "
                  "caller expects %" PRId64,
                  i, ort_element_count, caller_count);
+      }
+
+      // allocate caller buffer if NULL (dynamic output, caller
+      // couldn't pre-allocate because shapes were unknown)
+      if(!outputs[i].data)
+      {
+        ONNXTensorElementDataType onnx_type;
+        size_t type_size;
+        if(!_dtype_to_onnx(outputs[i].type, &onnx_type, &type_size))
+        {
+          dt_print(DT_DEBUG_AI,
+                   "[darktable_ai] unknown dtype %d for output[%d]",
+                   outputs[i].type, i);
+          continue;
+        }
+        outputs[i].data = g_try_malloc(ort_element_count * type_size);
+        if(!outputs[i].data)
+        {
+          dt_print(DT_DEBUG_AI,
+                   "[darktable_ai] failed to allocate output[%d] (%zu elements)",
+                   i, ort_element_count);
+          continue;
+        }
       }
 
       if(ctx->output_types[i] == DT_AI_FLOAT16 && outputs[i].type == DT_AI_FLOAT)
