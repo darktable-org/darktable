@@ -2802,8 +2802,11 @@ gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
                                  float *ht)
 {
-  *wd = dev->full.pipe->processed_width / dev->preview_pipe->iscale;
-  *ht = dev->full.pipe->processed_height / dev->preview_pipe->iscale;
+  // Use preview pipe's actual processed size, not full.pipe/iscale.
+  // The two differ by up to 1 pixel due to independent integer truncations
+  // in each pipeline (e.g. after crop), causing a systematic mask overlay shift.
+  *wd = dev->preview_pipe->processed_width;
+  *ht = dev->preview_pipe->processed_height;
   return *wd >= 1.f && *ht >= 1.f;
 }
 
@@ -3163,7 +3166,13 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
   pts[0] = (zoom_x + 0.5f) * procw;
   pts[1] = (zoom_y + 0.5f) * proch;
-  const gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f
+  // For validation-only calls (DT_ZOOM_MOVE with no movement), use a larger threshold
+  // to prevent sub-pixel clamping from causing a permanent viewport drift when the
+  // pipeline changes (e.g., crop module toggled). At high zoom levels, even a 0.5-pixel
+  // clamp in pipeline-output space backward-transforms to a 1-pixel shift in input space,
+  // which appears as a visible mask/image shift after the crop is removed.
+  const float moved_threshold = (zoom == DT_ZOOM_MOVE && !x && !y) ? 3.0f : 0.5f;
+  const gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > moved_threshold
     || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {

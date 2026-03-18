@@ -1169,30 +1169,24 @@ static inline void dt_masks_get_image_size(float *width,
                                            float *iwidth,
                                            float *iheight)
 {
-  // Use full.pipe dimensions divided by iscale to obtain floating-point preview
-  // coordinates that exactly match the Cairo coordinate system used by the darkroom
-  // canvas (wd = full.pipe->processed_width / iscale, see dt_dev_get_preview_size).
-  // The integer-truncated backbuf_width / preview->iwidth values differ by up to
-  // one pixel from these floats, which causes a scale error that becomes a visible
-  // misalignment (~50-60 px) at high zoom levels for non-round image dimensions
-  // (e.g. 6022×4024 with iscale=6 → 1003.67 vs 1003).
-  // Use full.pipe dimensions divided by iscale to obtain floating-point preview
-  // coordinates that exactly match the Cairo coordinate system used by the darkroom
-  // canvas (wd = full.pipe->processed_width / iscale, see dt_dev_get_preview_size).
-  // The integer-truncated backbuf_width values differ by up to one pixel from these
-  // floats, which causes a scale error that becomes a visible misalignment at high
-  // zoom levels for non-round image dimensions.
-  //
   // iwidth/iheight must match preview->iwidth/iheight (= pipe->iwidth/iheight used
   // by _path_get_pts_border to scale corner coordinates before distort_transform).
-  // Using full.pipe->iwidth / iscale instead gives a non-integer value that does NOT
-  // match pipe->iwidth due to iscale rounding, causing a mismatch between the forward
-  // (display) and backward (drag normalization) coordinate transforms.
+  // width/height must match preview->processed_width/height, which is what both
+  // dt_dev_get_preview_size() and dt_view_paint_surface FALLBACK use as canvas size.
   const dt_develop_t *dev = darktable.develop;
   const dt_dev_pixelpipe_t *preview = dev->preview_pipe;
   const float iscale = preview->iscale > 0.f ? preview->iscale : 1.f;
 
-  if(dev->full.pipe && dev->full.pipe->processed_width > 0)
+  // Use preview pipe's actual processed dimensions, not full.pipe/iscale.
+  // The two differ by up to 1 pixel due to independent integer truncations
+  // in each pipeline (e.g. after crop), causing a systematic mask overlay shift.
+  // dt_dev_get_preview_size() uses the same value, so both are consistent.
+  if(preview->processed_width > 0)
+  {
+    if(width  ) *width   = preview->processed_width;
+    if(height ) *height  = preview->processed_height;
+  }
+  else if(dev->full.pipe && dev->full.pipe->processed_width > 0)
   {
     if(width  ) *width   = dev->full.pipe->processed_width  / iscale;
     if(height ) *height  = dev->full.pipe->processed_height / iscale;
@@ -1208,6 +1202,7 @@ static inline void dt_masks_get_image_size(float *width,
   // functions), so that backtransform(corner * pipe->iwidth) / iwidth = corner.
   if(iwidth ) *iwidth  = preview->iwidth;
   if(iheight) *iheight = preview->iheight;
+
 }
 
 G_END_DECLS
