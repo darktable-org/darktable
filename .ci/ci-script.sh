@@ -19,7 +19,7 @@
 # This script is supposed to be run by Travis CI or GitHub workflow.
 # It expects a few env variables to be set:
 #   BUILD_DIR - the working directory where the program will be built
-#   INSTALL_DIR - the installation prefix
+#   INSTALL_PREFIX - the installation prefix
 #   SRC_DIR - directory with the source code to be compiled
 #   CC, CXX, CFLAGS, CXXFLAGS are optional, but make sense for build
 #   TARGET - either build or skiptest
