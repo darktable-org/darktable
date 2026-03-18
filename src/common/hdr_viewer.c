@@ -69,6 +69,15 @@ int dt_hdr_viewer_connect(void)
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) return -1;
 
+    /* Prevent SIGPIPE from killing the calling process if the viewer
+     * crashes or disconnects while we are writing a frame. */
+#ifdef SO_NOSIGPIPE
+    {
+        int yes = 1;
+        setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+    }
+#endif
+
     struct sockaddr_un addr;
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;

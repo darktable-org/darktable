@@ -111,7 +111,11 @@ final class IPCServer {
                 continue
             }
 
-            // Handle each client on the same serial queue (darktable sends one frame per connection)
+            // Set a receive timeout so we don't block forever if darktable
+            // crashes mid-frame. 5 seconds is generous for any single frame.
+            var tv = timeval(tv_sec: 5, tv_usec: 0)
+            setsockopt(clientFD, SOL_SOCKET, SO_RCVTIMEO, &tv, socklen_t(MemoryLayout<timeval>.size))
+
             handleClient(clientFD)
         }
 
