@@ -1281,9 +1281,6 @@ static int _path_get_pts_border(dt_develop_t *dev,
 
   const float wd = pipe->iwidth, ht = pipe->iheight;
   const guint nb = g_list_length(form->points);
-  // DEBUG #19135
-  dt_print(DT_DEBUG_MASKS, "[path_get_pts_border] pipe->iwidth=%.1f pipe->backbuf_width=%d pipe->iscale=%.4f",
-           (float)pipe->iwidth, pipe->backbuf_width, pipe->iscale);
 
   dt_masks_dynbuf_t *dpoints = NULL, *dborder = NULL, *intersections = NULL;
   dt_masks_intbuf_t *gap_fill_segs = NULL;
@@ -1537,7 +1534,8 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_free_align(border_init);
     return 1;
   }
-  else if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction,
+  // Note: the if(source) branch above always returns, so this is not really an else-if.
+  if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction,
                                         *points, *points_count))
   {
     if(!border
@@ -2162,20 +2160,6 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
         gui->scrollx = pzx;
         gui->scrolly = pzy;
       }
-      // DEBUG #19135
-      {
-        const int k = gui->point_selected;
-        dt_masks_point_path_t *dbg = g_list_nth_data(form->points, k);
-        dt_print(DT_DEBUG_MASKS, "[path_button_press] point_selected=%d"
-                 "  click: pzx=%.6f pzy=%.6f  pzx*wd=%.4f pzy*ht=%.4f"
-                 "  gpt->points=(%.4f,%.4f)"
-                 "  corner=(%.6f,%.6f)"
-                 "  wd=%.4f iwidth=%.4f",
-                 k, pzx, pzy, pzx * wd, pzy * ht,
-                 gpt->points[k * 6 + 2], gpt->points[k * 6 + 3],
-                 dbg ? dbg->corner[0] : -1.f, dbg ? dbg->corner[1] : -1.f,
-                 wd, iwidth);
-      }
       gui->point_edited = gui->point_dragging = gui->point_selected;
       gpt->clockwise = _path_is_clockwise(form);
       dt_control_queue_redraw_center();
@@ -2540,22 +2524,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   if(gui->point_dragging >= 0)
   {
     float pts[2] = { pzx * wd, pzy * ht };
-    // DEBUG #19135
-    {
-      dt_masks_point_path_t *dbg = g_list_nth_data(form->points, gui->point_dragging);
-      if(dbg)
-        dt_print(DT_DEBUG_MASKS, "[path_drag] point_dragging=%d  pzx=%.6f pzy=%.6f"
-                 "  pts_in=(%.4f,%.4f)"
-                 "  wd=%.4f iwidth=%.4f"
-                 "  corner=(%.6f,%.6f)"
-                 "  gpt=(%.4f,%.4f)",
-                 gui->point_dragging, pzx, pzy,
-                 pts[0], pts[1],
-                 wd, iwidth,
-                 dbg->corner[0], dbg->corner[1],
-                 gpt->points[gui->point_dragging * 6 + 2],
-                 gpt->points[gui->point_dragging * 6 + 3]);
-    }
     if(gui->creation && !g_list_shorter_than(form->points, 4))
     {
       // if we are near the first point, we have to say that the form should be closed
@@ -2574,15 +2542,6 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
 
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_path_t *bzpt = g_list_nth_data(form->points, gui->point_dragging);
-    // DEBUG #19135
-    dt_print(DT_DEBUG_MASKS, "[path_drag] after backtransform: pts=(%.4f,%.4f)"
-             "  /iwidth → norm=(%.6f,%.6f)"
-             "  bzpt->corner=(%.6f,%.6f)  delta=(%.6f,%.6f)",
-             pts[0], pts[1],
-             pts[0]/iwidth, pts[1]/iheight,
-             bzpt ? bzpt->corner[0] : -1.f, bzpt ? bzpt->corner[1] : -1.f,
-             bzpt ? pts[0]/iwidth - bzpt->corner[0] : 0.f,
-             bzpt ? pts[1]/iheight - bzpt->corner[1] : 0.f);
     pzx = pts[0] / iwidth;
     pzy = pts[1] / iheight;
 
