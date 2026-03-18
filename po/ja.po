@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-16 20:07+0100\n"
-"PO-Revision-Date: 2026-03-17 21:44+0900\n"
+"PO-Revision-Date: 2026-03-18 18:32+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -54,7 +54,7 @@ msgstr "バー"
 #: ../build/bin/preferences_gen.h:2783 ../build/bin/preferences_gen.h:2870
 msgctxt "preferences"
 msgid "never"
-msgstr "行わない"
+msgstr "なし"
 
 #: ../build/bin/conf_gen.h:277
 msgctxt "preferences"
@@ -1092,19 +1092,10 @@ msgstr "サムネイル"
 
 # 次のサイズより大きい場合、埋め込まれたJPEG画像ではなくrawファイルを使用します
 #: ../build/bin/preferences_gen.h:2776
-#, fuzzy
-#| msgid "use raw file instead of embedded JPEG from size"
 msgid "for unaltered images, use raw file instead of embedded JPEG from size"
-msgstr "次のサイズより大きい場合、埋め込みJPEGではなくRAWファイルを使用する"
+msgstr "次のサイズより大きい場合、未編集画像に埋め込みJPEGではなくRAWを使用する"
 
 #: ../build/bin/preferences_gen.h:2785
-#, fuzzy
-#| msgid ""
-#| "if the thumbnail size is greater than this value, it will be processed "
-#| "using raw file instead of the embedded preview JPEG (better but slower).\n"
-#| "if you want all thumbnails and pre-rendered images in best quality you "
-#| "should choose the *always* option.\n"
-#| "(more comments in the manual)"
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1116,9 +1107,12 @@ msgid ""
 "(more details in the manual)"
 msgstr ""
 "サムネイルのサイズがこの値より大きい場合、埋め込みプレビューJPEGではなくRAW"
-"ファイルを使用して処理されます（高クオリティですが低速です）\n"
-"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、'常に'オプ"
-"ションを選択してください\n"
+"ファイルを使用して処理します（高クオリティですが低速です）\n"
+"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、'常に'選択し"
+"てください\n"
+"表示速度を最速にしたい場合、'なし'を選択してください\n"
+"'自動'を選択すると、サムネイルのサイズが埋め込みJPEGの解像度を超えない限り、埋"
+"め込みJPEGを優先して使用します\n"
 "（マニュアルに詳しい説明があります）"
 
 #: ../build/bin/preferences_gen.h:2794
@@ -1126,13 +1120,6 @@ msgid "high quality processing from size"
 msgstr "次のサイズより大きい場合、高クオリティな処理を行う"
 
 #: ../build/bin/preferences_gen.h:2803
-#, fuzzy
-#| msgid ""
-#| "if the thumbnail size is greater than this value, it will be processed "
-#| "using the full quality rendering path (better but slower).\n"
-#| "if you want all thumbnails and pre-rendered images in best quality you "
-#| "should choose the *always* option.\n"
-#| "(more comments in the manual)"
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1141,9 +1128,9 @@ msgid ""
 "(more details in the manual)"
 msgstr ""
 "サムネイルのサイズがこの値より大きい場合、完全なクオリティのレンダリングパスを"
-"使用して処理されます。（高クオリティですが低速です）\n"
-"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、'常に'オプ"
-"ションを選択してください\n"
+"使用して処理します（高クオリティですが低速です）\n"
+"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、'常に'を選択"
+"してください\n"
 "（マニュアルに詳しい説明があります）"
 
 #: ../build/bin/preferences_gen.h:2812
@@ -1960,9 +1947,8 @@ msgid ""
 msgstr ""
 "データベースのスナップショットはdarktableが閉じられる直前に作られます。スナッ"
 "プショットを作成する頻度を選択することが出来ます\n"
-"- 行わない：スナップショットを作成しません。これを選択した場合、作成されるのは"
-"バージョンアップグレードでのスナップショットだけであり、これは必ず必要なもので"
-"す\n"
+"- なし：スナップショットを作成しません。これを選択した場合、作成されるのはバー"
+"ジョンアップグレードでのスナップショットだけであり、これは必ず必要なものです\n"
 "- 月に一度：最後にスナップショットが作られてからひと月経つと作成します\n"
 "- 週に一度：最後にスナップショットが作られてから7日経つと作成します\n"
 "- 日に一度：最後にスナップショットが作られてから24時間経つと作成します\n"
@@ -2012,13 +1998,13 @@ msgstr ""
 "XMPサイドカーファイルにはすべての編集過程、評価、タグ、カラーラベルが記録され"
 "ます。画像ファイルと同じ場所に保存されます。オープンな形式を採用しており、他の"
 "アプリケーションでも読み取ることが出来ます。また、データベースやそのバックアッ"
-"プが消失した際の緊急用バックアップにもなります。\n"
+"プが消失した際の緊急用バックアップにもなります\n"
 "\n"
-"<b>行わない</b>：情報はdarktableのデータベースにのみ保存されます。データベース"
-"が消失または破損した場合、ファイルから編集内容を復元することはできません。\n"
+"<b>なし</b>：情報はdarktableのデータベースにのみ保存されます。データベースが消"
+"失または破損した場合、ファイルから編集内容を復元することはできません\n"
 "\n"
 "<b>編集後</b>：最初の意図的な（つまり、自動適用ではない）編集が行われた後にXMP"
-"ファイルが作成され、編集セッションごとに更新されます。\n"
+"ファイルが作成され、編集セッションごとに更新されます\n"
 "\n"
 "<b>インポート時</b>：画像がインポートされた時にXMPファイルが作成され、その後変"
 "更が加えられるたびに更新されます"
@@ -3935,48 +3921,36 @@ msgstr "青／黄色 コントラスト"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:90
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:193
-#, fuzzy
-#| msgid "naming rules"
 msgid "harmony rule"
-msgstr "命名規則"
+msgstr "調和ルール"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:96
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:197
 #: ../src/iop/colorharmonizer.c:1437
-#, fuzzy
-#| msgid "gain hue"
 msgid "anchor hue"
-msgstr "ゲイン 色相"
+msgstr "アンカー色相"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:102
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:201
-#, fuzzy
-#| msgid "strength"
 msgid "pull strength"
-msgstr "強さ"
+msgstr "引き寄せ 強度"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:108
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:205
-#, fuzzy
-#| msgid "neutral colors"
 msgid "neutral color protection"
-msgstr "ニュートラルな色"
+msgstr "無彩色保護"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:114
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:209
-#, fuzzy
-#| msgid "crop width"
 msgid "pull width"
-msgstr "切り抜き 幅"
+msgstr "引き寄せ 幅"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:120
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:126
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:213
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:217
-#, fuzzy
-#| msgid "custom sort"
 msgid "custom node hue"
-msgstr "カスタム"
+msgstr "カスタムノード 色相"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:132
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:221
@@ -4041,7 +4015,7 @@ msgstr "テトラード"
 #: ../src/libs/filtering.c:312 ../src/libs/filters/ratio.c:124
 #: ../src/libs/scopes/vectorscope.c:71
 msgid "square"
-msgstr "正方形"
+msgstr "スクエア"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:218
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:447
@@ -15107,30 +15081,24 @@ msgid "all files"
 msgstr "全てのファイル"
 
 #: ../src/gui/preferences_ai.c:149
-#, fuzzy
-#| msgid "id when loaded"
 msgid "downloaded"
-msgstr "読み取られた時のID"
+msgstr "ダウンロード済み"
 
 #: ../src/gui/preferences_ai.c:151
 msgid "downloading..."
 msgstr "ダウンロード中..."
 
 #: ../src/gui/preferences_ai.c:155
-#, fuzzy
-#| msgid "id when loaded"
 msgid "not downloaded"
-msgstr "読み取られた時のID"
+msgstr "未ダウンロード"
 
 #: ../src/gui/preferences_ai.c:307
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>利用出来ません、CPUへフォールバックします</i>"
 
 #: ../src/gui/preferences_ai.c:566
-#, fuzzy
-#| msgid "loading utility modules"
 msgid "downloading AI model"
-msgstr "ユーティリティモジュールを読み込んでいます"
+msgstr "AIモデルパッケージ（*.dtmodel）"
 
 #: ../src/gui/preferences_ai.c:581
 #, c-format
@@ -15156,32 +15124,26 @@ msgstr[1] "選択した%d個のモデルを削除しますか？"
 
 #. enable AI toggle
 #: ../src/gui/preferences_ai.c:873
-#, fuzzy
-#| msgid "enabled as required"
 msgid "enable AI features"
-msgstr "必要なので無効化しました"
+msgstr "AI機能を有効にする"
 
 #. provider dropdown
 #: ../src/gui/preferences_ai.c:917
-#, fuzzy
-#| msgid "selection order"
 msgid "execution provider"
-msgstr "選択順序"
+msgstr "実行プロバイダー"
 
 #. populate from central provider table, skipping unavailable providers
 #: ../src/gui/preferences_ai.c:928
 msgid "select hardware acceleration for AI inference:"
-msgstr ""
+msgstr "AI推論に使用するハードウェアアクセラレーションを選択してください："
 
 #: ../src/gui/preferences_ai.c:976
 msgid "models"
 msgstr "モデル"
 
 #: ../src/gui/preferences_ai.c:1022
-#, fuzzy
-#| msgid "select all"
 msgid "select/deselect all"
-msgstr "全て選択"
+msgstr "全て選択／選択解除"
 
 #: ../src/gui/preferences_ai.c:1056
 msgid "task"
@@ -15192,53 +15154,38 @@ msgid "enabled"
 msgstr "有効"
 
 #: ../src/gui/preferences_ai.c:1091
-#, fuzzy
-#| msgid "statistic"
 msgid "status"
-msgstr "統計"
+msgstr "状態"
 
 #. download selected button
 #: ../src/gui/preferences_ai.c:1127
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "move down and select"
 msgid "download selected"
-msgstr "下に移動して選択"
+msgstr "選択項目をダウンロード"
 
 #. download default button
 #: ../src/gui/preferences_ai.c:1136
-#, fuzzy
-#| msgid "disabled defaults"
 msgid "download default"
-msgstr "無効にされたデフォルト"
+msgstr "デフォルトをダウンロード"
 
 #. download all button
 #: ../src/gui/preferences_ai.c:1145
-#, fuzzy
-#| msgid "show all"
 msgid "download all"
-msgstr "全て表示"
+msgstr "全項目をダウンロード"
 
 #. install model button
 #: ../src/gui/preferences_ai.c:1151
-#, fuzzy
-#| msgid "fill mode"
 msgid "install model"
-msgstr "塗りつぶしモード"
+msgstr "モデルをインストール"
 
 #. delete selected button
 #: ../src/gui/preferences_ai.c:1156
-#, fuzzy
-#| msgid "delete duplicate"
 msgid "delete selected"
-msgstr "複製を削除"
+msgstr "選択項目を削除"
 
 #. refresh button
 #: ../src/gui/preferences_ai.c:1165
-#, fuzzy
-#| msgid "refresh EXIF"
 msgid "refresh"
-msgstr "EXIFを更新する"
+msgstr "リフレッシュ"
 
 #. add to stack
 #: ../src/gui/preferences_ai.c:1176
@@ -19969,20 +19916,16 @@ msgid "set the global saturation"
 msgstr "全体の彩度を設定します"
 
 #: ../src/iop/colorharmonizer.c:124
-#, fuzzy
-#| msgid "color harmonies"
 msgid "color harmonizer"
-msgstr "色彩調和"
+msgstr "カラーハーモナイザー"
 
 #: ../src/iop/colorharmonizer.c:131
 msgid "harmonize colors toward a selected palette in perceptual space"
-msgstr ""
+msgstr "知覚空間において、選択したパレットに合わせて色を調和させます"
 
 #: ../src/iop/colorharmonizer.c:132
-#, fuzzy
-#| msgid "selective color grading"
 msgid "creative color grading"
-msgstr "選択的カラーグレーディング"
+msgstr "クリエイティブなカラーグレーディング"
 
 #: ../src/iop/colorharmonizer.c:134
 msgid "darktable UCS / JCH (perceptual)"
@@ -20005,6 +19948,17 @@ msgid ""
 "how strongly the remaining off-palette colors are pulled toward the detected "
 "palette."
 msgstr ""
+"画像の色相の分布を分析し、既存のカラーパレットに最もよく合致する調和ルールとア"
+"ンカー色相を自動的に提案します\n"
+"\n"
+"検出プロセスでは、プレビュー画像の彩度で重み付けしたヒストグラムに対して、全て"
+"のルールとアンカーの組み合わせをスコアリングします。その中から、すでに最も多く"
+"のクロマエネルギーをカバーしている、つまり補正が最小限で済む組み合わせを選択し"
+"ます\n"
+"\n"
+"この結果は既存のルールとアンカー色相を上書きします。引き寄せ強度を使用して、パ"
+"レットから外れている残りの色を、検出されたパレットに向けてどの程度強く引き寄せ"
+"るかを調整してください"
 
 #: ../src/iop/colorharmonizer.c:1417
 msgid "not yet available — wait for the preview to finish processing."
@@ -20028,6 +19982,20 @@ msgid ""
 "square: four hues evenly spaced 90° apart — strong and varied.\n"
 "custom: define all four harmony node hues independently."
 msgstr ""
+"どの色相が「調和している」と見なされるかを定義するルール\n"
+"\n"
+"単色：単一の色相ファミリー。一つのノードのみ\n"
+"類似色：30°間隔で隣接する3つの色相。自然主義的でまとまりがある\n"
+"類似色と補色：類似色の3色とその補色。豊かだがバランスが取れている\n"
+"補色：色相環内で正反対に位置する2つの色相。高コントラストで鮮やか\n"
+"分裂補色：1つの色相とその補色の両隣にある2つの色相。鮮やかだが、補色ほど対立が"
+"強くない\n"
+"ダイアード：60°離れた2つの色相。穏やかなコントラスト\n"
+"トライアド：120°間隔で均等に配置された3つの色相。バランスが取れていて色彩豊"
+"か\n"
+"テトラード：60°間隔の2組の補色をなす4色。複雑であり抑制が必要\n"
+"スクエア：90°間隔で均等に配置された4つの色相。強力で変化に富む\n"
+"カスタム：4つの調和ノードの色相を全て個別に定義する"
 
 #: ../src/iop/colorharmonizer.c:1445 ../src/iop/colorharmonizer.c:1500
 msgid ""
@@ -20051,12 +20019,23 @@ msgid ""
 "tip: pick a skin tone, a sky, or another dominant subject color to anchor the "
 "palette."
 msgstr ""
+"調和の基準になる主要な「キー」色相です。他のすべてのノードはこの最初のノードか"
+"ら導き出されます\n"
+"\n"
+"スライダーをドラッグするかカラーピッカー（スポイト）を使用して、支配的な色相を"
+"画像から直接サンプリングしてください。残りの調和ノードはこの色相と選択された調"
+"和ルールに基づいて自動的に計算されます\n"
+"\n"
+"ヒント：スキントーンや空、またはその他の主要な被写体の色を選択してパレットの基"
+"準にしてください"
 
 #: ../src/iop/colorharmonizer.c:1463
 msgid ""
 "number of active harmony nodes in custom mode (2–4).\n"
 "nodes are numbered from the top; inactive nodes are hidden."
 msgstr ""
+"カスタムモードで使用するアクティブな調和ノードの数（2~4）\n"
+"ノードは上から順に番号が振られ、アクティブでないノードは非表示になります"
 
 #: ../src/iop/colorharmonizer.c:1493
 msgid ""
@@ -20064,12 +20043,15 @@ msgid ""
 "only active in 'custom' harmony mode.\n"
 "use the color picker to sample the desired hue from the image."
 msgstr ""
+"この調和ノードの色相（0°–360°）\n"
+"\n"
+"「カスタム」調和モードを選択している場合のみ有効です\n"
+"カラーピッカーを使用することで、お望みの色相を画像からサンプリングすることが出"
+"来ます"
 
 #: ../src/iop/colorharmonizer.c:1512
-#, fuzzy
-#| msgid "cycle vectorscope types"
 msgid "vectorscope two-way sync"
-msgstr "ベクトルスコープの種類を切り替えます"
+msgstr "ベクトルスコープ双方向同期"
 
 #: ../src/iop/colorharmonizer.c:1514
 msgid ""
@@ -20078,6 +20060,11 @@ msgid ""
 "disable to adjust the module without disturbing the vectorscope display, and "
 "vice-versa."
 msgstr ""
+"有効にすると、ベクトルスコープのハーモニーオーバーレイが、このモジュールの調和"
+"ルールおよびアンカー色相の設定と同期されます\n"
+"\n"
+"無効にするとベクトルスコープの表示を乱さずにモジュールを調整することが出来、そ"
+"の逆も同様です"
 
 #: ../src/iop/colorharmonizer.c:1528
 msgid ""
@@ -20086,6 +20073,10 @@ msgid ""
 "also switches the histogram panel to the vectorscope view if it is not "
 "already active."
 msgstr ""
+"ベクトルスコープに現在表示されている調和ルールとアンカー色相をインポートしま"
+"す\n"
+"また、ヒストグラムパネルがベクトルスコープビューでない場合は、表示をベクトルス"
+"コープビューに切り替えます"
 
 #: ../src/iop/colorharmonizer.c:1549
 msgid ""
@@ -20101,6 +20092,18 @@ msgid ""
 "(grays)\n"
 "are never affected regardless of this setting."
 msgstr ""
+"調和から外れた色相を最も近い調和ノードへとどの程度強く引き寄せるか\n"
+"\n"
+"0：効果なし。色は変更されません\n"
+"\n"
+"低い値（0.1–0.3）：わずかな調整 。 色をパレットに寄せますが、もともとの特徴は"
+"失われません\n"
+"\n"
+"高い値（0.7–1.0）：強い補正。ほとんどの色相が調和ノードへと目に見えて収束しま"
+"す\n"
+"\n"
+"この変化は各ピクセルの彩度に応じて重み付けされます。完全に彩度が失われたピクセ"
+"ル（グレー）はこの設定に関わらず一切影響を受けません"
 
 #: ../src/iop/colorharmonizer.c:1563
 msgid ""
@@ -20120,6 +20123,19 @@ msgid ""
 "wide (> 1): attraction zones overlap — broader, more global hue shift.\n"
 "  useful for strongly discordant images or when a painterly look is desired."
 msgstr ""
+"各調和ノードの引き寄せがおよぶ角度的な範囲を制御します\n"
+"\n"
+"引き寄せはガウス分布であり、ノードの中心で最も強く、外側へ向かって滑らかに減衰"
+"します。ゾーン幅はこのガウス分布の標準偏差を線形にスケーリングします\n"
+"\n"
+"狭い（< 1）：ノードに非常に近い色相のみが引き寄せられます。 選択的で精密な調整"
+"です。色がすでに調和に近く、わずかな補正のみが必要な場合に有用です\n"
+"\n"
+"デフォルト（1）：隣接するノード間の中間地点で各ノードの影響力がほぼゼロまで減"
+"衰します。滑らかな階調を保ちながら、色をきれいに分離します\n"
+"\n"
+"広い（> 1）：引き寄せゾーンが互いに重なり合います。より広範囲で、グローバルな"
+"色相変化が起こります。強い不調和のある画像や絵画的な表現を求める場合に有用です"
 
 #: ../src/iop/colorharmonizer.c:1578
 msgid ""
@@ -20138,6 +20154,17 @@ msgid ""
 "gradually from zero and the slider response is distributed evenly across its "
 "range."
 msgstr ""
+"低彩度の色が色相補正の影響を受けないよう保護します\n"
+"\n"
+"0：保護無し。グレー、肌のハイライト、くすんだトーンの全てが変化します\n"
+"低い値（0.1–0.3）：無彩色に近いグレーのみが補正対象から除外されます。パステル"
+"カラーは補正の影響を受けます\n"
+"中間値 （0.4–0.6）：くすんだ色やパステルカラーが段々と補正を免れていきます\n"
+"高い値（0.7–1.0）：鮮やかで彩度の高い色のみが補正されます。それ以外のすべての"
+"色は、元の色相に近い状態に保たれます\n"
+"\n"
+"重み付けは滑らかで双曲線的に行われ、はっきりした境界はありません。保護はゼロか"
+"ら徐々に増大し、スライダーの全域にわたって均等に反応します"
 
 #: ../src/iop/colorharmonizer.c:1592
 msgid ""
@@ -20152,6 +20179,15 @@ msgid ""
 "but may\n"
 "  blur the grading across image edges, causing some visual separation."
 msgstr ""
+"補正フィールドに適用される平滑化の強さを制御します\n"
+"\n"
+"0：平滑化を無効にする（推奨） — 色相空間内での滑らかな補間によって遷移が処理さ"
+"れ、画像のディテールを最大限に保持します\n"
+"低い値 （0.1–0.5）：わずかな空間平均化を行い、シャドウ部のカラーノイズを低減し"
+"ます\n"
+"高い値 （> 1.0）：広範囲の空間ブレンディングを行います。ソフトで絵画的なルック"
+"を作り出しますが、画像のエッジでグレーディングがぼやけ、視覚的な分離が生じるこ"
+"とがあります"
 
 #: ../src/iop/colorharmonizer.c:1607
 msgid "hue 1"
@@ -20176,6 +20212,12 @@ msgid ""
 "the effect is weighted by the pixel's proximity to this node\n"
 "and respects the 'neutral hue protection' setting."
 msgstr ""
+"この調和ノード付近の色の彩度定数\n"
+"100%：変更なし\n"
+"100%未満：彩度を下げます\n"
+"100%より上：彩度を上げます\n"
+"この効果は各ピクセルがこのノードにどれだけ近いかによって重み付けされ、また、 "
+"'無彩色保護' の設定を尊重します"
 
 #: ../src/iop/colorequal.c:202 ../src/iop/colorequal.c:2933
 msgid "color equalizer"
@@ -24207,7 +24249,8 @@ msgstr "ラスター：マスク"
 
 #: ../src/iop/rasterfile.c:102
 msgid "read PFM/PNG files recorded for use as raster masks"
-msgstr "ラスターマスクとして用いるようPFM/PNGファイルを読み込む"
+msgstr ""
+"ラスターマスクとして使用するために記録されたPFM/PNGファイルを読み込みます"
 
 #: ../src/iop/rasterfile.c:174
 msgid ""
@@ -24245,7 +24288,7 @@ msgstr "選択したファイルはラスターマスクルートフォルダ内
 
 #: ../src/iop/rasterfile.c:740
 msgid "select the RGB channels taken into account to generate the raster mask"
-msgstr "ラスターマスクを生成するために考慮するRGBチャンネルを選択する"
+msgstr "ラスターマスクを生成する際に考慮するRGBチャンネルを選択する"
 
 #: ../src/iop/rasterfile.c:746
 msgid ""
@@ -24257,20 +24300,20 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:755
 msgid "the mask file path is saved with the image history"
-msgstr "マスクファイルパスが画像の履歴とともに保存されます"
+msgstr "マスクファイルのパスは画像の履歴とともに保存されます"
 
 #. Vectorize button
 #: ../src/iop/rasterfile.c:761
-#, fuzzy
-#| msgid "colorize"
 msgid "vectorize"
-msgstr "着色"
+msgstr "ベクトル化"
 
 #: ../src/iop/rasterfile.c:764
 msgid ""
 "vectorize the current bitmap and create corresponding path masks in the mask "
 "manager"
 msgstr ""
+"現在のビットマップをベクトル化し、それに対応するパスマスクをマスクマネージャー"
+"内に作成します"
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
@@ -29545,14 +29588,14 @@ msgstr ""
 
 #: ../src/libs/snapshots.c:867
 msgid "side-by-side"
-msgstr ""
+msgstr "左右表示"
 
 #: ../src/libs/snapshots.c:873
 msgid ""
 "place the snapshot side-by-side / above-below the current image instead of "
 "overlaying"
 msgstr ""
-"スナップショットをオーバーレイではなく現在の画像の横／上か下に配置します"
+"スナップショットを現在の画像の上に重ねるのではなく、横に並べるか上下に並べます"
 
 #: ../src/libs/snapshots.c:877
 msgid "toggle last snapshot"
@@ -29624,11 +29667,11 @@ msgstr "スタイルを検索"
 
 #: ../src/libs/styles.c:889 ../src/libs/styles.c:890
 msgid "hide preview"
-msgstr "プレビューを非表示にする"
+msgstr "プレビューを非表示"
 
 #: ../src/libs/styles.c:897
 msgid "hide preview of style on tooltip"
-msgstr ""
+msgstr "ツールチップ上にスタイルのプレビューを表示しないようにします"
 
 #: ../src/libs/styles.c:899 ../src/libs/styles.c:900
 msgid "create duplicate"
@@ -29691,7 +29734,7 @@ msgstr "プレビューのサイズ"
 
 #: ../src/libs/styles.c:1026
 msgid "change size of preview on tooltip of style"
-msgstr ""
+msgstr "スタイルのツールチップ上に表示するプレビューのサイズを変更します"
 
 #: ../src/libs/styles.c:1029
 msgid "large"
