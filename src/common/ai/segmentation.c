@@ -18,7 +18,10 @@
 
 #include "common/ai/segmentation.h"
 #include "ai/backend.h"
+#include "common/database.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
+#include "common/grealpath.h"
 #include <inttypes.h>
 #include <math.h>
 #include <string.h>
@@ -84,6 +87,8 @@ struct dt_seg_context_t
   int encoded_height;
   float scale; // SAM_INPUT_SIZE / max(w, h)
   gboolean image_encoded;
+
+  char *model_id; // model identifier (for cache validation)
 };
 
 /* --- preprocessing --- */
@@ -230,6 +235,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   dt_seg_context_t *ctx = g_new0(dt_seg_context_t, 1);
   ctx->encoder = encoder;
   ctx->decoder = decoder;
+  ctx->model_id = g_strdup(model_id);
 
   // query encoder output count and shapes from model metadata
   ctx->n_enc_outputs = dt_ai_get_output_count(encoder);
@@ -956,6 +962,310 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
            (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim * sizeof(float));
 }
 
+/* --- disk cache for encoder embeddings --- */
+
+// file format: magic + version + metadata + encoder outputs + RGB
+#define SEG_CACHE_MAGIC 0x44545347  // "DTSG"
+#define SEG_CACHE_VERSION 1
+#define SEG_CACHE_SUBDIR "objmasks"
+
+static void _get_cache_dir(char *out, size_t size)
+{
+  char cachedir[PATH_MAX] = {0};
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  // hash the database path so different --configdir instances
+  // get separate cache directories (same pattern as mipmaps)
+  const gchar *dbpath = dt_database_get_path(darktable.db);
+  gchar *abspath = g_realpath(dbpath);
+  if(!abspath) abspath = g_strdup(dbpath);
+  GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);
+  g_checksum_update(chk, (guchar *)abspath, strlen(abspath));
+  const gchar *hash = g_checksum_get_string(chk);
+
+  snprintf(out, size, "%s/%s-%s.d", cachedir, SEG_CACHE_SUBDIR, hash);
+
+  g_checksum_free(chk);
+  g_free(abspath);
+}
+
+gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
+                                const int32_t imgid,
+                                const dt_hash_t distort_hash,
+                                const uint8_t *rgb,
+                                const int rgb_w,
+                                const int rgb_h)
+{
+  if(!ctx || !ctx->image_encoded)
+    return FALSE;
+
+  char dir[PATH_MAX] = {0};
+  _get_cache_dir(dir, sizeof(dir));
+  g_mkdir_with_parents(dir, 0755);
+
+  char path[PATH_MAX] = {0};
+  snprintf(path, sizeof(path), "%s/%d.seg", dir, imgid);
+
+  FILE *fp = g_fopen(path, "wb");
+  if(!fp)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] disk cache: cannot open %s for writing",
+             path);
+    return FALSE;
+  }
+
+  gboolean ok = TRUE;
+  const uint32_t magic = SEG_CACHE_MAGIC;
+  const uint32_t version = SEG_CACHE_VERSION;
+  const int32_t n_out = ctx->n_enc_outputs;
+  // model id (length-prefixed string)
+  const uint32_t mid_len = ctx->model_id ? (uint32_t)strlen(ctx->model_id) : 0;
+
+  // header
+  ok = ok && fwrite(&magic, 4, 1, fp) == 1;
+  ok = ok && fwrite(&version, 4, 1, fp) == 1;
+  ok = ok && fwrite(&imgid, 4, 1, fp) == 1;
+  ok = ok && fwrite(&distort_hash, 8, 1, fp) == 1;
+  ok = ok && fwrite(&mid_len, 4, 1, fp) == 1;
+  if(mid_len > 0)
+    ok = ok && fwrite(ctx->model_id, 1, mid_len, fp) == mid_len;
+  ok = ok && fwrite(&ctx->encoded_width, 4, 1, fp) == 1;
+  ok = ok && fwrite(&ctx->encoded_height, 4, 1, fp) == 1;
+  ok = ok && fwrite(&ctx->scale, 4, 1, fp) == 1;
+  ok = ok && fwrite(&n_out, 4, 1, fp) == 1;
+
+  // encoder outputs
+  for(int i = 0; i < n_out && ok; i++)
+  {
+    ok = ok && fwrite(&ctx->enc_ndims[i], 4, 1, fp) == 1;
+    ok = ok && fwrite(ctx->enc_shapes[i],
+                      sizeof(int64_t), ctx->enc_ndims[i], fp)
+                 == (size_t)ctx->enc_ndims[i];
+    const uint64_t data_sz = ctx->enc_sizes[i];
+    ok = ok && fwrite(&data_sz, 8, 1, fp) == 1;
+    if(data_sz > 0 && ctx->enc_data[i])
+      ok = ok && fwrite(ctx->enc_data[i],
+                        sizeof(float), data_sz, fp) == data_sz;
+  }
+
+  // RGB footer
+  const int32_t rw = rgb ? rgb_w : 0;
+  const int32_t rh = rgb ? rgb_h : 0;
+  ok = ok && fwrite(&rw, 4, 1, fp) == 1;
+  ok = ok && fwrite(&rh, 4, 1, fp) == 1;
+  if(rw > 0 && rh > 0 && rgb)
+  {
+    const size_t rgb_sz = (size_t)rw * rh * 3;
+    ok = ok && fwrite(rgb, 1, rgb_sz, fp) == rgb_sz;
+  }
+
+  fclose(fp);
+
+  if(!ok)
+  {
+    g_unlink(path);
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] disk cache: write error for imgid %d",
+             imgid);
+    return FALSE;
+  }
+
+  dt_print(DT_DEBUG_AI,
+           "[segmentation] disk cache: saved imgid %d (%dx%d)",
+           imgid, ctx->encoded_width, ctx->encoded_height);
+
+  return TRUE;
+}
+
+gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
+                                const int32_t imgid,
+                                const dt_hash_t distort_hash,
+                                uint8_t **out_rgb,
+                                int *out_rgb_w,
+                                int *out_rgb_h)
+{
+  if(!ctx) return FALSE;
+
+  char dir[PATH_MAX] = {0};
+  _get_cache_dir(dir, sizeof(dir));
+
+  char path[PATH_MAX] = {0};
+  snprintf(path, sizeof(path), "%s/%d.seg", dir, imgid);
+
+  FILE *fp = g_fopen(path, "rb");
+  if(!fp) return FALSE;
+
+  gboolean ok = TRUE;
+  uint32_t magic = 0, version = 0;
+  dt_hash_t file_distort_hash = 0;
+  int32_t file_imgid = 0, enc_w = 0, enc_h = 0, n_out = 0;
+  float scale = 0.0f;
+
+  // read header
+  ok = ok && fread(&magic, 4, 1, fp) == 1;
+  ok = ok && fread(&version, 4, 1, fp) == 1;
+  ok = ok && fread(&file_imgid, 4, 1, fp) == 1;
+  ok = ok && fread(&file_distort_hash, 8, 1, fp) == 1;
+  // read model id
+  uint32_t mid_len = 0;
+  ok = ok && fread(&mid_len, 4, 1, fp) == 1;
+  char file_model_id[256] = {0};
+  if(ok && mid_len > 0 && mid_len < sizeof(file_model_id))
+    ok = ok && fread(file_model_id, 1, mid_len, fp) == mid_len;
+  else if(mid_len >= sizeof(file_model_id))
+    ok = FALSE;
+  ok = ok && fread(&enc_w, 4, 1, fp) == 1;
+  ok = ok && fread(&enc_h, 4, 1, fp) == 1;
+  ok = ok && fread(&scale, 4, 1, fp) == 1;
+  ok = ok && fread(&n_out, 4, 1, fp) == 1;
+
+  if(!ok || magic != SEG_CACHE_MAGIC
+     || version != SEG_CACHE_VERSION
+     || file_imgid != imgid
+     || file_distort_hash != distort_hash
+     || !ctx->model_id
+     || strcmp(file_model_id, ctx->model_id) != 0)
+  {
+    fclose(fp);
+    return FALSE;
+  }
+
+  // validate output count matches loaded model
+  if(n_out != ctx->n_enc_outputs || n_out <= 0
+     || n_out > MAX_ENCODER_OUTPUTS)
+  {
+    fclose(fp);
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] disk cache: output count mismatch "
+             "(file=%d, model=%d)",
+             n_out, ctx->n_enc_outputs);
+    return FALSE;
+  }
+
+  // read encoder outputs into temporary buffers
+  float *tmp_data[MAX_ENCODER_OUTPUTS] = {NULL};
+  size_t tmp_sizes[MAX_ENCODER_OUTPUTS] = {0};
+  int tmp_ndims[MAX_ENCODER_OUTPUTS] = {0};
+  int64_t tmp_shapes[MAX_ENCODER_OUTPUTS][MAX_TENSOR_DIMS];
+  memset(tmp_shapes, 0, sizeof(tmp_shapes));
+
+  for(int i = 0; i < n_out && ok; i++)
+  {
+    ok = ok && fread(&tmp_ndims[i], 4, 1, fp) == 1;
+    if(!ok || tmp_ndims[i] <= 0
+       || tmp_ndims[i] > MAX_TENSOR_DIMS)
+    {
+      ok = FALSE;
+      break;
+    }
+    ok = ok && fread(tmp_shapes[i], sizeof(int64_t),
+                     tmp_ndims[i], fp) == (size_t)tmp_ndims[i];
+
+    uint64_t data_sz = 0;
+    ok = ok && fread(&data_sz, 8, 1, fp) == 1;
+
+    // validate shapes match the model
+    if(ok && tmp_ndims[i] != ctx->enc_ndims[i])
+    {
+      ok = FALSE;
+      dt_print(DT_DEBUG_AI,
+               "[segmentation] disk cache: ndim mismatch for "
+               "output %d (file=%d, model=%d)",
+               i, tmp_ndims[i], ctx->enc_ndims[i]);
+      break;
+    }
+    for(int d = 0; d < tmp_ndims[i] && ok; d++)
+    {
+      if(tmp_shapes[i][d] != ctx->enc_shapes[i][d])
+      {
+        ok = FALSE;
+        dt_print(DT_DEBUG_AI,
+                 "[segmentation] disk cache: shape mismatch for output %d dim %d",
+                 i, d);
+      }
+    }
+
+    if(ok && data_sz > 0)
+    {
+      tmp_data[i] = g_try_malloc(data_sz * sizeof(float));
+      if(!tmp_data[i])
+      {
+        ok = FALSE;
+        break;
+      }
+      tmp_sizes[i] = (size_t)data_sz;
+      ok = ok && fread(tmp_data[i], sizeof(float),
+                       data_sz, fp) == data_sz;
+    }
+  }
+
+  // read RGB footer
+  int32_t rw = 0, rh = 0;
+  uint8_t *rgb = NULL;
+  if(ok)
+  {
+    ok = ok && fread(&rw, 4, 1, fp) == 1;
+    ok = ok && fread(&rh, 4, 1, fp) == 1;
+    if(ok && rw > 0 && rh > 0)
+    {
+      const size_t rgb_sz = (size_t)rw * rh * 3;
+      rgb = g_try_malloc(rgb_sz);
+      if(rgb)
+        ok = ok && fread(rgb, 1, rgb_sz, fp) == rgb_sz;
+      else
+        ok = FALSE;
+    }
+  }
+
+  fclose(fp);
+
+  if(!ok)
+  {
+    for(int i = 0; i < n_out; i++) g_free(tmp_data[i]);
+    g_free(rgb);
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] disk cache: read error for imgid %d",
+             imgid);
+    return FALSE;
+  }
+
+  // success -- install into context
+  for(int i = 0; i < MAX_ENCODER_OUTPUTS; i++)
+  {
+    g_free(ctx->enc_data[i]);
+    ctx->enc_data[i] = NULL;
+    ctx->enc_sizes[i] = 0;
+  }
+  for(int i = 0; i < n_out; i++)
+  {
+    ctx->enc_data[i] = tmp_data[i];
+    ctx->enc_sizes[i] = tmp_sizes[i];
+  }
+  ctx->encoded_width = enc_w;
+  ctx->encoded_height = enc_h;
+  ctx->scale = scale;
+  ctx->image_encoded = TRUE;
+  ctx->has_prev_mask = FALSE;
+  if(ctx->prev_mask)
+    memset(ctx->prev_mask, 0,
+           (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim * sizeof(float));
+
+  if(out_rgb) *out_rgb = rgb; else g_free(rgb);
+  if(out_rgb_w) *out_rgb_w = rw;
+  if(out_rgb_h) *out_rgb_h = rh;
+
+  dt_print(DT_DEBUG_AI,
+           "[segmentation] disk cache: loaded imgid %d (%dx%d, rgb=%dx%d)",
+           imgid, enc_w, enc_h, rw, rh);
+  return TRUE;
+}
+
+const char *dt_seg_get_model_id(const dt_seg_context_t *ctx)
+{
+  return ctx ? ctx->model_id : NULL;
+}
+
 void dt_seg_free(dt_seg_context_t *ctx)
 {
   if(!ctx)
@@ -968,6 +1278,7 @@ void dt_seg_free(dt_seg_context_t *ctx)
   for(int i = 0; i < MAX_ENCODER_OUTPUTS; i++)
     g_free(ctx->enc_data[i]);
   g_free(ctx->prev_mask);
+  g_free(ctx->model_id);
   g_free(ctx);
 }
 
