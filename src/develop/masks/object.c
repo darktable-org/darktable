@@ -120,16 +120,6 @@ static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
   return hash;
 }
 
-// persistent model state - survives mask creation sessions,
-// freed when leaving darkroom view.
-// accessed only from the main (GUI) thread: _destroy_data is called
-// from post_expose cleanup, and _on_view_changed is a signal callback
-// on the main thread
-static dt_ai_environment_t *_persistent_env = NULL;
-static dt_seg_context_t *_persistent_seg = NULL;
-static gboolean _persistent_model_loaded = FALSE;
-static gboolean _persistent_signal_connected = FALSE;
-
 static void _on_view_changed(gpointer instance,
                              dt_view_t *old_view,
                              dt_view_t *new_view,
@@ -142,22 +132,23 @@ static void _on_view_changed(gpointer instance,
   // free persistent model when leaving darkroom
   if(old_view && old_view->view(old_view) == DT_VIEW_DARKROOM)
   {
-    if(_persistent_seg)
+    dt_ai_seg_t *seg = &darktable.ai_seg;
+    if(seg->ctx)
     {
       dt_print(DT_DEBUG_AI,
                "[object mask] freeing persistent model");
-      dt_seg_free(_persistent_seg);
-      _persistent_seg = NULL;
+      dt_seg_free(seg->ctx);
+      seg->ctx = NULL;
     }
-    if(_persistent_env)
+    if(seg->env)
     {
-      dt_ai_env_destroy(_persistent_env);
-      _persistent_env = NULL;
+      dt_ai_env_destroy(seg->env);
+      seg->env = NULL;
     }
-    _persistent_model_loaded = FALSE;
+    seg->model_loaded = FALSE;
 
     DT_CONTROL_SIGNAL_DISCONNECT(_on_view_changed, NULL);
-    _persistent_signal_connected = FALSE;
+    seg->signal_connected = FALSE;
   }
 }
 
@@ -186,15 +177,16 @@ static void _destroy_data(_object_data_t *d)
 
   // save model to persistent storage -- keeps it loaded across
   // mask sessions, disk cache handles embedding persistence.
-  // only persist if nobody already claimed the statics (guards
+  // only persist if nobody already claimed the slot (guards
   // against deferred cleanup racing with a new session)
+  dt_ai_seg_t *ps = &darktable.ai_seg;
   const gboolean persist = dt_conf_get_bool(CONF_OBJECT_PERSIST_KEY);
-  if(persist && !_persistent_seg && d->seg)
+  if(persist && !ps->ctx && d->seg)
   {
     dt_seg_reset_encoding(d->seg);
-    _persistent_env = d->env;
-    _persistent_seg = d->seg;
-    _persistent_model_loaded = d->model_loaded;
+    ps->env = d->env;
+    ps->ctx = d->seg;
+    ps->model_loaded = d->model_loaded;
     d->env = NULL;
     d->seg = NULL;
   }
@@ -1565,36 +1557,37 @@ static void _object_events_post_expose(
     // restore persistent model (stays loaded across mask sessions)
     // if the active model changed in preferences, discard the old one
     {
+      dt_ai_seg_t *ps = &darktable.ai_seg;
       char *active = dt_ai_models_get_active_for_task("mask");
-      const char *persistent_id = dt_seg_get_model_id(_persistent_seg);
-      if(_persistent_seg && active
+      const char *persistent_id = dt_seg_get_model_id(ps->ctx);
+      if(ps->ctx && active
          && g_strcmp0(active, persistent_id) != 0)
       {
         dt_print(DT_DEBUG_AI,
                  "[object mask] model changed (%s -> %s), "
                  "discarding persistent model",
                  persistent_id, active);
-        dt_seg_free(_persistent_seg);
-        _persistent_seg = NULL;
-        dt_ai_env_destroy(_persistent_env);
-        _persistent_env = NULL;
-        _persistent_model_loaded = FALSE;
+        dt_seg_free(ps->ctx);
+        ps->ctx = NULL;
+        dt_ai_env_destroy(ps->env);
+        ps->env = NULL;
+        ps->model_loaded = FALSE;
       }
       g_free(active);
-    }
-    d->env = _persistent_env;
-    d->seg = _persistent_seg;
-    d->model_loaded = _persistent_model_loaded;
-    _persistent_env = NULL;
-    _persistent_seg = NULL;
-    _persistent_model_loaded = FALSE;
+      d->env = ps->env;
+      d->seg = ps->ctx;
+      d->model_loaded = ps->model_loaded;
+      ps->env = NULL;
+      ps->ctx = NULL;
+      ps->model_loaded = FALSE;
 
-    // connect view-change signal once to free model on darkroom exit
-    if(!_persistent_signal_connected)
-    {
-      DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                                _on_view_changed, NULL);
-      _persistent_signal_connected = TRUE;
+      // connect view-change signal once to free model on darkroom exit
+      if(!ps->signal_connected)
+      {
+        DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                                  _on_view_changed, NULL);
+        ps->signal_connected = TRUE;
+      }
     }
 
     gui->scratchpad = d;
