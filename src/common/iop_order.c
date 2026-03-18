@@ -91,6 +91,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 9.0f }, "mask_manager", 0},
   { {10.0f }, "denoiseprofile", 0},
   { {11.0f }, "tonemap", 0},
+  { {11.5f }, "lightleak", 0},
   { {12.0f }, "exposure", 0},
   { {13.0f }, "spots", 0},
   { {14.0f }, "retouch", 0},
@@ -204,6 +205,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {18.0f }, "liquify", 0},
   { {19.0f }, "spots", 0},
   { {20.0f }, "retouch", 0},
+  { {20.5f }, "lightleak", 0},
   { {21.0f }, "exposure", 0},
   { {22.0f }, "mask_manager", 0},
   { {23.0f }, "tonemap", 0},
@@ -322,6 +324,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { {18.0f }, "liquify", 0},
   { {19.0f }, "spots", 0},
   { {20.0f }, "retouch", 0},
+  { {20.5f }, "lightleak", 0},
   { {21.0f }, "exposure", 0},
   { {22.0f }, "mask_manager", 0},
   { {23.0f }, "tonemap", 0},
@@ -732,6 +735,7 @@ void dt_ioppr_migrate_legacy_iop_order_list(GList *iop_order_list)
   _insert_before(iop_order_list, "filmicrgb", "agx");
   _insert_before(iop_order_list, "colorbalancergb", "colorequal");
   _insert_before(iop_order_list, "highlights", "rasterfile");
+  _insert_before(iop_order_list, "exposure", "lightleak");
 }
 
 static dt_iop_order_t _ioppr_get_default_iop_order_version(const dt_imgid_t imgid)
