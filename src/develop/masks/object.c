@@ -72,6 +72,7 @@ typedef struct _object_data_t
   gboolean model_loaded;    // whether the model was loaded
   int encode_state;         // uses _encode_state_t values (atomic access)
   dt_imgid_t encoded_imgid; // image ID that was encoded
+  dt_imgid_t last_seen_imgid; // last image seen in post_expose (detects navigation)
   dt_hash_t encoded_distort_hash; // distort hash at encode time (detects crop/rotate)
   int encode_w, encode_h;   // encoding resolution (for coordinate mapping)
   uint8_t *encode_rgb;      // stored RGB from encoding (uint8, HWC, 3ch)
@@ -1553,6 +1554,7 @@ static void _object_events_post_expose(
     d->brush_radius = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
     d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
     d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+    d->last_seen_imgid = NO_IMGID;
 
     // restore persistent model (stays loaded across mask sessions)
     // if the active model changed in preferences, discard the old one
@@ -1593,12 +1595,17 @@ static void _object_events_post_expose(
     gui->scratchpad = d;
   }
 
-  // detect image or distortion change: reset encoding if we switched
-  // to a different image or if crop/rotate/perspective changed
+  // detect image change or navigation away and back:
+  // reset everything so the user starts a fresh mask session
   const dt_imgid_t cur_imgid = darktable.develop->image_storage.id;
   const int cur_state = g_atomic_int_get(&d->encode_state);
+  const gboolean navigated_away
+    = d->last_seen_imgid != NO_IMGID
+      && d->last_seen_imgid != cur_imgid;
+  d->last_seen_imgid = cur_imgid;
   if((cur_state == ENCODE_READY || cur_state == ENCODE_ERROR)
-     && (d->encoded_imgid != cur_imgid
+     && (navigated_away
+         || d->encoded_imgid != cur_imgid
          || d->encoded_distort_hash != _compute_distort_hash(darktable.develop)))
   {
     if(d->encode_thread)
