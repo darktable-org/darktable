@@ -70,12 +70,12 @@ G_BEGIN_DECLS
 
 #define DT_OPENCL_DEFAULT_COMPILE_DEFAULT ("")
 #define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
-#define DT_CLDEVICE_HEAD ("cldevice_v5_")
+#define DT_CLDEVICE_HEAD ("cldevice_v6_")
 
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 5
+#define DT_OPENCL_KERNELS 6
 
 typedef enum dt_opencl_memory_t
 {

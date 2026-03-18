@@ -41,9 +41,7 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #define BLUE 2
 #define ALPHA 3
 
-#define DT_OPENCL_PERFORMANCE
-
-#ifdef DT_OPENCL_PERFORMANCE
+#if(defined(__FAST_RELAXED_MATH__) && __FAST_RELAXED_MATH__ == 1)
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
   #define dtcl_sqrt(A) native_sqrt(A)
@@ -155,7 +153,41 @@ static inline float fsquare(const float a)
   return (a * a);
 }
 
+static inline float fcube(const float a)
+{
+  return (a * a * a);
+}
+
 static inline float clipf(const float a)
 {
   return clamp(a, 0.0f, 1.0f);
+}
+
+/* Some inline functions making life easier when reading photosites
+   or pixels from cl_mem images.
+  The variants with a leading A use the faster samplerA interpolater, only
+  to be used with safe positions as otherwise the read value will be undefined,
+  (on AMD possibly NaN).
+*/
+static inline float readsingle(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, sampleri, (int2)(col, row)).x;
+}
+static inline float Areadsingle(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, samplerA, (int2)(col, row)).x;
+}
+
+static inline float4 readpixel(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, sampleri, (int2)(col, row));
+}
+static inline float4 Areadpixel(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, samplerA, (int2)(col, row));
+}
+
+static inline float readalpha(read_only image2d_t in, int col, int row)
+{
+  return clipf(read_imagef(in, sampleri, (int2)(col, row)).w);
 }

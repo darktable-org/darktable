@@ -410,6 +410,13 @@
     <shortdescription>activate OpenCL support</shortdescription>
     <longdescription>if found, use OpenCL runtime on your system to speed up processing by using your graphics card(s).\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="opencl" capability="opencl" restart="true">
+    <name>opencl_fast</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>OpenCL fast mode</shortdescription>
+    <longdescription>if set the OpenCL compiler uses aggressive optimizing for better performance with reduced precision so more differences between CPU and OpenCL are expected.</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
     <type>
