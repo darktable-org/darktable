@@ -95,6 +95,7 @@ typedef struct _object_data_t
   GList *preview_signs;             // parallel GList of sign values ('+' or '-')
   int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
   float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
+  dt_iop_module_t *creation_module; // module that started this session
 } _object_data_t;
 
 static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
@@ -1546,8 +1547,31 @@ static void _object_events_post_expose(
   if(!gui->creation)
     return;
 
-  // ensure scratchpad exists
+  // ensure scratchpad exists.
+  // if a previous session left stale mask data (brush was used but
+  // not committed), clear mask/brush state but keep the encoding
+  // so re-encoding is not needed
   _object_data_t *d = _get_data(gui);
+  if(d && d->brush_used && d->creation_module != gui->creation_module)
+  {
+    g_free(d->mask);
+    d->mask = NULL;
+    d->mask_w = d->mask_h = 0;
+    d->brush_used = FALSE;
+    d->brush_painting = FALSE;
+    d->brush_points_count = 0;
+    if(d->brush_points)
+      dt_masks_dynbuf_reset(d->brush_points);
+    _free_preview_forms(d);
+    if(gui->guipoints)
+      dt_masks_dynbuf_reset(gui->guipoints);
+    if(gui->guipoints_payload)
+      dt_masks_dynbuf_reset(gui->guipoints_payload);
+    gui->guipoints_count = 0;
+    if(d->seg)
+      dt_seg_reset_prev_mask(d->seg);
+    d->creation_module = gui->creation_module;
+  }
   if(!d)
   {
     d = g_new0(_object_data_t, 1);
@@ -1555,6 +1579,7 @@ static void _object_events_post_expose(
     d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
     d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
     d->last_seen_imgid = NO_IMGID;
+    d->creation_module = gui->creation_module;
 
     // restore persistent model (stays loaded across mask sessions)
     // if the active model changed in preferences, discard the old one
@@ -1595,7 +1620,7 @@ static void _object_events_post_expose(
     gui->scratchpad = d;
   }
 
-  // detect image change or navigation away and back:
+  // detect image change, navigation, or stale session:
   // reset everything so the user starts a fresh mask session
   const dt_imgid_t cur_imgid = darktable.develop->image_storage.id;
   const int cur_state = g_atomic_int_get(&d->encode_state);
