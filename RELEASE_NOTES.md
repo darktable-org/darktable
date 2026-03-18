@@ -148,6 +148,9 @@ changes (where available).
 - Enabled shortcuts for some existing buttons in duplicate manager,
   snapshots, and AgX modules.
 
+- Enabled shortcuts to cycle through module groups, modules and
+  module instances.
+
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
 
@@ -189,6 +192,11 @@ changes (where available).
 - Properly apply the iop-order when applying a style at export
   time. This also fixes the style preview when flying over styles in
   the style module.
+
+- Drawn mask fixes:
+  - Masks do not shift position when crop is toggled on/off.
+  - Pixel-perfect node hovering and editing up to maximum (16x)
+    magnification.
 
 - If a tag category is marked as private, all tags and subcategories
   under it are also treated as private.
