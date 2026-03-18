@@ -139,17 +139,17 @@ changes (where available).
   and two-finger panning. Follow-up fixes refined input source
   handling to keep panning limited to touchpad smooth-scroll input.
 
-## Performance Improvements
-
-- Increased performance for OpenCL guided filter by internal tiling.
-
-## Other Changes
-
 - Enabled shortcuts for some existing buttons in duplicate manager,
   snapshots, and AgX modules.
 
 - Enabled shortcuts to cycle through module groups, modules and
   module instances.
+
+## Performance Improvements
+
+- Increased performance for OpenCL guided filter by internal tiling.
+
+## Other Changes
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
   presets dialogue.
