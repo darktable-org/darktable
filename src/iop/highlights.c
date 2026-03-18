@@ -558,7 +558,6 @@ int process_cl(dt_iop_module_t *self,
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_xtrans = NULL;
-  cl_mem dev_clips = NULL;
 
   if(g && fullpipe)
   {
@@ -574,9 +573,8 @@ int process_cl(dt_iop_module_t *self,
                            mclip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
                            mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
 
-        dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
         dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
-        if(!dev_clips || !dev_xtrans) goto finish;
+        if(!dev_xtrans) goto finish;
 
         const int dy = roi_out->y - roi_in->y;
         const int dx = roi_out->x - roi_in->x;
@@ -587,7 +585,7 @@ int process_cl(dt_iop_module_t *self,
           CLARG(roi_in->width), CLARG(roi_in->height),
           CLARG(dx), CLARG(dy),
           CLARG(filters), CLARG(dev_xtrans),
-          CLARG(dev_clips));
+          CLARG(clips));
         announce = FALSE;
         goto finish;
       }
@@ -658,11 +656,15 @@ int process_cl(dt_iop_module_t *self,
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
     if(chr->late_correction)
-    for_each_channel(c)
-      clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
-    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    {
+      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
+      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
+      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[3] *= chr->as_shot[1] / chr->D65coeffs[1];
+    }
+
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
-    if(!dev_clips || !dev_xtrans) goto finish;
+    if(!dev_xtrans) goto finish;
 
     // raw images with clip mode (both bayer and xtrans)
     const int dy = roi_out->y - roi_in->y;
@@ -671,7 +673,7 @@ int process_cl(dt_iop_module_t *self,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
       CLARG(roi_out->width), CLARG(roi_out->height),
-      CLARG(dev_clips), CLARG(dx), CLARG(dy),
+      CLARG(clips), CLARG(dx), CLARG(dy),
       CLARG(filters), CLARG(dev_xtrans));
   }
   if(err != CL_SUCCESS) goto finish;
@@ -703,7 +705,6 @@ int process_cl(dt_iop_module_t *self,
   finish:
   if(err != CL_SUCCESS) dt_iop_piece_clear_raster(piece, NULL);
 
-  dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   return err;
 }
@@ -736,7 +737,10 @@ static void process_clip(dt_iop_module_t *self,
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
     if(chr->late_correction)
     {
-      for_each_channel(c) clips[c] *= chr->as_shot[c] / chr->D65coeffs[c];
+      clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
+      clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
+      clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
+      clips[3] *= chr->as_shot[1] / chr->D65coeffs[1];
     }
     for(int row = 0; row < roi_out->height; row++)
     {
