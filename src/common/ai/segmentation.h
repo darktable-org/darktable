@@ -139,11 +139,11 @@ void dt_seg_reset_prev_mask(dt_seg_context_t *ctx);
  * @return TRUE on success.
  */
 gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
-                                dt_imgid_t imgid,
+                                const dt_imgid_t imgid,
                                 const dt_hash_t distort_hash,
                                 const uint8_t *rgb,
                                 const int rgb_w,
-                                int rgb_h);
+                                const int rgb_h);
 
 /**
  * @brief Load encoder embeddings + RGB from disk cache.
@@ -158,7 +158,7 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
  * @return TRUE on cache hit, FALSE on miss or mismatch.
  */
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
-                                dt_imgid_t imgid,
+                                const dt_imgid_t imgid,
                                 const dt_hash_t distort_hash,
                                 uint8_t **out_rgb,
                                 int *out_rgb_w,
