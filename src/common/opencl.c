@@ -339,16 +339,12 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f %.3f",
-    0, // don't use avoid atomics any longer
+  g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
-    cl->dev[devid].clroundup_wd,
-    cl->dev[devid].clroundup_ht,
     cl->dev[devid].use_events ? DT_OPENCL_EVENTS : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
-    0.0f, // dummy for now as we don't have the benching any more
     cl->dev[devid].advantage,
     cl->dev[devid].unified_fraction);
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
@@ -383,38 +379,23 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(existing_device)
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int idummy;
     int micro_nap;
     int pinned_memory;
     int events;
     int asyncmode;
     int disabled;
-    float dummy; // unused
     float advantage;
     float unified_fraction;
-    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f %f",
-           &idummy, &micro_nap, &pinned_memory, &idummy, &idummy,
-           &events, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
+    sscanf(dat, "%i %i %i %i %i %f %f",
+           &micro_nap, &pinned_memory, &events, &asyncmode, &disabled, &advantage, &unified_fraction);
 
     cldid->use_events = events ? TRUE : FALSE;
-
-    // some rudimentary safety checking if string seems to be ok
-    safety_ok = (advantage >= 0.0f) && (advantage <= 10000.0f);
-
-    if(safety_ok)
-    {
-      cldid->micro_nap = micro_nap;
-      cldid->pinned_memory = pinned_memory;
-      cldid->asyncmode = asyncmode;
-      cldid->disabled = disabled;
-      cldid->advantage = advantage;
-      cldid->unified_fraction = unified_fraction;
-    }
-    else // if there is something wrong with the found conf key reset to defaults
-    {
-      dt_print(DT_DEBUG_OPENCL,
-               "[dt_opencl_read_device_config] malformed data '%s' for '%s'", dat, key);
-    }
+    cldid->micro_nap = micro_nap;
+    cldid->pinned_memory = pinned_memory ? TRUE : FALSE;
+    cldid->asyncmode = asyncmode ? TRUE : FALSE;
+    cldid->disabled = disabled ? TRUE : FALSE;
+    cldid->advantage = advantage;
+    cldid->unified_fraction = unified_fraction;
     setlocale(LC_NUMERIC, locale);
   }
 
@@ -426,10 +407,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->micro_nap = 250;
   if((cldid->advantage < 0.0f) || (cldid->advantage > 10000.0f))
     cldid->advantage = 0.0f;
-
-  cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
-  cldid->disabled = cldid->disabled ? TRUE : FALSE;
-  cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
 
   // Also take care of extended device data, these are not only device
   // specific but also depend on the devid
@@ -1012,18 +989,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
      && (dt_conf_get_int("performance_configuration_version_completed") > 17))
     compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
-  {
-    if(!strcmp("nvidiacuda", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strcmp("apple", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strcmp("amdacceleratedparallelprocessing", pname))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else if(!strncmp("rusticl", pname, 7))
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_OPTI;
-    else
-      compile_opt = DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
-  }
+    compile_opt = dt_conf_get_bool("opencl_fast") ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
 
   gchar *my_option = g_strdup(compile_opt);
   dt_conf_set_string(compile_option_name_cname, my_option);
@@ -2298,6 +2264,9 @@ static gboolean _opencl_load_program(const int dev,
   // Include compiler flags for checksum
   len = g_strlcpy(start, cl->dev[dev].cflags, end - start);
   start += len;
+
+  start[0] = dt_conf_get_bool("opencl_fast");
+  start += 1;
 
   /* make sure that the md5sums of all the includes are applied as well */
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
