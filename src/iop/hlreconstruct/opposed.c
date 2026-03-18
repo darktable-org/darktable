@@ -48,12 +48,10 @@ static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 
 static inline float _calc_linear_refavg(const float *in, const int color)
 {
-  const dt_aligned_pixel_t ins = { powf(fmaxf(0.0f, in[0]), 1.0f / HL_POWERF),
-                                   powf(fmaxf(0.0f, in[1]), 1.0f / HL_POWERF),
-                                   powf(fmaxf(0.0f, in[2]), 1.0f / HL_POWERF), 0.0f };
+  const dt_aligned_pixel_t ins = { cbrtf(fmaxf(0.0f, in[0])), cbrtf(fmaxf(0.0f, in[1])), cbrtf(fmaxf(0.0f, in[2])), 0.0f };
   const dt_aligned_pixel_t opp = { 0.5f*(ins[1]+ins[2]), 0.5f*(ins[0]+ins[2]), 0.5f*(ins[0]+ins[1]), 0.0f};
 
-  return powf(opp[color], HL_POWERF);
+  return fcube(opp[color]);
 }
 
 static inline size_t _raw_to_cmap(const size_t width, const size_t row, const size_t col)
