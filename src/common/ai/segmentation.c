@@ -613,41 +613,50 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
        .shape = input_shape,
        .ndim  = 4};
 
-  // allocate output buffers for all encoder outputs
+  // allocate output buffers for encoder outputs.
+  // when shapes have dynamic dims (value <= 0), pass NULL data so
+  // dt_ai_run lets ORT allocate and copies back the results
   float *enc_bufs[MAX_ENCODER_OUTPUTS] = {NULL};
   size_t enc_buf_sizes[MAX_ENCODER_OUTPUTS] = {0};
+  gboolean has_dynamic = FALSE;
 
   for(int i = 0; i < ctx->n_enc_outputs; i++)
   {
     size_t sz = 1;
+    gboolean dynamic = FALSE;
     for(int d = 0; d < ctx->enc_ndims[i]; d++)
     {
       if(ctx->enc_shapes[i][d] <= 0)
       {
-        dt_print(DT_DEBUG_AI,
-                 "[segmentation] encoder output[%d] has non-positive dim[%d]=%" PRId64,
-                 i, d, ctx->enc_shapes[i][d]);
+        dynamic = TRUE;
+        has_dynamic = TRUE;
+        break;
+      }
+      sz *= (size_t)ctx->enc_shapes[i][d];
+    }
+    if(!dynamic)
+    {
+      enc_buf_sizes[i] = sz;
+      enc_bufs[i] = g_try_malloc(sz * sizeof(float));
+      if(!enc_bufs[i])
+      {
         for(int j = 0; j < i; j++) g_free(enc_bufs[j]);
         g_free(preprocessed);
         return FALSE;
       }
-      sz *= (size_t)ctx->enc_shapes[i][d];
-    }
-    enc_buf_sizes[i] = sz;
-    enc_bufs[i] = g_try_malloc(sz * sizeof(float));
-    if(!enc_bufs[i])
-    {
-      for(int j = 0; j < i; j++) g_free(enc_bufs[j]);
-      g_free(preprocessed);
-      return FALSE;
     }
   }
+
+  if(has_dynamic)
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] encoder has dynamic output shapes, "
+             "using ORT-allocated outputs");
 
   dt_ai_tensor_t outputs[MAX_ENCODER_OUTPUTS];
   for(int i = 0; i < ctx->n_enc_outputs; i++)
   {
     outputs[i] = (dt_ai_tensor_t){
-      .data  = enc_bufs[i],
+      .data  = enc_bufs[i], // NULL for dynamic outputs
       .type  = DT_AI_FLOAT,
       .shape = ctx->enc_shapes[i],
       .ndim  = ctx->enc_ndims[i]};
@@ -665,11 +674,17 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   if(ret != 0)
   {
     dt_print(DT_DEBUG_AI, "[segmentation] encoder failed: %d (%.1fs)", ret, enc_elapsed);
-    for(int i = 0; i < ctx->n_enc_outputs; i++) g_free(enc_bufs[i]);
+    for(int i = 0; i < ctx->n_enc_outputs; i++)
+    {
+      if(outputs[i].data != enc_bufs[i])
+        g_free(outputs[i].data);
+      g_free(enc_bufs[i]);
+    }
     return FALSE;
   }
 
-  // cache results
+  // cache results - use data from outputs[] which may have been
+  // allocated by the backend for dynamic-shape outputs
   for(int i = 0; i < MAX_ENCODER_OUTPUTS; i++)
   {
     g_free(ctx->enc_data[i]);
@@ -678,8 +693,18 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   }
   for(int i = 0; i < ctx->n_enc_outputs; i++)
   {
-    ctx->enc_data[i] = enc_bufs[i];
-    ctx->enc_sizes[i] = enc_buf_sizes[i];
+    if(outputs[i].data != enc_bufs[i])
+      g_free(enc_bufs[i]);
+    ctx->enc_data[i] = (float *)outputs[i].data;
+    // recompute size from actual resolved shape
+    size_t sz = 1;
+    for(int d = 0; d < outputs[i].ndim; d++)
+      sz *= (size_t)outputs[i].shape[d];
+    ctx->enc_sizes[i] = sz;
+    // update stored shapes with actual values
+    ctx->enc_ndims[i] = outputs[i].ndim;
+    memcpy(ctx->enc_shapes[i], outputs[i].shape,
+           outputs[i].ndim * sizeof(int64_t));
   }
 
   ctx->encoded_width = width;
