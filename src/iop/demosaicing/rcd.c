@@ -38,7 +38,7 @@
 */
 
 /* Some notes about the algorithm
-* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
+* 1. The calculated data at the tiling borders RCD_BORDER must be 10 to be stable.
 * 2. For the outermost tiles we only have to discard a 7 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
@@ -65,7 +65,7 @@
   #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-#define RCD_BORDER 9          // avoid tile-overlap errors
+#define RCD_BORDER 10         // avoid tile-overlap errors
 #define RCD_MARGIN 7          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 DT_RCD_TILESIZE
@@ -308,13 +308,9 @@ static void rcd_demosaic(float *const restrict out,
                          const uint32_t filters,
                          const float scaler)
 {
-  if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
-  {
-    rcd_ppg_border(out, in, width, height, filters, RCD_BORDER);
-    return;
-  }
-
   rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
+  if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
+    return;
 
   const float revscaler = 1.0f / scaler;
 
