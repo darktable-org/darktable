@@ -1839,6 +1839,59 @@ static void _dt_tag_change_callback(gpointer instance,
   _dt_metadata_change_callback(instance, 0, table);
 }
 
+static gboolean _filmstrip_ensure_imgid_visibility(dt_thumbtable_t *table, const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+  if(!table->list)
+    return FALSE;
+
+  // Check if the thumb is already in the loaded list
+  for(const GList *l = table->list; l; l = g_list_next(l))
+  {
+    const dt_thumbnail_t *th = l->data;
+    if(th->imgid == imgid)
+    {
+      // Already fully visible - nothing to do
+      if(th->x >= 0 && th->x + table->thumb_size <= table->view_width)
+        return TRUE;
+      // Scroll the minimum amount to bring it fully into view
+      int x_move = 0;
+      if(th->x < 0)
+        x_move = -th->x;
+      else
+        x_move = table->view_width - th->x - table->thumb_size;
+      return _move(table, x_move, 0, FALSE);
+    }
+  }
+
+  // Thumb not yet loaded - compute its expected position relative to the
+  // loaded range and scroll exactly enough to bring it into view
+  const dt_thumbnail_t *first = table->list->data;
+  const dt_thumbnail_t *last = g_list_last(table->list)->data;
+  const int rowid = _thumb_get_rowid(imgid);
+  if(rowid < 1)
+    return FALSE;
+
+  int x_move = 0;
+  if(rowid < first->rowid)
+  {
+    // Target is left of the loaded range; bring its left edge to x=0
+    const int target_x = first->x - (first->rowid - rowid) * table->thumb_size;
+    x_move = -target_x;
+  }
+  else if(rowid > last->rowid)
+  {
+    // Target is right of the loaded range; bring its right edge to view_width
+    const int target_x = last->x + (rowid - last->rowid) * table->thumb_size;
+    x_move = table->view_width - target_x - table->thumb_size;
+  }
+  else
+    return FALSE;
+
+  return _move(table, x_move, 0, FALSE);
+}
+
 // this is called each time the list of active images change
 static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table)
 {
@@ -1848,10 +1901,13 @@ static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table
     return;
 
   if(!darktable.view_manager->active_images) return;
+  const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
   if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
      && !dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+  {
+    _filmstrip_ensure_imgid_visibility(table, activeid);
     return;
-  const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+  }
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
 
@@ -3163,6 +3219,8 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table,
     return _filemanager_ensure_rowid_visibility(table, _thumb_get_rowid(imgid));
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     return _zoomable_ensure_rowid_visibility(table, _thumb_get_rowid(imgid));
+  else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    return _filmstrip_ensure_imgid_visibility(table, imgid);
 
   return FALSE;
 }

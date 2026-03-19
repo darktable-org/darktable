@@ -1447,32 +1447,38 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   }
   else if(diff > 0)
   {
-    // if we are here, that means that the current is not anymore in
-    // the list in this case, let's use the current offset image
-    new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
-    new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+    // past the last image in the collection - wrap around to the first
+    sqlite3_stmt *stmt2;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1",
+      -1,
+      &stmt2,
+      NULL);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      new_offset = sqlite3_column_int(stmt2, 0);
+      new_id = sqlite3_column_int(stmt2, 1);
+      dt_toast_log(_("past end of collection, looped to first image"));
+    }
+    sqlite3_finalize(stmt2);
   }
   else
   {
-    // if we are here, that means that the current is not anymore in
-    // the list in this case, let's use the image before current
-    // offset
-    new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
+    // past the first image in the collection - wrap around to the last
     sqlite3_stmt *stmt2;
-    gchar *query2 =
-      g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d",
-                      new_offset);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
+      -1,
+      &stmt2,
+      NULL);
     if(sqlite3_step(stmt2) == SQLITE_ROW)
     {
-      new_id = sqlite3_column_int(stmt2, 0);
+      new_offset = sqlite3_column_int(stmt2, 0);
+      new_id = sqlite3_column_int(stmt2, 1);
+      dt_toast_log(_("past beginning of collection, looped to last image"));
     }
-    else
-    {
-      new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
-      new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
-    }
-    g_free(query2);
     sqlite3_finalize(stmt2);
   }
   g_free(query);
@@ -1482,7 +1488,10 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
   // if id seems valid, we change the image and move filmstrip
   _dev_change_image(dev, new_id);
-  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+  if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
+    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+  else
+    dt_thumbtable_ensure_imgid_visibility(dt_ui_thumbtable(darktable.gui->ui), new_id);
 
   // if it's a change by key_press, we set mouse_over to the active image
   if(by_key) dt_control_set_mouse_over_id(new_id);
