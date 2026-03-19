@@ -145,6 +145,10 @@ changes (where available).
 - Enabled shortcuts to cycle through module groups, modules and
   module instances.
 
+- Added a configuration option to toggle the filmstrip auto-center
+  behavior. Enabled shortcuts to toggle filmstrip auto-centering and
+  to explicitly recenter the filmstrip on the current image.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
