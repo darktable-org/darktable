@@ -246,12 +246,6 @@ for dtSharedObj in $dtSharedObjDirs; do
     cp -LR "$homebrewHome"/lib/"$dtSharedObj"/"$dtSharedObjVersion"/* "$dtResourcesDir"/lib/"$dtSharedObj"
 done
 
-# Handle ONNX Runtime (for AI support)
-# TODO: this is only a hack to deal with the downloaded onnxruntime
-if ls "$dtResourcesDir"/lib/darktable/libonnxruntime.*.dylib &>/dev/null; then
-  mv "$dtResourcesDir"/lib/darktable/libonnxruntime.*.dylib "$dtResourcesDir"/lib
-fi
-
 # Add homebrew translations
 dtTranslations="gtk30 gtk30-properties gtk-mac-integration iso_639-2 gphoto2 exiv2"
 for dtTranslation in $dtTranslations; do
