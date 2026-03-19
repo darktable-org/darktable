@@ -354,9 +354,6 @@ jobs:
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
-          # handle keg-only libs
-          brew link --force libomp
-          brew link --force libsoup
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
