@@ -77,9 +77,9 @@ static inline __m128 lab_f_m_sse2(const __m128 x)
 /** uses D50 white point. */
 static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 {
-  const __m128 d50_inv = _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f);
+  const __m128 d50 = _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f);
   const __m128 coef = _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f);
-  const __m128 f = lab_f_m_sse2(XYZ / d50_inv);
+  const __m128 f = lab_f_m_sse2(XYZ / d50);
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return coef * (_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)) - _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3)));
 }
@@ -269,8 +269,8 @@ static inline void dt_D65_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_p
   dt_vector_max(XYZ, sXYZ, zero);
 
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = (sum > 0.0f) ? XYZ[0] / sum : D65xyY.x;
-  xyY[1] = (sum > 0.0f) ? XYZ[1] / sum : D65xyY.y;
+  xyY[0] = (sum > 0.0f) ? XYZ[0] / sum : (float)D65xyY.x;
+  xyY[1] = (sum > 0.0f) ? XYZ[1] / sum : (float)D65xyY.y;
   xyY[2] = XYZ[1];
 }
 
@@ -957,6 +957,7 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
   XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ_D65[0]) / g;
   XYZ_D65[2] = XYZ[2];
+  XYZ_D65[3] = JzAzBz[3];
 }
 
 // Convert CIE 1931 2° XYZ D65 to CIE 2006 LMS D65 (cone space)
@@ -1095,7 +1096,7 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   // -> grading RGB conversion.
   const float r = Yrg[1] - 0.21902143f;
   const float g = Yrg[2] - 0.54371398f;
-  const float c = dt_fast_hypotf(g, r);
+  const float c = hypotf(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;
