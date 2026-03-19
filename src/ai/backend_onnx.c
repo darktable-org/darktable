@@ -584,16 +584,8 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
     return NULL;
   }
 
-  // optimize: use all available cores (intra-op parallelism)
-#ifdef _WIN32
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-  const long num_cores = MAX(1, sysinfo.dwNumberOfProcessors);
-#else
-  const long num_cores = MAX(1, sysconf(_SC_NPROCESSORS_ONLN));
-#endif
-
-  status = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
+  // let ORT auto-select thread count (pass 0)
+  status = g_ort->SetIntraOpNumThreads(session_opts, 0);
   if(status)
   {
     g_ort->ReleaseStatus(status);
@@ -643,43 +635,68 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
   status = g_ort->CreateSession(g_env, onnx_path, session_opts, &ctx->session);
 #endif
 
-  // if accelerated provider failed, fall back to CPU-only
-  if(status && provider != DT_AI_PROVIDER_CPU)
+  // smart fallback: try progressively simpler configurations
+  // 1. provider + BASIC optimization
+  // 2. CPU + full optimization
+  // 3. CPU + BASIC optimization
+  // 4. CPU + disabled optimization (last resort)
+  // skip provider + DISABLE_ALL -- always slower than CPU
+  if(status)
   {
-    dt_print(DT_DEBUG_AI,
-             "[darktable_ai] accelerated session failed: %s — falling back to CPU",
-             g_ort->GetErrorMessage(status));
-    g_ort->ReleaseStatus(status);
-    g_ort->ReleaseSessionOptions(session_opts);
+    typedef struct
+    {
+      dt_ai_provider_t prov;
+      GraphOptimizationLevel opt;
+      const char *desc;
+    } _fallback_t;
 
-    status = g_ort->CreateSessionOptions(&session_opts);
-    if(status)
+    const _fallback_t fallbacks[] = {
+      { provider,             ORT_ENABLE_BASIC, "provider + basic opt" },
+      { DT_AI_PROVIDER_CPU,   ort_opt,          "CPU + full opt" },
+      { DT_AI_PROVIDER_CPU,   ORT_ENABLE_BASIC, "CPU + basic opt" },
+      { DT_AI_PROVIDER_CPU,   ORT_DISABLE_ALL,  "CPU + no opt" },
+    };
+    const int n_fallbacks = sizeof(fallbacks) / sizeof(fallbacks[0]);
+
+    for(int fb = 0; fb < n_fallbacks && status; fb++)
     {
+      // skip redundant attempts
+      if(fallbacks[fb].opt >= ort_opt
+         && fallbacks[fb].prov == provider)
+        continue;
+      if(fallbacks[fb].prov == provider
+         && provider == DT_AI_PROVIDER_CPU
+         && fallbacks[fb].opt >= ort_opt)
+        continue;
+
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] session failed: %s - retrying with %s",
+               g_ort->GetErrorMessage(status), fallbacks[fb].desc);
       g_ort->ReleaseStatus(status);
+      g_ort->ReleaseSessionOptions(session_opts);
+
+      status = g_ort->CreateSessionOptions(&session_opts);
+      if(status) break;
+      OrtStatus *s = g_ort->SetIntraOpNumThreads(session_opts, 0);
+      if(s) g_ort->ReleaseStatus(s);
+      s = g_ort->SetSessionGraphOptimizationLevel(session_opts, fallbacks[fb].opt);
+      if(s) g_ort->ReleaseStatus(s);
+      for(int i = 0; i < n_overrides; i++)
+      {
+        if(!dim_overrides[i].name) continue;
+        s = g_ort->AddFreeDimensionOverrideByName(session_opts,
+                                                  dim_overrides[i].name,
+                                                  dim_overrides[i].value);
+        if(s) g_ort->ReleaseStatus(s);
+      }
+      if(fallbacks[fb].prov != DT_AI_PROVIDER_CPU)
+        _enable_acceleration(session_opts, fallbacks[fb].prov);
 #ifdef _WIN32
-      g_free(onnx_path_wide);
-#endif
-      g_free(onnx_path);
-      dt_ai_unload_model(ctx);
-      return NULL;
-    }
-    status = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
-    if(status) g_ort->ReleaseStatus(status);
-    status = g_ort->SetSessionGraphOptimizationLevel(session_opts, ort_opt);
-    if(status) g_ort->ReleaseStatus(status);
-    for(int i = 0; i < n_overrides; i++)
-    {
-      if(!dim_overrides[i].name) continue;
-      status = g_ort->AddFreeDimensionOverrideByName(
-        session_opts, dim_overrides[i].name, dim_overrides[i].value);
-      if(status) g_ort->ReleaseStatus(status);
-    }
-    // CPU-only: no _enable_acceleration call
-#ifdef _WIN32
-    status = g_ort->CreateSession(g_env, onnx_path_wide, session_opts, &ctx->session);
+      status = g_ort->CreateSession(g_env, onnx_path_wide, session_opts, &ctx->session);
 #else
-    status = g_ort->CreateSession(g_env, onnx_path, session_opts, &ctx->session);
+      status = g_ort->CreateSession(g_env, onnx_path, session_opts, &ctx->session);
 #endif
+    }
   }
 
 #ifdef _WIN32
@@ -1135,6 +1152,29 @@ int dt_ai_run(
                  "[darktable_ai] output[%d] shape mismatch: ORT has %zu elements, "
                  "caller expects %" PRId64,
                  i, ort_element_count, caller_count);
+      }
+
+      // allocate caller buffer if NULL (dynamic output, caller
+      // couldn't pre-allocate because shapes were unknown)
+      if(!outputs[i].data)
+      {
+        ONNXTensorElementDataType onnx_type;
+        size_t type_size;
+        if(!_dtype_to_onnx(outputs[i].type, &onnx_type, &type_size))
+        {
+          dt_print(DT_DEBUG_AI,
+                   "[darktable_ai] unknown dtype %d for output[%d]",
+                   outputs[i].type, i);
+          continue;
+        }
+        outputs[i].data = g_try_malloc(ort_element_count * type_size);
+        if(!outputs[i].data)
+        {
+          dt_print(DT_DEBUG_AI,
+                   "[darktable_ai] failed to allocate output[%d] (%zu elements)",
+                   i, ort_element_count);
+          continue;
+        }
       }
 
       if(ctx->output_types[i] == DT_AI_FLOAT16 && outputs[i].type == DT_AI_FLOAT)
