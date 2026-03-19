@@ -1200,12 +1200,17 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
     }
     for(int d = 0; d < tmp_ndims[i] && ok; d++)
     {
+      // skip validation for dynamic dims - the model may report
+      // dynamic shapes at load time that resolve only after inference
+      if(ctx->enc_shapes[i][d] <= 0 || tmp_shapes[i][d] <= 0)
+        continue;
       if(tmp_shapes[i][d] != ctx->enc_shapes[i][d])
       {
         ok = FALSE;
         dt_print(DT_DEBUG_AI,
-                 "[segmentation] disk cache: shape mismatch for output %d dim %d",
-                 i, d);
+                 "[segmentation] disk cache: shape mismatch for "
+                 "output %d dim %d (file=%" PRId64 ", model=%" PRId64 ")",
+                 i, d, tmp_shapes[i][d], ctx->enc_shapes[i][d]);
       }
     }
 
@@ -1264,6 +1269,11 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
   {
     ctx->enc_data[i] = tmp_data[i];
     ctx->enc_sizes[i] = tmp_sizes[i];
+    // update shapes from cache -- the model may have dynamic dims
+    // that are only resolved after inference
+    ctx->enc_ndims[i] = tmp_ndims[i];
+    memcpy(ctx->enc_shapes[i], tmp_shapes[i],
+           tmp_ndims[i] * sizeof(int64_t));
   }
   ctx->encoded_width = enc_w;
   ctx->encoded_height = enc_h;
