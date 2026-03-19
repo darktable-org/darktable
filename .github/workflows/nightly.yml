@@ -387,11 +387,6 @@ jobs:
           cat $gm_formula | sed 's/--with-modules/--disable-installed/1' > gm_formula.tmp
           mv gm_formula.tmp $gm_formula
           brew reinstall --build-from-source --force graphicsmagick
-
-          # handle keg-only libs
-          brew link --force lua@5.4
-          brew link --force libomp
-          brew link --force libsoup
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
