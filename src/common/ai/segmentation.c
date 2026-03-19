@@ -617,7 +617,6 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   // when shapes have dynamic dims (value <= 0), pass NULL data so
   // dt_ai_run lets ORT allocate and copies back the results
   float *enc_bufs[MAX_ENCODER_OUTPUTS] = {NULL};
-  size_t enc_buf_sizes[MAX_ENCODER_OUTPUTS] = {0};
   gboolean has_dynamic = FALSE;
 
   for(int i = 0; i < ctx->n_enc_outputs; i++)
@@ -636,7 +635,6 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
     }
     if(!dynamic)
     {
-      enc_buf_sizes[i] = sz;
       enc_bufs[i] = g_try_malloc(sz * sizeof(float));
       if(!enc_bufs[i])
       {
