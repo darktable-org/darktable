@@ -920,9 +920,15 @@ char *version = g_strdup_printf(
 #endif
 
 #ifdef HAVE_WEBP
-               "  WebP                   -> ENABLED\n",
+               "  WebP                   -> ENABLED\n"
 #else
-               "  WebP                   -> DISABLED\n",
+               "  WebP                   -> DISABLED\n"
+#endif
+
+#ifdef HAVE_AI
+               "  AI                     -> ENABLED\n",
+#else
+               "  AI                     -> DISABLED\n",
 #endif
 
                PACKAGE_DOCS,
