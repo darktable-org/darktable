@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/image_cache.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -85,6 +86,27 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static void _filmstrip_center(dt_action_t *action)
+{
+  if(!darktable.view_manager->active_images) return;
+  const int imgid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+  dt_toast_log(_("filmstrip centered on selected image"));
+}
+
+static void _filmstrip_toggle_auto_scroll(dt_action_t *action)
+{
+  const gboolean current = dt_conf_get_bool("filmstrip/ui/auto_scroll");
+  dt_conf_set_bool("filmstrip/ui/auto_scroll", !current);
+  if(!current)
+  {
+    dt_toast_log(_("filmstrip auto-scroll enabled"));
+    _filmstrip_center(action);
+  }
+  else
+    dt_toast_log(_("filmstrip auto-scroll disabled"));
+}
+
 static void _filmstrip_pin_in_second_window(dt_action_t *action)
 {
   if(dt_view_get_current() != DT_VIEW_DARKROOM) return;
@@ -103,6 +125,9 @@ static void _filmstrip_pin_in_second_window(dt_action_t *action)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_wnd_button), TRUE);
 
   dt_dev_pin_image(dev, imgid);
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  dt_toast_log(_("pinned in second window: %s"), img->filename);
+  dt_image_cache_read_release(img);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -124,6 +149,11 @@ void gui_init(dt_lib_module_t *self)
                      _filmstrip_pin_in_second_window, 0, 0);
   dt_action_define(DT_ACTION(self), NULL, N_("pin in second window"),
                    self->widget, NULL);
+
+  dt_action_register(DT_ACTION(self), N_("auto-scroll to selected image"),
+                     _filmstrip_toggle_auto_scroll, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("center on selected image"),
+                     _filmstrip_center, 0, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
