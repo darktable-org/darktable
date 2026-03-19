@@ -584,16 +584,8 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
     return NULL;
   }
 
-  // optimize: use all available cores (intra-op parallelism)
-#ifdef _WIN32
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-  const long num_cores = MAX(1, sysinfo.dwNumberOfProcessors);
-#else
-  const long num_cores = MAX(1, sysconf(_SC_NPROCESSORS_ONLN));
-#endif
-
-  status = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
+  // let ORT auto-select thread count (pass 0)
+  status = g_ort->SetIntraOpNumThreads(session_opts, 0);
   if(status)
   {
     g_ort->ReleaseStatus(status);
@@ -663,7 +655,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
       dt_ai_unload_model(ctx);
       return NULL;
     }
-    status = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
+    status = g_ort->SetIntraOpNumThreads(session_opts, 0);
     if(status) g_ort->ReleaseStatus(status);
     status = g_ort->SetSessionGraphOptimizationLevel(session_opts, ort_opt);
     if(status) g_ort->ReleaseStatus(status);
@@ -700,7 +692,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
 
       status = g_ort->CreateSessionOptions(&session_opts);
       if(status) break;
-      OrtStatus *s1 = g_ort->SetIntraOpNumThreads(session_opts, (int)num_cores);
+      OrtStatus *s1 = g_ort->SetIntraOpNumThreads(session_opts, 0);
       if(s1) g_ort->ReleaseStatus(s1);
       OrtStatus *s2 = g_ort->SetSessionGraphOptimizationLevel(
         session_opts, fallbacks[fb]);
