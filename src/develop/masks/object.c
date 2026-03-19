@@ -41,7 +41,6 @@
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
 #define CONF_OBJECT_MORPH_KEY "plugins/darkroom/masks/object/morph_radius"
 #define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
-#define CONF_OBJECT_BRUSH_SIZE_KEY "plugins/darkroom/masks/object/brush_size"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 
 // target resolution for segmentation encoding (longest side in pixels),
@@ -60,7 +59,7 @@ typedef enum _encode_state_t
   ENCODE_RUNNING = 3,   // background thread in progress
 } _encode_state_t;
 
-// minimum drag distance (preview pipe pixels) to distinguish click from brush stroke
+// minimum drag distance (preview pipe pixels) to distinguish click from drag
 #define DRAG_THRESHOLD 5.0f
 
 typedef struct _object_data_t
@@ -79,17 +78,10 @@ typedef struct _object_data_t
   int encode_rgb_w, encode_rgb_h;
   guint modifier_poll_id;   // timer to detect shift key changes
   GThread *encode_thread;   // background encoding thread
-  gboolean dragging;        // TRUE between press and release during click/brush drag
+  gboolean dragging;        // TRUE between press and release during click drag
   float drag_start_x;       // press position (preview pipe pixel space)
   float drag_start_y;
-  float drag_end_x;         // current drag position (updated in mouse_moved)
-  float drag_end_y;
-  // brush state
-  float brush_radius;               // normalized, 0..0.5 (fraction of MIN(iw,ih))
-  gboolean brush_painting;          // TRUE during brush drag
-  gboolean brush_used;              // TRUE after initial input, switches to +/- refinement mode
-  dt_masks_dynbuf_t *brush_points;  // raw brush path (x,y pairs in preview space)
-  int brush_points_count;
+  gboolean has_selection;   // TRUE after first click, enables refinement mode
   // vectorization preview (auto-updated after each decode)
   GList *preview_forms;             // GList of dt_masks_form_t* (mask-space pixel coords)
   GList *preview_signs;             // parallel GList of sign values ('+' or '-')
@@ -177,7 +169,7 @@ static void _destroy_data(_object_data_t *d)
   if(d->encode_thread)
     g_thread_join(d->encode_thread);
 
-  // save model to persistent storage -- keeps it loaded across
+  // save model to persistent storage - keeps it loaded across
   // mask sessions, disk cache handles embedding persistence.
   // only persist if nobody already claimed the slot (guards
   // against deferred cleanup racing with a new session)
@@ -202,8 +194,6 @@ static void _destroy_data(_object_data_t *d)
 
   g_free(d->mask);
   g_free(d->encode_rgb);
-  if(d->brush_points)
-    dt_masks_dynbuf_free(d->brush_points);
   _free_preview_forms(d);
   g_free(d);
 }
@@ -245,7 +235,7 @@ typedef struct _encode_thread_data_t
 } _encode_thread_data_t;
 
 // background thread: loads model, renders image via export pipe, and encodes,
-// does ZERO GLib/GTK calls -- only computation + atomic state set,
+// does ZERO GLib/GTK calls - only computation + atomic state set,
 // the poll timer on the main thread detects completion
 static gpointer _encode_thread_func(gpointer data)
 {
@@ -416,10 +406,10 @@ static gpointer _encode_thread_func(gpointer data)
                            rgb, out_w, out_h);
 
   // signal ready immediately so the user can start placing points,
-  // the warmup below continues on this background thread -- if the user
+  // the warmup below continues on this background thread - if the user
   // clicks before it finishes, ORT serializes concurrent Run() calls on
   // the same session, so the decode simply waits for the warmup to
-  // complete first -- in practice, users need a moment to position their
+  // complete first - in practice, users need a moment to position their
   // cursor, so the ~1 s warmup usually finishes before the first click
   g_atomic_int_set(&d->encode_state, ok ? ENCODE_READY : ENCODE_ERROR);
 
@@ -609,7 +599,7 @@ static void _morph_open_close(float *mask, int w, int h, float threshold, int ra
 
 // edge-aware threshold refinement: near strong image edges the binarization
 // threshold is raised by up to edge_boost, snapping the mask boundary to
-// actual object contours -- uses Scharr gradient of the stored RGB image
+// actual object contours - uses Scharr gradient of the stored RGB image
 static void _edge_refine_threshold(float *mask, int mw, int mh,
                                     const uint8_t *rgb, int rgb_w, int rgb_h,
                                     float base_threshold, float edge_boost)
@@ -676,152 +666,6 @@ static void _edge_refine_threshold(float *mask, int mw, int mh,
   g_free(grad);
 }
 
-// emit a single foreground point if it's inside image bounds
-static inline void _emit_point(dt_masks_form_gui_t *gui,
-                               const float px, const float py,
-                               const float wd, const float ht)
-{
-  if(px >= 0.0f && px <= wd && py >= 0.0f && py <= ht)
-  {
-    dt_masks_dynbuf_add_2(gui->guipoints, px, py);
-    dt_masks_dynbuf_add(gui->guipoints_payload, 1.0f);
-    gui->guipoints_count++;
-  }
-}
-
-// resample a raw brush path into foreground points that fill
-// the brush circle. points are placed in a hex grid pattern
-// across the brush width at each sample along the stroke.
-// brush_pts: x,y pairs in preview pipe space, n_pts: count
-static void _resample_brush_to_points(dt_masks_form_gui_t *gui,
-                                       const float *brush_pts,
-                                       const int n_pts)
-{
-  if(n_pts < 2) return;
-
-  _object_data_t *d = _get_data(gui);
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
-  const float radius = (d ? d->brush_radius : 0.03f) * MIN(iwidth, iheight);
-  // point spacing: ~1/3 of brush diameter gives good coverage
-  const float spacing = MAX(radius * 0.667f, 2.0f);
-
-  // compute total arc length
-  float total_len = 0.0f;
-  for(int i = 1; i < n_pts; i++)
-  {
-    const float dx = brush_pts[i * 2] - brush_pts[(i - 1) * 2];
-    const float dy = brush_pts[i * 2 + 1] - brush_pts[(i - 1) * 2 + 1];
-    total_len += sqrtf(dx * dx + dy * dy);
-  }
-
-  // reset guipoints for brush output
-  dt_masks_dynbuf_reset(gui->guipoints);
-  dt_masks_dynbuf_reset(gui->guipoints_payload);
-  gui->guipoints_count = 0;
-
-  if(total_len < 1.0f)
-  {
-    // degenerate stroke: fill a single circle at the start
-    _emit_point(gui, brush_pts[0], brush_pts[1], wd, ht);
-    for(float r = spacing; r < radius; r += spacing)
-    {
-      const int n_ring = MAX((int)(2.0f * M_PI * r / spacing), 4);
-      for(int j = 0; j < n_ring; j++)
-      {
-        const float a = 2.0f * M_PI * j / n_ring;
-        _emit_point(gui,
-                    brush_pts[0] + r * cosf(a),
-                    brush_pts[1] + r * sinf(a),
-                    wd, ht);
-      }
-    }
-    return;
-  }
-
-  // walk along the stroke, emitting point clusters at each
-  // sample position spaced by brush diameter
-  const float along_step = MAX(2.0f * radius, spacing);
-  float accum = 0.0f;
-  float next_emit = 0.0f;
-
-  // previous emit direction for computing normals
-  float prev_nx = 0.0f, prev_ny = 1.0f;
-
-  for(int i = 1; i < n_pts; i++)
-  {
-    const float x0 = brush_pts[(i - 1) * 2];
-    const float y0 = brush_pts[(i - 1) * 2 + 1];
-    const float x1 = brush_pts[i * 2];
-    const float y1 = brush_pts[i * 2 + 1];
-    const float dx = x1 - x0;
-    const float dy = y1 - y0;
-    const float seg_len = sqrtf(dx * dx + dy * dy);
-    if(seg_len < 1e-6f) continue;
-
-    // stroke direction and normal
-    const float dirx = dx / seg_len;
-    const float diry = dy / seg_len;
-    // normal: perpendicular to stroke direction
-    const float nx = -diry;
-    const float ny = dirx;
-    prev_nx = nx;
-    prev_ny = ny;
-
-    float seg_pos = 0.0f;
-
-    while(seg_pos < seg_len)
-    {
-      const float remaining = next_emit - accum;
-      if(seg_pos + remaining <= seg_len)
-      {
-        seg_pos += remaining;
-        accum += remaining;
-
-        const float t = seg_pos / seg_len;
-        const float cx = x0 + t * dx;
-        const float cy = y0 + t * dy;
-
-        // emit center point
-        _emit_point(gui, cx, cy, wd, ht);
-
-        // emit points across brush width (perpendicular)
-        for(float off = spacing; off < radius; off += spacing)
-        {
-          _emit_point(gui,
-                      cx + nx * off,
-                      cy + ny * off,
-                      wd, ht);
-          _emit_point(gui,
-                      cx - nx * off,
-                      cy - ny * off,
-                      wd, ht);
-        }
-
-        next_emit += along_step;
-      }
-      else
-      {
-        accum += (seg_len - seg_pos);
-        break;
-      }
-    }
-  }
-
-  // always emit a cluster at the end point
-  const float ex = brush_pts[(n_pts - 1) * 2];
-  const float ey = brush_pts[(n_pts - 1) * 2 + 1];
-  _emit_point(gui, ex, ey, wd, ht);
-  for(float off = spacing; off < radius; off += spacing)
-  {
-    _emit_point(gui, ex + prev_nx * off,
-                ey + prev_ny * off, wd, ht);
-    _emit_point(gui, ex - prev_nx * off,
-                ey - prev_ny * off, wd, ht);
-  }
-}
-
 // run the decoder with accumulated points and update the cached mask
 static void _run_decoder(dt_masks_form_gui_t *gui)
 {
@@ -845,9 +689,9 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   // always send all accumulated points; on the first click reset the
   // previous mask, on subsequent clicks keep it so the decoder gets
   // both all points AND the previous mask as boundary context;
-  // after brush decode, prev_mask carries brush context, don't reset it
+  // after decode, prev_mask carries refinement context, don't reset it
   const int n_prompt_points = gui->guipoints_count;
-  if(gui->guipoints_count <= 1 && !d->brush_used)
+  if(gui->guipoints_count <= 1 && !d->has_selection)
     dt_seg_reset_prev_mask(d->seg);
 
   dt_seg_point_t *points = g_new(dt_seg_point_t, n_prompt_points);
@@ -1159,21 +1003,8 @@ static int _object_events_mouse_scrolled(
 {
   _object_data_t *d = _get_data(gui);
 
-  // brush size control (plain scroll, before brush is used)
-  if(gui->creation && d && !d->brush_used && dt_modifier_is(state, 0))
-  {
-    const float val = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-    const float new_val = dt_masks_change_size(up, val, 0.005f, 0.5f);
-    dt_conf_set_float(CONF_OBJECT_BRUSH_SIZE_KEY, new_val);
-    d->brush_radius = new_val;
-    dt_toast_log(_("size: %3.2f%%"), new_val * 2.0f * 100.0f);
-    dt_dev_masks_list_change(darktable.develop);
-    dt_control_queue_redraw_center();
-    return 1;
-  }
-
-  // vectorization parameter adjustment (after brush is used)
-  if(gui->creation && d && d->brush_used && d->mask)
+  // vectorization parameter adjustment (after first click)
+  if(gui->creation && d && d->has_selection && d->mask)
   {
     if(dt_modifier_is(state, 0))
     {
@@ -1233,12 +1064,8 @@ static void _clear_selection(dt_masks_form_gui_t *gui)
   if(d->seg)
     dt_seg_reset_prev_mask(d->seg);
 
-  // reset brush and preview state
-  d->brush_used = FALSE;
-  d->brush_painting = FALSE;
-  d->brush_points_count = 0;
-  if(d->brush_points)
-    dt_masks_dynbuf_reset(d->brush_points);
+  // reset selection and preview state
+  d->has_selection = FALSE;
   _free_preview_forms(d);
 
   dt_control_queue_redraw_center();
@@ -1271,7 +1098,7 @@ static int _object_events_button_pressed(
   {
     // alt+click: clear selection
     if(d && d->encode_state == ENCODE_READY
-       && (gui->guipoints_count > 0 || d->mask || d->brush_used))
+       && (gui->guipoints_count > 0 || d->mask || d->has_selection))
     {
       _clear_selection(gui);
       // refresh sliders back to step 1 (size only)
@@ -1290,29 +1117,13 @@ static int _object_events_button_pressed(
     // dismiss the "ready" hint now that the user is interacting
     dt_control_log_ack_all();
 
-    // start drag tracking, actual point/brush/click is resolved on button release
+    // start drag tracking, resolved as click on button release
     float wd, ht, iwidth, iheight;
     dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
     d->dragging = TRUE;
     d->drag_start_x = pzx * wd;
     d->drag_start_y = pzy * ht;
-    d->drag_end_x = d->drag_start_x;
-    d->drag_end_y = d->drag_start_y;
-
-    if(!d->brush_used && !dt_modifier_is(state, GDK_SHIFT_MASK))
-    {
-      d->brush_painting = TRUE;
-      if(!d->brush_points)
-        d->brush_points = dt_masks_dynbuf_init(200, "object brush_points");
-      else
-        dt_masks_dynbuf_reset(d->brush_points);
-      d->brush_points_count = 0;
-      dt_masks_dynbuf_add_2(d->brush_points, d->drag_start_x, d->drag_start_y);
-      d->brush_points_count++;
-      if(d->brush_radius <= 0.0f)
-        d->brush_radius = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-    }
     return 1;
   }
   else if(gui->creation && which == 3)
@@ -1413,8 +1224,6 @@ static int _object_events_button_released(
     return 0;
 
   d->dragging = FALSE;
-  const gboolean was_brush_painting = d->brush_painting;
-  d->brush_painting = FALSE;
 
   if(!gui->guipoints)
     gui->guipoints = dt_masks_dynbuf_init(200000, "object guipoints");
@@ -1425,34 +1234,13 @@ static int _object_events_button_released(
   if(!gui->guipoints_payload)
     return 1;
 
-  const float dx = d->drag_end_x - d->drag_start_x;
-  const float dy = d->drag_end_y - d->drag_start_y;
-  const float dist = sqrtf(dx * dx + dy * dy);
-
-  if(was_brush_painting && dist >= DRAG_THRESHOLD
-     && d->brush_points && d->brush_points_count >= 2)
-  {
-    // brush stroke: resample path into evenly-spaced foreground points
-    _resample_brush_to_points(gui,
-                              dt_masks_dynbuf_buffer(d->brush_points),
-                              d->brush_points_count);
-    d->brush_used = TRUE;
-  }
-  else
-  {
-    // short click: single point (foreground or background)
-    const float label = dt_modifier_is(state, GDK_SHIFT_MASK) ? 0.0f : 1.0f;
-    dt_masks_dynbuf_add_2(gui->guipoints, d->drag_start_x, d->drag_start_y);
-    dt_masks_dynbuf_add(gui->guipoints_payload, label);
-    gui->guipoints_count++;
-    // a short click in brush mode (no shift) counts as a completed brush stroke
-    if(was_brush_painting)
-      d->brush_used = TRUE;
-  }
-
-  if(d->brush_points)
-    dt_masks_dynbuf_reset(d->brush_points);
-  d->brush_points_count = 0;
+  // click: foreground point, shift+click: background point (only after first selection)
+  const float label = (d->has_selection && dt_modifier_is(state, GDK_SHIFT_MASK))
+    ? 0.0f : 1.0f;
+  dt_masks_dynbuf_add_2(gui->guipoints, d->drag_start_x, d->drag_start_y);
+  dt_masks_dynbuf_add(gui->guipoints_payload, label);
+  gui->guipoints_count++;
+  d->has_selection = TRUE;
 
   _run_decoder(gui);
 
@@ -1501,26 +1289,7 @@ static int _object_events_mouse_moved(
   gui->point_border_selected = -1;
 
   if(gui->creation)
-  {
-    _object_data_t *d = _get_data(gui);
-
-    // track drag position and collect brush path points
-    if(d && d->dragging)
-    {
-      float wd, ht, iwidth, iheight;
-      dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-      d->drag_end_x = pzx * wd;
-      d->drag_end_y = pzy * ht;
-
-      if(d->brush_painting && d->brush_points)
-      {
-        dt_masks_dynbuf_add_2(d->brush_points, d->drag_end_x, d->drag_end_y);
-        d->brush_points_count++;
-      }
-    }
-
     dt_control_queue_redraw_center();
-  }
 
   return 1;
 }
@@ -1548,20 +1317,16 @@ static void _object_events_post_expose(
     return;
 
   // ensure scratchpad exists.
-  // if a previous session left stale mask data (brush was used but
-  // not committed), clear mask/brush state but keep the encoding
+  // if a previous session left stale mask data (selection was made but
+  // not committed), clear mask state but keep the encoding
   // so re-encoding is not needed
   _object_data_t *d = _get_data(gui);
-  if(d && d->brush_used && d->creation_module != gui->creation_module)
+  if(d && d->has_selection && d->creation_module != gui->creation_module)
   {
     g_free(d->mask);
     d->mask = NULL;
     d->mask_w = d->mask_h = 0;
-    d->brush_used = FALSE;
-    d->brush_painting = FALSE;
-    d->brush_points_count = 0;
-    if(d->brush_points)
-      dt_masks_dynbuf_reset(d->brush_points);
+    d->has_selection = FALSE;
     _free_preview_forms(d);
     if(gui->guipoints)
       dt_masks_dynbuf_reset(gui->guipoints);
@@ -1575,7 +1340,6 @@ static void _object_events_post_expose(
   if(!d)
   {
     d = g_new0(_object_data_t, 1);
-    d->brush_radius = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
     d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
     d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
     d->last_seen_imgid = NO_IMGID;
@@ -1648,12 +1412,8 @@ static void _object_events_post_expose(
     d->encode_rgb = NULL;
     d->encode_rgb_w = d->encode_rgb_h = 0;
     d->encode_state = ENCODE_IDLE;
-    // reset brush, preview, and point state so the new image starts fresh
-    d->brush_used = FALSE;
-    d->brush_painting = FALSE;
-    d->brush_points_count = 0;
-    if(d->brush_points)
-      dt_masks_dynbuf_reset(d->brush_points);
+    // reset selection, preview, and point state so the new image starts fresh
+    d->has_selection = FALSE;
     _free_preview_forms(d);
     if(gui->guipoints)
       dt_masks_dynbuf_reset(gui->guipoints);
@@ -1709,7 +1469,7 @@ static void _object_events_post_expose(
     g_thread_join(d->encode_thread);
     d->encode_thread = NULL;
     dt_control_log_ack_all();
-    dt_control_log(_("brush over object to create mask"));
+    dt_control_log(_("click on object to create mask"));
   }
 
   if(g_atomic_int_get(&d->encode_state) == ENCODE_ERROR)
@@ -1817,7 +1577,7 @@ static void _object_events_post_expose(
   }
 
   // query pointer position and modifier state directly from GDK so the
-  // cursor/brush is drawn at the correct location even before the first
+  // cursor is drawn at the correct location even before the first
   // mouse_moved event fires.
   GtkWidget *cw = dt_ui_center(darktable.gui->ui);
   GdkWindow *win = gtk_widget_get_window(cw);
@@ -1839,59 +1599,10 @@ static void _object_events_post_expose(
     gui->posy = pzy * ht;
   }
 
-  if(d->brush_painting && d->brush_points && d->brush_points_count >= 2)
+  // draw +/- cursor indicator for click interaction
+  if(gui->posx >= 0.0f && gui->posx <= wd && gui->posy >= 0.0f && gui->posy <= ht)
   {
-    // during brush painting: draw stroke path and circle at current position
-    const float min_dim = MIN(iwidth, iheight);
-    const float radius = d->brush_radius * min_dim;
-    const float opacity = 0.5f;
-
-    // draw brush stroke path (DT_GUI_COLOR_BRUSH_TRACE matches brush mask style)
-    const float *bp = dt_masks_dynbuf_buffer(d->brush_points);
-    cairo_save(cr);
-    cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    cairo_set_line_width(cr, 2.0f * radius);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
-
-    cairo_move_to(cr, bp[0], bp[1]);
-    for(int i = 1; i < d->brush_points_count; i++)
-      cairo_line_to(cr, bp[i * 2], bp[i * 2 + 1]);
-    cairo_stroke(cr);
-
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
-    cairo_set_line_width(cr, 3.0 / zoom_scale);
-    cairo_arc(cr, gui->posx, gui->posy, radius, 0, 2.0 * M_PI);
-    cairo_fill_preserve(cr);
-    cairo_set_source_rgba(cr, 0.8, 0.8, 0.8, 0.8);
-    cairo_stroke(cr);
-    cairo_restore(cr);
-  }
-  else if(!d->brush_used)
-  {
-    // before brush completed: draw brush circle cursor
-    // center on image when cursor is outside the canvas
-    const gboolean inside = gui->posx >= 0.0f && gui->posx <= wd
-                            && gui->posy >= 0.0f && gui->posy <= ht;
-    const float cx = inside ? gui->posx : wd * 0.5f;
-    const float cy = inside ? gui->posy : ht * 0.5f;
-    const float min_dim = MIN(iwidth, iheight);
-    const float radius = d->brush_radius * min_dim;
-    const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-
-    cairo_save(cr);
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
-    cairo_set_line_width(cr, 3.0 / zoom_scale);
-    cairo_arc(cr, cx, cy, radius, 0, 2.0 * M_PI);
-    cairo_fill_preserve(cr);
-    cairo_set_source_rgba(cr, 0.8, 0.8, 0.8, 0.8);
-    cairo_stroke(cr);
-    cairo_restore(cr);
-  }
-  else if(gui->posx >= 0.0f && gui->posx <= wd
-          && gui->posy >= 0.0f && gui->posy <= ht)
-  {
-    // after brush used: draw +/- cursor indicator for point refinement
+    // draw +/- cursor indicator for click interaction
     const float r = DT_PIXEL_APPLY_DPI(8.0f) / zoom_scale;
     const float lw = DT_PIXEL_APPLY_DPI(2.0f) / zoom_scale;
     cairo_set_line_width(cr, lw);
@@ -2037,14 +1748,9 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(
     lm,
-    DT_MOUSE_ACTION_LEFT_DRAG,
-    0,
-    _("[OBJECT] brush over object"));
-  lm = dt_mouse_action_create_simple(
-    lm,
     DT_MOUSE_ACTION_LEFT,
     0,
-    _("[OBJECT] add foreground point"));
+    _("[OBJECT] select / add foreground point"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_LEFT,
@@ -2059,7 +1765,7 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
     lm,
     DT_MOUSE_ACTION_SCROLL,
     0,
-    _("[OBJECT] change brush size / cleanup"));
+    _("[OBJECT] change cleanup"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
@@ -2093,7 +1799,7 @@ static void _object_set_hint_message(
     const _object_data_t *d = _get_data((dt_masks_form_gui_t *)gui);
     if(!d || d->encode_state != ENCODE_READY)
       return;  // no hints while encoding
-    if(d->brush_used)
+    if(d->has_selection)
       g_snprintf(msgbuf,
                  msgbuf_len,
                  _("<b>add</b>: click, <b>subtract</b>: shift+click, "
@@ -2104,7 +1810,7 @@ static void _object_set_hint_message(
     else
       g_snprintf(msgbuf,
                  msgbuf_len,
-                 _("<b>brush</b>: drag, <b>size</b>: scroll, "
+                 _("<b>select</b>: click on object, "
                    "<b>opacity</b>: ctrl+scroll (%d%%)"),
                  opacity);
   }
@@ -2136,29 +1842,15 @@ static void _object_modify_property(dt_masks_form_t *const form,
 
   if(!gui || !gui->creation) return;
 
-  // show different sliders depending on creation step:
-  // before first brush stroke: size only
-  // after first brush stroke: cleanup + smoothing only
-  const gboolean brushing_done = d && d->brush_used;
+  // cleanup and smoothing sliders are shown after first click
+  const gboolean has_mask = d && d->has_selection;
 
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:
-      if(!brushing_done)
-      {
-        const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
-        float brush_size = dt_conf_get_float(CONF_OBJECT_BRUSH_SIZE_KEY);
-        brush_size = CLAMP(brush_size * ratio, 0.005f, 0.5f);
-        dt_conf_set_float(CONF_OBJECT_BRUSH_SIZE_KEY, brush_size);
-        if(d) d->brush_radius = brush_size;
-        *sum += 2.0f * brush_size;
-        *max = fminf(*max, 0.5f / brush_size);
-        *min = fmaxf(*min, 0.005f / brush_size);
-        ++*count;
-      }
-      break;
+      break; // no size slider for click-based interaction
     case DT_MASKS_PROPERTY_CLEANUP:
-      if(brushing_done)
+      if(has_mask)
       {
         int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
         cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
@@ -2170,7 +1862,7 @@ static void _object_modify_property(dt_masks_form_t *const form,
       }
       break;
     case DT_MASKS_PROPERTY_SMOOTHING:
-      if(brushing_done)
+      if(has_mask)
       {
         float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
         smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
