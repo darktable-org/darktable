@@ -42,9 +42,10 @@ brew 'libheif'
 brew 'libraw'
 brew 'librsvg'
 brew 'libsecret'
+brew 'libsoup', link: true
 brew 'little-cms2'
-brew 'lua@5.4'
-brew 'libomp'
+brew 'lua@5.4', link: true, overwrite: true
+brew 'libomp', link: true
 brew 'ninja'
 brew 'openexr'
 brew 'openjpeg'
