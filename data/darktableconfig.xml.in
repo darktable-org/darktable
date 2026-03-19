@@ -2499,12 +2499,12 @@
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="misc" section="interface">
     <name>filmstrip/ui/auto_scroll</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>auto-scroll filmstrip to selected image</shortdescription>
-    <longdescription>when enabled, the filmstrip automatically scrolls to center the newly selected image</longdescription>
+    <shortdescription>auto-scroll filmstrip to center on selected image</shortdescription>
+    <longdescription>when enabled, the filmstrip in culling mode and in the darkroom automatically scrolls to center on the selected image</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="general">
      <name>lighttable/ui/milliseconds</name>
