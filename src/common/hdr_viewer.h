@@ -2,7 +2,7 @@
  * dt_hdr_client.h
  *
  * Minimal POSIX-only C client library for sending HDR pixel frames to the
- * darktable HDR Viewer app (tools/hdr-viewer).
+ * darktable HDR Viewer app (https://github.com/MaykThewessen/darktable-hdr-viewer).
  *
  * Protocol (little-endian):
  *   [4 bytes] width  – uint32_t
