@@ -41,6 +41,9 @@
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
 #define CONF_OBJECT_MORPH_KEY "plugins/darkroom/masks/object/morph_radius"
 #define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
+#define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
+#define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
+#define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 
 // target resolution for segmentation encoding (longest side in pixels),
@@ -87,6 +90,7 @@ typedef struct _object_data_t
   GList *preview_signs;             // parallel GList of sign values ('+' or '-')
   int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
   float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
+  float preview_feather;            // path border/feather (0.0-0.5, normalized)
   dt_iop_module_t *creation_module; // module that started this session
 } _object_data_t;
 
@@ -779,6 +783,19 @@ static void _update_preview(_object_data_t *d)
                                d->preview_cleanup, (double)d->preview_smoothing,
                                &d->preview_signs);
   g_free(inv_mask);
+
+  // apply feather to all path points
+  const float feather = d->preview_feather;
+  for(GList *fl = d->preview_forms; fl; fl = g_list_next(fl))
+  {
+    dt_masks_form_t *f = fl->data;
+    for(GList *p = f->points; p; p = g_list_next(p))
+    {
+      dt_masks_point_path_t *pt = p->data;
+      pt->border[0] = feather;
+      pt->border[1] = feather;
+    }
+  }
 }
 
 // transform mask-space forms to input-normalized coords and register them,
@@ -952,8 +969,8 @@ _finalize_mask(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui
   for(size_t i = 0; i < n; i++)
     inv_mask[i] = 1.0f - d->mask[i];
 
-  const int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
-  const float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+  const int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+  const float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
   GList *signs = NULL;
   GList *forms
     = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL, cleanup, (double)smoothing, &signs);
@@ -1008,22 +1025,22 @@ static int _object_events_mouse_scrolled(
   {
     if(dt_modifier_is(state, 0))
     {
-      // plain scroll: adjust cleanup (potrace turdsize)
-      d->preview_cleanup = CLAMP(d->preview_cleanup + (up ? 5 : -5), 0, 100);
-      dt_conf_set_int("plugins/darkroom/masks/object/cleanup", d->preview_cleanup);
+      // plain scroll: adjust smoothing (potrace alphamax)
+      d->preview_smoothing = CLAMP(d->preview_smoothing + (up ? 0.05f : -0.05f), 0.0f, 1.3f);
+      dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, d->preview_smoothing);
       _update_preview(d);
-      dt_toast_log(_("cleanup: %d"), d->preview_cleanup);
+      dt_toast_log(_("smoothing: %3.2f"), d->preview_smoothing);
       dt_dev_masks_list_change(darktable.develop);
       dt_control_queue_redraw_center();
       return 1;
     }
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      // shift+scroll: adjust smoothing (potrace alphamax)
-      d->preview_smoothing = CLAMP(d->preview_smoothing + (up ? 0.05f : -0.05f), 0.0f, 1.3f);
-      dt_conf_set_float("plugins/darkroom/masks/object/smoothing", d->preview_smoothing);
+      // shift+scroll: adjust cleanup (potrace turdsize)
+      d->preview_cleanup = CLAMP(d->preview_cleanup + (up ? 5 : -5), 0, 100);
+      dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, d->preview_cleanup);
       _update_preview(d);
-      dt_toast_log(_("smoothing: %3.2f"), d->preview_smoothing);
+      dt_toast_log(_("cleanup: %d"), d->preview_cleanup);
       dt_dev_masks_list_change(darktable.develop);
       dt_control_queue_redraw_center();
       return 1;
@@ -1340,8 +1357,9 @@ static void _object_events_post_expose(
   if(!d)
   {
     d = g_new0(_object_data_t, 1);
-    d->preview_cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
-    d->preview_smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+    d->preview_cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
+    d->preview_smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+    d->preview_feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
     d->last_seen_imgid = NO_IMGID;
     d->creation_module = gui->creation_module;
 
@@ -1765,12 +1783,12 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
     lm,
     DT_MOUSE_ACTION_SCROLL,
     0,
-    _("[OBJECT] change cleanup"));
+    _("[OBJECT] change smoothing"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
     GDK_SHIFT_MASK,
-    _("[OBJECT] change smoothing"));
+    _("[OBJECT] change cleanup"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
@@ -1804,9 +1822,9 @@ static void _object_set_hint_message(
                  msgbuf_len,
                  _("<b>add</b>: click, <b>subtract</b>: shift+click, "
                    "<b>clear</b>: alt+click, <b>apply</b>: right-click\n"
-                   "<b>cleanup</b>: scroll (%d), <b>smoothing</b>: shift+scroll (%3.2f), "
+                   "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
                    "<b>opacity</b>: ctrl+scroll (%d%%)"),
-                 d->preview_cleanup, d->preview_smoothing, opacity);
+                 d->preview_smoothing, d->preview_cleanup, opacity);
     else
       g_snprintf(msgbuf,
                  msgbuf_len,
@@ -1852,9 +1870,9 @@ static void _object_modify_property(dt_masks_form_t *const form,
     case DT_MASKS_PROPERTY_CLEANUP:
       if(has_mask)
       {
-        int cleanup = dt_conf_get_int("plugins/darkroom/masks/object/cleanup");
+        int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
         cleanup = CLAMP(cleanup + (int)(new_val - old_val), 0, 100);
-        dt_conf_set_int("plugins/darkroom/masks/object/cleanup", cleanup);
+        dt_conf_set_int(CONF_OBJECT_CLEANUP_KEY, cleanup);
         d->preview_cleanup = cleanup;
         _update_preview(d);
         *sum += cleanup;
@@ -1864,13 +1882,30 @@ static void _object_modify_property(dt_masks_form_t *const form,
     case DT_MASKS_PROPERTY_SMOOTHING:
       if(has_mask)
       {
-        float smoothing = dt_conf_get_float("plugins/darkroom/masks/object/smoothing");
+        float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
         smoothing = CLAMP(smoothing + (new_val - old_val), 0.0f, 1.3f);
-        dt_conf_set_float("plugins/darkroom/masks/object/smoothing", smoothing);
+        dt_conf_set_float(CONF_OBJECT_SMOOTHING_KEY, smoothing);
         d->preview_smoothing = smoothing;
         _update_preview(d);
         *sum += smoothing;
         ++*count;
+      }
+      break;
+    case DT_MASKS_PROPERTY_FEATHER:
+      if(has_mask)
+      {
+        const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+        float feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+        if(feather < 0.0005f && ratio > 1.0f)
+          feather = 0.001f; // bootstrap from zero on increase
+        feather = CLAMP(feather * ratio, 0.0005f, 1.0f);
+        dt_conf_set_float(CONF_OBJECT_FEATHER_KEY, feather);
+        d->preview_feather = feather;
+        _update_preview(d);
+        *sum += feather + feather; // both borders (same as path)
+        *max = fminf(*max, 1.0f / feather);
+        *min = fmaxf(*min, 0.0005f / feather);
+        *count += 2; // both borders (same as path)
       }
       break;
     default:;
