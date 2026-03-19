@@ -3014,31 +3014,44 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     // HDR viewer: forward float pixels to the external HDR preview app (if running).
     // input is float RGBA in the display profile colorspace; values above 1.0 represent
     // HDR signal that GTK would otherwise clip to uint8.
-    // Only attempt this when the preference is enabled (or always try; the connect()
-    // call returns immediately with -1 when the viewer is not running).
+    // NOTE: the socket calls below must remain outside any OMP parallel section.
     if(dt_conf_get_bool("plugins/darkroom/hdr_viewer_enabled"))
     {
-      const int w = roi_in.width;
-      const int h = roi_in.height;
-      const float *const rgba = (const float *const)input;
-      // Strip alpha channel: RGBA float → RGB float (packed, row-major)
-      float *rgb = dt_alloc_align_float((size_t)w * h * 3);
-      if(rgb)
+      // Cooldown: skip connect attempts for 2 seconds after a failed connect
+      // to avoid 200ms timeout on every frame when the viewer is not running.
+      // The preview pipe runs on a single thread, so no synchronisation needed.
+      static int64_t _hdr_viewer_next_attempt_us = 0;
+      const int64_t now_us = g_get_monotonic_time();
+      if(now_us >= _hdr_viewer_next_attempt_us)
       {
-        DT_OMP_FOR()
-        for(int k = 0; k < w * h; k++)
-        {
-          rgb[k * 3 + 0] = rgba[k * 4 + 0];
-          rgb[k * 3 + 1] = rgba[k * 4 + 1];
-          rgb[k * 3 + 2] = rgba[k * 4 + 2];
-        }
+        const size_t w = (size_t)roi_in.width;
+        const size_t h = (size_t)roi_in.height;
+        const float *const rgba = (const float *const)input;
         int viewer_fd = dt_hdr_viewer_connect();
         if(viewer_fd >= 0)
         {
-          dt_hdr_viewer_send_frame(viewer_fd, (uint32_t)w, (uint32_t)h, rgb);
+          // Strip alpha channel: RGBA float -> RGB float (packed, row-major)
+          const size_t npixels = w * h;
+          float *rgb = dt_alloc_align_float(npixels * 3);
+          if(rgb)
+          {
+            DT_OMP_FOR()
+            for(size_t k = 0; k < npixels; k++)
+            {
+              rgb[k * 3 + 0] = rgba[k * 4 + 0];
+              rgb[k * 3 + 1] = rgba[k * 4 + 1];
+              rgb[k * 3 + 2] = rgba[k * 4 + 2];
+            }
+            dt_hdr_viewer_send_frame(viewer_fd, (uint32_t)w, (uint32_t)h, rgb);
+            dt_free_align(rgb);
+          }
           dt_hdr_viewer_disconnect(viewer_fd);
         }
-        dt_free_align(rgb);
+        else
+        {
+          // Viewer not reachable -- back off for 2 seconds before retrying
+          _hdr_viewer_next_attempt_us = now_us + 2 * G_USEC_PER_SEC;
+        }
       }
     }
   }

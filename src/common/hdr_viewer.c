@@ -38,7 +38,11 @@ static int write_exact(int fd, const void *buf, size_t len)
     size_t      left = len;
 
     while (left > 0) {
+#ifdef __linux__
+        ssize_t n = send(fd, p, left, MSG_NOSIGNAL);
+#else
         ssize_t n = write(fd, p, left);
+#endif
         if (n < 0) {
             if (errno == EINTR) continue;
             return -1;
