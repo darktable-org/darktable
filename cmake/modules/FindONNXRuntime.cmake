@@ -30,8 +30,8 @@ endif()
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-set(ONNXRUNTIME_VERSION "1.23.2" CACHE STRING "ONNX Runtime version to download")
-set(ONNXRUNTIME_DIRECTML_VERSION "1.23.0" CACHE STRING "DirectML NuGet package version for Windows")
+set(ONNXRUNTIME_VERSION "1.24.4" CACHE STRING "ONNX Runtime version to download")
+set(ONNXRUNTIME_DIRECTML_VERSION "1.24.4" CACHE STRING "DirectML NuGet package version for Windows")
 option(ONNXRUNTIME_OFFLINE "Disable automatic download of ONNX Runtime" OFF)
 
 set(_ORT_SRC_ROOT "${CMAKE_SOURCE_DIR}/src/external/onnxruntime")
