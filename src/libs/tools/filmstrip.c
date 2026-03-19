@@ -91,7 +91,6 @@ static void _filmstrip_center(dt_action_t *action)
   if(!darktable.view_manager->active_images) return;
   const int imgid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
-  dt_toast_log(_("filmstrip centered on selected image"));
 }
 
 static void _filmstrip_toggle_auto_scroll(dt_action_t *action)
