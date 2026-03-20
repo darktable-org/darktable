@@ -444,6 +444,7 @@ typedef struct dt_masks_form_gui_t
 
   // opaque per-type data (e.g. segmentation context for object masks)
   void *scratchpad;
+  void (*scratchpad_cleanup)(struct dt_masks_form_gui_t *gui);
 } dt_masks_form_gui_t;
 
 /** special value to indicate an invalid or uninitialized coordinate */

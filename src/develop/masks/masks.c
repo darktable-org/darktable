@@ -1312,6 +1312,11 @@ void dt_masks_events_post_expose(const dt_iop_module_t *module,
 void dt_masks_clear_form_gui(const dt_develop_t *dev)
 {
   if(!dev->form_gui) return;
+  if(dev->form_gui->scratchpad_cleanup)
+  {
+    dev->form_gui->scratchpad_cleanup(dev->form_gui);
+    dev->form_gui->scratchpad_cleanup = NULL;
+  }
   g_list_free_full(dev->form_gui->points, dt_masks_form_gui_points_free);
   dev->form_gui->points = NULL;
   dt_masks_dynbuf_free(dev->form_gui->guipoints);
