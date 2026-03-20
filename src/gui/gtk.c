@@ -2647,6 +2647,10 @@ static gboolean _panel_handle_cursor_callback(GtkWidget *w,
                                               const GdkEventCrossing *e,
                                               gpointer user_data)
 {
+  // GTK produces a lot of GDK_NOTIFY_ANCESTOR when dragging handle,
+  // but we only care about events when enter/leave the drag region
+  if(darktable.gui->widgets.panel_handle_dragging)
+    return FALSE;
   if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
     dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY)
                              ? "ns-resize"
@@ -4152,6 +4156,7 @@ static gboolean _scroll_wrap_height(GtkWidget *w,
 }
 
 static gboolean _resize_wrap_dragging = FALSE;
+static gboolean _resize_wrap_handle_hover = FALSE;
 static GtkWidget *_resize_wrap_hovered = NULL;
 
 static gboolean _resize_wrap_draw_handle(GtkWidget *w,
@@ -4164,7 +4169,9 @@ static gboolean _resize_wrap_draw_handle(GtkWidget *w,
   GtkAllocation allocation;
   gtk_widget_get_allocation(w, &allocation);
 
-  set_color(cr, darktable.bauhaus->color_fg_insensitive);
+  set_color(cr, _resize_wrap_handle_hover
+                ? darktable.bauhaus->color_fg_hover
+                : darktable.bauhaus->color_fg_insensitive);
   cairo_move_to(cr, allocation.width / 8 * 3,
                 allocation.height - DT_RESIZE_HANDLE_SIZE / 4 * 3);
   cairo_line_to(cr, allocation.width / 8 * 5,
@@ -4198,16 +4205,25 @@ static gboolean _resize_wrap_motion(GtkWidget *widget,
     }
     return TRUE;
   }
-  else if(!(event->state & GDK_BUTTON1_MASK)
-          && event->window == gtk_widget_get_window(widget)
-          && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
+
+  const gboolean prior = _resize_wrap_handle_hover;
+  if(!(event->state & GDK_BUTTON1_MASK)
+     && event->window == gtk_widget_get_window(widget))
   {
-    dt_control_set_temp_cursor("ns-resize");
-    return TRUE;
+    _resize_wrap_handle_hover =
+      event->y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE;
+    if(_resize_wrap_handle_hover != prior)
+    {
+      if(_resize_wrap_handle_hover)
+        dt_control_set_temp_cursor("ns-resize");
+      else
+        dt_control_clear_temp_cursor();
+      // draw changed handle hover state
+      gtk_widget_queue_draw(widget);
+    }
   }
 
-  dt_control_clear_temp_cursor();
-  return FALSE;
+  return _resize_wrap_handle_hover;
 }
 
 static gboolean _resize_wrap_button(GtkWidget *widget,
@@ -4221,7 +4237,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
     dt_control_clear_temp_cursor();
     return TRUE;
   }
-  else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
+  else if(event->y >= gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
           && event->type == GDK_BUTTON_PRESS
           && event->button == GDK_BUTTON_PRIMARY)
   {
@@ -4240,6 +4256,16 @@ static gboolean _resize_wrap_enter_leave(GtkWidget *widget,
     event->type == GDK_ENTER_NOTIFY
     || event->detail == GDK_NOTIFY_INFERIOR
     || _resize_wrap_dragging ? widget : NULL;
+
+  // When leave handle and widget, remove temp resize cursor. When
+  // enter widget, motion event will handle cursor change for handle.
+  if(event->type == GDK_LEAVE_NOTIFY
+     && !_resize_wrap_dragging
+     && _resize_wrap_handle_hover)
+  {
+    dt_control_clear_temp_cursor();
+    _resize_wrap_handle_hover = FALSE;
+  }
 
   gtk_widget_queue_draw(widget);
 
@@ -4634,8 +4660,8 @@ void dt_gui_cursor_set_busy()
   {
     // this is not a nested call, so store the current mouse cursor and set it to be the
     // "watch" cursor
-    dt_control_forbid_change_cursor();
     dt_control_set_temp_cursor("wait");
+    dt_control_forbid_change_cursor();
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
     dt_gui_process_events();
@@ -4655,8 +4681,8 @@ void dt_gui_cursor_clear_busy()
     {
       // we've matched the last of the pending set_busy calls, so it is now time
       // to restore the original mouse cursor
-      dt_control_clear_temp_cursor();
       dt_control_allow_change_cursor();
+      dt_control_clear_temp_cursor();
       gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
     }
   }
