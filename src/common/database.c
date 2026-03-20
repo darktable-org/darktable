@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3830,7 +3830,7 @@ static void _sanitize_db(dt_database_t *db)
 #undef TRY_PREPARE
 #undef FINALIZE
 
-void dt_database_show_error(const dt_database_t *db)
+void dt_database_show_error(const dt_database_t *db, const char *dblabel)
 {
   if(!db->lock_acquired)
   {
@@ -3838,6 +3838,14 @@ void dt_database_show_error(const dt_database_t *db)
     snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
     char *lck_dirname = g_strdup(lck_pathname);
     char *last_dirsep_position = g_strrstr(lck_dirname, G_DIR_SEPARATOR_S);
+    char library_lock_basename[1024];
+    if(strlen(dblabel) == 0)
+      strncpy(library_lock_basename, "library.db.lock",
+              sizeof(library_lock_basename));
+    else
+      snprintf(library_lock_basename, sizeof(library_lock_basename),
+               "library-%s.db.lock", dblabel);
+    
     if(last_dirsep_position)
       *last_dirsep_position = '\0';  // make lck_dirname contain only the directory name
 
@@ -3862,11 +3870,11 @@ void dt_database_show_error(const dt_database_t *db)
           "\n"
           "  4 - If you have done this or are certain that no other instances of darktable are running, \n"
           "      this probably means that the last instance was ended abnormally. \n"
-          "      Click on the \"delete database lock files\" button to delete the files <i>data.db.lock</i> and <i>library.db.lock</i>. \n"
+          "      Click on the \"delete database lock files\" button to delete the files <i>data.db.lock</i> and <i>%s</i>. \n"
           "\n\n"
           "      <i><u>Caution!</u> Do not delete these files without first undertaking the above checks, \n"
           "      otherwise you risk generating serious inconsistencies in your database.</i>\n"),
-      db->error_other_pid);
+      db->error_other_pid, library_lock_basename);
     // clang-format on
 
     gboolean delete_lockfiles =
@@ -3890,10 +3898,9 @@ void dt_database_show_error(const dt_database_t *db)
           status += remove(lck_filename);
         g_free(lck_filename);
 
-        lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
+        lck_filename = g_strconcat(lck_dirname, G_DIR_SEPARATOR_S, library_lock_basename, NULL);
         if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
-        g_free(lck_filename);
 
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog
@@ -3904,9 +3911,10 @@ void dt_database_show_error(const dt_database_t *db)
           dt_gui_show_standalone_yes_no_dialog
             (_("error"), g_markup_printf_escaped(
               _("\nat least one file could not be deleted.\n"
-                "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
-                "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
+                "you may try to manually delete the files <i>data.db.lock</i> and <i>%s</i>\n"
+                "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_filename, lck_dirname, lck_dirname),
              _("_ok"), NULL);
+        g_free(lck_filename);
       }
     }
 
