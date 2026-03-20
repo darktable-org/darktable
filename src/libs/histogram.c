@@ -545,6 +545,7 @@ static void _eventbox_leave_notify_callback(GtkEventControllerMotion *controller
   }
   gtk_widget_hide(s->button_box_left);
   gtk_widget_hide(s->button_box_right);
+  gtk_widget_hide(s->button_box_split);
 }
 
 static void _lib_histogram_collapse_callback(dt_action_t *action)
@@ -590,6 +591,7 @@ void view_enter(struct dt_lib_module_t *self,
   // histogram, in which case gtk kindly generates enter events
   gtk_widget_hide(s->button_box_left);
   gtk_widget_hide(s->button_box_right);
+  gtk_widget_hide(s->button_box_split);
 
   // FIXME: set histogram data to blank if enter tether with no active image
 }
@@ -601,7 +603,7 @@ void view_leave(struct dt_lib_module_t *self,
   DT_CONTROL_SIGNAL_DISCONNECT(_lib_histogram_preview_updated_callback, self);
 }
 
-static gboolean _overlay_size_child_to_main(GtkOverlay *overlay,
+static gboolean _overlay_get_child_position(GtkOverlay *overlay,
                                             GtkWidget *child,
                                             GdkRectangle *alloc,
                                             GtkWidget *match)
@@ -686,30 +688,45 @@ void gui_init(dt_lib_module_t *self)
                      GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   // a row of control buttons, split in two button boxes, on left and right side
+  // overlaying the current scope
+  //
   // self->widget (GtkEventBox)
   //   '--> GtkOverlay
   //          |--> scope_draw (DtGtkDrawingArea with dt_ui_resize_wrap)
   //          |--> button_box_left (GtkBox hori)
   //          |      '--> mode buttons
-  //          '--> button_box_right (GtkBox vert)
-  //                 |--> button_box_opt (GtkBox hori)
-  //                 |      '--> option buttons & button_box_rgb
-  //                 '--> vectorscope harmony buttons (GtkViewport)
-  // FIXME: put button_box_left_right into a single box so can load it into single overlay and turn on/off with one GTK call?
+  //          |--> button_box_right (GtkBox hori)
+  //          |      '--> option buttons for non-split or right side of split
+  //          '--> button_box_split (GtkBox hori)
+  //                 '--> option buttons for left side of split, if shown
   s->button_box_left = dt_gui_hbox();
   dt_gui_add_class(s->button_box_left, "button_box");
   gtk_widget_set_valign(s->button_box_left, GTK_ALIGN_START);
   gtk_widget_set_halign(s->button_box_left, GTK_ALIGN_START);
 
-  s->button_box_right = dt_gui_vbox();
+  s->button_box_split = dt_gui_hbox();
+  dt_gui_add_class(s->button_box_split, "button_box");
+  gtk_widget_set_valign(s->button_box_split, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->button_box_split, GTK_ALIGN_END);
+  GtkWidget *outer_box_split = dt_gui_hbox();
+  gtk_box_set_homogeneous(GTK_BOX(outer_box_split), TRUE);
+  GtkWidget *split_spacer = dt_gui_hbox();
+  dt_gui_box_add(outer_box_split, s->button_box_split, split_spacer);
+
+  s->button_box_right = dt_gui_hbox();
   dt_gui_add_class(s->button_box_right, "button_box");
   gtk_widget_set_valign(s->button_box_right, GTK_ALIGN_START);
   gtk_widget_set_halign(s->button_box_right, GTK_ALIGN_END);
+  gtk_widget_set_hexpand(s->button_box_right, TRUE);
 
-  GtkWidget *button_box_opt = dt_gui_hbox();
-  gtk_widget_set_valign(button_box_opt, GTK_ALIGN_START);
-  gtk_widget_set_halign(button_box_opt, GTK_ALIGN_END);
-  dt_gui_box_add(s->button_box_right, button_box_opt);
+  s->overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(s->overlay), s->scope_draw);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_left);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), s->button_box_right);
+  gtk_overlay_add_overlay(GTK_OVERLAY(s->overlay), outer_box_split);
+  // allow for dragging to change exposure in spaces where not buttons
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), s->button_box_left, TRUE);
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(s->overlay), outer_box_split, TRUE);
 
   // FIXME: the button transitions when they appear on mouseover
   // (mouse enters scope widget) or change (mouse click) cause redraws
@@ -723,20 +740,41 @@ void gui_init(dt_lib_module_t *self)
       dtgtk_cairo_paint_split_waveform_vectorscope,
       dtgtk_cairo_paint_rgb_parade,
       dtgtk_cairo_paint_histogram_scope };
+  // FIXME: can use use GtkStack or tabless GtkNotebook to handle
+  // mode-switching behavior -- drawable and right buttons?
   for(int i=0; i<DT_SCOPES_MODE_N; i++)
   {
-    // FIXME: can use use GtkStack or GtkNotebook with gtk_notebook_set_show_tabs() to FALSE to handle mode-switching behavior?
+    const char *const name = dt_scopes_call(&s->modes[i], name);
     s->modes[i].button_activate =
       dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
-    const char *const name = dt_scopes_call(&s->modes[i], name);
+    gtk_widget_set_halign(s->modes[i].button_activate, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(s->modes[i].button_activate, GTK_ALIGN_START);
     gtk_widget_set_tooltip_text(s->modes[i].button_activate, _(name));
     dt_action_define(dark, N_("modes"), name,
                      s->modes[i].button_activate, &dt_action_def_toggle);
-    dt_gui_box_add(s->button_box_left, s->modes[i].button_activate);
     // GTK4: use gtk_toggle_button_set_group(), GTK3: handle in callback
     s->modes[i].toggle_signal_handler =
       g_signal_connect_data(G_OBJECT(s->modes[i].button_activate), "toggled",
                             G_CALLBACK(_mode_toggle), s, NULL, 0);
+
+    if(s->modes[i].functions->add_options)
+    {
+      s->modes[i].options_box = dt_gui_hbox();
+      dt_scopes_call(&s->modes[i], add_options, dark);
+      dt_gui_box_add(s->button_box_right, s->modes[i].options_box);
+    }
+    else
+      s->modes[i].options_box = NULL;
+  }
+
+  // allow for clustering mode buttons in responsive layout
+  const int btns_per_row = 3;
+  for(int row_start=0; row_start < DT_SCOPES_MODE_N; row_start += btns_per_row)
+  {
+    GtkWidget *row = dt_gui_hbox();
+    for(int pos=row_start; pos < row_start+btns_per_row && pos < DT_SCOPES_MODE_N; pos++)
+      dt_gui_box_add(row, s->modes[pos].button_activate);
+    dt_gui_box_add(s->button_box_left, row);
   }
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
@@ -745,11 +783,10 @@ void gui_init(dt_lib_module_t *self)
                        _lib_histogram_collapse_callback,
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  // add option buttons
-
+  // RGB channel buttons
   s->button_box_rgb = dt_gui_hbox();
   gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
-  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_END);
+  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_CENTER);
   // red/green/blue channel on/off
   for(int i=DT_SCOPES_RGB_RED; i < DT_SCOPES_RGB_N; i++)
   {
@@ -767,16 +804,8 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), s);
     s->channel_buttons[i] = btn;
   }
-
-  // hardwire waveform buttons before vectorscope in split, RGB
-  // channels after waveform/histogram options but before vectorscope
-  dt_scopes_call(&s->modes[DT_SCOPES_MODE_WAVEFORM], add_options, dark,
-                 s->button_box_right, button_box_opt);
-  dt_scopes_call(&s->modes[DT_SCOPES_MODE_HISTOGRAM], add_options, dark,
-                 s->button_box_right, button_box_opt);
-  dt_gui_box_add(button_box_opt, s->button_box_rgb);
-  dt_scopes_call(&s->modes[DT_SCOPES_MODE_VECTORSCOPE], add_options, dark,
-                 s->button_box_right, button_box_opt);
+  // RGB channels are always rightmost
+  dt_gui_box_add(s->button_box_right, s->button_box_rgb);
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {
@@ -788,22 +817,14 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
 
-  // assemble the widgets
-
-  // The main widget is an overlay which has no window, and hence
-  // can't catch events. We need something on top to catch events to
-  // show/hide the buttons. The drawable is below the buttons, and
-  // hence won't catch motion events for the buttons, and gets a leave
-  // event when the cursor moves over the buttons.
-  GtkWidget *overlay = gtk_overlay_new();
-  gtk_container_add(GTK_CONTAINER(overlay), s->scope_draw);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), s->button_box_left);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), s->button_box_right);
-
+  // The overlay has no window, and hence can't catch events. We need
+  // something on top to catch events to show/hide the buttons. The
+  // drawable is below the buttons, and hence won't catch motion
+  // events for the buttons, and gets a leave event when the cursor
+  // moves over the buttons.
   GtkWidget *eventbox = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(eventbox), overlay);
+  gtk_container_add(GTK_CONTAINER(eventbox), s->overlay);
   self->widget = eventbox;
-
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
@@ -816,8 +837,8 @@ void gui_init(dt_lib_module_t *self)
                         _drawable_leave, s);
   // constrain height of button_box_right to s->scope_draw, necessary
   // so that harmony buttons are scrollable within overlay
-  g_signal_connect(G_OBJECT(overlay), "get-child-position",
-                   G_CALLBACK(_overlay_size_child_to_main), s->button_box_right);
+  g_signal_connect(G_OBJECT(s->overlay), "get-child-position",
+                   G_CALLBACK(_overlay_get_child_position), s->button_box_right);
 
   // FIXME: add (optional) propagation phase argument to dt_gui_connect_*()
   GtkEventController *scroll_controller =

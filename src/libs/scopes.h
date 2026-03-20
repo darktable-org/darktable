@@ -110,9 +110,10 @@ typedef struct dt_scopes_functions_t
   void (*update_buttons)(const struct dt_scopes_mode_t *const self);
   void (*mode_enter)(struct dt_scopes_mode_t *const self);
   void (*mode_leave)(const struct dt_scopes_mode_t *const self);
-  void (*gui_init)(struct dt_scopes_mode_t *const self, struct dt_scopes_t *const scopes);
-  void (*add_options)(struct dt_scopes_mode_t *const mode, dt_action_t *dark,
-                      GtkWidget *box_right, GtkWidget *box_opt);
+  void (*gui_init)(struct dt_scopes_mode_t *const self,
+                   struct dt_scopes_t *const scopes);
+  void (*add_options)(struct dt_scopes_mode_t *const mode,
+                      dt_action_t *dark);
   void (*gui_cleanup)(struct dt_scopes_mode_t *const self);
 } dt_scopes_functions_t;
 
@@ -121,6 +122,7 @@ typedef struct dt_scopes_mode_t
   const dt_scopes_functions_t *functions;
   void *data;
   GtkWidget *button_activate;                   // GtkDarktableToggleButton to activate
+  GtkWidget *options_box;                       // GtkBox with option buttons
   gulong toggle_signal_handler;
   int update_counter;
   // point back to parent
@@ -139,9 +141,11 @@ typedef struct dt_scopes_t
   scopes_channels_t channels;                   // display state chosen by RGB buttons
   gboolean dragging;                            // pre-GtkGestureDrag hack
   // UI elements
-  GtkWidget *button_box_left;                   // GtkBox -- contains scope mode buttons
-  GtkWidget *button_box_right;                  // GtkBox -- contains option buttons
-  GtkWidget *button_box_rgb;                    // GtkBox -- contains RGB channels buttons
+  GtkWidget *overlay;                           // GtkOverlay -- scope and buttons
+  GtkWidget *button_box_left;                   // GtkBox -- scope mode buttons
+  GtkWidget *button_box_split;                  // GtkBox -- option buttons for left scope
+  GtkWidget *button_box_right;                  // GtkBox -- option buttons for main scope
+  GtkWidget *button_box_rgb;                    // GtkBox -- RGB channels buttons
   GtkWidget *channel_buttons[DT_SCOPES_RGB_N];  // Array of GtkToggleButton -- RGB channels
   GtkWidget *scope_draw;                        // GtkDrawingArea -- scope & resize
   // for access to data during process/draw
