@@ -2349,7 +2349,7 @@ static void _event_dnd_get(GtkWidget *widget,
                                _BYTE, (guchar *)uri, strlen(uri));
         g_free(uri);
       }
-      else
+      else if(l)
       {
         GList *images = NULL;
         for(; l; l = g_list_next(l))
