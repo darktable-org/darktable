@@ -1111,9 +1111,10 @@ static int _object_events_button_pressed(
 
   _object_data_t *d = _get_data(gui);
 
-  if(gui->creation && which == 1 && dt_modifier_is(state, GDK_MOD1_MASK))
+  if(gui->creation && which == 1
+     && dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
   {
-    // alt+click: clear selection
+    // ctrl+shift+click: clear selection
     if(d && d->encode_state == ENCODE_READY
        && (gui->guipoints_count > 0 || d->mask || d->has_selection))
     {
@@ -1605,7 +1606,11 @@ static void _object_events_post_expose(
   int dev_x = 0, dev_y = 0;
   if(win && pointer)
     gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
-  const gboolean shift_held = (mod & GDK_SHIFT_MASK) != 0;
+  const gboolean ctrl_shift_held
+    = (mod & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+        == (GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  const gboolean shift_held
+    = !ctrl_shift_held && (mod & GDK_SHIFT_MASK) != 0;
 
   // convert device coordinates to preview pipe pixel space
   {
@@ -1617,26 +1622,58 @@ static void _object_events_post_expose(
     gui->posy = pzy * ht;
   }
 
-  // draw +/- cursor indicator for click interaction
-  if(gui->posx >= 0.0f && gui->posx <= wd && gui->posy >= 0.0f && gui->posy <= ht)
+  // draw cursor indicator for click interaction
+  if(gui->posx >= 0.0f && gui->posx <= wd
+     && gui->posy >= 0.0f && gui->posy <= ht)
   {
-    // draw +/- cursor indicator for click interaction
     const float r = DT_PIXEL_APPLY_DPI(8.0f) / zoom_scale;
     const float lw = DT_PIXEL_APPLY_DPI(2.0f) / zoom_scale;
     cairo_set_line_width(cr, lw);
-    cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
 
-    // horizontal line (common to both + and -)
-    cairo_move_to(cr, gui->posx - r, gui->posy);
-    cairo_line_to(cr, gui->posx + r, gui->posy);
-    cairo_stroke(cr);
-
-    if(!shift_held)
+    if(ctrl_shift_held)
     {
-      // add mode: vertical line to form "+"
-      cairo_move_to(cr, gui->posx, gui->posy - r);
-      cairo_line_to(cr, gui->posx, gui->posy + r);
+      // clear mode: draw undo/revert arrow above cursor
+      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
+      const float s = r * 0.7f; // icon size
+      const float cx = gui->posx;
+      const float cy = gui->posy - s * 1.8f; // above cursor
+
+      cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+      cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+
+      // arrowhead pointing left
+      const float ax = cx - s * 0.8f;
+      const float ay = cy - s;
+      cairo_move_to(cr, ax + s * 0.65f, ay - s * 0.6f);
+      cairo_line_to(cr, ax, ay);
+      cairo_line_to(cr, ax + s * 0.65f, ay + s * 0.6f);
       cairo_stroke(cr);
+
+      // horizontal line from arrow tip to half-circle top
+      cairo_move_to(cr, ax, ay);
+      cairo_line_to(cr, cx, ay);
+
+      // half-circle curving right and down
+      cairo_arc(cr, cx, cy, s, -G_PI * 0.5f, G_PI * 0.5f);
+
+      // small horizontal tail at bottom going left
+      cairo_line_to(cr, cx - s * 0.5f, cy + s);
+      cairo_stroke(cr);
+    }
+    else
+    {
+      cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, 0.9);
+      // horizontal line (common to both + and -)
+      cairo_move_to(cr, gui->posx - r, gui->posy);
+      cairo_line_to(cr, gui->posx + r, gui->posy);
+      cairo_stroke(cr);
+      if(!shift_held)
+      {
+        // add mode: vertical line to form "+"
+        cairo_move_to(cr, gui->posx, gui->posy - r);
+        cairo_line_to(cr, gui->posx, gui->posy + r);
+        cairo_stroke(cr);
+      }
     }
   }
 
@@ -1776,6 +1813,11 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
     _("[OBJECT] add background point"));
   lm = dt_mouse_action_create_simple(
     lm,
+    DT_MOUSE_ACTION_LEFT,
+    GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+    _("[OBJECT] clear selection"));
+  lm = dt_mouse_action_create_simple(
+    lm,
     DT_MOUSE_ACTION_RIGHT,
     0,
     _("[OBJECT] apply mask"));
@@ -1821,7 +1863,7 @@ static void _object_set_hint_message(
       g_snprintf(msgbuf,
                  msgbuf_len,
                  _("<b>add</b>: click, <b>subtract</b>: shift+click, "
-                   "<b>clear</b>: alt+click, <b>apply</b>: right-click\n"
+                   "<b>clear</b>: ctrl+shift+click, <b>apply</b>: right-click\n"
                    "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
                    "<b>opacity</b>: ctrl+scroll (%d%%)"),
                  d->preview_smoothing, d->preview_cleanup, opacity);
