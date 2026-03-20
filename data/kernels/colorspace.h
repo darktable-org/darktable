@@ -59,7 +59,7 @@ static inline float4 Lab_2_LCH(float4 Lab)
   H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
 
   const float L = Lab.x;
-  const float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
+  const float C = hypot(Lab.y, Lab.z);
 
   return (float4)(L, C, H, Lab.w);
 }
@@ -79,7 +79,7 @@ static inline float4 lab_f(float4 x)
 {
   const float4 epsilon = 216.0f / 24389.0f;
   const float4 kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? dtcl_pow(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
+  return (x > epsilon) ? cbrt(x) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
 }
 
 
@@ -98,7 +98,7 @@ static inline float4 XYZ_to_Lab(float4 xyz)
 
 static inline float4 lab_f_inv(float4 x)
 {
-  const float4 epsilon = 0.206896551f;
+  const float4 epsilon = 0.20689655172413796f;
   const float4 kappa   = 24389.0f / 27.0f;
   return (x > epsilon) ? x*x*x : ((float4)116.0f * x - (float4)16.0f)/kappa;
 }
@@ -437,7 +437,7 @@ static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
   const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
-  JzCzhz.y = dtcl_sqrt(JzAzBz.y * JzAzBz.y + JzAzBz.z * JzAzBz.z);
+  JzCzhz.y = hypot(JzAzBz.y, JzAzBz.z);
   JzCzhz.z = (h >= 0.0f) ? h : 1.0f + h;
   JzCzhz.w = JzAzBz.w;
   return JzCzhz;
@@ -561,7 +561,7 @@ static inline float4 Yrg_to_Ych(const float4 Yrg)
   // -> grading RGB conversion.
   const float r = Yrg.y - 0.21902143f;
   const float g = Yrg.z - 0.54371398f;
-  const float c = dt_fast_hypot(g, r);
+  const float c = hypot(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   return (float4)(Y, c, cos_h, sin_h);
