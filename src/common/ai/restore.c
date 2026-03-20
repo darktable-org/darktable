@@ -204,19 +204,19 @@ gboolean dt_restore_upscale_available(
 
 /* --- color conversion --- */
 
-static inline float _linear_to_srgb(float v)
+// sRGB transfer function (gamma curve only, no primaries change).
+// values > 1.0 are allowed to preserve wide-gamut colors
+static inline float _linear_to_srgb(const float v)
 {
   if(v <= 0.0f) return 0.0f;
-  if(v >= 1.0f) return 1.0f;
   return (v <= 0.0031308f)
     ? 12.92f * v
     : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
 }
 
-static inline float _srgb_to_linear(float v)
+static inline float _srgb_to_linear(const float v)
 {
   if(v <= 0.0f) return 0.0f;
-  if(v >= 1.0f) return 1.0f;
   return (v <= 0.04045f)
     ? v / 12.92f
     : powf((v + 0.055f) / 1.055f, 2.4f);
@@ -298,17 +298,14 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   const int out_h = h * scale;
   const int out_pixels = out_w * out_h * 3;
 
-  // convert to sRGB in scratch buffer
+  // apply sRGB transfer function to the in-gamut portion only.
+  // wide-gamut excess (values > 1.0) is stored separately and
+  // added back after inference to preserve colors outside sRGB
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
   if(!srgb_in) return 1;
 
   for(int i = 0; i < in_pixels; i++)
-  {
-    float v = in_patch[i];
-    if(v < 0.0f) v = 0.0f;
-    if(v > 1.0f) v = 1.0f;
-    srgb_in[i] = _linear_to_srgb(v);
-  }
+    srgb_in[i] = _linear_to_srgb(fminf(fmaxf(in_patch[i], 0.0f), 1.0f));
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
   if(num_inputs > MAX_MODEL_INPUTS)
@@ -361,9 +358,24 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   g_free(noise_map);
   if(ret != 0) return ret;
 
-  // sRGB -> linear
-  for(int i = 0; i < out_pixels; i++)
-    out_patch[i] = _srgb_to_linear(out_patch[i]);
+  // sRGB -> linear, then restore wide-gamut excess.
+  // for denoise (scale=1): add back the per-pixel excess that was
+  // clamped before inference. for upscale: no excess restoration
+  // since input/output resolutions differ
+  if(scale == 1)
+  {
+    for(int i = 0; i < out_pixels; i++)
+    {
+      const float clamped = fminf(fmaxf(in_patch[i], 0.0f), 1.0f);
+      const float excess = in_patch[i] - clamped;
+      out_patch[i] = _srgb_to_linear(out_patch[i]) + excess;
+    }
+  }
+  else
+  {
+    for(int i = 0; i < out_pixels; i++)
+      out_patch[i] = _srgb_to_linear(out_patch[i]);
+  }
 
   return 0;
 }
