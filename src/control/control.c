@@ -254,11 +254,12 @@ void dt_control_allow_change_cursor()
   darktable.control->lock_cursor_shape = FALSE;
 }
 
-
-static GdkCursor* temp_prev_cursor = NULL;
+// last cursor set by dt_control_change_cursor() or a direct call to
+// gdk_window_set_cursor() outside of functions below
+static GdkCursor* _prev_cursor = NULL;
 
 void _change_cursor_with_fallback(const char *cursor_name,
-                                  gboolean keep)
+                                  gboolean is_temp)
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
   if(!window) return;
@@ -284,13 +285,14 @@ void _change_cursor_with_fallback(const char *cursor_name,
     cursor = gdk_cursor_new_for_display(display, type);
   }
 
-  if(keep)
+  if(!is_temp && _prev_cursor)
   {
-    if(temp_prev_cursor) g_object_unref(temp_prev_cursor);
-    temp_prev_cursor = g_object_ref(cursor);
+    // cursor change request via dt_control_change_cursor() is overriden
+    // by temp cursor, save new cursor to use when clear temp cursor
+    g_object_unref(_prev_cursor);
+    _prev_cursor = g_object_ref(cursor);
   }
-
-  if(!darktable.control->lock_cursor_shape)
+  else if(!darktable.control->lock_cursor_shape)
   {
     gdk_window_set_cursor(window, cursor);
     g_object_unref(cursor);
@@ -300,34 +302,31 @@ void _change_cursor_with_fallback(const char *cursor_name,
 void dt_control_set_temp_cursor(const char *cursor_name)
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(window)
+  if(!window) return;
+  // store cursor to return to once clear temp cursor if this is the
+  // initial setup of this temp cursor (as can call this multiple
+  // times to vary a temp cursor)
+  if(!_prev_cursor)
   {
-    if(!temp_prev_cursor)
-    {
-      temp_prev_cursor = gdk_window_get_cursor(window);
-      g_object_ref(temp_prev_cursor);
-    }
-    _change_cursor_with_fallback(cursor_name, FALSE);
-    dt_control_forbid_change_cursor();
+    _prev_cursor = gdk_window_get_cursor(window);
+    g_object_ref(_prev_cursor);
   }
+  _change_cursor_with_fallback(cursor_name, TRUE);
 }
 
 void dt_control_clear_temp_cursor()
 {
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
-  if(temp_prev_cursor)
-  {
-    if(window)
-      gdk_window_set_cursor(window, temp_prev_cursor);
-    g_object_unref(temp_prev_cursor);
-    temp_prev_cursor = NULL;
-    dt_control_allow_change_cursor();
-  }
+  if(!_prev_cursor) return;
+  if(window)
+    gdk_window_set_cursor(window, _prev_cursor);
+  g_object_unref(_prev_cursor);
+  _prev_cursor = NULL;
 }
 
 void dt_control_change_cursor(const char *cursor_name)
 {
-  _change_cursor_with_fallback(cursor_name, TRUE);
+  _change_cursor_with_fallback(cursor_name, FALSE);
 }
 
 /* Some implementation and how-to use notes about control->running
