@@ -1114,12 +1114,10 @@ static int _object_events_button_pressed(
   if(gui->creation && which == 1
      && dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
   {
-    // ctrl+shift+click: clear selection
-    if(d && d->encode_state == ENCODE_READY
-       && (gui->guipoints_count > 0 || d->mask || d->has_selection))
+    // ctrl+shift+click: clear selection (only after first selection)
+    if(d && d->has_selection && d->encode_state == ENCODE_READY)
     {
       _clear_selection(gui);
-      // refresh sliders back to step 1 (size only)
       if(darktable.develop->proxy.masks.module)
         darktable.develop->proxy.masks.list_change(
           darktable.develop->proxy.masks.module);
@@ -1606,11 +1604,14 @@ static void _object_events_post_expose(
   int dev_x = 0, dev_y = 0;
   if(win && pointer)
     gdk_window_get_device_position(win, pointer, &dev_x, &dev_y, &mod);
+  const gboolean has_sel = d && d->has_selection;
   const gboolean ctrl_shift_held
-    = (mod & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-        == (GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+    = has_sel
+      && (mod & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+           == (GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   const gboolean shift_held
-    = !ctrl_shift_held && (mod & GDK_SHIFT_MASK) != 0;
+    = has_sel && !ctrl_shift_held
+      && (mod & GDK_SHIFT_MASK) != 0;
 
   // convert device coordinates to preview pipe pixel space
   {
