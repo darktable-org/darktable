@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-20 23:27+0900\n"
+"PO-Revision-Date: 2026-03-21 00:16+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -10695,20 +10695,17 @@ msgid "object #%d"
 msgstr "オブジェクト#%d"
 
 #: ../src/develop/masks/object.c:2099
-#, fuzzy, c-format
-#| msgid ""
-#| "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-#| "ctrl+scroll (%d%%)"
+#, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: alt+click, "
 "<b>apply</b>: right-click\n"
 "<b>cleanup</b>: scroll (%d), <b>smoothing</b>: shift+scroll (%3.2f), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>境界ぼかしのモード</b>：Shift+クリック　　<b>回転</b>：Ctrl+ドラッグ\n"
-"<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift+スクロール　　"
-"<b>不透明度</b>：Ctrl+スクロール (%d%%)"
+"<b>追加</b>：クリック　　<b>除外</b>：Shift+クリック　　<b>クリア</b>：Alt+ク"
+"リック　　<b>適用</b>：右クリック\\n\n"
+"<b>クリーンアップ</b>：スクロール （%d）　　<b>スムージング</b>：Shift+スク"
+"ロール（%3.2f）　　<b>不透明度</b>：Ctrl+スクロール（%d%%）"
 
 #: ../src/develop/masks/object.c:2107
 #, c-format
@@ -15132,10 +15129,8 @@ msgid "downloading: %s"
 msgstr "ダウンロード中：%s"
 
 #: ../src/gui/preferences_ai.c:735
-#, fuzzy
-#| msgid "fill mode"
 msgid "install AI model"
-msgstr "塗りつぶしモード"
+msgstr "AIモデルをインストールする"
 
 #: ../src/gui/preferences_ai.c:743
 msgid "AI model packages (*.dtmodel)"
@@ -27198,10 +27193,8 @@ msgid "all images"
 msgstr "全画像"
 
 #: ../src/libs/filters/duplicates.c:157
-#, fuzzy
-#| msgid "duplicate style"
 msgid "duplicates state filter"
-msgstr "スタイルを複製します"
+msgstr "複製状態フィルタ"
 
 #: ../src/libs/filters/filename.c:368
 msgid ""
@@ -28927,10 +28920,8 @@ msgid "module group: '%s'"
 msgstr "モジュールグループ：'%s'"
 
 #: ../src/libs/modulegroups.c:2945 ../src/libs/modulegroups.c:2999
-#, fuzzy
-#| msgid "module groups"
 msgid "cycle module groups"
-msgstr "モジュールグループ"
+msgstr "モジュールグループを順に切り替える"
 
 #: ../src/libs/modulegroups.c:2977
 msgid ""
@@ -29455,10 +29446,8 @@ msgid "set scale to logarithmic"
 msgstr "スケールを対数に設定します"
 
 #: ../src/libs/scopes/histogram.c:243
-#, fuzzy
-#| msgid "switch histogram view"
 msgid "switch histogram scale"
-msgstr "ヒストグラムビューを切り替えます"
+msgstr "ヒストグラムのスケールを切り替える"
 
 #. FIXME: this could depend on values of left/right scopes
 #: ../src/libs/scopes/split.c:30
@@ -29502,10 +29491,8 @@ msgid "cycle vectorscope types"
 msgstr "ベクトルスコープの種類を切り替えます"
 
 #: ../src/libs/scopes/vectorscope.c:1424
-#, fuzzy
-#| msgid "cycle vectorscope types"
 msgid "switch vectorscope scale"
-msgstr "ベクトルスコープの種類を切り替えます"
+msgstr "ベクトルスコープのスケールを切り替える"
 
 #: ../src/libs/scopes/vectorscope.c:1445
 msgid "color harmonies"
@@ -29514,7 +29501,7 @@ msgstr "色彩調和"
 #. FIXME: do we need this action, or is it vestigial?
 #: ../src/libs/scopes/vectorscope.c:1459
 msgid "cycle color harmonies"
-msgstr "色彩調和を切り替えます"
+msgstr "色彩調和を切り替える"
 
 #: ../src/libs/scopes/waveform.c:55
 msgid "waveform"
@@ -29529,10 +29516,8 @@ msgid "set scope to horizontal"
 msgstr "スコープを水平にします"
 
 #: ../src/libs/scopes/waveform.c:400
-#, fuzzy
-#| msgid "page orientation"
 msgid "switch scope orientation"
-msgstr "ページの向き"
+msgstr "スコープの向きを切り替える"
 
 #: ../src/libs/scopes/waveform.c:442
 msgid "RGB parade"
@@ -30168,30 +30153,23 @@ msgid "filmstrip auto-scroll disabled"
 msgstr "フィルムストリップの自動スクロール 無効"
 
 #: ../src/libs/tools/filmstrip.c:128
-#, fuzzy, c-format
-#| msgid "second window"
+#, c-format
 msgid "pinned in second window: %s"
-msgstr "第2ウィンドウ"
+msgstr "第2ウィンドウにピン留め中: %s"
 
 #. register action and attach it to self->widget so the quick-shortcut
 #. button can discover it by hovering anywhere over the filmstrip
 #: ../src/libs/tools/filmstrip.c:147 ../src/libs/tools/filmstrip.c:149
-#, fuzzy
-#| msgid "second window"
 msgid "pin in second window"
-msgstr "第2ウィンドウ"
+msgstr "第2ウィンドウにピン留め"
 
 #: ../src/libs/tools/filmstrip.c:152
-#, fuzzy
-#| msgid "apply offset to selected images"
 msgid "auto-scroll to selected image"
-msgstr "選択した画像に時差を適用します"
+msgstr "選択した画像に自動スクロール"
 
 #: ../src/libs/tools/filmstrip.c:154
-#, fuzzy
-#| msgid "selected image"
 msgid "center on selected image"
-msgstr "選択画像"
+msgstr "選択した画像を中央に表示"
 
 #: ../src/libs/tools/filter.c:42
 msgid "filter"
@@ -30923,7 +30901,7 @@ msgstr "2つ目のdarkroom画像ウィンドウを表示します"
 #. right-click shortcut assignment and tooltip display.
 #: ../src/views/darkroom.c:2867 ../src/views/darkroom.c:4636
 msgid "toggle pinned state in second window"
-msgstr ""
+msgstr "第2ウィンドウのピン留め状態を切り替える"
 
 #: ../src/views/darkroom.c:2879
 msgid "delete instance"
