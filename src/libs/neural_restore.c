@@ -58,7 +58,7 @@
           then writes TIFF
         - for plain denoise/upscale: streams tiles directly to TIFF via
           _process_tiled_tiff() to avoid buffering the full output
-        - output TIFF embeds linear Rec.709 ICC profile and source EXIF
+        - output TIFF embeds the darktable working profile and source EXIF
         - imports the result into the darktable library and groups it
           with the source image
 
@@ -503,9 +503,11 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                TIFFDefaultStripSize(tif, 0));
 
-  // embed linear Rec.709 ICC profile
+  // embed the darktable working profile ICC so wide-gamut
+  // colors are preserved (the restore pipeline applies only the
+  // sRGB transfer function, not a primaries conversion)
   const dt_colorspaces_color_profile_t *cp
-    = dt_colorspaces_get_output_profile(imgid, DT_COLORSPACE_LIN_REC709, NULL);
+    = dt_colorspaces_get_work_profile(imgid);
   if(cp && cp->profile)
   {
     uint32_t icc_len = 0;
@@ -821,7 +823,7 @@ static int32_t _process_job_run(dt_job_t *job)
                                      NULL,   // filter
                                      FALSE,  // copy_metadata
                                      FALSE,  // export_masks
-                                     DT_COLORSPACE_LIN_REC709,
+                                     dt_colorspaces_get_work_profile(imgid)->type,
                                      NULL,
                                      DT_INTENT_PERCEPTUAL,
                                      NULL, NULL,
@@ -1038,7 +1040,7 @@ static gpointer _preview_thread(gpointer data)
                                NULL,   // filter
                                FALSE,  // copy_metadata
                                FALSE,  // export_masks
-                               DT_COLORSPACE_LIN_REC709,
+                               dt_colorspaces_get_work_profile(pd->imgid)->type,
                                NULL,
                                DT_INTENT_PERCEPTUAL,
                                NULL, NULL, 1, 1, NULL, -1);
