@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-20 22:59+0900\n"
+"PO-Revision-Date: 2026-03-20 23:27+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -6582,16 +6582,12 @@ msgstr "ローカルにコピーしました"
 
 #. duplicates
 #: ../src/common/collection.c:1578 ../src/libs/filters/duplicates.c:38
-#, fuzzy
-#| msgid "existing duplicates"
 msgid "images with duplicates"
-msgstr "既存の複製"
+msgstr "複製のある画像"
 
 #: ../src/common/collection.c:1594 ../src/libs/filters/duplicates.c:38
-#, fuzzy
-#| msgid "duplicate"
 msgid "duplicates only"
-msgstr "複製"
+msgstr "複製のみ"
 
 #. if its undefined
 #: ../src/common/collection.c:1638 ../src/common/collection.c:1750
@@ -10137,40 +10133,28 @@ msgid "mask refinement"
 msgstr "マスク精緻化"
 
 #: ../src/develop/develop.c:448
-#, fuzzy
-#| msgid "no image"
 msgid "unpin image"
-msgstr "画像無し"
+msgstr "画像のピン留めを解除"
 
 #: ../src/develop/develop.c:451
-#, fuzzy
-#| msgid "image id"
 msgid "image pinned"
-msgstr "画像id"
+msgstr "画像をピン留めしました"
 
 #: ../src/develop/develop.c:462 ../src/develop/develop.c:564
-#, fuzzy
-#| msgid "failed to create session path %s."
 msgid "failed to create pinned develop"
-msgstr "セッションパス %s の作成失敗"
+msgstr "ピン留めした画像の現像を作成することが出来ませんでした"
 
 #: ../src/develop/develop.c:510 ../src/views/darkroom.c:4626
-#, fuzzy
-#| msgid "pan inside current image"
 msgid "pin current image"
-msgstr "現在の画像内をパン"
+msgstr "現在の画像をピン留め"
 
 #: ../src/develop/develop.c:513
-#, fuzzy
-#| msgid "image id"
 msgid "image unpinned"
-msgstr "画像id"
+msgstr "画像のピン留めを解除しました"
 
 #: ../src/develop/develop.c:525
-#, fuzzy
-#| msgid "no image to open!"
 msgid "no valid image to pin"
-msgstr "開く画像がありません！"
+msgstr "ピン留め出来る有効な画像がありません"
 
 #: ../src/develop/develop.c:531
 msgid "please wait for image to load"
@@ -10192,8 +10176,8 @@ msgstr "%s：モジュール`%s'のバージョンの不一致：%d != %d"
 #: ../src/develop/develop.c:3517
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
-"モジュール複製\n"
-"新しいインスタンスをベースインスタンスの後ろに移動することは出来ません\n"
+"モジュール複製、新しいインスタンスをベースインスタンスの後ろに移動することは出"
+"来ません\n"
 
 #: ../src/develop/imageop.c:1004 ../src/views/darkroom.c:2877
 msgid "new instance"
