@@ -65,7 +65,7 @@ static void pre_median_b(float *out,
         for(int i = 0; i < 8; i++)
           for(int ii = i + 1; ii < 9; ii++)
             if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[0] = fmaxf(0.0f, (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]));
+        pixo[0] = cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2];
         // pixo[0] = med[(cnt-1)/2];
         pixo += 2;
         pixi += 2;
@@ -138,7 +138,7 @@ static void color_smoothing(float *out,
           SWAPmed(4, 2);
           SWAPmed(6, 4);
           SWAPmed(4, 2);
-          outp[c] = fmaxf(med[4] + outp[1], 0.0f);
+          outp[c] = med[4] + outp[1];
         }
       }
     }
@@ -156,9 +156,9 @@ static void green_equilibration_lavg(float *out,
   const float maximum = 1.0f;
 
   int oj = 2, oi = 2;
-  if(FC(oj, oi, filters) != 1) oj++;
-  if(FC(oj, oi, filters) != 1) oi++;
-  if(FC(oj, oi, filters) != 1) oj--;
+  if(FC(oj, oi, filters) != GREEN) oj++;
+  if(FC(oj, oi, filters) != GREEN) oi++;
+  if(FC(oj, oi, filters) != GREEN) oj--;
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
@@ -190,7 +190,7 @@ static void green_equilibration_lavg(float *out,
                           + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
         if((in[j * width + i] < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
         {
-          out[j * width + i] = fmaxf(0.0f, in[j * width + i] * m1 / m2);
+          out[j * width + i] = in[j * width + i] * m1 / m2;
         }
       }
     }
@@ -230,7 +230,7 @@ static void green_equilibration_favg(float *out,
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)
     {
-      out[(size_t)j * width + i] = fmaxf(0.0f, in[(size_t)j * width + i] * gr_ratio);
+      out[(size_t)j * width + i] = in[(size_t)j * width + i] * gr_ratio;
     }
   }
 }
@@ -266,10 +266,10 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
   cl_mem dev_t1 = dev_out;
   cl_mem dev_t2 = dev_tmp;
 
+  const size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+  const size_t local[] = { locopt.sizex, locopt.sizey, 1 };
   for(int pass = 0; pass < passes; pass++)
   {
-    const size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    const size_t local[] = { locopt.sizex, locopt.sizey, 1 };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_color_smoothing, sizes, local,
       CLARG(dev_t1), CLARG(dev_t2), CLARG(width),
       CLARG(height), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
@@ -415,14 +415,15 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                             sizeof(float) * 2 * reducesize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    float sum1 = 0.0f, sum2 = 0.0f;
+    double sum1 = 0.0;
+    double sum2 = 0.0;
     for(int k = 0; k < reducesize; k++)
     {
-      sum1 += sumsum[2 * k];
-      sum2 += sumsum[2 * k + 1];
+      sum1 += (double)sumsum[2 * k];
+      sum2 += (double)sumsum[2 * k + 1];
     }
 
-    const float gr_ratio = (sum1 > 0.0f && sum2 > 0.0f) ? sum2 / sum1 : 1.0f;
+    const float gr_ratio = (sum1 > 0.0 && sum2 > 0.0) ? (float)(sum2 / sum1) : 1.0f;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_green_eq_favg_apply, width, height,
       CLARG(dev_in1), CLARG(dev_out1), CLARG(width), CLARG(height), CLARG(filters),
