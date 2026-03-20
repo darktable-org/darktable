@@ -345,9 +345,9 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   /* change current view to the new view */
 
-  /* 
+  /*
      Race Condition
- 
+
      the current view is set to the new view prior to
      initializing.  Plugins are initialized according to
      the current view, so it must be set prior.
@@ -1871,7 +1871,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   // Check if we should use the preview pipe for fallback rendering
   // This is only valid for the main develop (not for pinned images which have dev != darktable.develop)
-  const gboolean use_preview_fallback = 
+  const gboolean use_preview_fallback =
      (dev == darktable.develop)
      && pp->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
@@ -1879,7 +1879,7 @@ void dt_view_paint_surface(cairo_t *cr,
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2);
-     
+
   if(use_preview_fallback)
   {
     port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
