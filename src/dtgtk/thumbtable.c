@@ -2288,6 +2288,7 @@ static void _event_dnd_get(GtkWidget *widget,
                            const guint time,
                            dt_thumbtable_t *table)
 {
+  if (!table->drag_list) return;
   g_assert(selection_data != NULL);
 
   switch(target_type)
@@ -2349,7 +2350,7 @@ static void _event_dnd_get(GtkWidget *widget,
                                _BYTE, (guchar *)uri, strlen(uri));
         g_free(uri);
       }
-      else if(l)
+      else
       {
         GList *images = NULL;
         for(; l; l = g_list_next(l))
