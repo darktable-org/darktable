@@ -206,14 +206,96 @@ static void _split_update_buttons(const dt_scopes_mode_t *const self)
   dt_scopes_call(d->right, update_buttons);
 }
 
+static void _responsive_buttons(dt_scopes_t *const s)
+{
+  const int scopes_width = gtk_widget_get_allocated_width(s->scope_draw);
+  // no sense calculating while still allocating scope
+  if(scopes_width <= 1) return;
+
+  // widths calculated on startup
+  static int btns_mode_hori = 0;
+  static int btns_opt_hori = 0;
+  static int btns_opt_vert = 0;
+  static int extra = 0;
+
+  // make a reasonable guess at button box widths based on CSS, which
+  // won't be as accurate as the actual allocated size, but does allow
+  // for a layout without buttons moving after first shown
+  if(!btns_mode_hori)
+  {
+    GtkStyleContext *ctx = gtk_widget_get_style_context(s->cur_mode->button_activate);
+    GValue val = G_VALUE_INIT;
+    gtk_style_context_get_property(ctx, "min-width",
+                                   gtk_style_context_get_state(ctx),
+                                   &val);
+    double min_w = 0.0;
+    if(G_VALUE_HOLDS_INT(&val))
+      min_w = g_value_get_int(&val);
+    else if(G_VALUE_HOLDS_DOUBLE(&val))
+      min_w = g_value_get_double(&val);
+    else
+      dt_print(DT_DEBUG_ALWAYS, "[_responsive_buttons] unexpected type for min-width");
+    g_value_unset(&val);
+    if(min_w == 0.0) return;
+
+    const int mode_btns_hori = DT_SCOPES_MODE_N;
+    const int opt_btns_wave = 1;  // FIXME: change this if there are more
+    const int opt_btns_hori = DT_SCOPES_RGB_N + opt_btns_wave;
+    const int opt_btns_vert = 1 + opt_btns_wave;
+    const int estd_margin = 6;  // for both boxes and buttons
+    const double estd_btn_width = min_w + estd_margin;
+    extra = estd_btn_width;
+    btns_mode_hori = estd_btn_width * mode_btns_hori + estd_margin;
+    btns_opt_hori = estd_btn_width * opt_btns_hori + estd_margin;
+    btns_opt_vert = estd_btn_width * opt_btns_vert + estd_margin;
+  }
+
+  // collapse rgb buttons to prevent mode/option buttons overlap, and
+  // as last recourse collapse mode buttons
+  GtkOrientation orient_btn_left = GTK_ORIENTATION_HORIZONTAL;
+  GtkOrientation orient_btn_rgb = GTK_ORIENTATION_HORIZONTAL;
+  const int split_width = scopes_width/2;
+  if(btns_mode_hori + btns_opt_hori + extra > split_width)
+    orient_btn_rgb = GTK_ORIENTATION_VERTICAL;
+  if(btns_mode_hori + btns_opt_vert + extra > split_width)
+    orient_btn_left = GTK_ORIENTATION_VERTICAL;
+  // compact layout should show all buttons without overlap on the
+  // smallest panel width and scope height
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(s->button_box_left), orient_btn_left);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(s->button_box_rgb), orient_btn_rgb);
+}
+
+static void _reparent(GtkWidget *src, GtkWidget *dest, GtkWidget *child)
+{
+  // as enter/leave can be called multiple times, check the child
+  // widget is in src
+  if(gtk_widget_get_parent(child) == src)
+  {
+    g_object_ref(child);
+    gtk_container_remove(GTK_CONTAINER(src), child);
+    dt_gui_box_add(dest, child);
+    g_object_unref(child);
+  }
+}
+
 static void _split_mode_enter(dt_scopes_mode_t *const self)
 {
   const dt_scopes_split_t *const d = self->data;
+
+  _responsive_buttons(self->scopes);
   dt_scopes_call(d->left, mode_enter);
   dt_scopes_call(d->right, mode_enter);
   self->update_counter = MAX(d->left->update_counter, d->right->update_counter);
   if(d->left->update_counter != d->right->update_counter)
     dt_scopes_reprocess();
+
+  // reparent waveform and RGB channel buttons to left split options
+  _reparent(self->scopes->button_box_right, self->scopes->button_box_split,
+            d->left->options_box);
+  if(d->left->functions->draw_scope_channels)
+    _reparent(self->scopes->button_box_right, self->scopes->button_box_split,
+              self->scopes->button_box_rgb);
+  gtk_widget_show_all(self->scopes->button_box_split);
 }
 
 static void _split_mode_leave(const dt_scopes_mode_t *const self)
@@ -221,6 +303,25 @@ static void _split_mode_leave(const dt_scopes_mode_t *const self)
   const dt_scopes_split_t *const d = self->data;
   dt_scopes_call(d->left, mode_leave);
   dt_scopes_call(d->right, mode_leave);
+  // move all children back to right options box
+  _reparent(self->scopes->button_box_split, self->scopes->button_box_right,
+            d->left->options_box);
+  if(d->left->functions->draw_scope_channels)
+    _reparent(self->scopes->button_box_split, self->scopes->button_box_right,
+              self->scopes->button_box_rgb);
+  gtk_widget_hide(self->scopes->button_box_split);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(self->scopes->button_box_left),
+                                 GTK_ORIENTATION_HORIZONTAL);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(self->scopes->button_box_rgb),
+                                 GTK_ORIENTATION_HORIZONTAL);
+}
+
+static void _overlay_size_allocate(GtkWidget *overlay,
+                                   GtkAllocation* allocation,
+                                   dt_scopes_mode_t *const self)
+{
+  if(self->scopes->cur_mode == self)
+    _responsive_buttons(self->scopes);
 }
 
 static void _split_gui_init(dt_scopes_mode_t *const self,
@@ -230,6 +331,17 @@ static void _split_gui_init(dt_scopes_mode_t *const self,
   self->data = (void *)d;
   d->left = &self->scopes->modes[DT_SCOPES_MODE_WAVEFORM];
   d->right = &self->scopes->modes[DT_SCOPES_MODE_VECTORSCOPE];
+}
+
+static void _split_add_options(dt_scopes_mode_t *const self,
+                               dt_action_t *dark)
+{
+  // must be called after _split_gui_init as need more initializaiton,
+  // this does result in making an empty options_box and adding it to
+  // button_box_right, but that should be no harm
+  // FIXME: can wait to set this up until mode_enter?
+  g_signal_connect(G_OBJECT(self->scopes->overlay), "size-allocate",
+                   G_CALLBACK(_overlay_size_allocate), self);
 }
 
 static void _split_gui_cleanup(dt_scopes_mode_t *const self)
@@ -256,7 +368,7 @@ const dt_scopes_functions_t dt_scopes_functions_split = {
   .mode_enter = _split_mode_enter,
   .mode_leave = _split_mode_leave,
   .gui_init = _split_gui_init,
-  .add_options = NULL,
+  .add_options = _split_add_options,
   .gui_cleanup = _split_gui_cleanup
 };
 

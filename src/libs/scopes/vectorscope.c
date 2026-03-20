@@ -1220,12 +1220,12 @@ static void _harmony_adjust_page(GtkWidget *widget,
                                  dt_scopes_mode_t *self)
 {
   dt_scopes_vec_t *const d = self->data;
-  // size adjustment page to options buttons box which, in turn,
-  // changes height with the resizeable scopes widget
-  // FIXME: when user resizes scope vertically, next time mouse moves, the buttons widget jumps to new position, so should recalculate its position here based on mouse position during resize
+  // FIXME: when user resizes scope vertically, next time mouse moves,
+  // the buttons widget jumps to new position, so should recalculate
+  // its position here based on mouse position during resize
   gtk_adjustment_set_page_size
     (gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(d->harmony_viewport)),
-     alloc->height - gtk_widget_get_allocated_height(self->scopes->button_box_left));
+     alloc->height - gtk_widget_get_allocated_height(d->colorspace_button));
 }
 
 static void _harmony_motion(GtkEventControllerMotion *controller,
@@ -1411,25 +1411,21 @@ static void _vec_gui_init(dt_scopes_mode_t *const self,
 }
 
 static void _vec_add_options(dt_scopes_mode_t *const self,
-                             dt_action_t *dark,
-                             GtkWidget *box_right,
-                             GtkWidget *box_opt)
+                             dt_action_t *dark)
 {
   dt_scopes_vec_t *const d = self->data;
 
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   dt_action_define(dark, NULL, N_("cycle vectorscope types"),
                    d->colorspace_button, &dt_action_def_button);
+
   d->vec_scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  gtk_widget_set_valign(d->vec_scale_button, GTK_ALIGN_START);
   dt_action_define(dark, NULL, N_("switch vectorscope scale"),
                    d->vec_scale_button, &dt_action_def_button);
-  dt_gui_box_add(box_opt, d->vec_scale_button, d->colorspace_button);
 
   d->harmony_viewport = gtk_viewport_new(NULL, NULL);
   gtk_widget_set_halign(d->harmony_viewport, GTK_ALIGN_END);
-  dt_gui_box_add(box_right, d->harmony_viewport);
-  g_signal_connect(G_OBJECT(box_right), "size-allocate",
-                   G_CALLBACK(_harmony_adjust_page), self);
 
   d->color_harmony_box = dt_gui_vbox();
   gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
@@ -1453,7 +1449,11 @@ static void _vec_add_options(dt_scopes_mode_t *const self,
     dt_gui_box_add(d->color_harmony_box, rb);
     d->color_harmony_button[i] = rb;
   }
+
   gtk_container_add(GTK_CONTAINER(d->harmony_viewport), d->color_harmony_box);
+  GtkWidget *colorspace_box = dt_gui_vbox();
+  dt_gui_box_add(colorspace_box, d->colorspace_button, d->harmony_viewport);
+  dt_gui_box_add(self->options_box, d->vec_scale_button, colorspace_box);
 
   // FIXME: do we need this action, or is it vestigial?
   dt_action_register(dark, N_("cycle color harmonies"),
@@ -1465,6 +1465,8 @@ static void _vec_add_options(dt_scopes_mode_t *const self,
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked",
                    G_CALLBACK(_vec_colorspace_clicked), self);
   dt_gui_connect_motion(d->harmony_viewport, _harmony_motion, NULL, _harmony_leave, self);
+  g_signal_connect(G_OBJECT(colorspace_box), "size-allocate",
+                   G_CALLBACK(_harmony_adjust_page), self);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _vec_signal_image_changed);
 }
