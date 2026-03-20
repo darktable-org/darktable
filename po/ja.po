@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-20 21:46+0900\n"
+"PO-Revision-Date: 2026-03-20 22:59+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -19395,7 +19395,7 @@ msgstr "ニュートラルトーンに合わせて調整する"
 #. is set in _configure_slider_blocks
 #: ../src/iop/colorbalance.c:1898
 msgid "click to cycle layout"
-msgstr "クリックしてレイアウトを変更する"
+msgstr "クリックしてレイアウトを切り替える"
 
 #: ../src/iop/colorbalance.c:1932
 msgid "factor"
@@ -30834,61 +30834,49 @@ msgid "past beginning of collection, looped to last image"
 msgstr "コレクションの先頭を過ぎたため、最後の画像にループしました"
 
 #: ../src/views/darkroom.c:2582
-#, fuzzy
-#| msgid "all available modules"
 msgid "no visible modules"
-msgstr "全ての使用可能なモジュール"
+msgstr "表示されているモジュールはありません"
 
 #: ../src/views/darkroom.c:2612 ../src/views/darkroom.c:2767
-#, fuzzy, c-format
-#| msgid "prefer focused instance"
+#, c-format
 msgid "focused instance '%s' of '%s'"
-msgstr "フォーカスしているインスタンスを優先する"
+msgstr "インスタンス'%s'（'%s'）にフォーカスしています"
 
 #: ../src/views/darkroom.c:2614 ../src/views/darkroom.c:2771
-#, fuzzy, c-format
-#| msgctxt "accel"
-#| msgid "focus module"
+#, c-format
 msgid "focused module '%s'"
-msgstr "フォーカスモジュール"
+msgstr "フォーカス中のモジュール'%s'"
 
 #: ../src/views/darkroom.c:2622 ../src/views/darkroom.c:2652
 #: ../src/views/darkroom.c:2661 ../src/views/darkroom.c:2685
 #: ../src/views/darkroom.c:2727
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "focus module"
 msgid "no focused module"
-msgstr "フォーカスモジュール"
+msgstr "フォーカス中のモジュールはありません"
 
 #: ../src/views/darkroom.c:2624
 #, c-format
 msgid "'%s' cannot be enabled or disabled"
-msgstr ""
+msgstr "'%s'を有効または無効にすることが出来ません"
 
 #: ../src/views/darkroom.c:2634
-#, fuzzy, c-format
-#| msgid "prefer enabled instances"
+#, c-format
 msgid "enabled instance '%s' of '%s'"
-msgstr "有効になっているインスタンスを優先する"
+msgstr "インスタンス'%s'（'%s'）を有効にしました"
 
 #: ../src/views/darkroom.c:2636
 #, c-format
 msgid "disabled instance '%s' of '%s'"
-msgstr ""
+msgstr "インスタンス'%s'（'%s'）を無効にしました"
 
 #: ../src/views/darkroom.c:2641
-#, fuzzy, c-format
-#| msgctxt "accel"
-#| msgid "enable module"
+#, c-format
 msgid "enabled module '%s'"
-msgstr "モジュールを有効"
+msgstr "モジュール'%s'を有効にしました"
 
 #: ../src/views/darkroom.c:2643
-#, fuzzy, c-format
-#| msgid "disabled defaults"
+#, c-format
 msgid "disabled module '%s'"
-msgstr "無効にされたデフォルト"
+msgstr "モジュール'%s'を無効にしました"
 
 #: ../src/views/darkroom.c:2663 ../src/views/darkroom.c:2687
 #, c-format
@@ -30898,36 +30886,32 @@ msgstr "'%s'は複数のインスタンスをサポートしえちｍさえん"
 #: ../src/views/darkroom.c:2672
 #, c-format
 msgid "added instance '%s' of '%s'"
-msgstr ""
+msgstr "インスタンス'%s'（'%s'）を追加しました"
 
 #: ../src/views/darkroom.c:2676
 #, c-format
 msgid "added instance of '%s'"
-msgstr ""
+msgstr "'%s'のインスタンスを追加しました"
 
 #: ../src/views/darkroom.c:2695
 #, c-format
 msgid "deleted instance '%s' of '%s'"
-msgstr ""
+msgstr "インスタンス'%s'（'%s'）を削除しました"
 
 #: ../src/views/darkroom.c:2697
-#, fuzzy, c-format
-#| msgid "relative instance"
+#, c-format
 msgid "deleted instance of '%s'"
-msgstr "関連するインスタンス"
+msgstr "'%s'のインスタンスを削除しました"
 
 #: ../src/views/darkroom.c:2744
-#, fuzzy, c-format
-#| msgid "apply on new instance"
+#, c-format
 msgid "only one instance of '%s'"
-msgstr "新しいインスタンスに適用する"
+msgstr "'%s'のインスタンスは1つのみです"
 
 #. cycle through visible modules and their instances
 #: ../src/views/darkroom.c:2809 ../src/views/darkroom.c:2871
-#, fuzzy
-#| msgid "active modules"
 msgid "cycle modules"
-msgstr "アクティブなモジュール"
+msgstr "モジュールを順に切り替え"
 
 #: ../src/views/darkroom.c:2832 ../src/views/darkroom.c:2834
 msgid "quick access to presets"
@@ -30958,10 +30942,8 @@ msgid "toggle pinned state in second window"
 msgstr ""
 
 #: ../src/views/darkroom.c:2879
-#, fuzzy
-#| msgid "relative instance"
 msgid "delete instance"
-msgstr "関連するインスタンス"
+msgstr "インスタンスを削除"
 
 #: ../src/views/darkroom.c:2888
 msgid "color assessment"
