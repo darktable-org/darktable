@@ -1289,7 +1289,7 @@ void dt_view_lighttable_change_offset(dt_view_manager_t *vm,
                                       const gboolean reset,
                                       const dt_imgid_t imgid)
 {
-  if(vm->proxy.lighttable.module)
+  if(vm && vm->proxy.lighttable.module)
     vm->proxy.lighttable.change_offset(vm->proxy.lighttable.view, reset, imgid);
 }
 
