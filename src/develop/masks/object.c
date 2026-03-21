@@ -20,6 +20,7 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/guided_filter.h"
 #include "common/mipmap_cache.h"
 #include "common/ras2vect.h"
 #include "control/conf.h"
@@ -40,16 +41,20 @@
 #define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
 #define CONF_OBJECT_MORPH_KEY "plugins/darkroom/masks/object/morph_radius"
-#define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
+#define CONF_OBJECT_GUIDED_RADIUS_KEY "plugins/darkroom/masks/object/guided_radius"
+#define CONF_OBJECT_GUIDED_EPS_KEY "plugins/darkroom/masks/object/guided_eps"
 #define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
 #define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 
-// target resolution for segmentation encoding (longest side in pixels),
-// matches the encoder input size (1024) -- rendering higher just to
-// downscale in preprocessing wastes pipeline time with no quality gain
-#define SEG_ENCODE_TARGET 1024
+// default render target (longest side in pixels).
+// the SAM encoder internally downscales to 1024 so encoding quality
+// is the same, but higher render resolution gives the guided filter
+// and vectorizer more detail for edge refinement.
+// configurable via plugins/darkroom/masks/object/render_size
+#define SEG_RENDER_DEFAULT 1024
+#define CONF_OBJECT_RENDER_SIZE_KEY "plugins/darkroom/masks/object/render_size"
 
 // --- per-session segmentation state (stored in gui->scratchpad) ---
 
@@ -309,8 +314,11 @@ static gpointer _encode_thread_func(gpointer data)
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight,
                                   &pipe.processed_width, &pipe.processed_height);
 
-  const double scale = fmin((double)SEG_ENCODE_TARGET / (double)pipe.processed_width,
-                            (double)SEG_ENCODE_TARGET / (double)pipe.processed_height);
+  const int render_target = dt_conf_key_exists(CONF_OBJECT_RENDER_SIZE_KEY)
+    ? MAX(dt_conf_get_int(CONF_OBJECT_RENDER_SIZE_KEY), 1024)
+    : SEG_RENDER_DEFAULT;
+  const double scale = fmin((double)render_target / (double)pipe.processed_width,
+                            (double)render_target / (double)pipe.processed_height);
   const double final_scale = fmin(scale, 1.0); // don't upscale
   const int out_w = (int)(final_scale * pipe.processed_width);
   const int out_h = (int)(final_scale * pipe.processed_height);
@@ -599,73 +607,51 @@ static void _morph_open_close(float *mask, int w, int h, float threshold, int ra
   g_free(tmp);
 }
 
-// edge-aware threshold refinement: near strong image edges the binarization
-// threshold is raised by up to edge_boost, snapping the mask boundary to
-// actual object contours - uses Scharr gradient of the stored RGB image
-static void _edge_refine_threshold(float *mask, int mw, int mh,
-                                    const uint8_t *rgb, int rgb_w, int rgb_h,
-                                    float base_threshold, float edge_boost)
+// edge-aware mask refinement using guided filter: smooths the mask in
+// flat regions while preserving sharp transitions at image edges.
+// the stored RGB image is used as the guide
+static void _guided_filter_refine(float *mask,
+                                  const int mw,
+                                  const int mh,
+                                  const uint8_t *rgb,
+                                  const int rgb_w,
+                                  const int rgb_h,
+                                  const int radius,
+                                  const float sqrt_eps)
 {
-  if(edge_boost <= 0.0f || !rgb || rgb_w < 3 || rgb_h < 3)
+  if(!rgb || rgb_w < 3 || rgb_h < 3)
     return;
   if(mw != rgb_w || mh != rgb_h)
     return;
 
   const size_t npix = (size_t)mw * mh;
 
-  // step 1: convert uint8 RGB to float luminance (Rec.601)
-  float *lum = g_try_malloc(npix * sizeof(float));
-  if(!lum) return;
+  // convert uint8 RGB to float RGBA guide (guided_filter expects 4ch)
+  float *guide = dt_alloc_align_float(npix * 4);
+  if(!guide) return;
 
   for(size_t i = 0; i < npix; i++)
-    lum[i] = (0.299f * (float)rgb[i * 3]
-            + 0.587f * (float)rgb[i * 3 + 1]
-            + 0.114f * (float)rgb[i * 3 + 2]) / 255.0f;
-
-  // step 2: compute Scharr gradient magnitude, track max for normalization
-  float *grad = g_try_malloc(npix * sizeof(float));
-  if(!grad)
   {
-    g_free(lum);
+    guide[i * 4 + 0] = (float)rgb[i * 3 + 0] / 255.0f;
+    guide[i * 4 + 1] = (float)rgb[i * 3 + 1] / 255.0f;
+    guide[i * 4 + 2] = (float)rgb[i * 3 + 2] / 255.0f;
+    guide[i * 4 + 3] = 0.0f;
+  }
+
+  // run guided filter: smooths mask but preserves edges from the guide
+  float *mask_bak = dt_alloc_align_float(npix);
+  if(!mask_bak)
+  {
+    dt_free_align(guide);
     return;
   }
 
-  float grad_max = 0.0f;
+  memcpy(mask_bak, mask, npix * sizeof(float));
+  guided_filter(guide, mask_bak, mask, mw, mh, 4,
+                radius, sqrt_eps, 1.0f, 0.0f, 1.0f);
 
-  for(int y = 0; y < mh; y++)
-  {
-    for(int x = 0; x < mw; x++)
-    {
-      float g = 0.0f;
-      if(y >= 1 && y < mh - 1 && x >= 1 && x < mw - 1)
-      {
-        const float *p = &lum[y * mw + x];
-        const float gx = (47.0f / 255.0f) * (p[-mw - 1] - p[-mw + 1]
-                                             + p[mw - 1] - p[mw + 1])
-                        + (162.0f / 255.0f) * (p[-1] - p[1]);
-        const float gy = (47.0f / 255.0f) * (p[-mw - 1] - p[mw - 1]
-                                             + p[-mw + 1] - p[mw + 1])
-                        + (162.0f / 255.0f) * (p[-mw] - p[mw]);
-        g = sqrtf(gx * gx + gy * gy);
-      }
-      grad[y * mw + x] = g;
-      if(g > grad_max) grad_max = g;
-    }
-  }
-
-  g_free(lum);
-
-  // step 3: normalize and apply spatially-varying threshold
-  const float inv_max = (grad_max > 1e-6f) ? 1.0f / grad_max : 0.0f;
-
-  for(size_t i = 0; i < npix; i++)
-  {
-    const float g_norm = grad[i] * inv_max;
-    const float effective_thresh = base_threshold + edge_boost * g_norm;
-    mask[i] = (mask[i] > effective_thresh) ? 1.0f : 0.0f;
-  }
-
-  g_free(grad);
+  dt_free_align(mask_bak);
+  dt_free_align(guide);
 }
 
 // run the decoder with accumulated points and update the cached mask
@@ -741,12 +727,13 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     seed_y = CLAMP(seed_y, 0, mh - 1);
     const float threshold = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
 
-    // edge-aware threshold refinement: snap mask boundary to image edges
-    const float edge_boost = CLAMP(dt_conf_get_float(CONF_OBJECT_EDGE_REFINE_KEY), 0.0f, 0.5f);
-    if(edge_boost > 0.0f && d->encode_rgb)
-      _edge_refine_threshold(mask, mw, mh,
-                             d->encode_rgb, d->encode_rgb_w, d->encode_rgb_h,
-                             threshold, edge_boost);
+    // guided filter edge refinement: snap mask boundary to image edges
+    const int gf_radius = CLAMP(dt_conf_get_int(CONF_OBJECT_GUIDED_RADIUS_KEY), 0, 20);
+    const float gf_eps = CLAMP(dt_conf_get_float(CONF_OBJECT_GUIDED_EPS_KEY), 0.001f, 1.0f);
+    if(gf_radius > 0 && d->encode_rgb)
+      _guided_filter_refine(mask, mw, mh,
+                            d->encode_rgb, d->encode_rgb_w, d->encode_rgb_h,
+                            gf_radius, sqrtf(gf_eps));
 
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
 
