@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 21:23+0900\n"
+"PO-Revision-Date: 2026-03-21 21:59+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -8933,8 +8933,8 @@ msgstr "編集中の画像の履歴の圧縮をスキップしました"
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] "%d枚の画像の履歴を圧縮することが出来ません"
-msgstr[1] "%d枚の画像の履歴を圧縮することが出来ません"
+msgstr[0] "%d枚の画像は履歴の圧縮が不要です"
+msgstr[1] "%d枚の画像は履歴の圧縮が不要です"
 
 #: ../src/control/jobs/control_jobs.c:1732
 #, c-format
@@ -13474,11 +13474,11 @@ msgstr "翻訳者クレジット"
 
 #: ../src/gui/accelerators.c:67
 msgid "in active view"
-msgstr "アクティブなビュー"
+msgstr "アクティブなビュー内"
 
 #: ../src/gui/accelerators.c:68
 msgid "in other views"
-msgstr "他のビュー"
+msgstr "他のビュー内"
 
 #: ../src/gui/accelerators.c:69
 msgid "fallbacks"
@@ -13534,7 +13534,7 @@ msgstr "PgUpDown"
 
 #: ../src/gui/accelerators.c:107 ../src/views/view.c:1459
 msgid "shift"
-msgstr "シフト"
+msgstr "Shift"
 
 #: ../src/gui/accelerators.c:108 ../src/views/view.c:1461
 msgid "ctrl"
@@ -13542,7 +13542,7 @@ msgstr "Ctrl"
 
 #: ../src/gui/accelerators.c:110 ../src/views/view.c:1464
 msgid "option"
-msgstr "オプション"
+msgstr "Option"
 
 #: ../src/gui/accelerators.c:112 ../src/views/view.c:1466
 msgid "alt"
@@ -13550,11 +13550,11 @@ msgstr "Alt"
 
 #: ../src/gui/accelerators.c:114
 msgid "cmd"
-msgstr "cmd"
+msgstr "Cmd"
 
 #: ../src/gui/accelerators.c:115
 msgid "altgr"
-msgstr "altgr"
+msgstr "Altgr"
 
 #: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:179
 #: ../src/libs/tagging.c:1978
@@ -13613,7 +13613,7 @@ msgstr "次"
 #: ../src/gui/gtk.c:3868 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:883
 msgid "previous"
-msgstr "以前"
+msgstr "前"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:1610
 msgid "last"
@@ -13702,15 +13702,15 @@ msgstr "長押し"
 
 #: ../src/gui/accelerators.c:760
 msgid "double-press"
-msgstr "2回押す"
+msgstr "2回押し"
 
 #: ../src/gui/accelerators.c:761
 msgid "triple-press"
-msgstr "3回押す"
+msgstr "3回押し"
 
 #: ../src/gui/accelerators.c:762
 msgid "press"
-msgstr "押す"
+msgstr "1回押し"
 
 #: ../src/gui/accelerators.c:766
 msgctxt "accel"
@@ -13756,7 +13756,7 @@ msgstr "最後のインスタンス"
 
 #: ../src/gui/accelerators.c:804
 msgid "relative instance"
-msgstr "関連するインスタンス"
+msgstr "相対インスタンス"
 
 #: ../src/gui/accelerators.c:821 ../src/gui/accelerators.c:2947
 #: ../src/gui/accelerators.c:3910
@@ -13792,7 +13792,7 @@ msgid ""
 "press Delete to disable selected default shortcut"
 msgstr ""
 "\n"
-"Deleteキーを押すと、選択したデフォルトショートカットを削除します"
+"Deleteキーを押すと、選択したデフォルトショートカットを無効にします"
 
 #: ../src/gui/accelerators.c:1072
 msgid ""
@@ -13800,7 +13800,7 @@ msgid ""
 "press Delete to restore selected default shortcut"
 msgstr ""
 "\n"
-"Deleteキーを押すと、選択したデフォルトショートカットを削除します"
+"Deleteキーを押すと、選択したデフォルトショートカットを復元します"
 
 #: ../src/gui/accelerators.c:1074
 msgid ""
@@ -13877,7 +13877,7 @@ msgstr "Luaコマンドをコピー"
 #: ../src/gui/accelerators.c:1461
 msgid "shortcut for move exists with single effect"
 msgstr ""
-"このマウスの移動によるショートカットは一つの効果を割り当てられて存在しています"
+"このマウス移動によるショートカットには既に一つの効果が割り当てられています"
 
 #: ../src/gui/accelerators.c:1463
 #, c-format
@@ -13892,8 +13892,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1464
 msgid "create separate shortcuts for up and down move?"
-msgstr ""
-"マウスの上および下への移動に対してそれぞれ別のショートカットを作成しますか？"
+msgstr "マウスの上下移動に対してそれぞれ別のショートカットを作成しますか？"
 
 #: ../src/gui/accelerators.c:1490
 #, c-format
@@ -13997,7 +13996,7 @@ msgstr "プリセット"
 
 #: ../src/gui/accelerators.c:2531
 msgid "restore shortcuts"
-msgstr "ショートカットを復元します"
+msgstr "ショートカットを復元"
 
 #: ../src/gui/accelerators.c:2534
 msgid "_defaults"
@@ -14038,7 +14037,7 @@ msgstr "ショートカット"
 
 #: ../src/gui/accelerators.c:2614
 msgid "export shortcuts"
-msgstr "ショートカットをエクスポートします"
+msgstr "ショートカットをエクスポート"
 
 #: ../src/gui/accelerators.c:2621
 msgid ""
@@ -14066,7 +14065,7 @@ msgstr "_エクスポート"
 
 #: ../src/gui/accelerators.c:2686
 msgid "import shortcuts"
-msgstr "ショートカットをインポートします"
+msgstr "ショートカットをインポート"
 
 #: ../src/gui/accelerators.c:2693
 msgid ""
@@ -14098,7 +14097,7 @@ msgstr "_インポート"
 
 #: ../src/gui/accelerators.c:2795
 msgid "import sample shortcuts"
-msgstr "サンプルのショートカットをインポートします"
+msgstr "サンプルのショートカットをインポート"
 
 #: ../src/gui/accelerators.c:2801
 msgid ""
@@ -14236,7 +14235,7 @@ msgstr ""
 "このモードでは、ウィジェットや領域上でクリックすることで、このダイアログが詳細"
 "な設定をするために適切な選択をしたうえで開かれます\n"
 "\n"
-"同一のアクションに複数のショートカットを割り当てることがｄきます。これは、モ"
+"同一のアクションに複数のショートカットを割り当てることが出来ます。これは、モ"
 "ジュールボタンやスライダーに付随するカラーピッカーのような複数の<i>要素</i>が"
 "ある場合特に有用ですが、 <i>フォールバック</i>を有効にすることで、それと同じ単"
 "純なショートカットを使用しつつ、マウスクリックを加えることで<i>要素</i>または"
@@ -14246,7 +14245,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:3527
 msgid "reinitialising input devices"
-msgstr "インプットデバイスを再初期化"
+msgstr "入力デバイスを再初期化"
 
 #: ../src/gui/accelerators.c:3616
 msgid "move not assigned"
@@ -14294,7 +14293,7 @@ msgstr "%sは%sに割り当てられています"
 
 #: ../src/gui/accelerators.c:4424
 msgid "short key press resets stuck keys"
-msgstr "キーを短く押すとキー押し固定をリセットします"
+msgstr "キーを短く押すとスタック状態をリセットします"
 
 #: ../src/gui/workspace.c:59
 msgid "delete workspace"
@@ -14358,7 +14357,7 @@ msgstr "GIMPにエクスポートしています"
 
 #: ../src/gui/gtk.c:1248
 msgid "URL opened in web browser"
-msgstr "ウェブブラウザ開いているURL"
+msgstr "ウェブブラウザで開いているURL"
 
 #: ../src/gui/gtk.c:1252
 msgid "error while opening URL in web browser"
@@ -14497,7 +14496,7 @@ msgstr "ツールチップの表示／非表示切り替え"
 
 #: ../src/gui/gtk.c:1631
 msgid "reinitialise input devices"
-msgstr "インプットデバイスを再初期化"
+msgstr "入力デバイスを再初期化"
 
 #: ../src/gui/gtk.c:1672
 msgid "toggle focus-peaking mode"
@@ -14697,7 +14696,7 @@ msgstr "三分割法"
 
 #: ../src/gui/guides.c:32
 msgid "metering"
-msgstr "メーター"
+msgstr "メータリング"
 
 #: ../src/gui/guides.c:33
 msgid "perspective"
@@ -14725,7 +14724,7 @@ msgstr "黄金螺旋分割"
 
 #: ../src/gui/guides.c:39
 msgid "golden mean (all guides)"
-msgstr "黄金比の全てのガイド線"
+msgstr "黄金比（全ガイド線）"
 
 #: ../src/gui/guides.c:233
 msgid "horizontal lines"
@@ -14784,7 +14783,7 @@ msgstr "両方"
 
 #: ../src/gui/guides.c:841
 msgid "setup guide lines"
-msgstr "ガイド線を設定します"
+msgstr "ガイド線を設定"
 
 #: ../src/gui/guides.c:847
 msgid "overlay color"
@@ -14792,7 +14791,7 @@ msgstr "オーバーレイの色"
 
 #: ../src/gui/guides.c:848
 msgid "set overlay color"
-msgstr "オーバーレイの色を設定します"
+msgstr "オーバーレイの色を設定"
 
 #: ../src/gui/guides.c:865
 msgid ""
@@ -14843,7 +14842,7 @@ msgstr "_上書き"
 
 #: ../src/gui/hist_dialog.c:250
 msgid "appen_d"
-msgstr "appen_d"
+msgstr "追記(_d)"
 
 #: ../src/gui/hist_dialog.c:280 ../src/gui/styles_dialog.c:619
 #: ../src/gui/styles_dialog.c:641
@@ -15123,7 +15122,7 @@ msgstr "<i>利用出来ません、CPUへフォールバックします</i>"
 
 #: ../src/gui/preferences_ai.c:566
 msgid "downloading AI model"
-msgstr "AIモデルパッケージ（*.dtmodel）"
+msgstr "AIモデルをダウンロード中"
 
 #: ../src/gui/preferences_ai.c:581
 #, c-format
@@ -15132,7 +15131,7 @@ msgstr "ダウンロード中：%s"
 
 #: ../src/gui/preferences_ai.c:735
 msgid "install AI model"
-msgstr "AIモデルをインストールする"
+msgstr "AIモデルをインストール"
 
 #: ../src/gui/preferences_ai.c:743
 msgid "AI model packages (*.dtmodel)"
@@ -15450,7 +15449,7 @@ msgstr "モジュールのレイアウトの管理"
 
 #: ../src/gui/presets.c:1436
 msgid "manage quick presets"
-msgstr "クイックプリセットを管理してください"
+msgstr "クイックプリセットを管理"
 
 #: ../src/gui/presets.c:1618
 msgid "manage quick presets list..."
@@ -15570,7 +15569,7 @@ msgid ""
 "always change all values later in the <b>preferences</b>."
 msgstr ""
 "もし迷っても大丈夫です！とりあえずデフォルト設定のまま進めてください。後から "
-"<b>設定</b>でいつでも変更できます"
+"<b>設定</b>でいつでも変更出来ます"
 
 #: ../src/gui/welcome.c:746
 msgid ""
