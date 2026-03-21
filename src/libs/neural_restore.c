@@ -255,7 +255,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-int position(const dt_lib_module_t *self) { return 799; }
+int position(const dt_lib_module_t *self) { return 400; }
 static int _ai_check_bpp(dt_imageio_module_data_t *data) { return 32; }
 
 static int _ai_check_levels(dt_imageio_module_data_t *data)
