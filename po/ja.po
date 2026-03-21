@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 23:25+0900\n"
+"PO-Revision-Date: 2026-03-22 00:15+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -12373,7 +12373,7 @@ msgstr "ビット深度"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
-msgstr "アウトプット画像のチャンネルあたりのビット数"
+msgstr "出力画像のチャンネルあたりのビット数"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
@@ -19262,17 +19262,17 @@ msgstr "フィルム汎用"
 
 #: ../src/iop/colorbalance.c:312
 msgid "similar to Kodak Portra"
-msgstr "Kodak Portra"
+msgstr "Kodak Portra風"
 
 # Kodak Ektar 風
 #: ../src/iop/colorbalance.c:316
 msgid "similar to Kodak Ektar"
-msgstr "Kodak Ektar"
+msgstr "Kodak Ektar風"
 
 # Kodachrome 風
 #: ../src/iop/colorbalance.c:320
 msgid "similar to Kodachrome"
-msgstr "Kodachrome"
+msgstr "Kodachrome風"
 
 #: ../src/iop/colorbalance.c:934
 msgid "optimize luma from patches"
@@ -19574,8 +19574,7 @@ msgstr "絶対量で明るさ（ブリリアンス）を増減させます"
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
-msgstr ""
-"元のピクセルの明るさ（ブリリアンス）に比例して、絶対量で明るさを増減させます"
+msgstr "元のピクセルの明るさ（ブリリアンス）に比例して明るさを増減させます"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1873
@@ -20621,7 +20620,7 @@ msgstr "知覚的"
 #: ../src/libs/print_settings.c:2561 ../src/libs/print_settings.c:2910
 #: ../src/views/darkroom.c:3141 ../src/views/lighttable.c:1347
 msgid "relative colorimetric"
-msgstr "相対的な色彩を保持"
+msgstr "相対カラーメトリック"
 
 #: ../src/iop/colorout.c:842 ../src/libs/export.c:1638
 #: ../src/libs/print_settings.c:2562 ../src/libs/print_settings.c:2911
@@ -20634,7 +20633,7 @@ msgstr "彩度"
 #: ../src/libs/print_settings.c:2563 ../src/libs/print_settings.c:2912
 #: ../src/views/darkroom.c:3143 ../src/views/lighttable.c:1349
 msgid "absolute colorimetric"
-msgstr "絶対的な色彩を保持"
+msgstr "絶対カラーメトリック"
 
 #: ../src/iop/colorout.c:859
 msgid "export ICC profiles"
@@ -20654,7 +20653,7 @@ msgstr "周囲の色を流用してクリップしたハイライトを復元し
 #: ../src/iop/hazeremoval.c:898 ../src/iop/hazeremoval.c:912
 #: ../src/iop/levels.c:354
 msgid "inconsistent output"
-msgstr "不整合なアウトプット"
+msgstr "不整合な出力"
 
 #: ../src/iop/colorreconstruction.c:670
 msgid "module `color reconstruction' failed"
@@ -20980,8 +20979,7 @@ msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
-"LMMSEの精緻化のステップ数。このメディアンのステップはそのアウトプットを平均し"
-"ます\n"
+"LMMSEの精緻化のステップ数。このメディアンのステップはその出力を平均します\n"
 "精緻化は赤チャンネルと青チャンネルの再計算を追加して行います"
 
 #: ../src/iop/demosaic.c:1782
@@ -21037,7 +21035,7 @@ msgid ""
 "for best results avoid cropping or darkroom zooming in"
 msgstr ""
 "rawセンサーのデータからキャプチャシャープ化の範囲を計算します\n"
-"最良の結果を得るために、クロップdarkroomでの拡大表示を行わないでください"
+"最良の結果を得るために、クロップやdarkroomでの拡大表示を行わないでください"
 
 #: ../src/iop/demosaic.c:1812
 msgid ""
@@ -21317,7 +21315,7 @@ msgid ""
 msgstr ""
 "シャドウの色かぶりを補正します\n"
 "シャドウが紫がかっている場合、値を上げてください\n"
-"シャドウが緑がかっている場合、値を下げてしてください"
+"シャドウが緑がかっている場合、値を下げてください"
 
 #: ../src/iop/denoiseprofile.c:3790
 msgid ""
@@ -21719,7 +21717,7 @@ msgstr "構図|拡張|延長"
 msgid ""
 "how much to enlarge the canvas to the left as a percentage of the original "
 "image width"
-msgstr "画像の左側にキャンバスを拡げます（元画像の幅比）"
+msgstr "画像の左側にキャンバスを拡げます（元画像の高さ比）"
 
 #: ../src/iop/enlargecanvas.c:428
 msgid ""
@@ -21737,7 +21735,7 @@ msgstr "画像の上側にキャンバスを拡げます（元画像の幅比）
 msgid ""
 "how much to enlarge the canvas to the bottom as a percentage of the original "
 "image height"
-msgstr "画像の下側にキャンバスを拡げます（元画像の幅比）"
+msgstr "画像の下側にキャンバスを拡げます（元画像の高さ比）"
 
 #: ../src/iop/enlargecanvas.c:444
 msgid "select the color of the enlarged canvas"
