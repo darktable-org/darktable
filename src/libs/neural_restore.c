@@ -161,7 +161,7 @@ typedef struct dt_lib_neural_restore_t
   dt_neural_task_t task;
   dt_restore_env_t *env;
   gboolean model_available;
-  gboolean job_running;
+  GHashTable *processing_images;
   float *preview_before;
   float *preview_after;
   float *preview_detail;
@@ -659,15 +659,24 @@ static int _task_scale(dt_neural_task_t task)
 
 static void _update_button_sensitivity(dt_lib_neural_restore_t *d);
 
+typedef struct _job_finished_data_t
+{
+  dt_lib_module_t *self;
+  GList *images; // image IDs to remove from processing set
+} _job_finished_data_t;
+
 static gboolean _job_finished_idle(gpointer data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  _job_finished_data_t *fd = (_job_finished_data_t *)data;
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)fd->self->data;
   if(d)
   {
-    d->job_running = FALSE;
+    for(GList *l = fd->images; l; l = g_list_next(l))
+      g_hash_table_remove(d->processing_images, l->data);
     _update_button_sensitivity(d);
   }
+  g_list_free(fd->images);
+  g_free(fd);
   return G_SOURCE_REMOVE;
 }
 
@@ -843,7 +852,10 @@ static int32_t _process_job_run(dt_job_t *job)
     dt_control_job_set_progress(job, (double)++count / total);
   }
 
-  g_idle_add(_job_finished_idle, j->self);
+  _job_finished_data_t *fd = g_new(_job_finished_data_t, 1);
+  fd->self = j->self;
+  fd->images = g_list_copy(j->images);
+  g_idle_add(_job_finished_idle, fd);
   return 0;
 }
 
@@ -854,10 +866,28 @@ static gboolean _check_model_available(
   return _task_model_available(d->env, task);
 }
 
+// check if any of the currently selected images are already being processed
+static gboolean _any_selected_processing(dt_lib_neural_restore_t *d)
+{
+  GList *images = dt_act_on_get_images(TRUE, TRUE, FALSE);
+  gboolean found = FALSE;
+  for(GList *l = images; l; l = g_list_next(l))
+  {
+    if(g_hash_table_contains(d->processing_images, l->data))
+    {
+      found = TRUE;
+      break;
+    }
+  }
+  g_list_free(images);
+  return found;
+}
+
 static void _update_button_sensitivity(dt_lib_neural_restore_t *d)
 {
   const gboolean has_images = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
-  const gboolean sensitive = d->model_available && !d->job_running && has_images;
+  const gboolean sensitive = d->model_available && has_images
+                             && !_any_selected_processing(d);
   gtk_widget_set_sensitive(d->process_button, sensitive);
 }
 
@@ -1345,7 +1375,7 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
 
-  if(!d->model_available || d->job_running)
+  if(!d->model_available || _any_selected_processing(d))
     return;
 
   GList *images = dt_act_on_get_images(TRUE, TRUE, FALSE);
@@ -1371,7 +1401,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   if(!job_data->output_dir) g_free(out_dir);
   job_data->self = self;
 
-  d->job_running = TRUE;
+  // mark selected images as processing
+  for(GList *l = images; l; l = g_list_next(l))
+    g_hash_table_add(d->processing_images, l->data);
   _update_button_sensitivity(d);
 
   dt_job_t *job = dt_control_job_create(_process_job_run, "neural restore");
@@ -1725,6 +1757,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_neural_restore_t *d = g_new0(dt_lib_neural_restore_t, 1);
   self->data = d;
   d->env = dt_restore_env_init();
+  d->processing_images = g_hash_table_new(g_direct_hash, g_direct_equal);
   d->split_pos = 0.5f;
 
   // notebook tabs (denoise / upscale)
@@ -1890,6 +1923,8 @@ void gui_cleanup(dt_lib_module_t *self)
     dt_free_align(d->preview_detail);
     g_free(d->cairo_before);
     g_free(d->cairo_after);
+    if(d->processing_images)
+      g_hash_table_destroy(d->processing_images);
     if(d->env)
       dt_restore_env_destroy(d->env);
     g_free(d);
