@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 22:57+0900\n"
+"PO-Revision-Date: 2026-03-21 23:25+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -16561,7 +16561,7 @@ msgid ""
 "mid-gray to mid-gray mapping"
 msgstr ""
 "選択した領域の輝度の平均値を用いて、ミドルグレーに対するピボットを設定します\n"
-"出力はデフォルトの中間グレー対中間グレーマッピングに基づいて調整されます。"
+"出力はデフォルトの中間グレー対中間グレーマッピングに基づいて調整されます"
 
 #: ../src/iop/agx.c:1847
 msgid "slope of the linear section around the pivot"
@@ -17506,11 +17506,11 @@ msgstr "コントラストを適用する際に色を保持する方法"
 
 #: ../src/iop/basecurve.c:2116
 msgid "two exposures"
-msgstr "二重露出"
+msgstr "2露出"
 
 #: ../src/iop/basecurve.c:2117
 msgid "three exposures"
-msgstr "三重露出"
+msgstr "3露出"
 
 # 元画像と異なる補正値で露光した画像を合成し、ハイダイナミックレンジを圧縮します。 使用前のハイライトに基づいて露光を決定します
 #: ../src/iop/basecurve.c:2118
@@ -17669,7 +17669,7 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"局所的なコントラスの強調に使用されるフィルタ\n"
+"局所的なコントラストの強調に使用されるフィルタ\n"
 "バイラテラルは高速ですが、極端な設定ではエッジの周りにアーティファクトが発生す"
 "る可能性があります"
 
@@ -18034,7 +18034,7 @@ msgstr "画像の端を基準としたフレームライン位置のオフセッ
 
 #: ../src/iop/borders.c:1015
 msgid "select border color"
-msgstr "縁の色を選択してください"
+msgstr "縁の色を選択"
 
 #: ../src/iop/borders.c:1020
 msgid "pick border color from image"
@@ -18050,7 +18050,7 @@ msgstr "ピッカー"
 
 #: ../src/iop/borders.c:1029
 msgid "select frame line color"
-msgstr "フレームラインの色を選択してください"
+msgstr "フレームラインの色を選択"
 
 #: ../src/iop/borders.c:1034
 msgid "pick frame line color from image"
@@ -18189,15 +18189,15 @@ msgstr "特殊、 RGB、シーン参照"
 
 #: ../src/iop/censorize.c:424
 msgid "radius of gaussian blur before pixelization"
-msgstr "ビクセル化前のガウスぼかしの半径"
+msgstr "ピクセル化前のガウスぼかしの半径"
 
 #: ../src/iop/censorize.c:425
 msgid "radius of gaussian blur after pixelization"
-msgstr "ビクセル化後のガウスぼかしの半径"
+msgstr "ピクセル化後のガウスぼかしの半径"
 
 #: ../src/iop/censorize.c:426
 msgid "radius of the intermediate pixelization"
-msgstr "中間段階で行うビクセル化の半径"
+msgstr "中間段階で行うピクセル化の半径"
 
 #: ../src/iop/censorize.c:427
 msgid "amount of noise to add at the end"
@@ -18226,7 +18226,7 @@ msgstr ""
 
 #: ../src/iop/channelmixer.c:606
 msgid "destination"
-msgstr "宛て先"
+msgstr "出力先"
 
 #: ../src/iop/channelmixer.c:613
 msgctxt "channelmixer"
@@ -18459,7 +18459,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:2054
 msgid "double CAT applied"
-msgstr "色順応変換が二重に適用されています"
+msgstr "色順応変換の二重適用"
 
 #: ../src/iop/channelmixerrgb.c:2055
 msgid ""
@@ -18551,7 +18551,7 @@ msgid ""
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
 "so its temperature is relevant and meaningful with a D illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとして用いることで正確に計算されま"
 "す\n"
 "それゆえこの温度はイルミナントDと関連し意味があるものです"
@@ -18567,7 +18567,7 @@ msgid ""
 "this illuminant can be accurately modeled by a black body spectrum,\n"
 "so its temperature is relevant and meaningful with a Planckian illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは黒体スペクトルをモデルとして用いることで正確に計算されます\n"
 "それゆえこの温度はプランキアンイルミナントと関連し意味があるものです"
 
@@ -18584,7 +18584,7 @@ msgid ""
 "so its temperature is not relevant and meaningful and you need to use a "
 "custom illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとしても黒体スペクトルをモデルとして"
 "も正確に計算されません\n"
 "それゆえこの温度は関連するものがなく意味がありません。カスタム設定のイルミナン"
@@ -18600,7 +18600,7 @@ msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "算出することが出来ないためカスタム設定のイルミナントを使用する必要があります"
 
 #: ../src/iop/channelmixerrgb.c:4026
@@ -18644,7 +18644,7 @@ msgstr "色順応変換"
 
 #: ../src/iop/channelmixerrgb.c:4460
 msgid "adaptation"
-msgstr "順応"
+msgstr "色順応"
 
 #: ../src/iop/channelmixerrgb.c:4463
 msgid ""
@@ -19554,8 +19554,7 @@ msgstr "絶対量で彩度（サチュレーション）を増減させます"
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
-msgstr ""
-"元のピクセルの彩度（サチュレーション）に比例して、絶対量で彩度を増減させます"
+msgstr "元のピクセルの彩度（サチュレーション）に比例して彩度を増減させます"
 
 #: ../src/iop/colorbalancergb.c:1849
 msgctxt "section"
@@ -19661,7 +19660,7 @@ msgstr "パワー"
 
 #: ../src/iop/colorbalancergb.c:1947
 msgid "luminance exponent in mid-tones"
-msgstr "中間トーンにの輝度の冪指数"
+msgstr "中間トーンの輝度の冪指数"
 
 #: ../src/iop/colorbalancergb.c:1952
 msgid "hue of the color exponent in mid-tones"
@@ -19935,11 +19934,11 @@ msgstr "ウォームトーン"
 
 #: ../src/iop/colorcorrection.c:114
 msgid "warming filter"
-msgstr "ウォーム化フィルタ"
+msgstr "ウォームフィルタ"
 
 #: ../src/iop/colorcorrection.c:122
 msgid "cooling filter"
-msgstr "クール化フィルタ"
+msgstr "クールフィルタ"
 
 #: ../src/iop/colorcorrection.c:242
 msgid ""
@@ -20736,7 +20735,7 @@ msgstr "白黒：赤"
 
 #: ../src/iop/colorzones.c:691
 msgid "B&W: with skin tones"
-msgstr "白黒：赤とスキントーン"
+msgstr "白黒：スキントーン"
 
 #: ../src/iop/colorzones.c:716
 msgid "polarizing filter"
@@ -20781,7 +20780,7 @@ msgstr "曲線のノードを領域で編集します"
 
 #: ../src/iop/colorzones.c:2683
 msgid "display selection"
-msgstr "選択を表示します"
+msgstr "選択を表示"
 
 #: ../src/iop/colorzones.c:2698
 msgid "choose selection criterion, will be the abscissa in the graph"
@@ -22165,7 +22164,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1616
 msgctxt "section"
 msgid "destination/display"
-msgstr "宛て先／ディスプレイ"
+msgstr "出力先／ディスプレイ"
 
 #: ../src/iop/filmic.c:1625
 msgctxt "section"
