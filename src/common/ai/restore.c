@@ -49,6 +49,7 @@ struct dt_restore_context_t
   char *model_id;
   char *model_file;
   char *task;
+  gint ref_count;
 };
 
 static const float _dwt_detail_noise[DWT_DETAIL_BANDS] = {
@@ -117,6 +118,7 @@ static dt_restore_context_t *_load(
 
   dt_restore_context_t *ctx
     = g_new0(dt_restore_context_t, 1);
+  ctx->ref_count = 1;
   ctx->ai_ctx = ai_ctx;
   ctx->env = env;
   ctx->task = g_strdup(task);
@@ -143,33 +145,26 @@ dt_restore_context_t *dt_restore_load_upscale_x4(
   return _load(env, TASK_UPSCALE, "model_x4.onnx");
 }
 
-void dt_restore_unload(dt_restore_context_t *ctx)
+
+dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx)
 {
-  if(!ctx || !ctx->ai_ctx) return;
-  dt_ai_unload_model(ctx->ai_ctx);
-  ctx->ai_ctx = NULL;
+  if(ctx)
+    g_atomic_int_inc(&ctx->ref_count);
+  return ctx;
 }
 
-int dt_restore_reload(dt_restore_context_t *ctx)
+void dt_restore_unref(dt_restore_context_t *ctx)
 {
-  if(!ctx || !ctx->env) return 1;
-  if(ctx->ai_ctx) return 0; // already loaded
-
-  ctx->ai_ctx = dt_ai_load_model(
-    ctx->env->ai_env, ctx->model_id,
-    ctx->model_file, DT_AI_PROVIDER_AUTO);
-  return ctx->ai_ctx ? 0 : 1;
+  if(ctx && g_atomic_int_dec_and_test(&ctx->ref_count))
+  {
+    dt_ai_unload_model(ctx->ai_ctx);
+    g_free(ctx->task);
+    g_free(ctx->model_id);
+    g_free(ctx->model_file);
+    g_free(ctx);
+  }
 }
 
-void dt_restore_free(dt_restore_context_t *ctx)
-{
-  if(!ctx) return;
-  dt_restore_unload(ctx);
-  g_free(ctx->task);
-  g_free(ctx->model_id);
-  g_free(ctx->model_file);
-  g_free(ctx);
-}
 
 static gboolean _model_available(
   dt_restore_env_t *env,

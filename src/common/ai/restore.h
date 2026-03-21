@@ -98,31 +98,20 @@ dt_restore_context_t *dt_restore_load_upscale_x2(dt_restore_env_t *env);
 dt_restore_context_t *dt_restore_load_upscale_x4(dt_restore_env_t *env);
 
 /**
- * @brief unload the ONNX model to free runtime memory
- *
- * the context stays valid. call the matching load function
- * again to reload, or dt_restore_free to release everything.
- *
- * @param ctx context handle (NULL-safe)
- */
-void dt_restore_unload(dt_restore_context_t *ctx);
-
-/**
- * @brief reload a previously unloaded context
- *
- * re-loads the same model that was used when the context was
- * created. no-ops if already loaded.
- *
+ * @brief increment the reference count for shared ownership.
+ *        multiple threads can share the same context for concurrent
+ *        inference via dt_restore_run_patch().
  * @param ctx context handle
- * @return 0 on success, non-zero on error
+ * @return the same pointer (for convenience)
  */
-int dt_restore_reload(dt_restore_context_t *ctx);
+dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx);
 
 /**
- * @brief free the context and all resources
+ * @brief decrement the reference count. frees the context and all
+ *        resources when the count reaches zero.
  * @param ctx context handle (NULL-safe)
  */
-void dt_restore_free(dt_restore_context_t *ctx);
+void dt_restore_unref(dt_restore_context_t *ctx);
 
 /**
  * @brief check if a denoise model is available
