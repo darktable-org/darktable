@@ -992,24 +992,39 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
 #define SEG_CACHE_VERSION 1
 #define SEG_CACHE_SUBDIR "objmasks"
 
-static void _get_cache_dir(char *out, size_t size)
+// build the per-database cache directory path.
+// returns FALSE when disk caching is unavailable
+// (no database or in-memory mode)
+static gboolean _get_cache_dir(char *out, size_t size)
 {
-  char cachedir[PATH_MAX] = {0};
-  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+  out[0] = '\0';
 
-  // hash the database path so different --configdir instances
-  // get separate cache directories (same pattern as mipmaps)
-  const gchar *dbpath = dt_database_get_path(darktable.db);
-  gchar *abspath = g_realpath(dbpath);
-  if(!abspath) abspath = g_strdup(dbpath);
-  GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);
-  g_checksum_update(chk, (guchar *)abspath, strlen(abspath));
-  const gchar *hash = g_checksum_get_string(chk);
+  // skip disk cache when running with --library :memory:
+  const gchar *dbpath = darktable.db
+    ? dt_database_get_path(darktable.db)
+    : NULL;
 
-  snprintf(out, size, "%s/%s-%s.d", cachedir, SEG_CACHE_SUBDIR, hash);
+  if(dbpath && strcmp(dbpath, ":memory:") != 0)
+  {
+    char cachedir[PATH_MAX] = {0};
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  g_checksum_free(chk);
-  g_free(abspath);
+    // hash the database path so different --configdir instances
+    // get separate cache directories (same pattern as mipmaps)
+    gchar *abspath = g_realpath(dbpath);
+    if(abspath == NULL) abspath = g_strdup(dbpath);
+    GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);
+    g_checksum_update(chk, (guchar *)abspath, strlen(abspath));
+    const gchar *hash = g_checksum_get_string(chk);
+
+    snprintf(out, size, "%s/%s-%s.d", cachedir, SEG_CACHE_SUBDIR, hash);
+
+    g_checksum_free(chk);
+    g_free(abspath);
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
@@ -1023,7 +1038,8 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
     return FALSE;
 
   char dir[PATH_MAX] = {0};
-  _get_cache_dir(dir, sizeof(dir));
+  if(!_get_cache_dir(dir, sizeof(dir)))
+    return FALSE;
   g_mkdir_with_parents(dir, 0755);
 
   char path[PATH_MAX] = {0};
@@ -1111,7 +1127,8 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
   if(!ctx) return FALSE;
 
   char dir[PATH_MAX] = {0};
-  _get_cache_dir(dir, sizeof(dir));
+  if(!_get_cache_dir(dir, sizeof(dir)))
+    return FALSE;
 
   char path[PATH_MAX] = {0};
   snprintf(path, sizeof(path), "%s/%d.seg", dir, imgid);
