@@ -160,6 +160,8 @@ typedef struct dt_lib_neural_restore_t
   GtkWidget *recovery_slider;
   dt_neural_task_t task;
   dt_restore_env_t *env;
+  dt_restore_context_t *cached_ctx;
+  dt_neural_task_t cached_task;
   gboolean model_available;
   GHashTable *processing_images;
   float *preview_before;
@@ -457,11 +459,6 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   dt_neural_job_t *job = params->job;
 
   if(!job->ctx)
-  {
-    dt_print(DT_DEBUG_AI, "[neural_restore] reloading model for next image");
-    job->ctx = _load_for_task(job->env, job->task);
-  }
-  if(!job->ctx)
     return 1;
 
   const int width = params->parent.width;
@@ -602,11 +599,6 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(res == 0 && exif && exif_len > 0)
     dt_exif_write_blob(exif, exif_len, filename, 0);
 
-  // free runtime memory between images (context is
-  // recreated via dt_restore_load on the next image)
-  dt_restore_free(job->ctx);
-  job->ctx = NULL;
-
   if(res != 0)
     g_unlink(filename);
 
@@ -683,7 +675,7 @@ static gboolean _job_finished_idle(gpointer data)
 static void _job_cleanup(void *param)
 {
   dt_neural_job_t *job = (dt_neural_job_t *)param;
-  dt_restore_free(job->ctx);
+  dt_restore_unref(job->ctx);
   g_free(job->output_dir);
   g_list_free(job->images);
   g_free(job);
@@ -700,7 +692,25 @@ static int32_t _process_job_run(dt_job_t *job)
   dt_control_job_set_progress_message(job, msg);
 
   j->control_job = job;
-  j->ctx = _load_for_task(j->env, j->task);
+
+  // reuse cached model if available and matching task,
+  // otherwise load a new one and update the cache
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)j->self->data;
+  if(d->cached_ctx && d->cached_task == j->task)
+  {
+    j->ctx = dt_restore_ref(d->cached_ctx);
+  }
+  else
+  {
+    dt_restore_unref(d->cached_ctx);
+    d->cached_ctx = NULL;
+    j->ctx = _load_for_task(j->env, j->task);
+    if(j->ctx)
+    {
+      d->cached_ctx = dt_restore_ref(j->ctx);
+      d->cached_task = j->task;
+    }
+  }
 
   if(!j->ctx)
   {
@@ -851,6 +861,9 @@ static int32_t _process_job_run(dt_job_t *job)
       _import_image(filename, imgid);
     dt_control_job_set_progress(job, (double)++count / total);
   }
+
+  dt_restore_unref(j->ctx);
+  j->ctx = NULL;
 
   _job_finished_data_t *fd = g_new(_job_finished_data_t, 1);
   fd->self = j->self;
@@ -1167,10 +1180,14 @@ static gpointer _preview_thread(gpointer data)
     goto cleanup;
   }
 
-  // load model and run inference
-  dt_restore_context_t *ctx
-    = _load_for_task(pd->env, pd->task);
-  if(!ctx)
+  // use cached model or load a new one
+  if(!d->cached_ctx || d->cached_task != pd->task)
+  {
+    dt_restore_unref(d->cached_ctx);
+    d->cached_ctx = _load_for_task(pd->env, pd->task);
+    d->cached_task = pd->task;
+  }
+  if(!d->cached_ctx)
   {
     dt_print(DT_DEBUG_AI,
              "[neural_restore] preview: failed to load model");
@@ -1180,8 +1197,7 @@ static gpointer _preview_thread(gpointer data)
     goto cleanup;
   }
 
-  const int ret = dt_restore_run_patch(ctx, patch_in, padded_w, padded_h, patch_out, pd->scale);
-  dt_restore_free(ctx);
+  const int ret = dt_restore_run_patch(d->cached_ctx, patch_in, padded_w, padded_h, patch_out, pd->scale);
   g_free(patch_in);
 
   if(ret != 0)
@@ -1925,6 +1941,7 @@ void gui_cleanup(dt_lib_module_t *self)
     g_free(d->cairo_after);
     if(d->processing_images)
       g_hash_table_destroy(d->processing_images);
+    dt_restore_unref(d->cached_ctx);
     if(d->env)
       dt_restore_env_destroy(d->env);
     g_free(d);
