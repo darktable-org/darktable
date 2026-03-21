@@ -141,9 +141,9 @@ typedef enum dt_neural_task_t
 
 typedef enum dt_neural_bpp_t
 {
-  NEURAL_BPP_8 = 0,   // $DESCRIPTION: "8 bit"
-  NEURAL_BPP_16 = 1,  // $DESCRIPTION: "16 bit"
-  NEURAL_BPP_32 = 2,  // $DESCRIPTION: "32 bit (float)"
+  NEURAL_BPP_8 = 0,
+  NEURAL_BPP_16 = 1,
+  NEURAL_BPP_32 = 2,
 } dt_neural_bpp_t;
 
 typedef struct dt_lib_neural_restore_t
