@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 22:40+0900\n"
+"PO-Revision-Date: 2026-03-21 22:52+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -12328,7 +12328,7 @@ msgstr "enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:56
 msgid "exposure blend images"
-msgstr "露出ブレンド画像"
+msgstr "露出合成画像"
 
 #. name
 #. expandable
@@ -12357,7 +12357,7 @@ msgstr ""
 
 #: ../src/external/lua-scripts/official/enfuse.lua:147
 msgid "exposure optimum"
-msgstr "露出　適正"
+msgstr "露出 適正"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
@@ -12377,7 +12377,7 @@ msgstr "アウトプット画像のチャンネルあたりのビット数"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
-msgstr "色空間ブレンド"
+msgstr "ブレンド色空間"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 msgid "force blending in selected colorspace"
