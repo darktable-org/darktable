@@ -293,14 +293,13 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   const int out_h = h * scale;
   const int out_pixels = out_w * out_h * 3;
 
-  // apply sRGB transfer function to the in-gamut portion only.
-  // wide-gamut excess (values > 1.0) is stored separately and
-  // added back after inference to preserve colors outside sRGB
+  // apply sRGB transfer function (gamma only, no primaries change).
+  // values > 1.0 pass through to preserve wide-gamut colors
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
   if(!srgb_in) return 1;
 
   for(int i = 0; i < in_pixels; i++)
-    srgb_in[i] = _linear_to_srgb(fminf(fmaxf(in_patch[i], 0.0f), 1.0f));
+    srgb_in[i] = _linear_to_srgb(in_patch[i]);
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
   if(num_inputs > MAX_MODEL_INPUTS)
@@ -353,24 +352,9 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   g_free(noise_map);
   if(ret != 0) return ret;
 
-  // sRGB -> linear, then restore wide-gamut excess.
-  // for denoise (scale=1): add back the per-pixel excess that was
-  // clamped before inference. for upscale: no excess restoration
-  // since input/output resolutions differ
-  if(scale == 1)
-  {
-    for(int i = 0; i < out_pixels; i++)
-    {
-      const float clamped = fminf(fmaxf(in_patch[i], 0.0f), 1.0f);
-      const float excess = in_patch[i] - clamped;
-      out_patch[i] = _srgb_to_linear(out_patch[i]) + excess;
-    }
-  }
-  else
-  {
-    for(int i = 0; i < out_pixels; i++)
-      out_patch[i] = _srgb_to_linear(out_patch[i]);
-  }
+  // sRGB -> linear
+  for(int i = 0; i < out_pixels; i++)
+    out_patch[i] = _srgb_to_linear(out_patch[i]);
 
   return 0;
 }
