@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 00:16+0900\n"
+"PO-Revision-Date: 2026-03-21 18:52+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -113,7 +113,7 @@ msgstr "常に"
 #: ../build/bin/conf_gen.h:433 ../build/bin/preferences_gen.h:4206
 msgctxt "preferences"
 msgid "only large entries"
-msgstr "項目が多い場合のみ"
+msgstr "項目が大きい場合のみ"
 
 #: ../build/bin/conf_gen.h:470
 msgctxt "preferences"
@@ -462,7 +462,7 @@ msgstr "地図上に表示される画像サムネイルの最大数"
 
 #: ../build/bin/conf_gen.h:2732
 msgid "group size factor"
-msgstr "グループのサイズ"
+msgstr "グループサイズ係数"
 
 #: ../build/bin/conf_gen.h:2733
 msgid ""
@@ -1034,8 +1034,8 @@ msgid ""
 "\n"
 "<b>disabled</b> actions apply to the current selection (less error prone)"
 msgstr ""
-"選別作業を行ライトテーブルでは、評価づけなどのアクションをカーソルを乗せている"
-"画像または現在選択中の画像のいずれかに適用します\n"
+"選別作業を行うライトテーブルでは、評価づけなどのアクションをカーソルを乗せてい"
+"る画像または現在選択中の画像のいずれかに適用します\n"
 "\n"
 "<b>有効</b> ：カーソルを乗せている画像にアクションを適用します（クリック回数を"
 "減らせます）\n"
@@ -1331,7 +1331,7 @@ msgid ""
 "disable to just show a toast message"
 msgstr ""
 "ダークルームで画像間を移動する時に灰色のロード画面を表示します\n"
-"無効にするとポップアップメッセージのみ表示します"
+"無効にするとトーストメッセージのみ表示します"
 
 #: ../build/bin/preferences_gen.h:3153
 msgid "modules"
@@ -1371,15 +1371,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3232
 msgid "only collapse modules in current group"
-msgstr "使用中のグループのモジュールのみ折りたたむ"
+msgstr "現在のグループのモジュールのみ折りたたむ"
 
 #: ../build/bin/preferences_gen.h:3240
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
-"同時に展開されるモジュールが一つのみの場合、選択中のグループの他のモジュールの"
-"み折りたたみます。他のグループのモジュールは無視します"
+"同時に展開されるモジュールが一つのみの場合、現在のグループの他のモジュールのみ"
+"折りたたみます。他のグループのモジュールは無視します"
 
 #: ../build/bin/preferences_gen.h:3249
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -1407,7 +1407,7 @@ msgstr "処理モジュールのリストを画面の左側に移動する"
 
 #: ../build/bin/preferences_gen.h:3300
 msgid "show right-side buttons in processing module headers"
-msgstr "処理モジュールのヘッダに右ボタンを表示する"
+msgstr "処理モジュールのヘッダに右側のボタンを表示する"
 
 #: ../build/bin/preferences_gen.h:3309
 msgid ""
@@ -1447,7 +1447,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3335
 msgid "prompt for name on addition of new instance"
-msgstr "新しいインスタンス作成時にインスタンス名プロンプト"
+msgstr "新しいインスタンス追加時にインスタンス名プロンプトを表示"
 
 #: ../build/bin/preferences_gen.h:3343
 msgid ""
@@ -1835,7 +1835,8 @@ msgstr "画像を削除する時、ゴミ箱を使用するよう試みる"
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
-msgstr "ファイルを永久に削除するのではなくゴミ箱へ送ります"
+msgstr ""
+"対応するシステムでは、ファイルを永久に削除するのではなくゴミ箱へ送ります"
 
 #: ../build/bin/preferences_gen.h:3907
 msgid "ask before moving images from film roll folder"
@@ -2391,7 +2392,7 @@ msgstr "タグに「未分類」エントリを設定しない"
 
 #: ../build/bin/preferences_gen.h:4753
 msgid "do not set the 'uncategorized' entry for tags which do not have children"
-msgstr "子を持たないタグに「未分類」エントリを設定しないでください"
+msgstr "子を持たないタグに「未分類」エントリを設定しません"
 
 #: ../build/bin/preferences_gen.h:4762
 msgid "tags case sensitivity"
@@ -2581,7 +2582,7 @@ msgstr "極端な彩度"
 #. cubic spline
 #: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1568
 msgid "faded"
-msgstr "退色している"
+msgstr "退色"
 
 #: ../build/bin/styles_string.h:24
 msgid ""
@@ -3312,7 +3313,7 @@ msgstr "レンズ"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:221
 msgid "motion"
-msgstr "被写体ぶれ"
+msgstr "モーションブラー"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:222
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:567
@@ -3351,12 +3352,12 @@ msgstr "縁のサイズ"
 #: ../build/lib/darktable/plugins/introspection_borders.c:154
 #: ../build/lib/darktable/plugins/introspection_borders.c:291
 msgid "horizontal offset"
-msgstr "水平位置"
+msgstr "水平オフセット"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:172
 #: ../build/lib/darktable/plugins/introspection_borders.c:303
 msgid "vertical offset"
-msgstr "垂直位置"
+msgstr "垂直オフセット"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:190
 #: ../build/lib/darktable/plugins/introspection_borders.c:315
@@ -3366,7 +3367,7 @@ msgstr "フレームラインのサイズ"
 #: ../build/lib/darktable/plugins/introspection_borders.c:196
 #: ../build/lib/darktable/plugins/introspection_borders.c:319
 msgid "frame line offset"
-msgstr "フレームラインの位置"
+msgstr "フレームラインのオフセット"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:202
 #: ../build/lib/darktable/plugins/introspection_borders.c:208
@@ -4382,7 +4383,7 @@ msgstr "パッチ サイズ"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:136
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:315
 msgid "search radius"
-msgstr "検査範囲"
+msgstr "探索範囲"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:148
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:323
@@ -4397,7 +4398,7 @@ msgstr "バイアス補正"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:160
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:331
 msgid "scattering"
-msgstr "散乱"
+msgstr "拡散度"
 
 # 中央ピクセルのウェイト
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:166
@@ -4408,12 +4409,12 @@ msgstr "中央ピクセルのウェイト"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:172
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:339
 msgid "adjust autoset parameters"
-msgstr "自動設定パラメータを調整"
+msgstr "自動設定パラメータの調整"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:244
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:387
 msgid "whitebalance-adaptive transform"
-msgstr "ホワイトバランス順応変換"
+msgstr "ホワイトバランス適応変換"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:250
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:391
@@ -4456,7 +4457,7 @@ msgstr "ウェーブレット 自動"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:421
 msgid "compute variance"
-msgstr "分散を算出します"
+msgstr "分散の算出"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:425
 #: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:368
@@ -5399,14 +5400,14 @@ msgstr "カラーフィルム"
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:253
 msgid "x offset"
-msgstr "位置 X軸"
+msgstr "X軸 オフセット"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:124
 #: ../build/lib/darktable/plugins/introspection_overlay.c:245
 #: ../build/lib/darktable/plugins/introspection_watermark.c:124
 #: ../build/lib/darktable/plugins/introspection_watermark.c:257
 msgid "y offset"
-msgstr "位置 Y軸"
+msgstr "Y軸 オフセット"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:142
 #: ../build/lib/darktable/plugins/introspection_overlay.c:257
@@ -9194,7 +9195,7 @@ msgstr "%d枚の画像の時間オフセットを設定しています"
 #: ../src/control/jobs/control_jobs.c:2720
 #, c-format
 msgid "added time offset to %d image"
-msgstr "%d枚の画像に時差を追加しました"
+msgstr "%d枚の画像に時間オフセットを追加しました"
 
 #: ../src/control/jobs/control_jobs.c:2721
 #, c-format
@@ -9204,7 +9205,7 @@ msgstr "%d枚の画像の日時を設定しました"
 #: ../src/control/jobs/control_jobs.c:2723
 #, c-format
 msgid "added time offset to %d images"
-msgstr "%d枚の画像に時差を追加しました"
+msgstr "%d枚の画像に時間オフセットを追加しました"
 
 #: ../src/control/jobs/control_jobs.c:2724
 #, c-format
@@ -18029,7 +18030,7 @@ msgstr "フレームラインのサイズ（最小の縁の幅に対する割合
 
 #: ../src/iop/borders.c:1000
 msgid "offset of the frame line beginning on image side"
-msgstr "画像の側面を基準としたフレームラインの位置"
+msgstr "画像の端を基準としたフレームライン位置のオフセット"
 
 #: ../src/iop/borders.c:1015
 msgid "select border color"
@@ -25786,11 +25787,11 @@ msgstr "彩度に及ぼす効果の強さ"
 
 #: ../src/iop/vignette.c:1072
 msgid "horizontal offset of center of the effect"
-msgstr "効果の中心の水平位置"
+msgstr "効果の中心の水平オフセット"
 
 #: ../src/iop/vignette.c:1073
 msgid "vertical offset of center of the effect"
-msgstr "効果の中心の垂直位置"
+msgstr "効果の中心の垂直オフセット"
 
 #: ../src/iop/vignette.c:1076
 msgid ""
@@ -27413,24 +27414,24 @@ msgstr "元の日時"
 
 #: ../src/libs/geotagging.c:1809
 msgid "lock date/time offset value to apply it onto another selection"
-msgstr "日時の時差の値を固定して他のセクションに適用します"
+msgstr "日時のオフセットの値を固定して他のセクションに適用します"
 
 #: ../src/libs/geotagging.c:1813
 msgid "date/time offset"
-msgstr "日時 時差"
+msgstr "日時のオフセット"
 
 #: ../src/libs/geotagging.c:1814
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
-msgstr "時差 ([-]dd hh:mm:ss[.sss])"
+msgstr "オフセットまたは差分 ([-]dd hh:mm:ss[.sss])"
 
 #. apply
 #: ../src/libs/geotagging.c:1818
 msgid "apply offset"
-msgstr "時差を適用"
+msgstr "オフセットを適用"
 
 #: ../src/libs/geotagging.c:1819
 msgid "apply offset to selected images"
-msgstr "選択した画像に時差を適用します"
+msgstr "選択した画像にオフセットを適用します"
 
 #: ../src/libs/geotagging.c:1822
 msgid "apply date/time"
@@ -27479,7 +27480,7 @@ msgstr ""
 "GPXファイル内のトラックセグメントのリスト。セグメントごとに表示します\n"
 "・開始日時（現地時間（LT））\n"
 "・トラックポイントの数\n"
-"・画像の日時、時差、タイムゾーンをもとに、マッチした画像の数\n"
+"・画像の日時、オフセット、タイムゾーンをもとに、マッチした画像の数\n"
 "・列の上にカーソルを置くと、より詳細な時間情報"
 
 #. the gpx_view_button is invisible and the label and tooltip of cannot be displayed on GUI.
@@ -31414,7 +31415,7 @@ msgstr "グリッドに合わせて画像を配置"
 
 #: ../src/views/lighttable.c:1464
 msgid "reset first image offset"
-msgstr "最初の画像の位置をリセット"
+msgstr "最初の画像の表示位置をリセット"
 
 #: ../src/views/lighttable.c:1466
 msgid "select toggle image"
