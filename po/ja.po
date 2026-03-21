@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 18:52+0900\n"
+"PO-Revision-Date: 2026-03-21 19:45+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -4665,7 +4665,7 @@ msgstr "ターゲットレベル"
 #: ../build/lib/darktable/plugins/introspection_exposure.c:96
 #: ../build/lib/darktable/plugins/introspection_exposure.c:165
 msgid "compensate exposure bias"
-msgstr "露出補正の取り消し"
+msgstr "露出補正の相殺"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:183
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
@@ -4909,7 +4909,7 @@ msgstr "180度回転"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:109
 msgid "rotate 90°"
-msgstr "-90度回転"
+msgstr "90度回転"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:110
 msgid "rotate -90°"
@@ -4974,7 +4974,7 @@ msgstr "再構成の直径"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:167
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
 msgid "candidating"
-msgstr "候補"
+msgstr "候補選択"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:173
 #: ../build/lib/darktable/plugins/introspection_highlights.c:264
@@ -4993,7 +4993,7 @@ msgstr "色の一様な部分を修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
 msgid "inpaint opposed"
-msgstr "反対を修復"
+msgstr "対向色修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
 msgid "reconstruct in LCh"
@@ -5177,7 +5177,7 @@ msgstr "画像スケール"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:346
 #: ../build/lib/darktable/plugins/introspection_lens.cc:505
 msgid "steepness"
-msgstr "峻度"
+msgstr "傾き"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:527
 msgid "embedded metadata"
@@ -5239,7 +5239,7 @@ msgstr "歪曲"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:550
 msgid "rectilinear"
-msgstr "心射方位"
+msgstr "レクティリニア"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:551
 msgid "fisheye"
@@ -5792,7 +5792,7 @@ msgstr "スペキュラ"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:199
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:326
 msgid "smoothing diameter"
-msgstr "平滑化の半径"
+msgstr "平滑化の直径"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:211
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:334
@@ -5851,7 +5851,7 @@ msgstr "RGB 平均"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSL lightness"
-msgstr "HSV 明度"
+msgstr "HSL 明度"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "HSV value / RGB max"
@@ -5972,7 +5972,7 @@ msgstr "コレクションを表示するバーチャルライトテーブル"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
-msgstr "画像を開いて表示すバーチャルダークルーム"
+msgstr "画像を開いて表示するバーチャルダークルーム"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
@@ -6006,7 +6006,7 @@ msgid ""
 "or hold ctrl+shift while dragging to ignore soft limits."
 msgstr ""
 "%s右クリックして<b>%s</b>から<b>%s</b>の間の値を入力してください\n"
-"または、ソフトリミットを無視するには、CtrllとShiftを押しながらドラッグしてくだ"
+"または、ソフトリミットを無視するには、CtrlとShiftを押しながらドラッグしてくだ"
 "さい"
 
 #: ../src/bauhaus/bauhaus.c:3764
@@ -6171,7 +6171,8 @@ msgstr "エラー：入力ファイルと入力オプションが指定されま
 msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
-msgstr "出力場所はディレクトリーです。出力ひな型'%s/$(FILE_NAME).%s'が必要です"
+msgstr ""
+"出力場所はディレクトリです。出力ひな型を'%s/$(FILE_NAME).%s'と仮定します"
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:524
@@ -6430,7 +6431,7 @@ msgstr "タグ"
 
 #: ../src/common/collection.c:620
 msgid "capture date"
-msgstr "撮影日時"
+msgstr "撮影日付"
 
 #: ../src/common/collection.c:622 ../src/libs/filtering.c:52
 msgid "capture time"
@@ -6542,7 +6543,7 @@ msgstr "露出プログラム"
 
 #: ../src/common/collection.c:676 ../src/libs/metadata_view.c:156
 msgid "metering mode"
-msgstr "測定モード"
+msgstr "測光モード"
 
 #: ../src/common/collection.c:1501 ../src/libs/collect.c:1907
 #: ../src/libs/filters/history.c:38
@@ -21472,8 +21473,8 @@ msgid ""
 "increase to act on local contrast instead."
 msgstr ""
 "拡散の主要なスケール\n"
-"設定を0にすると、拡散が最も精緻なディテールにおいてより強く働きます\n"
-"0以外の値に設定すると、拡散が強く働くディテールのサイズを定義します\n"
+"設定を0にすると、拡散が最も細かいディテールにおいてより強く働きます\n"
+"0以外の値に設定すると、強く拡散させるディテールのサイズを定義します\n"
 "ぼけやノイズを除去する場合、設定を0にしてください\n"
 "値を上げると局所的なコントラストに作用します"
 
@@ -21485,7 +21486,7 @@ msgid ""
 "if you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 msgstr ""
-"中央区域の周りの拡散の幅\n"
+"中心域の周りの拡散の幅\n"
 "値を上げると、半径の広範囲で拡散します\n"
 "値を下げると、中央区域のより近くで拡散します\n"
 "ぼけを除去するつもりであれば、この半径はレンズぼけの幅と同じくらいにしてくださ"
@@ -22834,7 +22835,7 @@ msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
-"ハイライト：このタイプの画像にこのモードは使用出来ません。'反対を修復'に戻りま"
+"ハイライト：このタイプの画像にこのモードは使用出来ません。'対向色修復'に戻りま"
 "す"
 
 #: ../src/iop/highlights.c:1290
@@ -22851,7 +22852,7 @@ msgid ""
 msgstr ""
 "マゼンタのハイライトを避けるよう、クリップのしきい値を手動で調整してください\n"
 "特に、カメラで設定したホワイトポイントが不正確な場合に、\n"
-"'ラプラシアン'、'反対を修復'、'セグメンテーション'モードで使用することをおすす"
+"'ラプラシアン'、'対向色修復'、'セグメンテーション'モードで使用することをおすす"
 "めします"
 
 #: ../src/iop/highlights.c:1299
@@ -22884,8 +22885,8 @@ msgid ""
 "opposed means inpainting."
 msgstr ""
 "セグメンテーション分析後の修復を選択します\n"
-"値を上げると、セグメンテーション分析によって割り出された候補を利用します。値を"
-"下げると、反対の手段の修復を施します"
+"値を上げると、セグメンテーション分析によって割り出された候補を優先します\n"
+"値を下げると、対向色の手段を用いた修復を優先します"
 
 #: ../src/iop/highlights.c:1315
 msgid ""
@@ -23279,7 +23280,7 @@ msgstr "無補正の中央部の範囲"
 
 #: ../src/iop/lens.cc:4602
 msgid "steepness of the correction effect outside of radius"
-msgstr "範囲外における補正の効果の峻度"
+msgstr "範囲外における補正の効果の傾き"
 
 #: ../src/iop/levels.c:109
 msgid "this module is deprecated. please use the RGB levels module instead."
