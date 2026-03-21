@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 22:52+0900\n"
+"PO-Revision-Date: 2026-03-21 22:57+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -473,7 +473,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:2741
 msgid "min images per group"
-msgstr "グループごとの最小イメージ数"
+msgstr "グループごとの最小画像数"
 
 #: ../build/bin/conf_gen.h:2742
 msgid ""
