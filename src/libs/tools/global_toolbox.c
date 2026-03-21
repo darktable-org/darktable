@@ -599,7 +599,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
           // TODO: find a better way to tell the user that the hovered widget has a help link
           const char *cursor = event->type == GDK_ENTER_NOTIFY ? "help" : "not-allowed";
           dt_control_allow_change_cursor();
-          dt_control_change_cursor(cursor);
+          dt_control_set_temp_cursor(cursor);
           dt_control_forbid_change_cursor();
         }
       }
@@ -762,14 +762,14 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
-    dt_control_change_cursor("not-allowed");
+    dt_control_set_temp_cursor("not-allowed");
     dt_control_forbid_change_cursor();
     gdk_event_handler_set(_main_do_event_help, user_data, NULL);
   }
   else
   {
     dt_control_allow_change_cursor();
-    dt_control_change_cursor("default");
+    dt_control_clear_temp_cursor();
     gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
   }
 }
