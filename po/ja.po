@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-21 19:45+0900\n"
+"PO-Revision-Date: 2026-03-22 00:15+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -473,7 +473,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:2741
 msgid "min images per group"
-msgstr "グループごとの最小イメージ数"
+msgstr "グループごとの最小画像数"
 
 #: ../build/bin/conf_gen.h:2742
 msgid ""
@@ -7563,7 +7563,7 @@ msgstr ""
 
 #: ../src/common/database.c:4128
 msgid "darktable - too new db version"
-msgstr "darktable - 新しすぎるdvバージョン"
+msgstr "darktable - 新しすぎるdbバージョン"
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:4145
@@ -7741,7 +7741,7 @@ msgstr "他に貼り付ける前に、画像から履歴をコピーする必要
 
 #: ../src/common/image.c:345
 msgid "orphaned image"
-msgstr "存在しない画像"
+msgstr "参照切れ画像"
 
 # %d 画像の位置情報が取り消されました
 #: ../src/common/image.c:669
@@ -8045,7 +8045,7 @@ msgid ""
 "  - no OpenCL driver installed,\n"
 "  - multiple drivers installed per platform\n"
 msgstr ""
-"プラットフォームの検出が出来ませんでした。幾つかの原因が考えられます\\n\n"
+"プラットフォームの検出が出来ませんでした。幾つかの原因が考えられます\n"
 "  - OpenCL ICD (ocl-icd)が存在しない\n"
 "  - 以前のOpenCLエラーによりデバイスがブロックされている\n"
 "  - パワーマネジメントの問題\n"
@@ -8127,7 +8127,9 @@ msgstr "リーガルサイズ"
 
 #: ../src/common/pwstorage/pwstorage.c:109
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
-msgstr "GNOMEキーリングバックエンドのサポートは終了しました。別の設定をします"
+msgstr ""
+"GNOMEキーリングバックエンドのサポートは終了しました。別のバックエンドを設定し"
+"てください"
 
 #: ../src/common/ratings.c:150
 #, c-format
@@ -8229,7 +8231,7 @@ msgstr "モジュール`%s'のバージョンの不一致：%d != %d"
 #: ../src/common/styles.c:1036
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "スタイル`%s'を現在の画像に適用します"
+msgstr "スタイル`%s'を現在の画像に適用しました"
 
 #: ../src/common/styles.c:1300
 #, c-format
@@ -8335,7 +8337,7 @@ msgstr "蛍光灯 高出力"
 
 #: ../src/common/wb_presets.c:69
 msgid "cool white fluorescent"
-msgstr "白色蛍光灯"
+msgstr "冷白色蛍光灯"
 
 #: ../src/common/wb_presets.c:70
 msgid "warm white fluorescent"
@@ -8347,7 +8349,7 @@ msgstr "昼光色蛍光灯"
 
 #: ../src/common/wb_presets.c:72
 msgid "neutral fluorescent"
-msgstr "昼白色蛍光灯"
+msgstr "中性蛍光灯"
 
 #: ../src/common/wb_presets.c:73
 msgid "white fluorescent"
@@ -8356,7 +8358,7 @@ msgstr "白色蛍光灯"
 #. In some newer Nikon cameras:
 #: ../src/common/wb_presets.c:75
 msgid "sodium-vapor fluorescent"
-msgstr "ナトリウム灯混合光"
+msgstr "ナトリウム蒸気蛍光灯"
 
 #: ../src/common/wb_presets.c:76
 msgid "day white fluorescent"
@@ -8475,11 +8477,11 @@ msgstr "フォーカス中"
 
 #: ../src/control/control.c:213
 msgid "show accels window"
-msgstr "アクセルウィンドウを表示"
+msgstr "ショートカットウィンドウを表示"
 
 #: ../src/control/control.c:331
 msgid "darktable will be locked until background work has been done"
-msgstr "バックグランドワークが完了するまでdarktableはロックされます"
+msgstr "バックグラウンドワークが完了するまでdarktableはロックされます"
 
 #: ../src/control/control.c:434
 msgid "working..."
@@ -8660,7 +8662,7 @@ msgstr "同期ログ"
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "%d枚の画像をキャプチャーしています"
-msgstr[1] "%d枚の画像を取り込んでいます"
+msgstr[1] "%d枚の画像をキャプチャーしています"
 
 #: ../src/control/jobs/camera_jobs.c:122
 msgid "please set your camera to manual mode first!"
@@ -8931,8 +8933,8 @@ msgstr "編集中の画像の履歴の圧縮をスキップしました"
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] "%d枚の画像の履歴を圧縮することが出来ません"
-msgstr[1] "%d枚の画像の履歴を圧縮することが出来ません"
+msgstr[0] "%d枚の画像は履歴の圧縮が不要です"
+msgstr[1] "%d枚の画像は履歴の圧縮が不要です"
 
 #: ../src/control/jobs/control_jobs.c:1732
 #, c-format
@@ -9181,7 +9183,7 @@ msgstr "%d枚の画像に時間オフセットを追加しています"
 #: ../src/control/jobs/control_jobs.c:2671
 #, c-format
 msgid "setting date/time of %d image"
-msgstr "%d枚の画像の時間オフセットを設定しています"
+msgstr "%d枚の画像の日時を設定しています"
 
 #: ../src/control/jobs/control_jobs.c:2673
 #, c-format
@@ -9191,7 +9193,7 @@ msgstr "%d枚の画像に時間オフセットを追加しています"
 #: ../src/control/jobs/control_jobs.c:2674
 #, c-format
 msgid "setting date/time of %d images"
-msgstr "%d枚の画像の時間オフセットを設定しています"
+msgstr "%d枚の画像の日時を設定しています"
 
 #: ../src/control/jobs/control_jobs.c:2720
 #, c-format
@@ -9375,7 +9377,7 @@ msgstr "明度"
 #: ../src/develop/blend_gui.c:91
 msgctxt "blendmode"
 msgid "chromaticity"
-msgstr "色度（クロマティシティ）"
+msgstr "色度"
 
 #: ../src/develop/blend_gui.c:94
 msgctxt "blendmode"
@@ -9821,7 +9823,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3321 ../src/iop/toneequal.c:3331
 #: ../src/iop/toneequal.c:3391 ../src/views/darkroom.c:3069
 msgid " EV"
-msgstr "EV"
+msgstr " EV"
 
 #: ../src/develop/blend_gui.c:2676 ../src/develop/blend_gui.c:2768
 #: ../src/develop/blend_gui.c:3046 ../src/develop/blend_gui.c:3534
@@ -9953,7 +9955,7 @@ msgstr "カラーチャンネル"
 
 #: ../src/develop/blend_gui.c:3173 ../src/develop/blend_gui.c:3188
 msgid "chromaticity & lightness"
-msgstr "色度（クロマティシティ）＆明度"
+msgstr "色度＆明度"
 
 #: ../src/develop/blend_gui.c:3180
 msgid "normal & arithmetic"
@@ -10052,7 +10054,7 @@ msgstr "マスク組み合わせ方式"
 #: ../src/develop/blend_gui.c:3580
 msgid ""
 "how to combine individual drawn mask and different channels of parametric mask"
-msgstr "個々の描画マスクとパラメトリック マスクの諸チャンネルの組み合わせ方"
+msgstr "個々の描画マスクとパラメトリックマスクの諸チャンネルの組み合わせ方"
 
 #: ../src/develop/blend_gui.c:3587
 msgid "details threshold"
@@ -10092,11 +10094,11 @@ msgstr "境界ぼかしの半径"
 #: ../src/iop/demosaic.c:1820 ../src/iop/diffuse.c:1776
 #: ../src/iop/diffuse.c:1786 ../src/iop/retouch.c:2676
 msgid " px"
-msgstr "px"
+msgstr " px"
 
 #: ../src/develop/blend_gui.c:3611
 msgid "spatial radius of feathering"
-msgstr "境界ぼかしの半径"
+msgstr "境界ぼかしの空間的な半径"
 
 #: ../src/develop/blend_gui.c:3617
 msgid "blurring radius"
@@ -10290,7 +10292,7 @@ msgstr "エラー"
 
 #: ../src/develop/imageop.c:3993
 msgid "unsupported input"
-msgstr "サポートされていないインプット"
+msgstr "サポートされていない入力"
 
 #: ../src/develop/imageop.c:3994
 msgid ""
@@ -10391,8 +10393,8 @@ msgstr "`%s'はLightroom XMPではありません！"
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
-msgstr[0] "%sはすでにインポートされています"
-msgstr[1] "%sはすでにインポートされています"
+msgstr[0] "%sはインポートされました"
+msgstr[1] "%sはインポートされました"
 
 #: ../src/develop/masks/brush.c:1341 ../src/develop/masks/brush.c:1395
 #, c-format
@@ -10409,7 +10411,7 @@ msgstr "サイズ：%3.2f%%"
 
 #: ../src/develop/masks/brush.c:3146
 msgid "[BRUSH] change size"
-msgstr "【ブラシ】 サイズを変更する"
+msgstr "【ブラシ】サイズを変更する"
 
 #: ../src/develop/masks/brush.c:3148
 msgid "[BRUSH] change hardness"
@@ -10536,11 +10538,11 @@ msgstr "曲率：%3.2f%%"
 
 #: ../src/develop/masks/gradient.c:1418
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "【旋回軸上のグラデーション】シェイプを回転する"
+msgstr "【ピボット上のグラデーション】シェイプを回転する"
 
 #: ../src/develop/masks/gradient.c:1420
 msgid "[GRADIENT creation] set rotation"
-msgstr "【グラデーションの作成】シェイプを設定する"
+msgstr "【グラデーションの作成】回転を設定する"
 
 #: ../src/develop/masks/gradient.c:1422
 msgid "[GRADIENT] change curvature"
@@ -10665,31 +10667,31 @@ msgstr "オブジェクトマスクの準備に失敗しました"
 
 #: ../src/develop/masks/object.c:2042
 msgid "[OBJECT] brush over object"
-msgstr "[OBJECT] オブジェクト上をブラシでなぞる"
+msgstr "【オブジェクト】オブジェクト上をブラシでなぞる"
 
 #: ../src/develop/masks/object.c:2047
 msgid "[OBJECT] add foreground point"
-msgstr "[OBJECT] 前景ポイントを追加"
+msgstr "【オブジェクト】前景ポイントを追加"
 
 #: ../src/develop/masks/object.c:2052
 msgid "[OBJECT] add background point"
-msgstr "[OBJECT] 背景ポイントを追加"
+msgstr "【オブジェクト】背景ポイントを追加"
 
 #: ../src/develop/masks/object.c:2057
 msgid "[OBJECT] apply mask"
-msgstr "[OBJECT] マスクを適用"
+msgstr "【オブジェクト】マスクを適用"
 
 #: ../src/develop/masks/object.c:2062
 msgid "[OBJECT] change brush size / cleanup"
-msgstr "[OBJECT] ブラシサイズ／クリーンアップを変更"
+msgstr "【オブジェクト】ブラシサイズ／クリーンアップを変更"
 
 #: ../src/develop/masks/object.c:2067
 msgid "[OBJECT] change smoothing"
-msgstr "[OBJECT] 平滑化を変更"
+msgstr "【オブジェクト】平滑化を変更"
 
 #: ../src/develop/masks/object.c:2072
 msgid "[OBJECT] change opacity"
-msgstr "[OBJECT] 不透明度を変更"
+msgstr "【オブジェクト】不透明度を変更"
 
 #: ../src/develop/masks/object.c:2080
 #, c-format
@@ -10705,7 +10707,7 @@ msgid ""
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>追加</b>：クリック　　<b>除外</b>：Shift+クリック　　<b>クリア</b>：Alt+ク"
-"リック　　<b>適用</b>：右クリック\\n\n"
+"リック　　<b>適用</b>：右クリック\n"
 "<b>クリーンアップ</b>：スクロール （%d）　　<b>スムージング</b>：Shift+スク"
 "ロール（%3.2f）　　<b>不透明度</b>：Ctrl+スクロール（%d%%）"
 
@@ -10805,7 +10807,7 @@ msgstr ""
 
 #: ../src/develop/pixelpipe_hb.c:518
 msgid "enabled as required"
-msgstr "必要なので無効化しました"
+msgstr "必要なので有効化しました"
 
 # モジュールが履歴によって無効にされましたが、このタイプの画像では必ず有効にする必要があります。
 # プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因であると考えられます
@@ -10848,7 +10850,7 @@ msgstr ""
 #: ../src/develop/pixelpipe_hb.c:1844
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
-"致命的な入力の非整列n\n"
+"致命的な入力の非整列\n"
 "GitHubで報告してください\n"
 
 #: ../src/develop/pixelpipe_hb.c:3243
@@ -10975,7 +10977,7 @@ msgstr ""
 "最も大きい日付を入力してください\n"
 "YYYY:MM:DD hh:mm:ss.sss（年は必須です）\n"
 "制限が無い場合、maxを入力してください\n"
-"キーワードnowは取り扱われます\n"
+"キーワード'now'を使用することが出来ます\n"
 "相対日付は-を前に入力してください\n"
 "右クリックすると、カレンダーまたは既存の値から選択します"
 
@@ -11021,7 +11023,7 @@ msgstr "最大"
 
 #: ../src/dtgtk/range.c:939
 msgid "date type"
-msgstr "データタイプ"
+msgstr "日付タイプ"
 
 #. the date section
 #: ../src/dtgtk/range.c:948 ../src/libs/geotagging.c:1545
@@ -11068,7 +11070,7 @@ msgstr "適用"
 
 #: ../src/dtgtk/range.c:1030
 msgid "set the range bound with this value"
-msgstr "この値に結びついた一定の範囲を設定する"
+msgstr "この値を範囲の境界値として設定します"
 
 #: ../src/dtgtk/range.c:1041
 msgid "current date: "
@@ -11254,7 +11256,7 @@ msgstr "画像を複製"
 
 #: ../src/dtgtk/thumbtable.c:3093
 msgid "duplicate image virgin"
-msgstr "未編集画像を複製"
+msgstr "画像を履歴なしの状態で複製"
 
 #: ../src/dtgtk/thumbtable.c:3103 ../src/libs/select.c:154
 msgid "select film roll"
@@ -11262,7 +11264,7 @@ msgstr "フィルムロールを選択"
 
 #: ../src/dtgtk/thumbtable.c:3105 ../src/libs/select.c:158
 msgid "select untouched"
-msgstr "未編集画像を選択"
+msgstr "未処理画像を選択"
 
 #. clang-format off
 #. modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
@@ -11708,7 +11710,7 @@ msgstr "$(EXIF.YEAR) - EXIF 年"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:920
 #: ../src/gui/gtkentry.c:70
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF_YEAR) - EXIF 年（世紀無し）"
+msgstr "$(EXIF.YEAR.SHORT) - EXIF 年（世紀無し）"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:921
 #: ../src/gui/gtkentry.c:71
@@ -12195,7 +12197,7 @@ msgstr "メタデータを貼り付ける"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:146
 msgid "paste metadata to the selected images"
-msgstr "2番目に選択した画像にメタデータを貼り付けます"
+msgstr "選択した画像にメタデータを貼り付けます"
 
 #.
 #. This file is part of darktable,
@@ -12322,11 +12324,11 @@ msgstr "使用していないタグを削除する"
 #: ../src/external/lua-scripts/official/enfuse.lua:55
 #: ../src/external/lua-scripts/official/enfuse.lua:75
 msgid "enfuse"
-msgstr "融合"
+msgstr "enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:56
 msgid "exposure blend images"
-msgstr "画像ブレンド露出"
+msgstr "露出合成画像"
 
 #. name
 #. expandable
@@ -12355,7 +12357,7 @@ msgstr ""
 
 #: ../src/external/lua-scripts/official/enfuse.lua:147
 msgid "exposure optimum"
-msgstr "露出　適正"
+msgstr "露出 適正"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
@@ -12371,11 +12373,11 @@ msgstr "ビット深度"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
-msgstr "アウトプット画像のチャンネルあたりのビット数"
+msgstr "出力画像のチャンネルあたりのビット数"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
-msgstr "色空間ブレンド"
+msgstr "ブレンド色空間"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 msgid "force blending in selected colorspace"
@@ -12383,11 +12385,11 @@ msgstr "強制的に選択した色空間でブレンド"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "run enfuse"
-msgstr "融合を実行"
+msgstr "enfuseを実行"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "enfuse not installed"
-msgstr "融合はインストールされていません"
+msgstr "enfuseがインストールされていません"
 
 #. remember exposure_mu
 #. TODO: find a way to save it whenever the value changes
@@ -12418,7 +12420,7 @@ msgstr "`%s'をスキップしています..."
 msgid "no suitable images selected, nothing to do for enfuse"
 msgstr ""
 "適切な画像が選択されていません\n"
-"融合することが出来ません"
+"enfuseを実行することが出来ません"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:238
 #, lua-format
@@ -12430,7 +12432,7 @@ msgstr "%d枚の画像をスキップしました"
 #: ../src/external/lua-scripts/official/enfuse.lua:258
 msgid "enfuse failed, see terminal output for details"
 msgstr ""
-"融合することが出来ませんでした\n"
+"enfuseが失敗しました\n"
 "詳しくはターミナル出力をご覧ください"
 
 #. remove the response file
@@ -12439,23 +12441,21 @@ msgstr ""
 #: ../src/external/lua-scripts/official/enfuse.lua:270
 msgid "enfuse was successful, resulting image has been imported"
 msgstr ""
-"融合に成功しました\n"
+"enfuseが成功しました\n"
 "生成された画像がインポートされました"
 
 #. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
 #: ../src/external/lua-scripts/official/enfuse.lua:272
 #, lua-format
 msgid "enfuse: done, resulting image '%s' has been imported with id %d"
-msgstr ""
-"融合完了\n"
-"画像'%s'を生成し、%dというIDでインポートしました"
+msgstr "enfuse：完了。画像'%s'を生成し、%dというIDでインポートしました"
 
 #. ... and tell dt about it all
 #: ../src/external/lua-scripts/official/enfuse.lua:306
 msgid "could not find enfuse executable, not loading enfuse exporter..."
 msgstr ""
-"融合の実行ファイルを見つけることが出来ませんでした\n"
-"融合のエクスポート機能を読み込むことが出来ません..."
+"enfuseの実行ファイルを見つけることが出来ませんでした\n"
+"enfuseのエクスポート機能を読み込むことが出来ません..."
 
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #. kate: hl Lua;
@@ -12508,7 +12508,7 @@ msgstr "選択した画像にメタデータを重ねて表示"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:68
 msgid "create txt sidecars to display with images"
-msgstr "画像とともに表示するtxtsサイドカーを生成"
+msgstr "画像とともに表示するtxtサイドカーを生成"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:69
 msgid ""
@@ -12516,7 +12516,7 @@ msgid ""
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
 "ライトテーブルで画像を拡大表示した時に生成したtxtファイルが表示されます\n"
-"guiタブのtxyオーバーレイ設定も有効にします"
+"guiタブのtxtオーバーレイ設定も有効にします"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
 msgid "command to generate the txt sidecar"
@@ -13143,7 +13143,7 @@ msgstr "スクリプトを適切なバージョンに自動的に更新する"
 #. ----------------
 #: ../src/external/lua-scripts/tools/script_manager.lua:409
 msgid "contributed"
-msgstr "ユーザー提供"
+msgstr "コミュニティ提供"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:413
 msgid "official"
@@ -13225,7 +13225,7 @@ msgstr "スクリプトのダウンロードが出来ませんでした"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1062
 #, lua-format
 msgid "page %d of %d"
-msgstr "ページ%d（全体のページ数%d）"
+msgstr "%d / %dページ"
 
 #. no change
 #. force the buttons to repopulate
@@ -13335,7 +13335,7 @@ msgstr "スクリプトを追加"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1430
 msgid "select the script folder"
-msgstr "スクリプトフォルダを選択してください"
+msgstr "スクリプトフォルダを選択"
 
 #. a script "button" consists of:
 #. a button to start and stop the script
@@ -13474,11 +13474,11 @@ msgstr "翻訳者クレジット"
 
 #: ../src/gui/accelerators.c:67
 msgid "in active view"
-msgstr "アクティブなビュー"
+msgstr "アクティブなビュー内"
 
 #: ../src/gui/accelerators.c:68
 msgid "in other views"
-msgstr "他のビュー"
+msgstr "他のビュー内"
 
 #: ../src/gui/accelerators.c:69
 msgid "fallbacks"
@@ -13534,7 +13534,7 @@ msgstr "PgUpDown"
 
 #: ../src/gui/accelerators.c:107 ../src/views/view.c:1459
 msgid "shift"
-msgstr "シフト"
+msgstr "Shift"
 
 #: ../src/gui/accelerators.c:108 ../src/views/view.c:1461
 msgid "ctrl"
@@ -13542,7 +13542,7 @@ msgstr "Ctrl"
 
 #: ../src/gui/accelerators.c:110 ../src/views/view.c:1464
 msgid "option"
-msgstr "オプション"
+msgstr "Option"
 
 #: ../src/gui/accelerators.c:112 ../src/views/view.c:1466
 msgid "alt"
@@ -13550,11 +13550,11 @@ msgstr "Alt"
 
 #: ../src/gui/accelerators.c:114
 msgid "cmd"
-msgstr "cmd"
+msgstr "Cmd"
 
 #: ../src/gui/accelerators.c:115
 msgid "altgr"
-msgstr "altgr"
+msgstr "Altgr"
 
 #: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:179
 #: ../src/libs/tagging.c:1978
@@ -13613,7 +13613,7 @@ msgstr "次"
 #: ../src/gui/gtk.c:3868 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:883
 msgid "previous"
-msgstr "以前"
+msgstr "前"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:1610
 msgid "last"
@@ -13702,15 +13702,15 @@ msgstr "長押し"
 
 #: ../src/gui/accelerators.c:760
 msgid "double-press"
-msgstr "2回押す"
+msgstr "2回押し"
 
 #: ../src/gui/accelerators.c:761
 msgid "triple-press"
-msgstr "3回押す"
+msgstr "3回押し"
 
 #: ../src/gui/accelerators.c:762
 msgid "press"
-msgstr "押す"
+msgstr "1回押し"
 
 #: ../src/gui/accelerators.c:766
 msgctxt "accel"
@@ -13756,7 +13756,7 @@ msgstr "最後のインスタンス"
 
 #: ../src/gui/accelerators.c:804
 msgid "relative instance"
-msgstr "関連するインスタンス"
+msgstr "相対インスタンス"
 
 #: ../src/gui/accelerators.c:821 ../src/gui/accelerators.c:2947
 #: ../src/gui/accelerators.c:3910
@@ -13792,7 +13792,7 @@ msgid ""
 "press Delete to disable selected default shortcut"
 msgstr ""
 "\n"
-"Deleteキーを押すと、選択したデフォルトショートカットを削除します"
+"Deleteキーを押すと、選択したデフォルトショートカットを無効にします"
 
 #: ../src/gui/accelerators.c:1072
 msgid ""
@@ -13800,7 +13800,7 @@ msgid ""
 "press Delete to restore selected default shortcut"
 msgstr ""
 "\n"
-"Deleteキーを押すと、選択したデフォルトショートカットを削除します"
+"Deleteキーを押すと、選択したデフォルトショートカットを復元します"
 
 #: ../src/gui/accelerators.c:1074
 msgid ""
@@ -13877,7 +13877,7 @@ msgstr "Luaコマンドをコピー"
 #: ../src/gui/accelerators.c:1461
 msgid "shortcut for move exists with single effect"
 msgstr ""
-"このマウスの移動によるショートカットは一つの効果を割り当てられて存在しています"
+"このマウス移動によるショートカットには既に一つの効果が割り当てられています"
 
 #: ../src/gui/accelerators.c:1463
 #, c-format
@@ -13892,8 +13892,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1464
 msgid "create separate shortcuts for up and down move?"
-msgstr ""
-"マウスの上および下への移動に対してそれぞれ別のショートカットを作成しますか？"
+msgstr "マウスの上下移動に対してそれぞれ別のショートカットを作成しますか？"
 
 #: ../src/gui/accelerators.c:1490
 #, c-format
@@ -13997,7 +13996,7 @@ msgstr "プリセット"
 
 #: ../src/gui/accelerators.c:2531
 msgid "restore shortcuts"
-msgstr "ショートカットを復元します"
+msgstr "ショートカットを復元"
 
 #: ../src/gui/accelerators.c:2534
 msgid "_defaults"
@@ -14038,7 +14037,7 @@ msgstr "ショートカット"
 
 #: ../src/gui/accelerators.c:2614
 msgid "export shortcuts"
-msgstr "ショートカットをエクスポートします"
+msgstr "ショートカットをエクスポート"
 
 #: ../src/gui/accelerators.c:2621
 msgid ""
@@ -14066,7 +14065,7 @@ msgstr "_エクスポート"
 
 #: ../src/gui/accelerators.c:2686
 msgid "import shortcuts"
-msgstr "ショートカットをインポートします"
+msgstr "ショートカットをインポート"
 
 #: ../src/gui/accelerators.c:2693
 msgid ""
@@ -14098,7 +14097,7 @@ msgstr "_インポート"
 
 #: ../src/gui/accelerators.c:2795
 msgid "import sample shortcuts"
-msgstr "サンプルのショートカットをインポートします"
+msgstr "サンプルのショートカットをインポート"
 
 #: ../src/gui/accelerators.c:2801
 msgid ""
@@ -14236,7 +14235,7 @@ msgstr ""
 "このモードでは、ウィジェットや領域上でクリックすることで、このダイアログが詳細"
 "な設定をするために適切な選択をしたうえで開かれます\n"
 "\n"
-"同一のアクションに複数のショートカットを割り当てることがｄきます。これは、モ"
+"同一のアクションに複数のショートカットを割り当てることが出来ます。これは、モ"
 "ジュールボタンやスライダーに付随するカラーピッカーのような複数の<i>要素</i>が"
 "ある場合特に有用ですが、 <i>フォールバック</i>を有効にすることで、それと同じ単"
 "純なショートカットを使用しつつ、マウスクリックを加えることで<i>要素</i>または"
@@ -14246,7 +14245,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:3527
 msgid "reinitialising input devices"
-msgstr "インプットデバイスを再初期化"
+msgstr "入力デバイスを再初期化"
 
 #: ../src/gui/accelerators.c:3616
 msgid "move not assigned"
@@ -14294,7 +14293,7 @@ msgstr "%sは%sに割り当てられています"
 
 #: ../src/gui/accelerators.c:4424
 msgid "short key press resets stuck keys"
-msgstr "キーを短く押すとキー押し固定をリセットします"
+msgstr "キーを短く押すとスタック状態をリセットします"
 
 #: ../src/gui/workspace.c:59
 msgid "delete workspace"
@@ -14358,7 +14357,7 @@ msgstr "GIMPにエクスポートしています"
 
 #: ../src/gui/gtk.c:1248
 msgid "URL opened in web browser"
-msgstr "ウェブブラウザ開いているURL"
+msgstr "ウェブブラウザで開いているURL"
 
 #: ../src/gui/gtk.c:1252
 msgid "error while opening URL in web browser"
@@ -14497,7 +14496,7 @@ msgstr "ツールチップの表示／非表示切り替え"
 
 #: ../src/gui/gtk.c:1631
 msgid "reinitialise input devices"
-msgstr "インプットデバイスを再初期化"
+msgstr "入力デバイスを再初期化"
 
 #: ../src/gui/gtk.c:1672
 msgid "toggle focus-peaking mode"
@@ -14697,7 +14696,7 @@ msgstr "三分割法"
 
 #: ../src/gui/guides.c:32
 msgid "metering"
-msgstr "メーター"
+msgstr "メータリング"
 
 #: ../src/gui/guides.c:33
 msgid "perspective"
@@ -14725,7 +14724,7 @@ msgstr "黄金螺旋分割"
 
 #: ../src/gui/guides.c:39
 msgid "golden mean (all guides)"
-msgstr "黄金比の全てのガイド線"
+msgstr "黄金比（全ガイド線）"
 
 #: ../src/gui/guides.c:233
 msgid "horizontal lines"
@@ -14784,7 +14783,7 @@ msgstr "両方"
 
 #: ../src/gui/guides.c:841
 msgid "setup guide lines"
-msgstr "ガイド線を設定します"
+msgstr "ガイド線を設定"
 
 #: ../src/gui/guides.c:847
 msgid "overlay color"
@@ -14792,7 +14791,7 @@ msgstr "オーバーレイの色"
 
 #: ../src/gui/guides.c:848
 msgid "set overlay color"
-msgstr "オーバーレイの色を設定します"
+msgstr "オーバーレイの色を設定"
 
 #: ../src/gui/guides.c:865
 msgid ""
@@ -14843,7 +14842,7 @@ msgstr "_上書き"
 
 #: ../src/gui/hist_dialog.c:250
 msgid "appen_d"
-msgstr "appen_d"
+msgstr "追記(_d)"
 
 #: ../src/gui/hist_dialog.c:280 ../src/gui/styles_dialog.c:619
 #: ../src/gui/styles_dialog.c:641
@@ -15123,7 +15122,7 @@ msgstr "<i>利用出来ません、CPUへフォールバックします</i>"
 
 #: ../src/gui/preferences_ai.c:566
 msgid "downloading AI model"
-msgstr "AIモデルパッケージ（*.dtmodel）"
+msgstr "AIモデルをダウンロード中"
 
 #: ../src/gui/preferences_ai.c:581
 #, c-format
@@ -15132,7 +15131,7 @@ msgstr "ダウンロード中：%s"
 
 #: ../src/gui/preferences_ai.c:735
 msgid "install AI model"
-msgstr "AIモデルをインストールする"
+msgstr "AIモデルをインストール"
 
 #: ../src/gui/preferences_ai.c:743
 msgid "AI model packages (*.dtmodel)"
@@ -15450,7 +15449,7 @@ msgstr "モジュールのレイアウトの管理"
 
 #: ../src/gui/presets.c:1436
 msgid "manage quick presets"
-msgstr "クイックプリセットを管理してください"
+msgstr "クイックプリセットを管理"
 
 #: ../src/gui/presets.c:1618
 msgid "manage quick presets list..."
@@ -15570,7 +15569,7 @@ msgid ""
 "always change all values later in the <b>preferences</b>."
 msgstr ""
 "もし迷っても大丈夫です！とりあえずデフォルト設定のまま進めてください。後から "
-"<b>設定</b>でいつでも変更できます"
+"<b>設定</b>でいつでも変更出来ます"
 
 #: ../src/gui/welcome.c:746
 msgid ""
@@ -16562,7 +16561,7 @@ msgid ""
 "mid-gray to mid-gray mapping"
 msgstr ""
 "選択した領域の輝度の平均値を用いて、ミドルグレーに対するピボットを設定します\n"
-"出力はデフォルトの中間グレー対中間グレーマッピングに基づいて調整されます。"
+"出力はデフォルトの中間グレー対中間グレーマッピングに基づいて調整されます"
 
 #: ../src/iop/agx.c:1847
 msgid "slope of the linear section around the pivot"
@@ -17507,11 +17506,11 @@ msgstr "コントラストを適用する際に色を保持する方法"
 
 #: ../src/iop/basecurve.c:2116
 msgid "two exposures"
-msgstr "二重露出"
+msgstr "2露出"
 
 #: ../src/iop/basecurve.c:2117
 msgid "three exposures"
-msgstr "三重露出"
+msgstr "3露出"
 
 # 元画像と異なる補正値で露光した画像を合成し、ハイダイナミックレンジを圧縮します。 使用前のハイライトに基づいて露光を決定します
 #: ../src/iop/basecurve.c:2118
@@ -17670,7 +17669,7 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"局所的なコントラスの強調に使用されるフィルタ\n"
+"局所的なコントラストの強調に使用されるフィルタ\n"
 "バイラテラルは高速ですが、極端な設定ではエッジの周りにアーティファクトが発生す"
 "る可能性があります"
 
@@ -18035,7 +18034,7 @@ msgstr "画像の端を基準としたフレームライン位置のオフセッ
 
 #: ../src/iop/borders.c:1015
 msgid "select border color"
-msgstr "縁の色を選択してください"
+msgstr "縁の色を選択"
 
 #: ../src/iop/borders.c:1020
 msgid "pick border color from image"
@@ -18051,7 +18050,7 @@ msgstr "ピッカー"
 
 #: ../src/iop/borders.c:1029
 msgid "select frame line color"
-msgstr "フレームラインの色を選択してください"
+msgstr "フレームラインの色を選択"
 
 #: ../src/iop/borders.c:1034
 msgid "pick frame line color from image"
@@ -18190,15 +18189,15 @@ msgstr "特殊、 RGB、シーン参照"
 
 #: ../src/iop/censorize.c:424
 msgid "radius of gaussian blur before pixelization"
-msgstr "ビクセル化前のガウスぼかしの半径"
+msgstr "ピクセル化前のガウスぼかしの半径"
 
 #: ../src/iop/censorize.c:425
 msgid "radius of gaussian blur after pixelization"
-msgstr "ビクセル化後のガウスぼかしの半径"
+msgstr "ピクセル化後のガウスぼかしの半径"
 
 #: ../src/iop/censorize.c:426
 msgid "radius of the intermediate pixelization"
-msgstr "中間段階で行うビクセル化の半径"
+msgstr "中間段階で行うピクセル化の半径"
 
 #: ../src/iop/censorize.c:427
 msgid "amount of noise to add at the end"
@@ -18227,7 +18226,7 @@ msgstr ""
 
 #: ../src/iop/channelmixer.c:606
 msgid "destination"
-msgstr "宛て先"
+msgstr "出力先"
 
 #: ../src/iop/channelmixer.c:613
 msgctxt "channelmixer"
@@ -18460,7 +18459,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:2054
 msgid "double CAT applied"
-msgstr "色順応変換が二重に適用されています"
+msgstr "色順応変換の二重適用"
 
 #: ../src/iop/channelmixerrgb.c:2055
 msgid ""
@@ -18552,7 +18551,7 @@ msgid ""
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
 "so its temperature is relevant and meaningful with a D illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとして用いることで正確に計算されま"
 "す\n"
 "それゆえこの温度はイルミナントDと関連し意味があるものです"
@@ -18568,7 +18567,7 @@ msgid ""
 "this illuminant can be accurately modeled by a black body spectrum,\n"
 "so its temperature is relevant and meaningful with a Planckian illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは黒体スペクトルをモデルとして用いることで正確に計算されます\n"
 "それゆえこの温度はプランキアンイルミナントと関連し意味があるものです"
 
@@ -18585,7 +18584,7 @@ msgid ""
 "so its temperature is not relevant and meaningful and you need to use a "
 "custom illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとしても黒体スペクトルをモデルとして"
 "も正確に計算されません\n"
 "それゆえこの温度は関連するものがなく意味がありません。カスタム設定のイルミナン"
@@ -18601,7 +18600,7 @@ msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
 msgstr ""
-"相関色感度の概算値\n"
+"相関色温度の概算値\n"
 "算出することが出来ないためカスタム設定のイルミナントを使用する必要があります"
 
 #: ../src/iop/channelmixerrgb.c:4026
@@ -18645,7 +18644,7 @@ msgstr "色順応変換"
 
 #: ../src/iop/channelmixerrgb.c:4460
 msgid "adaptation"
-msgstr "順応"
+msgstr "色順応"
 
 #: ../src/iop/channelmixerrgb.c:4463
 msgid ""
@@ -19263,17 +19262,17 @@ msgstr "フィルム汎用"
 
 #: ../src/iop/colorbalance.c:312
 msgid "similar to Kodak Portra"
-msgstr "Kodak Portra"
+msgstr "Kodak Portra風"
 
 # Kodak Ektar 風
 #: ../src/iop/colorbalance.c:316
 msgid "similar to Kodak Ektar"
-msgstr "Kodak Ektar"
+msgstr "Kodak Ektar風"
 
 # Kodachrome 風
 #: ../src/iop/colorbalance.c:320
 msgid "similar to Kodachrome"
-msgstr "Kodachrome"
+msgstr "Kodachrome風"
 
 #: ../src/iop/colorbalance.c:934
 msgid "optimize luma from patches"
@@ -19555,8 +19554,7 @@ msgstr "絶対量で彩度（サチュレーション）を増減させます"
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
-msgstr ""
-"元のピクセルの彩度（サチュレーション）に比例して、絶対量で彩度を増減させます"
+msgstr "元のピクセルの彩度（サチュレーション）に比例して彩度を増減させます"
 
 #: ../src/iop/colorbalancergb.c:1849
 msgctxt "section"
@@ -19576,8 +19574,7 @@ msgstr "絶対量で明るさ（ブリリアンス）を増減させます"
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
-msgstr ""
-"元のピクセルの明るさ（ブリリアンス）に比例して、絶対量で明るさを増減させます"
+msgstr "元のピクセルの明るさ（ブリリアンス）に比例して明るさを増減させます"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1873
@@ -19662,7 +19659,7 @@ msgstr "パワー"
 
 #: ../src/iop/colorbalancergb.c:1947
 msgid "luminance exponent in mid-tones"
-msgstr "中間トーンにの輝度の冪指数"
+msgstr "中間トーンの輝度の冪指数"
 
 #: ../src/iop/colorbalancergb.c:1952
 msgid "hue of the color exponent in mid-tones"
@@ -19936,11 +19933,11 @@ msgstr "ウォームトーン"
 
 #: ../src/iop/colorcorrection.c:114
 msgid "warming filter"
-msgstr "ウォーム化フィルタ"
+msgstr "ウォームフィルタ"
 
 #: ../src/iop/colorcorrection.c:122
 msgid "cooling filter"
-msgstr "クール化フィルタ"
+msgstr "クールフィルタ"
 
 #: ../src/iop/colorcorrection.c:242
 msgid ""
@@ -20385,8 +20382,8 @@ msgid ""
 "   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
 "ガイデットフィルターの彩度（サチュレーション）のしきい値を設定します\n"
-" - 値を下げると、低彩度の領域における変化が生じます\n"
-" - 値を上げると、高彩度の領域における変化を抑制します\n"
+" - 値を下げると、低色度の領域における変化が生じます\n"
+" - 値を上げると、高色度の領域における変化を抑制します\n"
 "    また、低彩度の領域におけるコントラストを強め、明るさ（ブライトネス）の変化"
 "は防ぎます"
 
@@ -20623,7 +20620,7 @@ msgstr "知覚的"
 #: ../src/libs/print_settings.c:2561 ../src/libs/print_settings.c:2910
 #: ../src/views/darkroom.c:3141 ../src/views/lighttable.c:1347
 msgid "relative colorimetric"
-msgstr "相対的な色彩を保持"
+msgstr "相対カラーメトリック"
 
 #: ../src/iop/colorout.c:842 ../src/libs/export.c:1638
 #: ../src/libs/print_settings.c:2562 ../src/libs/print_settings.c:2911
@@ -20636,7 +20633,7 @@ msgstr "彩度"
 #: ../src/libs/print_settings.c:2563 ../src/libs/print_settings.c:2912
 #: ../src/views/darkroom.c:3143 ../src/views/lighttable.c:1349
 msgid "absolute colorimetric"
-msgstr "絶対的な色彩を保持"
+msgstr "絶対カラーメトリック"
 
 #: ../src/iop/colorout.c:859
 msgid "export ICC profiles"
@@ -20656,7 +20653,7 @@ msgstr "周囲の色を流用してクリップしたハイライトを復元し
 #: ../src/iop/hazeremoval.c:898 ../src/iop/hazeremoval.c:912
 #: ../src/iop/levels.c:354
 msgid "inconsistent output"
-msgstr "不整合なアウトプット"
+msgstr "不整合な出力"
 
 #: ../src/iop/colorreconstruction.c:670
 msgid "module `color reconstruction' failed"
@@ -20737,7 +20734,7 @@ msgstr "白黒：赤"
 
 #: ../src/iop/colorzones.c:691
 msgid "B&W: with skin tones"
-msgstr "白黒：赤とスキントーン"
+msgstr "白黒：スキントーン"
 
 #: ../src/iop/colorzones.c:716
 msgid "polarizing filter"
@@ -20782,7 +20779,7 @@ msgstr "曲線のノードを領域で編集します"
 
 #: ../src/iop/colorzones.c:2683
 msgid "display selection"
-msgstr "選択を表示します"
+msgstr "選択を表示"
 
 #: ../src/iop/colorzones.c:2698
 msgid "choose selection criterion, will be the abscissa in the graph"
@@ -20982,8 +20979,7 @@ msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
-"LMMSEの精緻化のステップ数。このメディアンのステップはそのアウトプットを平均し"
-"ます\n"
+"LMMSEの精緻化のステップ数。このメディアンのステップはその出力を平均します\n"
 "精緻化は赤チャンネルと青チャンネルの再計算を追加して行います"
 
 #: ../src/iop/demosaic.c:1782
@@ -21039,7 +21035,7 @@ msgid ""
 "for best results avoid cropping or darkroom zooming in"
 msgstr ""
 "rawセンサーのデータからキャプチャシャープ化の範囲を計算します\n"
-"最良の結果を得るために、クロップdarkroomでの拡大表示を行わないでください"
+"最良の結果を得るために、クロップやdarkroomでの拡大表示を行わないでください"
 
 #: ../src/iop/demosaic.c:1812
 msgid ""
@@ -21319,7 +21315,7 @@ msgid ""
 msgstr ""
 "シャドウの色かぶりを補正します\n"
 "シャドウが紫がかっている場合、値を上げてください\n"
-"シャドウが緑がかっている場合、値を下げてしてください"
+"シャドウが緑がかっている場合、値を下げてください"
 
 #: ../src/iop/denoiseprofile.c:3790
 msgid ""
@@ -21721,7 +21717,7 @@ msgstr "構図|拡張|延長"
 msgid ""
 "how much to enlarge the canvas to the left as a percentage of the original "
 "image width"
-msgstr "画像の左側にキャンバスを拡げます（元画像の幅比）"
+msgstr "画像の左側にキャンバスを拡げます（元画像の高さ比）"
 
 #: ../src/iop/enlargecanvas.c:428
 msgid ""
@@ -21739,7 +21735,7 @@ msgstr "画像の上側にキャンバスを拡げます（元画像の幅比）
 msgid ""
 "how much to enlarge the canvas to the bottom as a percentage of the original "
 "image height"
-msgstr "画像の下側にキャンバスを拡げます（元画像の幅比）"
+msgstr "画像の下側にキャンバスを拡げます（元画像の高さ比）"
 
 #: ../src/iop/enlargecanvas.c:444
 msgid "select the color of the enlarged canvas"
@@ -22166,7 +22162,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1616
 msgctxt "section"
 msgid "destination/display"
-msgstr "宛て先／ディスプレイ"
+msgstr "出力先／ディスプレイ"
 
 #: ../src/iop/filmic.c:1625
 msgctxt "section"
@@ -22533,7 +22529,7 @@ msgid ""
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
-"色度（クロマティシティ）の再構成の追加パスを実行します\n"
+"色度の再構成の追加パスを実行します\n"
 "繰り返し回数を増やすと、周囲からの色の流用が増加します\n"
 "これにより処理が遅くなりますが、よりニュートラルなハイライトが生成されます\n"
 "また、マゼンタのハイライトがある難しいケースにおいても有用です"
