@@ -254,7 +254,13 @@ For modules with canvas interaction (crop, masks):
 
 ### Cursor Management
 
-Use `dt_control_change_cursor()` to set the mouse cursor shape during interaction. This function uses **CSS cursor names**.
+There are three levels of cursor change:
+
+1. Regular cursor changes
+2. Temporary cursor changes, which override regular cursor changes
+3. Global cursor changes, which override regular or temporary cursor changes
+
+Use `dt_control_change_cursor()` for regular cursor changes to set the mouse cursor shape during an interaction. This function uses **CSS cursor names**.
 
 ```c
 // Example: set to crosshair during interaction
@@ -276,6 +282,13 @@ Commonly used CSS cursor names in darktable:
 
 Refer to `src/control/control.c` for the implementation of fallbacks for backends with incomplete CSS support.
 
+Use `dt_control_set_temp_cursor()` to set the mouse cursor shape temporarily, for example if a particular portion of a widget needs to override the cursor set widget-wide by `dt_control_change_cursor()`. Follow this up with `dt_control_clear_temp_cursor()` to restore the cursor to the shape set by the most recent call to `dt_control_change_cursor()`. It is possible to make successive calls to `dt_control_set_temp_cursor()` to update the temporary cursor before it is eventually cleared.
+
+To make a UI-wide global cursor change, set the cursor (via a regular or temporary change) then call `dt_control_forbid_change_cursor()`. Successive calls to `dt_control_change_cursor()` or `dt_control_set_temp_cursor()` will not modify the cursor. To end this global change, call `dt_control_allow_change_cursor()` and then clear any temporary cursor.
+
+Use `dt_gui_cursor_set_busy()` to set a UI-wide busy cursor. This is meant to be used for modal operations which can only be halted by clicking cancel in the job progress widget. Remove the busy cursor with `dt_gui_cursor_clear_busy()`.
+
+In general, darktable widgets do not set their GDK window cursors. If a widget needs to display a particular cursor, it will catch enter/leave events and make appropriate calls to `dt_control_change_cursor()` and/or `dt_control_set_temp_cursor()`. This allows for the global busy, help, and keyboard mapping cursors to override GDK window cursors.
 
 ---
 

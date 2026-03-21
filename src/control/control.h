@@ -63,6 +63,10 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 void dt_control_forbid_change_cursor(void);
 // enable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_allow_change_cursor(void);
+// set a cursor which will override the cursor set by dt_control_change_cursor
+void dt_control_set_temp_cursor(const char *cursor_name);
+// return to the cursor most rececently set by dt_control_change_cursor
+void dt_control_clear_temp_cursor();
 void dt_control_change_cursor(const char *cursor_name);
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
