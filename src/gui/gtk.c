@@ -2245,6 +2245,69 @@ void dt_ui_scrollbars_show(dt_ui_t *ui,
   }
 }
 
+static void _handle_panel_widths(const dt_ui_panel_t p)
+{
+  if(!g_atomic_int_get(&darktable.gui_running))
+    // we don't want to change panels while the gui isn't fully initialized
+    return;
+
+  if(p != DT_UI_PANEL_LEFT && p != DT_UI_PANEL_RIGHT)
+    return;
+
+  const dt_ui_panel_t other_panel = p == DT_UI_PANEL_LEFT? DT_UI_PANEL_RIGHT : DT_UI_PANEL_LEFT;
+
+  if(!gtk_widget_get_visible(darktable.gui->ui->panels[other_panel]))
+    // the other side panel is hidden, so nothing to do
+    return;
+
+  // get the width of the application window
+  int app_window_width = 0;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  gtk_window_get_size(GTK_WINDOW(main_window), &app_window_width, NULL);
+
+  // calculate total used width 
+  int used_w = 0;
+  used_w += gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
+
+  // width of left and right border
+  used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.left_border);
+  used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.right_border);
+
+  // calculate width of center column
+  const int center_col_w = app_window_width - used_w;
+
+  // the required width of the panel to be shown
+  const int required_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[p]);
+
+  // check if the center column is allowed to shrink by required_width
+  const int min_center_width = dt_conf_get_int("min_center_width");
+
+  if(center_col_w - required_width < min_center_width)
+  {
+    // the center column gives not enough room for the panel, so we need to shrink
+    // at least one of the side panels
+    int shrink_width = -1 * (center_col_w - required_width - min_center_width);
+
+    const int min_panel_width = dt_conf_get_int("min_panel_width");
+    const int other_panel_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
+
+    // first shrink the other panel, respecting the min_panel_width
+    if(other_panel_width > min_panel_width) {
+      const int shrink = MIN(other_panel_width - min_panel_width, shrink_width);
+      dt_ui_panel_set_size(darktable.gui->ui, other_panel, other_panel_width - shrink);
+      shrink_width -= shrink;
+    }
+
+    if(shrink_width > 0) {
+      // still some size left, try to shrink this panel
+      if(required_width > min_panel_width) {
+        const int shrink = MIN(required_width - min_panel_width, shrink_width);
+        dt_ui_panel_set_size(darktable.gui->ui, p, required_width - shrink);
+      }
+    }
+  }
+}
+
 void dt_ui_panel_show(const dt_ui_t *ui,
                       const dt_ui_panel_t p,
                       const gboolean show,
@@ -2261,6 +2324,7 @@ void dt_ui_panel_show(const dt_ui_t *ui,
   {
     gtk_widget_show(ui->panels[p]);
     if(over_panel) gtk_widget_show(over_panel);
+    _handle_panel_widths(p);
   }
   else
   {
@@ -2675,12 +2739,13 @@ static gboolean _panel_handle_cursor_callback(GtkWidget *w,
 static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t panel, const gdouble delta_x)
 {
   // get the width of the application window
-  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
-  const gint app_win_width = gtk_widget_get_allocated_width(toplevel);
+  int app_window_w = 0;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  gtk_window_get_size(GTK_WINDOW(main_window), &app_window_w, NULL);
 
-  const gint min_center_w = dt_conf_get_int("min_center_width");
-  gint max_w = dt_conf_get_int("max_panel_width");
-  gint used_w = min_center_w;
+  const int min_center_w = dt_conf_get_int("min_center_width");
+  int max_w = dt_conf_get_int("max_panel_width");
+  int used_w = min_center_w;
 
   // Constraint: window width - center min - other side panel (if visible) - borders
   const dt_ui_panel_t other_panel = panel == DT_UI_PANEL_LEFT? DT_UI_PANEL_RIGHT : DT_UI_PANEL_LEFT;
@@ -2691,8 +2756,8 @@ static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t p
   if(gtk_widget_get_visible(darktable.gui->ui->panels[other_panel]))
     used_w += gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
 
-  if(app_win_width - used_w < max_w)
-    max_w = app_win_width - used_w;
+  if(app_window_w - used_w < max_w)
+    max_w = app_window_w - used_w;
 
   int sx = panel_drag_start_size;
   sx = CLAMP((int)(sx + delta_x),
