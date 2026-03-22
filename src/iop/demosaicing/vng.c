@@ -18,12 +18,13 @@
 
 /* taken from dcraw and demosaic_ppg below */
 
-static void lin_interpolate(float *out,
-                            const float *const in,
-                            const int width,
-                            const int height,
-                            const uint32_t filters,
-                            const uint8_t (*const xtrans)[6])
+static void _vng_lininterpolate(float *out,
+                                const float *const in,
+                                const int width,
+                                const int height,
+                                const uint32_t filters,
+                                const uint8_t (*const xtrans)[6],
+                                const int border)
 {
   const int colors = (filters == 9) ? 3 : 4;
   // border interpolate
@@ -107,6 +108,13 @@ static void lin_interpolate(float *out,
     const float *buf_in = in + width * row + 1;
     for(int col = 1; col < width - 1; col++)
     {
+      if(col == border && row >= border && row < height - border)
+      {
+        col = width - border;
+        buf = out + (size_t)4 * width * row + 4 * col;
+        buf_in = in + (size_t)width * row + col;
+      }
+      if(col == width) break;
       dt_aligned_pixel_t sum = { 0.0f };
       int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
@@ -192,7 +200,7 @@ static void vng_interpolate(float *out,
   else
     filters4 = filters | 0x0c0c0c0cu;
 
-  lin_interpolate(out, in, width, height, filters4, xtrans);
+  _vng_lininterpolate(out, in, width, height, filters4, xtrans, 1000000);
 
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear)
