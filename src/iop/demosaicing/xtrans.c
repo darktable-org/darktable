@@ -47,7 +47,8 @@ static void xtrans_markesteijn_interpolate(float *out,
                                            const int width,
                                            const int height,
                                            const uint8_t (*const xtrans)[6],
-                                           const int passes)
+                                           const int passes,
+                                           const uint32_t filters)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -137,7 +138,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? fmax(0.0f, in[width * row + col]) : 0.f;
           }
           else
           {
@@ -152,7 +153,7 @@ static void xtrans_markesteijn_interpolate(float *out,
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
-                  pix[c] = in[width * cy + cx];
+                  pix[c] = fmaxf(0.0f, in[width * cy + cx]);
                 else
                 {
                   // interpolate if mirror pixel is a different color
@@ -165,7 +166,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[width * yy + xx];
+                        sum += fmaxf(0.0f, in[width * yy + xx]);
                         count++;
                       }
                     }
@@ -177,7 +178,8 @@ static void xtrans_markesteijn_interpolate(float *out,
         }
 
       // duplicate rgb[0] to rgb[1], rgb[2], and rgb[3]
-      for(int c = 1; c <= 3; c++) memcpy(rgb[c], rgb[0], sizeof(*rgb));
+      for(int c = 1; c <= 3; c++)
+        dt_iop_image_copy((float*)rgb[c], (float*)rgb[0], sizeof(*rgb) / sizeof(float));
 
       // note that successive calculations are inset within the tile
       // so as to give enough border data, and there needs to be a 6
@@ -502,11 +504,12 @@ static void xtrans_markesteijn_interpolate(float *out,
             }
           }
           for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] = MAX(0.0f, avg[c]/avg[3]);
+            out[4 * (width * (row + top) + col + left) + c] = fmaxf(0.0f, avg[c]/avg[3]);
         }
     }
   }
   dt_free_align(all_buffers);
+  _vng_lininterpolate(out, in, width, height, filters, xtrans, pad_tile);
 }
 
 #undef TS
