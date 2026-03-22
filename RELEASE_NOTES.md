@@ -264,6 +264,9 @@ changes (where available).
 - Fixed spurious export size is reduced because of memory restrictions
   issue.
 
+- Fixed darktable on startup failing to delete left over database
+  lockfiles for non default workspaces.
+
 ## Lua
 
 ### API Version
