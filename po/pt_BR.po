@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-20 00:20-0300\n"
-"PO-Revision-Date: 2026-03-20 00:20-0300\n"
+"POT-Creation-Date: 2026-03-22 15:37-0300\n"
+"PO-Revision-Date: 2026-03-22 15:37-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -104,7 +104,7 @@ msgid "on import"
 msgstr "ao importar"
 
 #: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1746
-#: ../build/bin/conf_gen.h:1767 ../build/bin/conf_gen.h:4848
+#: ../build/bin/conf_gen.h:1767 ../build/bin/conf_gen.h:4857
 #: ../build/bin/preferences_gen.h:3307
 msgctxt "preferences"
 msgid "always"
@@ -172,7 +172,7 @@ msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:1022 ../build/bin/conf_gen.h:2751
 #: ../build/bin/conf_gen.h:3714 ../build/bin/conf_gen.h:4142
-#: ../build/bin/conf_gen.h:4607
+#: ../build/bin/conf_gen.h:4616
 msgctxt "preferences"
 msgid "none"
 msgstr "nenhum"
@@ -350,7 +350,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:3713
-#: ../build/bin/conf_gen.h:4851 ../build/bin/preferences_gen.h:4046
+#: ../build/bin/conf_gen.h:4860 ../build/bin/preferences_gen.h:4046
 msgctxt "preferences"
 msgid "auto"
 msgstr "automático"
@@ -697,61 +697,61 @@ msgctxt "preferences"
 msgid "line"
 msgstr "linha"
 
-#: ../build/bin/conf_gen.h:4444
+#: ../build/bin/conf_gen.h:4453
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:4445
+#: ../build/bin/conf_gen.h:4454
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:4446
+#: ../build/bin/conf_gen.h:4455
 msgctxt "preferences"
 msgid "inch"
 msgstr "polegada"
 
-#: ../build/bin/conf_gen.h:4501 ../build/bin/preferences_gen.h:4501
+#: ../build/bin/conf_gen.h:4510 ../build/bin/preferences_gen.h:4501
 msgctxt "preferences"
 msgid "all"
 msgstr "todos"
 
-#: ../build/bin/conf_gen.h:4502
+#: ../build/bin/conf_gen.h:4511
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:4503
+#: ../build/bin/conf_gen.h:4512
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4603 ../build/bin/preferences_gen.h:3493
+#: ../build/bin/conf_gen.h:4612 ../build/bin/preferences_gen.h:3493
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "relativo à cena (sigmóide)"
 
-#: ../build/bin/conf_gen.h:4604
+#: ../build/bin/conf_gen.h:4613
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "relativo à cena (fílmico)"
 
-#: ../build/bin/conf_gen.h:4605
+#: ../build/bin/conf_gen.h:4614
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "relativo à cena (AgX)"
 
-#: ../build/bin/conf_gen.h:4606
+#: ../build/bin/conf_gen.h:4615
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relativo à exibição (legado)"
 
-#: ../build/bin/conf_gen.h:4753
+#: ../build/bin/conf_gen.h:4762
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:4754
+#: ../build/bin/conf_gen.h:4763
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -759,62 +759,62 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:4770
+#: ../build/bin/conf_gen.h:4779
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:4771
+#: ../build/bin/conf_gen.h:4780
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:4772
+#: ../build/bin/conf_gen.h:4781
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:4836
+#: ../build/bin/conf_gen.h:4845
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:4837
+#: ../build/bin/conf_gen.h:4846
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:4838
+#: ../build/bin/conf_gen.h:4847
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:4849
+#: ../build/bin/conf_gen.h:4858
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:4850
+#: ../build/bin/conf_gen.h:4859
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:4852
+#: ../build/bin/conf_gen.h:4861
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:4853
+#: ../build/bin/conf_gen.h:4862
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:4854
+#: ../build/bin/conf_gen.h:4863
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:4855
+#: ../build/bin/conf_gen.h:4864
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -825,7 +825,7 @@ msgid "this setting has been modified"
 msgstr "esta predefinição foi modificada"
 
 #: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3067
-#: ../src/gui/gtk.c:3333 ../src/gui/preferences.c:538
+#: ../src/gui/gtk.c:3337 ../src/gui/preferences.c:538
 #: ../src/gui/preferences.c:1030 ../src/libs/modulegroups.c:4173
 msgid "?"
 msgstr "?"
@@ -2496,7 +2496,7 @@ msgstr "outono"
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3969 ../src/iop/bilateral.cc:381
+#: ../src/gui/gtk.c:3973 ../src/iop/bilateral.cc:381
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
 #: ../src/iop/channelmixerrgb.c:4647 ../src/iop/colorequal.c:2927
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:1999
@@ -2625,7 +2625,7 @@ msgstr "genérico"
 #: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3968 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
+#: ../src/gui/gtk.c:3972 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
 #: ../src/iop/channelmixer.c:611 ../src/iop/channelmixer.c:626
 #: ../src/iop/channelmixerrgb.c:4646 ../src/iop/colorequal.c:2925
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1979
@@ -2700,7 +2700,7 @@ msgstr "roxo"
 #: ../src/common/collection.c:1475 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3967 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
+#: ../src/gui/gtk.c:3971 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
 #: ../src/iop/channelmixerrgb.c:4645 ../src/iop/colorequal.c:2922
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:1995
@@ -5215,7 +5215,7 @@ msgstr "apenas vinheta manual"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2626
-#: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:3966
+#: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:3970
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3614
 #: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3552
 #: ../src/libs/filtering.c:1515 ../src/libs/filters/colors.c:157
@@ -6003,16 +6003,16 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4096
+#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4099
 #: ../src/iop/colorequal.c:3016
 msgid "sliders"
 msgstr "controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4101
+#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4104
 msgid "dropdowns"
 msgstr "menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4106
+#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4109
 msgid "buttons"
 msgstr "botões"
 
@@ -6025,61 +6025,61 @@ msgstr ""
 "%sclique direito para digitar um valor entra <b>%s</b> e <b>%s</b>\n"
 "ou segure control+shift enquanto arrastar para ignorar os limites."
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3767
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3767
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3765
+#: ../src/bauhaus/bauhaus.c:3768
 msgid "button pressed"
 msgstr "botão pressionado"
 
-#: ../src/bauhaus/bauhaus.c:4001
+#: ../src/bauhaus/bauhaus.c:4004
 msgid "not that many sliders"
 msgstr "nem tantos controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:4015
+#: ../src/bauhaus/bauhaus.c:4018
 msgid "not that many dropdowns"
 msgstr "nem tantos menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:4034
+#: ../src/bauhaus/bauhaus.c:4037
 msgid "not that many buttons"
 msgstr "nem tantos botões"
 
-#: ../src/bauhaus/bauhaus.c:4039 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:4042 ../src/gui/accelerators.c:392
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:4040 ../src/bauhaus/bauhaus.c:4046
+#: ../src/bauhaus/bauhaus.c:4043 ../src/bauhaus/bauhaus.c:4049
 #: ../src/gui/accelerators.c:371
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:4041
+#: ../src/bauhaus/bauhaus.c:4044
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:4042 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:4045 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:4045 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:4048 ../src/libs/select.c:40
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:4085
+#: ../src/bauhaus/bauhaus.c:4088
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:4090
+#: ../src/bauhaus/bauhaus.c:4093
 msgid "dropdown"
 msgstr "menu flutuante"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3875
+#: ../src/chart/main.c:504 ../src/common/database.c:3883
 #: ../src/control/jobs/control_jobs.c:2205
 #: ../src/control/jobs/control_jobs.c:2263 ../src/gui/accelerators.c:2537
 #: ../src/gui/accelerators.c:2616 ../src/gui/accelerators.c:2659
@@ -7113,8 +7113,8 @@ msgstr ""
 msgid "darktable - unable to create directories"
 msgstr "darktable - não foi possível criar diretórios"
 
-#: ../src/common/darktable.c:1611 ../src/common/database.c:4129
-#: ../src/common/database.c:4331
+#: ../src/common/darktable.c:1611 ../src/common/database.c:4137
+#: ../src/common/database.c:4339
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
@@ -7400,8 +7400,8 @@ msgstr "nome de versão"
 msgid "preserved filename"
 msgstr "nomes preservado de arquivo"
 
-#: ../src/common/database.c:3846
-#, c-format
+#: ../src/common/database.c:3854
+#, fuzzy, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -7430,7 +7430,7 @@ msgid ""
 "darktable are running, \n"
 "      this probably means that the last instance was ended abnormally. \n"
 "      Click on the \"delete database lock files\" button to delete the files "
-"<i>data.db.lock</i> and <i>library.db.lock</i>. \n"
+"<i>data.db.lock</i> and <i>%s</i>. \n"
 "\n"
 "\n"
 "      <i><u>Caution!</u> Do not delete these files without first undertaking "
@@ -7475,19 +7475,19 @@ msgstr ""
 "      de outra forma você corre o risco de gerar sérias inconsistências na "
 "sua base de dados.</i>\n"
 
-#: ../src/common/database.c:3873
+#: ../src/common/database.c:3881
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:3876
+#: ../src/common/database.c:3884
 msgid "_delete database lock files"
 msgstr "_apagar arquivos de travas (locks) da base de dados"
 
-#: ../src/common/database.c:3882
+#: ../src/common/database.c:3890
 msgid "are you sure?"
 msgstr "tem certeza?"
 
-#: ../src/common/database.c:3883
+#: ../src/common/database.c:3891
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -7495,19 +7495,19 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3883 ../src/gui/gtk.c:3284
+#: ../src/common/database.c:3891 ../src/gui/gtk.c:3288
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3883 ../src/gui/gtk.c:3283
+#: ../src/common/database.c:3891 ../src/gui/gtk.c:3287
 msgid "_yes"
 msgstr "_sim"
 
-#: ../src/common/database.c:3900
+#: ../src/common/database.c:3907
 msgid "done"
 msgstr "feito"
 
-#: ../src/common/database.c:3901
+#: ../src/common/database.c:3908
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -7517,24 +7517,23 @@ msgstr ""
 "arquivos de trava removidos com sucesso.\n"
 "você agora pode reiniciar o darktable\n"
 
-#: ../src/common/database.c:3902 ../src/common/database.c:3909
+#: ../src/common/database.c:3909 ../src/common/database.c:3916
 #: ../src/gui/accelerators.c:2617 ../src/gui/accelerators.c:2689
 #: ../src/gui/accelerators.c:2798 ../src/gui/hist_dialog.c:237
 #: ../src/gui/presets.c:576
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3905 ../src/gui/preferences_ai.c:153
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:153
 msgid "error"
 msgstr "erro"
 
-#: ../src/common/database.c:3906
-#, c-format
+#: ../src/common/database.c:3913
+#, fuzzy, c-format
 msgid ""
 "\n"
 "at least one file could not be deleted.\n"
-"you may try to manually delete the files <i>data.db.lock</i> and "
-"<i>library.db.lock</i>\n"
+"you may try to manually delete the files <i>data.db.lock</i> and <i>%s</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
 "\n"
@@ -7543,7 +7542,7 @@ msgstr ""
 "<i>library.db.lock</i>\n"
 "na pasta <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:4032
+#: ../src/common/database.c:4040
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -7552,17 +7551,17 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
-#: ../src/common/database.c:4040
+#: ../src/common/database.c:4048
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
-#: ../src/common/database.c:4050
+#: ../src/common/database.c:4058
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
-#: ../src/common/database.c:4121
+#: ../src/common/database.c:4129
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -7580,12 +7579,12 @@ msgstr ""
 "dados foi criada ou passou por upgrade por uma versão mais nova do "
 "darktable)\n"
 
-#: ../src/common/database.c:4128
+#: ../src/common/database.c:4136
 msgid "darktable - too new db version"
 msgstr "darktable - versão de bd muito nova"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:4145
+#: ../src/common/database.c:4153
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -7604,21 +7603,21 @@ msgstr ""
 "\n"
 "você quer continuar ou parar agora para fazer um backup\n"
 
-#: ../src/common/database.c:4153
+#: ../src/common/database.c:4161
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
-#: ../src/common/database.c:4154 ../src/common/database.c:4512
-#: ../src/common/database.c:4527 ../src/common/database.c:4686
-#: ../src/common/database.c:4701
+#: ../src/common/database.c:4162 ../src/common/database.c:4520
+#: ../src/common/database.c:4535 ../src/common/database.c:4694
+#: ../src/common/database.c:4709
 msgid "_close darktable"
 msgstr "_fechar o darktable"
 
-#: ../src/common/database.c:4154
+#: ../src/common/database.c:4162
 msgid "_upgrade database"
 msgstr "_atualizar base de dados"
 
-#: ../src/common/database.c:4321
+#: ../src/common/database.c:4329
 #, c-format
 msgid ""
 "you do not have write access to at least one of the darktable databases:\n"
@@ -7635,11 +7634,11 @@ msgstr ""
 "\n"
 "por favor resolva isto e inicie o darktable novamente"
 
-#: ../src/common/database.c:4329
+#: ../src/common/database.c:4337
 msgid "darktable - read-only database detected"
 msgstr "darktable - base de dados somente de leitura detectada"
 
-#: ../src/common/database.c:4492 ../src/common/database.c:4666
+#: ../src/common/database.c:4500 ../src/common/database.c:4674
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -7648,21 +7647,21 @@ msgstr ""
 "quick_check disse:\n"
 "%s \n"
 
-#: ../src/common/database.c:4509 ../src/common/database.c:4524
-#: ../src/common/database.c:4683 ../src/common/database.c:4698
+#: ../src/common/database.c:4517 ../src/common/database.c:4532
+#: ../src/common/database.c:4691 ../src/common/database.c:4706
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
 
-#: ../src/common/database.c:4513 ../src/common/database.c:4687
+#: ../src/common/database.c:4521 ../src/common/database.c:4695
 msgid "_attempt restore"
 msgstr "_tentar recuperar"
 
-#: ../src/common/database.c:4514 ../src/common/database.c:4528
-#: ../src/common/database.c:4688 ../src/common/database.c:4702
+#: ../src/common/database.c:4522 ../src/common/database.c:4536
+#: ../src/common/database.c:4696 ../src/common/database.c:4710
 msgid "_delete database"
 msgstr "_apagar base de dados"
 
-#: ../src/common/database.c:4517 ../src/common/database.c:4691
+#: ../src/common/database.c:4525 ../src/common/database.c:4699
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -7674,7 +7673,7 @@ msgstr ""
 "do snapshot mais recente ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4531 ../src/common/database.c:4705
+#: ../src/common/database.c:4539 ../src/common/database.c:4713
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -7684,7 +7683,7 @@ msgstr ""
 "a base de dados de um backup ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4538 ../src/common/database.c:4710
+#: ../src/common/database.c:4546 ../src/common/database.c:4718
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -8495,12 +8494,12 @@ msgstr "<em foco>"
 msgid "show accels window"
 msgstr "mostra janela de atalhos"
 
-#: ../src/control/control.c:331
+#: ../src/control/control.c:375
 msgid "darktable will be locked until background work has been done"
 msgstr ""
 "o darktable permanecerá travado até que o trabalho de fundo tenha sido feito"
 
-#: ../src/control/control.c:434
+#: ../src/control/control.c:478
 msgid "working..."
 msgstr "processando..."
 
@@ -8634,17 +8633,17 @@ msgstr "_fechar"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:811 ../src/dtgtk/thumbtable.c:3097
+#: ../src/control/crawler.c:811 ../src/dtgtk/thumbtable.c:3098
 #: ../src/libs/import.c:2037 ../src/libs/select.c:142
 msgid "select all"
 msgstr "selecionar tudo"
 
-#: ../src/control/crawler.c:812 ../src/dtgtk/thumbtable.c:3099
+#: ../src/control/crawler.c:812 ../src/dtgtk/thumbtable.c:3100
 #: ../src/libs/import.c:2041 ../src/libs/select.c:146
 msgid "select none"
 msgstr "selecionar nenhuma"
 
-#: ../src/control/crawler.c:813 ../src/dtgtk/thumbtable.c:3101
+#: ../src/control/crawler.c:813 ../src/dtgtk/thumbtable.c:3102
 #: ../src/libs/select.c:150
 msgid "invert selection"
 msgstr "inverter seleção"
@@ -9135,7 +9134,7 @@ msgid "refresh EXIF"
 msgstr "atualizar EXIF"
 
 #: ../src/control/jobs/control_jobs.c:2415
-#: ../src/control/jobs/control_jobs.c:2447 ../src/dtgtk/thumbtable.c:3084
+#: ../src/control/jobs/control_jobs.c:2447 ../src/dtgtk/thumbtable.c:3085
 msgid "paste history"
 msgstr "colar histórico"
 
@@ -9143,7 +9142,7 @@ msgstr "colar histórico"
 msgid "compress history"
 msgstr "comprimir histórico"
 
-#: ../src/control/jobs/control_jobs.c:2475 ../src/dtgtk/thumbtable.c:3088
+#: ../src/control/jobs/control_jobs.c:2475 ../src/dtgtk/thumbtable.c:3089
 #: ../src/libs/copy_history.c:329
 msgid "discard history"
 msgstr "descartar histórico"
@@ -10333,7 +10332,7 @@ msgstr "duplicar"
 #: ../src/develop/imageop.c:4147
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:145
-#: ../src/gui/gtk.c:3814 ../src/gui/gtk.c:3869 ../src/gui/hist_dialog.c:289
+#: ../src/gui/gtk.c:3818 ../src/gui/gtk.c:3873 ../src/gui/hist_dialog.c:289
 #: ../src/gui/styles_dialog.c:629 ../src/gui/styles_dialog.c:651
 #: ../src/iop/atrous.c:1567 ../src/libs/lib.c:1650
 #: ../src/libs/modulegroups.c:4168
@@ -10414,7 +10413,7 @@ msgstr "dureza: %3.2f%%"
 #: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/object.c:1169 ../src/develop/masks/path.c:1886
+#: ../src/develop/masks/path.c:1886
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "tamanho: %3.2f%%"
@@ -10612,120 +10611,121 @@ msgstr "cópia de `%s`"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: versão de máscara incompatível: %d != %d"
 
-#: ../src/develop/masks/masks.c:1263 ../src/develop/masks/masks.c:1918
+#: ../src/develop/masks/masks.c:1263 ../src/develop/masks/masks.c:1923
 #, c-format
 msgid "opacity: %.0f%%"
 msgstr "opacidade: %.0f%%"
 
-#: ../src/develop/masks/masks.c:1664 ../src/libs/masks.c:1092
+#: ../src/develop/masks/masks.c:1669 ../src/libs/masks.c:1092
 msgid "add existing shape"
 msgstr "adicionar forma existente"
 
-#: ../src/develop/masks/masks.c:1691
+#: ../src/develop/masks/masks.c:1696
 msgid "use same shapes as"
 msgstr "usar as mesmas formas que"
 
-#: ../src/develop/masks/masks.c:2001
+#: ../src/develop/masks/masks.c:2006
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
-#: ../src/develop/masks/object.c:1012
+#: ../src/develop/masks/object.c:871
 msgid "no mask extracted from AI segmentation"
 msgstr "nenhuma máscara foi extraída da segmentação por IA"
 
-#: ../src/develop/masks/object.c:1020
+#: ../src/develop/masks/object.c:879
 msgid "ai object group"
 msgstr "grupo de objetos de ia"
 
-#: ../src/develop/masks/object.c:1021
+#: ../src/develop/masks/object.c:880
 msgid "ai object"
 msgstr "objeto de ia"
 
-#: ../src/develop/masks/object.c:1184
-#, c-format
-msgid "cleanup: %d"
-msgstr ""
-
-#: ../src/develop/masks/object.c:1195
+#: ../src/develop/masks/object.c:1030
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "suavização: %3.2f"
 
-#: ../src/develop/masks/object.c:1208
+#: ../src/develop/masks/object.c:1041
+#, c-format
+msgid "cleanup: %d"
+msgstr ""
+
+#: ../src/develop/masks/object.c:1054
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidade: %.0d%%"
 
-#: ../src/develop/masks/object.c:1343
+#: ../src/develop/masks/object.c:1168
 #, c-format
 msgid "group '%s'"
 msgstr "grupo '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1668 ../src/develop/masks/object.c:1702
+#: ../src/develop/masks/object.c:1418 ../src/develop/masks/object.c:1452
 msgid "object mask: analyzing image..."
 msgstr "máscara de objeto: analisando imagem..."
 
-#: ../src/develop/masks/object.c:1712
-msgid "brush over object to create mask"
-msgstr ""
+#: ../src/develop/masks/object.c:1462
+msgid "click on object to create mask"
+msgstr "clique no objeto para criar a máscara"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1722
+#: ../src/develop/masks/object.c:1472
 msgid "object mask preparation failed"
+msgstr "a preparação de máscara de objeto falhou"
+
+#: ../src/develop/masks/object.c:1782
+msgid "[OBJECT] select / add foreground point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:2042
-msgid "[OBJECT] brush over object"
-msgstr ""
-
-#: ../src/develop/masks/object.c:2047
-msgid "[OBJECT] add foreground point"
-msgstr ""
-
-#: ../src/develop/masks/object.c:2052
+#: ../src/develop/masks/object.c:1787
 msgid "[OBJECT] add background point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:2057
+#: ../src/develop/masks/object.c:1792
+#, fuzzy
+msgid "[OBJECT] clear selection"
+msgstr "limpa seleção"
+
+#: ../src/develop/masks/object.c:1797
 msgid "[OBJECT] apply mask"
 msgstr ""
 
-#: ../src/develop/masks/object.c:2062
-msgid "[OBJECT] change brush size / cleanup"
-msgstr ""
-
-#: ../src/develop/masks/object.c:2067
+#: ../src/develop/masks/object.c:1802
 #, fuzzy
 msgid "[OBJECT] change smoothing"
 msgstr "[CAMINHO] mudar tamanho"
 
-#: ../src/develop/masks/object.c:2072
+#: ../src/develop/masks/object.c:1807
+#, fuzzy
+msgid "[OBJECT] change cleanup"
+msgstr "[CAMINHO] mudar opacidade"
+
+#: ../src/develop/masks/object.c:1812
 #, fuzzy
 msgid "[OBJECT] change opacity"
 msgstr "[CAMINHO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:2080
+#: ../src/develop/masks/object.c:1820
 #, c-format
 msgid "object #%d"
 msgstr "objeto #%d"
 
-#: ../src/develop/masks/object.c:2099
+#: ../src/develop/masks/object.c:1839
 #, fuzzy, c-format
 msgid ""
-"<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: alt+click, "
-"<b>apply</b>: right-click\n"
-"<b>cleanup</b>: scroll (%d), <b>smoothing</b>: shift+scroll (%3.2f), "
+"<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
+"ctrl+shift+click, <b>apply</b>: right-click\n"
+"<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>modo da névoa</b>: alt+clique, <b>rotacionar</b>: ctrl+arrastar\n"
 "<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</"
 "b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:2107
+#: ../src/develop/masks/object.c:1847
 #, fuzzy, c-format
-msgid ""
-"<b>brush</b>: drag, <b>size</b>: scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
+msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>tamanho</b>: scroll, <b>tamanho do enevoamento</b>: shift+scroll\n"
 "<b>opacidade</b>: ctrl+scroll (%d%%)"
@@ -11246,31 +11246,31 @@ msgid "cached thumbnails invalidation"
 msgstr "invalidação do cache de miniaturas"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:3080
+#: ../src/dtgtk/thumbtable.c:3081
 msgid "copy history"
 msgstr "copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:3082
+#: ../src/dtgtk/thumbtable.c:3083
 msgid "copy history parts"
 msgstr "copiar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:3086
+#: ../src/dtgtk/thumbtable.c:3087
 msgid "paste history parts"
 msgstr "colar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:3091
+#: ../src/dtgtk/thumbtable.c:3092
 msgid "duplicate image"
 msgstr "duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:3093
+#: ../src/dtgtk/thumbtable.c:3094
 msgid "duplicate image virgin"
 msgstr "duplicar imagem sem desenvolvimento"
 
-#: ../src/dtgtk/thumbtable.c:3103 ../src/libs/select.c:154
+#: ../src/dtgtk/thumbtable.c:3104 ../src/libs/select.c:154
 msgid "select film roll"
 msgstr "selecionar rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:3105 ../src/libs/select.c:158
+#: ../src/dtgtk/thumbtable.c:3106 ../src/libs/select.c:158
 msgid "select untouched"
 msgstr "selecionar não modificadas"
 
@@ -13617,13 +13617,13 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:176
-#: ../src/gui/gtk.c:3867 ../src/libs/modulegroups.c:2939
+#: ../src/gui/gtk.c:3871 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:882
 msgid "next"
 msgstr "próxima"
 
 #: ../src/gui/accelerators.c:144 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3868 ../src/libs/modulegroups.c:2939
+#: ../src/gui/gtk.c:3872 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:883
 msgid "previous"
 msgstr "anterior"
@@ -13652,7 +13652,7 @@ msgstr "alternar-direita"
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:168 ../src/gui/gtk.c:3866
+#: ../src/gui/accelerators.c:168 ../src/gui/gtk.c:3870
 msgid "activate"
 msgstr "ativar"
 
@@ -14527,8 +14527,8 @@ msgstr "alterna foco máximo"
 msgid "toggle focus peaking"
 msgstr "alternar foco máximo"
 
-#: ../src/gui/gtk.c:2021 ../src/gui/gtk.c:3973 ../src/gui/gtk.c:3978
-#: ../src/gui/gtk.c:3983 ../src/gui/gtk.c:3988
+#: ../src/gui/gtk.c:2021 ../src/gui/gtk.c:3977 ../src/gui/gtk.c:3982
+#: ../src/gui/gtk.c:3987 ../src/gui/gtk.c:3992
 msgid "tabs"
 msgstr "abas"
 
@@ -14570,36 +14570,36 @@ msgid "show/hide modules"
 msgstr "mostrar/ocultar módulos"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3400
+#: ../src/gui/gtk.c:3404
 msgid "access the online user manual?"
 msgstr "acessar o manual do usuário online?"
 
-#: ../src/gui/gtk.c:3401
+#: ../src/gui/gtk.c:3405
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "você deseja acessar `%s'?"
 
-#: ../src/gui/gtk.c:3474
+#: ../src/gui/gtk.c:3478
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3519 ../src/libs/metadata_view.c:853
+#: ../src/gui/gtk.c:3523 ../src/libs/metadata_view.c:853
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3521
+#: ../src/gui/gtk.c:3525
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3861
+#: ../src/gui/gtk.c:3865
 msgid "does not contain pages"
 msgstr "não contém páginas"
 
-#: ../src/gui/gtk.c:4110
+#: ../src/gui/gtk.c:4114
 #, c-format
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
@@ -15169,11 +15169,11 @@ msgid "AI model packages (*.dtmodel)"
 msgstr ""
 
 #: ../src/gui/preferences_ai.c:815
-#, fuzzy, c-format
+#, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
-msgstr[0] "excluir duplicata?"
-msgstr[1] "excluir duplicata?"
+msgstr[0] "excluir %d modelo selecionado?"
+msgstr[1] "excluir %d modelos selecionados?"
 
 #. enable AI toggle
 #: ../src/gui/preferences_ai.c:873
@@ -15182,9 +15182,8 @@ msgstr "habilitar features de IA"
 
 #. provider dropdown
 #: ../src/gui/preferences_ai.c:917
-#, fuzzy
 msgid "execution provider"
-msgstr "ordem de seleção"
+msgstr "provedor de execução"
 
 #. populate from central provider table, skipping unavailable providers
 #: ../src/gui/preferences_ai.c:928
@@ -19993,7 +19992,7 @@ msgstr "harmonizador de cor"
 
 #: ../src/iop/colorharmonizer.c:132
 msgid "harmonize colors toward a selected palette in perceptual space"
-msgstr ""
+msgstr "harmonizar cores com uma paleta selecionada no espaço perceptual"
 
 #: ../src/iop/colorharmonizer.c:133
 msgid "creative color grading"
@@ -25908,7 +25907,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "controle da câmera"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:728
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:733
 msgid "modes"
 msgstr "modos"
 
@@ -27500,20 +27499,20 @@ msgstr "clique-duplo para redefinir"
 msgid "drag to change exposure"
 msgstr "arraste para mudar exposição"
 
-#: ../src/libs/histogram.c:673 ../src/libs/scopes/histogram.c:50
+#: ../src/libs/histogram.c:678 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:679 ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:684 ../src/libs/histogram.c:744
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:752
+#: ../src/libs/histogram.c:757
 #, c-format
 msgid "toggle %s channel"
 msgstr "alternar canal %s"
 
-#: ../src/libs/histogram.c:760
+#: ../src/libs/histogram.c:765
 msgid "toggle colors"
 msgstr "alternar cores"
 
@@ -28874,9 +28873,8 @@ msgid "module group: '%s'"
 msgstr "grupo de módulos: '%s'"
 
 #: ../src/libs/modulegroups.c:2945 ../src/libs/modulegroups.c:2999
-#, fuzzy
 msgid "cycle module groups"
-msgstr "grupos de módulos"
+msgstr "alternar grupos de módulos"
 
 #: ../src/libs/modulegroups.c:2977
 msgid ""
@@ -30774,11 +30772,11 @@ msgstr "não é possível modificar a imagem em modo plugin do GIMP"
 
 #: ../src/views/darkroom.c:1462
 msgid "past end of collection, looped to first image"
-msgstr ""
+msgstr "passado final da coleção, retornando a partir da primeira imagem"
 
 #: ../src/views/darkroom.c:1480
 msgid "past beginning of collection, looped to last image"
-msgstr ""
+msgstr "passado começo da coleção, retomando a partir da última imagem"
 
 #: ../src/views/darkroom.c:2582
 msgid "no visible modules"
@@ -30790,9 +30788,9 @@ msgid "focused instance '%s' of '%s'"
 msgstr "instância em foco: '%s' de '%s'"
 
 #: ../src/views/darkroom.c:2614 ../src/views/darkroom.c:2771
-#, fuzzy, c-format
+#, c-format
 msgid "focused module '%s'"
-msgstr "módulo em foco: '%s'"
+msgstr "módulo em foco '%s'"
 
 #: ../src/views/darkroom.c:2622 ../src/views/darkroom.c:2652
 #: ../src/views/darkroom.c:2661 ../src/views/darkroom.c:2685
@@ -30857,9 +30855,8 @@ msgstr "somente uma instância de '%s'"
 
 #. cycle through visible modules and their instances
 #: ../src/views/darkroom.c:2809 ../src/views/darkroom.c:2871
-#, fuzzy
 msgid "cycle modules"
-msgstr "módulos ativos"
+msgstr "alternar módulos"
 
 #: ../src/views/darkroom.c:2832 ../src/views/darkroom.c:2834
 msgid "quick access to presets"
