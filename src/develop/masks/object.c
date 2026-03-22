@@ -47,6 +47,7 @@
 #define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
+#define CONF_OBJECT_PATH_PREVIEW_KEY "plugins/darkroom/masks/object/path_preview"
 
 // default render target (longest side in pixels).
 // the SAM encoder internally downscales to 1024 so encoding quality
@@ -755,6 +756,11 @@ static void _update_preview(_object_data_t *d)
 {
   _free_preview_forms(d);
   if(!d->mask || d->mask_w <= 0 || d->mask_h <= 0)
+    return;
+
+  // skip vectorization when path preview is disabled
+  if(dt_conf_key_exists(CONF_OBJECT_PATH_PREVIEW_KEY)
+     && !dt_conf_get_bool(CONF_OBJECT_PATH_PREVIEW_KEY))
     return;
 
   const size_t n = (size_t)d->mask_w * d->mask_h;
