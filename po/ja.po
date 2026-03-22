@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-22 00:15+0900\n"
+"PO-Revision-Date: 2026-03-22 12:18+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -198,7 +198,7 @@ msgstr "新しい画像のみ選択"
 
 #: ../build/bin/conf_gen.h:1370
 msgid "only select images that have not already been imported"
-msgstr "インポートされていない画像のみ選択"
+msgstr "インポートされていない画像のみ選択します"
 
 #: ../build/bin/conf_gen.h:1378
 msgid "ignore non-raw images"
@@ -16596,7 +16596,7 @@ msgstr ""
 " - コントラストを上げる\n"
 " - ピボットのターゲット出力を上げる\n"
 " - ホワイトの相対露出値を上げる\n"
-" - カーブYガンマ（拡張カーブパラメータ内）を上げる\n"
+" - カーブYガンマ（詳細カーブパラメータ内）を上げる\n"
 "\n"
 "上記の設定の効果を確認するには、'カーブを表示'セクションを開いてください"
 
@@ -16628,7 +16628,7 @@ msgstr ""
 " - コントラストを上げる\n"
 " - ピボットのターゲット出力を下げる\n"
 " - ブラックの相対露出値を下げる（より負の値にする）\n"
-" - カーブYガンマ（拡張カーブパラメータ内）を下げる\n"
+" - カーブYガンマ（詳細カーブパラメータ内）を下げる\n"
 "\n"
 "上記の設定の効果を確認するには、'カーブを表示'セクションを開いてください"
 
@@ -16676,7 +16676,7 @@ msgstr "トーンマッピングカーブ"
 #: ../src/iop/agx.c:1970
 msgctxt "section"
 msgid "advanced curve parameters"
-msgstr "拡張カーブパラメータ"
+msgstr "詳細カーブパラメータ"
 
 #: ../src/iop/agx.c:1987
 msgid ""
@@ -18140,7 +18140,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:732
 msgctxt "section"
 msgid "advanced parameters"
-msgstr "拡張パラメータ"
+msgstr "詳細パラメータ"
 
 #: ../src/iop/cacorrectrgb.c:734
 msgid ""
@@ -19764,7 +19764,7 @@ msgstr "IT8 スキントーン"
 
 #: ../src/iop/colorchecker.c:472
 msgid "expanded color checker"
-msgstr "拡張カラー チェッカー"
+msgstr "拡張カラーチェッカー"
 
 #: ../src/iop/colorchecker.c:488
 msgid "Helmholtz/Kohlrausch monochrome"
@@ -20927,8 +20927,8 @@ msgid ""
 msgstr ""
 "ベイヤーセンサーのデモザイク方式。PPGとRCDは高速、AMaZEとLMMSEは低速です\n"
 "LMMSEは高ISOの画像に最も適しています\n"
-"二重デモザイクは第二パスでVNGバリアントを混ぜ合わせることで処理時間が2倍になり"
-"ます"
+"二重デモザイクは第二パスでVNGバリアントを混ぜ合わせることで処理時間が増加しま"
+"す"
 
 #: ../src/iop/demosaic.c:1754
 msgid ""
@@ -21618,7 +21618,7 @@ msgstr ""
 #: ../src/iop/diffuse.c:1874
 msgctxt "section"
 msgid "edge management"
-msgstr "エッジの操作"
+msgstr "エッジ管理"
 
 #: ../src/iop/diffuse.c:1882
 msgid ""
@@ -21768,9 +21768,8 @@ msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
 msgstr ""
-"まだ撮影時であるかのように、撮影の露出を変更します\n"
-"ISOの設定を上げるのと同様に、明度を上げる場合には変色しないよう気をつけてくだ"
-"さい"
+"まだ撮影時であるかのように、ショットの露出を再調整します\n"
+"ISO感度を上げるのと同様に、変色することのない明るさ調整を行います"
 
 #: ../src/iop/exposure.c:315
 msgid "magic lantern defaults"
@@ -21914,7 +21913,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:328
 msgid "09 EV (low-key)"
-msgstr "09 EV （ローキー）"
+msgstr "09 EV（ローキー）"
 
 #: ../src/iop/filmic.c:336
 msgid "10 EV (indoors)"
@@ -21930,7 +21929,7 @@ msgstr "12 EV（屋外）"
 
 #: ../src/iop/filmic.c:360
 msgid "13 EV (bright outdoors)"
-msgstr "13 EV （明るい屋外）"
+msgstr "13 EV（明るい屋外）"
 
 #: ../src/iop/filmic.c:368
 msgid "14 EV (backlighting)"
@@ -22083,7 +22082,7 @@ msgstr "インテント"
 
 #: ../src/iop/filmic.c:1567
 msgid "contrasted"
-msgstr "コントラスト"
+msgstr "コントラスト強調"
 
 #. centripetal spline
 #: ../src/iop/filmic.c:1569 ../src/iop/profile_gamma.c:602
@@ -22505,10 +22504,10 @@ msgid ""
 "fix the global exposure in the exposure module instead.\n"
 "disable to use standard 18.45% middle gray."
 msgstr ""
-"ミドルグレーのカスタム設定値を入力できるようにします\n"
+"有効にすると、ミドルグレーのカスタム設定値を入力出来るようにします\n"
 "たいていの場合非推奨です\n"
 "これを利用せずに、露出モジュールで画像全体の露出を修正してください\n"
-"標準の18.45%ミドルグレーの使用を無効にします"
+"無効にすると、標準の18.45%ミドルグレーの使用します"
 
 #: ../src/iop/filmicrgb.c:4600
 msgid ""
@@ -22655,27 +22654,27 @@ msgstr "トーンマップのターゲット明度を cd/m2 で指定します"
 
 #: ../src/iop/graduatednd.c:64
 msgid "neutral gray | ND2 (soft)"
-msgstr "着色：ニュートラルグレー ND2（ソフト）"
+msgstr "ニュートラルグレー：ND2（ソフト）"
 
 #: ../src/iop/graduatednd.c:67
 msgid "neutral gray | ND4 (soft)"
-msgstr "着色：ニュートラルグレー ND4（ソフト）"
+msgstr "ニュートラルグレー：ND4（ソフト）"
 
 #: ../src/iop/graduatednd.c:70
 msgid "neutral gray | ND8 (soft)"
-msgstr "着色：ニュートラルグレー ND8（ソフト）"
+msgstr "ニュートラルグレー：ND8（ソフト）"
 
 #: ../src/iop/graduatednd.c:73
 msgid "neutral gray | ND2 (hard)"
-msgstr "着色：ニュートラルグレー ND2（ハード）"
+msgstr "ニュートラルグレー：ND2（ハード）"
 
 #: ../src/iop/graduatednd.c:77
 msgid "neutral gray | ND4 (hard)"
-msgstr "着色：ニュートラルグレー ND4（ハード）"
+msgstr "ニュートラルグレー：ND4（ハード）"
 
 #: ../src/iop/graduatednd.c:80
 msgid "neutral gray | ND8 (hard)"
-msgstr "着色：ニュートラルグレー ND8（ハード）"
+msgstr "ニュートラルグレー：ND8（ハード）"
 
 #: ../src/iop/graduatednd.c:84
 msgid "tinted | orange ND2 (soft)"
@@ -23001,7 +23000,7 @@ msgstr[1] "%d個のピクセルを修復しました"
 
 #: ../src/iop/hotpixels.c:447
 msgid "lower threshold for hot pixel"
-msgstr "ホットピクセルのしきい値を下げます"
+msgstr "ホットピクセルのしきい値（下限）"
 
 #: ../src/iop/hotpixels.c:451
 msgid "strength of hot pixel correction"
@@ -23165,7 +23164,7 @@ msgstr "スケールの自動設定"
 
 #: ../src/iop/lens.cc:4463
 msgid "automatic scale to available image size due to Lensfun data"
-msgstr "Lensfunnoのデータにより利用可能な画像サイズに自動的にスケール調整します"
+msgstr "Lensfunのデータにより利用可能な画像サイズに自動的にスケール調整します"
 
 #: ../src/iop/lens.cc:4468
 msgid "correct distortions or apply them"
@@ -23207,7 +23206,7 @@ msgstr "変形および色収差の補正を調整します"
 
 #: ../src/iop/lens.cc:4519
 msgid "tune the vignette correction"
-msgstr "露出補正を調整します"
+msgstr "周辺減光の補正を調整します"
 
 #: ../src/iop/lens.cc:4524
 msgid "tune the TCA red correction"
@@ -23331,7 +23330,7 @@ msgstr "白 パーセント値"
 
 #: ../src/iop/liquify.c:288
 msgid "liquify"
-msgstr "液化（歪み）"
+msgstr "液化"
 
 #: ../src/iop/liquify.c:293
 msgid "distort parts of the image"
@@ -23428,7 +23427,7 @@ msgid ""
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
 "<b>ノードを追加</b>：Ctrl+クリック　　<b>パスを削除</b>：右クリック\n"
-"<b>直線／カーブを切り替え</b>:：Ctrl+Alt+クリック"
+"<b>直線／カーブを切り替え</b>：Ctrl+Alt+クリック"
 
 #: ../src/iop/liquify.c:3655
 msgid ""
@@ -23467,7 +23466,7 @@ msgstr ""
 
 #: ../src/iop/lowlight.c:83
 msgid "lowlight vision"
-msgstr "暗所視"
+msgstr "低照度視覚"
 
 #: ../src/iop/lowlight.c:88
 msgid "simulate human night vision"
@@ -23519,11 +23518,11 @@ msgstr "明るい"
 
 #: ../src/iop/lowlight.c:647
 msgid "day vision"
-msgstr "昼間視"
+msgstr "昼間視覚"
 
 #: ../src/iop/lowlight.c:652
 msgid "night vision"
-msgstr "夜間視"
+msgstr "夜間視覚"
 
 #: ../src/iop/lowlight.c:819
 msgid "blueness in shadows"
@@ -23939,7 +23938,7 @@ msgid ""
 "the shadows color cast will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
-"黒が本当に無彩色になるように、イルミナントの色を補正します\n"
+"白が本当に無彩色になるように、イルミナントの色を補正します\n"
 "シャドウの色かぶりの後にこの値を設定すると、\n"
 "困難なケースにおいて、画像全体のホワイトバランスを回復しやすくなります"
 
@@ -23949,7 +23948,7 @@ msgstr "イルミナント 緑 ゲイン"
 
 #: ../src/iop/negadoctor.c:966
 msgid "illuminant blue gain"
-msgstr "イルミナント青 ゲイン"
+msgstr "イルミナント 青 ゲイン"
 
 #. Page PRINT PROPERTIES
 #: ../src/iop/negadoctor.c:973
@@ -24316,7 +24315,7 @@ msgstr "ラスターマスクファイルのルートフォルダが設定され
 
 #: ../src/iop/rasterfile.c:378
 msgid "select raster mask file"
-msgstr "ラスターマスクファイルを選択してください"
+msgstr "ラスターマスクファイルを選択"
 
 #: ../src/iop/rasterfile.c:412
 msgid "selected file not within raster masks root folder"
@@ -24331,7 +24330,7 @@ msgid ""
 "select the PFM/PNG file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
-"ラスターマスクとして記録されたPFM/PNGファイルをを選択してください\n"
+"ラスターマスクとして記録されたPFM/PNGファイルを選択してください\n"
 "注意：選択する前に、【設定】の【処理】タブでパスを設定する必要があります"
 
 #: ../src/iop/rasterfile.c:755
@@ -25065,15 +25064,15 @@ msgstr ""
 
 #: ../src/iop/splittoning.c:117
 msgid "authentic sepia"
-msgstr "セピア"
+msgstr "本格的なセピア"
 
 #: ../src/iop/splittoning.c:126
 msgid "authentic cyanotype"
-msgstr "青写真"
+msgstr "本格的な青写真"
 
 #: ../src/iop/splittoning.c:135
 msgid "authentic platinotype"
-msgstr "プラチナプリント"
+msgstr "本格的なプラチナプリント"
 
 #: ../src/iop/splittoning.c:144
 msgid "chocolate brown"
@@ -25557,7 +25556,7 @@ msgstr "+0 EV"
 #. Advanced view
 #: ../src/iop/toneequal.c:3278
 msgid "advanced"
-msgstr "高度"
+msgstr "詳細"
 
 #: ../src/iop/toneequal.c:3304
 msgid "double-click to reset the curve"
@@ -26080,11 +26079,11 @@ msgstr "フォーカスモード"
 
 #: ../src/libs/camera.c:577
 msgid "shutterspeed2"
-msgstr "シャタースピード2"
+msgstr "シャッタースピード2"
 
 #: ../src/libs/camera.c:579
 msgid "shutterspeed"
-msgstr "シャタースピード"
+msgstr "シャッタースピード"
 
 #: ../src/libs/camera.c:585
 msgid "WB"
@@ -26263,7 +26262,7 @@ msgstr "日時"
 #: ../src/libs/collect.c:3352 ../src/libs/filtering.c:909
 #: ../src/libs/filtering.c:969 ../src/libs/filtering.c:1632
 msgid "capture details"
-msgstr "細部を撮影"
+msgstr "撮影詳細情報"
 
 #: ../src/libs/collect.c:3381
 msgid "collections settings"
@@ -26550,7 +26549,7 @@ msgid ""
 "style to be applied on export:\n"
 "<b>%s</b>"
 msgstr ""
-"エクスポート時に適用するスタイルn\n"
+"エクスポート時に適用するスタイル：\n"
 "<b>%s</b>"
 
 #: ../src/libs/export.c:1224 ../src/libs/print_settings.c:1235
@@ -26609,7 +26608,7 @@ msgstr "inch（印刷向け）"
 
 #: ../src/libs/export.c:1496
 msgid "by scale (for file)"
-msgstr "スケール（印刷向け）"
+msgstr "スケール（ファイル向け）"
 
 #: ../src/libs/export.c:1499
 msgid "print width"
@@ -27411,7 +27410,7 @@ msgstr "元の日時"
 
 #: ../src/libs/geotagging.c:1809
 msgid "lock date/time offset value to apply it onto another selection"
-msgstr "日時のオフセットの値を固定して他のセクションに適用します"
+msgstr "日時のオフセットの値を固定して他の選択画像に適用します"
 
 #: ../src/libs/geotagging.c:1813
 msgid "date/time offset"
@@ -27488,7 +27487,7 @@ msgstr "トラック全体を表示する"
 
 #: ../src/libs/geotagging.c:1949
 msgid "refresh map to view entire selected track segments"
-msgstr "マップをリフレクションして選択したトラックセグメント全体を表示します"
+msgstr "マップをリフレッシュして選択したトラックセグメント全体を表示します"
 
 #: ../src/libs/geotagging.c:1963
 msgid "preview images"
@@ -27963,7 +27962,7 @@ msgstr "変更"
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 "ファイルの'変更日時'\n"
-"'Exif日時'と異なっているかもしれません"
+"'Exif日時'と異なることがあります"
 
 #: ../src/libs/import.c:1893
 msgid "show/hide thumbnails"
@@ -27979,7 +27978,7 @@ msgstr "新しいファイルを選択"
 
 #: ../src/libs/import.c:2096
 msgid "please wait while prefetching the list of images from camera..."
-msgstr "カメラから画像リストをピリフェッチしています、お待ちください..."
+msgstr "カメラから画像リストをプリフェッチしています、お待ちください..."
 
 #: ../src/libs/import.c:2246
 msgid "invalid override date/time format"
@@ -27987,7 +27986,7 @@ msgstr "無効な上書き日時の形式です"
 
 #: ../src/libs/import.c:2314
 msgid "import base directory"
-msgstr "ベースディレクトリをインポート"
+msgstr "インポート先のベースディレクトリ"
 
 #: ../src/libs/import.c:2315
 msgid ""
@@ -28644,8 +28643,8 @@ msgstr ".wavがあります"
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
-msgstr[0] "評価%dです"
-msgstr[1] "評価%dです"
+msgstr[0] "評価星%d"
+msgstr[1] "評価星%d"
 
 #: ../src/libs/metadata_view.c:470
 #, c-format
@@ -29028,7 +29027,7 @@ msgstr "グループを削除します"
 
 #: ../src/libs/modulegroups.c:3517
 msgid "move group to the left"
-msgstr "クループを左に移動します"
+msgstr "グループを左に移動します"
 
 #: ../src/libs/modulegroups.c:3527
 msgid "add module to the group"
@@ -29215,7 +29214,7 @@ msgid ""
 "style to be applied on print:\n"
 "<b>%s</b>"
 msgstr ""
-"印刷時に適用するスタイルn\n"
+"印刷時に適用するスタイル：\n"
 "<b>%s</b>"
 
 #: ../src/libs/print_settings.c:2481
@@ -29555,7 +29554,7 @@ msgstr ""
 msgid ""
 "select untouched images in\n"
 "current collection"
-msgstr "このコレクション内の未編集画像を選択します"
+msgstr "現在のコレクション内の未編集画像を選択します"
 
 #: ../src/libs/session.c:47
 msgid "session"
@@ -29599,7 +29598,7 @@ msgstr "↗ %s '%s'"
 
 #: ../src/libs/snapshots.c:760
 msgid "this snapshot was taken from"
-msgstr "このスナップショットは次の画像から撮られています"
+msgstr "このスナップショットは次の画像から作成されています"
 
 #: ../src/libs/snapshots.c:810
 msgid "take snapshot"
@@ -30076,7 +30075,7 @@ msgstr "入力した名前で新しいタグを作成します"
 
 #: ../src/libs/tagging.c:3685
 msgid "import tags from a Lightroom keyword file"
-msgstr "Lightroomのキーワードファイルからタブをインポートします"
+msgstr "Lightroomのキーワードファイルからタグをインポートします"
 
 #: ../src/libs/tagging.c:3692
 msgid "export all tags to a Lightroom keyword file"
@@ -30295,19 +30294,19 @@ msgstr "右Y"
 
 #: ../src/libs/tools/gamepad.c:90
 msgid "left diagonal"
-msgstr "左斜め"
+msgstr "左対角線"
 
 #: ../src/libs/tools/gamepad.c:90
 msgid "left skew"
-msgstr "左斜め"
+msgstr "左スキュー"
 
 #: ../src/libs/tools/gamepad.c:90
 msgid "right diagonal"
-msgstr "右斜め"
+msgstr "右対角線"
 
 #: ../src/libs/tools/gamepad.c:90
 msgid "right skew"
-msgstr "右斜め"
+msgstr "右スキュー"
 
 #. diagonals
 #: ../src/libs/tools/gamepad.c:96
@@ -30477,7 +30476,7 @@ msgstr "クリックすると、フルプレビューレイアウトに入りま
 
 #: ../src/libs/tools/lighttable.c:119
 msgid "click to enter culling layout in fixed mode."
-msgstr "クリックすると、選別レイアウト固定モードを出ます"
+msgstr "クリックすると、選別レイアウト固定モードに入ります"
 
 #: ../src/libs/tools/lighttable.c:121 ../src/libs/tools/lighttable.c:126
 msgid "click to exit culling layout."
@@ -30558,7 +30557,7 @@ msgstr "midi"
 #: ../src/libs/tools/midi.c:221
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
-"絶対エンコーディングを使用しています；相対エンコーディングに切り替えるには最初"
+"絶対エンコーディングを使用しています；相対エンコーディングに切り替えるには再初"
 "期化してください"
 
 #: ../src/libs/tools/midi.c:225
@@ -30841,7 +30840,7 @@ msgstr "モジュール'%s'を無効にしました"
 #: ../src/views/darkroom.c:2663 ../src/views/darkroom.c:2687
 #, c-format
 msgid "'%s' does not support multiple instances"
-msgstr "'%s'は複数のインスタンスをサポートしえちｍさえん"
+msgstr "'%s'は複数のインスタンスをサポートしていません"
 
 #: ../src/views/darkroom.c:2672
 #, c-format
@@ -31359,7 +31358,7 @@ msgstr "最後の画像から範囲を選択"
 
 #: ../src/views/lighttable.c:1034
 msgid "add image to or remove it from a selection"
-msgstr "セクションに画像を追加または除去する"
+msgstr "選択に画像を追加または除去する"
 
 #: ../src/views/lighttable.c:1039
 msgid "change image order"
@@ -31593,7 +31592,7 @@ msgstr "右クリック+ドラッグ"
 
 #: ../src/views/view.c:1517
 msgid "darktable - accels window"
-msgstr "darktable - アクセルウィンドウ"
+msgstr "darktable - ショートカットウィンドウ"
 
 #: ../src/views/view.c:1564
 msgid "switch to a classic window which will stay open after key release"
