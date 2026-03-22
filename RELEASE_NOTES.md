@@ -191,6 +191,15 @@ changes (where available).
 - The masks in restricted edit mode are now displayed on-canvas as
   dashed lines to ensure proper feedback.
 
+- Several improvements to AgX:
+  - Default hue preservation is now 60% in most presets, reducing strong hue shifts in bright highlights.
+  - Default contrast has been increased and toe/shoulder power tuned to more closely match sigmoid's defaults.
+  - Added sigmoid-like presets that closely match sigmoid's tone curve.
+  - Removed the punchy presets (except for the blender-like variant, whose parameters still follow Blender's settings).
+  - Improved the toe/shoulder warning tooltips for clarity.
+  - The scene-referred preset is no longer applied exclusively to HDR images.
+  - Primaries selection is now visible even when "disable adjustments" is checked.  
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
