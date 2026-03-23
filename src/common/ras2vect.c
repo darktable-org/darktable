@@ -196,17 +196,26 @@ GList *ras2forms(const float *mask,
     snprintf(form->name, sizeof(form->name), "path raster %d",
              g_atomic_int_add(&formnb, 1) + 1);
 
+    // Potrace outputs cubic Bezier segments where:
+    //   c[i][0] = outgoing ctrl of the segment's start point
+    //   c[i][1] = incoming ctrl of the segment's end point
+    //   c[i][2] = endpoint
+    // darktable stores per point: ctrl1 = incoming handle, ctrl2 = outgoing.
+    // We must split each segment's control pair across two adjacent points.
+
+    // precompute image scaling factors (used for handle coordinate transform)
+    const float xsc = image ? image->p_width / (float)width : 0.0f;
+    const float ysc = image ? image->p_height / (float)height : 0.0f;
+
+    // add all corner points with zero-length handles
     _add_point(form, image, width, height, start.x, start.y, -1, -1, -1, -1);
 
     for(int i = 0; i < n; i++)
     {
       if(cv->tag[i] == POTRACE_CURVETO)
       {
-        const potrace_dpoint_t c0 = cv->c[i][0];
-        const potrace_dpoint_t c1 = cv->c[i][1];
-        const potrace_dpoint_t e  = cv->c[i][2];
-
-        _add_point(form, image, width, height, e.x, e.y, c0.x, c0.y, c1.x, c1.y);
+        const potrace_dpoint_t e = cv->c[i][2];
+        _add_point(form, image, width, height, e.x, e.y, -1, -1, -1, -1);
       }
       else // POTRACE_CORNER
       {
@@ -215,6 +224,49 @@ GList *ras2forms(const float *mask,
 
         _add_point(form, image, width, height, v.x, v.y, -1, -1, -1, -1);
         _add_point(form, image, width, height, e.x, e.y, -1, -1, -1, -1);
+      }
+    }
+
+    // assign Bezier handles: for each CURVETO segment, set
+    //   start_point.ctrl2 = c[i][0]  (outgoing)
+    //   end_point.ctrl1   = c[i][1]  (incoming)
+    // the path is closed, so the last segment wraps back to the start point
+    {
+      GList *pt = form->points;  // start point
+      for(int i = 0; i < n; i++)
+      {
+        if(cv->tag[i] == POTRACE_CURVETO)
+        {
+          const potrace_dpoint_t c0 = cv->c[i][0];
+          const potrace_dpoint_t c1 = cv->c[i][1];
+
+          // outgoing handle of current (start-of-segment) point
+          dt_masks_point_path_t *ps = pt->data;
+          ps->ctrl2[0] = c0.x;
+          ps->ctrl2[1] = c0.y;
+          if(image)
+            _scale_point(ps->ctrl2, xsc, ysc,
+                         image->crop_x, image->crop_y,
+                         image->width, image->height);
+
+          // advance to endpoint (wrap to start for the closing segment)
+          pt = g_list_next(pt);
+          if(!pt) pt = form->points;
+
+          // incoming handle of end-of-segment point
+          dt_masks_point_path_t *pe = pt->data;
+          pe->ctrl1[0] = c1.x;
+          pe->ctrl1[1] = c1.y;
+          if(image)
+            _scale_point(pe->ctrl1, xsc, ysc,
+                         image->crop_x, image->crop_y,
+                         image->width, image->height);
+        }
+        else // POTRACE_CORNER: two points added, no Bezier handles
+        {
+          pt = g_list_next(pt); if(!pt) pt = form->points;
+          pt = g_list_next(pt); if(!pt) pt = form->points;
+        }
       }
     }
 

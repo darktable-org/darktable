@@ -1540,19 +1540,24 @@ static void _object_events_post_expose(
                     first_pt->corner[0] * msx,
                     first_pt->corner[1] * msy);
 
+      // cairo_curve_to(c1, c2, end) expects:
+      //   c1 = outgoing handle of previous point (prev.ctrl2)
+      //   c2 = incoming handle of this point (this.ctrl1)
+      dt_masks_point_path_t *prev_pt = first_pt;
       for(GList *p = g_list_next(pts); p; p = g_list_next(p))
       {
         dt_masks_point_path_t *pt = p->data;
         cairo_curve_to(cr,
+                       prev_pt->ctrl2[0] * msx, prev_pt->ctrl2[1] * msy,
                        pt->ctrl1[0] * msx, pt->ctrl1[1] * msy,
-                       pt->ctrl2[0] * msx, pt->ctrl2[1] * msy,
                        pt->corner[0] * msx, pt->corner[1] * msy);
+        prev_pt = pt;
       }
 
       // close path back to first point
       cairo_curve_to(cr,
+                     prev_pt->ctrl2[0] * msx, prev_pt->ctrl2[1] * msy,
                      first_pt->ctrl1[0] * msx, first_pt->ctrl1[1] * msy,
-                     first_pt->ctrl2[0] * msx, first_pt->ctrl2[1] * msy,
                      first_pt->corner[0] * msx, first_pt->corner[1] * msy);
 
       dt_masks_line_stroke(cr, FALSE, FALSE, FALSE, zoom_scale);
