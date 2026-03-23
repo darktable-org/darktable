@@ -17,6 +17,7 @@
 */
 
 #include "common/ai/segmentation.h"
+#include "common/ai_models.h"
 #include "ai/backend.h"
 #include "common/database.h"
 #include "common/darktable.h"
@@ -88,7 +89,8 @@ struct dt_seg_context_t
   float scale; // SAM_INPUT_SIZE / max(w, h)
   gboolean image_encoded;
 
-  char *model_id; // model identifier (for cache validation)
+  char *model_id;      // model identifier (for cache validation)
+  char *model_version; // model version (for cache validation)
 };
 
 /* --- preprocessing --- */
@@ -232,10 +234,31 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     return NULL;
   }
 
+  // check model version compatibility
+  const char *version = dt_ai_model_get_version(model_id);
+  const char *min_ver = dt_ai_model_get_min_version(model_id);
+  if(min_ver)
+  {
+    int ver_major = 0, min_major = 0;
+    sscanf(version, "%d", &ver_major);
+    sscanf(min_ver, "%d", &min_major);
+    if(ver_major < min_major)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[segmentation] model %s v%s incompatible "
+               "(requires v%s) - please update model",
+               model_id, version, min_ver);
+      dt_ai_unload_model(encoder);
+      dt_ai_unload_model(decoder);
+      return NULL;
+    }
+  }
+
   dt_seg_context_t *ctx = g_new0(dt_seg_context_t, 1);
   ctx->encoder = encoder;
   ctx->decoder = decoder;
   ctx->model_id = g_strdup(model_id);
+  ctx->model_version = g_strdup(version);
 
   // query encoder output count and shapes from model metadata
   ctx->n_enc_outputs = dt_ai_get_output_count(encoder);
@@ -1058,8 +1081,10 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
   const uint32_t magic = SEG_CACHE_MAGIC;
   const uint32_t version = SEG_CACHE_VERSION;
   const int32_t n_out = ctx->n_enc_outputs;
-  // model id (length-prefixed string)
+  // model id and version (length-prefixed strings)
   const uint32_t mid_len = ctx->model_id ? (uint32_t)strlen(ctx->model_id) : 0;
+  const uint32_t mver_len = ctx->model_version
+    ? (uint32_t)strlen(ctx->model_version) : 0;
 
   // header
   ok = ok && fwrite(&magic, 4, 1, fp) == 1;
@@ -1069,6 +1094,9 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
   ok = ok && fwrite(&mid_len, 4, 1, fp) == 1;
   if(mid_len > 0)
     ok = ok && fwrite(ctx->model_id, 1, mid_len, fp) == mid_len;
+  ok = ok && fwrite(&mver_len, 4, 1, fp) == 1;
+  if(mver_len > 0)
+    ok = ok && fwrite(ctx->model_version, 1, mver_len, fp) == mver_len;
   ok = ok && fwrite(&ctx->encoded_width, 4, 1, fp) == 1;
   ok = ok && fwrite(&ctx->encoded_height, 4, 1, fp) == 1;
   ok = ok && fwrite(&ctx->scale, 4, 1, fp) == 1;
@@ -1155,17 +1183,27 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
     ok = ok && fread(file_model_id, 1, mid_len, fp) == mid_len;
   else if(mid_len >= sizeof(file_model_id))
     ok = FALSE;
+  // read model version
+  uint32_t mver_len = 0;
+  ok = ok && fread(&mver_len, 4, 1, fp) == 1;
+  char file_model_ver[64] = {0};
+  if(ok && mver_len > 0 && mver_len < sizeof(file_model_ver))
+    ok = ok && fread(file_model_ver, 1, mver_len, fp) == mver_len;
+  else if(mver_len >= sizeof(file_model_ver))
+    ok = FALSE;
   ok = ok && fread(&enc_w, 4, 1, fp) == 1;
   ok = ok && fread(&enc_h, 4, 1, fp) == 1;
   ok = ok && fread(&scale, 4, 1, fp) == 1;
   ok = ok && fread(&n_out, 4, 1, fp) == 1;
 
+  const char *cur_ver = ctx->model_version ? ctx->model_version : "0.0";
   if(!ok || magic != SEG_CACHE_MAGIC
      || version != SEG_CACHE_VERSION
      || file_imgid != imgid
      || file_distort_hash != distort_hash
      || !ctx->model_id
-     || strcmp(file_model_id, ctx->model_id) != 0)
+     || strcmp(file_model_id, ctx->model_id) != 0
+     || strcmp(file_model_ver, cur_ver) != 0)
   {
     fclose(fp);
     return FALSE;
@@ -1329,6 +1367,7 @@ void dt_seg_free(dt_seg_context_t *ctx)
     g_free(ctx->enc_data[i]);
   g_free(ctx->prev_mask);
   g_free(ctx->model_id);
+  g_free(ctx->model_version);
   g_free(ctx);
 }
 

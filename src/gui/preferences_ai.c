@@ -66,6 +66,7 @@ enum
 {
   COL_SELECTED,
   COL_NAME,
+  COL_VERSION,
   COL_TASK,
   COL_DESCRIPTION,
   COL_ENABLED,
@@ -147,6 +148,8 @@ static const char *_status_to_string(dt_ai_model_status_t status)
   {
   case DT_AI_MODEL_DOWNLOADED:
     return _("downloaded");
+  case DT_AI_MODEL_UPDATE_REQUIRED:
+    return _("update required");
   case DT_AI_MODEL_DOWNLOADING:
     return _("downloading...");
   case DT_AI_MODEL_ERROR:
@@ -214,6 +217,10 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       _status_to_string(model->status),
       COL_DEFAULT,
       model->is_default ? _("yes") : _("no"),
+      COL_VERSION,
+      (model->status == DT_AI_MODEL_DOWNLOADED
+       || model->status == DT_AI_MODEL_UPDATE_REQUIRED)
+        ? (model->version ? model->version : "0.0") : "–",
       COL_ID,
       model->id,
       -1);
@@ -661,7 +668,8 @@ static void _on_download_selected(GtkButton *button, gpointer user_data)
     dt_ai_model_t *model = dt_ai_models_get_by_id(darktable.ai_registry, id);
     if(model)
     {
-      gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED);
+      gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                                || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
       dt_ai_model_free(model);
       if(need_download && !_download_model_with_dialog(data, id))
         break; // stop on error or cancel
@@ -683,7 +691,9 @@ static void _on_download_default(GtkButton *button, gpointer user_data)
     if(!model)
       continue;
     gboolean need_download
-      = (model->is_default && model->status == DT_AI_MODEL_NOT_DOWNLOADED);
+      = (model->is_default
+         && (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+             || model->status == DT_AI_MODEL_UPDATE_REQUIRED));
     char *id = need_download ? g_strdup(model->id) : NULL;
     dt_ai_model_free(model);
     if(need_download)
@@ -710,7 +720,8 @@ static void _on_download_all(GtkButton *button, gpointer user_data)
     dt_ai_model_t *model = dt_ai_models_get_by_index(darktable.ai_registry, i);
     if(!model)
       continue;
-    gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED);
+    gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                              || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
     char *id = need_download ? g_strdup(model->id) : NULL;
     dt_ai_model_free(model);
     if(need_download)
@@ -984,6 +995,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     NUM_COLS,
     G_TYPE_BOOLEAN, // selected
     G_TYPE_STRING,  // name
+    G_TYPE_STRING,  // version
     G_TYPE_STRING,  // task
     G_TYPE_STRING,  // description
     G_TYPE_BOOLEAN, // enabled
@@ -1050,6 +1062,15 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     NULL);
   gtk_tree_view_column_set_expand(name_col, FALSE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), name_col);
+
+  // version column
+  GtkTreeViewColumn *version_col = gtk_tree_view_column_new_with_attributes(
+    _("version"),
+    text_renderer,
+    "text",
+    COL_VERSION,
+    NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), version_col);
 
   // task column
   GtkTreeViewColumn *task_col = gtk_tree_view_column_new_with_attributes(
