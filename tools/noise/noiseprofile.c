@@ -59,11 +59,11 @@ read_pfm(const char *filename, int *wd, int*ht)
 {
   FILE *f = fopen(filename, "rb");
   if(!f) return 0;
-  if(fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht) < 2) return;
+  if(fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht) < 2) return NULL;
   fgetc(f); // eat only one newline
 
   float *p = (float *)malloc(sizeof(float)*3*(*wd)*(*ht));
-  if(fread(p, sizeof(float)*3, (*wd)*(*ht), f) == 0) return;
+  if(fread(p, sizeof(float)*3, (*wd)*(*ht), f) == 0) { free(p); return NULL; }
   for(int k=0;k<3*(*wd)*(*ht);k++) p[k] = fmaxf(0.0f, p[k]);
   fclose(f);
   return p;
@@ -149,6 +149,7 @@ int main(int argc, char *arg[])
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
+  if(!input) { fprintf(stderr, "error: could not read input file '%s'\n", arg[1]); return 1;}
   float max = 0.0f;
   // sanity checks:
   // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
