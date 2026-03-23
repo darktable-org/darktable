@@ -45,6 +45,17 @@ static inline char *realpath(const char *path, char *resolved_path)
 #define CONF_MODEL_ENABLED_PREFIX "plugins/ai/models/"
 #define CONF_ACTIVE_MODEL_PREFIX "plugins/ai/models/active/"
 
+// compare version strings "X.Y", returns -1 if a<b, 0 if a==b, 1 if a>b
+static int _version_compare(const char *a, const char *b)
+{
+  int ax = 0, ay = 0, bx = 0, by = 0;
+  if(a) sscanf(a, "%d.%d", &ax, &ay);
+  if(b) sscanf(b, "%d.%d", &bx, &by);
+  if(ax != bx) return ax < bx ? -1 : 1;
+  if(ay != by) return ay < by ? -1 : 1;
+  return 0;
+}
+
 static void _model_free(dt_ai_model_t *model)
 {
   if(!model)
@@ -55,6 +66,8 @@ static void _model_free(dt_ai_model_t *model)
   g_free(model->task);
   g_free(model->github_asset);
   g_free(model->checksum);
+  g_free(model->version);
+  g_free(model->min_version);
   g_free(model);
 }
 
@@ -69,6 +82,8 @@ static dt_ai_model_t *_model_copy(const dt_ai_model_t *src)
   copy->task = g_strdup(src->task);
   copy->github_asset = g_strdup(src->github_asset);
   copy->checksum = g_strdup(src->checksum);
+  copy->version = g_strdup(src->version);
+  copy->min_version = g_strdup(src->min_version);
   copy->is_default = src->is_default;
   copy->enabled = src->enabled;
   copy->status = src->status;
@@ -467,6 +482,8 @@ static dt_ai_model_t *_parse_model_json(JsonObject *obj)
     model->github_asset = g_strdup(json_object_get_string_member(obj, "github_asset"));
   if(json_object_has_member(obj, "checksum"))
     model->checksum = g_strdup(json_object_get_string_member(obj, "checksum"));
+  if(json_object_has_member(obj, "min_version"))
+    model->min_version = g_strdup(json_object_get_string_member(obj, "min_version"));
   if(json_object_has_member(obj, "default"))
     model->is_default = json_object_get_boolean_member(obj, "default");
 
@@ -634,6 +651,8 @@ static dt_ai_model_t *_parse_local_model_config(const char *config_path,
     model->description = g_strdup(json_object_get_string_member(obj, "description"));
   if(json_object_has_member(obj, "task"))
     model->task = g_strdup(json_object_get_string_member(obj, "task"));
+  if(json_object_has_member(obj, "version"))
+    model->version = g_strdup(json_object_get_string_member(obj, "version"));
 
   // no github_asset, no checksum — local-only model
   model->enabled = TRUE;
@@ -692,6 +711,30 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
        && g_file_test(config_path, G_FILE_TEST_EXISTS))
     {
       model->status = DT_AI_MODEL_DOWNLOADED;
+      // read version from the model's own config.json
+      dt_ai_model_t *local = _parse_local_model_config(config_path, model->id);
+      if(local)
+      {
+        if(local->version && local->version[0])
+        {
+          g_free(model->version);
+          model->version = g_strdup(local->version);
+        }
+        _model_free(local);
+
+        // check if installed version meets minimum requirement
+        if(model->min_version
+           && _version_compare(model->version, model->min_version) < 0)
+        {
+          model->status = DT_AI_MODEL_UPDATE_REQUIRED;
+          dt_print(DT_DEBUG_AI,
+                   "[ai_models] model %s v%s is older than "
+                   "required v%s - please update",
+                   model->id,
+                   model->version ? model->version : "0.0",
+                   model->min_version);
+        }
+      }
     }
     else
     {
@@ -1558,6 +1601,47 @@ char *dt_ai_models_get_active_for_task(const char *task)
   }
 
   return NULL;
+}
+
+const char *dt_ai_model_get_version(const char *model_id)
+{
+  if(!model_id || !darktable.ai_registry)
+    return "0.0";
+
+  const char *result = "0.0";
+  g_mutex_lock(&darktable.ai_registry->lock);
+  for(GList *l = darktable.ai_registry->models; l; l = g_list_next(l))
+  {
+    const dt_ai_model_t *m = l->data;
+    if(m->id && strcmp(m->id, model_id) == 0)
+    {
+      if(m->version && m->version[0])
+        result = m->version;
+      break;
+    }
+  }
+  g_mutex_unlock(&darktable.ai_registry->lock);
+  return result;
+}
+
+const char *dt_ai_model_get_min_version(const char *model_id)
+{
+  if(!model_id || !darktable.ai_registry)
+    return NULL;
+
+  const char *result = NULL;
+  g_mutex_lock(&darktable.ai_registry->lock);
+  for(GList *l = darktable.ai_registry->models; l; l = g_list_next(l))
+  {
+    const dt_ai_model_t *m = l->data;
+    if(m->id && strcmp(m->id, model_id) == 0)
+    {
+      result = m->min_version;
+      break;
+    }
+  }
+  g_mutex_unlock(&darktable.ai_registry->lock);
+  return result;
 }
 
 void dt_ai_models_set_active_for_task(const char *task, const char *model_id)
