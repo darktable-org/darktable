@@ -6,6 +6,7 @@
       "name": "mask sam2.1 hiera small",
       "description": "Segment Anything 2.1 (Hiera Small) for interactive masking",
       "task": "mask",
+      "min_version": "1.0",
       "github_asset": "mask-object-sam21-small.dtmodel",
       "default": true
     },
@@ -14,6 +15,7 @@
       "name": "mask segnext vitb-sax2 hq",
       "description": "SegNext ViT-B SAx2 HQ fine-tuned for interactive masking",
       "task": "mask",
+      "min_version": "1.0",
       "github_asset": "mask-object-segnext-b2hq.dtmodel",
       "default": false
     }

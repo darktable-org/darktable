@@ -38,6 +38,7 @@ typedef enum dt_ai_model_status_t
   DT_AI_MODEL_NOT_DOWNLOADED = 0,
   DT_AI_MODEL_DOWNLOADING,
   DT_AI_MODEL_DOWNLOADED,
+  DT_AI_MODEL_UPDATE_REQUIRED,
   DT_AI_MODEL_ERROR,
 } dt_ai_model_status_t;
 
@@ -52,6 +53,8 @@ typedef struct dt_ai_model_t
   char *task;            // Task type: "denoise", "upscale", etc.
   char *github_asset;    // Asset filename in GitHub release
   char *checksum;        // SHA256 checksum (format: "sha256:...")
+  char *version;         // actual version from model's config.json
+  char *min_version;     // minimum required version from registry
   gboolean is_default;   // TRUE if model is a default model for its task
   gboolean enabled;      // User preference (stored in darktablerc)
   dt_ai_model_status_t status;
@@ -253,6 +256,20 @@ void dt_ai_models_set_enabled(dt_ai_registry_t *registry, const char *model_id,
  * @return Newly allocated model ID string (caller must free), or NULL if none active
  */
 char *dt_ai_models_get_active_for_task(const char *task);
+
+/**
+ * @brief Get the version string of a model by ID.
+ * @return Version string (e.g. "1.0"), or "0.0" if not set.
+ *         Pointer valid until next registry refresh. Do not free.
+ */
+const char *dt_ai_model_get_version(const char *model_id);
+
+/**
+ * @brief Get the minimum required version from the registry.
+ * @return Min version string, or NULL if not set.
+ *         Pointer valid until next registry refresh. Do not free.
+ */
+const char *dt_ai_model_get_min_version(const char *model_id);
 
 /**
  * @brief Set the active model for a task (exclusive — clears previous).
