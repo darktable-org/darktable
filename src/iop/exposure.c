@@ -927,7 +927,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     const float white = exposure2white(-expo);
 
     // apply the exposure compensation
-    dt_aligned_pixel_t XYZ_out;
+    dt_aligned_pixel_t XYZ_out = {0.0f };
     for(int c = 0; c < 3; c++)
       XYZ_out[c] = XYZ[c] * white;
 
