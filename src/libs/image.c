@@ -33,6 +33,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "gui/accelerators.h"
+#include "gui/duplicate_review_dialog.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include <gdk/gdkkeysyms.h>
@@ -50,7 +51,7 @@ typedef struct dt_lib_image_t
 {
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button;
   GtkWidget *delete_button, *create_hdr_button;
-  GtkWidget *duplicate_button, *reset_button, *move_button, *copy_button;
+  GtkWidget *duplicate_button, *duplicate_review_button, *reset_button, *move_button, *copy_button;
   GtkWidget *group_button, *ungroup_button, *cache_button, *uncache_button;
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
   GtkWidget *copy_metadata_button, *paste_metadata_button, *clear_metadata_button;
@@ -155,6 +156,11 @@ static void _duplicate_virgin(dt_action_t *action)
   dt_control_duplicate_images(TRUE);
 }
 
+static void _duplicate_review_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_duplicate_review_dialog_show();
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const int i = GPOINTER_TO_INT(user_data);
@@ -210,6 +216,9 @@ void gui_update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_any);
+
+  const uint32_t collection_cnt = dt_collection_get_count_no_group(darktable.collection);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_review_button), collection_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_any);
@@ -544,6 +553,13 @@ void gui_init(dt_lib_module_t *self)
      _("add a duplicate to the image library, including its history stack"),
      GDK_KEY_d, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
+
+  d->duplicate_review_button = dt_action_button_new(
+      self, N_("review duplicates..."), _duplicate_review_clicked, NULL,
+      _("find duplicate library entries and burst candidates in the current collection"),
+      0, 0);
+  gtk_grid_attach(grid, d->duplicate_review_button, 0, line, 4, 1);
+  line++;
 
   d->rotate_ccw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);;
   gtk_widget_set_name(d->rotate_ccw_button, "non-flat");
