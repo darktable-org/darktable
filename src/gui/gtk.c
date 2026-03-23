@@ -2280,7 +2280,8 @@ static void _handle_panel_widths(const dt_ui_panel_t p)
   const int required_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[p]);
 
   // check if the center column is allowed to shrink by required_width
-  const int min_center_width = dt_conf_get_int("min_center_width");
+  const int min_center_width =
+    darktable.gui->dpi_factor * dt_conf_get_int("min_center_width");
 
   if(center_col_w - required_width < min_center_width)
   {
@@ -2288,7 +2289,8 @@ static void _handle_panel_widths(const dt_ui_panel_t p)
     // at least one of the side panels
     int shrink_width = -1 * (center_col_w - required_width - min_center_width);
 
-    const int min_panel_width = dt_conf_get_int("min_panel_width");
+    const int min_panel_width =
+      darktable.gui->dpi_factor * dt_conf_get_int("min_panel_width");
     const int other_panel_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
 
     // first shrink the other panel, respecting the min_panel_width
@@ -2743,8 +2745,11 @@ static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t p
   GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
   gtk_window_get_size(GTK_WINDOW(main_window), &app_window_w, NULL);
 
-  const int min_center_w = dt_conf_get_int("min_center_width");
-  int max_w = dt_conf_get_int("max_panel_width");
+  const int min_center_w =
+    darktable.gui->dpi_factor * dt_conf_get_int("min_center_width");
+
+  int max_w =
+    darktable.gui->dpi_factor * dt_conf_get_int("max_panel_width");
   int used_w = min_center_w;
 
   // Constraint: window width - center min - other side panel (if visible) - borders
@@ -2761,8 +2766,8 @@ static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t p
 
   int sx = panel_drag_start_size;
   sx = CLAMP((int)(sx + delta_x),
-              dt_conf_get_int("min_panel_width"),
-              max_w);
+             darktable.gui->dpi_factor * dt_conf_get_int("min_panel_width"),
+             max_w);
   dt_ui_panel_set_size(darktable.gui->ui, panel, sx);
 }
 
@@ -2788,8 +2793,8 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w,
       const gint sy = gtk_widget_get_allocated_height(widget);
       int sx = panel_drag_start_size;
       sx = CLAMP((sy + darktable.gui->widgets.panel_handle_y - e->y),
-                 dt_conf_get_int("min_panel_height"),
-                 dt_conf_get_int("max_panel_height"));
+                 darktable.gui->dpi_factor * dt_conf_get_int("min_panel_height"),
+                 darktable.gui->dpi_factor * dt_conf_get_int("max_panel_height"));
       dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
       gtk_widget_set_size_request(widget, -1, sx);
     }
