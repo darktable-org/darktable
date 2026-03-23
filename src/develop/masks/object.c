@@ -789,6 +789,106 @@ static void _update_preview(_object_data_t *d)
   }
 }
 
+// save the raster mask as an RGB PNG to the raster mask root folder
+// (compatible with the external raster masks module)
+static void _save_raster_mask(const float *mask,
+                              const int w,
+                              const int h,
+                              const float threshold)
+{
+  if(!mask || w <= 0 || h <= 0) return;
+
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  if(!dt_is_valid_imgid(imgid)) return;
+
+  // get the raster mask root folder from preferences
+  gchar *root = dt_conf_get_string("plugins/darkroom/segments/def_path");
+  if(!root || !*root)
+  {
+    g_free(root);
+    dt_control_log(_("set raster mask root folder in preferences"));
+    return;
+  }
+
+  // ensure the directory exists
+  if(g_mkdir_with_parents(root, 0755) != 0)
+  {
+    dt_print(DT_DEBUG_AI, "[object mask] cannot create folder: %s", root);
+    dt_control_log(_("cannot create raster mask folder"));
+    g_free(root);
+    return;
+  }
+
+  // get image filename without directory and extension
+  char imgpath[PATH_MAX] = { 0 };
+  dt_image_full_path(imgid, imgpath, sizeof(imgpath), NULL);
+  gchar *basename = g_path_get_basename(imgpath);
+  char *dot = g_strrstr(basename, ".");
+  if(dot) *dot = '\0';
+
+  // build output path, append _1, _2, ... if file already exists
+  gchar *mask_name = g_strdup_printf("%s_mask.png", basename);
+  gchar *outpath = g_build_filename(root, mask_name, NULL);
+  g_free(mask_name);
+
+  for(int seq = 1;
+      g_file_test(outpath, G_FILE_TEST_EXISTS) && seq < 1000;
+      seq++)
+  {
+    g_free(outpath);
+    mask_name = g_strdup_printf("%s_mask_%d.png", basename, seq);
+    outpath = g_build_filename(root, mask_name, NULL);
+    g_free(mask_name);
+  }
+
+  g_free(basename);
+  g_free(root);
+
+  // create RGB buffer (rasterfile module expects 3-channel PNG)
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, w);
+  uint8_t *buf = g_try_malloc0((size_t)stride * h);
+  if(!buf)
+  {
+    g_free(outpath);
+    return;
+  }
+
+  for(int y = 0; y < h; y++)
+  {
+    uint8_t *row = buf + y * stride;
+    for(int x = 0; x < w; x++)
+    {
+      const uint8_t v = (mask[y * w + x] > threshold) ? 255 : 0;
+      // cairo RGB24 is native-endian BGRX in memory
+      row[x * 4 + 0] = v; // B
+      row[x * 4 + 1] = v; // G
+      row[x * 4 + 2] = v; // R
+      row[x * 4 + 3] = 0; // unused
+    }
+  }
+
+  cairo_surface_t *surface
+    = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_RGB24,
+                                          w, h, stride);
+  if(surface)
+  {
+    const cairo_status_t st = cairo_surface_write_to_png(surface, outpath);
+    cairo_surface_destroy(surface);
+    if(st == CAIRO_STATUS_SUCCESS)
+    {
+      dt_print(DT_DEBUG_AI, "[object mask] raster mask saved: %s", outpath);
+      dt_control_log(_("raster mask saved"));
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI, "[object mask] failed to write: %s", outpath);
+      dt_control_log(_("failed to save raster mask"));
+    }
+  }
+  g_free(buf);
+  g_free(outpath);
+}
+
 // transform mask-space forms to input-normalized coords and register them,
 // takes ownership of `forms` and `signs` lists (forms are appended to dev->forms)
 static dt_masks_form_t *
@@ -1138,6 +1238,15 @@ static int _object_events_button_pressed(
     // don't exit while background threads are running
     if(d && g_atomic_int_get(&d->encode_state) == ENCODE_RUNNING)
       return 1;
+
+    // shift+right-click: save raster mask before vectorization
+    if(d && d->has_selection && d->mask
+       && dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      const float thresh = CLAMP(
+        dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY), 0.3f, 0.9f);
+      _save_raster_mask(d->mask, d->mask_w, d->mask_h, thresh);
+    }
 
     // right-click: finalize mask (prefer cached preview forms)
     dt_masks_form_t *new_grp = NULL;
@@ -1835,8 +1944,11 @@ static void _object_set_hint_message(
       g_snprintf(msgbuf,
                  msgbuf_len,
                  _("<b>add</b>: click, <b>subtract</b>: shift+click, "
-                   "<b>clear</b>: ctrl+shift+click, <b>apply</b>: right-click\n"
-                   "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
+                   "<b>clear</b>: ctrl+shift+click\n"
+                   "<b>apply</b>: right-click, "
+                   "<b>apply+save raster</b>: shift+right-click\n"
+                   "<b>smoothing</b>: scroll (%3.2f), "
+                   "<b>cleanup</b>: shift+scroll (%d), "
                    "<b>opacity</b>: ctrl+scroll (%d%%)"),
                  d->preview_smoothing, d->preview_cleanup, opacity);
     else
