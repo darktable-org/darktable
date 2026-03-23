@@ -140,30 +140,6 @@ static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
     out[r] = matrix_row0[r] * in[0] + matrix_row1[r] * in[1] + matrix_row2[r] * in[2];
 }
 
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float cbrt_5f(float f)
-{
-  uint32_t * const p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
-}
-
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float cbrta_halleyf(const float a, const float R)
-{
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float lab_f(const float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? cbrta_halleyf(cbrt_5f(x), x) : (kappa * x + 16.0f) / 116.0f;
-}
-
 /** uses D50 white point. */
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
 static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
@@ -171,9 +147,14 @@ static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
 DT_OMP_DECLARE_SIMD(aligned(Lab, XYZ:16) uniform(Lab, XYZ))
 static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Lab)
 {
+  const float epsilon = 216.0f / 24389.0f;
+  const float kappa = 24389.0f / 27.0f;
   dt_aligned_pixel_t f;
   for_each_channel(i)
-    f[i] = lab_f(XYZ[i] * d50_inv[i]);
+  {
+    const float x = XYZ[i] * d50_inv[i];
+    f[i] = x > epsilon ? cbrtf(x) : (kappa * x + 16.0f) / 116.0f;
+  }
 //  Lab[0] = 116.0f * f[1] - 16.0f;
 //  Lab[1] = 500.0f * (f[0] - f[1]);
 //  Lab[2] = -200.0f * (f[2] - f[1]);
