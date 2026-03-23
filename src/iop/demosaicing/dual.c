@@ -118,7 +118,7 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
         wboff ? 1.0f : 1.0f / p->dsc.temperature.coeffs[2], 1.0f };
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
-     CLARG(mask), CLARG(high_image), CLARG(width), CLARG(height), CLFLARRAY(4, wb));
+     CLARG(mask), CLARG(high_image), CLARG(width), CLARG(height), CLARG(wb));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_scharr_mask, width, height,

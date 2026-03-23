@@ -339,8 +339,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
               CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord),
               CLARG(width), CLARG(height),
               CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
-              CLARG(dev_thresholds),
-              CLFLARRAY(4, color));
+              CLARG(dev_thresholds), CLARG(color));
 
 error:
   dt_opencl_release_mem_object(dev_xtrans);

@@ -808,16 +808,17 @@ static int _dehaze_cl(dt_iop_module_t *self,
                       cl_mem trans_map,
                       cl_mem img_out,
                       const float t_min,
-                      const float *const A0)
+                      const float *const A)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img_in);
   const int height = dt_opencl_get_image_height(img_in);
 
+  const dt_aligned_pixel_t A0 = { A[0], A[1], A[2], A[3]};
   return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_hazeremoval_dehaze, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(img_in), CLARG(trans_map),
-                                          CLARG(img_out), CLARG(t_min), CLFLARRAY(4, A0));
+                                          CLARG(img_out), CLARG(t_min), CLARG(A0));
 }
 
 void tiling_callback(dt_iop_module_t *self,
