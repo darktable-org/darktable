@@ -210,6 +210,9 @@ changes (where available).
   - Masks do not shift position when crop is toggled on/off.
   - Pixel-perfect node hovering and editing up to maximum (16x)
     magnification.
+  - Fix Bezier handle misassignment in vectorized masks causing
+    distorted curves on complex shapes (AI object masks and
+    external raster masks).
 
 - If a tag category is marked as private, all tags and subcategories
   under it are also treated as private.
