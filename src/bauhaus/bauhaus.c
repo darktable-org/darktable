@@ -3738,9 +3738,12 @@ static void dt_bh_init(DtBauhausWidget *w)
 
   dt_gui_connect_motion(w, _widget_motion, _widget_enter, _widget_leave, widget);
 
-  dt_gui_connect_scroll(w, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                           | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                        _widget_scroll, widget);
+  GtkEventController *scroll_controller =
+    dt_gui_connect_scroll(w, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                             | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _widget_scroll, widget);
+  // allows for capturing propagated events from other widgets
+  gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_BUBBLE);
 
   gtk_widget_set_can_focus(widget, TRUE);
   dt_gui_add_class(widget, "dt_bauhaus");
