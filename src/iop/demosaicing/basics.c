@@ -550,7 +550,8 @@ static int process_default_cl(const dt_iop_module_t *self,
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
           CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
-          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)));
+          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
+          CLARGINT(100000));
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -567,7 +568,8 @@ static int process_default_cl(const dt_iop_module_t *self,
         const size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
           CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
-          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
+          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
+          CLARGINT(100000));
         if(err != CL_SUCCESS) goto error;
       }
     }
