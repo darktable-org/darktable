@@ -580,14 +580,20 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
     {
       int64_t iou_shape[2] = {1, nm};
       int64_t lr_shape[4] = {1, nm, pm_dim, pm_dim};
+      const int dec_outputs = dt_ai_get_output_count(ctx->decoder);
 
       outputs[0] = (dt_ai_tensor_t){
         .data = masks, .type = DT_AI_FLOAT, .shape = masks_shape, .ndim = 4};
       outputs[1] = (dt_ai_tensor_t){
         .data = iou_buf, .type = DT_AI_FLOAT, .shape = iou_shape, .ndim = 2};
-      outputs[2] = (dt_ai_tensor_t){
-        .data = low_res, .type = DT_AI_FLOAT, .shape = lr_shape, .ndim = 4};
-      n_out = 3;
+      n_out = 2;
+      // low_res_masks output is optional (absent in 256x256 decoders)
+      if(dec_outputs >= 3)
+      {
+        outputs[2] = (dt_ai_tensor_t){
+          .data = low_res, .type = DT_AI_FLOAT, .shape = lr_shape, .ndim = 4};
+        n_out = 3;
+      }
     }
     else
     {
@@ -848,27 +854,33 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
 
   if(is_sam)
   {
-    // SAM: 3 outputs -- masks [1,N,H,W], iou [1,N], low_res [1,N,pm_dim,pm_dim]
-    const size_t low_res_per = (size_t)pm_dim * pm_dim;
-    low_res = g_try_malloc((size_t)nm * low_res_per * sizeof(float));
-    if(!low_res)
-    {
-      g_free(point_coords);
-      g_free(point_labels);
-      g_free(masks);
-      return NULL;
-    }
-
+    // SAM: masks [1,N,H,W] + iou [1,N], optionally low_res [1,N,pm,pm]
     int64_t iou_shape[2] = {1, nm};
-    int64_t low_res_shape[4] = {1, nm, pm_dim, pm_dim};
+    const int dec_out_count = dt_ai_get_output_count(ctx->decoder);
 
     dec_outputs[0] = (dt_ai_tensor_t){
       .data = masks, .type = DT_AI_FLOAT, .shape = masks_shape, .ndim = 4};
     dec_outputs[1] = (dt_ai_tensor_t){
       .data = iou_pred, .type = DT_AI_FLOAT, .shape = iou_shape, .ndim = 2};
-    dec_outputs[2] = (dt_ai_tensor_t){
-      .data = low_res, .type = DT_AI_FLOAT, .shape = low_res_shape, .ndim = 4};
-    n_dec_out = 3;
+    n_dec_out = 2;
+
+    // low_res_masks output is optional (absent in 256x256 decoders)
+    if(dec_out_count >= 3)
+    {
+      const size_t low_res_per = (size_t)pm_dim * pm_dim;
+      low_res = g_try_malloc((size_t)nm * low_res_per * sizeof(float));
+      if(!low_res)
+      {
+        g_free(point_coords);
+        g_free(point_labels);
+        g_free(masks);
+        return NULL;
+      }
+      int64_t low_res_shape[4] = {1, nm, pm_dim, pm_dim};
+      dec_outputs[2] = (dt_ai_tensor_t){
+        .data = low_res, .type = DT_AI_FLOAT, .shape = low_res_shape, .ndim = 4};
+      n_dec_out = 3;
+    }
   }
   else
   {
@@ -920,11 +932,21 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
              "[segmentation] mask computed (%.3fs), best=%d/%d IoU=%.3f",
              dec_elapsed, best, nm, iou_pred[best]);
 
-    // cache the best low-res mask for iterative refinement
-    const size_t low_res_per = (size_t)pm_dim * pm_dim;
-    memcpy(ctx->prev_mask, low_res + (size_t)best * low_res_per,
-           low_res_per * sizeof(float));
-    g_free(low_res);
+    // cache the best mask for iterative refinement
+    if(low_res)
+    {
+      // use dedicated low_res output (1024x1024 decoder)
+      const size_t low_res_per = (size_t)pm_dim * pm_dim;
+      memcpy(ctx->prev_mask, low_res + (size_t)best * low_res_per,
+             low_res_per * sizeof(float));
+      g_free(low_res);
+    }
+    else
+    {
+      // masks output is already at prev_mask resolution (256x256 decoder)
+      memcpy(ctx->prev_mask, masks + (size_t)best * per_mask,
+             per_mask * sizeof(float));
+    }
   }
   else
   {
