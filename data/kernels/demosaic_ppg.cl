@@ -116,10 +116,10 @@ green_equilibration_lavg(read_only image2d_t in,
       const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
 
       if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
-          o *= m1/m2;
+          o = fmax(0.0f, o * m1/m2);
     }
   }
-  write_imagef (out, (int2)(x, y), o);
+  write_imagef(out, (int2)(x, y), o);
 }
 
 
@@ -230,9 +230,10 @@ green_equilibration_favg_apply(read_only image2d_t in,
   const int c = FC(y, x, filters);
 
   const int isgreen1 = (c == GREEN && !(y & 1)); // on even lines
-
-  pixel *= (isgreen1 ? gr_ratio : 1.0f);
-
+  if(isgreen1)
+  {
+    pixel = fmax(0.0f, pixel * gr_ratio);
+  }
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -419,7 +420,7 @@ color_smoothing(read_only image2d_t in,
   cas(s6, s4);
   cas(s4, s2);
 
-  o.x = s4 + o.y;
+  o.x = fmax(0.0f, s4 + o.y);
 
 
   // 3x3 median for B
@@ -453,7 +454,7 @@ color_smoothing(read_only image2d_t in,
   cas(s6, s4);
   cas(s4, s2);
 
-  o.z = s4 + o.y;
+  o.z = fmax(0.0f, s4 + o.y);
 
   write_imagef(out, (int2) (x, y), o);
 }
