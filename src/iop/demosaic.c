@@ -853,7 +853,7 @@ void process(dt_iop_module_t *self,
         if(method == DT_IOP_DEMOSAIC_FDC)
           xtrans_fdc_interpolate(t_out, t_in, width, t_rows, xtrans, exif_iso);
         else if(method == DT_IOP_DEMOSAIC_MARKESTEIJN || method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes);
+          xtrans_markesteijn_interpolate(t_out, t_in, width, t_rows, xtrans, passes, filters);
         else
           vng_interpolate(t_out, t_in, width, t_rows, filters, xtrans, FALSE);
       }
@@ -1746,7 +1746,7 @@ void gui_init(dt_iop_module_t *self)
   const int xtranspos = dt_bauhaus_combobox_get_from_value(g->demosaic_method_bayer, DT_DEMOSAIC_XTRANS);
 
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, xtranspos);
-  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\nVNG4 is good in rare cases avoiding maze patterns.\ndual demosaicers increase processing time by blending a VNG variant in a second pass."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<xtranspos;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
