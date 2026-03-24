@@ -149,6 +149,14 @@ changes (where available).
   behavior. Enabled shortcuts to toggle filmstrip auto-centering and
   to explicitly recenter the filmstrip on the current image.
 
+- The radius calculated for capture sharpening is now using only the
+  central 60% of the image as lenses are mostly sharper here.
+  For xtrans sensors the radius has been slightly increased as
+  images tend to be more blurred.
+
+- The tone equalizer now visualizes an invalid curve (solver maths)
+  also for old edits.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
@@ -163,7 +171,8 @@ changes (where available).
 
 - Added PNG support (8/16-bit) for external raster masks.
 
-- Removed `Neo` Intel GPU from the Windows blacklist.
+- Removed `Neo` Intel and `pocl` OpenCL drivers from blacklist,
+  the `AMD-APP` driver has been added as not supported by AMD for 10yrs.
 
 - In the styles module, a new option has been added to hide the
   preview in the tooltip. Additionally, a module preference now allows
@@ -199,6 +208,9 @@ changes (where available).
   - Improved the toe/shoulder warning tooltips for clarity.
   - The scene-referred preset is no longer applied exclusively to HDR images.
   - Primaries selection is now visible even when "disable adjustments" is checked.  
+
+- For non-raw images with gamma corrected data we do the initial scaling in linear mode
+  for less artifacts.
 
 ## Bug Fixes
 
