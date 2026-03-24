@@ -66,7 +66,7 @@
 #endif
 
 #define RCD_BORDER 10         // avoid tile-overlap errors
-#define RCD_MARGIN 7          // for the outermost tiles we can have a smaller outer border
+#define RCD_MARGIN 9          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 DT_RCD_TILESIZE
 #define w2 (2 * DT_RCD_TILESIZE)
@@ -80,191 +80,6 @@
 static inline float _safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
-}
-
-/** This is basically ppg adopted to only write data to RCD_MARGIN */
-static void rcd_ppg_border(float *const out,
-                           const float *const in,
-                           const int width,
-                           const int height,
-                           const uint32_t filters,
-                           const int margin)
-{
-  const int border = margin + 3;
-  // write approximatad 3-pixel border region to out
-  float sum[8];
-  for(int j = 0; j < height; j++)
-  {
-    for(int i = 0; i < width; i++)
-    {
-      if(i == 3 && j >= 3 && j < height - 3) i = width - 3;
-      if(i == width) break;
-      memset(sum, 0, sizeof(float) * 8);
-      for(int y = j - 1; y != j + 2; y++)
-      {
-        for(int x = i - 1; x != i + 2; x++)
-        {
-          if((y >= 0) && (x >= 0) && (y < height) && (x < width))
-          {
-            const int f = FC(y, x, filters);
-            sum[f] += fmaxf(0.0f, in[(size_t)y * width + x]);
-            sum[f + 4]++;
-          }
-        }
-      }
-      const int f = FC(j, i, filters);
-      for(int c = 0; c < 3; c++)
-      {
-        if(c != f && sum[c + 4] > 0.0f)
-          out[4 * ((size_t)j * width + i) + c] = sum[c] / sum[c + 4];
-        else
-          out[4 * ((size_t)j * width + i) + c] = fmaxf(0.0f, in[(size_t)j * width + i]);
-      }
-    }
-  }
-
-  DT_OMP_FOR()
-  for(int j = 3; j < height - 3; j++)
-  {
-    float *buf = out + (size_t)4 * width * j + 4 * 3;
-    const float *buf_in = in + (size_t)width * j + 3;
-    for(int i = 3; i < width - 3; i++)
-    {
-      if(i == border && j >= border && j < height - border)
-      {
-        i = width - border;
-        buf = out + (size_t)4 * width * j + 4 * i;
-        buf_in = in + (size_t)width * j + i;
-      }
-      if(i == width) break;
-
-      const int c = FC(j, i, filters);
-      dt_aligned_pixel_t color;
-      const float pc = fmaxf(0.0f, buf_in[0]);
-      if(c == 0 || c == 2)
-      {
-        color[c] = pc;
-        const float pym  = fmaxf(0.0f, buf_in[-width * 1]);
-        const float pym2 = fmaxf(0.0f, buf_in[-width * 2]);
-        const float pym3 = fmaxf(0.0f, buf_in[-width * 3]);
-        const float pyM  = fmaxf(0.0f, buf_in[+width * 1]);
-        const float pyM2 = fmaxf(0.0f, buf_in[+width * 2]);
-        const float pyM3 = fmaxf(0.0f, buf_in[+width * 3]);
-        const float pxm  = fmaxf(0.0f, buf_in[-1]);
-        const float pxm2 = fmaxf(0.0f, buf_in[-2]);
-        const float pxm3 = fmaxf(0.0f, buf_in[-3]);
-        const float pxM  = fmaxf(0.0f, buf_in[+1]);
-        const float pxM2 = fmaxf(0.0f, buf_in[+2]);
-        const float pxM3 = fmaxf(0.0f, buf_in[+3]);
-
-        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
-        const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
-                            + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
-        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
-        const float diffy = (fabsf(pym2 - pc) + fabsf(pyM2 - pc) + fabsf(pym - pyM)) * 3.0f
-                            + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
-        if(diffx > diffy)
-        {
-          // use guessy
-          const float m = fminf(pym, pyM);
-          const float M = fmaxf(pym, pyM);
-          color[1] = fmaxf(fminf(guessy * .25f, M), m);
-        }
-        else
-        {
-          const float m = fminf(pxm, pxM);
-          const float M = fmaxf(pxm, pxM);
-          color[1] = fmaxf(fminf(guessx * .25f, M), m);
-        }
-      }
-      else
-        color[1] = pc;
-
-      color[3] = 0.0f;
-      for_each_channel(k)
-        buf[k] = color[k];
-      buf += 4;
-      buf_in++;
-    }
-  }
-// for all pixels: interpolate colors into float array
-  DT_OMP_FOR()
-  for(int j = 1; j < height - 1; j++)
-  {
-    float *buf = out + (size_t)4 * width * j + 4;
-    for(int i = 1; i < width - 1; i++)
-    {
-      if(i == margin && j >= margin && j < height - margin)
-      {
-        i = width - margin;
-        buf = out + (size_t)4 * (width * j + i);
-      }
-      const int c = FC(j, i, filters);
-      dt_aligned_pixel_t color = { buf[0], buf[1], buf[2], buf[3] };
-      const int linesize = 4 * width;
-      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
-      // b for r and r for b
-      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
-      {
-        // calculate red and blue for green pixels:
-        // need 4-nbhood:
-        const float *nt = buf - linesize;
-        const float *nb = buf + linesize;
-        const float *nl = buf - 4;
-        const float *nr = buf + 4;
-        if(FC(j, i + 1, filters) == 0) // red nb in same row
-        {
-          color[2] = (nt[2] + nb[2] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
-          color[0] = (nl[0] + nr[0] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
-        }
-        else
-        {
-          // blue nb
-          color[0] = (nt[0] + nb[0] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
-          color[2] = (nl[2] + nr[2] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
-        }
-      }
-      else
-      {
-        // get 4-star-nbhood:
-        const float *ntl = buf - 4 - linesize;
-        const float *ntr = buf + 4 - linesize;
-        const float *nbl = buf - 4 + linesize;
-        const float *nbr = buf + 4 + linesize;
-
-        if(c == 0)
-        {
-          // red pixel, fill blue:
-          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[2] + nbr[2] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[2] + nbl[2] + 2.0f * color[1] - ntr[1] - nbl[1];
-          if(diff1 > diff2)
-            color[2] = guess2 * .5f;
-          else if(diff1 < diff2)
-            color[2] = guess1 * .5f;
-          else
-            color[2] = (guess1 + guess2) * .25f;
-        }
-        else // c == 2, blue pixel, fill red:
-        {
-          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[0] + nbr[0] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[0] + nbl[0] + 2.0f * color[1] - ntr[1] - nbl[1];
-          if(diff1 > diff2)
-            color[0] = guess2 * .5f;
-          else if(diff1 < diff2)
-            color[0] = guess1 * .5f;
-          else
-            color[0] = (guess1 + guess2) * .25f;
-        }
-      }
-      for_each_channel(k)
-        buf[k] = color[k];
-      buf += 4;
-    }
-  }
 }
 
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
@@ -308,7 +123,7 @@ static void rcd_demosaic(float *const restrict out,
                          const uint32_t filters,
                          const float scaler)
 {
-  rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
+  demosaic_ppg(out, in, width, height, filters, 0.0f, RCD_BORDER);
   if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
     return;
 
@@ -621,12 +436,12 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt);
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
     if(err != CL_SUCCESS) goto error;
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_border_green, sizes, local,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters),
         CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)), CLARGINT(32));
     if(err != CL_SUCCESS) goto error;
@@ -638,12 +453,12 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-    err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt);
+    err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
     if(err != CL_SUCCESS) goto error;
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_border_redblue, sizes, local,
+    err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
       CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(filters),
       CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)), CLARGINT(16));
     if(err != CL_SUCCESS) goto error;
