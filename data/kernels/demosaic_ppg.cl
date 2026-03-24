@@ -803,7 +803,7 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
     if(j>=0 && i>=0 && j<height && i<width)
     {
       const int f = FC(j,i,filters);
-      sum[f] += fmax(0.0f, readsingle(in, i, j));
+      sum[f] += readsingle(in, i, j);
       count[f]++;
     }
   }

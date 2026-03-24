@@ -39,7 +39,7 @@ static void demosaic_ppg(float *const out,
           if((y >= 0) && (x >= 0) && (y < height) && (x < width))
           {
             const int f = FC(y, x, filters);
-            sum[f] += fmaxf(0.0f, in[(size_t)y * width + x]);
+            sum[f] += in[(size_t)y * width + x];
             sum[f + 4]++;
           }
         }
