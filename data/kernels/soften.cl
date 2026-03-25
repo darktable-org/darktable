@@ -30,7 +30,7 @@ soften_overexposed(read_only image2d_t in, write_only image2d_t out, const int w
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
   float4 hsl = RGB_2_HSL(pixel);
 
@@ -54,7 +54,7 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
   float4 pixel = (float4)0.0f;
 
   /* read pixel and fill center part of buffer */
-  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel = readpixel(in, x, y);
   buffer[rad + lid] = pixel;
 
   /* left wing of buffer */
@@ -63,7 +63,7 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int l = mad24(n, lsz, lid + 1);
     if(l > rad) continue;
     const int xx = mad24((int)get_group_id(0), lsz, -l);
-    buffer[rad - l] = read_imagef(in, sampleri, (int2)(xx, y));
+    buffer[rad - l] = readpixel(in, xx, y);
   }
 
   /* right wing of buffer */
@@ -72,7 +72,7 @@ soften_hblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int r = mad24(n, lsz, lsz - lid);
     if(r > rad) continue;
     const int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
-    buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(xx, y));
+    buffer[rad + lsz - 1 + r] = readpixel(in, xx, y);
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -106,7 +106,7 @@ soften_vblur(read_only image2d_t in, write_only image2d_t out, global const floa
   float4 pixel = (float4)0.0f;
 
   /* read pixel and fill center part of buffer */
-  pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel = readpixel(in, x, y);
   buffer[rad + lid] = pixel;
 
   /* left wing of buffer */
@@ -115,7 +115,7 @@ soften_vblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int l = mad24(n, lsz, lid + 1);
     if(l > rad) continue;
     const int yy = mad24((int)get_group_id(1), lsz, -l);
-    buffer[rad - l] = read_imagef(in, sampleri, (int2)(x, yy));
+    buffer[rad - l] = readpixel(in, x, yy);
   }
 
   /* right wing of buffer */
@@ -124,7 +124,7 @@ soften_vblur(read_only image2d_t in, write_only image2d_t out, global const floa
     const int r = mad24(n, lsz, lsz - lid);
     if(r > rad) continue;
     const int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
-    buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(x, yy));
+    buffer[rad + lsz - 1 + r] = readpixel(in, x, yy);
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);
@@ -158,10 +158,10 @@ soften_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2
 
   if(x >= width || y >= height) return;
 
-  float4 original  = read_imagef(in_a, sampleri, (int2)(x, y));
-  float4 processed = read_imagef(in_b, sampleri, (int2)(x, y));
+  float4 original  = readpixel(in_a, x, y);
+  float4 processed = readpixel(in_b, x, y);
 
-  float4 pixel = original * (1.0f - amount) + clamp(processed, (float4)0.0f, (float4)1.0f) * amount;
+  float4 pixel = original * (1.0f - amount) + clip4(processed) * amount;
   pixel.w = original.w;
 
   write_imagef (out, (int2)(x, y), pixel);

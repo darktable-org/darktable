@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019-2025 darktable developers.
+    copyright (c) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,10 +30,8 @@ lut3d_tetrahedral(read_only image2d_t in, write_only image2d_t out, const int wi
 
   if(x >= width || y >= height) return;
 
-  float4 input = read_imagef(in, sampleri, (int2)(x, y));
+  float4 input = clip4(readpixel(in, x, y));
   float4 output = (float4)(0.0f);
-
-  input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
   rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
@@ -110,10 +108,8 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
 
   if(x >= width || y >= height) return;
 
-  float4 input = read_imagef(in, sampleri, (int2)(x, y));
+  float4 input = clip4(readpixel(in, x, y));
   float4 output = (float4)(0.0f);
-
-  input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
   rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
@@ -166,10 +162,8 @@ lut3d_pyramid(read_only image2d_t in, write_only image2d_t out, const int width,
 
   if(x >= width || y >= height) return;
 
-  float4 input = read_imagef(in, sampleri, (int2)(x, y));
+  float4 input = clip4(readpixel(in, x, y));
   float4 output = (float4)(0.0f);
-
-  input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
   rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));

@@ -73,11 +73,11 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
 
   if(x >= width || y >= height) return;
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = readpixel(in, x, y);
   const float4 xyz = Lab_to_XYZ(i);
   float4 o = XYZ_to_prophotorgb(xyz);
 
-  const float noise = pow(2.0f, -16.0f);
+  const float noise = dtcl_pow(2.0f, -16.0f);
   const float4 noise4 = noise;
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
@@ -94,13 +94,13 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   {
 
     // Save the ratios
-    float maxRGB = fmax(fmax(o.x, o.y), o.z);
+    float maxRGB = fmax3(o);
     const float4 ratios = o / (float4)maxRGB;
 
     // Log profile
     maxRGB = maxRGB / grey;
     maxRGB = (maxRGB < noise) ? noise : maxRGB;
-    maxRGB = (native_log2(maxRGB) - shadows_range) / dynamic_range;
+    maxRGB = (dtcl_log2(maxRGB) - shadows_range) / dynamic_range;
     maxRGB = clipf(maxRGB);
 
     const float index = maxRGB;
@@ -120,8 +120,8 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     // Log profile
     o = o / grey;
     o = (o < noise) ? noise : o;
-    o = (native_log2(o) - shadows4) / dynamic4;
-    o = clamp(o, (float4)0.0f, (float4)1.0f);
+    o = (dtcl_log2(o) - shadows4) / dynamic4;
+    o = clip4(o);
 
     const float index = prophotorgb_to_XYZ(o).y;
 
@@ -137,7 +137,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
 
   // Desaturate selectively
   o = (float4)luma + (float4)derivative * (o - (float4)luma);
-  o = clamp(o, (float4)0.0f, (float4)1.0f);
+  o = clip4(o);
 
   // Apply the transfer function of the display
   const float4 power4 = power;
@@ -202,8 +202,8 @@ static inline float filmic_desaturate_v1(const float x, const float sigma_toe, c
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
 
-  const float key_toe = native_exp(-0.5f * radius_toe * radius_toe / sigma_toe);
-  const float key_shoulder = native_exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
+  const float key_toe = dtcl_exp(-0.5f * radius_toe * radius_toe / sigma_toe);
+  const float key_shoulder = dtcl_exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
 
   return 1.0f - clipf((key_toe + key_shoulder) / saturation);
 }
@@ -214,8 +214,8 @@ static inline float filmic_desaturate_v2(const float x, const float sigma_toe, c
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
   const float sat2 = 0.5f / dtcl_sqrt(saturation);
-  const float key_toe = native_exp(-radius_toe * radius_toe / sigma_toe * sat2);
-  const float key_shoulder = native_exp(-radius_shoulder * radius_shoulder / sigma_shoulder * sat2);
+  const float key_toe = dtcl_exp(-radius_toe * radius_toe / sigma_toe * sat2);
+  const float key_shoulder = dtcl_exp(-radius_shoulder * radius_shoulder / sigma_shoulder * sat2);
 
   return (saturation - (key_toe + key_shoulder) * (saturation));
 }
@@ -295,7 +295,7 @@ static inline float log_tonemapping_v1(const float x,
                                        const float grey, const float black,
                                        const float dynamic_range)
 {
-  const float temp = (native_log2(x / grey) - black) / dynamic_range;
+  const float temp = (dtcl_log2(x / grey) - black) / dynamic_range;
   return clamp(temp, NORM_MIN, 1.f);
 }
 
@@ -303,7 +303,7 @@ static inline float log_tonemapping_v2(const float x,
                                        const float grey, const float black,
                                        const float dynamic_range)
 {
-  return clipf((native_log2(x / grey) - black) / dynamic_range);
+  return clipf((dtcl_log2(x / grey) - black) / dynamic_range);
 }
 
 
@@ -750,7 +750,7 @@ static inline float4 filmic_split_v1(const float4 i,
   o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
 
   // Output power
-  o = dtcl_pow(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+  o = dtcl_pow(clip4(o), output_power);
 
   return o;
 }
@@ -787,7 +787,7 @@ static inline float4 filmic_split_v2_v3(const float4 i,
   o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
 
   // Output power
-  o = dtcl_pow(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+  o = dtcl_pow(clip4(o), output_power);
 
   return o;
 }
@@ -813,7 +813,7 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i = readpixel(in, x, y);
   float4 o;
 
   const dt_iop_filmicrgb_curve_type_t type[2] = { type_1, type_2 };
@@ -930,7 +930,7 @@ static inline float4 filmic_chroma_v2_v3(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  norm = dtcl_pow(clipf(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type)), output_power);
 
   // Re-apply ratios with saturation change
   ratios = fmax(ratios + ((float4)1.0f - ratios) * ((float4)1.0f - desaturation), (float4)0.f);
@@ -941,14 +941,14 @@ static inline float4 filmic_chroma_v2_v3(const float4 i,
   float4 o = (float4)norm * ratios;
 
   // Gamut mapping
-  const float max_pix = fmax(fmax(o.x, o.y), o.z);
+  const float max_pix = fmax3(o);
   const int penalize = (max_pix > 1.0f);
 
   // Penalize the ratios by the amount of clipping
   if(penalize)
   {
     ratios = fmax(ratios + ((float4)1.0f - (float4)max_pix), (float4)0.0f);
-    o = clamp((float4)norm * ratios, (float4)0.0f, (float4)1.0f);
+    o = clip4((float4)norm * ratios);
   }
 
   return o;
@@ -978,7 +978,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i = readpixel(in, x, y);
   float4 o;
 
   const dt_iop_filmicrgb_curve_type_t type[2] = { type_1, type_2 };
@@ -1042,12 +1042,12 @@ filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = readpixel(in, x, y);
   const float4 i2 = i * i;
 
   const float pix_max = fmax(dtcl_sqrt(i2.x + i2.y + i2.z), 0.f);
   const float argument = -pix_max * normalize + feathering;
-  const float weight = clipf(1.0f / ( 1.0f + native_exp2(argument)));
+  const float weight = clipf(1.0f / ( 1.0f + dtcl_exp2(argument)));
 
   if(4.f > argument) *is_clipped = 1;
 
@@ -1063,7 +1063,7 @@ filmic_show_mask(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
-  const float i = (read_imagef(in, sampleri, (int2)(x, y))).x;
+  const float i = readsingle(in, x, y);
   write_imagef(out, (int2)(x, y), (float4){i, i, i, 1.0f});
 }
 
@@ -1086,10 +1086,10 @@ filmic_inpaint_noise(read_only image2d_t in, read_only image2d_t mask, write_onl
   xoshiro128plus(state);
 
   // create noise
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i = readpixel(in, x, y);
   const float4 sigma = i * noise_level / threshold;
   const float4 noise = dt_noise_generator_simd(noise_distribution, i, sigma, state);
-  const float weight = (read_imagef(mask, sampleri, (int2)(x, y))).x;
+  const float weight = readsingle(mask, x, y);
   const float4 o = fmax(i * (1.0f - weight) + weight * noise, 0.f);
   write_imagef(out, (int2)(x, y), o);
 }
@@ -1103,8 +1103,8 @@ kernel void init_reconstruct(read_only image2d_t in, read_only image2d_t mask, w
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  const float4 weight = 1.f - (read_imagef(mask, sampleri, (int2)(x, y))).x;
+  const float4 i = readpixel(in, x, y);
+  const float4 weight = 1.f - readsingle(mask, x, y);
   float4 o = fmax(i * weight, 0.f);
 
   // copy masks and alpha
@@ -1144,10 +1144,10 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float alpha = read_imagef(mask, sampleri, (int2)(x, y)).x;
-  const float4 HF_c = read_imagef(HF, sampleri, (int2)(x, y));
-  const float4 LF_c = read_imagef(LF, sampleri, (int2)(x, y));
-  const float4 TT_c = read_imagef(texture, sampleri, (int2)(x, y));
+  const float alpha = readsingle(mask, x, y);
+  const float4 HF_c = readpixel(HF, x, y);
+  const float4 LF_c = readpixel(LF, x, y);
+  const float4 TT_c = readpixel(texture, x, y);
 
   float4 details;
   float4 residual;
@@ -1177,7 +1177,7 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
     }
   }
 
-  const float4 i = read_imagef(reconstructed_read, sampleri, (int2)(x, y));
+  const float4 i = readpixel(reconstructed_read, x, y);
   const float4 o = i + alpha * (delta * details + residual);
   write_imagef(reconstructed_write, (int2)(x, y), o);
 }
@@ -1192,7 +1192,7 @@ kernel void compute_ratios(read_only image2d_t in, write_only image2d_t norms,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i = readpixel(in, x, y);
   const float norm = fmax(pixel_rgb_norm_euclidean(i), NORM_MIN);
   const float4 ratio = i / norm;
   write_imagef(norms, (int2)(x, y), norm);
@@ -1208,8 +1208,8 @@ kernel void restore_ratios(read_only image2d_t ratios, read_only image2d_t norms
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 ratio = read_imagef(ratios, sampleri, (int2)(x, y));
-  const float norm = read_imagef(norms, sampleri, (int2)(x, y)).x;
-  const float4 o = clamp(ratio, 0.f, 1.f) * norm;
+  const float4 ratio = readpixel(ratios, x, y);
+  const float norm = readsingle(norms, x, y);
+  const float4 o = clip4(ratio) * norm;
   write_imagef(out, (int2)(x, y), o);
 }

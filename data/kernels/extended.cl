@@ -735,9 +735,9 @@ static inline float4 opacity_masks(const float x,
   float4 output;
   const float x_offset = (x - mask_grey_fulcrum);
   const float x_offset_norm = x_offset / mask_grey_fulcrum;
-  const float alpha = 1.f / (1.f + native_exp(x_offset_norm * shadows_weight));    // opacity of shadows
-  const float beta = 1.f / (1.f + native_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
-  const float gamma = native_exp(-sqf(x_offset) * midtones_weight / 4.f) * sqf(1.f - alpha) * sqf(1.f - beta) * 8.f; // opacity of midtones
+  const float alpha = 1.f / (1.f + dtcl_exp(x_offset_norm * shadows_weight));    // opacity of shadows
+  const float beta = 1.f / (1.f + dtcl_exp(-x_offset_norm * highlights_weight)); // opacity of highlights
+  const float gamma = dtcl_exp(-sqf(x_offset) * midtones_weight / 4.f) * sqf(1.f - alpha) * sqf(1.f - beta) * 8.f; // opacity of midtones
 
   output.x = alpha;
   output.y = gamma;
