@@ -1944,7 +1944,7 @@ static void _object_set_hint_message(
       g_snprintf(msgbuf,
                  msgbuf_len,
                  _("<b>add</b>: click, <b>subtract</b>: shift+click, "
-                   "<b>clear</b>: ctrl+shift+click\n"
+                   "<b>clear</b>: ctrl+shift+click, "
                    "<b>apply</b>: right-click, "
                    "<b>apply+save raster</b>: shift+right-click\n"
                    "<b>smoothing</b>: scroll (%3.2f), "
