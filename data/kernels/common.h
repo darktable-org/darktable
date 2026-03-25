@@ -48,6 +48,11 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_pow(A,B) native_powr(A,B)
   #define dtcl_exp(A) native_exp(A)
   #define dtcl_log(A) native_log(A)
+  #define dtcl_log2(A) native_log2(A)
+  #define dtcl_exp2(A) native_exp2(A)
+  #define dtcl_sin(A) native_sin(A)
+  #define dtcl_cos(A) native_cos(A)
+
   // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
   // on compatible platforms
   #pragma OPENCL FP_CONTRACT ON
@@ -58,6 +63,11 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_pow(A,B) pow(A,B)
   #define dtcl_exp(A) exp(A)
   #define dtcl_log(A) log(A)
+  #define dtcl_log2(A) log2(A)
+  #define dtcl_exp2(A) exp2(A)
+  #define dtcl_sin(A) sin(A)
+  #define dtcl_cos(A) cos(A)
+
   #pragma OPENCL FP_CONTRACT OFF
 #endif
 
@@ -170,6 +180,16 @@ static inline float fcube(const float a)
 static inline float clipf(const float a)
 {
   return clamp(a, 0.0f, 1.0f);
+}
+
+static inline float4 clip4(const float4 a)
+{
+  return clamp(a, (float4)0.0f, (float4)1.0f);
+}
+
+static inline float fmax3(const float4 o)
+{
+  return fmax(fmax(o.x, o.y), o.z);
 }
 
 /* Some inline functions making life easier when reading photosites

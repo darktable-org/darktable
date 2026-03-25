@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -607,9 +607,8 @@ int process_cl(dt_iop_module_t *self,
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  const int zero = 0;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_borders_fill, width, height,
-                            CLARG(dev_out), CLARG(zero), CLARG(zero),
+                            CLARG(dev_out), CLARGINT(0), CLARGINT(0),
                             CLARG(width), CLARG(height), CLARG(col));
   if(err != CL_SUCCESS) goto error;
 
