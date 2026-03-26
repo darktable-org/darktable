@@ -553,8 +553,21 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
   gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
 
+GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
+                                  GCallback drag_begin,
+                                  GCallback drag_end,
+				  GCallback drag_update,
+                                  gpointer data);
+#define dt_gui_connect_drag(widget, drag_begin, drag_end, drag_update, data) ( \
+  ASSERT_FUNC_TYPE(drag_begin, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(drag_end, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(drag_update, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
+  dt_gui_connect_drag(GTK_WIDGET(widget), G_CALLBACK(drag_begin), G_CALLBACK(drag_end), G_CALLBACK(drag_update), (data)))
+
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
+#define dt_gui_deny(gesture) \
+      gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_DENIED)
 
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,

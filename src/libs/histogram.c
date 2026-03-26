@@ -303,35 +303,63 @@ void lib_histogram_update_tooltip(const dt_scopes_t *const scopes)
   g_free(tip);
 }
 
+static void _drawable_drag_begin(GtkGestureDrag* gesture,
+                                 gdouble start_x,
+                                 gdouble start_y,
+                                 dt_scopes_t *s)
+{
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && dt_scopes_func_exists(s->cur_mode, get_exposure_delta)
+     && dt_gui_claim(gesture))
+  {
+    dt_control_change_cursor("grabbing");
+    s->last_offset_x = s->last_offset_y = 0.0;
+    s->dragging = TRUE;
+  }
+  else
+    dt_gui_deny(gesture);
+}
+
+static void _drawable_drag_end(GtkGestureDrag* g, gdouble ox, gdouble oy, dt_scopes_t *s)
+{
+  dt_control_change_cursor("grab");
+  s->dragging = FALSE;
+}
+
+static void _drawable_drag_update(GtkGestureDrag* gesture,
+                                  gdouble offset_x,
+                                  gdouble offset_y,
+                                  dt_scopes_t *s)
+{
+  dt_scopes_mode_t *const cur_mode = s->cur_mode;
+  // GTK4: use gtk_event_controller_get_current_event_state()
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  if(gdk_event_get_event_type(event) == GDK_MOTION_NOTIFY)
+  {
+    // at any time user may user a modifier key to adjust speed
+    // multiplier, so calculate delta since last move, rather than
+    // offset since drag start
+    const gdouble ox = offset_x - s->last_offset_x;
+    const gdouble oy = offset_y - s->last_offset_y;
+    const double delta = dt_scopes_call(cur_mode, get_exposure_delta, ox, oy);
+    dt_dev_exposure_handle_event(1, delta, event->motion.state,
+                                 s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
+    s->last_offset_x = offset_x;
+    s->last_offset_y = offset_y;
+  }
+  gdk_event_free(event);
+}
+
 static void _drawable_button_press(GtkGestureSingle *gesture,
                                    int n_press,
                                    double x,
                                    double y,
                                    dt_scopes_t *s)
 {
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
-     && dt_scopes_func_exists(s->cur_mode, get_exposure_pos))
-  {
-    dt_control_change_cursor("grabbing");
-    s->dragging = (n_press == 1);
-    const double pos = dt_scopes_call(s->cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), n_press, pos, 0.0,
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE && n_press == 2 && dt_gui_claim(gesture))
+    dt_dev_exposure_handle_event(2, 0.0, 0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
-  }
-}
-
-static void _drawable_button_release(GtkGestureSingle *gesture,
-                                     int n_press,
-                                     double x,
-                                     double y,
-                                     dt_scopes_t *s)
-{
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
-  {
-    dt_control_change_cursor("grab");
-    s->dragging = FALSE;
-    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(gesture), -n_press, x, 0.0, FALSE);
-  }
 }
 
 static void _drawable_motion(GtkEventControllerMotion *controller,
@@ -339,36 +367,27 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
                              double y,
                              dt_scopes_t *s)
 {
-  dt_scopes_mode_t *const cur_mode = s->cur_mode;
-  if(s->dragging
-     && s->highlight != DT_SCOPES_HIGHLIGHT_NONE
-     && dt_scopes_func_exists(cur_mode, get_exposure_pos))
-  {
-    const double pos = dt_scopes_call(cur_mode, get_exposure_pos, x, y);
-    dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(controller), 1, pos, 0.0, FALSE);
-  }
+  if(s->dragging) return;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(s->scope_draw, &allocation);
+  const double posx = x / (double)(allocation.width);
+  const double posy = y / (double)(allocation.height);
+  const dt_scopes_highlight_t prior_highlight = s->highlight;
+
+  if(dt_scopes_func_exists(s->cur_mode, get_highlight))
+    s->highlight = dt_scopes_call(s->cur_mode, get_highlight, posx, posy);
   else
+    s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
+
+  if(prior_highlight != s->highlight)
   {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(s->scope_draw, &allocation);
-    const double posx = x / (double)(allocation.width);
-    const double posy = y / (double)(allocation.height);
-    const dt_scopes_highlight_t prior_highlight = s->highlight;
-
-    if(dt_scopes_func_exists(cur_mode, get_highlight))
-      s->highlight = dt_scopes_call(cur_mode, get_highlight, posx, posy);
+    lib_histogram_update_tooltip(s);
+    dt_scopes_refresh(s);
+    if(s->highlight == DT_SCOPES_HIGHLIGHT_NONE)
+      dt_control_change_cursor("default");
     else
-      s->highlight = DT_SCOPES_HIGHLIGHT_NONE;
-
-    if(prior_highlight != s->highlight)
-    {
-      lib_histogram_update_tooltip(s);
-      dt_scopes_refresh(s);
-      if(s->highlight == DT_SCOPES_HIGHLIGHT_NONE)
-        dt_control_change_cursor("default");
-      else
-        dt_control_change_cursor("grab");
-    }
+      dt_control_change_cursor("grab");
   }
 }
 
@@ -474,10 +493,11 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
     {
       // FIXME: should scroll for exposure change be handled by each scope, rather than here?
       // FIXME: should handle horizontal scrolling as well?
+      // FIXME: should handle smooth scrolling rather than discrete?
       // FIXME: should scrolling of scope be handled in the drawable rather than
       //        the eventbox.
-      const gboolean black = s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT;
-      dt_dev_exposure_handle_event(GTK_EVENT_CONTROLLER(self), 0, 0, black ? -dy : dy, black);
+      dt_dev_exposure_handle_event(0, dy, event->scroll.state,
+                                   s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
     else
     {
@@ -831,8 +851,9 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(s->scope_draw),
                    "draw", G_CALLBACK(_drawable_draw_callback), s);
-  dt_gui_connect_click_all(s->scope_draw, _drawable_button_press,
-                           _drawable_button_release, s);
+  dt_gui_connect_drag(s->scope_draw, _drawable_drag_begin, _drawable_drag_end,
+                      _drawable_drag_update, s);
+  dt_gui_connect_click(s->scope_draw, _drawable_button_press, NULL, s);
   dt_gui_connect_motion(s->scope_draw, _drawable_motion, NULL,
                         _drawable_leave, s);
   // constrain height of button_box_right to s->scope_draw, necessary

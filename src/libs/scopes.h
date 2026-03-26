@@ -95,9 +95,11 @@ typedef struct dt_scopes_functions_t
   dt_scopes_highlight_t (*get_highlight)(const struct dt_scopes_mode_t *const self,
                                          const double posx,
                                          const double posy);
-  double (*get_exposure_pos)(const struct dt_scopes_mode_t *const self,
-                             const double x,
-                             const double y);
+  // returns 0 <= pos <= 1 where a pos of 1 is a drag across the full
+  // width/height of the scope (depending on mode exposure drag axis)
+  double (*get_exposure_delta)(const struct dt_scopes_mode_t *const self,
+                               const double offset_x,
+                               const double offset_y);
   void (*append_to_tooltip)(const struct dt_scopes_mode_t *const self,
                             gchar **tip);
   void (*eventbox_scroll)(struct dt_scopes_mode_t *const self,
@@ -139,7 +141,8 @@ typedef struct dt_scopes_t
   int update_counter;                           // most recent pixelpipe vs mode data
   dt_scopes_highlight_t highlight;              // depends on mouse position
   scopes_channels_t channels;                   // display state chosen by RGB buttons
-  gboolean dragging;                            // pre-GtkGestureDrag hack
+  gboolean dragging;                            // to block motion handling during drag
+  gdouble last_offset_x, last_offset_y;         // for drag handling
   // UI elements
   GtkWidget *overlay;                           // GtkOverlay -- scope and buttons
   GtkWidget *button_box_left;                   // GtkBox -- scope mode buttons
