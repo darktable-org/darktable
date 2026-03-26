@@ -201,16 +201,22 @@ changes (where available).
   dashed lines to ensure proper feedback.
 
 - Several improvements to AgX:
-  - Default hue preservation is now 60% in most presets, reducing strong hue shifts in bright highlights.
-  - Default contrast has been increased and toe/shoulder power tuned to more closely match sigmoid's defaults.
-  - Added sigmoid-like presets that closely match sigmoid's tone curve.
-  - Removed the punchy presets (except for the blender-like variant, whose parameters still follow Blender's settings).
+  - Default hue preservation is now 60% in most presets, reducing
+    strong hue shifts in bright highlights.
+  - Default contrast has been increased and toe/shoulder power tuned
+    to more closely match sigmoid's defaults.
+  - Added sigmoid-like presets that closely match sigmoid's tone
+    curve.
+  - Removed the punchy presets (except for the blender-like variant,
+    whose parameters still follow Blender's settings).
   - Improved the toe/shoulder warning tooltips for clarity.
-  - The scene-referred preset is no longer applied exclusively to HDR images.
-  - Primaries selection is now visible even when "disable adjustments" is checked.  
+  - The scene-referred preset is no longer applied exclusively to HDR
+    images.
+  - Primaries selection is now visible even when "disable adjustments"
+    is checked.
 
-- For non-raw images with gamma corrected data we do the initial scaling in linear mode
-  for less artifacts.
+- For non-raw images with gamma corrected data we do the initial
+  scaling in linear mode for less artifacts.
 
 ## Bug Fixes
 
