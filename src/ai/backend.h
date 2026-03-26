@@ -63,6 +63,10 @@ dt_ai_provider_t dt_ai_provider_from_string(const char *str);
  *  @return 1 if available, 0 if not. */
 int dt_ai_probe_provider(dt_ai_provider_t provider);
 
+/** Probe a shared library to check if it's a valid ONNX Runtime build.
+ *  @return version string (caller must g_free) or NULL on failure. */
+char *dt_ai_ort_probe_library(const char *path);
+
 /**
  * @brief Graph Optimization Level
  *
