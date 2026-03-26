@@ -1602,7 +1602,7 @@ static gboolean _preview_button_press(GtkWidget *widget,
   const int pw = d->preview_w;
   const int ph = d->preview_h;
   if(pw <= 0 || ph <= 0) return FALSE;
-  const double scale = fmin((double)w / pw, (double)h / ph);
+  const double scale = fmax(1.0, fmin((double)w / pw, (double)h / ph));
   const double ox = (w - pw * scale) / 2.0;
   const double div_x = ox + d->split_pos * pw * scale;
 
@@ -1644,8 +1644,8 @@ static gboolean _preview_motion(GtkWidget *widget,
     const int ph = d->preview_h;
     if(pw <= 0 || ph <= 0) return FALSE;
     const int ah = gtk_widget_get_allocated_height(widget);
-    const double scale = fmin((double)w / pw,
-                              (double)ah / ph);
+    const double scale = fmax(1.0, fmin((double)w / pw,
+                                        (double)ah / ph));
     const double ox = (w - pw * scale) / 2.0;
     const double img_w = pw * scale;
 
@@ -1661,8 +1661,8 @@ static gboolean _preview_motion(GtkWidget *widget,
   {
     const int w = gtk_widget_get_allocated_width(widget);
     const int h = gtk_widget_get_allocated_height(widget);
-    const double scale = fmin((double)w / d->preview_w,
-                              (double)h / d->preview_h);
+    const double scale = fmax(1.0, fmin((double)w / d->preview_w,
+                                        (double)h / d->preview_h));
     const double ox = (w - d->preview_w * scale) / 2.0;
     const double div_x
       = ox + d->split_pos * d->preview_w * scale;
