@@ -346,8 +346,10 @@ static float *_process_opposed(dt_iop_module_t *self,
 
       dt_print_pipe(DT_DEBUG_PIPE,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
-          "RGB %3.4f %3.4f %3.4f%s%s",
-          chrominance[0], chrominance[1], chrominance[2],
+           "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
+          chrominance[0], (int)cnts[0],
+          chrominance[1], (int)cnts[1],
+          chrominance[2], (int)cnts[2],
           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? " saved" : "",
           img_oppclipped ? "" : " unclipped");
     }
@@ -547,8 +549,10 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
 
     dt_print_pipe(DT_DEBUG_PIPE,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-        "RGB %3.4f %3.4f %3.4f%s%s",
-        chrominance[0], chrominance[1], chrominance[2],
+        "%12.7f (%d)%12.7f (%d)%12.7f (%d)%s%s",
+        chrominance[0], (int)cnts[0],
+        chrominance[1], (int)cnts[1],
+        chrominance[2], (int)cnts[2],
         piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? " saved" : "",
         img_oppclipped ? "" : " unclipped");
   }
