@@ -7,6 +7,9 @@
 set -e -o pipefail
 trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
 
+# Ensure we use system tools (BSD sed, find, etc.) even if user has GNU tools in PATH
+export PATH="/usr/bin:/bin:$PATH"
+
 # Go to directory of script
 scriptDir=$(dirname "$0")
 cd "$scriptDir"/
