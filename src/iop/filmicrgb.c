@@ -57,12 +57,6 @@
 #include <string.h>
 #include <time.h>
 
-// enabling the following gives a substantial speed boost (reducing
-// the total runtime of V3, V4 and V5 by 10%) but the fast approximate
-// expf() differs by enough to push several integration tests above
-// the permissible threshold.
-#define USE_FAST_EXPF FALSE
-
 #define INVERSE_SQRT_3 0.5773502691896258f
 #define SAFETY_MARGIN 0.01f
 
@@ -369,11 +363,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 {
   return IOP_CS_RGB;
 }
-
-#if USE_FAST_EXPF
-// replace calls to expf() with calls to dt_fast_expf()
-  #define expf dt_fast_expf
-#endif
 
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
                                                     dt_iop_filmic_rgb_spline_t *const spline);
