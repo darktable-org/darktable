@@ -169,7 +169,14 @@ jobs:
       - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
-      - name: Build and Install
+      - name: Set correct AppImage update info for release build
+        if: github.ref_name != 'master' # will be true only for not nightly builds
+        run: |
+          # Set the environment variable for build step. This is only needed
+          # for release builds, for nightly builds the build script does the
+          # right thing even if this environment variable is not present.
+          echo "DARKTABLE_APPIMAGE_UPDATE=release" >> $GITHUB_ENV
+      - name: Build AppImage
         run: |
           cd src
           bash tools/appimage-build-script.sh
@@ -331,7 +338,7 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -411,7 +418,7 @@ jobs:
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   upload_to_release:
     permissions:
