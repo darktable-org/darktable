@@ -406,6 +406,52 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
+#if GTK_MAJOR_VERSION >= 4
+  #define DT_ADD_CSS_CLASS(widget, cls) gtk_widget_add_css_class(widget,cls)
+#else
+  #define DT_ADD_CSS_CLASS(widget, cls) \
+    gtk_style_context_add_class(gtk_widget_get_style_context(widget), cls)
+#endif
+
+static inline GtkWidget *dt_ui_section_label_flexible(const char *left,
+                                                      const char *center,
+                                                      const char *right)
+{
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  DT_ADD_CSS_CLASS(box, "section-label-flexible");
+  gtk_widget_set_halign(box, GTK_ALIGN_FILL);
+  gtk_widget_set_hexpand(box, TRUE);
+
+  GtkWidget *label_left = gtk_label_new(left);
+  DT_ADD_CSS_CLASS(label_left, "section-label-flexible-side");
+  gtk_widget_set_hexpand(label_left, FALSE);
+  gtk_widget_set_halign(label_left, GTK_ALIGN_START);
+
+  GtkWidget *spacer1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_hexpand(spacer1, TRUE);
+
+  GtkWidget *label_center = gtk_label_new(center);
+  DT_ADD_CSS_CLASS(label_center, "section-label-flexible-center");
+  gtk_widget_set_hexpand(label_center, FALSE );
+  gtk_widget_set_halign(label_center, GTK_ALIGN_CENTER);
+
+  GtkWidget *spacer2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_hexpand(spacer2, TRUE);
+
+  GtkWidget *label_right = gtk_label_new(right);
+  DT_ADD_CSS_CLASS(label_right, "section-label-flexible-side");
+  gtk_widget_set_hexpand(label_right, FALSE);
+  gtk_widget_set_halign(label_right, GTK_ALIGN_END);
+
+  gtk_box_pack_start(GTK_BOX(box), label_left, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), spacer1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), label_center, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), spacer2, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), label_right, FALSE, FALSE, 0);
+
+  return box;
+}
+
 static inline GtkWidget *dt_ui_label_new(const gchar *str)
 {
   GtkWidget *label = gtk_label_new(str);

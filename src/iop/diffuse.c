@@ -51,24 +51,24 @@ typedef struct dt_iop_diffuse_params_t
   // global parameters
   int iterations;           // $MIN: 0    $MAX: 500  $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 0    $MAX: 2048 $DEFAULT: 8  $DESCRIPTION: "radius span"
+  int radius;               // $MIN: 0    $MAX: 2048 $DEFAULT: 8  $DESCRIPTION: "detail effect radius"
   float regularization;     // $MIN: 0.   $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2.  $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
-  float anisotropy_first;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
-  float anisotropy_second;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
-  float anisotropy_third;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
-  float anisotropy_fourth;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
+  float anisotropy_first;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "1st, coarse details"
+  float anisotropy_second;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "2nd, coarse details"
+  float anisotropy_third;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "3rd, coarse details"
+  float anisotropy_fourth;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "4th, coarse details"
 
   float threshold;          // $MIN: 0.   $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
-  float first;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order speed"
-  float second;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order speed"
-  float third;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order speed"
-  float fourth;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
+  float first;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st, coarse details"
+  float second;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd, coarse details"
+  float third;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd, coarse details"
+  float fourth;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th, coarse details"
 
   // v2
-  int radius_center;        // $MIN: 0    $MAX: 1024 $DEFAULT: 0  $DESCRIPTION: "central radius"
+  int radius_center;        // $MIN: 0    $MAX: 1024 $DEFAULT: 0  $DESCRIPTION: "detail scale  [fine .. coarse]"
 
   // new versions add params mandatorily at the end, so we can memcpy old parameters at the beginning
 
@@ -1791,7 +1791,9 @@ void gui_init(dt_iop_module_t *self)
                    "if you plan on deblurring, \n"
                    "the radius should be around the width of your lens blur."));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "speed (sharpen ↔ diffuse)")));
+  dt_gui_box_add(self->widget, dt_ui_section_label_flexible(C_("section", "<sharpen"),
+                                                            C_("section", "effect"),
+                                                            C_("section", "diffuse>")));
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
   dt_bauhaus_slider_set_digits(g->first, 4);
@@ -1833,7 +1835,9 @@ void gui_init(dt_iop_module_t *self)
                   "positive values diffuse and blur, \n"
                   "zero does nothing."));
 
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "direction")));
+  dt_gui_box_add(self->widget, dt_ui_section_label_flexible(C_("section", "<horizontal"),
+                                                            C_("section", "effect direction"),
+                                                            C_("section", "vertical>")));
 
   g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
   dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
