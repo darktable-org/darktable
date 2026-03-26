@@ -7,6 +7,9 @@
 set -e -o pipefail
 trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
 
+# Ensure we use system tools (BSD sed, find, etc.) even if user has GNU tools in PATH
+export PATH="/usr/bin:/bin:$PATH"
+
 # Check if brew exists
 if ! [ -x "$(command -v brew)" ]; then
     echo 'Homebrew not found. Follow instructions as provided by https://brew.sh/ to install it.' >&2
