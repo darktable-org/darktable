@@ -546,26 +546,26 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
 
   if(x >= width || y >= height) return;
 
-  float4 io = read_imagef(in, sampleri, (int2)(x, y));
+  float4 io = readpixel(in, x, y);
   float w = io.w;
   float4 m = (float4)0.0f;
   float xform;
   int4 unbound;
 
   /* blurred, inverted and desaturaed mask in m */
-  m.x = 100.0f - read_imagef(mask, sampleri, (int2)(x, y)).x;
+  m.x = 100.0f - readsingle(mask, x, y);
 
   /* white point adjustment */
   io.x = io.x > 0.0f ? io.x/whitepoint : io.x;
   m.x = m.x > 0.0f ? m.x/whitepoint : m.x;
 
   /* overlay highlights */
-  xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
+  xform = clipf(1.0f - 0.01f * m.x/(1.0f-compress));
   unbound = (int4)(flags & UNBOUND_HIGHLIGHTS_L, flags & UNBOUND_HIGHLIGHTS_A, flags & UNBOUND_HIGHLIGHTS_B, unbound_mask);
   io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect, unbound, low_approximation);
 
   /* overlay shadows */
-  xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
+  xform = clipf(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress));
   unbound = (int4)(flags & UNBOUND_SHADOWS_L, flags & UNBOUND_SHADOWS_A, flags & UNBOUND_SHADOWS_B, unbound_mask);
   io = overlay(io, m, shadows, xform, shadows_ccorrect, unbound, low_approximation);
 
