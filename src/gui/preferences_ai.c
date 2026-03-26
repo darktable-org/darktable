@@ -873,6 +873,7 @@ static void _on_refresh(GtkButton *button, gpointer user_data)
   _refresh_model_list(data);
 }
 
+#if !defined(__APPLE__)
 static void _show_ort_probe_result(GtkWindow *parent, const char *path, const char *version)
 {
   GtkWidget *dlg;
@@ -899,7 +900,6 @@ static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer 
   _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
   return TRUE;
 }
-
 static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
@@ -987,6 +987,7 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
     g_free(filename);
   }
 }
+#endif // !__APPLE__
 
 void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 {
