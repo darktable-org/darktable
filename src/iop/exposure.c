@@ -825,48 +825,36 @@ static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
   return g->effective_exposure;
 }
 
-static void _exposure_proxy_handle_event(GtkEventController *controller,
-                                         int n_press,
-                                         gdouble x, gdouble delta,
-                                         const gboolean blackwhite)
+static void _exposure_proxy_handle_event(int n_press,
+                                         gdouble delta,
+                                         GdkModifierType state,
+                                         const gboolean is_blackpoint)
 {
-  dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
+  const dt_iop_module_t *const self = darktable.develop->proxy.exposure.module;
   if(self && self->gui_data)
   {
-    static gboolean black = FALSE;
-    if((n_press > 0 && GTK_IS_GESTURE_SINGLE(controller)) // button press
-       || !n_press) // scroll event
-      black = blackwhite;
+    const dt_iop_exposure_params_t *const p = self->params;
+    const dt_iop_exposure_gui_data_t *const g = self->gui_data;
+    GtkWidget *const widget =
+      is_blackpoint ? g->black : (p->mode == EXPOSURE_MODE_DEFLICKER
+                                  ? g->deflicker_target_level : g->exposure);
+    const float val = dt_bauhaus_slider_get(widget);
+    const float accel = dt_accel_get_speed_multiplier(widget, state);
+    if(is_blackpoint)
+      delta = -delta;
 
-    if(black)
-      x *= -1;
-
-    const dt_iop_exposure_params_t *p = self->params;
-    dt_iop_exposure_gui_data_t *g = self->gui_data;
-    GtkWidget *widget = black ? g->black :
-                        p->mode == EXPOSURE_MODE_DEFLICKER
-                      ? g->deflicker_target_level : g->exposure;
-    if(!n_press)
-      darktable.bauhaus->scroll(GTK_EVENT_CONTROLLER_SCROLL(controller), 0.0, delta, widget);
+    if(n_press == 2)
+      dt_bauhaus_widget_reset(widget);
+    else if(!n_press)
+    { // scroll
+      const float step = dt_bauhaus_slider_get_step(widget);
+      dt_bauhaus_slider_set(widget, val + delta * step * accel);
+    }
     else
-    {
-      // ignores the quad width, but is accurate enough
-      const int slider_width = gtk_widget_get_allocated_width(widget);
-      // FIXME: it would be nice to fetch scope_height when using waveform
-      const int scope_width =
-        gtk_widget_get_allocated_width(darktable.lib->proxy.histogram.module->widget);
-      // bauhaus scales motion to slider widget, but we want to scale
-      // proportional to the scope widget, particularly when the
-      // slider has not been allocated and has a width of 1 (which can
-      // happen if its module group has not yet been displayed)
-      x = x * slider_width / scope_width;
-      if(GTK_IS_GESTURE_SINGLE(controller))
-        if(n_press > 0)
-          darktable.bauhaus->press(GTK_GESTURE_SINGLE(controller), n_press, x, 0, widget);
-        else
-          darktable.bauhaus->release(GTK_GESTURE_SINGLE(controller), -n_press, x, 0, widget);
-      else
-        darktable.bauhaus->motion(GTK_EVENT_CONTROLLER_MOTION(controller), x, 0, widget);
+    { // drag
+      const float s_min = dt_bauhaus_slider_get_soft_min(widget);
+      const float s_max = dt_bauhaus_slider_get_soft_max(widget);
+      dt_bauhaus_slider_set(widget, val + delta * (s_max - s_min) * accel);
     }
 
     gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));

@@ -3706,12 +3706,6 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   widget_class->get_preferred_height = _widget_get_preferred_height;
   // widget_class->measure = _widget_measure;
   G_OBJECT_CLASS(class)->finalize = _widget_finalize;
-
-  // for histogram -> exposure proxy
-  bh->press = _widget_button_press;
-  bh->release = _widget_button_release;
-  bh->motion = _widget_motion;
-  bh->scroll = _widget_scroll;
 }
 
 static void dt_bh_init(DtBauhausWidget *w)
