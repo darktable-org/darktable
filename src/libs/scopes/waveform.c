@@ -269,12 +269,15 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
   cairo_restore(cr);
 }
 
-static double _wave_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                     const double x,
-                                     const double y)
+static double _wave_get_exposure_delta(const dt_scopes_mode_t *const self,
+                                       const double offset_x,
+                                       const double offset_y)
 {
   const dt_scopes_wave_t *const d = self->data;
-  return d->orient == DT_WAVE_ORIENT_HORI ? -y : x;
+  if(d->orient == DT_WAVE_ORIENT_HORI)
+    return -offset_y / gtk_widget_get_allocated_height(self->scopes->scope_draw);
+  else
+    return offset_x / gtk_widget_get_allocated_width(self->scopes->scope_draw);
 }
 
 static dt_scopes_highlight_t _wave_get_highlight(const dt_scopes_mode_t *const self,
@@ -426,7 +429,7 @@ const dt_scopes_functions_t dt_scopes_functions_waveform = {
   .draw_scope = NULL,
   .draw_scope_channels = _wave_draw,
   .get_highlight = _wave_get_highlight,
-  .get_exposure_pos = _wave_get_exposure_pos,
+  .get_exposure_delta = _wave_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
   .update_buttons = _wave_update_buttons,
@@ -538,7 +541,7 @@ const dt_scopes_functions_t dt_scopes_functions_parade = {
   .draw_scope = _parade_draw,
   .draw_scope_channels = NULL,
   .get_highlight = _wave_get_highlight,
-  .get_exposure_pos = _wave_get_exposure_pos,
+  .get_exposure_delta = _wave_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
   .update_buttons = _wave_update_buttons,

@@ -4617,6 +4617,24 @@ GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
   return (GtkGestureSingle *)gesture;
 }
 
+GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
+                                  GCallback drag_begin,
+                                  GCallback drag_end,
+                                  GCallback drag_update,
+                                  gpointer data)
+{
+  GtkGesture *gesture = gtk_gesture_drag_new(widget);
+  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, gesture);
+  // GTK4 GtkGesture *gesture = gtk_gesture_drag_new();
+  //      gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(gesture));
+
+  if(drag_begin) g_signal_connect(gesture, "drag-begin", G_CALLBACK(drag_begin), data);
+  if(drag_end) g_signal_connect(gesture, "drag-end", G_CALLBACK(drag_end), data);
+  if(drag_update) g_signal_connect(gesture, "drag-update", G_CALLBACK(drag_update), data);
+
+  return gesture;
+}
+
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
                                             GCallback enter,

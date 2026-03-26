@@ -115,11 +115,11 @@ static dt_scopes_highlight_t _hist_get_highlight(const dt_scopes_mode_t *const s
          ? DT_SCOPES_HIGHLIGHT_BLACK_POINT : DT_SCOPES_HIGHLIGHT_EXPOSURE;
 }
 
-static double _hist_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                     const double x,
-                                     const double y)
+static double _hist_get_exposure_delta(const dt_scopes_mode_t *const self,
+                                       const double offset_x,
+                                       const double offset_y)
 {
-  return x;
+  return offset_x / gtk_widget_get_allocated_width(self->scopes->scope_draw);
 }
 
 static void _hist_draw(const dt_scopes_mode_t *const self,
@@ -268,7 +268,7 @@ const dt_scopes_functions_t dt_scopes_functions_histogram = {
   .draw_scope = NULL,
   .draw_scope_channels = _hist_draw,
   .get_highlight = _hist_get_highlight,
-  .get_exposure_pos = _hist_get_exposure_pos,
+  .get_exposure_delta = _hist_get_exposure_delta,
   .append_to_tooltip = NULL,
   .eventbox_scroll = NULL,
   .update_buttons = _hist_update_buttons,

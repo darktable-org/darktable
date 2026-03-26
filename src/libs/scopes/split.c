@@ -131,38 +131,23 @@ static void _split_append_to_tooltip(const dt_scopes_mode_t *const self,
   dt_scopes_call_if_exists(d->right, append_to_tooltip, tip);
 }
 
-static double _split_get_exposure_pos(const dt_scopes_mode_t *const self,
-                                      const double x,
-                                      const double y)
+static double _split_get_exposure_delta(const dt_scopes_mode_t *const self,
+                                        const double offset_x,
+                                        const double offset_y)
 {
   const dt_scopes_split_t *const d = self->data;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(self->scopes->scope_draw, &allocation);
-  if(x < allocation.width/2.0)
-  {
-    if(d->left->functions->get_exposure_pos)
-      return dt_scopes_call(d->left, get_exposure_pos, x*2.0, y);
-    else
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_split_get_exposure_pos] no %s (left) get_exposure_pos at %f, %f",
-               dt_scopes_call(d->left, name), x, y);
-  }
-  else
-  {
-    if(d->right->functions->get_exposure_pos)
-      return dt_scopes_call(d->right, get_exposure_pos, x*2.0-allocation.width, y);
-    else
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[_split_get_exposure_pos] no %s (right) get_exposure_pos at %f, %f",
-               dt_scopes_call(d->right, name), x, y);
-      // hack to handle user starting drag in left side and to right side
-      // FIXME: making each side of split in own widget will handle this
-      if(d->left->functions->get_exposure_pos)
-        return dt_scopes_call(d->left, get_exposure_pos, x*2.0, y);
-    }
-  }
-  return x;
+  // drag start always happens in highlit area and only one side of
+  // split will be draggable
+  if(d->left->functions->get_exposure_delta)
+    return dt_scopes_call(d->left, get_exposure_delta, offset_x * 2.0,
+                          offset_y);
+  else if(d->right->functions->get_exposure_delta)
+    return dt_scopes_call(d->right, get_exposure_delta,
+                          offset_x * 2.0
+                          - gtk_widget_get_allocated_width(self->scopes->scope_draw),
+                          offset_y);
+  dt_print(DT_DEBUG_ALWAYS, "[_split_get_exposure_delta] no get_exposure_delta");
+  return offset_x;
 }
 
 static dt_scopes_highlight_t _split_get_highlight(const dt_scopes_mode_t *const self,
@@ -361,7 +346,7 @@ const dt_scopes_functions_t dt_scopes_functions_split = {
   .draw_scope = NULL,
   .draw_scope_channels = _split_draw,
   .get_highlight = _split_get_highlight,
-  .get_exposure_pos = _split_get_exposure_pos,
+  .get_exposure_delta = _split_get_exposure_delta,
   .append_to_tooltip = _split_append_to_tooltip,
   .eventbox_scroll = _split_eventbox_scroll,
   .update_buttons = _split_update_buttons,

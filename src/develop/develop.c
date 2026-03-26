@@ -3334,13 +3334,12 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
-void dt_dev_exposure_handle_event(GtkEventController *controller,
-                                  int n_press, gdouble x, gdouble delta,
-                                  const gboolean blackwhite)
+void dt_dev_exposure_handle_event(int n_press, gdouble delta,
+                                  GdkModifierType state,
+                                  const gboolean is_blackpoint)
 {
   if(darktable.develop->proxy.exposure.handle_event)
-    darktable.develop->proxy.exposure.handle_event(controller, n_press, x, delta,
-                                                   blackwhite);
+    darktable.develop->proxy.exposure.handle_event(n_press, delta, state, is_blackpoint);
 }
 
 void dt_dev_modulegroups_set(dt_develop_t *dev,
