@@ -3753,6 +3753,20 @@
     <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
+    <name>plugins/lighttable/neural_restore/preview_size</name>
+    <type min="128" max="512">int</type>
+    <default>256</default>
+    <shortdescription>neural restore preview patch size</shortdescription>
+    <longdescription>size of the image patch (in pixels) used for the neural restore preview. larger values show more detail but take longer to generate</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/preview_height</name>
+    <type min="100" max="800">int</type>
+    <default>200</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
       <enum>
