@@ -338,7 +338,7 @@ jobs:
         with:
           path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -418,7 +418,7 @@ jobs:
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
           name: artifact-macos-${{ runner.arch }}
-          retention-days: 2
+          retention-days: 1
 
   upload_to_release:
     permissions:
