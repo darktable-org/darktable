@@ -169,7 +169,14 @@ jobs:
       - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
-      - name: Build and Install
+      - name: Set correct AppImage update info for release build
+        if: github.ref_name != 'master' # will be true only for not nightly builds
+        run: |
+          # Set the environment variable for build step. This is only needed
+          # for release builds, for nightly builds the build script does the
+          # right thing even if this environment variable is not present.
+          echo "DARKTABLE_APPIMAGE_UPDATE=release" >> $GITHUB_ENV
+      - name: Build AppImage
         run: |
           cd src
           bash tools/appimage-build-script.sh
