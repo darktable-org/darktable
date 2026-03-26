@@ -120,7 +120,6 @@
 
 DT_MODULE(1)
 
-#define PREVIEW_SIZE 256
 #define PREVIEW_EXPORT_SIZE 1024
 // warn the user when upscaled output exceeds this many megapixels
 #define LARGE_OUTPUT_MP 60.0
@@ -131,6 +130,8 @@ DT_MODULE(1)
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
+#define CONF_PREVIEW_SIZE "plugins/lighttable/neural_restore/preview_size"
+#define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 
 typedef enum dt_neural_task_t
 {
@@ -1294,16 +1295,17 @@ static void _trigger_preview(dt_lib_module_t *self)
     return;
 
   const int scale = _task_scale(d->task);
+  const int preview_size = CLAMP(dt_conf_get_int(CONF_PREVIEW_SIZE), 128, 512);
   int pw, ph;
   if(widget_w >= widget_h)
   {
-    pw = PREVIEW_SIZE;
-    ph = PREVIEW_SIZE * widget_h / widget_w;
+    pw = preview_size;
+    ph = preview_size * widget_h / widget_w;
   }
   else
   {
-    ph = PREVIEW_SIZE;
-    pw = PREVIEW_SIZE * widget_w / widget_h;
+    ph = preview_size;
+    pw = preview_size * widget_w / widget_h;
   }
   // ensure divisible by scale for clean crop_w/crop_h
   pw = (pw / scale) * scale;
@@ -1458,22 +1460,22 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
     cairo_text_extents(cr, text, &ext);
     cairo_move_to(cr, (w - ext.width) / 2.0, (h + ext.height) / 2.0);
     cairo_show_text(cr, text);
-    return TRUE;
+    return FALSE;
   }
 
   const int pw = d->preview_w;
   const int ph = d->preview_h;
-  if(pw <= 0 || ph <= 0) return TRUE;
+  if(pw <= 0 || ph <= 0) return FALSE;
 
   cairo_surface_t *before_surf = cairo_image_surface_create_for_data(
     d->cairo_before, CAIRO_FORMAT_RGB24, pw, ph, d->cairo_stride);
   cairo_surface_t *after_surf = cairo_image_surface_create_for_data(
     d->cairo_after, CAIRO_FORMAT_RGB24, pw, ph, d->cairo_stride);
 
-  // scale preview to fit widget, centered
+  // scale preview to fit widget, centered, never below 100% zoom
   const double sx = (double)w / pw;
   const double sy = (double)h / ph;
-  const double scale = fmin(sx, sy);
+  const double scale = fmax(1.0, fmin(sx, sy));
   const double img_w = pw * scale;
   const double img_h = ph * scale;
   const double ox = (w - img_w) / 2.0;
@@ -1524,10 +1526,10 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
     const double pad = 4.0;
     const double bh = ext.height + pad * 2;
     cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 0.85);
-    cairo_rectangle(cr, ox, oy, img_w, bh);
+    cairo_rectangle(cr, 0, 0, w, bh);
     cairo_fill(cr);
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-    cairo_move_to(cr, ox + (img_w - ext.width) / 2.0, oy + pad + ext.height);
+    cairo_move_to(cr, (w - ext.width) / 2.0, pad + ext.height);
     cairo_show_text(cr, d->warning_text);
   }
 
@@ -1542,12 +1544,12 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
     const double gap = 6.0;
     const double total_w = ext_l.width + gap + arrow_w + gap + ext_r.width;
     const double bh = ext_l.height + pad * 2;
-    const double by = oy + img_h - bh;
+    const double by = h - bh;
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
-    cairo_rectangle(cr, ox, by, img_w, bh);
+    cairo_rectangle(cr, 0, by, w, bh);
     cairo_fill(cr);
 
-    const double tx = ox + (img_w - total_w) / 2.0;
+    const double tx = (w - total_w) / 2.0;
     const double ty = by + pad + ext_l.height;
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
     cairo_move_to(cr, tx, ty);
@@ -1569,7 +1571,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
     cairo_show_text(cr, d->info_text_right);
   }
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _preview_button_press(GtkWidget *widget,
@@ -1815,9 +1817,8 @@ void gui_init(dt_lib_module_t *self)
   _update_task_from_ui(d);
   d->model_available = _check_model_available(d, d->task);
 
-  // preview area with mouse events for split divider
-  d->preview_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(d->preview_area, -1, 200);
+  // preview area (resizable via dt_ui_resize_wrap)
+  d->preview_area = GTK_WIDGET(dt_ui_resize_wrap(NULL, 200, CONF_PREVIEW_HEIGHT));
   gtk_widget_add_events(d->preview_area,
                         GDK_BUTTON_PRESS_MASK
                         | GDK_BUTTON_RELEASE_MASK
@@ -1837,7 +1838,6 @@ void gui_init(dt_lib_module_t *self)
                                            _("process selected images"), 0, 0);
 
   // main layout: notebook, preview, button, output (collapsible)
-  gtk_widget_set_vexpand(d->preview_area, TRUE);
   gtk_widget_set_margin_top(d->process_button, 4);
   self->widget = dt_gui_vbox(GTK_WIDGET(d->notebook),
                              d->preview_area,
