@@ -891,6 +891,86 @@ static void _show_ort_probe_result(GtkWindow *parent, const char *path, const ch
   gtk_widget_destroy(dlg);
 }
 
+static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  GList *found = dt_ai_ort_find_libraries();
+  const guint count = g_list_length(found);
+
+  if(count == 0)
+  {
+    GtkWidget *dlg = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+      _("no system ONNX Runtime library found.\n\n"
+        "install one via your package manager or use\n"
+        "the browse button to select a custom build."));
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(dlg);
+  }
+  else if(count == 1)
+  {
+    dt_ai_ort_found_t *f = found->data;
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
+    dt_conf_set_string("plugins/ai/ort_library_path", f->path);
+    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+    GtkWidget *dlg = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+      _("ONNX Runtime %s [%s]\n%s\n\nRestart darktable to apply."),
+      f->version, f->eps, f->path);
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(dlg);
+  }
+  else
+  {
+    GtkWidget *dlg = gtk_dialog_new_with_buttons(
+      _("select ONNX Runtime library"),
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      _("_cancel"), GTK_RESPONSE_CANCEL,
+      _("_select"), GTK_RESPONSE_ACCEPT,
+      NULL);
+
+    GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+    gtk_container_set_border_width(GTK_CONTAINER(content), DT_PIXEL_APPLY_DPI(10));
+
+    GtkWidget *label = gtk_label_new(_("multiple ONNX Runtime libraries found:"));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(5));
+    gtk_container_add(GTK_CONTAINER(content), label);
+
+    GtkWidget *combo = gtk_combo_box_text_new();
+    for(GList *l = found; l; l = g_list_next(l))
+    {
+      dt_ai_ort_found_t *f = l->data;
+      gchar *entry = g_strdup_printf("ORT %s [%s]  %s", f->version, f->eps, f->path);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
+      g_free(entry);
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
+    gtk_container_add(GTK_CONTAINER(content), combo);
+    gtk_widget_show_all(content);
+
+    if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
+    {
+      const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+      if(sel >= 0)
+      {
+        dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
+        gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
+        dt_conf_set_string("plugins/ai/ort_library_path", f->path);
+        _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+      }
+    }
+    gtk_widget_destroy(dlg);
+  }
+
+  g_list_free_full(found, (GDestroyNotify)dt_ai_ort_found_free);
+}
+
 static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   if(e->type != GDK_2BUTTON_PRESS) return FALSE;
@@ -1090,9 +1170,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   // put combo + status in an hbox so the combo doesn't stretch
   // when column 2 expands for the ORT path entry below
-  GtkWidget *provider_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
-  gtk_box_pack_start(GTK_BOX(provider_hbox), data->provider_combo, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(provider_hbox), data->provider_status, FALSE, FALSE, 0);
+  GtkWidget *provider_hbox = dt_gui_hbox(data->provider_combo, data->provider_status);
 
   gtk_grid_attach(GTK_GRID(settings_grid), provider_labelev, 0, row, 1, 1);
   gtk_grid_attach(GTK_GRID(settings_grid), data->provider_indicator, 1, row, 1, 1);
@@ -1133,12 +1211,20 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     gtk_widget_set_tooltip_text(browse_btn,
                                 _("select a custom ONNX Runtime shared library"));
 
+    GtkWidget *detect_btn = gtk_button_new_with_label(_("detect"));
+    gtk_widget_set_tooltip_text(detect_btn,
+                                _("search for a system-installed ONNX Runtime library"));
+
+    GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn);
+    gtk_widget_set_valign(btn_box, GTK_ALIGN_CENTER);
+
     gtk_grid_attach(GTK_GRID(settings_grid), path_labelev, 0, row, 1, 1);
     gtk_grid_attach(GTK_GRID(settings_grid), data->ort_path_indicator, 1, row, 1, 1);
     gtk_grid_attach(GTK_GRID(settings_grid), data->ort_path_entry, 2, row, 2, 1);
-    gtk_grid_attach(GTK_GRID(settings_grid), browse_btn, 4, row++, 1, 1);
+    gtk_grid_attach(GTK_GRID(settings_grid), btn_box, 4, row++, 1, 1);
 
     g_signal_connect(browse_btn, "clicked", G_CALLBACK(_on_ort_browse_clicked), data);
+    g_signal_connect(detect_btn, "clicked", G_CALLBACK(_on_detect_system_ort), data);
     g_signal_connect(data->ort_path_entry, "activate", G_CALLBACK(_on_ort_path_changed), data);
     g_signal_connect(path_labelev, "button-press-event", G_CALLBACK(_reset_ort_path_click), data);
   }
