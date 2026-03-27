@@ -108,6 +108,168 @@ char *dt_ai_ort_probe_library(const char *path)
   return version;
 }
 
+// Probe a library and return version + comma-separated list of supported EPs.
+// Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
+{
+  if(!path || !path[0]) return FALSE;
+  if(out_version) *out_version = NULL;
+  if(out_eps) *out_eps = NULL;
+
+  GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  if(!mod) return FALSE;
+
+  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
+  OrtGetApiBaseFn get_base = NULL;
+  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
+  {
+    g_module_close(mod);
+    return FALSE;
+  }
+
+  const OrtApiBase *base = get_base();
+  if(out_version)
+    *out_version = g_strdup(base->GetVersionString());
+
+  if(out_eps)
+  {
+    // check for known EP registration symbols
+    static const struct { const char *symbol; const char *name; } ep_table[] = {
+      { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
+      { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
+      { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
+      { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
+      { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
+      { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
+      { NULL, NULL }
+    };
+
+    GString *eps = g_string_new(NULL);
+    gpointer sym;
+    for(int i = 0; ep_table[i].symbol; i++)
+    {
+      if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+      {
+        if(eps->len > 0) g_string_append(eps, ", ");
+        g_string_append(eps, ep_table[i].name);
+      }
+    }
+    if(eps->len == 0) g_string_append(eps, "CPU");
+    *out_eps = g_string_free(eps, FALSE);
+  }
+
+  g_module_close(mod);
+  return TRUE;
+}
+
+// Scan system and user-space paths for valid ORT libraries.
+// Returns a GList of dt_ai_ort_found_t (caller owns list and contents).
+GList *dt_ai_ort_find_libraries(void)
+{
+  // system library paths (distro packages)
+  static const char *system_paths[] = {
+    "/usr/lib/libonnxruntime.so",
+    "/usr/lib64/libonnxruntime.so",
+    "/usr/lib/x86_64-linux-gnu/libonnxruntime.so",
+    "/usr/lib/aarch64-linux-gnu/libonnxruntime.so",
+    "/usr/local/lib/libonnxruntime.so",
+    "/usr/local/lib64/libonnxruntime.so",
+    NULL
+  };
+
+  // user-space paths (install scripts) — scan for versioned .so files
+  const char *home = g_get_home_dir();
+  static const char *subdirs[] = { "onnxruntime-cuda", "onnxruntime-migraphx", "onnxruntime-openvino" };
+  gchar *user_paths[3] = { NULL };
+
+  for(int i = 0; i < 3; i++)
+  {
+    gchar *dir = g_build_filename(home, ".local/lib", subdirs[i], NULL);
+    if(g_file_test(dir, G_FILE_TEST_IS_DIR))
+    {
+      gchar *exact = g_build_filename(dir, "libonnxruntime.so", NULL);
+      if(g_file_test(exact, G_FILE_TEST_EXISTS))
+      {
+        user_paths[i] = exact;
+      }
+      else
+      {
+        g_free(exact);
+        GDir *d = g_dir_open(dir, 0, NULL);
+        if(d)
+        {
+          const gchar *name;
+          while((name = g_dir_read_name(d)))
+          {
+            if(g_str_has_prefix(name, "libonnxruntime.so."))
+            {
+              user_paths[i] = g_build_filename(dir, name, NULL);
+              break;
+            }
+          }
+          g_dir_close(d);
+        }
+      }
+    }
+    g_free(dir);
+  }
+
+  GList *results = NULL;
+
+  // probe system paths
+  for(int i = 0; system_paths[i]; i++)
+  {
+    if(!g_file_test(system_paths[i], G_FILE_TEST_EXISTS)) continue;
+    char *version = NULL, *ep = NULL;
+    if(dt_ai_ort_probe_library_full(system_paths[i], &version, &ep))
+    {
+      dt_ai_ort_found_t *f = g_new0(dt_ai_ort_found_t, 1);
+      f->path = g_strdup(system_paths[i]);
+      f->version = version;
+      f->eps = ep;
+      results = g_list_append(results, f);
+    }
+    else
+    {
+      g_free(version);
+      g_free(ep);
+    }
+  }
+
+  // probe user-space paths
+  for(int i = 0; i < 3; i++)
+  {
+    if(!user_paths[i]) continue;
+    char *version = NULL, *ep = NULL;
+    if(dt_ai_ort_probe_library_full(user_paths[i], &version, &ep))
+    {
+      dt_ai_ort_found_t *f = g_new0(dt_ai_ort_found_t, 1);
+      f->path = user_paths[i];
+      f->version = version;
+      f->eps = ep;
+      user_paths[i] = NULL; // ownership transferred
+      results = g_list_append(results, f);
+    }
+    else
+    {
+      g_free(version);
+      g_free(ep);
+    }
+  }
+
+  for(int i = 0; i < 3; i++) g_free(user_paths[i]);
+  return results;
+}
+
+void dt_ai_ort_found_free(dt_ai_ort_found_t *f)
+{
+  if(!f) return;
+  g_free(f->path);
+  g_free(f->version);
+  g_free(f->eps);
+  g_free(f);
+}
+
 // Load ORT API from a dynamically loaded module. Returns NULL on failure.
 static const OrtApi *_ort_api_from_module(GModule *mod, const char *label)
 {
