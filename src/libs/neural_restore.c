@@ -2039,9 +2039,11 @@ void gui_init(dt_lib_module_t *self)
                                            _("process selected images"), 0, 0);
 
   // process + pick button row
-  GtkWidget *action_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-  gtk_box_pack_start(GTK_BOX(action_row), d->process_button, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(action_row), d->pick_button, FALSE, FALSE, 0);
+  gtk_widget_set_hexpand(d->process_button, TRUE);
+  gtk_widget_set_halign(d->process_button, GTK_ALIGN_FILL);
+  GtkWidget *action_row = dt_gui_hbox();
+  dt_gui_box_add(action_row, d->process_button);
+  dt_gui_box_add(action_row, d->pick_button);
 
   // main layout: notebook, preview, action row, output
   gtk_widget_set_margin_top(action_row, 4);
