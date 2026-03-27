@@ -1368,8 +1368,8 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 
   dt_conf_set_int(CONF_ACTIVE_PAGE, page_num);
   _task_changed(d);
-  d->preview_requested = TRUE;
-  _trigger_preview(self);
+  if(d->preview_requested)
+    _trigger_preview(self);
 }
 
 static void _scale_combo_changed(GtkWidget *widget, dt_lib_module_t *self)
@@ -1377,8 +1377,8 @@ static void _scale_combo_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
   _update_task_from_ui(d);
   _task_changed(d);
-  d->preview_requested = TRUE;
-  _trigger_preview(self);
+  if(d->preview_requested)
+    _trigger_preview(self);
 }
 
 static void _recovery_slider_changed(GtkWidget *widget, dt_lib_module_t *self)
