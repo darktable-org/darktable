@@ -295,6 +295,12 @@ else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
   set(VALIDATE_DESKTOP_FILE 1)
 endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
 
+# we need Lua 5.4 to run Lua scripts
+find_package(Lua54 REQUIRED)
+if(Lua54_FOUND)
+  message(STATUS "Found Lua 5.4")
+endif(Lua54_FOUND)
+
 # we need appstream-util to check darktable.appdata.xml
 if(VALIDATE_APPDATA_FILE)
   find_program(appstream_util_BIN appstream-util)
