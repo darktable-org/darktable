@@ -108,11 +108,13 @@
 #include "common/mipmap_cache.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
+#include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -181,6 +183,11 @@ typedef struct dt_lib_neural_restore_t
   unsigned char *cairo_after;
   int cairo_stride;
 
+  // preview area selector
+  float patch_center[2];
+  gboolean picking_area;
+  GtkWidget *pick_button;
+
   // output settings (collapsible)
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
@@ -228,6 +235,7 @@ typedef struct dt_neural_preview_data_t
   int sequence;
   int preview_w;
   int preview_h;
+  float patch_center[2];
 } dt_neural_preview_data_t;
 
 typedef struct dt_neural_preview_result_t
@@ -1108,8 +1116,8 @@ static gpointer _preview_thread(gpointer data)
   const int padded_w = crop_w + 2 * overlap;
   const int padded_h = crop_h + 2 * overlap;
   // center crop in image
-  int pad_x = (cap.cap_w - padded_w) / 2;
-  int pad_y = (cap.cap_h - padded_h) / 2;
+  int pad_x = (int)(pd->patch_center[0] * cap.cap_w) - padded_w / 2;
+  int pad_y = (int)(pd->patch_center[1] * cap.cap_h) - padded_h / 2;
   pad_x = CLAMP(pad_x, 0, cap.cap_w - padded_w);
   pad_y = CLAMP(pad_y, 0, cap.cap_h - padded_h);
 
@@ -1324,6 +1332,8 @@ static void _trigger_preview(dt_lib_module_t *self)
   pd->sequence = g_atomic_int_get(&d->preview_sequence);
   pd->preview_w = pw;
   pd->preview_h = ph;
+  pd->patch_center[0] = d->patch_center[0];
+  pd->patch_center[1] = d->patch_center[1];
   // join previous preview thread before starting a new one
   if(d->preview_thread)
   {
@@ -1428,6 +1438,187 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_job_set_params(job, job_data, _job_cleanup);
   dt_control_job_add_progress(job, _("neural restore"), TRUE);
   dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
+}
+
+// convert normalized image coords [0,1] to screen coords
+static void _img_to_screen(const float img_x, const float img_y,
+                           float *sx, float *sy)
+{
+  dt_dev_viewport_t *port = &darktable.develop->full;
+  dt_dev_zoom_t zoom;
+  int closeup = 0, procw = 0, proch = 0;
+  float zoom2_x = 0.0f, zoom2_y = 0.0f;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
+  dt_dev_get_processed_size(port, &procw, &proch);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1 << closeup, FALSE);
+  const float tb = (float)port->border_size;
+  *sx = (img_x - 0.5f - zoom2_x) * (float)procw * scale + tb + 0.5f * port->width;
+  *sy = (img_y - 0.5f - zoom2_y) * (float)proch * scale + tb + 0.5f * port->height;
+}
+
+// draw rectangle overlay on darkroom center view
+void gui_post_expose(dt_lib_module_t *self,
+                     cairo_t *cri,
+                     const int32_t width,
+                     const int32_t height,
+                     const int32_t pointerx,
+                     const int32_t pointery)
+{
+  (void)width;
+  (void)height;
+  (void)pointerx;
+  (void)pointery;
+
+  dt_lib_neural_restore_t *d = self->data;
+  if(!d->picking_area || !darktable.develop)
+    return;
+
+  // compute patch rectangle matching the actual preview thread math
+  const int preview_size = CLAMP(dt_conf_get_int(CONF_PREVIEW_SIZE), 128, 512);
+  int procw = 0, proch = 0;
+  dt_dev_get_processed_size(&darktable.develop->full, &procw, &proch);
+  if(procw <= 0 || proch <= 0) return;
+
+  // compute export dimensions (same as export pipeline)
+  const float escale
+    = fminf(fminf((float)PREVIEW_EXPORT_SIZE / procw,
+                  (float)PREVIEW_EXPORT_SIZE / proch), 1.0f);
+  const int export_w = (int)(escale * procw);
+  const int export_h = (int)(escale * proch);
+  if(export_w <= 0 || export_h <= 0) return;
+
+  // compute crop and padding (same as _preview_thread)
+  const int scale = _task_scale(d->task);
+  const int widget_w = gtk_widget_get_allocated_width(d->preview_area);
+  const int widget_h = gtk_widget_get_allocated_height(d->preview_area);
+  int pw, ph;
+  if(widget_w >= widget_h)
+  {
+    pw = preview_size;
+    ph = preview_size * widget_h / widget_w;
+  }
+  else
+  {
+    ph = preview_size;
+    pw = preview_size * widget_w / widget_h;
+  }
+  pw = (pw / scale) * scale;
+  ph = (ph / scale) * scale;
+  const int crop_w = pw / scale;
+  const int crop_h = ph / scale;
+  const int overlap = dt_restore_get_overlap(scale);
+  const int padded_w = crop_w + 2 * overlap;
+  const int padded_h = crop_h + 2 * overlap;
+
+  // clamp padded area to export bounds (same CLAMP as _preview_thread)
+  int pad_x = (int)(d->patch_center[0] * export_w) - padded_w / 2;
+  int pad_y = (int)(d->patch_center[1] * export_h) - padded_h / 2;
+  pad_x = CLAMP(pad_x, 0, export_w - padded_w);
+  pad_y = CLAMP(pad_y, 0, export_h - padded_h);
+
+  // visible crop starts at pad + overlap
+  const float x0 = (float)(pad_x + overlap) / export_w;
+  const float y0 = (float)(pad_y + overlap) / export_h;
+  const float x1 = (float)(pad_x + overlap + crop_w) / export_w;
+  const float y1 = (float)(pad_y + overlap + crop_h) / export_h;
+
+  float sx0, sy0, sx1, sy1;
+  _img_to_screen(x0, y0, &sx0, &sy0);
+  _img_to_screen(x1, y1, &sx1, &sy1);
+
+  // draw rectangle (same style as colorpicker box overlay)
+  cairo_rectangle(cri, sx0, sy0, sx1 - sx0, sy1 - sy0);
+
+  // dark outline
+  cairo_set_line_width(cri, 3.0);
+  cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.4);
+  cairo_stroke_preserve(cri);
+
+  // bright foreground
+  cairo_set_line_width(cri, 1.0);
+  cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.8);
+  cairo_stroke(cri);
+}
+
+static void _view_changed_callback(gpointer instance,
+                                   dt_view_t *old_view,
+                                   dt_view_t *new_view,
+                                   dt_lib_module_t *self)
+{
+  (void)instance;
+  (void)old_view;
+  dt_lib_neural_restore_t *d = self->data;
+  const gboolean is_darkroom
+    = new_view && !g_strcmp0(new_view->module_name, "darkroom");
+  if(is_darkroom)
+    gtk_widget_show(d->pick_button);
+  else
+  {
+    gtk_widget_hide(d->pick_button);
+    if(d->picking_area)
+    {
+      d->picking_area = FALSE;
+      gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
+    }
+  }
+}
+
+static void _pick_toggled(GtkToggleButton *btn, dt_lib_module_t *self)
+{
+  dt_lib_neural_restore_t *d = self->data;
+  d->picking_area = gtk_toggle_button_get_active(btn);
+  dt_control_queue_redraw_center();
+}
+
+static gboolean _pick_double_click(GtkWidget *widget,
+                                   GdkEventButton *event,
+                                   dt_lib_module_t *self)
+{
+  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  dt_lib_neural_restore_t *d = self->data;
+  d->patch_center[0] = 0.5f;
+  d->patch_center[1] = 0.5f;
+  d->picking_area = FALSE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
+  d->preview_requested = TRUE;
+  _trigger_preview(self);
+  return TRUE;
+}
+
+// lib module button_pressed: intercept darkroom image clicks
+// when pick-area mode is active
+int button_pressed(dt_lib_module_t *self,
+                   const double x,
+                   const double y,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state)
+{
+  (void)pressure;
+  (void)type;
+  (void)state;
+
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  if(!d->picking_area || which != 1)
+    return 0;
+
+  // only works in darkroom view
+  if(!darktable.develop) return 0;
+
+  float zoom_x = FLT_MAX, zoom_y = FLT_MAX, zoom_scale = 0;
+  dt_dev_get_pointer_zoom_pos(&darktable.develop->full,
+                              x, y,
+                              &zoom_x, &zoom_y, &zoom_scale);
+
+  d->patch_center[0] = CLAMP(zoom_x, 0.0f, 1.0f);
+  d->patch_center[1] = CLAMP(zoom_y, 0.0f, 1.0f);
+
+  d->preview_requested = TRUE;
+  _trigger_preview(self);
+  dt_control_queue_redraw_center();
+  return 1;
 }
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
@@ -1817,6 +2008,22 @@ void gui_init(dt_lib_module_t *self)
   _update_task_from_ui(d);
   d->model_available = _check_model_available(d, d->task);
 
+  // pick area button (crosshair icon, darkroom only)
+  d->patch_center[0] = 0.5f;
+  d->patch_center[1] = 0.5f;
+  d->picking_area = FALSE;
+  d->pick_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
+                                          0, NULL);
+  gtk_widget_set_tooltip_text(d->pick_button,
+    _("click to pick preview area on the darkroom image\n"
+      "double-click to reset to center"));
+  g_signal_connect(d->pick_button, "toggled",
+                   G_CALLBACK(_pick_toggled), self);
+  g_signal_connect(d->pick_button, "button-press-event",
+                   G_CALLBACK(_pick_double_click), self);
+  // initially hidden — shown only in darkroom view
+  gtk_widget_set_no_show_all(d->pick_button, TRUE);
+
   // preview area (resizable via dt_ui_resize_wrap)
   d->preview_area = GTK_WIDGET(dt_ui_resize_wrap(NULL, 200, CONF_PREVIEW_HEIGHT));
   gtk_widget_add_events(d->preview_area,
@@ -1837,11 +2044,16 @@ void gui_init(dt_lib_module_t *self)
                                            _process_clicked, self,
                                            _("process selected images"), 0, 0);
 
-  // main layout: notebook, preview, button, output (collapsible)
-  gtk_widget_set_margin_top(d->process_button, 4);
+  // process + pick button row
+  GtkWidget *action_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+  gtk_box_pack_start(GTK_BOX(action_row), d->process_button, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(action_row), d->pick_button, FALSE, FALSE, 0);
+
+  // main layout: notebook, preview, action row, output
+  gtk_widget_set_margin_top(action_row, 4);
   self->widget = dt_gui_vbox(GTK_WIDGET(d->notebook),
                              d->preview_area,
-                             d->process_button);
+                             action_row);
 
   // output settings
   dt_gui_new_collapsible_section(&d->cs_output,
@@ -1911,9 +2123,16 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_AI_MODELS_CHANGED, _ai_models_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed_callback);
 
   _update_info_label(d);
   _update_button_sensitivity(d);
+
+  // show pick button if already in darkroom at startup
+  const dt_view_t *cv
+    = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv && !g_strcmp0(cv->module_name, "darkroom"))
+    gtk_widget_show(d->pick_button);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1923,6 +2142,7 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_DISCONNECT(_selection_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_image_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_ai_models_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_view_changed_callback, self);
 
   if(d)
   {
