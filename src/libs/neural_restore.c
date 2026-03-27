@@ -1107,63 +1107,44 @@ static gpointer _preview_thread(gpointer data)
            "[neural_restore] preview: exported %dx%d, scale=%d",
            cap.cap_w, cap.cap_h, pd->scale);
 
-  // rectangular crop matching widget aspect ratio
+  // crop region matching widget aspect ratio
   const int pw = pd->preview_w;
   const int ph = pd->preview_h;
   const int crop_w = pw / pd->scale;
   const int crop_h = ph / pd->scale;
-  const int overlap = dt_restore_get_overlap(pd->scale);
-  const int padded_w = crop_w + 2 * overlap;
-  const int padded_h = crop_h + 2 * overlap;
-  // center crop in image
-  int pad_x = (int)(pd->patch_center[0] * cap.cap_w) - padded_w / 2;
-  int pad_y = (int)(pd->patch_center[1] * cap.cap_h) - padded_h / 2;
-  pad_x = CLAMP(pad_x, 0, cap.cap_w - padded_w);
-  pad_y = CLAMP(pad_y, 0, cap.cap_h - padded_h);
 
-  if(pad_x < 0 || pad_y < 0)
+  // compute crop position in export image
+  int crop_x = (int)(pd->patch_center[0] * cap.cap_w) - crop_w / 2;
+  int crop_y = (int)(pd->patch_center[1] * cap.cap_h) - crop_h / 2;
+  crop_x = CLAMP(crop_x, 0, cap.cap_w - crop_w);
+  crop_y = CLAMP(crop_y, 0, cap.cap_h - crop_h);
+
+  if(crop_x < 0 || crop_y < 0)
   {
     dt_print(DT_DEBUG_AI,
              "[neural_restore] preview: image too small for crop (%dx%d < %dx%d)",
-             cap.cap_w, cap.cap_h, padded_w, padded_h);
+             cap.cap_w, cap.cap_h, crop_w, crop_h);
     g_free(cap.pixels);
     goto cleanup;
   }
 
-  // extract padded crop from RGBx interleaved to planar RGB for _run_patch
-  const size_t pad_plane = (size_t)padded_w * padded_h;
-  const int out_pw = padded_w * pd->scale;
-  const int out_ph = padded_h * pd->scale;
-  float *patch_in = g_try_malloc(pad_plane * 3 * sizeof(float));
-  float *patch_out = g_try_malloc((size_t)out_pw * out_ph * 3 * sizeof(float));
-  if(!patch_in || !patch_out)
+  // extract crop as interleaved RGBx (4ch) for dt_restore_process_tiled
+  float *crop_4ch = g_try_malloc((size_t)crop_w * crop_h * 4 * sizeof(float));
+  if(!crop_4ch)
   {
-    g_free(patch_in);
-    g_free(patch_out);
     g_free(cap.pixels);
     goto cleanup;
   }
+  for(int y = 0; y < crop_h; y++)
+    memcpy(crop_4ch + (size_t)y * crop_w * 4,
+           cap.pixels + ((size_t)(crop_y + y) * cap.cap_w + crop_x) * 4,
+           (size_t)crop_w * 4 * sizeof(float));
 
-  for(int y = 0; y < padded_h; y++)
-  {
-    for(int x = 0; x < padded_w; x++)
-    {
-      const size_t si = ((size_t)(pad_y + y) * cap.cap_w + (pad_x + x)) * 4;
-      const size_t po = (size_t)y * padded_w + x;
-      patch_in[po]                 = cap.pixels[si + 0];
-      patch_in[po + pad_plane]     = cap.pixels[si + 1];
-      patch_in[po + 2 * pad_plane] = cap.pixels[si + 2];
-    }
-  }
-
-  // extract center crop (no padding) as interleaved RGB for "before" display
-  const int before_x = pad_x + overlap;
-  const int before_y = pad_y + overlap;
+  // extract "before" as interleaved RGB (3ch) for display
   float *crop_rgb = g_try_malloc((size_t)crop_w * crop_h * 3 * sizeof(float));
   if(!crop_rgb)
   {
-    g_free(patch_in);
-    g_free(patch_out);
+    g_free(crop_4ch);
     g_free(cap.pixels);
     goto cleanup;
   }
@@ -1171,7 +1152,7 @@ static gpointer _preview_thread(gpointer data)
   {
     for(int x = 0; x < crop_w; x++)
     {
-      const size_t si = ((size_t)(before_y + y) * cap.cap_w + (before_x + x)) * 4;
+      const size_t si = ((size_t)(crop_y + y) * cap.cap_w + (crop_x + x)) * 4;
       const size_t di = ((size_t)y * crop_w + x) * 3;
       crop_rgb[di + 0] = cap.pixels[si + 0];
       crop_rgb[di + 1] = cap.pixels[si + 1];
@@ -1183,8 +1164,7 @@ static gpointer _preview_thread(gpointer data)
   // check for cancellation before expensive inference
   if(pd->sequence != g_atomic_int_get(&d->preview_sequence))
   {
-    g_free(patch_in);
-    g_free(patch_out);
+    g_free(crop_4ch);
     g_free(crop_rgb);
     goto cleanup;
   }
@@ -1200,19 +1180,36 @@ static gpointer _preview_thread(gpointer data)
   {
     dt_print(DT_DEBUG_AI,
              "[neural_restore] preview: failed to load model");
-    g_free(patch_in);
-    g_free(patch_out);
+    g_free(crop_4ch);
     g_free(crop_rgb);
     goto cleanup;
   }
 
-  const int ret = dt_restore_run_patch(d->cached_ctx, patch_in, padded_w, padded_h, patch_out, pd->scale);
-  g_free(patch_in);
+  // use the same tiled processing as batch — this handles mirror
+  // padding, overlap blending, and planar conversion identically
+  const int tile_size = dt_restore_select_tile_size(pd->scale);
+  float *out_4ch = g_try_malloc((size_t)pw * ph * 4 * sizeof(float));
+  if(!out_4ch)
+  {
+    g_free(crop_4ch);
+    g_free(crop_rgb);
+    goto cleanup;
+  }
+
+  dt_print(DT_DEBUG_AI,
+           "[neural_restore] preview: tiled inference %dx%d, tile=%d",
+           crop_w, crop_h, tile_size);
+
+  _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
+  const int ret = dt_restore_process_tiled(
+    d->cached_ctx, crop_4ch, crop_w, crop_h, pd->scale,
+    _buf_row_writer, &bwd, NULL, tile_size);
+  g_free(crop_4ch);
 
   if(ret != 0)
   {
     dt_print(DT_DEBUG_AI, "[neural_restore] preview: inference failed");
-    g_free(patch_out);
+    g_free(out_4ch);
     g_free(crop_rgb);
     goto cleanup;
   }
@@ -1230,23 +1227,20 @@ static gpointer _preview_thread(gpointer data)
     before_buf = crop_rgb;
   }
 
-  // build "after" buffer: extract center pw × ph from padded output
+  // build "after" buffer: extract RGB from RGBx output
   float *after_buf = g_malloc((size_t)pw * ph * 3 * sizeof(float));
-  const size_t full_plane = (size_t)out_pw * out_ph;
-  const int off_x = overlap * pd->scale;
-  const int off_y = overlap * pd->scale;
   for(int y = 0; y < ph; y++)
   {
     for(int x = 0; x < pw; x++)
     {
-      const size_t si = (size_t)(off_y + y) * out_pw + (off_x + x);
+      const size_t si = ((size_t)y * pw + x) * 4;
       const size_t di = ((size_t)y * pw + x) * 3;
-      after_buf[di + 0] = patch_out[si];
-      after_buf[di + 1] = patch_out[si + full_plane];
-      after_buf[di + 2] = patch_out[si + 2 * full_plane];
+      after_buf[di + 0] = out_4ch[si + 0];
+      after_buf[di + 1] = out_4ch[si + 1];
+      after_buf[di + 2] = out_4ch[si + 2];
     }
   }
-  g_free(patch_out);
+  g_free(out_4ch);
 
   // deliver result to main thread
   dt_neural_preview_result_t *result = g_new(dt_neural_preview_result_t, 1);
