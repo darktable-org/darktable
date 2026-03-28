@@ -1657,9 +1657,11 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
     }
 }
 
-static int main_gui(dt_lut_t *self, int argc, char *argv[])
+static void gui_command_line(GApplication *app, GApplicationCommandLine* cmdline, gpointer user_data)
 {
-  gtk_init(&argc, &argv);
+  int argc;
+  char **argv = g_application_command_line_get_arguments(cmdline, &argc);
+  dt_lut_t *self = user_data;
 
   char *source_filename = argc >= 2 ? argv[1] : NULL;
   char *cht_filename = argc >= 3 ? argv[2] : NULL;
@@ -1676,12 +1678,11 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
   }
 
   // build the GUI
-  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  GtkWidget *window = gtk_application_window_new(GTK_APPLICATION(app));
   self->window = window;
   gtk_window_set_title(GTK_WINDOW(window), "darktable LUT tool");
   gtk_container_set_border_width(GTK_CONTAINER(window), 3);
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-  g_signal_connect(GTK_WINDOW(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
   // resizable container
   GtkWidget *vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
@@ -1722,9 +1723,17 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_focus_window();
 #endif
-  gtk_main();
+}
 
-  return 0;
+static int main_gui(dt_lut_t *self, int argc, char *argv[])
+{
+  GtkApplication* app
+    = gtk_application_new("org.darktable.Chart",
+                          G_APPLICATION_HANDLES_COMMAND_LINE | G_APPLICATION_NON_UNIQUE);
+
+  g_signal_connect(app, "command-line", G_CALLBACK(gui_command_line), self);
+
+  return g_application_run(G_APPLICATION(app), argc, argv);
 }
 
 static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr, double **target_a_ptr,
