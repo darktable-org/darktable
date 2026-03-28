@@ -41,10 +41,11 @@ static void _lib_histogram_get_sector_angles(dt_lib_module_t *self,
                                              float *angles,
                                              int *n);
 
-static const gchar *rgb_names[DT_SCOPES_RGB_N] =
+static const gchar *channel_names[DT_SCOPES_CHANNEL_N] =
   { N_("red"),
     N_("green"),
-    N_("blue")
+    N_("blue"),
+    N_("luma")
   };
 
 const char *name(dt_lib_module_t *self)
@@ -442,7 +443,7 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
   lib_histogram_update_tooltip(s);
 
   dt_scopes_call(prior_mode, mode_leave);
-  gtk_widget_set_visible(s->button_box_rgb,
+  gtk_widget_set_visible(s->button_box_channels,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
   dt_scopes_call(s->cur_mode, update_buttons);
   dt_scopes_call(s->cur_mode, mode_enter);
@@ -457,16 +458,23 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
 
 static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
 {
-  for(int i = 0; i < DT_SCOPES_RGB_N; i++)
-    if(s->channel_buttons[i] == button)
+  for(int i = 0; i < DT_SCOPES_CHANNEL_N; i++)
+    if(s->channel_btns[i] == button)
     {
       char conf[48];
       g_snprintf(conf, sizeof(conf),
-                 "plugins/darkroom/histogram/show_%s", rgb_names[i]);
+                 "plugins/darkroom/histogram/show_%s", channel_names[i]);
       s->channels[i]
         = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
       dt_conf_set_bool(conf, s->channels[i]);
-      dt_scopes_refresh(s);
+      if(i == DT_SCOPES_CHANNEL_LUMA)
+      {
+        for(int ch = 0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
+          gtk_widget_set_sensitive(s->channel_btns[ch], !s->channels[i]);
+        dt_scopes_reprocess();
+      }
+      else
+        dt_scopes_refresh(s);
     }
 }
 
@@ -537,7 +545,7 @@ static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller
     if(s->cur_mode != &s->modes[i])
       dt_scopes_call(&s->modes[i], mode_leave);
   dt_scopes_call(s->cur_mode, mode_enter);
-  gtk_widget_set_visible(s->button_box_rgb,
+  gtk_widget_set_visible(s->button_box_channels,
                          dt_scopes_func_exists(s->cur_mode, draw_scope_channels));
   gtk_widget_show(s->button_box_left);
   gtk_widget_show(s->button_box_right);
@@ -675,12 +683,14 @@ void gui_init(dt_lib_module_t *self)
 
   dt_pthread_mutex_init(&s->lock, NULL);
 
-  s->channels[DT_SCOPES_RGB_RED]
+  s->channels[DT_SCOPES_CHANNEL_RED]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
-  s->channels[DT_SCOPES_RGB_GREEN]
+  s->channels[DT_SCOPES_CHANNEL_GREEN]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
-  s->channels[DT_SCOPES_RGB_BLUE]
+  s->channels[DT_SCOPES_CHANNEL_BLUE]
     = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
+  s->channels[DT_SCOPES_CHANNEL_LUMA]
+    = dt_conf_get_bool("plugins/darkroom/histogram/show_luma");
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -804,14 +814,14 @@ void gui_init(dt_lib_module_t *self)
                        GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   // RGB channel buttons
-  s->button_box_rgb = dt_gui_hbox();
-  gtk_widget_set_valign(s->button_box_rgb, GTK_ALIGN_CENTER);
-  gtk_widget_set_halign(s->button_box_rgb, GTK_ALIGN_CENTER);
-  // red/green/blue channel on/off
-  for(int i=DT_SCOPES_RGB_RED; i < DT_SCOPES_RGB_N; i++)
+  s->button_box_channels = dt_gui_hbox();
+  gtk_widget_set_valign(s->button_box_channels, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(s->button_box_channels, GTK_ALIGN_CENTER);
+  // red/green/blue/luma on/off
+  for(int i=DT_SCOPES_CHANNEL_RED; i < DT_SCOPES_CHANNEL_N; i++)
   {
-    g_autofree char *name = g_strdup_printf("%s-channel-button", rgb_names[i]);
-    g_autofree char *tip = g_strdup_printf(_("toggle %s channel"), _(rgb_names[i]));
+    g_autofree char *name = g_strdup_printf("%s-channel-button", channel_names[i]);
+    g_autofree char *tip = g_strdup_printf(_("toggle %s channel"), _(channel_names[i]));
     GtkWidget *btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_color,
                                             CPF_NONE, NULL);
     dt_gui_add_class(btn, "rgb_toggle");
@@ -819,13 +829,20 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(btn, tip);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                  s->channels[i]);
-    dt_action_define(dark, N_("toggle colors"), rgb_names[i], btn, &dt_action_def_toggle);
-    dt_gui_box_add(s->button_box_rgb, btn);
+    if(i <= DT_SCOPES_CHANNEL_BLUE)
+      gtk_widget_set_sensitive(btn, !s->channels[DT_SCOPES_CHANNEL_LUMA]);
+    dt_action_define(dark, N_("toggle colors"), channel_names[i], btn, &dt_action_def_toggle);
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_channel_toggle), s);
-    s->channel_buttons[i] = btn;
+    s->channel_btns[i] = btn;
   }
-  // RGB channels are always rightmost
-  dt_gui_box_add(s->button_box_right, s->button_box_rgb);
+  // luma is always leftmost
+  dt_gui_box_add(s->button_box_channels,
+                 s->channel_btns[DT_SCOPES_CHANNEL_LUMA],
+                 s->channel_btns[DT_SCOPES_CHANNEL_RED],
+                 s->channel_btns[DT_SCOPES_CHANNEL_GREEN],
+                 s->channel_btns[DT_SCOPES_CHANNEL_BLUE]);
+  // channels are always rightmost
+  dt_gui_box_add(s->button_box_right, s->button_box_channels);
 
   for(dt_scopes_mode_type_t i = 0; i < DT_SCOPES_MODE_N; i++)
   {

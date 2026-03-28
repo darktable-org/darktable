@@ -42,9 +42,11 @@ static const gchar *dt_wave_orient_names[DT_WAVE_ORIENT_N] =
 
 typedef struct dt_scopes_wave_t
 {
-  uint8_t *waveform_img[3];           // image per RGB channel
-  int waveform_bins, waveform_tones, waveform_max_bins;
-  GtkWidget *orient_button;           // GtkButton -- horizontal or vertical
+  uint8_t *waveform_img[3];            // processed data per channel
+  int waveform_max_bins;               // for spatial sampling of image
+  int waveform_bins;                   // spatial sampling of currently processed data
+  int waveform_tones;                  // # tones/bin
+  GtkWidget *orient_button;            // GtkButton -- horizontal or vertical
   // state set by buttons
   dt_wave_orient_t orient;
 } dt_scopes_wave_t;
@@ -58,7 +60,7 @@ const char* _wave_name(const dt_scopes_mode_t *const self)
 static void _wave_process(dt_scopes_mode_t *const self,
                           const float *const input,
                           dt_histogram_roi_t *const roi,
-                          const dt_iop_order_iccprofile_info_t *vs_prof)
+                          const dt_iop_order_iccprofile_info_t *img_prof)
 {
   dt_scopes_wave_t *const d = self->data;
   // FIXME: for point sample, calculate whole graph and the point
@@ -72,6 +74,8 @@ static void _wave_process(dt_scopes_mode_t *const self,
   // orientation, bin_width will generally be 4, for "portrait" it
   // will generally be 3. Note that waveform_bins varies, depending on
   // preview image width and # of bins.
+  // FIXME: check these #s, waveform_max_bins, waveform_tones, and #s
+  // below now that mipf is mip3 resolution and CPUs are a bit faster
   const dt_wave_orient_t orient = d->orient;
   const int to_bin = orient == DT_WAVE_ORIENT_HORI ? sample_width : sample_height;
   const size_t samples_per_bin = ceilf(to_bin / (float)d->waveform_max_bins);
@@ -81,11 +85,14 @@ static void _wave_process(dt_scopes_mode_t *const self,
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
-  // will be <= 360x160x3. Hence process works with a relatively small
+  // will be <= 720x160x4. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
+  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CHANNEL_LUMA];
+  const size_t num_channels = (is_rgb ? 3U : 1U);
   uint32_t *const restrict partial_binned =
-    dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
+    dt_calloc_perthread(num_channels * num_bins * num_tones,
+                        sizeof(uint32_t), &bin_pad);
 
   DT_OMP_FOR()
   for(size_t y=0; y<sample_height; y++)
@@ -96,17 +103,42 @@ static void _wave_process(dt_scopes_mode_t *const self,
     for(size_t x=0; x<sample_width; x++)
     {
       const size_t bin = (orient == DT_WAVE_ORIENT_HORI ? x : y) / samples_per_bin;
-      size_t tone[4] DT_ALIGNED_PIXEL;
-      for_each_channel(ch, aligned(px,tone:16))
-      {
-        // 1.0 is at 8/9 of the height!
-        const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
-        // Using ceilf brings everything <= 0 to bottom tone,
-        // everything > 1.0f/(num_tones-1) to top tone.
-        tone[ch] = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
+      if(is_rgb)
+      { // RGB waveform
+        size_t tone[4] DT_ALIGNED_PIXEL;
+        for_each_channel(ch, aligned(px,tone:16))
+        {
+          // 1.0 is at 8/9 of the height!
+          const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
+          // Using ceilf brings everything <= 0 to bottom tone,
+          // everything > 1.0f/(num_tones-1) to top tone.
+          tone[ch] = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
+        }
+        // must be for_three_ch as binned[3] does not exist
+        for_three_channels(ch, aligned(tone,binned:16))
+          binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
       }
-      for(size_t ch = 0; ch < 3; ch++)
-        binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
+      else
+      { // luma/luminance waveform
+        dt_aligned_pixel_t RGB;
+        for_each_channel(ch, aligned(px,RGB:16))
+          RGB[ch] = px[4U * (x + roi->crop_x) + ch];
+        // luma (Y') from linearized data by pretending this is a
+        // linear colorspace
+        const int nonlinearlut_fake = FALSE;
+        // FIXME: also have option for showing a linear waveform, then
+        // calculate relative luminance (Y) from linearized data
+        const float luma =
+          dt_ioppr_get_rgb_matrix_luminance(RGB,
+                                            img_prof->matrix_in,
+                                            img_prof->lut_in,
+                                            img_prof->unbounded_coeffs_in,
+                                            img_prof->lutsize,
+                                            nonlinearlut_fake);
+        const float v = (8.0f / 9.0f) * luma;
+        const size_t tone = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
+        binned[num_tones * bin + tone]++;
+      }
     }
   }
 
@@ -127,7 +159,7 @@ static void _wave_process(dt_scopes_mode_t *const self,
   // NOTE: if constant is decreased, will brighten output
 
   // FIXME: instead of using an area-beased scale, figure out max bin
-  // count and scale to that?
+  //        count and scale to that?
 
   const float brightness = num_tones / 40.0f;
   const float scale = brightness / ((orient == DT_WAVE_ORIENT_HORI
@@ -136,13 +168,14 @@ static void _wave_process(dt_scopes_mode_t *const self,
   const size_t nthreads = dt_get_num_threads();
 
   DT_OMP_FOR(collapse(3))
-  for(size_t ch = 0; ch < 3; ch++)
+  for(size_t ch = 0; ch < num_channels; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
       {
         uint8_t *const restrict wf_img =
           DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
         uint32_t acc = 0;
+        // FIXME: can use openmp accumlate method?
         for(size_t n = 0; n < nthreads; n++)
         {
           uint32_t *const restrict binned = dt_get_bythread(partial_binned, bin_pad, n);
@@ -208,7 +241,7 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
                        cairo_t *cr,
                        const int width,
                        const int height,
-                       const scopes_channels_t channels)
+                       const dt_scopes_channels_list_t channels)
 {
   const dt_scopes_wave_t *const d = self->data;
 
@@ -217,34 +250,47 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
 
   // composite before scaling to screen dimensions, as scaling each
   // layer on draw causes a >2x slowdown
-  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
+  const double alpha_chroma = 0.75;
+  const double desat_over = 0.75;
+  const double alpha_over = channels[DT_SCOPES_CHANNEL_LUMA] ? 0.65 : 0.35;
   const int img_width = d->orient == DT_WAVE_ORIENT_HORI
     ? d->waveform_bins : d->waveform_tones;
   const int img_height = d->orient == DT_WAVE_ORIENT_HORI
     ? d->waveform_tones : d->waveform_bins;
   const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
+  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CHANNEL_LUMA];
+  const int num_channels = (is_rgb ? 3 : 1);
   cairo_surface_t *cs[3] = { NULL, NULL, NULL };
   cairo_surface_t *cst = cairo_image_surface_create
     (CAIRO_FORMAT_ARGB32, img_width, img_height);
 
   cairo_t *crt = cairo_create(cst);
   cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
-  for(int ch = 0; ch < 3; ch++)
-    if(channels[ch])
+  for(int ch = 0; ch < num_channels; ch++)
+    if((is_rgb && channels[ch]) || !is_rgb)
     {
       cs[ch] = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
                                                    img_width, img_height, img_stride);
-      cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
+      if(is_rgb)
+        cairo_set_source_rgba(crt,
+                              ch==0 ? 1.:0.,
+                              ch==1 ? 1.:0.,
+                              ch==2 ? 1.:0., alpha_chroma);
+      else
+        cairo_set_source_rgba(crt, 1., 1., 1., alpha_chroma);
       cairo_mask_surface(crt, cs[ch], 0., 0.);
     }
   cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
-  for(int ch = 0; ch < 3; ch++)
+  for(int ch = 0; ch < num_channels; ch++)
     if(cs[ch])
     {
-      cairo_set_source_rgba(crt,
-                            ch==0 ? 1.:desat_over,
-                            ch==1 ? 1.:desat_over,
-                            ch==2 ? 1.:desat_over, alpha_over);
+      if(is_rgb)
+        cairo_set_source_rgba(crt,
+                              ch==0 ? 1.:desat_over,
+                              ch==1 ? 1.:desat_over,
+                              ch==2 ? 1.:desat_over, alpha_over);
+      else
+        cairo_set_source_rgba(crt, 1., 1., 1., alpha_over);
       cairo_mask_surface(crt, cs[ch], 0., 0.);
       cairo_surface_destroy(cs[ch]);
     }
@@ -323,12 +369,24 @@ static void _wave_mode_enter(dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_show(d->orient_button);
+  // luma button currently only works in waveform
+  if(gtk_toggle_button_get_active
+       (GTK_TOGGLE_BUTTON(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA])))
+    for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
+      gtk_widget_set_sensitive(self->scopes->channel_btns[ch], FALSE);
+  gtk_widget_show(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA]);
 }
 
 static void _wave_mode_leave(const dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_hide(d->orient_button);
+  // for now luma option only works in waveform
+  gtk_widget_hide(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA]);
+  if(gtk_toggle_button_get_active
+       (GTK_TOGGLE_BUTTON(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA])))
+    for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
+      gtk_widget_set_sensitive(self->scopes->channel_btns[ch], TRUE);
 }
 
 static void _wave_gui_init(dt_scopes_mode_t *const self,
@@ -347,7 +405,7 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
   // drawn. Choose buffer dimensions which produces workable detail,
   // don't use too much CPU/memory, and allow reasonable gradations
   // of tone.
-
+  //
   // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
   // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
   // for mosaiced images), nor make it too slow to calculate
@@ -356,7 +414,7 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
   // width will vary with integral binning of image.
   //
   // FIXME: increasing waveform_max_bins increases processing speed
-  // less than increasing waveform_tones -- tune these better?
+  //        less than increasing waveform_tones -- tune these better?
   d->waveform_max_bins = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
   // initially no waveform to draw
   d->waveform_bins = 0;
@@ -369,18 +427,15 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_tones = 160;
-  // FIXME: combine waveform_8bit and vectorscope_graph, as only ever
-  // use one or the other
-  //
   // FIXME: keep alignment instead via single alloc via
-  // dt_alloc_perthread()?
+  //        dt_alloc_perthread()?
   const size_t bytes_hori =
     d->waveform_tones
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins);
   const size_t bytes_vert =
     d->waveform_max_bins
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
-  for(int ch=0; ch<3; ch++)
+  for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
     d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));
 }
 

@@ -33,11 +33,11 @@ const char* _split_name(const dt_scopes_mode_t *const self)
 static void _split_process(dt_scopes_mode_t *const self,
                           const float *const input,
                           dt_histogram_roi_t *const roi,
-                          const dt_iop_order_iccprofile_info_t *vs_prof)
+                          const dt_iop_order_iccprofile_info_t *profile)
 {
   dt_scopes_split_t *const d = self->data;
-  dt_scopes_call(d->left, process, input, roi, vs_prof);
-  dt_scopes_call(d->right, process, input, roi, vs_prof);
+  dt_scopes_call(d->left, process, input, roi, profile);
+  dt_scopes_call(d->right, process, input, roi, profile);
   self->update_counter = self->scopes->update_counter;
 }
 
@@ -90,7 +90,7 @@ static void _split_draw(const dt_scopes_mode_t *const self,
                         cairo_t *cr,
                         const int width,
                         const int height,
-                        const scopes_channels_t channels)
+                        const dt_scopes_channels_list_t channels)
 {
   const dt_scopes_split_t *const d = self->data;
   const int half_width = width / 2;
@@ -225,7 +225,7 @@ static void _responsive_buttons(dt_scopes_t *const s)
 
     const int mode_btns_hori = DT_SCOPES_MODE_N;
     const int opt_btns_wave = 1;  // FIXME: change this if there are more
-    const int opt_btns_hori = DT_SCOPES_RGB_N + opt_btns_wave;
+    const int opt_btns_hori = DT_SCOPES_CHANNEL_N + opt_btns_wave;
     const int opt_btns_vert = 1 + opt_btns_wave;
     const int estd_margin = 6;  // for both boxes and buttons
     const double estd_btn_width = min_w + estd_margin;
@@ -247,7 +247,7 @@ static void _responsive_buttons(dt_scopes_t *const s)
   // compact layout should show all buttons without overlap on the
   // smallest panel width and scope height
   gtk_orientable_set_orientation(GTK_ORIENTABLE(s->button_box_left), orient_btn_left);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(s->button_box_rgb), orient_btn_rgb);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(s->button_box_channels), orient_btn_rgb);
 }
 
 static void _reparent(GtkWidget *src, GtkWidget *dest, GtkWidget *child)
@@ -279,7 +279,7 @@ static void _split_mode_enter(dt_scopes_mode_t *const self)
             d->left->options_box);
   if(d->left->functions->draw_scope_channels)
     _reparent(self->scopes->button_box_right, self->scopes->button_box_split,
-              self->scopes->button_box_rgb);
+              self->scopes->button_box_channels);
   gtk_widget_show_all(self->scopes->button_box_split);
 }
 
@@ -293,11 +293,11 @@ static void _split_mode_leave(const dt_scopes_mode_t *const self)
             d->left->options_box);
   if(d->left->functions->draw_scope_channels)
     _reparent(self->scopes->button_box_split, self->scopes->button_box_right,
-              self->scopes->button_box_rgb);
+              self->scopes->button_box_channels);
   gtk_widget_hide(self->scopes->button_box_split);
   gtk_orientable_set_orientation(GTK_ORIENTABLE(self->scopes->button_box_left),
                                  GTK_ORIENTATION_HORIZONTAL);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(self->scopes->button_box_rgb),
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(self->scopes->button_box_channels),
                                  GTK_ORIENTATION_HORIZONTAL);
 }
 

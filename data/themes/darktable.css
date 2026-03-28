@@ -745,6 +745,11 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.2);
 }
 
+#luma-channel-button
+{
+  background-color: alpha(white, 0.2);
+}
+
 /* set now them active state */
 #red-channel-button:checked
 {
@@ -761,6 +766,11 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.66);
 }
 
+#luma-channel-button:checked
+{
+  background-color: alpha(white, 0.66);
+}
+
 /* set now hover state */
 #red-channel-button:hover
 {
@@ -775,6 +785,27 @@ dialog .sidebar row:selected:hover label,
 #blue-channel-button:hover
 {
   background-color: alpha(@graph_blue, 0.5);
+}
+
+#luma-channel-button:hover
+{
+  background-color: alpha(white, 0.5);
+}
+
+/* inactive state */
+#red-channel-button:disabled
+{
+  background-color: alpha(@graph_red, 0.1);
+}
+
+#green-channel-button:disabled
+{
+  background-color: alpha(@graph_green, 0.1);
+}
+
+#blue-channel-button:disabled
+{
+  background-color: alpha(@graph_blue, 0.1);
 }
 
 /*------------------

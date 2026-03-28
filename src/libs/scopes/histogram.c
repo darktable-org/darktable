@@ -53,7 +53,7 @@ const char* _hist_name(const dt_scopes_mode_t *const self)
 static void _hist_process(dt_scopes_mode_t *const self,
                           const float *const input,
                           dt_histogram_roi_t *const roi,
-                          const dt_iop_order_iccprofile_info_t *vs_prof)
+                          const dt_iop_order_iccprofile_info_t *profile)
 {
   dt_scopes_hist_t *const d = self->data;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
@@ -126,7 +126,7 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
                        cairo_t *cr,
                        const int width,
                        const int height,
-                       const scopes_channels_t channels)
+                       const dt_scopes_channels_list_t channels)
 {
   const dt_scopes_hist_t *const d = self->data;
 
@@ -146,7 +146,7 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  for(int k = 0; k < DT_SCOPES_RGB_N; k++)
+  for(int k = 0; k <= DT_SCOPES_CHANNEL_BLUE; k++)
     if(channels[k])
     {
       // FIXME: this is the last place in dt these are used -- if can
