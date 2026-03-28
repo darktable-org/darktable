@@ -28,6 +28,7 @@ FILE(GLOB SOURCE_FILES
   "common/calculator.c"
   "common/collection.c"
   "common/color_harmony.c"
+  "common/hdr_viewer.c"
   "common/color_picker.c"
   "common/color_vocabulary.c"
   "common/colorlabels.c"
