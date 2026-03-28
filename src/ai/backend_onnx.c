@@ -78,46 +78,309 @@ static void _stderr_suppress_end(int saved)
 }
 #endif
 
+// Probe a shared library for OrtGetApiBase to verify it's a valid ORT build.
+// Returns the version string (caller must g_free) or NULL on failure.
+// Uses BIND_LOCAL to avoid polluting the global symbol namespace.
+char *dt_ai_ort_probe_library(const char *path)
+{
+  if(!path || !path[0]) return NULL;
+
+  GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  if(!mod)
+  {
+    dt_print(DT_DEBUG_AI, "[darktable_ai] probe: failed to open '%s': %s", path, g_module_error());
+    return NULL;
+  }
+
+  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
+  OrtGetApiBaseFn get_base = NULL;
+  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
+  {
+    dt_print(DT_DEBUG_AI, "[darktable_ai] probe: OrtGetApiBase not found in '%s'", path);
+    g_module_close(mod);
+    return NULL;
+  }
+
+  const OrtApiBase *base = get_base();
+  gchar *version = g_strdup(base->GetVersionString());
+  dt_print(DT_DEBUG_AI, "[darktable_ai] probe: ORT %s in '%s'", version, path);
+  g_module_close(mod);
+  return version;
+}
+
+// Probe a library and return version + comma-separated list of supported EPs.
+// Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
+{
+  if(!path || !path[0]) return FALSE;
+  if(out_version) *out_version = NULL;
+  if(out_eps) *out_eps = NULL;
+
+  GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  if(!mod) return FALSE;
+
+  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
+  OrtGetApiBaseFn get_base = NULL;
+  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_base) || !get_base)
+  {
+    g_module_close(mod);
+    return FALSE;
+  }
+
+  const OrtApiBase *base = get_base();
+  if(out_version)
+    *out_version = g_strdup(base->GetVersionString());
+
+  if(out_eps)
+  {
+    // check for known EP registration symbols
+    static const struct { const char *symbol; const char *name; } ep_table[] = {
+      { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
+      { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
+      { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
+      { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
+      { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
+      { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
+      { NULL, NULL }
+    };
+
+    GString *eps = g_string_new(NULL);
+    gpointer sym;
+    for(int i = 0; ep_table[i].symbol; i++)
+    {
+      if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+      {
+        if(eps->len > 0) g_string_append(eps, ", ");
+        g_string_append(eps, ep_table[i].name);
+      }
+    }
+    if(eps->len == 0) g_string_append(eps, "CPU");
+    *out_eps = g_string_free(eps, FALSE);
+  }
+
+  g_module_close(mod);
+  return TRUE;
+}
+
+// Scan system and user-space paths for valid ORT libraries.
+// Returns a GList of dt_ai_ort_found_t (caller owns list and contents).
+GList *dt_ai_ort_find_libraries(void)
+{
+  // system library paths (distro packages)
+  static const char *system_paths[] = {
+    "/usr/lib/libonnxruntime.so",
+    "/usr/lib64/libonnxruntime.so",
+    "/usr/lib/x86_64-linux-gnu/libonnxruntime.so",
+    "/usr/lib/aarch64-linux-gnu/libonnxruntime.so",
+    "/usr/local/lib/libonnxruntime.so",
+    "/usr/local/lib64/libonnxruntime.so",
+    NULL
+  };
+
+  // user-space paths (install scripts) — scan for versioned .so files
+  const char *home = g_get_home_dir();
+  static const char *subdirs[] = { "onnxruntime-cuda", "onnxruntime-migraphx", "onnxruntime-openvino" };
+  gchar *user_paths[3] = { NULL };
+
+  for(int i = 0; i < 3; i++)
+  {
+    gchar *dir = g_build_filename(home, ".local/lib", subdirs[i], NULL);
+    if(g_file_test(dir, G_FILE_TEST_IS_DIR))
+    {
+      gchar *exact = g_build_filename(dir, "libonnxruntime.so", NULL);
+      if(g_file_test(exact, G_FILE_TEST_EXISTS))
+      {
+        user_paths[i] = exact;
+      }
+      else
+      {
+        g_free(exact);
+        GDir *d = g_dir_open(dir, 0, NULL);
+        if(d)
+        {
+          const gchar *name;
+          while((name = g_dir_read_name(d)))
+          {
+            if(g_str_has_prefix(name, "libonnxruntime.so."))
+            {
+              user_paths[i] = g_build_filename(dir, name, NULL);
+              break;
+            }
+          }
+          g_dir_close(d);
+        }
+      }
+    }
+    g_free(dir);
+  }
+
+  GList *results = NULL;
+
+  // probe system paths
+  for(int i = 0; system_paths[i]; i++)
+  {
+    if(!g_file_test(system_paths[i], G_FILE_TEST_EXISTS)) continue;
+    char *version = NULL, *ep = NULL;
+    if(dt_ai_ort_probe_library_full(system_paths[i], &version, &ep))
+    {
+      dt_ai_ort_found_t *f = g_new0(dt_ai_ort_found_t, 1);
+      f->path = g_strdup(system_paths[i]);
+      f->version = version;
+      f->eps = ep;
+      results = g_list_append(results, f);
+    }
+    else
+    {
+      g_free(version);
+      g_free(ep);
+    }
+  }
+
+  // probe user-space paths
+  for(int i = 0; i < 3; i++)
+  {
+    if(!user_paths[i]) continue;
+    char *version = NULL, *ep = NULL;
+    if(dt_ai_ort_probe_library_full(user_paths[i], &version, &ep))
+    {
+      dt_ai_ort_found_t *f = g_new0(dt_ai_ort_found_t, 1);
+      f->path = user_paths[i];
+      f->version = version;
+      f->eps = ep;
+      user_paths[i] = NULL; // ownership transferred
+      results = g_list_append(results, f);
+    }
+    else
+    {
+      g_free(version);
+      g_free(ep);
+    }
+  }
+
+  for(int i = 0; i < 3; i++) g_free(user_paths[i]);
+  return results;
+}
+
+void dt_ai_ort_found_free(dt_ai_ort_found_t *f)
+{
+  if(!f) return;
+  g_free(f->path);
+  g_free(f->version);
+  g_free(f->eps);
+  g_free(f);
+}
+
+// Load ORT API from a dynamically loaded module. Returns NULL on failure.
+static const OrtApi *_ort_api_from_module(GModule *mod, const char *label)
+{
+  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
+  OrtGetApiBaseFn get_api_base = NULL;
+  if(!g_module_symbol(mod, "OrtGetApiBase", (gpointer *)&get_api_base) || !get_api_base)
+  {
+    dt_print(DT_DEBUG_AI, "[darktable_ai] OrtGetApiBase symbol not found in '%s'", label);
+    return NULL;
+  }
+  const OrtApiBase *base = get_api_base();
+  const char *lib_version = base->GetVersionString();
+  dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT %s from '%s'", lib_version, label);
+
+  // try the compiled API version first, then fall back to lower versions
+  // so that older ORT libraries (e.g. MIGraphX on ROCm 6.x) still work
+  const OrtApi *api = base->GetApi(ORT_API_VERSION);
+  if(!api)
+  {
+    // minimum API version 14 = ORT 1.14, required for ONNX opset 18
+    for(int v = ORT_API_VERSION - 1; v >= 14; v--)
+    {
+      api = base->GetApi(v);
+      if(api)
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[darktable_ai] ORT %s: using API version %d (compiled for %d)",
+                 lib_version, v, ORT_API_VERSION);
+        break;
+      }
+    }
+    if(!api)
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] ORT %s does not support any compatible API version",
+               lib_version);
+  }
+  return api;
+}
+
 static gpointer _init_ort_api(gpointer data)
 {
   (void)data;
   const OrtApi *api = NULL;
 
-#ifdef ORT_LAZY_LOAD
-  // Ubuntu/Debian's system ORT links against libonnx, causing harmless but noisy
-  // "already registered" ONNX schema warnings when the library is first loaded.
-  // suppress them by loading ORT explicitly, with stderr temporarily redirected.
-  // G_MODULE_BIND_LAZY = RTLD_LAZY; default (no BIND_LOCAL) = RTLD_GLOBAL so
-  // provider symbols remain visible to the rest of the process via dlsym(NULL).
-  const int saved = _stderr_suppress_begin();
-  // the handle is intentionally not stored: ORT must stay loaded for the process
-  // lifetime and g_module_close is never called, so the library stays resident.
-  GModule *ort_mod = g_module_open(ORT_LIBRARY_PATH, G_MODULE_BIND_LAZY);
-  _stderr_suppress_end(saved);
+  // Custom ORT library: check darktablerc preference first, then env var.
+  // This allows users to point to a GPU-enabled ORT build (e.g. CUDA or
+  // ROCm) without rebuilding darktable. On Linux this overrides the
+  // compile-time default; on Windows/macOS it dynamically loads a
+  // user-supplied library instead of the bundled DirectML/CoreML one.
+  gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
+  const char *ort_env = g_getenv("DT_ORT_LIBRARY");
+  const char *ort_override = (ort_conf && ort_conf[0]) ? ort_conf
+                           : (ort_env && ort_env[0]) ? ort_env
+                           : NULL;
 
-  if(!ort_mod)
+  if(ort_override)
   {
-    dt_print(DT_DEBUG_AI,
-             "[darktable_ai] failed to load ORT library '%s': %s",
-             ORT_LIBRARY_PATH, g_module_error());
-    return NULL;
+    GModule *ort_mod = g_module_open(ort_override, G_MODULE_BIND_LAZY);
+    if(!ort_mod)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] failed to load ORT library '%s': %s",
+               ort_override, g_module_error());
+      goto done;
+    }
+    api = _ort_api_from_module(ort_mod, ort_override);
   }
-  typedef const OrtApiBase *(*OrtGetApiBaseFn)(void);
-  OrtGetApiBaseFn get_api_base = NULL;
-  if(!g_module_symbol(ort_mod, "OrtGetApiBase", (gpointer *)&get_api_base) || !get_api_base)
+#ifdef ORT_LAZY_LOAD
+  else
   {
-    dt_print(DT_DEBUG_AI, "[darktable_ai] OrtGetApiBase symbol not found");
-    return NULL;
+    // Linux default: lazy-load the bundled or system ORT library.
+    // Suppress stderr during load - Ubuntu/Debian's system ORT links against
+    // libonnx, causing harmless "already registered" ONNX schema warnings.
+    const int saved = _stderr_suppress_begin();
+    GModule *ort_mod = g_module_open(ORT_LIBRARY_PATH, G_MODULE_BIND_LAZY);
+    _stderr_suppress_end(saved);
+
+    if(!ort_mod)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] failed to load ORT library '%s': %s",
+               ORT_LIBRARY_PATH, g_module_error());
+      goto done;
+    }
+    api = _ort_api_from_module(ort_mod, ORT_LIBRARY_PATH);
   }
-  api = get_api_base()->GetApi(ORT_API_VERSION);
 #else
-  api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+  else
+  {
+    // Windows/macOS: use the directly linked ORT library (DirectML/CoreML).
+    const OrtApiBase *base = OrtGetApiBase();
+    dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT %s (bundled)",
+             base->GetVersionString());
+    api = base->GetApi(ORT_API_VERSION);
+  }
 #endif
 
+done:
+  g_free(ort_conf);
   if(!api)
+  {
     dt_print(DT_DEBUG_AI, "[darktable_ai] failed to init ONNX runtime API");
+  }
   else
+  {
     g_ort = api;
+    gchar *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+    dt_print(DT_DEBUG_AI, "[darktable_ai] execution provider: %s",
+             prov_str && prov_str[0] ? prov_str : "auto");
+    g_free(prov_str);
+  }
   return (gpointer)api;
 }
 

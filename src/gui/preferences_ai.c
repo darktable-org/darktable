@@ -18,6 +18,9 @@
 
 #include "gui/preferences_ai.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
+#include "ai/backend.h"
 #include "common/ai_models.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -96,6 +99,10 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *parent_dialog;
   GtkWidget *select_all_toggle;
   GtkWidget *controls_box;  // container for all controls below the enable toggle
+  GtkWidget *ort_path_entry;
+  GtkWidget *ort_path_indicator;
+  GtkWidget *settings_grid;
+  int controls_start_row;   // first row to grey out when AI disabled
 } dt_prefs_ai_data_t;
 
 #ifdef HAVE_AI_DOWNLOAD
@@ -232,6 +239,28 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->select_all_toggle), FALSE);
 }
 
+static void _update_controls_sensitivity(dt_prefs_ai_data_t *data, gboolean enabled)
+{
+  // grey out settings grid rows below the enable toggle
+  if(data->settings_grid)
+  {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(data->settings_grid));
+    for(GList *l = children; l; l = g_list_next(l))
+    {
+      GtkWidget *child = l->data;
+      int child_row = 0;
+      gtk_container_child_get(GTK_CONTAINER(data->settings_grid), child,
+                              "top-attach", &child_row, NULL);
+      if(child_row >= data->controls_start_row)
+        gtk_widget_set_sensitive(child, enabled);
+    }
+    g_list_free(children);
+  }
+  // grey out models section
+  if(data->controls_box)
+    gtk_widget_set_sensitive(data->controls_box, enabled);
+}
+
 static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
@@ -255,9 +284,7 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
   // AI-dependent features without requiring image switch
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_AI_MODELS_CHANGED);
 
-  // grey out all AI controls when disabled
-  if(data->controls_box)
-    gtk_widget_set_sensitive(data->controls_box, enabled);
+  _update_controls_sensitivity(data, enabled);
 
   // update non-default indicator dot
   _update_string_indicator(data->enable_indicator,
@@ -857,6 +884,202 @@ static void _on_refresh(GtkButton *button, gpointer user_data)
   _refresh_model_list(data);
 }
 
+#if !defined(__APPLE__)
+static void _show_ort_probe_result(GtkWindow *parent, const char *path, const char *version)
+{
+  GtkWidget *dlg;
+  if(version)
+    dlg = gtk_message_dialog_new(parent,
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+      _("ONNX Runtime %s detected.\nRestart darktable to apply."), version);
+  else
+    dlg = gtk_message_dialog_new(parent,
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
+      _("not a valid ONNX Runtime library:\n%s"), path);
+  gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+}
+
+static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  GList *found = dt_ai_ort_find_libraries();
+  const guint count = g_list_length(found);
+
+  if(count == 0)
+  {
+    GtkWidget *dlg = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+      _("no system ONNX Runtime library found.\n\n"
+        "install one via your package manager or use\n"
+        "the browse button to select a custom build."));
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(dlg);
+  }
+  else if(count == 1)
+  {
+    dt_ai_ort_found_t *f = found->data;
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
+    dt_conf_set_string("plugins/ai/ort_library_path", f->path);
+    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+    GtkWidget *dlg = gtk_message_dialog_new(
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+      _("ONNX Runtime %s [%s]\n%s\n\nRestart darktable to apply."),
+      f->version, f->eps, f->path);
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    gtk_widget_destroy(dlg);
+  }
+  else
+  {
+    GtkWidget *dlg = gtk_dialog_new_with_buttons(
+      _("select ONNX Runtime library"),
+      GTK_WINDOW(data->parent_dialog),
+      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+      _("_cancel"), GTK_RESPONSE_CANCEL,
+      _("_select"), GTK_RESPONSE_ACCEPT,
+      NULL);
+
+    GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+    gtk_container_set_border_width(GTK_CONTAINER(content), DT_PIXEL_APPLY_DPI(10));
+
+    GtkWidget *label = gtk_label_new(_("multiple ONNX Runtime libraries found:"));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(5));
+    gtk_container_add(GTK_CONTAINER(content), label);
+
+    GtkWidget *combo = gtk_combo_box_text_new();
+    for(GList *l = found; l; l = g_list_next(l))
+    {
+      dt_ai_ort_found_t *f = l->data;
+      gchar *entry = g_strdup_printf("ORT %s [%s]  %s", f->version, f->eps, f->path);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
+      g_free(entry);
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
+    gtk_container_add(GTK_CONTAINER(content), combo);
+    gtk_widget_show_all(content);
+
+    if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
+    {
+      const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+      if(sel >= 0)
+      {
+        dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
+        gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
+        dt_conf_set_string("plugins/ai/ort_library_path", f->path);
+        _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+      }
+    }
+    gtk_widget_destroy(dlg);
+  }
+
+  g_list_free_full(found, (GDestroyNotify)dt_ai_ort_found_free);
+}
+
+static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  if(e->type != GDK_2BUTTON_PRESS) return FALSE;
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
+  dt_conf_set_string("plugins/ai/ort_library_path", "");
+  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+  return TRUE;
+}
+static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  const char *text = gtk_entry_get_text(GTK_ENTRY(data->ort_path_entry));
+
+  // empty = reset to bundled
+  if(!text || !text[0])
+  {
+    dt_conf_set_string("plugins/ai/ort_library_path", "");
+    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+    return;
+  }
+
+  gchar *version = dt_ai_ort_probe_library(text);
+  _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), text, version);
+  if(!version)
+  {
+    // revert entry to saved config
+    gchar *prev = dt_conf_get_string("plugins/ai/ort_library_path");
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), prev ? prev : "");
+    g_free(prev);
+    return;
+  }
+
+  dt_conf_set_string("plugins/ai/ort_library_path", text);
+  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+  g_free(version);
+}
+
+static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  GtkWidget *chooser = gtk_file_chooser_dialog_new(
+    _("select ONNX Runtime library"),
+    GTK_WINDOW(data->parent_dialog),
+    GTK_FILE_CHOOSER_ACTION_OPEN,
+    _("_cancel"), GTK_RESPONSE_CANCEL,
+    _("_open"), GTK_RESPONSE_ACCEPT,
+    NULL);
+
+  // filter for shared libraries
+  GtkFileFilter *filter = gtk_file_filter_new();
+#ifdef _WIN32
+  gtk_file_filter_set_name(filter, _("ONNX Runtime (onnxruntime*.dll)"));
+  gtk_file_filter_add_pattern(filter, "onnxruntime*.dll");
+#else
+  gtk_file_filter_set_name(filter, _("ONNX Runtime (libonnxruntime.so*)"));
+  gtk_file_filter_add_pattern(filter, "libonnxruntime.so*");
+#endif
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
+
+  GtkFileFilter *all_filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(all_filter, _("all files"));
+  gtk_file_filter_add_pattern(all_filter, "*");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), all_filter);
+
+  // start in the current path's directory if set
+  gchar *cur = dt_conf_get_string("plugins/ai/ort_library_path");
+  if(cur && cur[0])
+  {
+    gchar *dir = g_path_get_dirname(cur);
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), dir);
+    g_free(dir);
+  }
+  g_free(cur);
+
+  gchar *filename = NULL;
+  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+
+  gtk_widget_destroy(chooser);
+
+  if(filename)
+  {
+    gchar *version = dt_ai_ort_probe_library(filename);
+    _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), filename, version);
+    if(version)
+    {
+      gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), filename);
+      dt_conf_set_string("plugins/ai/ort_library_path", filename);
+      _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+      g_free(version);
+    }
+    g_free(filename);
+  }
+}
+#endif // !__APPLE__
+
 void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 {
   dt_prefs_ai_data_t *data = g_new0(dt_prefs_ai_data_t, 1);
@@ -865,20 +1088,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   // main vertical box holds two independent sections
   GtkWidget *main_box = dt_gui_vbox();
 
-  // === "general" section with its own grid ===
-  GtkWidget *general_grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(general_grid), DT_PIXEL_APPLY_DPI(3));
-  gtk_grid_set_column_spacing(GTK_GRID(general_grid), DT_PIXEL_APPLY_DPI(5));
-
   int row = 0;
-
-  // "general" section header
-  {
-    GtkWidget *seclabel = gtk_label_new(_("general"));
-    GtkWidget *lbox = dt_gui_hbox(seclabel);
-    gtk_widget_set_name(lbox, "pref_section");
-    gtk_grid_attach(GTK_GRID(general_grid), lbox, 0, row++, 3, 1);
-  }
 
   // enable AI toggle
   GtkWidget *enable_label = gtk_label_new(_("enable AI features"));
@@ -903,26 +1113,27 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     "button-press-event",
     G_CALLBACK(_reset_enable_click),
     data->enable_toggle);
-  gtk_grid_attach(GTK_GRID(general_grid), enable_labelev, 0, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), data->enable_indicator, 1, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(general_grid), data->enable_toggle, 2, row++, 1, 1);
-
-  dt_gui_box_add(main_box, general_grid);
-
-  // all controls below are inside controls_box —
-  // greyed out when AI is disabled
-  data->controls_box = dt_gui_vbox();
-  const gboolean ai_on = dt_conf_get_bool("plugins/ai/enabled");
-  gtk_widget_set_sensitive(data->controls_box, ai_on);
-  dt_gui_box_add(main_box, data->controls_box);
-
-  // provider section grid
-  GtkWidget *provider_grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(provider_grid),
-                           DT_PIXEL_APPLY_DPI(3));
-  gtk_grid_set_column_spacing(GTK_GRID(provider_grid),
-                              DT_PIXEL_APPLY_DPI(5));
+  // single grid for enable, provider, and ORT path (column alignment)
+  GtkWidget *settings_grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(settings_grid), DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(GTK_GRID(settings_grid), DT_PIXEL_APPLY_DPI(5));
   row = 0;
+
+  {
+    GtkWidget *seclabel = gtk_label_new(_("general"));
+    GtkWidget *lbox = dt_gui_hbox(seclabel);
+    gtk_widget_set_name(lbox, "pref_section");
+    gtk_grid_attach(GTK_GRID(settings_grid), lbox, 0, row++, 5, 1);
+  }
+
+  gtk_grid_attach(GTK_GRID(settings_grid), enable_labelev, 0, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), data->enable_indicator, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), data->enable_toggle, 2, row++, 1, 1);
+
+  // rows below this are greyed out when AI is disabled
+  data->settings_grid = settings_grid;
+  data->controls_start_row = row;
+  const gboolean ai_on = dt_conf_get_bool("plugins/ai/enabled");
 
   // provider dropdown
   GtkWidget *provider_label = gtk_label_new(_("execution provider"));
@@ -968,12 +1179,76 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_label_set_use_markup(GTK_LABEL(data->provider_status), TRUE);
   gtk_widget_set_halign(data->provider_status, GTK_ALIGN_START);
 
-  gtk_grid_attach(GTK_GRID(provider_grid), provider_labelev, 0, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_indicator, 1, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_combo, 2, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(provider_grid), data->provider_status, 3, row++, 1, 1);
+  // put combo + status in an hbox so the combo doesn't stretch
+  // when column 2 expands for the ORT path entry below
+  GtkWidget *provider_hbox = dt_gui_hbox(data->provider_combo, data->provider_status);
 
-  dt_gui_box_add(data->controls_box, provider_grid);
+  gtk_grid_attach(GTK_GRID(settings_grid), provider_labelev, 0, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), data->provider_indicator, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(settings_grid), provider_hbox, 2, row++, 3, 1);
+
+  // ORT library path — not shown on macOS where ORT is statically linked with CoreML.
+  // Developers can still use DT_ORT_LIBRARY env var to override on macOS
+#if !defined(__APPLE__)
+  {
+    GtkWidget *path_label = gtk_label_new(_("ONNX Runtime library"));
+    gtk_widget_set_halign(path_label, GTK_ALIGN_START);
+    GtkWidget *path_labelev = gtk_event_box_new();
+    gtk_widget_add_events(path_labelev, GDK_BUTTON_PRESS_MASK);
+    gtk_container_add(GTK_CONTAINER(path_labelev), path_label);
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(path_labelev), FALSE);
+
+    data->ort_path_indicator = _create_indicator("plugins/ai/ort_library_path");
+
+    gchar *cur_path = dt_conf_get_string("plugins/ai/ort_library_path");
+    data->ort_path_entry = gtk_entry_new();
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), cur_path ? cur_path : "");
+#if defined(_WIN32)
+    gtk_entry_set_placeholder_text(GTK_ENTRY(data->ort_path_entry),
+                                   _("bundled (DirectML)"));
+#else
+    gtk_entry_set_placeholder_text(GTK_ENTRY(data->ort_path_entry),
+                                   _("bundled (CPU only)"));
+#endif
+    gtk_widget_set_tooltip_text(data->ort_path_entry,
+                                _("path to a GPU-enabled ONNX Runtime library.\n"
+                                  "leave empty to use the bundled library.\n"
+                                  "requires restart to take effect."));
+    gtk_widget_set_hexpand(data->ort_path_entry, TRUE);
+    g_free(cur_path);
+
+    GtkWidget *browse_btn = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+    gtk_widget_set_name(browse_btn, "non-flat");
+    gtk_widget_set_tooltip_text(browse_btn,
+                                _("select a custom ONNX Runtime shared library"));
+
+    GtkWidget *detect_btn = gtk_button_new_with_label(_("detect"));
+    gtk_widget_set_tooltip_text(detect_btn,
+                                _("search for a system-installed ONNX Runtime library"));
+
+    GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn);
+    gtk_widget_set_valign(btn_box, GTK_ALIGN_CENTER);
+
+    gtk_grid_attach(GTK_GRID(settings_grid), path_labelev, 0, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(settings_grid), data->ort_path_indicator, 1, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(settings_grid), data->ort_path_entry, 2, row, 2, 1);
+    gtk_grid_attach(GTK_GRID(settings_grid), btn_box, 4, row++, 1, 1);
+
+    g_signal_connect(browse_btn, "clicked", G_CALLBACK(_on_ort_browse_clicked), data);
+    g_signal_connect(detect_btn, "clicked", G_CALLBACK(_on_detect_system_ort), data);
+    g_signal_connect(data->ort_path_entry, "activate", G_CALLBACK(_on_ort_path_changed), data);
+    g_signal_connect(path_labelev, "button-press-event", G_CALLBACK(_reset_ort_path_click), data);
+  }
+#endif // !__APPLE__
+
+  dt_gui_box_add(main_box, settings_grid);
+
+  // controls_box wraps the models section - greyed out when AI disabled
+  data->controls_box = dt_gui_vbox();
+
+  // apply initial sensitivity
+  _update_controls_sensitivity(data, ai_on);
+  dt_gui_box_add(main_box, data->controls_box);
 
   // "models" section with its own grid
   GtkWidget *models_grid = gtk_grid_new();

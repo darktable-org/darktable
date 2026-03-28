@@ -397,6 +397,13 @@
     <longdescription>select the hardware acceleration provider for AI inference. 'auto' will automatically detect the best available option for your system.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/ai/ort_library_path</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>custom ONNX Runtime library path</shortdescription>
+    <longdescription>path to a custom ONNX Runtime shared library with GPU support (e.g. CUDA, MIGraphX, OpenVINO). when empty, darktable uses its bundled CPU-only library. set this to enable GPU acceleration without rebuilding.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/ai/repository</name>
     <type>string</type>
     <default>darktable-org/darktable-ai</default>

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <glib.h>
 
 /**
  * @brief AI Execution Provider
@@ -62,6 +63,31 @@ dt_ai_provider_t dt_ai_provider_from_string(const char *str);
 /** Test if a provider is available at runtime (checks deps, not just compile-time).
  *  @return 1 if available, 0 if not. */
 int dt_ai_probe_provider(dt_ai_provider_t provider);
+
+/** Probe a shared library to check if it's a valid ONNX Runtime build.
+ *  @return version string (caller must g_free) or NULL on failure. */
+char *dt_ai_ort_probe_library(const char *path);
+
+/** Probe a library and return version + supported execution providers.
+ *  @param out_version version string (caller must g_free), may be NULL
+ *  @param out_eps comma-separated EP names (caller must g_free), may be NULL
+ *  @return 1 if valid ORT library, 0 otherwise */
+int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps);
+
+/** Result from dt_ai_ort_find_libraries(). Caller owns all strings. */
+typedef struct dt_ai_ort_found_t
+{
+  char *path;     // full path to the library
+  char *version;  // ORT version string
+  char *eps;      // comma-separated execution provider names
+} dt_ai_ort_found_t;
+
+/** Scan system and user-space paths for valid ORT libraries.
+ *  @return GList of dt_ai_ort_found_t (caller must free with dt_ai_ort_found_free) */
+GList *dt_ai_ort_find_libraries(void);
+
+/** Free a dt_ai_ort_found_t */
+void dt_ai_ort_found_free(dt_ai_ort_found_t *f);
 
 /**
  * @brief Graph Optimization Level

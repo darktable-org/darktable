@@ -40,9 +40,13 @@ if(UNIX AND NOT APPLE)
   # before darktable has a chance to check the AI-enabled preference.
   # Also suppresses harmless "already registered" ONNX schema warnings
   # from system packages that link against libonnx.
+  # Use just the filename (not the full build-tree path) so g_module_open
+  # resolves it via LD_LIBRARY_PATH / system linker search. This is required
+  # for AppImage where the build-tree path does not exist at runtime.
+  get_filename_component(_ORT_LIB_NAME "${ONNXRuntime_LIBRARIES}" NAME)
   target_compile_definitions(darktable_ai PRIVATE
     ORT_LAZY_LOAD=1
-    ORT_LIBRARY_PATH="${ONNXRuntime_LIBRARIES}")
+    ORT_LIBRARY_PATH="${_ORT_LIB_NAME}")
   target_include_directories(darktable_ai PRIVATE ${ONNXRuntime_INCLUDE_DIRS})
 else()
   target_link_libraries(darktable_ai PUBLIC onnxruntime::onnxruntime)
