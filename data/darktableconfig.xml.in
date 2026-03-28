@@ -240,6 +240,13 @@
     <longdescription>(restart required)</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>min_center_width</name>
+    <type>int</type>
+    <default>650</default>
+    <shortdescription>minimum width of the center column in pixels</shortdescription>
+    <longdescription>(restart required)</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>min_panel_width</name>
     <type>int</type>
     <default>150</default>
