@@ -148,6 +148,71 @@ static void destroy_pref_element(pref_element *elt)
 }
 
 static pref_element *pref_list = NULL;
+static GHashTable *script_display_names = NULL;
+
+// scripts whose preferences appear at the top level rather than in a collapsible section
+static const char *const _global_scripts[] = {
+  "script_manager",
+  "_scripts_install",
+  NULL // sentinel
+};
+
+static gboolean _is_global_script(const char *script)
+{
+  for(int i = 0; _global_scripts[i]; i++)
+    if(strcmp(_global_scripts[i], script) == 0) return TRUE;
+  return FALSE;
+}
+
+static GtkWidget *_make_pref_grid(void)
+{
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  return grid;
+}
+
+static void _attach_pref_row(GtkWidget *grid, pref_element *cur_elt, GtkWidget *dialog, int line,
+                             GtkSizeGroup *label_sg)
+{
+  GtkWidget *label = dt_ui_label_new(cur_elt->label);
+  GtkWidget *labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  cur_elt->update_widget(cur_elt, dialog, labelev);
+  gtk_widget_set_tooltip_text(labelev, cur_elt->tooltip_reset);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
+  gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
+  gtk_size_group_add_widget(label_sg, labelev);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), cur_elt->widget, 1, line, 1, 1);
+}
+
+static const char *_get_script_display_name(const char *script)
+{
+  if(script_display_names)
+  {
+    const char *name = g_hash_table_lookup(script_display_names, script);
+    if(name) return name;
+  }
+  return script;
+}
+
+static gint _compare_script_display_names(gconstpointer a, gconstpointer b)
+{
+  return strcmp(_get_script_display_name(a), _get_script_display_name(b));
+}
+
+static void _combo_changed(GtkComboBox *combo, GtkWidget *script_stack)
+{
+  const gchar *id = gtk_combo_box_get_active_id(combo);
+  if(!id) return;
+  gtk_stack_set_visible_child_name(GTK_STACK(script_stack), id);
+  GtkWidget *section_label = g_object_get_data(G_OBJECT(combo), "script-section-label");
+  if(section_label) gtk_label_set_text(GTK_LABEL(section_label), _get_script_display_name(id));
+}
 
 // get all the darktablerc keys
 static int get_keys(lua_State *L)
@@ -190,29 +255,12 @@ static int read_pref(lua_State *L)
   switch(i)
   {
     case pref_enum:
-    {
-      const char *str = dt_conf_get_string_const(pref_name);
-      lua_pushstring(L, str);
-      break;
-    }
     case pref_dir:
-    {
-      const char *str = dt_conf_get_string_const(pref_name);
-      lua_pushstring(L, str);
-      break;
-    }
     case pref_file:
-    {
-      const char *str = dt_conf_get_string_const(pref_name);
-      lua_pushstring(L, str);
-      break;
-    }
     case pref_string:
-    {
-      const char *str = dt_conf_get_string_const(pref_name);
-      lua_pushstring(L, str);
+    case pref_lua:
+      lua_pushstring(L, dt_conf_get_string_const(pref_name));
       break;
-    }
     case pref_bool:
       lua_pushboolean(L, dt_conf_get_bool(pref_name));
       break;
@@ -222,12 +270,6 @@ static int read_pref(lua_State *L)
     case pref_float:
       lua_pushnumber(L, dt_conf_get_float(pref_name));
       break;
-    case pref_lua:
-    {
-      const char *str = dt_conf_get_string_const(pref_name);
-      lua_pushstring(L, str);
-      break;
-    }
   }
   return 1;
 }
@@ -249,12 +291,9 @@ static int write_pref(lua_State *L)
       dt_conf_set_string(pref_name, lua_tostring(L, 4));
       break;
     case pref_dir:
-      dt_conf_set_string(pref_name, luaL_checkstring(L, 4));
-      break;
     case pref_file:
-      dt_conf_set_string(pref_name, luaL_checkstring(L, 4));
-      break;
     case pref_string:
+    case pref_lua:
       dt_conf_set_string(pref_name, luaL_checkstring(L, 4));
       break;
     case pref_bool:
@@ -266,9 +305,6 @@ static int write_pref(lua_State *L)
       break;
     case pref_float:
       dt_conf_set_float(pref_name, luaL_checknumber(L, 4));
-      break;
-    case pref_lua:
-      dt_conf_set_string(pref_name, luaL_checkstring(L, 4));
       break;
   }
   return 0;
@@ -303,28 +339,15 @@ static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_ele
 }
 
 
-static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
+static void response_callback_filechooser(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_DELETE_EVENT)
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget));
-    dt_conf_set_string(pref_name, folder);
-    g_free(folder);
-  }
-}
-
-
-static void response_callback_file(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
-{
-  if(response_id == GTK_RESPONSE_DELETE_EVENT)
-  {
-    char pref_name[1024];
-    get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    gchar *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget));
-    dt_conf_set_string(pref_name, file);
-    g_free(file);
+    gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget));
+    dt_conf_set_string(pref_name, path);
+    g_free(path);
   }
 }
 
@@ -534,7 +557,7 @@ static void update_widget_dir(pref_element* cur_elt, GtkWidget* dialog, GtkWidge
   const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_filechooser), cur_elt);
 }
 
 
@@ -545,7 +568,7 @@ static void update_widget_file(pref_element* cur_elt, GtkWidget* dialog, GtkWidg
   const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
-  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_filechooser), cur_elt);
 }
 
 
@@ -801,6 +824,17 @@ static int register_pref_sub(lua_State *L)
 }
 
 
+static int register_script_name(lua_State *L)
+{
+  const char *script = luaL_checkstring(L, 1);
+  const char *display_name = luaL_checkstring(L, 2);
+  if(!script_display_names)
+    script_display_names = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  g_hash_table_insert(script_display_names, g_strdup(script), g_strdup(display_name));
+  return 0;
+}
+
+
 static int register_pref(lua_State *L)
 {
   // wrapper to catch lua errors in a clean way
@@ -824,48 +858,112 @@ static int register_pref(lua_State *L)
 }
 
 
-GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
+void init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
 {
-  if(!pref_list) return NULL; // no option registered => don't create the tab
-  GtkWidget *label, *labelev, *viewport;
-  GtkWidget *grid = gtk_grid_new();
-  int line = 0;
-  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
-  gtk_widget_set_valign(grid, GTK_ALIGN_START);
-  viewport = gtk_viewport_new(NULL, NULL);
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
+  if(!pref_list) return; // no option registered => don't create the tab
+
+  GtkWidget *viewport = gtk_viewport_new(NULL, NULL);
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE);
   GtkWidget *scroll = dt_gui_scroll_wrap(viewport);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Lua options"), _("Lua options"));
 
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_valign(content_box, GTK_ALIGN_START);
+  gtk_container_add(GTK_CONTAINER(viewport), content_box);
+
+  // shared size group so the selector label and all pref labels are the same width,
+  // causing the combobox to align with the input widgets in the pref rows
+  GtkSizeGroup *label_sg = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
+  // 1. add global scripts' prefs at the top level (no expander)
+  // always create the grid so the selector row below is in the same column structure
+  GtkWidget *global_grid = _make_pref_grid();
+  gtk_box_pack_start(GTK_BOX(content_box), global_grid, FALSE, FALSE, 0);
+  int global_line = 0;
   for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
   {
-    char pref_name[1024];
-    get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    label = gtk_label_new(cur_elt->label);
-    gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
-    labelev = gtk_event_box_new();
-    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
-    cur_elt->update_widget(cur_elt,dialog,labelev);
-    gtk_widget_set_tooltip_text(labelev, cur_elt->tooltip_reset);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
-    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), cur_elt->widget, 1, line, 1, 1);
-    line++;
+    if(!_is_global_script(cur_elt->script)) continue;
+    _attach_pref_row(global_grid, cur_elt, dialog, global_line++, label_sg);
   }
-  return GTK_GRID(grid);
+
+  // 2. collect unique non-global script names, sort by display name
+  GHashTable *seen = g_hash_table_new(g_str_hash, g_str_equal);
+  GList *scripts = NULL;
+  for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
+  {
+    if(_is_global_script(cur_elt->script)) continue;
+    if(!g_hash_table_contains(seen, cur_elt->script))
+    {
+      g_hash_table_add(seen, cur_elt->script);
+      scripts = g_list_prepend(scripts, cur_elt->script);
+    }
+  }
+  g_hash_table_destroy(seen);
+  scripts = g_list_sort(scripts, _compare_script_display_names);
+
+  if(!scripts)
+  {
+    g_object_unref(label_sg);
+    return;
+  }
+
+  // 3. selector row attached to global_grid so labels share the same column width
+  GtkWidget *combo = gtk_combo_box_text_new();
+  for(GList *l = scripts; l; l = l->next)
+  {
+    const char *script_name = l->data;
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), script_name,
+                              _get_script_display_name(script_name));
+  }
+
+  GtkWidget *selector_label = dt_ui_label_new(_("per-script configuration options"));
+  gtk_size_group_add_widget(label_sg, selector_label);
+  gtk_grid_attach(GTK_GRID(global_grid), selector_label, 0, global_line, 1, 1);
+  gtk_grid_attach(GTK_GRID(global_grid), combo, 1, global_line, 1, 1);
+
+  // 4. section label (updates with the active script) + indented stack
+  const char *first_script = scripts->data;
+  GtkWidget *section_label = dt_ui_section_label_new(_get_script_display_name(first_script));
+  gtk_box_pack_start(GTK_BOX(content_box), section_label, FALSE, FALSE, 0);
+
+  GtkWidget *script_stack = gtk_stack_new();
+  gtk_widget_set_margin_start(script_stack, DT_PIXEL_APPLY_DPI(10));
+  gtk_box_pack_start(GTK_BOX(content_box), script_stack, FALSE, FALSE, 0);
+
+  for(GList *l = scripts; l; l = l->next)
+  {
+    const char *script_name = l->data;
+    GtkWidget *grid = _make_pref_grid();
+    gtk_stack_add_named(GTK_STACK(script_stack), grid, script_name);
+
+    int line = 0;
+    for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
+      if(strcmp(cur_elt->script, script_name) == 0)
+        _attach_pref_row(grid, cur_elt, dialog, line++, label_sg);
+  }
+  g_list_free(scripts);
+  g_object_unref(label_sg);
+
+  g_object_set_data(G_OBJECT(combo), "script-section-label", section_label);
+  g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(_combo_changed), script_stack);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
 }
 
 
-void destroy_tab_lua(GtkGrid *grid)
+void destroy_tab_lua(void)
 {
-  if(!grid) return;
-  gtk_grid_remove_column(grid, 1); // detach all special widgets to avoid having them destroyed
+  // detach all pref widgets from their grid containers so they aren't freed
+  // with the dialog — they are owned by pref_element via g_object_ref_sink
+  for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
+  {
+    if(cur_elt->widget)
+    {
+      GtkWidget *parent = gtk_widget_get_parent(cur_elt->widget);
+      if(parent)
+        gtk_container_remove(GTK_CONTAINER(parent), cur_elt->widget);
+    }
+  }
 }
 
 
@@ -898,6 +996,9 @@ int dt_lua_init_preferences(lua_State *L)
 
   lua_pushcfunction(L, get_keys);
   lua_setfield(L, -2, "get_keys");
+
+  lua_pushcfunction(L, register_script_name);
+  lua_setfield(L, -2, "register_script_name");
 
   lua_pop(L, 1);
   return 0;
