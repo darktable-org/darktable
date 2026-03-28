@@ -371,19 +371,24 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
   if(!ctx || !in_data || !row_writer)
     return 1;
 
-  const int T = tile_size;
   const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
-  const int step = T - 2 * O;
   const int S = scale;
-  const int T_out = T * S;
-  const int O_out = O * S;
-  const int step_out = step * S;
   const int out_w = width * S;
-  const size_t in_plane = (size_t)T * T;
-  const size_t out_plane = (size_t)T_out * T_out;
-  const int cols = (width + step - 1) / step;
-  const int rows = (height + step - 1) / step;
-  const int total_tiles = cols * rows;
+  const int min_tile = (scale > 1) ? 192 : 256;
+  int T = tile_size;
+
+  // outer retry loop: if inference fails (e.g. GPU OOM), halve
+  // the tile size and try again with smaller tiles
+retry:;
+  int step = T - 2 * O;
+  int T_out = T * S;
+  int O_out = O * S;
+  int step_out = step * S;
+  size_t in_plane = (size_t)T * T;
+  size_t out_plane = (size_t)T_out * T_out;
+  int cols = (width + step - 1) / step;
+  int rows = (height + step - 1) / step;
+  int total_tiles = cols * rows;
 
   dt_print(DT_DEBUG_AI,
            "[restore] tiling %dx%d (scale=%d)"
@@ -481,9 +486,24 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
       if(dt_restore_run_patch(
            ctx, tile_in, T, T, tile_out, S) != 0)
       {
+        // retry with smaller tiles if no rows have been delivered
+        // yet (safe to restart). once rows are written we can't
+        // rewind the row_writer (e.g. TIFF is sequential)
+        if(T / 2 >= min_tile && ty == 0)
+        {
+          dt_print(DT_DEBUG_AI,
+                   "[restore] inference failed at tile %d,%d "
+                   "(T=%d), retrying with T=%d",
+                   x, y, T, T / 2);
+          g_free(tile_in);
+          g_free(tile_out);
+          g_free(row_buf);
+          T = T / 2;
+          goto retry;
+        }
         dt_print(DT_DEBUG_AI,
                  "[restore] inference failed at"
-                 " tile %d,%d", x, y);
+                 " tile %d,%d (T=%d, minimum reached)", x, y, T);
         res = 1;
         goto cleanup;
       }
