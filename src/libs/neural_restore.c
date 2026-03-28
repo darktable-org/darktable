@@ -165,6 +165,7 @@ typedef struct dt_lib_neural_restore_t
   dt_restore_env_t *env;
   dt_restore_context_t *cached_ctx;
   dt_neural_task_t cached_task;
+  dt_pthread_mutex_t ctx_lock;
   gboolean model_available;
   GHashTable *processing_images;
   float *preview_before;
@@ -684,6 +685,17 @@ static gboolean _job_finished_idle(gpointer data)
 static void _job_cleanup(void *param)
 {
   dt_neural_job_t *job = (dt_neural_job_t *)param;
+  // return the model to the preview cache if it's empty
+  // (avoids reloading the model for the next preview)
+  dt_lib_neural_restore_t *d
+    = (dt_lib_neural_restore_t *)job->self->data;
+  dt_pthread_mutex_lock(&d->ctx_lock);
+  if(!d->cached_ctx && job->ctx)
+  {
+    d->cached_ctx = dt_restore_ref(job->ctx);
+    d->cached_task = job->task;
+  }
+  dt_pthread_mutex_unlock(&d->ctx_lock);
   dt_restore_unref(job->ctx);
   g_free(job->output_dir);
   g_list_free(job->images);
@@ -702,24 +714,28 @@ static int32_t _process_job_run(dt_job_t *job)
 
   j->control_job = job;
 
-  // reuse cached model if available and matching task,
-  // otherwise load a new one and update the cache
+  // steal cached model if available - take a ref for the batch
+  // and release the cache's ref. this prevents the preview thread
+  // from using it concurrently (ORT sessions are not thread-safe
+  // for simultaneous inference). if the user triggers a preview
+  // while batch is running, the preview will load its own session
+  // since cached_ctx is NULL
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)j->self->data;
+  dt_pthread_mutex_lock(&d->ctx_lock);
   if(d->cached_ctx && d->cached_task == j->task)
   {
     j->ctx = dt_restore_ref(d->cached_ctx);
+    dt_restore_unref(d->cached_ctx);
+    d->cached_ctx = NULL;
   }
   else
   {
     dt_restore_unref(d->cached_ctx);
     d->cached_ctx = NULL;
-    j->ctx = _load_for_task(j->env, j->task);
-    if(j->ctx)
-    {
-      d->cached_ctx = dt_restore_ref(j->ctx);
-      d->cached_task = j->task;
-    }
   }
+  dt_pthread_mutex_unlock(&d->ctx_lock);
+  if(!j->ctx)
+    j->ctx = _load_for_task(j->env, j->task);
 
   if(!j->ctx)
   {
@@ -1169,14 +1185,21 @@ static gpointer _preview_thread(gpointer data)
     goto cleanup;
   }
 
-  // use cached model or load a new one
+  // take a ref on the cached model (or load a new one).
+  // hold the lock only for the ref/swap, not during inference
+  dt_restore_context_t *ctx = NULL;
+  dt_pthread_mutex_lock(&d->ctx_lock);
   if(!d->cached_ctx || d->cached_task != pd->task)
   {
     dt_restore_unref(d->cached_ctx);
     d->cached_ctx = _load_for_task(pd->env, pd->task);
     d->cached_task = pd->task;
   }
-  if(!d->cached_ctx)
+  if(d->cached_ctx)
+    ctx = dt_restore_ref(d->cached_ctx);
+  dt_pthread_mutex_unlock(&d->ctx_lock);
+
+  if(!ctx)
   {
     dt_print(DT_DEBUG_AI,
              "[neural_restore] preview: failed to load model");
@@ -1187,7 +1210,12 @@ static gpointer _preview_thread(gpointer data)
 
   // use the same tiled processing as batch — this handles mirror
   // padding, overlap blending, and planar conversion identically
-  const int tile_size = dt_restore_select_tile_size(pd->scale);
+  // cap tile size to the crop dimensions - no point using a 2048²
+  // tile for a 256×176 crop. oversized tiles waste GPU memory and
+  // can exhaust VRAM on smaller GPUs, leaving CUDA in a bad state
+  const int max_dim = (crop_w > crop_h) ? crop_w : crop_h;
+  const int selected = dt_restore_select_tile_size(pd->scale);
+  const int tile_size = (selected < max_dim) ? selected : max_dim;
   float *out_4ch = g_try_malloc((size_t)pw * ph * 4 * sizeof(float));
   if(!out_4ch)
   {
@@ -1202,9 +1230,10 @@ static gpointer _preview_thread(gpointer data)
 
   _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
   const int ret = dt_restore_process_tiled(
-    d->cached_ctx, crop_4ch, crop_w, crop_h, pd->scale,
+    ctx, crop_4ch, crop_w, crop_h, pd->scale,
     _buf_row_writer, &bwd, NULL, tile_size);
   g_free(crop_4ch);
+  dt_restore_unref(ctx);
 
   if(ret != 0)
   {
@@ -1961,6 +1990,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = d;
   d->env = dt_restore_env_init();
   d->processing_images = g_hash_table_new(g_direct_hash, g_direct_equal);
+  dt_pthread_mutex_init(&d->ctx_lock, NULL);
   d->split_pos = 0.5f;
 
   // notebook tabs (denoise / upscale)
@@ -2158,6 +2188,7 @@ void gui_cleanup(dt_lib_module_t *self)
     if(d->processing_images)
       g_hash_table_destroy(d->processing_images);
     dt_restore_unref(d->cached_ctx);
+    dt_pthread_mutex_destroy(&d->ctx_lock);
     if(d->env)
       dt_restore_env_destroy(d->env);
     g_free(d);
