@@ -2378,7 +2378,7 @@
   <dtconfig prefs="misc" section="interface">
     <name>darkroom/ui/sidebar_scroll_default</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
     <longdescription><![CDATA[in darktable's darkroom, where you do your edits, all controls are listed on a panel on the right; you can choose whether you want to use the scroll wheel or scroll gesture on your touchpad to scroll the panel, or to change the values of the control under the pointer; this latter modality enables faster editing, but this can be dangerous because you can change the values ​​of the module controls without noticing if you are not used to it\n\n<b>enabled:</b> the mouse wheel scrolls the modules panel and with <i>Ctrl+Alt</i> adjusts a control's value\n\n<b>disabled:</b> the mouse wheel adjusts the control under the pointer and with <i>Ctrl+Alt</i> scrolls the panel.]]></longdescription>
     <welcomescreen pagenum="5" questionnum="1"/>
