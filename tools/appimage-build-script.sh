@@ -70,6 +70,14 @@ cp -a /usr/lib/$ARCH-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_po
 mkdir -p ../AppDir/usr/lib/gio
 cp -a /usr/lib/$ARCH-linux-gnu/gio/* ../AppDir/usr/lib/gio
 
+# Include ONNX Runtime library. ORT is loaded via dlopen (ORT_LAZY_LOAD) so
+# linuxdeploy can't detect it automatically. Copy from the build tree.
+ORT_LIB_DIR=$(cmake -LA -N ../build 2>/dev/null | grep ONNXRuntime_LIB_DIR:PATH | cut -d= -f2)
+if [ -d "$ORT_LIB_DIR" ]; then
+  cp -a "$ORT_LIB_DIR"/libonnxruntime*.so* ../AppDir/usr/lib/
+  echo "Bundled ONNX Runtime from $ORT_LIB_DIR"
+fi
+
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed
 # on the build system, but download it every time we run this script. If that
 # doesn't suit you (for example, you want to build an AppImage without an
