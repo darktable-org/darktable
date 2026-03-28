@@ -619,7 +619,7 @@ void dt_gui_preferences_show()
   init_tab_ai(_preferences_dialog, stack);
 #endif
 #ifdef USE_LUA
-  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
+  init_tab_lua(_preferences_dialog, stack);
 #endif
 
   gtk_widget_show_all(_preferences_dialog);
@@ -638,7 +638,7 @@ void dt_gui_preferences_show()
   (void)gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
 
 #ifdef USE_LUA
-  destroy_tab_lua(lua_grid);
+  destroy_tab_lua();
 #endif
 
   free(tweak_widgets);
