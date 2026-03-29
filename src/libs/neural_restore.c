@@ -2322,9 +2322,8 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->scale_combo, 0);
   d->task = NEURAL_TASK_DENOISE;
   d->model_available = _check_model_available(d, d->task);
-  d->preview_ready = FALSE;
-  d->preview_generating = FALSE;
-  gtk_widget_queue_draw(d->preview_area);
+  d->preview_requested = FALSE;
+  _cancel_preview(self);
   _update_info_label(d);
   _update_button_sensitivity(d);
 }
