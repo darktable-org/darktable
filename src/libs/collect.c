@@ -678,7 +678,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
      || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY
          && (dt_modifier_is(event->state, GDK_SHIFT_MASK)
-             || dt_modifier_is(event->state, GDK_CONTROL_MASK))))
+             || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+     || (d->view_rule == DT_COLLECTION_PROP_MONTH
+         && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
 
