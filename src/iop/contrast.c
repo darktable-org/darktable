@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2026 darktable developers.
+    Copyright (C) 2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ Architecture
 The module decomposes the image into five interdependent frequency scales using edge-aware spatial filtering (EIGF).
 Contrast is modeled through three complementary components:
 
-1. Luminance Contrast  
+1. Global Contrast  
     Adjusted via a Contrast Sensitivity Function (CSF) centered around middle gray (0.1845), approximating human visual response.
     
 2. Multi-scale Local Contrast  
@@ -102,7 +102,7 @@ typedef struct dt_iop_contrast_params_t
   float local_scale;     // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
   float broad_scale;     // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "broad contrast"
   float coarse_scale;    // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "coarse contrast"
-  float global_scale;    // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "luminance contrast"
+  float global_scale;    // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "global contrast"
 
   // Blending uses a quadratic curve because changes in small values are more noticeable
   float blending;        // $MIN: 1.0 $MAX: 2.0 $DEFAULT: 1.2 $DESCRIPTION: "contrast scale"
@@ -843,6 +843,7 @@ void commit_params(dt_iop_module_t *self,
   d->feathering = (1.0f / p->feathering) * N * 1.2f;
   
   // The multipliers determine how the base epsilon for the guided filter is scaled for each detail level.
+  // The multiplier coefficients were determined following a series of empirical tests.
   d->f_mult_micro    = (1.0f / fmaxf(p->f_mult_micro,    1e-6f)) * 0.50f;
   d->f_mult_fine     = (1.0f / fmaxf(p->f_mult_fine,     1e-6f)) * 0.75f;
   d->f_mult_local    = (1.0f / fmaxf(p->f_mult_local,    1e-6f)) * 1.0f;
@@ -850,6 +851,7 @@ void commit_params(dt_iop_module_t *self,
   d->f_mult_coarse   = (1.0f / fmaxf(p->f_mult_coarse,   1e-6f)) * 2.25f;
   
   // The multipliers determine how the blending parameter maps to the radius for each scale.
+  // The multipliers coefficients were determined following a series of empirical tests.
   d->s_mult_micro    = p->blending * 0.25f;
   d->s_mult_fine     = p->blending * 0.50f;
   d->s_mult_local    = p->blending;
@@ -934,11 +936,16 @@ static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
   dt_bauhaus_widget_set_quad_active(g->fine_scale, g->mask_display == DT_LC_MASK_FINE);
   dt_bauhaus_widget_set_quad_active(g->micro_scale, g->mask_display == DT_LC_MASK_MICRO);
 
-  if(g->f_view_coarse) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_coarse), g->mask_display == DT_LC_MASK_coarse);
-  if(g->f_view_broad) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_broad), g->mask_display == DT_LC_MASK_broad);
-  if(g->f_view_local) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_local), g->mask_display == DT_LC_MASK_local);
-  if(g->f_view_fine) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_fine), g->mask_display == DT_LC_MASK_FINE);
-  if(g->f_view_micro) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_micro), g->mask_display == DT_LC_MASK_MICRO);
+  if(g->f_view_coarse)
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_coarse), g->mask_display == DT_LC_MASK_coarse);
+  if(g->f_view_broad)
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_broad), g->mask_display == DT_LC_MASK_broad);
+  if(g->f_view_local)
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_local), g->mask_display == DT_LC_MASK_local);
+  if(g->f_view_fine)
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_fine), g->mask_display == DT_LC_MASK_FINE);
+  if(g->f_view_micro)
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_micro), g->mask_display == DT_LC_MASK_MICRO);
 
   --darktable.gui->reset;
 }
@@ -973,7 +980,9 @@ static void _set_mask_display(dt_iop_module_t *self, dt_iop_contrast_mask_t mask
   invalidate_luminance_cache(self);
 }
 
-static gboolean _mask_toggle_callback(GtkWidget *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean _mask_toggle_callback(GtkWidget *togglebutton,
+                                      GdkEventButton *event,
+                                      dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_contrast_mask_t mask_type = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(togglebutton), "mask-type"));
@@ -981,8 +990,12 @@ static gboolean _mask_toggle_callback(GtkWidget *togglebutton, GdkEventButton *e
   return FALSE;
 }
 
-static void _create_slider_with_mask_button(dt_iop_module_t *self, GtkWidget *container, GtkWidget **slider_widget,
-                                            GtkWidget **button_widget, const char *param_name, const char *tooltip,
+static void _create_slider_with_mask_button(dt_iop_module_t *self,
+                                            GtkWidget *container,
+                                            GtkWidget **slider_widget,
+                                            GtkWidget **button_widget,
+                                            const char *param_name,
+                                            const char *tooltip,
                                             dt_iop_contrast_mask_t mask_type)
 {
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1126,9 +1139,6 @@ void gui_init(dt_iop_module_t *self)
   self->widget = main_box;
 
   // --- Section 1: Global Contrast ---
-  GtkWidget *label = dt_ui_section_label_new(C_("section", "global contrast"));
-  dt_gui_box_add(main_box, label);
-
   g->global_scale = dt_bauhaus_slider_from_params(self, "global_scale");
   dt_bauhaus_slider_set_soft_range(g->global_scale, 0.25, 1.75);
   dt_bauhaus_slider_set_digits(g->global_scale, 2);
@@ -1136,7 +1146,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->global_scale, 100.0);
   dt_bauhaus_slider_set_offset(g->global_scale, -100.0);
   dt_bauhaus_slider_set_default(g->global_scale, 1.0);
-  gtk_widget_set_tooltip_text(g->global_scale, _("amount of luminance contrast enhancement"));
+  gtk_widget_set_tooltip_text(g->global_scale, _("amount of global contrast enhancement"));
 
   g->csf_adaptation = dt_bauhaus_slider_from_params(self, "csf_adaptation");
   dt_bauhaus_slider_set_soft_range(g->csf_adaptation, 0.0, 1.0);
@@ -1165,7 +1175,7 @@ void gui_init(dt_iop_module_t *self)
                                                       "this affects color intensity, whereas 'colorimetric contrast' affects brightness."));
 
   // --- Section 2: spatial contrast ---
-  label = dt_ui_section_label_new(C_("section", "spatial contrast"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "spatial contrast"));
   dt_gui_box_add(main_box, label);
 
   // Micro detail slider
@@ -1225,7 +1235,7 @@ void gui_init(dt_iop_module_t *self)
                              _("visualize coarse contrast mask"));
 
   g->contrast_balance = dt_bauhaus_slider_from_params(self, "contrast_balance");
-  dt_bauhaus_widget_set_label(g->contrast_balance, NULL, _("balance global <> spatial"));
+  dt_bauhaus_widget_set_label(g->contrast_balance, NULL, _("balance global ↔ spatial"));
   dt_bauhaus_slider_set_soft_range(g->contrast_balance, -1.0, 1.0);
   dt_bauhaus_slider_set_format(g->contrast_balance, "%");
   dt_bauhaus_slider_set_factor(g->contrast_balance, 100.0);
