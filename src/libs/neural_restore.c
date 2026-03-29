@@ -105,7 +105,6 @@
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
-#include "common/mipmap_cache.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "develop/develop.h"
@@ -114,7 +113,6 @@
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
-#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -186,8 +184,14 @@ typedef struct dt_lib_neural_restore_t
 
   // preview area selector
   float patch_center[2];
-  gboolean picking_area;
+  gboolean picking_thumbnail;
   GtkWidget *pick_button;
+  // cached export image for re-picking without re-exporting
+  float *export_pixels;
+  int export_w;
+  int export_h;
+  unsigned char *export_cairo;
+  int export_cairo_stride;
 
   // output settings (collapsible)
   dt_gui_collapsible_section_t cs_output;
@@ -237,6 +241,12 @@ typedef struct dt_neural_preview_data_t
   int preview_w;
   int preview_h;
   float patch_center[2];
+  // when re-picking, borrow cached export instead of re-exporting.
+  // pointer is valid for the thread's lifetime (main thread joins
+  // before freeing). thread must NOT free this
+  const float *reuse_pixels;
+  int reuse_w;
+  int reuse_h;
 } dt_neural_preview_data_t;
 
 typedef struct dt_neural_preview_result_t
@@ -244,6 +254,9 @@ typedef struct dt_neural_preview_result_t
   dt_lib_module_t *self;
   float *before;
   float *after;
+  float *export_pixels;
+  int export_w;
+  int export_h;
   int sequence;
   int width;
   int height;
@@ -927,6 +940,9 @@ static void _update_button_sensitivity(dt_lib_neural_restore_t *d)
   const gboolean sensitive = d->model_available && has_images
                              && !_any_selected_processing(d);
   gtk_widget_set_sensitive(d->process_button, sensitive);
+  // picker only available after preview has been generated
+  gtk_widget_set_sensitive(d->pick_button,
+                           d->export_pixels != NULL);
 }
 
 static void _update_info_label(dt_lib_neural_restore_t *d)
@@ -1053,6 +1069,7 @@ static gboolean _preview_result_idle(gpointer data)
   {
     g_free(res->before);
     g_free(res->after);
+    g_free(res->export_pixels);
     g_free(res);
     return G_SOURCE_REMOVE;
   }
@@ -1064,6 +1081,17 @@ static gboolean _preview_result_idle(gpointer data)
   d->preview_after = res->after;
   d->preview_w = res->width;
   d->preview_h = res->height;
+
+  // cache the export image for picker re-cropping
+  if(res->export_pixels)
+  {
+    g_free(d->export_pixels);
+    g_free(d->export_cairo);
+    d->export_pixels = res->export_pixels;
+    d->export_w = res->export_w;
+    d->export_h = res->export_h;
+    d->export_cairo = NULL;
+  }
 
   // pre-compute DWT-filtered luminance detail for instant slider response
   d->preview_detail = dt_restore_compute_dwt_detail(res->before, res->after,
@@ -1082,6 +1110,7 @@ static gboolean _preview_result_idle(gpointer data)
 
   d->preview_ready = TRUE;
   d->preview_generating = FALSE;
+  _update_button_sensitivity(d);
   gtk_widget_queue_draw(d->preview_area);
   g_free(res);
   return G_SOURCE_REMOVE;
@@ -1092,45 +1121,66 @@ static gpointer _preview_thread(gpointer data)
   dt_neural_preview_data_t *pd = (dt_neural_preview_data_t *)data;
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)pd->self->data;
 
-  // export image at reduced resolution to capture fully-processed pixels
+  // reuse borrowed export if available (re-pick), otherwise export.
+  // pixels points to either the borrowed buffer (not owned) or
+  // cap.pixels (owned, must be freed on error or passed to result)
   dt_neural_preview_capture_t cap = {0};
-  cap.parent.max_width = PREVIEW_EXPORT_SIZE;
-  cap.parent.max_height = PREVIEW_EXPORT_SIZE;
+  const float *pixels = NULL;
+  int pixels_w = 0, pixels_h = 0;
+  gboolean owns_pixels = FALSE;
 
-  dt_imageio_module_format_t fmt = {
-    .mime = _ai_get_mime,
-    .levels = _ai_check_levels,
-    .bpp = _ai_check_bpp,
-    .write_image = _preview_capture_write_image};
-
-  dt_imageio_export_with_flags(pd->imgid,
-                               "unused",
-                               &fmt,
-                               (dt_imageio_module_data_t *)&cap,
-                               TRUE,   // ignore_exif
-                               FALSE,  // display_byteorder
-                               TRUE,   // high_quality
-                               FALSE,  // upscale
-                               FALSE,  // is_scaling
-                               1.0,    // scale_factor
-                               FALSE,  // thumbnail_export
-                               NULL,   // filter
-                               FALSE,  // copy_metadata
-                               FALSE,  // export_masks
-                               dt_colorspaces_get_work_profile(pd->imgid)->type,
-                               NULL,
-                               DT_INTENT_PERCEPTUAL,
-                               NULL, NULL, 1, 1, NULL, -1);
-
-  if(!cap.pixels || pd->sequence != g_atomic_int_get(&d->preview_sequence))
+  if(pd->reuse_pixels)
   {
-    g_free(cap.pixels);
+    pixels = pd->reuse_pixels;
+    pixels_w = pd->reuse_w;
+    pixels_h = pd->reuse_h;
+  }
+  else
+  {
+    cap.parent.max_width = PREVIEW_EXPORT_SIZE;
+    cap.parent.max_height = PREVIEW_EXPORT_SIZE;
+
+    dt_imageio_module_format_t fmt = {
+      .mime = _ai_get_mime,
+      .levels = _ai_check_levels,
+      .bpp = _ai_check_bpp,
+      .write_image = _preview_capture_write_image};
+
+    dt_imageio_export_with_flags(pd->imgid,
+                                 "unused",
+                                 &fmt,
+                                 (dt_imageio_module_data_t *)&cap,
+                                 TRUE,   // ignore_exif
+                                 FALSE,  // display_byteorder
+                                 TRUE,   // high_quality
+                                 FALSE,  // upscale
+                                 FALSE,  // is_scaling
+                                 1.0,    // scale_factor
+                                 FALSE,  // thumbnail_export
+                                 NULL,   // filter
+                                 FALSE,  // copy_metadata
+                                 FALSE,  // export_masks
+                                 dt_colorspaces_get_work_profile(pd->imgid)->type,
+                                 NULL,
+                                 DT_INTENT_PERCEPTUAL,
+                                 NULL, NULL, 1, 1, NULL, -1);
+
+    pixels = cap.pixels;
+    pixels_w = cap.cap_w;
+    pixels_h = cap.cap_h;
+    owns_pixels = TRUE;
+  }
+
+  if(!pixels || pd->sequence != g_atomic_int_get(&d->preview_sequence))
+  {
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
 
   dt_print(DT_DEBUG_AI,
-           "[neural_restore] preview: exported %dx%d, scale=%d",
-           cap.cap_w, cap.cap_h, pd->scale);
+           "[neural_restore] preview: %s %dx%d, scale=%d",
+           owns_pixels ? "exported" : "reusing",
+           pixels_w, pixels_h, pd->scale);
 
   // crop region matching widget aspect ratio
   const int pw = pd->preview_w;
@@ -1139,17 +1189,17 @@ static gpointer _preview_thread(gpointer data)
   const int crop_h = ph / pd->scale;
 
   // compute crop position in export image
-  int crop_x = (int)(pd->patch_center[0] * cap.cap_w) - crop_w / 2;
-  int crop_y = (int)(pd->patch_center[1] * cap.cap_h) - crop_h / 2;
-  crop_x = CLAMP(crop_x, 0, cap.cap_w - crop_w);
-  crop_y = CLAMP(crop_y, 0, cap.cap_h - crop_h);
+  int crop_x = (int)(pd->patch_center[0] * pixels_w) - crop_w / 2;
+  int crop_y = (int)(pd->patch_center[1] * pixels_h) - crop_h / 2;
+  crop_x = CLAMP(crop_x, 0, pixels_w - crop_w);
+  crop_y = CLAMP(crop_y, 0, pixels_h - crop_h);
 
   if(crop_x < 0 || crop_y < 0)
   {
     dt_print(DT_DEBUG_AI,
              "[neural_restore] preview: image too small for crop (%dx%d < %dx%d)",
-             cap.cap_w, cap.cap_h, crop_w, crop_h);
-    g_free(cap.pixels);
+             pixels_w, pixels_h, crop_w, crop_h);
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
 
@@ -1157,12 +1207,12 @@ static gpointer _preview_thread(gpointer data)
   float *crop_4ch = g_try_malloc((size_t)crop_w * crop_h * 4 * sizeof(float));
   if(!crop_4ch)
   {
-    g_free(cap.pixels);
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
   for(int y = 0; y < crop_h; y++)
     memcpy(crop_4ch + (size_t)y * crop_w * 4,
-           cap.pixels + ((size_t)(crop_y + y) * cap.cap_w + crop_x) * 4,
+           pixels + ((size_t)(crop_y + y) * pixels_w + crop_x) * 4,
            (size_t)crop_w * 4 * sizeof(float));
 
   // extract "before" as interleaved RGB (3ch) for display
@@ -1170,27 +1220,27 @@ static gpointer _preview_thread(gpointer data)
   if(!crop_rgb)
   {
     g_free(crop_4ch);
-    g_free(cap.pixels);
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
   for(int y = 0; y < crop_h; y++)
   {
     for(int x = 0; x < crop_w; x++)
     {
-      const size_t si = ((size_t)(crop_y + y) * cap.cap_w + (crop_x + x)) * 4;
+      const size_t si = ((size_t)(crop_y + y) * pixels_w + (crop_x + x)) * 4;
       const size_t di = ((size_t)y * crop_w + x) * 3;
-      crop_rgb[di + 0] = cap.pixels[si + 0];
-      crop_rgb[di + 1] = cap.pixels[si + 1];
-      crop_rgb[di + 2] = cap.pixels[si + 2];
+      crop_rgb[di + 0] = pixels[si + 0];
+      crop_rgb[di + 1] = pixels[si + 1];
+      crop_rgb[di + 2] = pixels[si + 2];
     }
   }
-  g_free(cap.pixels);
 
   // check for cancellation before expensive inference
   if(pd->sequence != g_atomic_int_get(&d->preview_sequence))
   {
     g_free(crop_4ch);
     g_free(crop_rgb);
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
 
@@ -1285,6 +1335,11 @@ static gpointer _preview_thread(gpointer data)
   result->self = pd->self;
   result->before = before_buf;
   result->after = after_buf;
+  // only pass export pixels on fresh export (owned by cap).
+  // on reuse, the main thread already has them cached
+  result->export_pixels = owns_pixels ? cap.pixels : NULL;
+  result->export_w = pixels_w;
+  result->export_h = pixels_h;
   result->sequence = pd->sequence;
   result->width = pw;
   result->height = ph;
@@ -1306,6 +1361,12 @@ static void _cancel_preview(dt_lib_module_t *self)
     g_thread_join(d->preview_thread);
     d->preview_thread = NULL;
   }
+  // invalidate cached export (image changed)
+  g_free(d->export_pixels);
+  d->export_pixels = NULL;
+  g_free(d->export_cairo);
+  d->export_cairo = NULL;
+  d->picking_thumbnail = FALSE;
   gtk_widget_queue_draw(d->preview_area);
 }
 
@@ -1354,6 +1415,17 @@ static void _trigger_preview(dt_lib_module_t *self)
   pd->preview_h = ph;
   pd->patch_center[0] = d->patch_center[0];
   pd->patch_center[1] = d->patch_center[1];
+
+  // borrow cached export pixels if available (re-pick scenario).
+  // the pointer is valid for the thread's lifetime because
+  // _trigger_preview joins the previous thread before starting,
+  // and _cancel_preview joins before freeing export_pixels
+  if(d->export_pixels)
+  {
+    pd->reuse_pixels = d->export_pixels;
+    pd->reuse_w = d->export_w;
+    pd->reuse_h = d->export_h;
+  }
   // join previous preview thread before starting a new one
   if(d->preview_thread)
   {
@@ -1461,114 +1533,50 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_add_job(DT_JOB_QUEUE_USER_BG, job);
 }
 
-// convert normalized image coords [0,1] to screen coords
-static void _img_to_screen(const float img_x, const float img_y,
-                           float *sx, float *sy)
+// compute geometry for fitting the export image into the widget
+static void _picking_geometry(const dt_lib_neural_restore_t *d,
+                              const int w, const int h,
+                              double *img_w, double *img_h,
+                              double *ox, double *oy)
 {
-  dt_dev_viewport_t *port = &darktable.develop->full;
-  dt_dev_zoom_t zoom;
-  int closeup = 0, procw = 0, proch = 0;
-  float zoom2_x = 0.0f, zoom2_y = 0.0f;
-  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
-  dt_dev_get_processed_size(port, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(port, zoom, 1 << closeup, FALSE);
-  const float tb = (float)port->border_size;
-  *sx = (img_x - 0.5f - zoom2_x) * (float)procw * scale + tb + 0.5f * port->width;
-  *sy = (img_y - 0.5f - zoom2_y) * (float)proch * scale + tb + 0.5f * port->height;
+  const double sx = (double)w / d->export_w;
+  const double sy = (double)h / d->export_h;
+  const double scale = fmin(sx, sy);
+  *img_w = d->export_w * scale;
+  *img_h = d->export_h * scale;
+  *ox = (w - *img_w) / 2.0;
+  *oy = (h - *img_h) / 2.0;
 }
 
-// draw rectangle overlay on darkroom center view
-void gui_post_expose(dt_lib_module_t *self,
-                     cairo_t *cri,
-                     const int32_t width,
-                     const int32_t height,
-                     const int32_t pointerx,
-                     const int32_t pointery)
+// build cairo surface from cached export pixels (4ch linear float → sRGB 8-bit)
+static void _build_export_cairo(dt_lib_neural_restore_t *d)
 {
-  (void)width;
-  (void)height;
-  (void)pointerx;
-  (void)pointery;
+  g_free(d->export_cairo);
+  d->export_cairo = NULL;
 
-  dt_lib_neural_restore_t *d = self->data;
-  if(!d->picking_area || !darktable.develop)
+  if(!d->export_pixels || d->export_w <= 0 || d->export_h <= 0)
     return;
 
-  // compute patch rectangle matching the actual preview thread math
-  int procw = 0, proch = 0;
-  dt_dev_get_processed_size(&darktable.develop->full, &procw, &proch);
-  if(procw <= 0 || proch <= 0) return;
+  const int ew = d->export_w;
+  const int eh = d->export_h;
+  const int stride
+    = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, ew);
+  d->export_cairo = g_malloc(stride * eh);
+  d->export_cairo_stride = stride;
 
-  // compute export dimensions (same as export pipeline)
-  const float escale
-    = fminf(fminf((float)PREVIEW_EXPORT_SIZE / procw,
-                  (float)PREVIEW_EXPORT_SIZE / proch), 1.0f);
-  const int export_w = (int)(escale * procw);
-  const int export_h = (int)(escale * proch);
-  if(export_w <= 0 || export_h <= 0) return;
-
-  // compute crop and padding (same as _preview_thread)
-  const int scale = _task_scale(d->task);
-  const int widget_w = gtk_widget_get_allocated_width(d->preview_area);
-  const int widget_h = gtk_widget_get_allocated_height(d->preview_area);
-  int pw = (widget_w / scale) * scale;
-  int ph = (widget_h / scale) * scale;
-  const int crop_w = pw / scale;
-  const int crop_h = ph / scale;
-  const int overlap = dt_restore_get_overlap(scale);
-  const int padded_w = crop_w + 2 * overlap;
-  const int padded_h = crop_h + 2 * overlap;
-
-  // clamp padded area to export bounds (same CLAMP as _preview_thread)
-  int pad_x = (int)(d->patch_center[0] * export_w) - padded_w / 2;
-  int pad_y = (int)(d->patch_center[1] * export_h) - padded_h / 2;
-  pad_x = CLAMP(pad_x, 0, export_w - padded_w);
-  pad_y = CLAMP(pad_y, 0, export_h - padded_h);
-
-  // visible crop starts at pad + overlap
-  const float x0 = (float)(pad_x + overlap) / export_w;
-  const float y0 = (float)(pad_y + overlap) / export_h;
-  const float x1 = (float)(pad_x + overlap + crop_w) / export_w;
-  const float y1 = (float)(pad_y + overlap + crop_h) / export_h;
-
-  float sx0, sy0, sx1, sy1;
-  _img_to_screen(x0, y0, &sx0, &sy0);
-  _img_to_screen(x1, y1, &sx1, &sy1);
-
-  // draw rectangle (same style as colorpicker box overlay)
-  cairo_rectangle(cri, sx0, sy0, sx1 - sx0, sy1 - sy0);
-
-  // dark outline
-  cairo_set_line_width(cri, 3.0);
-  cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.4);
-  cairo_stroke_preserve(cri);
-
-  // bright foreground
-  cairo_set_line_width(cri, 1.0);
-  cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.8);
-  cairo_stroke(cri);
-}
-
-static void _view_changed_callback(gpointer instance,
-                                   dt_view_t *old_view,
-                                   dt_view_t *new_view,
-                                   dt_lib_module_t *self)
-{
-  (void)instance;
-  (void)old_view;
-  dt_lib_neural_restore_t *d = self->data;
-  const gboolean is_darkroom
-    = new_view && !g_strcmp0(new_view->module_name, "darkroom");
-  if(is_darkroom)
-    gtk_widget_show(d->pick_button);
-  else
+  for(int y = 0; y < eh; y++)
   {
-    gtk_widget_hide(d->pick_button);
-    if(d->picking_area)
+    uint32_t *row = (uint32_t *)(d->export_cairo + y * stride);
+    for(int x = 0; x < ew; x++)
     {
-      d->picking_area = FALSE;
-      gtk_toggle_button_set_active(
-        GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
+      const size_t si = ((size_t)y * ew + x) * 4;
+      const uint8_t r
+        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 0]) * 255.0f + 0.5f);
+      const uint8_t g
+        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 1]) * 255.0f + 0.5f);
+      const uint8_t b
+        = (uint8_t)(_linear_to_srgb(d->export_pixels[si + 2]) * 255.0f + 0.5f);
+      row[x] = ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
     }
   }
 }
@@ -1576,8 +1584,30 @@ static void _view_changed_callback(gpointer instance,
 static void _pick_toggled(GtkToggleButton *btn, dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = self->data;
-  d->picking_area = gtk_toggle_button_get_active(btn);
-  dt_control_queue_redraw_center();
+  const gboolean active = gtk_toggle_button_get_active(btn);
+
+  if(active)
+  {
+    // use cached export image for area selection
+    if(!d->export_pixels)
+    {
+      gtk_toggle_button_set_active(btn, FALSE);
+      return;
+    }
+    if(!d->export_cairo)
+      _build_export_cairo(d);
+    if(!d->export_cairo)
+    {
+      gtk_toggle_button_set_active(btn, FALSE);
+      return;
+    }
+    d->picking_thumbnail = TRUE;
+  }
+  else
+  {
+    d->picking_thumbnail = FALSE;
+  }
+  gtk_widget_queue_draw(d->preview_area);
 }
 
 static gboolean _pick_double_click(GtkWidget *widget,
@@ -1588,46 +1618,15 @@ static gboolean _pick_double_click(GtkWidget *widget,
   dt_lib_neural_restore_t *d = self->data;
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
-  d->picking_area = FALSE;
+  d->picking_thumbnail = FALSE;
+  // free cairo cache (will be rebuilt), but keep export_pixels
+  // so _trigger_preview can reuse them for the center crop
+  g_free(d->export_cairo);
+  d->export_cairo = NULL;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
   d->preview_requested = TRUE;
   _trigger_preview(self);
   return TRUE;
-}
-
-// lib module button_pressed: intercept darkroom image clicks
-// when pick-area mode is active
-int button_pressed(dt_lib_module_t *self,
-                   const double x,
-                   const double y,
-                   const double pressure,
-                   const int which,
-                   const int type,
-                   const uint32_t state)
-{
-  (void)pressure;
-  (void)type;
-  (void)state;
-
-  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
-  if(!d->picking_area || which != 1)
-    return 0;
-
-  // only works in darkroom view
-  if(!darktable.develop) return 0;
-
-  float zoom_x = FLT_MAX, zoom_y = FLT_MAX, zoom_scale = 0;
-  dt_dev_get_pointer_zoom_pos(&darktable.develop->full,
-                              x, y,
-                              &zoom_x, &zoom_y, &zoom_scale);
-
-  d->patch_center[0] = CLAMP(zoom_x, 0.0f, 1.0f);
-  d->patch_center[1] = CLAMP(zoom_y, 0.0f, 1.0f);
-
-  d->preview_requested = TRUE;
-  _trigger_preview(self);
-  dt_control_queue_redraw_center();
-  return 1;
 }
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
@@ -1641,6 +1640,70 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
   cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
   cairo_rectangle(cr, 0, 0, w, h);
   cairo_fill(cr);
+
+  // thumbnail picking mode: show full image with crop rectangle
+  if(d->picking_thumbnail && d->export_cairo)
+  {
+    cairo_surface_t *thumb_surf = cairo_image_surface_create_for_data(
+      d->export_cairo, CAIRO_FORMAT_RGB24,
+      d->export_w, d->export_h, d->export_cairo_stride);
+
+    // fit thumbnail to widget
+    double img_w, img_h, ox, oy;
+    _picking_geometry(d, w, h, &img_w, &img_h, &ox, &oy);
+
+    cairo_save(cr);
+    cairo_translate(cr, ox, oy);
+    cairo_scale(cr, img_w / d->export_w, img_h / d->export_h);
+    cairo_set_source_surface(cr, thumb_surf, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BILINEAR);
+    cairo_paint(cr);
+    cairo_restore(cr);
+
+    // draw crop rectangle at current patch_center
+    const int task_scale = _task_scale(d->task);
+    const int crop_w = w / task_scale;
+    const int crop_h = h / task_scale;
+    const double rw = (double)crop_w / d->export_w * img_w;
+    const double rh = (double)crop_h / d->export_h * img_h;
+    const double rx = ox + d->patch_center[0] * img_w - rw / 2.0;
+    const double ry = oy + d->patch_center[1] * img_h - rh / 2.0;
+
+    // dim area outside the rectangle
+    cairo_save(cr);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
+    cairo_rectangle(cr, 0, 0, w, h);
+    cairo_rectangle(cr, rx, ry, rw, rh);
+    cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    // bright rectangle border
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);
+    cairo_set_line_width(cr, 1.5);
+    cairo_rectangle(cr, rx, ry, rw, rh);
+    cairo_stroke(cr);
+
+    // label
+    cairo_select_font_face(cr, "sans-serif",
+                           CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 11.0);
+    const char *text = _("click to select preview area");
+    cairo_text_extents_t ext;
+    cairo_text_extents(cr, text, &ext);
+    const double pad = 4.0;
+    const double bh = ext.height + pad * 2;
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.6);
+    cairo_rectangle(cr, 0, h - bh, w, bh);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_move_to(cr, (w - ext.width) / 2.0, h - pad);
+    cairo_show_text(cr, text);
+
+    cairo_surface_destroy(thumb_surf);
+    return FALSE;
+  }
 
   if(!d->preview_ready || !d->cairo_before || !d->cairo_after)
   {
@@ -1784,6 +1847,42 @@ static gboolean _preview_button_press(GtkWidget *widget,
   gdk_event_get_button((GdkEvent *)event, &button);
   if(button != 1) return FALSE;
 
+  double ex = 0.0, ey = 0.0;
+  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
+
+  // thumbnail picking mode: click to select area and trigger preview
+  if(d->picking_thumbnail && d->export_cairo)
+  {
+    const int w = gtk_widget_get_allocated_width(widget);
+    const int h = gtk_widget_get_allocated_height(widget);
+    double img_w, img_h, ox, oy;
+    _picking_geometry(d, w, h, &img_w, &img_h, &ox, &oy);
+
+    // convert click to normalized image coords, clamped so
+    // the crop rectangle stays within the image
+    const int task_scale = _task_scale(d->task);
+    const float half_w = (float)w / task_scale / (2.0f * d->export_w);
+    const float half_h = (float)h / task_scale / (2.0f * d->export_h);
+    const float nx = (float)((ex - ox) / img_w);
+    const float ny = (float)((ey - oy) / img_h);
+    if(nx < 0.0f || nx > 1.0f || ny < 0.0f || ny > 1.0f)
+      return TRUE;
+
+    d->patch_center[0] = CLAMP(nx, half_w, 1.0f - half_w);
+    d->patch_center[1] = CLAMP(ny, half_h, 1.0f - half_h);
+
+    // exit picking mode
+    d->picking_thumbnail = FALSE;
+    gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(d->pick_button), FALSE);
+
+    // trigger preview reusing cached export (skip re-export)
+    d->preview_requested = TRUE;
+    dt_control_log(_("generating preview..."));
+    _trigger_preview(self);
+    return TRUE;
+  }
+
   // click to start preview generation
   if(!d->preview_ready && !d->preview_generating)
   {
@@ -1793,9 +1892,6 @@ static gboolean _preview_button_press(GtkWidget *widget,
   }
 
   if(!d->preview_ready) return FALSE;
-
-  double ex = 0.0, ey = 0.0;
-  gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
 
   const int w = gtk_widget_get_allocated_width(widget);
   const int h = gtk_widget_get_allocated_height(widget);
@@ -1836,6 +1932,28 @@ static gboolean _preview_motion(GtkWidget *widget,
 
   double ex = 0.0, ey = 0.0;
   gdk_event_get_coords((GdkEvent *)event, &ex, &ey);
+
+  // move crop rectangle while hovering in picking mode
+  if(d->picking_thumbnail && d->export_cairo)
+  {
+    const int w = gtk_widget_get_allocated_width(widget);
+    const int h = gtk_widget_get_allocated_height(widget);
+    double img_w, img_h, ox, oy;
+    _picking_geometry(d, w, h, &img_w, &img_h, &ox, &oy);
+
+    // clamp so the crop rectangle stays within the image
+    const int task_scale = _task_scale(d->task);
+    const float half_w = (float)w / task_scale / (2.0f * d->export_w);
+    const float half_h = (float)h / task_scale / (2.0f * d->export_h);
+    const float nx = CLAMP((float)((ex - ox) / img_w),
+                           half_w, 1.0f - half_w);
+    const float ny = CLAMP((float)((ey - oy) / img_h),
+                           half_h, 1.0f - half_h);
+    d->patch_center[0] = nx;
+    d->patch_center[1] = ny;
+    gtk_widget_queue_draw(widget);
+    return TRUE;
+  }
 
   if(d->dragging_split)
   {
@@ -1903,6 +2021,17 @@ static void _image_changed_callback(gpointer instance, dt_lib_module_t *self)
   d->preview_requested = FALSE;
   _cancel_preview(self);
   _update_info_label(d);
+  _update_button_sensitivity(d);
+}
+
+// invalidate cached export when darkroom edits change the image
+static void _history_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  g_free(d->export_pixels);
+  d->export_pixels = NULL;
+  g_free(d->export_cairo);
+  d->export_cairo = NULL;
   _update_button_sensitivity(d);
 }
 
@@ -2018,21 +2147,19 @@ void gui_init(dt_lib_module_t *self)
   _update_task_from_ui(d);
   d->model_available = _check_model_available(d, d->task);
 
-  // pick area button (crosshair icon, darkroom only)
+  // pick area button
   d->patch_center[0] = 0.5f;
   d->patch_center[1] = 0.5f;
-  d->picking_area = FALSE;
+  d->picking_thumbnail = FALSE;
   d->pick_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                                           0, NULL);
   gtk_widget_set_tooltip_text(d->pick_button,
-    _("click to pick preview area on the darkroom image\n"
-      "double-click to reset to center"));
+                              _("click to pick preview area on the image thumbnail\n"
+                                "double-click to reset to center"));
   g_signal_connect(d->pick_button, "toggled",
                    G_CALLBACK(_pick_toggled), self);
   g_signal_connect(d->pick_button, "button-press-event",
                    G_CALLBACK(_pick_double_click), self);
-  // initially hidden — shown only in darkroom view
-  gtk_widget_set_no_show_all(d->pick_button, TRUE);
 
   // preview area (resizable via dt_ui_resize_wrap)
   d->preview_area = GTK_WIDGET(dt_ui_resize_wrap(NULL, 200, CONF_PREVIEW_HEIGHT));
@@ -2135,16 +2262,10 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_AI_MODELS_CHANGED, _ai_models_changed_callback);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _history_changed_callback);
 
   _update_info_label(d);
   _update_button_sensitivity(d);
-
-  // show pick button if already in darkroom at startup
-  const dt_view_t *cv
-    = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv && !g_strcmp0(cv->module_name, "darkroom"))
-    gtk_widget_show(d->pick_button);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -2154,7 +2275,7 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_DISCONNECT(_selection_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_image_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_ai_models_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_history_changed_callback, self);
 
   if(d)
   {
@@ -2171,6 +2292,8 @@ void gui_cleanup(dt_lib_module_t *self)
     dt_free_align(d->preview_detail);
     g_free(d->cairo_before);
     g_free(d->cairo_after);
+    g_free(d->export_pixels);
+    g_free(d->export_cairo);
     if(d->processing_images)
       g_hash_table_destroy(d->processing_images);
     dt_restore_unref(d->cached_ctx);
