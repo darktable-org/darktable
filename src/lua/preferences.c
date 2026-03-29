@@ -153,7 +153,6 @@ static GHashTable *script_display_names = NULL;
 // scripts whose preferences appear at the top level rather than in a collapsible section
 static const char *const _global_scripts[] = {
   "script_manager",
-  "_scripts_install",
   NULL // sentinel
 };
 
