@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-19 18:02+0100\n"
-"PO-Revision-Date: 2026-03-22 16:35+0100\n"
+"PO-Revision-Date: 2026-03-29 16:14+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1695,7 +1695,6 @@ msgstr ""
 "Kann jederzeit an- und ausgeschaltet werden."
 
 #: ../build/bin/preferences_gen.h:3609
-#| msgid "lens model"
 msgid "OpenCL fast mode"
 msgstr "OpenCL schneller Modus"
 
@@ -2119,7 +2118,7 @@ msgstr "zeigt den Fortschritt beim Start, bevor das Hauptfenster erscheint"
 
 #: ../build/bin/preferences_gen.h:4294
 msgid "show welcome screen on next run"
-msgstr "Startdialog beim Programmstart anzeigen"
+msgstr "Willkommensdialog beim nächsten Start anzeigen"
 
 #: ../build/bin/preferences_gen.h:4302
 msgid "display the welcome setup screen the next time darktable is launched"
@@ -7405,9 +7404,6 @@ msgstr ""
 "ist:"
 
 #: ../src/common/darktable.c:2611
-#| msgid ""
-#| " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
-#| "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 msgid ""
 " 'micro_nap' 'pinned_memory' 'eventhandles' 'async' 'disabled' 'advantage' "
 "'unified_fraction'"
