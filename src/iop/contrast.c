@@ -87,7 +87,7 @@ Contrast is modeled through three complementary components:
 
 static inline float dt_smoothstep(const float edge0, const float edge1, const float x)
 {
-  const float t = CLAMP((fabsf(x) - edge0) / fmaxf(edge1 - edge0, 1e-6f), 0.0f, 1.0f);
+  const float t = CLAMP((fabsf(x) - edge0) / fmaxf(edge1 - edge0, NORM_MIN), 0.0f, 1.0f);
   return t * t * (3.0f - 2.0f * t);
 }
 
@@ -155,12 +155,13 @@ typedef struct dt_iop_contrast_data_t
 
 typedef enum dt_iop_contrast_mask_t
 {
-  DT_LC_MASK_OFF = 0,
-  DT_LC_MASK_coarse = 1,
-  DT_LC_MASK_broad = 2,
-  DT_LC_MASK_local = 3,
-  DT_LC_MASK_FINE = 4,
-  DT_LC_MASK_MICRO = 5
+  DT_LC_MASK_OFF = -1,
+  DT_LC_MASK_coarse = 0,
+  DT_LC_MASK_broad = 1,
+  DT_LC_MASK_local = 2,
+  DT_LC_MASK_FINE = 3,
+  DT_LC_MASK_MICRO = 4,
+  DT_LC_MASK_LAST = 5
 } dt_iop_contrast_mask_t;
 
 typedef struct dt_iop_contrast_gui_data_t
@@ -392,7 +393,7 @@ static inline void apply_local_contrast(const float *const restrict in,
     correction_ev *= w_local;
 
     // Noise protection (Smoothstep on detail magnitude)
-    if (d->noise_threshold > 1e-6f) {
+    if (d->noise_threshold > NORM_MIN) {
         const float edge0 = d->noise_threshold * 0.5f;
         const float edge1 = edge0 * 1.5f;
         correction_ev *= dt_smoothstep(edge0, edge1, correction_ev);
@@ -413,7 +414,7 @@ static inline void apply_local_contrast(const float *const restrict in,
         const float r = in[4 * k + 0];
         const float g = in[4 * k + 1];
         const float b = in[4 * k + 2];
-        const float avg = fmaxf((r + g + b) / 3.0f, 1e-6f);
+        const float avg = fmaxf((r + g + b) / 3.0f, NORM_MIN);
         const float mix = (d->color_balance * 0.5f) * (r - b);
         factor = fmaxf(1.0f + mix / avg, 0.0f);
     }
@@ -423,7 +424,7 @@ static inline void apply_local_contrast(const float *const restrict in,
 
     const float L_final = lum_pixel * multiplier;
 
-    float ratio = L_final / fmaxf(lum_pixel, 1e-6f);
+    float ratio = L_final / fmaxf(lum_pixel, NORM_MIN);
     ratio = fminf(ratio, 8.0f);
     for_each_channel(c)
         out[4 * k + c] = in[4 * k + c] * ratio;
@@ -844,11 +845,11 @@ void commit_params(dt_iop_module_t *self,
   
   // The multipliers determine how the base epsilon for the guided filter is scaled for each detail level.
   // The multiplier coefficients were determined following a series of empirical tests.
-  d->f_mult_micro    = (1.0f / fmaxf(p->f_mult_micro,    1e-6f)) * 0.50f;
-  d->f_mult_fine     = (1.0f / fmaxf(p->f_mult_fine,     1e-6f)) * 0.75f;
-  d->f_mult_local    = (1.0f / fmaxf(p->f_mult_local,    1e-6f)) * 1.0f;
-  d->f_mult_broad    = (1.0f / fmaxf(p->f_mult_broad,    1e-6f)) * 1.60f;
-  d->f_mult_coarse   = (1.0f / fmaxf(p->f_mult_coarse,   1e-6f)) * 2.25f;
+  d->f_mult_micro    = (1.0f / fmaxf(p->f_mult_micro,    NORM_MIN)) * 0.50f;
+  d->f_mult_fine     = (1.0f / fmaxf(p->f_mult_fine,     NORM_MIN)) * 0.75f;
+  d->f_mult_local    = (1.0f / fmaxf(p->f_mult_local,    NORM_MIN)) * 1.0f;
+  d->f_mult_broad    = (1.0f / fmaxf(p->f_mult_broad,    NORM_MIN)) * 1.60f;
+  d->f_mult_coarse   = (1.0f / fmaxf(p->f_mult_coarse,   NORM_MIN)) * 2.25f;
   
   // The multipliers determine how the blending parameter maps to the radius for each scale.
   // The multipliers coefficients were determined following a series of empirical tests.
@@ -866,7 +867,7 @@ void commit_params(dt_iop_module_t *self,
     const float coeff_r = work_profile->matrix_in_transposed[0][1];
     const float coeff_g = work_profile->matrix_in_transposed[1][1];
     const float coeff_b = work_profile->matrix_in_transposed[2][1];
-    d->green_compensation = (coeff_r - coeff_b) / fmaxf(coeff_g, 1e-6f);
+    d->green_compensation = (coeff_r - coeff_b) / fmaxf(coeff_g, NORM_MIN);
   }
   else
   {
