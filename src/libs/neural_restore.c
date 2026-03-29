@@ -177,6 +177,7 @@ typedef struct dt_lib_neural_restore_t
   gboolean preview_requested;
   gboolean dragging_split;
   gboolean preview_generating;
+  gboolean recovery_changing;
   GThread *preview_thread;
   gint preview_sequence;
   unsigned char *cairo_before;
@@ -985,12 +986,21 @@ static void _task_changed(dt_lib_neural_restore_t *d)
     gtk_widget_queue_draw(d->preview_area);
   }
 
-  // reset detail recovery when switching away from denoise
-  if(d->task != NEURAL_TASK_DENOISE)
+  // restore detail recovery slider from conf when switching to denoise,
+  // reset to 0 when switching away (upscale has no detail recovery).
+  // use _recovery_changing flag to avoid redundant conf writes from
+  // the slider's value-changed callback
+  d->recovery_changing = TRUE;
+  if(d->task == NEURAL_TASK_DENOISE)
+  {
+    const float saved = dt_conf_get_float(CONF_DETAIL_RECOVERY);
+    dt_bauhaus_slider_set(d->recovery_slider, saved);
+  }
+  else
   {
     dt_bauhaus_slider_set(d->recovery_slider, 0.0f);
-    dt_conf_set_float(CONF_DETAIL_RECOVERY, 0.0f);
   }
+  d->recovery_changing = FALSE;
 
   _update_info_label(d);
   _update_button_sensitivity(d);
@@ -1400,6 +1410,7 @@ static void _scale_combo_changed(GtkWidget *widget, dt_lib_module_t *self)
 static void _recovery_slider_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  if(d->recovery_changing) return;
   dt_conf_set_float(CONF_DETAIL_RECOVERY, dt_bauhaus_slider_get(d->recovery_slider));
   if(d->preview_ready)
   {
