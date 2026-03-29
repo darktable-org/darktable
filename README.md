@@ -16,6 +16,7 @@ darktable is **not** a free Adobe® Lightroom® replacement.
 3. [Requirements](#requirements)
    - [Supported platforms](#supported-platforms)
    - [Hardware](#hardware)
+   - [AI features (optional)](#ai-features-optional )
 4. [Installing](#installing)
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
@@ -85,6 +86,38 @@ contrast equalizer, retouch or liquify to be slow beyond usable.*
 
 *A GPU is not mandatory but is strongly recommended for a smoother experience.
 Nvidia GPUs are recommended for safety because some AMD drivers behave unreliably with some modules (e.g. local contrast).*
+
+### AI features (optional)
+
+Darktable includes optional AI-powered features such as neural denoise, upscale and object
+masks. These require building with `-DUSE_AI=ON` (off by default). AI models are downloaded
+automatically from the darktable GitHub releases on first use.
+
+**CPU inference** is bundled and works out of the box - no additional software is needed.
+On macOS (Apple Silicon), CoreML acceleration and on Windows, DirectML GPU acceleration
+are also bundled by default. Processing on CPU is slower than GPU but requires no
+special hardware.
+
+**GPU acceleration** significantly speeds up AI inference but requires installing a
+GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
+
+* **NVIDIA (CUDA):** Linux and Windows.
+  * [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-downloads) (for ORT 1.20+)
+  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads) (for ORT 1.20+)
+  * Recommended: 8 GB+ VRAM
+* **AMD (ROCm):** Linux only.
+  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ORT 1.20+, includes MIGraphX)
+  * Supported AMD GPU (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+* **Intel (OpenVINO):** Linux and Windows.
+  * Intel integrated GPU (Gen9+), discrete Arc GPU, or NPU (Meteor Lake+)
+* **Windows (DirectML):** works with any DirectX 12 compatible GPU (NVIDIA, AMD, Intel).
+  * Windows 10 1903+ (DirectML is a system component)
+* **macOS (Apple Silicon):** CoreML acceleration is used automatically. No extra
+  install needed.
+
+To enable GPU acceleration, set the path to the GPU-enabled ONNX Runtime library in
+preferences → processing → AI. darktable will auto-detect available execution providers. You can verify which provider is active by running darktable
+with `-d ai` for debug output.
 
 Installing
 ----------
@@ -194,6 +227,7 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.9.3 *(for AVIF import & export)*
+* ONNX Runtime 1.16 *(for AI inference)*
 * libarchive 3.8.5 *(for AI models download)*
 * libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
