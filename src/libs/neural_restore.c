@@ -132,7 +132,6 @@ DT_MODULE(1)
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
-#define CONF_PREVIEW_SIZE "plugins/lighttable/neural_restore/preview_size"
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 
 typedef enum dt_neural_task_t
@@ -1326,21 +1325,9 @@ static void _trigger_preview(dt_lib_module_t *self)
     return;
 
   const int scale = _task_scale(d->task);
-  const int preview_size = CLAMP(dt_conf_get_int(CONF_PREVIEW_SIZE), 128, 512);
-  int pw, ph;
-  if(widget_w >= widget_h)
-  {
-    pw = preview_size;
-    ph = preview_size * widget_h / widget_w;
-  }
-  else
-  {
-    ph = preview_size;
-    pw = preview_size * widget_w / widget_h;
-  }
-  // ensure divisible by scale for clean crop_w/crop_h
-  pw = (pw / scale) * scale;
-  ph = (ph / scale) * scale;
+  // use widget dimensions directly for 1:1 pixel mapping
+  int pw = (widget_w / scale) * scale;
+  int ph = (widget_h / scale) * scale;
   if(pw < scale || ph < scale)
     return;
 
@@ -1497,7 +1484,6 @@ void gui_post_expose(dt_lib_module_t *self,
     return;
 
   // compute patch rectangle matching the actual preview thread math
-  const int preview_size = CLAMP(dt_conf_get_int(CONF_PREVIEW_SIZE), 128, 512);
   int procw = 0, proch = 0;
   dt_dev_get_processed_size(&darktable.develop->full, &procw, &proch);
   if(procw <= 0 || proch <= 0) return;
@@ -1514,19 +1500,8 @@ void gui_post_expose(dt_lib_module_t *self,
   const int scale = _task_scale(d->task);
   const int widget_w = gtk_widget_get_allocated_width(d->preview_area);
   const int widget_h = gtk_widget_get_allocated_height(d->preview_area);
-  int pw, ph;
-  if(widget_w >= widget_h)
-  {
-    pw = preview_size;
-    ph = preview_size * widget_h / widget_w;
-  }
-  else
-  {
-    ph = preview_size;
-    pw = preview_size * widget_w / widget_h;
-  }
-  pw = (pw / scale) * scale;
-  ph = (ph / scale) * scale;
+  int pw = (widget_w / scale) * scale;
+  int ph = (widget_h / scale) * scale;
   const int crop_w = pw / scale;
   const int crop_h = ph / scale;
   const int overlap = dt_restore_get_overlap(scale);
