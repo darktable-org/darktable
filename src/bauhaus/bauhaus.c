@@ -3042,6 +3042,11 @@ static void _slider_add_step(GtkWidget *widget,
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   dt_bauhaus_slider_data_t *d = &w->slider;
 
+  #ifdef GDK_WINDOWING_QUARTZ
+  // Reduce raw continuous trackpad/magic mouse delta to match discrete step behavior
+  delta *= 0.02f;  // tune: lower = less sensitive
+  #endif
+
   const float value = dt_bauhaus_slider_get(widget);
 
   if(d->curve == _curve_log10)
