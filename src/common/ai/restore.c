@@ -288,17 +288,17 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
                          int scale)
 {
   if(!ctx || !ctx->ai_ctx) return 1;
-  const int in_pixels = w * h * 3;
+  const size_t in_pixels = (size_t)w * h * 3;
   const int out_w = w * scale;
   const int out_h = h * scale;
-  const int out_pixels = out_w * out_h * 3;
+  const size_t out_pixels = (size_t)out_w * out_h * 3;
 
   // apply sRGB transfer function (gamma only, no primaries change).
   // values > 1.0 pass through to preserve wide-gamut colors
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
   if(!srgb_in) return 1;
 
-  for(int i = 0; i < in_pixels; i++)
+  for(size_t i = 0; i < in_pixels; i++)
     srgb_in[i] = _linear_to_srgb(in_patch[i]);
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
@@ -353,7 +353,7 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   if(ret != 0) return ret;
 
   // sRGB -> linear
-  for(int i = 0; i < out_pixels; i++)
+  for(size_t i = 0; i < out_pixels; i++)
     out_patch[i] = _srgb_to_linear(out_patch[i]);
 
   return 0;
