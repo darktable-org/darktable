@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2025 darktable developers.
+    Copyright (C) 2012-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3077,12 +3077,11 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
 {
   GdkEvent *event = gtk_get_current_event();
   if(!event || gdk_event_get_event_type(event) != GDK_SCROLL)
+    dt_print(DT_DEBUG_ALWAYS, "[_widget_scroll] called on non-scroll event");
+  else if(dt_gui_ignore_scroll(&event->scroll))
   {
-    // NOP, should not happen
-  }
-  if(dt_gui_ignore_scroll(&event->scroll))
-  {
-    // hack: GTK3 event controller handlers can't return GDK_EVENT_PROPAGATE
+    // event controller handlers can't propagate events, so synthesize
+    // an event directly to the destination widget
     GtkWidget *sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
     if(sw)
       gtk_widget_event(sw, event);
@@ -3118,7 +3117,7 @@ static void _widget_scroll(GtkEventControllerScroll *controller,
         _combobox_next_sensitive(w, delta, 0, FALSE);
     }
   }
-  gdk_event_free(event);
+  if(event) gdk_event_free(event);
 }
 
 static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
@@ -3733,9 +3732,8 @@ static void dt_bh_init(DtBauhausWidget *w)
   dt_gui_connect_motion(w, _widget_motion, _widget_enter, _widget_leave, widget);
 
   GtkEventController *scroll_controller =
-    dt_gui_connect_scroll(w, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
-                             | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                          _widget_scroll, widget);
+    dt_gui_connect_scroll_discrete(w, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                                   _widget_scroll, widget);
   // allows for capturing propagated events from other widgets
   gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_BUBBLE);
 

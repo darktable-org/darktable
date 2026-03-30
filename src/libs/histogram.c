@@ -486,17 +486,15 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
                       GDK_SHIFT_MASK | GDK_MOD1_MASK))
     {
       // bubble to adjusting the overall widget size
-      // FIXME: use gtk_event_controller_handle_event()
       gtk_widget_event(s->scope_draw, event);
     }
     else if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE)
     {
       // FIXME: should scroll for exposure change be handled by each scope, rather than here?
-      // FIXME: should handle horizontal scrolling as well?
       // FIXME: should handle smooth scrolling rather than discrete?
       // FIXME: should scrolling of scope be handled in the drawable rather than
       //        the eventbox.
-      dt_dev_exposure_handle_event(0, dy, event->scroll.state,
+      dt_dev_exposure_handle_event(0, dy - dx, event->scroll.state,
                                    s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
     }
     else
@@ -863,9 +861,8 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: add (optional) propagation phase argument to dt_gui_connect_*()
   GtkEventController *scroll_controller =
-    dt_gui_connect_scroll(eventbox, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL
-                                    | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                          _eventbox_scroll_callback, s);
+    dt_gui_connect_scroll_discrete(eventbox, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                                   _eventbox_scroll_callback, s);
   gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_CAPTURE);
   // use GTK_PHASE_TARGET to capture enter/leave events, as
   // enter/leave events apparently not bubbled in GTK < 3.24.43.
