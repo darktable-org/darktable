@@ -422,6 +422,7 @@ static gboolean _borders_button_pressed(GtkWidget *w,
   return TRUE;
 }
 
+// FIXME: if this is only called from scroll handlers, move this logic to scroll proxy
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
 {
   const gboolean ignore_without_mods =
@@ -4760,92 +4761,139 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
   return controller;
 }
 
-GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
-                                            GtkEventControllerScrollFlags flags,
-                                            GCallback scroll,
-                                            gpointer data)
+static float _scroll_attenuate(gdouble delta)
 {
-  GtkEventController *controller = gtk_event_controller_scroll_new(widget, flags);
-  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
-  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
-  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
-  if(scroll) g_signal_connect(controller, "scroll", G_CALLBACK(scroll), data);
-  return controller;
+#ifndef GDK_WINDOWING_QUARTZ
+  // Linux/Windows smooth scroll events are 0 < delta <= 1, slightly
+  // amplify small deltas and damp larger deltas
+  const double scale = 0.95;
+  const double compression = 0.9;
+#else
+  // MacOS scrolling is apparently distance-based, so can produce a
+  // range of large/small deltas. Most are delta 1, a few can be as
+  // high as 10. Compress the higher scroll deltas in particular, and
+  // place them all in range of Linux/Windows scrolling.
+  const double scale = 0.06;
+  const double compression = 0.7;
+#endif
+  return scale * copysign(pow(fabs(delta), compression), delta);
 }
 
 typedef void (*scroll_handler_t)(GtkEventControllerScroll*, gdouble, gdouble, gpointer);
 static gdouble _scroll_discrete_dx = 0.0;
 static gdouble _scroll_discrete_dy = 0.0;
-static const char *_scroll_discrete_real_handler_key = "real-scroll-discrete-handler";
+static const char *_scroll_real_handler_key = "real-scroll-handler";
 
-static void _scroll_discrete_proxy(GtkEventControllerScroll* controller,
-                                   gdouble dx,
-                                   gdouble dy,
-                                   gpointer user_data)
+static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
+                                GdkEvent* event)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return;
-  // avoid double counting real and emulated events
-  if(!gdk_event_get_pointer_emulated(event))
+  GtkWidget *const widget =
+    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  const GtkWidget *panel = NULL;
+  if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, widget))
+    panel = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, widget))
+    panel = darktable.gui->ui->panels[DT_UI_PANEL_RIGHT];
+  if(panel && dt_gui_ignore_scroll(&event->scroll))
   {
-    if(gdk_event_get_event_type(event) == GDK_SCROLL
-       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+    // FIXME: do need to test if ancestor is scrollable? do we need to even check if in left/right panel?
+    GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
+    if(sw)
     {
-      // MacOS scrolling is apparently distance-based, so can produce
-      // a range of large/small deltas. Most current code accumulates
-      // & attenuates via dt_gui_get_scroll_unit_deltas(). For
-      // GTK4-ready "scroll" events, use discrete scrolling based on
-      // gtk_event_controller_scroll_handle_event(), with attenuation.
-#ifdef GDK_WINDOWING_QUARTZ
-      const double scale = 0.06;
-      const double compression = 0.7;
-#else
-      const double scale = 0.95;
-      const double compression = 0.9;
-#endif
-      dx = scale * copysign(pow(fabs(dx), compression), dx);
-      dy = scale * copysign(pow(fabs(dy), compression), dy);
-      _scroll_discrete_dx += dx;
-      _scroll_discrete_dy += dy;
-      dx = dy = 0.0;
-      if(fabs(_scroll_discrete_dx) >= 1.0)
+      // event controller handlers can't propagate events, so synthesize
+      // an event directly to the destination widget
+      gtk_widget_event(sw, event);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static void _scroll_proxy_real(GtkEventControllerScroll* controller,
+                               gdouble dx,
+                               gdouble dy,
+                               gpointer user_data,
+                               gboolean discrete)
+{
+  GdkEvent *const event = gtk_get_current_event();
+  if(!event) return;
+  if(gdk_event_get_event_type(event) == GDK_SCROLL
+     // don't double counting real and emulated smooth scroll events
+     && !gdk_event_get_pointer_emulated(event)
+     && !_scroll_sidebar(controller, event))
+  {
+    if(event->scroll.direction == GDK_SCROLL_SMOOTH)
+    {
+      dx = _scroll_attenuate(dx);
+      dy = _scroll_attenuate(dy);
+      if(discrete)
       {
-        int steps = trunc(_scroll_discrete_dx);
-        _scroll_discrete_dx -= steps;
-        dx = steps;
+        _scroll_discrete_dx += dx;
+        _scroll_discrete_dy += dy;
+        dx = dy = 0.0;
+        // can return |delta| > 1, but clamping to -1 < delta < 1 dulls
+        // responsiveness, so it is up to the caller to handle this
+        // FIXME: actually clamp and if caller doesn't want clamping
+        //        they should not use discerete scrolling?
+        // FIXME: make another flag to setup func if want to clamp?
+        if(fabs(_scroll_discrete_dx) >= 1.0)
+        {
+          const int steps = trunc(_scroll_discrete_dx);
+          _scroll_discrete_dx -= steps;
+          dx = steps;
+        }
+        if(fabs(_scroll_discrete_dy) >= 1.0)
+        {
+          const int steps = trunc(_scroll_discrete_dy);
+          _scroll_discrete_dy -= steps;
+          dy = steps;
+        }
       }
-      if(fabs(_scroll_discrete_dy) >= 1.0)
-      {
-        int steps = trunc(_scroll_discrete_dy);
-        _scroll_discrete_dy -= steps;
-        dy = steps;
-      }
-      // FIXME: modern mouse wheels can produce smooth scroll events
-      //        with |delta| > 1, for now the caller must clamp these
     }
     if(dx != 0.0 || dy != 0.0)
     {
-      scroll_handler_t real_handler =
-        g_object_get_data(G_OBJECT(controller), _scroll_discrete_real_handler_key);
+      const scroll_handler_t real_handler =
+        g_object_get_data(G_OBJECT(controller), _scroll_real_handler_key);
       real_handler(controller, dx, dy, user_data);
     }
   }
   gdk_event_free(event);
 }
 
-GtkEventController *(dt_gui_connect_scroll_discrete)(GtkWidget *widget,
-                                                     GtkEventControllerScrollFlags flags,
-                                                     GCallback scroll_callback,
-                                                     gpointer user_data)
+static void _scroll_proxy(GtkEventControllerScroll* controller,
+                          gdouble dx,
+                          gdouble dy,
+                          gpointer data)
 {
-  // Use proxy, not GTK discrete scrolling, to attenuate. We could use
-  // GTK discrete scrolling for non-MacOS, but it makes it hard to
-  // test if a chunk of code is particular to one OS.
-  GtkEventController *controller =
-    dt_gui_connect_scroll(widget, flags & ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                          _scroll_discrete_proxy, user_data);
-  g_object_set_data(G_OBJECT(controller),
-                    _scroll_discrete_real_handler_key, scroll_callback);
+  _scroll_proxy_real(controller, dx, dy, data, FALSE);
+}
+
+static void _scroll_discrete_proxy(GtkEventControllerScroll* controller,
+                                   gdouble dx,
+                                   gdouble dy,
+                                   gpointer data)
+{
+  _scroll_proxy_real(controller, dx, dy, data, TRUE);
+}
+
+GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
+                                               GtkEventControllerScrollFlags flags,
+                                               GCallback scroll,
+                                               gpointer data)
+{
+  // FIXME: instead of using two proxy functions, set controller property if discrete
+  const scroll_handler_t proxy =
+    (flags & GTK_EVENT_CONTROLLER_SCROLL_DISCRETE) ?
+    _scroll_discrete_proxy : _scroll_proxy;
+  // proxy will attenuate, so bypass GTK's discrete scrolling code
+  flags &= ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE;
+
+  GtkEventController *const controller = gtk_event_controller_scroll_new(widget, flags);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+  g_signal_connect(controller, "scroll", G_CALLBACK(proxy), data);
+  g_object_set_data(G_OBJECT(controller), _scroll_real_handler_key, scroll);
   return controller;
 }
 
