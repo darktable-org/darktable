@@ -1183,25 +1183,34 @@ static gpointer _preview_thread(gpointer data)
            pixels_w, pixels_h, pd->scale);
 
   // crop region matching widget aspect ratio
-  const int pw = pd->preview_w;
-  const int ph = pd->preview_h;
+  // clamp crop to export dimensions and max preview size to keep
+  // inference responsive. the result is scaled to fill the widget
+  const int max_crop = 512;
+  // pw/ph are output dimensions (divisible by scale),
+  // crop_w/crop_h are input dimensions to the model
+  int pw = MIN(MIN(pd->preview_w, pixels_w * pd->scale),
+               max_crop * pd->scale);
+  int ph = MIN(MIN(pd->preview_h, pixels_h * pd->scale),
+               max_crop * pd->scale);
+  pw = (pw / pd->scale) * pd->scale;
+  ph = (ph / pd->scale) * pd->scale;
   const int crop_w = pw / pd->scale;
   const int crop_h = ph / pd->scale;
+
+  if(crop_w <= 0 || crop_h <= 0)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] preview: export too small (%dx%d)",
+             pixels_w, pixels_h);
+    if(owns_pixels) g_free(cap.pixels);
+    goto cleanup;
+  }
 
   // compute crop position in export image
   int crop_x = (int)(pd->patch_center[0] * pixels_w) - crop_w / 2;
   int crop_y = (int)(pd->patch_center[1] * pixels_h) - crop_h / 2;
   crop_x = CLAMP(crop_x, 0, pixels_w - crop_w);
   crop_y = CLAMP(crop_y, 0, pixels_h - crop_h);
-
-  if(crop_x < 0 || crop_y < 0)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[neural_restore] preview: image too small for crop (%dx%d < %dx%d)",
-             pixels_w, pixels_h, crop_w, crop_h);
-    if(owns_pixels) g_free(cap.pixels);
-    goto cleanup;
-  }
 
   // extract crop as interleaved RGBx (4ch) for dt_restore_process_tiled
   float *crop_4ch = g_try_malloc((size_t)crop_w * crop_h * 4 * sizeof(float));
