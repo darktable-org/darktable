@@ -49,7 +49,9 @@
 #define M_PI_F 3.14159265358979323846f
 #endif /* !M_PI_F */
 
-#define DT_M_LN2f (0.6931471805599453f)
+#ifndef M_LN2f
+#define M_LN2f 0.69314718055994530942f
+#endif
 
 // clip channel value to be between 0 and 1
 // NaN-safe: NaN compares false and will result in 0.0
@@ -152,13 +154,13 @@ static inline float scharr_gradient(const float *p, const int w)
 
 static inline float Log2(const float x)
 {
-  return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
+  return (x > 0.0f) ? (logf(x) / M_LN2f) : x;
 }
 
 static inline float Log2Thres(const float x,
                               const float Thres)
 {
-  return logf(x > Thres ? x : Thres) / DT_M_LN2f;
+  return logf(x > Thres ? x : Thres) / M_LN2f;
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
@@ -179,7 +181,7 @@ static inline float fastlog2(const float x)
 // ensure that any changes here are synchronized with data/kernels/extended.cl
 static inline float fastlog(const float x)
 {
-  return DT_M_LN2f * fastlog2(x);
+  return M_LN2f * fastlog2(x);
 }
 
 // multiply 3x3 matrix with 3x1 vector
