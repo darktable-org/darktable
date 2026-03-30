@@ -90,8 +90,9 @@ Nvidia GPUs are recommended for safety because some AMD drivers behave unreliabl
 ### AI features (optional)
 
 Darktable includes optional AI-powered features such as neural denoise, upscale and object
-masks. These require building with `-DUSE_AI=ON` (off by default). AI models are downloaded
-automatically from the darktable GitHub releases on first use.
+masks. These require building with `-DUSE_AI=ON` (off by default). AI features are
+disabled by default in preferences and must be enabled by the user. Models are downloaded
+from the AI tab in preferences.
 
 **CPU inference** is bundled and works out of the box - no additional software is needed.
 On macOS (Apple Silicon), CoreML acceleration and on Windows, DirectML GPU acceleration
@@ -102,11 +103,11 @@ special hardware.
 GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
 
 * **NVIDIA (CUDA):** Linux and Windows.
-  * [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-downloads) (for ORT 1.20+)
-  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads) (for ORT 1.20+)
+  * [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-downloads) (for ONNX Runtime 1.20+)
+  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads) (for ONNX Runtime 1.20+)
   * Recommended: 8 GB+ VRAM
 * **AMD (ROCm):** Linux only.
-  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ORT 1.20+, includes MIGraphX)
+  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ONNX Runtime 1.20+, includes MIGraphX)
   * Supported AMD GPU (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
 * **Intel (OpenVINO):** Linux and Windows.
   * Intel integrated GPU (Gen9+), discrete Arc GPU, or NPU (Meteor Lake+)
@@ -115,9 +116,12 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
 * **macOS (Apple Silicon):** CoreML acceleration is used automatically. No extra
   install needed.
 
+**GPU memory:** 4 GB VRAM minimum, 8 GB+ recommended. With less memory
+darktable will use smaller tiles, which is slower but still works.
+
 To enable GPU acceleration, set the path to the GPU-enabled ONNX Runtime library in
-preferences → processing → AI. darktable will auto-detect available execution providers. You can verify which provider is active by running darktable
-with `-d ai` for debug output.
+preferences → processing → AI. darktable will auto-detect available execution providers.
+You can verify which provider is active by running darktable with `-d ai` for debug output.
 
 Installing
 ----------
