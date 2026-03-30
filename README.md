@@ -230,14 +230,12 @@ sudo zypper si -d darktable
 
 #### Ubuntu
 
+Recent Ubuntu releases do not include the deb-src sources out of the box, even in commented form.
+To add them, you need to run "Software & Updates" and on the first tab that opens, "Ubuntu Software",
+check the "Source code" checkbox. Only after that you can use the following command:
+
 ```bash
-sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
-  | sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
-  && (
-    sudo apt-get update
-    sudo apt-get build-dep darktable
-  )
-sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
+sudo apt-get build-dep darktable
 ```
 
 #### Debian
