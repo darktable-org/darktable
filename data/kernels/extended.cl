@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2014 Ulrich Pegelow
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,58 +22,52 @@
 
 
 __kernel void
-graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float4 color,
-              const float density, const float length_base, const float length_inc_x, const float length_inc_y)
+graduatedndp (read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              const float4 color,
+              const float density,
+              const float length_base,
+              const float length_inc_x,
+              const float length_inc_y)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float len = length_base + y*length_inc_y + x*length_inc_x;
-
-  const float t = 0.693147181f * (density * clipf(0.5f+len)/8.0f);
-  const float d1 = t * t * 0.5f;
-  const float d2 = d1 * t * 0.333333333f;
-  const float d3 = d2 * t * 0.25f;
-  float dens = 1.0f + t + d1 + d2 + d3;
-  dens *= dens;
-  dens *= dens;
-  dens *= dens;
-
-  pixel.xyz = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  float len = length_base + y*length_inc_y + x*length_inc_x;
+  float dens = dtcl_exp2(density * clipf(0.5f + len));
+  pixel = pixel / (color + ((float4)1.0f - color) * (float4)dens);
+  write_imagef (out, (int2)(x, y), fmax(0.0f, pixel));
 }
 
 
 __kernel void
-graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float4 color,
-              const float density, const float length_base, const float length_inc_x, const float length_inc_y)
+graduatedndm (read_only image2d_t in,
+              write_only image2d_t out,
+              const int width,
+              const int height,
+              const float4 color,
+              const float density,
+              const float length_base,
+              const float length_inc_x,
+              const float length_inc_y)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float len = length_base + y*length_inc_y + x*length_inc_x;
-
-  const float t = 0.693147181f * (-density * clipf(0.5f-len)/8.0f);
-  const float d1 = t * t * 0.5f;
-  const float d2 = d1 * t * 0.333333333f;
-  const float d3 = d2 * t * 0.25f;
-  float dens = 1.0f + t + d1 + d2 + d3;
-  dens *= dens;
-  dens *= dens;
-  dens *= dens;
-
-  pixel.xyz = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  float len = length_base + y*length_inc_y + x*length_inc_x;
+  float dens = dtcl_exp2(-density * clipf(0.5f - len));
+  pixel = pixel * (color + ((float4)1.0f - color) * (float4)dens);
+  write_imagef(out, (int2)(x, y), fmax(0.0f, pixel));
 }
 
 __kernel void
