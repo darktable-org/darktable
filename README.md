@@ -208,8 +208,13 @@ Optional dependencies (no version requirement):
 * OpenJPEG *(for JPEG 2000 import & export)*
 * GraphicsMagick or ImageMagick *(for misc image format import)*
 
-To install all the dependencies on Linux systems, you may use the source repositories of your distribution
-(provided they are up-to-date):
+To install all the dependencies on Linux systems, you may use the source repository of your distribution.
+This will install the same packages that were used to build the official darktable package on your system.
+Most likely, you will want to build a newer version than the one packaged in the distribution. So please
+note that although this does not happen very often, it is possible that a new version of darktable will
+have a new (required or optional) dependency. So the commands below only simplify the creation of your
+build environment, but will not replace your attention to the build process and possibly finding and
+installing certain additional dependency packages.
 
 #### Fedora and RHEL/CentOS
 
