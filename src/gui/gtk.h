@@ -564,11 +564,6 @@ GtkGesture *(dt_gui_connect_drag)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(drag_update, void(*)(GtkGestureDrag *, double, double, __typeof__(data))), \
   dt_gui_connect_drag(GTK_WIDGET(widget), G_CALLBACK(drag_begin), G_CALLBACK(drag_end), G_CALLBACK(drag_update), (data)))
 
-#define dt_gui_claim(gesture) \
-      gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
-#define dt_gui_deny(gesture) \
-      gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_DENIED)
-
 GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback motion,
                                             GCallback enter,
@@ -587,6 +582,19 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
 #define dt_gui_connect_scroll(widget, flags, scroll, data) ( \
   ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
   dt_gui_connect_scroll(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
+
+GtkEventController *(dt_gui_connect_scroll_discrete)(GtkWidget *widget,
+						     GtkEventControllerScrollFlags flags,
+						     GCallback scroll,
+						     gpointer data);
+#define dt_gui_connect_scroll_discrete(widget, flags, scroll, data) ( \
+  ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
+  dt_gui_connect_scroll_discrete(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
+
+#define dt_gui_claim(gesture) \
+      gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
+#define dt_gui_deny(gesture) \
+      gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_DENIED)
 
 // GTK4 gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 #define dt_modifier_eq(controller, mask)\
