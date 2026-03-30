@@ -4773,6 +4773,82 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   return controller;
 }
 
+typedef void (*scroll_handler_t)(GtkEventControllerScroll*, gdouble, gdouble, gpointer);
+static gdouble _scroll_discrete_dx = 0.0;
+static gdouble _scroll_discrete_dy = 0.0;
+static const char *_scroll_discrete_real_handler_key = "real-scroll-discrete-handler";
+
+static void _scroll_discrete_proxy(GtkEventControllerScroll* controller,
+                                   gdouble dx,
+                                   gdouble dy,
+                                   gpointer user_data)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(!event) return;
+  // avoid double counting real and emulated events
+  if(!gdk_event_get_pointer_emulated(event))
+  {
+    if(gdk_event_get_event_type(event) == GDK_SCROLL
+       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+    {
+      // MacOS scrolling is apparently distance-based, so can produce
+      // a range of large/small deltas. Most current code accumulates
+      // & attenuates via dt_gui_get_scroll_unit_deltas(). For
+      // GTK4-ready "scroll" events, use discrete scrolling based on
+      // gtk_event_controller_scroll_handle_event(), with attenuation.
+#ifdef GDK_WINDOWING_QUARTZ
+      const double scale = 0.06;
+      const double compression = 0.7;
+#else
+      const double scale = 0.95;
+      const double compression = 0.9;
+#endif
+      dx = scale * copysign(pow(fabs(dx), compression), dx);
+      dy = scale * copysign(pow(fabs(dy), compression), dy);
+      _scroll_discrete_dx += dx;
+      _scroll_discrete_dy += dy;
+      dx = dy = 0.0;
+      if(fabs(_scroll_discrete_dx) >= 1.0)
+      {
+        int steps = trunc(_scroll_discrete_dx);
+        _scroll_discrete_dx -= steps;
+        dx = steps;
+      }
+      if(fabs(_scroll_discrete_dy) >= 1.0)
+      {
+        int steps = trunc(_scroll_discrete_dy);
+        _scroll_discrete_dy -= steps;
+        dy = steps;
+      }
+      // FIXME: modern mouse wheels can produce smooth scroll events
+      //        with |delta| > 1, for now the caller must clamp these
+    }
+    if(dx != 0.0 || dy != 0.0)
+    {
+      scroll_handler_t real_handler =
+        g_object_get_data(G_OBJECT(controller), _scroll_discrete_real_handler_key);
+      real_handler(controller, dx, dy, user_data);
+    }
+  }
+  gdk_event_free(event);
+}
+
+GtkEventController *(dt_gui_connect_scroll_discrete)(GtkWidget *widget,
+                                                     GtkEventControllerScrollFlags flags,
+                                                     GCallback scroll_callback,
+                                                     gpointer user_data)
+{
+  // Use proxy, not GTK discrete scrolling, to attenuate. We could use
+  // GTK discrete scrolling for non-MacOS, but it makes it hard to
+  // test if a chunk of code is particular to one OS.
+  GtkEventController *controller =
+    dt_gui_connect_scroll(widget, flags & ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _scroll_discrete_proxy, user_data);
+  g_object_set_data(G_OBJECT(controller),
+                    _scroll_discrete_real_handler_key, scroll_callback);
+  return controller;
+}
+
 
 static int busy_nest_count = 0;
 
