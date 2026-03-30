@@ -1273,6 +1273,7 @@ static gpointer _preview_thread(gpointer data)
              "[neural_restore] preview: failed to load model");
     g_free(crop_4ch);
     g_free(crop_rgb);
+    if(owns_pixels) g_free(cap.pixels);
     goto cleanup;
   }
 
