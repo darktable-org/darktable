@@ -3482,7 +3482,7 @@ void process(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
-    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+    const size_t requested_size = (size_t)roi_in->width * roi_in->height;
 
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL
@@ -3497,11 +3497,11 @@ void process(dt_iop_module_t *self,
 
     if(g->buf /* && hash != g->buf_hash */)
     {
-      // copy data; seems to be safe we don't care aboit roi_in here
+      // copy data using actual roi_in dimensions (can exceed buf_in when scale > 1.0)
       dt_iop_image_copy_by_size(g->buf, ivoid, roi_in->width, roi_in->height, ch);
 
-      g->buf_width = piece->buf_in.width;
-      g->buf_height = piece->buf_in.height;
+      g->buf_width = roi_in->width;
+      g->buf_height = roi_in->height;
       g->buf_x_off = roi_in->x;
       g->buf_y_off = roi_in->y;
       g->buf_scale = roi_in->scale;
@@ -3621,7 +3621,7 @@ int process_cl(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
-    const size_t requested_size = (size_t)piece->buf_in.width * piece->buf_in.height;
+    const size_t requested_size = (size_t)roi_in->width * roi_in->height;
 
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < requested_size)
@@ -3634,12 +3634,12 @@ int process_cl(dt_iop_module_t *self,
 
     if(g->buf /* && hash != g->buf_hash */)
     {
-      // copy data
+      // copy data using actual roi_in dimensions (can exceed buf_in when scale > 1.0)
       err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in,
                                           roi_in->width, roi_in->height, sizeof(float) * 4);
 
-      g->buf_width = piece->buf_in.width;
-      g->buf_height = piece->buf_in.height;
+      g->buf_width = roi_in->width;
+      g->buf_height = roi_in->height;
       g->buf_x_off = roi_in->x;
       g->buf_y_off = roi_in->y;
       g->buf_scale = roi_in->scale;
