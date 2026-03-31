@@ -107,8 +107,14 @@ typedef struct dt_dev_detail_mask_t
  */
 typedef struct dt_dev_pixelpipe_t
 {
-  // store history/zoom caches
-  dt_dev_pixelpipe_cache_t cache;
+  // scratch buffers for alternating input/output during processing
+  // (used by export/thumbnail pipes, and for masking/nocache modes in all pipes)
+  void *scratch_data[2];
+  size_t scratch_size[2];
+  dt_iop_buffer_dsc_t scratch_dsc[2];
+  uint64_t scratch_calls;
+  // TRUE when this pipe uses the global cache (full/preview/preview2 with pipe_cache enabled)
+  gboolean use_cache;
   // set to TRUE in order to obsolete old cache entries on next pixelpipe run
   gboolean cache_obsolete;
   uint64_t runs; // used only for pixelpipe cache statistics

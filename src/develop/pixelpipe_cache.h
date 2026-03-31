@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,51 +19,66 @@
 #pragma once
 
 #include <inttypes.h>
+#include <glib.h>
+#include "common/dtpthread.h"
 
 struct dt_dev_pixelpipe_t;
 struct dt_iop_buffer_dsc_t;
 struct dt_iop_roi_t;
+struct dt_iop_module_t;
 
 /**
- * implements a simple pixel cache suitable for caching float images
- * corresponding to history items and zoom/pan settings in the develop module.
- * correctness is secured via the hash so make sure everything is included here.
- * No caching if cl_mem, instead copied cache buffers are used.
+ * Global pixel cache for darktable's processing pipeline.
+ *
+ * A single cache instance is shared by all pipe types (full, preview, preview2).
+ * Cache entries are keyed by hash (computed from pipe identity + module params + ROI).
+ * Memory is bounded by max_memory with LRU eviction.
+ * Thread-safe via mutex (multiple pipes process concurrently).
+ *
+ * Export/thumbnail pipes use per-pipe scratch buffers instead of the global cache.
  */
+
+/** A single cached pixel buffer with metadata. */
+typedef struct dt_pixel_cache_entry_t
+{
+  dt_hash_t hash;           // cache key (DT_INVALID_HASH when invalidated)
+  void *data;               // pixel buffer (dt_alloc_aligned)
+  size_t size;              // buffer size in bytes
+  struct dt_iop_buffer_dsc_t dsc;  // buffer descriptor (colorspace, temperature, etc.)
+  int64_t last_access;      // g_get_monotonic_time() when last accessed
+  int32_t ioporder;         // iop_order of the module that created this entry
+  gboolean important;       // TRUE = prefer keeping in cache (e.g., focused module input)
+  int pipe_type;            // dt_dev_pixelpipe_type_t base bits of the pipe that created this
+} dt_pixel_cache_entry_t;
+
+/** The global pixel cache. One instance in darktable_t. */
 typedef struct dt_dev_pixelpipe_cache_t
 {
-  int32_t entries;
-  size_t allmem;
-  size_t memlimit;
-  void **data;
-  size_t *size;
-  struct dt_iop_buffer_dsc_t *dsc;
-  dt_hash_t *hash;
-  int32_t *used;
-  int32_t *ioporder;
+  GHashTable *lookup;       // dt_hash_t* -> dt_pixel_cache_entry_t* (O(1) lookup by hash)
+  GList *entries;           // all dt_pixel_cache_entry_t* (for iteration, eviction)
+  size_t max_memory;        // memory budget in bytes
+  size_t current_memory;    // sum of all entry->size
+  dt_pthread_mutex_t lock;  // protects all fields
+  // profiling & stats
   uint64_t calls;
-  int32_t lastline;
-  // profiling & stats:
   uint64_t tests;
   uint64_t hits;
-  uint32_t lused;
-  uint32_t linvalid;
-  uint32_t limportant;
 } dt_dev_pixelpipe_cache_t;
 
-typedef enum dt_dev_pixelpipe_cache_test_t
-{
-  DT_CACHETEST_PLAIN = 0,
-  DT_CACHETEST_USED = 1,
-  DT_CACHETEST_FREE = 2,
-  DT_CACHETEST_INVALID = 3,
-} dt_dev_pixelpipe_cache_test_t;
+// --- Global cache lifecycle (called once at startup/shutdown) ---
 
-/** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
-  \param[out] returns 0 if fail to allocate mem cache.
-*/
-gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const size_t limit);
+void dt_dev_pixelpipe_cache_init_global(size_t max_memory);
+void dt_dev_pixelpipe_cache_cleanup_global(void);
+
+// --- Per-pipe scratch buffer init/cleanup ---
+
+/** Initialize per-pipe scratch buffers. scratch_size > 0 pre-allocates buffers
+    (used by export/thumbnail pipes). */
+gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe,
+                                     const int entries, const size_t size, const size_t limit);
 void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
+
+// --- Cache operations (all take pipe for context: pipe->type, masking state, etc.) ---
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including the roi. */
 dt_hash_t dt_dev_pixelpipe_cache_hash(const struct dt_iop_roi_t *roi,
@@ -75,12 +90,13 @@ dt_hash_t dt_dev_pixelpipe_cache_hash(const struct dt_iop_roi_t *roi,
   Returned flag is TRUE for a new buffer
 */
 gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const dt_hash_t hash,
-                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, const struct dt_iop_module_t *module, const gboolean important);
+                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc,
+                               const struct dt_iop_module_t *module, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const dt_hash_t hash, const size_t size);
 
-/** invalidates all cachelines. */
+/** invalidates all cachelines for this pipe type. */
 void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);
 
 /** invalidates all cachelines for modules with at least the same iop_order */
@@ -105,4 +121,3 @@ void dt_dev_pixelpipe_compute_global_hashes(struct dt_dev_pixelpipe_t *pipe);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

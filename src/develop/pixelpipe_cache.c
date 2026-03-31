@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,82 +23,142 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
+// ---- hash table helpers for dt_hash_t keys ----
+
+static guint _hash_func(gconstpointer key)
+{
+  const dt_hash_t h = *(const dt_hash_t *)key;
+  // mix upper and lower 32 bits for a good 32-bit hash
+  return (guint)(h ^ (h >> 32));
+}
+
+static gboolean _equal_func(gconstpointer a, gconstpointer b)
+{
+  return *(const dt_hash_t *)a == *(const dt_hash_t *)b;
+}
+
 static inline int _to_mb(size_t m)
 {
   return (int)((m + 0x80000lu) / 0x400lu / 0x400lu);
 }
+
+// mask for the base pipe type bits (excluding FAST, IMAGE, etc.)
+#define DT_PIPETYPE_BASE_MASK (DT_DEV_PIXELPIPE_ANY)
+
+static inline int _pipe_base_type(const dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->type & DT_PIPETYPE_BASE_MASK;
+}
+
+// ---- global cache lifecycle ----
+
+void dt_dev_pixelpipe_cache_init_global(size_t max_memory)
+{
+  darktable.pipeline_cache = calloc(1, sizeof(dt_dev_pixelpipe_cache_t));
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  cache->lookup = g_hash_table_new(_hash_func, _equal_func);
+  cache->entries = NULL;
+  cache->max_memory = max_memory;
+  cache->current_memory = 0;
+  dt_pthread_mutex_init(&cache->lock, NULL);
+  cache->calls = cache->tests = cache->hits = 0;
+
+  dt_print(DT_DEBUG_PIPE | DT_DEBUG_MEMORY,
+           "[pipeline cache] initialized global cache with %iMB budget",
+           _to_mb(max_memory));
+}
+
+void dt_dev_pixelpipe_cache_cleanup_global(void)
+{
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
+
+  // free all entries
+  for(GList *l = cache->entries; l; l = g_list_next(l))
+  {
+    dt_pixel_cache_entry_t *entry = l->data;
+    dt_free_align(entry->data);
+    free(entry);
+  }
+  g_list_free(cache->entries);
+  cache->entries = NULL;
+  g_hash_table_destroy(cache->lookup);
+  cache->lookup = NULL;
+  cache->current_memory = 0;
+
+  dt_pthread_mutex_unlock(&cache->lock);
+  dt_pthread_mutex_destroy(&cache->lock);
+
+  free(darktable.pipeline_cache);
+  darktable.pipeline_cache = NULL;
+}
+
+// ---- per-pipe scratch buffer init/cleanup ----
 
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const int entries,
                                      const size_t size,
                                      const size_t limit)
 {
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-
-  cache->entries = entries;
-  cache->allmem = cache->hits = cache->calls = cache->tests = 0;
-  cache->memlimit = limit;
-
-  const size_t csize = sizeof(void *) + sizeof(size_t) + sizeof(dt_iop_buffer_dsc_t) + 2*sizeof(int32_t) + sizeof(uint64_t);
-  cache->data = (void **) calloc(entries, csize);
-  cache->size = (size_t *)((void *)cache->data + entries * sizeof(void *));
-  cache->dsc = (dt_iop_buffer_dsc_t *)((void *)cache->size + entries * sizeof(size_t));
-  cache->hash = (dt_hash_t *)((void *)cache->dsc + entries * sizeof(dt_iop_buffer_dsc_t));
-  cache->used = (int32_t *)((void *)cache->hash + entries * sizeof(dt_hash_t));
-  cache->ioporder = (int32_t *)((void *)cache->used + entries * sizeof(int32_t));
-
-  for(int k = 0; k < entries; k++)
+  // Initialize scratch buffers
+  pipe->scratch_calls = 0;
+  for(int k = 0; k < 2; k++)
   {
-    cache->hash[k] = DT_INVALID_HASH;
-    cache->used[k] = 64 + k;
+    pipe->scratch_data[k] = NULL;
+    pipe->scratch_size[k] = 0;
+    memset(&pipe->scratch_dsc[k], 0, sizeof(dt_iop_buffer_dsc_t));
   }
+
+  // Determine if this pipe uses the global cache.
+  // Export, thumbnail, and dummy pipes (entries <= DT_PIPECACHE_MIN) use scratch buffers only.
+  pipe->use_cache = darktable.pipe_cache && (entries > DT_PIPECACHE_MIN);
+
   if(!size) return TRUE;
 
-  // some pixelpipes use preallocated cachelines, following code is special for those
-  for(int k = 0; k < entries; k++)
+  // Pre-allocate scratch buffers for export/thumbnail pipes
+  for(int k = 0; k < 2; k++)
   {
-    cache->size[k] = size;
-    cache->data[k] = (void *)dt_alloc_aligned(size);
-    if(!cache->data[k])
-      goto alloc_memory_fail;
-
-    cache->allmem += size;
+    pipe->scratch_data[k] = (void *)dt_alloc_aligned(size);
+    if(!pipe->scratch_data[k])
+    {
+      // cleanup on failure
+      for(int j = 0; j < 2; j++)
+      {
+        dt_free_align(pipe->scratch_data[j]);
+        pipe->scratch_data[j] = NULL;
+        pipe->scratch_size[j] = 0;
+      }
+      return FALSE;
+    }
+    pipe->scratch_size[k] = size;
   }
   return TRUE;
-
-  alloc_memory_fail:
-  // Make sure all cachelines are cleared.
-  // A warning about low memory will appear but the pipeline still has valid data so dt won't crash
-  // but will only fail to generate thumbnails for example.
-  for(int k = 0; k < cache->entries; k++)
-  {
-    dt_free_align(cache->data[k]);
-    cache->size[k] = 0;
-    cache->data[k] = NULL;
-  }
-  cache->allmem = 0;
-  return FALSE;
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(cache && pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f",
     (double)(cache->hits) / fmax(1.0, pipe->runs),
     (double)(cache->hits) / fmax(1.0, cache->tests));
   }
 
-  for(int k = 0; k < cache->entries; k++)
+  // Flush this pipe's entries from the global cache
+  if(cache) dt_dev_pixelpipe_cache_flush(pipe);
+
+  // Free scratch buffers
+  for(int k = 0; k < 2; k++)
   {
-    dt_free_align(cache->data[k]);
-    cache->data[k] = NULL;
+    dt_free_align(pipe->scratch_data[k]);
+    pipe->scratch_data[k] = NULL;
+    pipe->scratch_size[k] = 0;
   }
-  free(cache->data);
-  cache->data = NULL;
 }
+
+// ---- global_hash computation (WP1) ----
 
 void dt_dev_pixelpipe_compute_global_hashes(dt_dev_pixelpipe_t *pipe)
 {
@@ -133,6 +193,8 @@ void dt_dev_pixelpipe_compute_global_hashes(dt_dev_pixelpipe_t *pipe)
     piece->global_hash = cumulative;
   }
 }
+
+// ---- hash computation ----
 
 static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
                                                 const int position,
@@ -243,121 +305,46 @@ dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_iop_roi_t *roi,
   return hash;
 }
 
+// ---- internal helpers ----
+
+// Find an entry by data pointer in the entries list. Returns entry or NULL.
+// Caller must hold cache->lock.
+static dt_pixel_cache_entry_t *_find_entry_by_data(dt_dev_pixelpipe_cache_t *cache,
+                                                    const void *data)
+{
+  for(GList *l = cache->entries; l; l = g_list_next(l))
+  {
+    dt_pixel_cache_entry_t *entry = l->data;
+    if(entry->data == data) return entry;
+  }
+  return NULL;
+}
+
+// ---- public API ----
+
 gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,
                                           const dt_hash_t hash,
                                           const size_t size)
 {
   if(pipe->mask_display
      || pipe->nocache
+     || !pipe->use_cache
      || (hash == DT_INVALID_HASH))
     return FALSE;
 
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
   cache->tests++;
-  // search for hash in cache and make the sizes are identical
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if((cache->size[k] == size) && (cache->hash[k] == hash))
-    {
-      cache->hits++;
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
 
-// While looking for the oldest cacheline we always ignore the first two lines as they are used
-// for swapping buffers while in entries==DT_PIPECACHE_MIN or masking mode
-static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
-                                 const dt_dev_pixelpipe_cache_test_t mode)
-{
-  // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
-  int age = 1;
-  int id = 0;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    gboolean older = (cache->used[k] > age) && (k != cache->lastline);
-    if(older)
-    {
-      if(mode == DT_CACHETEST_USED)         older = cache->data[k] != NULL;
-      else if(mode == DT_CACHETEST_FREE)    older = cache->data[k] == NULL;
-      else if(mode == DT_CACHETEST_INVALID) older = cache->hash[k] == DT_INVALID_HASH;
-      if(older)
-      {
-        age = cache->used[k];
-        id = k;
-      }
-    }
-  }
-  return id;
-}
+  dt_pixel_cache_entry_t *entry = g_hash_table_lookup(cache->lookup, &hash);
+  const gboolean found = entry
+                          && entry->hash != DT_INVALID_HASH
+                          && entry->size == size;
+  if(found)
+    cache->hits++;
 
-static int _get_c_cacheline(dt_dev_pixelpipe_cache_t *cache)
-{
-  int oldest = _get_oldest_cacheline(cache, DT_CACHETEST_INVALID);
-  if(oldest > 0) return oldest;
-
-  oldest = _get_oldest_cacheline(cache, DT_CACHETEST_FREE);
-  if(oldest > 0) return oldest;
-
-  oldest = _get_oldest_cacheline(cache, DT_CACHETEST_PLAIN);
-  return (oldest == 0) ? cache->calls & 1 : oldest;
-}
-
-static int _get_cacheline(dt_dev_pixelpipe_t *pipe)
-{
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-  // If pipe has only two cachelines or we are in masking or nocache mode
-  // we just toggle between the first two cachelines.
-  // These are also taken if there is no valid cacheline returned
-  if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display || pipe->nocache)
-    return cache->calls & 1;
-
-  cache->lastline = _get_c_cacheline(cache);
-  return cache->lastline;
-}
-
-// return TRUE in case of a hit
-static gboolean _get_by_hash(dt_dev_pixelpipe_t *pipe,
-                             const dt_iop_module_t *module,
-                             const dt_hash_t hash,
-                             const size_t size,
-                             void **data,
-                             dt_iop_buffer_dsc_t **dsc)
-{
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if(cache->hash[k] == hash)
-    {
-      if(cache->size[k] != size)
-      {
-        /* We check for situation with a hash identity but buffer sizes don't match.
-           This could happen because of "hash overlaps" or other situations where the hash
-           doesn't reflect the complete status.
-           Anyway this has to be accepted as a dt bug so we always report
-        */
-        cache->hash[k] = DT_INVALID_HASH;
-        dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR",
-          pipe, module, DT_DEVICE_NONE, NULL, NULL);
-      }
-      else if(pipe->mask_display || pipe->nocache)
-      {
-        // this should not happen but we make sure
-        cache->hash[k] = DT_INVALID_HASH;
-      }
-      else
-      {
-        // we have a proper hit
-        *data = cache->data[k];
-        *dsc = &cache->dsc[k];
-        // in case of a hit it's always good to further keep the cacheline as important
-        cache->used[k] = -cache->entries;
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
+  dt_pthread_mutex_unlock(&cache->lock);
+  return found;
 }
 
 gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
@@ -368,94 +355,136 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
                                     const dt_iop_module_t *module,
                                     const gboolean important)
 {
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-  cache->calls++;
-  for(int k = 0; k < cache->entries; k++)
-    cache->used[k]++; // age all entries
+  // Scratch buffer path: used for export/thumbnail pipes, masking mode, nocache mode
+  const gboolean use_scratch = !pipe->use_cache
+    || pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE
+    || pipe->nocache;
 
-  // cache keeps history and we have a cache hit, so no new buffer
-  if(cache->entries > DT_PIPECACHE_MIN
-     && (hash != DT_INVALID_HASH)
-     && _get_by_hash(pipe, module, hash, size, data, dsc))
+  if(use_scratch)
   {
+    const int idx = pipe->scratch_calls++ & 1;
+
+    // Grow scratch buffer if needed (never shrink)
+    if(pipe->scratch_size[idx] < size)
+    {
+      dt_free_align(pipe->scratch_data[idx]);
+      pipe->scratch_data[idx] = (void *)dt_alloc_aligned(size);
+      pipe->scratch_size[idx] = pipe->scratch_data[idx] ? size : 0;
+    }
+
+    *data = pipe->scratch_data[idx];
+
+    // Copy caller's dsc into scratch, redirect caller to scratch copy
+    pipe->scratch_dsc[idx] = **dsc;
+    *dsc = &pipe->scratch_dsc[idx];
+    return TRUE; // always "new" (no cache hit possible)
+  }
+
+  // Global cache path
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
+  cache->calls++;
+
+  // Check for cache hit
+  dt_pixel_cache_entry_t *entry = g_hash_table_lookup(cache->lookup, &hash);
+  if(entry && entry->hash != DT_INVALID_HASH && entry->size == size)
+  {
+    // HIT
+    entry->last_access = g_get_monotonic_time();
+    if(important) entry->important = TRUE;
+    *data = entry->data;
+    *dsc = &entry->dsc;
+    cache->hits++;
+
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
           "%s %.3f %.3f %.3f, hash=%" PRIx64,
           dt_iop_colorspace_to_name(cdsc->cst), cdsc->temperature.coeffs[0], cdsc->temperature.coeffs[1], cdsc->temperature.coeffs[2],
           hash);
-    return FALSE;
-  }
-  // We need a fresh buffer as there was no hit.
-  //
-  // Pipes with two cache lines have pre-allocated memory, but we must
-  // grow storage if a later iop requires a larger buffer.
-  //
-  // Otherwise, get an old/free cacheline and allocate required size.
-  // Check both for free and non-matching (and grow or shrink buffer).
-  const int cline = _get_cacheline(pipe);
 
-  if(((cache->entries == DT_PIPECACHE_MIN) && (cache->size[cline] < size))
-     || ((cache->entries > DT_PIPECACHE_MIN) && (cache->size[cline] != size)))
+    dt_pthread_mutex_unlock(&cache->lock);
+    return FALSE; // not new
+  }
+
+  // Handle size mismatch (hash collision or bug)
+  if(entry && entry->hash != DT_INVALID_HASH && entry->size != size)
   {
-    dt_free_align(cache->data[cline]);
-    cache->allmem -= cache->size[cline];
-    cache->data[cline] = (void *)dt_alloc_aligned(size);
-    if(cache->data[cline])
-    {
-      cache->size[cline] = size;
-      cache->allmem += size;
-    }
-    else
-    {
-      cache->size[cline] = 0;
-    }
+    dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR",
+      pipe, module, DT_DEVICE_NONE, NULL, NULL);
+    // Remove the bad entry
+    g_hash_table_steal(cache->lookup, &entry->hash);
+    cache->entries = g_list_remove(cache->entries, entry);
+    cache->current_memory -= entry->size;
+    dt_free_align(entry->data);
+    free(entry);
+    entry = NULL;
   }
 
-  *data = cache->data[cline];
-
-  // first, update our copy, then update the pointer to point at our copy
-  cache->dsc[cline] = **dsc;
-  *dsc = &cache->dsc[cline];
+  // MISS: allocate new entry
+  dt_pixel_cache_entry_t *new_entry = calloc(1, sizeof(dt_pixel_cache_entry_t));
+  new_entry->hash = hash;
+  new_entry->data = (void *)dt_alloc_aligned(size);
+  new_entry->size = new_entry->data ? size : 0;
+  new_entry->dsc = **dsc;  // copy caller's dsc in
+  new_entry->last_access = g_get_monotonic_time();
+  new_entry->ioporder = module ? module->iop_order : 0;
+  new_entry->important = important;
+  new_entry->pipe_type = _pipe_base_type(pipe);
 
   const gboolean masking = pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
-  cache->hash[cline]      = masking ? DT_INVALID_HASH : hash;
 
-  const dt_iop_buffer_dsc_t *cdsc = *dsc;
+  // Don't insert into lookup table if masking (hash would be unreliable)
+  if(!masking && hash != DT_INVALID_HASH)
+    g_hash_table_insert(cache->lookup, &new_entry->hash, new_entry);
+
+  cache->entries = g_list_prepend(cache->entries, new_entry);
+  cache->current_memory += new_entry->size;
+
+  *data = new_entry->data;
+
+  // Redirect caller's dsc to the entry's copy
+  *dsc = &new_entry->dsc;
+
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe cache get",
     pipe, module, DT_DEVICE_NONE, NULL, NULL,
-    "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s",
-     dt_iop_colorspace_to_name(cdsc->cst),
+    "%s %sat %p. hash=%" PRIx64 "%s",
+     dt_iop_colorspace_to_name(new_entry->dsc.cst),
      important ? "important " : "",
-     cline, cache->used[cline], cache->data[cline], cache->hash[cline],
+     new_entry->data, new_entry->hash,
      masking ? ". masking." : "");
 
-  cache->used[cline]      = !masking && important ? -cache->entries : 0;
-  cache->ioporder[cline]  = module ? module->iop_order : 0;
-
-  return TRUE;
-}
-
-static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const int k)
-{
-  cache->hash[k] = DT_INVALID_HASH;
-  cache->ioporder[k] = 0;
+  dt_pthread_mutex_unlock(&cache->lock);
+  return TRUE; // new buffer
 }
 
 void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
                                              const int32_t order)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
+
+  const int base_type = _pipe_base_type(pipe);
   int invalidated = 0;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+
+  for(GList *l = cache->entries; l; l = g_list_next(l))
   {
-    if((cache->ioporder[k] >= order) && (cache->hash[k] != DT_INVALID_HASH))
+    dt_pixel_cache_entry_t *entry = l->data;
+    if(entry->pipe_type == base_type
+       && entry->ioporder >= order
+       && entry->hash != DT_INVALID_HASH)
     {
-      _mark_invalid_cacheline(cache, k);
+      // Remove from lookup table, mark as invalid
+      g_hash_table_steal(cache->lookup, &entry->hash);
+      entry->hash = DT_INVALID_HASH;
+      entry->ioporder = 0;
       invalidated++;
     }
   }
 
+  dt_pthread_mutex_unlock(&cache->lock);
+
+  // bcache is per-pipe, handle outside the lock
   const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_HASH;
   pipe->bcache_hash = DT_INVALID_HASH;
 
@@ -476,92 +505,147 @@ void dt_dev_pixelpipe_important_cacheline(const dt_dev_pixelpipe_t *pipe,
                                           const void *data,
                                           const size_t size)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if((cache->data[k] == data)
-        && (size == cache->size[k])
-        && (cache->hash[k] != DT_INVALID_HASH))
-      cache->used[k] = -cache->entries;
-  }
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
+
+  dt_pixel_cache_entry_t *entry = _find_entry_by_data(cache, data);
+  if(entry && entry->size == size && entry->hash != DT_INVALID_HASH)
+    entry->important = TRUE;
+
+  dt_pthread_mutex_unlock(&cache->lock);
 }
 
 void dt_dev_pixelpipe_invalidate_cacheline(const dt_dev_pixelpipe_t *pipe,
                                            const void *data)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
+
+  dt_pixel_cache_entry_t *entry = _find_entry_by_data(cache, data);
+  if(entry)
   {
-    if(cache->data[k] == data) _mark_invalid_cacheline(cache, k);
+    if(entry->hash != DT_INVALID_HASH)
+      g_hash_table_steal(cache->lookup, &entry->hash);
+    entry->hash = DT_INVALID_HASH;
+    entry->ioporder = 0;
   }
-}
 
-static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k)
-{
-  const size_t removed = cache->size[k];
-
-  dt_free_align(cache->data[k]);
-  cache->allmem -= removed;
-  cache->size[k] = 0;
-  cache->data[k] = NULL;
-  _mark_invalid_cacheline(cache, k);
-  return removed;
-}
-
-static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
-{
-  cache->lused = cache->linvalid = cache->limportant = 0;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if(cache->data[k]) cache->lused++;
-    if(cache->data[k] && (cache->hash[k] == DT_INVALID_HASH)) cache->linvalid++;
-    if(cache->used[k] < 0) cache->limportant++;
-  }
+  dt_pthread_mutex_unlock(&cache->lock);
 }
 
 void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
 
-  // we have pixelpipes like export & thumbnail that just use
-  // alternating buffers so no cleanup
-  if(cache->entries == DT_PIPECACHE_MIN) return;
+  // Export/thumbnail pipes have no cache interaction
+  if(!pipe->use_cache) return;
 
-  // We always free cachelines marked as not valid
-  size_t freed = 0;
+  dt_pthread_mutex_lock(&cache->lock);
+
+  const int base_type = _pipe_base_type(pipe);
   size_t freed_invalid = 0;
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+
+  // First pass: free all invalid entries for this pipe type
+  GList *l = cache->entries;
+  while(l)
   {
-    if((cache->hash[k] == DT_INVALID_HASH) && cache->data)
-      freed_invalid += _free_cacheline(cache, k);
+    GList *next = g_list_next(l);
+    dt_pixel_cache_entry_t *entry = l->data;
+    if(entry->hash == DT_INVALID_HASH && entry->pipe_type == base_type)
+    {
+      freed_invalid += entry->size;
+      cache->current_memory -= entry->size;
+      cache->entries = g_list_delete_link(cache->entries, l);
+      dt_free_align(entry->data);
+      free(entry);
+    }
+    l = next;
   }
 
-  while(cache->memlimit && (cache->memlimit < cache->allmem))
+  // Second pass: evict LRU if still over budget.
+  // IMPORTANT: only evict entries from THIS pipe's type. Other pipes may be
+  // actively processing with pointers into their cache entries. Freeing those
+  // entries would cause use-after-free (the caller holds raw pointers to
+  // entry->data and entry->dsc during the entire recursive processing chain).
+  size_t freed_lru = 0;
+  while(cache->max_memory && cache->current_memory > cache->max_memory)
   {
-    const int k = _get_oldest_cacheline(cache, DT_CACHETEST_USED);
-    if(k == 0) break;
+    dt_pixel_cache_entry_t *victim = NULL;
+    int64_t oldest = G_MAXINT64;
+    for(GList *m = cache->entries; m; m = g_list_next(m))
+    {
+      dt_pixel_cache_entry_t *e = m->data;
+      if(e->pipe_type == base_type && !e->important && e->last_access < oldest)
+      {
+        oldest = e->last_access;
+        victim = e;
+      }
+    }
+    if(!victim)
+    {
+      // All entries of this type are important — evict oldest important as last resort
+      for(GList *m = cache->entries; m; m = g_list_next(m))
+      {
+        dt_pixel_cache_entry_t *e = m->data;
+        if(e->pipe_type == base_type && e->last_access < oldest)
+        {
+          oldest = e->last_access;
+          victim = e;
+        }
+      }
+    }
+    if(!victim) break;
 
-    freed += _free_cacheline(cache, k);
+    if(victim->hash != DT_INVALID_HASH)
+      g_hash_table_steal(cache->lookup, &victim->hash);
+
+    freed_lru += victim->size;
+    cache->current_memory -= victim->size;
+    cache->entries = g_list_remove(cache->entries, victim);
+    dt_free_align(victim->data);
+    free(victim);
   }
 
-  _cline_stats(cache);
+  // Compute stats for reporting
+  uint32_t lused = 0, linvalid = 0, limportant = 0;
+  for(GList *m = cache->entries; m; m = g_list_next(m))
+  {
+    dt_pixel_cache_entry_t *e = m->data;
+    if(e->data) lused++;
+    if(e->hash == DT_INVALID_HASH) linvalid++;
+    if(e->important) limportant++;
+  }
+
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i). Freed: invalid %iMB used %iMB. Using %iMB, limit=%iMB",
-    cache->entries, cache->limportant, cache->lused,
-    _to_mb(freed_invalid), _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
+    "%u lines (important=%u, used=%u, invalid=%u). Freed: invalid %iMB lru %iMB. Using %iMB, limit=%iMB",
+    g_list_length(cache->entries), limportant, lused, linvalid,
+    _to_mb(freed_invalid), _to_mb(freed_lru), _to_mb(cache->current_memory), _to_mb(cache->max_memory));
+
+  dt_pthread_mutex_unlock(&cache->lock);
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
+  dt_dev_pixelpipe_cache_t *cache = darktable.pipeline_cache;
+  dt_pthread_mutex_lock(&cache->lock);
 
-  _cline_stats(cache);
+  uint32_t lused = 0, linvalid = 0, limportant = 0;
+  for(GList *l = cache->entries; l; l = g_list_next(l))
+  {
+    dt_pixel_cache_entry_t *e = l->data;
+    if(e->data) lused++;
+    if(e->hash == DT_INVALID_HASH) linvalid++;
+    if(e->important) limportant++;
+  }
+
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f",
-    cache->entries, cache->limportant, cache->lused, cache->linvalid,
-    _to_mb(cache->allmem), _to_mb(cache->memlimit),
+    "%u lines (important=%u, used=%u, invalid=%u). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f",
+    g_list_length(cache->entries), limportant, lused, linvalid,
+    _to_mb(cache->current_memory), _to_mb(cache->max_memory),
     (double)(cache->hits) / fmax(1.0, pipe->runs),
     (double)(cache->hits) / fmax(1.0, cache->tests));
+
+  dt_pthread_mutex_unlock(&cache->lock);
 }
 
 // clang-format off
@@ -569,4 +653,3 @@ void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

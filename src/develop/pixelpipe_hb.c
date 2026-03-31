@@ -1657,19 +1657,30 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   if(cache_available)
   {
-    dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
+    const gboolean is_new = dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                output, out_format, module, TRUE);
 
     if(dt_pipe_shutdown(pipe))
       return TRUE;
 
-    dt_print_pipe(DT_DEBUG_PIPE,
-                  "pipe data: from cache",
-                  pipe, module, DT_DEVICE_NONE, &roi_in, NULL);
-    // we're done! as colorpicker/scopes only work on gamma iop
-    // input -- which is unavailable via cache -- there's no need to
-    // run these
-    return FALSE;
+    // cache_get returns FALSE on a real cache hit (existing data).
+    // If it returned TRUE, the entry was evicted between cache_available
+    // and cache_get — fall through to normal processing.
+    if(!is_new)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE,
+                    "pipe data: from cache",
+                    pipe, module, DT_DEVICE_NONE, &roi_in, NULL);
+      // we're done! as colorpicker/scopes only work on gamma iop
+      // input -- which is unavailable via cache -- there's no need to
+      // run these
+      return FALSE;
+    }
+
+    // Entry was evicted between cache_available and cache_get.
+    // Invalidate the freshly allocated entry so subsequent cache_get
+    // calls for this hash allocate properly and don't see stale data.
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output);
   }
 
   // 2) if history changed or exit event, abort processing?

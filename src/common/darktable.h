@@ -469,6 +469,7 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   gboolean pipe_cache;
+  struct dt_dev_pixelpipe_cache_t *pipeline_cache; // global shared pixel cache for all pipes
   int gui_running;		// atomic, access with g_atomic_int_*()
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;

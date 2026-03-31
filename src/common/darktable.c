@@ -65,6 +65,7 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/pixelpipe_cache.h"
 #include "gui/accelerators.h"
 #include "gui/workspace.h"
 #include "gui/gtk.h"
@@ -1913,6 +1914,13 @@ int dt_init(int argc,
   darktable.camctl = dt_camctl_new();
 #endif
 
+  // Initialize the global pipeline cache before creating any pipes.
+  // Budget: 1/2 of mipmap memory (shared by all pipe types).
+  {
+    const size_t cache_budget = MAX(64lu * 1024 * 1024, res->mipmap_memory / 2);
+    dt_dev_pixelpipe_cache_init_global(cache_budget);
+  }
+
   darktable.develop = malloc(sizeof(dt_develop_t));
   dt_dev_init(darktable.develop, TRUE);
 
@@ -2214,6 +2222,9 @@ void dt_cleanup()
   else
     dt_control_cleanup(FALSE);
 
+
+  // Clean up the global pipeline cache after all pipes are destroyed
+  dt_dev_pixelpipe_cache_cleanup_global();
 
   dt_image_cache_cleanup();
   dt_mipmap_cache_cleanup();
