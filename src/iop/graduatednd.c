@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,8 +127,8 @@ typedef struct dt_iop_graduatednd_data_t
   float hardness; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
-  float color[4];    // RGB color of gradient
-  float color1[4];   // inverted color (1 - c)
+  dt_aligned_pixel_t color;    // RGB color of gradient
+  dt_aligned_pixel_t color1;   // inverted color (1 - c)
 } dt_iop_graduatednd_data_t;
 
 
@@ -719,9 +719,9 @@ int scrolled(
   {
     float dens;
     if(up)
-      dens = fminf(8.0, p->density + 0.1);
+      dens = fminf(8.0f, p->density + 0.1f);
     else
-      dens = fmaxf(-8.0, p->density - 0.1);
+      dens = fmaxf(-8.0f, p->density - 0.1f);
     if(dens != p->density)
     {
       dt_bauhaus_slider_set(g->density, dens);
@@ -732,9 +732,9 @@ int scrolled(
   {
     float comp;
     if(up)
-      comp = fminf(100.0, p->hardness + 1.0);
+      comp = fminf(100.0f, p->hardness + 1.0f);
     else
-      comp = fmaxf(0.0, p->hardness - 1.0);
+      comp = fmaxf(0.0f, p->hardness - 1.0f);
     if(comp != p->hardness)
     {
       dt_bauhaus_slider_set(g->hardness, comp);
@@ -747,18 +747,18 @@ int scrolled(
 DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _density_times_length(const float dens, const float length)
 {
-  return (dens * CLAMP(0.5f + length, 0.0f, 1.0f) / 8.0f);
+  return (dens * CLIP(0.5f + length) / 8.0f);
 }
 
 DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _compute_density(const float dens, const float length)
 {
-#if 1
+#ifdef __FAST_MATH__
   // !!! approximation is ok only when highest density is 8
   // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
   // use exp2f approximation to calculate e^(ln2*x/8)
   // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-  const float t = DT_M_LN2f * _density_times_length(dens,length);
+  const float t = M_LN2f * _density_times_length(dens,length);
   const float d1 = t * t * 0.5f;
   const float d2 = d1 * t * 0.333333333f;
   const float d3 = d2 * t * 0.25f;
@@ -799,8 +799,8 @@ void process(dt_iop_module_t *self,
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float cosv_hh_inv = cosv * hh_inv;
-  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0f * 2;
+  const float filter_radie = hypotf(hh, hw) / hh;
+  const float offset = data->offset / 100.0f * 2.0f;
 
   const float filter_hardness = (1.0f / filter_radie)
                                 / (1.0f - (0.5f + (data->hardness / 100.0f) * 0.9f / 2.0f)) * 0.5f;
@@ -927,7 +927,8 @@ void process(dt_iop_module_t *self,
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
-               cl_mem dev_in, cl_mem dev_out,
+               cl_mem dev_in,
+               cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
@@ -949,20 +950,14 @@ int process_cl(dt_iop_module_t *self,
   const float v = deg2radf(-data->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
-  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0f * 2;
+  const float filter_radie = hypotf(hh, hw) / hh;
+  const float offset = data->offset / 100.0f * 2.0f;
   const float density = data->density;
 
-#if 1
-  const float filter_hardness = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
-#else
-  const float hardness = data->hardness / 100.0f;
-  const float t = 1.0f - .8f / (.8f + hardness);
-  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
-#endif
+  const float filter_hardness = (1.0f / filter_radie)
+                                / (1.0f - (0.5f + (data->hardness / 100.0f) * 0.9f / 2.0f)) * 0.5f;
 
-  const float length_base = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + iy * hh_inv) - 1.0 + offset)
+  const float length_base = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0f + iy * hh_inv) - 1.0f + offset)
                             * filter_hardness;
   const float length_inc_y = -cosv * hh_inv * filter_hardness;
   const float length_inc_x = sinv * hw_inv * filter_hardness;
@@ -971,7 +966,7 @@ int process_cl(dt_iop_module_t *self,
   const int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARRAY(4, data->color), CLARG(density),
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(data->color), CLARG(density),
     CLARG(length_base), CLARG(length_inc_x), CLARG(length_inc_y));
 }
 #endif
@@ -1026,9 +1021,9 @@ void commit_params(dt_iop_module_t *self,
   d->color[3] = 0.0f;
 
   if(d->density < 0)
-    for(int l = 0; l < 4; l++) d->color[l] = 1.0 - d->color[l];
+    for(int l = 0; l < 4; l++) d->color[l] = 1.0f - d->color[l];
 
-  for(int l = 0; l < 4; l++) d->color1[l] = 1.0 - d->color[l];
+  for(int l = 0; l < 4; l++) d->color1[l] = 1.0f - d->color[l];
 }
 
 void init_pipe(dt_iop_module_t *self,
