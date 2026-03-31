@@ -5013,7 +5013,8 @@ GtkWidget *dt_gui_popover_menu_from_model(GtkWidget *parent, GMenu *menu)
   GtkWidget *popover_menu;
 
 #if GTK_CHECK_VERSION(4, 0, 0)
-  popover_menu = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+  popover_menu = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(menu),
+                                                      GTK_POPOVER_MENU_NESTED);
   gtk_widget_set_parent(popover_menu, parent);
 #else
   popover_menu = gtk_popover_new_from_model(parent, G_MENU_MODEL(menu));

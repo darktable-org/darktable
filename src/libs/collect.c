@@ -3139,22 +3139,11 @@ static void _menuitem_mode_change(GSimpleAction *action,
                                   GVariant *parameter,
                                   gpointer userdata)
 {
-<<<<<<< HEAD
-  dt_lib_collect_t *m = (dt_lib_collect_t *)userdata;
-
-  dt_lib_collect_mode_t mode = 0;
-  int rule_index = 0;
-
-  g_variant_get(parameter, "(ii)", &mode, &rule_index);
-
-  dt_lib_collect_rule_t *d = &m->rule[rule_index];
-=======
   dt_lib_collect_mode_t mode;
   dt_lib_collect_rule_t *d = NULL;
 
   if(!_process_variant_params(parameter, userdata, &mode, &d))
     return;
->>>>>>> 0566cb200c (migrate collection popover menu)
 
   // add next row with and operator
   const int num = d->num + 1;

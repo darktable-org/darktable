@@ -513,8 +513,6 @@ static void _dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
   const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
   const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
 
-  // g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(_free_module_info), minfo);
-
   int cnt = 0;
   gchar *active_preset_name = NULL;
   gboolean selected_writeprotect = FALSE;
