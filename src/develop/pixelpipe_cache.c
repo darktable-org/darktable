@@ -100,6 +100,40 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
   cache->data = NULL;
 }
 
+void dt_dev_pixelpipe_compute_global_hashes(dt_dev_pixelpipe_t *pipe)
+{
+  /* Pre-compute cumulative hashes for every piece in the pipe.
+     Each piece->global_hash represents the hash of:
+       - pipe identity (imgid, type, want_detail_mask)
+       - color profiles
+       - all upstream piece->hash values (including this piece)
+     This allows O(1) cache lookups instead of O(N) chain walks
+     when no color picker is active.
+     Color picker state is NOT included because it can change
+     between sync and processing.
+  */
+  const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
+                                         (uint32_t)pipe->type,
+                                         (uint32_t)pipe->want_detail_mask };
+  dt_hash_t cumulative = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(uint32_t) * 3);
+  cumulative = dt_hash(cumulative, &pipe->input_profile_info, sizeof(pipe->input_profile_info));
+  cumulative = dt_hash(cumulative, &pipe->work_profile_info, sizeof(pipe->work_profile_info));
+  cumulative = dt_hash(cumulative, &pipe->output_profile_info, sizeof(pipe->output_profile_info));
+
+  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
+  {
+    dt_dev_pixelpipe_iop_t *piece = nodes->data;
+    const gboolean included = piece->module->enabled || piece->enabled;
+    const gboolean skipped = dt_iop_module_is_skipped(piece->module->dev, piece->module)
+      && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+    if(!skipped && included)
+    {
+      cumulative = dt_hash(cumulative, &piece->hash, sizeof(piece->hash));
+    }
+    piece->global_hash = cumulative;
+  }
+}
+
 static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
                                                 const int position,
                                                 const dt_iop_roi_t *roi)
@@ -118,9 +152,44 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
        6) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
           for better support of dt_dev_pixelpipe_piece_hash()
   */
+
+  // Fast path: use precomputed global_hash when available and roi is provided.
+  // The global_hash includes pipe identity (imgid + type + want_detail_mask) and profiles,
+  // which matches the roi!=NULL case. We can only use it if no color picker is active
+  // in any upstream module, since picker state is not baked into global_hash.
+  if(roi && position > 0)
+  {
+    // find the piece at position-1 (0-based index)
+    GList *node = g_list_nth(pipe->nodes, position - 1);
+    if(node)
+    {
+      dt_dev_pixelpipe_iop_t *piece = node->data;
+      if(piece->global_hash != DT_INVALID_HASH)
+      {
+        // check if any upstream module has an active color picker
+        gboolean has_picker = FALSE;
+        GList *check = pipe->nodes;
+        for(int k = 0; k < position && check; k++)
+        {
+          dt_dev_pixelpipe_iop_t *p = check->data;
+          if(p->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+          {
+            has_picker = TRUE;
+            break;
+          }
+          check = g_list_next(check);
+        }
+
+        if(!has_picker)
+          return piece->global_hash;
+      }
+    }
+  }
+
+  // Slow path: walk the chain (used when roi==NULL, global_hash not computed, or picker active)
   const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
-                                        (uint32_t)pipe->type,
-                                        (uint32_t)pipe->want_detail_mask };
+                                         (uint32_t)pipe->type,
+                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(uint32_t) * (roi ? 3 : 1));
   hash = dt_hash(hash, &pipe->input_profile_info, sizeof(pipe->input_profile_info));
   hash = dt_hash(hash, &pipe->work_profile_info, sizeof(pipe->work_profile_info));

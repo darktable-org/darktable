@@ -96,6 +96,10 @@ void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
 void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe);
 
+/** pre-computes cumulative global_hash on every pipe piece.
+    Must be called after sync and before pipeline processing. */
+void dt_dev_pixelpipe_compute_global_hashes(struct dt_dev_pixelpipe_t *pipe);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -451,6 +451,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     piece->pipe = pipe;
     piece->data = NULL;
     piece->hash = DT_INVALID_HASH;
+    piece->global_hash = DT_INVALID_HASH;
     piece->process_cl_ready = FALSE;
     piece->process_tiling_ready = FALSE;
     piece->raster_masks = g_hash_table_new_full(g_direct_hash,
@@ -597,6 +598,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   {
     dt_dev_pixelpipe_iop_t *piece = nodes->data;
     piece->hash = DT_INVALID_HASH;
+    piece->global_hash = DT_INVALID_HASH;
     piece->enabled = piece->module->default_enabled;
     dt_iop_commit_params(piece->module,
                          piece->module->default_params,
@@ -3169,6 +3171,22 @@ restart:
   // check if we should obsolete caches
   if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(pipe);
   pipe->cache_obsolete = FALSE;
+
+  // set FAST flag before computing global hashes so they include the correct pipe type.
+  // _dev_pixelpipe_process_rec will re-assert the same value.
+  {
+    const dt_iop_module_t *gui_module = dt_dev_gui_module();
+    if(gui_module
+       && gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE
+       && pipe->type & DT_DEV_PIXELPIPE_BASIC
+       && dt_dev_modulegroups_test_activated(darktable.develop))
+      pipe->type |= DT_DEV_PIXELPIPE_FAST;
+    else
+      pipe->type &= ~DT_DEV_PIXELPIPE_FAST;
+  }
+
+  // pre-compute cumulative hashes on each pipe piece for O(1) cache lookups
+  dt_dev_pixelpipe_compute_global_hashes(pipe);
 
   // mask display off as a starting point
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
