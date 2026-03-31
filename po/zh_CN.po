@@ -1478,7 +1478,7 @@ msgid ""
 "this folder (and sub-folders) contains PFM files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
-"该目录（及其子目录）应包含光栅蒙版倒入模块使用的 PFM 文件。（设置在重启后生"
+"该目录（及其子目录）应包含光栅蒙版导入模块使用的 PFM 文件。（设置在重启后生"
 "效）"
 
 #: ../build/bin/preferences_gen.h:3416
@@ -6651,7 +6651,7 @@ msgstr "正在初始化信号和控制"
 
 #: ../src/common/darktable.c:1696
 msgid "importing default styles"
-msgstr "正在倒入默认样式"
+msgstr "正在导入默认样式"
 
 #: ../src/common/darktable.c:1796
 msgid "initializing GraphicsMagick"
