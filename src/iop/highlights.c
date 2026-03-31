@@ -553,6 +553,7 @@ int process_cl(dt_iop_module_t *self,
 
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const dt_iop_highlights_mode_t dmode =  d->mode;
+  const float clipper = d->clip * highlights_clip_magics[dmode];
 
   gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
@@ -566,12 +567,11 @@ int process_cl(dt_iop_module_t *self,
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
-        const float mclip = d->clip * highlights_clip_magics[d->mode];
         const float *c = pipe->dsc.temperature.coeffs;
-        float clips[4] = { mclip * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
-                           mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
-                           mclip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
-                           mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
+        float clips[4] = { clipper * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
+                           clipper * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
+                           clipper * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
+                           clipper * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
 
         dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
         if(!dev_xtrans) goto finish;
@@ -592,15 +592,12 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
-
   if(!filters)
   {
     // non-raw images use dedicated kernel which just clips
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, roi_in->width, roi_in->height,
       CLARG(dev_in), CLARG(dev_out),
-      CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(dmode), CLARG(clip));
+      CLARG(roi_in->width), CLARG(roi_in->height), CLARG(clipper));
   }
   else if(dmode == DT_IOP_HIGHLIGHTS_OPPOSED)
   {
@@ -612,7 +609,7 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, roi_in->width, roi_in->height,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(clip), CLARG(filters));
+      CLARG(clipper), CLARG(filters));
   }
   else if(dmode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
   {
@@ -640,27 +637,25 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(clip), CLARG(dev_xtrans),
+      CLARG(clipper), CLARG(dev_xtrans),
       CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
   }
   else if(dmode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
-    const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
     const dt_aligned_pixel_t clips = { clipper * pipe->dsc.processed_maximum[0],
                                        clipper * pipe->dsc.processed_maximum[1],
-                                       clipper * pipe->dsc.processed_maximum[2], clip };
+                                       clipper * pipe->dsc.processed_maximum[2], 1.0f };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
   }
   else // (dmode == DT_IOP_HIGHLIGHTS_CLIP)
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
-    dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(chr->late_correction)
+    dt_aligned_pixel_t clips = { clipper, clipper, clipper, clipper};
+    if(pipe->dsc.temperature.enabled && chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
       clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
-      clips[3] *= chr->as_shot[1] / chr->D65coeffs[1];
     }
 
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
@@ -735,12 +730,11 @@ static void process_clip(dt_iop_module_t *self,
     const uint8_t(*const xtrans)[6] = piece->xtrans;
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
-    if(chr->late_correction)
+    if(piece->pipe->dsc.temperature.enabled && chr->late_correction)
     {
       clips[0] *= chr->as_shot[0] / chr->D65coeffs[0];
       clips[1] *= chr->as_shot[1] / chr->D65coeffs[1];
       clips[2] *= chr->as_shot[2] / chr->D65coeffs[2];
-      clips[3] *= chr->as_shot[1] / chr->D65coeffs[1];
     }
     for(int row = 0; row < roi_out->height; row++)
     {
@@ -891,13 +885,13 @@ void process(dt_iop_module_t *self,
     high_quality = (level >= min_s);
   }
 
-  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
+  const float clipper = d->clip * highlights_clip_magics[dmode];
 
   if(filters == 0)
   {
     if(dmode == DT_IOP_HIGHLIGHTS_CLIP)
     {
-      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
+      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clipper);
       const float m = dt_iop_get_processed_minimum(piece);
       for_three_channels(k) pipe->dsc.processed_maximum[k] = m;
     }
@@ -908,7 +902,7 @@ void process(dt_iop_module_t *self,
       dt_free_align(out);
     }
 
-    float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
+    float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, clipper, piece) : NULL;
     if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
     else      dt_iop_piece_clear_raster(piece, NULL);
 
@@ -919,10 +913,9 @@ void process(dt_iop_module_t *self,
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
-      const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_INPAINT];
       const float clips[4] = { clipper * pipe->dsc.processed_maximum[0],
                                clipper * pipe->dsc.processed_maximum[1],
-                               clipper * pipe->dsc.processed_maximum[2], clip };
+                               clipper * pipe->dsc.processed_maximum[2], 1.0f };
 
       if(filters == 9u)
       {
@@ -963,9 +956,9 @@ void process(dt_iop_module_t *self,
     case DT_IOP_HIGHLIGHTS_LCH:
     {
       if(filters == 9u)
-        process_lch_xtrans(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
+        process_lch_xtrans(self, piece, ivoid, ovoid, roi_in, roi_out, clipper);
       else
-        process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
+        process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clipper);
       break;
     }
 
@@ -973,7 +966,7 @@ void process(dt_iop_module_t *self,
     {
       const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
 
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE, clipper);
       if(tmp)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, d, vmode, tmp);
       dt_free_align(tmp);
@@ -982,28 +975,27 @@ void process(dt_iop_module_t *self,
 
     case DT_IOP_HIGHLIGHTS_CLIP:
     {
-      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
+      process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clipper);
       break;
     }
 
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
-      const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
       const dt_aligned_pixel_t clips = { clipper * pipe->dsc.processed_maximum[0],
                                          clipper * pipe->dsc.processed_maximum[1],
-                                         clipper * pipe->dsc.processed_maximum[2], clip };
+                                         clipper * pipe->dsc.processed_maximum[2], clipper };
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
 
     default:
     {
-      _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality);
+      _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality, clipper);
       break;
     }
   }
 
-  float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
+  float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, clipper, piece) : NULL;
   if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
   else      dt_iop_piece_clear_raster(piece, NULL);
 

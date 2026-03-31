@@ -1058,16 +1058,16 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / DT_M_LN2f;
+  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / M_LN2f;
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / DT_M_LN2f);
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / M_LN2f);
   }
   else
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / DT_M_LN2f);
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / M_LN2f);
   }
 
   if(fabsf(expcomp1) - fabsf(expcomp2) > 1.f) // for great expcomp
@@ -1079,7 +1079,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = expf(expcomp * DT_M_LN2f);
+  const float gain = expf(expcomp * M_LN2f);
 
   const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;

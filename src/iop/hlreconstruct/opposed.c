@@ -221,12 +221,11 @@ static float *_process_opposed(dt_iop_module_t *self,
                                const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out,
                                const gboolean keep,
-                               const gboolean quality)
+                               const gboolean quality,
+                               const float clipval)
 {
-  dt_iop_highlights_data_t *d = piece->data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
-  const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
 
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
