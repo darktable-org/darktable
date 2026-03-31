@@ -152,6 +152,8 @@ static int generate_cache(lua_State *L)
     dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
     dt_mipmap_cache_release(&buf);
   }
+  // ensure mipmap written to disk
+  dt_mipmap_cache_evict(imgid);
   // thumbnail in sync with image
   dt_history_hash_set_mipmap(imgid);
 
