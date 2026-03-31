@@ -867,7 +867,7 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Lua options"), _("Lua options"));
 
-  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  GtkWidget *content_box = dt_gui_vbox();
   gtk_widget_set_valign(content_box, GTK_ALIGN_START);
   gtk_container_add(GTK_CONTAINER(viewport), content_box);
 
@@ -878,7 +878,7 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   // 1. add global scripts' prefs at the top level (no expander)
   // always create the grid so the selector row below is in the same column structure
   GtkWidget *global_grid = _make_pref_grid();
-  gtk_box_pack_start(GTK_BOX(content_box), global_grid, FALSE, FALSE, 0);
+  dt_gui_box_add(content_box, global_grid);
   int global_line = 0;
   for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
   {
@@ -924,11 +924,11 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   // 4. section label (updates with the active script) + indented stack
   const char *first_script = scripts->data;
   GtkWidget *section_label = dt_ui_section_label_new(_get_script_display_name(first_script));
-  gtk_box_pack_start(GTK_BOX(content_box), section_label, FALSE, FALSE, 0);
+  dt_gui_box_add(content_box, section_label);
 
   GtkWidget *script_stack = gtk_stack_new();
   gtk_widget_set_margin_start(script_stack, DT_PIXEL_APPLY_DPI(10));
-  gtk_box_pack_start(GTK_BOX(content_box), script_stack, FALSE, FALSE, 0);
+  dt_gui_box_add(content_box, script_stack);
 
   for(GList *l = scripts; l; l = l->next)
   {
