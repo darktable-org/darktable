@@ -89,10 +89,10 @@ Nvidia GPUs are recommended for safety because some AMD drivers behave unreliabl
 
 ### AI features (optional)
 
-Darktable includes optional AI-powered features such as neural denoise, upscale and object
-masks. These require building with `-DUSE_AI=ON` (off by default). AI features are
-disabled by default in preferences and must be enabled by the user. Models are downloaded
-from the AI tab in preferences.
+Darktable includes optional AI-powered features such as object masks, denoise and upscale.
+These require building with `-DUSE_AI=ON` (off by default), or `--enable-ai` when building
+with the build helper script `build.sh`. AI features are disabled by default in preferences
+and must be enabled by the user. Models are downloaded from the AI tab in preferences.
 
 **CPU inference** is bundled and works out of the box - no additional software is needed.
 On macOS (Apple Silicon), CoreML acceleration and on Windows, DirectML GPU acceleration
@@ -107,7 +107,8 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads) (for ONNX Runtime 1.20+)
   * Recommended: 8 GB+ VRAM
 * **AMD (ROCm):** Linux only.
-  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ONNX Runtime 1.20+, includes MIGraphX)
+  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ONNX Runtime 1.20+)
+  * MIGraphX (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
   * Supported AMD GPU (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
 * **Intel (OpenVINO):** Linux and Windows.
   * Intel integrated GPU (Gen9+), discrete Arc GPU, or NPU (Meteor Lake+)
