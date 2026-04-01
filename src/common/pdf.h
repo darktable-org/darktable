@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2023 darktable developers.
+ *    Copyright (C) 2015-2026 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,9 +17,10 @@
  */
 
 /*
- *  this is a simple PDF writer, capable of creating multi page PDFs with embedded images.
- *  it is NOT meant to be a full fledged PDF library, and shall never turn into something like that!
- *  see the main() function in pdf.c to see an example how to use this.
+ *  this is a simple PDF writer, capable of creating multi page PDFs
+ *  with embedded images.  it is NOT meant to be a full fledged PDF
+ *  library, and shall never turn into something like that!  see the
+ *  main() function in pdf.c to see an example how to use this.
  */
 
 #pragma once
@@ -110,23 +111,43 @@ static const struct
 
 // clang-format on
 
-static const int dt_pdf_paper_sizes_n = sizeof(dt_pdf_paper_sizes) / sizeof(dt_pdf_paper_sizes[0]) - 1;
+static const int dt_pdf_paper_sizes_n =
+  sizeof(dt_pdf_paper_sizes) / sizeof(dt_pdf_paper_sizes[0]) - 1;
 
 // construction of the pdf
-dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dpi, dt_pdf_stream_encoder_t default_encoder);
-int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename);
-int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t size);
-dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int width, int height, int bpp, int icc_id, float border);
-dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_images);
-void dt_pdf_finish(dt_pdf_t *pdf, dt_pdf_page_t **pages, int n_pages);
+dt_pdf_t *dt_pdf_start(const char *filename,
+                       const float width,
+                       const float height,
+                       const float dpi,
+                       const dt_pdf_stream_encoder_t default_encoder);
+int dt_pdf_add_icc(dt_pdf_t *pdf,
+                   const char *filename);
+int dt_pdf_add_icc_from_data(dt_pdf_t *pdf,
+                             const unsigned char *data,
+                             const size_t size);
+dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf,
+                                 const unsigned char *image,
+                                 const int width,
+                                 const int height,
+                                 const int bpp,
+                                 const int icc_id,
+                                 const float border);
+dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf,
+                               dt_pdf_image_t **images,
+                               const int n_images);
+void dt_pdf_finish(dt_pdf_t *pdf,
+                   dt_pdf_page_t **pages,
+                   const int n_pages);
 
 // general helpers
-int dt_pdf_parse_length(const char *str, float *length);
-int dt_pdf_parse_paper_size(const char *str, float *width, float *height);
+int dt_pdf_parse_length(const char *str,
+                        float *length);
+int dt_pdf_parse_paper_size(const char *str,
+                            float *width,
+                            float *height);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
