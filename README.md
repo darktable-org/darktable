@@ -247,8 +247,13 @@ Optional dependencies (no version requirement):
 * OpenJPEG *(for JPEG 2000 import & export)*
 * GraphicsMagick or ImageMagick *(for misc image format import)*
 
-To install all the dependencies on Linux systems, you may use the source repositories of your distribution
-(provided they are up-to-date):
+To install all the dependencies on Linux systems, you may use the source repository of your distribution.
+This will install the same packages that were used to build the official darktable package on your system.
+Most likely, you will want to build a newer version than the one packaged in the distribution. So please
+note that although this does not happen very often, it is possible that a new version of darktable will
+have a new (required or optional) dependency. So the commands below only simplify the creation of your
+build environment, but will not replace your attention to the build process and possibly finding and
+installing certain additional dependency packages.
 
 #### Fedora and RHEL/CentOS
 
@@ -264,14 +269,12 @@ sudo zypper si -d darktable
 
 #### Ubuntu
 
+Recent Ubuntu releases do not include the deb-src sources out of the box, even in commented form.
+To add them, you need to run "Software & Updates" and on the first tab that opens, "Ubuntu Software",
+check the "Source code" checkbox. Only after that you can use the following command:
+
 ```bash
-sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
-  | sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
-  && (
-    sudo apt-get update
-    sudo apt-get build-dep darktable
-  )
-sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
+sudo apt-get build-dep darktable
 ```
 
 #### Debian
