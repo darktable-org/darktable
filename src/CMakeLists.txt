@@ -462,6 +462,7 @@ if(USE_AI)
   FILE(GLOB SOURCE_FILES_AI
     "common/ai_models.c"
     "common/ai/segmentation.c"
+    "common/ai/restore.c"
     "develop/masks/object.c"
     "gui/preferences_ai.c"
   )

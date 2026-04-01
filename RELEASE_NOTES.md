@@ -63,6 +63,16 @@ changes (where available).
   MIGraphX, DirectML, or OpenVINO), and the lightweight decoder
   produces masks interactively.
 
+- Added neural restore module in the lighttable/darkroom sidebar for
+  AI-based image denoise and upscale. Supports NIND UNet denoiser and
+  BSRGAN 2x/4x super-resolution models via the ONNX backend. Features
+  include an interactive before/after split preview with area picker,
+  a detail recovery slider (wavelet-based texture restoration for
+  denoise), batch processing with tiled inference, and TIFF output
+  with automatic library import and image grouping. GPU acceleration
+  is supported through CUDA, ROCm/MIGraphX, DirectML, OpenVINO, and
+  CoreML execution providers.
+
 - Added `colorharmonizer` module that applies color harmony
   corrections in UCS color space, rotating hues toward a target
   harmony structure (complementary, split-complementary, triadic,
