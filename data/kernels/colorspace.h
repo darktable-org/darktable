@@ -952,9 +952,10 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 
 static inline float lookup_gamut(global const float *gamut_lut, const float x)
 {
+
   // Linearly interpolate the value of the gamut LUT at the hue angle in radians.
   // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (float)LUT_ELEM * (x + M_PI_F) / (2.f * M_PI_F);
 
   // find the 2 closest integer coordinates (next/previous)
   const float x_prev = floor(x_test);
