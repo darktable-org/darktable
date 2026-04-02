@@ -434,7 +434,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const dt_mask_id_t formid)
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
   // we copy all the points
-  if(fbase->functions)
+  if(fbase->functions && fbase->functions->duplicate_points)
     fbase->functions->duplicate_points(dev, fbase, fdest);
 
   // we save the form
@@ -470,7 +470,7 @@ int dt_masks_get_area(const dt_iop_module_t *module,
                       int *posx,
                       int *posy)
 {
-  if(form->functions)
+  if(form->functions && form->functions->get_area)
     return form->functions->get_area(module, piece, form, width, height, posx, posy);
 
   return 0;
@@ -489,7 +489,7 @@ int dt_masks_get_source_area(dt_iop_module_t *module,
   // must be a clone form
   if(form->type & DT_MASKS_CLONE)
   {
-    if(form->functions)
+    if(form->functions && form->functions->get_source_area)
       return form->functions->get_source_area(module, piece, form, width, height,
                                               posx, posy);
   }

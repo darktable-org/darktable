@@ -1103,31 +1103,6 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
 
 // --- mask event handlers ---
 
-static void _object_get_distance(const float x,
-                                 const float y,
-                                 const float as,
-                                 dt_masks_form_gui_t *gui,
-                                 const int index,
-                                 const int num_points,
-                                 gboolean *inside,
-                                 gboolean *inside_border,
-                                 int *near,
-                                 gboolean *inside_source,
-                                 float *dist)
-{
-  (void)x;
-  (void)y;
-  (void)as;
-  (void)gui;
-  (void)index;
-  (void)num_points;
-  (void)inside;
-  (void)inside_border;
-  (void)near;
-  (void)inside_source;
-  (void)dist;
-}
-
 static int _object_events_mouse_scrolled(dt_iop_module_t *module,
                                          const float pzx,
                                          const float pzy,
@@ -1791,117 +1766,6 @@ static void _object_events_post_expose(cairo_t *cr,
 
 // --- stub functions (object is transient -- result is path masks) ---
 
-static int _object_get_points(dt_develop_t *dev,
-                              const float x,
-                              const float y,
-                              const float radius,
-                              const float radius2,
-                              const float rotation,
-                              float **points,
-                              int *points_count)
-{
-  (void)dev;
-  (void)x;
-  (void)y;
-  (void)radius;
-  (void)radius2;
-  (void)rotation;
-  *points = NULL;
-  *points_count = 0;
-  return 0;
-}
-
-static int _object_get_points_border(dt_develop_t *dev,
-                                     struct dt_masks_form_t *form,
-                                     float **points,
-                                     int *points_count,
-                                     float **border,
-                                     int *border_count,
-                                     const int source,
-                                     const dt_iop_module_t *module)
-{
-  (void)dev;
-  (void)form;
-  (void)points;
-  (void)points_count;
-  (void)border;
-  (void)border_count;
-  (void)source;
-  (void)module;
-  return 0;
-}
-
-static int _object_get_source_area(dt_iop_module_t *module,
-                                   dt_dev_pixelpipe_iop_t *piece,
-                                   dt_masks_form_t *form,
-                                   int *width,
-                                   int *height,
-                                   int *posx,
-                                   int *posy)
-{
-  (void)module;
-  (void)piece;
-  (void)form;
-  (void)width;
-  (void)height;
-  (void)posx;
-  (void)posy;
-  return 1;
-}
-
-static int _object_get_area(const dt_iop_module_t *const restrict module,
-                            const dt_dev_pixelpipe_iop_t *const restrict piece,
-                            dt_masks_form_t *const restrict form,
-  int *width,
-  int *height,
-  int *posx,
-  int *posy)
-{
-  (void)module;
-  (void)piece;
-  (void)form;
-  (void)width;
-  (void)height;
-  (void)posx;
-  (void)posy;
-  return 1;
-}
-
-static int _object_get_mask(const dt_iop_module_t *const restrict module,
-                            const dt_dev_pixelpipe_iop_t *const restrict piece,
-                            dt_masks_form_t *const restrict form,
-  float **buffer,
-  int *width,
-  int *height,
-  int *posx,
-  int *posy)
-{
-  (void)module;
-  (void)piece;
-  (void)form;
-  (void)buffer;
-  (void)width;
-  (void)height;
-  (void)posx;
-  (void)posy;
-  return 1;
-}
-
-static int _object_get_mask_roi
-  (const dt_iop_module_t *const restrict module,
-   const dt_dev_pixelpipe_iop_t *const restrict piece,
-   dt_masks_form_t *const form,
-   const dt_iop_roi_t *const roi,
-   float *const restrict buffer)
-{
-  (void)module;
-  (void)piece;
-  (void)form;
-  (void)roi;
-  (void)buffer;
-  return 1;
-}
-
 static GSList *_object_setup_mouse_actions
   (const struct dt_masks_form_t *const form)
 {
@@ -1945,8 +1809,6 @@ static GSList *_object_setup_mouse_actions
   return lm;
 }
 
-static void _object_sanitize_config(dt_masks_type_t type) { (void)type; }
-
 static void _object_set_form_name(dt_masks_form_t *const form,
                                   const size_t nb)
 {
@@ -1983,15 +1845,6 @@ static void _object_set_hint_message(const dt_masks_form_gui_t *const gui,
                    "<b>opacity</b>: ctrl+scroll (%d%%)"),
                  opacity);
   }
-}
-
-static void _object_duplicate_points(dt_develop_t *dev,
-                                     dt_masks_form_t *const base,
-                                     dt_masks_form_t *const dest)
-{
-  (void)dev;
-  (void)base;
-  (void)dest;
 }
 
 static void _object_modify_property(dt_masks_form_t *const form,
@@ -2062,35 +1915,23 @@ static void _object_modify_property(dt_masks_form_t *const form,
   }
 }
 
-static void
-_object_initial_source_pos(const float iwd,
-                           const float iht,
-                           float *x,
-                           float *y)
-{
-  (void)iwd;
-  (void)iht;
-  (void)x;
-  (void)y;
-}
-
 // the function table for object masks
 const dt_masks_functions_t dt_masks_functions_object = {
   .point_struct_size = sizeof(struct dt_masks_point_object_t),
-  .sanitize_config = _object_sanitize_config,
+  .sanitize_config = NULL,
   .setup_mouse_actions = _object_setup_mouse_actions,
   .set_form_name = _object_set_form_name,
   .set_hint_message = _object_set_hint_message,
   .modify_property = _object_modify_property,
-  .duplicate_points = _object_duplicate_points,
-  .initial_source_pos = _object_initial_source_pos,
-  .get_distance = _object_get_distance,
-  .get_points = _object_get_points,
-  .get_points_border = _object_get_points_border,
-  .get_mask = _object_get_mask,
-  .get_mask_roi = _object_get_mask_roi,
-  .get_area = _object_get_area,
-  .get_source_area = _object_get_source_area,
+  .duplicate_points = NULL,
+  .initial_source_pos = NULL,
+  .get_distance = NULL,
+  .get_points = NULL,
+  .get_points_border = NULL,
+  .get_mask = NULL,
+  .get_mask_roi = NULL,
+  .get_area = NULL,
+  .get_source_area = NULL,
   .mouse_moved = _object_events_mouse_moved,
   .mouse_scrolled = _object_events_mouse_scrolled,
   .button_pressed = _object_events_button_pressed,
