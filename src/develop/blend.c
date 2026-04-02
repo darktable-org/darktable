@@ -273,8 +273,12 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
   float *lum = dt_masks_calc_detail_mask(piece, threshold, detail);
   if(lum == NULL) goto error;
 
+  // src_hash encodes what the thresholded mask depends on (scharr data + slider value),
+  // so the distortion cache is invalidated when the details slider changes.
+  const dt_hash_t src_hash = dt_hash(p->scharr.hash, &level, sizeof(level));
+
   // here we have the slightly blurred full detail mask available
-  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
+  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self, src_hash);
   dt_free_align(lum);
 
   if(warp_mask == NULL) goto error;
@@ -815,8 +819,12 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   out = NULL;
   blur = NULL;
 
+  // src_hash encodes what the thresholded mask depends on (scharr data + slider value),
+  // so the distortion cache is invalidated when the details slider changes.
+  const dt_hash_t src_hash = dt_hash(p->scharr.hash, &level, sizeof(level));
+
   // here we have the slightly blurred full detail mask available
-  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
+  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self, src_hash);
   dt_free_align(lum);
   if(warp_mask == NULL)
   {
