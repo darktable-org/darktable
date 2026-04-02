@@ -981,31 +981,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  gchar* compile_option_name_cname =
-    g_strdup_printf("%s%s_building", DT_CLDEVICE_HEAD, cl->dev[dev].cname);
-  const char* compile_opt = NULL;
-
-  if(dt_conf_key_exists(compile_option_name_cname)
-     && (dt_conf_get_int("performance_configuration_version_completed") > 17))
-    compile_opt = dt_conf_get_string_const(compile_option_name_cname);
-  else
-    compile_opt = dt_conf_get_bool("opencl_fast") ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
-
-  gchar *my_option = g_strdup(compile_opt);
-  dt_conf_set_string(compile_option_name_cname, my_option);
-
+  const char* compile_opt = dt_conf_get_bool("opencl_fast") ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
-                                my_option,
+                                compile_opt,
                                 cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
                                 _opencl_get_vendor_by_id(vendor_id));
   cl->dev[dev].options = g_strdup_printf("%s -I%s",
                              cl->dev[dev].cflags, escapedkerneldir);
 
-  dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
-
-  g_free(compile_option_name_cname);
-  g_free(my_option);
   g_free(escapedkerneldir);
   escapedkerneldir = NULL;
 
@@ -1015,6 +999,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                                      "colorspaces.cl",
                                                      "colorspace.h",
                                                      "common.h",
+                                                     "guided_filter.cl",
                                                      NULL };
 
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_ERRORS 5
-#define DT_OPENCL_MAX_INCLUDES 7
+#define DT_OPENCL_MAX_INCLUDES 8
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_APPLE 16940800
@@ -72,9 +72,7 @@ G_BEGIN_DECLS
 #define DT_OPENCL_DEFAULT_COMPILE_OPTI ("-cl-fast-relaxed-math")
 #define DT_CLDEVICE_HEAD ("cldevice_v6_")
 
-// version for current darktable cl kernels
-// this is reflected in the kernel directory and allows to
-// enforce a new kernel compilation cycle
+// version for current darktable cl kernels reflected in the kernel directory
 #define DT_OPENCL_KERNELS 6
 
 typedef enum dt_opencl_memory_t
