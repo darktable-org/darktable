@@ -155,6 +155,8 @@ static const char *_status_to_string(dt_ai_model_status_t status)
   {
   case DT_AI_MODEL_DOWNLOADED:
     return _("downloaded");
+  case DT_AI_MODEL_UPDATE_AVAILABLE:
+    return _("update available");
   case DT_AI_MODEL_UPDATE_REQUIRED:
     return _("update required");
   case DT_AI_MODEL_DOWNLOADING:
@@ -177,6 +179,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
   gtk_list_store_clear(data->model_store);
 
   dt_ai_models_refresh_status(darktable.ai_registry);
+  dt_ai_models_check_updates(darktable.ai_registry);
 
   const int count = dt_ai_models_get_count(darktable.ai_registry);
   dt_print(DT_DEBUG_AI, "[preferences_ai] refreshing model list, count=%d", count);
@@ -194,7 +197,8 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       model->id ? model->id : "(null)");
 
     // check if this model is the active one for its task
-    const gboolean is_downloaded = (model->status == DT_AI_MODEL_DOWNLOADED);
+    const gboolean is_downloaded = (model->status == DT_AI_MODEL_DOWNLOADED
+                                    || model->status == DT_AI_MODEL_UPDATE_AVAILABLE);
     gboolean is_active = FALSE;
     if(model->task && model->task[0])
     {
@@ -226,6 +230,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       model->is_default ? _("yes") : _("no"),
       COL_VERSION,
       (model->status == DT_AI_MODEL_DOWNLOADED
+       || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
        || model->status == DT_AI_MODEL_UPDATE_REQUIRED)
         ? (model->version ? model->version : "0.0") : "–",
       COL_ID,
@@ -696,6 +701,7 @@ static void _on_download_selected(GtkButton *button, gpointer user_data)
     if(model)
     {
       gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                                || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
                                 || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
       dt_ai_model_free(model);
       if(need_download && !_download_model_with_dialog(data, id))
@@ -720,6 +726,7 @@ static void _on_download_default(GtkButton *button, gpointer user_data)
     gboolean need_download
       = (model->is_default
          && (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+             || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
              || model->status == DT_AI_MODEL_UPDATE_REQUIRED));
     char *id = need_download ? g_strdup(model->id) : NULL;
     dt_ai_model_free(model);
@@ -748,6 +755,7 @@ static void _on_download_all(GtkButton *button, gpointer user_data)
     if(!model)
       continue;
     gboolean need_download = (model->status == DT_AI_MODEL_NOT_DOWNLOADED
+                              || model->status == DT_AI_MODEL_UPDATE_AVAILABLE
                               || model->status == DT_AI_MODEL_UPDATE_REQUIRED);
     char *id = need_download ? g_strdup(model->id) : NULL;
     dt_ai_model_free(model);
@@ -828,7 +836,8 @@ static void _on_delete_selected(GtkButton *button, gpointer user_data)
     dt_ai_model_t *model = dt_ai_models_get_by_id(darktable.ai_registry, id);
     if(model)
     {
-      if(model->status == DT_AI_MODEL_DOWNLOADED)
+      if(model->status == DT_AI_MODEL_DOWNLOADED
+         || model->status == DT_AI_MODEL_UPDATE_AVAILABLE)
       {
         to_delete = g_list_append(to_delete, g_strdup(id));
         delete_count++;
@@ -876,12 +885,6 @@ static void _on_delete_selected(GtkButton *button, gpointer user_data)
   }
 
   g_list_free_full(to_delete, g_free);
-}
-
-static void _on_refresh(GtkButton *button, gpointer user_data)
-{
-  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
-  _refresh_model_list(data);
 }
 
 #if !defined(__APPLE__)
@@ -1421,6 +1424,8 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 #ifdef HAVE_AI_DOWNLOAD
   // download selected button
   data->download_selected_btn = gtk_button_new_with_label(_("download selected"));
+  gtk_widget_set_tooltip_text(data->download_selected_btn,
+    _("download or update the selected models"));
   g_signal_connect(
     data->download_selected_btn,
     "clicked",
@@ -1430,6 +1435,8 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   // download default button
   data->download_default_btn = gtk_button_new_with_label(_("download default"));
+  gtk_widget_set_tooltip_text(data->download_default_btn,
+    _("download or update all default models"));
   g_signal_connect(
     data->download_default_btn,
     "clicked",
@@ -1439,17 +1446,23 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   // download all button
   data->download_all_btn = gtk_button_new_with_label(_("download all"));
+  gtk_widget_set_tooltip_text(data->download_all_btn,
+    _("download or update all available models"));
   g_signal_connect(data->download_all_btn, "clicked", G_CALLBACK(_on_download_all), data);
   dt_gui_box_add(button_box, data->download_all_btn);
 #endif // HAVE_AI_DOWNLOAD
 
   // install model button
   data->install_btn = gtk_button_new_with_label(_("install model"));
+  gtk_widget_set_tooltip_text(data->install_btn,
+    _("install a model from a local .dtmodel file"));
   g_signal_connect(data->install_btn, "clicked", G_CALLBACK(_on_install_model), data);
   dt_gui_box_add(button_box, data->install_btn);
 
   // delete selected button
   data->delete_selected_btn = gtk_button_new_with_label(_("delete selected"));
+  gtk_widget_set_tooltip_text(data->delete_selected_btn,
+    _("remove the selected models from disk"));
   g_signal_connect(
     data->delete_selected_btn,
     "clicked",
@@ -1457,10 +1470,6 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data);
   dt_gui_box_add(button_box, data->delete_selected_btn);
 
-  // refresh button
-  GtkWidget *refresh_btn = gtk_button_new_with_label(_("refresh"));
-  g_signal_connect(refresh_btn, "clicked", G_CALLBACK(_on_refresh), data);
-  dt_gui_box_add(button_box, refresh_btn);
 
   dt_gui_box_add(data->controls_box, models_grid);
 
