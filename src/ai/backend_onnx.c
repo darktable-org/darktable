@@ -347,6 +347,20 @@ static gpointer _init_ort_api(gpointer data)
     GModule *ort_mod = g_module_open(ORT_LIBRARY_PATH, G_MODULE_BIND_LAZY);
     _stderr_suppress_end(saved);
 
+    // If the linker can't find it by name alone (e.g. custom install prefix
+    // like /opt/darktable), try the darktable plugin directory where cmake
+    // installs the bundled ORT alongside other libraries.
+    if(!ort_mod && darktable.plugindir)
+    {
+      gchar *bundled = g_build_filename(darktable.plugindir, ORT_LIBRARY_PATH, NULL);
+      const int saved2 = _stderr_suppress_begin();
+      ort_mod = g_module_open(bundled, G_MODULE_BIND_LAZY);
+      _stderr_suppress_end(saved2);
+      if(ort_mod)
+        dt_print(DT_DEBUG_AI, "[darktable_ai] loaded ORT from plugindir: %s", bundled);
+      g_free(bundled);
+    }
+
     if(!ort_mod)
     {
       dt_print(DT_DEBUG_AI,
