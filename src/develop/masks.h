@@ -503,7 +503,7 @@ static inline int dt_masks_get_mask(const dt_iop_module_t *const module,
                                     int *posx,
                                     int *posy)
 {
-  return form->functions
+  return (form->functions && form->functions->get_mask)
     ? form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy)
     : 0;
 }
@@ -514,7 +514,7 @@ static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module,
                                         const dt_iop_roi_t *roi,
                                         float *buffer)
 {
-  return form->functions
+  return (form->functions && form->functions->get_mask_roi)
     ? form->functions->get_mask_roi(module, piece, form, roi, buffer)
     : 0;
 }
