@@ -1585,12 +1585,8 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       else if(property == DT_COLLECTION_PROP_MONTH)
       {
         const int month_num = sqlite3_column_int(stmt, 0);
-        const char *month_names[] = { N_("January"), N_("February"), N_("March"),
-                                      N_("April"), N_("May"), N_("June"),
-                                      N_("July"), N_("August"), N_("September"),
-                                      N_("October"), N_("November"), N_("December") };
         if(month_num >= 1 && month_num <= 12)
-          name = g_strdup_printf("%02d - %s", month_num, _(month_names[month_num - 1]));
+          name = g_strdup_printf("%02d - %s", month_num, _(dt_month_names[month_num - 1].name));
         else
           name = g_strdup(_("unknown"));
       }
@@ -2354,12 +2350,8 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         else if(property == DT_COLLECTION_PROP_MONTH)
         {
           const int month_num = sqlite3_column_int(stmt, 0);
-          const char *month_names[] = { N_("January"), N_("February"), N_("March"),
-                                        N_("April"), N_("May"), N_("June"),
-                                        N_("July"), N_("August"), N_("September"),
-                                        N_("October"), N_("November"), N_("December") };
           if(month_num >= 1 && month_num <= 12)
-            folder = _(month_names[month_num - 1]);
+            folder = _(dt_month_names[month_num - 1].name);
           else
             folder = _("unknown");
         }
