@@ -132,6 +132,15 @@ typedef struct _range_t
   GtkTreePath *path2;
 } _range_t;
 
+typedef struct filmroll_row_t
+{
+  char *folder;
+  char *value;
+  int id;
+  int count;
+  int status;
+} filmroll_row_t;
+
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 
 static void _lib_folders_update_collection(const gchar *filmroll);
@@ -154,6 +163,20 @@ static void row_activated_with_event(GtkTreeView *view,
 static int _is_time_property(const int property);
 
 static void _populate_collect_combo(GtkWidget *w);
+
+static gint _sort_filmroll_rows(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return g_ascii_strcasecmp(ra->folder, rb->folder);
+}
+
+static gint _sort_filmroll_by_id(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return ra->id - rb->id;
+}
 
 int last_state = 0;
 
@@ -2224,17 +2247,11 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
           if(sort_by_import_time)
           {
-            if(sort_descending)
-              order_by = g_strdup("film_rolls_id DESC");
-            else
-              order_by = g_strdup("film_rolls_id ASC");
+            order_by = g_strdup(sort_descending ? "film_rolls_id DESC" : "film_rolls_id ASC");
           }
           else
           {
-            if(sort_descending)
-              order_by = g_strdup("lower(folder) DESC");
-            else
-              order_by = g_strdup("lower(folder) ASC");
+            order_by = g_strdup(sort_descending ? "lower(folder) DESC" : "lower(folder) ASC");
           }
 
           // clang-format off
@@ -2261,6 +2278,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     if(strlen(query) > 0)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      
+      GList *rows = NULL;
+
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
@@ -2275,6 +2295,17 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         {
           folder = dt_image_film_roll_name(folder);
           status = !sqlite3_column_int(stmt, 3);
+
+          filmroll_row_t *r = g_malloc(sizeof(*r));
+          r->folder = g_strdup(folder);
+          r->value = g_strdup(value);
+          r->id = sqlite3_column_int(stmt, 1);
+          r->count = count;
+          r->status = status;
+
+          rows = g_list_prepend(rows, r);
+
+          continue;
         }
         else if(property == DT_COLLECTION_PROP_RATING)
         {
@@ -2344,6 +2375,56 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         g_free(text);
         g_free(escaped_text);
       }
+
+      if(property == DT_COLLECTION_PROP_FILMROLL)
+      {
+        const gboolean sort_by_import_time =
+          dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
+      
+        if(sort_by_import_time)
+        {      
+          rows = g_list_sort(rows, _sort_filmroll_by_id);
+        }
+        else
+        {
+          rows = g_list_sort(rows, _sort_filmroll_rows);
+        }
+      
+        if(sort_descending)
+          rows = g_list_reverse(rows);
+      
+        for(GList *l = rows; l; l = l->next)
+        {
+          filmroll_row_t *r = l->data;
+      
+          gchar *text = g_strdup(r->value);
+          gchar *ptr = text;
+          while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr))
+            ptr[0] = '?';
+      
+          gchar *escaped_text = g_markup_escape_text(text, -1);
+      
+          gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
+                                            DT_LIB_COLLECT_COL_TEXT, r->folder,
+                                            DT_LIB_COLLECT_COL_ID, r->id,
+                                            DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
+                                            DT_LIB_COLLECT_COL_PATH, r->value,
+                                            DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                                            DT_LIB_COLLECT_COL_COUNT, r->count,
+                                            DT_LIB_COLLECT_COL_UNREACHABLE, r->status,
+                                            -1);
+      
+          g_free(text);
+          g_free(escaped_text);
+          g_free(r->folder);
+          g_free(r->value);
+          g_free(r);
+        }
+      
+        g_list_free(rows);
+        rows = NULL;
+      }
+
       sqlite3_finalize(stmt);
     }
 
