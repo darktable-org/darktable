@@ -47,6 +47,10 @@
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 
+// forward declarations for mask cache helpers
+static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece);
+static void _free_distort_bufs(dt_dev_pixelpipe_t *pipe);
+
 typedef enum dt_pixelpipe_flow_t
 {
   PIXELPIPE_FLOW_NONE = 0,
@@ -278,6 +282,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->runs = 0;
   pipe->bcache_data = NULL;
   pipe->bcache_hash = DT_INVALID_HASH;
+  memset(pipe->mask_distort_buf, 0, sizeof(pipe->mask_distort_buf));
+  memset(pipe->mask_distort_buf_size, 0, sizeof(pipe->mask_distort_buf_size));
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
@@ -339,6 +345,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_free_align(pipe->bcache_data);
+  _free_distort_bufs(pipe);
 
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
@@ -385,6 +392,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->histogram = NULL;
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
+    _clear_piece_mask_caches(piece);
     free(piece);
   }
   g_list_free(pipe->nodes);
@@ -3372,6 +3380,116 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
+// ensure ping-pong buffer [idx] can hold at least 'num_floats' floats.
+// returns pointer or NULL on OOM.
+static float *_ensure_distort_buf(dt_dev_pixelpipe_t *pipe, const int idx, const size_t num_floats)
+{
+  const size_t needed = num_floats * sizeof(float);
+  if(pipe->mask_distort_buf_size[idx] >= needed)
+    return pipe->mask_distort_buf[idx];
+
+  dt_free_align(pipe->mask_distort_buf[idx]);
+  pipe->mask_distort_buf[idx] = dt_alloc_align_float(num_floats);
+  pipe->mask_distort_buf_size[idx] = pipe->mask_distort_buf[idx] ? needed : 0;
+  return pipe->mask_distort_buf[idx];
+}
+
+static void _free_distort_bufs(dt_dev_pixelpipe_t *pipe)
+{
+  for(int i = 0; i < 2; i++)
+  {
+    dt_free_align(pipe->mask_distort_buf[i]);
+    pipe->mask_distort_buf[i] = NULL;
+    pipe->mask_distort_buf_size[i] = 0;
+  }
+}
+
+// compute a hash for a cached detail mask at a given piece's output.
+// incorporates the scharr source hash and the cumulative pipe hash up to this piece.
+static dt_hash_t _detail_mask_cache_hash(dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_hash_t hash = piece->pipe->scharr.hash;
+  if(hash == DT_INVALID_HASH)
+    return DT_INVALID_HASH;
+
+  const dt_hash_t piece_hash = dt_dev_pixelpipe_piece_hash(piece, &piece->processed_roi_out, TRUE);
+  hash = dt_hash(hash, &piece_hash, sizeof(piece_hash));
+  return hash;
+}
+
+// compute a hash for a cached raster mask at a given piece's output.
+static dt_hash_t _raster_mask_cache_hash(dt_dev_pixelpipe_iop_t *piece,
+                                         dt_dev_pixelpipe_iop_t *source_piece,
+                                         const dt_mask_id_t raster_mask_id)
+{
+  dt_hash_t hash = DT_INITHASH;
+  hash = dt_hash(hash, &raster_mask_id, sizeof(raster_mask_id));
+  hash = dt_hash(hash, &source_piece->hash, sizeof(source_piece->hash));
+  const dt_hash_t piece_hash = dt_dev_pixelpipe_piece_hash(piece, &piece->processed_roi_out, TRUE);
+  hash = dt_hash(hash, &piece_hash, sizeof(piece_hash));
+  return hash;
+}
+
+// update the detail mask cache on a geometric piece after distortion.
+static void
+_update_detail_mask_cache(dt_dev_pixelpipe_iop_t *piece, const float *data,
+                          const dt_iop_roi_t *roi, const dt_hash_t src_hash)
+{
+  dt_dev_distorted_mask_cache_t *c = &piece->detail_mask_cache;
+  const size_t num_floats = (size_t)roi->width * roi->height;
+
+  // realloc only if size changed
+  if(c->data && (size_t)c->roi.width * c->roi.height != num_floats)
+  {
+    dt_free_align(c->data);
+    c->data = NULL;
+  }
+  if(!c->data)
+    c->data = dt_alloc_align_float(num_floats);
+
+  if(c->data)
+  {
+    dt_iop_image_copy(c->data, data, num_floats);
+    c->roi = *roi;
+    c->hash = _detail_mask_cache_hash(piece);
+    c->src_hash = src_hash;
+  }
+}
+
+// update the raster mask cache on a geometric piece after distortion.
+static void _update_raster_mask_cache(dt_dev_pixelpipe_iop_t *piece,
+                                      const float *data,
+                                      const dt_iop_roi_t *roi,
+                                      dt_dev_pixelpipe_iop_t *source_piece,
+                                      const dt_mask_id_t raster_mask_id)
+{
+  dt_dev_distorted_mask_cache_t *c = &piece->raster_mask_cache;
+  const size_t num_floats = (size_t)roi->width * roi->height;
+
+  if(c->data && (size_t)c->roi.width * c->roi.height != num_floats)
+  {
+    dt_free_align(c->data);
+    c->data = NULL;
+  }
+  if(!c->data)
+    c->data = dt_alloc_align_float(num_floats);
+
+  if(c->data)
+  {
+    dt_iop_image_copy(c->data, data, num_floats);
+    c->roi = *roi;
+    c->hash = _raster_mask_cache_hash(piece, source_piece, raster_mask_id);
+  }
+}
+
+static void _clear_piece_mask_caches(dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_free_align(piece->detail_mask_cache.data);
+  memset(&piece->detail_mask_cache, 0, sizeof(dt_dev_distorted_mask_cache_t));
+  dt_free_align(piece->raster_mask_cache.data);
+  memset(&piece->raster_mask_cache, 0, sizeof(dt_dev_distorted_mask_cache_t));
+}
+
 static inline gboolean _distort_piece_roi(const dt_dev_pixelpipe_iop_t *piece)
 {
   const gboolean missing =
@@ -3496,9 +3614,73 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
     }
     else
     {
-      dt_print_pipe(DT_DEBUG_VERBOSE, "source raster mask",
-                piece->pipe, source_piece->module, DT_DEVICE_NONE, &source_piece->processed_roi_in, &source_piece->processed_roi_out);
+      dt_print_pipe(DT_DEBUG_VERBOSE,
+                    "source raster mask",
+                    piece->pipe,
+                    source_piece->module,
+                    DT_DEVICE_NONE,
+                    &source_piece->processed_roi_in,
+                    &source_piece->processed_roi_out);
+
+      // search backward from target for a valid cached raster mask
+      GList *start_iter = NULL;
+      const float *start_data = NULL;
+
+      // find target position so we can walk backward
+      GList *target_iter = NULL;
       for(GList *iter = g_list_next(source_iter); iter; iter = g_list_next(iter))
+      {
+        dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+        if(target_module && it_piece->module == target_module)
+        {
+          target_iter = iter;
+          break;
+        }
+      }
+
+      if(target_iter)
+      {
+        for(GList *iter = g_list_previous(target_iter); iter != source_iter;
+            iter = g_list_previous(iter))
+        {
+          dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+          if(it_piece->module->distort_mask && it_piece->raster_mask_cache.data &&
+             !_skip_piece_on_tags(it_piece))
+          {
+            const dt_hash_t expected =
+              _raster_mask_cache_hash(it_piece, source_piece, raster_mask_id);
+            if(expected != DT_INVALID_HASH && it_piece->raster_mask_cache.hash == expected)
+            {
+              start_iter = g_list_next(iter);
+              start_data = it_piece->raster_mask_cache.data;
+              final_roi = &it_piece->raster_mask_cache.roi;
+              dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                            "raster mask cache hit",
+                            piece->pipe,
+                            it_piece->module,
+                            DT_DEVICE_NONE,
+                            NULL,
+                            NULL,
+                            "");
+              break;
+            }
+          }
+        }
+      }
+
+      // if no cache hit, start from the source
+      if(!start_iter)
+      {
+        start_iter = g_list_next(source_iter);
+        start_data = raster_mask;
+      }
+
+      // walk forward using ping-pong buffers
+      int buf_idx = 0;
+      const float *inmask = start_data;
+      gboolean distorted = FALSE;
+
+      for(GList *iter = start_iter; iter; iter = g_list_next(iter))
       {
         dt_dev_pixelpipe_iop_t *it_piece = iter->data;
         if(!_skip_piece_on_tags(it_piece))
@@ -3507,36 +3689,60 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
           {
             dt_iop_roi_t *roi = &it_piece->processed_roi_in;
             dt_iop_roi_t *roo = &it_piece->processed_roi_out;
-            float *tmp = dt_iop_image_alloc(roo->width, roo->height, 1);
-            if(tmp)
-            {
-              dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                              "distort raster mask",
-                              piece->pipe, it_piece->module, DT_DEVICE_NONE, roi, roo);
-              it_piece->module->distort_mask(it_piece->module, it_piece, raster_mask, tmp, roi, roo);
+            const size_t num_floats = (size_t)roo->width * roo->height;
 
-              if(*free_mask)
-                dt_free_align(raster_mask);
-              else
-                *free_mask = TRUE;
-
-              raster_mask = tmp;
-              final_roi = roo;
-            }
-            else
+            float *out = _ensure_distort_buf(piece->pipe, buf_idx, num_floats);
+            if(!out)
             {
               dt_print_pipe(DT_DEBUG_ALWAYS,
-                              "no distort raster mask",
-                              piece->pipe, it_piece->module, DT_DEVICE_NONE, roi, roo,
-                              "skipped transforming mask due to lack of memory");
+                            "no distort raster mask",
+                            piece->pipe,
+                            it_piece->module,
+                            DT_DEVICE_NONE,
+                            roi,
+                            roo,
+                            "skipped transforming mask due to lack of memory");
               goto failure;
             }
+
+            dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                          "distort raster mask",
+                          piece->pipe,
+                          it_piece->module,
+                          DT_DEVICE_NONE,
+                          roi,
+                          roo);
+
+            it_piece->module->distort_mask(it_piece->module, it_piece, inmask, out, roi, roo);
+
+            // cache at this geometric boundary
+            _update_raster_mask_cache(it_piece, out, roo, source_piece, raster_mask_id);
+
+            inmask = out;
+            final_roi = roo;
+            buf_idx = 1 - buf_idx;
+            distorted = TRUE;
           }
           else if(_distort_piece_roi(it_piece)) goto failure;
         }
 
         if(target_module && it_piece->module == target_module)
           break;
+      }
+
+      // if we distorted, return a freshly allocated copy (ping-pong bufs are reused)
+      if(distorted)
+      {
+        const size_t num_floats = (size_t)final_roi->width * final_roi->height;
+        float *result = dt_iop_image_alloc(final_roi->width, final_roi->height, 1);
+        if(result)
+        {
+          dt_iop_image_copy(result, inmask, num_floats);
+          raster_mask = result;
+          *free_mask = TRUE;
+        }
+        else
+          goto failure;
       }
     }
   }
@@ -3569,6 +3775,13 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 {
   if(pipe->scharr.data) dt_free_align(pipe->scharr.data);
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
+
+  // invalidate all per-piece mask caches since the source data is gone
+  for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+  {
+    dt_dev_pixelpipe_iop_t *piece = iter->data;
+    _clear_piece_mask_caches(piece);
+  }
 }
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -3673,41 +3886,99 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 // through all pipeline modules until target
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
-                                  const dt_iop_module_t *target_module)
+                                  const dt_iop_module_t *target_module,
+                                  const dt_hash_t src_hash)
 {
   if(!src) return NULL;
 
   dt_dev_pixelpipe_t *pipe = piece->pipe;
-  gboolean valid = FALSE;
   const gboolean raw_img = dt_image_is_raw(&pipe->image) || dt_image_is_mono_sraw(&pipe->image);
 
-  GList *source_iter;
-  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  // find the source module (demosaic or rawprepare)
+  GList *source_iter = NULL;
+  for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
   {
-    const dt_dev_pixelpipe_iop_t *candidate = source_iter->data;
+    const dt_dev_pixelpipe_iop_t *candidate = iter->data;
 
     if(dt_iop_module_is(candidate->module->so, "demosaic")
        && candidate->enabled
        && raw_img)
     {
-      valid = TRUE;
+      source_iter = iter;
       break;
     }
     if(dt_iop_module_is(candidate->module->so, "rawprepare")
        && candidate->enabled
        && !raw_img)
     {
-      valid = TRUE;
+      source_iter = iter;
       break;
     }
   }
-  if(!valid || !source_iter) return NULL;
+  if(!source_iter)
+    return NULL;
 
-  dt_iop_roi_t *final_roi = &pipe->scharr.roi;
+  // search backward from target for the nearest valid cached detail mask.
+  // this avoids re-distorting from the source when an intermediate result is available.
+  GList *start_iter = NULL;
+  const float *start_data = NULL;
+  dt_iop_roi_t *start_roi = NULL;
 
-  float *resmask = src;
-  float *inmask  = src;
-  for(GList *iter = source_iter; iter; iter = g_list_next(iter))
+  // first, find the target piece's position in the list so we can walk backward
+  GList *target_iter = NULL;
+  for(GList *iter = g_list_next(source_iter); iter; iter = g_list_next(iter))
+  {
+    dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+    if(it_piece->module == target_module)
+    {
+      target_iter = iter;
+      break;
+    }
+  }
+
+  if(target_iter)
+  {
+    for(GList *iter = g_list_previous(target_iter); iter != source_iter;
+        iter = g_list_previous(iter))
+    {
+      dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+      if(it_piece->module->distort_mask && it_piece->detail_mask_cache.data &&
+         !_skip_piece_on_tags(it_piece))
+      {
+        const dt_hash_t expected = _detail_mask_cache_hash(it_piece);
+        if(expected != DT_INVALID_HASH && it_piece->detail_mask_cache.hash == expected
+           && it_piece->detail_mask_cache.src_hash == src_hash)
+        {
+          start_iter = g_list_next(iter);
+          start_data = it_piece->detail_mask_cache.data;
+          start_roi = &it_piece->detail_mask_cache.roi;
+          dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+                        "detail mask cache hit",
+                        pipe,
+                        it_piece->module,
+                        DT_DEVICE_NONE,
+                        NULL,
+                        NULL,
+                        "");
+          break;
+        }
+      }
+    }
+  }
+
+  // if no cache hit, start from the source (scharr data)
+  if(!start_iter)
+  {
+    start_iter = source_iter;
+    start_data = src;
+    start_roi = &pipe->scharr.roi;
+  }
+
+  // walk forward using ping-pong buffers
+  int buf_idx = 0;
+  const float *inmask = start_data;
+  dt_iop_roi_t *final_roi = start_roi;
+  for(GList *iter = start_iter; iter; iter = g_list_next(iter))
   {
     dt_dev_pixelpipe_iop_t *it_piece = iter->data;
     if(!_skip_piece_on_tags(it_piece))
@@ -3716,24 +3987,41 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
       {
         dt_iop_roi_t *roi = &it_piece->processed_roi_in;
         dt_iop_roi_t *roo = &it_piece->processed_roi_out;
-        float *tmp = dt_iop_image_alloc(roo->width, roo->height, 1);
+        const size_t num_floats = (size_t)roo->width * roo->height;
+
+        float *out = _ensure_distort_buf(pipe, buf_idx, num_floats);
+        if(!out)
+          goto failure;
+
         dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                        "distort detail mask",
-                        pipe, it_piece->module, DT_DEVICE_NONE, roi, roo);
+                      "distort detail mask",
+                      pipe,
+                      it_piece->module,
+                      DT_DEVICE_NONE,
+                      roi,
+                      roo);
 
-        it_piece->module->distort_mask(it_piece->module, it_piece, inmask, tmp, roi, roo);
-        resmask = tmp;
-        if(inmask != src) dt_free_align(inmask);
-        inmask = tmp;
+        it_piece->module->distort_mask(it_piece->module, it_piece, inmask, out, roi, roo);
+
+        // cache this intermediate result at the geometric boundary
+        _update_detail_mask_cache(it_piece, out, roo, src_hash);
+
+        inmask = out;
         final_roi = roo;
+        buf_idx = 1 - buf_idx;
       }
-      else _distort_piece_roi(it_piece);
+      else
+      {
+        _distort_piece_roi(it_piece);
+      }
 
-      if(it_piece->module == target_module) break;
+      if(it_piece->module == target_module)
+        break;
     }
   }
-  const gboolean correct =  piece->processed_roi_out.width == final_roi->width
-                        &&  piece->processed_roi_out.height == final_roi->height;
+
+  const gboolean correct = piece->processed_roi_out.width == final_roi->width &&
+                           piece->processed_roi_out.height == final_roi->height;
 
   dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE,
                 correct ? "got detail mask" : "DETAIL SIZE MISMATCH",
@@ -3743,17 +4031,19 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                 final_roi->width, final_roi->height);
 
   if(!correct)
+    goto failure;
+
+  // return a freshly allocated copy — caller owns it, ping-pong bufs are reused
   {
-    if(resmask != src) dt_free_align(resmask);
-    resmask = NULL;
+    const size_t num_floats = (size_t)final_roi->width * final_roi->height;
+    float *result = dt_iop_image_alloc(final_roi->width, final_roi->height, 1);
+    if(result)
+      dt_iop_image_copy(result, inmask, num_floats);
+    return result;
   }
 
-  if(src && src == resmask)
-  {
-    resmask = dt_iop_image_alloc(pipe->scharr.roi.width, pipe->scharr.roi.height, 1);
-    dt_iop_image_copy(resmask, src, pipe->scharr.roi.width * pipe->scharr.roi.height);
-  }
-  return resmask;
+failure:
+  return NULL;
 }
 
 dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
