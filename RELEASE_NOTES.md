@@ -307,6 +307,9 @@ changes (where available).
 - Fixed darktable on startup failing to delete left over database
   lockfiles for non default workspaces.
 
+- Fixed a rare bug which appeared when scale-pixels module was moved above
+  the tone-mapper while applying a shift in "rotate and perspective" module.
+
 ## Lua
 
 ### API Version
