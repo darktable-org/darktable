@@ -38,6 +38,7 @@ typedef enum dt_ai_model_status_t
   DT_AI_MODEL_NOT_DOWNLOADED = 0,
   DT_AI_MODEL_DOWNLOADING,
   DT_AI_MODEL_DOWNLOADED,
+  DT_AI_MODEL_UPDATE_AVAILABLE,
   DT_AI_MODEL_UPDATE_REQUIRED,
   DT_AI_MODEL_ERROR,
 } dt_ai_model_status_t;
@@ -77,13 +78,14 @@ typedef void (*dt_ai_progress_callback)(const char *model_id,
  */
 typedef struct dt_ai_registry_t
 {
-  GList *models;           // List of dt_ai_model_t*
-  char *repository;        // GitHub repository (e.g. "darktable-org/darktable-ai")
-  char *models_dir;        // Path to user's models directory
-  char *cache_dir;         // Path to download cache directory
-  gboolean ai_enabled;     // Global AI enable/disable
+  GList *models;              // List of dt_ai_model_t*
+  char *repository;           // GitHub repository (e.g. "darktable-org/darktable-ai")
+  char *models_dir;           // Path to user's models directory
+  char *cache_dir;            // Path to download cache directory
+  gboolean ai_enabled;        // Global AI enable/disable
   dt_ai_provider_t provider;  // Selected execution provider
-  GMutex lock;             // Thread safety for registry access
+  gboolean updates_checked;   // TRUE after first check_updates call
+  GMutex lock;                // Thread safety for registry access
 } dt_ai_registry_t;
 
 // --- Core API ---
@@ -121,6 +123,15 @@ void dt_ai_models_init_lazy(dt_ai_registry_t *registry);
  * @param registry The registry to update
  */
 void dt_ai_models_refresh_status(dt_ai_registry_t *registry);
+
+/**
+ * @brief Check for model updates by fetching versions.json from the
+ *        remote repository. Sets DT_AI_MODEL_UPDATE_AVAILABLE on
+ *        models where a newer version exists but the installed
+ *        version still meets min_version
+ * @param registry The registry to update
+ */
+void dt_ai_models_check_updates(dt_ai_registry_t *registry);
 
 /**
  * @brief Clean up and free the registry

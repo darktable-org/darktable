@@ -788,6 +788,140 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
   g_mutex_unlock(&registry->lock);
 }
 
+void dt_ai_models_check_updates(dt_ai_registry_t *registry)
+{
+  if(!registry) return;
+
+  // only check once per session
+  g_mutex_lock(&registry->lock);
+  if(registry->updates_checked)
+  {
+    g_mutex_unlock(&registry->lock);
+    return;
+  }
+  registry->updates_checked = TRUE;
+  const char *repository = g_strdup(registry->repository);
+  g_mutex_unlock(&registry->lock);
+
+  if(!repository || !repository[0])
+  {
+    g_free((char *)repository);
+    return;
+  }
+
+  // find the latest compatible release tag
+  char *error_msg = NULL;
+  char *release_tag
+    = _find_latest_compatible_release(repository, &error_msg);
+  if(!release_tag)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: no compatible release found%s%s",
+             error_msg ? ": " : "", error_msg ? error_msg : "");
+    g_free(error_msg);
+    g_free((char *)repository);
+    return;
+  }
+  g_free(error_msg);
+
+  // fetch versions.json from the release
+  char *url = g_strdup_printf(
+    "https://github.com/%s/releases/download/%s/versions.json",
+    repository, release_tag);
+
+  CURL *curl = curl_easy_init();
+  if(!curl)
+  {
+    g_free(url);
+    g_free(release_tag);
+    g_free((char *)repository);
+    return;
+  }
+  dt_curl_init(curl, FALSE);
+
+  GString *response = g_string_new(NULL);
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _curl_write_string);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  curl_easy_cleanup(curl);
+  g_free(url);
+  g_free(release_tag);
+  g_free((char *)repository);
+
+  if(res != CURLE_OK || http_code != 200)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to fetch versions.json"
+             " (curl=%d, http=%ld)",
+             res, http_code);
+    g_string_free(response, TRUE);
+    return;
+  }
+
+  // parse versions.json
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_data(parser, response->str,
+                                 response->len, NULL))
+  {
+    g_object_unref(parser);
+    g_string_free(response, TRUE);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: failed to parse versions.json");
+    return;
+  }
+  g_string_free(response, TRUE);
+
+  JsonNode *root = json_parser_get_root(parser);
+  JsonObject *root_obj = json_node_get_object(root);
+  JsonObject *models_obj
+    = json_object_has_member(root_obj, "models")
+      ? json_object_get_object_member(root_obj, "models")
+      : NULL;
+
+  if(!models_obj)
+  {
+    g_object_unref(parser);
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] check_updates: no 'models' object in "
+             "versions.json");
+    return;
+  }
+
+  // compare remote versions with installed versions
+  g_mutex_lock(&registry->lock);
+  for(GList *l = registry->models; l; l = g_list_next(l))
+  {
+    dt_ai_model_t *model = (dt_ai_model_t *)l->data;
+    if(model->status != DT_AI_MODEL_DOWNLOADED)
+      continue;
+
+    if(!json_object_has_member(models_obj, model->id))
+      continue;
+
+    const char *remote_version
+      = json_object_get_string_member(models_obj, model->id);
+    if(!remote_version) continue;
+
+    if(_version_compare(model->version, remote_version) < 0)
+    {
+      model->status = DT_AI_MODEL_UPDATE_AVAILABLE;
+      dt_print(DT_DEBUG_AI,
+               "[ai_models] update available for %s: v%s -> v%s",
+               model->id,
+               model->version ? model->version : "?",
+               remote_version);
+    }
+  }
+  g_mutex_unlock(&registry->lock);
+  g_object_unref(parser);
+}
+
 void dt_ai_models_cleanup(dt_ai_registry_t *registry)
 {
   if(!registry)
