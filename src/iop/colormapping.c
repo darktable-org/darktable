@@ -914,6 +914,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
   if(!buffer)
   {
     dt_iop_gui_leave_critical_section(self);
+    --darktable.gui->reset;
     return;
   }
   dt_iop_image_copy_by_size(buffer, g->buffer, width, height, ch);
