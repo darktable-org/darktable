@@ -547,11 +547,35 @@ void dt_print_file(const dt_imgid_t imgid,
 
     cupsFreeDests(num_dests, dests);
 
-    // if we have a profile, disable cm on CUPS, this is important as dt does the cm
+    // When a printer ICC profile is selected, tell CUPS to skip its
+    // own color management — darktable already did the conversion
+    // via LittleCMS, and the ICC profile is embedded in the PDF.
+    //
+    // Linux: cm-calibration=true causes pdftoraster to set cm_disabled=1,
+    //        skipping its own color management.
+    //
+    // macOS: cgpdftoraster ignores cm-calibration. Instead we send
+    //        AP_ColorMatchingMode=AP_ApplicationColorMatching which
+    //        tells both cgpdftoraster and the printer driver that the
+    //        application already handled color matching.
 
     num_options = cupsAddOption("cm-calibration",
                                 *pinfo->printer.profile ? "true" : "false",
                                 num_options, &options);
+
+#ifdef __APPLE__
+    if(*pinfo->printer.profile)
+    {
+      // dot-notation variant appears to be legacy but is observed in
+      // print jobs from other macOS applications
+      num_options = cupsAddOption("AP.ColorMatchingMode",
+                                  "AP_ApplicationColorMatching",
+                                  num_options, &options);
+      num_options = cupsAddOption("AP_ColorMatchingMode",
+                                  "AP_ApplicationColorMatching",
+                                  num_options, &options);
+    }
+#endif
 
     // media to print on
 
