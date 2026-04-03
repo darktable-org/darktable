@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-03 11:39-0300\n"
-"PO-Revision-Date: 2026-04-03 11:39-0300\n"
+"POT-Creation-Date: 2026-04-04 09:13-0300\n"
+"PO-Revision-Date: 2026-04-04 09:28-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -104,7 +104,7 @@ msgid "on import"
 msgstr "ao importar"
 
 #: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1755
-#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:4893
+#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:4911
 #: ../build/bin/preferences_gen.h:3307
 msgctxt "preferences"
 msgid "always"
@@ -172,7 +172,7 @@ msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:1031 ../build/bin/conf_gen.h:2760
 #: ../build/bin/conf_gen.h:3723 ../build/bin/conf_gen.h:4151
-#: ../build/bin/conf_gen.h:4652
+#: ../build/bin/conf_gen.h:4670
 msgctxt "preferences"
 msgid "none"
 msgstr "nenhum"
@@ -350,7 +350,7 @@ msgid "8K"
 msgstr "8K"
 
 #: ../build/bin/conf_gen.h:1766 ../build/bin/conf_gen.h:3722
-#: ../build/bin/conf_gen.h:4896 ../build/bin/preferences_gen.h:4046
+#: ../build/bin/conf_gen.h:4914 ../build/bin/preferences_gen.h:4046
 msgctxt "preferences"
 msgid "auto"
 msgstr "automático"
@@ -727,31 +727,31 @@ msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4648 ../build/bin/preferences_gen.h:3493
+#: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:3493
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "relativo à cena (sigmóide)"
 
-#: ../build/bin/conf_gen.h:4649
+#: ../build/bin/conf_gen.h:4667
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "relativo à cena (fílmico)"
 
-#: ../build/bin/conf_gen.h:4650
+#: ../build/bin/conf_gen.h:4668
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "relativo à cena (AgX)"
 
-#: ../build/bin/conf_gen.h:4651
+#: ../build/bin/conf_gen.h:4669
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relativo à exibição (legado)"
 
-#: ../build/bin/conf_gen.h:4798
+#: ../build/bin/conf_gen.h:4816
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:4799
+#: ../build/bin/conf_gen.h:4817
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -759,62 +759,62 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:4815
+#: ../build/bin/conf_gen.h:4833
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:4816
+#: ../build/bin/conf_gen.h:4834
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:4817
+#: ../build/bin/conf_gen.h:4835
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:4881
+#: ../build/bin/conf_gen.h:4899
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:4882
+#: ../build/bin/conf_gen.h:4900
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:4883
+#: ../build/bin/conf_gen.h:4901
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:4894
+#: ../build/bin/conf_gen.h:4912
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:4895
+#: ../build/bin/conf_gen.h:4913
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:4897
+#: ../build/bin/conf_gen.h:4915
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:4898
+#: ../build/bin/conf_gen.h:4916
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:4899
+#: ../build/bin/conf_gen.h:4917
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:4900
+#: ../build/bin/conf_gen.h:4918
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -979,7 +979,7 @@ msgstr "mesa de luz"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
 #: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1123
+#: ../src/gui/preferences_ai.c:1126
 msgid "general"
 msgstr "geral"
 
@@ -2182,6 +2182,11 @@ msgid ""
 "<b>disabled:</b> the mouse wheel adjusts the control under the pointer and "
 "with <i>Ctrl+Alt</i> scrolls the panel."
 msgstr ""
+"na sala escura do darktable, quando você faz edições, todos os controles são listados em um painel à direita; você pode escolher se quer usar o scroll do mouse ou o gesto de rolar no touchpad para rolar o painel, ou mudar os valores do controle sob o ponteiro do mouse; esta última modalidade permite edição mais rápida, mas isto pode se rperigoso porque você pode mudar os valores do controle do módulo sem notar se não estiver acostumado\n"
+"\n"
+"<b>habilitado:</b> a roda do mouse rola o painel de módulos e com <i>Ctrl+Alt</i> ajusta o valor do controle\n"
+"\n"
+"<b>desabilitado:</b> a roda do mouse ajusta o controle sob o ponteiro e com <i>Ctrl+Alt</i> roda o painel."
 
 #: ../build/bin/preferences_gen.h:4414
 msgid "always show panels' scrollbars"
@@ -2505,7 +2510,7 @@ msgstr "outono"
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
 #: ../src/iop/channelmixerrgb.c:4647 ../src/iop/colorequal.c:2927
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:1999
-#: ../src/iop/temperature.c:2184 ../src/libs/collect.c:1966
+#: ../src/iop/temperature.c:2184 ../src/libs/collect.c:1989
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:47
 msgid "blue"
 msgstr "azul"
@@ -2550,7 +2555,7 @@ msgstr "contraste e nitidez"
 msgid "cyan"
 msgstr "ciano"
 
-#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3366
+#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3447
 #: ../src/libs/filtering.c:923 ../src/libs/filtering.c:983
 #: ../src/libs/filtering.c:1649 ../src/libs/filtering.c:1956
 #: ../src/libs/tools/darktable.c:64
@@ -2635,7 +2640,7 @@ msgstr "genérico"
 #: ../src/iop/channelmixerrgb.c:4646 ../src/iop/colorequal.c:2925
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1979
 #: ../src/iop/temperature.c:1997 ../src/iop/temperature.c:2183
-#: ../src/libs/collect.c:1966 ../src/libs/filters/colors.c:262
+#: ../src/libs/collect.c:1989 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:46
 msgid "green"
 msgstr "verde"
@@ -2688,7 +2693,7 @@ msgstr "pastéis"
 
 #: ../build/bin/styles_string.h:34 ../src/common/collection.c:1483
 #: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:385
-#: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:1966
+#: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:1989
 #: ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "roxo"
@@ -2709,7 +2714,7 @@ msgstr "roxo"
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
 #: ../src/iop/channelmixerrgb.c:4645 ../src/iop/colorequal.c:2922
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:1995
-#: ../src/iop/temperature.c:2182 ../src/libs/collect.c:1966
+#: ../src/iop/temperature.c:2182 ../src/libs/collect.c:1989
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:45
 msgid "red"
 msgstr "vermelho"
@@ -2746,7 +2751,7 @@ msgstr "destacar cor"
 #: ../src/common/collection.c:1477 ../src/common/colorlabels.c:382
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:854
 #: ../src/iop/colorequal.c:2924 ../src/iop/colorzones.c:2487
-#: ../src/iop/temperature.c:1985 ../src/libs/collect.c:1966
+#: ../src/iop/temperature.c:1985 ../src/libs/collect.c:1989
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "amarelo"
@@ -3171,7 +3176,7 @@ msgstr "preservar cores"
 #: ../src/gui/guides.c:833 ../src/iop/basecurve.c:2115
 #: ../src/iop/channelmixerrgb.c:4698 ../src/iop/clipping.c:1917
 #: ../src/iop/clipping.c:2099 ../src/iop/clipping.c:2114
-#: ../src/iop/retouch.c:499 ../src/libs/collect.c:2162
+#: ../src/iop/retouch.c:499 ../src/libs/collect.c:2185
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
@@ -3406,7 +3411,7 @@ msgstr "base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1155
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1158
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4377,7 +4382,7 @@ msgstr "Monocromático"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:329
-#: ../src/common/collection.c:1495 ../src/libs/collect.c:1907
+#: ../src/common/collection.c:1495 ../src/libs/collect.c:1930
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
@@ -4827,7 +4832,7 @@ msgstr "habilitar reconstrução de realces"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 #: ../src/common/variables.c:197 ../src/common/variables.c:822
-#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586
@@ -5222,7 +5227,7 @@ msgstr "apenas vinheta manual"
 #: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2626
 #: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:3970
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3614
-#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3552
+#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3633
 #: ../src/libs/filtering.c:1515 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:210
 #: ../src/libs/modulegroups.c:2863 ../src/libs/modulegroups.c:2867
@@ -6091,19 +6096,19 @@ msgstr "menu flutuante"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:603
-#: ../src/gui/preferences_ai.c:776 ../src/gui/preferences_ai.c:944
-#: ../src/gui/preferences_ai.c:1031 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:608
+#: ../src/gui/preferences_ai.c:784 ../src/gui/preferences_ai.c:947
+#: ../src/gui/preferences_ai.c:1034 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
 #: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:379
-#: ../src/libs/collect.c:433 ../src/libs/collect.c:3383
+#: ../src/libs/collect.c:456 ../src/libs/collect.c:3464
 #: ../src/libs/copy_history.c:114 ../src/libs/export_metadata.c:166
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2090
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2083
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6115,7 +6120,7 @@ msgid "_cancel"
 msgstr "_cancelar"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1261
-#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3384
+#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3465
 #: ../src/libs/export_metadata.c:167 ../src/libs/metadata.c:846
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020
@@ -6293,47 +6298,46 @@ msgstr "Limite de uso da API do Github excedido, tente novamente mais tarde"
 msgid "GitHub API error (HTTP %ld)"
 msgstr "Erro da API do Github (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1097 ../src/common/ai_models.c:1126
+#: ../src/common/ai_models.c:1231 ../src/common/ai_models.c:1260
 msgid "invalid parameters"
 msgstr "parâmetros inválidos"
 
-#: ../src/common/ai_models.c:1100
+#: ../src/common/ai_models.c:1234
 #, c-format
 msgid "file not found: %s"
 msgstr "arquivo não encontrado: %s"
 
-#: ../src/common/ai_models.c:1103
+#: ../src/common/ai_models.c:1237
 msgid "failed to extract model archive"
 msgstr "falha ao extrair arquivo de modelos"
 
-#: ../src/common/ai_models.c:1134
+#: ../src/common/ai_models.c:1268
 msgid "model not found in registry"
 msgstr "modelo não encontrado no registro"
 
-#: ../src/common/ai_models.c:1140
+#: ../src/common/ai_models.c:1274
 msgid "model has no download asset defined"
-msgstr ""
+msgstr "modelo não tem recurso definido"
 
-#: ../src/common/ai_models.c:1151
-#, fuzzy
+#: ../src/common/ai_models.c:1285
 msgid "invalid asset filename"
-msgstr "tamanho inválido de papel"
+msgstr "nome de arquivo inválido para recurso"
 
-#: ../src/common/ai_models.c:1157
+#: ../src/common/ai_models.c:1291
 msgid "model is already downloading"
 msgstr "modelo já está sendo baixado"
 
-#: ../src/common/ai_models.c:1188
+#: ../src/common/ai_models.c:1322
 msgid "invalid repository format"
 msgstr "formato inválido de repositório"
 
-#: ../src/common/ai_models.c:1213
+#: ../src/common/ai_models.c:1347
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr ""
 "nenhuma release de modelo de IA compatível encontrada para darktable %s"
 
-#: ../src/common/ai_models.c:1229
+#: ../src/common/ai_models.c:1363
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6342,38 +6346,38 @@ msgstr ""
 "não foi possível obter checksum para %s - recusando baixar sem verificação "
 "de integridade"
 
-#: ../src/common/ai_models.c:1247
+#: ../src/common/ai_models.c:1381
 msgid "failed to build download url"
 msgstr "falha ao construir url para download"
 
-#: ../src/common/ai_models.c:1258
+#: ../src/common/ai_models.c:1392
 #, c-format
 msgid "failed to create file: %s"
 msgstr "falha ao criar arquivo: %s"
 
-#: ../src/common/ai_models.c:1282
+#: ../src/common/ai_models.c:1416
 msgid "failed to initialize download"
 msgstr "falha ao inicializar download"
 
-#: ../src/common/ai_models.c:1302
+#: ../src/common/ai_models.c:1436
 msgid "download cancelled"
 msgstr "download cancelado"
 
-#: ../src/common/ai_models.c:1304
+#: ../src/common/ai_models.c:1438
 #, c-format
 msgid "download failed: %s"
 msgstr "download falhou: %s"
 
-#: ../src/common/ai_models.c:1315
+#: ../src/common/ai_models.c:1449
 #, c-format
 msgid "http error: %ld"
 msgstr "erro http: %ld"
 
-#: ../src/common/ai_models.c:1338
+#: ../src/common/ai_models.c:1472
 msgid "checksum verification failed"
 msgstr "verificação de checksum falhou"
 
-#: ../src/common/ai_models.c:1348
+#: ../src/common/ai_models.c:1482
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6382,7 +6386,7 @@ msgstr ""
 "checksum não disponível para %s - rejeitando instalar sem verificação de "
 "integridade"
 
-#: ../src/common/ai_models.c:1358
+#: ../src/common/ai_models.c:1492
 msgid "failed to extract archive"
 msgstr "falha ao extrair arquivo"
 
@@ -6476,7 +6480,7 @@ msgstr "data/hora exportação"
 msgid "print time"
 msgstr "data/hora impressão"
 
-#: ../src/common/collection.c:632 ../src/libs/collect.c:3739
+#: ../src/common/collection.c:632 ../src/libs/collect.c:3820
 #: ../src/libs/filtering.c:2219 ../src/libs/filtering.c:2239
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:98
 msgid "history"
@@ -6568,24 +6572,24 @@ msgstr "programa de exposição"
 msgid "metering mode"
 msgstr "modo de medição"
 
-#: ../src/common/collection.c:1501 ../src/libs/collect.c:1907
+#: ../src/common/collection.c:1501 ../src/libs/collect.c:1930
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "auto-aplicado"
 
-#: ../src/common/collection.c:1507 ../src/libs/collect.c:1907
+#: ../src/common/collection.c:1507 ../src/libs/collect.c:1930
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "alterado"
 
 #: ../src/common/collection.c:1525 ../src/common/collection.c:1666
-#: ../src/libs/collect.c:1272 ../src/libs/collect.c:1462
-#: ../src/libs/collect.c:1488 ../src/libs/collect.c:1632
-#: ../src/libs/collect.c:2795
+#: ../src/libs/collect.c:1295 ../src/libs/collect.c:1485
+#: ../src/libs/collect.c:1511 ../src/libs/collect.c:1655
+#: ../src/libs/collect.c:2876
 msgid "not tagged"
 msgstr "não etiquetado"
 
-#: ../src/common/collection.c:1526 ../src/libs/collect.c:1488
+#: ../src/common/collection.c:1526 ../src/libs/collect.c:1511
 #: ../src/libs/map_locations.c:740
 msgid "tagged"
 msgstr "etiquetado"
@@ -6595,12 +6599,12 @@ msgid "tagged*"
 msgstr "etiquetado*"
 
 #. local copy
-#: ../src/common/collection.c:1561 ../src/libs/collect.c:1929
+#: ../src/common/collection.c:1561 ../src/libs/collect.c:1952
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "não copiado localmente"
 
-#: ../src/common/collection.c:1566 ../src/libs/collect.c:1928
+#: ../src/common/collection.c:1566 ../src/libs/collect.c:1951
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "copiado localmente"
@@ -6618,12 +6622,12 @@ msgstr "duplicatas apenas"
 #: ../src/common/collection.c:1638 ../src/common/collection.c:1750
 #: ../src/common/collection.c:1777 ../src/common/collection.c:1804
 #: ../src/common/collection.c:1830 ../src/common/collection.c:1856
-#: ../src/common/collection.c:2699 ../src/libs/collect.c:2322
-#: ../src/libs/collect.c:2323
+#: ../src/common/collection.c:2699 ../src/libs/collect.c:2353
+#: ../src/libs/collect.c:2354
 msgid "unnamed"
 msgstr "sem nome"
 
-#: ../src/common/collection.c:2305 ../src/libs/collect.c:2213
+#: ../src/common/collection.c:2305 ../src/libs/collect.c:2236
 msgid "not defined"
 msgstr "não definido"
 
@@ -7388,7 +7392,7 @@ msgstr "editor"
 msgid "title"
 msgstr "título"
 
-#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1361
+#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1364
 #: ../src/gui/styles_dialog.c:578 ../src/libs/filtering.c:61
 msgid "description"
 msgstr "descrição"
@@ -7533,7 +7537,7 @@ msgstr ""
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:163
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:165
 msgid "error"
 msgstr "erro"
 
@@ -7746,7 +7750,7 @@ msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
 #: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1333 ../src/gui/styles_dialog.c:571
+#: ../src/gui/preferences_ai.c:1336 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "nome"
@@ -8299,7 +8303,7 @@ msgid "no info"
 msgstr "sem informação"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:820
-#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586
@@ -9486,7 +9490,7 @@ msgstr "reverter"
 
 #. add default workspace
 #: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1396
+#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1399
 #: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
 msgid "default"
 msgstr "padrão"
@@ -10274,7 +10278,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2190
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2183
 msgid "process"
 msgstr "processamento"
 
@@ -13381,7 +13385,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2124
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2117
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
@@ -15144,9 +15148,9 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:777
-#: ../src/gui/preferences_ai.c:1032 ../src/gui/welcome.c:160
-#: ../src/libs/collect.c:433 ../src/libs/copy_history.c:114
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
+#: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
+#: ../src/libs/collect.c:456 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
 msgid "_open"
@@ -15156,7 +15160,7 @@ msgstr "_abrir"
 msgid "darktable preset files"
 msgstr "arquivos de predefinição do darktable"
 
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1047
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1050
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
@@ -15167,46 +15171,50 @@ msgid "downloaded"
 msgstr "baixado"
 
 #: ../src/gui/preferences_ai.c:159
+msgid "update available"
+msgstr "atualização disponível"
+
+#: ../src/gui/preferences_ai.c:161
 msgid "update required"
 msgstr "atualização necessária"
 
-#: ../src/gui/preferences_ai.c:161
+#: ../src/gui/preferences_ai.c:163
 msgid "downloading..."
 msgstr "baixando..."
 
-#: ../src/gui/preferences_ai.c:165
+#: ../src/gui/preferences_ai.c:167
 msgid "not downloaded"
 msgstr "não baixado"
 
-#: ../src/gui/preferences_ai.c:341
+#: ../src/gui/preferences_ai.c:346
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>não disponível, revertendo para CPU</i>"
 
-#: ../src/gui/preferences_ai.c:600
+#: ../src/gui/preferences_ai.c:605
 msgid "downloading AI model"
 msgstr "baixando modelo de IA"
 
-#: ../src/gui/preferences_ai.c:615
+#: ../src/gui/preferences_ai.c:620
 #, c-format
 msgid "downloading: %s"
 msgstr "baixando: %s"
 
-#: ../src/gui/preferences_ai.c:773
+#: ../src/gui/preferences_ai.c:781
 msgid "install AI model"
 msgstr "instalar modelo de IA"
 
-#: ../src/gui/preferences_ai.c:781
+#: ../src/gui/preferences_ai.c:789
 msgid "AI model packages (*.dtmodel)"
 msgstr "pacotes de modelos de IA (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:853
+#: ../src/gui/preferences_ai.c:862
 #, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
 msgstr[0] "excluir %d modelo selecionado?"
 msgstr[1] "excluir %d modelos selecionados?"
 
-#: ../src/gui/preferences_ai.c:895
+#: ../src/gui/preferences_ai.c:898
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -15215,7 +15223,7 @@ msgstr ""
 "ONNX Runtime %s detectado.\n"
 "Reinicie o darktable para aplicar."
 
-#: ../src/gui/preferences_ai.c:900
+#: ../src/gui/preferences_ai.c:903
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -15224,15 +15232,18 @@ msgstr ""
 "não é uma biblioteca ONNX Runtime válida:\n"
 "%s"
 
-#: ../src/gui/preferences_ai.c:917
+#: ../src/gui/preferences_ai.c:920
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
 "install one via your package manager or use\n"
 "the browse button to select a custom build."
 msgstr ""
+"nenhuma biblioteca ONNX Runtime encontrada.\n"
+"\n"
+"instale uma usando seu gerenciador de pacotes ou use o botão de navegar para selecionar um build personalizado."
 
-#: ../src/gui/preferences_ai.c:933
+#: ../src/gui/preferences_ai.c:936
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -15245,130 +15256,145 @@ msgstr ""
 "\n"
 "Reinicie o darktable para aplicar."
 
-#: ../src/gui/preferences_ai.c:941 ../src/gui/preferences_ai.c:1028
+#: ../src/gui/preferences_ai.c:944 ../src/gui/preferences_ai.c:1031
 msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
-#: ../src/gui/preferences_ai.c:945 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2091
+#: ../src/gui/preferences_ai.c:948 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2084
 msgid "_select"
 msgstr "_selecionar"
 
-#: ../src/gui/preferences_ai.c:951
+#: ../src/gui/preferences_ai.c:954
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "multiplas bibliotecas runtime ONNX encontradas:"
 
-#: ../src/gui/preferences_ai.c:1038
+#: ../src/gui/preferences_ai.c:1041
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "ONNX Runtime (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1041
+#: ../src/gui/preferences_ai.c:1044
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1094
+#: ../src/gui/preferences_ai.c:1097
 msgid "enable AI features"
 msgstr "habilitar features de IA"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1139
+#: ../src/gui/preferences_ai.c:1142
 msgid "execution provider"
 msgstr "provedor de execução"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1150
+#: ../src/gui/preferences_ai.c:1153
 msgid "select hardware acceleration for AI inference:"
 msgstr "selecione aceleração de IA para inferência por IA:"
 
-#: ../src/gui/preferences_ai.c:1194
+#: ../src/gui/preferences_ai.c:1197
 msgid "ONNX Runtime library"
 msgstr "biblioteca runtime ONNX"
 
-#: ../src/gui/preferences_ai.c:1208
-msgid "bundled (DirectML)"
-msgstr ""
-
 #: ../src/gui/preferences_ai.c:1211
-msgid "bundled (CPU only)"
-msgstr ""
+msgid "bundled (DirectML)"
+msgstr "agrupado (DirectML)"
 
 #: ../src/gui/preferences_ai.c:1214
+msgid "bundled (CPU only)"
+msgstr "agrupado (CPU apenas)"
+
+#: ../src/gui/preferences_ai.c:1217
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
 "requires restart to take effect."
 msgstr ""
 
-#: ../src/gui/preferences_ai.c:1223
+#: ../src/gui/preferences_ai.c:1226
 msgid "select a custom ONNX Runtime shared library"
 msgstr "selecione uma biblioteca compartilhara ONNX Runtime customizada"
 
-#: ../src/gui/preferences_ai.c:1225
+#: ../src/gui/preferences_ai.c:1228
 msgid "detect"
 msgstr "detectar"
 
-#: ../src/gui/preferences_ai.c:1227
+#: ../src/gui/preferences_ai.c:1230
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "procurar uma biblioteca runtime ONNX instalada no sistema"
 
-#: ../src/gui/preferences_ai.c:1262
+#: ../src/gui/preferences_ai.c:1265
 msgid "models"
 msgstr "modelos"
 
-#: ../src/gui/preferences_ai.c:1309
+#: ../src/gui/preferences_ai.c:1312
 msgid "select/deselect all"
 msgstr "selecionar/deselecionar tudo"
 
-#: ../src/gui/preferences_ai.c:1343 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1346 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "versão"
 
-#: ../src/gui/preferences_ai.c:1352
+#: ../src/gui/preferences_ai.c:1355
 msgid "task"
 msgstr "tarefa"
 
-#: ../src/gui/preferences_ai.c:1377
+#: ../src/gui/preferences_ai.c:1380
 msgid "enabled"
 msgstr "ativado"
 
-#: ../src/gui/preferences_ai.c:1387
+#: ../src/gui/preferences_ai.c:1390
 msgid "status"
 msgstr "estado"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1423
+#: ../src/gui/preferences_ai.c:1426
 msgid "download selected"
 msgstr "baixar selecionado"
 
+#: ../src/gui/preferences_ai.c:1428
+msgid "download or update the selected models"
+msgstr "baixar ou atualizar os modelos selecionados"
+
 #. download default button
-#: ../src/gui/preferences_ai.c:1432
+#: ../src/gui/preferences_ai.c:1437
 #, fuzzy
 msgid "download default"
 msgstr "padrões desabilitados"
 
+#: ../src/gui/preferences_ai.c:1439
+msgid "download or update all default models"
+msgstr "baixar ou atualizar todos os modelos padrão"
+
 #. download all button
-#: ../src/gui/preferences_ai.c:1441
+#: ../src/gui/preferences_ai.c:1448
 msgid "download all"
 msgstr "baixar todos"
 
+#: ../src/gui/preferences_ai.c:1450
+msgid "download or update all available models"
+msgstr "baixar ou atualizar todos os módulos disponíveis"
+
 #. install model button
-#: ../src/gui/preferences_ai.c:1447
+#: ../src/gui/preferences_ai.c:1456
 msgid "install model"
 msgstr "instalar modelo"
 
+#: ../src/gui/preferences_ai.c:1458
+msgid "install a model from a local .dtmodel file"
+msgstr "instalar um modelo de um arquivo local .dtmodel"
+
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1452
+#: ../src/gui/preferences_ai.c:1463
 msgid "delete selected"
 msgstr "deletar selecionados"
 
-#. refresh button
-#: ../src/gui/preferences_ai.c:1461
-msgid "refresh"
-msgstr "atualizar"
+#: ../src/gui/preferences_ai.c:1465
+msgid "remove the selected models from disk"
+msgstr "remover os modelos selecionados do disco"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1472
+#: ../src/gui/preferences_ai.c:1481
 msgid "AI"
 msgstr "IA"
 
@@ -15776,7 +15802,7 @@ msgstr "Boas edições com o dartkable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2216
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -15800,7 +15826,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2220
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2213
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -15928,7 +15954,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2216
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -16024,7 +16050,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2223
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2216
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -17404,7 +17430,7 @@ msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
 #: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
-#: ../src/libs/neural_restore.c:2127
+#: ../src/libs/neural_restore.c:2120
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -20199,6 +20225,8 @@ msgid ""
 "number of active harmony nodes in custom mode (2–4).\n"
 "nodes are numbered from the top; inactive nodes are hidden."
 msgstr ""
+"número de nós de harmonia ativos no modo personalizado (2-4).\n"
+"nós sào numerados a partir do topo; nós inativos ficam escondidos."
 
 #: ../src/iop/colorharmonizer.c:1494
 msgid ""
@@ -20206,6 +20234,9 @@ msgid ""
 "only active in 'custom' harmony mode.\n"
 "use the color picker to sample the desired hue from the image."
 msgstr ""
+"matiz deste nó de harmonia (0°–360°).\n"
+"somente ativo em modo de harmonia 'personalizado'.\n"
+"use o selecionador de cores para amostrar a matiz desejada da imagem."
 
 #: ../src/iop/colorharmonizer.c:1513
 msgid "vectorscope two-way sync"
@@ -23204,7 +23235,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2147
+#: ../src/libs/neural_restore.c:2140
 msgid "scale"
 msgstr "escala"
 
@@ -26140,11 +26171,11 @@ msgstr "velocidade de disparo"
 msgid "WB"
 msgstr "balanço de branco"
 
-#: ../src/libs/collect.c:162
+#: ../src/libs/collect.c:185
 msgid "collections"
 msgstr "coleções"
 
-#: ../src/libs/collect.c:167
+#: ../src/libs/collect.c:190
 msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
@@ -26152,45 +26183,45 @@ msgstr ""
 "definir critérios de busca para imagens\n"
 "a serem mostradas ou editadas"
 
-#: ../src/libs/collect.c:431
+#: ../src/libs/collect.c:454
 msgid "update path to files"
 msgstr "atualizar caminho para arquivos"
 
-#: ../src/libs/collect.c:515
+#: ../src/libs/collect.c:538
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema selecionando novo caminho para o rolo de filme em %s"
 
-#: ../src/libs/collect.c:589
+#: ../src/libs/collect.c:612
 msgid "update path to files..."
 msgstr "atualizar caminho para arquivos..."
 
-#: ../src/libs/collect.c:594
+#: ../src/libs/collect.c:617
 msgid "remove..."
 msgstr "remove..."
 
-#: ../src/libs/collect.c:1348
+#: ../src/libs/collect.c:1371
 msgid "uncategorized"
 msgstr "sem categoria"
 
-#: ../src/libs/collect.c:2285 ../src/libs/filters/rating_range.c:120
+#: ../src/libs/collect.c:2316 ../src/libs/filters/rating_range.c:120
 #: ../src/libs/filters/rating_range.c:146
 #: ../src/libs/filters/rating_range.c:151
 #: ../src/libs/filters/rating_range.c:302
 msgid "rejected"
 msgstr "rejeitadas"
 
-#: ../src/libs/collect.c:2288 ../src/libs/filters/rating_range.c:122
+#: ../src/libs/collect.c:2319 ../src/libs/filters/rating_range.c:122
 #: ../src/libs/filters/rating_range.c:146
 #: ../src/libs/filters/rating_range.c:303
 msgid "not rated"
 msgstr "não classificado"
 
-#: ../src/libs/collect.c:2472
+#: ../src/libs/collect.c:2553
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2476
+#: ../src/libs/collect.c:2557
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -26200,7 +26231,7 @@ msgstr ""
 "classificação em estrelas: 0-5\n"
 "imagens rejeitadas: -1"
 
-#: ../src/libs/collect.c:2484
+#: ../src/libs/collect.c:2565
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -26208,12 +26239,12 @@ msgstr ""
 "use <, <=, >, >=, <>, =, [;] como operadores\n"
 "digite datas no formato : YYYY:MM:DD hh:mm:ss.sss (só o ano é obrigatório)"
 
-#: ../src/libs/collect.c:2491
+#: ../src/libs/collect.c:2572
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "use `%' como curinga e `,' para separar valores"
 
-#: ../src/libs/collect.c:2498
+#: ../src/libs/collect.c:2579
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26226,7 +26257,7 @@ msgstr ""
 "shift+clique para incluir somente a hierarquia corrente (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-hierarquias (sufixo `|%')"
 
-#: ../src/libs/collect.c:2508
+#: ../src/libs/collect.c:2589
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26239,7 +26270,7 @@ msgstr ""
 "shift+clique para incluir somente o local atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-locais (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2518
+#: ../src/libs/collect.c:2599
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26252,52 +26283,52 @@ msgstr ""
 "shift+clique para incluir somente a pasta atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-pastas (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2526
+#: ../src/libs/collect.c:2607
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "use `%' como curinga"
 
-#: ../src/libs/collect.c:2597 ../src/libs/collect.c:2618
-#: ../src/libs/collect.c:3248
+#: ../src/libs/collect.c:2678 ../src/libs/collect.c:2699
+#: ../src/libs/collect.c:3329
 msgid "clear this rule"
 msgstr "limpar esta regra"
 
-#: ../src/libs/collect.c:2602
+#: ../src/libs/collect.c:2683
 msgid "clear this rule or add new rules"
 msgstr "limpar esta regra ou adicionar nova regra"
 
-#: ../src/libs/collect.c:3254
+#: ../src/libs/collect.c:3335
 msgid "narrow down search"
 msgstr "restringir pesquisa"
 
-#: ../src/libs/collect.c:3261
+#: ../src/libs/collect.c:3342
 msgid "add more images"
 msgstr "adicionar mais imagens"
 
-#: ../src/libs/collect.c:3268
+#: ../src/libs/collect.c:3349
 msgid "exclude images"
 msgstr "excluir imagens"
 
-#: ../src/libs/collect.c:3277
+#: ../src/libs/collect.c:3358
 msgid "change to: and"
 msgstr "muda para: and"
 
-#: ../src/libs/collect.c:3284
+#: ../src/libs/collect.c:3365
 msgid "change to: or"
 msgstr "muda para: ou"
 
-#: ../src/libs/collect.c:3291
+#: ../src/libs/collect.c:3372
 msgid "change to: except"
 msgstr "muda para: exceto"
 
 #. the different categories
-#: ../src/libs/collect.c:3320 ../src/libs/filtering.c:888
+#: ../src/libs/collect.c:3401 ../src/libs/filtering.c:888
 #: ../src/libs/filtering.c:948 ../src/libs/filtering.c:1613
 #: ../src/libs/filtering.c:1950
 msgid "files"
 msgstr "arquivos"
 
-#: ../src/libs/collect.c:3325 ../src/libs/export_metadata.c:178
+#: ../src/libs/collect.c:3406 ../src/libs/export_metadata.c:178
 #: ../src/libs/filtering.c:893 ../src/libs/filtering.c:953
 #: ../src/libs/filtering.c:1621 ../src/libs/filtering.c:1954
 #: ../src/libs/image.c:504 ../src/libs/image.c:605 ../src/libs/image.c:624
@@ -26305,49 +26336,49 @@ msgstr "arquivos"
 msgid "metadata"
 msgstr "metadados"
 
-#: ../src/libs/collect.c:3344 ../src/libs/filtering.c:901
+#: ../src/libs/collect.c:3425 ../src/libs/filtering.c:901
 #: ../src/libs/filtering.c:961 ../src/libs/filtering.c:1952
 msgid "times"
 msgstr "tempo"
 
-#: ../src/libs/collect.c:3352 ../src/libs/filtering.c:909
+#: ../src/libs/collect.c:3433 ../src/libs/filtering.c:909
 #: ../src/libs/filtering.c:969 ../src/libs/filtering.c:1632
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
-#: ../src/libs/collect.c:3381
+#: ../src/libs/collect.c:3462
 msgid "collections settings"
 msgstr "preferências de coleções"
 
-#: ../src/libs/collect.c:3403 ../src/libs/export.c:1427
+#: ../src/libs/collect.c:3484 ../src/libs/export.c:1427
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
 #: ../src/libs/tagging.c:3968
 msgid "preferences..."
 msgstr "preferências..."
 
-#: ../src/libs/collect.c:3527 ../src/libs/filtering.c:1488
+#: ../src/libs/collect.c:3608 ../src/libs/filtering.c:1488
 msgid "AND"
 msgstr "E"
 
-#: ../src/libs/collect.c:3532 ../src/libs/filtering.c:1493
+#: ../src/libs/collect.c:3613 ../src/libs/filtering.c:1493
 msgid "OR"
 msgstr "OU"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3537 ../src/libs/filtering.c:1498
+#: ../src/libs/collect.c:3618 ../src/libs/filtering.c:1498
 msgid "BUT NOT"
 msgstr "MAS NÃO"
 
-#: ../src/libs/collect.c:3643
+#: ../src/libs/collect.c:3724
 msgid "toggle collection sort order ascending/descending"
 msgstr "alternar critério de ordenação da coleção ascendente/descendente"
 
-#: ../src/libs/collect.c:3741 ../src/libs/filtering.c:2220
+#: ../src/libs/collect.c:3822 ../src/libs/filtering.c:2220
 msgid "revert to a previous set of rules"
 msgstr "reverte para um conjunto de regras anterior"
 
-#: ../src/libs/collect.c:3795
+#: ../src/libs/collect.c:3876
 msgid "jump back to previous collection"
 msgstr "pula para coleção anterior"
 
@@ -29231,10 +29262,9 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:264 ../src/libs/neural_restore.c:1542
-#, fuzzy
+#: ../src/libs/neural_restore.c:264 ../src/libs/neural_restore.c:1545
 msgid "neural restore"
-msgstr "fluorescente neutra"
+msgstr "restauração neural"
 
 #: ../src/libs/neural_restore.c:268
 msgid "AI-based image restoration: denoise and upscale"
@@ -29250,7 +29280,7 @@ msgstr "falha ao abrir TIFF para escrita: %s"
 msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2129
+#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2122
 msgid "upscale"
 msgstr "aumentar escala"
 
@@ -29265,13 +29295,12 @@ msgid "failed to load AI %s model"
 msgstr "falha ao carregar modelo %s de IA"
 
 #: ../src/libs/neural_restore.c:825
-#, fuzzy
 msgid "neural restore: cannot create output directory"
-msgstr "erro: não foi possível ler a pasta %s"
+msgstr "restauração neural: nào foi possível criar o diretório de saída"
 
 #: ../src/libs/neural_restore.c:853
 msgid "neural restore: too many output files"
-msgstr ""
+msgstr "restauração neural: arquivos de saída em quantidade excessiva"
 
 #: ../src/libs/neural_restore.c:862
 #, c-format
@@ -29281,103 +29310,100 @@ msgstr "removendo ruído de imagem %d/%d..."
 #: ../src/libs/neural_restore.c:863
 #, c-format
 msgid "upscaling 2x image %d/%d..."
-msgstr ""
+msgstr "aumentando escala 2x imagem %d/%d..."
 
 #: ../src/libs/neural_restore.c:864
 #, c-format
 msgid "upscaling 4x image %d/%d..."
-msgstr ""
+msgstr "aumentando escala 4x imagem %d/%d..."
 
 #: ../src/libs/neural_restore.c:893
-#, fuzzy
 msgid "neural restore: export failed"
-msgstr "armazenamento inválido selecionado para exportação"
+msgstr "restauração neural: exportação falhou"
 
 #: ../src/libs/neural_restore.c:984
 msgid "large output - processing will be slow"
-msgstr ""
+msgstr "saída grande - o processamento será lento"
 
-#: ../src/libs/neural_restore.c:1702
-#, fuzzy
+#: ../src/libs/neural_restore.c:1705
 msgid "click to select preview area"
-msgstr "clique para entrar no modo de visualização completa"
+msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:1727
+#: ../src/libs/neural_restore.c:1730
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:1729 ../src/libs/neural_restore.c:1891
+#: ../src/libs/neural_restore.c:1732 ../src/libs/neural_restore.c:1894
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:1731
+#: ../src/libs/neural_restore.c:1734
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:1732
+#: ../src/libs/neural_restore.c:1735
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:2087 ../src/libs/neural_restore.c:2257
+#: ../src/libs/neural_restore.c:2080 ../src/libs/neural_restore.c:2250
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:2128
+#: ../src/libs/neural_restore.c:2121
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:2130
+#: ../src/libs/neural_restore.c:2123
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:2137
+#: ../src/libs/neural_restore.c:2130
 msgid "detail recovery"
 msgstr "recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:2140
+#: ../src/libs/neural_restore.c:2133
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:2148
+#: ../src/libs/neural_restore.c:2141
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2143
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2143
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2167
+#: ../src/libs/neural_restore.c:2160
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:2192
-#, fuzzy
+#: ../src/libs/neural_restore.c:2185
 msgid "process selected images"
-msgstr "imagem selecionada"
+msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:2210
+#: ../src/libs/neural_restore.c:2203
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:2221
+#: ../src/libs/neural_restore.c:2214
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:2228
+#: ../src/libs/neural_restore.c:2221
 msgid "add to catalog"
 msgstr "adicionaro ao catálogo"
 
-#: ../src/libs/neural_restore.c:2234
+#: ../src/libs/neural_restore.c:2227
 msgid "automatically import output image into the darktable library"
-msgstr ""
+msgstr "automaticamente importar imagem de saída na biblioteca do darktable"
 
-#: ../src/libs/neural_restore.c:2250
+#: ../src/libs/neural_restore.c:2243
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -31866,6 +31892,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "refresh"
+#~ msgstr "atualizar"
 
 #~ msgctxt "preferences"
 #~ msgid "waveform/vectorscope"
