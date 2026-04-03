@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 13:38-0300\n"
-"PO-Revision-Date: 2026-04-01 13:37-0300\n"
+"POT-Creation-Date: 2026-04-03 11:39-0300\n"
+"PO-Revision-Date: 2026-04-03 11:39-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2208,15 +2208,17 @@ msgstr ""
 "outros elementos da interface"
 
 #: ../build/bin/preferences_gen.h:4459
-#, fuzzy
 msgid "auto-scroll filmstrip to center on selected image"
-msgstr "colar os metadados nas imagens selecionadas"
+msgstr ""
+"rolar automaticamente o rolo de filme para centrar na imagem selecionada"
 
 #: ../build/bin/preferences_gen.h:4467
 msgid ""
 "when enabled, the filmstrip in culling mode and in the darkroom "
 "automatically scrolls to center on the selected image"
 msgstr ""
+"quando habilitado, o rolo de filme em modo de seleção e na sala escura rola "
+"automaticamente para centrar a imagem selecionada"
 
 #: ../build/bin/preferences_gen.h:4476
 msgid "position of the scopes module"
@@ -6101,13 +6103,14 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/recentcollect.c:232
-#: ../src/libs/styles.c:457 ../src/libs/styles.c:503 ../src/libs/styles.c:595
-#: ../src/libs/styles.c:656 ../src/libs/styles.c:1019
-#: ../src/libs/tagging.c:1670 ../src/libs/tagging.c:1759
-#: ../src/libs/tagging.c:1851 ../src/libs/tagging.c:1980
-#: ../src/libs/tagging.c:2289 ../src/libs/tagging.c:2804
-#: ../src/libs/tagging.c:2846 ../src/libs/tagging.c:3944
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2090
+#: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
+#: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
+#: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
+#: ../src/libs/tagging.c:1759 ../src/libs/tagging.c:1851
+#: ../src/libs/tagging.c:1980 ../src/libs/tagging.c:2289
+#: ../src/libs/tagging.c:2804 ../src/libs/tagging.c:2846
+#: ../src/libs/tagging.c:3944
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -8054,11 +8057,11 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1201
+#: ../src/common/opencl.c:1186
 msgid "no working OpenCL library found"
 msgstr "nenhuma biblioteca OpenCL funcional encontrada"
 
-#: ../src/common/opencl.c:1221
+#: ../src/common/opencl.c:1206
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -8076,23 +8079,23 @@ msgstr ""
 "  - nenhum driver OpenCL instalado,\n"
 "  - múltiplos drivers instalados por plataforma\n"
 
-#: ../src/common/opencl.c:1336
+#: ../src/common/opencl.c:1321
 msgid "no devices found for unknown platform"
 msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
 
-#: ../src/common/opencl.c:1383
+#: ../src/common/opencl.c:1368
 msgid "not enough memory for OpenCL devices"
 msgstr "não há memória suficiente para dispositivos OpenCL"
 
-#: ../src/common/opencl.c:1421
+#: ../src/common/opencl.c:1406
 msgid "no OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL encontrado"
 
-#: ../src/common/opencl.c:1464
+#: ../src/common/opencl.c:1449
 msgid "no suitable OpenCL devices found"
 msgstr "nenhum dispositivo OpenCL adequado encontrado"
 
-#: ../src/common/opencl.c:1488
+#: ../src/common/opencl.c:1473
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -8103,47 +8106,47 @@ msgstr ""
 "%s\n"
 "desabilitando OpenCL por enquanto"
 
-#: ../src/common/opencl.c:1524
+#: ../src/common/opencl.c:1509
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2373
+#: ../src/common/opencl.c:2358
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4054
+#: ../src/common/pdf.h:89 ../src/iop/lens.cc:4054
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:84
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:680 ../src/libs/export.c:1534
+#: ../src/common/pdf.h:90 ../src/libs/export.c:680 ../src/libs/export.c:1534
 #: ../src/libs/print_settings.c:84
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:84
+#: ../src/common/pdf.h:91 ../src/libs/print_settings.c:84
 msgid "inch"
 msgstr "polegadas"
 
-#: ../src/common/pdf.h:91
+#: ../src/common/pdf.h:92
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:947
+#: ../src/common/pdf.h:105 ../src/iop/borders.c:947
 msgid "A4"
 msgstr "A4"
 
-#: ../src/common/pdf.h:105
+#: ../src/common/pdf.h:106
 msgid "A3"
 msgstr "A3"
 
-#: ../src/common/pdf.h:106
+#: ../src/common/pdf.h:107
 msgid "Letter"
 msgstr "Carta"
 
-#: ../src/common/pdf.h:107
+#: ../src/common/pdf.h:108
 msgid "Legal"
 msgstr "Legal"
 
@@ -10270,7 +10273,8 @@ msgstr "clique para mostrar (o módulo deve ser ativado antes)"
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:2982
+#. process button
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2190
 msgid "process"
 msgstr "processamento"
 
@@ -10634,91 +10638,109 @@ msgstr "usar as mesmas formas que"
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
-#: ../src/develop/masks/object.c:864
+#: ../src/develop/masks/object.c:836
+#, fuzzy
+msgid "set raster mask root folder in preferences"
+msgstr "pasta raiz de máscaras de pixels não definida"
+
+#: ../src/develop/masks/object.c:844
+msgid "cannot create raster mask folder"
+msgstr "não foi possível ler o arquivo de máscara de pixels"
+
+#: ../src/develop/masks/object.c:907
+msgid "raster mask saved"
+msgstr "máscara de pixels gravada"
+
+#: ../src/develop/masks/object.c:912
+msgid "failed to save raster mask"
+msgstr "falha ao gravar máscara de pixels"
+
+#: ../src/develop/masks/object.c:993
 msgid "no mask extracted from AI segmentation"
 msgstr "nenhuma máscara foi extraída da segmentação por IA"
 
-#: ../src/develop/masks/object.c:872
+#: ../src/develop/masks/object.c:1001
 msgid "ai object group"
 msgstr "grupo de objetos de ia"
 
-#: ../src/develop/masks/object.c:873
+#: ../src/develop/masks/object.c:1002
 msgid "ai object"
 msgstr "objeto de ia"
 
-#: ../src/develop/masks/object.c:1023
+#: ../src/develop/masks/object.c:1128
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "suavização: %3.2f"
 
-#: ../src/develop/masks/object.c:1034
+#: ../src/develop/masks/object.c:1139
 #, c-format
 msgid "cleanup: %d"
 msgstr "limpeza: %d"
 
-#: ../src/develop/masks/object.c:1047
+#: ../src/develop/masks/object.c:1152
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidade: %.0d%%"
 
-#: ../src/develop/masks/object.c:1161
+#: ../src/develop/masks/object.c:1275
 #, c-format
 msgid "group '%s'"
 msgstr "grupo '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1411 ../src/develop/masks/object.c:1445
+#: ../src/develop/masks/object.c:1524 ../src/develop/masks/object.c:1558
 msgid "object mask: analyzing image..."
 msgstr "máscara de objeto: analisando imagem..."
 
-#: ../src/develop/masks/object.c:1455
+#: ../src/develop/masks/object.c:1568
 msgid "click on object to create mask"
 msgstr "clique no objeto para criar a máscara"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1465
+#: ../src/develop/masks/object.c:1578
 msgid "object mask preparation failed"
 msgstr "a preparação de máscara de objeto falhou"
 
-#: ../src/develop/masks/object.c:1780
+#: ../src/develop/masks/object.c:1778
 msgid "[OBJECT] select / add foreground point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1785
+#: ../src/develop/masks/object.c:1783
 msgid "[OBJECT] add background point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1790
+#: ../src/develop/masks/object.c:1788
 msgid "[OBJECT] clear selection"
 msgstr "[OBJETO] limpar seleção"
 
-#: ../src/develop/masks/object.c:1795
+#: ../src/develop/masks/object.c:1793
 msgid "[OBJECT] apply mask"
 msgstr "[OBJETO] aplicar máscara"
 
-#: ../src/develop/masks/object.c:1800
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJETO] mudar suavização"
 
-#: ../src/develop/masks/object.c:1805
+#: ../src/develop/masks/object.c:1803
 #, fuzzy
 msgid "[OBJECT] change cleanup"
 msgstr "[CAMINHO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:1810
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] change opacity"
 msgstr "[OBJETO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:1818
+#: ../src/develop/masks/object.c:1815
 #, c-format
 msgid "object #%d"
 msgstr "objeto #%d"
 
-#: ../src/develop/masks/object.c:1837
+#: ../src/develop/masks/object.c:1833
 #, fuzzy, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-"ctrl+shift+click, <b>apply</b>: right-click\n"
+"ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
+"shift+right-click\n"
 "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
@@ -10726,7 +10748,7 @@ msgstr ""
 "<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</"
 "b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1845
+#: ../src/develop/masks/object.c:1844
 #, fuzzy, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
@@ -13359,7 +13381,8 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/views/lighttable.c:1446
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2124
+#: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
 
@@ -15227,7 +15250,7 @@ msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
 #: ../src/gui/preferences_ai.c:945 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2091
 msgid "_select"
 msgstr "_selecionar"
 
@@ -15753,6 +15776,7 @@ msgstr "Boas edições com o dartkable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
+#: ../src/libs/neural_restore.c:2223
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -15776,7 +15800,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2220
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -15904,6 +15928,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
+#: ../src/libs/neural_restore.c:2223
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -15999,7 +16024,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2223
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -17378,7 +17403,8 @@ msgstr "melhorar nitidez"
 msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
-#: ../src/iop/atrous.c:808
+#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
+#: ../src/libs/neural_restore.c:2127
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -20563,37 +20589,37 @@ msgstr ""
 "transfere a paleta de cores e divisão tonal\n"
 "de uma imagem para outra"
 
-#: ../src/iop/colormapping.c:1001
+#: ../src/iop/colormapping.c:1002
 msgid "acquire as source"
 msgstr "adquirir como fonte"
 
-#: ../src/iop/colormapping.c:1005
+#: ../src/iop/colormapping.c:1006
 msgid "analyze this image as a source image"
 msgstr "analisa esta imagem como imagem fonte"
 
-#: ../src/iop/colormapping.c:1007
+#: ../src/iop/colormapping.c:1008
 msgid "acquire as target"
 msgstr "adquirir como alvo"
 
-#: ../src/iop/colormapping.c:1011
+#: ../src/iop/colormapping.c:1012
 msgid "analyze this image as a target image"
 msgstr "analisa esta imagem como imagem alvo"
 
-#: ../src/iop/colormapping.c:1013
+#: ../src/iop/colormapping.c:1014
 msgid "source clusters:"
 msgstr "clusters fonte:"
 
-#: ../src/iop/colormapping.c:1014
+#: ../src/iop/colormapping.c:1015
 msgid "target clusters:"
 msgstr "clusters alvo:"
 
-#: ../src/iop/colormapping.c:1017
+#: ../src/iop/colormapping.c:1018
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "número de clusters a procurar na imagem. alteração de valor redefine todos "
 "os clusters"
 
-#: ../src/iop/colormapping.c:1020
+#: ../src/iop/colormapping.c:1021
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -20601,7 +20627,7 @@ msgstr ""
 "como clusters são mapeados. valores baixos: baseado em proximidade de cores, "
 "valores altos: baseados em domínio de cores"
 
-#: ../src/iop/colormapping.c:1025
+#: ../src/iop/colormapping.c:1026
 msgid "level of histogram equalization"
 msgstr "nível de equalização do histograma"
 
@@ -23175,8 +23201,10 @@ msgid "distance to subject"
 msgstr "distância do objeto"
 
 #. scale
+#. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
+#: ../src/libs/neural_restore.c:2147
 msgid "scale"
 msgstr "escala"
 
@@ -24847,7 +24875,7 @@ msgstr ""
 "útil para certos tipos de sensor\n"
 "e descompressão anamórfica"
 
-#: ../src/iop/scalepixels.c:270
+#: ../src/iop/scalepixels.c:280
 msgid "adjust pixel aspect ratio"
 msgstr "ajustar proporção de pixel"
 
@@ -29203,6 +29231,158 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
+#: ../src/libs/neural_restore.c:264 ../src/libs/neural_restore.c:1542
+#, fuzzy
+msgid "neural restore"
+msgstr "fluorescente neutra"
+
+#: ../src/libs/neural_restore.c:268
+msgid "AI-based image restoration: denoise and upscale"
+msgstr ""
+"restauração de imagem baseada em IA: remoção de ruído e aumento de escala"
+
+#: ../src/libs/neural_restore.c:507
+#, c-format
+msgid "failed to open TIFF for writing: %s"
+msgstr "falha ao abrir TIFF para escrita: %s"
+
+#: ../src/libs/neural_restore.c:559
+msgid "out of memory for detail recovery buffer"
+msgstr "memória insuficiente para buffer de recuperação de detalhes"
+
+#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2129
+msgid "upscale"
+msgstr "aumentar escala"
+
+#: ../src/libs/neural_restore.c:725
+#, c-format
+msgid "loading %s model..."
+msgstr "carregando modelo %s ..."
+
+#: ../src/libs/neural_restore.c:755
+#, c-format
+msgid "failed to load AI %s model"
+msgstr "falha ao carregar modelo %s de IA"
+
+#: ../src/libs/neural_restore.c:825
+#, fuzzy
+msgid "neural restore: cannot create output directory"
+msgstr "erro: não foi possível ler a pasta %s"
+
+#: ../src/libs/neural_restore.c:853
+msgid "neural restore: too many output files"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:862
+#, c-format
+msgid "denoising image %d/%d..."
+msgstr "removendo ruído de imagem %d/%d..."
+
+#: ../src/libs/neural_restore.c:863
+#, c-format
+msgid "upscaling 2x image %d/%d..."
+msgstr ""
+
+#: ../src/libs/neural_restore.c:864
+#, c-format
+msgid "upscaling 4x image %d/%d..."
+msgstr ""
+
+#: ../src/libs/neural_restore.c:893
+#, fuzzy
+msgid "neural restore: export failed"
+msgstr "armazenamento inválido selecionado para exportação"
+
+#: ../src/libs/neural_restore.c:984
+msgid "large output - processing will be slow"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:1702
+#, fuzzy
+msgid "click to select preview area"
+msgstr "clique para entrar no modo de visualização completa"
+
+#: ../src/libs/neural_restore.c:1727
+msgid "model not available"
+msgstr "modelo não disponível"
+
+#: ../src/libs/neural_restore.c:1729 ../src/libs/neural_restore.c:1891
+msgid "generating preview..."
+msgstr "gerando pré-visualização"
+
+#: ../src/libs/neural_restore.c:1731
+msgid "click to generate preview"
+msgstr "clique para gerar pré-visualização"
+
+#: ../src/libs/neural_restore.c:1732
+msgid "select an image to preview"
+msgstr "selecionar uma imagem para pré-visualizar"
+
+#: ../src/libs/neural_restore.c:2087 ../src/libs/neural_restore.c:2257
+msgid "select output folder"
+msgstr "selecione a pasta de saída"
+
+#: ../src/libs/neural_restore.c:2128
+msgid "AI denoising"
+msgstr "remoção de ruído com IA"
+
+#: ../src/libs/neural_restore.c:2130
+msgid "AI upscaling"
+msgstr "aumento da escala com IA"
+
+#: ../src/libs/neural_restore.c:2137
+msgid "detail recovery"
+msgstr "recuperação de detalhes"
+
+#: ../src/libs/neural_restore.c:2140
+msgid "recover fine texture lost during denoising while suppressing noise"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:2148
+msgid "upscale factor"
+msgstr "fator de aumento de escala"
+
+#: ../src/libs/neural_restore.c:2150
+msgid "2x"
+msgstr "2x"
+
+#: ../src/libs/neural_restore.c:2150
+msgid "4x"
+msgstr "4x"
+
+#: ../src/libs/neural_restore.c:2167
+msgid ""
+"click to pick preview area on the image thumbnail\n"
+"double-click to reset to center"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:2192
+#, fuzzy
+msgid "process selected images"
+msgstr "imagem selecionada"
+
+#: ../src/libs/neural_restore.c:2210
+msgid "output parameters"
+msgstr "parâmetros de saída"
+
+#: ../src/libs/neural_restore.c:2221
+msgid "output TIFF bit depth"
+msgstr "profundidade de bits do TIFF de saída"
+
+#: ../src/libs/neural_restore.c:2228
+msgid "add to catalog"
+msgstr "adicionaro ao catálogo"
+
+#: ../src/libs/neural_restore.c:2234
+msgid "automatically import output image into the darktable library"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:2250
+msgid ""
+"output folder — supports darktable variables\n"
+"$(FILE_FOLDER) = source image folder"
+msgstr ""
+
 #: ../src/libs/print_settings.c:48
 msgid "print settings"
 msgstr "configurações de impressão"
@@ -30222,14 +30402,12 @@ msgid "pin in second window"
 msgstr "fixar em segunda janela"
 
 #: ../src/libs/tools/filmstrip.c:152
-#, fuzzy
 msgid "auto-scroll to selected image"
-msgstr "aplicar deslocamento às imagens selecionadas"
+msgstr "auto-rolar até a imagem selecionada"
 
 #: ../src/libs/tools/filmstrip.c:154
-#, fuzzy
 msgid "center on selected image"
-msgstr "imagem selecionada"
+msgstr "centralizar na imagem selecionada"
 
 #: ../src/libs/tools/filter.c:42
 msgid "filter"
