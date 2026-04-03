@@ -2034,16 +2034,6 @@ static void _image_changed_callback(gpointer instance, dt_lib_module_t *self)
   _update_button_sensitivity(d);
 }
 
-// invalidate cached export when darkroom edits change the image
-static void _history_changed_callback(gpointer instance, dt_lib_module_t *self)
-{
-  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
-  g_free(d->export_pixels);
-  d->export_pixels = NULL;
-  g_free(d->export_cairo);
-  d->export_cairo = NULL;
-  _update_button_sensitivity(d);
-}
 
 static void _ai_models_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
@@ -2272,7 +2262,6 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_AI_MODELS_CHANGED, _ai_models_changed_callback);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _history_changed_callback);
 
   _update_info_label(d);
   _update_button_sensitivity(d);
@@ -2285,7 +2274,6 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_DISCONNECT(_selection_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_image_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_ai_models_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_history_changed_callback, self);
 
   if(d)
   {
