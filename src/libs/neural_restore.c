@@ -120,7 +120,7 @@
 
 DT_MODULE(1)
 
-#define PREVIEW_EXPORT_SIZE 1024
+#define CONF_PREVIEW_EXPORT_SIZE "plugins/lighttable/neural_restore/preview_export_size"
 // warn the user when upscaled output exceeds this many megapixels
 #define LARGE_OUTPUT_MP 60.0
 
@@ -1137,8 +1137,9 @@ static gpointer _preview_thread(gpointer data)
   }
   else
   {
-    cap.parent.max_width = PREVIEW_EXPORT_SIZE;
-    cap.parent.max_height = PREVIEW_EXPORT_SIZE;
+    const int export_size = dt_conf_get_int(CONF_PREVIEW_EXPORT_SIZE);
+    cap.parent.max_width = export_size;
+    cap.parent.max_height = export_size;
 
     dt_imageio_module_format_t fmt = {
       .mime = _ai_get_mime,
@@ -1178,9 +1179,11 @@ static gpointer _preview_thread(gpointer data)
   }
 
   dt_print(DT_DEBUG_AI,
-           "[neural_restore] preview: %s %dx%d, scale=%d",
+           "[neural_restore] preview: %s %dx%d, scale=%d, "
+           "export_size=%d",
            owns_pixels ? "exported" : "reusing",
-           pixels_w, pixels_h, pd->scale);
+           pixels_w, pixels_h, pd->scale,
+           owns_pixels ? cap.parent.max_width : 0);
 
   // crop region matching widget aspect ratio
   // clamp crop to export dimensions and max preview size to keep

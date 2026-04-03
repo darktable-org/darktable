@@ -3753,6 +3753,20 @@
     <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
 <dtconfig>
+    <name>plugins/lighttable/neural_restore/preview_export_size</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription>neural restore preview export size</shortdescription>
+    <longdescription>maximum resolution (in pixels) for the preview export. 0 means full resolution. set a lower value (e.g. 2048) for faster preview generation on slower machines</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/detail_recovery_bands</name>
+    <type>string</type>
+    <default>0.5,0.3,0.1,0.05,0.02</default>
+    <shortdescription>detail recovery wavelet band thresholds</shortdescription>
+    <longdescription>comma-separated sigma multipliers for wavelet detail recovery bands (finest to coarsest). controls how much noise vs texture is recovered by the detail recovery slider</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/preview_height</name>
     <type min="100" max="800">int</type>
     <default>200</default>
