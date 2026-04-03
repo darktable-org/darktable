@@ -218,6 +218,9 @@ changes (where available).
 - For non-raw images with gamma corrected data we do the initial
   scaling in linear mode for less artifacts.
 
+- Added a new option to filter images by capture month in collections
+  and collection filters.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
