@@ -52,13 +52,50 @@ struct dt_restore_context_t
   gint ref_count;
 };
 
-static const float _dwt_detail_noise[DWT_DETAIL_BANDS] = {
-  0.04f,  // band 0 (finest) — strong noise suppression
-  0.03f,  // band 1
-  0.02f,  // band 2
-  0.01f,  // band 3
-  0.005f  // band 4 (coarsest) — preserve most detail
+// default multipliers of residual sigma for each wavelet band.
+// band 0 (finest) gets the strongest suppression since fine-scale
+// features are hardest to distinguish from noise. coarser bands
+// preserve more because they capture real texture.
+// tunable via darktablerc: plugins/lighttable/neural_restore/detail_recovery_bands
+static const float _dwt_sigma_mul_default[DWT_DETAIL_BANDS] = {
+  0.5f,   // band 0 (finest) — suppress fine luminance noise
+  0.3f,   // band 1
+  0.1f,   // band 2
+  0.05f,  // band 3
+  0.02f   // band 4 (coarsest) — keep almost everything
 };
+
+// compute adaptive noise thresholds from residual standard deviation
+static void _compute_adaptive_noise(const float *const restrict buf,
+                                    const size_t npix,
+                                    float noise[DWT_DETAIL_BANDS])
+{
+  // read band multipliers from config (comma-separated list).
+  // e.g. "0.5,0.3,0.1,0.05,0.02" in darktablerc
+  float sigma_mul[DWT_DETAIL_BANDS];
+  memcpy(sigma_mul, _dwt_sigma_mul_default, sizeof(sigma_mul));
+  gchar *val = dt_conf_get_string("plugins/lighttable/neural_restore/detail_recovery_bands");
+  if(val && val[0])
+  {
+    gchar **parts = g_strsplit(val, ",", DWT_DETAIL_BANDS);
+    for(int b = 0; parts[b] && b < DWT_DETAIL_BANDS; b++)
+      sigma_mul[b] = g_ascii_strtod(g_strstrip(parts[b]), NULL);
+    g_strfreev(parts);
+  }
+  g_free(val);
+
+  double sum = 0.0, sum2 = 0.0;
+  for(size_t i = 0; i < npix; i++)
+  {
+    sum += (double)buf[i];
+    sum2 += (double)buf[i] * (double)buf[i];
+  }
+  const double mean = sum / (double)npix;
+  const float sigma = (float)sqrt(sum2 / (double)npix - mean * mean);
+
+  for(int b = 0; b < DWT_DETAIL_BANDS; b++)
+    noise[b] = sigma * sigma_mul[b];
+}
 
 /* --- environment lifecycle --- */
 
@@ -589,8 +626,10 @@ void dt_restore_apply_detail_recovery(const float *original_4ch,
     lum_residual[i] = lum_orig - lum_den;
   }
 
+  float noise[DWT_DETAIL_BANDS];
+  _compute_adaptive_noise(lum_residual, npix, noise);
   dwt_denoise(lum_residual, width, height,
-              DWT_DETAIL_BANDS, _dwt_detail_noise);
+              DWT_DETAIL_BANDS, noise);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none)       \
@@ -633,8 +672,10 @@ float *dt_restore_compute_dwt_detail(const float *before_3ch,
     lum_residual[i] = lum_orig - lum_den;
   }
 
+  float noise[DWT_DETAIL_BANDS];
+  _compute_adaptive_noise(lum_residual, npix, noise);
   dwt_denoise(lum_residual, width, height,
-              DWT_DETAIL_BANDS, _dwt_detail_noise);
+              DWT_DETAIL_BANDS, noise);
 
   return lum_residual;
 }
