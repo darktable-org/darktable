@@ -1586,7 +1586,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       {
         const int month_num = sqlite3_column_int(stmt, 0);
         if(month_num >= 1 && month_num <= 12)
-          name = g_strdup_printf("%02d - %s", month_num, _(dt_month_names[month_num - 1].name));
+          name = g_strdup_printf("%02d - %s", month_num, _(dt_month_names[month_num - 1]));
         else
           name = g_strdup(_("unknown"));
       }
@@ -2351,7 +2351,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         {
           const int month_num = sqlite3_column_int(stmt, 0);
           if(month_num >= 1 && month_num <= 12)
-            folder = _(dt_month_names[month_num - 1].name);
+            folder = _(dt_month_names[month_num - 1]);
           else
             folder = _("unknown");
         }

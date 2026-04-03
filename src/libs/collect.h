@@ -27,23 +27,36 @@ typedef enum dt_lib_collect_mode_t
   DT_LIB_COLLECT_MODE_AND_NOT
 } dt_lib_collect_mode_t;
 
-static const struct
+static const char *dt_month_names[] __attribute__((unused)) =
 {
-  const char *name;
-} dt_month_names[] =
+  N_("January"),
+  N_("February"),
+  N_("March"),
+  N_("April"),
+  N_("May"),
+  N_("June"),
+  N_("July"),
+  N_("August"),
+  N_("September"),
+  N_("October"),
+  N_("November"),
+  N_("December"),
+};
+
+static const char *dt_month_short_names[] __attribute__((unused)) =
 {
-  { N_("January") },
-  { N_("February") },
-  { N_("March") },
-  { N_("April") },
-  { N_("May") },
-  { N_("June") },
-  { N_("July") },
-  { N_("August") },
-  { N_("September") },
-  { N_("October") },
-  { N_("November") },
-  { N_("December") },
+  N_("Jan"),
+  N_("Feb"),
+  N_("Mar"),
+  N_("Apr"),
+  N_("May"),
+  N_("Jun"),
+  N_("Jul"),
+  N_("Aug"),
+  N_("Sep"),
+  N_("Oct"),
+  N_("Nov"),
+  N_("Dec"),
 };
 
 // clang-format off
