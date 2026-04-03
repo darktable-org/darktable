@@ -112,6 +112,7 @@ GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
   * [MIGraphX](https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/install/install-migraphx.html) (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
 * **Intel (OpenVINO):** Linux and Windows.
   * Supported Intel GPU with up-to-date drivers (integrated Gen9+, discrete Arc, or NPU Meteor Lake+)
+  * [Intel OpenCL](https://www.intel.com/content/www/us/en/developer/articles/tool/opencl-drivers.html) or/and [Level Zero runtime](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-2/intel-oneapi-level-zero.html) (included with drivers on Windows; on Linux may need `intel-opencl-icd` or `level-zero`)
   * On Windows, requires [OpenVINO Toolkit](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-windows.html) installation
 * **Windows (DirectML):** bundled, works with any DirectX 12 compatible GPU (NVIDIA, AMD, Intel).
   No extra install needed.
