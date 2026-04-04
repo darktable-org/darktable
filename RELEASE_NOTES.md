@@ -231,6 +231,9 @@ changes (where available).
 - Added a new option to filter images by capture month in collections
   and collection filters.
 
+- Added `--library` option to `darktable-cli` to use the image library
+  instead of XMP files for reading processing history. 
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
