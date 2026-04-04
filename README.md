@@ -103,19 +103,24 @@ special hardware.
 GPU-enabled build of [ONNX Runtime](https://onnxruntime.ai/) separately:
 
 * **NVIDIA (CUDA):** Linux and Windows.
-  * [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-downloads) (for ONNX Runtime 1.20+)
-  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads) (for ONNX Runtime 1.20+)
-  * Recommended: 8 GB+ VRAM
+  * Supported NVIDIA GPU with up-to-date drivers (Maxwell or newer)
+  * [CUDA Toolkit 12](https://developer.nvidia.com/cuda-12-0-0-download-archive) or [CUDA Toolkit 13](https://developer.nvidia.com/cuda-13-0-0-download-archive)
+  * [cuDNN 9.x](https://developer.nvidia.com/cudnn-downloads)
 * **AMD (ROCm):** Linux only.
-  * [ROCm 6.x](https://rocm.docs.amd.com/en/latest/deploy/linux/index.html) (for ONNX Runtime 1.20+)
-  * MIGraphX (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
-  * Supported AMD GPU (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+  * Supported AMD GPU with up-to-date drivers (RDNA2/CDNA or newer), see [compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+  * [ROCm 6](https://rocm.docs.amd.com/projects/install-on-linux/en/docs-6.4.0/index.html) or [ROCm 7](https://rocm.docs.amd.com/projects/install-on-linux/en/docs-7.2.1/) 
+  * [MIGraphX](https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/install/install-migraphx.html) (may require separate install, e.g. `apt install migraphx migraphx-dev` on Ubuntu)
 * **Intel (OpenVINO):** Linux and Windows.
-  * Intel integrated GPU (Gen9+), discrete Arc GPU, or NPU (Meteor Lake+)
-* **Windows (DirectML):** works with any DirectX 12 compatible GPU (NVIDIA, AMD, Intel).
+  * Supported Intel GPU with up-to-date drivers (integrated Gen9+, discrete Arc, or NPU Meteor Lake+)
+  * [Intel OpenCL](https://www.intel.com/content/www/us/en/developer/articles/tool/opencl-drivers.html) or/and [Level Zero runtime](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-2/intel-oneapi-level-zero.html) (included with drivers on Windows; on Linux may need `intel-opencl-icd` or `level-zero`)
+  * On Windows, requires [OpenVINO Toolkit](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-windows.html) installation
+* **Windows (DirectML):** bundled, works with any DirectX 12 compatible GPU (NVIDIA, AMD, Intel).
+  No extra install needed.
   * Windows 10 1903+ (DirectML is a system component)
-* **macOS (Apple Silicon):** CoreML acceleration is used automatically. No extra
-  install needed.
+* **macOS (CoreML):** bundled, uses Apple Neural Engine automatically.
+  No extra install needed.
+  * macOS 11+ (Big Sur)
+  * Apple Silicon (M1+)
 
 **GPU memory:** 4 GB VRAM minimum, 8 GB+ recommended. With less memory
 darktable will use smaller tiles, which is slower but still works.
