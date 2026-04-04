@@ -49,7 +49,7 @@ static const char *dt_month_short_names[] __attribute__((unused)) =
   N_("Feb"),
   N_("Mar"),
   N_("Apr"),
-  N_("May"),
+  NC_("short_month_name", "May"),
   N_("Jun"),
   N_("Jul"),
   N_("Aug"),
