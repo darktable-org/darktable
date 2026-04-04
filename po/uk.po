@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 19:10+0200\n"
-"PO-Revision-Date: 2026-04-02 00:24+0300\n"
+"POT-Creation-Date: 2026-04-03 17:29+0200\n"
+"PO-Revision-Date: 2026-04-03 21:51+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -50,8 +50,8 @@ msgid "bar"
 msgstr "Брусок"
 
 #: ../build/bin/conf_gen.h:276 ../build/bin/conf_gen.h:419
-#: ../build/bin/conf_gen.h:431 ../build/bin/conf_gen.h:1756
-#: ../build/bin/conf_gen.h:1777 ../build/bin/conf_gen.h:1814
+#: ../build/bin/conf_gen.h:431 ../build/bin/conf_gen.h:1765
+#: ../build/bin/conf_gen.h:1786 ../build/bin/conf_gen.h:1823
 #: ../build/bin/preferences_gen.h:2818 ../build/bin/preferences_gen.h:2905
 msgctxt "preferences"
 msgid "never"
@@ -77,19 +77,19 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "при закритті"
 
-#: ../build/bin/conf_gen.h:344 ../build/bin/conf_gen.h:1747
-#: ../build/bin/conf_gen.h:1768 ../build/bin/conf_gen.h:1815
+#: ../build/bin/conf_gen.h:344 ../build/bin/conf_gen.h:1756
+#: ../build/bin/conf_gen.h:1777 ../build/bin/conf_gen.h:1824
 msgctxt "preferences"
 msgid "small"
 msgstr "малий"
 
-#: ../build/bin/conf_gen.h:345 ../build/bin/conf_gen.h:526
+#: ../build/bin/conf_gen.h:345 ../build/bin/conf_gen.h:535
 #: ../build/bin/preferences_gen.h:3569 ../build/bin/preferences_gen.h:3637
 msgctxt "preferences"
 msgid "default"
 msgstr "за замовчуванням"
 
-#: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:4171
+#: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:4180
 msgctxt "preferences"
 msgid "large"
 msgstr "великий"
@@ -104,8 +104,8 @@ msgctxt "preferences"
 msgid "on import"
 msgstr "при імпорті"
 
-#: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1746
-#: ../build/bin/conf_gen.h:1767 ../build/bin/conf_gen.h:4857
+#: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1755
+#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:4893
 #: ../build/bin/preferences_gen.h:3307
 msgctxt "preferences"
 msgid "always"
@@ -126,86 +126,86 @@ msgctxt "preferences"
 msgid "insensitive"
 msgstr "нечутливо"
 
-#: ../build/bin/conf_gen.h:527
+#: ../build/bin/conf_gen.h:536
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "кілька GPU"
 
-#: ../build/bin/conf_gen.h:528
+#: ../build/bin/conf_gen.h:537
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "дуже швидкий GPU"
 
-#: ../build/bin/conf_gen.h:997 ../build/bin/preferences_gen.h:4843
+#: ../build/bin/conf_gen.h:1006 ../build/bin/preferences_gen.h:4843
 msgctxt "preferences"
 msgid "import time"
 msgstr "Час імпорту"
 
-#: ../build/bin/conf_gen.h:998
+#: ../build/bin/conf_gen.h:1007
 msgctxt "preferences"
 msgid "folder name"
 msgstr "імена каталогів"
 
-#: ../build/bin/conf_gen.h:1017
+#: ../build/bin/conf_gen.h:1026
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:1018
+#: ../build/bin/conf_gen.h:1027
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:1019
+#: ../build/bin/conf_gen.h:1028
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:1020
+#: ../build/bin/conf_gen.h:1029
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:1021
+#: ../build/bin/conf_gen.h:1030
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:1022 ../build/bin/conf_gen.h:2751
-#: ../build/bin/conf_gen.h:3714 ../build/bin/conf_gen.h:4142
-#: ../build/bin/conf_gen.h:4616
+#: ../build/bin/conf_gen.h:1031 ../build/bin/conf_gen.h:2760
+#: ../build/bin/conf_gen.h:3723 ../build/bin/conf_gen.h:4151
+#: ../build/bin/conf_gen.h:4652
 msgctxt "preferences"
 msgid "none"
 msgstr "немає"
 
-#: ../build/bin/conf_gen.h:1032
+#: ../build/bin/conf_gen.h:1041
 msgctxt "preferences"
 msgid "mean"
 msgstr "середнє"
 
-#: ../build/bin/conf_gen.h:1033
+#: ../build/bin/conf_gen.h:1042
 msgctxt "preferences"
 msgid "min"
 msgstr "мін"
 
-#: ../build/bin/conf_gen.h:1034
+#: ../build/bin/conf_gen.h:1043
 msgctxt "preferences"
 msgid "max"
 msgstr "макс"
 
-#: ../build/bin/conf_gen.h:1369
+#: ../build/bin/conf_gen.h:1378
 msgid "select only new images"
 msgstr "Вибирати лише нові"
 
-#: ../build/bin/conf_gen.h:1370
+#: ../build/bin/conf_gen.h:1379
 msgid "only select images that have not already been imported"
 msgstr "Вибирати лише ті зображення, які ще не були імпортовані."
 
-#: ../build/bin/conf_gen.h:1378
+#: ../build/bin/conf_gen.h:1387
 msgid "ignore non-raw images"
 msgstr "Ігнорувати не-raw зображення"
 
-#: ../build/bin/conf_gen.h:1379
+#: ../build/bin/conf_gen.h:1388
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -213,55 +213,55 @@ msgstr ""
 "Якщо ввімкнено, буде дозволено імпортувати лише raw файли. Не-raw файли не "
 "відображатимуться в діалоговому вікні та не імпортуватимуться."
 
-#: ../build/bin/conf_gen.h:1387
+#: ../build/bin/conf_gen.h:1396
 msgid "apply metadata"
 msgstr "Застосовувати метадані"
 
-#: ../build/bin/conf_gen.h:1388
+#: ../build/bin/conf_gen.h:1397
 msgid "apply some metadata to all newly imported images."
 msgstr "Застосувати деякі метадані до всіх імпортованих зображень."
 
-#: ../build/bin/conf_gen.h:1396
+#: ../build/bin/conf_gen.h:1405
 msgid "recursive directory"
 msgstr "Імпортувати з підкаталогами"
 
-#: ../build/bin/conf_gen.h:1397
+#: ../build/bin/conf_gen.h:1406
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "Рекурсивний обхід каталогу під час імпорту фотоплівок."
 
-#: ../build/bin/conf_gen.h:1405
+#: ../build/bin/conf_gen.h:1414
 msgid "creator to be applied when importing"
 msgstr "Автор (застосовується під час імпорту)"
 
-#: ../build/bin/conf_gen.h:1414
+#: ../build/bin/conf_gen.h:1423
 msgid "publisher to be applied when importing"
 msgstr "Видавець (застосовується під час імпорту)"
 
-#: ../build/bin/conf_gen.h:1423
+#: ../build/bin/conf_gen.h:1432
 msgid "rights to be applied when importing"
 msgstr "Права (застосовується під час імпорту)"
 
-#: ../build/bin/conf_gen.h:1432
+#: ../build/bin/conf_gen.h:1441
 msgid "comma separated tags to be applied when importing"
 msgstr "Теги, розділені комами (застосовуються під час імпорту)"
 
-#: ../build/bin/conf_gen.h:1441
+#: ../build/bin/conf_gen.h:1450
 msgid "import tags from XMP"
 msgstr "Імпортувати теги з XMP"
 
-#: ../build/bin/conf_gen.h:1477
+#: ../build/bin/conf_gen.h:1486
 msgid "initial rating"
 msgstr "Початковий рейтинг"
 
-#: ../build/bin/conf_gen.h:1478
+#: ../build/bin/conf_gen.h:1487
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "Початковий рейтинг зірок для всіх зображень під час імпорту фотоплівки."
 
-#: ../build/bin/conf_gen.h:1486
+#: ../build/bin/conf_gen.h:1495
 msgid "ignore EXIF rating"
 msgstr "Ігнорувати рейтинг з EXIF"
 
-#: ../build/bin/conf_gen.h:1487
+#: ../build/bin/conf_gen.h:1496
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -269,19 +269,19 @@ msgstr ""
 "Ігнорувати рейтинг з EXIF. Якщо це не встановлено і рейтинг в EXIF знайдено, "
 "він замінює \"початковий рейтинг\"."
 
-#: ../build/bin/conf_gen.h:1495
+#: ../build/bin/conf_gen.h:1504
 msgid "import job"
 msgstr "Завдання імпорту"
 
-#: ../build/bin/conf_gen.h:1496
+#: ../build/bin/conf_gen.h:1505
 msgid "name of the import job"
 msgstr "Ім'я завдання імпорту."
 
-#: ../build/bin/conf_gen.h:1504
+#: ../build/bin/conf_gen.h:1513
 msgid "override today's date"
 msgstr "Замінити сьогоднішню дату"
 
-#: ../build/bin/conf_gen.h:1505
+#: ../build/bin/conf_gen.h:1514
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -293,177 +293,177 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "Якщо не хочете заміни, залиште поле порожнім."
 
-#: ../build/bin/conf_gen.h:1513
+#: ../build/bin/conf_gen.h:1522
 msgid "keep this window open"
 msgstr "Тримати це вікно відкритим"
 
-#: ../build/bin/conf_gen.h:1514
+#: ../build/bin/conf_gen.h:1523
 msgid "keep this window open to run several imports"
 msgstr "Тримайте це вікно відкритим для запуску декількох імпортів."
 
-#: ../build/bin/conf_gen.h:1748 ../build/bin/conf_gen.h:1769
-#: ../build/bin/conf_gen.h:1816
+#: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:1778
+#: ../build/bin/conf_gen.h:1825
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1749 ../build/bin/conf_gen.h:1770
-#: ../build/bin/conf_gen.h:1817 ../build/bin/preferences_gen.h:2836
+#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:1779
+#: ../build/bin/conf_gen.h:1826 ../build/bin/preferences_gen.h:2836
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1750 ../build/bin/conf_gen.h:1771
-#: ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:1759 ../build/bin/conf_gen.h:1780
+#: ../build/bin/conf_gen.h:1827
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1751 ../build/bin/conf_gen.h:1772
-#: ../build/bin/conf_gen.h:1819
+#: ../build/bin/conf_gen.h:1760 ../build/bin/conf_gen.h:1781
+#: ../build/bin/conf_gen.h:1828
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1752 ../build/bin/conf_gen.h:1773
-#: ../build/bin/conf_gen.h:1820
+#: ../build/bin/conf_gen.h:1761 ../build/bin/conf_gen.h:1782
+#: ../build/bin/conf_gen.h:1829
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1753 ../build/bin/conf_gen.h:1774
-#: ../build/bin/conf_gen.h:1821
+#: ../build/bin/conf_gen.h:1762 ../build/bin/conf_gen.h:1783
+#: ../build/bin/conf_gen.h:1830
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1754 ../build/bin/conf_gen.h:1775
-#: ../build/bin/conf_gen.h:1822
+#: ../build/bin/conf_gen.h:1763 ../build/bin/conf_gen.h:1784
+#: ../build/bin/conf_gen.h:1831
 msgctxt "preferences"
 msgid "6K"
 msgstr "6K"
 
-#: ../build/bin/conf_gen.h:1755 ../build/bin/conf_gen.h:1776
-#: ../build/bin/conf_gen.h:1823
+#: ../build/bin/conf_gen.h:1764 ../build/bin/conf_gen.h:1785
+#: ../build/bin/conf_gen.h:1832
 msgctxt "preferences"
 msgid "8K"
 msgstr "8K"
 
-#: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:3713
-#: ../build/bin/conf_gen.h:4860 ../build/bin/preferences_gen.h:4046
+#: ../build/bin/conf_gen.h:1766 ../build/bin/conf_gen.h:3722
+#: ../build/bin/conf_gen.h:4896 ../build/bin/preferences_gen.h:4046
 msgctxt "preferences"
 msgid "auto"
 msgstr "авто"
 
-#: ../build/bin/conf_gen.h:1869
+#: ../build/bin/conf_gen.h:1878
 msgctxt "preferences"
 msgid "off"
 msgstr "вимкнено"
 
-#: ../build/bin/conf_gen.h:1870
+#: ../build/bin/conf_gen.h:1879
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "жорсткість (відносна)"
 
-#: ../build/bin/conf_gen.h:1871
+#: ../build/bin/conf_gen.h:1880
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "жорсткість (абсолютна)"
 
-#: ../build/bin/conf_gen.h:1872
+#: ../build/bin/conf_gen.h:1881
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "непрозорість (відносна)"
 
-#: ../build/bin/conf_gen.h:1873
+#: ../build/bin/conf_gen.h:1882
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "непрозорість (абсолютна)"
 
-#: ../build/bin/conf_gen.h:1874
+#: ../build/bin/conf_gen.h:1883
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "розмір пензля (відносний)"
 
-#: ../build/bin/conf_gen.h:1884
+#: ../build/bin/conf_gen.h:1893
 msgctxt "preferences"
 msgid "low"
 msgstr "слабке"
 
-#: ../build/bin/conf_gen.h:1885
+#: ../build/bin/conf_gen.h:1894
 msgctxt "preferences"
 msgid "medium"
 msgstr "середнє"
 
-#: ../build/bin/conf_gen.h:1886
+#: ../build/bin/conf_gen.h:1895
 msgctxt "preferences"
 msgid "high"
 msgstr "сильне"
 
-#: ../build/bin/conf_gen.h:1914 ../build/bin/preferences_gen.h:3170
+#: ../build/bin/conf_gen.h:1923 ../build/bin/preferences_gen.h:3170
 msgctxt "preferences"
 msgid "false color"
 msgstr "псевдоколір"
 
-#: ../build/bin/conf_gen.h:1915
+#: ../build/bin/conf_gen.h:1924
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "відтінки сірого"
 
-#: ../build/bin/conf_gen.h:1934
+#: ../build/bin/conf_gen.h:1943
 msgctxt "preferences"
 msgid "top left"
 msgstr "зверху ліворуч"
 
-#: ../build/bin/conf_gen.h:1935
+#: ../build/bin/conf_gen.h:1944
 msgctxt "preferences"
 msgid "top right"
 msgstr "зверху праворуч"
 
-#: ../build/bin/conf_gen.h:1936
+#: ../build/bin/conf_gen.h:1945
 msgctxt "preferences"
 msgid "top center"
 msgstr "зверху в центрі"
 
-#: ../build/bin/conf_gen.h:1937 ../build/bin/preferences_gen.h:3085
+#: ../build/bin/conf_gen.h:1946 ../build/bin/preferences_gen.h:3085
 msgctxt "preferences"
 msgid "bottom"
 msgstr "низ"
 
-#: ../build/bin/conf_gen.h:1938
+#: ../build/bin/conf_gen.h:1947
 msgctxt "preferences"
 msgid "hidden"
 msgstr "приховано"
 
-#: ../build/bin/conf_gen.h:2705
+#: ../build/bin/conf_gen.h:2714
 msgid "show OSD"
 msgstr "OSD"
 
-#: ../build/bin/conf_gen.h:2706
+#: ../build/bin/conf_gen.h:2715
 msgid "toggle the visibility of the map overlays"
 msgstr "Перемикає видимість елементів керування і інформації на мапі."
 
-#: ../build/bin/conf_gen.h:2714 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:2723 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "Фільтрувати"
 
-#: ../build/bin/conf_gen.h:2715
+#: ../build/bin/conf_gen.h:2724
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "Показувати лише зображення з поточної плівки."
 
-#: ../build/bin/conf_gen.h:2723
+#: ../build/bin/conf_gen.h:2732
 msgid "max images"
 msgstr "Максимально"
 
-#: ../build/bin/conf_gen.h:2724
+#: ../build/bin/conf_gen.h:2733
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "Максимальна кількість мініатюр, розміщених на мапі."
 
-#: ../build/bin/conf_gen.h:2732
+#: ../build/bin/conf_gen.h:2741
 msgid "group size factor"
 msgstr "Розмір групи"
 
-#: ../build/bin/conf_gen.h:2733
+#: ../build/bin/conf_gen.h:2742
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -471,11 +471,11 @@ msgstr ""
 "Збільшити або зменшити просторовий розмір груп зображень на мапі. Може "
 "вплинути на час обчислення."
 
-#: ../build/bin/conf_gen.h:2741
+#: ../build/bin/conf_gen.h:2750
 msgid "min images per group"
 msgstr "Мінімально в групі"
 
-#: ../build/bin/conf_gen.h:2742
+#: ../build/bin/conf_gen.h:2751
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -483,273 +483,273 @@ msgstr ""
 "Мінімальна кількість зображень для створення групи зображень. Може вплинути "
 "на час обчислення."
 
-#: ../build/bin/conf_gen.h:2749
+#: ../build/bin/conf_gen.h:2758
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "мініатюри"
 
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2759
 msgctxt "preferences"
 msgid "count"
 msgstr "кількість зображень"
 
-#: ../build/bin/conf_gen.h:2753
+#: ../build/bin/conf_gen.h:2762
 msgid "thumbnail display"
 msgstr "Показ мініатюр"
 
-#: ../build/bin/conf_gen.h:2754
+#: ../build/bin/conf_gen.h:2763
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
 "Доступні три варіанти: мініатюри, лише кількість зображень групи або нічого."
 
-#: ../build/bin/conf_gen.h:2771
+#: ../build/bin/conf_gen.h:2780
 msgid "max polygon points"
 msgstr "Макс. точок полігонів"
 
-#: ../build/bin/conf_gen.h:2772
+#: ../build/bin/conf_gen.h:2781
 msgid "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Обмежити кількість точок, імпортованих з багатокутником у модулі пошуку на "
 "мапі."
 
-#: ../build/bin/conf_gen.h:3265 ../build/bin/conf_gen.h:3277
+#: ../build/bin/conf_gen.h:3274 ../build/bin/conf_gen.h:3286
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "білінійний"
 
-#: ../build/bin/conf_gen.h:3266 ../build/bin/conf_gen.h:3278
+#: ../build/bin/conf_gen.h:3275 ../build/bin/conf_gen.h:3287
 #: ../build/bin/preferences_gen.h:3409
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "бікубічний"
 
-#: ../build/bin/conf_gen.h:3267 ../build/bin/conf_gen.h:3279
+#: ../build/bin/conf_gen.h:3276 ../build/bin/conf_gen.h:3288
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:3280 ../build/bin/preferences_gen.h:3427
+#: ../build/bin/conf_gen.h:3289 ../build/bin/preferences_gen.h:3427
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:3715
+#: ../build/bin/conf_gen.h:3724
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:3716
+#: ../build/bin/conf_gen.h:3725
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:3717
+#: ../build/bin/conf_gen.h:3726
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "apple_keychain"
 
-#: ../build/bin/conf_gen.h:3718
+#: ../build/bin/conf_gen.h:3727
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "windows_credentials"
 
-#: ../build/bin/conf_gen.h:4016
+#: ../build/bin/conf_gen.h:4025
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vectorscope"
 
-#: ../build/bin/conf_gen.h:4017
+#: ../build/bin/conf_gen.h:4026
 msgctxt "preferences"
 msgid "waveform"
 msgstr "waveform"
 
-#: ../build/bin/conf_gen.h:4018
+#: ../build/bin/conf_gen.h:4027
 msgctxt "preferences"
 msgid "split"
 msgstr "Розділений вигляд"
 
-#: ../build/bin/conf_gen.h:4019
+#: ../build/bin/conf_gen.h:4028
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "RGB-парад"
 
-#: ../build/bin/conf_gen.h:4020
+#: ../build/bin/conf_gen.h:4029
 msgctxt "preferences"
 msgid "histogram"
 msgstr "histogram"
 
-#: ../build/bin/conf_gen.h:4030
+#: ../build/bin/conf_gen.h:4039
 msgctxt "preferences"
 msgid "left"
 msgstr "зліва"
 
-#: ../build/bin/conf_gen.h:4031 ../build/bin/preferences_gen.h:4483
+#: ../build/bin/conf_gen.h:4040 ../build/bin/preferences_gen.h:4483
 msgctxt "preferences"
 msgid "right"
 msgstr "справа"
 
-#: ../build/bin/conf_gen.h:4050 ../build/bin/conf_gen.h:4095
+#: ../build/bin/conf_gen.h:4059 ../build/bin/conf_gen.h:4104
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarithmic"
 
-#: ../build/bin/conf_gen.h:4051 ../build/bin/conf_gen.h:4096
+#: ../build/bin/conf_gen.h:4060 ../build/bin/conf_gen.h:4105
 msgctxt "preferences"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/bin/conf_gen.h:4061
+#: ../build/bin/conf_gen.h:4070
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "горизонтально"
 
-#: ../build/bin/conf_gen.h:4062
+#: ../build/bin/conf_gen.h:4071
 msgctxt "preferences"
 msgid "vertical"
 msgstr "вертикально"
 
-#: ../build/bin/conf_gen.h:4072
+#: ../build/bin/conf_gen.h:4081
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "overlaid"
 
-#: ../build/bin/conf_gen.h:4073
+#: ../build/bin/conf_gen.h:4082
 msgctxt "preferences"
 msgid "parade"
 msgstr "parade"
 
-#: ../build/bin/conf_gen.h:4083
+#: ../build/bin/conf_gen.h:4092
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:4084
+#: ../build/bin/conf_gen.h:4093
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:4085
+#: ../build/bin/conf_gen.h:4094
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:4143
+#: ../build/bin/conf_gen.h:4152
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "монохроматична"
 
-#: ../build/bin/conf_gen.h:4144
+#: ../build/bin/conf_gen.h:4153
 msgctxt "preferences"
 msgid "analogous"
 msgstr "аналогова"
 
-#: ../build/bin/conf_gen.h:4145
+#: ../build/bin/conf_gen.h:4154
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "аналогова комплементарна"
 
-#: ../build/bin/conf_gen.h:4146
+#: ../build/bin/conf_gen.h:4155
 msgctxt "preferences"
 msgid "complementary"
 msgstr "комплементарна"
 
-#: ../build/bin/conf_gen.h:4147
+#: ../build/bin/conf_gen.h:4156
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "спліт-комплементарна"
 
-#: ../build/bin/conf_gen.h:4148
+#: ../build/bin/conf_gen.h:4157
 msgctxt "preferences"
 msgid "dyad"
 msgstr "діада"
 
-#: ../build/bin/conf_gen.h:4149
+#: ../build/bin/conf_gen.h:4158
 msgctxt "preferences"
 msgid "triad"
 msgstr "тріада"
 
-#: ../build/bin/conf_gen.h:4150
+#: ../build/bin/conf_gen.h:4159
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "тетрада"
 
-#: ../build/bin/conf_gen.h:4151
+#: ../build/bin/conf_gen.h:4160
 msgctxt "preferences"
 msgid "square"
 msgstr "квадрат"
 
-#: ../build/bin/conf_gen.h:4170
+#: ../build/bin/conf_gen.h:4179
 msgctxt "preferences"
 msgid "normal"
 msgstr "нормальна"
 
-#: ../build/bin/conf_gen.h:4172
+#: ../build/bin/conf_gen.h:4181
 msgctxt "preferences"
 msgid "narrow"
 msgstr "вузька"
 
-#: ../build/bin/conf_gen.h:4173
+#: ../build/bin/conf_gen.h:4182
 msgctxt "preferences"
 msgid "line"
 msgstr "лінія"
 
-#: ../build/bin/conf_gen.h:4453
+#: ../build/bin/conf_gen.h:4480
 msgctxt "preferences"
 msgid "mm"
 msgstr "мм"
 
-#: ../build/bin/conf_gen.h:4454
+#: ../build/bin/conf_gen.h:4481
 msgctxt "preferences"
 msgid "cm"
 msgstr "см"
 
-#: ../build/bin/conf_gen.h:4455
+#: ../build/bin/conf_gen.h:4482
 msgctxt "preferences"
 msgid "inch"
 msgstr "дюйм"
 
-#: ../build/bin/conf_gen.h:4510 ../build/bin/preferences_gen.h:4501
+#: ../build/bin/conf_gen.h:4537 ../build/bin/preferences_gen.h:4501
 msgctxt "preferences"
 msgid "all"
 msgstr "всі"
 
-#: ../build/bin/conf_gen.h:4511
+#: ../build/bin/conf_gen.h:4538
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:4512
+#: ../build/bin/conf_gen.h:4539
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4612 ../build/bin/preferences_gen.h:3493
+#: ../build/bin/conf_gen.h:4648 ../build/bin/preferences_gen.h:3493
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "на основі сцен (Сигмоїда)"
 
-#: ../build/bin/conf_gen.h:4613
+#: ../build/bin/conf_gen.h:4649
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "на основі сцен (Filmic)"
 
-#: ../build/bin/conf_gen.h:4614
+#: ../build/bin/conf_gen.h:4650
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "на основі сцен (AgX)"
 
-#: ../build/bin/conf_gen.h:4615
+#: ../build/bin/conf_gen.h:4651
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "на основі відображення (застаріло)"
 
-#: ../build/bin/conf_gen.h:4762
+#: ../build/bin/conf_gen.h:4798
 msgid "camera time zone"
 msgstr "Часовий пояс камери"
 
-#: ../build/bin/conf_gen.h:4763
+#: ../build/bin/conf_gen.h:4799
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone so "
 "the GPX data can be correctly matched"
@@ -757,62 +757,62 @@ msgstr ""
 "Більшість камер на записує часовий пояс в EXIF. Вкажіть правильний часовий "
 "пояс, щоб дані з GPX були застосовані коректно."
 
-#: ../build/bin/conf_gen.h:4779
+#: ../build/bin/conf_gen.h:4815
 msgctxt "preferences"
 msgid "no color"
 msgstr "не змінювати"
 
-#: ../build/bin/conf_gen.h:4780
+#: ../build/bin/conf_gen.h:4816
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "колір джерела світла"
 
-#: ../build/bin/conf_gen.h:4781
+#: ../build/bin/conf_gen.h:4817
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "емуляція ефекту"
 
-#: ../build/bin/conf_gen.h:4845
+#: ../build/bin/conf_gen.h:4881
 msgctxt "preferences"
 msgid "list"
 msgstr "список"
 
-#: ../build/bin/conf_gen.h:4846
+#: ../build/bin/conf_gen.h:4882
 msgctxt "preferences"
 msgid "tabs"
 msgstr "вкладки"
 
-#: ../build/bin/conf_gen.h:4847
+#: ../build/bin/conf_gen.h:4883
 msgctxt "preferences"
 msgid "columns"
 msgstr "колонки"
 
-#: ../build/bin/conf_gen.h:4858
+#: ../build/bin/conf_gen.h:4894
 msgctxt "preferences"
 msgid "active"
 msgstr "при наведенні"
 
-#: ../build/bin/conf_gen.h:4859
+#: ../build/bin/conf_gen.h:4895
 msgctxt "preferences"
 msgid "dim"
 msgstr "підсвічувати тьмяні"
 
-#: ../build/bin/conf_gen.h:4861
+#: ../build/bin/conf_gen.h:4897
 msgctxt "preferences"
 msgid "fade"
 msgstr "поступово прибирати"
 
-#: ../build/bin/conf_gen.h:4862
+#: ../build/bin/conf_gen.h:4898
 msgctxt "preferences"
 msgid "fit"
 msgstr "пріоритет імені модуля"
 
-#: ../build/bin/conf_gen.h:4863
+#: ../build/bin/conf_gen.h:4899
 msgctxt "preferences"
 msgid "smooth"
 msgstr "гасити одночасно при недостатній ширині"
 
-#: ../build/bin/conf_gen.h:4864
+#: ../build/bin/conf_gen.h:4900
 msgctxt "preferences"
 msgid "glide"
 msgstr "витісняти при недостатній ширині"
@@ -975,7 +975,7 @@ msgstr "Світлий стіл"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
 #: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1123
+#: ../src/gui/preferences_ai.c:1126
 msgid "general"
 msgstr "Загальні"
 
@@ -3421,7 +3421,7 @@ msgstr "Базис"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1155
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1158
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4839,7 +4839,7 @@ msgstr "Увімкнути реконструкцію переекспонова
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 #: ../src/common/variables.c:197 ../src/common/variables.c:822
-#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -6103,9 +6103,9 @@ msgstr "Спадне меню"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:603
-#: ../src/gui/preferences_ai.c:776 ../src/gui/preferences_ai.c:944
-#: ../src/gui/preferences_ai.c:1031 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:608
+#: ../src/gui/preferences_ai.c:784 ../src/gui/preferences_ai.c:947
+#: ../src/gui/preferences_ai.c:1034 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
@@ -6114,7 +6114,7 @@ msgstr "Спадне меню"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1815 ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2090
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2080
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6300,45 +6300,45 @@ msgstr "Перевищено ліміт темпу запитів до API GitHu
 msgid "GitHub API error (HTTP %ld)"
 msgstr "Помилка API GitHub (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1097 ../src/common/ai_models.c:1126
+#: ../src/common/ai_models.c:1231 ../src/common/ai_models.c:1260
 msgid "invalid parameters"
 msgstr "Недійсні параметри"
 
-#: ../src/common/ai_models.c:1100
+#: ../src/common/ai_models.c:1234
 #, c-format
 msgid "file not found: %s"
 msgstr "Файл не знайдено: %s"
 
-#: ../src/common/ai_models.c:1103
+#: ../src/common/ai_models.c:1237
 msgid "failed to extract model archive"
 msgstr "Не вдалося розпакувати архів моделі"
 
-#: ../src/common/ai_models.c:1134
+#: ../src/common/ai_models.c:1268
 msgid "model not found in registry"
 msgstr "Модель не знайдено в реєстрі"
 
-#: ../src/common/ai_models.c:1140
+#: ../src/common/ai_models.c:1274
 msgid "model has no download asset defined"
 msgstr "У моделі не визначено ресурс для завантаження"
 
-#: ../src/common/ai_models.c:1151
+#: ../src/common/ai_models.c:1285
 msgid "invalid asset filename"
 msgstr "Недійсна назва файлу ресурсу"
 
-#: ../src/common/ai_models.c:1157
+#: ../src/common/ai_models.c:1291
 msgid "model is already downloading"
 msgstr "Модель вже завантажується"
 
-#: ../src/common/ai_models.c:1188
+#: ../src/common/ai_models.c:1322
 msgid "invalid repository format"
 msgstr "Недійсний формат репозиторію"
 
-#: ../src/common/ai_models.c:1213
+#: ../src/common/ai_models.c:1347
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "Не знайдено сумісного випуску ШІ моделі для Darktable %s"
 
-#: ../src/common/ai_models.c:1229
+#: ../src/common/ai_models.c:1363
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6347,38 +6347,38 @@ msgstr ""
 "Не вдалося отримати контрольну суму для %s — відмова від завантаження без "
 "перевірки цілісності"
 
-#: ../src/common/ai_models.c:1247
+#: ../src/common/ai_models.c:1381
 msgid "failed to build download url"
 msgstr "Не вдалося створити URL-адресу завантаження"
 
-#: ../src/common/ai_models.c:1258
+#: ../src/common/ai_models.c:1392
 #, c-format
 msgid "failed to create file: %s"
 msgstr "Не вдалося створити файл: %s"
 
-#: ../src/common/ai_models.c:1282
+#: ../src/common/ai_models.c:1416
 msgid "failed to initialize download"
 msgstr "Не вдалося ініціалізувати завантаження"
 
-#: ../src/common/ai_models.c:1302
+#: ../src/common/ai_models.c:1436
 msgid "download cancelled"
 msgstr "Завантаження скасовано"
 
-#: ../src/common/ai_models.c:1304
+#: ../src/common/ai_models.c:1438
 #, c-format
 msgid "download failed: %s"
 msgstr "Не вдалося завантажити: %s"
 
-#: ../src/common/ai_models.c:1315
+#: ../src/common/ai_models.c:1449
 #, c-format
 msgid "http error: %ld"
 msgstr "Помилка HTTP: %ld"
 
-#: ../src/common/ai_models.c:1338
+#: ../src/common/ai_models.c:1472
 msgid "checksum verification failed"
 msgstr "Невдала перевірка контрольної суми"
 
-#: ../src/common/ai_models.c:1348
+#: ../src/common/ai_models.c:1482
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6386,7 +6386,7 @@ msgid ""
 msgstr ""
 "Немає контрольної суми для %s — відмова в установці без перевірки цілісності"
 
-#: ../src/common/ai_models.c:1358
+#: ../src/common/ai_models.c:1492
 msgid "failed to extract archive"
 msgstr "Не вдалося розпакувати архів"
 
@@ -7395,7 +7395,7 @@ msgstr "Видавець"
 msgid "title"
 msgstr "Заголовок"
 
-#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1361
+#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1364
 #: ../src/gui/styles_dialog.c:578 ../src/libs/filtering.c:61
 msgid "description"
 msgstr "Опис"
@@ -7539,7 +7539,7 @@ msgstr ""
 msgid "_ok"
 msgstr "_OK"
 
-#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:163
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:165
 msgid "error"
 msgstr "Помилка"
 
@@ -7752,7 +7752,7 @@ msgstr[1] "Видалити порожній каталог?"
 msgstr[2] "Видалити порожній каталог?"
 
 #: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1333 ../src/gui/styles_dialog.c:571
+#: ../src/gui/preferences_ai.c:1336 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "Ім'я"
@@ -8063,11 +8063,11 @@ msgstr "загальний пуассонівський"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Файл профілю шуму `%s' недійсний"
 
-#: ../src/common/opencl.c:1201
+#: ../src/common/opencl.c:1186
 msgid "no working OpenCL library found"
 msgstr "Не знайдено робочої бібліотеки OpenCL"
 
-#: ../src/common/opencl.c:1221
+#: ../src/common/opencl.c:1206
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -8084,23 +8084,23 @@ msgstr ""
 "   - помилки в драйверах,\n"
 "   - драйвер OpenCL не встановлено.\n"
 
-#: ../src/common/opencl.c:1336
+#: ../src/common/opencl.c:1321
 msgid "no devices found for unknown platform"
 msgstr "Не знайдено пристроїв для невідомої платформи"
 
-#: ../src/common/opencl.c:1383
+#: ../src/common/opencl.c:1368
 msgid "not enough memory for OpenCL devices"
 msgstr "Недостатньо пам'яті для пристроїв OpenCL"
 
-#: ../src/common/opencl.c:1421
+#: ../src/common/opencl.c:1406
 msgid "no OpenCL devices found"
 msgstr "Пристроїв OpenCL не знайдено"
 
-#: ../src/common/opencl.c:1464
+#: ../src/common/opencl.c:1449
 msgid "no suitable OpenCL devices found"
 msgstr "Відповідних пристроїв OpenCL не знайдено"
 
-#: ../src/common/opencl.c:1488
+#: ../src/common/opencl.c:1473
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -8111,47 +8111,47 @@ msgstr ""
 "%s\n"
 "Вимикаємо OpenCL"
 
-#: ../src/common/opencl.c:1524
+#: ../src/common/opencl.c:1509
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "Профіль планування OpenCL встановлено за замовчуванням, налаштування змінено"
 
-#: ../src/common/opencl.c:2373
+#: ../src/common/opencl.c:2358
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "Компіляція програми OpenCL %s для %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4054 ../src/libs/filters/focal.c:74
+#: ../src/common/pdf.h:89 ../src/iop/lens.cc:4054 ../src/libs/filters/focal.c:74
 #: ../src/libs/print_settings.c:84
 msgid "mm"
 msgstr "мм"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:680 ../src/libs/export.c:1534
+#: ../src/common/pdf.h:90 ../src/libs/export.c:680 ../src/libs/export.c:1534
 #: ../src/libs/print_settings.c:84
 msgid "cm"
 msgstr "см"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:84
+#: ../src/common/pdf.h:91 ../src/libs/print_settings.c:84
 msgid "inch"
 msgstr "дюйм"
 
-#: ../src/common/pdf.h:91
+#: ../src/common/pdf.h:92
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:947
+#: ../src/common/pdf.h:105 ../src/iop/borders.c:947
 msgid "A4"
 msgstr "A4"
 
-#: ../src/common/pdf.h:105
+#: ../src/common/pdf.h:106
 msgid "A3"
 msgstr "A3"
 
-#: ../src/common/pdf.h:106
+#: ../src/common/pdf.h:107
 msgid "Letter"
 msgstr "Letter"
 
-#: ../src/common/pdf.h:107
+#: ../src/common/pdf.h:108
 msgid "Legal"
 msgstr "Legal"
 
@@ -8307,7 +8307,7 @@ msgid "no info"
 msgstr "Немає інформації"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:820
-#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -9548,7 +9548,7 @@ msgstr "Зворотна"
 
 #. add default workspace
 #: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1396
+#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1399
 #: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
 msgid "default"
 msgstr "Замовчування"
@@ -10329,7 +10329,7 @@ msgid "purpose"
 msgstr "Призначення"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2190
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2180
 msgid "process"
 msgstr "Обробка"
 
@@ -10696,99 +10696,117 @@ msgstr "Використати фігури з модуля"
 msgid "masks can not contain themselves"
 msgstr "Маски не можуть містити себе"
 
-#: ../src/develop/masks/object.c:864
+#: ../src/develop/masks/object.c:836
+msgid "set raster mask root folder in preferences"
+msgstr "Встановіть кореневий каталог файлів растрових масок в Налаштуваннях"
+
+#: ../src/develop/masks/object.c:844
+msgid "cannot create raster mask folder"
+msgstr "Не вдалося створити каталог файлів растрових масок"
+
+#: ../src/develop/masks/object.c:907
+msgid "raster mask saved"
+msgstr "Растрову маску збережено"
+
+#: ../src/develop/masks/object.c:912
+msgid "failed to save raster mask"
+msgstr "Не вдалося зберегти растрову маску"
+
+#: ../src/develop/masks/object.c:993
 msgid "no mask extracted from AI segmentation"
 msgstr "Маску не витягнуто з сегментації ШІ"
 
-#: ../src/develop/masks/object.c:872
+#: ../src/develop/masks/object.c:1001
 msgid "ai object group"
 msgstr "Група об'єктів ШІ"
 
-#: ../src/develop/masks/object.c:873
+#: ../src/develop/masks/object.c:1002
 msgid "ai object"
 msgstr "Об'єкт ШІ"
 
-#: ../src/develop/masks/object.c:1023
+#: ../src/develop/masks/object.c:1128
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Згладжування: %3.2f"
 
-#: ../src/develop/masks/object.c:1034
+#: ../src/develop/masks/object.c:1139
 #, c-format
 msgid "cleanup: %d"
 msgstr "Очищення: %d"
 
-#: ../src/develop/masks/object.c:1047
+#: ../src/develop/masks/object.c:1152
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Непрозорість: %d%%"
 
-#: ../src/develop/masks/object.c:1161
+#: ../src/develop/masks/object.c:1275
 #, c-format
 msgid "group '%s'"
 msgstr "Група '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1411 ../src/develop/masks/object.c:1445
+#: ../src/develop/masks/object.c:1524 ../src/develop/masks/object.c:1558
 msgid "object mask: analyzing image..."
 msgstr "Маска об'єкта: аналіз зображення..."
 
-#: ../src/develop/masks/object.c:1455
+#: ../src/develop/masks/object.c:1568
 msgid "click on object to create mask"
 msgstr "Клікніть на об'єкті, щоб створити маску"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1465
+#: ../src/develop/masks/object.c:1578
 msgid "object mask preparation failed"
 msgstr "Підготовка маски об'єкта не вдалася"
 
-#: ../src/develop/masks/object.c:1780
+#: ../src/develop/masks/object.c:1778
 msgid "[OBJECT] select / add foreground point"
 msgstr "[ОБ'ЄКТ] Вибрати / Додати точку переднього плану"
 
-#: ../src/develop/masks/object.c:1785
+#: ../src/develop/masks/object.c:1783
 msgid "[OBJECT] add background point"
 msgstr "[ОБ'ЄКТ] Додати точку тла"
 
-#: ../src/develop/masks/object.c:1790
+#: ../src/develop/masks/object.c:1788
 msgid "[OBJECT] clear selection"
 msgstr "[ОБ'ЄКТ] Очистити вибір"
 
-#: ../src/develop/masks/object.c:1795
+#: ../src/develop/masks/object.c:1793
 msgid "[OBJECT] apply mask"
 msgstr "[ОБ'ЄКТ] Застосувати маску"
 
-#: ../src/develop/masks/object.c:1800
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] change smoothing"
 msgstr "[ОБ'ЄКТ] Змінити згладжування"
 
-#: ../src/develop/masks/object.c:1805
+#: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] change cleanup"
 msgstr "[ОБ'ЄКТ] Змінити очищення"
 
-#: ../src/develop/masks/object.c:1810
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] change opacity"
 msgstr "[ОБ'ЄКТ] Змінити непрозорість"
 
-#: ../src/develop/masks/object.c:1818
+#: ../src/develop/masks/object.c:1815
 #, c-format
 msgid "object #%d"
 msgstr "Об'єкт #%d"
 
-#: ../src/develop/masks/object.c:1837
+#: ../src/develop/masks/object.c:1833
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-"ctrl+shift+click, <b>apply</b>: right-click\n"
+"ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
+"shift+right-click\n"
 "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Додати</b>: клік, <b>Відняти</b>: Shift+клік, <b>Скинути</b>: "
-"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік\n"
+"Ctrl+Shift+клік, <b>Застосувати</b>: правий клік, <b>Застосувати+зберегти "
+"растр</b>: shift+правий клік\n"
 "<b>Згладжування</b>: прокрутка (%3.2f), <b>Очищення</b>: Shift+прокрутка "
 "(%d), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/object.c:1845
+#: ../src/develop/masks/object.c:1844
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
@@ -13411,7 +13429,7 @@ msgstr "Вибрати каталог сценаріїв"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2124
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2114
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "Сторінка"
@@ -15170,8 +15188,8 @@ msgstr "Не вдається імпортувати пресет %s"
 msgid "select preset(s) to import"
 msgstr "Виберіть пресет(и) для імпорту"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:777
-#: ../src/gui/preferences_ai.c:1032 ../src/gui/welcome.c:160
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
+#: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
 #: ../src/libs/collect.c:433 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
@@ -15182,7 +15200,7 @@ msgstr "_Відкрити"
 msgid "darktable preset files"
 msgstr "Файли пресетів Darktable"
 
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1047
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1050
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
@@ -15193,39 +15211,43 @@ msgid "downloaded"
 msgstr "Завантажено"
 
 #: ../src/gui/preferences_ai.c:159
+msgid "update available"
+msgstr "Доступне оновлення"
+
+#: ../src/gui/preferences_ai.c:161
 msgid "update required"
 msgstr "Потрібне оновлення"
 
-#: ../src/gui/preferences_ai.c:161
+#: ../src/gui/preferences_ai.c:163
 msgid "downloading..."
 msgstr "Завантаження..."
 
-#: ../src/gui/preferences_ai.c:165
+#: ../src/gui/preferences_ai.c:167
 msgid "not downloaded"
 msgstr "Не завантажено"
 
-#: ../src/gui/preferences_ai.c:341
+#: ../src/gui/preferences_ai.c:346
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>недоступно, буде використано CPU</i>"
 
-#: ../src/gui/preferences_ai.c:600
+#: ../src/gui/preferences_ai.c:605
 msgid "downloading AI model"
 msgstr "Завантаження моделі ШІ"
 
-#: ../src/gui/preferences_ai.c:615
+#: ../src/gui/preferences_ai.c:620
 #, c-format
 msgid "downloading: %s"
 msgstr "Завантаження: %s"
 
-#: ../src/gui/preferences_ai.c:773
+#: ../src/gui/preferences_ai.c:781
 msgid "install AI model"
 msgstr "Встановлення моделі ШІ"
 
-#: ../src/gui/preferences_ai.c:781
+#: ../src/gui/preferences_ai.c:789
 msgid "AI model packages (*.dtmodel)"
 msgstr "Пакети моделей ШІ (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:853
+#: ../src/gui/preferences_ai.c:862
 #, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
@@ -15233,7 +15255,7 @@ msgstr[0] "Видалити %d вибрану модель?"
 msgstr[1] "Видалити %d вибрані моделі?"
 msgstr[2] "Видалити %d вибраних моделей?"
 
-#: ../src/gui/preferences_ai.c:895
+#: ../src/gui/preferences_ai.c:898
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -15242,7 +15264,7 @@ msgstr ""
 "Виявлено ONNX Runtime %s.\n"
 "Перезапустіть Darktable, щоб застосувати."
 
-#: ../src/gui/preferences_ai.c:900
+#: ../src/gui/preferences_ai.c:903
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -15251,7 +15273,7 @@ msgstr ""
 "Недійсна бібліотека ONNX Runtime:\n"
 "%s"
 
-#: ../src/gui/preferences_ai.c:917
+#: ../src/gui/preferences_ai.c:920
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
@@ -15263,7 +15285,7 @@ msgstr ""
 "Встановіть її через менеджер пакетів або скористайтеся\n"
 "кнопкою перегляду, щоб вибрати власну збірку."
 
-#: ../src/gui/preferences_ai.c:933
+#: ../src/gui/preferences_ai.c:936
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -15276,55 +15298,55 @@ msgstr ""
 "\n"
 "Перезапустіть Darktable, щоб застосувати зміни."
 
-#: ../src/gui/preferences_ai.c:941 ../src/gui/preferences_ai.c:1028
+#: ../src/gui/preferences_ai.c:944 ../src/gui/preferences_ai.c:1031
 msgid "select ONNX Runtime library"
 msgstr "Виберіть бібліотеку ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:945 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2091
+#: ../src/gui/preferences_ai.c:948 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2081
 msgid "_select"
 msgstr "_Вибрати"
 
-#: ../src/gui/preferences_ai.c:951
+#: ../src/gui/preferences_ai.c:954
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "Знайдено кілька бібліотек ONNX Runtime:"
 
-#: ../src/gui/preferences_ai.c:1038
+#: ../src/gui/preferences_ai.c:1041
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "ONNX Runtime (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1041
+#: ../src/gui/preferences_ai.c:1044
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1094
+#: ../src/gui/preferences_ai.c:1097
 msgid "enable AI features"
 msgstr "Активація функцій ШІ"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1139
+#: ../src/gui/preferences_ai.c:1142
 msgid "execution provider"
 msgstr "Постачальник виконання"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1150
+#: ../src/gui/preferences_ai.c:1153
 msgid "select hardware acceleration for AI inference:"
 msgstr "Виберіть апаратне прискорення для генерації ШІ:"
 
-#: ../src/gui/preferences_ai.c:1194
+#: ../src/gui/preferences_ai.c:1197
 msgid "ONNX Runtime library"
 msgstr "Бібліотека ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1208
+#: ../src/gui/preferences_ai.c:1211
 msgid "bundled (DirectML)"
 msgstr "Комплектна (DirectML)"
 
-#: ../src/gui/preferences_ai.c:1211
+#: ../src/gui/preferences_ai.c:1214
 msgid "bundled (CPU only)"
 msgstr "Комплектна (лише CPU)"
 
-#: ../src/gui/preferences_ai.c:1214
+#: ../src/gui/preferences_ai.c:1217
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
@@ -15334,74 +15356,89 @@ msgstr ""
 "Залиште поле порожнім, щоб використовувати комплектну бібліотеку.\n"
 "Для набрання чинності потрібен перезапуск."
 
-#: ../src/gui/preferences_ai.c:1223
+#: ../src/gui/preferences_ai.c:1226
 msgid "select a custom ONNX Runtime shared library"
 msgstr "Виберіть власну бібліотеку ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1225
+#: ../src/gui/preferences_ai.c:1228
 msgid "detect"
 msgstr "Визначити"
 
-#: ../src/gui/preferences_ai.c:1227
+#: ../src/gui/preferences_ai.c:1230
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "Пошук встановленої системою бібліотеки ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1262
+#: ../src/gui/preferences_ai.c:1265
 msgid "models"
 msgstr "Моделі"
 
-#: ../src/gui/preferences_ai.c:1309
+#: ../src/gui/preferences_ai.c:1312
 msgid "select/deselect all"
 msgstr "Вибрати чи скасувати вибір усіх"
 
-#: ../src/gui/preferences_ai.c:1343 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1346 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "Версія"
 
-#: ../src/gui/preferences_ai.c:1352
+#: ../src/gui/preferences_ai.c:1355
 msgid "task"
 msgstr "Завдання"
 
-#: ../src/gui/preferences_ai.c:1377
+#: ../src/gui/preferences_ai.c:1380
 msgid "enabled"
 msgstr "Увімкнено"
 
-#: ../src/gui/preferences_ai.c:1387
+#: ../src/gui/preferences_ai.c:1390
 msgid "status"
 msgstr "Статус"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1423
+#: ../src/gui/preferences_ai.c:1426
 msgid "download selected"
 msgstr "Завантажити вибране"
 
+#: ../src/gui/preferences_ai.c:1428
+msgid "download or update the selected models"
+msgstr "Завантажити або оновити вибрані моделі"
+
 #. download default button
-#: ../src/gui/preferences_ai.c:1432
+#: ../src/gui/preferences_ai.c:1437
 msgid "download default"
 msgstr "Завантажити за замовчуванням"
 
+#: ../src/gui/preferences_ai.c:1439
+msgid "download or update all default models"
+msgstr "Завантажити або оновити всі моделі за замовчуванням"
+
 #. download all button
-#: ../src/gui/preferences_ai.c:1441
+#: ../src/gui/preferences_ai.c:1448
 msgid "download all"
 msgstr "Завантажити все"
 
+#: ../src/gui/preferences_ai.c:1450
+msgid "download or update all available models"
+msgstr "Завантажити або оновити всі доступні моделі"
+
 #. install model button
-#: ../src/gui/preferences_ai.c:1447
+#: ../src/gui/preferences_ai.c:1456
 msgid "install model"
 msgstr "Встановити модель"
 
+#: ../src/gui/preferences_ai.c:1458
+msgid "install a model from a local .dtmodel file"
+msgstr "Встановити модель з локального файлу .dtmodel"
+
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1452
+#: ../src/gui/preferences_ai.c:1463
 msgid "delete selected"
 msgstr "Видалити вибране"
 
-#. refresh button
-#: ../src/gui/preferences_ai.c:1461
-msgid "refresh"
-msgstr "Оновити"
+#: ../src/gui/preferences_ai.c:1465
+msgid "remove the selected models from disk"
+msgstr "Видалити вибрані моделі з диска"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1472
+#: ../src/gui/preferences_ai.c:1481
 msgid "AI"
 msgstr "ШІ"
 
@@ -15810,7 +15847,7 @@ msgstr "Щасливого редагування з Darktable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2213
 msgid "8 bit"
 msgstr "8 біт"
 
@@ -15834,7 +15871,7 @@ msgstr "З втратами"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2220
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2210
 msgid "bit depth"
 msgstr "Бітова глибина"
 
@@ -15961,7 +15998,7 @@ msgstr "16 біт (рухома кома)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2213
 msgid "32 bit (float)"
 msgstr "32 біти (рухома кома)"
 
@@ -16057,7 +16094,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2223
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2213
 msgid "16 bit"
 msgstr "16 біт"
 
@@ -17448,7 +17485,7 @@ msgid "denoise chroma"
 msgstr "Знешумлення кольорового шуму"
 
 #: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
-#: ../src/libs/neural_restore.c:2127
+#: ../src/libs/neural_restore.c:2117
 msgid "denoise"
 msgstr "Знешумлення"
 
@@ -20764,37 +20801,37 @@ msgstr ""
 "Перенесення палітри кольорів і тонального розподілу\n"
 "з одного зображення в інше"
 
-#: ../src/iop/colormapping.c:1001
+#: ../src/iop/colormapping.c:1002
 msgid "acquire as source"
 msgstr "Отримати з джерела"
 
-#: ../src/iop/colormapping.c:1005
+#: ../src/iop/colormapping.c:1006
 msgid "analyze this image as a source image"
 msgstr "Проаналізувати це зображення як джерельне"
 
-#: ../src/iop/colormapping.c:1007
+#: ../src/iop/colormapping.c:1008
 msgid "acquire as target"
 msgstr "Отримати з цілі"
 
-#: ../src/iop/colormapping.c:1011
+#: ../src/iop/colormapping.c:1012
 msgid "analyze this image as a target image"
 msgstr "Проаналізувати це зображення як цільове"
 
-#: ../src/iop/colormapping.c:1013
+#: ../src/iop/colormapping.c:1014
 msgid "source clusters:"
 msgstr "Джерельні кластери:"
 
-#: ../src/iop/colormapping.c:1014
+#: ../src/iop/colormapping.c:1015
 msgid "target clusters:"
 msgstr "Цільові кластери:"
 
-#: ../src/iop/colormapping.c:1017
+#: ../src/iop/colormapping.c:1018
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "Скільки кластерів отримати із зображення. Зміна значення скидає всі заповнені "
 "кластери"
 
-#: ../src/iop/colormapping.c:1020
+#: ../src/iop/colormapping.c:1021
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -20802,7 +20839,7 @@ msgstr ""
 "Як кластери відображаються. Низькі значення - на основі близькості кольорів, "
 "високі значення - на основі домінуючих кольорів"
 
-#: ../src/iop/colormapping.c:1025
+#: ../src/iop/colormapping.c:1026
 msgid "level of histogram equalization"
 msgstr "Рівень вирівнювання гістограми"
 
@@ -23394,7 +23431,7 @@ msgstr "Відстань до об'єкта"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2147
+#: ../src/libs/neural_restore.c:2137
 msgid "scale"
 msgstr "Масштаб"
 
@@ -25059,7 +25096,7 @@ msgstr ""
 "\n"
 "Корисно для певних типів сенсорів і анаморфного розтискання"
 
-#: ../src/iop/scalepixels.c:270
+#: ../src/iop/scalepixels.c:280
 msgid "adjust pixel aspect ratio"
 msgstr "Відрегулювати пропорцію пікселя"
 
@@ -29438,7 +29475,7 @@ msgstr "Не вдалося відкрити TIFF для запису: %s"
 msgid "out of memory for detail recovery buffer"
 msgstr "Бракує пам'яті для буфера відновлення деталей"
 
-#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2129
+#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2119
 msgid "upscale"
 msgstr "Збільшення"
 
@@ -29503,41 +29540,41 @@ msgstr "Натисніть, щоб створити попередній пер�
 msgid "select an image to preview"
 msgstr "Виберіть зображення для попереднього перегляду"
 
-#: ../src/libs/neural_restore.c:2087 ../src/libs/neural_restore.c:2257
+#: ../src/libs/neural_restore.c:2077 ../src/libs/neural_restore.c:2247
 msgid "select output folder"
 msgstr "Вибрати папку виводу"
 
-#: ../src/libs/neural_restore.c:2128
+#: ../src/libs/neural_restore.c:2118
 msgid "AI denoising"
 msgstr "ШІ знешумлення"
 
-#: ../src/libs/neural_restore.c:2130
+#: ../src/libs/neural_restore.c:2120
 msgid "AI upscaling"
 msgstr "ШІ збільшення"
 
-#: ../src/libs/neural_restore.c:2137
+#: ../src/libs/neural_restore.c:2127
 msgid "detail recovery"
 msgstr "Відновлення деталей"
 
-#: ../src/libs/neural_restore.c:2140
+#: ../src/libs/neural_restore.c:2130
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
 "Відновити дрібну текстуру, втрачену під час знешумлення, одночасно "
 "пригнічуючи шум"
 
-#: ../src/libs/neural_restore.c:2148
+#: ../src/libs/neural_restore.c:2138
 msgid "upscale factor"
 msgstr "Фактор масштабування"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2140
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2140
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2167
+#: ../src/libs/neural_restore.c:2157
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -29546,27 +29583,27 @@ msgstr ""
 "зображення\n"
 "Подвійний клік, щоб скинути до центру"
 
-#: ../src/libs/neural_restore.c:2192
+#: ../src/libs/neural_restore.c:2182
 msgid "process selected images"
 msgstr "Обробити вибрані зображення"
 
-#: ../src/libs/neural_restore.c:2210
+#: ../src/libs/neural_restore.c:2200
 msgid "output parameters"
 msgstr "Вихідні параметри"
 
-#: ../src/libs/neural_restore.c:2221
+#: ../src/libs/neural_restore.c:2211
 msgid "output TIFF bit depth"
 msgstr "Розрядність вихідного TIFF"
 
-#: ../src/libs/neural_restore.c:2228
+#: ../src/libs/neural_restore.c:2218
 msgid "add to catalog"
 msgstr "Додати до каталогу"
 
-#: ../src/libs/neural_restore.c:2234
+#: ../src/libs/neural_restore.c:2224
 msgid "automatically import output image into the darktable library"
 msgstr "Автоматично імпортувати вихідне зображення до бібліотеки Darktable"
 
-#: ../src/libs/neural_restore.c:2250
+#: ../src/libs/neural_restore.c:2240
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -32051,6 +32088,9 @@ msgstr ""
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "refresh"
+#~ msgstr "Оновити"
 
 #~ msgid "[OBJECT] brush over object"
 #~ msgstr "[ОБ'ЄКТ] Пензлем по об'єкту"
