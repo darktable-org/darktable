@@ -227,6 +227,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
         { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
         { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_MONTH, _month_widget_init, _month_update },
         { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
@@ -900,6 +901,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MONTH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -960,6 +962,7 @@ static void _populate_rules_combo(GtkWidget *w)
 
   dt_bauhaus_combobox_add_section(w, _("times"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MONTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -1215,7 +1218,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
 static gboolean _rule_available_for_topbar(const dt_collection_properties_t prop)
 {
   // we don't want to allow date filters for topbar as the design of the bar is not useful as it
-  if(prop == DT_COLLECTION_PROP_DAY || prop == DT_COLLECTION_PROP_TIME
+  if(prop == DT_COLLECTION_PROP_DAY || prop == DT_COLLECTION_PROP_MONTH || prop == DT_COLLECTION_PROP_TIME
      || prop == DT_COLLECTION_PROP_CHANGE_TIMESTAMP || prop == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
      || prop == DT_COLLECTION_PROP_PRINT_TIMESTAMP || prop == DT_COLLECTION_PROP_IMPORT_TIMESTAMP)
     return FALSE;
@@ -1511,6 +1514,8 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       gchar *pretty = NULL;
       if(item == DT_COLLECTION_PROP_COLORLABEL)
         pretty = _colors_pretty_print(str);
+      else if(item == DT_COLLECTION_PROP_MONTH)
+        pretty = _month_pretty_print(str);
       else if(!g_strcmp0(str, "%"))
         pretty = g_strdup(_("all"));
       else

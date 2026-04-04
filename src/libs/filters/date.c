@@ -83,6 +83,130 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
+typedef struct _widgets_month_t
+{
+  dt_lib_filtering_rule_t *rule;
+  GtkWidget *toggles[12];
+} _widgets_month_t;
+
+static gboolean _month_update(dt_lib_filtering_rule_t *rule);
+
+static int _month_get_mask(const char *text)
+{
+  if(g_str_has_prefix(text, "0x"))
+    return (int)strtoll(&text[2], NULL, 16);
+  else
+    return 0;
+}
+
+static void _month_set_mask(dt_lib_filtering_rule_t *rule, const int mask, const gboolean signal)
+{
+  gchar *txt = g_strdup_printf("0x%x", mask);
+  _rule_set_raw_text(rule, txt, signal);
+  g_free(txt);
+}
+
+static gchar *_month_pretty_print(const gchar *raw_txt)
+{
+  const int mask = _month_get_mask(raw_txt);
+  if(mask == 0 || mask == 0xFFF) return g_strdup(_("all"));
+
+  gchar *txt = NULL;
+  for(int i = 0; i < 12; i++)
+  {
+    if(mask & (1 << i))
+    {
+      if(txt)
+        dt_util_str_cat(&txt, ", %s", _(dt_month_short_names[i]));
+      else
+        txt = g_strdup(_(dt_month_short_names[i]));
+    }
+  }
+  return txt ? txt : g_strdup(_("all"));
+}
+
+static void _month_widget_changed(GtkToggleButton *button, gpointer user_data)
+{
+  _widgets_month_t *month = (_widgets_month_t *)user_data;
+  if(month->rule->manual_widget_set) return;
+  if(month->rule->lib->leaving) return;
+
+  int mask = 0;
+  for(int i = 0; i < 12; i++)
+  {
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(month->toggles[i])))
+      mask |= (1 << i);
+  }
+
+  _month_set_mask(month->rule, mask, TRUE);
+
+  // synchronize the other widget if any
+  _month_update(month->rule);
+}
+
+static gboolean _month_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  rule->manual_widget_set++;
+  _widgets_month_t *month = (_widgets_month_t *)rule->w_specific;
+  _widgets_month_t *monthtop = (_widgets_month_t *)rule->w_specific_top;
+
+  const int mask = _month_get_mask(rule->raw_text);
+
+  for(int i = 0; i < 12; i++)
+  {
+    const gboolean active = (mask & (1 << i)) != 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(month->toggles[i]), active);
+    if(monthtop)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(monthtop->toggles[i]), active);
+  }
+
+  rule->manual_widget_set--;
+  return TRUE;
+}
+
+static void _month_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                               const gchar *text, dt_lib_module_t *self, const gboolean top)
+{
+  _widgets_month_t *month = g_malloc0(sizeof(_widgets_month_t));
+  month->rule = rule;
+  if(top)
+    rule->w_specific_top = month;
+  else
+    rule->w_specific = month;
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hbox, "filter-month-box");
+
+  for(int i = 0; i < 12; i++)
+  {
+    month->toggles[i] = gtk_toggle_button_new_with_label(_(dt_month_short_names[i]));
+    gtk_widget_set_tooltip_text(month->toggles[i],
+                                _("filter by capture month\n"
+                                  "click to toggle month selection"));
+    g_signal_connect(G_OBJECT(month->toggles[i]), "toggled",
+                     G_CALLBACK(_month_widget_changed), month);
+    gtk_box_pack_start(GTK_BOX(hbox), month->toggles[i], TRUE, TRUE, 0);
+  }
+
+  // apply initial state from text
+  if(text && text[0])
+  {
+    const int mask = _month_get_mask(text);
+    rule->manual_widget_set++;
+    for(int i = 0; i < 12; i++)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(month->toggles[i]),
+                                   (mask & (1 << i)) != 0);
+    rule->manual_widget_set--;
+  }
+
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hbox, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
+}
+
 static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                               const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
