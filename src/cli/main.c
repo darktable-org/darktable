@@ -93,6 +93,8 @@ fprintf(stderr, "darktable %s\n"
                 "                          if specified, takes preference over output\n"
                 "   --import <file or dir> specify input file or dir, can be used'\n"
                 "                          multiple times instead of input file\n"
+                "   --library <path> read the history stack from library database\n"
+                "                    instead of XMP sidecar files\n"
                 "   --icc-type <type> specify icc type, default to NONE\n"
                 "                     use --help icc-type for list of supported types\n"
                 "   --icc-file <file> specify icc filename, default to NONE\n"
@@ -216,6 +218,7 @@ int main(int argc, char *arg[])
   gchar *output_filename = NULL;
   gchar *output_ext = NULL;
   char *style = NULL;
+  char *library = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
@@ -365,6 +368,11 @@ int main(int argc, char *arg[])
         else
           fprintf(stderr, _("notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
       }
+      else if(!strcmp(arg[k], "--library") && argc > k + 1)
+      {
+        k++;
+        library = arg[k];
+      }
       else if(!strcmp(arg[k], "--icc-type") && argc > k + 1)
       {
         k++;
@@ -436,7 +444,7 @@ int main(int argc, char *arg[])
   char **m_arg = malloc(sizeof(char *) * (5 + argc - k + 1));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
-  m_arg[m_argc++] = ":memory:";
+  m_arg[m_argc++] = library ? library : ":memory:";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=never";
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
