@@ -650,7 +650,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   if(get_path && dt_modifier_is(event->state, GDK_SHIFT_MASK)
      && gtk_tree_selection_count_selected_rows(selection) > 0
-     && (d->view_rule == DT_COLLECTION_PROP_DAY || _is_time_property(d->view_rule)
+     && (d->view_rule == DT_COLLECTION_PROP_DAY
+         || d->view_rule == DT_COLLECTION_PROP_MONTH 
+         || _is_time_property(d->view_rule)
          || d->view_rule == DT_COLLECTION_PROP_APERTURE
          || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
          || d->view_rule == DT_COLLECTION_PROP_ISO
@@ -699,7 +701,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
      || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY
          && (dt_modifier_is(event->state, GDK_SHIFT_MASK)
-             || dt_modifier_is(event->state, GDK_CONTROL_MASK))))
+             || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+     || (d->view_rule == DT_COLLECTION_PROP_MONTH
+         && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
 
@@ -1387,6 +1391,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s|";
       break;
     case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_MONTH:
     case DT_COLLECTION_PROP_TIME:
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1525,6 +1530,20 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
 
+      case DT_COLLECTION_PROP_MONTH:
+        // clang-format off
+        query = g_strdup_printf
+          ("SELECT CAST(strftime('%%m', datetime_taken / 86400000000.0"
+           "            + julianday('0001-01-01')) AS INTEGER) AS month_num,"
+           "        1, COUNT(*) AS count"
+           " FROM main.images AS mi"
+           " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+           " AND %s"
+           " GROUP BY month_num"
+           " ORDER BY month_num", where_ext);
+        // clang-format on
+        break;
+
       case DT_COLLECTION_PROP_TIME:
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1585,6 +1604,14 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         if(property == DT_COLLECTION_PROP_DAY)
           sdt[10] = '\0';
         name = g_strdup(sdt);
+      }
+      else if(property == DT_COLLECTION_PROP_MONTH)
+      {
+        const int month_num = sqlite3_column_int(stmt, 0);
+        if(month_num >= 1 && month_num <= 12)
+          name = g_strdup_printf("%02d - %s", month_num, _(dt_month_names[month_num - 1]));
+        else
+          name = g_strdup(_("unknown"));
       }
       else
       {
@@ -2215,6 +2242,22 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         }
         break;
 
+      case DT_COLLECTION_PROP_MONTH: // capture month
+        // clang-format off
+        g_snprintf(query, sizeof(query),
+                   "SELECT CAST(strftime('%%m', datetime_taken / 86400000000.0"
+                   "            + julianday('0001-01-01')) AS INTEGER) AS month_num,"
+                   "        1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+                   " AND %s"
+                   " GROUP BY month_num"
+                   " ORDER BY month_num %s",
+                   where_ext,
+                   sort_descending ? "DESC" : "ASC");
+        // clang-format on
+        break;
+
       default:
         if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
@@ -2334,6 +2377,14 @@ static void _list_view(dt_lib_collect_rule_t *dr)
                folder = "★★★★★";
                break;
           }
+        }
+        else if(property == DT_COLLECTION_PROP_MONTH)
+        {
+          const int month_num = sqlite3_column_int(stmt, 0);
+          if(month_num >= 1 && month_num <= 12)
+            folder = _(dt_month_names[month_num - 1]);
+          else
+            folder = _("unknown");
         }
 
         // check if name is empty string
@@ -3424,6 +3475,7 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("times"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MONTH);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
@@ -4092,6 +4144,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MONTH);
 }
 #endif
 #undef MAX_RULES
