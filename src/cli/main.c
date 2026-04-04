@@ -198,6 +198,18 @@ static dt_iop_color_intent_t get_icc_intent(const char* option)
 }
 #undef ICC_INTENT_FROM_STR
 
+static gboolean _inputs_have_xmp_sidecar(const GList* inputs)
+{
+  for(const GList *l = inputs; l; l = g_list_next(l))
+  {
+    char sidecar[PATH_MAX + 5];
+    snprintf(sidecar, sizeof(sidecar), "%s.xmp", (const gchar *)l->data);
+    if(!g_file_test(sidecar, G_FILE_TEST_EXISTS))
+      return FALSE;
+  }
+  return inputs != NULL;
+}
+
 int main(int argc, char *arg[])
 {
 #ifdef __APPLE__
@@ -450,19 +462,42 @@ int main(int argc, char *arg[])
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
-  if( (inputs && file_counter < 1) || (!inputs && file_counter < 2) || file_counter > 3)
+  gboolean args_error = FALSE;
+  if(inputs && file_counter < 1)
+  {
+    fprintf(stderr, _("error: output file or directory must be specified\n\n"));
+    args_error = TRUE;
+  }
+  else if(!inputs && file_counter < 2)
+  {
+    if(file_counter == 0)
+      fprintf(stderr, _("error: input file and output file must be specified\n\n"));
+    else
+      fprintf(stderr, _("error: output file or directory must be specified\n\n"));
+    args_error = TRUE;
+  }
+  else if(file_counter > 3)
+  {
+    fprintf(stderr, _("error: too many positional arguments\n\n"));
+    args_error = TRUE;
+  }
+  else if(inputs && file_counter == 3)
+  {
+    fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
+    args_error = TRUE;
+  }
+
+  if(args_error)
   {
     usage(arg[0]);
     free(m_arg);
-    if(output_filename)
-      g_free(output_filename);
-    if(output_ext)
-      g_free(output_ext);
-    if(inputs)
-      g_list_free_full(inputs, g_free);
+    g_free(output_filename);
+    g_free(output_ext);
+    g_list_free_full(inputs, g_free);
     exit(1);
   }
-  else if(inputs && file_counter == 1)
+
+  if(inputs && file_counter == 1)
   {
     //user specified inputs as options, and only dest is present
     if(output_filename)
@@ -479,18 +514,6 @@ int main(int argc, char *arg[])
     xmp_filename = input_filename;
     input_filename = NULL;
   }
-  else if(inputs && file_counter == 3)
-  {
-    fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
-    usage(arg[0]);
-    free(m_arg);
-    if(output_filename)
-      g_free(output_filename);
-    if(output_ext)
-      g_free(output_ext);
-    g_list_free_full(inputs, g_free);
-    exit(1);
-  }
   else if(file_counter == 2)
   {
     // assume no xmp file given
@@ -506,6 +529,11 @@ int main(int argc, char *arg[])
     inputs = g_list_prepend(inputs, g_strdup(input_filename));
     input_filename = NULL;
   }
+
+  // auto-detect XMP sidecar: darktable's import reads <input>.xmp automatically,
+  // so only check for existence to decide whether to suppress the "no XMP" notice.
+  if(!xmp_filename && !library && ! _inputs_have_xmp_sidecar(inputs))
+    fprintf(stderr, "%s\n", _("notice: no XMP sidecar file nor library path provided, using default settings for export"));
 
   if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
   {
