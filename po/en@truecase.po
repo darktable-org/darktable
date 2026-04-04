@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 19:10+0200\n"
-"PO-Revision-Date: 2026-04-01 23:00+0300\n"
+"POT-Creation-Date: 2026-04-03 17:29+0200\n"
+"PO-Revision-Date: 2026-04-03 21:41+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -49,8 +49,8 @@ msgid "bar"
 msgstr "Bar"
 
 #: ../build/bin/conf_gen.h:276 ../build/bin/conf_gen.h:419
-#: ../build/bin/conf_gen.h:431 ../build/bin/conf_gen.h:1756
-#: ../build/bin/conf_gen.h:1777 ../build/bin/conf_gen.h:1814
+#: ../build/bin/conf_gen.h:431 ../build/bin/conf_gen.h:1765
+#: ../build/bin/conf_gen.h:1786 ../build/bin/conf_gen.h:1823
 #: ../build/bin/preferences_gen.h:2818 ../build/bin/preferences_gen.h:2905
 msgctxt "preferences"
 msgid "never"
@@ -76,19 +76,19 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "On close"
 
-#: ../build/bin/conf_gen.h:344 ../build/bin/conf_gen.h:1747
-#: ../build/bin/conf_gen.h:1768 ../build/bin/conf_gen.h:1815
+#: ../build/bin/conf_gen.h:344 ../build/bin/conf_gen.h:1756
+#: ../build/bin/conf_gen.h:1777 ../build/bin/conf_gen.h:1824
 msgctxt "preferences"
 msgid "small"
 msgstr "Small"
 
-#: ../build/bin/conf_gen.h:345 ../build/bin/conf_gen.h:526
+#: ../build/bin/conf_gen.h:345 ../build/bin/conf_gen.h:535
 #: ../build/bin/preferences_gen.h:3569 ../build/bin/preferences_gen.h:3637
 msgctxt "preferences"
 msgid "default"
 msgstr "Default"
 
-#: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:4171
+#: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:4180
 msgctxt "preferences"
 msgid "large"
 msgstr "Large"
@@ -103,8 +103,8 @@ msgctxt "preferences"
 msgid "on import"
 msgstr "On import"
 
-#: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1746
-#: ../build/bin/conf_gen.h:1767 ../build/bin/conf_gen.h:4857
+#: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1755
+#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:4893
 #: ../build/bin/preferences_gen.h:3307
 msgctxt "preferences"
 msgid "always"
@@ -125,86 +125,86 @@ msgctxt "preferences"
 msgid "insensitive"
 msgstr "Insensitive"
 
-#: ../build/bin/conf_gen.h:527
+#: ../build/bin/conf_gen.h:536
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "Multiple GPUs"
 
-#: ../build/bin/conf_gen.h:528
+#: ../build/bin/conf_gen.h:537
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "Very fast GPU"
 
-#: ../build/bin/conf_gen.h:997 ../build/bin/preferences_gen.h:4843
+#: ../build/bin/conf_gen.h:1006 ../build/bin/preferences_gen.h:4843
 msgctxt "preferences"
 msgid "import time"
 msgstr "Import time"
 
-#: ../build/bin/conf_gen.h:998
+#: ../build/bin/conf_gen.h:1007
 msgctxt "preferences"
 msgid "folder name"
 msgstr "Folder name"
 
-#: ../build/bin/conf_gen.h:1017
+#: ../build/bin/conf_gen.h:1026
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:1018
+#: ../build/bin/conf_gen.h:1027
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:1019
+#: ../build/bin/conf_gen.h:1028
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:1020
+#: ../build/bin/conf_gen.h:1029
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:1021
+#: ../build/bin/conf_gen.h:1030
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:1022 ../build/bin/conf_gen.h:2751
-#: ../build/bin/conf_gen.h:3714 ../build/bin/conf_gen.h:4142
-#: ../build/bin/conf_gen.h:4616
+#: ../build/bin/conf_gen.h:1031 ../build/bin/conf_gen.h:2760
+#: ../build/bin/conf_gen.h:3723 ../build/bin/conf_gen.h:4151
+#: ../build/bin/conf_gen.h:4652
 msgctxt "preferences"
 msgid "none"
 msgstr "None"
 
-#: ../build/bin/conf_gen.h:1032
+#: ../build/bin/conf_gen.h:1041
 msgctxt "preferences"
 msgid "mean"
 msgstr "Mean"
 
-#: ../build/bin/conf_gen.h:1033
+#: ../build/bin/conf_gen.h:1042
 msgctxt "preferences"
 msgid "min"
 msgstr "Min"
 
-#: ../build/bin/conf_gen.h:1034
+#: ../build/bin/conf_gen.h:1043
 msgctxt "preferences"
 msgid "max"
 msgstr "Max"
 
-#: ../build/bin/conf_gen.h:1369
+#: ../build/bin/conf_gen.h:1378
 msgid "select only new images"
 msgstr "Select only new images"
 
-#: ../build/bin/conf_gen.h:1370
+#: ../build/bin/conf_gen.h:1379
 msgid "only select images that have not already been imported"
 msgstr "Only select images that have not already been imported"
 
-#: ../build/bin/conf_gen.h:1378
+#: ../build/bin/conf_gen.h:1387
 msgid "ignore non-raw images"
 msgstr "Ignore non-raw images"
 
-#: ../build/bin/conf_gen.h:1379
+#: ../build/bin/conf_gen.h:1388
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -212,55 +212,55 @@ msgstr ""
 "If enabled, only raw files will be allowed to import. Non-raw files will not "
 "be visible in the dialog and will not be imported."
 
-#: ../build/bin/conf_gen.h:1387
+#: ../build/bin/conf_gen.h:1396
 msgid "apply metadata"
 msgstr "Apply metadata"
 
-#: ../build/bin/conf_gen.h:1388
+#: ../build/bin/conf_gen.h:1397
 msgid "apply some metadata to all newly imported images."
 msgstr "Apply some metadata to all newly imported images."
 
-#: ../build/bin/conf_gen.h:1396
+#: ../build/bin/conf_gen.h:1405
 msgid "recursive directory"
 msgstr "Recursive directory"
 
-#: ../build/bin/conf_gen.h:1397
+#: ../build/bin/conf_gen.h:1406
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "Recursive directory traversal when importing filmrolls"
 
-#: ../build/bin/conf_gen.h:1405
+#: ../build/bin/conf_gen.h:1414
 msgid "creator to be applied when importing"
 msgstr "Creator to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1414
+#: ../build/bin/conf_gen.h:1423
 msgid "publisher to be applied when importing"
 msgstr "Publisher to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1423
+#: ../build/bin/conf_gen.h:1432
 msgid "rights to be applied when importing"
 msgstr "Rights to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1432
+#: ../build/bin/conf_gen.h:1441
 msgid "comma separated tags to be applied when importing"
 msgstr "Comma separated tags to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1441
+#: ../build/bin/conf_gen.h:1450
 msgid "import tags from XMP"
 msgstr "Import tags from XMP"
 
-#: ../build/bin/conf_gen.h:1477
+#: ../build/bin/conf_gen.h:1486
 msgid "initial rating"
 msgstr "Initial rating"
 
-#: ../build/bin/conf_gen.h:1478
+#: ../build/bin/conf_gen.h:1487
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "Initial star rating for all images when importing a filmroll"
 
-#: ../build/bin/conf_gen.h:1486
+#: ../build/bin/conf_gen.h:1495
 msgid "ignore EXIF rating"
 msgstr "Ignore EXIF rating"
 
-#: ../build/bin/conf_gen.h:1487
+#: ../build/bin/conf_gen.h:1496
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -268,19 +268,19 @@ msgstr ""
 "Ignore EXIF rating. If not set and EXIF rating is found, it overrides "
 "'initial rating'"
 
-#: ../build/bin/conf_gen.h:1495
+#: ../build/bin/conf_gen.h:1504
 msgid "import job"
 msgstr "Import job"
 
-#: ../build/bin/conf_gen.h:1496
+#: ../build/bin/conf_gen.h:1505
 msgid "name of the import job"
 msgstr "Name of the import job"
 
-#: ../build/bin/conf_gen.h:1504
+#: ../build/bin/conf_gen.h:1513
 msgid "override today's date"
 msgstr "Override today's date"
 
-#: ../build/bin/conf_gen.h:1505
+#: ../build/bin/conf_gen.h:1514
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -292,177 +292,177 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "Let the field empty otherwise"
 
-#: ../build/bin/conf_gen.h:1513
+#: ../build/bin/conf_gen.h:1522
 msgid "keep this window open"
 msgstr "Keep this window open"
 
-#: ../build/bin/conf_gen.h:1514
+#: ../build/bin/conf_gen.h:1523
 msgid "keep this window open to run several imports"
 msgstr "Keep this window open to run several imports"
 
-#: ../build/bin/conf_gen.h:1748 ../build/bin/conf_gen.h:1769
-#: ../build/bin/conf_gen.h:1816
+#: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:1778
+#: ../build/bin/conf_gen.h:1825
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1749 ../build/bin/conf_gen.h:1770
-#: ../build/bin/conf_gen.h:1817 ../build/bin/preferences_gen.h:2836
+#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:1779
+#: ../build/bin/conf_gen.h:1826 ../build/bin/preferences_gen.h:2836
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1750 ../build/bin/conf_gen.h:1771
-#: ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:1759 ../build/bin/conf_gen.h:1780
+#: ../build/bin/conf_gen.h:1827
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1751 ../build/bin/conf_gen.h:1772
-#: ../build/bin/conf_gen.h:1819
+#: ../build/bin/conf_gen.h:1760 ../build/bin/conf_gen.h:1781
+#: ../build/bin/conf_gen.h:1828
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1752 ../build/bin/conf_gen.h:1773
-#: ../build/bin/conf_gen.h:1820
+#: ../build/bin/conf_gen.h:1761 ../build/bin/conf_gen.h:1782
+#: ../build/bin/conf_gen.h:1829
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1753 ../build/bin/conf_gen.h:1774
-#: ../build/bin/conf_gen.h:1821
+#: ../build/bin/conf_gen.h:1762 ../build/bin/conf_gen.h:1783
+#: ../build/bin/conf_gen.h:1830
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1754 ../build/bin/conf_gen.h:1775
-#: ../build/bin/conf_gen.h:1822
+#: ../build/bin/conf_gen.h:1763 ../build/bin/conf_gen.h:1784
+#: ../build/bin/conf_gen.h:1831
 msgctxt "preferences"
 msgid "6K"
 msgstr "6K"
 
-#: ../build/bin/conf_gen.h:1755 ../build/bin/conf_gen.h:1776
-#: ../build/bin/conf_gen.h:1823
+#: ../build/bin/conf_gen.h:1764 ../build/bin/conf_gen.h:1785
+#: ../build/bin/conf_gen.h:1832
 msgctxt "preferences"
 msgid "8K"
 msgstr "8K"
 
-#: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:3713
-#: ../build/bin/conf_gen.h:4860 ../build/bin/preferences_gen.h:4046
+#: ../build/bin/conf_gen.h:1766 ../build/bin/conf_gen.h:3722
+#: ../build/bin/conf_gen.h:4896 ../build/bin/preferences_gen.h:4046
 msgctxt "preferences"
 msgid "auto"
 msgstr "Auto"
 
-#: ../build/bin/conf_gen.h:1869
+#: ../build/bin/conf_gen.h:1878
 msgctxt "preferences"
 msgid "off"
 msgstr "Off"
 
-#: ../build/bin/conf_gen.h:1870
+#: ../build/bin/conf_gen.h:1879
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "Hardness (relative)"
 
-#: ../build/bin/conf_gen.h:1871
+#: ../build/bin/conf_gen.h:1880
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "Hardness (absolute)"
 
-#: ../build/bin/conf_gen.h:1872
+#: ../build/bin/conf_gen.h:1881
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "Opacity (relative)"
 
-#: ../build/bin/conf_gen.h:1873
+#: ../build/bin/conf_gen.h:1882
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "Opacity (absolute)"
 
-#: ../build/bin/conf_gen.h:1874
+#: ../build/bin/conf_gen.h:1883
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "Brush size (relative)"
 
-#: ../build/bin/conf_gen.h:1884
+#: ../build/bin/conf_gen.h:1893
 msgctxt "preferences"
 msgid "low"
 msgstr "Low"
 
-#: ../build/bin/conf_gen.h:1885
+#: ../build/bin/conf_gen.h:1894
 msgctxt "preferences"
 msgid "medium"
 msgstr "Medium"
 
-#: ../build/bin/conf_gen.h:1886
+#: ../build/bin/conf_gen.h:1895
 msgctxt "preferences"
 msgid "high"
 msgstr "High"
 
-#: ../build/bin/conf_gen.h:1914 ../build/bin/preferences_gen.h:3170
+#: ../build/bin/conf_gen.h:1923 ../build/bin/preferences_gen.h:3170
 msgctxt "preferences"
 msgid "false color"
 msgstr "False color"
 
-#: ../build/bin/conf_gen.h:1915
+#: ../build/bin/conf_gen.h:1924
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "Grayscale"
 
-#: ../build/bin/conf_gen.h:1934
+#: ../build/bin/conf_gen.h:1943
 msgctxt "preferences"
 msgid "top left"
 msgstr "Top left"
 
-#: ../build/bin/conf_gen.h:1935
+#: ../build/bin/conf_gen.h:1944
 msgctxt "preferences"
 msgid "top right"
 msgstr "Top right"
 
-#: ../build/bin/conf_gen.h:1936
+#: ../build/bin/conf_gen.h:1945
 msgctxt "preferences"
 msgid "top center"
 msgstr "Top center"
 
-#: ../build/bin/conf_gen.h:1937 ../build/bin/preferences_gen.h:3085
+#: ../build/bin/conf_gen.h:1946 ../build/bin/preferences_gen.h:3085
 msgctxt "preferences"
 msgid "bottom"
 msgstr "Bottom"
 
-#: ../build/bin/conf_gen.h:1938
+#: ../build/bin/conf_gen.h:1947
 msgctxt "preferences"
 msgid "hidden"
 msgstr "Hidden"
 
-#: ../build/bin/conf_gen.h:2705
+#: ../build/bin/conf_gen.h:2714
 msgid "show OSD"
 msgstr "Show OSD"
 
-#: ../build/bin/conf_gen.h:2706
+#: ../build/bin/conf_gen.h:2715
 msgid "toggle the visibility of the map overlays"
 msgstr "Toggle the visibility of the map overlays"
 
-#: ../build/bin/conf_gen.h:2714 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:2723 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "Filtered images"
 
-#: ../build/bin/conf_gen.h:2715
+#: ../build/bin/conf_gen.h:2724
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "When set limit the images drawn to the current filmstrip"
 
-#: ../build/bin/conf_gen.h:2723
+#: ../build/bin/conf_gen.h:2732
 msgid "max images"
 msgstr "Max images"
 
-#: ../build/bin/conf_gen.h:2724
+#: ../build/bin/conf_gen.h:2733
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "The maximum number of image thumbnails drawn on the map"
 
-#: ../build/bin/conf_gen.h:2732
+#: ../build/bin/conf_gen.h:2741
 msgid "group size factor"
 msgstr "Group size factor"
 
-#: ../build/bin/conf_gen.h:2733
+#: ../build/bin/conf_gen.h:2742
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -470,11 +470,11 @@ msgstr ""
 "Increase or decrease the spatial size of images groups on the map. Can "
 "influence the calculation time"
 
-#: ../build/bin/conf_gen.h:2741
+#: ../build/bin/conf_gen.h:2750
 msgid "min images per group"
 msgstr "Min images per group"
 
-#: ../build/bin/conf_gen.h:2742
+#: ../build/bin/conf_gen.h:2751
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -482,21 +482,21 @@ msgstr ""
 "The minimum number of images to set up an images group. Can influence the "
 "calculation time."
 
-#: ../build/bin/conf_gen.h:2749
+#: ../build/bin/conf_gen.h:2758
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Thumbnail"
 
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2759
 msgctxt "preferences"
 msgid "count"
 msgstr "Count"
 
-#: ../build/bin/conf_gen.h:2753
+#: ../build/bin/conf_gen.h:2762
 msgid "thumbnail display"
 msgstr "Thumbnail display"
 
-#: ../build/bin/conf_gen.h:2754
+#: ../build/bin/conf_gen.h:2763
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -504,251 +504,251 @@ msgstr ""
 "Three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 
-#: ../build/bin/conf_gen.h:2771
+#: ../build/bin/conf_gen.h:2780
 msgid "max polygon points"
 msgstr "Max polygon points"
 
-#: ../build/bin/conf_gen.h:2772
+#: ../build/bin/conf_gen.h:2781
 msgid "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Limit the number of points imported with polygon in find location module"
 
-#: ../build/bin/conf_gen.h:3265 ../build/bin/conf_gen.h:3277
+#: ../build/bin/conf_gen.h:3274 ../build/bin/conf_gen.h:3286
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "Bilinear"
 
-#: ../build/bin/conf_gen.h:3266 ../build/bin/conf_gen.h:3278
+#: ../build/bin/conf_gen.h:3275 ../build/bin/conf_gen.h:3287
 #: ../build/bin/preferences_gen.h:3409
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "Bicubic"
 
-#: ../build/bin/conf_gen.h:3267 ../build/bin/conf_gen.h:3279
+#: ../build/bin/conf_gen.h:3276 ../build/bin/conf_gen.h:3288
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "Lanczos2"
 
-#: ../build/bin/conf_gen.h:3280 ../build/bin/preferences_gen.h:3427
+#: ../build/bin/conf_gen.h:3289 ../build/bin/preferences_gen.h:3427
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "Lanczos3"
 
-#: ../build/bin/conf_gen.h:3715
+#: ../build/bin/conf_gen.h:3724
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:3716
+#: ../build/bin/conf_gen.h:3725
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "KWallet"
 
-#: ../build/bin/conf_gen.h:3717
+#: ../build/bin/conf_gen.h:3726
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "apple_keychain"
 
-#: ../build/bin/conf_gen.h:3718
+#: ../build/bin/conf_gen.h:3727
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "windows_credentials"
 
-#: ../build/bin/conf_gen.h:4016
+#: ../build/bin/conf_gen.h:4025
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "Vectorscope"
 
-#: ../build/bin/conf_gen.h:4017
+#: ../build/bin/conf_gen.h:4026
 msgctxt "preferences"
 msgid "waveform"
 msgstr "Waveform"
 
-#: ../build/bin/conf_gen.h:4018
+#: ../build/bin/conf_gen.h:4027
 msgctxt "preferences"
 msgid "split"
 msgstr "Split"
 
-#: ../build/bin/conf_gen.h:4019
+#: ../build/bin/conf_gen.h:4028
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "RGB parade"
 
-#: ../build/bin/conf_gen.h:4020
+#: ../build/bin/conf_gen.h:4029
 msgctxt "preferences"
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../build/bin/conf_gen.h:4030
+#: ../build/bin/conf_gen.h:4039
 msgctxt "preferences"
 msgid "left"
 msgstr "Left"
 
-#: ../build/bin/conf_gen.h:4031 ../build/bin/preferences_gen.h:4483
+#: ../build/bin/conf_gen.h:4040 ../build/bin/preferences_gen.h:4483
 msgctxt "preferences"
 msgid "right"
 msgstr "Right"
 
-#: ../build/bin/conf_gen.h:4050 ../build/bin/conf_gen.h:4095
+#: ../build/bin/conf_gen.h:4059 ../build/bin/conf_gen.h:4104
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "Logarithmic"
 
-#: ../build/bin/conf_gen.h:4051 ../build/bin/conf_gen.h:4096
+#: ../build/bin/conf_gen.h:4060 ../build/bin/conf_gen.h:4105
 msgctxt "preferences"
 msgid "linear"
 msgstr "Linear"
 
-#: ../build/bin/conf_gen.h:4061
+#: ../build/bin/conf_gen.h:4070
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "Horizontal"
 
-#: ../build/bin/conf_gen.h:4062
+#: ../build/bin/conf_gen.h:4071
 msgctxt "preferences"
 msgid "vertical"
 msgstr "Vertical"
 
-#: ../build/bin/conf_gen.h:4072
+#: ../build/bin/conf_gen.h:4081
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "Overlaid"
 
-#: ../build/bin/conf_gen.h:4073
+#: ../build/bin/conf_gen.h:4082
 msgctxt "preferences"
 msgid "parade"
 msgstr "Parade"
 
-#: ../build/bin/conf_gen.h:4083
+#: ../build/bin/conf_gen.h:4092
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:4084
+#: ../build/bin/conf_gen.h:4093
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:4085
+#: ../build/bin/conf_gen.h:4094
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:4143
+#: ../build/bin/conf_gen.h:4152
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "Monochromatic"
 
-#: ../build/bin/conf_gen.h:4144
+#: ../build/bin/conf_gen.h:4153
 msgctxt "preferences"
 msgid "analogous"
 msgstr "Analogous"
 
-#: ../build/bin/conf_gen.h:4145
+#: ../build/bin/conf_gen.h:4154
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "Analogous complementary"
 
-#: ../build/bin/conf_gen.h:4146
+#: ../build/bin/conf_gen.h:4155
 msgctxt "preferences"
 msgid "complementary"
 msgstr "Complementary"
 
-#: ../build/bin/conf_gen.h:4147
+#: ../build/bin/conf_gen.h:4156
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "Split complementary"
 
-#: ../build/bin/conf_gen.h:4148
+#: ../build/bin/conf_gen.h:4157
 msgctxt "preferences"
 msgid "dyad"
 msgstr "Dyad"
 
-#: ../build/bin/conf_gen.h:4149
+#: ../build/bin/conf_gen.h:4158
 msgctxt "preferences"
 msgid "triad"
 msgstr "Triad"
 
-#: ../build/bin/conf_gen.h:4150
+#: ../build/bin/conf_gen.h:4159
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "Tetrad"
 
-#: ../build/bin/conf_gen.h:4151
+#: ../build/bin/conf_gen.h:4160
 msgctxt "preferences"
 msgid "square"
 msgstr "Square"
 
-#: ../build/bin/conf_gen.h:4170
+#: ../build/bin/conf_gen.h:4179
 msgctxt "preferences"
 msgid "normal"
 msgstr "Normal"
 
-#: ../build/bin/conf_gen.h:4172
+#: ../build/bin/conf_gen.h:4181
 msgctxt "preferences"
 msgid "narrow"
 msgstr "Narrow"
 
-#: ../build/bin/conf_gen.h:4173
+#: ../build/bin/conf_gen.h:4182
 msgctxt "preferences"
 msgid "line"
 msgstr "Line"
 
-#: ../build/bin/conf_gen.h:4453
+#: ../build/bin/conf_gen.h:4480
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:4454
+#: ../build/bin/conf_gen.h:4481
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:4455
+#: ../build/bin/conf_gen.h:4482
 msgctxt "preferences"
 msgid "inch"
 msgstr "inch"
 
-#: ../build/bin/conf_gen.h:4510 ../build/bin/preferences_gen.h:4501
+#: ../build/bin/conf_gen.h:4537 ../build/bin/preferences_gen.h:4501
 msgctxt "preferences"
 msgid "all"
 msgstr "All"
 
-#: ../build/bin/conf_gen.h:4511
+#: ../build/bin/conf_gen.h:4538
 msgctxt "preferences"
 msgid "xatom"
 msgstr "Xatom"
 
-#: ../build/bin/conf_gen.h:4512
+#: ../build/bin/conf_gen.h:4539
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4612 ../build/bin/preferences_gen.h:3493
+#: ../build/bin/conf_gen.h:4648 ../build/bin/preferences_gen.h:3493
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Scene-referred (Sigmoid)"
 
-#: ../build/bin/conf_gen.h:4613
+#: ../build/bin/conf_gen.h:4649
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Scene-referred (Filmic)"
 
-#: ../build/bin/conf_gen.h:4614
+#: ../build/bin/conf_gen.h:4650
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "Scene-referred (AgX)"
 
-#: ../build/bin/conf_gen.h:4615
+#: ../build/bin/conf_gen.h:4651
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "Display-referred (legacy)"
 
-#: ../build/bin/conf_gen.h:4762
+#: ../build/bin/conf_gen.h:4798
 msgid "camera time zone"
 msgstr "Camera time zone"
 
-#: ../build/bin/conf_gen.h:4763
+#: ../build/bin/conf_gen.h:4799
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone so "
 "the GPX data can be correctly matched"
@@ -756,62 +756,62 @@ msgstr ""
 "Most cameras don't store the time zone in EXIF. Give the correct time zone so "
 "the GPX data can be correctly matched"
 
-#: ../build/bin/conf_gen.h:4779
+#: ../build/bin/conf_gen.h:4815
 msgctxt "preferences"
 msgid "no color"
 msgstr "No color"
 
-#: ../build/bin/conf_gen.h:4780
+#: ../build/bin/conf_gen.h:4816
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Illuminant color"
 
-#: ../build/bin/conf_gen.h:4781
+#: ../build/bin/conf_gen.h:4817
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Effect emulation"
 
-#: ../build/bin/conf_gen.h:4845
+#: ../build/bin/conf_gen.h:4881
 msgctxt "preferences"
 msgid "list"
 msgstr "List"
 
-#: ../build/bin/conf_gen.h:4846
+#: ../build/bin/conf_gen.h:4882
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Tabs"
 
-#: ../build/bin/conf_gen.h:4847
+#: ../build/bin/conf_gen.h:4883
 msgctxt "preferences"
 msgid "columns"
 msgstr "Columns"
 
-#: ../build/bin/conf_gen.h:4858
+#: ../build/bin/conf_gen.h:4894
 msgctxt "preferences"
 msgid "active"
 msgstr "Active"
 
-#: ../build/bin/conf_gen.h:4859
+#: ../build/bin/conf_gen.h:4895
 msgctxt "preferences"
 msgid "dim"
 msgstr "Dim"
 
-#: ../build/bin/conf_gen.h:4861
+#: ../build/bin/conf_gen.h:4897
 msgctxt "preferences"
 msgid "fade"
 msgstr "Fade"
 
-#: ../build/bin/conf_gen.h:4862
+#: ../build/bin/conf_gen.h:4898
 msgctxt "preferences"
 msgid "fit"
 msgstr "Fit"
 
-#: ../build/bin/conf_gen.h:4863
+#: ../build/bin/conf_gen.h:4899
 msgctxt "preferences"
 msgid "smooth"
 msgstr "Smooth"
 
-#: ../build/bin/conf_gen.h:4864
+#: ../build/bin/conf_gen.h:4900
 msgctxt "preferences"
 msgid "glide"
 msgstr "Glide"
@@ -973,7 +973,7 @@ msgstr "Lighttable"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
 #: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1123
+#: ../src/gui/preferences_ai.c:1126
 msgid "general"
 msgstr "General"
 
@@ -3361,7 +3361,7 @@ msgstr "Basis"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1155
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1158
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4779,7 +4779,7 @@ msgstr "Enable highlight reconstruction"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 #: ../src/common/variables.c:197 ../src/common/variables.c:822
-#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -6041,9 +6041,9 @@ msgstr "Dropdown"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:603
-#: ../src/gui/preferences_ai.c:776 ../src/gui/preferences_ai.c:944
-#: ../src/gui/preferences_ai.c:1031 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:608
+#: ../src/gui/preferences_ai.c:784 ../src/gui/preferences_ai.c:947
+#: ../src/gui/preferences_ai.c:1034 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
@@ -6052,7 +6052,7 @@ msgstr "Dropdown"
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1815 ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2090
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2080
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6237,45 +6237,45 @@ msgstr "GitHub API rate limit exceeded, try again later"
 msgid "GitHub API error (HTTP %ld)"
 msgstr "GitHub API error (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1097 ../src/common/ai_models.c:1126
+#: ../src/common/ai_models.c:1231 ../src/common/ai_models.c:1260
 msgid "invalid parameters"
 msgstr "Invalid parameters"
 
-#: ../src/common/ai_models.c:1100
+#: ../src/common/ai_models.c:1234
 #, c-format
 msgid "file not found: %s"
 msgstr "File not found: %s"
 
-#: ../src/common/ai_models.c:1103
+#: ../src/common/ai_models.c:1237
 msgid "failed to extract model archive"
 msgstr "Failed to extract model archive"
 
-#: ../src/common/ai_models.c:1134
+#: ../src/common/ai_models.c:1268
 msgid "model not found in registry"
 msgstr "Model not found in registry"
 
-#: ../src/common/ai_models.c:1140
+#: ../src/common/ai_models.c:1274
 msgid "model has no download asset defined"
 msgstr "Model has no download asset defined"
 
-#: ../src/common/ai_models.c:1151
+#: ../src/common/ai_models.c:1285
 msgid "invalid asset filename"
 msgstr "Invalid asset filename"
 
-#: ../src/common/ai_models.c:1157
+#: ../src/common/ai_models.c:1291
 msgid "model is already downloading"
 msgstr "Model is already downloading"
 
-#: ../src/common/ai_models.c:1188
+#: ../src/common/ai_models.c:1322
 msgid "invalid repository format"
 msgstr "Invalid repository format"
 
-#: ../src/common/ai_models.c:1213
+#: ../src/common/ai_models.c:1347
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "No compatible AI model release found for Darktable %s"
 
-#: ../src/common/ai_models.c:1229
+#: ../src/common/ai_models.c:1363
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6284,38 +6284,38 @@ msgstr ""
 "Could not obtain checksum for %s — refusing to download without integrity "
 "verification"
 
-#: ../src/common/ai_models.c:1247
+#: ../src/common/ai_models.c:1381
 msgid "failed to build download url"
 msgstr "Failed to build download URL"
 
-#: ../src/common/ai_models.c:1258
+#: ../src/common/ai_models.c:1392
 #, c-format
 msgid "failed to create file: %s"
 msgstr "Failed to create file: %s"
 
-#: ../src/common/ai_models.c:1282
+#: ../src/common/ai_models.c:1416
 msgid "failed to initialize download"
 msgstr "Failed to initialize download"
 
-#: ../src/common/ai_models.c:1302
+#: ../src/common/ai_models.c:1436
 msgid "download cancelled"
 msgstr "Download cancelled"
 
-#: ../src/common/ai_models.c:1304
+#: ../src/common/ai_models.c:1438
 #, c-format
 msgid "download failed: %s"
 msgstr "Download failed: %s"
 
-#: ../src/common/ai_models.c:1315
+#: ../src/common/ai_models.c:1449
 #, c-format
 msgid "http error: %ld"
 msgstr "HTTP error: %ld"
 
-#: ../src/common/ai_models.c:1338
+#: ../src/common/ai_models.c:1472
 msgid "checksum verification failed"
 msgstr "Checksum verification failed"
 
-#: ../src/common/ai_models.c:1348
+#: ../src/common/ai_models.c:1482
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6324,7 +6324,7 @@ msgstr ""
 "No checksum available for %s — refusing to install without integrity "
 "verification"
 
-#: ../src/common/ai_models.c:1358
+#: ../src/common/ai_models.c:1492
 msgid "failed to extract archive"
 msgstr "Failed to extract archive"
 
@@ -7326,7 +7326,7 @@ msgstr "Publisher"
 msgid "title"
 msgstr "Title"
 
-#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1361
+#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1364
 #: ../src/gui/styles_dialog.c:578 ../src/libs/filtering.c:61
 msgid "description"
 msgstr "Description"
@@ -7469,7 +7469,7 @@ msgstr ""
 msgid "_ok"
 msgstr "_OK"
 
-#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:163
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:165
 msgid "error"
 msgstr "Error"
 
@@ -7678,7 +7678,7 @@ msgstr[0] "Delete empty directory?"
 msgstr[1] "Delete empty directories?"
 
 #: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1333 ../src/gui/styles_dialog.c:571
+#: ../src/gui/preferences_ai.c:1336 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "Name"
@@ -7982,11 +7982,11 @@ msgstr "Generic poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Noiseprofile file `%s' is not valid"
 
-#: ../src/common/opencl.c:1201
+#: ../src/common/opencl.c:1186
 msgid "no working OpenCL library found"
 msgstr "No working OpenCL library found"
 
-#: ../src/common/opencl.c:1221
+#: ../src/common/opencl.c:1206
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -8004,23 +8004,23 @@ msgstr ""
 "  - no OpenCL driver installed,\n"
 "  - multiple drivers installed per platform\n"
 
-#: ../src/common/opencl.c:1336
+#: ../src/common/opencl.c:1321
 msgid "no devices found for unknown platform"
 msgstr "No devices found for unknown platform"
 
-#: ../src/common/opencl.c:1383
+#: ../src/common/opencl.c:1368
 msgid "not enough memory for OpenCL devices"
 msgstr "Not enough memory for OpenCL devices"
 
-#: ../src/common/opencl.c:1421
+#: ../src/common/opencl.c:1406
 msgid "no OpenCL devices found"
 msgstr "No OpenCL devices found"
 
-#: ../src/common/opencl.c:1464
+#: ../src/common/opencl.c:1449
 msgid "no suitable OpenCL devices found"
 msgstr "No suitable OpenCL devices found"
 
-#: ../src/common/opencl.c:1488
+#: ../src/common/opencl.c:1473
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -8031,46 +8031,46 @@ msgstr ""
 "%s\n"
 "Disabling OpenCL for now"
 
-#: ../src/common/opencl.c:1524
+#: ../src/common/opencl.c:1509
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr "OpenCL scheduling profile set to default, setup has changed"
 
-#: ../src/common/opencl.c:2373
+#: ../src/common/opencl.c:2358
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "Building OpenCL program %s for %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4054 ../src/libs/filters/focal.c:74
+#: ../src/common/pdf.h:89 ../src/iop/lens.cc:4054 ../src/libs/filters/focal.c:74
 #: ../src/libs/print_settings.c:84
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:680 ../src/libs/export.c:1534
+#: ../src/common/pdf.h:90 ../src/libs/export.c:680 ../src/libs/export.c:1534
 #: ../src/libs/print_settings.c:84
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:84
+#: ../src/common/pdf.h:91 ../src/libs/print_settings.c:84
 msgid "inch"
 msgstr "inch"
 
-#: ../src/common/pdf.h:91
+#: ../src/common/pdf.h:92
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:947
+#: ../src/common/pdf.h:105 ../src/iop/borders.c:947
 msgid "A4"
 msgstr "A4"
 
-#: ../src/common/pdf.h:105
+#: ../src/common/pdf.h:106
 msgid "A3"
 msgstr "A3"
 
-#: ../src/common/pdf.h:106
+#: ../src/common/pdf.h:107
 msgid "Letter"
 msgstr "Letter"
 
-#: ../src/common/pdf.h:107
+#: ../src/common/pdf.h:108
 msgid "Legal"
 msgstr "Legal"
 
@@ -8222,7 +8222,7 @@ msgid "no info"
 msgstr "No info"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:820
-#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:226
+#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:230
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -9406,7 +9406,7 @@ msgstr "Reverse"
 
 #. add default workspace
 #: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1396
+#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1399
 #: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
 msgid "default"
 msgstr "Default"
@@ -10184,7 +10184,7 @@ msgid "purpose"
 msgstr "Purpose"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2190
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2180
 msgid "process"
 msgstr "Process"
 
@@ -10548,99 +10548,117 @@ msgstr "Use same shapes as"
 msgid "masks can not contain themselves"
 msgstr "Masks can not contain themselves"
 
-#: ../src/develop/masks/object.c:864
+#: ../src/develop/masks/object.c:836
+msgid "set raster mask root folder in preferences"
+msgstr "Set raster mask root folder in preferences"
+
+#: ../src/develop/masks/object.c:844
+msgid "cannot create raster mask folder"
+msgstr "Cannot create raster mask folder"
+
+#: ../src/develop/masks/object.c:907
+msgid "raster mask saved"
+msgstr "Raster mask saved"
+
+#: ../src/develop/masks/object.c:912
+msgid "failed to save raster mask"
+msgstr "Failed to save raster mask"
+
+#: ../src/develop/masks/object.c:993
 msgid "no mask extracted from AI segmentation"
 msgstr "No mask extracted from AI segmentation"
 
-#: ../src/develop/masks/object.c:872
+#: ../src/develop/masks/object.c:1001
 msgid "ai object group"
 msgstr "AI object group"
 
-#: ../src/develop/masks/object.c:873
+#: ../src/develop/masks/object.c:1002
 msgid "ai object"
 msgstr "AI object"
 
-#: ../src/develop/masks/object.c:1023
+#: ../src/develop/masks/object.c:1128
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Smoothing: %3.2f"
 
-#: ../src/develop/masks/object.c:1034
+#: ../src/develop/masks/object.c:1139
 #, c-format
 msgid "cleanup: %d"
 msgstr "Cleanup: %d"
 
-#: ../src/develop/masks/object.c:1047
+#: ../src/develop/masks/object.c:1152
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Opacity: %d%%"
 
-#: ../src/develop/masks/object.c:1161
+#: ../src/develop/masks/object.c:1275
 #, c-format
 msgid "group '%s'"
 msgstr "Group '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1411 ../src/develop/masks/object.c:1445
+#: ../src/develop/masks/object.c:1524 ../src/develop/masks/object.c:1558
 msgid "object mask: analyzing image..."
 msgstr "Object mask: analyzing image..."
 
-#: ../src/develop/masks/object.c:1455
+#: ../src/develop/masks/object.c:1568
 msgid "click on object to create mask"
 msgstr "Click on object to create mask"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1465
+#: ../src/develop/masks/object.c:1578
 msgid "object mask preparation failed"
 msgstr "Object mask preparation failed"
 
-#: ../src/develop/masks/object.c:1780
+#: ../src/develop/masks/object.c:1778
 msgid "[OBJECT] select / add foreground point"
 msgstr "[OBJECT] Select / Add foreground point"
 
-#: ../src/develop/masks/object.c:1785
+#: ../src/develop/masks/object.c:1783
 msgid "[OBJECT] add background point"
 msgstr "[OBJECT] Add background point"
 
-#: ../src/develop/masks/object.c:1790
+#: ../src/develop/masks/object.c:1788
 msgid "[OBJECT] clear selection"
 msgstr "[OBJECT] Clear selection"
 
-#: ../src/develop/masks/object.c:1795
+#: ../src/develop/masks/object.c:1793
 msgid "[OBJECT] apply mask"
 msgstr "[OBJECT] Apply mask"
 
-#: ../src/develop/masks/object.c:1800
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJECT] Change smoothing"
 
-#: ../src/develop/masks/object.c:1805
+#: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] change cleanup"
 msgstr "[OBJECT] Change cleanup"
 
-#: ../src/develop/masks/object.c:1810
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] change opacity"
 msgstr "[OBJECT] Change opacity"
 
-#: ../src/develop/masks/object.c:1818
+#: ../src/develop/masks/object.c:1815
 #, c-format
 msgid "object #%d"
 msgstr "Object #%d"
 
-#: ../src/develop/masks/object.c:1837
+#: ../src/develop/masks/object.c:1833
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
-"ctrl+shift+click, <b>apply</b>: right-click\n"
+"ctrl+shift+click, <b>apply</b>: right-click, <b>apply+save raster</b>: "
+"shift+right-click\n"
 "<b>smoothing</b>: scroll (%3.2f), <b>cleanup</b>: shift+scroll (%d), "
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Add</b>: click, <b>Subtract</b>: Shift+click, <b>Clear</b>: "
-"Ctrl+Shift+click, <b>Apply</b>: right-click\n"
+"Ctrl+Shift+click, <b>Apply</b>: right-click, <b>Apply+save raster</b>: "
+"Shift+right-click\n"
 "<b>Smoothing</b>: scroll (%3.2f), <b>Cleanup</b>: Shift+scroll (%d), "
 "<b>Opacity</b>: Ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1845
+#: ../src/develop/masks/object.c:1844
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr "<b>Select</b>: click on object, <b>Opacity</b>: Ctrl+scroll (%d%%)"
@@ -13249,7 +13267,7 @@ msgstr "Select the script folder"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2124
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2114
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "Page"
@@ -14989,8 +15007,8 @@ msgstr "Failed to import preset %s"
 msgid "select preset(s) to import"
 msgstr "Select preset(s) to import"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:777
-#: ../src/gui/preferences_ai.c:1032 ../src/gui/welcome.c:160
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
+#: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
 #: ../src/libs/collect.c:433 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
@@ -15001,7 +15019,7 @@ msgstr "_Open"
 msgid "darktable preset files"
 msgstr "Darktable preset files"
 
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1047
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1050
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
@@ -15012,46 +15030,50 @@ msgid "downloaded"
 msgstr "Downloaded"
 
 #: ../src/gui/preferences_ai.c:159
+msgid "update available"
+msgstr "Update available"
+
+#: ../src/gui/preferences_ai.c:161
 msgid "update required"
 msgstr "Update required"
 
-#: ../src/gui/preferences_ai.c:161
+#: ../src/gui/preferences_ai.c:163
 msgid "downloading..."
 msgstr "Downloading..."
 
-#: ../src/gui/preferences_ai.c:165
+#: ../src/gui/preferences_ai.c:167
 msgid "not downloaded"
 msgstr "Not downloaded"
 
-#: ../src/gui/preferences_ai.c:341
+#: ../src/gui/preferences_ai.c:346
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>Not available, will fall back to CPU</i>"
 
-#: ../src/gui/preferences_ai.c:600
+#: ../src/gui/preferences_ai.c:605
 msgid "downloading AI model"
 msgstr "Downloading AI model"
 
-#: ../src/gui/preferences_ai.c:615
+#: ../src/gui/preferences_ai.c:620
 #, c-format
 msgid "downloading: %s"
 msgstr "Downloading: %s"
 
-#: ../src/gui/preferences_ai.c:773
+#: ../src/gui/preferences_ai.c:781
 msgid "install AI model"
 msgstr "Install AI model"
 
-#: ../src/gui/preferences_ai.c:781
+#: ../src/gui/preferences_ai.c:789
 msgid "AI model packages (*.dtmodel)"
 msgstr "AI model packages (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:853
+#: ../src/gui/preferences_ai.c:862
 #, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
 msgstr[0] "Delete %d selected model?"
 msgstr[1] "Delete %d selected models?"
 
-#: ../src/gui/preferences_ai.c:895
+#: ../src/gui/preferences_ai.c:898
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -15060,7 +15082,7 @@ msgstr ""
 "ONNX Runtime %s detected.\n"
 "Restart Darktable to apply."
 
-#: ../src/gui/preferences_ai.c:900
+#: ../src/gui/preferences_ai.c:903
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -15069,7 +15091,7 @@ msgstr ""
 "Not a valid ONNX Runtime library:\n"
 "%s"
 
-#: ../src/gui/preferences_ai.c:917
+#: ../src/gui/preferences_ai.c:920
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
@@ -15081,7 +15103,7 @@ msgstr ""
 "Install one via your package manager or use\n"
 "the browse button to select a custom build."
 
-#: ../src/gui/preferences_ai.c:933
+#: ../src/gui/preferences_ai.c:936
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -15094,55 +15116,55 @@ msgstr ""
 "\n"
 "Restart Darktable to apply."
 
-#: ../src/gui/preferences_ai.c:941 ../src/gui/preferences_ai.c:1028
+#: ../src/gui/preferences_ai.c:944 ../src/gui/preferences_ai.c:1031
 msgid "select ONNX Runtime library"
 msgstr "Select ONNX Runtime library"
 
-#: ../src/gui/preferences_ai.c:945 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2091
+#: ../src/gui/preferences_ai.c:948 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2081
 msgid "_select"
 msgstr "_Select"
 
-#: ../src/gui/preferences_ai.c:951
+#: ../src/gui/preferences_ai.c:954
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "Multiple ONNX Runtime libraries found:"
 
-#: ../src/gui/preferences_ai.c:1038
+#: ../src/gui/preferences_ai.c:1041
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "ONNX Runtime (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1041
+#: ../src/gui/preferences_ai.c:1044
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1094
+#: ../src/gui/preferences_ai.c:1097
 msgid "enable AI features"
 msgstr "Enable AI features"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1139
+#: ../src/gui/preferences_ai.c:1142
 msgid "execution provider"
 msgstr "Execution provider"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1150
+#: ../src/gui/preferences_ai.c:1153
 msgid "select hardware acceleration for AI inference:"
 msgstr "Select hardware acceleration for AI inference:"
 
-#: ../src/gui/preferences_ai.c:1194
+#: ../src/gui/preferences_ai.c:1197
 msgid "ONNX Runtime library"
 msgstr "ONNX Runtime library"
 
-#: ../src/gui/preferences_ai.c:1208
+#: ../src/gui/preferences_ai.c:1211
 msgid "bundled (DirectML)"
 msgstr "Bundled (DirectML)"
 
-#: ../src/gui/preferences_ai.c:1211
+#: ../src/gui/preferences_ai.c:1214
 msgid "bundled (CPU only)"
 msgstr "Bundled (CPU only)"
 
-#: ../src/gui/preferences_ai.c:1214
+#: ../src/gui/preferences_ai.c:1217
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
@@ -15152,74 +15174,89 @@ msgstr ""
 "Leave empty to use the bundled library.\n"
 "Requires restart to take effect."
 
-#: ../src/gui/preferences_ai.c:1223
+#: ../src/gui/preferences_ai.c:1226
 msgid "select a custom ONNX Runtime shared library"
 msgstr "Select a custom ONNX Runtime shared library"
 
-#: ../src/gui/preferences_ai.c:1225
+#: ../src/gui/preferences_ai.c:1228
 msgid "detect"
 msgstr "Detect"
 
-#: ../src/gui/preferences_ai.c:1227
+#: ../src/gui/preferences_ai.c:1230
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "Search for a system-installed ONNX Runtime library"
 
-#: ../src/gui/preferences_ai.c:1262
+#: ../src/gui/preferences_ai.c:1265
 msgid "models"
 msgstr "Models"
 
-#: ../src/gui/preferences_ai.c:1309
+#: ../src/gui/preferences_ai.c:1312
 msgid "select/deselect all"
 msgstr "Select/deselect all"
 
-#: ../src/gui/preferences_ai.c:1343 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1346 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "Version"
 
-#: ../src/gui/preferences_ai.c:1352
+#: ../src/gui/preferences_ai.c:1355
 msgid "task"
 msgstr "Task"
 
-#: ../src/gui/preferences_ai.c:1377
+#: ../src/gui/preferences_ai.c:1380
 msgid "enabled"
 msgstr "Enabled"
 
-#: ../src/gui/preferences_ai.c:1387
+#: ../src/gui/preferences_ai.c:1390
 msgid "status"
 msgstr "Status"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1423
+#: ../src/gui/preferences_ai.c:1426
 msgid "download selected"
 msgstr "Download selected"
 
+#: ../src/gui/preferences_ai.c:1428
+msgid "download or update the selected models"
+msgstr "Download or update the selected models"
+
 #. download default button
-#: ../src/gui/preferences_ai.c:1432
+#: ../src/gui/preferences_ai.c:1437
 msgid "download default"
 msgstr "Download default"
 
+#: ../src/gui/preferences_ai.c:1439
+msgid "download or update all default models"
+msgstr "Download or update all default models"
+
 #. download all button
-#: ../src/gui/preferences_ai.c:1441
+#: ../src/gui/preferences_ai.c:1448
 msgid "download all"
 msgstr "Download all"
 
+#: ../src/gui/preferences_ai.c:1450
+msgid "download or update all available models"
+msgstr "Download or update all available models"
+
 #. install model button
-#: ../src/gui/preferences_ai.c:1447
+#: ../src/gui/preferences_ai.c:1456
 msgid "install model"
 msgstr "Install model"
 
+#: ../src/gui/preferences_ai.c:1458
+msgid "install a model from a local .dtmodel file"
+msgstr "Install a model from a local .dtmodel file"
+
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1452
+#: ../src/gui/preferences_ai.c:1463
 msgid "delete selected"
 msgstr "Delete selected"
 
-#. refresh button
-#: ../src/gui/preferences_ai.c:1461
-msgid "refresh"
-msgstr "Refresh"
+#: ../src/gui/preferences_ai.c:1465
+msgid "remove the selected models from disk"
+msgstr "Remove the selected models from disk"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1472
+#: ../src/gui/preferences_ai.c:1481
 msgid "AI"
 msgstr "AI"
 
@@ -15624,7 +15661,7 @@ msgstr "Happy editing with Darktable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2213
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -15648,7 +15685,7 @@ msgstr "Lossy"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2220
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2210
 msgid "bit depth"
 msgstr "Bit depth"
 
@@ -15774,7 +15811,7 @@ msgstr "16 bit (float)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2223
+#: ../src/libs/neural_restore.c:2213
 msgid "32 bit (float)"
 msgstr "32 bit (float)"
 
@@ -15869,7 +15906,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2223
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2213
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -17234,7 +17271,7 @@ msgid "denoise chroma"
 msgstr "Denoise chroma"
 
 #: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
-#: ../src/libs/neural_restore.c:2127
+#: ../src/libs/neural_restore.c:2117
 msgid "denoise"
 msgstr "Denoise"
 
@@ -20496,35 +20533,35 @@ msgstr ""
 "Transfer a color palette and tonal repartition\n"
 "from one image to another"
 
-#: ../src/iop/colormapping.c:1001
+#: ../src/iop/colormapping.c:1002
 msgid "acquire as source"
 msgstr "Acquire as source"
 
-#: ../src/iop/colormapping.c:1005
+#: ../src/iop/colormapping.c:1006
 msgid "analyze this image as a source image"
 msgstr "Analyze this image as a source image"
 
-#: ../src/iop/colormapping.c:1007
+#: ../src/iop/colormapping.c:1008
 msgid "acquire as target"
 msgstr "Acquire as target"
 
-#: ../src/iop/colormapping.c:1011
+#: ../src/iop/colormapping.c:1012
 msgid "analyze this image as a target image"
 msgstr "Analyze this image as a target image"
 
-#: ../src/iop/colormapping.c:1013
+#: ../src/iop/colormapping.c:1014
 msgid "source clusters:"
 msgstr "Source clusters:"
 
-#: ../src/iop/colormapping.c:1014
+#: ../src/iop/colormapping.c:1015
 msgid "target clusters:"
 msgstr "Target clusters:"
 
-#: ../src/iop/colormapping.c:1017
+#: ../src/iop/colormapping.c:1018
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr "Number of clusters to find in image. Value change resets all clusters"
 
-#: ../src/iop/colormapping.c:1020
+#: ../src/iop/colormapping.c:1021
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -20532,7 +20569,7 @@ msgstr ""
 "How clusters are mapped. Low values: based on color proximity, high values: "
 "based on color dominance"
 
-#: ../src/iop/colormapping.c:1025
+#: ../src/iop/colormapping.c:1026
 msgid "level of histogram equalization"
 msgstr "Level of histogram equalization"
 
@@ -23083,7 +23120,7 @@ msgstr "Distance to subject"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2147
+#: ../src/libs/neural_restore.c:2137
 msgid "scale"
 msgstr "Scale"
 
@@ -24727,7 +24764,7 @@ msgstr ""
 "Useful for certain sensor types\n"
 "and anamorphic desqueeze"
 
-#: ../src/iop/scalepixels.c:270
+#: ../src/iop/scalepixels.c:280
 msgid "adjust pixel aspect ratio"
 msgstr "Adjust pixel aspect ratio"
 
@@ -29053,7 +29090,7 @@ msgstr "Failed to open TIFF for writing: %s"
 msgid "out of memory for detail recovery buffer"
 msgstr "Out of memory for detail recovery buffer"
 
-#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2129
+#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2119
 msgid "upscale"
 msgstr "Upscale"
 
@@ -29118,39 +29155,39 @@ msgstr "Click to generate preview"
 msgid "select an image to preview"
 msgstr "Select an image to preview"
 
-#: ../src/libs/neural_restore.c:2087 ../src/libs/neural_restore.c:2257
+#: ../src/libs/neural_restore.c:2077 ../src/libs/neural_restore.c:2247
 msgid "select output folder"
 msgstr "Select output folder"
 
-#: ../src/libs/neural_restore.c:2128
+#: ../src/libs/neural_restore.c:2118
 msgid "AI denoising"
 msgstr "AI denoising"
 
-#: ../src/libs/neural_restore.c:2130
+#: ../src/libs/neural_restore.c:2120
 msgid "AI upscaling"
 msgstr "AI upscaling"
 
-#: ../src/libs/neural_restore.c:2137
+#: ../src/libs/neural_restore.c:2127
 msgid "detail recovery"
 msgstr "Detail recovery"
 
-#: ../src/libs/neural_restore.c:2140
+#: ../src/libs/neural_restore.c:2130
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr "Recover fine texture lost during denoising while suppressing noise"
 
-#: ../src/libs/neural_restore.c:2148
+#: ../src/libs/neural_restore.c:2138
 msgid "upscale factor"
 msgstr "Upscale factor"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2140
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2150
+#: ../src/libs/neural_restore.c:2140
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2167
+#: ../src/libs/neural_restore.c:2157
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -29158,27 +29195,27 @@ msgstr ""
 "Click to pick preview area on the image thumbnail\n"
 "Double-click to reset to center"
 
-#: ../src/libs/neural_restore.c:2192
+#: ../src/libs/neural_restore.c:2182
 msgid "process selected images"
 msgstr "Process selected images"
 
-#: ../src/libs/neural_restore.c:2210
+#: ../src/libs/neural_restore.c:2200
 msgid "output parameters"
 msgstr "Output parameters"
 
-#: ../src/libs/neural_restore.c:2221
+#: ../src/libs/neural_restore.c:2211
 msgid "output TIFF bit depth"
 msgstr "Output TIFF bit depth"
 
-#: ../src/libs/neural_restore.c:2228
+#: ../src/libs/neural_restore.c:2218
 msgid "add to catalog"
 msgstr "Add to catalog"
 
-#: ../src/libs/neural_restore.c:2234
+#: ../src/libs/neural_restore.c:2224
 msgid "automatically import output image into the darktable library"
 msgstr "Automatically import output image into the Darktable library"
 
-#: ../src/libs/neural_restore.c:2250
+#: ../src/libs/neural_restore.c:2240
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -31640,6 +31677,9 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#~ msgid "refresh"
+#~ msgstr "Refresh"
 
 #~ msgid "[OBJECT] brush over object"
 #~ msgstr "[OBJECT] Brush over object"
