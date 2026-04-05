@@ -216,11 +216,12 @@ static inline void illuminant_CCT_to_RGB(const float t, dt_aligned_pixel_t RGB)
   illuminant_xy_to_RGB(x, y, RGB);
 }
 
-static inline gboolean find_temperature_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
+// Derive illuminant chromaticity from WB module coefficients
+static inline gboolean find_illuminant_xy_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
                                             float *chroma_x, float *chroma_y);
 
 // Fetch image from pipeline and read EXIF for camera RAW WB coeffs
-static inline gboolean find_temperature_from_as_shot_coeffs(const dt_image_t *img, const dt_aligned_pixel_t correction_ratios,
+static inline gboolean find_illuminant_xy_from_as_shot_coeffs(const dt_image_t *img, const dt_aligned_pixel_t correction_ratios,
                                                    float *chroma_x, float *chroma_y);
 
 
@@ -304,7 +305,7 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
     case DT_ILLUMINANT_CAMERA:
     {
       // Detect WB from RAW EXIF, correcting with D65/wb_coeff ratios
-      if(img && find_temperature_from_as_shot_coeffs(img, correction_ratios, &x, &y))
+      if(img && find_illuminant_xy_from_as_shot_coeffs(img, correction_ratios, &x, &y))
         break;
 
       // xy calculation failed
@@ -313,7 +314,7 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant,           /
     case DT_ILLUMINANT_FROM_WB:
     {
       // Detect WB from user-provided coefficients
-      if(img && find_temperature_from_wb_coeffs(img, wb_coeffs, &x, &y))
+      if(img && find_illuminant_xy_from_wb_coeffs(img, wb_coeffs, &x, &y))
         break;
 
       // xy calculation failed
@@ -449,7 +450,7 @@ static inline gboolean _wb_coeffs_invalid(const dt_aligned_pixel_t wb_coeffs, co
 }
 
 // returns FALSE if failed; TRUE if successful
-static gboolean find_temperature_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
+static gboolean find_illuminant_xy_from_wb_coeffs(const dt_image_t *img, const dt_aligned_pixel_t wb_coeffs,
                                             float *chroma_x, float *chroma_y)
 {
   if(img == NULL || wb_coeffs == NULL) return FALSE;
@@ -471,7 +472,7 @@ static gboolean find_temperature_from_wb_coeffs(const dt_image_t *img, const dt_
 }
 
 // returns FALSE if failed; TRUE if successful
-static gboolean find_temperature_from_as_shot_coeffs(const dt_image_t *img, const dt_aligned_pixel_t correction_ratios,
+static gboolean find_illuminant_xy_from_as_shot_coeffs(const dt_image_t *img, const dt_aligned_pixel_t correction_ratios,
                                             float *chroma_x, float *chroma_y)
 {
   if(img == NULL) return FALSE;
@@ -491,7 +492,7 @@ static gboolean find_temperature_from_as_shot_coeffs(const dt_image_t *img, cons
     for(size_t k = 0; k < 4; k++) WB[k] *= correction_ratios[k];
   // for a neutral surface, raw RGB * img->wb_coeffs would produce neutral R=G=B
 
-  return find_temperature_from_wb_coeffs(img, WB, chroma_x, chroma_y);
+  return find_illuminant_xy_from_wb_coeffs(img, WB, chroma_x, chroma_y);
 }
 
 
