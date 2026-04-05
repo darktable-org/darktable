@@ -112,8 +112,8 @@ static dt_hash_t _compute_distort_hash(dt_develop_t *dev)
   for(GList *l = dev->history; l; l = g_list_next(l))
   {
     const dt_dev_history_item_t *item = l->data;
-    if(item->enabled
-       && item->module
+    if(item->module
+       && item->module->enabled
        && (item->module->operation_tags() & IOP_TAG_DISTORT))
     {
       hash = dt_hash(hash, item->params, item->module->params_size);
@@ -240,6 +240,7 @@ typedef struct _encode_thread_data_t
   _object_data_t *d;
   dt_imgid_t imgid;        // image to encode (thread renders via export pipe)
   int32_t history_end;     // darkroom history_end (may be ahead of database)
+  dt_hash_t distort_hash;  // hash from live darkroom state (for disk cache key)
 } _encode_thread_data_t;
 
 // background thread: loads model, renders image via export pipe, and encodes,
@@ -251,6 +252,7 @@ static gpointer _encode_thread_func(gpointer data)
   _object_data_t *d = td->d;
   const dt_imgid_t imgid = td->imgid;
   const int32_t td_history_end = td->history_end;
+  const dt_hash_t distort_hash = td->distort_hash;
   g_free(td);
 
   // load model if needed
@@ -329,8 +331,9 @@ static gpointer _encode_thread_func(gpointer data)
   const int out_w = (int)(final_scale * pipe.processed_width);
   const int out_h = (int)(final_scale * pipe.processed_height);
 
-  // try disk cache - distort hash mismatch means re-encode needed
-  const dt_hash_t distort_hash = _compute_distort_hash(&dev);
+  // use distort hash from darkroom's live state (passed by caller)
+  // instead of computing from the thread's dev, which may have
+  // stale history (not yet flushed to database)
   {
     uint8_t *cached_rgb = NULL;
     int cached_rgb_w = 0, cached_rgb_h = 0;
@@ -1536,13 +1539,16 @@ static void _object_events_post_expose(cairo_t *cr,
     // sees the current edits (crop/rotate may not be flushed yet)
     dt_dev_write_history(darktable.develop);
 
+    const dt_hash_t cur_hash = _compute_distort_hash(darktable.develop);
+
     _encode_thread_data_t *td = g_new(_encode_thread_data_t, 1);
     td->d = d;
     td->imgid = cur_imgid;
     td->history_end = darktable.develop->history_end;
+    td->distort_hash = cur_hash;
 
     d->encoded_imgid = cur_imgid;
-    d->encoded_distort_hash = _compute_distort_hash(darktable.develop);
+    d->encoded_distort_hash = cur_hash;
     d->encode_state = ENCODE_RUNNING;
     // start poll timer BEFORE the thread, it will detect completion
     // and also tracks modifier keys once encoding is ready
