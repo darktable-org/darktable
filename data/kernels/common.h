@@ -31,10 +31,26 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
 
 #ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
+#define M_PI_F 3.14159265358979323846f
 #endif
 
+#ifndef M_LN2f
 #define M_LN2f 0.69314718055994530942f
+#endif
+
+#ifndef M_PI_2f
+#define M_PI_2f 1.57079632679489661923f
+#endif
+
+#ifndef M_PI_4f
+#define M_PI_4f 0.78539816339744830962f
+#endif
+
+#ifndef M_SQRT2_F
+#define M_SQRT2_F 1.41421356237309504880f
+#endif
+
+#define DT_2PI_F 6.28318530717958647693f
 
 #define LUT_ELEM 512 // gamut LUT number of elements:
 

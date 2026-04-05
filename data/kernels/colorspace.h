@@ -56,7 +56,7 @@ static inline float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
-  H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
+  H = (H > 0.0f) ? H / DT_2PI_F : 1.0f - fabs(H) / DT_2PI_F;
 
   const float L = Lab.x;
   const float C = dt_fast_hypot(Lab.y, Lab.z);
@@ -68,8 +68,8 @@ static inline float4 Lab_2_LCH(float4 Lab)
 static inline float4 LCH_2_Lab(float4 LCH)
 {
   const float L = LCH.x;
-  const float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
-  const float b = sin(2.0f*M_PI_F*LCH.z) * LCH.y;
+  const float a = cos(DT_2PI_F*LCH.z) * LCH.y;
+  const float b = sin(DT_2PI_F*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
@@ -434,7 +434,7 @@ static inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
 
 static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 {
-  const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
+  const float h = atan2(JzAzBz.z, JzAzBz.y) / DT_2PI_F;
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
   JzCzhz.y = dt_fast_hypot(JzAzBz.y, JzAzBz.z);
@@ -955,7 +955,7 @@ static inline float lookup_gamut(global const float *gamut_lut, const float x)
 
   // Linearly interpolate the value of the gamut LUT at the hue angle in radians.
   // convert in LUT coordinate
-  const float x_test = (float)LUT_ELEM * (x + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (float)LUT_ELEM * (x + M_PI_F) / DT_2PI_F;
 
   // find the 2 closest integer coordinates (next/previous)
   const float x_prev = floor(x_test);

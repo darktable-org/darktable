@@ -144,7 +144,7 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
   const float max_bin = params->bins_count - 1;
   const dt_aligned_pixel_t scale = { max_bin / 100.0f,
-                                     max_bin / (128.0f * sqrtf(2.0f)),
+                                     max_bin / (128.0f * M_SQRT2_F),
                                      max_bin, 0.0f };
 
   for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)

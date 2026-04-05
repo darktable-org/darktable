@@ -434,7 +434,7 @@ void process_display(dt_iop_module_t *self,
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   const int ch = piece->colors;
-  const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
+  const float normalize_C = 1.f / (128.0f * M_SQRT2_F);
 
   const dt_iop_colorzones_channel_t display_channel = g->channel;
 
@@ -484,7 +484,7 @@ void process_v1(dt_iop_module_t *self,
   const dt_iop_colorzones_data_t *d = piece->data;
 
   const int ch = piece->colors;
-  const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
+  const float normalize_C = 1.f / (128.0f * M_SQRT2_F);
 
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
@@ -537,8 +537,8 @@ void process_v3(dt_iop_module_t *self,
     float *in = (float *)ivoid + ch * k;
     float *out = (float *)ovoid + ch * k;
     const float a = in[1], b = in[2];
-    const float h = fmodf(atan2f(b, a) + 2.0f * M_PI_F, 2.0f * M_PI_F) / (2.0f * M_PI_F);
-    const float C = sqrtf(b * b + a * a);
+    const float h = fmodf(atan2f(b, a) + DT_2PI_F, DT_2PI_F) / DT_2PI_F;
+    const float C = dt_fast_hypotf(b, a);
     float select = 0.0f;
     float blend = 0.0f;
     switch(d->channel)
@@ -562,8 +562,8 @@ void process_v3(dt_iop_module_t *self,
     const float Cm = 2.0f * lookup(d->lut[1], select);
     const float L = in[0] * powf(2.0f, 4.0f * Lm);
     out[0] = L;
-    out[1] = cosf(2.0f * M_PI_F * (h + hm)) * Cm * C;
-    out[2] = sinf(2.0f * M_PI_F * (h + hm)) * Cm * C;
+    out[1] = cosf(DT_2PI_F * (h + hm)) * Cm * C;
+    out[2] = sinf(DT_2PI_F * (h + hm)) * Cm * C;
     out[3] = in[3];
   }
 }
@@ -951,9 +951,9 @@ static void _draw_color_picker(dt_iop_module_t *self,
               picked_max_i = pick_max[0] / 100.0f;
               break;
             case DT_IOP_COLORZONES_C:
-              picked_i = pick_mean[1] / (128.0f * sqrtf(2.f));
-              picked_min_i = pick_min[1] / (128.0f * sqrtf(2.f));
-              picked_max_i = pick_max[1] / (128.0f * sqrtf(2.f));
+              picked_i = pick_mean[1] / (128.0f * M_SQRT2_F);
+              picked_min_i = pick_min[1] / (128.0f * M_SQRT2_F);
+              picked_max_i = pick_max[1] / (128.0f * M_SQRT2_F);
               break;
             default: // case DT_IOP_COLORZONES_h:
               picked_i = pick_mean[2];
@@ -997,9 +997,9 @@ static void _draw_color_picker(dt_iop_module_t *self,
         picked_max_i = picker_max[0] / 100.0f;
         break;
       case DT_IOP_COLORZONES_C:
-        picked_i = picker_color[1] / (128.0f * sqrtf(2.f));
-        picked_min_i = picker_min[1] / (128.0f * sqrtf(2.f));
-        picked_max_i = picker_max[1] / (128.0f * sqrtf(2.f));
+        picked_i = picker_color[1] / (128.0f * M_SQRT2_F);
+        picked_min_i = picker_min[1] / (128.0f * M_SQRT2_F);
+        picked_max_i = picker_max[1] / (128.0f * M_SQRT2_F);
         break;
       default: // case DT_IOP_COLORZONES_h:
         picked_i = picker_color[2];
@@ -1066,7 +1066,7 @@ static void _draw_background(cairo_t *cr,
 {
   const float bg_sat_factor =
     dt_conf_get_float("plugins/darkroom/colorzones/bg_sat_factor");
-  const float normalize_C = (128.f * bg_sat_factor * sqrtf(2.f));
+  const float normalize_C = (128.f * bg_sat_factor * M_SQRT2_F);
 
   const int cellsi = DT_COLORZONES_CELLSI;
   const int cellsj = DT_COLORZONES_CELLSJ;
@@ -1594,7 +1594,7 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget,
   // we will work on LCh
   dt_aligned_pixel_t picked_color, picker_min, picker_max;
   _select_base_display_color(self, picked_color, picker_min, picker_max);
-  const float normalize_C = (128.f * sqrtf(2.f));
+  const float normalize_C = (128.f * M_SQRT2_F);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
 
@@ -2433,7 +2433,7 @@ void color_picker_apply(dt_iop_module_t *self,
     if(ch_val == DT_IOP_COLORZONES_L)
       x = self->picked_color_min[0] / 100.f;
     else if(ch_val == DT_IOP_COLORZONES_C)
-      x = self->picked_color_min[1] / (128.f * sqrtf(2.f));
+      x = self->picked_color_min[1] / (128.f * M_SQRT2_F);
     else if(ch_val == DT_IOP_COLORZONES_h)
       x = self->picked_color_min[2];
     x -= feather;
@@ -2442,7 +2442,7 @@ void color_picker_apply(dt_iop_module_t *self,
     if(ch_val == DT_IOP_COLORZONES_L)
       x = self->picked_color_min[0] / 100.f;
     else if(ch_val == DT_IOP_COLORZONES_C)
-      x = self->picked_color_min[1] / (128.f * sqrtf(2.f));
+      x = self->picked_color_min[1] / (128.f * M_SQRT2_F);
     else if(ch_val == DT_IOP_COLORZONES_h)
       x = self->picked_color_min[2];
     if(x > 0.f && x < 1.f) _add_node(curve, &p->curve_num_nodes[ch_curve],
@@ -2451,7 +2451,7 @@ void color_picker_apply(dt_iop_module_t *self,
     if(ch_val == DT_IOP_COLORZONES_L)
       x = self->picked_color[0] / 100.f;
     else if(ch_val == DT_IOP_COLORZONES_C)
-      x = self->picked_color[1] / (128.f * sqrtf(2.f));
+      x = self->picked_color[1] / (128.f * M_SQRT2_F);
     else if(ch_val == DT_IOP_COLORZONES_h)
       x = self->picked_color[2];
     if(x > 0.f && x < 1.f) _add_node(curve, &p->curve_num_nodes[ch_curve],
@@ -2460,7 +2460,7 @@ void color_picker_apply(dt_iop_module_t *self,
     if(ch_val == DT_IOP_COLORZONES_L)
       x = self->picked_color_max[0] / 100.f;
     else if(ch_val == DT_IOP_COLORZONES_C)
-      x = self->picked_color_max[1] / (128.f * sqrtf(2.f));
+      x = self->picked_color_max[1] / (128.f * M_SQRT2_F);
     else if(ch_val == DT_IOP_COLORZONES_h)
       x = self->picked_color_max[2];
     if(x > 0.f && x < 1.f) _add_node(curve, &p->curve_num_nodes[ch_curve],
@@ -2469,7 +2469,7 @@ void color_picker_apply(dt_iop_module_t *self,
     if(ch_val == DT_IOP_COLORZONES_L)
       x = self->picked_color_max[0] / 100.f;
     else if(ch_val == DT_IOP_COLORZONES_C)
-      x = self->picked_color_max[1] / (128.f * sqrtf(2.f));
+      x = self->picked_color_max[1] / (128.f * M_SQRT2_F);
     else if(ch_val == DT_IOP_COLORZONES_h)
       x = self->picked_color_max[2];
     x += feather;
