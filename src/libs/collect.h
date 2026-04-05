@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ static const char *dt_month_short_names[] __attribute__((unused)) =
   N_("Feb"),
   N_("Mar"),
   N_("Apr"),
-  N_("May"),
+  NC_("short_month_name", "May"),
   N_("Jun"),
   N_("Jul"),
   N_("Aug"),
