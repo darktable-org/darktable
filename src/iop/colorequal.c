@@ -896,9 +896,9 @@ static void _guide_with_chromaticity(float *const restrict UV,
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
     const float cv[2] = { a[4 * k + 0] * uv[0] + a[4 * k + 1] * uv[1] + b[2 * k + 0],
                           a[4 * k + 2] * uv[0] + a[4 * k + 3] * uv[1] + b[2 * k + 1] };
-    corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
+    corrections[2 * k + 1] = 1.0f + (cv[0] - 1.0f) * _get_satweight(saturation[k] - sat_shift);
     const float gradient_weight = 1.0f - CLIP(gradients[k]);
-    b_corrections[k] = interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
+    b_corrections[k] = cv[1] * gradient_weight * _get_satweight(saturation[k] - bright_shift);
   }
   dt_free_align(a);
   dt_free_align(b);
