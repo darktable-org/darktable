@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-04 17:05+0200\n"
-"PO-Revision-Date: 2026-04-04 20:13+0300\n"
+"PO-Revision-Date: 2026-04-05 16:34+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -26670,7 +26670,7 @@ msgstr "жовт."
 
 #: ../src/libs/collect.h:58
 msgid "Nov"
-msgstr "листоп."
+msgstr "лист."
 
 #: ../src/libs/collect.h:59
 msgid "Dec"
