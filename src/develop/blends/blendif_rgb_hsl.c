@@ -924,7 +924,7 @@ _BLEND_FUNC _blend_HSV_color(const float *const a,
 
     tb[0] = atan2f(yc, xc) / (2.0f * M_PI_F);
     if(tb[0] < 0.0f) tb[0] += 1.0f;
-    tb[1] = sqrtf(xc * xc + yc * yc);
+    tb[1] = dt_fast_hypotf(xc, yc);
 
     // lightness from input image
     tb[2] = ta[2];

@@ -143,15 +143,6 @@ static inline float Kahan_sum(const float m,
    return t2;
 }
 
-static inline float scharr_gradient(const float *p, const int w)
-{
-  const float gx = 47.0f / 255.0f * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
-                + 162.0f / 255.0f * (p[-1] - p[1]);
-  const float gy = 47.0f / 255.0f * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
-                + 162.0f / 255.0f * (p[-w] - p[w]);
-  return sqrtf(sqrf(gx) + sqrf(gy));
-}
-
 static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / M_LN2f) : x;
@@ -371,13 +362,39 @@ union float_int {
   int k;
 };
 
+/* __FAST_MATH__ is defined via -ffast-math compiler option,
+  for darktable this is currently used for "Release" builds and in some
+  special parts of the code.
+  For these builds we accept some precision loss for performance and in
+  addition to compiler optimizing we allow some perf optimized inline functions
+  or macros.
+*/
+#ifdef __FAST_MATH__
+
 // a faster, vectorizable version of hypotf() when we know that there
-// won't be overflow, NaNs, or infinities
+// won't be overflow, NaNs or infinities. Looses some precision for very small inputs
 DT_OMP_DECLARE_SIMD()
-static inline float dt_fast_hypotf(const float x,
-                                   const float y)
+static inline float dt_fast_hypotf(const float x, const float y)
 {
   return sqrtf(x * x + y * y);
+}
+
+#else // __FAST_MATH__
+
+static inline float dt_fast_hypotf(const float x, const float y)
+{
+  return hypotf(x, y);
+}
+
+#endif // __FAST_MATH__
+
+static inline float scharr_gradient(const float *p, const int w)
+{
+  const float gx = 47.0f / 255.0f * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
+                + 162.0f / 255.0f * (p[-1] - p[1]);
+  const float gy = 47.0f / 255.0f * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
+                + 162.0f / 255.0f * (p[-w] - p[w]);
+  return dt_fast_hypotf(gx, gy);
 }
 
 // fast approximation of expf()

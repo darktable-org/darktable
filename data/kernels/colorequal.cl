@@ -43,17 +43,6 @@ static inline float _get_satweight(const float sat, global float *weights)
   return weights[i] + (isat - base) * (weights[i+1] - weights[i]);
 }
 
-static inline float _scharr_gradient(global float *in,
-                                     const size_t k,
-                                     const int w)
-{
-  const float gx = 47.0f / 255.0f * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-1]   - in[k+1]);
-  const float gy = 47.0f / 255.0f * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
-                + 162.0f / 255.0f * (in[k-w]   - in[k+w]);
-  return dt_fast_hypot(gx, gy);
-}
-
 static inline float gamut_map_HSB(const float4 HSB, global float *gamut_LUT, const float L_white)
 {
   const float4 JCH = dt_UCS_HSB_to_JCH(HSB);
@@ -443,7 +432,7 @@ __kernel void process_data(global float2 *uv,
   {
     const int kk = mad24(clamp(row, 1, height - 2), width, clamp(col, 1, width - 2));
 
-    const float kscharr = fmax(0.0f, _scharr_gradient(saturation, kk, width) - 0.02f);
+    const float kscharr = fmax(0.0f, scharr_gradient(saturation, kk, width) - 0.02f);
     Lscharr[k] = gradient_amp * kscharr * kscharr;
   }
 
