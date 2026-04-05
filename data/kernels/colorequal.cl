@@ -37,7 +37,7 @@ typedef enum dt_iop_colorequal_channel_t
 
 static inline float _get_satweight(const float sat, global float *weights)
 {
-  const float isat = SATSIZE * (1.0f + clamp(sat, -1.0f, 1.0f - (1.0f / SATSIZE)));
+  const float isat = (float)SATSIZE * (1.0f + clamp(sat, -1.0f, 1.0f - (1.0f / SATSIZE)));
   const float base = floor(isat);
   const int i = (int)base;
   return weights[i] + (isat - base) * (weights[i+1] - weights[i]);
@@ -247,9 +247,9 @@ __kernel void apply_guided(global float2 *uv,
   const float2 CV = { a[k].x * uv[k].x + a[k].y * uv[k].y + b[k].x,
                       a[k].z * uv[k].x + a[k].w * uv[k].y + b[k].y };
 
-  corrections[k].y = mix(1.0f, CV.x, _get_satweight(saturation[k] - sat_shift, weights));
+  corrections[k].y = 1.0f + (CV.x - 1.0f) * _get_satweight(saturation[k] - sat_shift, weights);
   const float gradient_weight = 1.0f - clipf(scharr[k]);
-  b_corrections[k] = mix(0.0f, CV.y, gradient_weight * _get_satweight(saturation[k] - bright_shift, weights));
+  b_corrections[k] = CV.y * gradient_weight * _get_satweight(saturation[k] - bright_shift, weights);
 }
 
 __kernel void sample_input(__read_only image2d_t dev_in,
