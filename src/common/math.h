@@ -53,6 +53,20 @@
 #define M_LN2f 0.69314718055994530942f
 #endif
 
+#ifndef M_SQRT2_F
+#define M_SQRT2_F 1.41421356237309504880f
+#endif
+
+#define DT_2PI_F 6.28318530717958647693f
+
+#ifndef M_PI_2f
+#define M_PI_2f 1.57079632679489661923f
+#endif
+
+#ifndef M_PI_4f
+#define M_PI_4f 0.78539816339744830962f
+#endif
+
 // clip channel value to be between 0 and 1
 // NaN-safe: NaN compares false and will result in 0.0
 // also does not force promotion of floats to doubles, but will use the type of its argument

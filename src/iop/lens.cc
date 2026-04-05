@@ -4100,7 +4100,7 @@ static void _lens_set(dt_iop_module_t *self,
     snprintf(txt, sizeof(txt), "%.*f", _precision(val, 10.0), val);
     dt_bauhaus_combobox_add(w, txt);
     if(val >= 1000.0f) break;
-    val *= sqrtf(2.0f);
+    val *= M_SQRT2_F;
   }
 }
 

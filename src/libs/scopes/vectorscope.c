@@ -481,7 +481,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       dt_sRGB_to_linear_sRGB(RGB, rgb);
       _rgb2ryb(rgb, RYB, rgb2ryb_ypp);
       dt_RGB_2_HCV(RYB, HCV);
-      const float alpha = 2.f * M_PI_F * HCV[0];
+      const float alpha = DT_2PI_F * HCV[0];
       chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
       chromaticity[2] = sinf(alpha) * HCV[1] * 0.01;
       break;
@@ -854,8 +854,8 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
       const int n = d->harmony_guide.custom_n;
       for(int i = 0; i < n; i++)
       {
-        const float center = d->harmony_guide.custom_angles[i] * 2.f * M_PI_F;
-        const float span   = hw * 2.f * M_PI_F;
+        const float center = d->harmony_guide.custom_angles[i] * DT_2PI_F;
+        const float span   = hw * DT_2PI_F;
         float hr = vs_radius * 0.80f;
         if(d->vectorscope_scale == DT_SCOPES_VEC_SCALE_LOGARITHMIC)
           hr = baselog(hr, vs_radius);
@@ -878,9 +878,9 @@ static void _vec_draw(const dt_scopes_mode_t *const self,
                             ? MIN(hw, (hm.angle[i+1] - hm.angle[i]) / 2.f)
                             : hw);
         const float angle1 =
-          (hm.angle[i] - span1) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
+          (hm.angle[i] - span1) * DT_2PI_F + deg2radf((float)d->harmony_guide.rotation);
         const float angle2 =
-          (hm.angle[i] + span2) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
+          (hm.angle[i] + span2) * DT_2PI_F + deg2radf((float)d->harmony_guide.rotation);
         cairo_arc(cr, 0., 0., hr * scale, angle1, angle2);
         cairo_line_to(cr, 0., 0.);
       }

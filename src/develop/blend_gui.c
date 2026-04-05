@@ -413,7 +413,7 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data,
       break;
     case IOP_CS_LCH:
       out[CHANNEL_INDEX_C] = (in[1] / _get_boost_factor(data, 3, in_out))
-        / (128.0f * sqrtf(2.0f));
+        / (128.0f * M_SQRT2_F);
       out[CHANNEL_INDEX_h] = in[2] / _get_boost_factor(data, 4, in_out);
       break;
     case IOP_CS_HSL:
@@ -460,7 +460,7 @@ static void _blendif_cook(const dt_iop_colorspace_type_t cst,
       out[CHANNEL_INDEX_B] = in[2] * 100.0f;
       break;
     case IOP_CS_LCH:
-      out[CHANNEL_INDEX_C] = in[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
+      out[CHANNEL_INDEX_C] = in[1] / (128.0f * M_SQRT2_F) * 100.0f;
       out[CHANNEL_INDEX_h] = in[2] * 360.0f;
       break;
     case IOP_CS_HSL:

@@ -440,7 +440,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 float thinplate_color_pos(const float L, const float a, const float b)
 {
   const float h = atan2f(b, a) + M_PI_F;
-  const int sector = 4.0f * h / (2.0f * M_PI_F);
+  const int sector = 4.0f * h / DT_2PI_F;
   return 256.0 * sector + L; // C;
 }
 

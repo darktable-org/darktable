@@ -791,7 +791,7 @@ void process(dt_iop_module_t *self,
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_F / 2.f - T);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_2f - T);
       SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle
@@ -1217,7 +1217,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
             saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
             hue = Jch[2];
 
-            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / DT_2PI_F);
             index += (index < 0) ? LUT_ELEM : 0;
             index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
             sampler[index] = fmaxf(sampler[index], saturation);

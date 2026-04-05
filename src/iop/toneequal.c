@@ -415,7 +415,7 @@ int legacy_params(dt_iop_module_t *self,
 
     // New params
     n->quantization = 0.0f;
-    n->smoothing = sqrtf(2.0f);
+    n->smoothing = M_SQRT2_F;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v2_t);
@@ -472,7 +472,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.exposure_boost = -0.5f;
   p.feathering = 1.0f;
   p.iterations = 1;
-  p.smoothing = sqrtf(2.0f);
+  p.smoothing = M_SQRT2_F;
   p.quantization = 0.0f;
 
   // Init exposure settings
@@ -1339,7 +1339,7 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->thumb_preview_hash = DT_INVALID_HASH;
   g->max_histogram = 1;
   g->scale = 1.0f;
-  g->sigma = sqrtf(2.0f);
+  g->sigma = M_SQRT2_F;
   g->mask_display = FALSE;
 
   g->interpolation_valid = FALSE;  // TRUE if the interpolation_matrix is ready
@@ -1721,7 +1721,7 @@ void gui_update(dt_iop_module_t *self)
   const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   const dt_iop_toneequalizer_params_t *p = self->params;
 
-  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
+  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(M_SQRT2_F) - 1.0f);
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
@@ -1762,7 +1762,7 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_toneequalizer_params_t *p = self->params;
   const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  p->smoothing= powf(sqrtf(2.0f), 1.0f +  dt_bauhaus_slider_get(slider));
+  p->smoothing= powf(M_SQRT2_F, 1.0f +  dt_bauhaus_slider_get(slider));
 
   float factors[CHANNELS] DT_ALIGNED_ARRAY;
   get_channels_factors(factors, p);
@@ -2897,7 +2897,7 @@ static gboolean area_draw(GtkWidget *widget,
   {
     if(g->area_cursor_valid)
     {
-      const float radius = g->sigma * g->graph_width / 8.0f / sqrtf(2.0f);
+      const float radius = g->sigma * g->graph_width / 8.0f / M_SQRT2_F;
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
       const float y =
         g->gui_lut[(int)CLAMP(((UI_SAMPLES - 1) * g->area_x / g->graph_width),

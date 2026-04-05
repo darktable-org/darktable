@@ -47,7 +47,7 @@ typedef struct dt_iop_blurs_params_t
   int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "diaphragm blades"
   float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "concavity"
   float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "linearity"
-  float rotation;          // $MIN: -M_PI_F / 2.f $MAX: M_PI_F / 2.f $DEFAULT: 0.f $DESCRIPTION: "rotation"
+  float rotation;          // $MIN: -M_PI_2f $MAX: M_PI_2f $DEFAULT: 0.f $DESCRIPTION: "rotation"
 
   // motion blur params
   float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0.f $DESCRIPTION: "direction"
@@ -218,7 +218,7 @@ static inline void _create_motion_kernel(float *const restrict buffer,
   const float eps = 1.f / (float)width;
 
   const float radius = (float)(width - 1) / 2.f - 1;
-  const float corr_angle = -M_PI_F / 4.f - angle;
+  const float corr_angle = -M_PI_4f - angle;
 
   // Matrix of rotation
   const float M[2][2] = { { cosf(corr_angle), -sinf(corr_angle) },
