@@ -59,7 +59,7 @@ static inline float4 Lab_2_LCH(float4 Lab)
   H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
 
   const float L = Lab.x;
-  const float C = hypot(Lab.y, Lab.z);
+  const float C = dt_fast_hypot(Lab.y, Lab.z);
 
   return (float4)(L, C, H, Lab.w);
 }
@@ -437,7 +437,7 @@ static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
   const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
-  JzCzhz.y = hypot(JzAzBz.y, JzAzBz.z);
+  JzCzhz.y = dt_fast_hypot(JzAzBz.y, JzAzBz.z);
   JzCzhz.z = (h >= 0.0f) ? h : 1.0f + h;
   JzCzhz.w = JzAzBz.w;
   return JzCzhz;
@@ -561,7 +561,7 @@ static inline float4 Yrg_to_Ych(const float4 Yrg)
   // -> grading RGB conversion.
   const float r = Yrg.y - 0.21902143f;
   const float g = Yrg.z - 0.54371398f;
-  const float c = hypot(g, r);
+  const float c = dt_fast_hypot(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   return (float4)(Y, c, cos_h, sin_h);

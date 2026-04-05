@@ -1269,7 +1269,7 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
       d = ta.y*cos(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*cos(2.0f*M_PI_F*tb.x) * opacity;
       s = ta.y*sin(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*sin(2.0f*M_PI_F*tb.x) * opacity;
       to.x = fmod(atan2(s, d)/(2.0f*M_PI_F)+1.0f, 1.0f);
-      to.y = sqrt(s*s + d*d);
+      to.y = dt_fast_hypot(s, d);
       to.z = ta.z;
       o = HSV_2_RGB(to);
       break;

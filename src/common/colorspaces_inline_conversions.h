@@ -1077,7 +1077,7 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   // -> grading RGB conversion.
   const float r = Yrg[1] - 0.21902143f;
   const float g = Yrg[2] - 0.54371398f;
-  const float c = hypotf(g, r);
+  const float c = dt_fast_hypotf(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;
@@ -1383,22 +1383,6 @@ static inline void dt_UCS_HCB_to_JCH(const dt_aligned_pixel_t HCB, dt_aligned_pi
   JCH[2] = HCB[0];
   JCH[1] = HCB[1];
   JCH[0] = HCB[2] / (powf(HCB[1], 1.33654221029386f) + 1.f);
-}
-
-
-static inline void dt_UCS_HSB_to_HPW(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t HPW)
-{
-  HPW[2] = sqrtf(HSB[1] * HSB[1] + HSB[2] * HSB[2]);
-  HPW[1] = (HPW[2] > 0.f) ? HSB[1] / HPW[2] : 0.f;
-  HPW[0] = HSB[0];
-}
-
-
-static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pixel_t HSB)
-{
-  HSB[0] = HPW[0];
-  HSB[1] = HPW[1] * HPW[2];
-  HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
 }
 
 static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L_w, dt_aligned_pixel_t XYZ)

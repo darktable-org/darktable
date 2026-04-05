@@ -32,7 +32,7 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if(col >= w || row >= height) return;
-  const float val = scale * fmax(0.0f, readsingle(in, col, row));
+  const float val = scale * fmax(0.0f, Areadsingle(in, col, row));
   const int color = FC(row, col, filters);
 
   global float *rgbcol = rgb0;
@@ -51,7 +51,7 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
   if(!(col >= border && col < w - border && row >= border && row < height - border)) return;
   const int idx = mad24(row, w, col);
 
-  write_imagef(out, (int2)(col, row), (float4)(fmax(scale * rgb0[idx], 0.0f), fmax(scale * rgb1[idx], 0.0f), fmax(scale * rgb2[idx], 0.0f), 0.0f));
+  write_imagef(out, (int2)(col, row), fmax(0.0f, (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f)));
 }
 
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
@@ -278,8 +278,8 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const float4 high_val = readpixel(high, col, row);
-  const float4 low_val = readpixel(low, col, row);
+  const float4 high_val = Areadpixel(high, col, row);
+  const float4 low_val = Areadpixel(low, col, row);
   const float4 blender = (float4)clipf(mask[mad24(row, w, col)]);
   float4 data = mix(low_val, high_val, blender);
   data.w = showmask ? blender.x : 0.0f;
@@ -297,8 +297,8 @@ __kernel void calc_Y0_mask(global float *mask,
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  const float4 pt = wb * fmax(0.0f, readpixel(in, col, row));
-  mask[idx] = dtcl_sqrt(0.33333333f * (pt.x + pt.y + pt.z));
+  const float4 pt = wb * fmax(0.0f, Areadpixel(in, col, row));
+  mask[idx] = dtcl_sqrt((pt.x + pt.y + pt.z) / 3.0f);
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
@@ -311,11 +311,7 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   const int incol = clamp(col, 1, w - 2);
   const int inrow = clamp(row, 1, height -2);
   const int idx = mad24(inrow, w, incol);
-  const float gx = 47.0f / 255.0f * (in[idx-w-1] - in[idx-w+1] + in[idx+w-1] - in[idx+w+1])
-                + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
-  const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
-                + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
-  const float gradient_magnitude = dt_fast_hypot(gx, gy);
+  const float gradient_magnitude = scharr_gradient(in, idx, w);
   out[oidx] = clipf(gradient_magnitude / 16.0f);
 }
 
@@ -350,7 +346,7 @@ kernel void demosaic_box3(read_only image2d_t in,
       if(x >= 0 && y >= 0 && x < width && y < height)
       {
         const int color = fcol(y, x, filters, xtrans);
-        sum[color] += fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+        sum[color] += fmax(0.0f, Areadsingle(in, x, y));
         cnt[color] += 1.0f;
       }
     }
