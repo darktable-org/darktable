@@ -10,8 +10,8 @@ static inline float Delta_H(const float h_1, const float h_2)
   // Compute the difference between 2 angles
   // and force the result in [-pi; pi] radians
   float diff = h_1 - h_2;
-  diff += (diff < -M_PI_F) ? 2.f * M_PI_F : 0.f;
-  diff -= (diff > M_PI_F) ? 2.f * M_PI_F : 0.f;
+  diff += (diff < -M_PI_F) ? DT_2PI_F : 0.f;
+  diff -= (diff > M_PI_F) ? DT_2PI_F : 0.f;
   return diff;
 }
 
@@ -57,7 +57,7 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   DT_OMP_FOR(reduction(+: gamut_LUT[:LUT_ELEM], sampler[:LUT_ELEM]))
   for(int i = 0; i < 50 * LUT_ELEM; i++)
   {
-    const float angle = -M_PI_F + ((float)i) / (float)(50 * LUT_ELEM) * 2.f * M_PI_F;
+    const float angle = -M_PI_F + ((float)i) / (float)(50 * LUT_ELEM) * DT_2PI_F;
     const float tan_angle = tanf(angle);
 
     const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
@@ -96,7 +96,7 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
 
     // Get the hue angle in darktable UCS
     const float hue = atan2f(UV_star_prime[1], UV_star_prime[0]);
-    int index = roundf((float)(LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+    int index = roundf((float)(LUT_ELEM - 1) * (hue + M_PI_F) / DT_2PI_F);
     index += (index < 0) ? LUT_ELEM : 0;
     index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
     // Warning: we store M², the square of the colorfulness
@@ -137,7 +137,7 @@ static inline float lookup_gamut(const float gamut_lut[LUT_ELEM], const float hu
    */
 
   // convert hue in LUT index coordinate
-  const float x_test = (float)LUT_ELEM * (hue + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (float)LUT_ELEM * (hue + M_PI_F) / DT_2PI_F;
 
   const float x_prev = floor(x_test);
   const float x_next = ceil(x_test);

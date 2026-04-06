@@ -287,7 +287,7 @@ static void _update_histogram(dt_iop_module_t *self,
       const float chroma = px_JCH[1];
       if(chroma > 0.01f)
       {
-        const float hue = (px_JCH[2] + M_PI_F) / (2.f * M_PI_F);
+        const float hue = (px_JCH[2] + M_PI_F) / DT_2PI_F;
         const int bin = (int)(hue * COLORHARMONIZER_HUE_BINS) % COLORHARMONIZER_HUE_BINS;
         local_histo[bin] += chroma;
       }
@@ -354,7 +354,7 @@ void process(dt_iop_module_t *self,
         dt_aligned_pixel_t px_JCH;
         dt_ioppr_rgb_matrix_to_dt_UCS_JCH(px_rgb, px_JCH, work_profile->matrix_in_transposed, L_white);
 
-        const float hue    = (px_JCH[2] + M_PI_F) / (2.f * M_PI_F);
+        const float hue    = (px_JCH[2] + M_PI_F) / DT_2PI_F;
         const float chroma = px_JCH[1];
 
         int   winning_idx = 0;
@@ -366,7 +366,7 @@ void process(dt_iop_module_t *self,
         // Smooth hyperbolic ramp: approaches 0 for neutral colors, ~1 for saturated colors.
         const float chroma_weight = chroma / (chroma + cutoff + 1e-5f);
 
-        px_JCH[2] = wrap_hue(hue + hue_shift * pull_strength * chroma_weight) * 2.f * M_PI_F - M_PI_F;
+        px_JCH[2] = wrap_hue(hue + hue_shift * pull_strength * chroma_weight) * DT_2PI_F - M_PI_F;
         px_JCH[1] = fmaxf(chroma * (1.0f + sat_delta * chroma_weight), 0.0f);
 
         dt_aligned_pixel_t px_xyY, px_xyz_d65, px_xyz;
@@ -409,7 +409,7 @@ void process(dt_iop_module_t *self,
         dt_aligned_pixel_t px_JCH;
         dt_ioppr_rgb_matrix_to_dt_UCS_JCH(px_rgb, px_JCH, work_profile->matrix_in_transposed, L_white);
 
-        const float hue = (px_JCH[2] + M_PI_F) / (2.f * M_PI_F);
+        const float hue = (px_JCH[2] + M_PI_F) / DT_2PI_F;
 
         const size_t k = row + i;
         jch_cache[k * 3]     = px_JCH[0];  // J
@@ -453,7 +453,7 @@ void process(dt_iop_module_t *self,
         const float new_hue = wrap_hue(hue + corrections[k * 2] * pull_strength * chroma_weight);
         dt_aligned_pixel_t px_JCH = { J,
                                       fmaxf(chroma * (1.0f + corrections[k * 2 + 1] * chroma_weight), 0.0f),
-                                      new_hue * 2.f * M_PI_F - M_PI_F,
+                                      new_hue * DT_2PI_F - M_PI_F,
                                       0.0f };
 
         dt_aligned_pixel_t px_xyY, px_xyz_d65, px_xyz;
@@ -699,7 +699,7 @@ error:
 static float _find_max_chroma(const float hue)
 {
   const float L_white = Y_to_dt_UCS_L_star(1.0f);
-  const float H = hue * 2.f * M_PI_F - M_PI_F;  // [0,1) → [-π, π]
+  const float H = hue * DT_2PI_F - M_PI_F;  // [0,1) → [-π, π]
   const float J = 0.65f;                         // ≈ Y=0.29, mid-brightness
 
   float C_lo = 0.f, C_hi = 2.f;
@@ -726,7 +726,7 @@ static void _hue_to_srgb(const float hue,
                          float *b)
 {
   const float L_white = Y_to_dt_UCS_L_star(1.0f);
-  const float H = hue * 2.f * M_PI_F - M_PI_F;
+  const float H = hue * DT_2PI_F - M_PI_F;
   const float J = 0.65f;
 
   dt_aligned_pixel_t JCH = { J, _find_max_chroma(hue) * 0.85f, H, 0.f };
@@ -761,7 +761,7 @@ static void _paint_sat_slider(GtkWidget *slider, const float hue)
 {
   const float L_white = Y_to_dt_UCS_L_star(1.0f);
   const float J = 0.65f;
-  const float H = hue * 2.f * M_PI_F - M_PI_F;
+  const float H = hue * DT_2PI_F - M_PI_F;
 
   const float C_lo = _find_max_chroma(hue);
   // C_swatch is the chroma used for the swatch (= the "neutral / 100%" reference color).
@@ -1191,7 +1191,7 @@ static gboolean _picked_color_to_hue(dt_iop_module_t *self,
   dt_D65_XYZ_to_xyY(px_xyz_d65, px_xyY);
   xyY_to_dt_UCS_JCH(px_xyY, L_white, px_JCH);
 
-  *out_hue = (px_JCH[2] + M_PI_F) / (2.f * M_PI_F);
+  *out_hue = (px_JCH[2] + M_PI_F) / DT_2PI_F;
   return TRUE;
 }
 

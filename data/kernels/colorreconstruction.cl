@@ -99,7 +99,7 @@ colorreconstruction_splat(
     case COLORRECONSTRUCT_PRECEDENCE_HUE:
       m = atan2(pixel.z, pixel.y) - params.x;
       // readjust m into [-pi, +pi] interval
-      m = m > M_PI_F ? m - 2*M_PI_F : (m < -M_PI_F ? m + 2*M_PI_F : m);
+      m = m > M_PI_F ? m - DT_2PI_F : (m < -M_PI_F ? m + DT_2PI_F : m);
       weight = exp(-m*m/params.y);
       break;
 

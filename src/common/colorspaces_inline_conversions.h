@@ -330,7 +330,7 @@ static inline void dt_Luv_to_Lch(const dt_aligned_pixel_t Luv, dt_aligned_pixel_
   Lch[0] = Luv[0];                 // L stays L
   Lch[1] = hypotf(Luv[2], Luv[1]); // chroma radius
   Lch[2] = atan2f(Luv[2], Luv[1]); // hue angle
-  Lch[2] = (Lch[2] < 0.f) ? 2.f * M_PI + Lch[2] : Lch[2]; // ensure angle is positive modulo 2 pi
+  Lch[2] = (Lch[2] < 0.f) ? DT_2PI_F + Lch[2] : Lch[2]; // ensure angle is positive modulo 2 pi
 }
 
 
@@ -753,9 +753,9 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
   float var_H = atan2f(Lab[2], Lab[1]);
 
   if(var_H > 0.0f)
-    var_H = var_H / (2.0f * M_PI_F);
+    var_H = var_H / DT_2PI_F;
   else
-    var_H = 1.0f - fabsf(var_H) / (2.0f * M_PI_F);
+    var_H = 1.0f - fabsf(var_H) / DT_2PI_F;
 
   LCH[0] = Lab[0];
   LCH[1] = hypotf(Lab[1], Lab[2]);
@@ -767,8 +767,8 @@ DT_OMP_DECLARE_SIMD()
 static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t Lab)
 {
   Lab[0] = LCH[0];
-  Lab[1] = cosf(2.0f * M_PI_F * LCH[2]) * LCH[1];
-  Lab[2] = sinf(2.0f * M_PI_F * LCH[2]) * LCH[1];
+  Lab[1] = cosf(DT_2PI_F * LCH[2]) * LCH[1];
+  Lab[2] = sinf(DT_2PI_F * LCH[2]) * LCH[1];
 }
 
 static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
@@ -862,7 +862,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, JzCzhz: 16))
 static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t JzCzhz)
 {
-  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * M_PI_F);
+  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / DT_2PI_F;
   JzCzhz[0] = JzAzBz[0];
   JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
@@ -872,8 +872,8 @@ DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
 {
   JzAzBz[0] = JzCzhz[0];
-  JzAzBz[1] = cosf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
-  JzAzBz[2] = sinf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[1] = cosf(DT_2PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[2] = sinf(DT_2PI_F * JzCzhz[2]) * JzCzhz[1];
 }
 
 DT_OMP_DECLARE_SIMD(aligned(JzAzBz, XYZ_D65: 16))
@@ -1077,7 +1077,7 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   // -> grading RGB conversion.
   const float r = Yrg[1] - 0.21902143f;
   const float g = Yrg[2] - 0.54371398f;
-  const float c = hypotf(g, r);
+  const float c = dt_fast_hypotf(g, r);
   const float cos_h = c != 0.f ? r / c : 1.f;
   const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;
@@ -1383,22 +1383,6 @@ static inline void dt_UCS_HCB_to_JCH(const dt_aligned_pixel_t HCB, dt_aligned_pi
   JCH[2] = HCB[0];
   JCH[1] = HCB[1];
   JCH[0] = HCB[2] / (powf(HCB[1], 1.33654221029386f) + 1.f);
-}
-
-
-static inline void dt_UCS_HSB_to_HPW(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t HPW)
-{
-  HPW[2] = sqrtf(HSB[1] * HSB[1] + HSB[2] * HSB[2]);
-  HPW[1] = (HPW[2] > 0.f) ? HSB[1] / HPW[2] : 0.f;
-  HPW[0] = HSB[0];
-}
-
-
-static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pixel_t HSB)
-{
-  HSB[0] = HPW[0];
-  HSB[1] = HPW[1] * HPW[2];
-  HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
 }
 
 static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L_w, dt_aligned_pixel_t XYZ)

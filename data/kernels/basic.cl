@@ -3243,12 +3243,12 @@ colorzones_v3 (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
   const float a = pixel.y;
   const float b = pixel.z;
-  const float h = fmod(atan2(b, a) + 2.0f*M_PI_F, 2.0f*M_PI_F)/(2.0f*M_PI_F);
-  const float C = sqrt(b*b + a*a);
+  const float h = fmod(atan2(b, a) + DT_2PI_F, DT_2PI_F) / DT_2PI_F;
+  const float C = dt_fast_hypot(b, a);
 
   float select = 0.0f;
   float blend = 0.0f;
@@ -3264,7 +3264,7 @@ colorzones_v3 (read_only image2d_t in,
     default:
     case DT_IOP_COLORZONES_h:
       select = h;
-      blend = pow(1.0f - C/128.0f, 2.0f);
+      blend = dtcl_pow(1.0f - C/128.0f, 2.0f);
       break;
   }
 
@@ -3273,11 +3273,11 @@ colorzones_v3 (read_only image2d_t in,
   blend *= blend; // saturation isn't as prone to artifacts:
   // const float Cm = 2.0f* (blend*0.5f + (1.0f-blend)*lookup(d->lut[1], select));
   const float Cm = 2.0f * lookup(table_a, select);
-  const float L = pixel.x * pow(2.0f, 4.0f*Lm);
+  const float L = pixel.x * dtcl_pow(2.0f, 4.0f*Lm);
 
   pixel.x = L;
-  pixel.y = cos(2.0f*M_PI_F*(h + hm)) * Cm * C;
-  pixel.z = sin(2.0f*M_PI_F*(h + hm)) * Cm * C;
+  pixel.y = dtcl_cos(DT_2PI_F*(h + hm)) * Cm * C;
+  pixel.z = dtcl_sin(DT_2PI_F*(h + hm)) * Cm * C;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -3297,10 +3297,10 @@ colorzones (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
   float4 LCh;
-  const float normalize_C = 1.f / (128.0f * sqrt(2.f));
+  const float normalize_C = 1.f / (128.0f * M_SQRT2_F);
 
   LCh = Lab_2_LCH(pixel);
 
