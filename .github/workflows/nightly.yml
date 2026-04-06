@@ -322,12 +322,6 @@ jobs:
           cp ${{ env.BUILD_DIR }}/darktable.iss ./
           iscc "darktable.iss"
           mv Output/*.exe ${{ env.BUILD_DIR }}/
-      - name: Create NSIS installer
-        if: runner.arch != 'ARM64'
-        run: |
-          pacboy --noconfirm -S --needed nsis:p
-          cd "${BUILD_DIR}"
-          cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
         run: |
           cd ${SRC_DIR}
