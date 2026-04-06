@@ -194,10 +194,10 @@ blendif_factor_Lab(const float4 input, const float4 output,
     float4 LCH_input = Lab_2_LCH(input);
     float4 LCH_output = Lab_2_LCH(output);
 
-    scaled[DEVELOP_BLENDIF_C_in] = LCH_input.y / (128.0f*sqrt(2.0f));        // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_in] = LCH_input.y / (128.0f*M_SQRT2_F);        // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_in] = LCH_input.z;		                // h scaled to 0..1
 
-    scaled[DEVELOP_BLENDIF_C_out] = LCH_output.y / (128.0f*sqrt(2.0f));       // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_out] = LCH_output.y / (128.0f*M_SQRT2_F);       // C scaled to 0..1
     scaled[DEVELOP_BLENDIF_h_out] = LCH_output.z;		                // h scaled to 0..1
   }
 
@@ -1266,10 +1266,10 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
       ta = RGB_2_HSV(a);
       tb = RGB_2_HSV(b);
       // blend color vectors of input and output
-      d = ta.y*cos(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*cos(2.0f*M_PI_F*tb.x) * opacity;
-      s = ta.y*sin(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*sin(2.0f*M_PI_F*tb.x) * opacity;
-      to.x = fmod(atan2(s, d)/(2.0f*M_PI_F)+1.0f, 1.0f);
-      to.y = sqrt(s*s + d*d);
+      d = ta.y*cos(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*cos(DT_2PI_F*tb.x) * opacity;
+      s = ta.y*sin(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*sin(DT_2PI_F*tb.x) * opacity;
+      to.x = fmod(atan2(s, d)/DT_2PI_F+1.0f, 1.0f);
+      to.y = dt_fast_hypot(s, d);
       to.z = ta.z;
       o = HSV_2_RGB(to);
       break;
@@ -1560,12 +1560,12 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
       LCH = Lab_2_LCH(a);
-      c = clipf(LCH.y / (128.0f * sqrt(2.0f) / exp2(boost_factors[DEVELOP_BLENDIF_C_in])));
+      c = clipf(LCH.y / (128.0f * M_SQRT2_F / exp2(boost_factors[DEVELOP_BLENDIF_C_in])));
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       LCH = Lab_2_LCH(b);
-      c = clipf(LCH.y / (128.0f * sqrt(2.0f)) / exp2(boost_factors[DEVELOP_BLENDIF_C_out]));
+      c = clipf(LCH.y / (128.0f * M_SQRT2_F) / exp2(boost_factors[DEVELOP_BLENDIF_C_out]));
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:

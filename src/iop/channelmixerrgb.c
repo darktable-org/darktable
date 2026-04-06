@@ -1337,8 +1337,8 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
 
     // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi],
     // again, to comply with specifications
-    if(h_ref_prime < 0.f) h_ref_prime = 2.f * M_PI_F - h_ref_prime;
-    if(h_test_prime < 0.f) h_test_prime = 2.f * M_PI_F - h_test_prime;
+    if(h_ref_prime < 0.f) h_ref_prime = DT_2PI_F - h_ref_prime;
+    if(h_test_prime < 0.f) h_test_prime = DT_2PI_F - h_test_prime;
 
     // Convert to degrees, again to comply with specs
     h_ref_prime = rad2degf(h_ref_prime);
@@ -1412,9 +1412,9 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
       else if(fabsf(delta_hue) <= M_PI_F)                         \
         ;                                                         \
       else if(fabsf(delta_hue) > M_PI_F && (hue <= ref_hue))      \
-        delta_hue += 2.f * M_PI_F;                                \
+        delta_hue += DT_2PI_F;                                \
       else if(fabsf(delta_hue) > M_PI_F && (hue > ref_hue))       \
-        delta_hue -= 2.f * M_PI_F;                                \
+        delta_hue -= DT_2PI_F;                                \
       w = sqrtf(expf(-sqf(delta_hue) / 2.f));
 
 

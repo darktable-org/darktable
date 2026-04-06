@@ -3639,7 +3639,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     float y_white = 1.f;
 
     const float central_slope = (g->spline.y[3] - g->spline.y[1]) * g->graph_width / ((g->spline.x[3] - g->spline.x[1]) * g->graph_height);
-    const float central_slope_angle = atanf(central_slope) + M_PI_F / 2.f;
+    const float central_slope_angle = atanf(central_slope) + M_PI_2f;
     set_color(cr, darktable.bauhaus->graph_fg);
     for(int k = 0; k < 5; k++)
     {
@@ -3654,7 +3654,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
         gboolean red = (((k == 1) && (y - ymin <= y_margin))
                      || ((k == 3) && (ymax - y <= y_margin)));
         float start_angle = 0.0f;
-        float end_angle = 2.f * M_PI;
+        float end_angle = DT_2PI_F;
         // if contrast is clamped, show it on GUI with half circles
         // for points 1 and 3
         if(contrast_clamped)

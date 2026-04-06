@@ -708,13 +708,13 @@ static void mix_warps(dt_liquify_warp_t *result,
   float arg2 = cargf(p2);
   gboolean invert = FALSE;
 
-  if(arg1 > .0f && arg2 < -(M_PI_F / 2.f))
+  if(arg1 > .0f && arg2 < -M_PI_2f)
   {
     invert = TRUE;
     arg1 = M_PI_F - arg1;
     arg2 = -M_PI_F - arg2;
   }
-  else if(arg1 < -(M_PI_F / 2.f) && arg2 > .0f)
+  else if(arg1 < -M_PI_2f && arg2 > .0f)
   {
     invert = TRUE;
     arg1 = -M_PI_F - arg1;

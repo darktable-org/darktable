@@ -137,7 +137,7 @@ static inline void _blendif_lch(const float *const restrict pixels,
                                 const float *const restrict parameters,
                                 const unsigned int *const restrict invert_mask)
 {
-  const float c_scale = 1.0f / (128.0f * sqrtf(2.0f));
+  const float c_scale = 1.0f / (128.0f * M_SQRT2_F);
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_LAB_CH)
   {
     dt_aligned_pixel_t LCH;
@@ -1359,7 +1359,7 @@ static void _display_channel(const float *const restrict a,
     }
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
     {
-      const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_out]));
+      const float factor = 1.0f / (128.0f * M_SQRT2_F * exp2f(boost_factors[DEVELOP_BLENDIF_C_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         dt_aligned_pixel_t LCH;

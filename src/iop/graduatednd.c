@@ -274,23 +274,22 @@ static int _set_grad_from_points(
   // be careful to the gnd direction
 
   const float diff_x = pts[2] - pts[0];
-  const float MPI2 = M_PI_F / 2.0f;
 
   if(diff_x > eps)
   {
-    if(v >=  MPI2) v -= M_PI_F;
-    if(v <  -MPI2) v += M_PI_F;
+    if(v >=  M_PI_2f) v -= M_PI_F;
+    if(v <  -M_PI_2f) v += M_PI_F;
   }
   else if(diff_x < -eps)
   {
-    if(v <  MPI2 && v >= 0) v -= M_PI_F;
-    if(v > -MPI2 && v < 0)  v += M_PI_F;
+    if(v <  M_PI_2f && v >= 0) v -= M_PI_F;
+    if(v > -M_PI_2f && v < 0)  v += M_PI_F;
   }
   else // let's pretend that we are at PI/2
   {
     const float diff_y = pts[3] - pts[1];
-    if(diff_y <= 0.0f) v = -MPI2;
-    else               v = MPI2;
+    if(diff_y <= 0.0f) v = -M_PI_2f;
+    else               v = M_PI_2f;
   }
 
   *rotation = rad2degf(-v);

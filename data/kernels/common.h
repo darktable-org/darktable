@@ -31,10 +31,26 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 
 
 #ifndef M_PI_F
-#define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
+#define M_PI_F 3.14159265358979323846f
 #endif
 
+#ifndef M_LN2f
 #define M_LN2f 0.69314718055994530942f
+#endif
+
+#ifndef M_PI_2f
+#define M_PI_2f 1.57079632679489661923f
+#endif
+
+#ifndef M_PI_4f
+#define M_PI_4f 0.78539816339744830962f
+#endif
+
+#ifndef M_SQRT2_F
+#define M_SQRT2_F 1.41421356237309504880f
+#endif
+
+#define DT_2PI_F 6.28318530717958647693f
 
 #define LUT_ELEM 512 // gamut LUT number of elements:
 
@@ -55,6 +71,11 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_sin(A) native_sin(A)
   #define dtcl_cos(A) native_cos(A)
 
+  static inline float dt_fast_hypot(const float x, const float y)
+  {
+    return native_sqrt(x * x + y * y);
+  }
+
   // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
   // on compatible platforms
   #pragma OPENCL FP_CONTRACT ON
@@ -70,6 +91,11 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
   #define dtcl_sin(A) sin(A)
   #define dtcl_cos(A) cos(A)
 
+  static inline float dt_fast_hypot(const float x, const float y)
+  {
+    return hypot(x, y);
+  }
+
   #pragma OPENCL FP_CONTRACT OFF
 #endif
 
@@ -81,6 +107,15 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
     c = (t2 - m) - t1;              \
     m = t2;                         \
   }
+
+static inline float scharr_gradient(global float *in, const int k, const int w)
+{
+  const float gx = 47.0f / 255.0f * (in[k-w-1] - in[k-w+1] + in[k+w-1] - in[k+w+1])
+                + 162.0f / 255.0f * (in[k-1]   - in[k+1]);
+  const float gy = 47.0f / 255.0f * (in[k-w-1] - in[k+w-1] + in[k-w+1] - in[k+w+1])
+                + 162.0f / 255.0f * (in[k-w]   - in[k+w]);
+  return dt_fast_hypot(gx, gy);
+}
 
 static inline int
 FC(const int row, const int col, const unsigned int filters)
@@ -141,12 +176,6 @@ atomic_add_f(
   }
   while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
 #endif
-}
-
-static inline float
-dt_fast_hypot(const float x, const float y)
-{
-  return dtcl_sqrt(x * x + y * y);
 }
 
 /* we use this exp approximation to maintain full identity with cpu path */

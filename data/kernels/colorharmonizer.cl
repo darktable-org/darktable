@@ -99,7 +99,7 @@ kernel void colorharmonizer_map(read_only  image2d_t  in,
   float4 xyY = dt_D65_XYZ_to_xyY(XYZ_D65);
   float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
 
-  const float hue = (JCH.z + M_PI_F) / (2.0f * M_PI_F);
+  const float hue = (JCH.z + M_PI_F) / DT_2PI_F;
 
   const int idx = y * width + x;
   jch_out[idx] = (float4)(JCH.x, JCH.y, hue, pix_in.w);
@@ -146,7 +146,7 @@ kernel void colorharmonizer_apply(write_only image2d_t  out,
   float4 JCH;
   JCH.x = J;
   JCH.y = fmax(chroma * (1.0f + corr.y * chroma_weight), 0.0f);
-  JCH.z = wrap_hue(hue + corr.x * effect_strength * chroma_weight) * 2.0f * M_PI_F - M_PI_F;
+  JCH.z = wrap_hue(hue + corr.x * effect_strength * chroma_weight) * DT_2PI_F - M_PI_F;
 
   float4 xyY = dt_UCS_JCH_to_xyY(JCH, L_white);
   float4 XYZ_D65 = dt_xyY_to_XYZ(xyY);

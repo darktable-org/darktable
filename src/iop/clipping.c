@@ -1488,7 +1488,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
         p->ratio_d = 2445;
         p->ratio_n = 2032;
       }
-      else if(fabsf(whratio - sqrtf(2.0f)) < prec)
+      else if(fabsf(whratio - M_SQRT2_F) < prec)
       {
         p->ratio_d = 14142136;
         p->ratio_n = 10000000;
@@ -3137,12 +3137,12 @@ int button_released(dt_iop_module_t *self,
     }
 
     float angle = atan2f(dy, dx);
-    if(!(angle >= -M_PI_F / 2.f && angle <= M_PI_F / 2.f)) angle = 0.0f;
+    if(!(angle >= -M_PI_2f && angle <= M_PI_2f)) angle = 0.0f;
     float close = angle;
-    if(close > M_PI_F / 4.f)
-      close = M_PI_F / 2.f - close;
-    else if(close < -M_PI_F / 4.f)
-      close = -M_PI_F / 2.f - close;
+    if(close > M_PI_4f)
+      close = M_PI_2f - close;
+    else if(close < -M_PI_4f)
+      close = -M_PI_2f - close;
     else
       close = -close;
 
