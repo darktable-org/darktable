@@ -164,11 +164,18 @@ static int _is_time_property(const int property);
 
 static void _populate_collect_combo(GtkWidget *w);
 
-static gint _sort_filmroll_rows(gconstpointer a, gconstpointer b)
+static gint _sort_filmroll_by_display_name(gconstpointer a, gconstpointer b)
 {
   const filmroll_row_t *ra = a;
   const filmroll_row_t *rb = b;
   return g_ascii_strcasecmp(ra->folder, rb->folder);
+}
+
+static gint _sort_filmroll_rows(gconstpointer a, gconstpointer b)
+{
+  const filmroll_row_t *ra = a;
+  const filmroll_row_t *rb = b;
+  return g_ascii_strcasecmp(ra->value, rb->value);
 }
 
 static gint _sort_filmroll_by_id(gconstpointer a, gconstpointer b)
@@ -2431,14 +2438,20 @@ static void _list_view(dt_lib_collect_rule_t *dr)
       {
         const gboolean sort_by_import_time =
           dt_conf_is_equal("plugins/collect/filmroll_sort", "import time");
+        const gboolean sort_by_folder_name = 
+          dt_conf_is_equal("plugins/collect/filmroll_sort", "folder name");
       
         if(sort_by_import_time)
         {      
           rows = g_list_sort(rows, _sort_filmroll_by_id);
         }
-        else
+        else if(sort_by_folder_name)
         {
           rows = g_list_sort(rows, _sort_filmroll_rows);
+        }
+        else
+        {
+          rows = g_list_sort(rows, _sort_filmroll_by_display_name);
         }
       
         if(sort_descending)
