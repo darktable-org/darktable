@@ -1873,23 +1873,25 @@ int dt_init(int argc,
   heif_init(NULL);
 #endif
 
+  dt_splash_screen_set_progress(_("initializing WB presets"));
+  dt_wb_presets_init(NULL);
+
+  // Do locale-sensitive init BEFORE starting any background worker jobs
+  dt_splash_screen_set_progress(_("loading noise profiles"));
+  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
+
   dt_splash_screen_set_progress(_("starting OpenCL"));
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
+  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
+  dt_points_init(darktable.points, dt_get_num_threads());
+
+  // Only then kick off the OpenCL background job
   if(init_gui)
     dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
-  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
-  dt_points_init(darktable.points, dt_get_num_threads());
-
-  dt_wb_presets_init(NULL);
-
-  dt_splash_screen_set_progress(_("loading noise profiles"));
-  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
-
-  // must come before mipmap_cache, because that one will need to access
-  // image dimensions stored in here:
+  // must come before mipmap_cache, because that one will need to access image dimensions stored in here:
   dt_image_cache_init();
 
   dt_mipmap_cache_init();
