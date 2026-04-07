@@ -800,6 +800,7 @@
       <enum>
         <option>import time</option>
         <option>folder name</option>
+        <option>display name</option>
       </enum>
     </type>
     <default>import time</default>
