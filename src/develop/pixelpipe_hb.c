@@ -3333,7 +3333,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
   dt_print_pipe(DT_DEBUG_PIPE,
                 "get dimensions",
                 pipe, NULL, DT_DEVICE_NONE, &roi_in, NULL, "ID=%i", pipe->image.id);
-  dt_iop_roi_t roi_out;
+  dt_iop_roi_t roi_out = roi_in;
   GList *modules = pipe->iop;
   GList *pieces = pipe->nodes;
   while(modules)
