@@ -312,10 +312,18 @@ static void _blur_vertical_1ch(float *const __restrict__ buf,
                                float *const __restrict__ scanlines,
                                const size_t padded_size)
 {
+  (void)scanlines;
   DT_OMP_FOR()
   for(size_t x = 0; x < width; x += MAX_VECT)
   {
-    float *const __restrict__ scratch = (float*)dt_get_perthread(scanlines,padded_size);
+    // Avoid dt_get_perthread() here: under ASan/libomp we can observe worker
+    // thread ids that step past the precomputed pool size, which makes the
+    // shared scratch pool alias unrelated heap memory. A local scratch buffer
+    // per OpenMP iteration keeps the vertical pass isolated.
+    float *const __restrict__ scratch = dt_alloc_align_float(padded_size);
+    if(!scratch)
+      continue;
+
     if(x + MAX_VECT <= width)
     {
       _blur_vertical<MAX_VECT,compensated>(buf + x, height, width, radius, scratch);
@@ -329,6 +337,7 @@ static void _blur_vertical_1ch(float *const __restrict__ buf,
       for( ; col < width; col++)
 	_blur_vertical<1,compensated>(buf + col, height, width, radius, scratch);
     }
+    dt_free_align(scratch);
   }
   return;
 }
@@ -377,8 +386,14 @@ static void _box_mean(float *const buf,
     DT_OMP_FOR()
     for(size_t row = 0; row < height; row++)
     {
-      float *const __restrict__ scratch = (float*)dt_get_perthread(scanlines,padded_size);
+      // Avoid dt_get_perthread() here for the same reason as the vertical
+      // pass below: with ASan/libomp the worker identity can outrun the
+      // scratch-pool sizing assumptions and overrun the shared buffer.
+      float *const __restrict__ scratch = dt_alloc_align_float(padded_size);
+      if(!scratch)
+        continue;
       _blur_horizontal<N,compensated>(buf + row * N * width, width, radius, scratch);
+      dt_free_align(scratch);
     }
     // we need to multiply width by N to get the correct stride for the vertical blur
     _blur_vertical_1ch<compensated>(buf, height, N*width, radius, scanlines, padded_size);

@@ -690,6 +690,15 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
   if(gui->guipoints_count <= 0)
     return;
 
+  // ENCODE_READY is published before the background thread finishes decoder
+  // warmup. Wait here so the first real decode can't race the warmup on the
+  // shared segmentation context.
+  if(d->encode_thread)
+  {
+    g_thread_join(d->encode_thread);
+    d->encode_thread = NULL;
+  }
+
   dt_gui_cursor_set_busy();
 
   const float *gp = dt_masks_dynbuf_buffer(gui->guipoints);

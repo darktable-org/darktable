@@ -117,11 +117,13 @@ static void _guided_filter_tiling(color_image imgg,
   color_image mean = _new_color_image(width, height, 4);
   color_image variance = _new_color_image(width, height, 9);
   const size_t img_dimen = dt_round_size(mean.width, 16);
-  size_t img_bak_sz;
-  float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
-  DT_OMP_FOR(shared(img, imgg, mean, variance, img_bak) dt_omp_sharedconst(source))
+  DT_OMP_FOR(shared(img, imgg, mean, variance) firstprivate(img_dimen) dt_omp_sharedconst(source))
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
+    float *const restrict scratch = dt_alloc_align_float(9 * img_dimen);
+    if(!scratch)
+      continue;
+
     int j = j_imgg - source.lower;
     float *const restrict meanpx = mean.data + 4 * j * mean.width;
     float *const restrict varpx = variance.data + 9 * j * variance.width;
@@ -146,12 +148,14 @@ static void _guided_filter_tiling(color_image imgg,
       varpx[9*i+VAR_GB] = pixel[1] * pixel[2];
       varpx[9*i+VAR_BB] = pixel[2] * pixel[2];
     }
-    // apply horizontal pass of box mean filter while the cache is still hot
-    float *const restrict scratch = dt_get_perthread(img_bak, img_bak_sz);
+    // apply horizontal pass of box mean filter while the cache is still hot.
+    // Use a row-local scratch buffer instead of dt_alloc_perthread_float():
+    // ASan shows OpenMP occasionally uses a thread index beyond the pool size
+    // computed for that helper, which overruns the shared scratch pool here.
     dt_box_mean_horizontal(meanpx, mean.width, 4|BOXFILTER_KAHAN_SUM, w, scratch);
     dt_box_mean_horizontal(varpx, variance.width, 9|BOXFILTER_KAHAN_SUM, w, scratch);
+    dt_free_align(scratch);
   }
-  dt_free_align(img_bak);
   dt_box_mean_vertical(mean.data, mean.height, mean.width, 4|BOXFILTER_KAHAN_SUM, w);
   dt_box_mean_vertical(variance.data, variance.height, variance.width, 9|BOXFILTER_KAHAN_SUM, w);
   // we will recycle memory of 'mean' for the new coefficient arrays a_? and b to reduce memory foot print
