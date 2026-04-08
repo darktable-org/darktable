@@ -533,7 +533,7 @@ static uint16_t _float_to_half(float f)
     const int shift = 1 - new_exp;
     if(shift > 24)
       return (uint16_t)(sign << 15);       // too small even for denormal
-    const uint32_t full_mant = (1 << 23) | mant; // restore implicit leading 1
+    const uint64_t full_mant = (1 << 23) | mant; // restore implicit leading 1
     const uint16_t half_mant = (uint16_t)(full_mant >> (13 + shift));
     return (uint16_t)((sign << 15) | half_mant);
   }
