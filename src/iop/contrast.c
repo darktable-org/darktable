@@ -207,6 +207,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
+/*
 static void hash_set_get(const dt_hash_t *hash_in,
                          dt_hash_t *hash_out,
                          dt_pthread_mutex_t *lock)
@@ -215,6 +216,7 @@ static void hash_set_get(const dt_hash_t *hash_in,
   *hash_out = *hash_in;
   dt_pthread_mutex_unlock(lock);
 }
+*/
 
 
 static void invalidate_luminance_cache(dt_iop_module_t *const self)
@@ -355,7 +357,7 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
 
 
 // Main processing function
-
+/*
 __DT_CLONE_TARGETS__
 static void spatial_contrast_process(dt_iop_module_t *self,
                                        dt_dev_pixelpipe_iop_t *piece,
@@ -524,6 +526,7 @@ static void spatial_contrast_process(dt_iop_module_t *self,
 
   if(!cached) { dt_free_align(luminance_pixel); dt_free_align(luminance_smoothed_local); }
 }
+*/
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -543,7 +546,47 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  spatial_contrast_process(self, piece, ivoid, ovoid, roi_in, roi_out);
+  //spatial_contrast_process(self, piece, ivoid, ovoid, roi_in, roi_out);
+
+  const dt_iop_contrast_data_t *const d = piece->data;
+  dt_iop_contrast_gui_data_t *const g = self->gui_data;
+
+  const float *const restrict in = (float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+  float *restrict luminance_pixel = NULL;
+  float *restrict luminance_smoothed_local = NULL;
+
+  const size_t width = roi_in->width;
+  const size_t height = roi_in->height;
+  const size_t num_elem = width * height;
+
+  luminance_pixel = dt_alloc_align_float(num_elem);
+  luminance_smoothed_local = dt_alloc_align_float(num_elem);
+
+  if(!luminance_pixel || !luminance_smoothed_local)
+  {
+    dt_control_log(_("local contrast failed to allocate memory, check your RAM settings"));
+    dt_free_align(luminance_pixel);
+    dt_free_align(luminance_smoothed_local);
+    return;
+  }
+
+  compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
+  compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, d->feathering * d->feathering * fmaxf(d->f_mult_local, 0.5f));
+  
+  // Display output
+  if(g && g->mask_display != DT_LC_MASK_OFF)
+  {
+    display_local_mask(luminance_pixel, luminance_smoothed_local, out, width, height);
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+  }
+  else
+  {
+    apply_local_contrast(in, luminance_pixel, luminance_smoothed_local, out, roi_in, roi_out, d);
+  }
+
+  dt_free_align(luminance_pixel);
+  dt_free_align(luminance_smoothed_local);
 }
 
 
