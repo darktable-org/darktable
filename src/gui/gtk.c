@@ -2245,6 +2245,71 @@ void dt_ui_scrollbars_show(dt_ui_t *ui,
   }
 }
 
+static void _handle_panel_widths(const dt_ui_panel_t p)
+{
+  if(!g_atomic_int_get(&darktable.gui_running))
+    // we don't want to change panels while the gui isn't fully initialized
+    return;
+
+  if(p != DT_UI_PANEL_LEFT && p != DT_UI_PANEL_RIGHT)
+    return;
+
+  const dt_ui_panel_t other_panel = p == DT_UI_PANEL_LEFT? DT_UI_PANEL_RIGHT : DT_UI_PANEL_LEFT;
+
+  if(!gtk_widget_get_visible(darktable.gui->ui->panels[other_panel]))
+    // the other side panel is hidden, so nothing to do
+    return;
+
+  // get the width of the application window
+  int app_window_width = 0;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  gtk_window_get_size(GTK_WINDOW(main_window), &app_window_width, NULL);
+
+  // calculate total used width 
+  int used_w = 0;
+  used_w += gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
+
+  // width of left and right border
+  used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.left_border);
+  used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.right_border);
+
+  // calculate width of center column
+  const int center_col_w = app_window_width - used_w;
+
+  // the required width of the panel to be shown
+  const int required_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[p]);
+
+  // check if the center column is allowed to shrink by required_width
+  const int min_center_width =
+    darktable.gui->dpi_factor * dt_conf_get_int("min_center_width");
+
+  if(center_col_w - required_width < min_center_width)
+  {
+    // the center column gives not enough room for the panel, so we need to shrink
+    // at least one of the side panels
+    int shrink_width = -1 * (center_col_w - required_width - min_center_width);
+
+    const int min_panel_width =
+      darktable.gui->dpi_factor * dt_conf_get_int("min_panel_width");
+    const int other_panel_width = gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
+
+    // first shrink the other panel, respecting the min_panel_width
+    if(other_panel_width > min_panel_width) {
+      const int shrink = MIN(other_panel_width - min_panel_width, shrink_width);
+      dt_ui_panel_set_size(darktable.gui->ui, other_panel, other_panel_width - shrink);
+      shrink_width -= shrink;
+    }
+
+    if(shrink_width > 0) {
+      // still some size left, try to shrink this panel
+      if(required_width > min_panel_width) {
+        const int shrink = MIN(required_width - min_panel_width, shrink_width);
+        dt_ui_panel_set_size(darktable.gui->ui, p, required_width - shrink);
+      }
+    }
+  }
+}
+
 void dt_ui_panel_show(const dt_ui_t *ui,
                       const dt_ui_panel_t p,
                       const gboolean show,
@@ -2261,6 +2326,7 @@ void dt_ui_panel_show(const dt_ui_t *ui,
   {
     gtk_widget_show(ui->panels[p]);
     if(over_panel) gtk_widget_show(over_panel);
+    _handle_panel_widths(p);
   }
   else
   {
@@ -2612,6 +2678,9 @@ static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
   return w;
 }
 
+static int panel_drag_start_size = 0;
+static gdouble panel_drag_start_x = 0.0;
+
 static gboolean _panel_handle_button_callback(GtkWidget *w,
                                               const GdkEventButton *e,
                                               gpointer user_data)
@@ -2620,8 +2689,14 @@ static gboolean _panel_handle_button_callback(GtkWidget *w,
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
-    darktable.gui->widgets.panel_handle_x = e->x;
-    darktable.gui->widgets.panel_handle_y = e->y;
+      GtkWidget *widget = (GtkWidget *)user_data;
+
+      panel_drag_start_x = e->x_root;
+
+      if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
+        panel_drag_start_size = gtk_widget_get_allocated_height(widget);
+      else
+        panel_drag_start_size = gtk_widget_get_allocated_width(widget);
 
       darktable.gui->widgets.panel_handle_dragging = TRUE;
     }
@@ -2643,6 +2718,7 @@ static gboolean _panel_handle_button_callback(GtkWidget *w,
   }
   return TRUE;
 }
+
 static gboolean _panel_handle_cursor_callback(GtkWidget *w,
                                               const GdkEventCrossing *e,
                                               gpointer user_data)
@@ -2661,6 +2737,40 @@ static gboolean _panel_handle_cursor_callback(GtkWidget *w,
                              : "default");
   return TRUE;
 }
+
+static void _panel_set_side_panel_width(GtkWidget *widget, const dt_ui_panel_t panel, const gdouble delta_x)
+{
+  // get the width of the application window
+  int app_window_w = 0;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  gtk_window_get_size(GTK_WINDOW(main_window), &app_window_w, NULL);
+
+  const int min_center_w =
+    darktable.gui->dpi_factor * dt_conf_get_int("min_center_width");
+
+  int max_w =
+    darktable.gui->dpi_factor * dt_conf_get_int("max_panel_width");
+  int used_w = min_center_w;
+
+  // Constraint: window width - center min - other side panel (if visible) - borders
+  const dt_ui_panel_t other_panel = panel == DT_UI_PANEL_LEFT? DT_UI_PANEL_RIGHT : DT_UI_PANEL_LEFT;
+  if(gtk_widget_get_visible(darktable.gui->widgets.left_border))
+    used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.left_border);
+  if(gtk_widget_get_visible(darktable.gui->widgets.right_border))
+    used_w += gtk_widget_get_allocated_width(darktable.gui->widgets.right_border);
+  if(gtk_widget_get_visible(darktable.gui->ui->panels[other_panel]))
+    used_w += gtk_widget_get_allocated_width(darktable.gui->ui->panels[other_panel]);
+
+  if(app_window_w - used_w < max_w)
+    max_w = app_window_w - used_w;
+
+  int sx = panel_drag_start_size;
+  sx = CLAMP((int)(sx + delta_x),
+             darktable.gui->dpi_factor * dt_conf_get_int("min_panel_width"),
+             max_w);
+  dt_ui_panel_set_size(darktable.gui->ui, panel, sx);
+}
+
 static gboolean _panel_handle_motion_callback(GtkWidget *w,
                                               const GdkEventMotion *e,
                                               const gpointer user_data)
@@ -2668,28 +2778,23 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w,
   GtkWidget *widget = (GtkWidget *)user_data;
   if(darktable.gui->widgets.panel_handle_dragging)
   {
-    gint sx = gtk_widget_get_allocated_width(widget);
-    const gint sy = gtk_widget_get_allocated_height(widget);
+    const gdouble delta_x = e->x_root - panel_drag_start_x;
 
     if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
     {
-      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - e->x),
-                 dt_conf_get_int("min_panel_width"),
-                 dt_conf_get_int("max_panel_width"));
-      dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_RIGHT, sx);
+      _panel_set_side_panel_width(widget, DT_UI_PANEL_RIGHT, -delta_x);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-left") == 0)
     {
-      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + e->x),
-                 dt_conf_get_int("min_panel_width"),
-                 dt_conf_get_int("max_panel_width"));
-      dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_LEFT, sx);
+      _panel_set_side_panel_width(widget, DT_UI_PANEL_LEFT, delta_x);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
     {
+      const gint sy = gtk_widget_get_allocated_height(widget);
+      int sx = panel_drag_start_size;
       sx = CLAMP((sy + darktable.gui->widgets.panel_handle_y - e->y),
-                 dt_conf_get_int("min_panel_height"),
-                 dt_conf_get_int("max_panel_height"));
+                 darktable.gui->dpi_factor * dt_conf_get_int("min_panel_height"),
+                 darktable.gui->dpi_factor * dt_conf_get_int("max_panel_height"));
       dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
       gtk_widget_set_size_request(widget, -1, sx);
     }
@@ -2726,9 +2831,9 @@ static void _ui_init_panel_left(dt_ui_t *ui,
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-left");
 
   g_signal_connect(G_OBJECT(handle), "button-press-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "button-release-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "motion-notify-event",
                    G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event",
@@ -2776,9 +2881,9 @@ static void _ui_init_panel_right(dt_ui_t *ui,
                         | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-right");
   g_signal_connect(G_OBJECT(handle), "button-press-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "button-release-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "motion-notify-event",
                    G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event",
@@ -2863,9 +2968,9 @@ static void _ui_init_panel_bottom(dt_ui_t *ui,
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-bottom");
 
   g_signal_connect(G_OBJECT(handle), "button-press-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "button-release-event",
-                   G_CALLBACK(_panel_handle_button_callback), handle);
+                   G_CALLBACK(_panel_handle_button_callback), widget);
   g_signal_connect(G_OBJECT(handle), "motion-notify-event",
                    G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event",
