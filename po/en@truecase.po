@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-04 17:05+0200\n"
-"PO-Revision-Date: 2026-04-04 19:57+0300\n"
+"POT-Creation-Date: 2026-04-05 19:29+0200\n"
+"PO-Revision-Date: 2026-04-09 13:10+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -2994,7 +2994,7 @@ msgstr "Display P3"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:311
 #: ../src/common/colorspaces.c:1465 ../src/common/colorspaces.c:1746
-#: ../src/libs/print_settings.c:1427
+#: ../src/libs/print_settings.c:1442
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -3003,7 +3003,7 @@ msgstr "Adobe RGB (compatible)"
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:312
 #: ../src/common/colorspaces.c:1454 ../src/common/colorspaces.c:1744
-#: ../src/libs/print_settings.c:1420
+#: ../src/libs/print_settings.c:1435
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -3129,8 +3129,8 @@ msgstr "Preserve colors"
 #: ../src/iop/retouch.c:499 ../src/libs/collect.c:2212
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
-#: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1158
-#: ../src/libs/print_settings.c:1176 ../src/libs/scopes/vectorscope.c:62
+#: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1173
+#: ../src/libs/print_settings.c:1191 ../src/libs/scopes/vectorscope.c:62
 msgid "none"
 msgstr "None"
 
@@ -3317,7 +3317,7 @@ msgstr "Aspect ratio"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:142
 #: ../build/lib/darktable/plugins/introspection_borders.c:283
-#: ../src/iop/flip.c:73 ../src/libs/print_settings.c:2602
+#: ../src/iop/flip.c:73 ../src/libs/print_settings.c:2617
 msgid "orientation"
 msgstr "Orientation"
 
@@ -3370,19 +3370,19 @@ msgstr "Auto"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:350
 #: ../src/imageio/format/pdf.c:621 ../src/libs/filtering.c:321
-#: ../src/libs/filters/ratio.c:120 ../src/libs/print_settings.c:2604
+#: ../src/libs/filters/ratio.c:120 ../src/libs/print_settings.c:2619
 msgid "portrait"
 msgstr "Portrait"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:351
 #: ../src/imageio/format/pdf.c:621 ../src/libs/filtering.c:317
-#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2604
+#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2619
 msgid "landscape"
 msgstr "Landscape"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:356
 #: ../src/iop/relight.c:264 ../src/libs/export.c:1516
-#: ../src/libs/metadata_view.c:163 ../src/libs/print_settings.c:2622
+#: ../src/libs/metadata_view.c:163 ../src/libs/print_settings.c:2637
 msgid "width"
 msgstr "Width"
 
@@ -3390,7 +3390,7 @@ msgstr "Width"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:306
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
 #: ../src/libs/export.c:1522 ../src/libs/metadata_view.c:164
-#: ../src/libs/print_settings.c:2626
+#: ../src/libs/print_settings.c:2641
 msgid "height"
 msgstr "Height"
 
@@ -5099,7 +5099,7 @@ msgstr "Corrections"
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/exposure.c:1250 ../src/iop/levels.c:688
 #: ../src/iop/profile_gamma.c:649 ../src/libs/export.c:1645
-#: ../src/libs/image.c:646 ../src/libs/print_settings.c:2941
+#: ../src/libs/image.c:646 ../src/libs/print_settings.c:2956
 #: ../src/libs/styles.c:910 ../src/views/darkroom.c:2976
 msgid "mode"
 msgstr "Mode"
@@ -7014,12 +7014,12 @@ msgstr "Failed to create temporary file for printing options"
 msgid "printing on `%s' cancelled"
 msgstr "Printing on `%s' cancelled"
 
-#: ../src/common/cups_print.c:602
+#: ../src/common/cups_print.c:626
 #, c-format
 msgid "error while printing `%s' on `%s'"
 msgstr "Error while printing `%s' on `%s'"
 
-#: ../src/common/cups_print.c:604
+#: ../src/common/cups_print.c:628
 #, c-format
 msgid "printing `%s' on `%s'"
 msgstr "Printing `%s' on `%s'"
@@ -14373,7 +14373,7 @@ msgid "slideshow"
 msgstr "Slideshow"
 
 #. Print button
-#: ../src/gui/gtk.c:1600 ../src/libs/print_settings.c:2954
+#: ../src/gui/gtk.c:1600 ../src/libs/print_settings.c:2969
 msgid "print"
 msgstr "Print"
 
@@ -15986,7 +15986,7 @@ msgstr "Enter the title of the PDF"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:602 ../src/libs/print_settings.c:2595
+#: ../src/imageio/format/pdf.c:602 ../src/libs/print_settings.c:2610
 msgid "paper size"
 msgstr "Paper size"
 
@@ -20616,26 +20616,26 @@ msgid "rendering intent"
 msgstr "Rendering intent"
 
 #: ../src/iop/colorout.c:840 ../src/libs/export.c:1636
-#: ../src/libs/print_settings.c:2560 ../src/libs/print_settings.c:2909
+#: ../src/libs/print_settings.c:2575 ../src/libs/print_settings.c:2924
 #: ../src/views/darkroom.c:3140 ../src/views/lighttable.c:1346
 msgid "perceptual"
 msgstr "Perceptual"
 
 #: ../src/iop/colorout.c:841 ../src/libs/export.c:1637
-#: ../src/libs/print_settings.c:2561 ../src/libs/print_settings.c:2910
+#: ../src/libs/print_settings.c:2576 ../src/libs/print_settings.c:2925
 #: ../src/views/darkroom.c:3141 ../src/views/lighttable.c:1347
 msgid "relative colorimetric"
 msgstr "Relative colorimetric"
 
 #: ../src/iop/colorout.c:842 ../src/libs/export.c:1638
-#: ../src/libs/print_settings.c:2562 ../src/libs/print_settings.c:2911
+#: ../src/libs/print_settings.c:2577 ../src/libs/print_settings.c:2926
 #: ../src/views/darkroom.c:3142 ../src/views/lighttable.c:1348
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturation"
 
 #: ../src/iop/colorout.c:843 ../src/libs/export.c:1639
-#: ../src/libs/print_settings.c:2563 ../src/libs/print_settings.c:2912
+#: ../src/libs/print_settings.c:2578 ../src/libs/print_settings.c:2927
 #: ../src/views/darkroom.c:3143 ../src/views/lighttable.c:1349
 msgid "absolute colorimetric"
 msgstr "Absolute colorimetric"
@@ -21157,7 +21157,7 @@ msgid "variance blue: "
 msgstr "Variance blue: "
 
 #: ../src/iop/denoiseprofile.c:3689 ../src/libs/export.c:1599
-#: ../src/libs/print_settings.c:2503 ../src/libs/print_settings.c:2859
+#: ../src/libs/print_settings.c:2518 ../src/libs/print_settings.c:2874
 msgid "profile"
 msgstr "Profile"
 
@@ -22061,7 +22061,7 @@ msgstr ""
 
 #. Add export intent combo
 #: ../src/iop/filmic.c:1566 ../src/libs/export.c:1617
-#: ../src/libs/print_settings.c:2558 ../src/libs/print_settings.c:2905
+#: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2920
 #: ../src/views/darkroom.c:3148 ../src/views/lighttable.c:1353
 msgid "intent"
 msgstr "Intent"
@@ -24092,7 +24092,7 @@ msgid "overlay dimension to scale"
 msgstr "Overlay dimension to scale"
 
 #: ../src/iop/overlay.c:1148 ../src/iop/watermark.c:1507
-#: ../src/libs/print_settings.c:2760
+#: ../src/libs/print_settings.c:2775
 msgid "alignment"
 msgstr "Alignment"
 
@@ -26243,7 +26243,7 @@ msgstr "March"
 msgid "April"
 msgstr "April"
 
-#: ../src/libs/collect.h:36 ../src/libs/collect.h:52
+#: ../src/libs/collect.h:36
 msgid "May"
 msgstr "May"
 
@@ -26290,6 +26290,11 @@ msgstr "Mar"
 #: ../src/libs/collect.h:51
 msgid "Apr"
 msgstr "Apr"
+
+#: ../src/libs/collect.h:52
+msgctxt "short_month_name"
+msgid "May"
+msgstr "May"
 
 #: ../src/libs/collect.h:53
 msgid "Jun"
@@ -26585,7 +26590,7 @@ msgstr ""
 "Style to be applied on export:\n"
 "<b>%s</b>"
 
-#: ../src/libs/export.c:1224 ../src/libs/print_settings.c:1235
+#: ../src/libs/export.c:1224 ../src/libs/print_settings.c:1250
 #: ../src/views/darkroom.c:1602
 msgid "no styles have been created yet"
 msgstr "No styles have been created yet"
@@ -26709,11 +26714,11 @@ msgid "store masks as layers in exported images. only works for some formats."
 msgstr "Store masks as layers in exported images. Only works for some formats."
 
 #: ../src/libs/export.c:1600 ../src/libs/export.c:1635
-#: ../src/libs/print_settings.c:2862 ../src/libs/print_settings.c:2908
+#: ../src/libs/print_settings.c:2877 ../src/libs/print_settings.c:2923
 msgid "image settings"
 msgstr "Image settings"
 
-#: ../src/libs/export.c:1610 ../src/libs/print_settings.c:2896
+#: ../src/libs/export.c:1610 ../src/libs/print_settings.c:2911
 msgid "output ICC profiles"
 msgstr "output ICC profiles"
 
@@ -26755,17 +26760,17 @@ msgstr ""
 "destination medium and do nothing else. Mainly used when proofing colors.\n"
 "(not suited for photography)."
 
-#: ../src/libs/export.c:1646 ../src/libs/print_settings.c:2942
+#: ../src/libs/export.c:1646 ../src/libs/print_settings.c:2957
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "Whether the style items are appended to the history or replacing the history"
 
-#: ../src/libs/export.c:1649 ../src/libs/print_settings.c:2944
+#: ../src/libs/export.c:1649 ../src/libs/print_settings.c:2959
 msgid "replace history"
 msgstr "Replace history"
 
-#: ../src/libs/export.c:1649 ../src/libs/print_settings.c:2944
+#: ../src/libs/export.c:1649 ../src/libs/print_settings.c:2959
 msgid "append history"
 msgstr "Append history"
 
@@ -26777,7 +26782,7 @@ msgstr "Select style to be applied on export"
 msgid "temporary style to use while exporting"
 msgstr "Temporary style to use while exporting"
 
-#: ../src/libs/export.c:1660 ../src/libs/print_settings.c:2925
+#: ../src/libs/export.c:1660 ../src/libs/print_settings.c:2940
 msgid "style"
 msgstr "Style"
 
@@ -29334,7 +29339,7 @@ msgid "print settings"
 msgstr "Print settings"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:368 ../src/libs/print_settings.c:763
+#: ../src/libs/print_settings.c:368 ../src/libs/print_settings.c:771
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "Processing `%s' for `%s'"
@@ -29354,38 +29359,38 @@ msgstr "Error getting output profile for image %d"
 msgid "cannot apply printer profile `%s'"
 msgstr "Cannot apply printer profile `%s'"
 
-#: ../src/libs/print_settings.c:586
+#: ../src/libs/print_settings.c:594
 msgid "failed to create temporary PDF for printing"
 msgstr "Failed to create temporary PDF for printing"
 
-#: ../src/libs/print_settings.c:632
+#: ../src/libs/print_settings.c:640
 msgid "maximum image per page reached"
 msgstr "Maximum image per page reached"
 
-#: ../src/libs/print_settings.c:717
+#: ../src/libs/print_settings.c:725
 msgid "cannot print until a picture is selected"
 msgstr "Cannot print until a picture is selected"
 
-#: ../src/libs/print_settings.c:722
+#: ../src/libs/print_settings.c:730
 msgid "cannot print until a printer is selected"
 msgstr "Cannot print until a printer is selected"
 
-#: ../src/libs/print_settings.c:727
+#: ../src/libs/print_settings.c:735
 msgid "cannot print until a paper is selected"
 msgstr "Cannot print until a paper is selected"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:755
+#: ../src/libs/print_settings.c:763
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "Cannot get image %d for printing"
 
-#: ../src/libs/print_settings.c:927
+#: ../src/libs/print_settings.c:942
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:1182
+#: ../src/libs/print_settings.c:1197
 #, c-format
 msgid ""
 "style to be applied on print:\n"
@@ -29394,59 +29399,59 @@ msgstr ""
 "Style to be applied on print:\n"
 "<b>%s</b>"
 
-#: ../src/libs/print_settings.c:2481
+#: ../src/libs/print_settings.c:2496
 msgctxt "section"
 msgid "printer"
 msgstr "Printer"
 
-#: ../src/libs/print_settings.c:2494 ../src/libs/print_settings.c:2503
-#: ../src/libs/print_settings.c:2558
+#: ../src/libs/print_settings.c:2509 ../src/libs/print_settings.c:2518
+#: ../src/libs/print_settings.c:2573
 msgid "printer"
 msgstr "Printer"
 
-#: ../src/libs/print_settings.c:2494
+#: ../src/libs/print_settings.c:2509
 msgid "media"
 msgstr "Media"
 
-#: ../src/libs/print_settings.c:2515
+#: ../src/libs/print_settings.c:2530
 msgid "color management in printer driver"
 msgstr "Color management in printer driver"
 
-#: ../src/libs/print_settings.c:2548
+#: ../src/libs/print_settings.c:2563
 msgid "printer ICC profiles"
 msgstr "printer ICC profiles"
 
-#: ../src/libs/print_settings.c:2569
+#: ../src/libs/print_settings.c:2584
 msgid "black point compensation"
 msgstr "Black point compensation"
 
-#: ../src/libs/print_settings.c:2582
+#: ../src/libs/print_settings.c:2597
 msgid "activate black point compensation when applying the printer profile"
 msgstr "Activate black point compensation when applying the printer profile"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2589
+#: ../src/libs/print_settings.c:2604
 msgctxt "section"
 msgid "page"
 msgstr "Page"
 
-#: ../src/libs/print_settings.c:2611
+#: ../src/libs/print_settings.c:2626
 msgid "measurement units"
 msgstr "Measurement units"
 
-#: ../src/libs/print_settings.c:2619
+#: ../src/libs/print_settings.c:2634
 msgid "image width/height"
 msgstr "Image width/height"
 
-#: ../src/libs/print_settings.c:2624
+#: ../src/libs/print_settings.c:2639
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2632
+#: ../src/libs/print_settings.c:2647
 msgid "scale factor"
 msgstr "Scale factor"
 
-#: ../src/libs/print_settings.c:2638
+#: ../src/libs/print_settings.c:2653
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -29459,46 +29464,46 @@ msgstr ""
 " a too large value may result in poor print quality"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2652
+#: ../src/libs/print_settings.c:2667
 msgid "top margin"
 msgstr "Top margin"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2656
+#: ../src/libs/print_settings.c:2671
 msgid "left margin"
 msgstr "Left margin"
 
-#: ../src/libs/print_settings.c:2659
+#: ../src/libs/print_settings.c:2674
 msgid "lock"
 msgstr "Lock"
 
-#: ../src/libs/print_settings.c:2661
+#: ../src/libs/print_settings.c:2676
 msgid "change all margins uniformly"
 msgstr "Change all margins uniformly"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2665
+#: ../src/libs/print_settings.c:2680
 msgid "right margin"
 msgstr "Right margin"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2669
+#: ../src/libs/print_settings.c:2684
 msgid "bottom margin"
 msgstr "Bottom margin"
 
-#: ../src/libs/print_settings.c:2702
+#: ../src/libs/print_settings.c:2717
 msgid "display grid"
 msgstr "Display grid"
 
-#: ../src/libs/print_settings.c:2713
+#: ../src/libs/print_settings.c:2728
 msgid "snap to grid"
 msgstr "Snap to grid"
 
-#: ../src/libs/print_settings.c:2726
+#: ../src/libs/print_settings.c:2741
 msgid "borderless mode required"
 msgstr "Borderless mode required"
 
-#: ../src/libs/print_settings.c:2729
+#: ../src/libs/print_settings.c:2744
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -29509,16 +29514,16 @@ msgstr ""
 "below the printer hardware margins"
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2736
+#: ../src/libs/print_settings.c:2751
 msgctxt "section"
 msgid "image layout"
 msgstr "Image layout"
 
-#: ../src/libs/print_settings.c:2777
+#: ../src/libs/print_settings.c:2792
 msgid "new image area"
 msgstr "New image area"
 
-#: ../src/libs/print_settings.c:2779
+#: ../src/libs/print_settings.c:2794
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -29528,57 +29533,57 @@ msgstr ""
 "Click and drag on the page to place the area\n"
 "Drag and drop image from film strip on it"
 
-#: ../src/libs/print_settings.c:2783
+#: ../src/libs/print_settings.c:2798
 msgid "delete image area"
 msgstr "Delete image area"
 
-#: ../src/libs/print_settings.c:2785
+#: ../src/libs/print_settings.c:2800
 msgid "delete the currently selected image area"
 msgstr "Delete the currently selected image area"
 
-#: ../src/libs/print_settings.c:2788
+#: ../src/libs/print_settings.c:2803
 msgid "clear layout"
 msgstr "Clear layout"
 
-#: ../src/libs/print_settings.c:2790
+#: ../src/libs/print_settings.c:2805
 msgid "remove all image areas from the page"
 msgstr "Remove all image areas from the page"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2807
+#: ../src/libs/print_settings.c:2822
 msgid "image area x origin (in current unit)"
 msgstr "Image area x origin (in current unit)"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2811
+#: ../src/libs/print_settings.c:2826
 msgid "image area y origin (in current unit)"
 msgstr "Image area y origin (in current unit)"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2822
+#: ../src/libs/print_settings.c:2837
 msgid "image area width (in current unit)"
 msgstr "Image area width (in current unit)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2826
+#: ../src/libs/print_settings.c:2841
 msgid "image area height (in current unit)"
 msgstr "Image area height (in current unit)"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2852
+#: ../src/libs/print_settings.c:2867
 msgctxt "section"
 msgid "print settings"
 msgstr "Print settings"
 
-#: ../src/libs/print_settings.c:2922
+#: ../src/libs/print_settings.c:2937
 msgid "select style to be applied on printing"
 msgstr "Select style to be applied on printing"
 
-#: ../src/libs/print_settings.c:2924
+#: ../src/libs/print_settings.c:2939
 msgid "temporary style to use while printing"
 msgstr "Temporary style to use while printing"
 
-#: ../src/libs/print_settings.c:2956
+#: ../src/libs/print_settings.c:2971
 msgid "print with current settings"
 msgstr "Print with current settings"
 
