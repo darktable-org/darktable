@@ -117,9 +117,9 @@ static gchar *_month_pretty_print(const gchar *raw_txt)
     if(mask & (1 << i))
     {
       if(txt)
-        dt_util_str_cat(&txt, ", %s", _(dt_month_short_names[i]));
+        dt_util_str_cat(&txt, ", %s", Q_(dt_month_short_names[i]));
       else
-        txt = g_strdup(_(dt_month_short_names[i]));
+        txt = g_strdup(Q_(dt_month_short_names[i]));
     }
   }
   return txt ? txt : g_strdup(_("all"));
@@ -181,7 +181,7 @@ static void _month_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 
   for(int i = 0; i < 12; i++)
   {
-    month->toggles[i] = gtk_toggle_button_new_with_label(_(dt_month_short_names[i]));
+    month->toggles[i] = gtk_toggle_button_new_with_label(Q_(dt_month_short_names[i]));
     gtk_widget_set_tooltip_text(month->toggles[i],
                                 _("filter by capture month\n"
                                   "click to toggle month selection"));
