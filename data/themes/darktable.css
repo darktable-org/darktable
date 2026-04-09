@@ -2436,6 +2436,52 @@ Details :
     margin: 0em;
 }
 
+/* check row: do not inherit #workspace label padding-top (keeps indicator vertically centered with text) */
+#workspace checkbutton label
+{
+    padding-top: 0.2em;
+}
+
+#workspace .dt_workspace_template_radio_cell
+{
+    min-width: 1.25em;
+    min-height: 1.55em;
+    padding: 0.1em 0;
+    margin: 0.06em 0.14em 0.06em 0;
+    background-color: @grey_25;
+    border: none;
+    border-radius: 5px;
+}
+
+#workspace .dt_workspace_template_radio_cell:hover
+{
+    background-color: @grey_30;
+}
+
+#workspace .dt_workspace_template_radio_cell.dt_workspace_template_radio_on
+{
+    background-color: alpha(@grey_85, 0.15);
+}
+
+#workspace .dt_workspace_template_radio
+{
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* workspace dialog: template radios are icon-only; enlarge indicator slightly */
+#workspace .dt_workspace_template_radio check,
+#workspace .dt_workspace_template_radio radio
+{
+    min-width: 1.28em;
+    min-height: 1.28em;
+}
+
 /* splash screen */
 #splashscreen
 {
