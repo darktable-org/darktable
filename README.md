@@ -494,4 +494,3 @@ Community
 ---------
 
 * [Darktable forum on pixls.us](https://discuss.pixls.us/c/software/darktable/19)
-* [Darktable on Mastodon](https://photog.social/@darktable)
