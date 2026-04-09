@@ -100,7 +100,7 @@ static void _process_linear_opposed(dt_iop_module_t *self,
   const size_t height = roi_in->height;
   const size_t mwidth  = width / 3;
   const size_t mheight = height / 3;
-  const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
+  const size_t msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
 
   const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -122,9 +122,9 @@ static void _process_linear_opposed(dt_iop_module_t *self,
     {
       gboolean anyclipped = FALSE;
       DT_OMP_FOR(reduction( | : anyclipped))
-      for(size_t row = 1; row < height -1; row++)
+      for(size_t row = 0; row < height -1; row++)
       {
-        for(size_t col = 1; col < width -1; col++)
+        for(size_t col = 0; col < width -1; col++)
         {
           const size_t idx = (row * width + col) * 4;
           const size_t mdx = _raw_to_cmap(mwidth, row, col);
@@ -243,7 +243,7 @@ static float *_process_opposed(dt_iop_module_t *self,
 
   const size_t mwidth  = roi_in->width / 3;
   const size_t mheight = roi_in->height / 3;
-  const size_t msize = dt_round_size((size_t) mwidth * mheight, 16);
+  const size_t msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
 
   const dt_hash_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -475,7 +475,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
     // We don't have valid chrominance correction so go the hard way
     const int mwidth  = roi_in->width / 3;
     const int mheight = roi_in->height / 3;
-    const int msize = dt_round_size((size_t) mwidth * mheight, 16);
+    const int msize = dt_round_size((size_t) mwidth, 4) * dt_round_size(mheight, 4);
     const size_t mbufsize = sizeof(float) * msize;
 
     dev_inmask = dt_opencl_alloc_device_buffer(devid, mbufsize);
