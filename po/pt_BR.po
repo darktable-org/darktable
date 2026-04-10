@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-08 16:52-0300\n"
-"PO-Revision-Date: 2026-04-08 17:03-0300\n"
+"POT-Creation-Date: 2026-04-10 20:29-0300\n"
+"PO-Revision-Date: 2026-04-10 20:28-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -6021,16 +6021,16 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4096
+#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4094
 #: ../src/iop/colorequal.c:3016
 msgid "sliders"
 msgstr "controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4101
+#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4099
 msgid "dropdowns"
 msgstr "menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4106
+#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4104
 msgid "buttons"
 msgstr "botões"
 
@@ -6043,57 +6043,57 @@ msgstr ""
 "%sclique direito para digitar um valor entra <b>%s</b> e <b>%s</b>\n"
 "ou segure control+shift enquanto arrastar para ignorar os limites."
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3762
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3762
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3765
+#: ../src/bauhaus/bauhaus.c:3763
 msgid "button pressed"
 msgstr "botão pressionado"
 
-#: ../src/bauhaus/bauhaus.c:4001
+#: ../src/bauhaus/bauhaus.c:3999
 msgid "not that many sliders"
 msgstr "nem tantos controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:4015
+#: ../src/bauhaus/bauhaus.c:4013
 msgid "not that many dropdowns"
 msgstr "nem tantos menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:4034
+#: ../src/bauhaus/bauhaus.c:4032
 msgid "not that many buttons"
 msgstr "nem tantos botões"
 
-#: ../src/bauhaus/bauhaus.c:4039 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:4037 ../src/gui/accelerators.c:392
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:4040 ../src/bauhaus/bauhaus.c:4046
+#: ../src/bauhaus/bauhaus.c:4038 ../src/bauhaus/bauhaus.c:4044
 #: ../src/gui/accelerators.c:371
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:4041
+#: ../src/bauhaus/bauhaus.c:4039
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:4042 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:4040 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:4045 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:4043 ../src/libs/select.c:40
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:4085
+#: ../src/bauhaus/bauhaus.c:4083
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:4090
+#: ../src/bauhaus/bauhaus.c:4088
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -7425,7 +7425,7 @@ msgid "preserved filename"
 msgstr "nomes preservado de arquivo"
 
 #: ../src/common/database.c:3854
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -7491,7 +7491,7 @@ msgstr ""
 "      isto provavelmente significa que a última instância fechou de forma "
 "não normal.\n"
 "      Clique no botão \"remover arquivos de trava da base de dados\" para "
-"remover os arquivos <i>data.db.lock</i> e <i>library.db.lock</i>.\n"
+"remover os arquivos <i>data.db.lock</i> e <i>%s</i>.\n"
 "\n"
 "\n"
 "      <i><u>Cuidado!</u> Não remova estes arquivos sem antes fazer as "
@@ -7562,7 +7562,8 @@ msgid ""
 msgstr ""
 "\n"
 "pelo menos um arquivo não pode ser removido.\n"
-"você pode tentar manualmente apagar os arquivos <i>data.db.lock</i> e <i>%s</i>\n"
+"você pode tentar manualmente apagar os arquivos <i>data.db.lock</i> e <i>%s</"
+"i>\n"
 "na pasta <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:4040
@@ -20263,9 +20264,11 @@ msgid ""
 "disable to adjust the module without disturbing the vectorscope display, and "
 "vice-versa."
 msgstr ""
-"quando habilitado, a sobreposição de harmonia do vetoroscópio é mantira em sincronia\n"
+"quando habilitado, a sobreposição de harmonia do vetoroscópio é mantira em "
+"sincronia\n"
 "com a regra de harmonia e controles de matiz no módulo.\n"
-"desabilite para ajustar o módulo sem perturbar o mostrador do vetoroscópio, e vice-versa."
+"desabilite para ajustar o módulo sem perturbar o mostrador do vetoroscópio, "
+"e vice-versa."
 
 #: ../src/iop/colorharmonizer.c:1529
 msgid ""
@@ -26087,7 +26090,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "controle da câmera"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:773
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:771
 msgid "modes"
 msgstr "modos"
 
@@ -27783,20 +27786,20 @@ msgstr "clique-duplo para redefinir"
 msgid "drag to change exposure"
 msgstr "arraste para mudar exposição"
 
-#: ../src/libs/histogram.c:700 ../src/libs/scopes/histogram.c:50
+#: ../src/libs/histogram.c:698 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:706 ../src/libs/histogram.c:802
+#: ../src/libs/histogram.c:704 ../src/libs/histogram.c:800
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:814
+#: ../src/libs/histogram.c:812
 #, c-format
 msgid "toggle %s channel"
 msgstr "alternar canal %s"
 
-#: ../src/libs/histogram.c:822
+#: ../src/libs/histogram.c:820
 msgid "toggle colors"
 msgstr "alternar cores"
 
@@ -29490,6 +29493,8 @@ msgstr "recuperação de detalhes"
 #: ../src/libs/neural_restore.c:2133
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
+"recuperar textura fina perdida durante remoção de ruído enquanto suprime "
+"ruído"
 
 #: ../src/libs/neural_restore.c:2141
 msgid "upscale factor"
@@ -29507,7 +29512,7 @@ msgstr "4x"
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
-msgstr ""
+msgstr "clique para escolher área de pré-visualização na miniatura"
 
 #: ../src/libs/neural_restore.c:2185
 msgid "process selected images"
