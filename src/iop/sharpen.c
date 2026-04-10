@@ -225,7 +225,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   /* mixing tmp and in -> out */
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sharpen_mix, width, height,
     CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
-    CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
+    CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold), CLARG(rad));
 
 error:
   dt_opencl_release_mem_object(dev_m);
