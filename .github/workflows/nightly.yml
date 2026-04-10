@@ -380,14 +380,15 @@ jobs:
           brew update > /dev/null || true
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --verbose || true
+          brew bundle --quiet || true
 
           # rebuild graphicsmagick for macOS bundling
           export HOMEBREW_NO_INSTALL_FROM_API=1
-          gm_formula=`brew edit --print-path graphicsmagick`
+          brew developer on
+          gm_formula=`brew edit --quiet --print-path graphicsmagick`
           cat $gm_formula | sed 's/--with-modules/--disable-installed/1' > gm_formula.tmp
           mv gm_formula.tmp $gm_formula
-          brew reinstall --build-from-source --force graphicsmagick
+          brew reinstall --build-from-source --force --quiet graphicsmagick
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
