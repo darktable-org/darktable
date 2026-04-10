@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
     Copyright (C) 2026 darktable developers.
-    copyright (c) 2011 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,9 +18,7 @@
 
 #include "common.h"
 
-
-
-kernel void 
+kernel void
 sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
@@ -42,7 +39,7 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const flo
     const int xx = mad24((int)get_group_id(0), lsz, -l);
     buffer[rad - l] = readsingle(in, xx, y);
   }
-    
+
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
@@ -73,7 +70,7 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const flo
 }
 
 
-kernel void 
+kernel void
 sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
@@ -94,7 +91,7 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const flo
     const int yy = mad24((int)get_group_id(1), lsz, -l);
     buffer[rad - l] = readsingle(in, x, yy);
   }
-    
+
   /* right wing of buffer */
   for(int n=0; n <= rad/lsz; n++)
   {
@@ -132,7 +129,7 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const flo
  * out  = sharpened image
  * sharpen = level of sharpening
  * thrs = sharpening threshold
- */  
+ */
 kernel void
 sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out,
             const int width, const int height, const float sharpen, const float thrs, const int rad)
@@ -155,4 +152,3 @@ sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image
   }
   write_imagef (out, (int2)(x, y), pixel);
 }
-
