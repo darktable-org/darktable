@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-11 10:20+0200\n"
-"PO-Revision-Date: 2026-04-11 10:20+0200\n"
+"POT-Creation-Date: 2026-04-11 11:40+0200\n"
+"PO-Revision-Date: 2026-04-11 11:45+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6170,64 +6170,99 @@ msgstr ""
 "ΔE moyen : %.02f\n"
 "ΔE max : %.02f"
 
-#: ../src/cli/main.c:269
+#: ../src/cli/main.c:284
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO : désolé, en raison de restrictions de l’interface de programmation, il "
 "n’est pas possible de régler le BPP à"
 
-#: ../src/cli/main.c:281
+#: ../src/cli/main.c:296
 msgid "unknown option for --hq"
 msgstr "Option inconnue pour --hq"
 
-#: ../src/cli/main.c:297
+#: ../src/cli/main.c:312
 msgid "unknown option for --export_masks"
 msgstr "Option inconnue pour --export_masks"
 
-#: ../src/cli/main.c:313
+#: ../src/cli/main.c:328
 msgid "unknown option for --upscale"
 msgstr "Option inconnue pour --upscale"
 
-#: ../src/cli/main.c:338
+#: ../src/cli/main.c:353
 msgid "unknown option for --apply-custom-presets"
 msgstr "Option inconnue pour --apply-custom-presets"
 
-#: ../src/cli/main.c:349
+#: ../src/cli/main.c:364
 msgid "too long ext for --out-ext"
 msgstr "Extension trop longue pour --out-ext"
 
-#: ../src/cli/main.c:366
+#: ../src/cli/main.c:381
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr "Information : le fichier ou répertoire « %s » n’existe pas\n"
 
-#: ../src/cli/main.c:375
+#: ../src/cli/main.c:395
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
 msgstr "Type ICC invalide pour --icc-type « %s »\n"
 
-#: ../src/cli/main.c:391
+#: ../src/cli/main.c:411
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
 msgstr "Information : le fichier ICC « %s » n’existe pas, ignore\n"
 
-#: ../src/cli/main.c:400
+#: ../src/cli/main.c:420
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
 msgstr "Intention ICC invalide pour --icc-intent « %s »\n"
 
-#: ../src/cli/main.c:418
+#: ../src/cli/main.c:438
 #, c-format
 msgid "warning: unknown option '%s'\n"
 msgstr "Attention : option inconnue « %s »\n"
 
-#: ../src/cli/main.c:476
+#: ../src/cli/main.c:468 ../src/cli/main.c:476
+#, c-format
+msgid ""
+"error: output file or directory must be specified\n"
+"\n"
+msgstr ""
+"Erreur : le fichier de sortie ou un répertoire doit être spécifié\n"
+"\n"
+
+#: ../src/cli/main.c:474
+#, c-format
+msgid ""
+"error: input file and output file must be specified\n"
+"\n"
+msgstr ""
+"Erreur : les fichiers en entrée et en sortie doivent être spécifiés\n"
+"\n"
+
+#: ../src/cli/main.c:481
+#, c-format
+msgid ""
+"error: too many positional arguments\n"
+"\n"
+msgstr ""
+"Erreur : trop d’arguments positionnels spécifiés\n"
+"\n"
+
+#: ../src/cli/main.c:486
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
 msgstr ""
 "Fichier en entrée et options d’importation spécifiés, cela n’est pas permis.\n"
 
-#: ../src/cli/main.c:509
+#: ../src/cli/main.c:536
+msgid ""
+"notice: no XMP sidecar file nor library path provided, using default settings "
+"for export"
+msgstr ""
+"Note : pas de ficher XMP ni de chemin de bibliothèque spécifié, utilisation "
+"des paramètres par défaut pour l'export"
+
+#: ../src/cli/main.c:545
 #, c-format
 msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
@@ -6237,58 +6272,58 @@ msgstr ""
 "« %s/$(FILE_NAME).%s » est utilisé"
 
 #. output file exists or there's output ext specified and it's same as file...
-#: ../src/cli/main.c:524
+#: ../src/cli/main.c:560
 msgid "output file already exists, it will get renamed"
 msgstr "Ficher de sortie existant, il va être renommé"
 
-#: ../src/cli/main.c:556
+#: ../src/cli/main.c:592
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "Erreur : impossible d’ouvrir le répertoire « %s »"
 
-#: ../src/cli/main.c:579
+#: ../src/cli/main.c:615
 #, c-format
 msgid "error: can't import file %s"
 msgstr "Erreur : impossible d’importer le fichier « %s »"
 
-#: ../src/cli/main.c:589
+#: ../src/cli/main.c:625
 #, c-format
 msgid "error: can't read directory %s"
 msgstr "Erreur : impossible de lire le répertoire « %s »"
 
-#: ../src/cli/main.c:605
+#: ../src/cli/main.c:641
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Erreur : impossible d’ouvrir le fichier « %s »"
 
-#: ../src/cli/main.c:622
+#: ../src/cli/main.c:658
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "Aucune image à exporter, annulation\n"
 
-#: ../src/cli/main.c:639
+#: ../src/cli/main.c:675
 #, c-format
 msgid "error: can't open XMP file %s"
 msgstr "Erreur : impossible d’ouvrir le fichier XMP « %s »"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/cli/main.c:660
+#: ../src/cli/main.c:696
 msgid "empty history stack"
 msgstr "Réinitialiser le développement"
 
 #. too long ext, no point in wasting time
-#: ../src/cli/main.c:672
+#: ../src/cli/main.c:708
 #, c-format
 msgid "too long output file extension: %s\n"
 msgstr "Extension du nom du fichier de sortie trop longue : « %s »\n"
 
 #. no ext or empty ext, no point in wasting time
-#: ../src/cli/main.c:680
+#: ../src/cli/main.c:716
 #, c-format
 msgid "no output file extension given\n"
 msgstr "Pas d’extension de fichier spécifiée\n"
 
-#: ../src/cli/main.c:725
+#: ../src/cli/main.c:761
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -6296,17 +6331,17 @@ msgstr ""
 "Impossible de trouver le module d’export vers le disque, vérifier "
 "l’installation de Darktable."
 
-#: ../src/cli/main.c:735
+#: ../src/cli/main.c:771
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Impossible d’obtenir les paramètres du module de stockage, export abandonné."
 
-#: ../src/cli/main.c:751
+#: ../src/cli/main.c:787
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "Extension inconnue « .%s »"
 
-#: ../src/cli/main.c:761
+#: ../src/cli/main.c:797
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Impossible d’obtenir les paramètres du module de format, export abandonné."
@@ -37534,11 +37569,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "invalid ratio format. it should be non zero"
 #~ msgstr "Format non reconnu. Il devrait être non nul"
-
-#~ msgid "error: output file is a directory. please specify file name"
-#~ msgstr ""
-#~ "Erreur : le fichier de sortie est un répertoire, merci de spécifier un nom "
-#~ "de fichier"
 
 #~ msgid ""
 #~ "scale to use in the graph. use logarithmic scale for more precise control "
