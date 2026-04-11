@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-11 10:20+0200\n"
-"PO-Revision-Date: 2026-04-11 15:07+0300\n"
+"POT-Creation-Date: 2026-04-11 11:40+0200\n"
+"PO-Revision-Date: 2026-04-11 21:29+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -6089,61 +6089,96 @@ msgstr ""
 "Average dE: %.02f\n"
 "Max dE: %.02f"
 
-#: ../src/cli/main.c:269
+#: ../src/cli/main.c:284
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 
-#: ../src/cli/main.c:281
+#: ../src/cli/main.c:296
 msgid "unknown option for --hq"
 msgstr "Unknown option for --hq"
 
-#: ../src/cli/main.c:297
+#: ../src/cli/main.c:312
 msgid "unknown option for --export_masks"
 msgstr "Unknown option for --export_masks"
 
-#: ../src/cli/main.c:313
+#: ../src/cli/main.c:328
 msgid "unknown option for --upscale"
 msgstr "Unknown option for --upscale"
 
-#: ../src/cli/main.c:338
+#: ../src/cli/main.c:353
 msgid "unknown option for --apply-custom-presets"
 msgstr "Unknown option for --apply-custom-presets"
 
-#: ../src/cli/main.c:349
+#: ../src/cli/main.c:364
 msgid "too long ext for --out-ext"
 msgstr "Too long ext for --out-ext"
 
-#: ../src/cli/main.c:366
+#: ../src/cli/main.c:381
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr "Notice: input file or dir '%s' doesn't exist, skipping\n"
 
-#: ../src/cli/main.c:375
+#: ../src/cli/main.c:395
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
 msgstr "Incorrect ICC type for --icc-type: '%s'\n"
 
-#: ../src/cli/main.c:391
+#: ../src/cli/main.c:411
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
 msgstr "Notice: ICC file '%s' doesn't exist, skipping\n"
 
-#: ../src/cli/main.c:400
+#: ../src/cli/main.c:420
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
 msgstr "Incorrect ICC intent for --icc-intent: '%s'\n"
 
-#: ../src/cli/main.c:418
+#: ../src/cli/main.c:438
 #, c-format
 msgid "warning: unknown option '%s'\n"
 msgstr "Warning: unknown option '%s'\n"
 
-#: ../src/cli/main.c:476
+#: ../src/cli/main.c:468 ../src/cli/main.c:476
+#, c-format
+msgid ""
+"error: output file or directory must be specified\n"
+"\n"
+msgstr ""
+"Error: output file or directory must be specified\n"
+"\n"
+
+#: ../src/cli/main.c:474
+#, c-format
+msgid ""
+"error: input file and output file must be specified\n"
+"\n"
+msgstr ""
+"Error: input file and output file must be specified\n"
+"\n"
+
+#: ../src/cli/main.c:481
+#, c-format
+msgid ""
+"error: too many positional arguments\n"
+"\n"
+msgstr ""
+"Error: too many positional arguments\n"
+"\n"
+
+#: ../src/cli/main.c:486
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
 msgstr "Error: input file and import opts specified! That's not supported!\n"
 
-#: ../src/cli/main.c:509
+#: ../src/cli/main.c:536
+msgid ""
+"notice: no XMP sidecar file nor library path provided, using default settings "
+"for export"
+msgstr ""
+"Notice: no XMP sidecar file nor library path provided, using default settings "
+"for export"
+
+#: ../src/cli/main.c:545
 #, c-format
 msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
@@ -6153,57 +6188,57 @@ msgstr ""
 "pattern"
 
 #. output file exists or there's output ext specified and it's same as file...
-#: ../src/cli/main.c:524
+#: ../src/cli/main.c:560
 msgid "output file already exists, it will get renamed"
 msgstr "Output file already exists, it will get renamed"
 
-#: ../src/cli/main.c:556
+#: ../src/cli/main.c:592
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "Error: can't open folder %s"
 
-#: ../src/cli/main.c:579
+#: ../src/cli/main.c:615
 #, c-format
 msgid "error: can't import file %s"
 msgstr "Error: can't import file %s"
 
-#: ../src/cli/main.c:589
+#: ../src/cli/main.c:625
 #, c-format
 msgid "error: can't read directory %s"
 msgstr "Error: can't read directory %s"
 
-#: ../src/cli/main.c:605
+#: ../src/cli/main.c:641
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Error: can't open file %s"
 
-#: ../src/cli/main.c:622
+#: ../src/cli/main.c:658
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "No images to export, aborting\n"
 
-#: ../src/cli/main.c:639
+#: ../src/cli/main.c:675
 #, c-format
 msgid "error: can't open XMP file %s"
 msgstr "Error: can't open XMP file %s"
 
-#: ../src/cli/main.c:660
+#: ../src/cli/main.c:696
 msgid "empty history stack"
 msgstr "Empty history stack"
 
 #. too long ext, no point in wasting time
-#: ../src/cli/main.c:672
+#: ../src/cli/main.c:708
 #, c-format
 msgid "too long output file extension: %s\n"
 msgstr "Too long output file extension: %s\n"
 
 #. no ext or empty ext, no point in wasting time
-#: ../src/cli/main.c:680
+#: ../src/cli/main.c:716
 #, c-format
 msgid "no output file extension given\n"
 msgstr "No output file extension given\n"
 
-#: ../src/cli/main.c:725
+#: ../src/cli/main.c:761
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -6211,16 +6246,16 @@ msgstr ""
 "Cannot find disk storage module. Please check your installation, something "
 "seems to be broken."
 
-#: ../src/cli/main.c:735
+#: ../src/cli/main.c:771
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr "Failed to get parameters from storage module, aborting export ..."
 
-#: ../src/cli/main.c:751
+#: ../src/cli/main.c:787
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "Unknown extension '.%s'"
 
-#: ../src/cli/main.c:761
+#: ../src/cli/main.c:797
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "Failed to get parameters from format module, aborting export ..."
 
