@@ -314,3 +314,37 @@ void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
                                    const char *model_id,
                                    const char **out_h,
                                    const char **out_w);
+
+/**
+ * @brief Model card — provenance and transparency info read
+ *        from config.json on demand. All fields are optional;
+ *        NULL means the field was not present
+ */
+typedef struct dt_ai_model_card_t
+{
+  char *name;
+  char *long_description;
+  char *scope;
+  char *author;
+  char *source;
+  char *paper;
+  char *license;
+  char *training_data;
+  char *training_data_license;
+  char *notes;
+} dt_ai_model_card_t;
+
+/**
+ * @brief Read model card from config.json on disk
+ * @param registry The registry
+ * @param model_id The model identifier
+ * @return Card struct (caller must free with dt_ai_model_card_free),
+ *         or NULL if model directory not found
+ */
+dt_ai_model_card_t *dt_ai_models_get_card(
+  dt_ai_registry_t *registry, const char *model_id);
+
+/**
+ * @brief Free a model card returned by dt_ai_models_get_card
+ */
+void dt_ai_model_card_free(dt_ai_model_card_t *card);

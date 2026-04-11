@@ -1842,6 +1842,95 @@ void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
   g_mutex_unlock(&registry->lock);
 }
 
+// read an optional string from a JSON object, returns
+// g_strdup'd copy or NULL if missing/empty
+static char *_card_str(JsonObject *obj, const char *key)
+{
+  if(!obj || !json_object_has_member(obj, key))
+    return NULL;
+  const char *val = json_object_get_string_member(obj, key);
+  return (val && val[0]) ? g_strdup(val) : NULL;
+}
+
+dt_ai_model_card_t *dt_ai_models_get_card(
+  dt_ai_registry_t *registry, const char *model_id)
+{
+  char *model_path = dt_ai_models_get_path(registry, model_id);
+  if(!model_path)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[ai_models] model card: %s not on disk", model_id);
+    return NULL;
+  }
+
+  char *config_path = g_build_filename(model_path, "config.json", NULL);
+  g_free(model_path);
+
+  JsonParser *parser = json_parser_new();
+  if(!json_parser_load_from_file(parser, config_path, NULL))
+  {
+    g_free(config_path);
+    g_object_unref(parser);
+    return NULL;
+  }
+  g_free(config_path);
+
+  JsonNode *root = json_parser_get_root(parser);
+  if(!root || !JSON_NODE_HOLDS_OBJECT(root))
+  {
+    g_object_unref(parser);
+    return NULL;
+  }
+
+  JsonObject *config = json_node_get_object(root);
+  dt_ai_model_card_t *card = g_new0(dt_ai_model_card_t, 1);
+
+  // read name from top level
+  card->name = _card_str(config, "name");
+
+  // card fields live under the "model_card" nested object
+  JsonObject *mc = NULL;
+  if(json_object_has_member(config, "model_card"))
+  {
+    JsonNode *cn = json_object_get_member(config, "model_card");
+    if(cn && JSON_NODE_HOLDS_OBJECT(cn))
+      mc = json_node_get_object(cn);
+  }
+
+  card->long_description = _card_str(mc, "long_description");
+  card->scope = _card_str(mc, "scope");
+  card->author = _card_str(mc, "author");
+  card->source = _card_str(mc, "source");
+  card->paper = _card_str(mc, "paper");
+  card->license = _card_str(mc, "license");
+  card->training_data = _card_str(mc, "training_data");
+  card->training_data_license = _card_str(mc, "training_data_license");
+  card->notes = _card_str(mc, "notes");
+
+  // fall back to top-level description
+  if(!card->long_description)
+    card->long_description = _card_str(config, "description");
+
+  g_object_unref(parser);
+  return card;
+}
+
+void dt_ai_model_card_free(dt_ai_model_card_t *card)
+{
+  if(!card) return;
+  g_free(card->name);
+  g_free(card->long_description);
+  g_free(card->scope);
+  g_free(card->author);
+  g_free(card->source);
+  g_free(card->paper);
+  g_free(card->license);
+  g_free(card->training_data);
+  g_free(card->training_data_license);
+  g_free(card->notes);
+  g_free(card);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
