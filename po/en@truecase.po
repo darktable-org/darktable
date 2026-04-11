@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-05 19:29+0200\n"
-"PO-Revision-Date: 2026-04-09 13:10+0300\n"
+"POT-Creation-Date: 2026-04-11 10:20+0200\n"
+"PO-Revision-Date: 2026-04-11 15:07+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -48,9 +48,9 @@ msgctxt "preferences"
 msgid "bar"
 msgstr "Bar"
 
-#: ../build/bin/conf_gen.h:276 ../build/bin/conf_gen.h:419
-#: ../build/bin/conf_gen.h:431 ../build/bin/conf_gen.h:1765
-#: ../build/bin/conf_gen.h:1786 ../build/bin/conf_gen.h:1823
+#: ../build/bin/conf_gen.h:276 ../build/bin/conf_gen.h:428
+#: ../build/bin/conf_gen.h:440 ../build/bin/conf_gen.h:1775
+#: ../build/bin/conf_gen.h:1796 ../build/bin/conf_gen.h:1833
 #: ../build/bin/preferences_gen.h:2818 ../build/bin/preferences_gen.h:2905
 msgctxt "preferences"
 msgid "never"
@@ -76,135 +76,140 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "On close"
 
-#: ../build/bin/conf_gen.h:344 ../build/bin/conf_gen.h:1756
-#: ../build/bin/conf_gen.h:1777 ../build/bin/conf_gen.h:1824
+#: ../build/bin/conf_gen.h:353 ../build/bin/conf_gen.h:1766
+#: ../build/bin/conf_gen.h:1787 ../build/bin/conf_gen.h:1834
 msgctxt "preferences"
 msgid "small"
 msgstr "Small"
 
-#: ../build/bin/conf_gen.h:345 ../build/bin/conf_gen.h:535
+#: ../build/bin/conf_gen.h:354 ../build/bin/conf_gen.h:544
 #: ../build/bin/preferences_gen.h:3569 ../build/bin/preferences_gen.h:3637
 msgctxt "preferences"
 msgid "default"
 msgstr "Default"
 
-#: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:4180
+#: ../build/bin/conf_gen.h:355 ../build/bin/conf_gen.h:4190
 msgctxt "preferences"
 msgid "large"
 msgstr "Large"
 
-#: ../build/bin/conf_gen.h:420
+#: ../build/bin/conf_gen.h:429
 msgctxt "preferences"
 msgid "after edit"
 msgstr "After edit"
 
-#: ../build/bin/conf_gen.h:421 ../build/bin/preferences_gen.h:4188
+#: ../build/bin/conf_gen.h:430 ../build/bin/preferences_gen.h:4188
 msgctxt "preferences"
 msgid "on import"
 msgstr "On import"
 
-#: ../build/bin/conf_gen.h:432 ../build/bin/conf_gen.h:1755
-#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:4911
+#: ../build/bin/conf_gen.h:441 ../build/bin/conf_gen.h:1765
+#: ../build/bin/conf_gen.h:1786 ../build/bin/conf_gen.h:4921
 #: ../build/bin/preferences_gen.h:3307
 msgctxt "preferences"
 msgid "always"
 msgstr "Always"
 
-#: ../build/bin/conf_gen.h:433 ../build/bin/preferences_gen.h:4206
+#: ../build/bin/conf_gen.h:442 ../build/bin/preferences_gen.h:4206
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "Only large entries"
 
-#: ../build/bin/conf_gen.h:470
+#: ../build/bin/conf_gen.h:479
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "Sensitive"
 
-#: ../build/bin/conf_gen.h:471 ../build/bin/preferences_gen.h:4769
+#: ../build/bin/conf_gen.h:480 ../build/bin/preferences_gen.h:4769
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "Insensitive"
 
-#: ../build/bin/conf_gen.h:536
+#: ../build/bin/conf_gen.h:545
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "Multiple GPUs"
 
-#: ../build/bin/conf_gen.h:537
+#: ../build/bin/conf_gen.h:546
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "Very fast GPU"
 
-#: ../build/bin/conf_gen.h:1006 ../build/bin/preferences_gen.h:4843
+#: ../build/bin/conf_gen.h:1015 ../build/bin/preferences_gen.h:4843
 msgctxt "preferences"
 msgid "import time"
 msgstr "Import time"
 
-#: ../build/bin/conf_gen.h:1007
+#: ../build/bin/conf_gen.h:1016
 msgctxt "preferences"
 msgid "folder name"
 msgstr "Folder name"
 
-#: ../build/bin/conf_gen.h:1026
+#: ../build/bin/conf_gen.h:1017
+msgctxt "preferences"
+msgid "display name"
+msgstr "Display name"
+
+#: ../build/bin/conf_gen.h:1036
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:1027
+#: ../build/bin/conf_gen.h:1037
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:1028
+#: ../build/bin/conf_gen.h:1038
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:1029
+#: ../build/bin/conf_gen.h:1039
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:1030
+#: ../build/bin/conf_gen.h:1040
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:1031 ../build/bin/conf_gen.h:2760
-#: ../build/bin/conf_gen.h:3723 ../build/bin/conf_gen.h:4151
-#: ../build/bin/conf_gen.h:4670
+#: ../build/bin/conf_gen.h:1041 ../build/bin/conf_gen.h:2770
+#: ../build/bin/conf_gen.h:3733 ../build/bin/conf_gen.h:4161
+#: ../build/bin/conf_gen.h:4680
 msgctxt "preferences"
 msgid "none"
 msgstr "None"
 
-#: ../build/bin/conf_gen.h:1041
+#: ../build/bin/conf_gen.h:1051
 msgctxt "preferences"
 msgid "mean"
 msgstr "Mean"
 
-#: ../build/bin/conf_gen.h:1042
+#: ../build/bin/conf_gen.h:1052
 msgctxt "preferences"
 msgid "min"
 msgstr "Min"
 
-#: ../build/bin/conf_gen.h:1043
+#: ../build/bin/conf_gen.h:1053
 msgctxt "preferences"
 msgid "max"
 msgstr "Max"
 
-#: ../build/bin/conf_gen.h:1378
+#: ../build/bin/conf_gen.h:1388
 msgid "select only new images"
 msgstr "Select only new images"
 
-#: ../build/bin/conf_gen.h:1379
+#: ../build/bin/conf_gen.h:1389
 msgid "only select images that have not already been imported"
 msgstr "Only select images that have not already been imported"
 
-#: ../build/bin/conf_gen.h:1387
+#: ../build/bin/conf_gen.h:1397
 msgid "ignore non-raw images"
 msgstr "Ignore non-raw images"
 
-#: ../build/bin/conf_gen.h:1388
+#: ../build/bin/conf_gen.h:1398
 msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
@@ -212,55 +217,55 @@ msgstr ""
 "If enabled, only raw files will be allowed to import. Non-raw files will not "
 "be visible in the dialog and will not be imported."
 
-#: ../build/bin/conf_gen.h:1396
+#: ../build/bin/conf_gen.h:1406
 msgid "apply metadata"
 msgstr "Apply metadata"
 
-#: ../build/bin/conf_gen.h:1397
+#: ../build/bin/conf_gen.h:1407
 msgid "apply some metadata to all newly imported images."
 msgstr "Apply some metadata to all newly imported images."
 
-#: ../build/bin/conf_gen.h:1405
+#: ../build/bin/conf_gen.h:1415
 msgid "recursive directory"
 msgstr "Recursive directory"
 
-#: ../build/bin/conf_gen.h:1406
+#: ../build/bin/conf_gen.h:1416
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "Recursive directory traversal when importing filmrolls"
 
-#: ../build/bin/conf_gen.h:1414
+#: ../build/bin/conf_gen.h:1424
 msgid "creator to be applied when importing"
 msgstr "Creator to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1423
+#: ../build/bin/conf_gen.h:1433
 msgid "publisher to be applied when importing"
 msgstr "Publisher to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1432
+#: ../build/bin/conf_gen.h:1442
 msgid "rights to be applied when importing"
 msgstr "Rights to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1441
+#: ../build/bin/conf_gen.h:1451
 msgid "comma separated tags to be applied when importing"
 msgstr "Comma separated tags to be applied when importing"
 
-#: ../build/bin/conf_gen.h:1450
+#: ../build/bin/conf_gen.h:1460
 msgid "import tags from XMP"
 msgstr "Import tags from XMP"
 
-#: ../build/bin/conf_gen.h:1486
+#: ../build/bin/conf_gen.h:1496
 msgid "initial rating"
 msgstr "Initial rating"
 
-#: ../build/bin/conf_gen.h:1487
+#: ../build/bin/conf_gen.h:1497
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "Initial star rating for all images when importing a filmroll"
 
-#: ../build/bin/conf_gen.h:1495
+#: ../build/bin/conf_gen.h:1505
 msgid "ignore EXIF rating"
 msgstr "Ignore EXIF rating"
 
-#: ../build/bin/conf_gen.h:1496
+#: ../build/bin/conf_gen.h:1506
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -268,19 +273,19 @@ msgstr ""
 "Ignore EXIF rating. If not set and EXIF rating is found, it overrides "
 "'initial rating'"
 
-#: ../build/bin/conf_gen.h:1504
+#: ../build/bin/conf_gen.h:1514
 msgid "import job"
 msgstr "Import job"
 
-#: ../build/bin/conf_gen.h:1505
+#: ../build/bin/conf_gen.h:1515
 msgid "name of the import job"
 msgstr "Name of the import job"
 
-#: ../build/bin/conf_gen.h:1513
+#: ../build/bin/conf_gen.h:1523
 msgid "override today's date"
 msgstr "Override today's date"
 
-#: ../build/bin/conf_gen.h:1514
+#: ../build/bin/conf_gen.h:1524
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -292,177 +297,177 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "Let the field empty otherwise"
 
-#: ../build/bin/conf_gen.h:1522
+#: ../build/bin/conf_gen.h:1532
 msgid "keep this window open"
 msgstr "Keep this window open"
 
-#: ../build/bin/conf_gen.h:1523
+#: ../build/bin/conf_gen.h:1533
 msgid "keep this window open to run several imports"
 msgstr "Keep this window open to run several imports"
 
-#: ../build/bin/conf_gen.h:1757 ../build/bin/conf_gen.h:1778
-#: ../build/bin/conf_gen.h:1825
+#: ../build/bin/conf_gen.h:1767 ../build/bin/conf_gen.h:1788
+#: ../build/bin/conf_gen.h:1835
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1758 ../build/bin/conf_gen.h:1779
-#: ../build/bin/conf_gen.h:1826 ../build/bin/preferences_gen.h:2836
+#: ../build/bin/conf_gen.h:1768 ../build/bin/conf_gen.h:1789
+#: ../build/bin/conf_gen.h:1836 ../build/bin/preferences_gen.h:2836
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1759 ../build/bin/conf_gen.h:1780
-#: ../build/bin/conf_gen.h:1827
+#: ../build/bin/conf_gen.h:1769 ../build/bin/conf_gen.h:1790
+#: ../build/bin/conf_gen.h:1837
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1760 ../build/bin/conf_gen.h:1781
-#: ../build/bin/conf_gen.h:1828
+#: ../build/bin/conf_gen.h:1770 ../build/bin/conf_gen.h:1791
+#: ../build/bin/conf_gen.h:1838
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1761 ../build/bin/conf_gen.h:1782
-#: ../build/bin/conf_gen.h:1829
+#: ../build/bin/conf_gen.h:1771 ../build/bin/conf_gen.h:1792
+#: ../build/bin/conf_gen.h:1839
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1762 ../build/bin/conf_gen.h:1783
-#: ../build/bin/conf_gen.h:1830
+#: ../build/bin/conf_gen.h:1772 ../build/bin/conf_gen.h:1793
+#: ../build/bin/conf_gen.h:1840
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1763 ../build/bin/conf_gen.h:1784
-#: ../build/bin/conf_gen.h:1831
+#: ../build/bin/conf_gen.h:1773 ../build/bin/conf_gen.h:1794
+#: ../build/bin/conf_gen.h:1841
 msgctxt "preferences"
 msgid "6K"
 msgstr "6K"
 
-#: ../build/bin/conf_gen.h:1764 ../build/bin/conf_gen.h:1785
-#: ../build/bin/conf_gen.h:1832
+#: ../build/bin/conf_gen.h:1774 ../build/bin/conf_gen.h:1795
+#: ../build/bin/conf_gen.h:1842
 msgctxt "preferences"
 msgid "8K"
 msgstr "8K"
 
-#: ../build/bin/conf_gen.h:1766 ../build/bin/conf_gen.h:3722
-#: ../build/bin/conf_gen.h:4914 ../build/bin/preferences_gen.h:4046
+#: ../build/bin/conf_gen.h:1776 ../build/bin/conf_gen.h:3732
+#: ../build/bin/conf_gen.h:4924 ../build/bin/preferences_gen.h:4046
 msgctxt "preferences"
 msgid "auto"
 msgstr "Auto"
 
-#: ../build/bin/conf_gen.h:1878
+#: ../build/bin/conf_gen.h:1888
 msgctxt "preferences"
 msgid "off"
 msgstr "Off"
 
-#: ../build/bin/conf_gen.h:1879
+#: ../build/bin/conf_gen.h:1889
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "Hardness (relative)"
 
-#: ../build/bin/conf_gen.h:1880
+#: ../build/bin/conf_gen.h:1890
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "Hardness (absolute)"
 
-#: ../build/bin/conf_gen.h:1881
+#: ../build/bin/conf_gen.h:1891
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "Opacity (relative)"
 
-#: ../build/bin/conf_gen.h:1882
+#: ../build/bin/conf_gen.h:1892
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "Opacity (absolute)"
 
-#: ../build/bin/conf_gen.h:1883
+#: ../build/bin/conf_gen.h:1893
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "Brush size (relative)"
 
-#: ../build/bin/conf_gen.h:1893
+#: ../build/bin/conf_gen.h:1903
 msgctxt "preferences"
 msgid "low"
 msgstr "Low"
 
-#: ../build/bin/conf_gen.h:1894
+#: ../build/bin/conf_gen.h:1904
 msgctxt "preferences"
 msgid "medium"
 msgstr "Medium"
 
-#: ../build/bin/conf_gen.h:1895
+#: ../build/bin/conf_gen.h:1905
 msgctxt "preferences"
 msgid "high"
 msgstr "High"
 
-#: ../build/bin/conf_gen.h:1923 ../build/bin/preferences_gen.h:3170
+#: ../build/bin/conf_gen.h:1933 ../build/bin/preferences_gen.h:3170
 msgctxt "preferences"
 msgid "false color"
 msgstr "False color"
 
-#: ../build/bin/conf_gen.h:1924
+#: ../build/bin/conf_gen.h:1934
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "Grayscale"
 
-#: ../build/bin/conf_gen.h:1943
+#: ../build/bin/conf_gen.h:1953
 msgctxt "preferences"
 msgid "top left"
 msgstr "Top left"
 
-#: ../build/bin/conf_gen.h:1944
+#: ../build/bin/conf_gen.h:1954
 msgctxt "preferences"
 msgid "top right"
 msgstr "Top right"
 
-#: ../build/bin/conf_gen.h:1945
+#: ../build/bin/conf_gen.h:1955
 msgctxt "preferences"
 msgid "top center"
 msgstr "Top center"
 
-#: ../build/bin/conf_gen.h:1946 ../build/bin/preferences_gen.h:3085
+#: ../build/bin/conf_gen.h:1956 ../build/bin/preferences_gen.h:3085
 msgctxt "preferences"
 msgid "bottom"
 msgstr "Bottom"
 
-#: ../build/bin/conf_gen.h:1947
+#: ../build/bin/conf_gen.h:1957
 msgctxt "preferences"
 msgid "hidden"
 msgstr "Hidden"
 
-#: ../build/bin/conf_gen.h:2714
+#: ../build/bin/conf_gen.h:2724
 msgid "show OSD"
 msgstr "Show OSD"
 
-#: ../build/bin/conf_gen.h:2715
+#: ../build/bin/conf_gen.h:2725
 msgid "toggle the visibility of the map overlays"
 msgstr "Toggle the visibility of the map overlays"
 
-#: ../build/bin/conf_gen.h:2723 ../src/libs/map_settings.c:119
+#: ../build/bin/conf_gen.h:2733 ../src/libs/map_settings.c:119
 msgid "filtered images"
 msgstr "Filtered images"
 
-#: ../build/bin/conf_gen.h:2724
+#: ../build/bin/conf_gen.h:2734
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "When set limit the images drawn to the current filmstrip"
 
-#: ../build/bin/conf_gen.h:2732
+#: ../build/bin/conf_gen.h:2742
 msgid "max images"
 msgstr "Max images"
 
-#: ../build/bin/conf_gen.h:2733
+#: ../build/bin/conf_gen.h:2743
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "The maximum number of image thumbnails drawn on the map"
 
-#: ../build/bin/conf_gen.h:2741
+#: ../build/bin/conf_gen.h:2751
 msgid "group size factor"
 msgstr "Group size factor"
 
-#: ../build/bin/conf_gen.h:2742
+#: ../build/bin/conf_gen.h:2752
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -470,11 +475,11 @@ msgstr ""
 "Increase or decrease the spatial size of images groups on the map. Can "
 "influence the calculation time"
 
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2760
 msgid "min images per group"
 msgstr "Min images per group"
 
-#: ../build/bin/conf_gen.h:2751
+#: ../build/bin/conf_gen.h:2761
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -482,21 +487,21 @@ msgstr ""
 "The minimum number of images to set up an images group. Can influence the "
 "calculation time."
 
-#: ../build/bin/conf_gen.h:2758
+#: ../build/bin/conf_gen.h:2768
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Thumbnail"
 
-#: ../build/bin/conf_gen.h:2759
+#: ../build/bin/conf_gen.h:2769
 msgctxt "preferences"
 msgid "count"
 msgstr "Count"
 
-#: ../build/bin/conf_gen.h:2762
+#: ../build/bin/conf_gen.h:2772
 msgid "thumbnail display"
 msgstr "Thumbnail display"
 
-#: ../build/bin/conf_gen.h:2763
+#: ../build/bin/conf_gen.h:2773
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -504,251 +509,251 @@ msgstr ""
 "Three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 
-#: ../build/bin/conf_gen.h:2780
+#: ../build/bin/conf_gen.h:2790
 msgid "max polygon points"
 msgstr "Max polygon points"
 
-#: ../build/bin/conf_gen.h:2781
+#: ../build/bin/conf_gen.h:2791
 msgid "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Limit the number of points imported with polygon in find location module"
 
-#: ../build/bin/conf_gen.h:3274 ../build/bin/conf_gen.h:3286
+#: ../build/bin/conf_gen.h:3284 ../build/bin/conf_gen.h:3296
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "Bilinear"
 
-#: ../build/bin/conf_gen.h:3275 ../build/bin/conf_gen.h:3287
+#: ../build/bin/conf_gen.h:3285 ../build/bin/conf_gen.h:3297
 #: ../build/bin/preferences_gen.h:3409
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "Bicubic"
 
-#: ../build/bin/conf_gen.h:3276 ../build/bin/conf_gen.h:3288
+#: ../build/bin/conf_gen.h:3286 ../build/bin/conf_gen.h:3298
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "Lanczos2"
 
-#: ../build/bin/conf_gen.h:3289 ../build/bin/preferences_gen.h:3427
+#: ../build/bin/conf_gen.h:3299 ../build/bin/preferences_gen.h:3427
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "Lanczos3"
 
-#: ../build/bin/conf_gen.h:3724
+#: ../build/bin/conf_gen.h:3734
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:3725
+#: ../build/bin/conf_gen.h:3735
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "KWallet"
 
-#: ../build/bin/conf_gen.h:3726
+#: ../build/bin/conf_gen.h:3736
 msgctxt "preferences"
 msgid "apple_keychain"
 msgstr "apple_keychain"
 
-#: ../build/bin/conf_gen.h:3727
+#: ../build/bin/conf_gen.h:3737
 msgctxt "preferences"
 msgid "windows_credentials"
 msgstr "windows_credentials"
 
-#: ../build/bin/conf_gen.h:4025
+#: ../build/bin/conf_gen.h:4035
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "Vectorscope"
 
-#: ../build/bin/conf_gen.h:4026
+#: ../build/bin/conf_gen.h:4036
 msgctxt "preferences"
 msgid "waveform"
 msgstr "Waveform"
 
-#: ../build/bin/conf_gen.h:4027
+#: ../build/bin/conf_gen.h:4037
 msgctxt "preferences"
 msgid "split"
 msgstr "Split"
 
-#: ../build/bin/conf_gen.h:4028
+#: ../build/bin/conf_gen.h:4038
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "RGB parade"
 
-#: ../build/bin/conf_gen.h:4029
+#: ../build/bin/conf_gen.h:4039
 msgctxt "preferences"
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../build/bin/conf_gen.h:4039
+#: ../build/bin/conf_gen.h:4049
 msgctxt "preferences"
 msgid "left"
 msgstr "Left"
 
-#: ../build/bin/conf_gen.h:4040 ../build/bin/preferences_gen.h:4483
+#: ../build/bin/conf_gen.h:4050 ../build/bin/preferences_gen.h:4483
 msgctxt "preferences"
 msgid "right"
 msgstr "Right"
 
-#: ../build/bin/conf_gen.h:4059 ../build/bin/conf_gen.h:4104
+#: ../build/bin/conf_gen.h:4069 ../build/bin/conf_gen.h:4114
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "Logarithmic"
 
-#: ../build/bin/conf_gen.h:4060 ../build/bin/conf_gen.h:4105
+#: ../build/bin/conf_gen.h:4070 ../build/bin/conf_gen.h:4115
 msgctxt "preferences"
 msgid "linear"
 msgstr "Linear"
 
-#: ../build/bin/conf_gen.h:4070
+#: ../build/bin/conf_gen.h:4080
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "Horizontal"
 
-#: ../build/bin/conf_gen.h:4071
+#: ../build/bin/conf_gen.h:4081
 msgctxt "preferences"
 msgid "vertical"
 msgstr "Vertical"
 
-#: ../build/bin/conf_gen.h:4081
+#: ../build/bin/conf_gen.h:4091
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "Overlaid"
 
-#: ../build/bin/conf_gen.h:4082
+#: ../build/bin/conf_gen.h:4092
 msgctxt "preferences"
 msgid "parade"
 msgstr "Parade"
 
-#: ../build/bin/conf_gen.h:4092
+#: ../build/bin/conf_gen.h:4102
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:4093
+#: ../build/bin/conf_gen.h:4103
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:4094
+#: ../build/bin/conf_gen.h:4104
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
-#: ../build/bin/conf_gen.h:4152
+#: ../build/bin/conf_gen.h:4162
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "Monochromatic"
 
-#: ../build/bin/conf_gen.h:4153
+#: ../build/bin/conf_gen.h:4163
 msgctxt "preferences"
 msgid "analogous"
 msgstr "Analogous"
 
-#: ../build/bin/conf_gen.h:4154
+#: ../build/bin/conf_gen.h:4164
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "Analogous complementary"
 
-#: ../build/bin/conf_gen.h:4155
+#: ../build/bin/conf_gen.h:4165
 msgctxt "preferences"
 msgid "complementary"
 msgstr "Complementary"
 
-#: ../build/bin/conf_gen.h:4156
+#: ../build/bin/conf_gen.h:4166
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "Split complementary"
 
-#: ../build/bin/conf_gen.h:4157
+#: ../build/bin/conf_gen.h:4167
 msgctxt "preferences"
 msgid "dyad"
 msgstr "Dyad"
 
-#: ../build/bin/conf_gen.h:4158
+#: ../build/bin/conf_gen.h:4168
 msgctxt "preferences"
 msgid "triad"
 msgstr "Triad"
 
-#: ../build/bin/conf_gen.h:4159
+#: ../build/bin/conf_gen.h:4169
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "Tetrad"
 
-#: ../build/bin/conf_gen.h:4160
+#: ../build/bin/conf_gen.h:4170
 msgctxt "preferences"
 msgid "square"
 msgstr "Square"
 
-#: ../build/bin/conf_gen.h:4179
+#: ../build/bin/conf_gen.h:4189
 msgctxt "preferences"
 msgid "normal"
 msgstr "Normal"
 
-#: ../build/bin/conf_gen.h:4181
+#: ../build/bin/conf_gen.h:4191
 msgctxt "preferences"
 msgid "narrow"
 msgstr "Narrow"
 
-#: ../build/bin/conf_gen.h:4182
+#: ../build/bin/conf_gen.h:4192
 msgctxt "preferences"
 msgid "line"
 msgstr "Line"
 
-#: ../build/bin/conf_gen.h:4480
+#: ../build/bin/conf_gen.h:4490
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:4481
+#: ../build/bin/conf_gen.h:4491
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:4482
+#: ../build/bin/conf_gen.h:4492
 msgctxt "preferences"
 msgid "inch"
 msgstr "inch"
 
-#: ../build/bin/conf_gen.h:4537 ../build/bin/preferences_gen.h:4501
+#: ../build/bin/conf_gen.h:4547 ../build/bin/preferences_gen.h:4501
 msgctxt "preferences"
 msgid "all"
 msgstr "All"
 
-#: ../build/bin/conf_gen.h:4538
+#: ../build/bin/conf_gen.h:4548
 msgctxt "preferences"
 msgid "xatom"
 msgstr "Xatom"
 
-#: ../build/bin/conf_gen.h:4539
+#: ../build/bin/conf_gen.h:4549
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:4666 ../build/bin/preferences_gen.h:3493
+#: ../build/bin/conf_gen.h:4676 ../build/bin/preferences_gen.h:3493
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "Scene-referred (Sigmoid)"
 
-#: ../build/bin/conf_gen.h:4667
+#: ../build/bin/conf_gen.h:4677
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "Scene-referred (Filmic)"
 
-#: ../build/bin/conf_gen.h:4668
+#: ../build/bin/conf_gen.h:4678
 msgctxt "preferences"
 msgid "scene-referred (AgX)"
 msgstr "Scene-referred (AgX)"
 
-#: ../build/bin/conf_gen.h:4669
+#: ../build/bin/conf_gen.h:4679
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "Display-referred (legacy)"
 
-#: ../build/bin/conf_gen.h:4816
+#: ../build/bin/conf_gen.h:4826
 msgid "camera time zone"
 msgstr "Camera time zone"
 
-#: ../build/bin/conf_gen.h:4817
+#: ../build/bin/conf_gen.h:4827
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone so "
 "the GPX data can be correctly matched"
@@ -756,62 +761,62 @@ msgstr ""
 "Most cameras don't store the time zone in EXIF. Give the correct time zone so "
 "the GPX data can be correctly matched"
 
-#: ../build/bin/conf_gen.h:4833
+#: ../build/bin/conf_gen.h:4843
 msgctxt "preferences"
 msgid "no color"
 msgstr "No color"
 
-#: ../build/bin/conf_gen.h:4834
+#: ../build/bin/conf_gen.h:4844
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "Illuminant color"
 
-#: ../build/bin/conf_gen.h:4835
+#: ../build/bin/conf_gen.h:4845
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "Effect emulation"
 
-#: ../build/bin/conf_gen.h:4899
+#: ../build/bin/conf_gen.h:4909
 msgctxt "preferences"
 msgid "list"
 msgstr "List"
 
-#: ../build/bin/conf_gen.h:4900
+#: ../build/bin/conf_gen.h:4910
 msgctxt "preferences"
 msgid "tabs"
 msgstr "Tabs"
 
-#: ../build/bin/conf_gen.h:4901
+#: ../build/bin/conf_gen.h:4911
 msgctxt "preferences"
 msgid "columns"
 msgstr "Columns"
 
-#: ../build/bin/conf_gen.h:4912
+#: ../build/bin/conf_gen.h:4922
 msgctxt "preferences"
 msgid "active"
 msgstr "Active"
 
-#: ../build/bin/conf_gen.h:4913
+#: ../build/bin/conf_gen.h:4923
 msgctxt "preferences"
 msgid "dim"
 msgstr "Dim"
 
-#: ../build/bin/conf_gen.h:4915
+#: ../build/bin/conf_gen.h:4925
 msgctxt "preferences"
 msgid "fade"
 msgstr "Fade"
 
-#: ../build/bin/conf_gen.h:4916
+#: ../build/bin/conf_gen.h:4926
 msgctxt "preferences"
 msgid "fit"
 msgstr "Fit"
 
-#: ../build/bin/conf_gen.h:4917
+#: ../build/bin/conf_gen.h:4927
 msgctxt "preferences"
 msgid "smooth"
 msgstr "Smooth"
 
-#: ../build/bin/conf_gen.h:4918
+#: ../build/bin/conf_gen.h:4928
 msgctxt "preferences"
 msgid "glide"
 msgstr "Glide"
@@ -822,7 +827,7 @@ msgid "this setting has been modified"
 msgstr "This setting has been modified"
 
 #: ../build/bin/preferences_gen.h:95 ../src/gui/accelerators.c:3067
-#: ../src/gui/gtk.c:3337 ../src/gui/preferences.c:538
+#: ../src/gui/gtk.c:3442 ../src/gui/preferences.c:538
 #: ../src/gui/preferences.c:1030 ../src/libs/modulegroups.c:4173
 msgid "?"
 msgstr "?"
@@ -2462,11 +2467,11 @@ msgstr "Autumn"
 #: ../src/common/collection.c:1483 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3973 ../src/iop/bilateral.cc:381
+#: ../src/gui/gtk.c:4078 ../src/iop/bilateral.cc:381
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
 #: ../src/iop/channelmixerrgb.c:4647 ../src/iop/colorequal.c:2927
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:1999
-#: ../src/iop/temperature.c:2184 ../src/libs/collect.c:2016
+#: ../src/iop/temperature.c:2184 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:47
 msgid "blue"
 msgstr "Blue"
@@ -2511,7 +2516,7 @@ msgstr "Contrast and sharpness"
 msgid "cyan"
 msgstr "Cyan"
 
-#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3499
+#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3512
 #: ../src/libs/filtering.c:925 ../src/libs/filtering.c:986
 #: ../src/libs/filtering.c:1654 ../src/libs/filtering.c:1961
 #: ../src/libs/tools/darktable.c:64
@@ -2590,12 +2595,12 @@ msgstr "Generic"
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3972 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
+#: ../src/gui/gtk.c:4077 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
 #: ../src/iop/channelmixer.c:611 ../src/iop/channelmixer.c:626
 #: ../src/iop/channelmixerrgb.c:4646 ../src/iop/colorequal.c:2925
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1979
 #: ../src/iop/temperature.c:1997 ../src/iop/temperature.c:2183
-#: ../src/libs/collect.c:2016 ../src/libs/filters/colors.c:262
+#: ../src/libs/collect.c:2023 ../src/libs/filters/colors.c:262
 #: ../src/libs/histogram.c:46
 msgid "green"
 msgstr "Green"
@@ -2646,7 +2651,7 @@ msgstr "Pastels"
 
 #: ../build/bin/styles_string.h:34 ../src/common/collection.c:1485
 #: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:385
-#: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:2016
+#: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Purple"
@@ -2663,11 +2668,11 @@ msgstr "Purple"
 #: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3971 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
+#: ../src/gui/gtk.c:4076 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
 #: ../src/iop/channelmixerrgb.c:4645 ../src/iop/colorequal.c:2922
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:1995
-#: ../src/iop/temperature.c:2182 ../src/libs/collect.c:2016
+#: ../src/iop/temperature.c:2182 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:45
 msgid "red"
 msgstr "Red"
@@ -2702,7 +2707,7 @@ msgstr "Spot color"
 #: ../src/common/collection.c:1479 ../src/common/colorlabels.c:382
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:854
 #: ../src/iop/colorequal.c:2924 ../src/iop/colorzones.c:2487
-#: ../src/iop/temperature.c:1985 ../src/libs/collect.c:2016
+#: ../src/iop/temperature.c:1985 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "Yellow"
@@ -3126,7 +3131,7 @@ msgstr "Preserve colors"
 #: ../src/gui/guides.c:833 ../src/iop/basecurve.c:2115
 #: ../src/iop/channelmixerrgb.c:4698 ../src/iop/clipping.c:1917
 #: ../src/iop/clipping.c:2099 ../src/iop/clipping.c:2114
-#: ../src/iop/retouch.c:499 ../src/libs/collect.c:2212
+#: ../src/iop/retouch.c:499 ../src/libs/collect.c:2219
 #: ../src/libs/colorpicker.c:52 ../src/libs/export.c:103
 #: ../src/libs/export.c:1165 ../src/libs/filters/module_order.c:158
 #: ../src/libs/live_view.c:369 ../src/libs/print_settings.c:1173
@@ -4329,7 +4334,7 @@ msgstr "Monochrome"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:329
-#: ../src/common/collection.c:1497 ../src/libs/collect.c:1957
+#: ../src/common/collection.c:1497 ../src/libs/collect.c:1964
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "Basic"
@@ -5171,9 +5176,9 @@ msgstr "Only manual vignette"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2626
-#: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:3970
+#: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:4075
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3614
-#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3685
+#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3698
 #: ../src/libs/filtering.c:1520 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/date.c:112
 #: ../src/libs/filters/date.c:125 ../src/libs/filters/rating.c:210
@@ -5959,16 +5964,16 @@ msgstr "Show images on a map"
 msgid "Print your images"
 msgstr "Print your images"
 
-#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4096
+#: ../src/bauhaus/bauhaus.c:927 ../src/bauhaus/bauhaus.c:4094
 #: ../src/iop/colorequal.c:3016
 msgid "sliders"
 msgstr "Sliders"
 
-#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4101
+#: ../src/bauhaus/bauhaus.c:929 ../src/bauhaus/bauhaus.c:4099
 msgid "dropdowns"
 msgstr "Dropdowns"
 
-#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4106
+#: ../src/bauhaus/bauhaus.c:931 ../src/bauhaus/bauhaus.c:4104
 msgid "buttons"
 msgstr "Buttons"
 
@@ -5981,57 +5986,57 @@ msgstr ""
 "%sRight-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
 "or hold Ctrl+Shift while dragging to ignore soft limits."
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3762
 msgid "button on"
 msgstr "Button on"
 
-#: ../src/bauhaus/bauhaus.c:3764
+#: ../src/bauhaus/bauhaus.c:3762
 msgid "button off"
 msgstr "Button off"
 
-#: ../src/bauhaus/bauhaus.c:3765
+#: ../src/bauhaus/bauhaus.c:3763
 msgid "button pressed"
 msgstr "Button pressed"
 
-#: ../src/bauhaus/bauhaus.c:4001
+#: ../src/bauhaus/bauhaus.c:3999
 msgid "not that many sliders"
 msgstr "Not that many sliders"
 
-#: ../src/bauhaus/bauhaus.c:4015
+#: ../src/bauhaus/bauhaus.c:4013
 msgid "not that many dropdowns"
 msgstr "Not that many dropdowns"
 
-#: ../src/bauhaus/bauhaus.c:4034
+#: ../src/bauhaus/bauhaus.c:4032
 msgid "not that many buttons"
 msgstr "Not that many buttons"
 
-#: ../src/bauhaus/bauhaus.c:4039 ../src/gui/accelerators.c:392
+#: ../src/bauhaus/bauhaus.c:4037 ../src/gui/accelerators.c:392
 msgid "value"
 msgstr "Value"
 
-#: ../src/bauhaus/bauhaus.c:4040 ../src/bauhaus/bauhaus.c:4046
+#: ../src/bauhaus/bauhaus.c:4038 ../src/bauhaus/bauhaus.c:4044
 #: ../src/gui/accelerators.c:371
 msgid "button"
 msgstr "Button"
 
-#: ../src/bauhaus/bauhaus.c:4041
+#: ../src/bauhaus/bauhaus.c:4039
 msgid "force"
 msgstr "Force"
 
-#: ../src/bauhaus/bauhaus.c:4042 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:4040 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "Zoom"
 
-#: ../src/bauhaus/bauhaus.c:4045 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:4043 ../src/libs/select.c:40
 msgid "selection"
 msgstr "Selection"
 
-#: ../src/bauhaus/bauhaus.c:4085
+#: ../src/bauhaus/bauhaus.c:4083
 msgid "slider"
 msgstr "Slider"
 
-#: ../src/bauhaus/bauhaus.c:4090
+#: ../src/bauhaus/bauhaus.c:4088
 msgid "dropdown"
 msgstr "Dropdown"
 
@@ -6048,8 +6053,8 @@ msgstr "Dropdown"
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
-#: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:379 ../src/libs/collect.c:456
-#: ../src/libs/collect.c:3516 ../src/libs/copy_history.c:114
+#: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:379 ../src/libs/collect.c:463
+#: ../src/libs/collect.c:3529 ../src/libs/copy_history.c:114
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1815 ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
@@ -6065,7 +6070,7 @@ msgid "_cancel"
 msgstr "_Cancel"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1261
-#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3517
+#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3530
 #: ../src/libs/export_metadata.c:167 ../src/libs/metadata.c:846
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1852
@@ -6423,7 +6428,7 @@ msgstr "Export time"
 msgid "print time"
 msgstr "Print time"
 
-#: ../src/common/collection.c:634 ../src/libs/collect.c:3872
+#: ../src/common/collection.c:634 ../src/libs/collect.c:3885
 #: ../src/libs/filtering.c:2224 ../src/libs/filtering.c:2244
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:98
 msgid "history"
@@ -6515,24 +6520,24 @@ msgstr "Exposure program"
 msgid "metering mode"
 msgstr "Metering mode"
 
-#: ../src/common/collection.c:1503 ../src/libs/collect.c:1957
+#: ../src/common/collection.c:1503 ../src/libs/collect.c:1964
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "Auto applied"
 
-#: ../src/common/collection.c:1509 ../src/libs/collect.c:1957
+#: ../src/common/collection.c:1509 ../src/libs/collect.c:1964
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "Altered"
 
 #: ../src/common/collection.c:1527 ../src/common/collection.c:1668
-#: ../src/libs/collect.c:1299 ../src/libs/collect.c:1490
-#: ../src/libs/collect.c:1516 ../src/libs/collect.c:1682
-#: ../src/libs/collect.c:2927
+#: ../src/libs/collect.c:1306 ../src/libs/collect.c:1497
+#: ../src/libs/collect.c:1523 ../src/libs/collect.c:1689
+#: ../src/libs/collect.c:2940
 msgid "not tagged"
 msgstr "Not tagged"
 
-#: ../src/common/collection.c:1528 ../src/libs/collect.c:1516
+#: ../src/common/collection.c:1528 ../src/libs/collect.c:1523
 #: ../src/libs/map_locations.c:740
 msgid "tagged"
 msgstr "Tagged"
@@ -6542,12 +6547,12 @@ msgid "tagged*"
 msgstr "Tagged*"
 
 #. local copy
-#: ../src/common/collection.c:1563 ../src/libs/collect.c:1979
+#: ../src/common/collection.c:1563 ../src/libs/collect.c:1986
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "Not copied locally"
 
-#: ../src/common/collection.c:1568 ../src/libs/collect.c:1978
+#: ../src/common/collection.c:1568 ../src/libs/collect.c:1985
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "Copied locally"
@@ -6565,12 +6570,12 @@ msgstr "Duplicates only"
 #: ../src/common/collection.c:1640 ../src/common/collection.c:1752
 #: ../src/common/collection.c:1779 ../src/common/collection.c:1806
 #: ../src/common/collection.c:1832 ../src/common/collection.c:1858
-#: ../src/common/collection.c:2769 ../src/libs/collect.c:2404
-#: ../src/libs/collect.c:2405
+#: ../src/common/collection.c:2769 ../src/libs/collect.c:2411
+#: ../src/libs/collect.c:2412
 msgid "unnamed"
 msgstr "Unnamed"
 
-#: ../src/common/collection.c:2375 ../src/libs/collect.c:2279
+#: ../src/common/collection.c:2375 ../src/libs/collect.c:2286
 msgid "not defined"
 msgstr "Not defined"
 
@@ -7445,11 +7450,11 @@ msgstr ""
 "\n"
 "Do you really want to delete the lock files?\n"
 
-#: ../src/common/database.c:3891 ../src/gui/gtk.c:3288
+#: ../src/common/database.c:3891 ../src/gui/gtk.c:3393
 msgid "_no"
 msgstr "_No"
 
-#: ../src/common/database.c:3891 ../src/gui/gtk.c:3287
+#: ../src/common/database.c:3891 ../src/gui/gtk.c:3392
 msgid "_yes"
 msgstr "_Yes"
 
@@ -7813,8 +7818,8 @@ msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "or the <b>RAW won't be readable</b> in next version."
 
 #: ../src/common/image.h:218 ../src/common/ratings.c:322
-#: ../src/imageio/format/avif.c:120 ../src/libs/collect.c:1614
-#: ../src/libs/collect.c:2387 ../src/libs/history.c:838
+#: ../src/imageio/format/avif.c:120 ../src/libs/collect.c:1621
+#: ../src/libs/collect.c:2394 ../src/libs/history.c:838
 #: ../src/libs/modulegroups.c:2869 ../src/libs/snapshots.c:927
 msgid "unknown"
 msgstr "Unknown"
@@ -9749,7 +9754,7 @@ msgstr ""
 #: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491
 #: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4385
 #: ../src/iop/filmicrgb.c:4396 ../src/iop/filmicrgb.c:4429
-#: ../src/iop/filmicrgb.c:4439 ../src/iop/graduatednd.c:1060
+#: ../src/iop/filmicrgb.c:4439 ../src/iop/graduatednd.c:1059
 #: ../src/iop/negadoctor.c:1004 ../src/iop/profile_gamma.c:624
 #: ../src/iop/profile_gamma.c:630 ../src/iop/relight.c:249
 #: ../src/iop/soften.c:385 ../src/iop/toneequal.c:3240
@@ -10258,7 +10263,7 @@ msgstr "Duplicate"
 #: ../src/develop/imageop.c:4147
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:145
-#: ../src/gui/gtk.c:3818 ../src/gui/gtk.c:3873 ../src/gui/hist_dialog.c:289
+#: ../src/gui/gtk.c:3923 ../src/gui/gtk.c:3978 ../src/gui/hist_dialog.c:289
 #: ../src/gui/styles_dialog.c:629 ../src/gui/styles_dialog.c:651
 #: ../src/iop/atrous.c:1567 ../src/libs/lib.c:1650
 #: ../src/libs/modulegroups.c:4168
@@ -10554,102 +10559,102 @@ msgstr "Use same shapes as"
 msgid "masks can not contain themselves"
 msgstr "Masks can not contain themselves"
 
-#: ../src/develop/masks/object.c:836
+#: ../src/develop/masks/object.c:839
 msgid "set raster mask root folder in preferences"
 msgstr "Set raster mask root folder in preferences"
 
-#: ../src/develop/masks/object.c:844
+#: ../src/develop/masks/object.c:847
 msgid "cannot create raster mask folder"
 msgstr "Cannot create raster mask folder"
 
-#: ../src/develop/masks/object.c:907
+#: ../src/develop/masks/object.c:910
 msgid "raster mask saved"
 msgstr "Raster mask saved"
 
-#: ../src/develop/masks/object.c:912
+#: ../src/develop/masks/object.c:915
 msgid "failed to save raster mask"
 msgstr "Failed to save raster mask"
 
-#: ../src/develop/masks/object.c:993
+#: ../src/develop/masks/object.c:996
 msgid "no mask extracted from AI segmentation"
 msgstr "No mask extracted from AI segmentation"
 
-#: ../src/develop/masks/object.c:1001
+#: ../src/develop/masks/object.c:1004
 msgid "ai object group"
 msgstr "AI object group"
 
-#: ../src/develop/masks/object.c:1002
+#: ../src/develop/masks/object.c:1005
 msgid "ai object"
 msgstr "AI object"
 
-#: ../src/develop/masks/object.c:1128
+#: ../src/develop/masks/object.c:1131
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Smoothing: %3.2f"
 
-#: ../src/develop/masks/object.c:1139
+#: ../src/develop/masks/object.c:1142
 #, c-format
 msgid "cleanup: %d"
 msgstr "Cleanup: %d"
 
-#: ../src/develop/masks/object.c:1152
+#: ../src/develop/masks/object.c:1155
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Opacity: %d%%"
 
-#: ../src/develop/masks/object.c:1275
+#: ../src/develop/masks/object.c:1278
 #, c-format
 msgid "group '%s'"
 msgstr "Group '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1524 ../src/develop/masks/object.c:1558
+#: ../src/develop/masks/object.c:1527 ../src/develop/masks/object.c:1564
 msgid "object mask: analyzing image..."
 msgstr "Object mask: analyzing image..."
 
-#: ../src/develop/masks/object.c:1568
+#: ../src/develop/masks/object.c:1574
 msgid "click on object to create mask"
 msgstr "Click on object to create mask"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1578
+#: ../src/develop/masks/object.c:1584
 msgid "object mask preparation failed"
 msgstr "Object mask preparation failed"
 
-#: ../src/develop/masks/object.c:1778
+#: ../src/develop/masks/object.c:1784
 msgid "[OBJECT] select / add foreground point"
 msgstr "[OBJECT] Select / Add foreground point"
 
-#: ../src/develop/masks/object.c:1783
+#: ../src/develop/masks/object.c:1789
 msgid "[OBJECT] add background point"
 msgstr "[OBJECT] Add background point"
 
-#: ../src/develop/masks/object.c:1788
+#: ../src/develop/masks/object.c:1794
 msgid "[OBJECT] clear selection"
 msgstr "[OBJECT] Clear selection"
 
-#: ../src/develop/masks/object.c:1793
+#: ../src/develop/masks/object.c:1799
 msgid "[OBJECT] apply mask"
 msgstr "[OBJECT] Apply mask"
 
-#: ../src/develop/masks/object.c:1798
+#: ../src/develop/masks/object.c:1804
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJECT] Change smoothing"
 
-#: ../src/develop/masks/object.c:1803
+#: ../src/develop/masks/object.c:1809
 msgid "[OBJECT] change cleanup"
 msgstr "[OBJECT] Change cleanup"
 
-#: ../src/develop/masks/object.c:1808
+#: ../src/develop/masks/object.c:1814
 msgid "[OBJECT] change opacity"
 msgstr "[OBJECT] Change opacity"
 
-#: ../src/develop/masks/object.c:1815
+#: ../src/develop/masks/object.c:1821
 #, c-format
 msgid "object #%d"
 msgstr "Object #%d"
 
-#: ../src/develop/masks/object.c:1833
+#: ../src/develop/masks/object.c:1839
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
@@ -10664,7 +10669,7 @@ msgstr ""
 "<b>Smoothing</b>: scroll (%3.2f), <b>Cleanup</b>: Shift+scroll (%d), "
 "<b>Opacity</b>: Ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1844
+#: ../src/develop/masks/object.c:1850
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr "<b>Select</b>: click on object, <b>Opacity</b>: Ctrl+scroll (%d%%)"
@@ -13531,13 +13536,13 @@ msgid "popup"
 msgstr "Popup"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:176
-#: ../src/gui/gtk.c:3871 ../src/libs/modulegroups.c:2939
+#: ../src/gui/gtk.c:3976 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:882
 msgid "next"
 msgstr "Next"
 
 #: ../src/gui/accelerators.c:144 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3872 ../src/libs/modulegroups.c:2939
+#: ../src/gui/gtk.c:3977 ../src/libs/modulegroups.c:2939
 #: ../src/views/lighttable.c:883
 msgid "previous"
 msgstr "Previous"
@@ -13566,7 +13571,7 @@ msgstr "Right-toggle"
 msgid "right-on"
 msgstr "Right-on"
 
-#: ../src/gui/accelerators.c:168 ../src/gui/gtk.c:3870
+#: ../src/gui/accelerators.c:168 ../src/gui/gtk.c:3975
 msgid "activate"
 msgstr "Activate"
 
@@ -14432,8 +14437,8 @@ msgstr "Toggle focus-peaking mode"
 msgid "toggle focus peaking"
 msgstr "Toggle focus peaking"
 
-#: ../src/gui/gtk.c:2021 ../src/gui/gtk.c:3977 ../src/gui/gtk.c:3982
-#: ../src/gui/gtk.c:3987 ../src/gui/gtk.c:3992
+#: ../src/gui/gtk.c:2021 ../src/gui/gtk.c:4082 ../src/gui/gtk.c:4087
+#: ../src/gui/gtk.c:4092 ../src/gui/gtk.c:4097
 msgid "tabs"
 msgstr "Tabs"
 
@@ -14457,53 +14462,53 @@ msgstr ""
 "\n"
 "Do you want to collapse all panels now?"
 
-#: ../src/gui/gtk.c:2509
+#: ../src/gui/gtk.c:2575
 msgid "restore defaults"
 msgstr "Restore defaults"
 
-#: ../src/gui/gtk.c:2510
+#: ../src/gui/gtk.c:2576
 msgid "restore the default visibility and position of all modules in this view"
 msgstr "Restore the default visibility and position of all modules in this view"
 
-#: ../src/gui/gtk.c:2593
+#: ../src/gui/gtk.c:2659
 msgid "right-click to show/hide modules"
 msgstr "Right-click to show/hide modules"
 
-#: ../src/gui/gtk.c:2602
+#: ../src/gui/gtk.c:2668
 msgid "show/hide modules"
 msgstr "Show/hide modules"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3404
+#: ../src/gui/gtk.c:3509
 msgid "access the online user manual?"
 msgstr "Access the online user manual?"
 
-#: ../src/gui/gtk.c:3405
+#: ../src/gui/gtk.c:3510
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "Do you want to access `%s'?"
 
-#: ../src/gui/gtk.c:3478
+#: ../src/gui/gtk.c:3583
 msgid "there is no help available for this element"
 msgstr "There is no help available for this element"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3523 ../src/libs/metadata_view.c:853
+#: ../src/gui/gtk.c:3628 ../src/libs/metadata_view.c:853
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3525
+#: ../src/gui/gtk.c:3630
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3865
+#: ../src/gui/gtk.c:3970
 msgid "does not contain pages"
 msgstr "Does not contain pages"
 
-#: ../src/gui/gtk.c:4114
+#: ../src/gui/gtk.c:4219
 #, c-format
 msgid "never show more than %d lines"
 msgstr "Never show more than %d lines"
@@ -15015,7 +15020,7 @@ msgstr "Select preset(s) to import"
 
 #: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
 #: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
-#: ../src/libs/collect.c:456 ../src/libs/copy_history.c:114
+#: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
 msgid "_open"
@@ -22683,11 +22688,11 @@ msgstr "Graduated density"
 msgid "simulate an optical graduated neutral density filter"
 msgstr "Simulate an optical graduated neutral density filter"
 
-#: ../src/iop/graduatednd.c:1061
+#: ../src/iop/graduatednd.c:1060
 msgid "the density in EV for the filter"
 msgstr "The density in EV for the filter"
 
-#: ../src/iop/graduatednd.c:1066
+#: ../src/iop/graduatednd.c:1065
 #, no-c-format
 msgid ""
 "hardness of graduation:\n"
@@ -22696,34 +22701,34 @@ msgstr ""
 "Hardness of graduation:\n"
 "0% = soft, 100% = hard"
 
-#: ../src/iop/graduatednd.c:1071
+#: ../src/iop/graduatednd.c:1070
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "Rotation of filter -180 to 180 degrees"
 
-#: ../src/iop/graduatednd.c:1084
+#: ../src/iop/graduatednd.c:1083
 msgid "select the hue tone of filter"
 msgstr "Select the hue tone of filter"
 
-#: ../src/iop/graduatednd.c:1090
+#: ../src/iop/graduatednd.c:1089
 msgid "select the saturation of filter"
 msgstr "Select the saturation of filter"
 
-#: ../src/iop/graduatednd.c:1101
+#: ../src/iop/graduatednd.c:1100
 #, c-format
 msgid "[%s on nodes] change line rotation"
 msgstr "[%s on nodes] change line rotation"
 
-#: ../src/iop/graduatednd.c:1102
+#: ../src/iop/graduatednd.c:1101
 #, c-format
 msgid "[%s on line] move line"
 msgstr "[%s on line] move line"
 
-#: ../src/iop/graduatednd.c:1104
+#: ../src/iop/graduatednd.c:1103
 #, c-format
 msgid "[%s on line] change density"
 msgstr "[%s on line] change density"
 
-#: ../src/iop/graduatednd.c:1106
+#: ../src/iop/graduatednd.c:1105
 #, c-format
 msgid "[%s on line] change hardness"
 msgstr "[%s on line] change hardness"
@@ -25912,7 +25917,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Camera control"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:773
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:771
 msgid "modes"
 msgstr "Modes"
 
@@ -26018,11 +26023,11 @@ msgstr "Shutterspeed"
 msgid "WB"
 msgstr "WB"
 
-#: ../src/libs/collect.c:185
+#: ../src/libs/collect.c:192
 msgid "collections"
 msgstr "Collections"
 
-#: ../src/libs/collect.c:190
+#: ../src/libs/collect.c:197
 msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
@@ -26030,43 +26035,43 @@ msgstr ""
 "Define search criteria for images\n"
 "to be displayed or edited"
 
-#: ../src/libs/collect.c:454
+#: ../src/libs/collect.c:461
 msgid "update path to files"
 msgstr "Update path to files"
 
-#: ../src/libs/collect.c:538
+#: ../src/libs/collect.c:545
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "Problem selecting new path for the filmroll in %s"
 
-#: ../src/libs/collect.c:612
+#: ../src/libs/collect.c:619
 msgid "update path to files..."
 msgstr "Update path to files..."
 
-#: ../src/libs/collect.c:617
+#: ../src/libs/collect.c:624
 msgid "remove..."
 msgstr "Remove..."
 
-#: ../src/libs/collect.c:1375
+#: ../src/libs/collect.c:1382
 msgid "uncategorized"
 msgstr "Uncategorized"
 
-#: ../src/libs/collect.c:2359 ../src/libs/filters/rating_range.c:120
+#: ../src/libs/collect.c:2366 ../src/libs/filters/rating_range.c:120
 #: ../src/libs/filters/rating_range.c:146 ../src/libs/filters/rating_range.c:151
 #: ../src/libs/filters/rating_range.c:302
 msgid "rejected"
 msgstr "Rejected"
 
-#: ../src/libs/collect.c:2362 ../src/libs/filters/rating_range.c:122
+#: ../src/libs/collect.c:2369 ../src/libs/filters/rating_range.c:122
 #: ../src/libs/filters/rating_range.c:146 ../src/libs/filters/rating_range.c:303
 msgid "not rated"
 msgstr "Not rated"
 
-#: ../src/libs/collect.c:2604
+#: ../src/libs/collect.c:2617
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Use <, <=, >, >=, <>, =, [;] as operators"
 
-#: ../src/libs/collect.c:2608
+#: ../src/libs/collect.c:2621
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -26076,7 +26081,7 @@ msgstr ""
 "Star rating: 0-5\n"
 "Rejected images: -1"
 
-#: ../src/libs/collect.c:2616
+#: ../src/libs/collect.c:2629
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -26084,12 +26089,12 @@ msgstr ""
 "Use <, <=, >, >=, <>, =, [;] as operators\n"
 "Type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 
-#: ../src/libs/collect.c:2623
+#: ../src/libs/collect.c:2636
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "Use `%' as wildcard and `,' to separate values"
 
-#: ../src/libs/collect.c:2630
+#: ../src/libs/collect.c:2643
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26102,7 +26107,7 @@ msgstr ""
 "Shift+click to include only the current hierarchy (no suffix)\n"
 "Ctrl+click to include only sub-hierarchies (suffix `|%')"
 
-#: ../src/libs/collect.c:2640
+#: ../src/libs/collect.c:2653
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26115,7 +26120,7 @@ msgstr ""
 "Shift+click to include only the current location (no suffix)\n"
 "Ctrl+click to include only sub-locations (suffix `|%')"
 
-#: ../src/libs/collect.c:2650
+#: ../src/libs/collect.c:2663
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -26128,52 +26133,52 @@ msgstr ""
 "Shift+click to include only the current folder (no suffix)\n"
 "Ctrl+click to include only sub-folders (suffix `|%')"
 
-#: ../src/libs/collect.c:2658
+#: ../src/libs/collect.c:2671
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "Use `%' as wildcard"
 
-#: ../src/libs/collect.c:2729 ../src/libs/collect.c:2750
-#: ../src/libs/collect.c:3380
+#: ../src/libs/collect.c:2742 ../src/libs/collect.c:2763
+#: ../src/libs/collect.c:3393
 msgid "clear this rule"
 msgstr "Clear this rule"
 
-#: ../src/libs/collect.c:2734
+#: ../src/libs/collect.c:2747
 msgid "clear this rule or add new rules"
 msgstr "Clear this rule or add new rules"
 
-#: ../src/libs/collect.c:3386
+#: ../src/libs/collect.c:3399
 msgid "narrow down search"
 msgstr "Narrow down search"
 
-#: ../src/libs/collect.c:3393
+#: ../src/libs/collect.c:3406
 msgid "add more images"
 msgstr "Add more images"
 
-#: ../src/libs/collect.c:3400
+#: ../src/libs/collect.c:3413
 msgid "exclude images"
 msgstr "Exclude images"
 
-#: ../src/libs/collect.c:3409
+#: ../src/libs/collect.c:3422
 msgid "change to: and"
 msgstr "Change to: and"
 
-#: ../src/libs/collect.c:3416
+#: ../src/libs/collect.c:3429
 msgid "change to: or"
 msgstr "Change to: or"
 
-#: ../src/libs/collect.c:3423
+#: ../src/libs/collect.c:3436
 msgid "change to: except"
 msgstr "Change to: except"
 
 #. the different categories
-#: ../src/libs/collect.c:3452 ../src/libs/filtering.c:889
+#: ../src/libs/collect.c:3465 ../src/libs/filtering.c:889
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1618
 #: ../src/libs/filtering.c:1955
 msgid "files"
 msgstr "Files"
 
-#: ../src/libs/collect.c:3457 ../src/libs/export_metadata.c:178
+#: ../src/libs/collect.c:3470 ../src/libs/export_metadata.c:178
 #: ../src/libs/filtering.c:894 ../src/libs/filtering.c:955
 #: ../src/libs/filtering.c:1626 ../src/libs/filtering.c:1959
 #: ../src/libs/image.c:504 ../src/libs/image.c:605 ../src/libs/image.c:624
@@ -26181,49 +26186,49 @@ msgstr "Files"
 msgid "metadata"
 msgstr "Metadata"
 
-#: ../src/libs/collect.c:3476 ../src/libs/filtering.c:902
+#: ../src/libs/collect.c:3489 ../src/libs/filtering.c:902
 #: ../src/libs/filtering.c:963 ../src/libs/filtering.c:1957
 msgid "times"
 msgstr "Times"
 
-#: ../src/libs/collect.c:3485 ../src/libs/filtering.c:911
+#: ../src/libs/collect.c:3498 ../src/libs/filtering.c:911
 #: ../src/libs/filtering.c:972 ../src/libs/filtering.c:1637
 msgid "capture details"
 msgstr "Capture details"
 
-#: ../src/libs/collect.c:3514
+#: ../src/libs/collect.c:3527
 msgid "collections settings"
 msgstr "Collections settings"
 
-#: ../src/libs/collect.c:3536 ../src/libs/export.c:1427
+#: ../src/libs/collect.c:3549 ../src/libs/export.c:1427
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
 #: ../src/libs/tagging.c:3968
 msgid "preferences..."
 msgstr "Preferences..."
 
-#: ../src/libs/collect.c:3660 ../src/libs/filtering.c:1491
+#: ../src/libs/collect.c:3673 ../src/libs/filtering.c:1491
 msgid "AND"
 msgstr "AND"
 
-#: ../src/libs/collect.c:3665 ../src/libs/filtering.c:1496
+#: ../src/libs/collect.c:3678 ../src/libs/filtering.c:1496
 msgid "OR"
 msgstr "OR"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3670 ../src/libs/filtering.c:1501
+#: ../src/libs/collect.c:3683 ../src/libs/filtering.c:1501
 msgid "BUT NOT"
 msgstr "BUT NOT"
 
-#: ../src/libs/collect.c:3776
+#: ../src/libs/collect.c:3789
 msgid "toggle collection sort order ascending/descending"
 msgstr "Toggle collection sort order ascending/descending"
 
-#: ../src/libs/collect.c:3874 ../src/libs/filtering.c:2225
+#: ../src/libs/collect.c:3887 ../src/libs/filtering.c:2225
 msgid "revert to a previous set of rules"
 msgstr "Revert to a previous set of rules"
 
-#: ../src/libs/collect.c:3928
+#: ../src/libs/collect.c:3941
 msgid "jump back to previous collection"
 msgstr "Jump back to previous collection"
 
@@ -27594,20 +27599,20 @@ msgstr "Double-click resets"
 msgid "drag to change exposure"
 msgstr "Drag to change exposure"
 
-#: ../src/libs/histogram.c:700 ../src/libs/scopes/histogram.c:50
+#: ../src/libs/histogram.c:698 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../src/libs/histogram.c:706 ../src/libs/histogram.c:802
+#: ../src/libs/histogram.c:704 ../src/libs/histogram.c:800
 msgid "hide histogram"
 msgstr "Hide histogram"
 
-#: ../src/libs/histogram.c:814
+#: ../src/libs/histogram.c:812
 #, c-format
 msgid "toggle %s channel"
 msgstr "Toggle %s channel"
 
-#: ../src/libs/histogram.c:822
+#: ../src/libs/histogram.c:820
 msgid "toggle colors"
 msgstr "Toggle colors"
 
