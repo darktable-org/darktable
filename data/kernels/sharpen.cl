@@ -19,8 +19,14 @@
 #include "common.h"
 
 kernel void
-sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
-      const int width, const int height, const int blocksize, local float *buffer)
+sharpen_hblur(read_only image2d_t in,
+              write_only image2d_t out,
+              global const float *m,
+              const int rad,
+              const int width,
+              const int height,
+              const int blocksize,
+              local float *buffer)
 {
   const int lid = get_local_id(0);
   const int lsz = get_local_size(0);
@@ -71,8 +77,14 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const flo
 
 
 kernel void
-sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
-      const int width, const int height, const int blocksize, local float *buffer)
+sharpen_vblur(read_only image2d_t in,
+              write_only image2d_t out,
+              global const float *m,
+              const int rad,
+              const int width,
+              const int height,
+              const int blocksize,
+              local float *buffer)
 {
   const int lid = get_local_id(1);
   const int lsz = get_local_size(1);
@@ -131,8 +143,14 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const flo
  * thrs = sharpening threshold
  */
 kernel void
-sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out,
-            const int width, const int height, const float sharpen, const float thrs, const int rad)
+sharpen_mix(read_only image2d_t in_a,
+            read_only image2d_t in_b,
+            write_only image2d_t out,
+            const int width,
+            const int height,
+            const float sharpen,
+            const float thrs,
+            const int rad)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -142,12 +160,10 @@ sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image
   float4 pixel = readpixel(in_a, x, y);
   if(x >= rad && y >= rad && x < width-rad && y < height-rad)
   {
-    float blurredx  = readsingle(in_b, x, y);
-    float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-    float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+    const float blurredx  = readsingle(in_b, x, y);
 
-    float delta = pixel.x - blurredx;
-    float amount = sharpen * copysign(fmax(0.0f, fabs(delta) - thrs), delta);
+    const float delta = pixel.x - blurredx;
+    const float amount = sharpen * copysign(fmax(0.0f, fabs(delta) - thrs), delta);
     pixel.x = pixel.x + amount;
   }
   write_imagef (out, (int2)(x, y), pixel);
