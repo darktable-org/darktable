@@ -77,6 +77,7 @@ enum
   COL_STATUS,
   COL_DEFAULT,
   COL_ID,
+  COL_INFO,     // info icon column (static "ℹ" text)
   NUM_COLS
 };
 
@@ -98,6 +99,7 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *delete_selected_btn;
   GtkWidget *parent_dialog;
   GtkWidget *select_all_toggle;
+  GtkTreeViewColumn *info_col;
   GtkWidget *controls_box;  // container for all controls below the enable toggle
   GtkWidget *ort_path_entry;
   GtkWidget *ort_path_indicator;
@@ -235,6 +237,8 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
         ? (model->version ? model->version : "0.0") : "–",
       COL_ID,
       model->id,
+      COL_INFO,
+      "\xe2\x84\xb9",  // ℹ (U+2139)
       -1);
     dt_ai_model_free(model);
   }
@@ -887,6 +891,167 @@ static void _on_delete_selected(GtkButton *button, gpointer user_data)
   g_list_free_full(to_delete, g_free);
 }
 
+// show model card dialog for the given model_id
+static void _show_model_card(dt_prefs_ai_data_t *data,
+                             const char *model_id)
+{
+  if(!model_id || !model_id[0]) return;
+
+  const char *dash = "\xe2\x80\x93";  // en dash for missing fields
+  dt_ai_model_card_t *card = dt_ai_models_get_card(darktable.ai_registry, model_id);
+
+  const char *name = (card && card->name)
+    ? card->name : model_id;
+  const char *desc = (card && card->long_description)
+    ? card->long_description : dash;
+
+  GtkWidget *dlg = gtk_message_dialog_new(
+    GTK_WINDOW(data->parent_dialog),
+    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+    GTK_MESSAGE_INFO,
+    GTK_BUTTONS_CLOSE,
+    "%s", desc);
+  gtk_window_set_title(GTK_WINDOW(dlg), name);
+
+  // field grid in the message area below the description
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), 4);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), 12);
+  gtk_widget_set_margin_top(grid, 12);
+
+  GtkWidget *msg_area
+    = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dlg));
+  gtk_widget_set_margin_top(msg_area, 8);
+  gtk_container_add(GTK_CONTAINER(msg_area), grid);
+
+  const char *labels[] = {
+    N_("scope"), N_("author"),
+    N_("source"), N_("paper"),
+    N_("license"), N_("training data"),
+    N_("data license"), N_("notes")
+  };
+  const char *values[] = {
+    card ? card->scope : NULL,
+    card ? card->author : NULL,
+    card ? card->source : NULL,
+    card ? card->paper : NULL,
+    card ? card->license : NULL,
+    card ? card->training_data : NULL,
+    card ? card->training_data_license : NULL,
+    card ? card->notes : NULL
+  };
+  const int n_fields = (int)(sizeof(labels) / sizeof(labels[0]));
+
+  for(int i = 0; i < n_fields; i++)
+  {
+    GtkWidget *lbl = gtk_label_new(_(labels[i]));
+    gtk_label_set_xalign(GTK_LABEL(lbl), 1.0f);
+    gtk_grid_attach(GTK_GRID(grid), lbl, 0, i, 1, 1);
+
+    const char *v = values[i] ? values[i] : dash;
+    GtkWidget *val;
+    // render URLs as clickable links
+    if(g_str_has_prefix(v, "http://")
+       || g_str_has_prefix(v, "https://"))
+    {
+      gchar *markup = g_markup_printf_escaped(
+        "<a href=\"%s\">%s</a>", v, v);
+      val = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(val), markup);
+      g_free(markup);
+    }
+    else
+    {
+      val = gtk_label_new(v);
+    }
+    gtk_label_set_xalign(GTK_LABEL(val), 0.0f);
+    gtk_label_set_line_wrap(GTK_LABEL(val), TRUE);
+    gtk_label_set_max_width_chars(GTK_LABEL(val), 50);
+    gtk_label_set_selectable(GTK_LABEL(val), TRUE);
+    gtk_grid_attach(GTK_GRID(grid), val, 1, i, 1, 1);
+  }
+
+  gtk_widget_show_all(dlg);
+  gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+
+  dt_ai_model_card_free(card);
+}
+
+// show tooltip and hand cursor over the info column
+static gboolean _on_query_tooltip(GtkWidget *widget,
+                                  gint x, gint y,
+                                  gboolean keyboard_mode,
+                                  GtkTooltip *tooltip,
+                                  gpointer user_data)
+{
+  (void)keyboard_mode;
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  GtkTreeView *tv = GTK_TREE_VIEW(widget);
+  GtkTreeViewColumn *column = NULL;
+  gint bx, by;
+  gtk_tree_view_convert_widget_to_bin_window_coords(
+    tv, x, y, &bx, &by);
+
+  if(!gtk_tree_view_get_path_at_pos(
+       tv, bx, by, NULL, &column, NULL, NULL))
+    return FALSE;
+
+  GdkWindow *win = gtk_tree_view_get_bin_window(tv);
+  if(column == data->info_col)
+  {
+    gdk_window_set_cursor(win,
+                          gdk_cursor_new_from_name(gdk_window_get_display(win),
+                                                           "pointer"));
+    gtk_tooltip_set_text(tooltip, _("click for model details"));
+    return TRUE;
+  }
+
+  gdk_window_set_cursor(win, NULL);
+  return FALSE;
+}
+
+// click on the ℹ info column opens the model card
+static gboolean _on_info_button_press(GtkWidget *widget,
+                                      GdkEventButton *event,
+                                      gpointer user_data)
+{
+  if(event->type != GDK_BUTTON_PRESS
+     || event->button != 1)
+    return FALSE;
+
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  GtkTreeView *tv = GTK_TREE_VIEW(widget);
+  GtkTreePath *path = NULL;
+  GtkTreeViewColumn *column = NULL;
+
+  if(!gtk_tree_view_get_path_at_pos(tv, (gint)event->x, (gint)event->y,
+                                    &path, &column, NULL, NULL))
+    return FALSE;
+
+  // only react to clicks on the info column
+  if(column != data->info_col)
+  {
+    gtk_tree_path_free(path);
+    return FALSE;
+  }
+
+  GtkTreeIter iter;
+  if(gtk_tree_model_get_iter(GTK_TREE_MODEL(data->model_store), &iter, path))
+  {
+    gchar *model_id = NULL;
+    gtk_tree_model_get(GTK_TREE_MODEL(data->model_store),
+                       &iter, COL_ID, &model_id, -1);
+    if(model_id)
+    {
+      _show_model_card(data, model_id);
+      g_free(model_id);
+    }
+  }
+  gtk_tree_path_free(path);
+  return TRUE;
+}
+
 #if !defined(__APPLE__)
 static void _show_ort_probe_result(GtkWindow *parent, const char *path, const char *version)
 {
@@ -1280,7 +1445,8 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     G_TYPE_BOOLEAN, // enabled_sensitive
     G_TYPE_STRING,  // status
     G_TYPE_STRING,  // default
-    G_TYPE_STRING); // id
+    G_TYPE_STRING,  // id
+    G_TYPE_STRING); // info icon
 
   // sort by task, then default, then name
   gtk_tree_sortable_set_default_sort_func(
@@ -1402,6 +1568,24 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     COL_DEFAULT,
     NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), default_col);
+
+  // info icon column — click opens model card
+  GtkCellRenderer *info_renderer = gtk_cell_renderer_text_new();
+  data->info_col = gtk_tree_view_column_new_with_attributes(
+    "",
+    info_renderer,
+    "text",
+    COL_INFO,
+    NULL);
+  gtk_tree_view_column_set_clickable(data->info_col, FALSE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list),
+                              data->info_col);
+
+  gtk_widget_set_has_tooltip(data->model_list, TRUE);
+  g_signal_connect(data->model_list, "query-tooltip",
+                   G_CALLBACK(_on_query_tooltip), data);
+  g_signal_connect(data->model_list, "button-press-event",
+                   G_CALLBACK(_on_info_button_press), data);
 
   // scrolled window for the list
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
