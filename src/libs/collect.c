@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2025 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2895,7 +2895,12 @@ static void row_activated_with_event(GtkTreeView *view,
       gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
 
       gchar *n_text;
-      n_text = g_strdup_printf("[%s;%s]", text, text2);
+      const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
+
+      if(sort_descending)
+        n_text = g_strdup_printf("[%s;%s]", text2, text);
+      else
+        n_text = g_strdup_printf("[%s;%s]", text, text2);
 
       g_free(text);
       g_free(text2);
