@@ -972,7 +972,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   //    automatic detection similar to the structure one,
   //  * generalize the framework for isotropic diffusion and
   //    anisotropic weighted on the isophote direction
-  //  * add a variance regularization to better avoid edges.
+  //  * add an HF-band energy regularization to better avoid edges.
   // The sharpness setting mimics the contrast equalizer effect by
   // simply multiplying the HF by some gain.
 
@@ -1019,8 +1019,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
               const float lf_val = LF[neighbor + c];
               neighbour_pixel_HF[3 * ii + jj][c] = hf_val;
               neighbour_pixel_LF[3 * ii + jj][c] = lf_val;
-              // Exposure-invariant band energy: HF/LF ratio squared.
-              // Clamp LF to a strictly positive floor to avoid division by zero.
+              // Clamp LF to a strictly positive floor to avoid divide-by-zero in
+              // the HF/LF energy estimate
               const float safe_lf = fmaxf(lf_val - FLT_MIN, 0.f) + FLT_MIN;
               energy[c] += sqf(hf_val / safe_lf);
             }
@@ -1275,7 +1275,6 @@ static inline gboolean wavelets_process(const float *const restrict in,
 
     if(s == 0) buffer_out = reconstructed;
 
-    // Pre-compute the regularization factor using the zoom-aware physical radius.
     // This folds together: user regularization, 3x3 averaging (1/9), and sqf(real_radius).
     const float normalized_regularization = regularization / 9.f * sqf(real_radius);
 

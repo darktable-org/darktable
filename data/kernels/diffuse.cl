@@ -200,8 +200,8 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       y,
       clamp((y + mult * H_STEP), 0, height - 1) };
 
-    // Fetch the local 3x3 neighborhoods and accumulate the HF/LF
-    // energy regularizer in the same pass.
+    // Fetch the local 3x3 neighborhoods used by the anisotropic stencils
+    // and accumulate the HF/LF energy regularizer in the same pass.
     float4 neighbour_pixel_HF[9];
     float4 neighbour_pixel_LF[9];
     float4 energy = (float4)0.f;
@@ -215,9 +215,8 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
         const float4 lf_value = read_imagef(LF, samplerA, p);
         neighbour_pixel_HF[k] = hf_value;
         neighbour_pixel_LF[k] = lf_value;
-        // Exposure-invariant band energy: HF/LF ratio squared.
-        // Clamp LF to a strictly positive floor to match the CPU path
-        // and avoid divide-by-zero.
+        // Clamp LF to a strictly positive floor to avoid divide-by-zero in
+        // the HF/LF energy estimate
         const float4 safe_lf = fmax(lf_value - (float4)(FLT_MIN), (float4)0.f) + (float4)(FLT_MIN);
         const float4 ratio = hf_value / safe_lf;
         energy += ratio * ratio;
@@ -283,10 +282,9 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       derivatives[3] += kern_fourth[k] * neighbour_pixel_HF[k];
     }
 
-    // compute the update -- use neighbour_pixel[4] (the center pixel,
-    // already fetched) instead of re-reading from the image.
     float4 acc = (float4)0.f;
     for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
+    // neighbour_pixel_HF[4]: center pixel, already read from image
     acc = (neighbour_pixel_HF[4] * strength + acc / energy);
 
     // update the solution
