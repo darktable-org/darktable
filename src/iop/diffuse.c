@@ -1522,13 +1522,14 @@ static inline cl_int wavelets_process_cl(const int devid,
       buffer_out = LF_odd;
     }
 
-    // Compute wavelets low-frequency scales
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_horizontal, width, height,
+    // Keep the same separable order as the CPU path: vertical pass first,
+    // then horizontal pass.
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_vertical, width, height,
                               CLARG(buffer_in), CLARG(HF[s]),
                               CLARG(width), CLARG(height), CLARG(mult));
     if(err != CL_SUCCESS) return err;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_vertical, width, height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_horizontal, width, height,
                               CLARG(HF[s]), CLARG(buffer_out),
                               CLARG(width), CLARG(height), CLARG(mult));
     if(err != CL_SUCCESS) return err;
