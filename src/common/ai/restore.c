@@ -35,6 +35,14 @@ extern void dwt_denoise(float *buf, int width, int height,
 #define MAX_MODEL_INPUTS 4
 #define DWT_DETAIL_BANDS 5
 
+// candidate tile sizes from largest to smallest, used by both the
+// startup memory-budget selector and the runtime OOM-retry fallback.
+// the memory-budget check gates which entry is chosen at startup;
+// the tile size cache persists the result so JIT-compiling EPs
+// (MIGraphX, CoreML, TensorRT) only pay the compile cost once.
+#define DT_RESTORE_TILE_LADDER_1X {2048, 1536, 1024, 768, 512, 384, 256}
+#define DT_RESTORE_TILE_LADDER_SR {768, 512, 384, 256, 192}
+
 /* --- opaque struct definitions --- */
 
 struct dt_restore_env_t
@@ -49,6 +57,9 @@ struct dt_restore_context_t
   char *model_id;
   char *model_file;
   char *task;
+  int tile_size;    // tile size used to create the current session
+  char *dim_h;      // symbolic height dim name used for session overrides
+  char *dim_w;      // symbolic width dim name used for session overrides
   gint ref_count;
 };
 
@@ -128,58 +139,130 @@ void dt_restore_env_destroy(dt_restore_env_t *env)
 #define TASK_DENOISE "denoise"
 #define TASK_UPSCALE "upscale"
 
-// internal: resolve task -> model_id -> load
+static int _select_tile_size(int scale);
+
+// returns the cached tile size for model_id+scale+provider combo, or 0 if not set
+static int _get_cached_tile_size(const char *model_id, int scale)
+{
+  char *prov = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  char *key = g_strdup_printf("plugins/ai/tile_cache/%s/%d/%s",
+                               model_id, scale, prov ? prov : "auto");
+  g_free(prov);
+  const int cached = dt_conf_get_int(key);
+  g_free(key);
+  return cached;
+}
+
+// persist a successful tile size to darktablerc so the next run skips OOM retry
+static void _set_cached_tile_size(const char *model_id, int scale, int tile_size)
+{
+  char *prov = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  char *key = g_strdup_printf("plugins/ai/tile_cache/%s/%d/%s",
+                               model_id, scale, prov ? prov : "auto");
+  g_free(prov);
+  dt_conf_set_int(key, tile_size);
+  g_free(key);
+}
+
+// internal: create an ORT session for model_id/model_file with spatial dims
+// fixed to tile_size. returns a new ai_ctx, or NULL on failure.
+static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
+                                        const char *model_id,
+                                        const char *model_file,
+                                        const char *dim_h,
+                                        const char *dim_w,
+                                        int tile_size)
+{
+  const dt_ai_dim_override_t overrides[] = {
+    { "batch_size", 1 },
+    { "batch",      1 },
+    { dim_h,        tile_size },
+    { dim_w,        tile_size },
+  };
+  return dt_ai_load_model_ext(
+    ai_env, model_id, model_file,
+    DT_AI_PROVIDER_AUTO, DT_AI_OPT_ALL,
+    overrides, (int)G_N_ELEMENTS(overrides));
+}
+
+// internal: resolve task -> model_id -> load with tile size dim overrides
 static dt_restore_context_t *_load(
   dt_restore_env_t *env,
   const char *task,
-  const char *model_file)
+  const char *model_file,
+  int scale)
 {
   if(!env) return NULL;
 
-  char *model_id
-    = dt_ai_models_get_active_for_task(task);
+  char *model_id = dt_ai_models_get_active_for_task(task);
   if(!model_id || !model_id[0])
   {
     g_free(model_id);
     return NULL;
   }
 
-  dt_ai_context_t *ai_ctx = dt_ai_load_model(
-    env->ai_env, model_id, model_file,
-    DT_AI_PROVIDER_AUTO);
+  // look up spatial dimension names for this model
+  const char *dim_h, *dim_w;
+  dt_ai_models_get_spatial_dims(darktable.ai_registry, model_id,
+                                &dim_h, &dim_w);
+
+  // select tile size from cache or memory budget
+  int tile_size = _get_cached_tile_size(model_id, scale);
+  if(tile_size <= 0)
+    tile_size = _select_tile_size(scale);
+
+  dt_ai_context_t *ai_ctx = _create_session(
+    env->ai_env, model_id, model_file, dim_h, dim_w, tile_size);
   if(!ai_ctx)
   {
     g_free(model_id);
     return NULL;
   }
 
-  dt_restore_context_t *ctx
-    = g_new0(dt_restore_context_t, 1);
+  dt_restore_context_t *ctx = g_new0(dt_restore_context_t, 1);
   ctx->ref_count = 1;
-  ctx->ai_ctx = ai_ctx;
-  ctx->env = env;
-  ctx->task = g_strdup(task);
-  ctx->model_id = model_id;
+  ctx->ai_ctx    = ai_ctx;
+  ctx->env       = env;
+  ctx->task      = g_strdup(task);
+  ctx->model_id  = model_id;
   ctx->model_file = g_strdup(model_file);
+  ctx->tile_size = tile_size;
+  ctx->dim_h     = g_strdup(dim_h);
+  ctx->dim_w     = g_strdup(dim_w);
   return ctx;
+}
+
+// internal: recreate the ORT session with a smaller tile size after OOM.
+// updates ctx->ai_ctx and ctx->tile_size in place.
+// returns TRUE on success, FALSE if the reload also fails.
+static gboolean _reload_session(dt_restore_context_t *ctx, int new_tile_size)
+{
+  dt_ai_context_t *new_ctx = _create_session(
+    ctx->env->ai_env, ctx->model_id, ctx->model_file,
+    ctx->dim_h, ctx->dim_w, new_tile_size);
+  if(!new_ctx) return FALSE;
+  dt_ai_unload_model(ctx->ai_ctx);
+  ctx->ai_ctx    = new_ctx;
+  ctx->tile_size = new_tile_size;
+  return TRUE;
 }
 
 dt_restore_context_t *dt_restore_load_denoise(
   dt_restore_env_t *env)
 {
-  return _load(env, TASK_DENOISE, NULL);
+  return _load(env, TASK_DENOISE, NULL, 1);
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x2(
   dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, "model_x2.onnx");
+  return _load(env, TASK_UPSCALE, "model_x2.onnx", 2);
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x4(
   dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, "model_x4.onnx");
+  return _load(env, TASK_UPSCALE, "model_x4.onnx", 4);
 }
 
 
@@ -198,6 +281,8 @@ void dt_restore_unref(dt_restore_context_t *ctx)
     g_free(ctx->task);
     g_free(ctx->model_id);
     g_free(ctx->model_file);
+    g_free(ctx->dim_h);
+    g_free(ctx->dim_w);
     g_free(ctx);
   }
 }
@@ -272,18 +357,14 @@ int dt_restore_get_overlap(int scale)
   return (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
 }
 
-int dt_restore_select_tile_size(int scale)
+static int _select_tile_size(int scale)
 {
-  static const int candidates_1x[] =
-    {2048, 1536, 1024, 768, 512, 384, 256};
-  static const int n_1x = 7;
-  static const int candidates_sr[] =
-    {512, 384, 256, 192};
-  static const int n_sr = 4;
-
-  const int *candidates = (scale > 1)
-    ? candidates_sr : candidates_1x;
-  const int n_candidates = (scale > 1) ? n_sr : n_1x;
+  const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
+  const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
+  const int *candidates = (scale > 1) ? ladder_sr : ladder_1x;
+  const int n_candidates = (scale > 1)
+    ? (int)(sizeof(ladder_sr) / sizeof(int))
+    : (int)(sizeof(ladder_1x) / sizeof(int));
 
   const size_t avail = dt_get_available_mem();
   const size_t budget = avail / 4;
@@ -402,8 +483,7 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
                              int scale,
                              dt_restore_row_writer_t row_writer,
                              void *writer_data,
-                             struct _dt_job_t *control_job,
-                             int tile_size)
+                             struct _dt_job_t *control_job)
 {
   if(!ctx || !in_data || !row_writer)
     return 1;
@@ -411,11 +491,16 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
   const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
   const int S = scale;
   const int out_w = width * S;
-  const int min_tile = (scale > 1) ? 192 : 256;
-  int T = tile_size;
+  const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
+  const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
+  const int *ladder = (scale > 1) ? ladder_sr : ladder_1x;
+  const int n_ladder = (scale > 1)
+    ? (int)(sizeof(ladder_sr) / sizeof(int))
+    : (int)(sizeof(ladder_1x) / sizeof(int));
+  int T = ctx->tile_size;
 
-  // outer retry loop: if inference fails (e.g. GPU OOM), halve
-  // the tile size and try again with smaller tiles
+  // outer retry loop: on inference failure (e.g. GPU OOM) drop to the
+  // next smaller candidate in the shared ladder and try again
 retry:;
   int step = T - 2 * O;
   int T_out = T * S;
@@ -523,19 +608,25 @@ retry:;
       if(dt_restore_run_patch(
            ctx, tile_in, T, T, tile_out, S) != 0)
       {
-        // retry with smaller tiles if no rows have been delivered
-        // yet (safe to restart). once rows are written we can't
-        // rewind the row_writer (e.g. TIFF is sequential)
-        if(T / 2 >= min_tile && ty == 0)
+        // retry with the next smaller ladder entry if no rows have
+        // been delivered yet (safe to restart). once rows are written
+        // we can't rewind the row_writer (e.g. TIFF is sequential).
+        // _reload_session() recreates the ORT session for the smaller
+        // tile size (dim overrides are shape-specific).
+        int next_T = 0;
+        for(int i = 0; i < n_ladder; i++)
+          if(ladder[i] < T) { next_T = ladder[i]; break; }
+        if(next_T > 0 && ty == 0
+           && _reload_session(ctx, next_T))
         {
           dt_print(DT_DEBUG_AI,
                    "[restore] inference failed at tile %d,%d "
                    "(T=%d), retrying with T=%d",
-                   x, y, T, T / 2);
+                   x, y, T, next_T);
           g_free(tile_in);
           g_free(tile_out);
           g_free(row_buf);
-          T = T / 2;
+          T = next_T;
           goto retry;
         }
         dt_print(DT_DEBUG_AI,
@@ -586,6 +677,10 @@ retry:;
       }
     }
   }
+
+  // persist tile size on first full success so subsequent runs skip OOM retry
+  if(res == 0)
+    _set_cached_tile_size(ctx->model_id, S, ctx->tile_size);
 
 cleanup:
   g_free(tile_in);

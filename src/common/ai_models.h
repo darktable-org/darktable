@@ -56,6 +56,8 @@ typedef struct dt_ai_model_t
   char *checksum;        // SHA256 checksum (format: "sha256:...")
   char *version;         // actual version from model's config.json
   char *min_version;     // minimum required version from registry
+  char *spatial_dim_h;   // symbolic name of height dimension (default "height")
+  char *spatial_dim_w;   // symbolic name of width dimension (default "width")
   gboolean is_default;   // TRUE if model is a default model for its task
   gboolean enabled;      // User preference (stored in darktablerc)
   dt_ai_model_status_t status;
@@ -300,3 +302,15 @@ void dt_ai_models_set_active_for_task(const char *task, const char *model_id);
  * @return Path string (caller must free), or NULL if not downloaded
  */
 char *dt_ai_models_get_path(dt_ai_registry_t *registry, const char *model_id);
+
+/**
+ * @brief Get the symbolic spatial dimension names for a model
+ * @param registry The registry
+ * @param model_id The model identifier
+ * @param out_h Output: height dimension name (never NULL; points to static default if unset)
+ * @param out_w Output: width dimension name (never NULL; points to static default if unset)
+ */
+void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
+                                   const char *model_id,
+                                   const char **out_h,
+                                   const char **out_w);

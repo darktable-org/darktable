@@ -97,6 +97,7 @@
 */
 
 #include "common/ai/restore.h"
+#include "control/conf.h"
 #include "bauhaus/bauhaus.h"
 #include "common/act_on.h"
 #include "common/collection.h"
@@ -544,7 +545,6 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     }
   }
 
-  const int tile_size = dt_restore_select_tile_size(S);
   const float recovery_alpha = job->detail_recovery / 100.0f;
   const gboolean need_buffer = (recovery_alpha > 0.0f && S == 1);
 
@@ -565,8 +565,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
     res = dt_restore_process_tiled(job->ctx, in_data,
                                    width, height, S,
                                    _buf_row_writer, &bwd,
-                                   job->control_job,
-                                   tile_size);
+                                   job->control_job);
 
     if(res == 0)
     {
@@ -611,8 +610,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
                                    width, height, S,
                                    _tiff_row_writer,
                                    &twd,
-                                   job->control_job,
-                                   tile_size);
+                                   job->control_job);
     g_free(scratch);
   }
 
@@ -1281,13 +1279,10 @@ static gpointer _preview_thread(gpointer data)
   }
 
   // use the same tiled processing as batch — this handles mirror
-  // padding, overlap blending, and planar conversion identically
-  // cap tile size to the crop dimensions - no point using a 2048²
-  // tile for a 256×176 crop. oversized tiles waste GPU memory and
-  // can exhaust VRAM on smaller GPUs, leaving CUDA in a bad state
-  const int max_dim = (crop_w > crop_h) ? crop_w : crop_h;
-  const int selected = dt_restore_select_tile_size(pd->scale);
-  const int tile_size = (selected < max_dim) ? selected : max_dim;
+  // padding, overlap blending, and planar conversion identically.
+  // tile size is fixed at model load time (ctx->tile_size) and shared
+  // across preview and batch so JIT-compiling EPs (MIGraphX, CoreML,
+  // TensorRT) compile the kernel only once per session.
   float *out_4ch = g_try_malloc((size_t)pw * ph * 4 * sizeof(float));
   if(!out_4ch)
   {
@@ -1297,13 +1292,13 @@ static gpointer _preview_thread(gpointer data)
   }
 
   dt_print(DT_DEBUG_AI,
-           "[neural_restore] preview: tiled inference %dx%d, tile=%d",
-           crop_w, crop_h, tile_size);
+           "[neural_restore] preview: tiled inference %dx%d",
+           crop_w, crop_h);
 
   _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
   const int ret = dt_restore_process_tiled(
     ctx, crop_4ch, crop_w, crop_h, pd->scale,
-    _buf_row_writer, &bwd, NULL, tile_size);
+    _buf_row_writer, &bwd, NULL);
   g_free(crop_4ch);
   dt_restore_unref(ctx);
 

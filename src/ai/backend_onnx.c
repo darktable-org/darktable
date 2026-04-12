@@ -18,10 +18,12 @@
 
 #include "backend.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include <glib.h>
 #include <onnxruntime_c_api.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -398,9 +400,90 @@ done:
   return (gpointer)api;
 }
 
+#if defined(__linux__)
+// configure AMD GPU caches (MIOpen kernel db + MIGraphX compiled-program
+// cache) via environment variables. these MUST be set before any ORT
+// internals query them — in practice that means before the MIGraphX
+// provider .so is loaded, which happens during the first model load.
+// setting them at OrtEnv init guarantees correct ordering
+//
+// MIOpen: without MIOPEN_USER_DB_PATH, the kernel find-db lives in a
+// temp location and may not survive between runs on consumer/iGPU AMD
+// where no prebuilt kdb ships — every launch recompiles conv shapes
+// from source via comgr/clang (10+ minutes on a Radeon iGPU)
+// MIGraphX: without ORT_MIGRAPHX_MODEL_CACHE_PATH, recompiles the whole
+// graph (compile_program: Begin/Complete) on every launch
+//
+// only sets vars the user hasn't already overridden so power users
+// keep control
+static void _setup_amd_caches(void)
+{
+  if(!g_file_test("/opt/rocm", G_FILE_TEST_IS_DIR))
+    return;
+
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  gchar *miopen_dir = g_build_filename(cachedir, "ai", "amd", "miopen", NULL);
+  g_mkdir_with_parents(miopen_dir, 0700);
+  g_setenv("MIOPEN_USER_DB_PATH", miopen_dir, FALSE);
+  g_setenv("MIOPEN_CUSTOM_CACHE_DIR", miopen_dir, FALSE);
+  dt_print(DT_DEBUG_AI, "[darktable_ai] MIOpen cache: %s", miopen_dir);
+  g_free(miopen_dir);
+
+  gchar *migraphx_dir = g_build_filename(cachedir, "ai", "amd", "migraphx", NULL);
+  g_mkdir_with_parents(migraphx_dir, 0700);
+  g_setenv("ORT_MIGRAPHX_CACHE_PATH", migraphx_dir, FALSE);
+  g_setenv("ORT_MIGRAPHX_MODEL_CACHE_PATH", migraphx_dir, FALSE);
+  dt_print(DT_DEBUG_AI, "[darktable_ai] MIGraphX cache: %s", migraphx_dir);
+  g_free(migraphx_dir);
+}
+#endif
+
+// try to enable OpenVINO with disk cache via the dedicated V2 API;
+// SessionOptionsAppendExecutionProvider_OpenVINO_V2 (OrtApi, since 1.17)
+// takes string key/value pairs directly — version-stable, no struct ABI
+// to mismatch, and documented as the recommended path. OpenVINO compiles
+// ONNX → its internal IR on first inference (5-30s for a UNet), then
+// writes .blob files to cache_dir for instant reload on subsequent runs
+static gboolean _try_openvino_with_cache(OrtSessionOptions *session_opts)
+{
+  if(!g_ort || !g_ort->SessionOptionsAppendExecutionProvider_OpenVINO_V2)
+    return FALSE;
+
+  char cachedir[PATH_MAX] = { 0 };
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+  gchar *ov_dir = g_build_filename(cachedir, "ai", "intel", "openvino", NULL);
+  g_mkdir_with_parents(ov_dir, 0700);
+
+  dt_print(DT_DEBUG_AI,
+           "[darktable_ai] attempting Intel OpenVINO (cache: %s)...", ov_dir);
+
+  const char *keys[] = { "device_type", "cache_dir" };
+  const char *values[] = { "AUTO", ov_dir };
+  OrtStatus *status = g_ort->SessionOptionsAppendExecutionProvider_OpenVINO_V2(
+    session_opts, keys, values, 2);
+
+  if(status)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] OpenVINO (with cache) failed: %s",
+             g_ort->GetErrorMessage(status));
+    g_ort->ReleaseStatus(status);
+    g_free(ov_dir);
+    return FALSE;
+  }
+  dt_print(DT_DEBUG_AI, "[darktable_ai] Intel OpenVINO enabled with disk cache.");
+  g_free(ov_dir);
+  return TRUE;
+}
+
 static gpointer _init_ort_env(gpointer data)
 {
   (void)data;
+#if defined(__linux__)
+  _setup_amd_caches();
+#endif
   OrtEnv *env = NULL;
 #ifdef ORT_LAZY_LOAD
   // ORT may emit additional schema-registration noise during env creation.
@@ -700,13 +783,17 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     break;
 
   case DT_AI_PROVIDER_MIGRAPHX:
-    // try MIGraphX first; fall back to ROCm for older ORT builds
+    // MIGraphX reads its cache env vars once at provider library
+    // load time, so they must be set before CreateEnv() — see
+    // _setup_amd_caches() above. OpenVINO (below) takes options
+    // per-session, so its cache path is passed inline here
     if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL))
       _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL);
     break;
 
   case DT_AI_PROVIDER_OPENVINO:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
+    if(!_try_openvino_with_cache(session_opts))
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
@@ -734,7 +821,7 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
       "OrtSessionOptionsAppendExecutionProvider_DML",
       "Windows DirectML", NULL);
 #elif defined(__linux__)
-    // try CUDA first, then MIGraphX
+    // try CUDA first, then MIGraphX (cache configured at env init)
     if(!_try_provider(
          session_opts,
          "OrtSessionOptionsAppendExecutionProvider_CUDA",
@@ -901,7 +988,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
     }
   }
 
-  // optimize: enable hardware acceleration
+  // optimize: enable hardware acceleration (AMD caches set at env init)
   _enable_acceleration(session_opts, provider);
 
 #ifdef _WIN32
