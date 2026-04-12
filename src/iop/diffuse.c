@@ -955,9 +955,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
                                       const size_t height,
                                       const dt_aligned_pixel_t anisotropy,
                                       const dt_isotropy_t isotropy_type[4],
-                                      const float regularization,
                                       const float variance_threshold,
-                                      const float current_radius_square,
+                                      const float normalized_regularization,
                                       const int mult,
                                       const dt_aligned_pixel_t ABCD,
                                       const float strength)
@@ -981,7 +980,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-  const float regularization_factor = regularization * current_radius_square / 9.f;
   DT_OMP_FOR()
   for(size_t row = 0; row < height; ++row)
   {
@@ -1009,6 +1007,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
         dt_aligned_pixel_t neighbour_pixel_LF[9];
+        dt_aligned_pixel_t energy = { 0.f };
 
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
@@ -1016,10 +1015,25 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
             for_each_channel(c)
             {
-              neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-              neighbour_pixel_LF[3 * ii + jj][c] = LF[neighbor + c];
+              const float hf_val = HF[neighbor + c];
+              const float lf_val = LF[neighbor + c];
+              neighbour_pixel_HF[3 * ii + jj][c] = hf_val;
+              neighbour_pixel_LF[3 * ii + jj][c] = lf_val;
+              // Exposure-invariant band energy: HF/LF ratio squared.
+              // Clamp LF to a strictly positive floor to avoid division by zero.
+              const float safe_lf = fmaxf(lf_val - FLT_MIN, 0.f) + FLT_MIN;
+              energy[c] += sqf(hf_val / safe_lf);
             }
           }
+
+        // Regularize the energy taking into account the physical blur radius.
+        // normalized_regularization already folds together the user
+        // regularization, the 3x3-support averaging factor (1/9), and the
+        // physical blur radius of the current wavelet band.
+        for_each_channel(c, aligned(energy))
+        {
+          energy[c] = variance_threshold + energy[c] * normalized_regularization;
+        }
 
         // c² in https://www.researchgate.net/publication/220663968
         dt_aligned_pixel_t c2[4];
@@ -1094,8 +1108,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
                        kern_fourth);
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
-        dt_aligned_pixel_t variance = { 0.f };
-        // convolve filters and compute the variance and the regularization term
+        // convolve filters
         for(size_t k = 0; k < 9; k++)
         {
           for_each_channel(c,aligned(derivatives,neighbour_pixel_LF,kern_first,kern_second))
@@ -1104,16 +1117,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
             derivatives[1][c] += kern_second[k][c] * neighbour_pixel_LF[k][c];
             derivatives[2][c] += kern_third[k][c] * neighbour_pixel_HF[k][c];
             derivatives[3][c] += kern_fourth[k][c] * neighbour_pixel_HF[k][c];
-            variance[c] += sqf(neighbour_pixel_HF[k][c]);
           }
-        }
-        // Regularize the variance taking into account the blurring scale.
-        // This allows to keep the scene-referred variance roughly constant
-        // regardless of the wavelet scale where we compute it.
-        // Prevents large scale halos when deblurring.
-        for_each_channel(c, aligned(variance))
-        {
-          variance[c] = variance_threshold + variance[c] * regularization_factor;
         }
         // compute the update
         dt_aligned_pixel_t acc = { 0.f };
@@ -1122,18 +1126,18 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
           for_each_channel(c, aligned(acc,derivatives,ABCD))
             acc[c] += derivatives[k][c] * ABCD[k];
         }
-        for_each_channel(c, aligned(acc,HF,LF,variance,out))
+        for_each_channel(c, aligned(acc,HF,LF,energy,out))
         {
-          acc[c] = (HF[index + c] * strength + acc[c] / variance[c]);
+          acc[c] = (HF[index + c] * strength + acc[c] / energy[c]);
           // update the solution
           out[index + c] = fmaxf(acc[c] + LF[index + c], 0.f);
         }
       }
       else
       {
-        // only copy input to output, do nothing
+        // only copy input to output, clamp to non-negative
         for_each_channel(c, aligned(out, HF, LF : 64))
-          out[index + c] = HF[index + c] + LF[index + c];
+          out[index + c] = fmaxf(HF[index + c] + LF[index + c], 0.f);
       }
     }
   }
@@ -1271,10 +1275,14 @@ static inline gboolean wavelets_process(const float *const restrict in,
 
     if(s == 0) buffer_out = reconstructed;
 
+    // Pre-compute the regularization factor using the zoom-aware physical radius.
+    // This folds together: user regularization, 3x3 averaging (1/9), and sqf(real_radius).
+    const float normalized_regularization = regularization / 9.f * sqf(real_radius);
+
     // Compute wavelets low-frequency scales
     heat_PDE_diffusion(HF[s], buffer_in, mask, has_mask, buffer_out, width, height,
-                       anisotropy, isotropy_type, regularization,
-                       variance_threshold, sqf(current_radius), mult, ABCD, strength);
+                       anisotropy, isotropy_type, variance_threshold,
+                       normalized_regularization, mult, ABCD, strength);
 
     if(darktable.dump_pfm_module)
     {
