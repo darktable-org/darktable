@@ -130,13 +130,6 @@ gboolean dt_restore_upscale_available(dt_restore_env_t *env);
 /* --- tile size --- */
 
 /**
- * @brief select optimal tile size based on available memory
- * @param scale upscale factor (1 for denoise)
- * @return tile size in pixels
- */
-int dt_restore_select_tile_size(int scale);
-
-/**
  * @brief get tile overlap for a given scale factor
  * @param scale upscale factor (1 for denoise)
  * @return overlap in pixels
@@ -189,15 +182,14 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
  * completed scanlines via the row_writer callback. input is
  * float4 RGBA interleaved (from dt export).
  *
- * @param ctx loaded restore context
+ * @param ctx loaded restore context (tile_size is stored in ctx)
  * @param in_data input pixels (float4 RGBA, width * height)
  * @param width input width
  * @param height input height
  * @param scale upscale factor (1 for denoise)
  * @param row_writer callback receiving 3ch float scanlines
  * @param writer_data user data passed to row_writer
- * @param control_job job handle for progress/cancellation
- * @param tile_size tile size from dt_restore_select_tile_size
+ * @param control_job job handle for progress/cancellation (NULL-safe)
  * @return 0 on success
  */
 int dt_restore_process_tiled(dt_restore_context_t *ctx,
@@ -206,8 +198,7 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
                              int scale,
                              dt_restore_row_writer_t row_writer,
                              void *writer_data,
-                             struct _dt_job_t *control_job,
-                             int tile_size);
+                             struct _dt_job_t *control_job);
 
 /* --- detail recovery --- */
 
