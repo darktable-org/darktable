@@ -182,7 +182,7 @@ static void menon_demosaic(float *const restrict out,
   {
     const int row = idx / width;
     const int col = idx % width;
-    const float val = in[idx]; // raw data is 1 channel per pixel for Bayer
+    const float val = fmaxf(in[idx], 0.0f); // clamp negative values from rawprepare
     CFA[idx] = val;
     const int fc = FC(row, col, filters);
     R[idx] = (fc == 0) ? val : 0.0f;
