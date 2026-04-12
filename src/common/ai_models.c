@@ -68,6 +68,8 @@ static void _model_free(dt_ai_model_t *model)
   g_free(model->checksum);
   g_free(model->version);
   g_free(model->min_version);
+  g_free(model->spatial_dim_h);
+  g_free(model->spatial_dim_w);
   g_free(model);
 }
 
@@ -653,6 +655,17 @@ static dt_ai_model_t *_parse_local_model_config(const char *config_path,
     model->task = g_strdup(json_object_get_string_member(obj, "task"));
   if(json_object_has_member(obj, "version"))
     model->version = g_strdup(json_object_get_string_member(obj, "version"));
+  if(json_object_has_member(obj, "spatial_dims"))
+  {
+    JsonArray *arr = json_object_get_array_member(obj, "spatial_dims");
+    if(arr && json_array_get_length(arr) >= 2)
+    {
+      const char *h = json_array_get_string_element(arr, 0);
+      const char *w = json_array_get_string_element(arr, 1);
+      if(h && h[0]) model->spatial_dim_h = g_strdup(h);
+      if(w && w[0]) model->spatial_dim_w = g_strdup(w);
+    }
+  }
 
   // no github_asset, no checksum — local-only model
   model->enabled = TRUE;
@@ -720,6 +733,10 @@ void dt_ai_models_refresh_status(dt_ai_registry_t *registry)
           g_free(model->version);
           model->version = g_strdup(local->version);
         }
+        g_free(model->spatial_dim_h);
+        g_free(model->spatial_dim_w);
+        model->spatial_dim_h = g_strdup(local->spatial_dim_h);
+        model->spatial_dim_w = g_strdup(local->spatial_dim_w);
         _model_free(local);
 
         // check if installed version meets minimum requirement
@@ -1802,6 +1819,27 @@ char *dt_ai_models_get_path(dt_ai_registry_t *registry, const char *model_id)
     return NULL;
 
   return g_build_filename(registry->models_dir, model_id, NULL);
+}
+
+void dt_ai_models_get_spatial_dims(dt_ai_registry_t *registry,
+                                   const char *model_id,
+                                   const char **out_h,
+                                   const char **out_w)
+{
+  *out_h = "height";
+  *out_w = "width";
+  if(!registry || !_valid_model_id(model_id)) return;
+
+  g_mutex_lock(&registry->lock);
+  dt_ai_model_t *model = _find_model_unlocked(registry, model_id);
+  if(model)
+  {
+    if(model->spatial_dim_h && model->spatial_dim_h[0])
+      *out_h = model->spatial_dim_h;
+    if(model->spatial_dim_w && model->spatial_dim_w[0])
+      *out_w = model->spatial_dim_w;
+  }
+  g_mutex_unlock(&registry->lock);
 }
 
 // clang-format off
