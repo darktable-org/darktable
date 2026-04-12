@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && defined(__aarch64__)
 #include "osx/dt_metal.h"
 #endif
 
@@ -116,6 +116,9 @@ typedef struct dt_iop_exposure_data_t
 typedef struct dt_iop_exposure_global_data_t
 {
   int kernel_exposure;
+#if defined(__APPLE__) && defined(__aarch64__)
+  int kernel_exposure_metal;
+#endif
 } dt_iop_exposure_global_data_t;
 
 #define EXPOSURE_CORRECTION_UNDEFINED (-FLT_MAX)
@@ -512,11 +515,41 @@ static void _process_common_setup(dt_iop_module_t *self,
   d->scale = 1.0 / (white - d->black);
 }
 
-#ifdef __APPLE__
-int process_metal()
+#if defined(__APPLE__) && defined(__aarch64__)
+int process_metal(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const void *const i,
+                  void *const o,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
-  // TODO: this is only dummy-code to test the call of metal routines
-  dt_metal_list_devices(darktable.metal);
+  dt_iop_exposure_data_t *d = piece->data;
+  dt_iop_exposure_global_data_t *gd = self->global_data;
+
+  _process_common_setup(self, piece);
+
+  if(gd->kernel_exposure_metal < 0)
+    return DT_METAL_DEFAULT_ERROR;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const float black = d->black;
+  const float scale = d->scale;
+
+  const void *extra_args[] = { &black, &scale };
+  const size_t extra_arg_sizes[] = { sizeof(float), sizeof(float) };
+
+  const int err = dt_metal_enqueue_kernel_2d(darktable.metal,
+                                             gd->kernel_exposure_metal,
+                                             width, height,
+                                             (const float *)i, (float *)o,
+                                             2, extra_args, extra_arg_sizes);
+
+  if(err != 0) return err;
+
+  for(int k = 0; k < 3; k++)
+    piece->pipe->dsc.processed_maximum[k] *= d->scale;
+
   return 0;
 }
 #endif
@@ -763,12 +796,22 @@ void init_global(dt_iop_module_so_t *self)
   dt_iop_exposure_global_data_t *gd = calloc(1,sizeof(dt_iop_exposure_global_data_t));
   self->data = gd;
   gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal && dt_metal_is_available(darktable.metal))
+    gd->kernel_exposure_metal = dt_metal_create_kernel(darktable.metal, "exposure");
+  else
+    gd->kernel_exposure_metal = -1;
+#endif
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_exposure_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_exposure);
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal)
+    dt_metal_free_kernel(darktable.metal, gd->kernel_exposure_metal);
+#endif
   free(self->data);
   self->data = NULL;
 }

@@ -23,6 +23,8 @@
 #endif
 #ifdef __APPLE__
 #include <sys/malloc.h>
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
 #include "osx/dt_metal.h"
 #endif
 
@@ -1882,7 +1884,7 @@ int dt_init(int argc,
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && defined(__aarch64__)
   darktable.metal = (dt_metal_t *)calloc(1, sizeof(dt_metal_t));
   dt_metal_init(darktable.metal);
 #endif
@@ -2244,6 +2246,14 @@ void dt_cleanup()
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
   darktable.opencl = NULL;
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal)
+  {
+    dt_metal_cleanup(darktable.metal);
+    free(darktable.metal);
+    darktable.metal = NULL;
+  }
+#endif
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
   darktable.camctl = NULL;

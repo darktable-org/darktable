@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2023 darktable developers.
+   Copyright (C) 2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,11 @@
 #include "common/darktable.h"
 #include <sys/types.h>
 
+/** Maximum number of Metal compute pipelines (kernel functions) that can be registered */
+#define DT_METAL_MAX_KERNELS 512
+
+/** Error code returned by Metal kernel dispatch on failure */
+#define DT_METAL_DEFAULT_ERROR -1
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,23 +35,81 @@ typedef struct dt_metal_device_t
 {
   dt_pthread_mutex_t lock;
   u_int64_t devid;
-  void *device;
+  void *device;         // stores MTL::Device* as void*
+  void *library;        // stores MTL::Library* as void*
+  void *command_queue;  // stores MTL::CommandQueue* as void*
 } dt_metal_device_t;
 
 
 /**
  * main struct, stored in darktable.metal.
- * holds pointers to all
+ * holds pointers to Metal devices, the compiled metallib library,
+ * and registered compute pipelines.
  */
 typedef struct dt_metal_t
 {
   int num_devs;
   dt_metal_device_t *dev;
+
+  /** registered compute pipeline states (indexed by kernel_id) */
+  int num_kernels;
+  void *kernels[DT_METAL_MAX_KERNELS];  // stores MTL::ComputePipelineState* as void*
 } dt_metal_t;
 
 
+/** Initialize Metal devices and load the compiled metallib */
 void dt_metal_init(dt_metal_t *metal);
+
+/** Clean up all Metal resources (pipelines, queues, libraries) */
+void dt_metal_cleanup(dt_metal_t *metal);
+
+/** Print all discovered Metal device names */
 void dt_metal_list_devices(dt_metal_t *metal);
+
+/** Check if Metal compute is available (at least one device with a valid library) */
+gboolean dt_metal_is_available(dt_metal_t *metal);
+
+/**
+ * Create a compute pipeline for a named kernel function in the metallib.
+ * Returns a kernel_id >= 0 on success, or -1 on error.
+ * The kernel_id is used with dt_metal_enqueue_kernel_2d().
+ */
+int dt_metal_create_kernel(dt_metal_t *metal, const char *kernel_name);
+
+/**
+ * Free a previously created kernel pipeline.
+ */
+void dt_metal_free_kernel(dt_metal_t *metal, int kernel_id);
+
+/**
+ * Dispatch a 2D compute kernel over a width x height grid.
+ *
+ * The kernel function in the metallib must follow this argument convention:
+ *   buffer(0): input  pixel data (device const float4*)
+ *   buffer(1): output pixel data (device float4*)
+ *   buffer(2): constant int &width
+ *   buffer(3): constant int &height
+ *   buffer(4..): additional scalar arguments, set via extra_args/extra_arg_sizes
+ *
+ * @param metal       The global Metal context
+ * @param kernel_id   Pipeline ID returned by dt_metal_create_kernel()
+ * @param width       Image width in pixels
+ * @param height      Image height in pixels
+ * @param input       Input pixel data (float4 per pixel, width*height*4 floats)
+ * @param output      Output pixel data (same layout)
+ * @param num_extra_args  Number of additional scalar arguments (bound to buffer(4), buffer(5), ...)
+ * @param extra_args      Array of pointers to the extra argument data
+ * @param extra_arg_sizes Array of sizes (in bytes) for each extra argument
+ * @return 0 on success, DT_METAL_DEFAULT_ERROR on failure
+ */
+int dt_metal_enqueue_kernel_2d(dt_metal_t *metal,
+                               int kernel_id,
+                               int width, int height,
+                               const float *input,
+                               float *output,
+                               int num_extra_args,
+                               const void **extra_args,
+                               const size_t *extra_arg_sizes);
 
 
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -269,8 +269,17 @@ DEFAULT(void, process_tiling, struct dt_iop_module_t *self,
                               const struct dt_iop_roi_t *const roi_out,
                               const int bpp);
 
-#ifdef __APPLE__
-OPTIONAL(int, process_metal);
+#if defined(__APPLE__) && defined(__aarch64__)
+/** the Metal compute equivalent of process().
+ *  Uses CPU-side buffers (Apple Silicon unified memory).
+ *  Returns 0 on success, non-zero on error.
+ */
+OPTIONAL(int, process_metal, struct dt_iop_module_t *self,
+                             struct dt_dev_pixelpipe_iop_t *piece,
+                             const void *const i,
+                             void *const o,
+                             const struct dt_iop_roi_t *const roi_in,
+                             const struct dt_iop_roi_t *const roi_out);
 #endif
 
 #ifdef HAVE_OPENCL

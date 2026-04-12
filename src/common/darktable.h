@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,6 +66,8 @@
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
 #include <osx/dt_metal.h>
 #endif
 

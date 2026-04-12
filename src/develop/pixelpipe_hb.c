@@ -37,6 +37,10 @@
 #include "gui/color_picker_proxy.h"
 #include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 
+#if defined(__APPLE__) && defined(__aarch64__)
+#include "osx/dt_metal.h"
+#endif
+
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -1261,6 +1265,202 @@ static inline gboolean _piece_wants_blending(const dt_dev_pixelpipe_iop_t *piece
   return TRUE;
 }
 
+/* Shared context between pre/post processing helpers */
+typedef struct _pixelpipe_process_ctx_t
+{
+  const dt_iop_order_iccprofile_info_t *work_profile;
+  int cst_from, cst_to, cst_out;
+  size_t in_bpp, bpp, nfloats;
+  size_t m_bpp, m_width, m_height;
+  gboolean relevant, bcaching, pfm_dump;
+  dt_hash_t phash;
+} _pixelpipe_process_ctx_t;
+
+/* Shared preamble: colorspace transform, histogram, cache setup.
+   Returns TRUE if pipeline shutdown was requested. */
+static gboolean _pixelpipe_pre_process(dt_dev_pixelpipe_t *pipe,
+                                       dt_develop_t *dev,
+                                       float *input,
+                                       dt_iop_buffer_dsc_t *input_format,
+                                       const dt_iop_roi_t *roi_in,
+                                       void **output,
+                                       dt_iop_buffer_dsc_t **out_format,
+                                       const dt_iop_roi_t *roi_out,
+                                       dt_iop_module_t *module,
+                                       dt_dev_pixelpipe_iop_t *piece,
+                                       dt_pixelpipe_flow_t *pixelpipe_flow,
+                                       const int position,
+                                       _pixelpipe_process_ctx_t *ctx)
+{
+  // Fetch RGB working profile
+  // if input is RAW, we can't color convert because RAW is not in a color space
+  // so we send NULL to by-pass
+  ctx->work_profile =
+    (input_format->cst != IOP_CS_RAW)
+      ? dt_ioppr_get_pipe_work_profile_info(pipe)
+      : NULL;
+
+  ctx->cst_from = input_format->cst;
+  ctx->cst_to = module->input_colorspace(module, pipe, piece);
+  ctx->cst_out = module->output_colorspace(module, pipe, piece);
+
+  dt_dev_prepare_piece_cfa(piece, roi_in);
+
+  if(ctx->cst_from != ctx->cst_to)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  "transform colorspace",
+                  pipe, module, DT_DEVICE_CPU, roi_in, NULL, "%s -> %s `%s'",
+                  dt_iop_colorspace_to_name(ctx->cst_from),
+                  dt_iop_colorspace_to_name(ctx->cst_to),
+                  ctx->work_profile
+                    ? dt_colorspaces_get_name(ctx->work_profile->type,
+                                              ctx->work_profile->filename)
+                    : "no work profile");
+  }
+
+  // transform to module input colorspace
+  dt_ioppr_transform_image_colorspace(module, input, input,
+                                      roi_in->width, roi_in->height,
+                                      ctx->cst_from, ctx->cst_to,
+                                      &input_format->cst,
+                                      ctx->work_profile);
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
+
+  _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
+
+  ctx->in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
+  ctx->bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
+  ctx->m_bpp = MAX(ctx->in_bpp, ctx->bpp);
+  ctx->m_width = MAX(roi_in->width, roi_out->width);
+  ctx->m_height = MAX(roi_in->height, roi_out->height);
+
+  ctx->pfm_dump = darktable.dump_pfm_pipe
+    && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+
+  if(ctx->pfm_dump)
+    dt_dump_pipe_pfm(module->op, input,
+                     roi_in->width, roi_in->height, ctx->in_bpp,
+                     TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
+
+  ctx->nfloats = ctx->bpp * roi_out->width * roi_out->height / sizeof(float);
+  ctx->relevant = _piece_fast_blend(piece, module);
+  ctx->phash = ctx->relevant
+    ? _piece_process_hash(piece, roi_out, module, position)
+    : DT_INVALID_HASH;
+  ctx->bcaching = ctx->relevant
+    ? pipe->bcache_data && ctx->phash == pipe->bcache_hash
+      && ctx->phash != DT_INVALID_HASH
+    : FALSE;
+
+  return FALSE;
+}
+
+/* Shared epilogue: PFM dump, color picking, blending.
+   Returns TRUE if pipeline shutdown was requested. */
+static gboolean _pixelpipe_post_process(dt_dev_pixelpipe_t *pipe,
+                                        dt_develop_t *dev,
+                                        float *input,
+                                        dt_iop_buffer_dsc_t *input_format,
+                                        const dt_iop_roi_t *roi_in,
+                                        void **output,
+                                        dt_iop_buffer_dsc_t **out_format,
+                                        const dt_iop_roi_t *roi_out,
+                                        dt_iop_module_t *module,
+                                        dt_dev_pixelpipe_iop_t *piece,
+                                        dt_pixelpipe_flow_t *pixelpipe_flow,
+                                        const _pixelpipe_process_ctx_t *ctx)
+{
+  if(_module_pipe_stop(pipe, input))
+    return TRUE;
+
+  if(ctx->pfm_dump)
+  {
+    dt_dump_pipe_pfm(module->op, *output,
+                     roi_out->width, roi_out->height, ctx->bpp,
+                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
+    _dump_pipe_pfm_diff(module->op, input, roi_in, ctx->in_bpp, *output, roi_out, ctx->bpp,
+                        dt_dev_pixelpipe_type_to_str(pipe->type));
+  }
+
+  // and save the output colorspace
+  pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
+
+  dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+  const gboolean blend_picking = _request_color_pick(pipe, dev, module)
+                                && _transform_for_blend(module, piece)
+                                && blend_cst != ctx->cst_to;
+  // color picking for module
+  if(_request_color_pick(pipe, dev, module) && !blend_picking)
+  {
+    _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
+                      module->picked_color,
+                      module->picked_color_min,
+                      module->picked_color_max,
+                      input_format->cst, PIXELPIPE_PICKER_INPUT);
+
+    _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output), roi_out,
+                      module->picked_output_color,
+                      module->picked_output_color_min,
+                      module->picked_output_color_max,
+                      pipe->dsc.cst, PIXELPIPE_PICKER_OUTPUT);
+
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+  }
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
+
+  // blend needs input/output images with default colorspace
+  if(_transform_for_blend(module, piece))
+  {
+    dt_ioppr_transform_image_colorspace(module, input, input,
+                                        roi_in->width, roi_in->height,
+                                        input_format->cst, blend_cst, &input_format->cst,
+                                        ctx->work_profile);
+    dt_ioppr_transform_image_colorspace(module, *output, *output,
+                                        roi_out->width, roi_out->height,
+                                        pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
+                                        ctx->work_profile);
+    if(blend_picking)
+    {
+      _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
+                        module->picked_color,
+                        module->picked_color_min,
+                        module->picked_color_max,
+                        blend_cst, PIXELPIPE_PICKER_INPUT);
+
+      _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output), roi_out,
+                        module->picked_output_color,
+                        module->picked_output_color_min,
+                        module->picked_output_color_max,
+                        blend_cst, PIXELPIPE_PICKER_OUTPUT);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+    }
+  }
+
+  if(dt_pipe_shutdown(pipe))
+    return TRUE;
+
+  /* process blending on CPU */
+  if(_piece_wants_blending(piece))
+  {
+    dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
+    *pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
+    *pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
+  }
+
+  return dt_pipe_shutdown(pipe);
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1295,97 +1495,39 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     return FALSE;
   }
 
-  // Fetch RGB working profile
-  // if input is RAW, we can't color convert because RAW is not in a color space
-  // so we send NULL to by-pass
-  const dt_iop_order_iccprofile_info_t *const work_profile =
-    (input_format->cst != IOP_CS_RAW)
-      ? dt_ioppr_get_pipe_work_profile_info(pipe)
-      : NULL;
-
-  const int cst_from = input_format->cst;
-  const int cst_to = module->input_colorspace(module, pipe, piece);
-  const int cst_out = module->output_colorspace(module, pipe, piece);
-
-  dt_dev_prepare_piece_cfa(piece, roi_in);
-
-  if(cst_from != cst_to)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE,
-                  "transform colorspace",
-                  pipe, module, DT_DEVICE_CPU, roi_in, NULL, "%s -> %s `%s'",
-                  dt_iop_colorspace_to_name(cst_from),
-                  dt_iop_colorspace_to_name(cst_to),
-                  work_profile
-                    ? dt_colorspaces_get_name(work_profile->type, work_profile->filename)
-                    : "no work profile");
-  }
-
-  // transform to module input colorspace
-  dt_ioppr_transform_image_colorspace(module, input, input,
-                                      roi_in->width, roi_in->height,
-                                      cst_from, cst_to, &input_format->cst,
-                                      work_profile);
-
-  if(dt_pipe_shutdown(pipe))
+  _pixelpipe_process_ctx_t ctx;
+  if(_pixelpipe_pre_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                            roi_out, module, piece, pixelpipe_flow, position, &ctx))
     return TRUE;
 
-  _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
-
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
-  const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
-  const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
-  const size_t m_bpp = MAX(in_bpp, bpp);
-  const size_t m_width = MAX(roi_in->width, roi_out->width);
-  const size_t m_height = MAX(roi_in->height, roi_out->height);
-
-  const gboolean fitting = dt_tiling_piece_fits_host_memory(piece, m_width, m_height, m_bpp,
+  const gboolean fitting = dt_tiling_piece_fits_host_memory(piece, ctx.m_width, ctx.m_height, ctx.m_bpp,
                                                             tiling->factor,
                                                             tiling->overhead);
   /* process module on cpu. use tiling if needed and possible. */
 
-  const gboolean pfm_dump = darktable.dump_pfm_pipe
-    && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
-
-  if(pfm_dump)
-    dt_dump_pipe_pfm(module->op, input,
-                     roi_in->width, roi_in->height, in_bpp,
-                     TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
-
-  const size_t nfloats = bpp * roi_out->width * roi_out->height / sizeof(float);
-  const gboolean relevant = _piece_fast_blend(piece, module);
-  const dt_hash_t phash = relevant
-    ? _piece_process_hash(piece, roi_out, module, position)
-    : DT_INVALID_HASH;
-  const gboolean bcaching = relevant
-    ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_HASH
-    : FALSE;
-
   if(!fitting && _piece_may_tile(piece))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  bcaching ? "from blend cache tile" : "process tiles",
+                  ctx.bcaching ? "from blend cache tile" : "process tiles",
                   pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s",
-                  dt_iop_colorspace_to_name(cst_to),
-                  cst_to != cst_out ? " -> " : "",
-                  cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
+                  dt_iop_colorspace_to_name(ctx.cst_to),
+                  ctx.cst_to != ctx.cst_out ? " -> " : "",
+                  ctx.cst_to != ctx.cst_out ? dt_iop_colorspace_to_name(ctx.cst_out) : "");
 
-    if(bcaching)
+    if(ctx.bcaching)
     {
-      dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
+      dt_iop_image_copy(*output, pipe->bcache_data, ctx.nfloats);
     }
     else
     {
-      module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
-      if(relevant)
+      module->process_tiling(module, piece, input, *output, roi_in, roi_out, ctx.in_bpp);
+      if(ctx.relevant)
       {
         if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
           && !dt_pipe_shutdown(pipe))
         {
-          float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-          if(cache) dt_iop_image_copy(cache, *output, nfloats);
+          float *cache = _get_fast_blendcache(ctx.nfloats, ctx.phash, pipe);
+          if(cache) dt_iop_image_copy(cache, *output, ctx.nfloats);
         }
         else
           pipe->bcache_hash = DT_INVALID_HASH;
@@ -1398,15 +1540,15 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   else
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-       bcaching ? "from blend cache" : "process",
+       ctx.bcaching ? "from blend cache" : "process",
        pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s %.fMB",
-       dt_iop_colorspace_to_name(cst_to),
-       cst_to != cst_out ? " -> " : "",
-       cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
+       dt_iop_colorspace_to_name(ctx.cst_to),
+       ctx.cst_to != ctx.cst_out ? " -> " : "",
+       ctx.cst_to != ctx.cst_out ? dt_iop_colorspace_to_name(ctx.cst_out) : "",
        (fitting)
        ? ""
        : " Warning: processed without tiling even if memory requirements are not met",
-       1e-6 * (tiling->factor * (m_width * m_height * m_bpp) + tiling->overhead));
+       1e-6 * (tiling->factor * (ctx.m_width * ctx.m_height * ctx.m_bpp) + tiling->overhead));
 
     // this code section is for simplistic benchmarking via --bench-module
     if((pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
@@ -1438,20 +1580,20 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       }
     }
 
-    if(bcaching)
+    if(ctx.bcaching)
     {
-      dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
+      dt_iop_image_copy(*output, pipe->bcache_data, ctx.nfloats);
     }
     else
     {
       module->process(module, piece, input, *output, roi_in, roi_out);
-      if(relevant)
+      if(ctx.relevant)
       {
         if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
           && !dt_pipe_shutdown(pipe))
         {
-          float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-          if(cache) dt_iop_image_copy(cache, *output, nfloats);
+          float *cache = _get_fast_blendcache(ctx.nfloats, ctx.phash, pipe);
+          if(cache) dt_iop_image_copy(cache, *output, ctx.nfloats);
         }
         else
           pipe->bcache_hash = DT_INVALID_HASH;
@@ -1460,93 +1602,95 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU
-                         | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+                          | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
 
-  if(_module_pipe_stop(pipe, input))
-    return TRUE;
+  return _pixelpipe_post_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                                 roi_out, module, piece, pixelpipe_flow, &ctx);
+}
 
-  if(pfm_dump)
-  {
-    dt_dump_pipe_pfm(module->op, *output,
-                     roi_out->width, roi_out->height, bpp,
-                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
-    _dump_pipe_pfm_diff(module->op, input, roi_in, in_bpp, *output, roi_out, bpp,
-                        dt_dev_pixelpipe_type_to_str(pipe->type));
-  }
-
-  // and save the output colorspace
-  pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
+#if defined(__APPLE__) && defined(__aarch64__)
+/* Try to process the module using Metal compute.
+   Returns:
+     1  = Metal processing succeeded (output is valid, all post-processing done)
+     0  = Metal failed or not applicable (caller should try OpenCL/CPU)
+    -1  = Pipeline shutdown (caller should return TRUE)
+   Note: On failure, input colorspace conversion may have been performed,
+   which is fine since subsequent OpenCL/CPU paths handle already-converted input. */
+static int _pixelpipe_try_metal(dt_dev_pixelpipe_t *pipe,
+                                dt_develop_t *dev,
+                                float *input,
+                                dt_iop_buffer_dsc_t *input_format,
+                                const dt_iop_roi_t *roi_in,
+                                void **output,
+                                dt_iop_buffer_dsc_t **out_format,
+                                const dt_iop_roi_t *roi_out,
+                                dt_iop_module_t *module,
+                                dt_dev_pixelpipe_iop_t *piece,
+                                dt_pixelpipe_flow_t *pixelpipe_flow,
+                                const int position)
+{
+  if(!module->process_metal
+     || !darktable.metal
+     || !dt_metal_is_available(darktable.metal))
+    return 0;
 
   if(dt_pipe_shutdown(pipe))
-    return TRUE;
+    return -1;
 
-  dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
-  const gboolean blend_picking = _request_color_pick(pipe, dev, module)
-                                && _transform_for_blend(module, piece)
-                                && blend_cst != cst_to;
-  // color picking for module
-  if(_request_color_pick(pipe, dev, module) && !blend_picking)
+  _pixelpipe_process_ctx_t ctx;
+  if(_pixelpipe_pre_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                            roi_out, module, piece, pixelpipe_flow, position, &ctx))
+    return -1;
+
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_METAL,
+                ctx.bcaching ? "from blend cache (Metal)" : "process (Metal)",
+                pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s %.fMB",
+                dt_iop_colorspace_to_name(ctx.cst_to),
+                ctx.cst_to != ctx.cst_out ? " -> " : "",
+                ctx.cst_to != ctx.cst_out ? dt_iop_colorspace_to_name(ctx.cst_out) : "",
+                1e-6 * (2.0f * (ctx.m_width * ctx.m_height * ctx.m_bpp)));
+
+  if(ctx.bcaching)
   {
-    _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
-                      module->picked_color,
-                      module->picked_color_min,
-                      module->picked_color_max,
-                      input_format->cst, PIXELPIPE_PICKER_INPUT);
-
-    _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output), roi_out,
-                      module->picked_output_color,
-                      module->picked_output_color_min,
-                      module->picked_output_color_max,
-                      pipe->dsc.cst, PIXELPIPE_PICKER_OUTPUT);
-
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+    dt_iop_image_copy(*output, pipe->bcache_data, ctx.nfloats);
   }
-
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
-  // blend needs input/output images with default colorspace
-  if(_transform_for_blend(module, piece))
+  else
   {
-    dt_ioppr_transform_image_colorspace(module, input, input,
-                                        roi_in->width, roi_in->height,
-                                        input_format->cst, blend_cst, &input_format->cst,
-                                        work_profile);
-    dt_ioppr_transform_image_colorspace(module, *output, *output,
-                                        roi_out->width, roi_out->height,
-                                        pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
-                                        work_profile);
-    if(blend_picking)
+    // Try Metal processing
+    if(module->process_metal(module, piece, input, *output, roi_in, roi_out) != 0)
     {
-      _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
-                        module->picked_color,
-                        module->picked_color_min,
-                        module->picked_color_max,
-                        blend_cst, PIXELPIPE_PICKER_INPUT);
+      dt_print(DT_DEBUG_METAL,
+               "[pixelpipe] Metal failed for `%s', falling back to OpenCL/CPU",
+               module->op);
+      return 0;  // Metal failed, try other paths
+    }
 
-      _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output), roi_out,
-                        module->picked_output_color,
-                        module->picked_output_color_min,
-                        module->picked_output_color_max,
-                        blend_cst, PIXELPIPE_PICKER_OUTPUT);
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+    dt_print(DT_DEBUG_METAL,
+             "[pixelpipe] `%s' processed with Metal", module->op);
+
+    if(ctx.relevant)
+    {
+      if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+         && !dt_pipe_shutdown(pipe))
+      {
+        float *cache = _get_fast_blendcache(ctx.nfloats, ctx.phash, pipe);
+        if(cache) dt_iop_image_copy(cache, *output, ctx.nfloats);
+      }
+      else
+        pipe->bcache_hash = DT_INVALID_HASH;
     }
   }
 
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
+  *pixelpipe_flow |= PIXELPIPE_FLOW_PROCESSED_ON_GPU;
+  *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU
+                        | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
 
-  /* process blending on CPU */
-  if(_piece_wants_blending(piece))
-  {
-    dt_develop_blend_process(module, piece, input, *output, roi_in, roi_out);
-    *pixelpipe_flow |= PIXELPIPE_FLOW_BLENDED_ON_CPU;
-    *pixelpipe_flow &= ~PIXELPIPE_FLOW_BLENDED_ON_GPU;
-  }
-
-  return dt_pipe_shutdown(pipe);
+  return _pixelpipe_post_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                                 roi_out, module, piece, pixelpipe_flow, &ctx)
+    ? -1 : 1;
 }
+#endif
 
 #ifdef HAVE_OPENCL
 static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
@@ -1998,12 +2142,49 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   piece->module->position = pos;
 
-#ifdef __APPLE__
-  gboolean possible_metal = (module->process_metal != NULL);
-
-  if (possible_metal)
+#if defined(__APPLE__) && defined(__aarch64__)
+  /* On Apple Silicon, prefer Metal compute over OpenCL.
+     Fallback chain: Metal -> OpenCL -> CPU.
+     Metal operates on CPU-side buffers via unified memory.
+     If the module implements process_metal() and Metal is available,
+     try Metal first. If Metal fails, fall through to OpenCL, then CPU. */
   {
-    module->process_metal();
+    gboolean try_metal_path = TRUE;
+#ifdef HAVE_OPENCL
+    /* If input data is on GPU from a previous OpenCL module,
+       copy it back to CPU before trying Metal. */
+    if(cl_mem_input != NULL
+       && module->process_metal
+       && darktable.metal
+       && dt_metal_is_available(darktable.metal))
+    {
+      if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
+                                       roi_in.width, roi_in.height,
+                                       in_bpp) != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_METAL | DT_DEBUG_OPENCL,
+                 "[pixelpipe] couldn't copy GPU input to host for Metal `%s',"
+                 " falling through to OpenCL/CPU\n", module->op);
+        try_metal_path = FALSE;
+      }
+    }
+#endif
+    const int metal_result = try_metal_path
+      ? _pixelpipe_try_metal(pipe, dev, input, input_format, &roi_in,
+                             output, out_format, roi_out,
+                             module, piece, &pixelpipe_flow, pos)
+      : 0;
+    if(metal_result < 0)
+      return TRUE;  // pipeline shutdown
+    if(metal_result > 0)
+    {
+#ifdef HAVE_OPENCL
+      /* Metal succeeded — release any GPU input buffer */
+      dt_opencl_release_mem_object(cl_mem_input);
+      cl_mem_input = NULL;
+#endif
+      goto _metal_done;
+    }
   }
 #endif
 
@@ -2855,6 +3036,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                module, piece, &tiling, &pixelpipe_flow, pos))
     return TRUE;
 #endif // HAVE_OPENCL
+
+#if defined(__APPLE__) && defined(__aarch64__)
+_metal_done: ;
+#endif
 
   if(pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
     dt_dev_pixelpipe_invalidate_cacheline(pipe, *output);
