@@ -60,6 +60,7 @@ static const OrtApi *g_ort = NULL;
 static GOnce g_ort_once = G_ONCE_INIT;
 static OrtEnv *g_env = NULL;
 static GOnce g_env_once = G_ONCE_INIT;
+static GModule *g_ort_module = NULL;  // custom ORT library loaded via g_module_open
 
 #ifdef ORT_LAZY_LOAD
 // redirect fd 2 to /dev/null.  returns the saved fd on success, -1 on failure.
@@ -168,6 +169,9 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
 // Returns a GList of dt_ai_ort_found_t (caller owns list and contents).
 GList *dt_ai_ort_find_libraries(void)
 {
+#ifdef _WIN32
+  static const char *system_paths[] = { NULL };
+#else
   // system library paths (distro packages)
   static const char *system_paths[] = {
     "/usr/lib/libonnxruntime.so",
@@ -178,17 +182,56 @@ GList *dt_ai_ort_find_libraries(void)
     "/usr/local/lib64/libonnxruntime.so",
     NULL
   };
+#endif
 
-  // user-space paths (install scripts) — scan for versioned .so files
-  const char *home = g_get_home_dir();
+  // user-space paths (install scripts) — scan for ORT libraries
   static const char *subdirs[] = { "onnxruntime-cuda", "onnxruntime-migraphx", "onnxruntime-openvino" };
   gchar *user_paths[3] = { NULL };
 
+#ifdef _WIN32
+  // on Windows the install script puts libraries under %LOCALAPPDATA%
+  const char *local_app = g_getenv("LOCALAPPDATA");
+  const char *base_dir = local_app ? local_app : g_get_home_dir();
+#else
+  const char *base_dir = g_get_home_dir();
+#endif
+
   for(int i = 0; i < 3; i++)
   {
-    gchar *dir = g_build_filename(home, ".local/lib", subdirs[i], NULL);
+#ifdef _WIN32
+    gchar *dir = g_build_filename(base_dir, subdirs[i], NULL);
+#else
+    gchar *dir = g_build_filename(base_dir, ".local/lib", subdirs[i], NULL);
+#endif
     if(g_file_test(dir, G_FILE_TEST_IS_DIR))
     {
+#ifdef _WIN32
+      // look for onnxruntime.dll
+      gchar *exact = g_build_filename(dir, "onnxruntime.dll", NULL);
+      if(g_file_test(exact, G_FILE_TEST_EXISTS))
+      {
+        user_paths[i] = exact;
+      }
+      else
+      {
+        g_free(exact);
+        GDir *d = g_dir_open(dir, 0, NULL);
+        if(d)
+        {
+          const gchar *name;
+          while((name = g_dir_read_name(d)))
+          {
+            if(g_str_has_prefix(name, "onnxruntime") &&
+               g_str_has_suffix(name, ".dll"))
+            {
+              user_paths[i] = g_build_filename(dir, name, NULL);
+              break;
+            }
+          }
+          g_dir_close(d);
+        }
+      }
+#else
       gchar *exact = g_build_filename(dir, "libonnxruntime.so", NULL);
       if(g_file_test(exact, G_FILE_TEST_EXISTS))
       {
@@ -212,6 +255,7 @@ GList *dt_ai_ort_find_libraries(void)
           g_dir_close(d);
         }
       }
+#endif
     }
     g_free(dir);
   }
@@ -329,6 +373,24 @@ static gpointer _init_ort_api(gpointer data)
 
   if(ort_override)
   {
+#ifdef _WIN32
+    // set the DLL search directory to the custom ORT location so that
+    // provider DLLs (onnxruntime_providers_cuda.dll) and their bundled
+    // dependencies (cuDNN, cublas) are found by LoadLibrary;
+    // the install script copies all required DLLs into this directory
+    gchar *ort_dir = g_path_get_dirname(ort_override);
+    if(ort_dir)
+    {
+      wchar_t *wdir = g_utf8_to_utf16(ort_dir, -1, NULL, NULL, NULL);
+      if(wdir)
+      {
+        SetDllDirectoryW(wdir);
+        dt_print(DT_DEBUG_AI, "[darktable_ai] set DLL directory: %s", ort_dir);
+        g_free(wdir);
+      }
+      g_free(ort_dir);
+    }
+#endif
     GModule *ort_mod = g_module_open(ort_override, G_MODULE_BIND_LAZY);
     if(!ort_mod)
     {
@@ -337,6 +399,7 @@ static gpointer _init_ort_api(gpointer data)
                ort_override, g_module_error());
       goto done;
     }
+    g_ort_module = ort_mod;  // keep handle for _try_provider EP lookups
     api = _ort_api_from_module(ort_mod, ort_override);
   }
 #ifdef ORT_LAZY_LOAD
@@ -695,18 +758,20 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   dt_print(DT_DEBUG_AI, "[darktable_ai] attempting to enable %s...", provider_name);
 
 #ifdef _WIN32
-  // on windows, we need to get the handle to onnxruntime.dll, not the main executable
-  HMODULE h = GetModuleHandleA("onnxruntime.dll");
-  if(!h)
-  {
-    // if not already loaded, try to load it
-    h = LoadLibraryA("onnxruntime.dll");
-  }
   void *func_ptr = NULL;
-  if(h)
+  // if a custom ORT library was loaded (e.g. CUDA build), look up the
+  // EP symbol there — the bundled DirectML onnxruntime.dll won't have it
+  if(g_ort_module)
   {
-    func_ptr = (void *)GetProcAddress(h, symbol_name);
-    // don't call FreeLibrary - we want to keep onnxruntime.dll loaded
+    g_module_symbol(g_ort_module, symbol_name, &func_ptr);
+  }
+  if(!func_ptr)
+  {
+    HMODULE h = GetModuleHandleA("onnxruntime.dll");
+    if(!h)
+      h = LoadLibraryA("onnxruntime.dll");
+    if(h)
+      func_ptr = (void *)GetProcAddress(h, symbol_name);
   }
 #else
   GModule *mod = g_module_open(NULL, 0);

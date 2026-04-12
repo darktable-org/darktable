@@ -39,7 +39,7 @@ const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
 #endif
   },
   { DT_AI_PROVIDER_CUDA,     "CUDA",     "NVIDIA CUDA",
-#if defined(__linux__)
+#if defined(__linux__) || defined(_WIN32)
     1
 #else
     0
@@ -53,7 +53,7 @@ const dt_ai_provider_desc_t dt_ai_providers[DT_AI_PROVIDER_COUNT] = {
 #endif
   },
   { DT_AI_PROVIDER_OPENVINO, "OpenVINO", "Intel OpenVINO",
-#if defined(__linux__) || (defined(__APPLE__) && defined(__x86_64__))
+#if defined(__linux__) || defined(_WIN32) || (defined(__APPLE__) && defined(__x86_64__))
     1
 #else
     0
