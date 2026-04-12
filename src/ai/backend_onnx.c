@@ -62,6 +62,54 @@ static OrtEnv *g_env = NULL;
 static GOnce g_env_once = G_ONCE_INIT;
 static GModule *g_ort_module = NULL;  // custom ORT library loaded via g_module_open
 
+#if defined(__linux__)
+// check that the CUDA driver supports the installed CUDA runtime version;
+// a mismatch causes ORT's CUDA EP to abort() during first inference;
+// result is cached — the check runs only once per process
+static gboolean _check_cuda_driver_compat(void)
+{
+  static int cached = -1;  // -1 = unchecked, 0 = incompatible, 1 = ok
+  if(cached >= 0) return cached == 1;
+
+  cached = 1;  // assume ok until proven otherwise
+
+  static const char *cudart_names[] = {
+    "libcudart.so.13", "libcudart.so.12", "libcudart.so.11", "libcudart.so", NULL
+  };
+  GModule *mod = NULL;
+  for(int i = 0; cudart_names[i] && !mod; i++)
+    mod = g_module_open(cudart_names[i], G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  if(!mod) return TRUE;  // can't check — assume compatible
+
+  typedef int (*cuda_ver_fn)(int *);
+  cuda_ver_fn drv_fn = NULL, rt_fn = NULL;
+  g_module_symbol(mod, "cudaDriverGetVersion",  (gpointer *)&drv_fn);
+  g_module_symbol(mod, "cudaRuntimeGetVersion", (gpointer *)&rt_fn);
+
+  if(drv_fn && rt_fn)
+  {
+    int drv = 0, rt = 0;
+    drv_fn(&drv);
+    rt_fn(&rt);
+    dt_print(DT_DEBUG_AI,
+             "[darktable_ai] CUDA driver %d.%d, runtime %d.%d",
+             drv / 1000, (drv % 1000) / 10,
+             rt / 1000, (rt % 1000) / 10);
+    if(drv < rt)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] CUDA driver %d.%d is too old for runtime %d.%d — "
+               "disabling CUDA to prevent crash. Update your NVIDIA driver.",
+               drv / 1000, (drv % 1000) / 10,
+               rt / 1000, (rt % 1000) / 10);
+      cached = 0;
+    }
+  }
+  g_module_close(mod);
+  return cached == 1;
+}
+#endif  // __linux__
+
 #ifdef ORT_LAZY_LOAD
 // redirect fd 2 to /dev/null.  returns the saved fd on success, -1 on failure.
 static int _stderr_suppress_begin(void)
@@ -774,6 +822,12 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
       func_ptr = (void *)GetProcAddress(h, symbol_name);
   }
 #else
+#if defined(__linux__)
+  // before enabling CUDA EP, verify the driver supports the installed runtime;
+  // a driver/runtime version mismatch causes ORT to abort() during inference
+  if(strstr(symbol_name, "CUDA") && !_check_cuda_driver_compat())
+    return FALSE;
+#endif
   GModule *mod = g_module_open(NULL, 0);
   void *func_ptr = NULL;
   if(mod)
