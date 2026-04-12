@@ -175,9 +175,9 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
             write_only image2d_t output,
             const int width, const int height,
             const float4 anisotropy, const int4 isotropy_type,
-            const float regularization, const float variance_threshold,
-            const float current_radius_square, const int mult,
-            const float4 ABCD, const float strength)
+            const float normalized_regularization, const float variance_threshold,
+            const int mult, const float4 ABCD,
+            const float strength)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -185,8 +185,6 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
   if(x >= width || y >= height) return;
 
   const char opacity = (has_mask) ? read_imageui(mask, sampleri, (int2)(x, y)).x : 1;
-
-  const float4 regularization_factor = regularization * current_radius_square / 9.f;
 
   float4 out;
 
@@ -202,16 +200,33 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       y,
       clamp((y + mult * H_STEP), 0, height - 1) };
 
-    // fetch non-local pixels and store them locally and contiguously
+    // Fetch the local 3x3 neighborhoods and accumulate the HF/LF
+    // energy regularizer in the same pass.
     float4 neighbour_pixel_HF[9];
     float4 neighbour_pixel_LF[9];
+    float4 energy = (float4)0.f;
 
     for(int ii = 0; ii < 3; ii++)
       for(int jj = 0; jj < 3; jj++)
       {
-        neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-        neighbour_pixel_LF[3 * ii + jj] = read_imagef(LF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
+        const int k = 3 * ii + jj;
+        const int2 p = (int2)(j_neighbours[ii], i_neighbours[jj]);
+        const float4 hf_value = read_imagef(HF, samplerA, p);
+        const float4 lf_value = read_imagef(LF, samplerA, p);
+        neighbour_pixel_HF[k] = hf_value;
+        neighbour_pixel_LF[k] = lf_value;
+        // Exposure-invariant band energy: HF/LF ratio squared.
+        // Clamp LF to a strictly positive floor to match the CPU path
+        // and avoid divide-by-zero.
+        const float4 safe_lf = fmax(lf_value - (float4)(FLT_MIN), (float4)0.f) + (float4)(FLT_MIN);
+        const float4 ratio = hf_value / safe_lf;
+        energy += ratio * ratio;
       }
+
+    // normalized_regularization already folds together the user
+    // regularization, the 3x3-support averaging factor (1/9), and the
+    // physical blur radius of the current wavelet band.
+    energy = variance_threshold + energy * normalized_regularization;
 
     // build the local anisotropic convolution filters for gradients and laplacians
     float4 gradient[2], laplacian[2];
@@ -256,9 +271,8 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     compute_kern(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.z, kern_third);
     compute_kern(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.w, kern_fourth);
 
-    // convolve filters and compute the variance and the regularization term
+    // convolve filters
     float4 derivatives[4] = { (float4)0.f };
-    float4 variance = (float4)0.f;
 
     #pragma unroll
     for(int k = 0; k < 9; k++)
@@ -267,30 +281,22 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       derivatives[1] += kern_second[k] * neighbour_pixel_LF[k];
       derivatives[2] += kern_third[k] * neighbour_pixel_HF[k];
       derivatives[3] += kern_fourth[k] * neighbour_pixel_HF[k];
-      variance += sqf(neighbour_pixel_HF[k]);
     }
 
-    // Regularize the variance taking into account the blurring scale.
-    // This allows to keep the scene-referred variance roughly constant
-    // regardless of the wavelet scale where we compute it.
-    // Prevents large scale halos when deblurring.
-    variance = variance_threshold + variance * regularization_factor;
-
-    // compute the update
+    // compute the update -- use neighbour_pixel[4] (the center pixel,
+    // already fetched) instead of re-reading from the image.
     float4 acc = (float4)0.f;
     for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    acc = (hf * strength + acc / variance);
+    acc = (neighbour_pixel_HF[4] * strength + acc / energy);
 
     // update the solution
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = fmax(acc + lf, 0.f);
+    out = fmax(acc + neighbour_pixel_LF[4], 0.f);
   }
   else
   {
     float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
     float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = hf + lf;
+    out = fmax(hf + lf, 0.f);
   }
 
   write_imagef(output, (int2)(x, y), out);

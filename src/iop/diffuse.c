@@ -1561,7 +1561,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     const int mult = 1 << s;
     const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
     const float real_radius = current_radius * zoom;
-    const float current_radius_square = sqf(current_radius);
+    const float normalized_regularization = regularization / 9.f * sqf(real_radius);
 
     const float norm =
       expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
@@ -1598,8 +1598,8 @@ static inline cl_int wavelets_process_cl(const int devid,
                               CLARG(has_mask), CLARG(buffer_out),
                               CLARG(width), CLARG(height),
                               CLARG(anisotropy), CLARG(isotropy_type),
-                              CLARG(regularization), CLARG(variance_threshold),
-                              CLARG(current_radius_square), CLARG(mult), CLARG(ABCD),
+                              CLARG(normalized_regularization), CLARG(variance_threshold),
+                              CLARG(mult), CLARG(ABCD),
                               CLARG(strength));
     if(err != CL_SUCCESS) return err;
 
