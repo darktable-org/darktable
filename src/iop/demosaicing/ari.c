@@ -470,6 +470,13 @@ static void ari_demosaic(float *const restrict out,
 {
   const size_t npix = (size_t)width * height;
 
+  /* Clamp negative Bayer values (can occur after rawprepare) so all
+   * subsequent gradient and residual computations see consistent data. */
+  float *cfa = dt_alloc_align_float(npix);
+  if(!cfa) { memset(out, 0, sizeof(float) * npix * 4); return; }
+  DT_OMP_FOR()
+  for(size_t i = 0; i < npix; i++) cfa[i] = fmaxf(in[i], 0.0f);
+
   /* === Quality 1: MLRI only, no selection === */
   if(quality <= 1)
   {
@@ -479,18 +486,20 @@ static void ari_demosaic(float *const restrict out,
     if(!green || !dr || !db)
     {
       dt_free_align(green); dt_free_align(dr); dt_free_align(db);
+      dt_free_align(cfa);
       memset(out, 0, sizeof(float) * npix * 4);
       return;
     }
-    _ari_green_mlri(green, in, width, height, filters);
-    _ari_interpolate_cd(dr, db, in, green, width, height, filters);
+    _ari_green_mlri(green, cfa, width, height, filters);
+    _ari_interpolate_cd(dr, db, cfa, green, width, height, filters);
     _ari_write_rgb(out, green, dr, db, width, height);
     dt_free_align(green); dt_free_align(dr); dt_free_align(db);
+    dt_free_align(cfa);
     return;
   }
 
   /* === Quality 2-3: adaptive selection === */
-  const float noise_sigma = _ari_estimate_noise(in, width, height, filters);
+  const float noise_sigma = _ari_estimate_noise(cfa, width, height, filters);
   const float gf_eps = noise_sigma * noise_sigma * 4.0f;
 
   /* Candidate 0: MLRI (sharpest) */
@@ -511,17 +520,18 @@ static void ari_demosaic(float *const restrict out,
     dt_free_align(green_mlri); dt_free_align(dr_mlri); dt_free_align(db_mlri);
     dt_free_align(green_ri);   dt_free_align(dr_ri);   dt_free_align(db_ri);
     dt_free_align(dr_gfri);    dt_free_align(db_gfri);
+    dt_free_align(cfa);
     memset(out, 0, sizeof(float) * npix * 4);
     return;
   }
 
   /* Generate MLRI candidate */
-  _ari_green_mlri(green_mlri, in, width, height, filters);
-  _ari_interpolate_cd(dr_mlri, db_mlri, in, green_mlri, width, height, filters);
+  _ari_green_mlri(green_mlri, cfa, width, height, filters);
+  _ari_interpolate_cd(dr_mlri, db_mlri, cfa, green_mlri, width, height, filters);
 
   /* Generate RI candidate (HA green + bilinear CD) */
-  _ari_green_ha(green_ri, in, width, height, filters);
-  _ari_interpolate_cd(dr_ri, db_ri, in, green_ri, width, height, filters);
+  _ari_green_ha(green_ri, cfa, width, height, filters);
+  _ari_interpolate_cd(dr_ri, db_ri, cfa, green_ri, width, height, filters);
 
   /* Generate GF-RI: guided filter on RI color differences */
   _ari_guided_filter_ch(dr_ri, green_ri, dr_gfri, width, height, ARI_GF_RADIUS, gf_eps);
@@ -550,4 +560,5 @@ static void ari_demosaic(float *const restrict out,
   dt_free_align(green_mlri); dt_free_align(dr_mlri); dt_free_align(db_mlri);
   dt_free_align(green_ri);   dt_free_align(dr_ri);   dt_free_align(db_ri);
   dt_free_align(dr_gfri);    dt_free_align(db_gfri);
+  dt_free_align(cfa);
 }
