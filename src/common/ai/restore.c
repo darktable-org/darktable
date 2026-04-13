@@ -186,11 +186,10 @@ static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
 }
 
 // internal: resolve task -> model_id -> load with tile size dim overrides
-static dt_restore_context_t *_load(
-  dt_restore_env_t *env,
-  const char *task,
-  const char *model_file,
-  int scale)
+static dt_restore_context_t *_load(dt_restore_env_t *env,
+                                   const char *task,
+                                   const char *model_file,
+                                   int scale)
 {
   if(!env) return NULL;
 
@@ -247,24 +246,20 @@ static gboolean _reload_session(dt_restore_context_t *ctx, int new_tile_size)
   return TRUE;
 }
 
-dt_restore_context_t *dt_restore_load_denoise(
-  dt_restore_env_t *env)
+dt_restore_context_t *dt_restore_load_denoise(dt_restore_env_t *env)
 {
   return _load(env, TASK_DENOISE, NULL, 1);
 }
 
-dt_restore_context_t *dt_restore_load_upscale_x2(
-  dt_restore_env_t *env)
+dt_restore_context_t *dt_restore_load_upscale_x2(dt_restore_env_t *env)
 {
   return _load(env, TASK_UPSCALE, "model_x2.onnx", 2);
 }
 
-dt_restore_context_t *dt_restore_load_upscale_x4(
-  dt_restore_env_t *env)
+dt_restore_context_t *dt_restore_load_upscale_x4(dt_restore_env_t *env)
 {
   return _load(env, TASK_UPSCALE, "model_x4.onnx", 4);
 }
-
 
 dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx)
 {
@@ -287,10 +282,8 @@ void dt_restore_unref(dt_restore_context_t *ctx)
   }
 }
 
-
-static gboolean _model_available(
-  dt_restore_env_t *env,
-  const char *task)
+static gboolean _model_available(dt_restore_env_t *env,
+                                 const char *task)
 {
   if(!env || !env->ai_env) return FALSE;
   char *model_id
@@ -307,14 +300,12 @@ static gboolean _model_available(
   return (info != NULL);
 }
 
-gboolean dt_restore_denoise_available(
-  dt_restore_env_t *env)
+gboolean dt_restore_denoise_available(dt_restore_env_t *env)
 {
   return _model_available(env, TASK_DENOISE);
 }
 
-gboolean dt_restore_upscale_available(
-  dt_restore_env_t *env)
+gboolean dt_restore_upscale_available(dt_restore_env_t *env)
 {
   return _model_available(env, TASK_UPSCALE);
 }
