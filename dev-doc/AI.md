@@ -151,6 +151,14 @@ ctx = dt_ai_load_model_ext(env, id, file, provider,
 | Intel OpenVINO | `DT_AI_PROVIDER_OPENVINO` | `OpenVINO` | Linux, Windows, macOS (x86_64) |
 | Windows DirectML | `DT_AI_PROVIDER_DIRECTML` | `DirectML` | Windows |
 
+In addition, `DT_AI_PROVIDER_CONFIGURED` (`#define`, value -1) is a
+sentinel for `dt_ai_load_model()` / `dt_ai_load_model_ext()`: it reads
+the user's provider preference from `darktablerc` at call time. It is
+not a real provider and must never be stored in config or the provider
+table. Consumers that want to respect the user's setting (e.g. restore,
+segmentation) pass `CONFIGURED`; consumers that need a specific EP
+(e.g. the decoder forced to CPU) pass the EP directly.
+
 The `available` field in the provider descriptor is a compile-time
 platform guard controlled by `#if` preprocessor directives. It
 determines which providers are shown in the UI -- runtime availability
@@ -158,7 +166,8 @@ is checked separately.
 
 ### Auto-Detection Strategy
 
-When `DT_AI_PROVIDER_AUTO` is selected, the backend tries
+When `DT_AI_PROVIDER_AUTO` is selected (either by the user in
+preferences or resolved from `CONFIGURED`), the backend tries
 platform-native acceleration first and falls back gracefully:
 
 - **macOS**: CoreML -> CPU
@@ -361,7 +370,7 @@ dt_your_task_ctx_t *dt_your_task_load(
     return NULL;
   }
   dt_ai_context_t *ai_ctx = dt_ai_load_model(
-    env->ai_env, model_id, NULL, DT_AI_PROVIDER_AUTO);
+    env->ai_env, model_id, NULL, DT_AI_PROVIDER_CONFIGURED);
   g_free(model_id);
   if(!ai_ctx) return NULL;
 

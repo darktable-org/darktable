@@ -368,10 +368,10 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
     return NULL;
   }
 
-  // resolve AUTO: re-read from config so preference changes take effect
-  // immediately without requiring app restart.  Read config before acquiring
-  // env->lock to avoid lock-ordering issues with darktable's config lock
-  if(provider == DT_AI_PROVIDER_AUTO)
+  // resolve CONFIGURED: read the user's provider preference from config.
+  // read config before acquiring env->lock to avoid lock-ordering issues
+  // with darktable's config lock
+  if(provider == DT_AI_PROVIDER_CONFIGURED)
   {
     char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
     provider = dt_ai_provider_from_string(prov_str);
