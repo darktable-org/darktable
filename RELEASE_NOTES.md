@@ -167,6 +167,11 @@ changes (where available).
 - The tone equalizer now visualizes an invalid curve (solver maths)
   also for old edits.
 
+- Add `--library <path>` command-line option to darktable-cli that
+  allows specifying a `library.db` database file to read image processing
+  history stacks from instead of requiring XMP sidecar files, for people
+  who do not use XMP sidecar files.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
