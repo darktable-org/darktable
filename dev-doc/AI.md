@@ -120,7 +120,7 @@ The runtime handles two special cases transparently:
 |-------|------|----------|
 | All | `DT_AI_OPT_ALL` | default, fastest. works for most models |
 | Basic | `DT_AI_OPT_BASIC` | constant folding + redundancy elimination only. Required for SAM2 decoder (aggressive optimization breaks shape inference on dynamic dims) |
-| Disabled | `DT_AI_OPT_DISABLED` | reserved for future use |
+| Disabled | `DT_AI_OPT_DISABLED` | disables graph transforms entirely. Use for ORT regressions like the SAM2.1 encoder UAF during session initialization |
 
 ### Symbolic Dimension Overrides
 
