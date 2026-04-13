@@ -1852,8 +1852,8 @@ static char *_card_str(JsonObject *obj, const char *key)
   return (val && val[0]) ? g_strdup(val) : NULL;
 }
 
-dt_ai_model_card_t *dt_ai_models_get_card(
-  dt_ai_registry_t *registry, const char *model_id)
+dt_ai_model_card_t *dt_ai_models_get_card(dt_ai_registry_t *registry,
+                                          const char *model_id)
 {
   char *model_path = dt_ai_models_get_path(registry, model_id);
   if(!model_path)
