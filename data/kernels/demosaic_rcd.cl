@@ -67,8 +67,8 @@ __kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global floa
   const int w2 = 2 * w;
   const int w3 = 3 * w;
 
-  v_diff[idx] = fsquare(cfa[idx - w3] - 3.0f * cfa[idx - w2] - cfa[idx - w] + 6.0f * cfa[idx] - cfa[idx + w] - 3.0f * cfa[idx + w2] + cfa[idx + w3]);
-  h_diff[idx] = fsquare(cfa[idx -  3] - 3.0f * cfa[idx -  2] - cfa[idx - 1] + 6.0f * cfa[idx] - cfa[idx + 1] - 3.0f * cfa[idx +  2] + cfa[idx +  3]);
+  v_diff[idx] = fsquare((cfa[idx - w3] - cfa[idx - w] - cfa[idx + w] + cfa[idx + w3]) - 3.0f * (cfa[idx - w2] + cfa[idx + w2]) + 6.0f * cfa[idx]);
+  h_diff[idx] = fsquare((cfa[idx -  3] - cfa[idx - 1] - cfa[idx + 1] + cfa[idx +  3]) - 3.0f * (cfa[idx -  2] + cfa[idx +  2]) + 6.0f * cfa[idx]);
 }
 
 // Step 1.2: Calculate vertical and horizontal local discrimination
@@ -84,8 +84,8 @@ __kernel void rcd_step_1_2 (global float *VH_dir, global float *v_diff, global f
   VH_dir[idx] = V_Stat / (V_Stat + H_Stat);
 }
 
-// Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
-__kernel void rcd_step_2_1(global float *lpf, global float *cfa, const int w, const int height, const unsigned int filters)
+// Step 2: Low pass filter incorporating green, red and blue local samples from the raw data
+__kernel void rcd_step_2(global float *lpf, global float *cfa, const int w, const int height, const unsigned int filters)
 {
   const int row = 2 + get_global_id(1);
   const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
@@ -97,8 +97,8 @@ __kernel void rcd_step_2_1(global float *lpf, global float *cfa, const int w, co
     + 0.25f * (cfa[idx - w - 1] + cfa[idx - w + 1] + cfa[idx + w - 1] + cfa[idx + w + 1]);
 }
 
-// Step 3.1: Populate the green channel at blue and red CFA positions
-__kernel void rcd_step_3_1(global float *lpf, global float *cfa, global float *rgb1, global float *VH_Dir, const int w, const int height, const unsigned int filters)
+// Step 3: Populate the green channel at blue and red CFA positions
+__kernel void rcd_step_3(global float *lpf, global float *cfa, global float *rgb1, global float *VH_Dir, const int w, const int height, const unsigned int filters)
 {
   const int row = 4 + get_global_id(1);
   const int col = 4 + (FC(row, 0, filters) & 1) + 2 * get_global_id(0);
@@ -133,11 +133,11 @@ __kernel void rcd_step_3_1(global float *lpf, global float *cfa, global float *r
   const float H_Est = (W_Grad * E_Est + E_Grad * W_Est) / (E_Grad + W_Grad);
 
   // G@B and G@R interpolation
-  rgb1[idx] = mix(V_Est, H_Est, VH_Disc);
+  rgb1[idx] = mix(V_Est, H_Est, clipf(VH_Disc));
 }
 
 // Step 4.0: Calculate the square of the P/Q diagonals color difference high pass filter
-__kernel void rcd_step_4_1(global float *cfa, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
+__kernel void rcd_step_4_0(global float *cfa, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
 {
   const int row = 3 + get_global_id(1);
   const int col = 3 + 2 * get_global_id(0);
@@ -152,7 +152,7 @@ __kernel void rcd_step_4_1(global float *cfa, global float *p_diff, global float
 }
 
 // Step 4.1: Calculate P/Q diagonals local discrimination strength
-__kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
+__kernel void rcd_step_4_1(global float *PQ_dir, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
 {
   const int row = 2 + get_global_id(1);
   const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
@@ -168,7 +168,7 @@ __kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global fl
 }
 
 // Step 4.2: Populate the red and blue channels at blue and red CFA positions
-__kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters)
+__kernel void rcd_step_4_2(global float *PQ_dir, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters)
 {
   const int row = 4 + get_global_id(1);
   const int col = 4 + (FC(row, 0, filters) & 1) + 2 * get_global_id(0);
@@ -204,11 +204,11 @@ __kernel void rcd_step_5_1(global float *PQ_dir, global float *rgb0, global floa
   const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
   const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
-  rgbc[idx]= rgb1[idx] + mix(P_Est, Q_Est, PQ_Disc);
+  rgbc[idx]= rgb1[idx] + mix(P_Est, Q_Est, clipf(PQ_Disc));
 }
 
 // Step 4.3: Populate the red and blue channels at green CFA positions
-__kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters)
+__kernel void rcd_step_4_3(global float *VH_dir, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters)
 {
   const int row = 4 + get_global_id(1);
   const int col = 4 + (FC(row, 1, filters) & 1) + 2 * get_global_id(0);
@@ -259,7 +259,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
     const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
     // R@G and B@G interpolation
-    rgbc[idx] = rgb1[idx] + mix(V_Est, H_Est, VH_Disc);
+    rgbc[idx] = rgb1[idx] + mix(V_Est, H_Est, clipf(VH_Disc));
   }
 }
 
