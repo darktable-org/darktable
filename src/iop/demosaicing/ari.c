@@ -1,18 +1,19 @@
 /*
-    ARI (Adaptive Residual Interpolation) Custom Demosaic
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
 
-    Based on Monno et al. 2017 "Adaptive Residual Interpolation for Color
-    and Multispectral Image Demosaicking" with customizations:
-    - Three candidate generators: MLRI, RI, GF-RI
-    - Per-pixel adaptive selection based on residual variance
-    - Automatic noise estimation for adaptive threshold
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    References:
-    - Kiku et al. 2013 "Residual Interpolation for Color Image Demosaicking"
-    - Kiku et al. 2014 "Minimized-Laplacian Residual Interpolation..."
-    - Monno et al. 2017 "Adaptive Residual Interpolation..."
-    - Hamilton & Adams 1997 "Adaptive color plan interpolation..."
-    - He et al. 2013 "Guided Image Filtering"
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #define ARI_BORDER     10
@@ -28,7 +29,8 @@ static int _ari_compare_float(const void *a, const void *b)
 
 /* ===== Noise estimation from dark pixels ===== */
 static float _ari_estimate_noise(const float *const restrict in,
-                                 const int width, const int height,
+                                 const int width,
+                                 const int height,
                                  const uint32_t filters)
 {
   /* Find 10th percentile intensity */
@@ -100,7 +102,8 @@ static float _ari_estimate_noise(const float *const restrict in,
 /* ===== Box filter via integral image ===== */
 static void _ari_box_filter(const float *const restrict src,
                             float *const restrict dst,
-                            const int width, const int height,
+                            const int width,
+                            const int height,
                             const int radius)
 {
   double *integral = calloc((size_t)(width + 1) * (height + 1), sizeof(double));
@@ -138,8 +141,10 @@ static void _ari_box_filter(const float *const restrict src,
 static void _ari_guided_filter_ch(const float *const restrict input,
                                   const float *const restrict guide,
                                   float *const restrict output,
-                                  const int width, const int height,
-                                  const int radius, const float eps)
+                                  const int width,
+                                  const int height,
+                                  const int radius,
+                                  const float eps)
 {
   const size_t npix = (size_t)width * height;
 
@@ -204,7 +209,8 @@ cleanup_gf:
 /* ===== Green interpolation: Hamilton-Adams (for RI) ===== */
 static void _ari_green_ha(float *const restrict green,
                           const float *const restrict in,
-                          const int width, const int height,
+                          const int width,
+                          const int height,
                           const uint32_t filters)
 {
   /* Copy known G values, zero non-G */
@@ -241,7 +247,8 @@ static void _ari_green_ha(float *const restrict green,
 /* ===== Green interpolation: MLRI (Laplacian energy direction) ===== */
 static void _ari_green_mlri(float *const restrict green,
                             const float *const restrict in,
-                            const int width, const int height,
+                            const int width,
+                            const int height,
                             const uint32_t filters)
 {
   /* Copy known G values */
@@ -307,7 +314,8 @@ static void _ari_interpolate_cd(float *const restrict diff_r,
                                 float *const restrict diff_b,
                                 const float *const restrict in,
                                 const float *const restrict green,
-                                const int width, const int height,
+                                const int width,
+                                const int height,
                                 const uint32_t filters)
 {
   const size_t npix = (size_t)width * height;
@@ -381,7 +389,8 @@ static void _ari_write_rgb(float *const restrict out,
                            const float *const restrict green,
                            const float *const restrict diff_r,
                            const float *const restrict diff_b,
-                           const int width, const int height)
+                           const int width,
+                           const int height)
 {
   DT_OMP_FOR()
   for(int y = 0; y < height; y++)
@@ -406,7 +415,8 @@ static void _ari_adaptive_select(float *const restrict out,
                                  float *const *const diff_rs,
                                  float *const *const diff_bs,
                                  const int n_candidates,
-                                 const int width, const int height,
+                                 const int width,
+                                 const int height,
                                  const float noise_thr)
 {
   const int r = ARI_SEL_RADIUS;
@@ -464,7 +474,8 @@ static void _ari_adaptive_select(float *const restrict out,
 /* ===== Main entry point ===== */
 static void ari_demosaic(float *const restrict out,
                          const float *const restrict in,
-                         const int width, const int height,
+                         const int width,
+                         const int height,
                          const uint32_t filters,
                          const int quality)
 {
