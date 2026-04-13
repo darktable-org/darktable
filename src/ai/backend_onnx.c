@@ -73,12 +73,15 @@ static gboolean _check_cuda_driver_compat(void)
 
   cached = 1;  // assume ok until proven otherwise
 
-  static const char *cudart_names[] = {
-    "libcudart.so.13", "libcudart.so.12", "libcudart.so.11", "libcudart.so", NULL
-  };
-  GModule *mod = NULL;
-  for(int i = 0; cudart_names[i] && !mod; i++)
-    mod = g_module_open(cudart_names[i], G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  // try unversioned first (available when dev package is installed),
+  // then probe versioned names from high to low
+  GModule *mod = g_module_open("libcudart.so", G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  for(int v = 20; !mod && v >= 11; v--)
+  {
+    char name[32];
+    snprintf(name, sizeof(name), "libcudart.so.%d", v);
+    mod = g_module_open(name, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+  }
   if(!mod) return TRUE;  // can't check — assume compatible
 
   typedef int (*cuda_ver_fn)(int *);
