@@ -211,10 +211,9 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   if(!env || !model_id)
     return NULL;
 
-  // provider is resolved from the environment (read from config at init time),
-  // passing AUTO lets dt_ai_load_model resolve it
+  // use the user's configured provider for the encoder (the heavy part)
   dt_ai_context_t *encoder
-    = dt_ai_load_model(env, model_id, "encoder.onnx", DT_AI_PROVIDER_AUTO);
+    = dt_ai_load_model(env, model_id, "encoder.onnx", DT_AI_PROVIDER_CONFIGURED);
   if(!encoder)
   {
     dt_print(DT_DEBUG_AI, "[segmentation] failed to load encoder for %s", model_id);

@@ -35,6 +35,12 @@ typedef enum {
   DT_AI_PROVIDER_COUNT  // must be last
 } dt_ai_provider_t;
 
+/** Sentinel for dt_ai_load_model / dt_ai_load_model_ext: read the
+ *  user's configured provider from darktablerc instead of forcing
+ *  a specific one. Not a real provider — never store in config or
+ *  the provider table. */
+#define DT_AI_PROVIDER_CONFIGURED (-1)
+
 /**
  * @brief Provider descriptor: maps enum to config/display strings.
  *
@@ -175,10 +181,8 @@ void dt_ai_env_destroy(dt_ai_environment_t *env);
 
 /**
  * @brief Set the default execution provider for this environment.
- *        When dt_ai_load_model / dt_ai_load_model_opts is called with
- *        DT_AI_PROVIDER_AUTO, the environment's provider is used instead.
  * @param env The environment handle.
- * @param provider The provider to use (DT_AI_PROVIDER_AUTO = platform auto-detect).
+ * @param provider The provider to use (DT_AI_PROVIDER_AUTO = probe all EPs).
  */
 void dt_ai_env_set_provider(dt_ai_environment_t *env, dt_ai_provider_t provider);
 
@@ -196,7 +200,7 @@ dt_ai_provider_t dt_ai_env_get_provider(dt_ai_environment_t *env);
  * @param env Library environment.
  * @param model_id ID of the model to load.
  * @param model_file Filename within the model directory (NULL = "model.onnx").
- * @param provider Execution provider to use for hardware acceleration.
+ * @param provider Execution provider (DT_AI_PROVIDER_CONFIGURED = use user config).
  * @return dt_ai_context_t* Context ready for inference, or NULL.
  */
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
@@ -219,7 +223,7 @@ typedef struct {
  * @param env Library environment.
  * @param model_id ID of the model to load.
  * @param model_file Filename within the model directory (NULL = "model.onnx").
- * @param provider Execution provider to use for hardware acceleration.
+ * @param provider Execution provider (DT_AI_PROVIDER_CONFIGURED = use user config).
  * @param opt_level Graph optimization level.
  * @param dim_overrides Array of symbolic dimension overrides (NULL = none).
  * @param n_overrides Number of overrides.
