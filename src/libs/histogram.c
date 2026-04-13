@@ -322,8 +322,9 @@ static void _drawable_drag_begin(GtkGestureDrag* gesture,
 
 static void _drawable_drag_end(GtkGestureDrag* g, gdouble ox, gdouble oy, dt_scopes_t *s)
 {
-  dt_control_change_cursor("grab");
   s->dragging = FALSE;
+  dt_control_change_cursor(s->highlight == DT_SCOPES_HIGHLIGHT_NONE
+                           ? "default" : "grab");
 }
 
 static void _drawable_drag_update(GtkGestureDrag* gesture,
@@ -384,10 +385,8 @@ static void _drawable_motion(GtkEventControllerMotion *controller,
   {
     lib_histogram_update_tooltip(s);
     dt_scopes_refresh(s);
-    if(s->highlight == DT_SCOPES_HIGHLIGHT_NONE)
-      dt_control_change_cursor("default");
-    else
-      dt_control_change_cursor("grab");
+    dt_control_change_cursor(s->highlight == DT_SCOPES_HIGHLIGHT_NONE
+                             ? "default" : "grab");
   }
 }
 
