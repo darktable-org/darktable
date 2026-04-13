@@ -69,15 +69,14 @@ enum
 {
   COL_SELECTED,
   COL_NAME,
+  COL_INFO,     // info icon column (static "ℹ" text)
   COL_VERSION,
   COL_TASK,
-  COL_DESCRIPTION,
   COL_ENABLED,
   COL_ENABLED_SENSITIVE, // whether the enabled checkbox is clickable
   COL_STATUS,
   COL_DEFAULT,
   COL_ID,
-  COL_INFO,     // info icon column (static "ℹ" text)
   NUM_COLS
 };
 
@@ -224,8 +223,6 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       model->name ? model->name : model->id,
       COL_TASK,
       model->task ? model->task : "",
-      COL_DESCRIPTION,
-      model->description ? model->description : "",
       COL_STATUS,
       _status_to_string(model->status),
       COL_DEFAULT,
@@ -1000,9 +997,9 @@ static gboolean _on_query_tooltip(GtkWidget *widget,
   GdkWindow *win = gtk_tree_view_get_bin_window(tv);
   if(column == data->info_col)
   {
-    gdk_window_set_cursor(win,
-                          gdk_cursor_new_from_name(gdk_window_get_display(win),
-                                                           "pointer"));
+    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(win), "pointer");
+    gdk_window_set_cursor(win, cursor);
+    g_object_unref(cursor);
     gtk_tooltip_set_text(tooltip, _("click for model details"));
     return TRUE;
   }
@@ -1438,15 +1435,14 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     NUM_COLS,
     G_TYPE_BOOLEAN, // selected
     G_TYPE_STRING,  // name
+    G_TYPE_STRING,  // info icon
     G_TYPE_STRING,  // version
     G_TYPE_STRING,  // task
-    G_TYPE_STRING,  // description
     G_TYPE_BOOLEAN, // enabled
     G_TYPE_BOOLEAN, // enabled_sensitive
     G_TYPE_STRING,  // status
     G_TYPE_STRING,  // default
-    G_TYPE_STRING,  // id
-    G_TYPE_STRING); // info icon
+    G_TYPE_STRING); // id
 
   // sort by task, then default, then name
   gtk_tree_sortable_set_default_sort_func(
@@ -1504,8 +1500,20 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     "text",
     COL_NAME,
     NULL);
-  gtk_tree_view_column_set_expand(name_col, FALSE);
+  gtk_tree_view_column_set_expand(name_col, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), name_col);
+
+  // info icon column — click opens model card
+  GtkCellRenderer *info_renderer = gtk_cell_renderer_text_new();
+  data->info_col = gtk_tree_view_column_new_with_attributes(
+    "",
+    info_renderer,
+    "text",
+    COL_INFO,
+    NULL);
+  gtk_tree_view_column_set_clickable(data->info_col, FALSE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list),
+                              data->info_col);
 
   // version column
   GtkTreeViewColumn *version_col = gtk_tree_view_column_new_with_attributes(
@@ -1524,16 +1532,6 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     COL_TASK,
     NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), task_col);
-
-  // description column
-  GtkTreeViewColumn *desc_col = gtk_tree_view_column_new_with_attributes(
-    _("description"),
-    text_renderer,
-    "text",
-    COL_DESCRIPTION,
-    NULL);
-  gtk_tree_view_column_set_expand(desc_col, TRUE);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), desc_col);
 
   // enabled checkbox column (radio-button behavior per task)
   GtkCellRenderer *enabled_renderer = gtk_cell_renderer_toggle_new();
@@ -1568,18 +1566,6 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     COL_DEFAULT,
     NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list), default_col);
-
-  // info icon column — click opens model card
-  GtkCellRenderer *info_renderer = gtk_cell_renderer_text_new();
-  data->info_col = gtk_tree_view_column_new_with_attributes(
-    "",
-    info_renderer,
-    "text",
-    COL_INFO,
-    NULL);
-  gtk_tree_view_column_set_clickable(data->info_col, FALSE);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(data->model_list),
-                              data->info_col);
 
   gtk_widget_set_has_tooltip(data->model_list, TRUE);
   g_signal_connect(data->model_list, "query-tooltip",
