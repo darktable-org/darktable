@@ -462,6 +462,8 @@ gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
 gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
                                        const double x,
                                        const double y,
+                                       const double dx,
+                                       const double dy,
                                        const int phase,
                                        const double scale,
                                        const int state);

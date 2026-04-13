@@ -745,7 +745,8 @@ static gboolean _input_event(GtkWidget *widget,
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
     if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
-                                     pinch->phase, pinch->scale, pinch->state & 0xf))
+                                     pinch->dx, pinch->dy, pinch->phase,
+                                     pinch->scale, pinch->state & 0xf))
     {
       gtk_widget_queue_draw(widget);
       return TRUE;
@@ -762,8 +763,9 @@ static gboolean _scrolled(GtkWidget *widget,
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
 
-  if(((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
-      || device == _touchpad)
+  if(!dt_modifier_is(event->state, GDK_CONTROL_MASK)
+     && ((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
+         || device == _touchpad)
      && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
