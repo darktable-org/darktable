@@ -4244,7 +4244,7 @@ gboolean gesture_pinch(dt_view_t *self,
 {
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
-  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  (void)state;
   const double pinch_step_ratio = 1.1;
 
   static double pinch_last_scale = 0.0;
@@ -4273,7 +4273,7 @@ gboolean gesture_pinch(dt_view_t *self,
 
   if(zoom_step >= 0)
   {
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, FALSE);
     pinch_last_scale = scale;
   }
 

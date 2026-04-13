@@ -726,6 +726,21 @@ static gboolean _draw(GtkWidget *da,
 }
 
 static GdkDevice *_touchpad = NULL;
+static gboolean _touchpad_gestures_enabled(void)
+{
+  // If conf_gen.h was built before darktableconfig.xml.in gained this key
+  // (incremental build without cmake reconfigure), dt_confgen_value_exists
+  // returns FALSE and dt_conf_get_bool gets an empty string → FALSE.
+  // Default to enabled in that case so a stale build doesn't silently break gestures.
+  if(!dt_confgen_value_exists("darkroom/ui/touchpad_gestures", DT_DEFAULT))
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] 'darkroom/ui/touchpad_gestures' missing from confgen"
+             " (stale conf_gen.h — run cmake reconfigure), defaulting to enabled");
+    return TRUE;
+  }
+  return dt_conf_get_bool("darkroom/ui/touchpad_gestures");
+}
 
 static gboolean _input_event(GtkWidget *widget,
                              GdkEvent *event,
@@ -744,6 +759,7 @@ static gboolean _input_event(GtkWidget *widget,
   }
 
   if(event->type == GDK_TOUCHPAD_PINCH)
+  if(event->type == GDK_TOUCHPAD_PINCH && _touchpad_gestures_enabled())
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
     if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
@@ -764,8 +780,10 @@ static gboolean _scrolled(GtkWidget *widget,
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
 
-  if(((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
-      || device == _touchpad)
+  if(_touchpad_gestures_enabled()
+     && !dt_modifier_is(event->state, GDK_CONTROL_MASK)
+     && ((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
+         || device == _touchpad)
      && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
