@@ -181,7 +181,7 @@ static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
   };
   return dt_ai_load_model_ext(
     ai_env, model_id, model_file,
-    DT_AI_PROVIDER_AUTO, DT_AI_OPT_ALL,
+    DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL,
     overrides, (int)G_N_ELEMENTS(overrides));
 }
 
