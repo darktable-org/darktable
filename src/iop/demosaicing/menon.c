@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024-2025 darktable developers.
+    Copyright (C) 2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,8 +27,10 @@
 /* Helper: mirror-boundary 1D horizontal convolution with a 5-tap kernel.
    kernel[] is indexed [-2..+2] stored as kernel[0..4]. */
 static inline float _menon_cnv_h5(const float *const restrict buf,
-                                  const int row, const int col,
-                                  const int width, const int height,
+                                  const int row,
+                                  const int col,
+                                  const int width,
+                                  const int height,
                                   const float *const restrict kernel)
 {
   float sum = 0.0f;
@@ -44,8 +46,10 @@ static inline float _menon_cnv_h5(const float *const restrict buf,
 
 /* Helper: mirror-boundary 1D vertical convolution with a 5-tap kernel. */
 static inline float _menon_cnv_v5(const float *const restrict buf,
-                                  const int row, const int col,
-                                  const int width, const int height,
+                                  const int row,
+                                  const int col,
+                                  const int width,
+                                  const int height,
                                   const float *const restrict kernel)
 {
   float sum = 0.0f;
@@ -62,8 +66,10 @@ static inline float _menon_cnv_v5(const float *const restrict buf,
 /* Helper: mirror-boundary 1D horizontal convolution with a 3-tap kernel.
    kernel[] is indexed [-1..+1] stored as kernel[0..2]. */
 static inline float _menon_cnv_h3(const float *const restrict buf,
-                                  const int row, const int col,
-                                  const int width, const int height,
+                                  const int row,
+                                  const int col,
+                                  const int width,
+                                  const int height,
                                   const float *const restrict kernel)
 {
   float sum = 0.0f;
@@ -79,8 +85,10 @@ static inline float _menon_cnv_h3(const float *const restrict buf,
 
 /* Helper: mirror-boundary 1D vertical convolution with a 3-tap kernel. */
 static inline float _menon_cnv_v3(const float *const restrict buf,
-                                  const int row, const int col,
-                                  const int width, const int height,
+                                  const int row,
+                                  const int col,
+                                  const int width,
+                                  const int height,
                                   const float *const restrict kernel)
 {
   float sum = 0.0f;
@@ -96,8 +104,10 @@ static inline float _menon_cnv_v3(const float *const restrict buf,
 
 /* Helper: 5x5 2D convolution with constant (zero-pad) boundary for the classifier kernel. */
 static inline float _menon_cnv_2d(const float *const restrict buf,
-                                  const int row, const int col,
-                                  const int width, const int height,
+                                  const int row,
+                                  const int col,
+                                  const int width,
+                                  const int height,
                                   const float kernel[5][5])
 {
   float sum = 0.0f;
