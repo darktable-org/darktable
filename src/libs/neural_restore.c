@@ -960,81 +960,6 @@ static void _update_button_sensitivity(dt_lib_neural_restore_t *d)
                            d->export_pixels != NULL);
 }
 
-// TRUE if the given profile type has primaries wider than sRGB;
-// exhaustive switch with no default: when dt_colorspaces_color_profile_type_t
-// gains a new value, the compiler will warn and force this list to be
-// updated; DT_COLORSPACE_NONE and DT_COLORSPACE_FILE require additional
-// context and are handled by the caller
-static gboolean _profile_type_is_wide_gamut(dt_colorspaces_color_profile_type_t t)
-{
-  switch(t)
-  {
-    // wider than sRGB
-    case DT_COLORSPACE_ADOBERGB:
-    case DT_COLORSPACE_PROPHOTO_RGB:
-    case DT_COLORSPACE_LIN_REC2020:
-    case DT_COLORSPACE_PQ_REC2020:
-    case DT_COLORSPACE_HLG_REC2020:
-    case DT_COLORSPACE_PQ_P3:
-    case DT_COLORSPACE_HLG_P3:
-    case DT_COLORSPACE_DISPLAY_P3:
-      return TRUE;
-
-    // sRGB primaries (gamma may differ but gamut is the same)
-    case DT_COLORSPACE_SRGB:
-    case DT_COLORSPACE_REC709:
-    case DT_COLORSPACE_LIN_REC709:
-      return FALSE;
-
-    // non-RGB / internal / pseudo profiles — treat as not wide-gamut
-    case DT_COLORSPACE_NONE:
-    case DT_COLORSPACE_FILE:
-    case DT_COLORSPACE_XYZ:
-    case DT_COLORSPACE_LAB:
-    case DT_COLORSPACE_INFRARED:
-    case DT_COLORSPACE_DISPLAY:
-    case DT_COLORSPACE_DISPLAY2:
-    case DT_COLORSPACE_EMBEDDED_ICC:
-    case DT_COLORSPACE_EMBEDDED_MATRIX:
-    case DT_COLORSPACE_STANDARD_MATRIX:
-    case DT_COLORSPACE_ENHANCED_MATRIX:
-    case DT_COLORSPACE_VENDOR_MATRIX:
-    case DT_COLORSPACE_ALTERNATE_MATRIX:
-    case DT_COLORSPACE_BRG:
-    case DT_COLORSPACE_EXPORT:
-    case DT_COLORSPACE_SOFTPROOF:
-    case DT_COLORSPACE_WORK:
-    case DT_COLORSPACE_LAST:
-      return FALSE;
-  }
-  return FALSE;
-}
-
-// TRUE if the configured output profile is wider than sRGB (colors
-// outside sRGB gamut will be clipped by the AI model which operates
-// in sRGB internally); for "image settings" (NONE), resolves to the
-// image's actual working profile when imgid is valid
-static gboolean _output_profile_is_wide_gamut(dt_imgid_t imgid)
-{
-  const int icc_type = dt_conf_key_exists(CONF_ICC_TYPE)
-    ? dt_conf_get_int(CONF_ICC_TYPE)
-    : DT_COLORSPACE_NONE;
-
-  if(icc_type == DT_COLORSPACE_NONE)
-  {
-    // fall back to image's working profile
-    if(!dt_is_valid_imgid(imgid)) return FALSE;
-    const dt_colorspaces_color_profile_t *work
-      = dt_colorspaces_get_work_profile(imgid);
-    return work ? _profile_type_is_wide_gamut(work->type) : FALSE;
-  }
-
-  if(icc_type == DT_COLORSPACE_FILE)
-    return TRUE;  // unknown custom — be conservative
-
-  return _profile_type_is_wide_gamut(icc_type);
-}
-
 static void _update_info_label(dt_lib_neural_restore_t *d)
 {
   d->info_text_left[0] = '\0';
@@ -1078,7 +1003,11 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
   // gamut note (informational, not a warning): reuse the same info
   // line as the upscale size display. for denoise, shows standalone
   // in info_text_left; for upscale, appended to the size info
-  if(_output_profile_is_wide_gamut(imgid))
+  const dt_colorspaces_color_profile_type_t icc_type
+    = dt_conf_key_exists(CONF_ICC_TYPE)
+      ? dt_conf_get_int(CONF_ICC_TYPE)
+      : DT_COLORSPACE_NONE;
+  if(dt_image_has_wide_gamut_output_profile(imgid, icc_type))
   {
     const char *msg = (scale == 1)
       ? _("wide-gamut preserved, not denoised")
