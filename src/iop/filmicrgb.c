@@ -3262,7 +3262,7 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr, const double origin_x, const
   if(show_head)
   {
     // arrow head is hard set to 45° - convert to radians
-    const float angle_arrow = 45.f / 360.f * M_PI;
+    const float angle_arrow = 45.f / 360.f * M_PI_F;
     const float angle_trunk = atan2f((destination_y - origin_y), (destination_x - origin_x));
     const float radius = DT_PIXEL_APPLY_DPI(3);
 
@@ -3661,13 +3661,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
         {
           if(k == 1)
           {
-            start_angle = central_slope_angle + M_PI;
+            start_angle = central_slope_angle + M_PI_F;
             end_angle = central_slope_angle;
           }
           if(k == 3)
           {
             start_angle = central_slope_angle;
-            end_angle = start_angle + M_PI;
+            end_angle = start_angle + M_PI_F;
           }
         }
 

@@ -248,7 +248,7 @@ static void _brush_border_get_XY(const float p0x,
     *yb = DT_INVALID_COORDINATE;
     return;
   }
-  const float l = 1.0f / sqrtf(dx * dx + dy * dy);
+  const float l = 1.0f / dt_fast_hypotf(dx, dy);
   *xb = (*xc) + rad * dy * l;
   *yb = (*yc) - rad * dx * l;
 }
@@ -430,18 +430,16 @@ static void _brush_points_recurs_border_gaps(float *cmax,
   // we have to be sure that we turn in the correct direction
   if(a2 < a1 && clockwise)
   {
-    a2 += 2.0f * M_PI;
+    a2 += DT_2PI_F;
   }
   if(a2 > a1 && !clockwise)
   {
-    a1 += 2.0f * M_PI;
+    a1 += DT_2PI_F;
   }
 
   // we determine start and end radius too
-  float r1 = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1])
-                   + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
-  float r2 = sqrtf((bmax[1] - cmax[1]) * (bmax[1] - cmax[1])
-                   + (bmax[0] - cmax[0]) * (bmax[0] - cmax[0]));
+  float r1 = dt_fast_hypotf(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float r2 = dt_fast_hypotf(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   // and the max length of the circle arc
   int l;
@@ -489,21 +487,19 @@ static void _brush_points_recurs_border_small_gaps(float *cmax,
 {
   // we want to find the start and end angles
   const float a1 = fmodf(atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0])
-                         + 2.0f * M_PI, 2.0f * M_PI);
+                         + DT_2PI_F, DT_2PI_F);
   const float a2 = fmodf(atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0])
-                         + 2.0f * M_PI, 2.0f * M_PI);
+                         + DT_2PI_F, DT_2PI_F);
 
   if(a1 == a2) return;
 
   // we determine start and end radius too
-  const float r1 = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1])
-                         + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
-  const float r2 = sqrtf((bmax[1] - cmax[1]) * (bmax[1] - cmax[1])
-                         + (bmax[0] - cmax[0]) * (bmax[0] - cmax[0]));
+  const float r1 = dt_fast_hypotf(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  const float r2 = dt_fast_hypotf(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   // we close the gap in the shortest direction
   float delta = a2 - a1;
-  if(fabsf(delta) > M_PI) delta = delta - copysignf(2.0f * M_PI, delta);
+  if(fabsf(delta) > M_PI_F) delta = delta - copysignf(DT_2PI_F, delta);
 
   // get the max length of the circle arc
   const int l = fabsf(delta) * fmaxf(r1, r2);
@@ -547,15 +543,14 @@ static void _brush_points_stamp(float *cmax,
   const float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
 
   // we determine the radius too
-  const float rad = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1])
-                          + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
+  const float rad = dt_fast_hypotf(bmin[1] - cmax[1], bmin[0] - cmax[0]);
 
   // determine the max length of the circle arc
   const int l = 2.0f * M_PI * rad;
   if(l < 2) return;
 
   // and now we add the points
-  const float incra = 2.0f * M_PI / l;
+  const float incra = DT_2PI_F / l;
   float aa = a1 + incra;
   // allocate entries in the dynbufs
   float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
@@ -2273,7 +2268,7 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
     dt_masks_point_brush_t *point = g_list_nth_data(form->points, k);
     const float nx = point->corner[0] * iwidth;
     const float ny = point->corner[1] * iheight;
-    const float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
+    const float nr = dt_fast_hypotf(pts[0] - nx, pts[1] - ny);
     const float bdr = nr / fminf(iwidth, iheight);
 
     point->border[0] = point->border[1] = bdr;

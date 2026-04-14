@@ -676,7 +676,7 @@ static float *_points_to_transform(const float x,
 {
   // how many points do we need?
   const float r = radius * MIN(wd, ht);
-  const size_t l = MAX(10, (size_t)(2.0f * M_PI * r));
+  const size_t l = MAX(10, (size_t)(DT_2PI_F * r));
   // allocate buffer
   float *const restrict points = dt_alloc_align_float((l + 1) * 2);
   if(!points)
@@ -694,7 +694,7 @@ static float *_points_to_transform(const float x,
   DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64))
   for(int i = 1; i < l + 1; i++)
   {
-    const float alpha = (i - 1) * 2.0f * M_PI / (float)l;
+    const float alpha = (i - 1) * DT_2PI_F / (float)l;
     points[i * 2] = center_x + r * cosf(alpha);
     points[i * 2 + 1] = center_y + r * sinf(alpha);
   }
@@ -1210,14 +1210,14 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   // we look at the outer circle of the shape - no effects outside of
   // this circle; we need many points as we do not know how the circle
   // might get distorted in the pixelpipe
-  const size_t circpts = dt_masks_roundup(MIN(360, 2 * M_PI * total2), 8);
+  const size_t circpts = dt_masks_roundup(MIN(360, DT_2PI_F * total2), 8);
   float *const restrict circ = dt_alloc_align_float(circpts * 2);
   if(circ == NULL) return 0;
 
   DT_OMP_FOR(if(circpts/8 > 1000))
   for(int n = 0; n < circpts / 8; n++)
   {
-    const float phi = (2.0f * M_PI * n) / circpts;
+    const float phi = (DT_2PI_F * n) / circpts;
     const float x = total * cosf(phi);
     const float y = total * sinf(phi);
     const float cx = centerx;

@@ -3264,7 +3264,7 @@ colorzones_v3 (read_only image2d_t in,
     default:
     case DT_IOP_COLORZONES_h:
       select = h;
-      blend = dtcl_pow(1.0f - C/128.0f, 2.0f);
+      blend = fsquare(1.0f - C/128.0f);
       break;
   }
 

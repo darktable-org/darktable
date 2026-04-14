@@ -315,7 +315,7 @@ static void _gradient_init_values(const float zoom_scale,
                                                        pts[4] - pts[0]);
   // Normalize to the range -180 to 180 degrees
   check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-  if(check_angle < 0.0f) rot -= M_PI;
+  if(check_angle < 0.0f) rot -= M_PI_F;
 
   const float compr =
     MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(0, gradient, compression)));
@@ -694,14 +694,14 @@ static int _gradient_get_points(dt_develop_t *dev,
 
   float wd, ht;
   dt_masks_get_image_size(NULL, NULL, &wd, &ht);
-  const float scale = sqrtf(wd * wd + ht * ht);
+  const float scale = dt_fast_hypotf(wd, ht);
   const float distance = 0.1f * fminf(wd, ht);
 
   const float v = deg2radf(-rotation);
   const float cosv = cosf(v);
   const float sinv = sinf(v);
 
-  const int count = sqrtf(wd * wd + ht * ht) + 3;
+  const int count = scale + 3;
   *points = dt_alloc_align_float((size_t)2 * count);
   if(*points == NULL) return 0;
 
@@ -795,7 +795,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
 
   float wd, ht;
   dt_masks_get_image_size(NULL, NULL, &wd, &ht);
-  const float scale = sqrtf(wd * wd + ht * ht);
+  const float scale = dt_fast_hypotf(wd, ht);
 
   const float v1 = deg2radf(-(rotation - 90.0f));
 
@@ -963,7 +963,7 @@ static void _gradient_draw_arrow(cairo_t *cr,
 
   // start side of the gradient (this is the control point for
   // rotating the gradient).
-  cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+  cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, DT_2PI_F);
   cairo_fill_preserve(cr);
 
   dt_masks_line_stroke(cr, FALSE, FALSE, selected, zoom_scale);
@@ -1169,7 +1169,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
   const float ht = piece->pipe->iheight;
-  const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
+  const float hwscale = 1.0f / dt_fast_hypotf(wd, ht);
   const float ihwscale = 1.0f / hwscale;
   const float v = deg2radf(-gradient->rotation);
   const float sinv = sinf(v);
@@ -1321,7 +1321,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
   const float ht = piece->pipe->iheight;
-  const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
+  const float hwscale = 1.0f / dt_fast_hypotf(wd, ht);
   const float ihwscale = 1.0f / hwscale;
   const float v = deg2radf(-gradient->rotation);
   const float sinv = sinf(v);

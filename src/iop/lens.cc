@@ -1973,7 +1973,7 @@ static void _preprocess_vignette(dt_iop_module_t *self,
 
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
-  const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float inv_maxr = 1.0f / dt_fast_hypotf(w2, h2);
   const float strength = 2.0f * d->v_strength;
   const float *spline = d->vigspline;
 
@@ -1985,7 +1985,7 @@ static void _preprocess_vignette(dt_iop_module_t *self,
       const size_t idx = 4 * (size_t)(row * roi->width + col);
       const float dx = ((float)(roi->x + col) - w2);
       const float dy = ((float)(roi->y + row) - h2);
-      const float radius = sqrtf(dx*dx + dy*dy) * inv_maxr;
+      const float radius = dt_fast_hypotf(dx, dy) * inv_maxr;
       const float val = MAX(0.0f, strength * _calc_vignette_spline(radius, spline));
 
       for_three_channels(c)
@@ -2431,7 +2431,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   const float iwd2 = 0.5f * img->p_width;
   const float iht2 = 0.5f * img->p_height;
 
-  const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
+  const float r = dt_fast_hypotf(iwd2, iht2);
   const float sr = MIN(iwd2, iht2);
   const float srr = sr / r;
 
@@ -2626,7 +2626,7 @@ static gboolean _distort_transform_md(dt_iop_module_t *self,
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
-  const float r = 1 / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
@@ -2639,7 +2639,7 @@ static gboolean _distort_transform_md(dt_iop_module_t *self,
       const float cy = (p2 - h2) * inv_scale_md;
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
-                                   d->nc, r*sqrtf(cx*cx + cy*cy));
+                                   d->nc, r * dt_fast_hypotf(cx, cy));
 
       const float dist1 = points[i] - (dr*cx + w2);
       const float dist2 = points[i + 1] - (dr*cy + h2);
@@ -2672,7 +2672,7 @@ static gboolean _distort_backtransform_md(dt_iop_module_t *self,
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
-  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
@@ -2680,7 +2680,7 @@ static gboolean _distort_backtransform_md(dt_iop_module_t *self,
     const float cy = (points[i + 1] - h2) * inv_scale_md;
     const float dr =
       _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
-                                 d->nc, r*sqrtf(cx*cx + cy*cy));
+                                 d->nc, r * dt_fast_hypotf(cx, cy));
 
     points[i] = dr*cx + w2;
     points[i + 1] = dr*cy + h2;
@@ -2706,7 +2706,7 @@ static void _distort_mask_md(dt_iop_module_t *self,
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
 
   const float limw = roi_in->width - 1;
   const float limh = roi_in->height - 1;
@@ -2722,7 +2722,7 @@ static void _distort_mask_md(dt_iop_module_t *self,
       const float cy = (roi_out->y + y - h2) * inv_scale_md;
       const float dr =
         _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1],
-                                   d->nc, r*sqrtf(cx*cx + cy*cy));
+                                   d->nc, r*dt_fast_hypotf(cx, cy));
       const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
       const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
       out[y * roi_out->width + x] = CLIP(dt_interpolation_compute_sample(interpolation, in,
@@ -2749,7 +2749,7 @@ static void _process_md(dt_iop_module_t *self,
   const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
 
   const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -2776,7 +2776,7 @@ static void _process_md(dt_iop_module_t *self,
         const float cy = roi_in->y + y - h2;
         const float sf =
           _interpolate_linear_spline(d->knots_vig, d->vig,
-                                     d->nc, r*sqrtf(cx*cx + cy*cy));
+                                     d->nc, r*dt_fast_hypotf(cx, cy));
 
         for_each_channel(c)
           buf[idx + c] /= MAX(1e-4, sf);
@@ -2798,7 +2798,7 @@ static void _process_md(dt_iop_module_t *self,
       const float cx = (roi_out->x + x - w2) * inv_scale_md;
       const float cy = (roi_out->y + y - h2) * inv_scale_md;
 
-      const float radius = r*sqrtf(cx*cx + cy*cy);
+      const float radius = r*dt_fast_hypotf(cx, cy);
 
       for_each_channel(c)
       {
@@ -2842,7 +2842,7 @@ static int _process_cl_md(dt_iop_module_t *self,
 
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
   const int knots = d->nc;
 
   const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
@@ -2915,7 +2915,7 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
   const float orig_h = roi_in->scale * piece->buf_in.height;
   const float w2 = 0.5f * orig_w;
   const float h2 = 0.5f * orig_h;
-  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / dt_fast_hypotf(w2, h2);
 
   const int xoff = roi_in->x;
   const int yoff = roi_in->y;
@@ -2939,7 +2939,7 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
       {
         const float dr = _interpolate_linear_spline(d->knots_dist,
                                                     d->cor_rgb[c], d->nc,
-                                                    r*sqrtf(cx*cx + cy*cy));
+                                                    r*dt_fast_hypotf(cx, cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
         xm = MIN(xm, xs);
@@ -2961,7 +2961,7 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
       {
         const float dr = _interpolate_linear_spline(d->knots_dist,
                                                     d->cor_rgb[c], d->nc,
-                                                    r*sqrtf(cx*cx + cy*cy));
+                                                    r*dt_fast_hypotf(cx, cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
         xm = MIN(xm, xs);
