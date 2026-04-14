@@ -91,10 +91,17 @@ jobs:
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
       DEBIAN_FRONTEND: noninteractive
     steps:
+      - name: Select fallback Ubuntu mirror if requested
+        if: startsWith(github.ref_name, 'azure-')
+        # Sometimes the default Ubuntu mirror is unreliable under overload
+        # and CI fails because of this. We can use a special branch name
+        # prefix to switch the mirror to the one on Azure. Always using the
+        # Azure is not a solution as it can also fail from time to time.
+        run: |
+          sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
       - name: Update base packages
         timeout-minutes: 1
         run: |
-          sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
           set -xe
           rm -rf /var/lib/apt/lists/*
           apt-get --yes update
