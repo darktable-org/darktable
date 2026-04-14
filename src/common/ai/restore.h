@@ -114,6 +114,29 @@ dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx);
 void dt_restore_unref(dt_restore_context_t *ctx);
 
 /**
+ * @brief Set the working color profile for the context.
+ *
+ * The AI model was trained on sRGB primaries. If the input pixels are
+ * in a different working profile (e.g. Rec.2020), we must convert to
+ * sRGB before inference and back after to avoid hue shifts. Call this
+ * before running inference on each image that may use a different
+ * working profile.
+ *
+ * If profile is NULL, the pipeline falls back to gamma-only conversion
+ * (treating working-profile numbers as if they were sRGB), which can
+ * cause color shifts for wide-gamut working profiles.
+ *
+ * Thread-safety: must not be called concurrently with
+ * dt_restore_run_patch() or dt_restore_process_tiled(). Set the
+ * profile before dispatching inference on a given image.
+ *
+ * @param ctx context handle (NULL-safe)
+ * @param profile lcms2 cmsHPROFILE handle cast to void*; NULL to disable
+ */
+void dt_restore_set_profile(dt_restore_context_t *ctx,
+                            void *profile);
+
+/**
  * @brief check if a denoise model is available
  * @param env environment handle
  * @return TRUE if a denoise model is configured and present

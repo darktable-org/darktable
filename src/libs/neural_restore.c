@@ -130,6 +130,8 @@ DT_MODULE(1)
 #define CONF_BIT_DEPTH "plugins/lighttable/neural_restore/bit_depth"
 #define CONF_ADD_CATALOG "plugins/lighttable/neural_restore/add_to_catalog"
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
+#define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
+#define CONF_ICC_FILE "plugins/lighttable/neural_restore/icc_filename"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 
@@ -156,7 +158,7 @@ typedef struct dt_lib_neural_restore_t
   GtkWidget *preview_area;
   GtkWidget *process_button;
   char info_text_left[64];
-  char info_text_right[64];
+  char info_text_right[128];
   char warning_text[128];
   GtkWidget *recovery_slider;
   dt_neural_task_t task;
@@ -197,6 +199,7 @@ typedef struct dt_lib_neural_restore_t
   // output settings (collapsible)
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
+  GtkWidget *profile_combo;
   GtkWidget *catalog_toggle;
   GtkWidget *output_dir_entry;
   GtkWidget *output_dir_button;
@@ -215,6 +218,9 @@ typedef struct dt_neural_job_t
   dt_neural_bpp_t bpp;
   gboolean add_to_catalog;
   char *output_dir;  // NULL = same as source
+  // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
+  dt_colorspaces_color_profile_type_t icc_type;
+  char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
 } dt_neural_job_t;
 
 typedef struct dt_neural_format_params_t
@@ -485,6 +491,14 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   if(!job->ctx)
     return 1;
 
+  // inform the restore pipeline of the working profile so it can
+  // convert to sRGB primaries before inference (the model was trained
+  // on sRGB data) and back after. without this the model treats the
+  // working-profile RGB values as sRGB and shifts hues
+  const dt_colorspaces_color_profile_t *work_cp
+    = dt_colorspaces_get_work_profile(imgid);
+  dt_restore_set_profile(job->ctx, work_cp ? work_cp->profile : NULL);
+
   const int width = params->parent.width;
   const int height = params->parent.height;
   const int S = job->scale;
@@ -709,6 +723,7 @@ static void _job_cleanup(void *param)
   dt_pthread_mutex_unlock(&d->ctx_lock);
   dt_restore_unref(job->ctx);
   g_free(job->output_dir);
+  g_free(job->icc_filename);
   g_list_free(job->images);
   g_free(job);
 }
@@ -878,8 +893,10 @@ static int32_t _process_job_run(dt_job_t *job)
                                      NULL,   // filter
                                      FALSE,  // copy_metadata
                                      FALSE,  // export_masks
-                                     dt_colorspaces_get_work_profile(imgid)->type,
-                                     NULL,
+                                     (j->icc_type == DT_COLORSPACE_NONE)
+                                       ? dt_colorspaces_get_work_profile(imgid)->type
+                                       : j->icc_type,
+                                     j->icc_filename,
                                      DT_INTENT_PERCEPTUAL,
                                      NULL, NULL,
                                      count, total, NULL, -1);
@@ -943,6 +960,81 @@ static void _update_button_sensitivity(dt_lib_neural_restore_t *d)
                            d->export_pixels != NULL);
 }
 
+// TRUE if the given profile type has primaries wider than sRGB;
+// exhaustive switch with no default: when dt_colorspaces_color_profile_type_t
+// gains a new value, the compiler will warn and force this list to be
+// updated; DT_COLORSPACE_NONE and DT_COLORSPACE_FILE require additional
+// context and are handled by the caller
+static gboolean _profile_type_is_wide_gamut(dt_colorspaces_color_profile_type_t t)
+{
+  switch(t)
+  {
+    // wider than sRGB
+    case DT_COLORSPACE_ADOBERGB:
+    case DT_COLORSPACE_PROPHOTO_RGB:
+    case DT_COLORSPACE_LIN_REC2020:
+    case DT_COLORSPACE_PQ_REC2020:
+    case DT_COLORSPACE_HLG_REC2020:
+    case DT_COLORSPACE_PQ_P3:
+    case DT_COLORSPACE_HLG_P3:
+    case DT_COLORSPACE_DISPLAY_P3:
+      return TRUE;
+
+    // sRGB primaries (gamma may differ but gamut is the same)
+    case DT_COLORSPACE_SRGB:
+    case DT_COLORSPACE_REC709:
+    case DT_COLORSPACE_LIN_REC709:
+      return FALSE;
+
+    // non-RGB / internal / pseudo profiles — treat as not wide-gamut
+    case DT_COLORSPACE_NONE:
+    case DT_COLORSPACE_FILE:
+    case DT_COLORSPACE_XYZ:
+    case DT_COLORSPACE_LAB:
+    case DT_COLORSPACE_INFRARED:
+    case DT_COLORSPACE_DISPLAY:
+    case DT_COLORSPACE_DISPLAY2:
+    case DT_COLORSPACE_EMBEDDED_ICC:
+    case DT_COLORSPACE_EMBEDDED_MATRIX:
+    case DT_COLORSPACE_STANDARD_MATRIX:
+    case DT_COLORSPACE_ENHANCED_MATRIX:
+    case DT_COLORSPACE_VENDOR_MATRIX:
+    case DT_COLORSPACE_ALTERNATE_MATRIX:
+    case DT_COLORSPACE_BRG:
+    case DT_COLORSPACE_EXPORT:
+    case DT_COLORSPACE_SOFTPROOF:
+    case DT_COLORSPACE_WORK:
+    case DT_COLORSPACE_LAST:
+      return FALSE;
+  }
+  return FALSE;
+}
+
+// TRUE if the configured output profile is wider than sRGB (colors
+// outside sRGB gamut will be clipped by the AI model which operates
+// in sRGB internally); for "image settings" (NONE), resolves to the
+// image's actual working profile when imgid is valid
+static gboolean _output_profile_is_wide_gamut(dt_imgid_t imgid)
+{
+  const int icc_type = dt_conf_key_exists(CONF_ICC_TYPE)
+    ? dt_conf_get_int(CONF_ICC_TYPE)
+    : DT_COLORSPACE_NONE;
+
+  if(icc_type == DT_COLORSPACE_NONE)
+  {
+    // fall back to image's working profile
+    if(!dt_is_valid_imgid(imgid)) return FALSE;
+    const dt_colorspaces_color_profile_t *work
+      = dt_colorspaces_get_work_profile(imgid);
+    return work ? _profile_type_is_wide_gamut(work->type) : FALSE;
+  }
+
+  if(icc_type == DT_COLORSPACE_FILE)
+    return TRUE;  // unknown custom — be conservative
+
+  return _profile_type_is_wide_gamut(icc_type);
+}
+
 static void _update_info_label(dt_lib_neural_restore_t *d)
 {
   d->info_text_left[0] = '\0';
@@ -953,15 +1045,16 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
     return;
 
   const int scale = _task_scale(d->task);
-  if(scale == 1)
-    return;
 
-  // show output dimensions for current image using final
-  // developed size (respects crop, rotation, lens correction)
+  // pick the first selected/active image to resolve "image settings"
+  // profile and to compute upscale output dimensions
   GList *imgs = dt_act_on_get_images(TRUE, FALSE, FALSE);
-  if(imgs)
+  const dt_imgid_t imgid = imgs ? GPOINTER_TO_INT(imgs->data) : NO_IMGID;
+
+  // show output dimensions for upscale using final developed size
+  // (respects crop, rotation, lens correction)
+  if(scale > 1 && dt_is_valid_imgid(imgid))
   {
-    dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     int fw = 0, fh = 0;
     dt_image_get_final_size(imgid, &fw, &fh);
     if(fw > 0 && fh > 0)
@@ -970,20 +1063,39 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
       const int out_h = fh * scale;
       const double in_mp = (double)fw * fh / 1e6;
       const double out_mp = (double)out_w * out_h / 1e6;
-      const size_t est_mb = (size_t)out_w * out_h * 3 * 4 / (1024 * 1024);
       snprintf(d->info_text_left, sizeof(d->info_text_left),
                "%.0fMP", in_mp);
       snprintf(d->info_text_right, sizeof(d->info_text_right),
-               "%.0fMP (~%zuMB)", out_mp, est_mb);
+               "%.0fMP", out_mp);
 
       if(out_mp >= LARGE_OUTPUT_MP)
         snprintf(d->warning_text, sizeof(d->warning_text),
                  "%s",
                  _("large output - processing will be slow"));
     }
-    g_list_free(imgs);
   }
 
+  // gamut note (informational, not a warning): reuse the same info
+  // line as the upscale size display. for denoise, shows standalone
+  // in info_text_left; for upscale, appended to the size info
+  if(_output_profile_is_wide_gamut(imgid))
+  {
+    const char *msg = (scale == 1)
+      ? _("wide-gamut preserved, not denoised")
+      : _("wide-gamut clipped");
+    if(d->info_text_right[0])
+    {
+      const size_t used = strlen(d->info_text_right);
+      snprintf(d->info_text_right + used, sizeof(d->info_text_right) - used,
+               "  ·  %s", msg);
+    }
+    else
+    {
+      snprintf(d->info_text_left, sizeof(d->info_text_left), "%s", msg);
+    }
+  }
+
+  g_list_free(imgs);
   gtk_widget_queue_draw(d->preview_area);
 }
 
@@ -1145,6 +1257,13 @@ static gpointer _preview_thread(gpointer data)
       .bpp = _ai_check_bpp,
       .write_image = _preview_capture_write_image};
 
+    const dt_colorspaces_color_profile_type_t cfg_type
+      = dt_conf_key_exists(CONF_ICC_TYPE)
+        ? dt_conf_get_int(CONF_ICC_TYPE)
+        : DT_COLORSPACE_NONE;
+    gchar *cfg_file = (cfg_type == DT_COLORSPACE_FILE)
+      ? dt_conf_get_string(CONF_ICC_FILE)
+      : NULL;
     dt_imageio_export_with_flags(pd->imgid,
                                  "unused",
                                  &fmt,
@@ -1159,10 +1278,13 @@ static gpointer _preview_thread(gpointer data)
                                  NULL,   // filter
                                  FALSE,  // copy_metadata
                                  FALSE,  // export_masks
-                                 dt_colorspaces_get_work_profile(pd->imgid)->type,
-                                 NULL,
+                                 (cfg_type == DT_COLORSPACE_NONE)
+                                   ? dt_colorspaces_get_work_profile(pd->imgid)->type
+                                   : cfg_type,
+                                 cfg_file,
                                  DT_INTENT_PERCEPTUAL,
                                  NULL, NULL, 1, 1, NULL, -1);
+    g_free(cfg_file);
 
     pixels = cap.pixels;
     pixels_w = cap.cap_w;
@@ -1294,6 +1416,11 @@ static gpointer _preview_thread(gpointer data)
   dt_print(DT_DEBUG_AI,
            "[neural_restore] preview: tiled inference %dx%d",
            crop_w, crop_h);
+
+  // set working profile on context so the model sees sRGB primaries
+  const dt_colorspaces_color_profile_t *work_cp
+    = dt_colorspaces_get_work_profile(pd->imgid);
+  dt_restore_set_profile(ctx, work_cp ? work_cp->profile : NULL);
 
   _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
   const int ret = dt_restore_process_tiled(
@@ -1528,6 +1655,12 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->output_dir
     = (out_dir && out_dir[0]) ? out_dir : NULL;
   if(!job_data->output_dir) g_free(out_dir);
+  job_data->icc_type = dt_conf_key_exists(CONF_ICC_TYPE)
+    ? dt_conf_get_int(CONF_ICC_TYPE)
+    : DT_COLORSPACE_NONE;
+  job_data->icc_filename = (job_data->icc_type == DT_COLORSPACE_FILE)
+    ? dt_conf_get_string(CONF_ICC_FILE)
+    : NULL;
   job_data->self = self;
 
   // mark selected images as processing
@@ -1809,11 +1942,15 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
   {
     cairo_text_extents_t ext_l, ext_r;
     cairo_text_extents(cr, d->info_text_left, &ext_l);
-    cairo_text_extents(cr, d->info_text_right, &ext_r);
+    const gboolean with_right = (d->info_text_right[0] != '\0');
+    if(with_right)
+      cairo_text_extents(cr, d->info_text_right, &ext_r);
     const double pad = 4.0;
     const double arrow_w = ext_l.height * 1.2;
     const double gap = 6.0;
-    const double total_w = ext_l.width + gap + arrow_w + gap + ext_r.width;
+    const double total_w = with_right
+      ? ext_l.width + gap + arrow_w + gap + ext_r.width
+      : ext_l.width;
     const double bh = ext_l.height + pad * 2;
     const double by = h - bh;
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.3);
@@ -1826,20 +1963,23 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
     cairo_move_to(cr, tx, ty);
     cairo_show_text(cr, d->info_text_left);
 
-    // draw arrow
-    const double ah = ext_l.height * 0.5;
-    const double ax = tx + ext_l.width + gap;
-    const double ay = ty - ext_l.height * 0.5;
-    cairo_set_line_width(cr, 1.5);
-    cairo_move_to(cr, ax, ay);
-    cairo_line_to(cr, ax + arrow_w, ay);
-    cairo_line_to(cr, ax + arrow_w - ah * 0.5, ay - ah * 0.5);
-    cairo_move_to(cr, ax + arrow_w, ay);
-    cairo_line_to(cr, ax + arrow_w - ah * 0.5, ay + ah * 0.5);
-    cairo_stroke(cr);
+    if(with_right)
+    {
+      // draw arrow between the size texts
+      const double ah = ext_l.height * 0.5;
+      const double ax = tx + ext_l.width + gap;
+      const double ay = ty - ext_l.height * 0.5;
+      cairo_set_line_width(cr, 1.5);
+      cairo_move_to(cr, ax, ay);
+      cairo_line_to(cr, ax + arrow_w, ay);
+      cairo_line_to(cr, ax + arrow_w - ah * 0.5, ay - ah * 0.5);
+      cairo_move_to(cr, ax + arrow_w, ay);
+      cairo_line_to(cr, ax + arrow_w - ah * 0.5, ay + ah * 0.5);
+      cairo_stroke(cr);
 
-    cairo_move_to(cr, ax + arrow_w + gap, ty);
-    cairo_show_text(cr, d->info_text_right);
+      cairo_move_to(cr, ax + arrow_w + gap, ty);
+      cairo_show_text(cr, d->info_text_right);
+    }
   }
 
   return FALSE;
@@ -2051,6 +2191,37 @@ static void _bpp_combo_changed(GtkWidget *w,
   dt_conf_set_int(CONF_BIT_DEPTH, idx);
 }
 
+// mirror of export.c: combo index 0 = "image settings", 1..N = profiles
+// with out_pos >= 0 ordered by out_pos
+static void _profile_combo_changed(GtkWidget *w,
+                                   dt_lib_module_t *self)
+{
+  const int pos = dt_bauhaus_combobox_get(w);
+  gboolean done = FALSE;
+  if(pos > 0)
+  {
+    const int out_pos = pos - 1;
+    for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+    {
+      const dt_colorspaces_color_profile_t *pp = l->data;
+      if(pp->out_pos == out_pos)
+      {
+        dt_conf_set_int(CONF_ICC_TYPE, pp->type);
+        dt_conf_set_string(CONF_ICC_FILE,
+                           (pp->type == DT_COLORSPACE_FILE) ? pp->filename : "");
+        done = TRUE;
+        break;
+      }
+    }
+  }
+  if(!done)
+  {
+    dt_conf_set_int(CONF_ICC_TYPE, DT_COLORSPACE_NONE);
+    dt_conf_set_string(CONF_ICC_FILE, "");
+  }
+  _update_info_label((dt_lib_neural_restore_t *)self->data);
+}
+
 static void _catalog_toggle_changed(GtkWidget *w,
                                     dt_lib_module_t *self)
 {
@@ -2210,6 +2381,48 @@ void gui_init(dt_lib_module_t *self)
                                saved_bpp, _bpp_combo_changed, self,
                                N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
   dt_gui_box_add(cs_box, d->bpp_combo);
+
+  // output color profile: 0 = image settings (working profile), then the
+  // same list the standard export dialog uses; out-of-gamut colors are
+  // still clamped by the model, so this only controls the wrapper
+  // embedded in the output TIFF
+  d->profile_combo = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(d->profile_combo, NULL, N_("profile"));
+  dt_bauhaus_combobox_add(d->profile_combo, _("image settings"));
+  for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+  {
+    const dt_colorspaces_color_profile_t *pp = l->data;
+    if(pp->out_pos > -1)
+      dt_bauhaus_combobox_add(d->profile_combo, pp->name);
+  }
+  // restore saved selection
+  int saved_pos = 0;
+  if(dt_conf_key_exists(CONF_ICC_TYPE))
+  {
+    const int saved_type = dt_conf_get_int(CONF_ICC_TYPE);
+    if(saved_type != DT_COLORSPACE_NONE)
+    {
+      gchar *saved_file = dt_conf_get_string(CONF_ICC_FILE);
+      for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+      {
+        const dt_colorspaces_color_profile_t *pp = l->data;
+        if(pp->out_pos > -1 && pp->type == saved_type
+           && (pp->type != DT_COLORSPACE_FILE
+               || g_strcmp0(pp->filename, saved_file) == 0))
+        {
+          saved_pos = pp->out_pos + 1;
+          break;
+        }
+      }
+      g_free(saved_file);
+    }
+  }
+  dt_bauhaus_combobox_set(d->profile_combo, saved_pos);
+  gtk_widget_set_tooltip_text(d->profile_combo,
+                              _("color profile embedded in the output TIFF"));
+  g_signal_connect(d->profile_combo, "value-changed",
+                   G_CALLBACK(_profile_combo_changed), self);
+  dt_gui_box_add(cs_box, d->profile_combo);
 
   // add to catalog
   GtkWidget *catalog_box = dt_gui_hbox();
