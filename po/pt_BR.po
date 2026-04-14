@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-13 09:14-0300\n"
-"PO-Revision-Date: 2026-04-13 09:14-0300\n"
+"POT-Creation-Date: 2026-04-14 10:27-0300\n"
+"PO-Revision-Date: 2026-04-14 10:26-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -985,7 +985,7 @@ msgstr "mesa de luz"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
 #: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1126
+#: ../src/gui/preferences_ai.c:1288
 msgid "general"
 msgstr "geral"
 
@@ -3424,7 +3424,7 @@ msgstr "base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1158
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1320
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4845,7 +4845,7 @@ msgstr "habilitar reconstrução de realces"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 #: ../src/common/variables.c:197 ../src/common/variables.c:822
-#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:230
+#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:229
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586
@@ -6110,9 +6110,9 @@ msgstr "menu flutuante"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:608
-#: ../src/gui/preferences_ai.c:784 ../src/gui/preferences_ai.c:947
-#: ../src/gui/preferences_ai.c:1034 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:609
+#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1109
+#: ../src/gui/preferences_ai.c:1196 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
@@ -6122,7 +6122,7 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2083
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2078
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6326,65 +6326,65 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de formato, abortando exportação..."
 
-#: ../src/common/ai_models.c:194
+#: ../src/common/ai_models.c:196
 #, c-format
 msgid "network error: %s"
 msgstr "erro de rede: %s"
 
-#: ../src/common/ai_models.c:196
+#: ../src/common/ai_models.c:198
 #, c-format
 msgid "model repository \"%s\" not found"
 msgstr "repositório de modelos \"%s\" não encontrado"
 
-#: ../src/common/ai_models.c:198
+#: ../src/common/ai_models.c:200
 msgid "GitHub API rate limit exceeded, try again later"
 msgstr "Limite de uso da API do Github excedido, tente novamente mais tarde"
 
-#: ../src/common/ai_models.c:200
+#: ../src/common/ai_models.c:202
 #, c-format
 msgid "GitHub API error (HTTP %ld)"
 msgstr "Erro da API do Github (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1231 ../src/common/ai_models.c:1260
+#: ../src/common/ai_models.c:1248 ../src/common/ai_models.c:1277
 msgid "invalid parameters"
 msgstr "parâmetros inválidos"
 
-#: ../src/common/ai_models.c:1234
+#: ../src/common/ai_models.c:1251
 #, c-format
 msgid "file not found: %s"
 msgstr "arquivo não encontrado: %s"
 
-#: ../src/common/ai_models.c:1237
+#: ../src/common/ai_models.c:1254
 msgid "failed to extract model archive"
 msgstr "falha ao extrair arquivo de modelos"
 
-#: ../src/common/ai_models.c:1268
+#: ../src/common/ai_models.c:1285
 msgid "model not found in registry"
 msgstr "modelo não encontrado no registro"
 
-#: ../src/common/ai_models.c:1274
+#: ../src/common/ai_models.c:1291
 msgid "model has no download asset defined"
 msgstr "modelo não tem recurso definido"
 
-#: ../src/common/ai_models.c:1285
+#: ../src/common/ai_models.c:1302
 msgid "invalid asset filename"
 msgstr "nome de arquivo inválido para recurso"
 
-#: ../src/common/ai_models.c:1291
+#: ../src/common/ai_models.c:1308
 msgid "model is already downloading"
 msgstr "modelo já está sendo baixado"
 
-#: ../src/common/ai_models.c:1322
+#: ../src/common/ai_models.c:1339
 msgid "invalid repository format"
 msgstr "formato inválido de repositório"
 
-#: ../src/common/ai_models.c:1347
+#: ../src/common/ai_models.c:1364
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr ""
 "nenhuma release de modelo de IA compatível encontrada para darktable %s"
 
-#: ../src/common/ai_models.c:1363
+#: ../src/common/ai_models.c:1380
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6393,38 +6393,38 @@ msgstr ""
 "não foi possível obter checksum para %s - recusando baixar sem verificação "
 "de integridade"
 
-#: ../src/common/ai_models.c:1381
+#: ../src/common/ai_models.c:1398
 msgid "failed to build download url"
 msgstr "falha ao construir url para download"
 
-#: ../src/common/ai_models.c:1392
+#: ../src/common/ai_models.c:1409
 #, c-format
 msgid "failed to create file: %s"
 msgstr "falha ao criar arquivo: %s"
 
-#: ../src/common/ai_models.c:1416
+#: ../src/common/ai_models.c:1433
 msgid "failed to initialize download"
 msgstr "falha ao inicializar download"
 
-#: ../src/common/ai_models.c:1436
+#: ../src/common/ai_models.c:1453
 msgid "download cancelled"
 msgstr "download cancelado"
 
-#: ../src/common/ai_models.c:1438
+#: ../src/common/ai_models.c:1455
 #, c-format
 msgid "download failed: %s"
 msgstr "download falhou: %s"
 
-#: ../src/common/ai_models.c:1449
+#: ../src/common/ai_models.c:1466
 #, c-format
 msgid "http error: %ld"
 msgstr "erro http: %ld"
 
-#: ../src/common/ai_models.c:1472
+#: ../src/common/ai_models.c:1489
 msgid "checksum verification failed"
 msgstr "verificação de checksum falhou"
 
-#: ../src/common/ai_models.c:1482
+#: ../src/common/ai_models.c:1499
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6433,7 +6433,7 @@ msgstr ""
 "checksum não disponível para %s - rejeitando instalar sem verificação de "
 "integridade"
 
-#: ../src/common/ai_models.c:1492
+#: ../src/common/ai_models.c:1509
 msgid "failed to extract archive"
 msgstr "falha ao extrair arquivo"
 
@@ -7442,8 +7442,8 @@ msgstr "editor"
 msgid "title"
 msgstr "título"
 
-#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1364
-#: ../src/gui/styles_dialog.c:578 ../src/libs/filtering.c:61
+#: ../src/common/database.c:3239 ../src/gui/styles_dialog.c:578
+#: ../src/libs/filtering.c:61
 msgid "description"
 msgstr "descrição"
 
@@ -7451,7 +7451,7 @@ msgstr "descrição"
 msgid "rights"
 msgstr "direitos"
 
-#: ../src/common/database.c:3241
+#: ../src/common/database.c:3241 ../src/gui/preferences_ai.c:928
 msgid "notes"
 msgstr "notas"
 
@@ -7587,7 +7587,7 @@ msgstr ""
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:165
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:166
 msgid "error"
 msgstr "erro"
 
@@ -7800,7 +7800,7 @@ msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
 #: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1336 ../src/gui/styles_dialog.c:571
+#: ../src/gui/preferences_ai.c:1498 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "nome"
@@ -8354,7 +8354,7 @@ msgid "no info"
 msgstr "sem informação"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:820
-#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:230
+#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:229
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586
@@ -9541,7 +9541,7 @@ msgstr "reverter"
 
 #. add default workspace
 #: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1399
+#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1563
 #: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
 msgid "default"
 msgstr "padrão"
@@ -10329,7 +10329,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2183
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2178
 msgid "process"
 msgstr "processamento"
 
@@ -13434,7 +13434,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2117
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2112
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
@@ -15197,8 +15197,8 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
-#: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:786
+#: ../src/gui/preferences_ai.c:1197 ../src/gui/welcome.c:160
 #: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
@@ -15209,61 +15209,94 @@ msgstr "_abrir"
 msgid "darktable preset files"
 msgstr "arquivos de predefinição do darktable"
 
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1050
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1212
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
 msgstr "todos arquivos"
 
-#: ../src/gui/preferences_ai.c:157
+#: ../src/gui/preferences_ai.c:158
 msgid "downloaded"
 msgstr "baixado"
 
-#: ../src/gui/preferences_ai.c:159
+#: ../src/gui/preferences_ai.c:160
 msgid "update available"
 msgstr "atualização disponível"
 
-#: ../src/gui/preferences_ai.c:161
+#: ../src/gui/preferences_ai.c:162
 msgid "update required"
 msgstr "atualização necessária"
 
-#: ../src/gui/preferences_ai.c:163
+#: ../src/gui/preferences_ai.c:164
 msgid "downloading..."
 msgstr "baixando..."
 
-#: ../src/gui/preferences_ai.c:167
+#: ../src/gui/preferences_ai.c:168
 msgid "not downloaded"
 msgstr "não baixado"
 
-#: ../src/gui/preferences_ai.c:346
+#: ../src/gui/preferences_ai.c:347
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>não disponível, revertendo para CPU</i>"
 
-#: ../src/gui/preferences_ai.c:605
+#: ../src/gui/preferences_ai.c:606
 msgid "downloading AI model"
 msgstr "baixando modelo de IA"
 
-#: ../src/gui/preferences_ai.c:620
+#: ../src/gui/preferences_ai.c:621
 #, c-format
 msgid "downloading: %s"
 msgstr "baixando: %s"
 
-#: ../src/gui/preferences_ai.c:781
+#: ../src/gui/preferences_ai.c:782
 msgid "install AI model"
 msgstr "instalar modelo de IA"
 
-#: ../src/gui/preferences_ai.c:789
+#: ../src/gui/preferences_ai.c:790
 msgid "AI model packages (*.dtmodel)"
 msgstr "pacotes de modelos de IA (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:862
+#: ../src/gui/preferences_ai.c:863
 #, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
 msgstr[0] "excluir %d modelo selecionado?"
 msgstr[1] "excluir %d modelos selecionados?"
 
-#: ../src/gui/preferences_ai.c:898
+#: ../src/gui/preferences_ai.c:925
+#, fuzzy
+msgid "scope"
+msgstr "histograma"
+
+#: ../src/gui/preferences_ai.c:925
+msgid "author"
+msgstr "autor"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "source"
+msgstr "fonte"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "paper"
+msgstr "papel"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "license"
+msgstr "licença"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "training data"
+msgstr "dados de treinamento"
+
+#: ../src/gui/preferences_ai.c:928
+msgid "data license"
+msgstr "licença dos dados"
+
+#: ../src/gui/preferences_ai.c:1003
+msgid "click for model details"
+msgstr "clique para detalhes do modelo"
+
+#: ../src/gui/preferences_ai.c:1060
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -15272,7 +15305,7 @@ msgstr ""
 "ONNX Runtime %s detectado.\n"
 "Reinicie o darktable para aplicar."
 
-#: ../src/gui/preferences_ai.c:903
+#: ../src/gui/preferences_ai.c:1065
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -15281,7 +15314,7 @@ msgstr ""
 "não é uma biblioteca ONNX Runtime válida:\n"
 "%s"
 
-#: ../src/gui/preferences_ai.c:920
+#: ../src/gui/preferences_ai.c:1082
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
@@ -15293,7 +15326,7 @@ msgstr ""
 "instale uma usando seu gerenciador de pacotes ou use o botão de navegar para "
 "selecionar um build personalizado."
 
-#: ../src/gui/preferences_ai.c:936
+#: ../src/gui/preferences_ai.c:1098
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -15306,55 +15339,55 @@ msgstr ""
 "\n"
 "Reinicie o darktable para aplicar."
 
-#: ../src/gui/preferences_ai.c:944 ../src/gui/preferences_ai.c:1031
+#: ../src/gui/preferences_ai.c:1106 ../src/gui/preferences_ai.c:1193
 msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
-#: ../src/gui/preferences_ai.c:948 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2084
+#: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2079
 msgid "_select"
 msgstr "_selecionar"
 
-#: ../src/gui/preferences_ai.c:954
+#: ../src/gui/preferences_ai.c:1116
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "multiplas bibliotecas runtime ONNX encontradas:"
 
-#: ../src/gui/preferences_ai.c:1041
+#: ../src/gui/preferences_ai.c:1203
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "ONNX Runtime (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1044
+#: ../src/gui/preferences_ai.c:1206
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1097
+#: ../src/gui/preferences_ai.c:1259
 msgid "enable AI features"
 msgstr "habilitar features de IA"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1142
+#: ../src/gui/preferences_ai.c:1304
 msgid "execution provider"
 msgstr "provedor de execução"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1153
+#: ../src/gui/preferences_ai.c:1315
 msgid "select hardware acceleration for AI inference:"
 msgstr "selecione aceleração de IA para inferência por IA:"
 
-#: ../src/gui/preferences_ai.c:1197
+#: ../src/gui/preferences_ai.c:1359
 msgid "ONNX Runtime library"
 msgstr "biblioteca runtime ONNX"
 
-#: ../src/gui/preferences_ai.c:1211
+#: ../src/gui/preferences_ai.c:1373
 msgid "bundled (DirectML)"
 msgstr "agrupado (DirectML)"
 
-#: ../src/gui/preferences_ai.c:1214
+#: ../src/gui/preferences_ai.c:1376
 msgid "bundled (CPU only)"
 msgstr "agrupado (CPU apenas)"
 
-#: ../src/gui/preferences_ai.c:1217
+#: ../src/gui/preferences_ai.c:1379
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
@@ -15364,90 +15397,90 @@ msgstr ""
 "deixe vazio par ausar a biblioteca agrupada.\n"
 "requer reinício para surtir efeito."
 
-#: ../src/gui/preferences_ai.c:1226
+#: ../src/gui/preferences_ai.c:1388
 msgid "select a custom ONNX Runtime shared library"
 msgstr "selecione uma biblioteca compartilhara ONNX Runtime customizada"
 
-#: ../src/gui/preferences_ai.c:1228
+#: ../src/gui/preferences_ai.c:1390
 msgid "detect"
 msgstr "detectar"
 
-#: ../src/gui/preferences_ai.c:1230
+#: ../src/gui/preferences_ai.c:1392
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "procurar uma biblioteca runtime ONNX instalada no sistema"
 
-#: ../src/gui/preferences_ai.c:1265
+#: ../src/gui/preferences_ai.c:1427
 msgid "models"
 msgstr "modelos"
 
-#: ../src/gui/preferences_ai.c:1312
+#: ../src/gui/preferences_ai.c:1474
 msgid "select/deselect all"
 msgstr "selecionar/deselecionar tudo"
 
-#: ../src/gui/preferences_ai.c:1346 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1520 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "versão"
 
-#: ../src/gui/preferences_ai.c:1355
+#: ../src/gui/preferences_ai.c:1529
 msgid "task"
 msgstr "tarefa"
 
-#: ../src/gui/preferences_ai.c:1380
+#: ../src/gui/preferences_ai.c:1544
 msgid "enabled"
 msgstr "ativado"
 
-#: ../src/gui/preferences_ai.c:1390
+#: ../src/gui/preferences_ai.c:1554
 msgid "status"
 msgstr "estado"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1426
+#: ../src/gui/preferences_ai.c:1596
 msgid "download selected"
 msgstr "baixar selecionado"
 
-#: ../src/gui/preferences_ai.c:1428
+#: ../src/gui/preferences_ai.c:1598
 msgid "download or update the selected models"
 msgstr "baixar ou atualizar os modelos selecionados"
 
 #. download default button
-#: ../src/gui/preferences_ai.c:1437
+#: ../src/gui/preferences_ai.c:1607
 #, fuzzy
 msgid "download default"
 msgstr "padrões desabilitados"
 
-#: ../src/gui/preferences_ai.c:1439
+#: ../src/gui/preferences_ai.c:1609
 msgid "download or update all default models"
 msgstr "baixar ou atualizar todos os modelos padrão"
 
 #. download all button
-#: ../src/gui/preferences_ai.c:1448
+#: ../src/gui/preferences_ai.c:1618
 msgid "download all"
 msgstr "baixar todos"
 
-#: ../src/gui/preferences_ai.c:1450
+#: ../src/gui/preferences_ai.c:1620
 msgid "download or update all available models"
 msgstr "baixar ou atualizar todos os módulos disponíveis"
 
 #. install model button
-#: ../src/gui/preferences_ai.c:1456
+#: ../src/gui/preferences_ai.c:1626
 msgid "install model"
 msgstr "instalar modelo"
 
-#: ../src/gui/preferences_ai.c:1458
+#: ../src/gui/preferences_ai.c:1628
 msgid "install a model from a local .dtmodel file"
 msgstr "instalar um modelo de um arquivo local .dtmodel"
 
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1463
+#: ../src/gui/preferences_ai.c:1633
 msgid "delete selected"
 msgstr "deletar selecionados"
 
-#: ../src/gui/preferences_ai.c:1465
+#: ../src/gui/preferences_ai.c:1635
 msgid "remove the selected models from disk"
 msgstr "remover os modelos selecionados do disco"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1481
+#: ../src/gui/preferences_ai.c:1651
 msgid "AI"
 msgstr "IA"
 
@@ -15855,7 +15888,7 @@ msgstr "Boas edições com o dartkable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2216
+#: ../src/libs/neural_restore.c:2211
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -15879,7 +15912,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2213
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2208
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -16007,7 +16040,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2216
+#: ../src/libs/neural_restore.c:2211
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -16103,7 +16136,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2216
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2211
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -17482,8 +17515,8 @@ msgstr "melhorar nitidez"
 msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
-#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
-#: ../src/libs/neural_restore.c:2120
+#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:721
+#: ../src/libs/neural_restore.c:2115
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -23298,7 +23331,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2140
+#: ../src/libs/neural_restore.c:2135
 msgid "scale"
 msgstr "escala"
 
@@ -29429,16 +29462,16 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:264 ../src/libs/neural_restore.c:1545
+#: ../src/libs/neural_restore.c:265 ../src/libs/neural_restore.c:1540
 msgid "neural restore"
 msgstr "restauração neural"
 
-#: ../src/libs/neural_restore.c:268
+#: ../src/libs/neural_restore.c:269
 msgid "AI-based image restoration: denoise and upscale"
 msgstr ""
 "restauração de imagem baseada em IA: remoção de ruído e aumento de escala"
 
-#: ../src/libs/neural_restore.c:507
+#: ../src/libs/neural_restore.c:508
 #, c-format
 msgid "failed to open TIFF for writing: %s"
 msgstr "falha ao abrir TIFF para escrita: %s"
@@ -29447,132 +29480,132 @@ msgstr "falha ao abrir TIFF para escrita: %s"
 msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2122
+#: ../src/libs/neural_restore.c:721 ../src/libs/neural_restore.c:2117
 msgid "upscale"
 msgstr "aumentar escala"
 
-#: ../src/libs/neural_restore.c:725
+#: ../src/libs/neural_restore.c:723
 #, c-format
 msgid "loading %s model..."
 msgstr "carregando modelo %s ..."
 
-#: ../src/libs/neural_restore.c:755
+#: ../src/libs/neural_restore.c:753
 #, c-format
 msgid "failed to load AI %s model"
 msgstr "falha ao carregar modelo %s de IA"
 
-#: ../src/libs/neural_restore.c:825
+#: ../src/libs/neural_restore.c:823
 msgid "neural restore: cannot create output directory"
 msgstr "restauração neural: nào foi possível criar o diretório de saída"
 
-#: ../src/libs/neural_restore.c:853
+#: ../src/libs/neural_restore.c:851
 msgid "neural restore: too many output files"
 msgstr "restauração neural: arquivos de saída em quantidade excessiva"
 
-#: ../src/libs/neural_restore.c:862
+#: ../src/libs/neural_restore.c:860
 #, c-format
 msgid "denoising image %d/%d..."
 msgstr "removendo ruído de imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:863
+#: ../src/libs/neural_restore.c:861
 #, c-format
 msgid "upscaling 2x image %d/%d..."
 msgstr "aumentando escala 2x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:864
+#: ../src/libs/neural_restore.c:862
 #, c-format
 msgid "upscaling 4x image %d/%d..."
 msgstr "aumentando escala 4x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:893
+#: ../src/libs/neural_restore.c:891
 msgid "neural restore: export failed"
 msgstr "restauração neural: exportação falhou"
 
-#: ../src/libs/neural_restore.c:984
+#: ../src/libs/neural_restore.c:982
 msgid "large output - processing will be slow"
 msgstr "saída grande - o processamento será lento"
 
-#: ../src/libs/neural_restore.c:1705
+#: ../src/libs/neural_restore.c:1700
 msgid "click to select preview area"
 msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:1730
+#: ../src/libs/neural_restore.c:1725
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:1732 ../src/libs/neural_restore.c:1894
+#: ../src/libs/neural_restore.c:1727 ../src/libs/neural_restore.c:1889
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:1734
+#: ../src/libs/neural_restore.c:1729
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:1735
+#: ../src/libs/neural_restore.c:1730
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:2080 ../src/libs/neural_restore.c:2250
+#: ../src/libs/neural_restore.c:2075 ../src/libs/neural_restore.c:2245
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:2121
+#: ../src/libs/neural_restore.c:2116
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:2123
+#: ../src/libs/neural_restore.c:2118
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:2130
+#: ../src/libs/neural_restore.c:2125
 msgid "detail recovery"
 msgstr "recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:2133
+#: ../src/libs/neural_restore.c:2128
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
 "recuperar textura fina perdida durante remoção de ruído enquanto suprime "
 "ruído"
 
-#: ../src/libs/neural_restore.c:2141
+#: ../src/libs/neural_restore.c:2136
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:2143
+#: ../src/libs/neural_restore.c:2138
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2143
+#: ../src/libs/neural_restore.c:2138
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2160
+#: ../src/libs/neural_restore.c:2155
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:2185
+#: ../src/libs/neural_restore.c:2180
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:2203
+#: ../src/libs/neural_restore.c:2198
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:2214
+#: ../src/libs/neural_restore.c:2209
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:2221
+#: ../src/libs/neural_restore.c:2216
 msgid "add to catalog"
 msgstr "adicionaro ao catálogo"
 
-#: ../src/libs/neural_restore.c:2227
+#: ../src/libs/neural_restore.c:2222
 msgid "automatically import output image into the darktable library"
 msgstr "automaticamente importar imagem de saída na biblioteca do darktable"
 
-#: ../src/libs/neural_restore.c:2243
+#: ../src/libs/neural_restore.c:2238
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
