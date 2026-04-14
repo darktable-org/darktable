@@ -1347,7 +1347,7 @@ static void _display_channel(const float *const restrict a,
     }
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
     {
-      const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_in]));
+      const float factor = 1.0f / (128.0f * M_SQRT2_F * exp2f(boost_factors[DEVELOP_BLENDIF_C_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         dt_aligned_pixel_t LCH;

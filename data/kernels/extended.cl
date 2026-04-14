@@ -263,9 +263,9 @@ vibrance (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
-  const float sw = sqrt(pixel.y*pixel.y + pixel.z*pixel.z)/256.0f;
+  const float sw = dt_fast_hypot(pixel.y, pixel.z)/256.0f;
   const float ls = 1.0f - amount * sw * 0.25f;
   const float ss = 1.0f + amount * sw;
 

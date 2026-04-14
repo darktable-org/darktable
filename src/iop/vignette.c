@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -803,7 +803,7 @@ void process(dt_iop_module_t *self,
         else if(dither != 0.0f)
         {
           // only bother computing the random number if dithering is enabled
-          weight = 0.5f - cosf((float)M_PI * weight) / 2.0f;
+          weight = 0.5f - cosf(M_PI_F * weight) / 2.0f;
           encrypt_tea(tea_state);
           dith = dither * tpdf(tea_state[0]);
         }

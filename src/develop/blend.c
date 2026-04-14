@@ -252,7 +252,7 @@ static inline float _detail_mask_threshold(const float level,
                                            const gboolean detail)
 {
   // this does some range calculation for smoother ui experience
-  return 0.005f * (detail ? powf(level, 2.0f) : 1.0f - powf(fabs(level), 0.5f ));
+  return 0.005f * (detail ? sqrf(level) : 1.0f - sqrtf(fabs(level)));
 }
 
 static void _refine_with_detail_mask(dt_iop_module_t *self,
@@ -1478,7 +1478,7 @@ void tiling_callback_blendop(dt_iop_module_t *self,
       if(devid > DT_DEVICE_CPU)
       {
         /* OpenCL feathering does simple internal tiling for less mem pressure,
-           we still need some mem here for this. 
+           we still need some mem here for this.
         */
         tiling->factor_cl = MAX(tiling->factor, 1.0f);
       }

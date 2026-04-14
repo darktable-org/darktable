@@ -67,7 +67,7 @@ static inline void dt_draw_star(cairo_t *cr,
                                 const float r1,
                                 const float r2)
 {
-  const float d = 2.0 * M_PI * 0.1f;
+  const float d = DT_2PI_F * 0.1f;
 
   const float dx[10] = { sinf(0.0),   sinf(d),     sinf(2 * d), sinf(3 * d), sinf(4 * d),
                          sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };
