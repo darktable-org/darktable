@@ -425,12 +425,9 @@ static gpointer _encode_thread_func(gpointer data)
     dt_seg_disk_cache_save(d->seg, imgid, distort_hash,
                            rgb, out_w, out_h);
 
-  // signal ready immediately so the user can start placing points,
-  // the warmup below continues on this background thread - if the user
-  // clicks before it finishes, ORT serializes concurrent Run() calls on
-  // the same session, so the decode simply waits for the warmup to
-  // complete first - in practice, users need a moment to position their
-  // cursor, so the ~1 s warmup usually finishes before the first click
+  // signal ready so the user can start placing points; warmup continues
+  // on this thread; _run_decoder joins the thread on the first click to
+  // avoid a race with warmup on the shared segmentation context
   g_atomic_int_set(&d->encode_state, ok ? ENCODE_READY : ENCODE_ERROR);
 
   // warm up decoder with real encoder embeddings so the first user click
@@ -689,6 +686,13 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     return;
   if(gui->guipoints_count <= 0)
     return;
+
+  // wait for encode thread: warmup may still be running after ENCODE_READY
+  if(d->encode_thread)
+  {
+    g_thread_join(d->encode_thread);
+    d->encode_thread = NULL;
+  }
 
   dt_gui_cursor_set_busy();
 
