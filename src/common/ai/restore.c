@@ -20,7 +20,11 @@
 #include "ai/backend.h"
 #include "common/darktable.h"
 #include "common/ai_models.h"
+#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/imagebuf.h"
+#include "common/math.h"
+#include "common/matrices.h"
 #include "control/jobs.h"
 
 // forward-declare to avoid pulling in dwt.h (which
@@ -60,6 +64,13 @@ struct dt_restore_context_t
   int tile_size;    // tile size used to create the current session
   char *dim_h;      // symbolic height dim name used for session overrides
   char *dim_w;      // symbolic width dim name used for session overrides
+  // color management: convert from working profile to sRGB before
+  // inference (model was trained on sRGB primaries) and back after.
+  // if has_profile is FALSE, fall back to gamma-only conversion
+  // (treats working-profile numbers as if they were sRGB)
+  gboolean has_profile;
+  float wp_to_srgb[9];   // working profile RGB -> sRGB linear (row-major)
+  float srgb_to_wp[9];   // sRGB linear -> working profile RGB (row-major)
   gint ref_count;
 };
 
@@ -282,6 +293,63 @@ void dt_restore_unref(dt_restore_context_t *ctx)
   }
 }
 
+void dt_restore_set_profile(dt_restore_context_t *ctx, void *profile)
+{
+  if(!ctx) return;
+  if(!profile)
+  {
+    ctx->has_profile = FALSE;
+    return;
+  }
+
+  float primaries[3][2], whitepoint[2];
+  if(!dt_colorspaces_get_primaries_and_whitepoint_from_profile(
+       (cmsHPROFILE)profile, primaries, whitepoint))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] could not read primaries from working profile, "
+             "falling back to gamma-only conversion");
+    ctx->has_profile = FALSE;
+    return;
+  }
+
+  // build WP -> XYZ (stored transposed by dt, convert to row-major)
+  dt_colormatrix_t wp_to_xyz_T;
+  dt_make_transposed_matrices_from_primaries_and_whitepoint(primaries,
+                                                            whitepoint,
+                                                            wp_to_xyz_T);
+  float wp_to_xyz[9];
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      wp_to_xyz[3 * i + j] = wp_to_xyz_T[j][i];
+
+  // transpose dt's sRGB<->XYZ matrices (Bradford D50) to row-major
+  float xyz_to_srgb[9], srgb_to_xyz[9];
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      xyz_to_srgb[3 * i + j] = xyz_to_srgb_transposed[j][i];
+      srgb_to_xyz[3 * i + j] = sRGB_to_xyz_transposed[j][i];
+    }
+
+  // WP -> sRGB = (XYZ -> sRGB) * (WP -> XYZ)
+  mat3mul(ctx->wp_to_srgb, xyz_to_srgb, wp_to_xyz);
+
+  // invert WP -> XYZ to get XYZ -> WP, then compose sRGB -> WP
+  float xyz_to_wp[9];
+  if(mat3inv(xyz_to_wp, wp_to_xyz) != 0)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] singular WP->XYZ matrix, falling back to gamma-only");
+    ctx->has_profile = FALSE;
+    return;
+  }
+  mat3mul(ctx->srgb_to_wp, xyz_to_wp, srgb_to_xyz);
+
+  ctx->has_profile = TRUE;
+  dt_print(DT_DEBUG_AI, "[restore] working profile color matrices ready");
+}
+
 static gboolean _model_available(dt_restore_env_t *env,
                                  const char *task)
 {
@@ -401,14 +469,53 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   const int out_w = w * scale;
   const int out_h = h * scale;
   const size_t out_pixels = (size_t)out_w * out_h * 3;
+  const size_t plane = (size_t)w * h;
 
-  // apply sRGB transfer function (gamma only, no primaries change).
-  // values > 1.0 pass through to preserve wide-gamut colors
+  // convert to sRGB gamma-encoded. If a working profile is set,
+  // first convert primaries (working profile -> sRGB linear) so the
+  // model sees the image as if it were native sRGB. Otherwise only
+  // apply the gamma curve (legacy path, shifts hues for wide-gamut).
+  // input layout is planar NCHW: R plane, then G plane, then B plane.
+  // in_gamut_mask records which pixels were in sRGB gamut (scale==1
+  // only) so the output pass can skip recomputing WP->sRGB
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
+  uint8_t *in_gamut_mask = NULL;
   if(!srgb_in) return 1;
+  if(ctx->has_profile && scale == 1)
+  {
+    in_gamut_mask = g_try_malloc(plane);
+    if(!in_gamut_mask)
+    {
+      g_free(srgb_in);
+      return 1;
+    }
+  }
 
-  for(size_t i = 0; i < in_pixels; i++)
-    srgb_in[i] = _linear_to_srgb(in_patch[i]);
+  if(ctx->has_profile)
+  {
+    const float *M = ctx->wp_to_srgb;
+    for(size_t p = 0; p < plane; p++)
+    {
+      const float r = in_patch[p];
+      const float g = in_patch[p + plane];
+      const float b = in_patch[p + 2 * plane];
+      const float sr = M[0] * r + M[1] * g + M[2] * b;
+      const float sg = M[3] * r + M[4] * g + M[5] * b;
+      const float sb = M[6] * r + M[7] * g + M[8] * b;
+      srgb_in[p]             = _linear_to_srgb(sr);
+      srgb_in[p + plane]     = _linear_to_srgb(sg);
+      srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
+      if(in_gamut_mask)
+        in_gamut_mask[p] = (sr >= 0.0f && sr <= 1.0f
+                           && sg >= 0.0f && sg <= 1.0f
+                           && sb >= 0.0f && sb <= 1.0f) ? 1 : 0;
+    }
+  }
+  else
+  {
+    for(size_t i = 0; i < in_pixels; i++)
+      srgb_in[i] = _linear_to_srgb(in_patch[i]);
+  }
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
   if(num_inputs > MAX_MODEL_INPUTS)
@@ -459,12 +566,86 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
                       &output, 1);
   g_free(srgb_in);
   g_free(noise_map);
-  if(ret != 0) return ret;
+  if(ret != 0)
+  {
+    g_free(in_gamut_mask);
+    return ret;
+  }
 
-  // sRGB -> linear
-  for(size_t i = 0; i < out_pixels; i++)
-    out_patch[i] = _srgb_to_linear(out_patch[i]);
+  // convert model output back to the working profile
+  //
+  // with profile: apply inverse sRGB gamma, then check if the ORIGINAL
+  // input pixel (converted to sRGB linear) is representable in sRGB
+  // gamut. if yes, use model output converted back to working profile.
+  // if no, pass through the original pixel (wide-gamut colors preserved,
+  // no denoising on those pixels). upscale has no pixel-to-pixel
+  // correspondence so pass-through is not possible — always use the
+  // model output
+  //
+  // without profile: fall back to per-channel pass-through in the
+  // original (working-profile-as-sRGB) space
+  if(ctx->has_profile && scale == 1)
+  {
+    const size_t out_plane = (size_t)out_w * out_h;
+    const float *Mi = ctx->srgb_to_wp;
+    for(size_t p = 0; p < out_plane; p++)
+    {
+      if(in_gamut_mask[p])
+      {
+        const float sr = _srgb_to_linear(out_patch[p]);
+        const float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+      }
+      else
+      {
+        out_patch[p]                 = in_patch[p];
+        out_patch[p + out_plane]     = in_patch[p + plane];
+        out_patch[p + 2 * out_plane] = in_patch[p + 2 * plane];
+      }
+    }
+  }
+  else if(scale == 1)
+  {
+    // no profile set: per-channel pass-through, treats working-profile
+    // numbers as if they were sRGB. colors will be slightly shifted
+    // for wide-gamut working profiles — rely on the profile path above
+    // when possible
+    for(size_t i = 0; i < out_pixels; i++)
+    {
+      const float in = in_patch[i];
+      out_patch[i] = (in >= 0.0f && in <= 1.0f)
+        ? _srgb_to_linear(out_patch[i])
+        : in;
+    }
+  }
+  else
+  {
+    // upscale: no pixel-to-pixel correspondence, use model output as-is
+    if(ctx->has_profile)
+    {
+      const size_t out_plane = (size_t)out_w * out_h;
+      const float *Mi = ctx->srgb_to_wp;
+      for(size_t p = 0; p < out_plane; p++)
+      {
+        const float sr = _srgb_to_linear(out_patch[p]);
+        const float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+      }
+    }
+    else
+    {
+      for(size_t i = 0; i < out_pixels; i++)
+        out_patch[i] = _srgb_to_linear(out_patch[i]);
+    }
+  }
 
+  g_free(in_gamut_mask);
   return 0;
 }
 
