@@ -570,6 +570,9 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
         .shape = has_mask_shape, .ndim = 1};
 
     int64_t masks_shape[4] = {1, nm, dec_h, dec_w};
+    // shapes must outlive outputs[] used by dt_ai_run below
+    int64_t iou_shape[2] = {1, nm};
+    int64_t lr_shape[4] = {1, nm, pm_dim, pm_dim};
     float iou_buf[MAX_NUM_MASKS];
 
     dt_ai_tensor_t outputs[3];
@@ -577,8 +580,6 @@ void dt_seg_warmup_decoder(dt_seg_context_t *ctx)
 
     if(is_sam)
     {
-      int64_t iou_shape[2] = {1, nm};
-      int64_t lr_shape[4] = {1, nm, pm_dim, pm_dim};
       const int dec_outputs = dt_ai_get_output_count(ctx->decoder);
 
       outputs[0] = (dt_ai_tensor_t){
@@ -847,6 +848,9 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   dt_ai_tensor_t dec_outputs[3];
   int n_dec_out;
   int64_t masks_shape[4] = {1, nm, dec_h, dec_w};
+  // shapes must outlive dec_outputs[] used by dt_ai_run below
+  int64_t iou_shape[2] = {1, nm};
+  int64_t low_res_shape[4] = {1, nm, pm_dim, pm_dim};
 
   float iou_pred[MAX_NUM_MASKS];
   float *low_res = NULL;
@@ -854,7 +858,6 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   if(is_sam)
   {
     // SAM: masks [1,N,H,W] + iou [1,N], optionally low_res [1,N,pm,pm]
-    int64_t iou_shape[2] = {1, nm};
     const int dec_out_count = dt_ai_get_output_count(ctx->decoder);
 
     dec_outputs[0] = (dt_ai_tensor_t){
@@ -875,7 +878,6 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
         g_free(masks);
         return NULL;
       }
-      int64_t low_res_shape[4] = {1, nm, pm_dim, pm_dim};
       dec_outputs[2] = (dt_ai_tensor_t){
         .data = low_res, .type = DT_AI_FLOAT, .shape = low_res_shape, .ndim = 4};
       n_dec_out = 3;
