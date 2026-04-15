@@ -230,8 +230,7 @@ static void rcd_demosaic(float *const restrict out,
           }
         }
 
-        // STEP 3: Populate the green channel
-        // Step 3.1: Populate the green channel at blue and red CFA positions
+        // STEP 3: Populate the green channel at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
           for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
@@ -240,9 +239,9 @@ static void rcd_demosaic(float *const restrict out,
 
             // Cardinal gradients
             const float N_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx - w2]) + fabsf(cfa[indx - w1] - cfa[indx - w3]) + fabsf(cfa[indx - w2] - cfa[indx - w4]);
-            const float S_Grad = eps + fabsf(cfa[indx - w1] - cfa[indx + w1]) + fabsf(cfai - cfa[indx + w2]) + fabsf(cfa[indx + w1] - cfa[indx + w3]) + fabsf(cfa[indx + w2] - cfa[indx + w4]);
+            const float S_Grad = eps + fabsf(cfa[indx + w1] - cfa[indx - w1]) + fabsf(cfai - cfa[indx + w2]) + fabsf(cfa[indx + w1] - cfa[indx + w3]) + fabsf(cfa[indx + w2] - cfa[indx + w4]);
             const float W_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx -  2]) + fabsf(cfa[indx -  1] - cfa[indx -  3]) + fabsf(cfa[indx -  2] - cfa[indx -  4]);
-            const float E_Grad = eps + fabsf(cfa[indx -  1] - cfa[indx +  1]) + fabsf(cfai - cfa[indx +  2]) + fabsf(cfa[indx +  1] - cfa[indx +  3]) + fabsf(cfa[indx +  2] - cfa[indx +  4]);
+            const float E_Grad = eps + fabsf(cfa[indx +  1] - cfa[indx -  1]) + fabsf(cfai - cfa[indx +  2]) + fabsf(cfa[indx +  1] - cfa[indx +  3]) + fabsf(cfa[indx +  2] - cfa[indx +  4]);
 
             // Cardinal pixel estimations
             const float lpfi = lpf[lpindx];
@@ -261,7 +260,7 @@ static void rcd_demosaic(float *const restrict out,
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
             const float VH_Disc = (fabsf(0.5f - VH_Central_Value) < fabsf(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-            rgb[1][indx] = interpolatef(VH_Disc, H_Est, V_Est);
+            rgb[1][indx] = interpolatef(CLIP(VH_Disc), H_Est, V_Est);
           }
         }
 
@@ -315,7 +314,7 @@ static void rcd_demosaic(float *const restrict out,
             const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
-            rgb[c][indx] = rgb[1][indx] + interpolatef(PQ_Disc, Q_Est, P_Est);
+            rgb[c][indx] = rgb[1][indx] + interpolatef(CLIP(PQ_Disc), Q_Est, P_Est);
           }
         }
 
@@ -361,7 +360,7 @@ static void rcd_demosaic(float *const restrict out,
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + interpolatef(VH_Disc, H_Est, V_Est);
+              rgb[c][indx] = rgb1 + interpolatef(CLIP(VH_Disc), H_Est, V_Est);
             }
           }
         }
@@ -487,42 +486,50 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
-        CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
-  if(err != CL_SUCCESS) goto error;
-
   // Step 1.2: Calculate vertical and horizontal local discrimination
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
-        CLARG(VH_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
+  dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 8, .xfactor = 1, .yoffset = 8, .yfactor = 1,
+                                    .cellsize = sizeof(float), .overhead = 0,
+                                    .sizex = 64, .sizey = 64 };
+
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_step_1, &locopt);
   if(err != CL_SUCCESS) goto error;
 
-  // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
+  // Fused step1 code with locals.
+  size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+  size_t local[2] = { locopt.sizex, locopt.sizey };
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_step_1, sizes, local,
+      CLARG(cfa), CLARG(VH_dir), CLARG(width), CLARG(height),
+      CLLOCAL(sizeof(float) * (locopt.sizex + 8) * (locopt.sizey + 8)));
+  if(err != CL_SUCCESS) goto error;
+
+  // Step 2: Low pass filter incorporating green, red and blue local samples from the raw data
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2, width / 2, height,
         CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 3.1: Populate the green channel at blue and red CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
+  // Step 3: populate the green channel at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3, width / 2, height,
       CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-    // Step 4.1: Calculate a squared P/Q diagonals high pass filter on color differences
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
+  // Step 4.0: Calculate a squared P/Q diagonals high pass filter on color differences
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_0, width / 2, height,
       CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-    // Step 4.2: Calculate P/Q diagonal local discrimination
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
+  // Step 4.1: calculate P/Q diagonal local discrimination
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
         CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 4.3: Populate the red and blue channels at blue and red CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
+  // Step 4.2: populate the red and blue channels at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
         CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 
-  // Step 5.2: Populate the red and blue channels at green CFA positions
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
+  // Step 4.3: Populate the red and blue channels at green CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_3, width / 2, height,
         CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
 

@@ -205,7 +205,7 @@ __kernel void prepare_blend(__read_only image2d_t cfa,
   if(row > 1 && col > 1 && (row < height-2) && (col < w -2))
   {
     const int w2 = 2 * w;
-    const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+    const int color = fcol(row, col, filters, xtrans);
     const float val = Areadsingle(cfa, col, row);
     if(val > whites[color] || Y < CAPTURE_YMIN)
     {

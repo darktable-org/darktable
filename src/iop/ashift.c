@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2025 darktable developers.
+  Copyright (C) 2016-2026 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -685,7 +685,7 @@ static inline void vec3norm(float *dst, const float *const v)
 // dst and v may be the same
 static inline void vec3lnorm(float *dst, const float *const v)
 {
-  const float sq = sqrtf(v[0] * v[0] + v[1] * v[1]);
+  const float sq = dt_fast_hypotf(v[0], v[1]);
 
   // special handling for a point vector of the image center
   const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
@@ -3458,14 +3458,14 @@ void process(dt_iop_module_t *self,
                                 (float)piece->buf_in.height };
 
     const float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    const float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    const float ivecl = dt_fast_hypotf(ivec[0], ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     const float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    const float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    const float ovecl = dt_fast_hypotf(ovec[0], ovec[1]);
 
     // angle between input vector and output vector
     const float alpha = acosf(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl),
@@ -3596,14 +3596,14 @@ int process_cl(dt_iop_module_t *self,
                                 (float)piece->buf_in.height };
 
     const float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    const float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    const float ivecl = dt_fast_hypotf(ivec[0], ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     const float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    const float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    const float ovecl = dt_fast_hypotf(ovec[0], ovec[1]);
 
     // angle between input vector and output vector
     const float alpha =

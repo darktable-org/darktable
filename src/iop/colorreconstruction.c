@@ -405,7 +405,7 @@ static void dt_iop_colorreconstruct_bilateral_splat(
         case COLORRECONSTRUCT_PRECEDENCE_HUE:
           m = atan2f(bin, ain) - params[0];
           // readjust m into [-pi, +pi] interval
-          m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
+          m = m > M_PI_F ? m - DT_2PI_F : (m < -M_PI_F ? m + DT_2PI_F : m);
           weight = expf(-m*m/params[1]);
           break;
 
@@ -609,7 +609,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float sigma_s = fmax(data->spatial, 1.0f) / scale;
   const float hue = hue_conversion(data->hue); // convert to LCH hue which better fits to Lab colorspace
 
-  const dt_aligned_pixel_t params = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
+  const dt_aligned_pixel_t params = { hue, M_PI_F*M_PI_F/8, 0.0f, 0.0f };
 
   dt_iop_colorreconstruct_bilateral_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
@@ -1013,7 +1013,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const float sigma_s = fmax(d->spatial, 1.0f) / scale;
   const float hue = hue_conversion(d->hue); // convert to LCH hue which better fits to Lab colorspace
 
-  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
+  const float params[4] = { hue, M_PI_F*M_PI_F/8.0f, 0.0f, 0.0f };
 
   cl_int err = DT_OPENCL_PROCESS_CL;
 

@@ -177,7 +177,7 @@ vng_interpolate(read_only image2d_t in,
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    const float4 pixel = fmax(0.0f, readpixel(in, xx, yy));
+    const float4 pixel = readpixel(in, xx, yy);
     vstore4(pixel, bufidx, buffer);
   }
 

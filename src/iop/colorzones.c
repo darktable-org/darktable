@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -552,7 +552,7 @@ void process_v3(dt_iop_module_t *self,
       default:
       case DT_IOP_COLORZONES_h:
         select = h;
-        blend = powf(1.0f - C / 128.0f, 2.0f);
+        blend = sqrf(1.0f - C / 128.0f);
         break;
     }
     const float Lm = (blend * .5f + (1.0f - blend) * lookup(d->lut[0], select)) - .5f;

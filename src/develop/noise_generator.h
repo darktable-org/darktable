@@ -86,8 +86,8 @@ static inline float gaussian_noise(const float mu,
 
   const float u1 = fmaxf(xoshiro128plus(state), FLT_MIN);
   const float u2 = xoshiro128plus(state);
-  const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2) :
-                               sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
+  const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(DT_2PI_F * u2) :
+                               sqrtf(-2.0f * logf(u1)) * sinf(DT_2PI_F * u2);
   return noise * sigma + mu;
 }
 
@@ -101,8 +101,8 @@ static inline float poisson_noise(const float mu,
   // Create poissonian noise - it's just gaussian noise with Anscombe transform applied.
   const float u1 = fmaxf(xoshiro128plus(state), FLT_MIN);
   const float u2 = xoshiro128plus(state);
-  const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2) :
-                               sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
+  const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(DT_2PI_F * u2) :
+                               sqrtf(-2.0f * logf(u1)) * sinf(DT_2PI_F * u2);
   const float r = noise * sigma + 2.0f * sqrtf(fmaxf(mu + 3.f / 8.f, 0.0f));
   return (r * r - sigma * sigma) / 4.f - 3.f / 8.f;
 }
@@ -180,8 +180,8 @@ static inline void gaussian_noise_simd(const dt_aligned_pixel_t mu,
 
   for_each_channel(c)
   {
-    noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(2.f * M_PI * u2[c]) :
-                           sqrtf(-2.0f * logf(u1[c])) * sinf(2.f * M_PI * u2[c]);
+    noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(DT_2PI_F * u2[c]) :
+                           sqrtf(-2.0f * logf(u1[c])) * sinf(DT_2PI_F * u2[c]);
   }
 
   for_each_channel(c)
@@ -214,8 +214,8 @@ static inline void poisson_noise_simd(const dt_aligned_pixel_t mu,
 
   for_each_channel(c)
   {
-    noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(2.f * M_PI * u2[c]) :
-                           sqrtf(-2.0f * logf(u1[c])) * sinf(2.f * M_PI * u2[c]);
+    noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(DT_2PI_F * u2[c]) :
+                           sqrtf(-2.0f * logf(u1[c])) * sinf(DT_2PI_F * u2[c]);
   }
 
   // Now we have gaussian noise, then apply Anscombe transform to get poissonian one.

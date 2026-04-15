@@ -129,7 +129,7 @@ static unsigned char *_cs_precalc_gauss_idx(dt_iop_module_t *self,
     for(int col = 0; col < width; col++)
     {
       const float fcol = col + dx - rwidth;
-      const float sc = sqrtf(frow * frow + fcol * fcol) / mdim;
+      const float sc = hypotf(frow, fcol) / mdim;
       const float corr = cboost * boost * sqrf(MAX(0.0f, sc - 0.5f - centre));
 
       // also special care for the image borders
@@ -690,7 +690,7 @@ static void _prepare_blend(const float *cfa,
       Yold[k] = MAX(0.0f, yw[0] + yw[1] + yw[2]);
       if(row > 1 && col > 1 && row < height-2 && col < w1-2)
       {
-        const int color = (filters == 9u) ? FCNxtrans(row, col, xtrans) : FC(row, col, filters);
+        const int color = fcol(row, col, filters, xtrans);
         const gboolean heat = filters ? cfa[k] > whites[color] : cfa[4*k] > CAPTURE_CFACLIP;
         if(heat || Yold[k] < CAPTURE_YMIN)
         {
