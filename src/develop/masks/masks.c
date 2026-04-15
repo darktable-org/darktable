@@ -142,7 +142,7 @@ GSList *dt_masks_mouse_actions(const dt_masks_form_t *form)
 static void _set_hinter_message(const dt_masks_form_gui_t *gui,
                                 const dt_masks_form_t *form)
 {
-  char msg[256] = "";
+  char msg[512] = "";
 
   const int ftype = form->type;
 
