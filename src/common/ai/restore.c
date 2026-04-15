@@ -20,7 +20,11 @@
 #include "ai/backend.h"
 #include "common/darktable.h"
 #include "common/ai_models.h"
+#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/imagebuf.h"
+#include "common/math.h"
+#include "common/matrices.h"
 #include "control/jobs.h"
 
 // forward-declare to avoid pulling in dwt.h (which
@@ -60,6 +64,24 @@ struct dt_restore_context_t
   int tile_size;    // tile size used to create the current session
   char *dim_h;      // symbolic height dim name used for session overrides
   char *dim_w;      // symbolic width dim name used for session overrides
+  // color management: convert from working profile to sRGB before
+  // inference (model was trained on sRGB primaries) and back after.
+  // if has_profile is FALSE, fall back to gamma-only conversion
+  // (treats working-profile numbers as if they were sRGB)
+  gboolean has_profile;
+  float wp_to_srgb[9];   // working profile RGB -> sRGB linear (row-major)
+  float srgb_to_wp[9];   // sRGB linear -> working profile RGB (row-major)
+  // when TRUE (default), out-of-sRGB-gamut pixels pass through unchanged
+  // during denoise. when FALSE, every pixel uses the model output and
+  // wide-gamut colors get clipped to sRGB but everything is denoised
+  gboolean preserve_wide_gamut;
+  // shadow_boost_capable: TRUE when the model declares the
+  // "shadow_boost" attribute in its config.json; set once at load
+  gboolean shadow_boost_capable;
+  // shadow_boost: the effective flag used at inference; recomputed
+  // per-image inside dt_restore_process_tiled() when capable, based
+  // on a luminance check (bright images skip the curve)
+  gboolean shadow_boost;
   gint ref_count;
 };
 
@@ -219,15 +241,29 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   }
 
   dt_restore_context_t *ctx = g_new0(dt_restore_context_t, 1);
-  ctx->ref_count = 1;
-  ctx->ai_ctx    = ai_ctx;
-  ctx->env       = env;
-  ctx->task      = g_strdup(task);
-  ctx->model_id  = model_id;
-  ctx->model_file = g_strdup(model_file);
-  ctx->tile_size = tile_size;
-  ctx->dim_h     = g_strdup(dim_h);
-  ctx->dim_w     = g_strdup(dim_w);
+  ctx->ref_count           = 1;
+  ctx->ai_ctx              = ai_ctx;
+  ctx->env                 = env;
+  ctx->task                = g_strdup(task);
+  ctx->model_id            = model_id;
+  ctx->model_file          = g_strdup(model_file);
+  ctx->tile_size           = tile_size;
+  ctx->dim_h               = g_strdup(dim_h);
+  ctx->dim_w               = g_strdup(dim_w);
+  ctx->preserve_wide_gamut = TRUE;
+  // shadow boost capability is declared per-model via the
+  // "attributes": { "shadow_boost": true } object in config.json;
+  // models that hallucinate in dark patches opt in this way;
+  // other models run as-is
+  const dt_ai_model_info_t *info
+    = dt_ai_get_model_info_by_id(env->ai_env, model_id);
+  ctx->shadow_boost_capable
+    = dt_ai_model_attribute_bool(info, "shadow_boost");
+  ctx->shadow_boost = ctx->shadow_boost_capable;
+  if(ctx->shadow_boost_capable)
+    dt_print(DT_DEBUG_AI,
+             "[restore] model %s declares shadow_boost attribute",
+             model_id);
   return ctx;
 }
 
@@ -280,6 +316,68 @@ void dt_restore_unref(dt_restore_context_t *ctx)
     g_free(ctx->dim_w);
     g_free(ctx);
   }
+}
+
+void dt_restore_set_profile(dt_restore_context_t *ctx, void *profile)
+{
+  if(!ctx) return;
+  if(!profile)
+  {
+    ctx->has_profile = FALSE;
+    return;
+  }
+
+  float primaries[3][2], whitepoint[2];
+  if(!dt_colorspaces_get_primaries_and_whitepoint_from_profile(
+       (cmsHPROFILE)profile, primaries, whitepoint))
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] could not read primaries from working profile, "
+             "falling back to gamma-only conversion");
+    ctx->has_profile = FALSE;
+    return;
+  }
+
+  // build WP -> XYZ (stored transposed by dt, convert to row-major)
+  dt_colormatrix_t wp_to_xyz_T;
+  dt_make_transposed_matrices_from_primaries_and_whitepoint(primaries,
+                                                            whitepoint,
+                                                            wp_to_xyz_T);
+  float wp_to_xyz[9];
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      wp_to_xyz[3 * i + j] = wp_to_xyz_T[j][i];
+
+  // transpose dt's sRGB<->XYZ matrices (Bradford D50) to row-major
+  float xyz_to_srgb[9], srgb_to_xyz[9];
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      xyz_to_srgb[3 * i + j] = xyz_to_srgb_transposed[j][i];
+      srgb_to_xyz[3 * i + j] = sRGB_to_xyz_transposed[j][i];
+    }
+
+  // WP -> sRGB = (XYZ -> sRGB) * (WP -> XYZ)
+  mat3mul(ctx->wp_to_srgb, xyz_to_srgb, wp_to_xyz);
+
+  // invert WP -> XYZ to get XYZ -> WP, then compose sRGB -> WP
+  float xyz_to_wp[9];
+  if(mat3inv(xyz_to_wp, wp_to_xyz) != 0)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] singular WP->XYZ matrix, falling back to gamma-only");
+    ctx->has_profile = FALSE;
+    return;
+  }
+  mat3mul(ctx->srgb_to_wp, xyz_to_wp, srgb_to_xyz);
+
+  ctx->has_profile = TRUE;
+  dt_print(DT_DEBUG_AI, "[restore] working profile color matrices ready");
+}
+
+void dt_restore_set_preserve_wide_gamut(dt_restore_context_t *ctx, gboolean preserve)
+{
+  if(ctx) ctx->preserve_wide_gamut = preserve;
 }
 
 static gboolean _model_available(dt_restore_env_t *env,
@@ -390,6 +488,15 @@ static int _select_tile_size(int scale)
   return candidates[n_candidates - 1];
 }
 
+// Rec.709 / sRGB luminance weights (Y row of sRGB->XYZ D65);
+// applied to working-profile-linear pixels in the pass-through
+// blending below; exact only when the working profile is
+// sRGB/Rec.709, but correct enough for luminance deltas
+static inline float _luma_rec709(float r, float g, float b)
+{
+  return 0.2126f * r + 0.7152f * g + 0.0722f * b;
+}
+
 int dt_restore_run_patch(dt_restore_context_t *ctx,
                          const float *in_patch,
                          int w, int h,
@@ -401,14 +508,79 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   const int out_w = w * scale;
   const int out_h = h * scale;
   const size_t out_pixels = (size_t)out_w * out_h * 3;
+  const size_t plane = (size_t)w * h;
 
-  // apply sRGB transfer function (gamma only, no primaries change).
-  // values > 1.0 pass through to preserve wide-gamut colors
+  // convert to sRGB gamma-encoded. If a working profile is set,
+  // first convert primaries (working profile -> sRGB linear) so the
+  // model sees the image as if it were native sRGB. Otherwise only
+  // apply the gamma curve (legacy path, shifts hues for wide-gamut).
+  // input layout is planar NCHW: R plane, then G plane, then B plane.
+  // in_gamut_mask records which pixels were in sRGB gamut (scale==1
+  // only) so the output pass can skip recomputing WP->sRGB
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
+  uint8_t *in_gamut_mask = NULL;
   if(!srgb_in) return 1;
+  // only allocate the gamut mask when denoise pass-through is requested
+  const gboolean need_gamut_mask
+    = ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut;
+  if(need_gamut_mask)
+  {
+    in_gamut_mask = g_try_malloc(plane);
+    if(!in_gamut_mask)
+    {
+      g_free(srgb_in);
+      return 1;
+    }
+  }
 
-  for(size_t i = 0; i < in_pixels; i++)
-    srgb_in[i] = _linear_to_srgb(in_patch[i]);
+  if(ctx->has_profile)
+  {
+    const float *M = ctx->wp_to_srgb;
+    const gboolean boost = ctx->shadow_boost;
+    for(size_t p = 0; p < plane; p++)
+    {
+      const float r = in_patch[p];
+      const float g = in_patch[p + plane];
+      const float b = in_patch[p + 2 * plane];
+      float sr = M[0] * r + M[1] * g + M[2] * b;
+      float sg = M[3] * r + M[4] * g + M[5] * b;
+      float sb = M[6] * r + M[7] * g + M[8] * b;
+      // gamut check uses pre-boost values so pass-through decisions
+      // reflect the original color
+      if(in_gamut_mask)
+      {
+        const float m = 0.01f;  // ~1% margin beyond [0, 1]
+        in_gamut_mask[p] = (sr >= -m && sr <= 1.0f + m
+                           && sg >= -m && sg <= 1.0f + m
+                           && sb >= -m && sb <= 1.0f + m) ? 1 : 0;
+      }
+      if(boost)
+      {
+        sr = sr > 0.0f ? sqrtf(sr) : 0.0f;
+        sg = sg > 0.0f ? sqrtf(sg) : 0.0f;
+        sb = sb > 0.0f ? sqrtf(sb) : 0.0f;
+      }
+      srgb_in[p]             = _linear_to_srgb(sr);
+      srgb_in[p + plane]     = _linear_to_srgb(sg);
+      srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
+    }
+  }
+  else if(ctx->shadow_boost)
+  {
+    // no profile: still boost shadows so the model stays within its
+    // comfort zone, even though we treat WP values as sRGB
+    for(size_t i = 0; i < in_pixels; i++)
+    {
+      const float v = in_patch[i];
+      const float boosted = v > 0.0f ? sqrtf(v) : 0.0f;
+      srgb_in[i] = _linear_to_srgb(boosted);
+    }
+  }
+  else
+  {
+    for(size_t i = 0; i < in_pixels; i++)
+      srgb_in[i] = _linear_to_srgb(in_patch[i]);
+  }
 
   const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
   if(num_inputs > MAX_MODEL_INPUTS)
@@ -459,13 +631,193 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
                       &output, 1);
   g_free(srgb_in);
   g_free(noise_map);
-  if(ret != 0) return ret;
+  if(ret != 0)
+  {
+    g_free(in_gamut_mask);
+    return ret;
+  }
 
-  // sRGB -> linear
-  for(size_t i = 0; i < out_pixels; i++)
-    out_patch[i] = _srgb_to_linear(out_patch[i]);
+  // convert model output back to the working profile
+  //
+  // with profile: apply inverse sRGB gamma, then check if the ORIGINAL
+  // input pixel (converted to sRGB linear) is representable in sRGB
+  // gamut. if yes, use model output converted back to working profile.
+  // if no, pass through the original pixel (wide-gamut colors preserved,
+  // no denoising on those pixels). upscale has no pixel-to-pixel
+  // correspondence so pass-through is not possible — always use the
+  // model output
+  //
+  // without profile: fall back to per-channel pass-through in the
+  // original (working-profile-as-sRGB) space
+  const gboolean boost = ctx->shadow_boost;
+  if(ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut)
+  {
+    const size_t out_plane = (size_t)out_w * out_h;
+    const float *Mi = ctx->srgb_to_wp;
+    // pass 1: write denoised values for in-gamut pixels; out-of-gamut
+    // pixels get plain pass-through as a fallback (used only when no
+    // in-gamut neighbors are found in pass 2)
+    for(size_t p = 0; p < out_plane; p++)
+    {
+      if(in_gamut_mask[p])
+      {
+        float sr = _srgb_to_linear(out_patch[p]);
+        float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
+        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+      }
+      else
+      {
+        out_patch[p]                 = in_patch[p];
+        out_patch[p + out_plane]     = in_patch[p + plane];
+        out_patch[p + 2 * out_plane] = in_patch[p + 2 * plane];
+      }
+    }
+    // pass 2: luminance-only smoothing for out-of-gamut pixels. the
+    // original pixel keeps its chroma (wide-gamut color preserved
+    // exactly) but its brightness is shifted to match the local
+    // average luminance of denoised in-gamut neighbors; this kills
+    // the single-pixel speckles that pass-through would otherwise
+    // leave visible against the denoised background
+    const int radius = 2;  // 5x5 window
+    for(int y = 0; y < out_h; y++)
+    {
+      for(int x = 0; x < out_w; x++)
+      {
+        const size_t p = (size_t)y * out_w + x;
+        if(in_gamut_mask[p]) continue;
+        const float r0 = in_patch[p];
+        const float g0 = in_patch[p + plane];
+        const float b0 = in_patch[p + 2 * plane];
+        const float Y_orig = _luma_rec709(r0, g0, b0);
+        float sumY = 0.0f;
+        int count = 0;
+        const int y0 = y - radius < 0 ? 0 : y - radius;
+        const int y1 = y + radius >= out_h ? out_h - 1 : y + radius;
+        const int x0 = x - radius < 0 ? 0 : x - radius;
+        const int x1 = x + radius >= out_w ? out_w - 1 : x + radius;
+        for(int yy = y0; yy <= y1; yy++)
+        {
+          for(int xx = x0; xx <= x1; xx++)
+          {
+            const size_t q = (size_t)yy * out_w + xx;
+            if(!in_gamut_mask[q]) continue;
+            const float rq = out_patch[q];
+            const float gq = out_patch[q + out_plane];
+            const float bq = out_patch[q + 2 * out_plane];
+            sumY += _luma_rec709(rq, gq, bq);
+            count++;
+          }
+        }
+        if(count > 0)
+        {
+          const float dY = sumY / (float)count - Y_orig;
+          out_patch[p]                 = r0 + dY;
+          out_patch[p + out_plane]     = g0 + dY;
+          out_patch[p + 2 * out_plane] = b0 + dY;
+        }
+      }
+    }
+  }
+  else if(ctx->has_profile && scale == 1)
+  {
+    // denoise with profile but NO pass-through: apply the inverse
+    // matrix to every pixel. wide-gamut inputs will have been clipped
+    // by the model, but we get denoising everywhere
+    const size_t out_plane = (size_t)out_w * out_h;
+    const float *Mi = ctx->srgb_to_wp;
+    for(size_t p = 0; p < out_plane; p++)
+    {
+      float sr = _srgb_to_linear(out_patch[p]);
+      float sg = _srgb_to_linear(out_patch[p + out_plane]);
+      float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+      if(boost) { sr *= sr; sg *= sg; sb *= sb; }
+      out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+      out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+      out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+    }
+  }
+  else if(scale == 1)
+  {
+    // no profile set: per-channel pass-through, treats working-profile
+    // numbers as if they were sRGB. colors will be slightly shifted
+    // for wide-gamut working profiles — rely on the profile path above
+    // when possible. pass-through still honored via preserve_wide_gamut
+    for(size_t i = 0; i < out_pixels; i++)
+    {
+      const float in = in_patch[i];
+      if(ctx->preserve_wide_gamut && (in < 0.0f || in > 1.0f))
+      {
+        out_patch[i] = in;
+      }
+      else
+      {
+        float v = _srgb_to_linear(out_patch[i]);
+        if(boost) v *= v;
+        out_patch[i] = v;
+      }
+    }
+  }
+  else
+  {
+    // upscale: no pixel-to-pixel correspondence, use model output as-is
+    if(ctx->has_profile)
+    {
+      const size_t out_plane = (size_t)out_w * out_h;
+      const float *Mi = ctx->srgb_to_wp;
+      for(size_t p = 0; p < out_plane; p++)
+      {
+        float sr = _srgb_to_linear(out_patch[p]);
+        float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
+        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+      }
+    }
+    else
+    {
+      for(size_t i = 0; i < out_pixels; i++)
+      {
+        float v = _srgb_to_linear(out_patch[i]);
+        if(boost) v *= v;
+        out_patch[i] = v;
+      }
+    }
+  }
 
+  g_free(in_gamut_mask);
   return 0;
+}
+
+// per-image gate for the shadow-boost curve; enable only when the image
+// has substantial near-black area to protect — bright images would only
+// pay the curve cost (minor highlight compression) for no gain;
+// thresholds tuned so localized very-dark features (a tree hollow, a
+// silhouette) do NOT trigger; only broad noisy shadow regions do
+//
+// in_data is interleaved float4 RGBA
+#define _SHADOW_BOOST_THRESHOLD 0.005f  // 0.5% linear luminance
+#define _SHADOW_BOOST_FRACTION  0.10f   // 10% of sampled pixels
+static gboolean _image_has_deep_shadows(const float *in_data, int w, int h)
+{
+  const size_t stride = 16;  // sample 1/256 of pixels for speed
+  size_t dark = 0, total = 0;
+  for(size_t y = 0; y < (size_t)h; y += stride)
+    for(size_t x = 0; x < (size_t)w; x += stride)
+    {
+      const size_t p = ((size_t)y * w + x) * 4;
+      const float luma = 0.2126f * in_data[p]
+                       + 0.7152f * in_data[p + 1]
+                       + 0.0722f * in_data[p + 2];
+      if(luma < _SHADOW_BOOST_THRESHOLD) dark++;
+      total++;
+    }
+  return total > 0 && (float)dark / total >= _SHADOW_BOOST_FRACTION;
 }
 
 int dt_restore_process_tiled(dt_restore_context_t *ctx,
@@ -478,6 +830,17 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
 {
   if(!ctx || !in_data || !row_writer)
     return 1;
+
+  // for shadow-boost-capable models, decide per-image whether the
+  // curve is worth applying; one analysis per call, before tiling,
+  // so all tiles see the same flag (avoids per-tile seams)
+  if(ctx->shadow_boost_capable)
+  {
+    const gboolean dark = _image_has_deep_shadows(in_data, width, height);
+    ctx->shadow_boost = dark;
+    dt_print(DT_DEBUG_AI, "[restore] shadow boost %s",
+             dark ? "enabled" : "disabled");
+  }
 
   const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
   const int S = scale;

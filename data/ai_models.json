@@ -28,6 +28,14 @@
       "default": true
     },
     {
+      "id": "denoise-nafnet",
+      "name": "denoise nafnet small",
+      "description": "NAFNet denoiser trained on SIDD dataset",
+      "task": "denoise",
+      "github_asset": "denoise-nafnet.dtmodel",
+      "default": false
+    },
+    {
       "id": "upscale-bsrgan",
       "name": "upscale bsrgan",
       "description": "BSRGAN 2x and 4x blind super-resolution",

@@ -132,7 +132,39 @@ typedef struct dt_ai_model_info_t {
   const char *arch;        ///< e.g. "sam2", "segnext"
   const char *backend;     ///< Backend type (e.g. "onnx")
   int num_inputs;          ///< Number of model inputs (default 1)
+  const char *attributes;  ///< Optional attributes
 } dt_ai_model_info_t;
+
+/* --- Model "attributes" lookup ---
+ *
+ * Models declare optional behavior hints under an "attributes" object
+ * in their config.json, e.g.:
+ *   "attributes": {
+ *     "shadow_boost": true,
+ *     "tile_factor": 1.5,
+ *     "color_space": "sRGB"
+ *   }
+ *
+ * The accessors parse the stored JSON on demand. A missing key (or
+ * one of a different type) returns the supplied default — or FALSE /
+ * NULL for the bool / string variants.
+ */
+
+gboolean dt_ai_model_attribute_bool(const dt_ai_model_info_t *info,
+                                    const char *key);
+
+int dt_ai_model_attribute_int(const dt_ai_model_info_t *info,
+                              const char *key,
+                              int default_value);
+
+double dt_ai_model_attribute_double(const dt_ai_model_info_t *info,
+                                    const char *key,
+                                    double default_value);
+
+/** Returned string is newly allocated and must be freed with g_free().
+ *  Returns NULL if the key is absent or not a string. */
+char *dt_ai_model_attribute_string(const dt_ai_model_info_t *info,
+                                   const char *key);
 
 /* --- Discovery --- */
 
