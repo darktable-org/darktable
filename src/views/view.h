@@ -459,6 +459,7 @@ gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
                                      const double dx,
                                      const double dy,
                                      const int state);
+/** x, y are root (screen-absolute) coordinates, same convention as GdkEventScroll.x_root. */
 gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
                                        const double x,
                                        const double y,

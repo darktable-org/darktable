@@ -105,6 +105,14 @@ void dt_culling_change_offset_image(dt_culling_t *table,
 void dt_culling_zoom_max(dt_culling_t *table);
 void dt_culling_zoom_fit(dt_culling_t *table);
 
+// zoom by zoom_delta (in th->zoom units) centered on culling-local (x_culling, y_culling).
+// equivalent to _thumbs_zoom_add.
+gboolean dt_culling_zoom_add(dt_culling_t *table, float zoom_delta, float x_culling, float y_culling, int state);
+
+// translate all zoomed thumbnails by (dx, dy) screen pixels.
+// state is used to optionally restrict panning to the hovered image (GDK_SHIFT_MASK).
+gboolean dt_culling_pan_move(dt_culling_t *table, float dx, float dy, int state);
+
 // set the overlays type
 void dt_culling_set_overlays_mode(dt_culling_t *table,
                                   const dt_thumbnail_overlay_t over);

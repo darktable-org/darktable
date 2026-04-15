@@ -710,6 +710,146 @@ void reset(dt_view_t *self)
   dt_control_set_mouse_over_id(NO_IMGID);
 }
 
+// Return the active dt_culling_t for gesture dispatch: the preview widget when in
+// preview mode, the culling widget when in a culling layout, NULL otherwise.
+static dt_culling_t *_active_culling(const dt_library_t *lib)
+{
+  if(lib->preview_state)
+  {
+    return lib->preview;
+  }
+
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  {
+    return lib->culling;
+  }
+
+  return NULL;
+}
+
+gboolean gesture_pan(dt_view_t *self,
+                     const double x,
+                     const double y,
+                     const double dx,
+                     const double dy,
+                     const int state)
+{
+  const dt_library_t *lib = self->data;
+  dt_culling_t *table = _active_culling(lib);
+  dt_print(DT_DEBUG_INPUT,
+           "[lighttable pan] x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x"
+           " layout=%d preview=%d table=%s",
+           x, y, dx, dy, state,
+           lib->current_layout, lib->preview_state,
+           table ? "active" : "NULL (not in culling/preview)");
+  if(!table) return FALSE;
+
+  const gboolean moved = dt_culling_pan_move(table, (float)dx, (float)dy, state);
+  dt_print(DT_DEBUG_INPUT, "[lighttable pan] dt_culling_pan_move -> %s", moved ? "moved" : "no-op");
+  if(moved)
+  {
+    gtk_widget_queue_draw(table->widget);
+  }
+
+  return moved;
+}
+
+gboolean gesture_pinch(dt_view_t *self,
+                       const double x,
+                       const double y,
+                       const double dx,
+                       const double dy,
+                       const int phase,
+                       const double scale,
+                       const int state)
+{
+  const dt_library_t *lib = self->data;
+  dt_culling_t *table = _active_culling(lib);
+  if(!table)
+  {
+    return FALSE;
+  }
+
+  // prev_scale tracks the cumulative scale from the last UPDATE so we can compute
+  // an incremental scale ratio each event rather than needing per-thumbnail begin state.
+  static double prev_scale = 1.0;
+
+  dt_print(DT_DEBUG_INPUT,
+           "[lighttable pinch] phase=%d x=%.1f y=%.1f dx=%.3f dy=%.3f"
+           " scale=%.6f prev_scale=%.6f state=0x%x layout=%d preview=%d",
+           phase, x, y, dx, dy, scale, prev_scale,
+           state, lib->current_layout, lib->preview_state);
+
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
+  {
+    prev_scale = 1.0;
+    dt_print(DT_DEBUG_INPUT, "[lighttable pinch] begin -> reset prev_scale");
+    return TRUE;
+  }
+  if(phase == GDK_TOUCHPAD_GESTURE_PHASE_END
+     || phase == GDK_TOUCHPAD_GESTURE_PHASE_CANCEL)
+  {
+    prev_scale = 1.0;
+    dt_print(DT_DEBUG_INPUT, "[lighttable pinch] %s",
+             phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel");
+    return TRUE;
+  }
+  if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
+  {
+    dt_print(DT_DEBUG_INPUT, "[lighttable pinch] unknown phase %d -> ignored", phase);
+    return FALSE;
+  }
+
+  gboolean changed = FALSE;
+
+  // pan component (combined pinch+translation, from GdkEventTouchpadPinch dx/dy)
+  // Negate dx/dy so the gesture feels like scrolling (moving fingers right shifts the
+  // viewport right, i.e. the image moves left) rather than touchscreen dragging.
+  if(dx != 0.0 || dy != 0.0)
+  {
+    dt_print(DT_DEBUG_INPUT, "[lighttable pinch] pan component dx=%.3f dy=%.3f", dx, dy);
+    changed |= dt_culling_pan_move(table, (float)-dx, (float)-dy, state);
+  }
+
+  // zoom component — derive an incremental zoom_delta from the scale ratio.
+  // Tuning: a full 2× pinch spread (cumulative scale 1.0→2.0) should cover most of
+  // the fit-to-100% range. sum of (scale/prev_scale - 1) over a smooth 2× pinch
+  // ≈ ln(2) ≈ 0.69, and zoom_100 - 1 ≈ 3–5, giving SPEED ≈ 5–7.
+  //
+  // Always advance prev_scale so the dead zone is measured against the immediately
+  // preceding event rather than the last zoom-fire point. This keeps the worst-case
+  // accumulated noise to a single event step (~0.4%), well within the 1% threshold.
+  const float scale_increment = (float)(scale / prev_scale) - 1.0f;
+  prev_scale = scale;
+  if(fabsf(scale_increment) > 0.01f)
+  {
+    const float zoom_delta = scale_increment * 5.0f;
+    dt_print(DT_DEBUG_INPUT,
+             "[lighttable pinch] zoom scale_increment=%.6f zoom_delta=%.4f"
+             " x_root=%.1f y_root=%.1f",
+             scale_increment, zoom_delta, x, y);
+
+    if(dt_culling_zoom_add(table, zoom_delta, x, y, state))
+    {
+      changed = TRUE;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_INPUT, "[lighttable pinch] dt_culling_zoom_add -> no-op");
+    }
+  }
+
+  prev_scale = scale;
+  dt_print(DT_DEBUG_INPUT, "[lighttable pinch] update done changed=%d", changed);
+  if(changed)
+  {
+    gtk_widget_queue_draw(table->widget);
+  }
+
+  return TRUE;
+}
+
 
 void scrollbar_changed(dt_view_t *self,
                        const double x,
