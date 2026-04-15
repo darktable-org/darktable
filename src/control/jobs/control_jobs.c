@@ -554,7 +554,7 @@ static int _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
   const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
   const float rad = .5f * efl / eap;
-  const float aperture = M_PI * rad * rad;
+  const float aperture = M_PI_F * rad * rad;
   const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
   const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
   const float cal = 100.0f / (aperture * exp * iso);
