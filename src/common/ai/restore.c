@@ -71,6 +71,10 @@ struct dt_restore_context_t
   gboolean has_profile;
   float wp_to_srgb[9];   // working profile RGB -> sRGB linear (row-major)
   float srgb_to_wp[9];   // sRGB linear -> working profile RGB (row-major)
+  // when TRUE (default), out-of-sRGB-gamut pixels pass through unchanged
+  // during denoise. when FALSE, every pixel uses the model output and
+  // wide-gamut colors get clipped to sRGB but everything is denoised
+  gboolean preserve_wide_gamut;
   gint ref_count;
 };
 
@@ -239,6 +243,7 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   ctx->tile_size = tile_size;
   ctx->dim_h     = g_strdup(dim_h);
   ctx->dim_w     = g_strdup(dim_w);
+  ctx->preserve_wide_gamut = TRUE;
   return ctx;
 }
 
@@ -348,6 +353,11 @@ void dt_restore_set_profile(dt_restore_context_t *ctx, void *profile)
 
   ctx->has_profile = TRUE;
   dt_print(DT_DEBUG_AI, "[restore] working profile color matrices ready");
+}
+
+void dt_restore_set_preserve_wide_gamut(dt_restore_context_t *ctx, gboolean preserve)
+{
+  if(ctx) ctx->preserve_wide_gamut = preserve;
 }
 
 static gboolean _model_available(dt_restore_env_t *env,
@@ -481,7 +491,10 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
   uint8_t *in_gamut_mask = NULL;
   if(!srgb_in) return 1;
-  if(ctx->has_profile && scale == 1)
+  // only allocate the gamut mask when denoise pass-through is requested
+  const gboolean need_gamut_mask
+    = ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut;
+  if(need_gamut_mask)
   {
     in_gamut_mask = g_try_malloc(plane);
     if(!in_gamut_mask)
@@ -584,7 +597,7 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   //
   // without profile: fall back to per-channel pass-through in the
   // original (working-profile-as-sRGB) space
-  if(ctx->has_profile && scale == 1)
+  if(ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut)
   {
     const size_t out_plane = (size_t)out_w * out_h;
     const float *Mi = ctx->srgb_to_wp;
@@ -607,18 +620,35 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
       }
     }
   }
+  else if(ctx->has_profile && scale == 1)
+  {
+    // denoise with profile but NO pass-through: apply the inverse
+    // matrix to every pixel. wide-gamut inputs will have been clipped
+    // by the model, but we get denoising everywhere
+    const size_t out_plane = (size_t)out_w * out_h;
+    const float *Mi = ctx->srgb_to_wp;
+    for(size_t p = 0; p < out_plane; p++)
+    {
+      const float sr = _srgb_to_linear(out_patch[p]);
+      const float sg = _srgb_to_linear(out_patch[p + out_plane]);
+      const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+      out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
+      out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
+      out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
+    }
+  }
   else if(scale == 1)
   {
     // no profile set: per-channel pass-through, treats working-profile
     // numbers as if they were sRGB. colors will be slightly shifted
     // for wide-gamut working profiles — rely on the profile path above
-    // when possible
+    // when possible. pass-through still honored via preserve_wide_gamut
     for(size_t i = 0; i < out_pixels; i++)
     {
       const float in = in_patch[i];
-      out_patch[i] = (in >= 0.0f && in <= 1.0f)
-        ? _srgb_to_linear(out_patch[i])
-        : in;
+      out_patch[i] = (ctx->preserve_wide_gamut && (in < 0.0f || in > 1.0f))
+        ? in
+        : _srgb_to_linear(out_patch[i]);
     }
   }
   else
