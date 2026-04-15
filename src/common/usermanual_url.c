@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2025 darktable developers.
+    Copyright (C) 2018-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ dt_help_url urls_db[] =
   {"export",                     "module-reference/utility-modules/shared/export/"},
   {"export_dialog",              "module-reference/utility-modules/shared/export/#metadata-preferences"},
   {"histogram",                  "module-reference/utility-modules/shared/scopes/"},
+  {"neural_restore",             "module-reference/utility-modules/shared/neural-restore/"},
   {"navigation",                 "module-reference/utility-modules/darkroom/navigation/"},
   {"snapshots",                  "module-reference/utility-modules/darkroom/snapshots/"},
   {"history",                    "module-reference/utility-modules/darkroom/history-stack/"},
