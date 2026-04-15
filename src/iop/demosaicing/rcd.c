@@ -486,16 +486,24 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
-        CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
-  if(err != CL_SUCCESS) goto error;
-
   // Step 1.2: Calculate vertical and horizontal local discrimination
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
-        CLARG(VH_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
+  dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 8, .xfactor = 1, .yoffset = 8, .yfactor = 1,
+                                    .cellsize = sizeof(float), .overhead = 0,
+                                    .sizex = 64, .sizey = 64 };
+
+  err = dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_step_1, &locopt);
   if(err != CL_SUCCESS) goto error;
 
-  // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
+  // Fused step1 code with locals.
+  size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+  size_t local[2] = { locopt.sizex, locopt.sizey };
+  err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_rcd_step_1, sizes, local,
+      CLARG(cfa), CLARG(VH_dir), CLARG(width), CLARG(height),
+      CLLOCAL(sizeof(float) * (locopt.sizex + 8) * (locopt.sizey + 8)));
+  if(err != CL_SUCCESS) goto error;
+
+  // Step 2: Low pass filter incorporating green, red and blue local samples from the raw data
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2, width / 2, height,
         CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(filters));
   if(err != CL_SUCCESS) goto error;
