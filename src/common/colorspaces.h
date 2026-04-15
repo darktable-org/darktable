@@ -436,6 +436,9 @@ void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float prima
                                                                const float whitepoint[2],
                                                                dt_colormatrix_t RGB_to_XYZ_transposed);
 
+/** TRUE if the profile type has primaries wider than sRGB */
+gboolean dt_colorspaces_profile_is_wide_gamut(const dt_colorspaces_color_profile_type_t type);
+
 G_END_DECLS
 
 // clang-format off

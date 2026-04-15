@@ -18,6 +18,7 @@
 
 #include "common/image.h"
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
@@ -435,6 +436,24 @@ void dt_image_full_path(const dt_imgid_t imgid,
     else
       *from_cache = FALSE;
   }
+}
+
+gboolean dt_image_has_wide_gamut_output_profile(
+    const dt_imgid_t imgid,
+    const dt_colorspaces_color_profile_type_t icc_type)
+{
+  // "image settings": fall back to the image's working profile
+  if(icc_type == DT_COLORSPACE_NONE)
+  {
+    if(!dt_is_valid_imgid(imgid)) return FALSE;
+    const dt_colorspaces_color_profile_t *work
+      = dt_colorspaces_get_work_profile(imgid);
+    return work && dt_colorspaces_profile_is_wide_gamut(work->type);
+  }
+  // custom ICC file: gamut unknown, be conservative
+  if(icc_type == DT_COLORSPACE_FILE)
+    return TRUE;
+  return dt_colorspaces_profile_is_wide_gamut(icc_type);
 }
 
 gboolean dt_image_exists(const dt_imgid_t imgid)
