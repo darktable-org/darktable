@@ -539,9 +539,12 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
       // gamut check uses pre-boost values so pass-through decisions
       // reflect the original color
       if(in_gamut_mask)
-        in_gamut_mask[p] = (sr >= 0.0f && sr <= 1.0f
-                           && sg >= 0.0f && sg <= 1.0f
-                           && sb >= 0.0f && sb <= 1.0f) ? 1 : 0;
+      {
+        const float m = 0.01f;  // ~1% margin beyond [0, 1]
+        in_gamut_mask[p] = (sr >= -m && sr <= 1.0f + m
+                           && sg >= -m && sg <= 1.0f + m
+                           && sb >= -m && sb <= 1.0f + m) ? 1 : 0;
+      }
       if(boost)
       {
         sr = sr > 0.0f ? sqrtf(sr) : 0.0f;
