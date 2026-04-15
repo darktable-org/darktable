@@ -4261,12 +4261,19 @@ gboolean gesture_pinch(dt_view_t *self,
   if(!dev) return FALSE;
   (void)state;
   static float pinch_begin_tscale = 0.0f;
+#ifdef GDK_WINDOWING_QUARTZ
+  static double pinch_prev_x = 0.0, pinch_prev_y = 0.0;
+#endif
 
   if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
     pinch_begin_tscale =
       dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
       * dev->full.ppd;
+#ifdef GDK_WINDOWING_QUARTZ
+    pinch_prev_x = x;
+    pinch_prev_y = y;
+#endif
     dt_print(DT_DEBUG_INPUT,
              "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
              " -> begin_tscale=%.6f ppd=%.2f",
@@ -4298,12 +4305,27 @@ gboolean gesture_pinch(dt_view_t *self,
     return FALSE;
   }
 
-  if(dx != 0.0 || dy != 0.0)
+#ifdef GDK_WINDOWING_QUARTZ
+  // On macOS (GDK Quartz), NSEventTypeMagnify does not populate deltaX/deltaY,
+  // so GDK fills pinch->dx and pinch->dy with 0. Infer translation from the
+  // movement of the gesture focal point (midpoint between the two fingers).
+  const double eff_dx = x - pinch_prev_x;
+  const double eff_dy = y - pinch_prev_y;
+#else
+  const double eff_dx = dx;
+  const double eff_dy = dy;
+#endif
+#ifdef GDK_WINDOWING_QUARTZ
+  pinch_prev_x = x;
+  pinch_prev_y = y;
+#endif
+
+  if(eff_dx != 0.0 || eff_dy != 0.0)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[darkroom pinch] pan component dx=%.3f dy=%.3f (combined with scale)",
-             dx, dy);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, dx, dy, TRUE);
+             "[darkroom pinch] pan component eff_dx=%.3f eff_dy=%.3f (combined with scale)",
+             eff_dx, eff_dy);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, 1.0f, 0, eff_dx, eff_dy, TRUE);
   }
 
   const float ppd = dev->full.ppd;
@@ -4315,9 +4337,10 @@ gboolean gesture_pinch(dt_view_t *self,
   // Keep pinch fully continuous for a smartphone-like feeling, including at high zoom.
   const float zoom_scale = tscale / ppd;
   dt_print(DT_DEBUG_INPUT,
-           "[darkroom pinch] update x=%.1f y=%.1f dx=%.3f dy=%.3f scale=%.6f state=0x%x"
+           "[darkroom pinch] update x=%.1f y=%.1f raw_dx=%.3f raw_dy=%.3f"
+           " eff_dx=%.3f eff_dy=%.3f scale=%.6f state=0x%x"
            " -> tscale=%.6f (floor=%.6f top=%.1f) zoom_scale=%.6f",
-           x, y, dx, dy, scale, state,
+           x, y, dx, dy, eff_dx, eff_dy, scale, state,
            tscale, tscalefloor, tscaletop, zoom_scale);
   dt_dev_zoom_move(&dev->full, DT_ZOOM_FREE, zoom_scale, 0, x, y, TRUE);
 
