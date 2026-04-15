@@ -75,6 +75,13 @@ struct dt_restore_context_t
   // during denoise. when FALSE, every pixel uses the model output and
   // wide-gamut colors get clipped to sRGB but everything is denoised
   gboolean preserve_wide_gamut;
+  // shadow_boost_capable: TRUE when the model declares the
+  // "shadow_boost" attribute in its config.json; set once at load
+  gboolean shadow_boost_capable;
+  // shadow_boost: the effective flag used at inference; recomputed
+  // per-image inside dt_restore_process_tiled() when capable, based
+  // on a luminance check (bright images skip the curve)
+  gboolean shadow_boost;
   gint ref_count;
 };
 
@@ -234,16 +241,29 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   }
 
   dt_restore_context_t *ctx = g_new0(dt_restore_context_t, 1);
-  ctx->ref_count = 1;
-  ctx->ai_ctx    = ai_ctx;
-  ctx->env       = env;
-  ctx->task      = g_strdup(task);
-  ctx->model_id  = model_id;
-  ctx->model_file = g_strdup(model_file);
-  ctx->tile_size = tile_size;
-  ctx->dim_h     = g_strdup(dim_h);
-  ctx->dim_w     = g_strdup(dim_w);
+  ctx->ref_count           = 1;
+  ctx->ai_ctx              = ai_ctx;
+  ctx->env                 = env;
+  ctx->task                = g_strdup(task);
+  ctx->model_id            = model_id;
+  ctx->model_file          = g_strdup(model_file);
+  ctx->tile_size           = tile_size;
+  ctx->dim_h               = g_strdup(dim_h);
+  ctx->dim_w               = g_strdup(dim_w);
   ctx->preserve_wide_gamut = TRUE;
+  // shadow boost capability is declared per-model via the
+  // "attributes": { "shadow_boost": true } object in config.json;
+  // models that hallucinate in dark patches opt in this way;
+  // other models run as-is
+  const dt_ai_model_info_t *info
+    = dt_ai_get_model_info_by_id(env->ai_env, model_id);
+  ctx->shadow_boost_capable
+    = dt_ai_model_attribute_bool(info, "shadow_boost");
+  ctx->shadow_boost = ctx->shadow_boost_capable;
+  if(ctx->shadow_boost_capable)
+    dt_print(DT_DEBUG_AI,
+             "[restore] model %s declares shadow_boost attribute",
+             model_id);
   return ctx;
 }
 
@@ -507,21 +527,41 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   if(ctx->has_profile)
   {
     const float *M = ctx->wp_to_srgb;
+    const gboolean boost = ctx->shadow_boost;
     for(size_t p = 0; p < plane; p++)
     {
       const float r = in_patch[p];
       const float g = in_patch[p + plane];
       const float b = in_patch[p + 2 * plane];
-      const float sr = M[0] * r + M[1] * g + M[2] * b;
-      const float sg = M[3] * r + M[4] * g + M[5] * b;
-      const float sb = M[6] * r + M[7] * g + M[8] * b;
-      srgb_in[p]             = _linear_to_srgb(sr);
-      srgb_in[p + plane]     = _linear_to_srgb(sg);
-      srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
+      float sr = M[0] * r + M[1] * g + M[2] * b;
+      float sg = M[3] * r + M[4] * g + M[5] * b;
+      float sb = M[6] * r + M[7] * g + M[8] * b;
+      // gamut check uses pre-boost values so pass-through decisions
+      // reflect the original color
       if(in_gamut_mask)
         in_gamut_mask[p] = (sr >= 0.0f && sr <= 1.0f
                            && sg >= 0.0f && sg <= 1.0f
                            && sb >= 0.0f && sb <= 1.0f) ? 1 : 0;
+      if(boost)
+      {
+        sr = sr > 0.0f ? sqrtf(sr) : 0.0f;
+        sg = sg > 0.0f ? sqrtf(sg) : 0.0f;
+        sb = sb > 0.0f ? sqrtf(sb) : 0.0f;
+      }
+      srgb_in[p]             = _linear_to_srgb(sr);
+      srgb_in[p + plane]     = _linear_to_srgb(sg);
+      srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
+    }
+  }
+  else if(ctx->shadow_boost)
+  {
+    // no profile: still boost shadows so the model stays within its
+    // comfort zone, even though we treat WP values as sRGB
+    for(size_t i = 0; i < in_pixels; i++)
+    {
+      const float v = in_patch[i];
+      const float boosted = v > 0.0f ? sqrtf(v) : 0.0f;
+      srgb_in[i] = _linear_to_srgb(boosted);
     }
   }
   else
@@ -597,6 +637,7 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   //
   // without profile: fall back to per-channel pass-through in the
   // original (working-profile-as-sRGB) space
+  const gboolean boost = ctx->shadow_boost;
   if(ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut)
   {
     const size_t out_plane = (size_t)out_w * out_h;
@@ -605,9 +646,10 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
     {
       if(in_gamut_mask[p])
       {
-        const float sr = _srgb_to_linear(out_patch[p]);
-        const float sg = _srgb_to_linear(out_patch[p + out_plane]);
-        const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        float sr = _srgb_to_linear(out_patch[p]);
+        float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
         out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
         out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
         out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
@@ -629,9 +671,10 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
     const float *Mi = ctx->srgb_to_wp;
     for(size_t p = 0; p < out_plane; p++)
     {
-      const float sr = _srgb_to_linear(out_patch[p]);
-      const float sg = _srgb_to_linear(out_patch[p + out_plane]);
-      const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+      float sr = _srgb_to_linear(out_patch[p]);
+      float sg = _srgb_to_linear(out_patch[p + out_plane]);
+      float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+      if(boost) { sr *= sr; sg *= sg; sb *= sb; }
       out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
       out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
       out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
@@ -646,9 +689,16 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
     for(size_t i = 0; i < out_pixels; i++)
     {
       const float in = in_patch[i];
-      out_patch[i] = (ctx->preserve_wide_gamut && (in < 0.0f || in > 1.0f))
-        ? in
-        : _srgb_to_linear(out_patch[i]);
+      if(ctx->preserve_wide_gamut && (in < 0.0f || in > 1.0f))
+      {
+        out_patch[i] = in;
+      }
+      else
+      {
+        float v = _srgb_to_linear(out_patch[i]);
+        if(boost) v *= v;
+        out_patch[i] = v;
+      }
     }
   }
   else
@@ -660,9 +710,10 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
       const float *Mi = ctx->srgb_to_wp;
       for(size_t p = 0; p < out_plane; p++)
       {
-        const float sr = _srgb_to_linear(out_patch[p]);
-        const float sg = _srgb_to_linear(out_patch[p + out_plane]);
-        const float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        float sr = _srgb_to_linear(out_patch[p]);
+        float sg = _srgb_to_linear(out_patch[p + out_plane]);
+        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
+        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
         out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
         out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
         out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
@@ -671,12 +722,42 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
     else
     {
       for(size_t i = 0; i < out_pixels; i++)
-        out_patch[i] = _srgb_to_linear(out_patch[i]);
+      {
+        float v = _srgb_to_linear(out_patch[i]);
+        if(boost) v *= v;
+        out_patch[i] = v;
+      }
     }
   }
 
   g_free(in_gamut_mask);
   return 0;
+}
+
+// per-image gate for the shadow-boost curve; enable only when the image
+// has substantial near-black area to protect — bright images would only
+// pay the curve cost (minor highlight compression) for no gain;
+// thresholds tuned so localized very-dark features (a tree hollow, a
+// silhouette) do NOT trigger; only broad noisy shadow regions do
+//
+// in_data is interleaved float4 RGBA
+#define _SHADOW_BOOST_THRESHOLD 0.005f  // 0.5% linear luminance
+#define _SHADOW_BOOST_FRACTION  0.10f   // 10% of sampled pixels
+static gboolean _image_has_deep_shadows(const float *in_data, int w, int h)
+{
+  const size_t stride = 16;  // sample 1/256 of pixels for speed
+  size_t dark = 0, total = 0;
+  for(size_t y = 0; y < (size_t)h; y += stride)
+    for(size_t x = 0; x < (size_t)w; x += stride)
+    {
+      const size_t p = ((size_t)y * w + x) * 4;
+      const float luma = 0.2126f * in_data[p]
+                       + 0.7152f * in_data[p + 1]
+                       + 0.0722f * in_data[p + 2];
+      if(luma < _SHADOW_BOOST_THRESHOLD) dark++;
+      total++;
+    }
+  return total > 0 && (float)dark / total >= _SHADOW_BOOST_FRACTION;
 }
 
 int dt_restore_process_tiled(dt_restore_context_t *ctx,
@@ -689,6 +770,17 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
 {
   if(!ctx || !in_data || !row_writer)
     return 1;
+
+  // for shadow-boost-capable models, decide per-image whether the
+  // curve is worth applying; one analysis per call, before tiling,
+  // so all tiles see the same flag (avoids per-tile seams)
+  if(ctx->shadow_boost_capable)
+  {
+    const gboolean dark = _image_has_deep_shadows(in_data, width, height);
+    ctx->shadow_boost = dark;
+    dt_print(DT_DEBUG_AI, "[restore] shadow boost %s",
+             dark ? "enabled" : "disabled");
+  }
 
   const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
   const int S = scale;
