@@ -57,30 +57,57 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
 #define epssq 1e-10f
 
-// Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
-__kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global float *h_diff, const int w, const int height)
+static inline float rcd_vdiff_local(local const float *buf, const int stride)
 {
-  const int col = 3 + get_global_id(0);
-  const int row = 3 + get_global_id(1);
-  if((row > height - 4) || (col > w - 4)) return;
-  const int idx = mad24(row, w, col);
-  const int w2 = 2 * w;
-  const int w3 = 3 * w;
-
-  v_diff[idx] = fsquare((cfa[idx - w3] - cfa[idx - w] - cfa[idx + w] + cfa[idx + w3]) - 3.0f * (cfa[idx - w2] + cfa[idx + w2]) + 6.0f * cfa[idx]);
-  h_diff[idx] = fsquare((cfa[idx -  3] - cfa[idx - 1] - cfa[idx + 1] + cfa[idx +  3]) - 3.0f * (cfa[idx -  2] + cfa[idx +  2]) + 6.0f * cfa[idx]);
+  return fsquare(buf[-3 * stride] - buf[-stride] - buf[stride] + buf[3 * stride] - 3.0f *(buf[-2 * stride] + buf[2 * stride]) + 6.0f * buf[0]);
 }
 
-// Step 1.2: Calculate vertical and horizontal local discrimination
-__kernel void rcd_step_1_2 (global float *VH_dir, global float *v_diff, global float *h_diff, const int w, const int height)
+static inline float rcd_hdiff_local(local const float *buf)
 {
+  return fsquare(buf[-3] - buf[-1] - buf[1] + buf[3] - 3.0f *(buf[-2] + buf[2]) + 6.0f * buf[0]);
+}
+
+// Step 1.1 + 1.2: preload one CFA tile and derive the directional discrimination locally
+// so we avoid materializing two full-frame high-pass buffers in global memory.
+// helpers and rcd_step_1 from ansel code @aurelienpierre
+__kernel void rcd_step_1(global float *cfa, global float *VH_dir, const int w, const int height, local float *buffer)
+{
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+  const int stride = xlsz + 8;
+  const int maxbuf = mul24(stride, ylsz + 8);
+  const int xul = mul24(xgid, xlsz) - 2;
+  const int yul = mul24(ygid, ylsz) - 2;
+
+  for(int n = 0; n <= maxbuf / lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = clamp(xul + bufidx % stride, 0, w - 1);
+    const int yy = clamp(yul + bufidx / stride, 0, height - 1);
+    buffer[bufidx] = cfa[mad24(yy, w, xx)];
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
   const int col = 2 + get_global_id(0);
   const int row = 2 + get_global_id(1);
   if((row > height - 3) || (col > w - 3)) return;
   const int idx = mad24(row, w, col);
+  local const float *buf = buffer + mad24(ylid + 4, stride, xlid + 4);
 
-  const float V_Stat = fmax(epssq, v_diff[idx - w] + v_diff[idx] + v_diff[idx + w]);
-  const float H_Stat = fmax(epssq, h_diff[idx - 1] + h_diff[idx] + h_diff[idx + 1]);
+  const float V_Stat = fmax(epssq, rcd_vdiff_local(buf - stride, stride)
+                                  + rcd_vdiff_local(buf, stride)
+                                  + rcd_vdiff_local(buf + stride, stride));
+  const float H_Stat = fmax(epssq, rcd_hdiff_local(buf - 1)
+                                  + rcd_hdiff_local(buf)
+                                  + rcd_hdiff_local(buf + 1));
   VH_dir[idx] = V_Stat / (V_Stat + H_Stat);
 }
 
