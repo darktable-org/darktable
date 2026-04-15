@@ -488,6 +488,15 @@ static int _select_tile_size(int scale)
   return candidates[n_candidates - 1];
 }
 
+// Rec.709 / sRGB luminance weights (Y row of sRGB->XYZ D65);
+// applied to working-profile-linear pixels in the pass-through
+// blending below; exact only when the working profile is
+// sRGB/Rec.709, but correct enough for luminance deltas
+static inline float _luma_rec709(float r, float g, float b)
+{
+  return 0.2126f * r + 0.7152f * g + 0.0722f * b;
+}
+
 int dt_restore_run_patch(dt_restore_context_t *ctx,
                          const float *in_patch,
                          int w, int h,
@@ -645,6 +654,9 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
   {
     const size_t out_plane = (size_t)out_w * out_h;
     const float *Mi = ctx->srgb_to_wp;
+    // pass 1: write denoised values for in-gamut pixels; out-of-gamut
+    // pixels get plain pass-through as a fallback (used only when no
+    // in-gamut neighbors are found in pass 2)
     for(size_t p = 0; p < out_plane; p++)
     {
       if(in_gamut_mask[p])
@@ -662,6 +674,51 @@ int dt_restore_run_patch(dt_restore_context_t *ctx,
         out_patch[p]                 = in_patch[p];
         out_patch[p + out_plane]     = in_patch[p + plane];
         out_patch[p + 2 * out_plane] = in_patch[p + 2 * plane];
+      }
+    }
+    // pass 2: luminance-only smoothing for out-of-gamut pixels. the
+    // original pixel keeps its chroma (wide-gamut color preserved
+    // exactly) but its brightness is shifted to match the local
+    // average luminance of denoised in-gamut neighbors; this kills
+    // the single-pixel speckles that pass-through would otherwise
+    // leave visible against the denoised background
+    const int radius = 2;  // 5x5 window
+    for(int y = 0; y < out_h; y++)
+    {
+      for(int x = 0; x < out_w; x++)
+      {
+        const size_t p = (size_t)y * out_w + x;
+        if(in_gamut_mask[p]) continue;
+        const float r0 = in_patch[p];
+        const float g0 = in_patch[p + plane];
+        const float b0 = in_patch[p + 2 * plane];
+        const float Y_orig = _luma_rec709(r0, g0, b0);
+        float sumY = 0.0f;
+        int count = 0;
+        const int y0 = y - radius < 0 ? 0 : y - radius;
+        const int y1 = y + radius >= out_h ? out_h - 1 : y + radius;
+        const int x0 = x - radius < 0 ? 0 : x - radius;
+        const int x1 = x + radius >= out_w ? out_w - 1 : x + radius;
+        for(int yy = y0; yy <= y1; yy++)
+        {
+          for(int xx = x0; xx <= x1; xx++)
+          {
+            const size_t q = (size_t)yy * out_w + xx;
+            if(!in_gamut_mask[q]) continue;
+            const float rq = out_patch[q];
+            const float gq = out_patch[q + out_plane];
+            const float bq = out_patch[q + 2 * out_plane];
+            sumY += _luma_rec709(rq, gq, bq);
+            count++;
+          }
+        }
+        if(count > 0)
+        {
+          const float dY = sumY / (float)count - Y_orig;
+          out_patch[p]                 = r0 + dY;
+          out_patch[p + out_plane]     = g0 + dY;
+          out_patch[p + 2 * out_plane] = b0 + dY;
+        }
       }
     }
   }
