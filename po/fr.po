@@ -10861,8 +10861,8 @@ msgstr ""
 "<b>Ajouter</b> : clic • <b>Enlever</b> : Maj+clic • <b>Supprimer</b> : "
 "Ctrl+Maj+clic • <b>Valider</b> : Clic-droit • <b>Valider et sauvegarder</b> : "
 "Maj+clic-droit\n"
-"<b>Adoucissement</b> : molette (%3.2f) • <b>Nettoyer</b> : Maj+molette (%d) • "
-"<b>Opacité</b> : Ctrl+molette (%d%%)"
+"<b>Lissage</b> : molette (%3.2f) • <b>Nettoyer</b> : Maj+molette (%d) • "
+"<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/object.c:1850
 #, c-format
