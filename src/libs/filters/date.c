@@ -176,8 +176,9 @@ static void _month_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   else
     rule->w_specific = month;
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hbox, "filter-month-box");
+  GtkWidget *month_box = gtk_flow_box_new();
+  gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(month_box), 12); // default is 7
+  gtk_widget_set_name(month_box, "filter-month-box");
 
   for(int i = 0; i < 12; i++)
   {
@@ -187,7 +188,7 @@ static void _month_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
                                   "click to toggle month selection"));
     g_signal_connect(G_OBJECT(month->toggles[i]), "toggled",
                      G_CALLBACK(_month_widget_changed), month);
-    gtk_box_pack_start(GTK_BOX(hbox), month->toggles[i], TRUE, TRUE, 0);
+    gtk_flow_box_insert(GTK_FLOW_BOX(month_box), month->toggles[i], -1);
   }
 
   // apply initial state from text
@@ -202,9 +203,9 @@ static void _month_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   }
 
   if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hbox, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), month_box, TRUE, TRUE, 0);
   else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), month_box, TRUE, TRUE, 0);
 }
 
 static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
