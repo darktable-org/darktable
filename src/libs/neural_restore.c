@@ -132,6 +132,7 @@ DT_MODULE(1)
 #define CONF_OUTPUT_DIR "plugins/lighttable/neural_restore/output_directory"
 #define CONF_ICC_TYPE "plugins/lighttable/neural_restore/icc_type"
 #define CONF_ICC_FILE "plugins/lighttable/neural_restore/icc_filename"
+#define CONF_PRESERVE_WIDE_GAMUT "plugins/lighttable/neural_restore/preserve_wide_gamut"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
 
@@ -200,6 +201,7 @@ typedef struct dt_lib_neural_restore_t
   dt_gui_collapsible_section_t cs_output;
   GtkWidget *bpp_combo;
   GtkWidget *profile_combo;
+  GtkWidget *preserve_wide_gamut_toggle;
   GtkWidget *catalog_toggle;
   GtkWidget *output_dir_entry;
   GtkWidget *output_dir_button;
@@ -221,6 +223,8 @@ typedef struct dt_neural_job_t
   // output color profile. DT_COLORSPACE_NONE means "use image's working profile"
   dt_colorspaces_color_profile_type_t icc_type;
   char *icc_filename;  // only used when icc_type == DT_COLORSPACE_FILE
+  // when TRUE, wide-gamut pixels pass through unchanged on denoise
+  gboolean preserve_wide_gamut;
 } dt_neural_job_t;
 
 typedef struct dt_neural_format_params_t
@@ -498,6 +502,7 @@ static int _ai_write_image(dt_imageio_module_data_t *data,
   const dt_colorspaces_color_profile_t *work_cp
     = dt_colorspaces_get_work_profile(imgid);
   dt_restore_set_profile(job->ctx, work_cp ? work_cp->profile : NULL);
+  dt_restore_set_preserve_wide_gamut(job->ctx, job->preserve_wide_gamut);
 
   const int width = params->parent.width;
   const int height = params->parent.height;
@@ -1009,7 +1014,9 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
       : DT_COLORSPACE_NONE;
   if(dt_image_has_wide_gamut_output_profile(imgid, icc_type))
   {
-    const char *msg = (scale == 1)
+    const gboolean preserve = dt_conf_key_exists(CONF_PRESERVE_WIDE_GAMUT)
+      ? dt_conf_get_bool(CONF_PRESERVE_WIDE_GAMUT) : TRUE;
+    const char *msg = (scale == 1 && preserve)
       ? _("wide-gamut preserved, not denoised")
       : _("wide-gamut clipped");
     if(d->info_text_right[0])
@@ -1350,6 +1357,9 @@ static gpointer _preview_thread(gpointer data)
   const dt_colorspaces_color_profile_t *work_cp
     = dt_colorspaces_get_work_profile(pd->imgid);
   dt_restore_set_profile(ctx, work_cp ? work_cp->profile : NULL);
+  const gboolean pres = dt_conf_key_exists(CONF_PRESERVE_WIDE_GAMUT)
+    ? dt_conf_get_bool(CONF_PRESERVE_WIDE_GAMUT) : TRUE;
+  dt_restore_set_preserve_wide_gamut(ctx, pres);
 
   _buf_writer_data_t bwd = { .out_buf = out_4ch, .out_w = pw };
   const int ret = dt_restore_process_tiled(
@@ -1590,6 +1600,9 @@ static void _process_clicked(GtkWidget *widget, gpointer user_data)
   job_data->icc_filename = (job_data->icc_type == DT_COLORSPACE_FILE)
     ? dt_conf_get_string(CONF_ICC_FILE)
     : NULL;
+  job_data->preserve_wide_gamut = dt_conf_key_exists(CONF_PRESERVE_WIDE_GAMUT)
+    ? dt_conf_get_bool(CONF_PRESERVE_WIDE_GAMUT)
+    : TRUE;
   job_data->self = self;
 
   // mark selected images as processing
@@ -2159,6 +2172,15 @@ static void _catalog_toggle_changed(GtkWidget *w,
   dt_conf_set_bool(CONF_ADD_CATALOG, active);
 }
 
+static void _preserve_wide_gamut_toggled(GtkWidget *w,
+                                         dt_lib_module_t *self)
+{
+  const gboolean active
+    = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+  dt_conf_set_bool(CONF_PRESERVE_WIDE_GAMUT, active);
+  _update_info_label((dt_lib_neural_restore_t *)self->data);
+}
+
 static void _output_dir_changed(GtkEditable *editable,
                                 dt_lib_module_t *self)
 {
@@ -2352,6 +2374,25 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->profile_combo, "value-changed",
                    G_CALLBACK(_profile_combo_changed), self);
   dt_gui_box_add(cs_box, d->profile_combo);
+
+  // preserve wide-gamut toggle: when on, out-of-sRGB pixels pass
+  // through the model unchanged (preserved but not denoised). when
+  // off, every pixel is denoised but wide-gamut colors may be clipped.
+  // only affects denoise; upscale always uses the model output.
+  d->preserve_wide_gamut_toggle
+    = gtk_check_button_new_with_label(_("preserve wide-gamut colors"));
+  gtk_toggle_button_set_active(
+    GTK_TOGGLE_BUTTON(d->preserve_wide_gamut_toggle),
+    dt_conf_key_exists(CONF_PRESERVE_WIDE_GAMUT)
+      ? dt_conf_get_bool(CONF_PRESERVE_WIDE_GAMUT)
+      : TRUE);
+  gtk_widget_set_tooltip_text(d->preserve_wide_gamut_toggle,
+    _("when on, pixels outside sRGB gamut pass through without being"
+      " denoised; when off, all pixels are denoised but wide-gamut"
+      " colors may be clipped; only affects denoise"));
+  g_signal_connect(d->preserve_wide_gamut_toggle, "toggled",
+                   G_CALLBACK(_preserve_wide_gamut_toggled), self);
+  dt_gui_box_add(cs_box, d->preserve_wide_gamut_toggle);
 
   // add to catalog
   GtkWidget *catalog_box = dt_gui_hbox();

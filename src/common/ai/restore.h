@@ -137,6 +137,24 @@ void dt_restore_set_profile(dt_restore_context_t *ctx,
                             void *profile);
 
 /**
+ * @brief Enable/disable wide-gamut pass-through for denoise.
+ *
+ * When TRUE (default): pixels that would be out of sRGB gamut pass
+ * through unchanged, preserving color but not denoising them. When
+ * FALSE: all pixels use the model output, wide-gamut colors are
+ * clipped to sRGB but everything gets denoised.
+ *
+ * Affects denoise only (scale == 1). Upscale always uses the model
+ * output because there is no pixel-to-pixel correspondence to
+ * pass through.
+ *
+ * @param ctx context handle (NULL-safe)
+ * @param preserve TRUE to enable pass-through, FALSE to denoise everything
+ */
+void dt_restore_set_preserve_wide_gamut(dt_restore_context_t *ctx,
+                                        gboolean preserve);
+
+/**
  * @brief check if a denoise model is available
  * @param env environment handle
  * @return TRUE if a denoise model is configured and present
