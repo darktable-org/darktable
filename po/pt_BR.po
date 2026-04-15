@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-14 10:27-0300\n"
-"PO-Revision-Date: 2026-04-14 10:26-0300\n"
+"POT-Creation-Date: 2026-04-21 11:24-0300\n"
+"PO-Revision-Date: 2026-04-21 13:03-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2601,7 +2601,7 @@ msgid "effects"
 msgstr "efeitos"
 
 #: ../build/bin/styles_string.h:20
-#: ../src/external/lua-scripts/tools/script_manager.lua:411
+#: ../src/external/lua-scripts/tools/script_manager.lua:447
 msgid "examples"
 msgstr "exemplos"
 
@@ -6122,7 +6122,7 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2078
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2226
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6209,6 +6209,8 @@ msgid ""
 "error: output file or directory must be specified\n"
 "\n"
 msgstr ""
+"erro: arquivo ou diretório de saída deve ser especificado\n"
+"\n"
 
 #: ../src/cli/main.c:474
 #, c-format
@@ -6490,7 +6492,7 @@ msgstr "rolo de filme"
 
 #. manage the scripts
 #: ../src/common/collection.c:614
-#: ../src/external/lua-scripts/tools/script_manager.lua:1429
+#: ../src/external/lua-scripts/tools/script_manager.lua:1501
 msgid "folder"
 msgstr "pasta"
 
@@ -7434,7 +7436,7 @@ msgstr "editor"
 
 #. title
 #: ../src/common/database.c:3238
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
 #: ../src/imageio/format/pdf.c:591 ../src/imageio/format/pdf.c:593
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/gallery.c:219
 #: ../src/imageio/storage/latex.c:202 ../src/imageio/storage/piwigo.c:1150
@@ -7820,32 +7822,32 @@ msgstr "falha ao analisar arquivo GPX"
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
-#: ../src/common/image.c:345
+#: ../src/common/image.c:346
 msgid "orphaned image"
 msgstr "imagem órfã"
 
-#: ../src/common/image.c:669
+#: ../src/common/image.c:688
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
 msgstr[0] "geolocalização desfeita para %d imagem"
 msgstr[1] "geolocalização desfeita para %d imagens"
 
-#: ../src/common/image.c:671
+#: ../src/common/image.c:690
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
 msgstr[0] "geolocalização re-aplicada a %d imagem"
 msgstr[1] "geolocalização re-aplicada a %d imagens"
 
-#: ../src/common/image.c:693
+#: ../src/common/image.c:712
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
 msgstr[0] "definição de data/hora desfeita em %d imagem"
 msgstr[1] "definição de data/hora desfeita em %d imagens"
 
-#: ../src/common/image.c:695
+#: ../src/common/image.c:714
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
@@ -7853,67 +7855,67 @@ msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
 #. FIXME make GIMP handle duplicates
-#: ../src/common/image.c:1326
+#: ../src/common/image.c:1345
 msgid "can't create a duplicate in GIMP mode"
 msgstr "não é possível criar duplicatas em modo GIMP"
 
-#: ../src/common/image.c:2423
+#: ../src/common/image.c:2442
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2430
+#: ../src/common/image.c:2449
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2437
+#: ../src/common/image.c:2456
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2482
+#: ../src/common/image.c:2501
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2492
+#: ../src/common/image.c:2511
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2496 ../src/common/image.c:2505
+#: ../src/common/image.c:2515 ../src/common/image.c:2524
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2807
+#: ../src/common/image.c:2826
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2821
+#: ../src/common/image.c:2840
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2900 ../src/control/jobs/control_jobs.c:955
+#: ../src/common/image.c:2919 ../src/control/jobs/control_jobs.c:955
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:3076
+#: ../src/common/image.c:3095
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3274
+#: ../src/common/image.c:3293
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3275
+#: ../src/common/image.c:3294
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7921,7 +7923,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3276
+#: ../src/common/image.c:3295
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7930,7 +7932,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3279
+#: ../src/common/image.c:3298
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -9334,11 +9336,11 @@ msgstr "importar imagem"
 msgid "synchronize sidecars"
 msgstr "sincronizar arquivos XMP"
 
-#: ../src/develop/blend.c:298
+#: ../src/develop/blend.c:302
 msgid "detail mask blending error"
 msgstr "erro na mesclagem da máscara de detalhes"
 
-#: ../src/develop/blend.c:838
+#: ../src/develop/blend.c:846
 msgid "detail mask CL blending problem"
 msgstr "problema na mesclagem da máscara CL"
 
@@ -9540,9 +9542,10 @@ msgid "reverse"
 msgstr "reverter"
 
 #. add default workspace
-#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1563
-#: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
+#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:48
+#: ../src/gui/workspace.c:336 ../src/gui/workspace.c:547
+#: ../src/gui/preferences_ai.c:1563 ../src/imageio/format/webp.c:435
+#: ../src/libs/styles.c:1029
 msgid "default"
 msgstr "padrão"
 
@@ -10158,8 +10161,8 @@ msgstr "raio de enevoamento"
 
 #: ../src/develop/blend_gui.c:3609 ../src/develop/blend_gui.c:3618
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3112
-#: ../src/iop/colorequal.c:3139 ../src/iop/demosaic.c:1795
-#: ../src/iop/demosaic.c:1814 ../src/iop/diffuse.c:1776
+#: ../src/iop/colorequal.c:3139 ../src/iop/demosaic.c:1792
+#: ../src/iop/demosaic.c:1811 ../src/iop/diffuse.c:1776
 #: ../src/iop/diffuse.c:1786 ../src/iop/retouch.c:2676
 msgid " px"
 msgstr " px"
@@ -10241,12 +10244,12 @@ msgstr ""
 "a gravação automática do histórico foi desabilitada para esta sessão por "
 "causa de um histórico muito grande ou de um drive lento sendo usado"
 
-#: ../src/develop/develop.c:2603
+#: ../src/develop/develop.c:2608
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/develop.c:3516
+#: ../src/develop/develop.c:3521
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
@@ -10329,7 +10332,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2178
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2326
 msgid "process"
 msgstr "processamento"
 
@@ -10470,37 +10473,37 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s foi importado"
 msgstr[1] "%s foram importadas"
 
-#: ../src/develop/masks/brush.c:1341 ../src/develop/masks/brush.c:1395
+#: ../src/develop/masks/brush.c:1336 ../src/develop/masks/brush.c:1390
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "dureza: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
+#: ../src/develop/masks/brush.c:1352 ../src/develop/masks/brush.c:1450
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/path.c:1886
+#: ../src/develop/masks/path.c:1884
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "tamanho: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:3146
+#: ../src/develop/masks/brush.c:3141
 msgid "[BRUSH] change size"
 msgstr "[PINCEL] mudar tamanho"
 
-#: ../src/develop/masks/brush.c:3148
+#: ../src/develop/masks/brush.c:3143
 msgid "[BRUSH] change hardness"
 msgstr "[PINCEL] mudar dureza"
 
-#: ../src/develop/masks/brush.c:3150
+#: ../src/develop/masks/brush.c:3145
 msgid "[BRUSH] change opacity"
 msgstr "[PINCEL] mudar opacidade"
 
-#: ../src/develop/masks/brush.c:3162
+#: ../src/develop/masks/brush.c:3157
 #, c-format
 msgid "brush #%d"
 msgstr "pincel #%d"
 
-#: ../src/develop/masks/brush.c:3175
+#: ../src/develop/masks/brush.c:3170
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -10509,13 +10512,13 @@ msgstr ""
 "<b>tamanho</b>: scroll, <b>dureza</b>: shift+scroll\n"
 "<b>opacidade</b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/brush.c:3178
+#: ../src/develop/masks/brush.c:3173
 msgid "<b>size</b>: scroll"
 msgstr "<b>tamanho</b>: scroll"
 
 #: ../src/develop/masks/circle.c:136 ../src/develop/masks/circle.c:180
 #: ../src/develop/masks/ellipse.c:465 ../src/develop/masks/ellipse.c:525
-#: ../src/develop/masks/path.c:1820
+#: ../src/develop/masks/path.c:1818
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "tamanho do enevoamento: %3.2f%%"
@@ -10537,7 +10540,7 @@ msgstr "[CÍRCULO] mudar opacidade"
 msgid "circle #%d"
 msgstr "círculo #%d"
 
-#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4012
+#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4010
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -10693,103 +10696,103 @@ msgstr "usar as mesmas formas que"
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
-#: ../src/develop/masks/object.c:839
+#: ../src/develop/masks/object.c:843
 msgid "set raster mask root folder in preferences"
 msgstr "determinar pasta raiz de máscaras de pixels nas preferências"
 
-#: ../src/develop/masks/object.c:847
+#: ../src/develop/masks/object.c:851
 msgid "cannot create raster mask folder"
 msgstr "não foi possível ler o arquivo de máscara de pixels"
 
-#: ../src/develop/masks/object.c:910
+#: ../src/develop/masks/object.c:914
 msgid "raster mask saved"
 msgstr "máscara de pixels gravada"
 
-#: ../src/develop/masks/object.c:915
+#: ../src/develop/masks/object.c:919
 msgid "failed to save raster mask"
 msgstr "falha ao gravar máscara de pixels"
 
-#: ../src/develop/masks/object.c:996
+#: ../src/develop/masks/object.c:1000
 msgid "no mask extracted from AI segmentation"
 msgstr "nenhuma máscara foi extraída da segmentação por IA"
 
-#: ../src/develop/masks/object.c:1004
+#: ../src/develop/masks/object.c:1008
 msgid "ai object group"
 msgstr "grupo de objetos de ia"
 
-#: ../src/develop/masks/object.c:1005
+#: ../src/develop/masks/object.c:1009
 msgid "ai object"
 msgstr "objeto de ia"
 
-#: ../src/develop/masks/object.c:1131
+#: ../src/develop/masks/object.c:1135
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "suavização: %3.2f"
 
-#: ../src/develop/masks/object.c:1142
+#: ../src/develop/masks/object.c:1146
 #, c-format
 msgid "cleanup: %d"
 msgstr "limpeza: %d"
 
-#: ../src/develop/masks/object.c:1155
+#: ../src/develop/masks/object.c:1159
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidade: %.0d%%"
 
-#: ../src/develop/masks/object.c:1278
+#: ../src/develop/masks/object.c:1282
 #, c-format
 msgid "group '%s'"
 msgstr "grupo '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1527 ../src/develop/masks/object.c:1564
+#: ../src/develop/masks/object.c:1531 ../src/develop/masks/object.c:1568
 msgid "object mask: analyzing image..."
 msgstr "máscara de objeto: analisando imagem..."
 
-#: ../src/develop/masks/object.c:1574
+#: ../src/develop/masks/object.c:1578
 msgid "click on object to create mask"
 msgstr "clique no objeto para criar a máscara"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1584
+#: ../src/develop/masks/object.c:1588
 msgid "object mask preparation failed"
 msgstr "a preparação de máscara de objeto falhou"
 
-#: ../src/develop/masks/object.c:1784
+#: ../src/develop/masks/object.c:1788
 msgid "[OBJECT] select / add foreground point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1789
+#: ../src/develop/masks/object.c:1793
 msgid "[OBJECT] add background point"
 msgstr ""
 
-#: ../src/develop/masks/object.c:1794
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] clear selection"
 msgstr "[OBJETO] limpar seleção"
 
-#: ../src/develop/masks/object.c:1799
+#: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] apply mask"
 msgstr "[OBJETO] aplicar máscara"
 
-#: ../src/develop/masks/object.c:1804
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJETO] mudar suavização"
 
-#: ../src/develop/masks/object.c:1809
+#: ../src/develop/masks/object.c:1813
 #, fuzzy
 msgid "[OBJECT] change cleanup"
 msgstr "[CAMINHO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:1814
+#: ../src/develop/masks/object.c:1818
 msgid "[OBJECT] change opacity"
 msgstr "[OBJETO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:1821
+#: ../src/develop/masks/object.c:1825
 #, c-format
 msgid "object #%d"
 msgstr "objeto #%d"
 
-#: ../src/develop/masks/object.c:1839
+#: ../src/develop/masks/object.c:1843
 #, fuzzy, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
@@ -10802,58 +10805,58 @@ msgstr ""
 "<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</"
 "b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1850
+#: ../src/develop/masks/object.c:1854
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>selecionar</b>: clique no objeto, <b>opacidade</b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/path.c:3945
+#: ../src/develop/masks/path.c:3943
 msgid "[PATH creation] add a smooth node"
 msgstr "[CAMINHO criação] adiciona nó suave"
 
-#: ../src/develop/masks/path.c:3947
+#: ../src/develop/masks/path.c:3945
 msgid "[PATH creation] add a sharp node"
 msgstr "[CAMINHO criação] adicionar um nó nítido"
 
-#: ../src/develop/masks/path.c:3949
+#: ../src/develop/masks/path.c:3947
 msgid "[PATH creation] terminate path creation"
 msgstr "[CAMINHO em nó] terminar criação de caminho"
 
-#: ../src/develop/masks/path.c:3951
+#: ../src/develop/masks/path.c:3949
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[CAMINHO em nó] mudar entre nó suave/nítido"
 
-#: ../src/develop/masks/path.c:3953
+#: ../src/develop/masks/path.c:3951
 msgid "[PATH on node] remove the node"
 msgstr "[CAMINHO em nó] remover o nó"
 
-#: ../src/develop/masks/path.c:3955
+#: ../src/develop/masks/path.c:3953
 msgid "[PATH on feather] reset curvature"
 msgstr "[CAMINHO em enevoamento] redefinir curvatura"
 
-#: ../src/develop/masks/path.c:3957
+#: ../src/develop/masks/path.c:3955
 msgid "[PATH on segment] add node"
 msgstr "[CAMINHO em segmento] adicionar nó"
 
-#: ../src/develop/masks/path.c:3959
+#: ../src/develop/masks/path.c:3957
 msgid "[PATH] change size"
 msgstr "[CAMINHO] mudar tamanho"
 
-#: ../src/develop/masks/path.c:3961
+#: ../src/develop/masks/path.c:3959
 msgid "[PATH] change feather size"
 msgstr "[CAMINHO]  muda tamanho do enevoamento"
 
-#: ../src/develop/masks/path.c:3963
+#: ../src/develop/masks/path.c:3961
 msgid "[PATH] change opacity"
 msgstr "[CAMINHO] mudar opacidade"
 
-#: ../src/develop/masks/path.c:3975
+#: ../src/develop/masks/path.c:3973
 #, c-format
 msgid "path #%d"
 msgstr "caminho #%d"
 
-#: ../src/develop/masks/path.c:3986
+#: ../src/develop/masks/path.c:3984
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -10861,7 +10864,7 @@ msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
 "<b>cancelar</b>: clique-direito"
 
-#: ../src/develop/masks/path.c:3991
+#: ../src/develop/masks/path.c:3989
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -10869,7 +10872,7 @@ msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
 "<b>finalizar caminho</b>: clique-direito"
 
-#: ../src/develop/masks/path.c:3996
+#: ../src/develop/masks/path.c:3994
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -10877,7 +10880,7 @@ msgstr ""
 "<b>mover nó</b>: arrastar, <b>remover nó</b>: clique-direito\n"
 "<b>alternar modo entre nó suave/nítido</b>: ctrl+clique"
 
-#: ../src/develop/masks/path.c:4001
+#: ../src/develop/masks/path.c:3999
 msgid ""
 "<b>node curvature</b>: drag, <b>force symmetry</b>: ctrl+drag,\n"
 "<b>move single handle</b>: shift+drag, <b>reset curvature</b>: right-click"
@@ -10886,7 +10889,7 @@ msgstr ""
 "<b>mover um só alça</b>: shift+arrastar, <b>reiniciar curvatura</b>: clique-"
 "direito"
 
-#: ../src/develop/masks/path.c:4006
+#: ../src/develop/masks/path.c:4004
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
 "<b>remove path</b>: right-click"
@@ -10894,11 +10897,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar, <b>adicionar nó</b>:ctrl+clique\n"
 "<b>remover caminho</b>: clique-direito"
 
-#: ../src/develop/pixelpipe_hb.c:518
+#: ../src/develop/pixelpipe_hb.c:526
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:519
+#: ../src/develop/pixelpipe_hb.c:527
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10908,11 +10911,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:526
+#: ../src/develop/pixelpipe_hb.c:534
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:527
+#: ../src/develop/pixelpipe_hb.c:535
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10922,7 +10925,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1290
+#: ../src/develop/pixelpipe_hb.c:1298
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10932,11 +10935,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1844
+#: ../src/develop/pixelpipe_hb.c:1852
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3243
+#: ../src/develop/pixelpipe_hb.c:3251
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10957,7 +10960,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3435
+#: ../src/develop/pixelpipe_hb.c:3553
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -11543,6 +11546,10 @@ msgstr "selecionar não modificadas"
 #. Not Implemented
 #. Not Implemented
 #. Not Implemented
+#. handle the ROLL.NAME[n] case
+#. grab each complete variable
+#. strip of the leading $( and trailing )
+#. add one because c arrays are 0 based and lua are 1 based
 #. find the $CATEGORYn and $CATEGORY[n,m] requests and add them to the substitute list
 #. grab each complete variable
 #. strip of the leading $( and trailing )
@@ -11557,10 +11564,13 @@ msgstr "selecionar não modificadas"
 #. FILE.NAME
 #. FILE.EXTENSION
 #. ID
+#. IMAGE.ID
+#. IMAGE.ID.NEXT
 #. VERSION
 #. VERSION.IF_MULTI
 #. VERSION.NAME
 #. DARKTABLE.VERSION
+#. Xmp.darktable.version
 #. DARKTABLE.NAME
 #. SEQUENCE
 #. WIDTH.SENSOR
@@ -11626,10 +11636,15 @@ msgstr "selecionar não modificadas"
 #. LABELS
 #. LABELS.ICONS - wont be implemented
 #. TITLE
+#. Xmp.dc.title
 #. DESCRIPTION
+#. Xmp.dc.description
 #. CREATOR
+#. Xmp.dc.creator
 #. PUBLISHER
+#. Xmp.dc.publisher
 #. RIGHTS
+#. Xmp.dc.rights
 #. TAGS - wont be implemented
 #. SIDECAR.TXT - wont be implemented
 #. FOLDER.PICTURES
@@ -11641,36 +11656,46 @@ msgstr "selecionar não modificadas"
 #. JOBCODE - wont be implemented
 #. populate the substitution list
 #. do category substitutions separately
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:887
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:931
 msgid "$(ROLL.NAME) - roll of the input image"
 msgstr "$(ROLL.NAME) - rolo da imagem de entrada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
 #: ../src/gui/gtkentry.c:38
 msgid "$(FILE.FOLDER) - folder containing the input image"
 msgstr "$(FILE.FOLDER) - pasta contendo a imagem de entrada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:889
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:933
 #: ../src/gui/gtkentry.c:39
 msgid "$(FILE.NAME) - basename of the input image"
 msgstr "$(FILE.NAME) - nome base do arquivo de entrada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:890
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
 #: ../src/gui/gtkentry.c:40
 msgid "$(FILE.EXTENSION) - extension of the input image"
 msgstr "$(FILE.EXTENSION) - extensão do arquivo de entrada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:891
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
 #: ../src/gui/gtkentry.c:111
 msgid "$(ID) - image ID"
 msgstr "$(ID) - ID da imagem"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/gui/gtkentry.c:109
+msgid "$(IMAGE.ID) - image ID"
+msgstr "$(IMAGE.ID) - ID da imagem"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/gui/gtkentry.c:110
+msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
+msgstr "$(IMAGE.ID.NEXT) - próximo ID de mensagem a ser usada ao importar"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
 #: ../src/gui/gtkentry.c:41
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - versão duplicada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:893
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:939
 #: ../src/gui/gtkentry.c:42
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
@@ -11679,18 +11704,22 @@ msgstr ""
 "$(VERSION.IF_MULTI) - mesmo que $(VERSION) mas é string nula quando só uma "
 "versão existe"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
 #: ../src/gui/gtkentry.c:43
 msgid "$(VERSION.NAME) - version name from metadata"
 msgstr "$(VERSION.NAME) - nome de versão nos metadados"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:895
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
 #: ../src/gui/gtkentry.c:120
 msgid "$(DARKTABLE.VERSION) - current darktable version"
 msgstr "$(DARKTABLE.VERSION) - versão atual do darktable"
 
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+msgid "$(Xmp.darktable.version) - current darktable version"
+msgstr "$(Xmp.darktable.version) - versão atual do darktable"
+
 #. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:897
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
 #: ../src/gui/gtkentry.c:45
 msgid ""
 "$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
@@ -11698,115 +11727,115 @@ msgstr ""
 "$(SEQUENCE[n,m]) - número de sequência, n: número de dígitos, m: número "
 "inicial"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:898
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:945
 #: ../src/gui/gtkentry.c:47
 msgid "$(WIDTH.SENSOR) - image sensor width"
 msgstr "$(WIDTH.SENSOR) - largura do sensor de imagem"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
 #: ../src/gui/gtkentry.c:52
 msgid "$(HEIGHT.SENSOR) - image sensor height"
 msgstr "$(HEIGHT.SENSOR) - altura do sensor de imagem"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:900
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:947
 #: ../src/gui/gtkentry.c:48
 msgid "$(WIDTH.RAW) - RAW image width"
 msgstr "$(WIDTH.RAW) - largura da imagem RAW"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:901
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:948
 #: ../src/gui/gtkentry.c:53
 msgid "$(HEIGHT.RAW) - RAW image height"
 msgstr "$(HEIGHT.RAW) - altura da imagem RAW"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:902
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:49
 msgid "$(WIDTH.CROP) - image width after crop"
 msgstr "$(WIDTH.CROP) - largura da imagem após o recorte"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:903
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:950
 #: ../src/gui/gtkentry.c:54
 msgid "$(HEIGHT.CROP) - image height after crop"
 msgstr "$(HEIGHT.CROP) - altura da imagem após o recorte"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:904
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:951
 #: ../src/gui/gtkentry.c:50
 msgid "$(WIDTH.EXPORT) - exported image width"
 msgstr "$(WIDTH.EXPORT) - largura da imagem exportada"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:905
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:952
 #: ../src/gui/gtkentry.c:55
 msgid "$(HEIGHT.EXPORT) - exported image height"
 msgstr "$(HEIGHT.EXPORT) - altura da imagem exportada"
 
 #. _("$(WIDTH.MAX) - maximum image export width"),  -- not implemented
 #. _("$(HEIGHT.MAX) - maximum image export height"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:908
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:955
 #: ../src/gui/gtkentry.c:56
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - ano"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:909
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:956
 #: ../src/gui/gtkentry.c:57
 msgid "$(YEAR.SHORT) - year without century"
 msgstr "$(YEAR.SHORT) - ano sem século"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:910
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:957
 #: ../src/gui/gtkentry.c:58
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - mês"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:958
 #: ../src/gui/gtkentry.c:60
 msgid "$(MONTH.LONG) - full month name according to the current locale"
 msgstr "$(MONTH.LONG) - nome completo do mês, de acordo com o locale atual"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:912
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:959
 #: ../src/gui/gtkentry.c:59
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
 msgstr "$(MONTH.SHORT) - nome abreviado do mês, de acordo com o locale atual"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:913
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:960
 #: ../src/gui/gtkentry.c:61
 msgid "$(DAY) - day"
 msgstr "$(DAY) - dia"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:914
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:961
 #: ../src/gui/gtkentry.c:62
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - hora"
 
 #. _("$(HOUR.AMPM) - hour, 12-hour clock"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:963
 #: ../src/gui/gtkentry.c:64
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minuto"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:964
 #: ../src/gui/gtkentry.c:65
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - segundo"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:918
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:965
 #: ../src/gui/gtkentry.c:66
 msgid "$(MSEC) - millisecond"
 msgstr "$(MSEC) - milisegundo"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:966
 #: ../src/gui/gtkentry.c:69
 msgid "$(EXIF.YEAR) - EXIF year"
 msgstr "$(EXIF.YEAR) - ano no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:967
 #: ../src/gui/gtkentry.c:70
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
 msgstr "$(EXIF.YEAR.SHORT) - ano no EXIF, sem século"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:921
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:968
 #: ../src/gui/gtkentry.c:71
 msgid "$(EXIF.MONTH) - EXIF month"
 msgstr "$(EXIF.MONTH) - mês no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:969
 #: ../src/gui/gtkentry.c:73
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
@@ -11814,7 +11843,7 @@ msgstr ""
 "$(EXIF.MONTH.LONG) - nome completo do mês no EXIF, de acordo com o locale "
 "atual"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:923
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:970
 #: ../src/gui/gtkentry.c:72
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
@@ -11823,104 +11852,104 @@ msgstr ""
 "$(EXIF.MONTH.SHORT) - nome abreviado do mês no EXIF, de acordo com o locale "
 "atual"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:924
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:971
 #: ../src/gui/gtkentry.c:74
 msgid "$(EXIF.DAY) - EXIF day"
 msgstr "$(EXIF.DAY) - dia no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:925
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:972
 #: ../src/gui/gtkentry.c:75
 msgid "$(EXIF.HOUR) - EXIF hour"
 msgstr "$(EXIF.HOUR) - hora no EXIF"
 
 #. _("$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock") ..  "\n" .. -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:974
 #: ../src/gui/gtkentry.c:77
 msgid "$(EXIF.MINUTE) - EXIF minute"
 msgstr "$(EXIF.MINUTE) - minuto no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:975
 #: ../src/gui/gtkentry.c:78
 msgid "$(EXIF.SECOND) - EXIF second"
 msgstr "$(EXIF.SECOND) - segundo no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:929
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:976
 #: ../src/gui/gtkentry.c:79
 msgid "$(EXIF.MSEC) - EXIF millisecond"
 msgstr "$(EXIF.MSEC) - milisegundo no EXIF"
 
 #. _("$(EXIF.DATE.REGIONAL) - localized EXIF date"),  -- not implemented
 #. _("$(EXIF.TIME.REGIONAL) - localized EXIF time"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:979
 #: ../src/gui/gtkentry.c:80
 msgid "$(EXIF.ISO) - ISO value"
 msgstr "$(EXIF.ISO) - valor ISO"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:933
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:980
 #: ../src/gui/gtkentry.c:83
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF.EXPOSURE) - exposição no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:981
 #: ../src/gui/gtkentry.c:81
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
 msgstr "$(EXIF.EXPOSURE.BIAS) - viés de exposição no EXIF"
 
 #. _("$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:983
 #: ../src/gui/gtkentry.c:84
 msgid "$(EXIF.APERTURE) - EXIF aperture"
 msgstr "$(EXIF.APERTURE) - abertura no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:984
 #: ../src/gui/gtkentry.c:85
 msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
 msgstr "$(EXIF.CROP_FACTOR) - EXIF fator de crop"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:985
 #: ../src/gui/gtkentry.c:86
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
 msgstr "$(EXIT.FOCAL.LENGTH) - distância focal no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:939
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:986
 #: ../src/gui/gtkentry.c:87
 msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
 msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF distância focal equivalente 35 mm"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:987
 #: ../src/gui/gtkentry.c:88
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF.FOCUS.DISTANCE) - distância focal no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:988
 #: ../src/gui/gtkentry.c:89
 msgid "$(EXIF.MAKER) - camera maker"
 msgstr "$(EXIF.MAKER) - fabricante da câmera"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:989
 #: ../src/gui/gtkentry.c:90
 msgid "$(EXIF.MODEL) - camera model"
 msgstr "$(EXIF.MODEL) - modelo da câmera"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:990
 #: ../src/gui/gtkentry.c:91
 msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
 msgstr "$(EXIF.WHITEBALANCE) - balanço de branco selecionado no EXIF"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:991
 #: ../src/gui/gtkentry.c:92
 msgid "$(EXIF.METERING) - EXIF exposure metering mode"
 msgstr "$(EXIF.METERING) - modo de medição de exposição no EXIF"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:945
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:992
 #: ../src/gui/gtkentry.c:93
 msgid "$(EXIF.LENS) - lens"
 msgstr "$(EXIF.LENS) - lente"
 
 #. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:947
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:994
 #: ../src/gui/gtkentry.c:95
 msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
 msgstr "$(EXIF.FLASH) - flash foi usado (sim/não/--)"
@@ -11930,82 +11959,102 @@ msgstr "$(EXIF.FLASH) - flash foi usado (sim/não/--)"
 #. _("$(GPS.LATITUDE) - latitude"),-- not implemented
 #. _("$(GPS.ELEVATION) - elevation"),-- not implemented
 #. _("$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:952
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:999
 #: ../src/gui/gtkentry.c:100
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) - longitude"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:953
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1000
 #: ../src/gui/gtkentry.c:101
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) - latitude"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:954
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1001
 #: ../src/gui/gtkentry.c:102
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) - elevação"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:955
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1002
 #: ../src/gui/gtkentry.c:103
 msgid "$(STARS) - star rating as number (-1 for rejected)"
 msgstr "$(STARS) - classificação em estrelas como número (-1 para rejeitado)"
 
 #. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:957
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1004
 #: ../src/gui/gtkentry.c:105
 msgid "$(LABELS) - color labels as text"
 msgstr "$(LABELS) - etiquetas coloridas como texto"
 
 #. _("$(LABELS.ICONS) - color labels as icons"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:959
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1006
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - título dos metadados"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:960
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1007
+msgid "$(Xmp.dc.title) - title from metadata"
+msgstr "$(Xmp.dc.title) - título dos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1008
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - descrição nos metadados"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:961
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1009
+msgid "$(Xmp.dc.description) - description from metadata"
+msgstr "$(Xmp.dc.description) - descrição nos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1010
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - criador nos metadados"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:962
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1011
+msgid "$(Xmp.dc.creator) - creator from metadata"
+msgstr "$(Xmp.dc.creator) - criador nos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1012
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) - editor dos metadados"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:963
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1013
+msgid "$(Xmp.dc.publisher) - publisher from metadata"
+msgstr "$(Xmp.dc.publisher) - editor dos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1014
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - direitos dos metadados"
 
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1015
+msgid "$(Xmp.dc.rights) - rights from metadata"
+msgstr "$(Xmp.dc.rights) - direitos dos metadados"
+
 #. _("$(TAGS) - tags as set in metadata settings"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:965
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1017
 #: ../src/gui/gtkentry.c:117
 msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgstr ""
 "$(CATEGORY[n,category]) - subetiqueta de nível n em etiquetas hierárquicas"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:966
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1018
 #: ../src/gui/gtkentry.c:121
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
 msgstr "$(SIDECAR_TXT) - conteúdo do arquivo auxiliar .txt, se presente"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:967
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1019
 #: ../src/gui/gtkentry.c:113
 msgid "$(FOLDER.PICTURES) - pictures folder"
 msgstr "$(FOLDER.PICTURES) - pasta de imagens"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:968
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1020
 #: ../src/gui/gtkentry.c:114
 msgid "$(FOLDER.HOME) - home folder"
 msgstr "$(FOLDER.HOME) - pasta home"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:969
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1021
 #: ../src/gui/gtkentry.c:115
 msgid "$(FOLDER.DESKTOP) - desktop folder"
 msgstr "$(FOLDER.DESKTOP) - pasta desktop"
 
 #. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:971
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1023
 #: ../src/gui/gtkentry.c:112
 msgid "$(USERNAME) - login name"
 msgstr "$(USERNAME) - nome de login"
@@ -12017,7 +12066,11 @@ msgstr "$(USERNAME) - nome de login"
 #. remove the var from the string
 #. string modifications
 #. replace the substitution variables in a string
+#. catch everything below 0.3 seconds
+#. catch 1/2, 1/3, ...
+#. catch 1/1.3, 1/1.6, ...
 #. change the encoding of the terminal to handle non-english characters in path
+#. otherwise, when the real command fails, script will still return "good" error code of chcp
 #. On Windows we don't need any command. (start e.g. has problems with spaces in the filename, even if we put quoter around them.) https://stackoverflow.com/questions/13691827/opening-file-with-spaces-in-windows-via-command-prompt
 #.
 #.
@@ -12056,8 +12109,12 @@ msgstr "$(USERNAME) - nome de login"
 #.
 #. CHANGES
 #.
+#. 20251202 - fixed pattern matching bugs affecting Canon EOS R? series
+#. styles and styles being applied twice if images are reimported
+#.
+#. Added more debugging statements to pattern matching functions
+#.
 #. local df = require "lib/dtutils.file"
-#. local ds = require "lib/dtutils.string"
 #. local dtsys = require "lib/dtutils.system"
 #. local debug = require "darktable.debug"
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -12079,12 +12136,12 @@ msgstr "$(USERNAME) - nome de login"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:94
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:99
 msgid "apply camera style"
 msgstr "aplicar estilo de câmera"
 
 #. name of script
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:95
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:100
 msgid "apply darktable camera style to matching images"
 msgstr ""
 "aplica estilo darktable de camera a imagens que casam com os padrões "
@@ -12123,6 +12180,7 @@ msgstr ""
 #. escape dashes
 #. make spaces optional
 #. until we end up with a set, I'll defer set processing, i.e. [...]
+#. log.msg(log.debug, "make spaces conditional again? pattern is " .. pattern)
 #. anchor the pattern to ensure we don't short match
 #. separate the styles into
 #.
@@ -12131,7 +12189,7 @@ msgstr ""
 #. styles {}
 #. patterns {}
 #. strip off the maker name
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:381
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:396
 msgid "applying camera styles to images"
 msgstr "aplicando estilos de câmara às imagens"
 
@@ -12147,11 +12205,11 @@ msgstr "aplicando estilos de câmara às imagens"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. E V E N T S
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:474
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:490
 msgid "apply darktable camera styles to collection"
 msgstr "aplicar estilos de câmera do darktable à coleção"
 
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:480
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:496
 msgid "apply darktable camera styles to selection"
 msgstr "aplicar estilos de câmera do darktable à seleção"
 
@@ -12903,11 +12961,11 @@ msgstr "trocar a seleção com o buffer temporário"
 #.
 #.
 #. return data structure for script_manager
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:52
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:56
 msgid "selection to PDF"
 msgstr "seleção para PDF"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
 msgid "generate a pdf file of selected images"
 msgstr "gerar um arquivo pdf das imagens selecionadas"
 
@@ -12915,15 +12973,19 @@ msgstr "gerar um arquivo pdf das imagens selecionadas"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:65
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:69
 msgid "a pdf viewer"
 msgstr "um visualisador de pdf"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
-msgid "can be an absolute pathname or the tool may be in the PATH"
-msgstr "pode ser um caminho absoluto ou a ferramenta pode estar no PATH"
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
+msgid ""
+"can be an absolute pathname or the tool may be in the PATH\n"
+"if not specified the system default will be used to open the pdf"
+msgstr ""
+"pode ser um caminho absoluto ou a ferramenta pode estar no PATH\n"
+"se não especificado o padrão do sistema será usado para abrir o pdf"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
 msgid "thumbs per line"
 msgstr "miniaturas por linha"
 
@@ -12932,29 +12994,29 @@ msgstr "miniaturas por linha"
 #. The hard minimum value for the slider, the user can't manually enter a value beyond this point
 #. The hard maximum value for the slider, the user can't manually enter a value beyond this point
 #. The current value of the slider
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:83
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:87
 msgid "title:"
 msgstr "título:"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:85
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:89
 msgid "thumbnails per row:"
 msgstr "miniaturas por linha"
 
 #. fact is that latex will get confused if the filename has multiple dots.
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:132
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
 msgid "export thumbnails to pdf"
 msgstr "exportar miniaturas para pdf"
 
 #. convert to PDF
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:184
 msgid "problem running pdflatex"
 msgstr "problema executando pdflatex"
 
 #. this one is probably usefull to the user
 #. open the PDF
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:203
 msgid "problem running pdf viewer"
 msgstr "problema executando visualizador de pdf"
 
@@ -13142,6 +13204,8 @@ msgstr "recuperar e mostrar a documentação no console"
 #. file to luarc and the scripts will run.
 #.
 #.
+#. figure out where we are running from
+#. assume user based
 #. api check
 #. du.check_min_api_version("9.3.0", "script_manager")
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13154,11 +13218,19 @@ msgstr "recuperar e mostrar a documentação no console"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/tools/script_manager.lua:104
+#: ../src/external/lua-scripts/tools/script_manager.lua:131
+msgid "disable Lua scripts"
+msgstr "desabilitar scripts Lua"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:132
+msgid "do not run the Lua scripts"
+msgstr "nào executar os scripts Lua"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:140
 msgid "check for updated scripts on start up"
 msgstr "procurar por atualizações de scripts ao iniciar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:105
+#: ../src/external/lua-scripts/tools/script_manager.lua:141
 msgid "automatically update scripts to correct version"
 msgstr "automaticamente atualizar scripts para a versão correta"
 
@@ -13228,15 +13300,15 @@ msgstr "automaticamente atualizar scripts para a versão correta"
 #. ----------------
 #. script handling
 #. ----------------
-#: ../src/external/lua-scripts/tools/script_manager.lua:409
+#: ../src/external/lua-scripts/tools/script_manager.lua:445
 msgid "contributed"
 msgstr "contribuído"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:413
+#: ../src/external/lua-scripts/tools/script_manager.lua:449
 msgid "official"
 msgstr "oficial"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:415
+#: ../src/external/lua-scripts/tools/script_manager.lua:451
 #: ../src/iop/retouch.c:2469 ../src/iop/retouch.c:2474
 #: ../src/iop/retouch.c:2479 ../src/iop/retouch.c:2484
 msgid "tools"
@@ -13249,7 +13321,7 @@ msgstr "ferramentas"
 #. break up the lines into key value pairs
 #. slurp the file
 #. assume that the second block comment is the documentation
-#: ../src/external/lua-scripts/tools/script_manager.lua:503
+#: ../src/external/lua-scripts/tools/script_manager.lua:539
 msgid "no documentation available"
 msgstr "não há documentação disponível"
 
@@ -13275,6 +13347,7 @@ msgstr "não há documentação disponível"
 #. change the path separator from / to \ for windows
 #. add the script data
 #. scan the scripts
+#. add a string.match to figure out which lua dir to use
 #. strip the lua dir off
 #. strip off .lua\n
 #. let's not include ourself
@@ -13282,6 +13355,18 @@ msgstr "não há documentação disponível"
 #. let's not try and run libraries
 #. don't match files in the .git directory
 #. but let's make sure libraries can be found
+#: ../src/external/lua-scripts/tools/script_manager.lua:792
+#: ../src/external/lua-scripts/tools/script_manager.lua:918
+msgid ""
+"ERROR: git not found.  Install or specify the location of the git executable."
+msgstr ""
+"ERRO: git não encontrado.  Instale ou especifique a localizaçào do "
+"executável git."
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:806
+msgid "lua scripts successfully updated"
+msgstr "scripts lua atualizados com sucesso"
+
 #. ------------
 #. UI handling
 #. ------------
@@ -13289,27 +13374,30 @@ msgstr "não há documentação disponível"
 #. get everything to the first /
 #. if we have a folder (.git doesn't)
 #. skip plugins
-#: ../src/external/lua-scripts/tools/script_manager.lua:751
-#: ../src/external/lua-scripts/tools/script_manager.lua:866
+#: ../src/external/lua-scripts/tools/script_manager.lua:901
 msgid ""
-"ERROR: git not found.  Install or specify the location of the git executable."
-msgstr ""
-"ERRO: git não encontrado.  Instale ou especifique a localizaçào do "
-"executável git."
+"unable to create user lua directory, installing additional scripts failed"
+msgstr "não foi possível criar o diretório para usuário lua, a instalação de scripts adicionais falou"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:765
-msgid "lua scripts successfully updated"
-msgstr "scripts lua atualizados com sucesso"
+#: ../src/external/lua-scripts/tools/script_manager.lua:907
+#, lua-format
+msgid "folder %s is already in use. Please specify a different folder name."
+msgstr "a pasta %s já está em uso. Por favor especifique um nome de pasta diferente."
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:905
+#: ../src/external/lua-scripts/tools/script_manager.lua:939
+#, lua-format
+msgid "scripts successfully installed into folder %s"
+msgstr "scripts instalados com sucesso na pasta %s"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:957
 msgid "no scripts found to install"
 msgstr "nenhum script encontrado para instalar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:910
+#: ../src/external/lua-scripts/tools/script_manager.lua:962
 msgid "failed to download scripts"
 msgstr "falha ao baixar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1062
+#: ../src/external/lua-scripts/tools/script_manager.lua:1115
 #, lua-format
 msgid "page %d of %d"
 msgstr "página %d de %d"
@@ -13323,8 +13411,8 @@ msgstr "página %d de %d"
 #. num_buttons
 #. main menu
 #. Module name
-#: ../src/external/lua-scripts/tools/script_manager.lua:1217
-#: ../src/external/lua-scripts/tools/script_manager.lua:1492
+#: ../src/external/lua-scripts/tools/script_manager.lua:1270
+#: ../src/external/lua-scripts/tools/script_manager.lua:1564
 msgid "scripts"
 msgstr "scripts"
 
@@ -13341,7 +13429,7 @@ msgstr "scripts"
 #. only make changes to clean branches
 #. probably upgraded from an earlier api version so get back to master
 #. to use the latest version of script_manager to get the proper API
-#: ../src/external/lua-scripts/tools/script_manager.lua:1263
+#: ../src/external/lua-scripts/tools/script_manager.lua:1316
 msgid "lua API version reset, please restart darktable"
 msgstr "versão da API de lua resetada, por favor reinicie o darktable"
 
@@ -13350,78 +13438,80 @@ msgstr "versão da API de lua resetada, por favor reinicie o darktable"
 #. api version or checkout/stay on master
 #. stay on master
 #. checkout the appropriate branch for API version if it exists
-#: ../src/external/lua-scripts/tools/script_manager.lua:1310
+#: ../src/external/lua-scripts/tools/script_manager.lua:1363
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
 "você precisa reiniciar o darktable para usar a versão correta dos scripts lua"
 
+#. exec user luarc file if it exists
+#. scan_script(USER_LUA_DIR)
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. update the scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1336
+#: ../src/external/lua-scripts/tools/script_manager.lua:1408
 msgid "scripts to update"
 msgstr "scripts para atualizar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1337
+#: ../src/external/lua-scripts/tools/script_manager.lua:1409
 msgid "select the scripts installation to update"
 msgstr "selecione a instalação de scripts para atualizar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1346
-#: ../src/external/lua-scripts/tools/script_manager.lua:1408
+#: ../src/external/lua-scripts/tools/script_manager.lua:1418
+#: ../src/external/lua-scripts/tools/script_manager.lua:1480
 msgid "update scripts"
 msgstr "atualizar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1347
+#: ../src/external/lua-scripts/tools/script_manager.lua:1419
 msgid "update the lua scripts from the repository"
 msgstr "atualizar os scripts lua a partir do repositório"
 
 #. add additional scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1358
+#: ../src/external/lua-scripts/tools/script_manager.lua:1430
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr "entre a URL do repositório git contendo os scripts que quer adicionar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1363
+#: ../src/external/lua-scripts/tools/script_manager.lua:1435
 msgid "name of new folder"
 msgstr "nome da nova pasta"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1364
+#: ../src/external/lua-scripts/tools/script_manager.lua:1436
 msgid "enter a folder name for the additional scripts"
 msgstr "entre um nome de pasta para os scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1369
+#: ../src/external/lua-scripts/tools/script_manager.lua:1441
 msgid "URL to download additional scripts from"
 msgstr "URL de onde baixar scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1371
+#: ../src/external/lua-scripts/tools/script_manager.lua:1443
 msgid "new folder to place scripts in"
 msgstr "nova pasta onde colocar os scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1374
+#: ../src/external/lua-scripts/tools/script_manager.lua:1446
 msgid "install additional scripts"
 msgstr "instalar scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1382
+#: ../src/external/lua-scripts/tools/script_manager.lua:1454
 msgid "enable \"disable scripts\" button"
 msgstr "habilitar botào \"desabilitar scripts\""
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1394
-#: ../src/external/lua-scripts/tools/script_manager.lua:1419
+#: ../src/external/lua-scripts/tools/script_manager.lua:1466
+#: ../src/external/lua-scripts/tools/script_manager.lua:1491
 msgid "disable scripts"
 msgstr "desabilitar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1400
+#: ../src/external/lua-scripts/tools/script_manager.lua:1472
 msgid "lua scripts will not run the next time darktable is started"
 msgstr ""
 "os scripts lua não vão executar na próxima vez que o darktable for iniciado"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1414
+#: ../src/external/lua-scripts/tools/script_manager.lua:1486
 msgid "add more scripts"
 msgstr "adicionar mais scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1430
+#: ../src/external/lua-scripts/tools/script_manager.lua:1502
 msgid "select the script folder"
 msgstr "selecione a pasta do script"
 
@@ -13429,50 +13519,50 @@ msgstr "selecione a pasta do script"
 #. a button to start and stop the script
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
-#: ../src/external/lua-scripts/tools/script_manager.lua:1461
+#: ../src/external/lua-scripts/tools/script_manager.lua:1533
 #: ../src/iop/agx.c:2456 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2112
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2260
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
 
 #. configure options
-#: ../src/external/lua-scripts/tools/script_manager.lua:1501
+#: ../src/external/lua-scripts/tools/script_manager.lua:1573
 msgid "scripts per page"
 msgstr "scripts por página"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1502
+#: ../src/external/lua-scripts/tools/script_manager.lua:1574
 msgid "select number of start/stop buttons to display"
 msgstr "selecione o número de botões iniciar/parar a serem mostrados"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1513
+#: ../src/external/lua-scripts/tools/script_manager.lua:1585
 msgid "change number of buttons"
 msgstr "mudar número de botões"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1523
+#: ../src/external/lua-scripts/tools/script_manager.lua:1595
 msgid "configuration"
 msgstr "configuração"
 
 #. stack for the options
 #. main menu
-#: ../src/external/lua-scripts/tools/script_manager.lua:1545
+#: ../src/external/lua-scripts/tools/script_manager.lua:1617
 #: ../src/gui/accelerators.c:2922 ../src/gui/accelerators.c:3022
 #: ../src/views/view.c:1672
 msgid "action"
 msgstr "ação"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "install/update scripts"
 msgstr "instalar/atualizar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "configure"
 msgstr "configurar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "start/stop scripts"
 msgstr "iniciar/parar scripts"
 
@@ -14395,11 +14485,17 @@ msgstr "%s associado a %s"
 msgid "short key press resets stuck keys"
 msgstr "pressionamento curto de tecla reinicializa teclas bloqueadas"
 
-#: ../src/gui/workspace.c:59
+#. add a memory workspace just after default one
+#: ../src/gui/workspace.c:49 ../src/gui/workspace.c:341
+#: ../src/gui/workspace.c:549
+msgid "memory"
+msgstr "memória"
+
+#: ../src/gui/workspace.c:265
 msgid "delete workspace"
 msgstr "excluir área de trabalho?"
 
-#: ../src/gui/workspace.c:60
+#: ../src/gui/workspace.c:266
 #, c-format
 msgid ""
 "WARNING\n"
@@ -14414,26 +14510,58 @@ msgstr ""
 "\n"
 "se a escrita de XMP não estiver ativada, o trabalho de edição será perdido."
 
-#. add a memory workspace just after default one
-#: ../src/gui/workspace.c:103 ../src/gui/workspace.c:196
-msgid "memory"
-msgstr "memória"
+#: ../src/gui/workspace.c:374 ../src/gui/workspace.c:387
+msgid "create workspace"
+msgstr "criar área de trabalho"
 
-#: ../src/gui/workspace.c:177
+#: ../src/gui/workspace.c:375
+msgid ""
+"WARNING\n"
+"\n"
+"the names \"default\" and \"memory\" are reserved.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"CUIDADO\n"
+"\n"
+"os nomes \"default\" e \"memory\" são reservados.\n"
+"\n"
+"escolha um nome diferente."
+
+#: ../src/gui/workspace.c:384
+#, c-format
+msgid ""
+"WARNING\n"
+"\n"
+"a workspace named \"%s\" already exists.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"CUIDADO\n"
+"\n"
+"um espaço de trabalho com o nome \"%s\" já existe.\n"
+"\n"
+"escolha um nome diferente."
+
+#: ../src/gui/workspace.c:528
 msgid "darktable - select a workspace"
 msgstr "darktable - selecionar uma área de trabalho"
 
-#: ../src/gui/workspace.c:187
+#: ../src/gui/workspace.c:540
 msgid "select an existing workspace"
 msgstr "selecionar uma área de trabalho existente"
 
-#: ../src/gui/workspace.c:225
+#: ../src/gui/workspace.c:582
 msgid "or create a new one"
 msgstr "ou criar uma nova"
 
-#: ../src/gui/workspace.c:233 ../src/libs/session.c:104
+#: ../src/gui/workspace.c:590 ../src/libs/session.c:104
 msgid "create"
 msgstr "criar"
+
+#: ../src/gui/workspace.c:605
+msgid "copy settings from existing workspace"
+msgstr "copiar configurações de uma área de trabalho existente"
 
 #: ../src/gui/gtk.c:194 ../src/views/darkroom.c:4822
 msgid "darktable - darkroom preview"
@@ -14761,14 +14889,6 @@ msgid "$(IMAGE.TAGS) - tags as set in metadata settings, flattened"
 msgstr ""
 "$(IMAGE.TAGS) - etiquetas estabelecidas na configuração de metadados, com "
 "hierarquia colapsada"
-
-#: ../src/gui/gtkentry.c:109
-msgid "$(IMAGE.ID) - image ID"
-msgstr "$(IMAGE.ID) - ID da imagem"
-
-#: ../src/gui/gtkentry.c:110
-msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
-msgstr "$(IMAGE.ID.NEXT) - próximo ID de mensagem a ser usada ao importar"
 
 #: ../src/gui/gtkentry.c:116
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -15344,7 +15464,7 @@ msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
 #: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2079
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
 msgid "_select"
 msgstr "_selecionar"
 
@@ -15888,7 +16008,7 @@ msgstr "Boas edições com o dartkable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2211
+#: ../src/libs/neural_restore.c:2359
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -15912,7 +16032,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2208
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2356
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -16040,7 +16160,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2211
+#: ../src/libs/neural_restore.c:2359
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -16136,7 +16256,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2211
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2359
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -16764,7 +16884,7 @@ msgstr "corretivo e criativo"
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorharmonizer.c:134
 #: ../src/iop/colorharmonizer.c:136 ../src/iop/colorequal.c:217
 #: ../src/iop/colorin.c:130 ../src/iop/crop.c:135 ../src/iop/crop.c:137
-#: ../src/iop/demosaic.c:321 ../src/iop/denoiseprofile.c:821
+#: ../src/iop/demosaic.c:320 ../src/iop/denoiseprofile.c:821
 #: ../src/iop/denoiseprofile.c:823 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
@@ -17515,8 +17635,8 @@ msgstr "melhorar nitidez"
 msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
-#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:721
-#: ../src/libs/neural_restore.c:2115
+#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:756
+#: ../src/libs/neural_restore.c:2263
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -18332,7 +18452,7 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:319 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:104
@@ -18343,7 +18463,7 @@ msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:320 ../src/iop/invert.c:133
+#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133
 #: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:105
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -20611,7 +20731,7 @@ msgstr ""
 "converte qualquer entrada RGB para a referência RGB do\n"
 "pipeline usando perfis de cor para remapear valores RGB"
 
-#: ../src/iop/colorin.c:127 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:318
+#: ../src/iop/colorin.c:127 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:317
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "obrigatório"
@@ -20876,7 +20996,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
-#: ../src/iop/colorreconstruction.c:1247 ../src/iop/demosaic.c:1828
+#: ../src/iop/colorreconstruction.c:1247 ../src/iop/demosaic.c:1825
 #: ../src/iop/highlights.c:1339
 msgid "not applicable"
 msgstr "não aplicável"
@@ -21079,30 +21199,30 @@ msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "limite para mesclagem de borda, valores altos significam menos mesclagem"
 
-#: ../src/iop/demosaic.c:312
+#: ../src/iop/demosaic.c:311
 msgid "demosaic"
 msgstr "interpolação cromática"
 
-#: ../src/iop/demosaic.c:317
+#: ../src/iop/demosaic.c:316
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "reconstrói pixels RGB completamente a partir de uma leitura da\n"
 "matriz de filtro de cor do sensor da câmera"
 
-#: ../src/iop/demosaic.c:767 ../src/iop/demosaic.c:814
+#: ../src/iop/demosaic.c:766 ../src/iop/demosaic.c:813
 msgid "can't allocate demosaic buffer"
 msgstr "não foi possível alocar buffer para interpolação cromática"
 
-#: ../src/iop/demosaic.c:804
+#: ../src/iop/demosaic.c:803
 msgid "can't equilibrate greens"
 msgstr "não é possível equilibrar os verdes"
 
-#: ../src/iop/demosaic.c:1455
+#: ../src/iop/demosaic.c:1452
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cor não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:1743
+#: ../src/iop/demosaic.c:1740
 #, fuzzy
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
@@ -21118,7 +21238,7 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1748
+#: ../src/iop/demosaic.c:1745
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -21130,15 +21250,15 @@ msgstr ""
 "interpoladores cromáticos duplos aumentam o tempo de processamento ao "
 "incorporar uma variante VNG em um segundo passo."
 
-#: ../src/iop/demosaic.c:1754
+#: ../src/iop/demosaic.c:1751
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores Bayer4."
 
-#: ../src/iop/demosaic.c:1759
+#: ../src/iop/demosaic.c:1756
 msgid "monochrome sensor demosaicing methods."
 msgstr "métodos de interpolação cromática para sensores monocromáticos."
 
-#: ../src/iop/demosaic.c:1763
+#: ../src/iop/demosaic.c:1760
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -21148,11 +21268,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência\n"
 "defina em 1.0 para conteúdo plano"
 
-#: ../src/iop/demosaic.c:1766
+#: ../src/iop/demosaic.c:1763
 msgid "toggle mask visualization"
 msgstr "alterna visualização da máscara"
 
-#: ../src/iop/demosaic.c:1770
+#: ../src/iop/demosaic.c:1767
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -21162,7 +21282,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:1773
+#: ../src/iop/demosaic.c:1770
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -21170,17 +21290,17 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:1776
+#: ../src/iop/demosaic.c:1773
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:1779
+#: ../src/iop/demosaic.c:1776
 msgid "green channels matching method. only applies for some old sensors"
 msgstr ""
 "método de casamento de canais de verde. somente se aplica a alguns sensores "
 "antigos"
 
-#: ../src/iop/demosaic.c:1782
+#: ../src/iop/demosaic.c:1779
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -21190,15 +21310,15 @@ msgstr ""
 "devido ao desfoque da câmera, que pode ser causado por difração, filtros\n"
 "anti-aliasing e outras fontes de desfoque do tipo gaussiano"
 
-#: ../src/iop/demosaic.c:1787
+#: ../src/iop/demosaic.c:1784
 msgid "capture sharpen controls"
 msgstr "controles de captura de nitidez"
 
-#: ../src/iop/demosaic.c:1791
+#: ../src/iop/demosaic.c:1788
 msgid "set effect strength by iterations"
 msgstr "determinar a força do efeito por iterações"
 
-#: ../src/iop/demosaic.c:1796
+#: ../src/iop/demosaic.c:1793
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -21216,7 +21336,7 @@ msgstr ""
 "Nota: o raio definido em zero será recalculado automaticamente na próxim "
 "vez. use para predefinições"
 
-#: ../src/iop/demosaic.c:1802
+#: ../src/iop/demosaic.c:1799
 msgid ""
 "calculate the capture sharpen radius from available raw sensor data.\n"
 "for best results avoid cropping or darkroom zooming in"
@@ -21224,7 +21344,7 @@ msgstr ""
 "calcular o raio de ajuste de nitidez a partir dos dados do sensor.\n"
 "para melhores resultados evite cortar o fazer zoom"
 
-#: ../src/iop/demosaic.c:1806
+#: ../src/iop/demosaic.c:1803
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -21240,11 +21360,11 @@ msgstr ""
 "Nota: o limiar em zero reinicializará aos defaults na próxima vez. use para "
 "predefinições"
 
-#: ../src/iop/demosaic.c:1810
+#: ../src/iop/demosaic.c:1807
 msgid "visualize sharpened areas"
 msgstr "visualizar áreas com nitidez ajustada"
 
-#: ../src/iop/demosaic.c:1815
+#: ../src/iop/demosaic.c:1812
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -21252,15 +21372,15 @@ msgstr ""
 "aumenta o raio de nitidez dos cantos da imagem,\n"
 "o centro da imagem não é afetado"
 
-#: ../src/iop/demosaic.c:1817
+#: ../src/iop/demosaic.c:1814
 msgid "visualize the overall radius"
 msgstr "visualizar o raio geral"
 
-#: ../src/iop/demosaic.c:1822
+#: ../src/iop/demosaic.c:1819
 msgid "adjust to the sharp image center"
 msgstr "ajusta a nitidez no centro da imagem"
 
-#: ../src/iop/demosaic.c:1829
+#: ../src/iop/demosaic.c:1826
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
@@ -21346,7 +21466,8 @@ msgid "variance blue: "
 msgstr "variância de azul: "
 
 #: ../src/iop/denoiseprofile.c:3689 ../src/libs/export.c:1599
-#: ../src/libs/print_settings.c:2518 ../src/libs/print_settings.c:2874
+#: ../src/libs/neural_restore.c:2367 ../src/libs/print_settings.c:2518
+#: ../src/libs/print_settings.c:2874
 msgid "profile"
 msgstr "perfil"
 
@@ -23331,7 +23452,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2135
+#: ../src/libs/neural_restore.c:2283
 msgid "scale"
 msgstr "escala"
 
@@ -26161,7 +26282,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "controle da câmera"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:771
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:770
 msgid "modes"
 msgstr "modos"
 
@@ -26969,7 +27090,8 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1600 ../src/libs/export.c:1635
-#: ../src/libs/print_settings.c:2877 ../src/libs/print_settings.c:2923
+#: ../src/libs/neural_restore.c:2368 ../src/libs/print_settings.c:2877
+#: ../src/libs/print_settings.c:2923
 msgid "image settings"
 msgstr "configurações da imagem"
 
@@ -27480,7 +27602,7 @@ msgstr ""
 "interseção: imagens tendo as mesmas etiquetas de cor\n"
 "união: imagens tendo ao menos uma das etiquetas de cor selecionadas"
 
-#: ../src/libs/filters/date.c:186
+#: ../src/libs/filters/date.c:187
 msgid ""
 "filter by capture month\n"
 "click to toggle month selection"
@@ -27857,20 +27979,20 @@ msgstr "clique-duplo para redefinir"
 msgid "drag to change exposure"
 msgstr "arraste para mudar exposição"
 
-#: ../src/libs/histogram.c:698 ../src/libs/scopes/histogram.c:50
+#: ../src/libs/histogram.c:697 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:704 ../src/libs/histogram.c:800
+#: ../src/libs/histogram.c:703 ../src/libs/histogram.c:799
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:812
+#: ../src/libs/histogram.c:811
 #, c-format
 msgid "toggle %s channel"
 msgstr "alternar canal %s"
 
-#: ../src/libs/histogram.c:820
+#: ../src/libs/histogram.c:819
 msgid "toggle colors"
 msgstr "alternar cores"
 
@@ -29462,150 +29584,182 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:265 ../src/libs/neural_restore.c:1540
+#: ../src/libs/neural_restore.c:290 ../src/libs/neural_restore.c:1641
 msgid "neural restore"
 msgstr "restauração neural"
 
-#: ../src/libs/neural_restore.c:269
+#: ../src/libs/neural_restore.c:294
 msgid "AI-based image restoration: denoise and upscale"
 msgstr ""
 "restauração de imagem baseada em IA: remoção de ruído e aumento de escala"
 
-#: ../src/libs/neural_restore.c:508
+#: ../src/libs/neural_restore.c:542
 #, c-format
 msgid "failed to open TIFF for writing: %s"
 msgstr "falha ao abrir TIFF para escrita: %s"
 
-#: ../src/libs/neural_restore.c:559
+#: ../src/libs/neural_restore.c:593
 msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:721 ../src/libs/neural_restore.c:2117
+#: ../src/libs/neural_restore.c:756 ../src/libs/neural_restore.c:2265
 msgid "upscale"
 msgstr "aumentar escala"
 
-#: ../src/libs/neural_restore.c:723
+#: ../src/libs/neural_restore.c:758
 #, c-format
 msgid "loading %s model..."
 msgstr "carregando modelo %s ..."
 
-#: ../src/libs/neural_restore.c:753
+#: ../src/libs/neural_restore.c:788
 #, c-format
 msgid "failed to load AI %s model"
 msgstr "falha ao carregar modelo %s de IA"
 
-#: ../src/libs/neural_restore.c:823
+#: ../src/libs/neural_restore.c:859
 msgid "neural restore: cannot create output directory"
 msgstr "restauração neural: nào foi possível criar o diretório de saída"
 
-#: ../src/libs/neural_restore.c:851
+#: ../src/libs/neural_restore.c:887
 msgid "neural restore: too many output files"
 msgstr "restauração neural: arquivos de saída em quantidade excessiva"
 
-#: ../src/libs/neural_restore.c:860
+#: ../src/libs/neural_restore.c:896
 #, c-format
 msgid "denoising image %d/%d..."
 msgstr "removendo ruído de imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:861
+#: ../src/libs/neural_restore.c:897
 #, c-format
 msgid "upscaling 2x image %d/%d..."
 msgstr "aumentando escala 2x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:862
+#: ../src/libs/neural_restore.c:898
 #, c-format
 msgid "upscaling 4x image %d/%d..."
 msgstr "aumentando escala 4x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:891
+#: ../src/libs/neural_restore.c:929
 msgid "neural restore: export failed"
 msgstr "restauração neural: exportação falhou"
 
-#: ../src/libs/neural_restore.c:982
+#: ../src/libs/neural_restore.c:947
+#, c-format
+msgid "neural %s: %d image processed"
+msgid_plural "neural %s: %d images processed"
+msgstr[0] "neural %s: %d imagem processada"
+msgstr[1] "neural %s: %d imagens processadas"
+
+#: ../src/libs/neural_restore.c:1030
 msgid "large output - processing will be slow"
 msgstr "saída grande - o processamento será lento"
 
-#: ../src/libs/neural_restore.c:1700
+#: ../src/libs/neural_restore.c:1046
+msgid "wide-gamut preserved, not denoised"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:1047
+#, fuzzy
+msgid "wide-gamut clipped"
+msgstr "recorte de gama"
+
+#: ../src/libs/neural_restore.c:1801
 msgid "click to select preview area"
 msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:1725
+#: ../src/libs/neural_restore.c:1826
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:1727 ../src/libs/neural_restore.c:1889
+#: ../src/libs/neural_restore.c:1828 ../src/libs/neural_restore.c:1997
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:1729
+#: ../src/libs/neural_restore.c:1830
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:1730
+#: ../src/libs/neural_restore.c:1831
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:2075 ../src/libs/neural_restore.c:2245
+#: ../src/libs/neural_restore.c:2223 ../src/libs/neural_restore.c:2454
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:2116
+#: ../src/libs/neural_restore.c:2264
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:2118
+#: ../src/libs/neural_restore.c:2266
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:2125
+#: ../src/libs/neural_restore.c:2273
 msgid "detail recovery"
 msgstr "recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:2128
+#: ../src/libs/neural_restore.c:2276
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
 "recuperar textura fina perdida durante remoção de ruído enquanto suprime "
 "ruído"
 
-#: ../src/libs/neural_restore.c:2136
+#: ../src/libs/neural_restore.c:2284
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:2138
+#: ../src/libs/neural_restore.c:2286
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2138
+#: ../src/libs/neural_restore.c:2286
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2155
+#: ../src/libs/neural_restore.c:2303
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:2180
+#: ../src/libs/neural_restore.c:2328
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:2198
+#: ../src/libs/neural_restore.c:2346
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:2209
+#: ../src/libs/neural_restore.c:2357
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:2216
+#: ../src/libs/neural_restore.c:2399
+msgid "color profile embedded in the output TIFF"
+msgstr "perfil de cor embutido na saída TIFF"
+
+#: ../src/libs/neural_restore.c:2409
+#, fuzzy
+msgid "preserve wide-gamut colors"
+msgstr "preservar cores"
+
+#: ../src/libs/neural_restore.c:2416
+msgid ""
+"when on, pixels outside sRGB gamut pass through without being denoised; when "
+"off, all pixels are denoised but wide-gamut colors may be clipped; only "
+"affects denoise"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:2425
 msgid "add to catalog"
 msgstr "adicionaro ao catálogo"
 
-#: ../src/libs/neural_restore.c:2222
+#: ../src/libs/neural_restore.c:2431
 msgid "automatically import output image into the darktable library"
 msgstr "automaticamente importar imagem de saída na biblioteca do darktable"
 
-#: ../src/libs/neural_restore.c:2238
+#: ../src/libs/neural_restore.c:2447
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -32728,9 +32882,6 @@ msgstr "ações com mouse"
 
 #~ msgid "export_pdf"
 #~ msgstr "exportar_pdf"
-
-#~ msgid "scripts successfully installed into folder "
-#~ msgstr "scripts instalados com sucesso na pasta "
 
 #~ msgid " "
 #~ msgstr " "
