@@ -96,14 +96,11 @@ DT_MODULE_INTROSPECTION(1, dt_iop_contrast_params_t)
 
 typedef struct dt_iop_contrast_params_t
 {
-  float gain_local;     // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
-
-  // Blending uses a quadratic curve because changes in small values are more noticeable
-  float blending;        // $MIN: 1.0 $MAX: 2.0 $DEFAULT: 1.2 $DESCRIPTION: "contrast scale"
-  float feathering;      // $MIN: 0.01 $MAX: 10.0 $DEFAULT: 2.5 $DESCRIPTION: "spatial edge protection"
-  float f_mult_local;    // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "local edge protection"
-  int iterations;        // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"  
-  float noise_threshold;    // $MIN: 0.0 $MAX: 0.01 $DEFAULT: 0.001 $DESCRIPTION: "noise threshold"
+  float gain_local_contrast;  // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
+  float contrast_scale;       // $MIN: 1.0 $MAX: 2.0 $DEFAULT: 1.2 $DESCRIPTION: "contrast scale"
+  float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
+  int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
+  float noise_threshold;      // $MIN: 0.0 $MAX: 0.01 $DEFAULT: 0.001 $DESCRIPTION: "noise threshold"
 } dt_iop_contrast_params_t;
 
 typedef enum dt_iop_contrast_mask_t
@@ -114,16 +111,12 @@ typedef enum dt_iop_contrast_mask_t
 
 typedef struct dt_iop_contrast_data_t
 {
-  float gain_local;
+  float gain_local_contrast;
   float blending;
   float feathering;
-  float f_mult_local;
-  float s_mult_local;
-  float eigf_scale;
   int radius_local;
   int iterations;
   float noise_threshold;
-  dt_iop_luminance_mask_method_t method;
 } dt_iop_contrast_data_t;
 
 typedef struct dt_iop_contrast_gui_data_t
@@ -149,11 +142,11 @@ typedef struct dt_iop_contrast_gui_data_t
   gboolean luminance_valid;
 
   // GTK widgets
-  GtkWidget *gain_local;
-  GtkWidget *blending;
-  GtkWidget *feathering;
+  GtkWidget *gain_local_contrast;
+  GtkWidget *contrast_scale;
+  GtkWidget *edge_protection;
+  GtkWidget *filter_iterations;
   GtkWidget *noise_threshold;
-  GtkWidget *f_mult_local;
 
   // New buttons for mask display in expanders
   GtkWidget *f_view_local;
@@ -231,39 +224,25 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   dt_iop_refresh_all(self);
 }
 
-
-//Compute pixel-wise luminance mask (no blur)
-
-__DT_CLONE_TARGETS__
-static inline void compute_pixel_luminance_mask(const float *const restrict in,
-                                                float *const restrict luminance,
-                                                const size_t width,
-                                                const size_t height,
-                                                const dt_iop_luminance_mask_method_t method)
-{
-  // No exposure/contrast boost, just compute raw luminance
-  luminance_mask(in, luminance, width, height, method, 1.0f, 0.0f, 1.0f);
-}
-
-
 // Compute smoothed luminance mask using edge-aware filters
 
 __DT_CLONE_TARGETS__
-static inline void compute_smoothed_luminance_mask(const float *const restrict in,
+static inline void compute_luminance_and_mask(const float *const restrict in,
                                                    float *const restrict luminance,
+                                                   float *const restrict smoothed_luminance,
                                                    const size_t width,
                                                    const size_t height,
-                                                   const dt_iop_contrast_data_t *const d,
-                                                   const int radius,
-                                                   const float feathering)
+                                                   const dt_iop_contrast_data_t *const d)
 {
   // First compute pixel-wise luminance (no boost)
-  luminance_mask(in, luminance, width, height, d->method, 1.0f, 0.0f, 1.0f);
+  luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
 
-  // Then apply the smoothing filter
-  fast_eigf_surface_blur(luminance, width, height,
-                         radius, feathering, d->iterations,
-                         DT_GF_BLENDING_LINEAR, d->eigf_scale,
+  // Then apply the smoothing filter on a copy
+  memcpy(smoothed_luminance, luminance, width * height * sizeof(float));
+
+  fast_eigf_surface_blur(smoothed_luminance, width, height,
+                         d->radius_local, d->feathering, d->iterations,
+                         DT_GF_BLENDING_LINEAR, 1.0f,
                          0.0f, exp2f(-14.0f), 4.0f);
 }
 
@@ -282,7 +261,7 @@ static inline void apply_local_contrast(const float *const restrict in,
                                         const dt_iop_contrast_data_t *const d)
 {
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
-  const float gain_local = d->gain_local;
+  const float gain_local = d->gain_local_contrast;
   
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
@@ -344,12 +323,13 @@ static inline void display_local_mask(const float *const restrict luminance_pixe
     // Detail in log space, mapped to [0, 1] for display
     // Detail range roughly [-2, +2] EV mapped to [0, 1]
     const float local_ev = log2f(lum_pixel / lum_smoothed);
-    const float intensity = fminf(fmaxf(local_ev / 4.0f + 0.5f, 0.0f), 1.0f);
+    const float intensity = local_ev / sqrtf(local_ev * local_ev + 1.0f) * 0.5f + 0.5f; // Smooth mapping to [0, 1]
 
     // Set all RGB channels to the same intensity (grayscale)
-    out[4 * k + 0] = intensity;
-    out[4 * k + 1] = intensity;
-    out[4 * k + 2] = intensity;
+    for_each_channel(c)
+    {
+      out[4 * k + c] = intensity;
+    }
     // Full opacity
     out[4 * k + 3] = 1.0f;
   }
@@ -571,8 +551,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  compute_pixel_luminance_mask(in, luminance_pixel, width, height, d->method);
-  compute_smoothed_luminance_mask(in, luminance_smoothed_local, width, height, d, d->radius_local, d->feathering * d->feathering * fmaxf(d->f_mult_local, 0.5f));
+  compute_luminance_and_mask(in, luminance_pixel, luminance_smoothed_local, width, height, d);
   
   // Display output
   if(g && g->mask_display != DT_LC_MASK_OFF)
@@ -601,7 +580,7 @@ void modify_roi_in(dt_iop_module_t *self,
   const float max_size = (float)((piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight);
   const float base_diameter = d->blending * max_size * roi_in->scale;
 
-  const float diameter_local = base_diameter * d->s_mult_local;
+  const float diameter_local = base_diameter;
   d->radius_local = (int)((diameter_local - 1.0f) / 2.0f);
 }
 
@@ -614,11 +593,8 @@ void commit_params(dt_iop_module_t *self,
   const dt_iop_contrast_params_t *p = (dt_iop_contrast_params_t *)p1;
   dt_iop_contrast_data_t *d = piece->data;
 
-  d->method = DT_TONEEQ_NORM_2;
-  d->iterations = 1;
-  d->eigf_scale = 1.0f;
-  d->gain_local = p->gain_local;
-
+  d->iterations = p->filter_iterations;
+  d->gain_local_contrast = p->gain_local_contrast;
   d->noise_threshold = p->noise_threshold;
 
   // Normalize blending and feathering to the "sensor 3:2 36 MP" as reference.
@@ -631,19 +607,12 @@ void commit_params(dt_iop_module_t *self,
 
   // UI blending param is squared to increase sensitivity to small values.
   // Scaled by sqrt(N) so larger sensors use proportionally wider radii.
-  d->blending = (p->blending * p->blending / 100.0f) * sqrtf(N);
+  d->blending = (p->contrast_scale * p->contrast_scale / 100.0f) * sqrtf(N);
 
   // UI feathering is inverted (higher = stricter edge preservation).
-  // Scaled by N so higher resolution sensors get a proportionally larger epsilon.
-  d->feathering = (1.0f / p->feathering) * N * 1.2f;
-  
-  // The multipliers determine how the base epsilon for the guided filter is scaled for each detail level.
-  // The multiplier coefficients were determined following a series of empirical tests.
-  d->f_mult_local    = (1.0f / fmaxf(p->f_mult_local,    NORM_MIN)) * 1.0f;
-  
-  // The multipliers determine how the blending parameter maps to the radius for each scale.
-  // The multipliers coefficients were determined following a series of empirical tests.
-  d->s_mult_local    = p->blending;
+  // Adjust the strength based on the number of iterations to maintain a consistent overall effect regardless of iteration count.
+  const float default_feathering = 0.2f;  // Base value based on Christian's experiments for a good balance of edge preservation and contrast boost at default settings.
+  d->feathering = default_feathering * powf(2.0, -p->edge_protection) / (p->filter_iterations * p->filter_iterations);
 }
 
 
@@ -689,7 +658,7 @@ static void _update_mask_buttons_state(dt_iop_contrast_gui_data_t *g)
   if(darktable.gui->reset) return;
   ++darktable.gui->reset;
 
-  dt_bauhaus_widget_set_quad_active(g->gain_local, g->mask_display == DT_LC_MASK_LOCAL);
+  dt_bauhaus_widget_set_quad_active(g->gain_local_contrast, g->mask_display == DT_LC_MASK_LOCAL);
 
   if(g->f_view_local)
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->f_view_local), g->mask_display == DT_LC_MASK_LOCAL);
@@ -731,8 +700,8 @@ static void show_guiding_controls(const dt_iop_module_t *self)
   const dt_iop_contrast_gui_data_t *g = self->gui_data;
 
   // All filters need these controls
-  gtk_widget_set_visible(g->blending, TRUE);
-  gtk_widget_set_visible(g->feathering, TRUE);
+  gtk_widget_set_visible(g->contrast_scale, TRUE);
+  gtk_widget_set_visible(g->edge_protection, TRUE);
 }
 
 
@@ -742,8 +711,7 @@ void gui_changed(dt_iop_module_t *self,
 {
   const dt_iop_contrast_gui_data_t *g = self->gui_data;
 
-  if(w == g->blending || w == g->feathering
-     || w == g->f_mult_local)
+  if(w == g->contrast_scale || w == g->edge_protection)
   {
     invalidate_luminance_cache(self);
   }
@@ -768,7 +736,7 @@ static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_iop_contrast_gui_data_t *g = self->gui_data;
   dt_iop_contrast_mask_t mask_type = DT_LC_MASK_OFF;
 
-  if(quad == g->gain_local) mask_type = DT_LC_MASK_LOCAL;
+  if(quad == g->gain_local_contrast) mask_type = DT_LC_MASK_LOCAL;
 
   if(mask_type != DT_LC_MASK_OFF)
   {
@@ -829,33 +797,41 @@ void gui_init(dt_iop_module_t *self)
   self->widget = main_box;
   
   // Local boost slider
-  g->gain_local = dt_bauhaus_slider_from_params(self, "gain_local");
-  dt_bauhaus_slider_set_soft_range(g->gain_local, 0.10, 1.90);
-  dt_bauhaus_slider_set_digits(g->gain_local, 2);
-  dt_bauhaus_slider_set_format(g->gain_local, "%");
-  dt_bauhaus_slider_set_factor(g->gain_local, 100.0);
-  dt_bauhaus_slider_set_offset(g->gain_local, -100.0);
-  gtk_widget_set_tooltip_text (g->gain_local,
+  g->gain_local_contrast = dt_bauhaus_slider_from_params(self, "gain_local_contrast");
+  dt_bauhaus_slider_set_soft_range(g->gain_local_contrast, 0.0, 2.0);
+  dt_bauhaus_slider_set_digits(g->gain_local_contrast, 2);
+  dt_bauhaus_slider_set_format(g->gain_local_contrast, "%");
+  dt_bauhaus_slider_set_factor(g->gain_local_contrast, 100.0);
+  dt_bauhaus_slider_set_offset(g->gain_local_contrast, -100.0);
+  gtk_widget_set_tooltip_text (g->gain_local_contrast,
                               _("amount of local contrast enhancement"));
-  dt_bauhaus_widget_set_quad(g->gain_local, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+  dt_bauhaus_widget_set_quad(g->gain_local_contrast, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
                              _("visualize local contrast mask"));
 
   // filter settings
   GtkWidget *filter_label = dt_ui_section_label_new(C_("section", "filter settings"));
   dt_gui_box_add(main_box, filter_label);
   
-  g->blending = dt_bauhaus_slider_from_params(self, "blending");
-  dt_bauhaus_slider_set_soft_range(g->blending, 1.0, 4.0);
+  g->contrast_scale = dt_bauhaus_slider_from_params(self, "contrast_scale");
+  dt_bauhaus_slider_set_soft_range(g->contrast_scale, 1.0, 4.0);
   gtk_widget_set_tooltip_text
-    (g->blending,
+    (g->contrast_scale,
      _("adjusts the scale of details targeted by the sliders in the “spatial contrast” section.\n"
        "higher values target larger features, lower values target finer details."));
 
-  g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
-  dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
-  gtk_widget_set_tooltip_text(g->feathering, _("edge sensitivity of the filter\n"
-                                               "higher = better edge preservation\n"
-                                               "lower = smoother transitions, but may lead to halos around edges"));
+  g->edge_protection = dt_bauhaus_slider_from_params(self, "edge_protection");
+  dt_bauhaus_slider_set_soft_range(g->edge_protection, -2.0, 2.0);
+  dt_bauhaus_slider_set_digits(g->edge_protection, 2);
+  dt_bauhaus_slider_set_format(g->edge_protection, "%");
+  dt_bauhaus_slider_set_factor(g->edge_protection, 100.0);
+  gtk_widget_set_tooltip_text(g->edge_protection, _("adjust the edge sensitivity of the filter\n"
+                                                    "higher = more edge preservation\n"
+                                                    "lower = smoother transitions, but may lead to halos around edges"));
+
+  g->filter_iterations = dt_bauhaus_slider_from_params(self, "filter_iterations");
+  dt_bauhaus_slider_set_soft_range(g->filter_iterations, 1, 5);
+  gtk_widget_set_tooltip_text(g->filter_iterations, _("number of passes of the guided filter to apply\n"
+       "helps diffusing the edges of the filter at the expense of speed"));
 
   g->noise_threshold = dt_bauhaus_slider_from_params(self, "noise_threshold");
   dt_bauhaus_slider_set_soft_range(g->noise_threshold, 0.0, 0.01);
