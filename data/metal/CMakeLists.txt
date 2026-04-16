@@ -8,6 +8,7 @@ set(DT_METALLIB "darktable.metallib")
 set(DT_METALLIB_TOUCH "${DT_METALLIB}.touch")
 
 set(KERNELS "")
+set(KERNEL_TOUCHES "")
 
 add_custom_target(metal_kernels ALL)
 add_custom_target(dt_metallib ALL)
@@ -39,6 +40,7 @@ macro (compile_metal_kernel IN)
   add_dependencies(dt_metallib ${KERNAME_OUT})
 
   list(APPEND KERNELS ${KERNAME_OUT})
+  list(APPEND KERNEL_TOUCHES ${TOUCH})
 endmacro (compile_metal_kernel)
 
 foreach(KERNEL IN ITEMS ${DT_METAL_KERNEL_SOURCES})
@@ -47,7 +49,7 @@ endforeach()
 
 add_custom_command(
   OUTPUT ${DT_METALLIB_TOUCH}
-  DEPENDS metal_kernels
+  DEPENDS ${KERNEL_TOUCHES}
   COMMAND xcrun -sdk macosx metallib -o ${DT_METALLIB} ${KERNELS}
   COMMENT "Building ${DT_METALLIB}"
   COMMAND ${CMAKE_COMMAND} -E touch ${DT_METALLIB_TOUCH}
@@ -61,7 +63,11 @@ add_custom_target(
 
 add_dependencies(dt_metallib dt_metallib_touch)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable
-        FILES_MATCHING PATTERN "*.air" PATTERN "*.metallib"
-        PATTERN "CMakeFiles" EXCLUDE
-)
+set(METAL_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/darktable/metal")
+set(METAL_INSTALL_FILES "")
+foreach(K IN LISTS KERNELS)
+  list(APPEND METAL_INSTALL_FILES "${CMAKE_CURRENT_BINARY_DIR}/${K}")
+endforeach()
+list(APPEND METAL_INSTALL_FILES "${CMAKE_CURRENT_BINARY_DIR}/${DT_METALLIB}")
+
+install(FILES ${METAL_INSTALL_FILES} DESTINATION ${METAL_INSTALL_DIR})
