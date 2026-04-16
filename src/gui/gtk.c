@@ -778,9 +778,19 @@ static gboolean _scrolled(GtkWidget *widget,
   const gboolean is_known_gesture_device = (device == _touchpad);
   const gboolean is_smooth = event->direction == GDK_SCROLL_SMOOTH && !event->is_stop;
 
-  if(!ctrl_held
-     && (is_touchpad_source || is_known_gesture_device)
-     && is_smooth)
+#ifdef GDK_WINDOWING_QUARTZ
+  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
+  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to gesture_pan so
+  // that two-finger panning works in views like darkroom (both standalone and
+  // interleaved with a pinch-zoom gesture whose translational component macOS
+  // delivers as a separate scroll stream).
+  const gboolean route_as_pan = !ctrl_held && is_smooth;
+#else
+  const gboolean route_as_pan = !ctrl_held
+                                && (is_touchpad_source || is_known_gesture_device)
+                                && is_smooth;
+#endif
+  if(route_as_pan)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
     if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
@@ -810,9 +820,9 @@ static gboolean _scrolled(GtkWidget *widget,
   {
     dt_print(DT_DEBUG_INPUT,
              "[touchpad] smooth scroll not routed as pan:"
-             " ctrl=%d touchpad_source=%d known_gesture_dev=%d"
+             " ctrl=%d touchpad_source=%d known_gesture_dev=%d route_as_pan=%d"
              " device='%s' source-type=%d",
-             ctrl_held, is_touchpad_source, is_known_gesture_device,
+             ctrl_held, is_touchpad_source, is_known_gesture_device, route_as_pan,
              device ? gdk_device_get_name(device) : "<none>",
              device ? (int)gdk_device_get_source(device) : -1);
   }
