@@ -224,6 +224,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color graph_red rgb(237,30,20);
 @define-color graph_green rgb(28,235,26);
 @define-color graph_blue rgb(14,14,233);
+@define-color graph_white @grey_95;
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);

@@ -45,14 +45,14 @@ typedef enum dt_scopes_highlight_t
 
 typedef enum dt_scopes_channels_t
 {
-  DT_SCOPES_CHANNEL_RED = 0,
-  DT_SCOPES_CHANNEL_GREEN,
-  DT_SCOPES_CHANNEL_BLUE,
-  DT_SCOPES_CHANNEL_LUMA,
-  DT_SCOPES_CHANNEL_N // needs to be the last one
+  DT_SCOPES_CH_RED = 0,
+  DT_SCOPES_CH_GREEN,
+  DT_SCOPES_CH_BLUE,
+  DT_SCOPES_CH_LUMA,
+  DT_SCOPES_CH_N // needs to be the last one
 } dt_scopes_channels_t;
 
-typedef gboolean dt_scopes_channels_list_t[DT_SCOPES_CHANNEL_N];
+typedef gboolean dt_scopes_channels_list_t[DT_SCOPES_CH_N];
 
 struct dt_scopes_t;
 struct dt_scopes_mode_t;
@@ -150,7 +150,7 @@ typedef struct dt_scopes_t
   GtkWidget *button_box_split;                  // GtkBox -- option buttons for left scope
   GtkWidget *button_box_right;                  // GtkBox -- option buttons for main scope
   GtkWidget *button_box_channels;               // GtkBox -- RGB & luma buttons
-  GtkWidget *channel_btns[DT_SCOPES_CHANNEL_N]; // Array of GtkToggleButton -- channels
+  GtkWidget *channel_btns[DT_SCOPES_CH_N]; // Array of GtkToggleButton -- channels
   GtkWidget *scope_draw;                        // GtkDrawingArea -- scope & resize
   // for access to data during process/draw
   dt_pthread_mutex_t lock;

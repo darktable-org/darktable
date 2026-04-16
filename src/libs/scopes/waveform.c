@@ -49,6 +49,7 @@ typedef struct dt_scopes_wave_t
   GtkWidget *orient_button;            // GtkButton -- horizontal or vertical
   // state set by buttons
   dt_wave_orient_t orient;
+  gboolean is_rgb;
 } dt_scopes_wave_t;
 
 
@@ -88,7 +89,8 @@ static void _wave_process(dt_scopes_mode_t *const self,
   // will be <= 720x160x4. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
-  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CHANNEL_LUMA];
+  const gboolean is_rgb = (self == &self->scopes->modes[DT_SCOPES_MODE_PARADE])
+                          || !self->scopes->channels[DT_SCOPES_CH_LUMA];
   const size_t num_channels = (is_rgb ? 3U : 1U);
   uint32_t *const restrict partial_binned =
     dt_calloc_perthread(num_channels * num_bins * num_tones,
@@ -191,10 +193,15 @@ static void _wave_process(dt_scopes_mode_t *const self,
 
   dt_free_align(partial_binned);
 
-  // waveform and rgb parade share underlying data, so updates to one update both
-  self->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter =
-    self->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter =
-      self->scopes->update_counter;
+  // waveform and rgb parade share underlying RGB (but not luminosity)
+  // data, so some updates will update both
+  if(is_rgb)
+    self->scopes->modes[DT_SCOPES_MODE_WAVEFORM].update_counter =
+      self->scopes->modes[DT_SCOPES_MODE_PARADE].update_counter =
+        self->scopes->update_counter;
+  else
+    self->update_counter = self->scopes->update_counter;
+  d->is_rgb = is_rgb;
 }
 
 static void _wave_draw_grid(const dt_scopes_mode_t *const self,
@@ -252,13 +259,13 @@ static void _wave_draw(const dt_scopes_mode_t *const self,
   // layer on draw causes a >2x slowdown
   const double alpha_chroma = 0.75;
   const double desat_over = 0.75;
-  const double alpha_over = channels[DT_SCOPES_CHANNEL_LUMA] ? 0.65 : 0.35;
+  const double alpha_over = channels[DT_SCOPES_CH_LUMA] ? 0.65 : 0.35;
   const int img_width = d->orient == DT_WAVE_ORIENT_HORI
     ? d->waveform_bins : d->waveform_tones;
   const int img_height = d->orient == DT_WAVE_ORIENT_HORI
     ? d->waveform_tones : d->waveform_bins;
   const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
-  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CHANNEL_LUMA];
+  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CH_LUMA];
   const int num_channels = (is_rgb ? 3 : 1);
   cairo_surface_t *cs[3] = { NULL, NULL, NULL };
   cairo_surface_t *cst = cairo_image_surface_create
@@ -369,24 +376,17 @@ static void _wave_mode_enter(dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_show(d->orient_button);
-  // luma button currently only works in waveform
-  if(gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA])))
-    for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
-      gtk_widget_set_sensitive(self->scopes->channel_btns[ch], FALSE);
-  gtk_widget_show(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA]);
+  // force reprocess if have valid RGB parade data but are switching
+  // to a luma waveform
+  if(self == &self->scopes->modes[DT_SCOPES_MODE_WAVEFORM]
+     && d->is_rgb && self->scopes->channels[DT_SCOPES_CH_LUMA])
+    self->update_counter--;
 }
 
 static void _wave_mode_leave(const dt_scopes_mode_t *const self)
 {
   const dt_scopes_wave_t *const d = self->data;
   gtk_widget_hide(d->orient_button);
-  // for now luma option only works in waveform
-  gtk_widget_hide(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA]);
-  if(gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON(self->scopes->channel_btns[DT_SCOPES_CHANNEL_LUMA])))
-    for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
-      gtk_widget_set_sensitive(self->scopes->channel_btns[ch], TRUE);
 }
 
 static void _wave_gui_init(dt_scopes_mode_t *const self,
@@ -435,7 +435,7 @@ static void _wave_gui_init(dt_scopes_mode_t *const self,
   const size_t bytes_vert =
     d->waveform_max_bins
     * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
-  for(int ch=0; ch <= DT_SCOPES_CHANNEL_BLUE; ch++)
+  for(int ch=0; ch <= DT_SCOPES_CH_BLUE; ch++)
     d->waveform_img[ch] = dt_alloc_align_uint8(MAX(bytes_hori, bytes_vert));
 }
 

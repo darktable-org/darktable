@@ -225,7 +225,7 @@ static void _responsive_buttons(dt_scopes_t *const s)
 
     const int mode_btns_hori = DT_SCOPES_MODE_N;
     const int opt_btns_wave = 1;  // FIXME: change this if there are more
-    const int opt_btns_hori = DT_SCOPES_CHANNEL_N + opt_btns_wave;
+    const int opt_btns_hori = DT_SCOPES_CH_N + opt_btns_wave;
     const int opt_btns_vert = 1 + opt_btns_wave;
     const int estd_margin = 6;  // for both boxes and buttons
     const double estd_btn_width = min_w + estd_margin;

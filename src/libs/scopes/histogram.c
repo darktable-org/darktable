@@ -56,17 +56,19 @@ static void _hist_process(dt_scopes_mode_t *const self,
                           const dt_iop_order_iccprofile_info_t *profile)
 {
   dt_scopes_hist_t *const d = self->data;
+  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CH_LUMA];
+  const uint32_t channels = is_rgb ? 4u : 1u;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
   dt_dev_histogram_stats_t histogram_stats =
     { .bins_count = HISTOGRAM_BINS,
-      .ch = 4,
+      .ch = channels,
       .pixels = 0,
-      .buf_size = sizeof(uint32_t) * 4 * HISTOGRAM_BINS };
+      .buf_size = sizeof(uint32_t) * channels * HISTOGRAM_BINS };
   uint32_t histogram_max[4] = { 0 };
 
   d->histogram_max = 0;
-  memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
+  memset(d->histogram, 0, sizeof(uint32_t) * channels * HISTOGRAM_BINS);
 
   histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
@@ -77,8 +79,11 @@ static void _hist_process(dt_scopes_mode_t *const self,
   // FIXME: set up "custom" histogram worker which can do colorspace
   // conversion on fly -- in cases that we need to do that -- may need
   // to add from colorspace to dt_dev_histogram_collection_params_t
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE,
-                      input, &d->histogram, histogram_max, FALSE, NULL);
+  dt_histogram_helper(&histogram_params, &histogram_stats,
+                      cst, IOP_CS_NONE,
+                      input,
+                      &d->histogram, histogram_max,
+                      FALSE, profile);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
   self->update_counter = self->scopes->update_counter;
 }
@@ -146,14 +151,15 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  for(int k = 0; k <= DT_SCOPES_CHANNEL_BLUE; k++)
-    if(channels[k])
+  for(int k = 0; k < DT_SCOPES_CH_N; k++)
+    if((channels[k]
+        && ((k <= DT_SCOPES_CH_BLUE && !channels[DT_SCOPES_CH_LUMA])
+            || k == DT_SCOPES_CH_LUMA)))
     {
-      // FIXME: this is the last place in dt these are used -- if can
-      // eliminate, then can directly set button colors in CSS and
-      // simplify things
       set_color(cr, darktable.bauhaus->graph_colors[k]);
-      dt_draw_histogram_8(cr, d->histogram, 4, k,
+      dt_draw_histogram_8(cr, d->histogram,
+                          k == DT_SCOPES_CH_LUMA ? 1 : 4,
+                          k == DT_SCOPES_CH_LUMA ? 0 : k,
                           d->scale == DT_HIST_SCALE_LINEAR);
     }
   cairo_pop_group_to_source(cr);

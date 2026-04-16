@@ -811,6 +811,8 @@ void dt_bauhaus_load_theme()
                                  &bh->graph_colors[1]);
   gtk_style_context_lookup_color(ctx, "graph_blue",
                                  &bh->graph_colors[2]);
+  gtk_style_context_lookup_color(ctx, "graph_white",
+                                 &bh->graph_colors[3]);
   gtk_style_context_lookup_color(ctx, "colorlabel_red",
                                  &bh->colorlabels[DT_COLORLABELS_RED]);
   gtk_style_context_lookup_color(ctx, "colorlabel_yellow",
