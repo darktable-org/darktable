@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/splines.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include <cairo.h>
