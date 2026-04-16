@@ -33,10 +33,13 @@ config, etc.) and is compiled conditionally with `USE_AI=ON`.
 | Flag | Default | Effect |
 |------|---------|--------|
 | `USE_AI` | OFF | enable AI subsystem |
-| `USE_AI_DOWNLOAD` | ON (if `USE_AI`) | enable model downloading from GitHub |
+| `USE_AI_DOWNLOAD` | ON (if `USE_AI`) | enable curl-based AI downloads (models from GitHub, GPU ORT library install) |
 
 When `USE_AI=ON`, the preprocessor defines `HAVE_AI`. When download is
-enabled, `HAVE_AI_DOWNLOAD` is also defined.
+enabled, `HAVE_AI_DOWNLOAD` is also defined. `HAVE_AI_DOWNLOAD` gates
+any feature that fetches data over the network: both the model
+downloader and the GPU ORT library installer rely on libcurl +
+libarchive, so they share one flag.
 
 ### Runtime Enable/Disable
 

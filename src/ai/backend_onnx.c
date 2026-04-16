@@ -187,27 +187,81 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
 
   if(out_eps)
   {
-    // check for known EP registration symbols
-    static const struct { const char *symbol; const char *name; } ep_table[] = {
-      { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
-      { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
-      { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
-      { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
-      { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
-      { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
-      { NULL, NULL }
-    };
-
     GString *eps = g_string_new(NULL);
-    gpointer sym;
-    for(int i = 0; ep_table[i].symbol; i++)
+
+    // preferred path: ask the OrtApi for the list of providers compiled into
+    // the library; this is the only reliable method for ROCm/MIGraphX, since
+    // AMD's official builds do not export the legacy C shim symbols
+    // (OrtSessionOptionsAppendExecutionProvider_ROCM, _MIGraphX) — ROCm is
+    // only reachable through the OrtApi struct
+    const OrtApi *probe_api = base->GetApi(ORT_API_VERSION);
+    if(!probe_api)
     {
-      if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+      for(int v = ORT_API_VERSION - 1; v >= 14 && !probe_api; v--)
+        probe_api = base->GetApi(v);
+    }
+    if(probe_api && probe_api->GetAvailableProviders)
+    {
+      char **providers = NULL;
+      int n_providers = 0;
+      if(probe_api->GetAvailableProviders(&providers, &n_providers) == NULL && providers)
       {
-        if(eps->len > 0) g_string_append(eps, ", ");
-        g_string_append(eps, ep_table[i].name);
+        // map ORT provider names to short labels
+        static const struct { const char *ort_name; const char *label; } map[] = {
+          { "CUDAExecutionProvider",     "CUDA" },
+          { "MIGraphXExecutionProvider", "MIGraphX" },
+          { "ROCMExecutionProvider",     "ROCm" },
+          { "OpenVINOExecutionProvider", "OpenVINO" },
+          { "DmlExecutionProvider",      "DirectML" },
+          { "CoreMLExecutionProvider",   "CoreML" },
+          { "TensorrtExecutionProvider", "TensorRT" },
+          { NULL, NULL }
+        };
+        for(int i = 0; i < n_providers; i++)
+        {
+          const char *label = NULL;
+          for(int j = 0; map[j].ort_name; j++)
+          {
+            if(g_strcmp0(providers[i], map[j].ort_name) == 0)
+            {
+              label = map[j].label;
+              break;
+            }
+          }
+          // skip CPU here; added below if nothing else matched
+          if(!label || g_strcmp0(providers[i], "CPUExecutionProvider") == 0) continue;
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, label);
+        }
+        if(probe_api->ReleaseAvailableProviders)
+          probe_api->ReleaseAvailableProviders(providers, n_providers);
       }
     }
+
+    // fallback: legacy C-shim symbol probing for very old ORT builds where
+    // GetAvailableProviders is unavailable
+    if(eps->len == 0)
+    {
+      static const struct { const char *symbol; const char *name; } ep_table[] = {
+        { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
+        { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
+        { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
+        { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
+        { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
+        { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
+        { NULL, NULL }
+      };
+      gpointer sym;
+      for(int i = 0; ep_table[i].symbol; i++)
+      {
+        if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+        {
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, ep_table[i].name);
+        }
+      }
+    }
+
     if(eps->len == 0) g_string_append(eps, "CPU");
     *out_eps = g_string_free(eps, FALSE);
   }
