@@ -809,10 +809,21 @@ static gboolean _scrolled(GtkWidget *widget,
   const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
   const gboolean matches_last_gesture_device = (device == _touchpad);
 
-  if(touchpad_enabled
-     && !ctrl_pressed
-     && (is_touchpad_source || matches_last_gesture_device)
-     && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
+  const gboolean is_smooth = event->direction == GDK_SCROLL_SMOOTH && !event->is_stop;
+#ifdef GDK_WINDOWING_QUARTZ
+  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
+  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to gesture_pan so
+  // that two-finger panning works in views like darkroom (both standalone and
+  // interleaved with a pinch-zoom gesture whose translational component macOS
+  // delivers as a separate scroll stream).
+  const gboolean route_as_pan = touchpad_enabled && !ctrl_pressed && is_smooth;
+#else
+  const gboolean route_as_pan = touchpad_enabled
+                                && !ctrl_pressed
+                                && (is_touchpad_source || matches_last_gesture_device)
+                                && is_smooth;
+#endif
+  if(route_as_pan)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
     if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
@@ -845,14 +856,15 @@ static gboolean _scrolled(GtkWidget *widget,
                delta_x, delta_y);
     }
   }
-  else if(event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
+  else if(is_smooth)
   {
     dt_print(DT_DEBUG_INPUT,
-             "[touchpad] smooth scroll not treated as pan: enabled=%d ctrl=%d touchpad_source=%d matches_last_gesture=%d source='%s' source_type=%d",
+             "[touchpad] smooth scroll not treated as pan: enabled=%d ctrl=%d touchpad_source=%d matches_last_gesture=%d route_as_pan=%d source='%s' source_type=%d",
              touchpad_enabled,
              ctrl_pressed,
              is_touchpad_source,
              matches_last_gesture_device,
+             route_as_pan,
              device ? gdk_device_get_name(device) : "<none>",
              device ? gdk_device_get_source(device) : -1);
   }

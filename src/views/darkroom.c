@@ -4261,19 +4261,12 @@ gboolean gesture_pinch(dt_view_t *self,
   if(!dev) return FALSE;
   (void)state;
   static float pinch_begin_tscale = 0.0f;
-#ifdef GDK_WINDOWING_QUARTZ
-  static double pinch_prev_x = 0.0, pinch_prev_y = 0.0;
-#endif
 
   if(phase == GDK_TOUCHPAD_GESTURE_PHASE_BEGIN)
   {
     pinch_begin_tscale =
       dt_dev_get_zoom_scale(&dev->full, dev->full.zoom, 1 << dev->full.closeup, FALSE)
       * dev->full.ppd;
-#ifdef GDK_WINDOWING_QUARTZ
-    pinch_prev_x = x;
-    pinch_prev_y = y;
-#endif
     dt_print(DT_DEBUG_INPUT,
              "[darkroom pinch] begin x=%.1f y=%.1f scale=%.6f state=0x%x"
              " -> begin_tscale=%.6f ppd=%.2f",
@@ -4305,20 +4298,14 @@ gboolean gesture_pinch(dt_view_t *self,
     return FALSE;
   }
 
-#ifdef GDK_WINDOWING_QUARTZ
-  // On macOS (GDK Quartz), NSEventTypeMagnify does not populate deltaX/deltaY,
-  // so GDK fills pinch->dx and pinch->dy with 0. Infer translation from the
-  // movement of the gesture focal point (midpoint between the two fingers).
-  const double eff_dx = x - pinch_prev_x;
-  const double eff_dy = y - pinch_prev_y;
-#else
+  // On macOS (GDK Quartz), NSEventTypeMagnify never populates dx/dy and the
+  // gesture focal-point x/y is set once at phase=BEGIN and does not update
+  // during the gesture — so both approaches to infer translation are zero.
+  // Pan on macOS therefore arrives as a separate smooth-scroll stream which is
+  // routed to gesture_pan by _scrolled() in gtk.c.
+  // On other platforms (Wayland/X11), dx/dy carry the actual translational delta.
   const double eff_dx = dx;
   const double eff_dy = dy;
-#endif
-#ifdef GDK_WINDOWING_QUARTZ
-  pinch_prev_x = x;
-  pinch_prev_y = y;
-#endif
 
   if(eff_dx != 0.0 || eff_dy != 0.0)
   {
