@@ -2127,6 +2127,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data);
   dt_gui_box_add(button_box, data->delete_selected_btn);
 
+  // help button anchored to the right end of the action row,
+  // matching the convention in other preference tabs
+  GtkWidget *help_btn = gtk_button_new_with_label(_("?"));
+  dt_gui_add_help_link(help_btn, "ai");
+  g_signal_connect(help_btn, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(button_box), help_btn, FALSE, FALSE, 0);
 
   dt_gui_box_add(data->controls_box, models_grid);
 
