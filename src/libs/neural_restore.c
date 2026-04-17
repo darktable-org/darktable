@@ -660,11 +660,11 @@ static void _import_image(const char *filename, dt_imgid_t source_imgid)
     dt_print(DT_DEBUG_AI, "[neural_restore] imported imgid=%d: %s", newid, filename);
     if(dt_is_valid_imgid(source_imgid))
       dt_grouping_add_to_group(source_imgid, newid);
+    // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_UNDEF,
                                NULL);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
   }
 }
 
@@ -788,6 +788,7 @@ static int32_t _process_job_run(dt_job_t *job)
 
   const int total = g_list_length(j->images);
   int count = 0;
+  int successes = 0;  // images that made it through export (for the completion toast)
   const char *suffix = _task_suffix(j->task);
 
   for(GList *iter = j->images; iter; iter = g_list_next(iter))
@@ -917,11 +918,21 @@ static int32_t _process_job_run(dt_job_t *job)
 
     if(j->add_to_catalog)
       _import_image(filename, imgid);
+    successes++;
     dt_control_job_set_progress(job, (double)++count / total);
   }
 
   dt_restore_unref(j->ctx);
   j->ctx = NULL;
+
+  // single completion toast, shown in whichever view the user is in;
+  // covers the batch cleanly and avoids the per-image navigation that
+  // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE would trigger
+  if(successes > 0)
+    dt_control_log(ngettext("neural %s: %d image processed",
+                            "neural %s: %d images processed",
+                            successes),
+                   task_name, successes);
 
   _job_finished_data_t *fd = g_new(_job_finished_data_t, 1);
   fd->self = j->self;
