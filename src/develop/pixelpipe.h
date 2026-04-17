@@ -110,7 +110,7 @@ typedef struct dt_dev_histogram_stats_t
   size_t buf_size;
   /** count of pixels sampled during histogram capture. */
   uint32_t pixels;
-  /** count of channels: 1 for RAW, 3 for rgb/Lab. */
+  /** count of channels: 1 for RAW/luma, 3 for rgb/Lab. */
   uint32_t ch;
 } dt_dev_histogram_stats_t;
 

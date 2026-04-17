@@ -224,6 +224,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color graph_red rgb(237,30,20);
 @define-color graph_green rgb(28,235,26);
 @define-color graph_blue rgb(14,14,233);
+@define-color graph_white @grey_95;
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);
@@ -745,6 +746,11 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.2);
 }
 
+#luma-toggle-button
+{
+  background-color: alpha(white, 0.2);
+}
+
 /* set now them active state */
 #red-channel-button:checked
 {
@@ -761,6 +767,11 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.66);
 }
 
+#luma-toggle-button:checked
+{
+  background-color: alpha(white, 0.66);
+}
+
 /* set now hover state */
 #red-channel-button:hover
 {
@@ -775,6 +786,27 @@ dialog .sidebar row:selected:hover label,
 #blue-channel-button:hover
 {
   background-color: alpha(@graph_blue, 0.5);
+}
+
+#luma-toggle-button:hover
+{
+  background-color: alpha(white, 0.5);
+}
+
+/* inactive state */
+#red-channel-button:disabled
+{
+  background-color: alpha(@graph_red, 0.1);
+}
+
+#green-channel-button:disabled
+{
+  background-color: alpha(@graph_green, 0.1);
+}
+
+#blue-channel-button:disabled
+{
+  background-color: alpha(@graph_blue, 0.1);
 }
 
 /*------------------
