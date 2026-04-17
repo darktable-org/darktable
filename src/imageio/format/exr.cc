@@ -46,22 +46,27 @@ DT_MODULE(5)
 
 enum dt_imageio_exr_compression_t
 {
-  NO_COMPRESSION = 0,     // no compression
-  RLE_COMPRESSION = 1,    // run length encoding
-  ZIPS_COMPRESSION = 2,   // zlib compression, one scan line at a time
-  ZIP_COMPRESSION = 3,    // zlib compression, in blocks of 16 scan lines
-  PIZ_COMPRESSION = 4,    // piz-based wavelet compression
-  PXR24_COMPRESSION = 5,  // lossy 24-bit float compression
-  B44_COMPRESSION = 6,    // lossy 4-by-4 pixel block compression,
-                          // fixed compression rate
-  B44A_COMPRESSION = 7,   // lossy 4-by-4 pixel block compression,
-                          // flat fields are compressed more
-  DWAA_COMPRESSION = 8,   // lossy DCT based compression, in blocks
-                          // of 32 scanlines
-  DWAB_COMPRESSION = 9,   // lossy DCT based compression, in blocks
-                          // of 256 scanlines
-  NUM_COMPRESSION_METHODS // number of different compression methods
-};                        // copy of Imf::Compression
+  NO_COMPRESSION = 0,        // no compression
+  RLE_COMPRESSION = 1,       // run length encoding
+  ZIPS_COMPRESSION = 2,      // zlib compression, one scan line at a time
+  ZIP_COMPRESSION = 3,       // zlib compression, in blocks of 16 scan lines
+  PIZ_COMPRESSION = 4,       // piz-based wavelet compression
+  PXR24_COMPRESSION = 5,     // lossy 24-bit float compression
+  B44_COMPRESSION = 6,       // lossy 4-by-4 pixel block compression,
+                             // fixed compression rate
+  B44A_COMPRESSION = 7,      // lossy 4-by-4 pixel block compression,
+                             // flat fields are compressed more
+  DWAA_COMPRESSION = 8,      // lossy DCT based compression, in blocks
+                             // of 32 scanlines
+  DWAB_COMPRESSION = 9,      // lossy DCT based compression, in blocks
+                             // of 256 scanlines
+  HTJ2K256_COMPRESSION = 10, // JPEG 2000 lossless coding, in blocks of 256 scanlines and using the High-Throughput (HT) blocker.
+                             // Offers both speed and high-coding efficiency.
+  HTJ2K32_COMPRESSION = 11,  // JPEG 2000 lossless coding, in blocks of 32 scanlines and using the High-Throughput (HT) blocker.
+                             // Offers both speed and high-coding efficiency.
+  // ZSTD_COMPRESSION 12
+  NUM_COMPRESSION_METHODS    // number of different compression methods
+};                           // copy of Imf::Compression
 
 enum dt_imageio_exr_pixeltype_t
 {
@@ -98,6 +103,9 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, B44A_COMPRESSION, "b44a");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAA_COMPRESSION, "dwaa");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAB_COMPRESSION, "dwab");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K256_COMPRESSION, "htj2k256");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K32_COMPRESSION, "htj2k32");
+  //luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, ZSTD_COMPRESSION, "zstd");
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_exr_t, compression,
                                 dt_imageio_exr_compression_t);
@@ -607,7 +615,9 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("B44"),
                                N_("B44A"),
                                N_("DWAA"),
-                               N_("DWAB"));
+                               N_("DWAB"),
+                               N_("HTJ2K256"),
+                               N_("HTJ2K32"));
   dt_bauhaus_combobox_set_default(gui->compression,
                                   dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
