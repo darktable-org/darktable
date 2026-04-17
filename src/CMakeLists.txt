@@ -923,7 +923,7 @@ if(BUILD_PRINT)
       "common/printing.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-    list(APPEND LIBS winspool)
+    list(APPEND LIBS winspool gdi32 shell32)
     add_definitions("-DHAVE_PRINT")
     message(STATUS "Print mode: enabled (Windows native)")
   else(WIN32)

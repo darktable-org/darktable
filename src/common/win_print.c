@@ -23,6 +23,7 @@
 #ifdef _WIN32
 
 #include <windows.h>
+#include <shellapi.h>
 #include <winspool.h>
 #include <glib.h>
 #include <stdio.h>
@@ -41,6 +42,22 @@ typedef struct dt_prtctl_t
   void (*cb)(dt_printer_info_t *, void *);
   void *user_data;
 } dt_prtctl_t;
+
+/* helper: convert a UTF-16 wide string to a UTF-8 gchar*.
+   The caller must g_free() the result. */
+static gchar *_wchar_to_utf8(const wchar_t *wstr)
+{
+  if(!wstr) return g_strdup("");
+  return g_utf16_to_utf8((const gunichar2 *)wstr, -1, NULL, NULL, NULL);
+}
+
+/* helper: convert a UTF-8 string to a newly-allocated wide string.
+   The caller must g_free() the result. */
+static wchar_t *_utf8_to_wchar(const char *utf8)
+{
+  if(!utf8) return NULL;
+  return (wchar_t *)g_utf8_to_utf16(utf8, -1, NULL, NULL, NULL);
+}
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo)
@@ -63,8 +80,12 @@ void dt_get_printer_info(const char *printer_name,
   // default resolution
   pinfo->resolution = 300;
 
-  // try to get hardware margins from DEVMODE
-  HDC hdc = CreateDCA(NULL, printer_name, NULL, NULL);
+  // try to get hardware margins via a printer DC
+  // Use "WINSPOOL" as driver name for proper printer DC creation
+  wchar_t *wprinter = _utf8_to_wchar(printer_name);
+  HDC hdc = CreateDCW(L"WINSPOOL", wprinter, NULL, NULL);
+  g_free(wprinter);
+
   if(hdc)
   {
     // get physical page size and printable area (in device units)
@@ -94,6 +115,8 @@ void dt_get_printer_info(const char *printer_name,
   }
 }
 
+static volatile int _cancel = 0;
+
 static int _detect_printers_callback(dt_job_t *job)
 {
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
@@ -101,7 +124,7 @@ static int _detect_printers_callback(dt_job_t *job)
   DWORD needed = 0, returned = 0;
 
   // first call to find out how much memory we need
-  EnumPrintersA(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+  EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
                 NULL, 2, NULL, 0, &needed, &returned);
 
   if(needed == 0)
@@ -117,27 +140,40 @@ static int _detect_printers_callback(dt_job_t *job)
     return 1;
   }
 
-  if(EnumPrintersA(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+  if(EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
                    NULL, 2, buffer, needed, &needed, &returned))
   {
-    PRINTER_INFO_2A *pi = (PRINTER_INFO_2A *)buffer;
+    PRINTER_INFO_2W *pi = (PRINTER_INFO_2W *)buffer;
 
     for(DWORD i = 0; i < returned; i++)
     {
-      // skip printers that are paused or have errors
-      if(pi[i].Status == 0 || !(pi[i].Status & PRINTER_STATUS_ERROR))
+      // check for cancellation
+      if(_cancel) break;
+
+      // skip printers that are paused, offline, or have errors
+      const DWORD bad_status = PRINTER_STATUS_ERROR
+                             | PRINTER_STATUS_PAUSED
+                             | PRINTER_STATUS_OFFLINE
+                             | PRINTER_STATUS_NOT_AVAILABLE;
+
+      if(pi[i].Status & bad_status)
       {
-        dt_printer_info_t pr;
-        memset(&pr, 0, sizeof(pr));
-        dt_get_printer_info(pi[i].pPrinterName, &pr);
-        if(pctl->cb) pctl->cb(&pr, pctl->user_data);
-        dt_print(DT_DEBUG_PRINT, "[print] new printer %s found", pi[i].pPrinterName);
-      }
-      else
-      {
+        gchar *name_utf8 = _wchar_to_utf8(pi[i].pPrinterName);
         dt_print(DT_DEBUG_PRINT, "[print] skip printer %s (status=%lu)",
-                 pi[i].pPrinterName, (unsigned long)pi[i].Status);
+                 name_utf8, (unsigned long)pi[i].Status);
+        g_free(name_utf8);
+        continue;
       }
+
+      gchar *name_utf8 = _wchar_to_utf8(pi[i].pPrinterName);
+
+      dt_printer_info_t pr;
+      memset(&pr, 0, sizeof(pr));
+      dt_get_printer_info(name_utf8, &pr);
+      if(pctl->cb) pctl->cb(&pr, pctl->user_data);
+      dt_print(DT_DEBUG_PRINT, "[print] new printer %s found", name_utf8);
+
+      g_free(name_utf8);
     }
   }
 
@@ -145,8 +181,6 @@ static int _detect_printers_callback(dt_job_t *job)
   darktable.control->cups_started = TRUE;
   return 0;
 }
-
-static int _cancel = 0;
 
 void dt_printers_abort_discovery(void)
 {
@@ -156,6 +190,8 @@ void dt_printers_abort_discovery(void)
 void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data),
                            void *user_data)
 {
+  _cancel = 0;
+
   // asynchronously checks for available printers
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
   if(job)
@@ -200,38 +236,47 @@ sort_papers(gconstpointer p1, gconstpointer p2)
 GList *dt_get_papers(const dt_printer_info_t *printer)
 {
   GList *result = NULL;
+
+  wchar_t *wprinter = _utf8_to_wchar(printer->name);
+  if(!wprinter) return NULL;
+
   HANDLE hPrinter = NULL;
-
-  if(!OpenPrinterA((LPSTR)printer->name, &hPrinter, NULL))
-    return NULL;
-
-  // get the number of paper names
-  const DWORD count = DeviceCapabilitiesA(printer->name, NULL, DC_PAPERNAMES, NULL, NULL);
-  if(count == 0 || count == (DWORD)-1)
+  if(!OpenPrinterW(wprinter, &hPrinter, NULL))
   {
-    ClosePrinter(hPrinter);
+    g_free(wprinter);
     return NULL;
   }
 
-  // paper names are fixed 64-char blocks
-  char *names = (char *)g_malloc0(count * 64);
+  // get the number of paper names
+  const DWORD count = DeviceCapabilitiesW(wprinter, NULL, DC_PAPERNAMES, NULL, NULL);
+  if(count == 0 || count == (DWORD)-1)
+  {
+    ClosePrinter(hPrinter);
+    g_free(wprinter);
+    return NULL;
+  }
+
+  // paper names are fixed 64-wchar_t blocks
+  wchar_t *names = (wchar_t *)g_malloc0(count * 64 * sizeof(wchar_t));
   // paper sizes in tenths of mm
   POINT *sizes = (POINT *)g_malloc0(count * sizeof(POINT));
 
-  DeviceCapabilitiesA(printer->name, NULL, DC_PAPERNAMES, names, NULL);
-  DeviceCapabilitiesA(printer->name, NULL, DC_PAPERSIZE, (LPSTR)sizes, NULL);
+  DeviceCapabilitiesW(wprinter, NULL, DC_PAPERNAMES, (LPWSTR)names, NULL);
+  DeviceCapabilitiesW(wprinter, NULL, DC_PAPERSIZE, (LPWSTR)sizes, NULL);
 
   for(DWORD k = 0; k < count; k++)
   {
-    const char *paper_name = names + k * 64;
+    const wchar_t *wname = names + k * 64;
 
     // skip papers with zero dimension
     if(sizes[k].x == 0 || sizes[k].y == 0)
       continue;
 
+    gchar *paper_name_utf8 = _wchar_to_utf8(wname);
+
     dt_paper_info_t *paper = malloc(sizeof(dt_paper_info_t));
-    g_strlcpy(paper->name, paper_name, MAX_NAME);
-    g_strlcpy(paper->common_name, paper_name, MAX_NAME);
+    g_strlcpy(paper->name, paper_name_utf8, MAX_NAME);
+    g_strlcpy(paper->common_name, paper_name_utf8, MAX_NAME);
     paper->width  = (double)sizes[k].x / 10.0;  // convert tenths of mm to mm
     paper->height = (double)sizes[k].y / 10.0;
 
@@ -240,13 +285,16 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
     dt_print(DT_DEBUG_PRINT,
              "[print] new paper %4lu %6.2f x %6.2f (%s)",
              (unsigned long)k, paper->width, paper->height, paper->name);
+
+    g_free(paper_name_utf8);
   }
 
   g_free(names);
   g_free(sizes);
+  g_free(wprinter);
   ClosePrinter(hPrinter);
 
-  result = g_list_sort_with_data(result, (GCompareDataFunc)sort_papers, NULL);
+  result = g_list_sort(result, sort_papers);
   return result;
 }
 
@@ -289,26 +337,28 @@ void dt_print_file(const dt_imgid_t imgid,
     return;
   }
 
-  // On Windows we print the PDF file by rendering it to a GDI DC.
-  // For the initial implementation we use ShellExecute with the
-  // "print" verb which delegates to the system PDF handler.
-  // This avoids reimplementing a full PDF rasteriser.
-  //
-  // A future enhancement could render the image bitmap directly
-  // using StretchDIBits to a printer DC.
+  // Use the "printto" verb so we can target the specific printer
+  // selected in the darktable UI, not just the system default.
+  // Syntax: ShellExecute(NULL, "printto", file, "PrinterName", ...)
 
-  const HINSTANCE result = ShellExecuteA(NULL, "print", filename,
-                                          NULL, NULL, SW_HIDE);
+  wchar_t *wfilename = _utf8_to_wchar(filename);
+  wchar_t *wprinter  = _utf8_to_wchar(pinfo->printer.name);
+
+  const HINSTANCE result = ShellExecuteW(NULL, L"printto", wfilename,
+                                          wprinter, NULL, SW_HIDE);
 
   if((intptr_t)result <= 32)
   {
     dt_control_log(_("error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
     dt_print(DT_DEBUG_ALWAYS,
-             "[print] ShellExecute('print') failed for %s, code %d",
-             filename, (int)(intptr_t)result);
+             "[print] ShellExecuteW('printto') failed for %s on %s, code %d",
+             filename, pinfo->printer.name, (int)(intptr_t)result);
   }
   else
     dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
+
+  g_free(wfilename);
+  g_free(wprinter);
 }
 
 void dt_get_print_layout(const dt_print_info_t *prt,
