@@ -806,6 +806,18 @@ static gboolean _scrolled(GtkWidget *widget,
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
   const gboolean touchpad_enabled = _touchpad_gestures_enabled();
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+
+  dt_print(DT_DEBUG_INPUT,
+           "[scroll] direction=%d smooth=%s stop=%s ctrl=%s"
+           " x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x"
+           " device='%s' source-type=%d",
+           event->direction,
+           event->direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
+           event->is_stop ? "yes" : "no",
+           ctrl_pressed ? "yes" : "no",
+           event->x, event->y, event->delta_x, event->delta_y, event->state,
+           device ? gdk_device_get_name(device) : "<none>",
+           device ? (int)gdk_device_get_source(device) : -1);
   const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
   const gboolean matches_last_gesture_device = (device == _touchpad);
 
