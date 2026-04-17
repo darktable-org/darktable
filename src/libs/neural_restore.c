@@ -32,7 +32,7 @@
    architecture
    ------------
    the core AI inference, tiling, and detail recovery logic lives in
-   src/ai/restore.c (the darktable_ai library). this module handles:
+   src/common/ai/restore.c (the darktable_ai library). this module handles:
 
    1. preview (interactive, single-image)
       triggered by clicking the preview widget or switching tabs.
@@ -58,12 +58,22 @@
           then writes TIFF
         - for plain denoise/upscale: streams tiles directly to TIFF via
           _process_tiled_tiff() to avoid buffering the full output
-        - output TIFF embeds the darktable working profile and source EXIF
+        - output TIFF embeds the selected output ICC profile and source EXIF
         - imports the result into the darktable library and groups it
           with the source image
+      when the batch finishes, a single completion toast is shown via
+      dt_control_log (e.g. "neural denoise: 3 images processed"). the
+      module deliberately does NOT raise DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE:
+      lighttable ignores that signal while darkroom / map / culling /
+      tethering / print_settings would swap the user's current view to
+      the freshly-imported image and clobber any in-progress edit.
 
    3. output parameters (collapsible section)
       - bit depth: 8/16/32-bit TIFF (default 16-bit)
+      - output ICC profile: pick any installed profile, or keep image settings
+      - preserve wide-gamut: when on, out-of-sRGB-gamut pixels pass through
+        the denoise model unchanged (wide-gamut colors preserved exactly);
+        when off, those pixels are clipped to sRGB and denoised like the rest
       - add to catalog: auto-import output into darktable library
       - output directory: supports darktable variables (e.g. $(FILE_FOLDER))
 
@@ -88,12 +98,17 @@
 
    preferences
    -----------
-   CONF_DETAIL_RECOVERY — detail recovery slider value
-   CONF_ACTIVE_PAGE     — last active notebook tab
-   CONF_BIT_DEPTH       — output TIFF bit depth (0=8, 1=16, 2=32)
-   CONF_ADD_CATALOG     — auto-import output into library
-   CONF_OUTPUT_DIR      — output directory pattern (supports variables)
-   CONF_EXPAND_OUTPUT   — output section collapsed/expanded state
+   CONF_DETAIL_RECOVERY     — detail recovery slider value
+   CONF_ACTIVE_PAGE         — last active notebook tab
+   CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
+   CONF_ADD_CATALOG         — auto-import output into library
+   CONF_OUTPUT_DIR          — output directory pattern (supports variables)
+   CONF_ICC_TYPE            — output ICC profile type (image settings by default)
+   CONF_ICC_FILE            — filename for file-type ICC profiles
+   CONF_PRESERVE_WIDE_GAMUT — pass-through out-of-sRGB-gamut pixels during denoise
+   CONF_PREVIEW_EXPORT_SIZE — preview export longest-edge in pixels
+   CONF_PREVIEW_HEIGHT      — preview widget height in pixels
+   CONF_EXPAND_OUTPUT       — output section collapsed/expanded state
 */
 
 #include "common/ai/restore.h"
