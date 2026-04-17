@@ -48,7 +48,6 @@ typedef enum dt_scopes_channels_t
   DT_SCOPES_CH_RED = 0,
   DT_SCOPES_CH_GREEN,
   DT_SCOPES_CH_BLUE,
-  DT_SCOPES_CH_LUMA,
   DT_SCOPES_CH_N // needs to be the last one
 } dt_scopes_channels_t;
 
@@ -141,7 +140,7 @@ typedef struct dt_scopes_t
   dt_scopes_mode_t modes[DT_SCOPES_MODE_N];     // all available modes
   int update_counter;                           // most recent pixelpipe vs mode data
   dt_scopes_highlight_t highlight;              // depends on mouse position
-  dt_scopes_channels_list_t channels;           // RGB & luma display state
+  dt_scopes_channels_list_t channels;           // RGB channels to display
   gboolean dragging;                            // to block motion handling during drag
   gdouble last_offset_x, last_offset_y;         // for drag handling
   // UI elements
@@ -149,8 +148,8 @@ typedef struct dt_scopes_t
   GtkWidget *button_box_left;                   // GtkBox -- scope mode buttons
   GtkWidget *button_box_split;                  // GtkBox -- option buttons for left scope
   GtkWidget *button_box_right;                  // GtkBox -- option buttons for main scope
-  GtkWidget *button_box_channels;               // GtkBox -- RGB & luma buttons
-  GtkWidget *channel_btns[DT_SCOPES_CH_N]; // Array of GtkToggleButton -- channels
+  GtkWidget *button_box_channels;               // GtkBox -- RGB channel buttons
+  GtkWidget *channel_btns[DT_SCOPES_CH_N];      // Array of GtkToggleButton -- channels
   GtkWidget *scope_draw;                        // GtkDrawingArea -- scope & resize
   // for access to data during process/draw
   dt_pthread_mutex_t lock;

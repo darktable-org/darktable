@@ -746,7 +746,7 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.2);
 }
 
-#luma-channel-button
+#luma-toggle-button
 {
   background-color: alpha(white, 0.2);
 }
@@ -767,7 +767,7 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.66);
 }
 
-#luma-channel-button:checked
+#luma-toggle-button:checked
 {
   background-color: alpha(white, 0.66);
 }
@@ -788,7 +788,7 @@ dialog .sidebar row:selected:hover label,
   background-color: alpha(@graph_blue, 0.5);
 }
 
-#luma-channel-button:hover
+#luma-toggle-button:hover
 {
   background-color: alpha(white, 0.5);
 }

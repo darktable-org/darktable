@@ -38,10 +38,15 @@ static const gchar *dt_hist_scale_names[DT_HIST_SCALE_N] =
 
 typedef struct dt_scopes_hist_t
 {
+  // buffers/data
   uint32_t *histogram;
   uint32_t histogram_max;
-  dt_hist_scale_t scale;
+  // buttons
   GtkWidget *scale_button;        // GtkButton -- linear or logarithmic histogram
+  GtkWidget *luma_button;         // GtkButton -- luma/rgb toggle
+  // state set by buttons
+  dt_hist_scale_t scale;
+  gboolean is_rgb;
 } dt_scopes_hist_t;
 
 
@@ -56,8 +61,7 @@ static void _hist_process(dt_scopes_mode_t *const self,
                           const dt_iop_order_iccprofile_info_t *profile)
 {
   dt_scopes_hist_t *const d = self->data;
-  const gboolean is_rgb = !self->scopes->channels[DT_SCOPES_CH_LUMA];
-  const uint32_t channels = is_rgb ? 4u : 1u;
+  const uint32_t channels = d->is_rgb ? 4u : 1u;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
   dt_dev_histogram_stats_t histogram_stats =
@@ -151,17 +155,22 @@ static void _hist_draw(const dt_scopes_mode_t *const self,
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  for(int k = 0; k < DT_SCOPES_CH_N; k++)
-    if((channels[k]
-        && ((k <= DT_SCOPES_CH_BLUE && !channels[DT_SCOPES_CH_LUMA])
-            || k == DT_SCOPES_CH_LUMA)))
-    {
-      set_color(cr, darktable.bauhaus->graph_colors[k]);
-      dt_draw_histogram_8(cr, d->histogram,
-                          k == DT_SCOPES_CH_LUMA ? 1 : 4,
-                          k == DT_SCOPES_CH_LUMA ? 0 : k,
-                          d->scale == DT_HIST_SCALE_LINEAR);
-    }
+  if(d->is_rgb)
+  {
+    for(int k = 0; k < DT_SCOPES_CH_N; k++)
+      if(channels[k])
+      {
+        set_color(cr, darktable.bauhaus->graph_colors[k]);
+        dt_draw_histogram_8(cr, d->histogram, 4, k,
+                            d->scale == DT_HIST_SCALE_LINEAR);
+      }
+  }
+  else
+  {
+    set_color(cr, darktable.bauhaus->graph_colors[3]);
+    dt_draw_histogram_8(cr, d->histogram, 1, 0,
+                        d->scale == DT_HIST_SCALE_LINEAR);
+  }
   cairo_pop_group_to_source(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_paint_with_alpha(cr, 0.5);
@@ -178,6 +187,7 @@ static void _hist_mode_enter(dt_scopes_mode_t *const self)
 {
   dt_scopes_hist_t *d = self->data;
   gtk_widget_show(d->scale_button);
+  gtk_widget_show(d->luma_button);
   // FIXME: can call _hist_scale_update() here instead of in gui_init_options?
 }
 
@@ -185,6 +195,7 @@ static void _hist_mode_leave(const dt_scopes_mode_t *const self)
 {
   dt_scopes_hist_t *d = self->data;
   gtk_widget_hide(d->scale_button);
+  gtk_widget_hide(d->luma_button);
 }
 
 static void _hist_gui_init(dt_scopes_mode_t *const self,
@@ -207,6 +218,7 @@ static void _hist_gui_init(dt_scopes_mode_t *const self,
 static void _hist_update_buttons(const dt_scopes_mode_t *const self)
 {
   dt_scopes_hist_t *d = self->data;
+
   switch(d->scale)
   {
     case DT_HIST_SCALE_LOGARITHMIC:
@@ -222,6 +234,10 @@ static void _hist_update_buttons(const dt_scopes_mode_t *const self)
     case DT_HIST_SCALE_N:
       dt_unreachable_codepath();
   }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->luma_button), !d->is_rgb);
+  gtk_widget_set_sensitive(self->scopes->button_box_channels, d->is_rgb);
+
   // FIXME: this should really redraw current iop if its background is
   // a histogram (check request_histogram)
   darktable.lib->proxy.histogram.is_linear =
@@ -241,17 +257,39 @@ static void _hist_scale_clicked(GtkWidget *button, dt_scopes_mode_t *self)
   dt_scopes_refresh(self->scopes);
 }
 
+static void _hist_luma_toggle(GtkWidget *button, dt_scopes_mode_t *self)
+{
+  dt_scopes_hist_t *d = self->data;
+  d->is_rgb = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_luma", !d->is_rgb);
+  d->histogram_max = 0;
+  _hist_update_buttons(self);
+  dt_scopes_reprocess();
+}
+
 static void _hist_add_options(dt_scopes_mode_t *const self,
                               dt_action_t *dark)
 {
   dt_scopes_hist_t *d = self->data;
+
   d->scale_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   gtk_widget_set_valign(d->scale_button, GTK_ALIGN_START);
   dt_action_define(dark, NULL, N_("switch histogram scale"),
                    d->scale_button, &dt_action_def_button);
-  dt_gui_box_add(self->options_box, d->scale_button);
   g_signal_connect(G_OBJECT(d->scale_button), "clicked",
                    G_CALLBACK(_hist_scale_clicked), self);
+
+  d->luma_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color,
+                                          CPF_NONE, NULL);
+  gtk_widget_set_valign(d->luma_button, GTK_ALIGN_START);
+  // FIXME: s/rgb_toggle/color_toggle/?
+  dt_gui_add_class(d->luma_button, "rgb_toggle");
+  gtk_widget_set_name(d->luma_button, "luma-toggle-button");
+  gtk_widget_set_tooltip_text(d->luma_button, "toggle luma/rgb");
+  dt_action_define(dark, N_("toggle colors"), N_("histogram luma/rgb"), d->luma_button, &dt_action_def_toggle);
+  g_signal_connect(G_OBJECT(d->luma_button), "toggled", G_CALLBACK(_hist_luma_toggle), self);
+
+  dt_gui_box_add(self->options_box, d->scale_button, d->luma_button);
 }
 
 static void _hist_gui_cleanup(dt_scopes_mode_t *const self)

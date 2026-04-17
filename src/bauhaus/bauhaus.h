@@ -152,7 +152,7 @@ typedef struct dt_bauhaus_t
 
   // colors for graphs
   GdkRGBA graph_bg, graph_exterior, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
-  GdkRGBA graph_colors[4];               // primaries and white
+  GdkRGBA graph_colors[4];               // additive primaries and luma white
   GdkRGBA colorlabels[DT_COLORLABELS_LAST];
 } dt_bauhaus_t;
 
