@@ -913,24 +913,39 @@ if(USE_COLORD)
 endif(USE_COLORD)
 
 if(BUILD_PRINT)
-  find_package(Cups)
-  if(CUPS_FOUND)
-    include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
+  if(WIN32)
+    # Windows-native print backend using GDI / WinSpool
     FILE(GLOB SOURCE_FILES_PRINT
       "common/cups_print.h"
-      "common/cups_print.c"
+      "common/win_print.c"
       "common/printprof.c"
       "common/printing.h"
       "common/printing.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-    list(APPEND LIBS ${CUPS_LIBRARIES})
+    list(APPEND LIBS winspool gdi32 shell32)
     add_definitions("-DHAVE_PRINT")
-    message(STATUS "Print mode: enabled")
-  else(CUPS_FOUND)
-    set(BUILD_PRINT OFF)
-    message(STATUS "Print mode: disabled, please install CUPS dev package")
-  endif(CUPS_FOUND)
+    message(STATUS "Print mode: enabled (Windows native)")
+  else(WIN32)
+    find_package(Cups)
+    if(CUPS_FOUND)
+      include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
+      FILE(GLOB SOURCE_FILES_PRINT
+        "common/cups_print.h"
+        "common/cups_print.c"
+        "common/printprof.c"
+        "common/printing.h"
+        "common/printing.c"
+        )
+      set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
+      list(APPEND LIBS ${CUPS_LIBRARIES})
+      add_definitions("-DHAVE_PRINT")
+      message(STATUS "Print mode: enabled")
+    else(CUPS_FOUND)
+      set(BUILD_PRINT OFF)
+      message(STATUS "Print mode: disabled, please install CUPS dev package")
+    endif(CUPS_FOUND)
+  endif(WIN32)
 else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)

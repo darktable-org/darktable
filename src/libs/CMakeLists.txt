@@ -108,10 +108,10 @@ add_library(geotagging MODULE "geotagging.c")
 set(MODULES ${MODULES} geotagging)
 
 # the module specific to print mode
-if(CUPS_FOUND)
+if(BUILD_PRINT)
   add_library(print_settings MODULE "print_settings.c")
   set(MODULES ${MODULES} print_settings)
-endif(CUPS_FOUND)
+endif(BUILD_PRINT)
 
 # AI neural restore module
 if(USE_AI)
