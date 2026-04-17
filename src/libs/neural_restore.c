@@ -32,7 +32,7 @@
    architecture
    ------------
    the core AI inference, tiling, and detail recovery logic lives in
-   src/ai/restore.c (the darktable_ai library). this module handles:
+   src/common/ai/restore.c (the darktable_ai library). this module handles:
 
    1. preview (interactive, single-image)
       triggered by clicking the preview widget or switching tabs.
@@ -58,12 +58,22 @@
           then writes TIFF
         - for plain denoise/upscale: streams tiles directly to TIFF via
           _process_tiled_tiff() to avoid buffering the full output
-        - output TIFF embeds the darktable working profile and source EXIF
+        - output TIFF embeds the selected output ICC profile and source EXIF
         - imports the result into the darktable library and groups it
           with the source image
+      when the batch finishes, a single completion toast is shown via
+      dt_control_log (e.g. "neural denoise: 3 images processed"). the
+      module deliberately does NOT raise DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE:
+      lighttable ignores that signal while darkroom / map / culling /
+      tethering / print_settings would swap the user's current view to
+      the freshly-imported image and clobber any in-progress edit.
 
    3. output parameters (collapsible section)
       - bit depth: 8/16/32-bit TIFF (default 16-bit)
+      - output ICC profile: pick any installed profile, or keep image settings
+      - preserve wide-gamut: when on, out-of-sRGB-gamut pixels pass through
+        the denoise model unchanged (wide-gamut colors preserved exactly);
+        when off, those pixels are clipped to sRGB and denoised like the rest
       - add to catalog: auto-import output into darktable library
       - output directory: supports darktable variables (e.g. $(FILE_FOLDER))
 
@@ -88,12 +98,17 @@
 
    preferences
    -----------
-   CONF_DETAIL_RECOVERY — detail recovery slider value
-   CONF_ACTIVE_PAGE     — last active notebook tab
-   CONF_BIT_DEPTH       — output TIFF bit depth (0=8, 1=16, 2=32)
-   CONF_ADD_CATALOG     — auto-import output into library
-   CONF_OUTPUT_DIR      — output directory pattern (supports variables)
-   CONF_EXPAND_OUTPUT   — output section collapsed/expanded state
+   CONF_DETAIL_RECOVERY     — detail recovery slider value
+   CONF_ACTIVE_PAGE         — last active notebook tab
+   CONF_BIT_DEPTH           — output TIFF bit depth (0=8, 1=16, 2=32)
+   CONF_ADD_CATALOG         — auto-import output into library
+   CONF_OUTPUT_DIR          — output directory pattern (supports variables)
+   CONF_ICC_TYPE            — output ICC profile type (image settings by default)
+   CONF_ICC_FILE            — filename for file-type ICC profiles
+   CONF_PRESERVE_WIDE_GAMUT — pass-through out-of-sRGB-gamut pixels during denoise
+   CONF_PREVIEW_EXPORT_SIZE — preview export longest-edge in pixels
+   CONF_PREVIEW_HEIGHT      — preview widget height in pixels
+   CONF_EXPAND_OUTPUT       — output section collapsed/expanded state
 */
 
 #include "common/ai/restore.h"
@@ -660,11 +675,11 @@ static void _import_image(const char *filename, dt_imgid_t source_imgid)
     dt_print(DT_DEBUG_AI, "[neural_restore] imported imgid=%d: %s", newid, filename);
     if(dt_is_valid_imgid(source_imgid))
       dt_grouping_add_to_group(source_imgid, newid);
+    // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_UNDEF,
                                NULL);
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
   }
 }
 
@@ -788,6 +803,7 @@ static int32_t _process_job_run(dt_job_t *job)
 
   const int total = g_list_length(j->images);
   int count = 0;
+  int successes = 0;  // images that made it through export (for the completion toast)
   const char *suffix = _task_suffix(j->task);
 
   for(GList *iter = j->images; iter; iter = g_list_next(iter))
@@ -917,11 +933,21 @@ static int32_t _process_job_run(dt_job_t *job)
 
     if(j->add_to_catalog)
       _import_image(filename, imgid);
+    successes++;
     dt_control_job_set_progress(job, (double)++count / total);
   }
 
   dt_restore_unref(j->ctx);
   j->ctx = NULL;
+
+  // single completion toast, shown in whichever view the user is in;
+  // covers the batch cleanly and avoids the per-image navigation that
+  // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE would trigger
+  if(successes > 0)
+    dt_control_log(ngettext("neural %s: %d image processed",
+                            "neural %s: %d images processed",
+                            successes),
+                   task_name, successes);
 
   _job_finished_data_t *fd = g_new(_job_finished_data_t, 1);
   fd->self = j->self;
