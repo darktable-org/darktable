@@ -583,14 +583,6 @@ GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
   ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
   dt_gui_connect_scroll(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
 
-GtkEventController *(dt_gui_connect_scroll_discrete)(GtkWidget *widget,
-						     GtkEventControllerScrollFlags flags,
-						     GCallback scroll,
-						     gpointer data);
-#define dt_gui_connect_scroll_discrete(widget, flags, scroll, data) ( \
-  ASSERT_FUNC_TYPE(scroll, void(*)(GtkEventControllerScroll *, double, double, __typeof__(data))), \
-  dt_gui_connect_scroll_discrete(GTK_WIDGET(widget), (flags), G_CALLBACK(scroll), (data)))
-
 #define dt_gui_claim(gesture) \
       gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED)
 #define dt_gui_deny(gesture) \

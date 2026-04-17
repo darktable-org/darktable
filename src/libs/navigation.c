@@ -51,6 +51,18 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
                                                        GdkEventMotion *event,
                                                        dt_lib_module_t *self);
+/* scroll callback */
+static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller,
+                                            double dx, double dy,
+                                            dt_lib_module_t *self);
+/* zoom begin callback */
+static void _lib_navigation_pinch_begin_callback(GtkGesture *gesture,
+                                                GdkEventSequence* sequence,
+                                                dt_lib_module_t *self);
+/* zoom scale-changed callback */
+static void _lib_navigation_pinch_scale_callback(GtkGesture *gesture,
+                                                gdouble scale,
+                                                dt_lib_module_t *self);
 /* button press callback */
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
                                                       GdkEvent *event,
@@ -218,10 +230,17 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_navigation_draw_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "button-press-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
-  g_signal_connect(G_OBJECT(thumbnail), "scroll-event",
-                   G_CALLBACK(_lib_navigation_button_press_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "button-release-event",
                    G_CALLBACK(_lib_navigation_button_release_callback), self);
+  dt_gui_connect_scroll(thumbnail, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
+                        _lib_navigation_scroll_callback, self);
+  // FIXME: Make helper function for zoom gesture. If discrete zooming
+  //        as here is a well-used pattern, make proxy which handles
+  //        this so don't need to implement a "begin" handler here.
+  GtkGesture *zoom_gesture = gtk_gesture_zoom_new(thumbnail);
+  g_object_weak_ref(G_OBJECT(thumbnail), (GWeakNotify) g_object_unref, zoom_gesture);
+  g_signal_connect(zoom_gesture, "begin", G_CALLBACK(_lib_navigation_pinch_begin_callback), self);
+  g_signal_connect(zoom_gesture, "scale-changed", G_CALLBACK(_lib_navigation_pinch_scale_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "motion-notify-event",
                    G_CALLBACK(_lib_navigation_motion_notify_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "leave-notify-event",
@@ -448,6 +467,114 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
     scale = val / 100.0f * ppd;
 
   dt_dev_zoom_move(port, zoom, scale, closeup, -1.0f, -1.0f, TRUE);
+}
+
+static gboolean _lib_navigation_widget_to_center(GtkEventController *controller,
+                                                 gdouble in_x, gdouble in_y,
+                                                 gdouble *out_x, gdouble *out_y)
+{
+  dt_develop_t *dev = darktable.develop;
+  if(!dev->preview_pipe->backbuf
+     || dev->image_storage.id != dev->preview_pipe->output_imgid)
+    return FALSE;
+  dt_dev_viewport_t *port = &dev->full;
+
+  GtkAllocation alloc_nav, alloc_center;
+  GtkWidget *nav = gtk_event_controller_get_widget(controller);
+  GtkWidget *center = dt_ui_center(darktable.gui->ui);
+  gtk_widget_get_allocation(nav, &alloc_nav);
+  gtk_widget_get_allocation(center, &alloc_center);
+  int procw, proch;
+  dt_dev_get_processed_size(port, &procw, &proch);
+
+  // navigation widget image dimensions
+  const double nav_scale = MIN((double)alloc_nav.width / procw,
+                               (double)alloc_nav.height / proch);
+  const double nav_img_w = procw * nav_scale;
+  const double nav_img_h = proch * nav_scale;
+  // nav widget coords to nav widget's image coords
+  const double x_nav_img = in_x - (alloc_nav.width - nav_img_w) / 2.0;
+  const double y_nav_img = in_y - (alloc_nav.height - nav_img_h) / 2.0;
+
+  // visible part of image in center widget in navigation widget
+  // coords with zoom-to-fit defaults
+  float zoom_x, zoom_y, boxw, boxh;
+  if(!dt_dev_get_zoom_bounds(port, &zoom_x, &zoom_y, &boxw, &boxh))
+  { // zoom-to-fit
+    zoom_x = zoom_y = 0.0;
+    boxw = boxh = 1.0;
+  }
+  const double vis_w = nav_img_w * boxw;
+  const double vis_h = nav_img_h * boxh;
+  const double vis_x = nav_img_w * (0.5 + zoom_x) - vis_w * 0.5;
+  const double vis_y = nav_img_h * (0.5 + zoom_y) - vis_h * 0.5;
+
+  // navigation image coords to center widget coords
+  *out_x = (x_nav_img - vis_x) / vis_w * alloc_center.width;
+  *out_y = (y_nav_img - vis_y) / vis_h * alloc_center.height;
+  return TRUE;
+}
+
+static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller,
+                                            double dx, double dy,
+                                            // FIXME: if unused don't pass
+                                            dt_lib_module_t *self)
+{
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    GdkDevice *device = gdk_event_get_source_device(event);
+    if(device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
+       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+      dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE,
+                       15.0, 0, dx, dy, TRUE);
+    else
+    {
+      const gboolean constrain = !dt_modifier_eq(controller, GDK_CONTROL_MASK);
+      gdouble x, y;
+      if(_lib_navigation_widget_to_center(GTK_EVENT_CONTROLLER(controller),
+                                          event->scroll.x, event->scroll.y,
+                                          &x, &y))
+        dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
+                         0.0f, dy < 0, x, y, constrain);
+    }
+    gdk_event_free(event);
+  }
+}
+
+static gdouble pinch_last_scale = 1.0;
+
+static void _lib_navigation_pinch_begin_callback(GtkGesture *gesture,
+                                                 GdkEventSequence* sequence,
+                                                 dt_lib_module_t *self)
+{
+  gtk_gesture_set_state(gesture, GTK_EVENT_SEQUENCE_CLAIMED);
+  pinch_last_scale = 1.0;
+}
+
+static void _lib_navigation_pinch_scale_callback(GtkGesture *gesture,
+                                                 gdouble scale,
+                                                 dt_lib_module_t *self)
+{
+  gdouble wx, wy, cx, cy;
+  if(gtk_gesture_get_bounding_box_center(gesture, &wx, &wy)
+     && _lib_navigation_widget_to_center(GTK_EVENT_CONTROLLER(gesture),
+                                         wx, wy, &cx, &cy))
+  {
+    const double pinch_step_ratio = 1.1;
+    const double ratio = scale / pinch_last_scale;
+    int zoom_step = -1;
+    if(ratio > pinch_step_ratio)
+      zoom_step = 1;
+    else if(ratio < 1.0 / pinch_step_ratio)
+      zoom_step = 0;
+    if(zoom_step >= 0)
+    {
+      dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_SCROLL,
+                       0.0f, zoom_step, cx, cy, TRUE);
+      pinch_last_scale = scale;
+    }
+  }
 }
 
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
