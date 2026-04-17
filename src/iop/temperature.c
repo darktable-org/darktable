@@ -43,7 +43,7 @@
 #include "common/colorspaces.h"
 #include "external/cie_colorimetric_tables.c"
 
-DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -72,6 +72,7 @@ typedef struct dt_iop_temperature_params_t
   float blue;    // $MIN: 0.0 $MAX: 8.0
   float various; // $MIN: 0.0 $MAX: 8.0
   int preset;
+  gboolean late_correction; // $DEFAULT: FALSE $DESCRIPTION: "prepare data for color calibration"
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
@@ -87,6 +88,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *btn_d65_late;
   GtkWidget *temp_label;
   GtkWidget *balance_label;
+  GtkWidget *check_late_correction;
   int preset_cnt;
   int preset_num[54];
   double mod_coeff[4];
@@ -102,6 +104,7 @@ typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
   int preset;
+  gboolean late_correction;
 } dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
@@ -142,6 +145,16 @@ int legacy_params(dt_iop_module_t *self,
     int preset;
   } dt_iop_temperature_params_v4_t;
 
+  typedef struct dt_iop_temperature_params_v5_t
+  {
+    float red;
+    float green;
+    float blue;
+    float various;
+    int preset;
+    gboolean late_correction;
+  } dt_iop_temperature_params_v5_t;
+
   if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
@@ -177,6 +190,18 @@ int legacy_params(dt_iop_module_t *self,
     *new_params = n;
     *new_params_size = sizeof(dt_iop_temperature_params_v4_t);
     *new_version = 4;
+    return 0;
+  }
+  if(old_version == 4)
+  {
+    const dt_iop_temperature_params_v4_t *o = (dt_iop_temperature_params_v4_t *)old_params;
+    dt_iop_temperature_params_v5_t *n = malloc(sizeof(dt_iop_temperature_params_v5_t));
+
+    memcpy(n, o, sizeof(dt_iop_temperature_params_v4_t));
+    n->late_correction = FALSE;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v5_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -526,7 +551,7 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     chr->wb_coeffs[k] = d->coeffs[k];
   }
-  chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
+  chr->late_correction = d->late_correction;
 }
 
 void process(dt_iop_module_t *self,
@@ -717,12 +742,23 @@ void commit_params(dt_iop_module_t *self,
 
   d->preset = p->preset;
 
+  gboolean effective_late_correction = FALSE;
+
+  if(p->preset == DT_IOP_TEMP_D65_LATE)
+    effective_late_correction = TRUE;
+  else if(p->preset == DT_IOP_TEMP_D65)
+    effective_late_correction = FALSE;
+  else
+    effective_late_correction = p->late_correction;
+
+  d->late_correction = effective_late_correction;
+  chr->late_correction = effective_late_correction;
+
+  chr->temperature = piece->enabled ? self : NULL;
   /* Make sure the chroma information stuff is valid
      If piece is disabled we always clear the trouble message and
      make sure chroma does know there is no temperature module.
   */
-  chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE;
-  chr->temperature = piece->enabled ? self : NULL;
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW && !piece->enabled)
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
@@ -1163,9 +1199,43 @@ static void _update_preset(dt_iop_module_t *self, int mode)
 {
   dt_iop_temperature_params_t *p = self->params;
   dt_dev_chroma_t *chr = &self->dev->chroma;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+
+  const gboolean is_current_reference = (p->preset == DT_IOP_TEMP_D65_LATE) ||
+                                        (p->preset == DT_IOP_TEMP_D65);
+  const gboolean is_new_mode_manual = (mode != DT_IOP_TEMP_D65_LATE) &&
+                                    (mode != DT_IOP_TEMP_D65);
+
+  if(is_current_reference && is_new_mode_manual)
+  {
+    // set iff color calibration active in adaptation mode
+    p->late_correction = (chr->adaptation != NULL);
+  }
 
   p->preset = mode;
-  chr->late_correction = mode == DT_IOP_TEMP_D65_LATE;
+
+  if(mode == DT_IOP_TEMP_D65_LATE)
+  {
+    chr->late_correction = TRUE;
+  }
+  else if(mode == DT_IOP_TEMP_D65)
+  {
+    chr->late_correction = FALSE;
+  }
+  else
+  {
+    // For manual modes, use the parameter
+    chr->late_correction = p->late_correction;
+  }
+
+  if(g && g->check_late_correction)
+  {
+    // show the checkbox only in modes where user can adjust multipliers
+    gtk_widget_set_visible(g->check_late_correction, is_new_mode_manual);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->check_late_correction),
+                                 p->late_correction);
+  }
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -1516,6 +1586,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = self->params;
 
   d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
+  d->late_correction = dt_is_scene_referred();
 
   float *dcoeffs = (float *)d;
   for_four_channels(k)
@@ -1741,8 +1812,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   _mul2temp(self, p, &g->mod_temp, &g->mod_tint);
 
-  dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
-  _update_preset(self, DT_IOP_TEMP_USER);
+  if(w != g->check_late_correction) {
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+    _update_preset(self, DT_IOP_TEMP_USER);
+  }
 }
 
 static gboolean _btn_toggled(GtkWidget *togglebutton,
@@ -2164,12 +2237,26 @@ void gui_init(dt_iop_module_t *self)
     (g->scale_tint,
      _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
+  g->check_late_correction = dt_bauhaus_toggle_from_params(self, "late_correction");
+  g_object_ref(g->check_late_correction); // prevent destruction
+  GtkWidget *temp_parent = gtk_widget_get_parent(g->check_late_correction);
+  if(temp_parent)
+    gtk_container_remove(GTK_CONTAINER(temp_parent), g->check_late_correction);
+
+  gtk_widget_set_tooltip_text(g->check_late_correction,
+      _("ensures the white balance coefficients are treated as a reference for the color calibration module.\n"
+        "keep this checked if you use the modern scene-referred workflow but want to manually adjust white balance."));
+
   GtkWidget *box_enabled = dt_gui_vbox(g->buttonbar,
+                                       g->check_late_correction,
                                        g->presets,
                                        g->finetune,
                                        temp_label_box,
                                        g->scale_k,
                                        g->scale_tint);
+
+  g_object_unref(g->check_late_correction);
+
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/temperature/expand_coefficients",

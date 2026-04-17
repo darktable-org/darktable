@@ -653,10 +653,15 @@ int process_cl(dt_iop_module_t *self,
 
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const gboolean corrected = chr->late_correction;
-  dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
-                                corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
-                                corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
-                                corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  dt_aligned_pixel_t coeffs;
+  for_four_channels(k)
+  {
+    if(corrected && chr->wb_coeffs[k] > 1e-6f)
+      coeffs[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    else
+      coeffs[k] = 1.0f;
+  }
+
   if(corrected)
   {
     for_four_channels(k)
@@ -1199,10 +1204,15 @@ void process(dt_iop_module_t *self,
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   const dt_iop_colorin_data_t *const d = piece->data;
   const gboolean corrected = chr->late_correction && d->type != DT_COLORSPACE_LAB;
-  const dt_aligned_pixel_t coeffs = { corrected ? chr->D65coeffs[0] / chr->as_shot[0] : 1.0f,
-                                      corrected ? chr->D65coeffs[1] / chr->as_shot[1] : 1.0f,
-                                      corrected ? chr->D65coeffs[2] / chr->as_shot[2] : 1.0f,
-                                      corrected ? chr->D65coeffs[3] / chr->as_shot[3] : 1.0f };
+  dt_aligned_pixel_t coeffs;
+  for_four_channels(k)
+  {
+    if(corrected && chr->wb_coeffs[k] > 1e-6f)
+      coeffs[k] = chr->D65coeffs[k] / chr->wb_coeffs[k];
+    else
+      coeffs[k] = 1.0f;
+  }
+
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   if(corrected)
   {
