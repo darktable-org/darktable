@@ -715,6 +715,8 @@ gboolean dt_view_manager_gesture_pan(dt_view_manager_t *vm,
 gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
                                        const double x,
                                        const double y,
+                                       const double dx,
+                                       const double dy,
                                        const int phase,
                                        const double scale,
                                        const int state)
@@ -725,7 +727,7 @@ gboolean dt_view_manager_gesture_pinch(dt_view_manager_t *vm,
   }
   else if(vm->current_view->gesture_pinch)
   {
-    return vm->current_view->gesture_pinch(vm->current_view, x, y, phase, scale, state);
+    return vm->current_view->gesture_pinch(vm->current_view, x, y, dx, dy, phase, scale, state);
   }
   else
   {

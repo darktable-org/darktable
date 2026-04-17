@@ -736,6 +736,11 @@ static gboolean _input_event(GtkWidget *widget,
     case GDK_TOUCHPAD_PINCH:
     case GDK_TOUCHPAD_SWIPE:
       _touchpad = gdk_event_get_source_device(event);
+      dt_print(DT_DEBUG_INPUT,
+               "[touchpad] gesture-type event: type=%d device='%s' source-type=%d",
+               event->type,
+               _touchpad ? gdk_device_get_name(_touchpad) : "<none>",
+               _touchpad ? (int)gdk_device_get_source(_touchpad) : -1);
       break;
     default:
       break;
@@ -744,12 +749,18 @@ static gboolean _input_event(GtkWidget *widget,
   if(event->type == GDK_TOUCHPAD_PINCH)
   {
     const GdkEventTouchpadPinch *pinch = &event->touchpad_pinch;
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] pinch phase=%d x=%.1f y=%.1f dx=%.3f dy=%.3f scale=%.6f state=0x%x",
+             pinch->phase, pinch->x, pinch->y, pinch->dx, pinch->dy,
+             pinch->scale, pinch->state);
     if(dt_view_manager_gesture_pinch(darktable.view_manager, pinch->x, pinch->y,
-                                     pinch->phase, pinch->scale, pinch->state & 0xf))
+                                     pinch->dx, pinch->dy, pinch->phase,
+                                     pinch->scale, pinch->state & 0xf))
     {
       gtk_widget_queue_draw(widget);
       return TRUE;
     }
+    dt_print(DT_DEBUG_INPUT, "[touchpad] pinch not handled by current view");
   }
 
   return FALSE;
@@ -762,13 +773,46 @@ static gboolean _scrolled(GtkWidget *widget,
   (void)user_data;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
 
-  if(((device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD)
-      || device == _touchpad)
-     && event->direction == GDK_SCROLL_SMOOTH && !event->is_stop)
+  dt_print(DT_DEBUG_INPUT,
+           "[scroll] direction=%d smooth=%s stop=%s ctrl=%s"
+           " x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x"
+           " device='%s' source-type=%d",
+           event->direction,
+           event->direction == GDK_SCROLL_SMOOTH ? "yes" : "no",
+           event->is_stop ? "yes" : "no",
+           dt_modifier_is(event->state, GDK_CONTROL_MASK) ? "yes" : "no",
+           event->x, event->y, event->delta_x, event->delta_y, event->state,
+           device ? gdk_device_get_name(device) : "<none>",
+           device ? (int)gdk_device_get_source(device) : -1);
+
+  const gboolean ctrl_held = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  const gboolean is_touchpad_source = device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD;
+  const gboolean is_known_gesture_device = (device == _touchpad);
+  const gboolean is_smooth = event->direction == GDK_SCROLL_SMOOTH && !event->is_stop;
+
+#ifdef GDK_WINDOWING_QUARTZ
+  // On macOS/Quartz, the built-in trackpad reports as GDK_SOURCE_MOUSE, not
+  // GDK_SOURCE_TOUCHPAD.  Route every non-ctrl smooth scroll to gesture_pan so
+  // that two-finger panning works in views like darkroom (both standalone and
+  // interleaved with a pinch-zoom gesture whose translational component macOS
+  // delivers as a separate scroll stream).
+  const gboolean route_as_pan = !ctrl_held && is_smooth;
+#else
+  const gboolean route_as_pan = !ctrl_held
+                                && (is_touchpad_source || is_known_gesture_device)
+                                && is_smooth;
+#endif
+  if(route_as_pan)
   {
     gdouble delta_x = 0.0, delta_y = 0.0;
     if(!dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+    {
+      dt_print(DT_DEBUG_INPUT,
+               "[touchpad] smooth scroll skipped (pointer-emulated) device='%s' source-type=%d",
+               device ? gdk_device_get_name(device) : "<none>",
+               device ? (int)gdk_device_get_source(device) : -1);
       return TRUE;
+    }
 
     delta_x *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
     delta_y *= DT_UI_SCROLL_SMOOTH_DELTA_SCALE;
@@ -776,9 +820,23 @@ static gboolean _scrolled(GtkWidget *widget,
        && dt_view_manager_gesture_pan(darktable.view_manager, event->x, event->y,
                                       delta_x, delta_y, event->state & 0xf))
     {
+      dt_print(DT_DEBUG_INPUT,
+               "[touchpad] pan x=%.1f y=%.1f dx=%.3f dy=%.3f state=0x%x device='%s'",
+               event->x, event->y, delta_x, delta_y, event->state,
+               device ? gdk_device_get_name(device) : "<none>");
       gtk_widget_queue_draw(widget);
       return TRUE;
     }
+  }
+  else if(is_smooth)
+  {
+    dt_print(DT_DEBUG_INPUT,
+             "[touchpad] smooth scroll not routed as pan:"
+             " ctrl=%d touchpad_source=%d known_gesture_dev=%d route_as_pan=%d"
+             " device='%s' source-type=%d",
+             ctrl_held, is_touchpad_source, is_known_gesture_device, route_as_pan,
+             device ? gdk_device_get_name(device) : "<none>",
+             device ? (int)gdk_device_get_source(device) : -1);
   }
 
   int delta_y;
