@@ -1846,9 +1846,7 @@ int process_metal(dt_iop_module_t *self,
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const size_t npixels = (size_t)width * height;
-  const size_t buf_size = npixels * 4 * sizeof(float);
-  const size_t mask_size = npixels * sizeof(uint8_t);
+  const size_t bytes_per_row_f4 = (size_t)width * 4 * sizeof(float);
 
   int err = DT_METAL_DEFAULT_ERROR;
 
@@ -1865,23 +1863,23 @@ int process_metal(dt_iop_module_t *self,
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
-  // Try no-copy buffer for input (avoids memcpy on Apple Silicon unified memory)
-  dt_metal_buffer_t temp1 = dt_metal_alloc_buffer_nocopy(metal, (void *)ivoid, buf_size);
-  dt_metal_buffer_t temp2 = dt_metal_alloc_buffer(metal, buf_size);
-  dt_metal_buffer_t mask = dt_metal_alloc_buffer(metal, mask_size);
-  dt_metal_buffer_t LF_odd = dt_metal_alloc_buffer(metal, buf_size);
-  dt_metal_buffer_t LF_even = dt_metal_alloc_buffer(metal, buf_size);
-  dt_metal_buffer_t out_buf = NULL;
+  // Allocate textures — these leverage the GPU's hardware 2D texture cache
+  dt_metal_texture_t temp1 = dt_metal_alloc_texture_rgba_f32(metal, width, height);
+  dt_metal_texture_t temp2 = dt_metal_alloc_texture_rgba_f32(metal, width, height);
+  dt_metal_texture_t mask = dt_metal_alloc_texture_r8(metal, width, height);
+  dt_metal_texture_t LF_odd = dt_metal_alloc_texture_rgba_f32(metal, width, height);
+  dt_metal_texture_t LF_even = dt_metal_alloc_texture_rgba_f32(metal, width, height);
+  dt_metal_texture_t out_tex = dt_metal_alloc_texture_rgba_f32(metal, width, height);
 
   gboolean out_of_memory = FALSE;
-  dt_metal_buffer_t HF[MAX_NUM_SCALES] = { NULL };
+  dt_metal_texture_t HF[MAX_NUM_SCALES] = { NULL };
   for(int s = 0; s < scales; s++)
   {
-    HF[s] = dt_metal_alloc_buffer(metal, buf_size);
+    HF[s] = dt_metal_alloc_texture_rgba_f32(metal, width, height);
     if(!HF[s]) out_of_memory = TRUE;
   }
 
-  if(!temp1 || !temp2 || !mask || !LF_odd || !LF_even || out_of_memory)
+  if(!temp1 || !temp2 || !mask || !LF_odd || !LF_even || !out_tex || out_of_memory)
   {
     dt_print(DT_DEBUG_METAL, "[diffuse process_metal] out of memory");
     dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
@@ -1889,7 +1887,10 @@ int process_metal(dt_iop_module_t *self,
     goto error;
   }
 
-  dt_metal_buffer_t in_buf = temp1;
+  // Upload input image to texture
+  dt_metal_copy_to_texture(temp1, ivoid, bytes_per_row_f4);
+
+  dt_metal_texture_t in_tex = temp1;
 
   const gboolean has_mask = (data->threshold > 0.f);
   if(has_mask)
@@ -1898,12 +1899,12 @@ int process_metal(dt_iop_module_t *self,
     err = dt_metal_begin_batch(metal);
     if(err != 0) goto error;
 
-    // build_mask
+    // build_mask: textures=[input, mask], buffers=[threshold, width, height]
     {
       const float threshold = data->threshold;
       const dt_metal_arg_t args[] = {
-        { DT_METAL_ARG_BUFFER, in_buf, 0 },
-        { DT_METAL_ARG_BUFFER, mask, 0 },
+        { DT_METAL_ARG_TEXTURE, in_tex, 0 },
+        { DT_METAL_ARG_TEXTURE, mask, 0 },
         { DT_METAL_ARG_BYTES, &threshold, sizeof(float) },
         { DT_METAL_ARG_BYTES, &width, sizeof(int) },
         { DT_METAL_ARG_BYTES, &height, sizeof(int) },
@@ -1912,12 +1913,12 @@ int process_metal(dt_iop_module_t *self,
       if(err != 0) { dt_metal_end_batch(metal); goto error; }
     }
 
-    // inpaint_mask
+    // inpaint_mask: textures=[inpainted, original, mask], buffers=[width, height]
     {
       const dt_metal_arg_t args[] = {
-        { DT_METAL_ARG_BUFFER, temp2, 0 },
-        { DT_METAL_ARG_BUFFER, in_buf, 0 },
-        { DT_METAL_ARG_BUFFER, mask, 0 },
+        { DT_METAL_ARG_TEXTURE, temp2, 0 },
+        { DT_METAL_ARG_TEXTURE, in_tex, 0 },
+        { DT_METAL_ARG_TEXTURE, mask, 0 },
         { DT_METAL_ARG_BYTES, &width, sizeof(int) },
         { DT_METAL_ARG_BYTES, &height, sizeof(int) },
       };
@@ -1928,7 +1929,7 @@ int process_metal(dt_iop_module_t *self,
     err = dt_metal_end_batch(metal);
     if(err != 0) goto error;
 
-    in_buf = temp2;
+    in_tex = temp2;
   }
 
   // Precompute anisotropy parameters (constant across iterations)
@@ -1951,23 +1952,15 @@ int process_metal(dt_iop_module_t *self,
   const float variance_threshold = powf(10.f, data->variance_threshold);
   const int has_mask_int = has_mask ? 1 : 0;
 
-  // Try no-copy buffer for output
-  out_buf = dt_metal_alloc_buffer_nocopy(metal, ovoid, buf_size);
-  if(!out_buf)
-  {
-    dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
-    goto error;
-  }
-
   for(int it = 0; it < iterations; it++)
   {
-    dt_metal_buffer_t iter_in;
-    dt_metal_buffer_t iter_out;
+    dt_metal_texture_t iter_in;
+    dt_metal_texture_t iter_out;
 
     if(it == 0)
     {
-      iter_in = in_buf;
-      iter_out = (in_buf == temp1) ? temp2 : temp1;
+      iter_in = in_tex;
+      iter_out = (in_tex == temp1) ? temp2 : temp1;
     }
     else if(it % 2 == 0)
     {
@@ -1981,20 +1974,20 @@ int process_metal(dt_iop_module_t *self,
     }
 
     if(it == iterations - 1)
-      iter_out = out_buf;
+      iter_out = out_tex;
 
     // ── Batch the entire iteration: wavelet decompose + PDE reconstruct ──
     err = dt_metal_begin_batch(metal);
     if(err != 0) goto error;
 
     // ── Wavelet decompose ──
-    dt_metal_buffer_t residual = NULL;
+    dt_metal_texture_t residual = NULL;
     for(int s = 0; s < scales; ++s)
     {
       const int mult = 1 << s;
 
-      dt_metal_buffer_t buffer_in;
-      dt_metal_buffer_t buffer_out;
+      dt_metal_texture_t buffer_in;
+      dt_metal_texture_t buffer_out;
 
       if(s == 0)
       {
@@ -2012,12 +2005,12 @@ int process_metal(dt_iop_module_t *self,
         buffer_out = LF_odd;
       }
 
-      // bspline horizontal: input -> HF[s]
+      // bspline horizontal: textures=[input, output], buffers=[width, height, mult]
       // Use wider threadgroups (32x8) for horizontal memory access pattern
       {
         const dt_metal_arg_t args[] = {
-          { DT_METAL_ARG_BUFFER, buffer_in, 0 },
-          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_TEXTURE, buffer_in, 0 },
+          { DT_METAL_ARG_TEXTURE, HF[s], 0 },
           { DT_METAL_ARG_BYTES, &width, sizeof(int) },
           { DT_METAL_ARG_BYTES, &height, sizeof(int) },
           { DT_METAL_ARG_BYTES, &mult, sizeof(int) },
@@ -2027,12 +2020,12 @@ int process_metal(dt_iop_module_t *self,
         if(err != 0) { dt_metal_end_batch(metal); goto error; }
       }
 
-      // bspline vertical: HF[s] -> buffer_out
+      // bspline vertical: textures=[input, output], buffers=[width, height, mult]
       // Use taller threadgroups (8x32) for vertical memory access pattern
       {
         const dt_metal_arg_t args[] = {
-          { DT_METAL_ARG_BUFFER, HF[s], 0 },
-          { DT_METAL_ARG_BUFFER, buffer_out, 0 },
+          { DT_METAL_ARG_TEXTURE, HF[s], 0 },
+          { DT_METAL_ARG_TEXTURE, buffer_out, 0 },
           { DT_METAL_ARG_BYTES, &width, sizeof(int) },
           { DT_METAL_ARG_BYTES, &height, sizeof(int) },
           { DT_METAL_ARG_BYTES, &mult, sizeof(int) },
@@ -2042,12 +2035,12 @@ int process_metal(dt_iop_module_t *self,
         if(err != 0) { dt_metal_end_batch(metal); goto error; }
       }
 
-      // wavelets detail: HF[s] = buffer_in - buffer_out
+      // wavelets detail: textures=[detail, LF, HF], buffers=[width, height]
       {
         const dt_metal_arg_t args[] = {
-          { DT_METAL_ARG_BUFFER, buffer_in, 0 },
-          { DT_METAL_ARG_BUFFER, buffer_out, 0 },
-          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_TEXTURE, buffer_in, 0 },
+          { DT_METAL_ARG_TEXTURE, buffer_out, 0 },
+          { DT_METAL_ARG_TEXTURE, HF[s], 0 },
           { DT_METAL_ARG_BYTES, &width, sizeof(int) },
           { DT_METAL_ARG_BYTES, &height, sizeof(int) },
         };
@@ -2059,7 +2052,7 @@ int process_metal(dt_iop_module_t *self,
     }
 
     // ── PDE reconstruct (coarse to fine) ──
-    dt_metal_buffer_t temp_pde = (residual == LF_even) ? LF_odd : LF_even;
+    dt_metal_texture_t temp_pde = (residual == LF_even) ? LF_odd : LF_even;
 
     int count = 0;
     for(int s = scales - 1; s > -1; --s)
@@ -2077,8 +2070,8 @@ int process_metal(dt_iop_module_t *self,
                                          data->fourth * KAPPA * norm };
       const float strength = data->sharpness * norm + 1.f;
 
-      dt_metal_buffer_t pde_in;
-      dt_metal_buffer_t pde_out;
+      dt_metal_texture_t pde_in;
+      dt_metal_texture_t pde_out;
 
       if(count == 0)
       {
@@ -2098,13 +2091,13 @@ int process_metal(dt_iop_module_t *self,
 
       if(s == 0) pde_out = iter_out;
 
-      // diffuse_pde kernel (16x16 default — accesses 3x3 neighbourhood)
+      // diffuse_pde: textures=[HF, LF, mask, output], buffers=[has_mask, width, height, ...]
       {
         const dt_metal_arg_t args[] = {
-          { DT_METAL_ARG_BUFFER, HF[s], 0 },
-          { DT_METAL_ARG_BUFFER, pde_in, 0 },
-          { DT_METAL_ARG_BUFFER, mask, 0 },
-          { DT_METAL_ARG_BUFFER, pde_out, 0 },
+          { DT_METAL_ARG_TEXTURE, HF[s], 0 },
+          { DT_METAL_ARG_TEXTURE, pde_in, 0 },
+          { DT_METAL_ARG_TEXTURE, mask, 0 },
+          { DT_METAL_ARG_TEXTURE, pde_out, 0 },
           { DT_METAL_ARG_BYTES, &has_mask_int, sizeof(int) },
           { DT_METAL_ARG_BYTES, &width, sizeof(int) },
           { DT_METAL_ARG_BYTES, &height, sizeof(int) },
@@ -2129,23 +2122,19 @@ int process_metal(dt_iop_module_t *self,
     if(err != 0) goto error;
   }
 
-  // If out_buf is a no-copy buffer wrapping ovoid, the data is already there.
-  // Otherwise (fallback alloc+copy case), we need to copy back.
-  // Since we can't easily distinguish, and memcpy of same pointer is harmless
-  // on shared memory, just always do it. The no-copy case makes this a no-op
-  // in practice (same physical memory).
-  dt_metal_copy_from_buffer(out_buf, ovoid, buf_size);
+  // Copy output texture back to host
+  dt_metal_copy_from_texture(out_tex, ovoid, bytes_per_row_f4);
   err = 0;
 
 error:
-  dt_metal_free_buffer(temp1);
-  dt_metal_free_buffer(temp2);
-  dt_metal_free_buffer(mask);
-  dt_metal_free_buffer(LF_odd);
-  dt_metal_free_buffer(LF_even);
-  dt_metal_free_buffer(out_buf);
+  dt_metal_free_texture(temp1);
+  dt_metal_free_texture(temp2);
+  dt_metal_free_texture(mask);
+  dt_metal_free_texture(LF_odd);
+  dt_metal_free_texture(LF_even);
+  dt_metal_free_texture(out_tex);
   for(int s = 0; s < scales; s++)
-    dt_metal_free_buffer(HF[s]);
+    dt_metal_free_texture(HF[s]);
 
   return err;
 }

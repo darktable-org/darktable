@@ -445,6 +445,13 @@ void dt_metal_free_buffer(dt_metal_buffer_t buf)
 }
 
 
+void *dt_metal_buffer_get_contents(dt_metal_buffer_t buf)
+{
+  if(!buf) return NULL;
+  return ((MTL::Buffer *)buf)->contents();
+}
+
+
 void dt_metal_copy_to_buffer(dt_metal_buffer_t buf, const void *src, size_t size)
 {
   if(!buf || !src) return;
@@ -496,7 +503,8 @@ int dt_metal_enqueue_kernel_2d_flex_with_tgs(dt_metal_t *metal,
     encoder = (MTL::ComputeCommandEncoder *)dev->active_encoder;
 
     // Memory barrier to ensure previous kernel writes are visible
-    encoder->memoryBarrier(MTL::BarrierScopeBuffers);
+    // Include both buffer and texture scopes for mixed workloads
+    encoder->memoryBarrier(MTL::BarrierScope(MTL::BarrierScopeBuffers | MTL::BarrierScopeTextures));
   }
   else
   {
@@ -521,17 +529,25 @@ int dt_metal_enqueue_kernel_2d_flex_with_tgs(dt_metal_t *metal,
 
   encoder->setComputePipelineState(pipeline);
 
-  // bind arguments in order: buffer(0), buffer(1), ...
+  // bind arguments: buffers/bytes use buffer index space,
+  // textures use a separate texture index space
+  int buf_idx = 0;
+  int tex_idx = 0;
   for(int i = 0; i < num_args; i++)
   {
     if(args[i].type == DT_METAL_ARG_BUFFER)
     {
       MTL::Buffer *buf = (MTL::Buffer *)args[i].data;
-      encoder->setBuffer(buf, 0, i);
+      encoder->setBuffer(buf, 0, buf_idx++);
+    }
+    else if(args[i].type == DT_METAL_ARG_TEXTURE)
+    {
+      MTL::Texture *tex = (MTL::Texture *)args[i].data;
+      encoder->setTexture(tex, tex_idx++);
     }
     else // DT_METAL_ARG_BYTES
     {
-      encoder->setBytes(args[i].data, args[i].size, i);
+      encoder->setBytes(args[i].data, args[i].size, buf_idx++);
     }
   }
 
@@ -678,9 +694,78 @@ dt_metal_buffer_t dt_metal_alloc_buffer_nocopy(dt_metal_t *metal, void *ptr, siz
   if(!buf)
   {
     dt_print(DT_DEBUG_METAL,
-            "[dt_metal_alloc_buffer_nocopy] Could not create no-copy buffer (%zu bytes)", size);
+             "[dt_metal_alloc_buffer_nocopy] Could not create no-copy buffer (%zu bytes)", size);
     return NULL;
   }
 
   return (dt_metal_buffer_t)buf;
+}
+
+
+/* ── Texture API implementation ──────────────────────────────────── */
+
+static MTL::Texture *_dt_metal_alloc_texture(dt_metal_t *metal,
+                                              int width, int height,
+                                              MTL::PixelFormat pixelFormat)
+{
+  if(!metal || metal->num_devs == 0) return NULL;
+
+  MTL::Device *device = (MTL::Device *)metal->dev[0].device;
+  if(!device) return NULL;
+
+  MTL::TextureDescriptor *desc = MTL::TextureDescriptor::texture2DDescriptor(
+      pixelFormat, (NS::UInteger)width, (NS::UInteger)height, false);
+  if(!desc) return NULL;
+
+  desc->setStorageMode(MTL::StorageModeShared);
+  desc->setUsage(MTL::TextureUsageShaderRead | MTL::TextureUsageShaderWrite);
+
+  MTL::Texture *tex = device->newTexture(desc);
+
+  if(!tex)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_alloc_texture] Could not allocate %dx%d texture", width, height);
+  }
+
+  return tex;
+}
+
+
+dt_metal_texture_t dt_metal_alloc_texture_rgba_f32(dt_metal_t *metal, int width, int height)
+{
+  return (dt_metal_texture_t)_dt_metal_alloc_texture(metal, width, height,
+                                                      MTL::PixelFormatRGBA32Float);
+}
+
+
+dt_metal_texture_t dt_metal_alloc_texture_r8(dt_metal_t *metal, int width, int height)
+{
+  return (dt_metal_texture_t)_dt_metal_alloc_texture(metal, width, height,
+                                                      MTL::PixelFormatR8Uint);
+}
+
+
+void dt_metal_free_texture(dt_metal_texture_t tex)
+{
+  if(!tex) return;
+  ((MTL::Texture *)tex)->release();
+}
+
+
+void dt_metal_copy_to_texture(dt_metal_texture_t tex, const void *src, size_t bytes_per_row)
+{
+  if(!tex || !src) return;
+  MTL::Texture *t = (MTL::Texture *)tex;
+  MTL::Region region = MTL::Region::Make2D(0, 0, t->width(), t->height());
+  t->replaceRegion(region, 0, src, bytes_per_row);
+}
+
+
+void dt_metal_copy_from_texture(dt_metal_texture_t tex, void *dst, size_t bytes_per_row)
+{
+  if(!tex || !dst) return;
+  MTL::Texture *t = (MTL::Texture *)tex;
+  MTL::Region region = MTL::Region::Make2D(0, 0, t->width(), t->height());
+  t->getBytes(dst, bytes_per_row, region, 0);
 }

@@ -34,11 +34,11 @@ constant float4 bspline_filter[FSIZE] = {
 };
 
 kernel void
-blur_2D_Bspline_vertical(device const float4 *input  [[buffer(0)]],
-                          device float4       *output [[buffer(1)]],
-                          constant int        &width  [[buffer(2)]],
-                          constant int        &height [[buffer(3)]],
-                          constant int        &mult   [[buffer(4)]],
+blur_2D_Bspline_vertical(texture2d<float, access::read>  input  [[texture(0)]],
+                          texture2d<float, access::write> output [[texture(1)]],
+                          constant int        &width  [[buffer(0)]],
+                          constant int        &height [[buffer(1)]],
+                          constant int        &mult   [[buffer(2)]],
                           uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
@@ -49,18 +49,18 @@ blur_2D_Bspline_vertical(device const float4 *input  [[buffer(0)]],
   for(int jj = 0; jj < FSIZE; ++jj)
   {
     const int yy = clamp(mult * (jj - FSTART) + y, 0, height - 1);
-    acc += bspline_filter[jj] * input[yy * width + x];
+    acc += bspline_filter[jj] * input.read(uint2(x, yy));
   }
 
-  output[y * width + x] = max(acc, float4(0.0f));
+  output.write(max(acc, float4(0.0f)), uint2(x, y));
 }
 
 kernel void
-blur_2D_Bspline_horizontal(device const float4 *input  [[buffer(0)]],
-                            device float4       *output [[buffer(1)]],
-                            constant int        &width  [[buffer(2)]],
-                            constant int        &height [[buffer(3)]],
-                            constant int        &mult   [[buffer(4)]],
+blur_2D_Bspline_horizontal(texture2d<float, access::read>  input  [[texture(0)]],
+                            texture2d<float, access::write> output [[texture(1)]],
+                            constant int        &width  [[buffer(0)]],
+                            constant int        &height [[buffer(1)]],
+                            constant int        &mult   [[buffer(2)]],
                             uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
@@ -71,26 +71,26 @@ blur_2D_Bspline_horizontal(device const float4 *input  [[buffer(0)]],
   for(int ii = 0; ii < FSIZE; ++ii)
   {
     const int xx = clamp(mult * (ii - FSTART) + x, 0, width - 1);
-    acc += bspline_filter[ii] * input[y * width + xx];
+    acc += bspline_filter[ii] * input.read(uint2(xx, y));
   }
 
-  output[y * width + x] = max(acc, float4(0.0f));
+  output.write(max(acc, float4(0.0f)), uint2(x, y));
 }
 
 kernel void
-wavelets_detail_level(device const float4 *detail [[buffer(0)]],
-                      device const float4 *LF     [[buffer(1)]],
-                      device float4       *HF     [[buffer(2)]],
-                      constant int        &width  [[buffer(3)]],
-                      constant int        &height [[buffer(4)]],
+wavelets_detail_level(texture2d<float, access::read>  detail [[texture(0)]],
+                      texture2d<float, access::read>  LF     [[texture(1)]],
+                      texture2d<float, access::write> HF     [[texture(2)]],
+                      constant int        &width  [[buffer(0)]],
+                      constant int        &height [[buffer(1)]],
                       uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
   const int y = gid.y;
   if(x >= width || y >= height) return;
 
-  const int idx = y * width + x;
-  HF[idx] = detail[idx] - LF[idx];
+  const uint2 pos = uint2(x, y);
+  HF.write(detail.read(pos) - LF.read(pos), pos);
 }
 
 
@@ -206,29 +206,29 @@ static inline void compute_kern(float4 c2,
 
 
 kernel void
-diffuse_pde(device const float4  *HF_buf       [[buffer(0)]],
-            device const float4  *LF_buf       [[buffer(1)]],
-            device const uchar   *mask_buf     [[buffer(2)]],
-            device float4        *output       [[buffer(3)]],
-            constant int         &has_mask     [[buffer(4)]],
-            constant int         &width        [[buffer(5)]],
-            constant int         &height       [[buffer(6)]],
-            constant float4      &anisotropy   [[buffer(7)]],
-            constant int4        &isotropy_type [[buffer(8)]],
-            constant float       &regularization [[buffer(9)]],
-            constant float       &variance_threshold [[buffer(10)]],
-            constant float       &current_radius_square [[buffer(11)]],
-            constant int         &mult         [[buffer(12)]],
-            constant float4      &ABCD         [[buffer(13)]],
-            constant float       &strength     [[buffer(14)]],
+diffuse_pde(texture2d<float, access::read>  HF_tex     [[texture(0)]],
+            texture2d<float, access::read>  LF_tex     [[texture(1)]],
+            texture2d<uint, access::read>   mask_tex   [[texture(2)]],
+            texture2d<float, access::write> output     [[texture(3)]],
+            constant int         &has_mask     [[buffer(0)]],
+            constant int         &width        [[buffer(1)]],
+            constant int         &height       [[buffer(2)]],
+            constant float4      &anisotropy   [[buffer(3)]],
+            constant int4        &isotropy_type [[buffer(4)]],
+            constant float       &regularization [[buffer(5)]],
+            constant float       &variance_threshold [[buffer(6)]],
+            constant float       &current_radius_square [[buffer(7)]],
+            constant int         &mult         [[buffer(8)]],
+            constant float4      &ABCD         [[buffer(9)]],
+            constant float       &strength     [[buffer(10)]],
             uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
   const int y = gid.y;
   if(x >= width || y >= height) return;
 
-  const int idx = y * width + x;
-  const uchar opacity = has_mask ? mask_buf[idx] : 1;
+  const uint2 pos = uint2(x, y);
+  const uchar opacity = has_mask ? (uchar)mask_tex.read(pos).r : 1;
 
   const float4 regularization_factor = regularization * current_radius_square / 9.0f;
 
@@ -248,16 +248,16 @@ diffuse_pde(device const float4  *HF_buf       [[buffer(0)]],
       clamp(y + mult * H_STEP, 0, height - 1)
     };
 
-    // fetch non-local pixels
+    // fetch non-local pixels via texture reads (hardware 2D cache)
     float4 neighbour_pixel_HF[9];
     float4 neighbour_pixel_LF[9];
 
     for(int ii = 0; ii < 3; ii++)
       for(int jj = 0; jj < 3; jj++)
       {
-        const int nidx = i_neighbours[jj] * width + j_neighbours[ii];
-        neighbour_pixel_HF[3 * ii + jj] = HF_buf[nidx];
-        neighbour_pixel_LF[3 * ii + jj] = LF_buf[nidx];
+        const uint2 npos = uint2(j_neighbours[ii], i_neighbours[jj]);
+        neighbour_pixel_HF[3 * ii + jj] = HF_tex.read(npos);
+        neighbour_pixel_LF[3 * ii + jj] = LF_tex.read(npos);
       }
 
     // build local anisotropic convolution filters
@@ -282,10 +282,10 @@ diffuse_pde(device const float4  *HF_buf       [[buffer(0)]],
 
     // c² anisotropy coefficients
     const float4 c2[4] = {
-      exp(-magnitude_grad * anisotropy.x),
-      exp(-magnitude_lapl * anisotropy.y),
-      exp(-magnitude_grad * anisotropy.z),
-      exp(-magnitude_lapl * anisotropy.w)
+      fast::exp(-magnitude_grad * anisotropy.x),
+      fast::exp(-magnitude_lapl * anisotropy.y),
+      fast::exp(-magnitude_grad * anisotropy.z),
+      fast::exp(-magnitude_lapl * anisotropy.w)
     };
 
     float4 kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
@@ -298,7 +298,7 @@ diffuse_pde(device const float4  *HF_buf       [[buffer(0)]],
     float4 derivatives[4] = { float4(0.0f) };
     float4 variance = float4(0.0f);
 
-    for(int k = 0; k < 9; k++)
+    [[unroll]] for(int k = 0; k < 9; k++)
     {
       derivatives[0] += kern_first[k] * neighbour_pixel_LF[k];
       derivatives[1] += kern_second[k] * neighbour_pixel_LF[k];
@@ -316,38 +316,39 @@ diffuse_pde(device const float4  *HF_buf       [[buffer(0)]],
     acc += derivatives[2] * ABCD.z;
     acc += derivatives[3] * ABCD.w;
 
-    float4 hf = HF_buf[idx];
+    float4 hf = HF_tex.read(pos);
     acc = hf * strength + acc / variance;
 
-    float4 lf = LF_buf[idx];
+    float4 lf = LF_tex.read(pos);
     out = max(acc + lf, float4(0.0f));
   }
   else
   {
-    out = HF_buf[idx] + LF_buf[idx];
+    out = HF_tex.read(pos) + LF_tex.read(pos);
   }
 
-  output[idx] = out;
+  output.write(out, pos);
 }
 
 
 /* ── Mask kernels ────────────────────────────────────────────────── */
 
 kernel void
-build_mask(device const float4 *input   [[buffer(0)]],
-           device uchar        *mask    [[buffer(1)]],
-           constant float      &threshold [[buffer(2)]],
-           constant int        &width   [[buffer(3)]],
-           constant int        &height  [[buffer(4)]],
+build_mask(texture2d<float, access::read>  input  [[texture(0)]],
+           texture2d<uint, access::write>  mask   [[texture(1)]],
+           constant float      &threshold [[buffer(0)]],
+           constant int        &width     [[buffer(1)]],
+           constant int        &height    [[buffer(2)]],
            uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
   const int y = gid.y;
   if(x >= width || y >= height) return;
 
-  const int idx = y * width + x;
-  const float4 pix = input[idx];
-  mask[idx] = (pix.x > threshold || pix.y > threshold || pix.z > threshold) ? 1 : 0;
+  const uint2 pos = uint2(x, y);
+  const float4 pix = input.read(pos);
+  const uint val = (pix.x > threshold || pix.y > threshold || pix.z > threshold) ? 1u : 0u;
+  mask.write(uint4(val, 0, 0, 0), pos);
 }
 
 
@@ -405,20 +406,20 @@ static inline float4 gaussian_noise_simd(float4 mu, float4 sigma, thread uint st
 
 
 kernel void
-inpaint_mask(device float4       *inpainted [[buffer(0)]],
-             device const float4 *original  [[buffer(1)]],
-             device const uchar  *mask      [[buffer(2)]],
-             constant int        &width     [[buffer(3)]],
-             constant int        &height    [[buffer(4)]],
+inpaint_mask(texture2d<float, access::write> inpainted [[texture(0)]],
+             texture2d<float, access::read>  original  [[texture(1)]],
+             texture2d<uint, access::read>   mask      [[texture(2)]],
+             constant int        &width     [[buffer(0)]],
+             constant int        &height    [[buffer(1)]],
              uint2 gid [[thread_position_in_grid]])
 {
   const int x = gid.x;
   const int y = gid.y;
   if(x >= width || y >= height) return;
 
-  const int idx = y * width + x;
-  const float4 pix_in = original[idx];
-  const uchar m = mask[idx];
+  const uint2 pos = uint2(x, y);
+  const float4 pix_in = original.read(pos);
+  const uint m = mask.read(pos).r;
   float4 pix_out = pix_in;
 
   if(m)
@@ -431,5 +432,5 @@ inpaint_mask(device float4       *inpainted [[buffer(0)]],
     pix_out = abs(gaussian_noise_simd(pix_in, pix_in, state));
   }
 
-  inpainted[idx] = pix_out;
+  inpainted.write(pix_out, pos);
 }

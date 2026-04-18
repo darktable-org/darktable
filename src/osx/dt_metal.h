@@ -138,6 +138,14 @@ dt_metal_buffer_t dt_metal_alloc_buffer(dt_metal_t *metal, size_t size);
 void dt_metal_free_buffer(dt_metal_buffer_t buf);
 
 /**
+ * Get the host-accessible contents pointer of a Metal buffer.
+ * On Apple Silicon (shared storage mode), this returns a pointer
+ * directly accessible by the CPU.
+ * @return Pointer to the buffer's contents, or NULL if buf is NULL.
+ */
+void *dt_metal_buffer_get_contents(dt_metal_buffer_t buf);
+
+/**
  * Copy host data into a Metal buffer.
  * @param buf   Metal buffer handle
  * @param src   Source host pointer
@@ -157,7 +165,8 @@ void dt_metal_copy_from_buffer(dt_metal_buffer_t buf, void *dst, size_t size);
 typedef enum dt_metal_arg_type_t
 {
   DT_METAL_ARG_BUFFER,   /**< a dt_metal_buffer_t handle */
-  DT_METAL_ARG_BYTES     /**< inline scalar data (like setBytes) */
+  DT_METAL_ARG_BYTES,    /**< inline scalar data (like setBytes) */
+  DT_METAL_ARG_TEXTURE   /**< a dt_metal_texture_t handle */
 } dt_metal_arg_type_t;
 
 typedef struct dt_metal_arg_t
@@ -234,11 +243,63 @@ dt_metal_buffer_t dt_metal_alloc_buffer_nocopy(dt_metal_t *metal, void *ptr, siz
  * Pass threadW=0, threadH=0 to use the default 16x16.
  */
 int dt_metal_enqueue_kernel_2d_flex_with_tgs(dt_metal_t *metal,
-                                              int kernel_id,
-                                              int width, int height,
-                                              int num_args,
-                                              const dt_metal_arg_t *args,
-                                              int threadW, int threadH);
+                                               int kernel_id,
+                                               int width, int height,
+                                               int num_args,
+                                               const dt_metal_arg_t *args,
+                                               int threadW, int threadH);
+
+/* ── Texture API ───────────────────────────────────────────────────
+ * Metal textures provide hardware 2D spatial caching (texture cache)
+ * which is critical for stencil-based kernels like diffuse_pde.
+ * On Apple Silicon with StorageModeShared, textures reside in unified
+ * memory but GPU reads go through the dedicated texture cache unit.
+ *
+ * When passed as DT_METAL_ARG_TEXTURE, these are bound via
+ * setTexture() with a separate texture index namespace.
+ */
+
+/** Opaque handle for a Metal texture */
+typedef void *dt_metal_texture_t;
+
+/**
+ * Allocate a 2D RGBA float32 texture (PixelFormatRGBA32Float).
+ * @param metal   The global Metal context
+ * @param width   Texture width in pixels
+ * @param height  Texture height in pixels
+ * @return Handle to Metal texture, or NULL on failure
+ */
+dt_metal_texture_t dt_metal_alloc_texture_rgba_f32(dt_metal_t *metal, int width, int height);
+
+/**
+ * Allocate a 2D single-channel uint8 texture (PixelFormatR8Uint).
+ * @param metal   The global Metal context
+ * @param width   Texture width in pixels
+ * @param height  Texture height in pixels
+ * @return Handle to Metal texture, or NULL on failure
+ */
+dt_metal_texture_t dt_metal_alloc_texture_r8(dt_metal_t *metal, int width, int height);
+
+/**
+ * Free a Metal texture previously allocated with dt_metal_alloc_texture_*.
+ */
+void dt_metal_free_texture(dt_metal_texture_t tex);
+
+/**
+ * Copy host data into a Metal texture via replaceRegion.
+ * @param tex          Metal texture handle
+ * @param src          Source host pointer
+ * @param bytes_per_row  Bytes per row of the source data
+ */
+void dt_metal_copy_to_texture(dt_metal_texture_t tex, const void *src, size_t bytes_per_row);
+
+/**
+ * Copy data from a Metal texture to host memory via getBytes.
+ * @param tex          Metal texture handle
+ * @param dst          Destination host pointer
+ * @param bytes_per_row  Bytes per row of the destination data
+ */
+void dt_metal_copy_from_texture(dt_metal_texture_t tex, void *dst, size_t bytes_per_row);
 
 
 #ifdef __cplusplus
