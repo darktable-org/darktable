@@ -74,6 +74,7 @@
 #define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 #define MINIMUM_FITLINES 2                  // minimum number of lines needed for automatic parameter fit
+#define MINIMUM_FITLINES_ROTATION_ONLY 1    // minimum number of lines needed for a simple rotation
 #define NMS_EPSILON 1e-3                    // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 400                  // number of iterations for Nelder-Mead simplex
@@ -2347,7 +2348,8 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
     // we use vertical lines for fitting
     fit.linetype |= ASHIFT_LINE_DIRVERT;
     fit.weight += g->vertical_weight;
-    enough_lines = enough_lines && (g->vertical_count >= MINIMUM_FITLINES);
+    int minimum_fitlines = mdir == ASHIFT_FIT_ROTATION_VERTICAL_LINES ? MINIMUM_FITLINES_ROTATION_ONLY : MINIMUM_FITLINES;
+    enough_lines = enough_lines && (g->vertical_count >= minimum_fitlines);
   }
 
   if(mdir & ASHIFT_FIT_LINES_HOR)
@@ -2355,7 +2357,8 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
     // we use horizontal lines for fitting
     fit.linetype |= 0;
     fit.weight += g->horizontal_weight;
-    enough_lines = enough_lines && (g->horizontal_count >= MINIMUM_FITLINES);
+    int minimum_fitlines = mdir == ASHIFT_FIT_ROTATION_HORIZONTAL_LINES ? MINIMUM_FITLINES_ROTATION_ONLY : MINIMUM_FITLINES;
+    enough_lines = enough_lines && (g->horizontal_count >= minimum_fitlines);
   }
 
   // this needs to come after ASHIFT_FIT_LINES_VERT and ASHIFT_FIT_LINES_HOR
@@ -3409,8 +3412,8 @@ static void do_fit(dt_iop_module_t *self,
     case NMS_NOT_ENOUGH_LINES:
       dt_control_log(
           _("not enough structure for automatic correction\n"
-            "minimum %d lines in each relevant direction"),
-          MINIMUM_FITLINES);
+            "minimum %d lines in each relevant direction, or %d line for a simple rotation"),
+          MINIMUM_FITLINES, MINIMUM_FITLINES_ROTATION_ONLY);
       return;
     case NMS_DID_NOT_CONVERGE:
     case NMS_INSANE:
