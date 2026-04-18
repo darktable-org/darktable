@@ -18,6 +18,7 @@
 
 #include "common/color_picker.h"
 #include "common/colorspaces.h"
+#include "common/hdr_viewer.h"
 #include "common/histogram.h"
 #include "common/opencl.h"
 #include "common/iop_order.h"
@@ -3009,6 +3010,50 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            roi_in.width, roi_in.height,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
+
+    // HDR viewer: forward float pixels to the external HDR preview app (if running).
+    // input is float RGBA in the display profile colorspace; values above 1.0 represent
+    // HDR signal that GTK would otherwise clip to uint8.
+    // NOTE: the socket calls below must remain outside any OMP parallel section.
+    if(dt_conf_get_bool("plugins/darkroom/hdr_viewer_enabled"))
+    {
+      // Cooldown: skip connect attempts for 2 seconds after a failed connect
+      // to avoid 200ms timeout on every frame when the viewer is not running.
+      // The preview pipe runs on a single thread, so no synchronisation needed.
+      static int64_t _hdr_viewer_next_attempt_us = 0;
+      const int64_t now_us = g_get_monotonic_time();
+      if(now_us >= _hdr_viewer_next_attempt_us)
+      {
+        const size_t w = (size_t)roi_in.width;
+        const size_t h = (size_t)roi_in.height;
+        const float *const rgba = (const float *const)input;
+        int viewer_fd = dt_hdr_viewer_connect();
+        if(viewer_fd >= 0)
+        {
+          // Strip alpha channel: RGBA float -> RGB float (packed, row-major)
+          const size_t npixels = w * h;
+          float *rgb = dt_alloc_align_float(npixels * 3);
+          if(rgb)
+          {
+            DT_OMP_FOR()
+            for(size_t k = 0; k < npixels; k++)
+            {
+              rgb[k * 3 + 0] = rgba[k * 4 + 0];
+              rgb[k * 3 + 1] = rgba[k * 4 + 1];
+              rgb[k * 3 + 2] = rgba[k * 4 + 2];
+            }
+            dt_hdr_viewer_send_frame(viewer_fd, (uint32_t)w, (uint32_t)h, rgb);
+            dt_free_align(rgb);
+          }
+          dt_hdr_viewer_disconnect(viewer_fd);
+        }
+        else
+        {
+          // Viewer not reachable -- back off for 2 seconds before retrying
+          _hdr_viewer_next_attempt_us = now_us + 2 * G_USEC_PER_SEC;
+        }
+      }
+    }
   }
   return dt_pipe_shutdown(pipe);
 }
