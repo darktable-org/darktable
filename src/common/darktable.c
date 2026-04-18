@@ -24,6 +24,9 @@
 #ifdef __APPLE__
 #include <sys/malloc.h>
 #endif
+#if defined(__APPLE__) && defined(__aarch64__)
+#include "osx/dt_metal.h"
+#endif
 
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -264,7 +267,7 @@ static int usage(const char *argv0)
          "    Enable debug output to the terminal. Valid signals are:\n\n"
          "    act_on, cache, camctl, camsupport, control, dev, expose,\n"
          "    imageio, input, ioporder, lighttable, lua, masks, memory,\n"
-         "    nan, opencl, params, perf, pipe, print, pwstorage, signal,\n"
+         "    nan, opencl, metal, params, perf, pipe, print, pwstorage, signal,\n"
          "    sql, tiling, picker, undo\n"
          "\n"
          "    all     -> to debug all signals\n"
@@ -1154,6 +1157,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "metal") ? DT_DEBUG_METAL : // macOS metal
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1880,6 +1884,11 @@ int dt_init(int argc,
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
+#if defined(__APPLE__) && defined(__aarch64__)
+  darktable.metal = (dt_metal_t *)calloc(1, sizeof(dt_metal_t));
+  dt_metal_init(darktable.metal);
+#endif
+
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
@@ -2237,6 +2246,14 @@ void dt_cleanup()
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
   darktable.opencl = NULL;
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal)
+  {
+    dt_metal_cleanup(darktable.metal);
+    free(darktable.metal);
+    darktable.metal = NULL;
+  }
+#endif
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
   darktable.camctl = NULL;

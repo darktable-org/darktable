@@ -1,5 +1,6 @@
 /*
     This file is part of darktable,
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,6 +47,7 @@
 #endif
 #include "osx.h"
 #include "libintl.h"
+#include "dt_metal.h"
 
 extern "C" int apple_main(int argc, char *argv[]);
 

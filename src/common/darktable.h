@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,6 +66,9 @@
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
+#include <osx/dt_metal.h>
 #endif
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
@@ -364,6 +367,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_PICKER         = 1 << 27,
   DT_DEBUG_AI             = 1 << 28,
+  DT_DEBUG_METAL          = 1 << 29,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
@@ -438,6 +442,9 @@ typedef struct darktable_t
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
   struct dt_opencl_t *opencl;
+
+  struct dt_metal_t *metal;
+
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;
