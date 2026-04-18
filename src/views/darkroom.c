@@ -1221,7 +1221,16 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
-  ++darktable.gui->reset;
+  // IMPORTANT: We save and force-restore gui->reset rather than using
+  // ++/--.  During the operations below (widget creation/destruction,
+  // pixelpipe rebuilding, etc.), GTK re-entrant event processing can
+  // cause other code paths to run their own ++/-- cycles on
+  // gui->reset.  If any of those paths has an early-return between
+  // their ++ and --, or if they complete out of order, a simple --
+  // at the end can result in gui->reset going negative, which
+  // permanently disables all IOP module GUI callbacks.
+  const int32_t saved_gui_reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
 
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->full.pipe);
@@ -1337,7 +1346,12 @@ static gboolean _dev_load_requested_image(gpointer user_data)
      are blocked due to implementation of dt_iop_request_focus so we do it now
      A double history entry is not generated.
   */
-  --darktable.gui->reset;
+  if(darktable.gui->reset != 1)
+    dt_print(DT_DEBUG_ALWAYS,
+             "[darkroom] BUG AVERTED: gui->reset was %d (expected 1, saved was %d)"
+             " - re-entrant corruption detected and corrected, restoring to %d\n",
+             darktable.gui->reset, saved_gui_reset, saved_gui_reset);
+  darktable.gui->reset = saved_gui_reset;
 
   dt_dev_masks_list_change(dev);
 
