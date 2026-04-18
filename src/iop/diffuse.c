@@ -43,6 +43,10 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
+#if defined(__APPLE__) && defined(__aarch64__)
+#include "osx/dt_metal.h"
+#endif
+
 DT_MODULE_INTROSPECTION(2, dt_iop_diffuse_params_t)
 
 #define MAX_NUM_SCALES 10
@@ -90,6 +94,15 @@ typedef struct dt_iop_diffuse_global_data_t
   int kernel_diffuse_build_mask;
   int kernel_diffuse_inpaint_mask;
   int kernel_diffuse_pde;
+
+#if defined(__APPLE__) && defined(__aarch64__)
+  int metal_kernel_bspline_vertical;
+  int metal_kernel_bspline_horizontal;
+  int metal_kernel_wavelets_detail;
+  int metal_kernel_build_mask;
+  int metal_kernel_inpaint_mask;
+  int metal_kernel_diffuse_pde;
+#endif
 } dt_iop_diffuse_global_data_t;
 
 
@@ -1737,6 +1750,27 @@ void init_global(dt_iop_module_so_t *self)
     dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
   gd->kernel_filmic_wavelets_detail =
     dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
+
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal && dt_metal_is_available(darktable.metal))
+  {
+    gd->metal_kernel_bspline_vertical = dt_metal_create_kernel(darktable.metal, "blur_2D_Bspline_vertical");
+    gd->metal_kernel_bspline_horizontal = dt_metal_create_kernel(darktable.metal, "blur_2D_Bspline_horizontal");
+    gd->metal_kernel_wavelets_detail = dt_metal_create_kernel(darktable.metal, "wavelets_detail_level");
+    gd->metal_kernel_build_mask = dt_metal_create_kernel(darktable.metal, "build_mask");
+    gd->metal_kernel_inpaint_mask = dt_metal_create_kernel(darktable.metal, "inpaint_mask");
+    gd->metal_kernel_diffuse_pde = dt_metal_create_kernel(darktable.metal, "diffuse_pde");
+  }
+  else
+  {
+    gd->metal_kernel_bspline_vertical = -1;
+    gd->metal_kernel_bspline_horizontal = -1;
+    gd->metal_kernel_wavelets_detail = -1;
+    gd->metal_kernel_build_mask = -1;
+    gd->metal_kernel_inpaint_mask = -1;
+    gd->metal_kernel_diffuse_pde = -1;
+  }
+#endif
 }
 
 
@@ -1750,10 +1784,372 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
   dt_opencl_free_kernel(gd->kernel_filmic_wavelets_detail);
+
+#if defined(__APPLE__) && defined(__aarch64__)
+  if(darktable.metal)
+  {
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_bspline_vertical);
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_bspline_horizontal);
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_wavelets_detail);
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_build_mask);
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_inpaint_mask);
+    dt_metal_free_kernel(darktable.metal, gd->metal_kernel_diffuse_pde);
+  }
+#endif
+
   free(self->data);
   self->data = NULL;
 }
 #endif
+
+
+#if defined(__APPLE__) && defined(__aarch64__)
+
+// Helper to dispatch a Metal kernel with the flex API + custom threadgroup size
+static inline int _metal_dispatch_tgs(dt_metal_t *metal, int kernel_id,
+                                      int width, int height,
+                                      int num_args, const dt_metal_arg_t *args,
+                                      int threadW, int threadH)
+{
+  return dt_metal_enqueue_kernel_2d_flex_with_tgs(metal, kernel_id, width, height,
+                                                   num_args, args, threadW, threadH);
+}
+
+// Default dispatch (16x16 threadgroups)
+static inline int _metal_dispatch(dt_metal_t *metal, int kernel_id,
+                                  int width, int height,
+                                  int num_args, const dt_metal_arg_t *args)
+{
+  return dt_metal_enqueue_kernel_2d_flex(metal, kernel_id, width, height, num_args, args);
+}
+
+int process_metal(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const void *const ivoid,
+                  void *const ovoid,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
+{
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const dt_iop_diffuse_data_t *const data = piece->data;
+  dt_iop_diffuse_global_data_t *const gd = self->global_data;
+
+  dt_metal_t *metal = darktable.metal;
+  if(!metal || !dt_metal_is_available(metal))
+    return DT_METAL_DEFAULT_ERROR;
+
+  // check all kernels are valid
+  if(gd->metal_kernel_bspline_vertical < 0 || gd->metal_kernel_bspline_horizontal < 0
+     || gd->metal_kernel_wavelets_detail < 0 || gd->metal_kernel_build_mask < 0
+     || gd->metal_kernel_inpaint_mask < 0 || gd->metal_kernel_diffuse_pde < 0)
+    return DT_METAL_DEFAULT_ERROR;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const size_t npixels = (size_t)width * height;
+  const size_t buf_size = npixels * 4 * sizeof(float);
+  const size_t mask_size = npixels * sizeof(uint8_t);
+
+  int err = DT_METAL_DEFAULT_ERROR;
+
+  // fast mode: just copy
+  if(fastmode)
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
+    return 0;
+  }
+
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
+  const int iterations = MAX(ceilf((float)data->iterations), 1);
+  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  // Try no-copy buffer for input (avoids memcpy on Apple Silicon unified memory)
+  dt_metal_buffer_t temp1 = dt_metal_alloc_buffer_nocopy(metal, (void *)ivoid, buf_size);
+  dt_metal_buffer_t temp2 = dt_metal_alloc_buffer(metal, buf_size);
+  dt_metal_buffer_t mask = dt_metal_alloc_buffer(metal, mask_size);
+  dt_metal_buffer_t LF_odd = dt_metal_alloc_buffer(metal, buf_size);
+  dt_metal_buffer_t LF_even = dt_metal_alloc_buffer(metal, buf_size);
+  dt_metal_buffer_t out_buf = NULL;
+
+  gboolean out_of_memory = FALSE;
+  dt_metal_buffer_t HF[MAX_NUM_SCALES] = { NULL };
+  for(int s = 0; s < scales; s++)
+  {
+    HF[s] = dt_metal_alloc_buffer(metal, buf_size);
+    if(!HF[s]) out_of_memory = TRUE;
+  }
+
+  if(!temp1 || !temp2 || !mask || !LF_odd || !LF_even || out_of_memory)
+  {
+    dt_print(DT_DEBUG_METAL, "[diffuse process_metal] out of memory");
+    dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
+    err = DT_METAL_DEFAULT_ERROR;
+    goto error;
+  }
+
+  dt_metal_buffer_t in_buf = temp1;
+
+  const gboolean has_mask = (data->threshold > 0.f);
+  if(has_mask)
+  {
+    // Batch mask build + inpaint together (2 kernels, 1 GPU round-trip)
+    err = dt_metal_begin_batch(metal);
+    if(err != 0) goto error;
+
+    // build_mask
+    {
+      const float threshold = data->threshold;
+      const dt_metal_arg_t args[] = {
+        { DT_METAL_ARG_BUFFER, in_buf, 0 },
+        { DT_METAL_ARG_BUFFER, mask, 0 },
+        { DT_METAL_ARG_BYTES, &threshold, sizeof(float) },
+        { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+        { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+      };
+      err = _metal_dispatch(metal, gd->metal_kernel_build_mask, width, height, 5, args);
+      if(err != 0) { dt_metal_end_batch(metal); goto error; }
+    }
+
+    // inpaint_mask
+    {
+      const dt_metal_arg_t args[] = {
+        { DT_METAL_ARG_BUFFER, temp2, 0 },
+        { DT_METAL_ARG_BUFFER, in_buf, 0 },
+        { DT_METAL_ARG_BUFFER, mask, 0 },
+        { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+        { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+      };
+      err = _metal_dispatch(metal, gd->metal_kernel_inpaint_mask, width, height, 5, args);
+      if(err != 0) { dt_metal_end_batch(metal); goto error; }
+    }
+
+    err = dt_metal_end_batch(metal);
+    if(err != 0) goto error;
+
+    in_buf = temp2;
+  }
+
+  // Precompute anisotropy parameters (constant across iterations)
+  const dt_aligned_pixel_t anisotropy
+      = { compute_anisotropy_factor(data->anisotropy_first),
+          compute_anisotropy_factor(data->anisotropy_second),
+          compute_anisotropy_factor(data->anisotropy_third),
+          compute_anisotropy_factor(data->anisotropy_fourth) };
+
+  const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type_arr[4]
+      = { check_isotropy_mode(data->anisotropy_first),
+          check_isotropy_mode(data->anisotropy_second),
+          check_isotropy_mode(data->anisotropy_third),
+          check_isotropy_mode(data->anisotropy_fourth) };
+
+  const int isotropy_type[4] = { (int)isotropy_type_arr[0], (int)isotropy_type_arr[1],
+                                  (int)isotropy_type_arr[2], (int)isotropy_type_arr[3] };
+
+  const float regularization = powf(10.f, data->regularization) - 1.f;
+  const float variance_threshold = powf(10.f, data->variance_threshold);
+  const int has_mask_int = has_mask ? 1 : 0;
+
+  // Try no-copy buffer for output
+  out_buf = dt_metal_alloc_buffer_nocopy(metal, ovoid, buf_size);
+  if(!out_buf)
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, width, height, 4);
+    goto error;
+  }
+
+  for(int it = 0; it < iterations; it++)
+  {
+    dt_metal_buffer_t iter_in;
+    dt_metal_buffer_t iter_out;
+
+    if(it == 0)
+    {
+      iter_in = in_buf;
+      iter_out = (in_buf == temp1) ? temp2 : temp1;
+    }
+    else if(it % 2 == 0)
+    {
+      iter_in = temp1;
+      iter_out = temp2;
+    }
+    else
+    {
+      iter_in = temp2;
+      iter_out = temp1;
+    }
+
+    if(it == iterations - 1)
+      iter_out = out_buf;
+
+    // ── Batch the entire iteration: wavelet decompose + PDE reconstruct ──
+    err = dt_metal_begin_batch(metal);
+    if(err != 0) goto error;
+
+    // ── Wavelet decompose ──
+    dt_metal_buffer_t residual = NULL;
+    for(int s = 0; s < scales; ++s)
+    {
+      const int mult = 1 << s;
+
+      dt_metal_buffer_t buffer_in;
+      dt_metal_buffer_t buffer_out;
+
+      if(s == 0)
+      {
+        buffer_in = iter_in;
+        buffer_out = LF_odd;
+      }
+      else if(s % 2 != 0)
+      {
+        buffer_in = LF_odd;
+        buffer_out = LF_even;
+      }
+      else
+      {
+        buffer_in = LF_even;
+        buffer_out = LF_odd;
+      }
+
+      // bspline horizontal: input -> HF[s]
+      // Use wider threadgroups (32x8) for horizontal memory access pattern
+      {
+        const dt_metal_arg_t args[] = {
+          { DT_METAL_ARG_BUFFER, buffer_in, 0 },
+          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &mult, sizeof(int) },
+        };
+        err = _metal_dispatch_tgs(metal, gd->metal_kernel_bspline_horizontal,
+                                  width, height, 5, args, 32, 8);
+        if(err != 0) { dt_metal_end_batch(metal); goto error; }
+      }
+
+      // bspline vertical: HF[s] -> buffer_out
+      // Use taller threadgroups (8x32) for vertical memory access pattern
+      {
+        const dt_metal_arg_t args[] = {
+          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_BUFFER, buffer_out, 0 },
+          { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &mult, sizeof(int) },
+        };
+        err = _metal_dispatch_tgs(metal, gd->metal_kernel_bspline_vertical,
+                                  width, height, 5, args, 8, 32);
+        if(err != 0) { dt_metal_end_batch(metal); goto error; }
+      }
+
+      // wavelets detail: HF[s] = buffer_in - buffer_out
+      {
+        const dt_metal_arg_t args[] = {
+          { DT_METAL_ARG_BUFFER, buffer_in, 0 },
+          { DT_METAL_ARG_BUFFER, buffer_out, 0 },
+          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+        };
+        err = _metal_dispatch(metal, gd->metal_kernel_wavelets_detail, width, height, 5, args);
+        if(err != 0) { dt_metal_end_batch(metal); goto error; }
+      }
+
+      residual = buffer_out;
+    }
+
+    // ── PDE reconstruct (coarse to fine) ──
+    dt_metal_buffer_t temp_pde = (residual == LF_even) ? LF_odd : LF_even;
+
+    int count = 0;
+    for(int s = scales - 1; s > -1; --s)
+    {
+      const int mult = 1 << s;
+      const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
+      const float real_radius = current_radius * scale;
+      const float current_radius_square = sqf(current_radius);
+
+      const float norm =
+        expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
+      const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm,
+                                         data->second * KAPPA * norm,
+                                         data->third * KAPPA * norm,
+                                         data->fourth * KAPPA * norm };
+      const float strength = data->sharpness * norm + 1.f;
+
+      dt_metal_buffer_t pde_in;
+      dt_metal_buffer_t pde_out;
+
+      if(count == 0)
+      {
+        pde_in = residual;
+        pde_out = temp_pde;
+      }
+      else if(count % 2 != 0)
+      {
+        pde_in = temp_pde;
+        pde_out = residual;
+      }
+      else
+      {
+        pde_in = residual;
+        pde_out = temp_pde;
+      }
+
+      if(s == 0) pde_out = iter_out;
+
+      // diffuse_pde kernel (16x16 default — accesses 3x3 neighbourhood)
+      {
+        const dt_metal_arg_t args[] = {
+          { DT_METAL_ARG_BUFFER, HF[s], 0 },
+          { DT_METAL_ARG_BUFFER, pde_in, 0 },
+          { DT_METAL_ARG_BUFFER, mask, 0 },
+          { DT_METAL_ARG_BUFFER, pde_out, 0 },
+          { DT_METAL_ARG_BYTES, &has_mask_int, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &width, sizeof(int) },
+          { DT_METAL_ARG_BYTES, &height, sizeof(int) },
+          { DT_METAL_ARG_BYTES, anisotropy, sizeof(float) * 4 },
+          { DT_METAL_ARG_BYTES, isotropy_type, sizeof(int) * 4 },
+          { DT_METAL_ARG_BYTES, &regularization, sizeof(float) },
+          { DT_METAL_ARG_BYTES, &variance_threshold, sizeof(float) },
+          { DT_METAL_ARG_BYTES, &current_radius_square, sizeof(float) },
+          { DT_METAL_ARG_BYTES, &mult, sizeof(int) },
+          { DT_METAL_ARG_BYTES, ABCD, sizeof(float) * 4 },
+          { DT_METAL_ARG_BYTES, &strength, sizeof(float) },
+        };
+        err = _metal_dispatch(metal, gd->metal_kernel_diffuse_pde, width, height, 15, args);
+        if(err != 0) { dt_metal_end_batch(metal); goto error; }
+      }
+
+      count++;
+    }
+
+    // End iteration batch — submit all kernels to GPU and wait
+    err = dt_metal_end_batch(metal);
+    if(err != 0) goto error;
+  }
+
+  // If out_buf is a no-copy buffer wrapping ovoid, the data is already there.
+  // Otherwise (fallback alloc+copy case), we need to copy back.
+  // Since we can't easily distinguish, and memcpy of same pointer is harmless
+  // on shared memory, just always do it. The no-copy case makes this a no-op
+  // in practice (same physical memory).
+  dt_metal_copy_from_buffer(out_buf, ovoid, buf_size);
+  err = 0;
+
+error:
+  dt_metal_free_buffer(temp1);
+  dt_metal_free_buffer(temp2);
+  dt_metal_free_buffer(mask);
+  dt_metal_free_buffer(LF_odd);
+  dt_metal_free_buffer(LF_even);
+  dt_metal_free_buffer(out_buf);
+  for(int s = 0; s < scales; s++)
+    dt_metal_free_buffer(HF[s]);
+
+  return err;
+}
+#endif /* __APPLE__ && __aarch64__ */
 
 
 void gui_init(dt_iop_module_t *self)

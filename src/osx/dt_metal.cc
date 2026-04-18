@@ -25,6 +25,7 @@
 #include "Metal.hpp"
 
 #include <string.h>
+#include <unistd.h>
 
 
 /**
@@ -129,6 +130,8 @@ void dt_metal_init(dt_metal_t *metal)
               deviceName);
 
       dt_pthread_mutex_init(&metal->dev[i].lock, NULL);
+      metal->dev[i].active_command_buffer = NULL;
+      metal->dev[i].active_encoder = NULL;
 
       if(_dt_metal_create_library(url, &metal->dev[i], pDevice))
       {
@@ -411,4 +414,273 @@ int dt_metal_enqueue_kernel_2d(dt_metal_t *metal,
   outputBuffer->release();
 
   return 0;
+}
+
+
+/* ── Multi-buffer API implementation ─────────────────────────────── */
+
+dt_metal_buffer_t dt_metal_alloc_buffer(dt_metal_t *metal, size_t size)
+{
+  if(!metal || metal->num_devs == 0) return NULL;
+
+  MTL::Device *device = (MTL::Device *)metal->dev[0].device;
+  if(!device) return NULL;
+
+  MTL::Buffer *buf = device->newBuffer(size, MTL::ResourceStorageModeShared);
+  if(!buf)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_alloc_buffer] Could not allocate %zu bytes", size);
+    return NULL;
+  }
+
+  return (dt_metal_buffer_t)buf;
+}
+
+
+void dt_metal_free_buffer(dt_metal_buffer_t buf)
+{
+  if(!buf) return;
+  ((MTL::Buffer *)buf)->release();
+}
+
+
+void dt_metal_copy_to_buffer(dt_metal_buffer_t buf, const void *src, size_t size)
+{
+  if(!buf || !src) return;
+  memcpy(((MTL::Buffer *)buf)->contents(), src, size);
+}
+
+
+void dt_metal_copy_from_buffer(dt_metal_buffer_t buf, void *dst, size_t size)
+{
+  if(!buf || !dst) return;
+  memcpy(dst, ((MTL::Buffer *)buf)->contents(), size);
+}
+
+
+int dt_metal_enqueue_kernel_2d_flex(dt_metal_t *metal,
+                                    int kernel_id,
+                                    int width, int height,
+                                    int num_args,
+                                    const dt_metal_arg_t *args)
+{
+  return dt_metal_enqueue_kernel_2d_flex_with_tgs(metal, kernel_id, width, height,
+                                                   num_args, args, 0, 0);
+}
+
+
+int dt_metal_enqueue_kernel_2d_flex_with_tgs(dt_metal_t *metal,
+                                              int kernel_id,
+                                              int width, int height,
+                                              int num_args,
+                                              const dt_metal_arg_t *args,
+                                              int threadW_hint, int threadH_hint)
+{
+  if(!metal || kernel_id < 0 || kernel_id >= metal->num_kernels)
+    return DT_METAL_DEFAULT_ERROR;
+
+  MTL::ComputePipelineState *pipeline = (MTL::ComputePipelineState *)metal->kernels[kernel_id];
+  if(!pipeline) return DT_METAL_DEFAULT_ERROR;
+
+  dt_metal_device_t *dev = &metal->dev[0];
+  if(!dev->device || !dev->command_queue) return DT_METAL_DEFAULT_ERROR;
+
+  // Check if we're inside a batch
+  const gboolean batched = (dev->active_encoder != NULL);
+  MTL::ComputeCommandEncoder *encoder = NULL;
+  MTL::CommandBuffer *commandBuffer = NULL;
+
+  if(batched)
+  {
+    encoder = (MTL::ComputeCommandEncoder *)dev->active_encoder;
+
+    // Memory barrier to ensure previous kernel writes are visible
+    encoder->memoryBarrier(MTL::BarrierScopeBuffers);
+  }
+  else
+  {
+    // Non-batched: create a fresh command buffer + encoder
+    MTL::CommandQueue *commandQueue = (MTL::CommandQueue *)dev->command_queue;
+    commandBuffer = commandQueue->commandBuffer();
+    if(!commandBuffer)
+    {
+      dt_print(DT_DEBUG_METAL,
+              "[dt_metal_enqueue_kernel_2d_flex] Could not create command buffer");
+      return DT_METAL_DEFAULT_ERROR;
+    }
+
+    encoder = commandBuffer->computeCommandEncoder();
+    if(!encoder)
+    {
+      dt_print(DT_DEBUG_METAL,
+              "[dt_metal_enqueue_kernel_2d_flex] Could not create compute encoder");
+      return DT_METAL_DEFAULT_ERROR;
+    }
+  }
+
+  encoder->setComputePipelineState(pipeline);
+
+  // bind arguments in order: buffer(0), buffer(1), ...
+  for(int i = 0; i < num_args; i++)
+  {
+    if(args[i].type == DT_METAL_ARG_BUFFER)
+    {
+      MTL::Buffer *buf = (MTL::Buffer *)args[i].data;
+      encoder->setBuffer(buf, 0, i);
+    }
+    else // DT_METAL_ARG_BYTES
+    {
+      encoder->setBytes(args[i].data, args[i].size, i);
+    }
+  }
+
+  // calculate thread group sizes
+  const NS::UInteger maxThreads = pipeline->maxTotalThreadsPerThreadgroup();
+  NS::UInteger threadW = (threadW_hint > 0) ? (NS::UInteger)threadW_hint : 16;
+  NS::UInteger threadH = (threadH_hint > 0) ? (NS::UInteger)threadH_hint : 16;
+  // clamp to pipeline limits
+  while(threadW * threadH > maxThreads)
+  {
+    if(threadH > 1) threadH /= 2;
+    else threadW /= 2;
+  }
+
+  const MTL::Size gridSize = MTL::Size::Make(width, height, 1);
+  const MTL::Size threadGroupSize = MTL::Size::Make(threadW, threadH, 1);
+
+  encoder->dispatchThreads(gridSize, threadGroupSize);
+
+  if(!batched)
+  {
+    // Non-batched: finalize immediately
+    encoder->endEncoding();
+    commandBuffer->commit();
+    commandBuffer->waitUntilCompleted();
+
+    if(commandBuffer->status() == MTL::CommandBufferStatusError)
+    {
+      NS::Error *cbError = commandBuffer->error();
+      dt_print(DT_DEBUG_METAL,
+              "[dt_metal_enqueue_kernel_2d_flex] Command buffer error: %s",
+              cbError ? cbError->localizedDescription()->utf8String() : "unknown");
+      return DT_METAL_DEFAULT_ERROR;
+    }
+  }
+
+  return 0;
+}
+
+
+/* ── Batch dispatch API ──────────────────────────────────────────── */
+
+int dt_metal_begin_batch(dt_metal_t *metal)
+{
+  if(!metal || metal->num_devs == 0) return DT_METAL_DEFAULT_ERROR;
+
+  dt_metal_device_t *dev = &metal->dev[0];
+  if(!dev->device || !dev->command_queue) return DT_METAL_DEFAULT_ERROR;
+
+  // Don't nest batches
+  if(dev->active_encoder)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_begin_batch] Batch already active, ignoring");
+    return 0;
+  }
+
+  MTL::CommandQueue *commandQueue = (MTL::CommandQueue *)dev->command_queue;
+  MTL::CommandBuffer *commandBuffer = commandQueue->commandBuffer();
+  if(!commandBuffer)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_begin_batch] Could not create command buffer");
+    return DT_METAL_DEFAULT_ERROR;
+  }
+
+  MTL::ComputeCommandEncoder *encoder = commandBuffer->computeCommandEncoder();
+  if(!encoder)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_begin_batch] Could not create compute encoder");
+    return DT_METAL_DEFAULT_ERROR;
+  }
+
+  dev->active_command_buffer = (void *)commandBuffer;
+  dev->active_encoder = (void *)encoder;
+
+  return 0;
+}
+
+
+int dt_metal_end_batch(dt_metal_t *metal)
+{
+  if(!metal || metal->num_devs == 0) return DT_METAL_DEFAULT_ERROR;
+
+  dt_metal_device_t *dev = &metal->dev[0];
+
+  MTL::ComputeCommandEncoder *encoder = (MTL::ComputeCommandEncoder *)dev->active_encoder;
+  MTL::CommandBuffer *commandBuffer = (MTL::CommandBuffer *)dev->active_command_buffer;
+
+  if(!encoder || !commandBuffer)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_end_batch] No active batch");
+    return DT_METAL_DEFAULT_ERROR;
+  }
+
+  // Clear batch state before waiting (so error paths don't try to double-end)
+  dev->active_encoder = NULL;
+  dev->active_command_buffer = NULL;
+
+  encoder->endEncoding();
+  commandBuffer->commit();
+  commandBuffer->waitUntilCompleted();
+
+  if(commandBuffer->status() == MTL::CommandBufferStatusError)
+  {
+    NS::Error *cbError = commandBuffer->error();
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_end_batch] Command buffer error: %s",
+            cbError ? cbError->localizedDescription()->utf8String() : "unknown");
+    return DT_METAL_DEFAULT_ERROR;
+  }
+
+  return 0;
+}
+
+
+/* ── No-copy buffer API ──────────────────────────────────────────── */
+
+dt_metal_buffer_t dt_metal_alloc_buffer_nocopy(dt_metal_t *metal, void *ptr, size_t size)
+{
+  if(!metal || metal->num_devs == 0 || !ptr) return NULL;
+
+  MTL::Device *device = (MTL::Device *)metal->dev[0].device;
+  if(!device) return NULL;
+
+  // Check page alignment (required for no-copy buffers)
+  const size_t page_size = sysconf(_SC_PAGESIZE);
+  if(((uintptr_t)ptr & (page_size - 1)) != 0)
+  {
+    // Not page-aligned: fall back to alloc + copy
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_alloc_buffer_nocopy] Pointer not page-aligned, falling back to copy");
+    dt_metal_buffer_t buf = dt_metal_alloc_buffer(metal, size);
+    if(buf) dt_metal_copy_to_buffer(buf, ptr, size);
+    return buf;
+  }
+
+  // Create no-copy buffer. Pass NULL deallocator — the caller owns the memory.
+  MTL::Buffer *buf = device->newBuffer(ptr, size,
+                                        MTL::ResourceStorageModeShared | MTL::ResourceCPUCacheModeDefaultCache,
+                                        nullptr);
+  if(!buf)
+  {
+    dt_print(DT_DEBUG_METAL,
+            "[dt_metal_alloc_buffer_nocopy] Could not create no-copy buffer (%zu bytes)", size);
+    return NULL;
+  }
+
+  return (dt_metal_buffer_t)buf;
 }
