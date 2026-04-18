@@ -346,7 +346,7 @@ typedef struct dt_image_t
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;
 
-  /* GainMaps from DNG OpcodeList2 exif tag */
+  /* GainMaps from DNG OpcodeList2 or OpcodeList3 exif tag */
   GList *dng_gain_maps;
 
   /* convenience pointer back into the image cache, so we can return

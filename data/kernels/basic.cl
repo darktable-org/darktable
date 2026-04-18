@@ -154,6 +154,90 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
 }
 
 kernel void
+rawprepare_1f_gainmap_rgb(read_only image2d_t in, write_only image2d_t out,
+              const int width, const int height,
+              const int cx, const int cy,
+              global const float *sub, global const float *div,
+              const int rx, const int ry,
+              read_only image2d_t map_r, read_only image2d_t map_g, read_only image2d_t map_b,
+              const int2 map_size, const float2 im_to_rel,
+              const float2 rel_to_map, const float2 map_origin,
+              const int4 bl_to_plane)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5f, 0.5f);
+
+  int plane;
+  switch(id)
+  {
+    case 0:  plane = bl_to_plane.s0; break;
+    case 1:  plane = bl_to_plane.s1; break;
+    case 2:  plane = bl_to_plane.s2; break;
+    default: plane = bl_to_plane.s3; break;
+  }
+  switch(plane)
+  {
+    case 0:  pixel_scaled *= read_imagef(map_r, samplerf, map_pt).x; break;
+    case 1:  pixel_scaled *= read_imagef(map_g, samplerf, map_pt).x; break;
+    default: pixel_scaled *= read_imagef(map_b, samplerf, map_pt).x; break;
+  }
+
+  write_imagef(out, (int2)(x, y), pixel_scaled);
+}
+
+kernel void
+rawprepare_1f_unnormalized_gainmap_rgb(read_only image2d_t in, write_only image2d_t out,
+                           const int width, const int height,
+                           const int cx, const int cy,
+                           global const float *sub, global const float *div,
+                           const int rx, const int ry,
+                           read_only image2d_t map_r, read_only image2d_t map_g, read_only image2d_t map_b,
+                           const int2 map_size, const float2 im_to_rel,
+                           const float2 rel_to_map, const float2 map_origin,
+                           const int4 bl_to_plane)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width  || y >= height) return;
+
+  const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5f, 0.5f);
+
+  int plane;
+  switch(id)
+  {
+    case 0:  plane = bl_to_plane.s0; break;
+    case 1:  plane = bl_to_plane.s1; break;
+    case 2:  plane = bl_to_plane.s2; break;
+    default: plane = bl_to_plane.s3; break;
+  }
+  switch(plane)
+  {
+    case 0:  pixel_scaled *= read_imagef(map_r, samplerf, map_pt).x; break;
+    case 1:  pixel_scaled *= read_imagef(map_g, samplerf, map_pt).x; break;
+    default: pixel_scaled *= read_imagef(map_b, samplerf, map_pt).x; break;
+  }
+
+  write_imagef(out, (int2)(x, y), pixel_scaled);
+}
+
+kernel void
 rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
               const int cx, const int cy,
