@@ -92,6 +92,12 @@ int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, 
 /** Reads exif tags that are not cached in the database */
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 
+/** create empty metadata file */
+int dt_exif_write_exv(uint8_t *blob,
+                       uint32_t size,
+                       const char *path,
+                       const int compressed);
+
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
