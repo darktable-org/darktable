@@ -788,6 +788,7 @@ if(USE_LUA)
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
     FILE(GLOB SOURCE_FILES_LUA
+      "lua/ai.c"
       "lua/cairo.c"
       "lua/call.c"
       "lua/configuration.c"
