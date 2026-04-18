@@ -171,6 +171,8 @@ if(USE_AI)
   #
   FILE(COPY ai_models.json DESTINATION "${DARKTABLE_DATADIR}")
   install(FILES ai_models.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+  FILE(COPY ort_gpu.json DESTINATION "${DARKTABLE_DATADIR}")
+  install(FILES ort_gpu.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 endif(USE_AI)
 
 #

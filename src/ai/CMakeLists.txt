@@ -4,6 +4,8 @@ add_library(darktable_ai STATIC
   backend.h
   backend_common.c
   backend_onnx.c
+  ort_install.c
+  ort_install.h
 )
 
 # Find ONNX Runtime (auto-downloads if not present)
@@ -59,6 +61,18 @@ target_link_libraries(darktable_ai PUBLIC
   ${GLIB_LIBRARIES}
   ${JSON_GLIB_LIBRARIES}
 )
+
+# ort_install.c needs curl and libarchive for download/extraction
+find_package(CURL 7.56 QUIET)
+find_package(LibArchive QUIET)
+if(CURL_FOUND AND LibArchive_FOUND)
+  target_compile_definitions(darktable_ai PRIVATE HAVE_AI_DOWNLOAD)
+  target_include_directories(darktable_ai PRIVATE
+    ${LibArchive_INCLUDE_DIRS})
+  target_link_libraries(darktable_ai PRIVATE
+    CURL::libcurl
+    ${LibArchive_LIBRARIES})
+endif()
 
 # Install the bundled ONNX Runtime shared library alongside darktable_ai
 # (skip when using system package — it's already in the system library path)

@@ -66,6 +66,17 @@ const char *dt_ai_provider_to_string(dt_ai_provider_t provider);
 /** Parse provider from config string (with legacy alias support) */
 dt_ai_provider_t dt_ai_provider_from_string(const char *str);
 
+/** Parse the comma-separated EP list produced by
+ *  dt_ai_ort_probe_library_full() into a bitmask of (1u << dt_ai_provider_t)
+ *  values. AUTO and CPU are always set. Unknown tokens are ignored. */
+guint dt_ai_providers_from_eps(const char *eps);
+
+/** Bitmask of providers that ship with darktable's bundled ORT on the
+ *  current platform. Includes AUTO and CPU always, plus CoreML on macOS
+ *  and DirectML on Windows. Use as a safe default when the loaded ORT
+ *  cannot be probed. */
+guint dt_ai_providers_bundled(void);
+
 /** Test if a provider is available at runtime (checks deps, not just compile-time).
  *  @return 1 if available, 0 if not. */
 int dt_ai_probe_provider(dt_ai_provider_t provider);

@@ -98,6 +98,7 @@ dt_help_url urls_db[] =
   {"gamut",                      "module-reference/utility-modules/darkroom/gamut/"},
   {"shortcuts",                  "preferences-settings/shortcuts/"},
   {"presets",                    "preferences-settings/presets/"},
+  {"ai",                         "preferences-settings/ai/"},
   {"css_tweaks",                 "preferences-settings/general/#css-theme-modifications"},
   {"preset_dialog",              "darkroom/processing-modules/presets/#creating-and-editing-presets"},
 

@@ -21,11 +21,13 @@
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "ai/backend.h"
+#include "ai/ort_install.h"
 #include "common/ai_models.h"
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
+#include "osx/osx.h"
 
 #include <glib/gi18n.h>
 
@@ -104,7 +106,22 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *ort_path_indicator;
   GtkWidget *settings_grid;
   int controls_start_row;   // first row to grey out when AI disabled
+  // bitmask of (1u << dt_ai_provider_t) values that the currently-loaded
+  // ORT library actually advertises. refreshed on page build and after
+  // the user changes the ORT path. AUTO and CPU are always set
+  guint supported_providers;
+  gchar *ort_path_at_open;
 } dt_prefs_ai_data_t;
+
+// release struct + any heap-owned string fields; attached to tab_box
+// as the GDestroyNotify in g_object_set_data_full
+static void _prefs_ai_data_free(gpointer p)
+{
+  dt_prefs_ai_data_t *data = p;
+  if(!data) return;
+  g_free(data->ort_path_at_open);
+  g_free(data);
+}
 
 #ifdef HAVE_AI_DOWNLOAD
 // download dialog data
@@ -297,13 +314,125 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
                            "plugins/ai/enabled");
 }
 
-// map combo box index to provider table index (skipping unavailable providers)
-static int _combo_idx_to_provider(int combo_idx)
+// forward declarations
+static int _provider_to_combo_idx(dt_ai_provider_t provider, guint supported);
+static void _on_provider_changed(GtkWidget *widget, gpointer user_data);
+static void _update_provider_status(dt_prefs_ai_data_t *data,
+                                    dt_ai_provider_t provider);
+#if !defined(__APPLE__)
+// _apply_ort_path and its callers only exist on non-Apple platforms;
+// on macOS ORT is statically linked so there is no path UI
+static gboolean _apply_ort_path(dt_prefs_ai_data_t *data, const char *path);
+#endif
+
+// a provider is visible in the combo iff it is compiled in AND the
+// currently-loaded ORT library advertises it (GPU EPs) or it is CPU /
+// AUTO (always shown regardless of what ORT advertises)
+static gboolean _provider_visible(int i, guint supported)
+{
+  return dt_ai_providers[i].available
+         && (supported & (1u << dt_ai_providers[i].value));
+}
+
+// probe the ORT library at `path` (NULL/empty = use the bundled mask)
+// and return a bitmask of dt_ai_provider_t values it advertises;
+// falls back to the bundled mask when the probe fails, so the combo
+// only offers providers we can reasonably expect to work
+static guint _compute_supported_providers(const char *path)
+{
+  if(path && path[0])
+  {
+    char *eps = NULL;
+    if(dt_ai_ort_probe_library_full(path, NULL, &eps) && eps)
+    {
+      const guint mask = dt_ai_providers_from_eps(eps);
+      g_free(eps);
+      return mask;
+    }
+  }
+  return dt_ai_providers_bundled();
+}
+
+// rebuild the provider combo to reflect data->supported_providers;
+// preserves the user's selection if still supported, else falls back
+// to AUTO; blocks the value-changed signal during the rebuild so the
+// intermediate states don't fire _on_provider_changed
+static void _refresh_provider_combo(dt_prefs_ai_data_t *data)
+{
+  g_signal_handlers_block_by_func(data->provider_combo,
+                                  _on_provider_changed, data);
+
+  char *cfg = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  const dt_ai_provider_t prev = dt_ai_provider_from_string(cfg);
+  g_free(cfg);
+
+  dt_bauhaus_combobox_clear(data->provider_combo);
+  GString *tooltip =
+    g_string_new(_("select hardware acceleration for AI inference:"));
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+  {
+    if(!_provider_visible(i, data->supported_providers)) continue;
+    const char *label = dt_ai_providers[i].value == DT_AI_PROVIDER_AUTO
+                        ? _("auto") : dt_ai_providers[i].display_name;
+    dt_bauhaus_combobox_add(data->provider_combo, label);
+    g_string_append_printf(tooltip, "\n- %s", dt_ai_providers[i].display_name);
+  }
+  gtk_widget_set_tooltip_text(data->provider_combo, tooltip->str);
+  g_string_free(tooltip, TRUE);
+
+  // resolve the selection after filtering. preference order:
+  //   1. keep the previous selection if still supported
+  //   2. if it was a GPU EP now missing, switch to another supported
+  //      GPU EP — the user clearly wants GPU acceleration
+  //   3. fall back to AUTO
+  // persist any change so the combo and config stay in sync
+  dt_ai_provider_t selected = DT_AI_PROVIDER_AUTO;
+  if(data->supported_providers & (1u << prev))
+  {
+    selected = prev;
+  }
+  else if(prev != DT_AI_PROVIDER_AUTO && prev != DT_AI_PROVIDER_CPU)
+  {
+    // previous was a GPU EP; try to find another supported GPU EP
+    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    {
+      const dt_ai_provider_t v = dt_ai_providers[i].value;
+      if(v == DT_AI_PROVIDER_AUTO || v == DT_AI_PROVIDER_CPU) continue;
+      if(data->supported_providers & (1u << v))
+      {
+        selected = v;
+        break;
+      }
+    }
+  }
+  if(selected != prev)
+    dt_conf_set_string(DT_AI_CONF_PROVIDER,
+                       dt_ai_providers[selected].config_string);
+  dt_bauhaus_combobox_set(data->provider_combo,
+                          _provider_to_combo_idx(selected,
+                                                 data->supported_providers));
+
+  g_signal_handlers_unblock_by_func(data->provider_combo,
+                                    _on_provider_changed, data);
+
+  // bauhaus sizes the combo to fit the longest entry at allocation
+  // time; after clear/repopulate the cached layout would keep the old
+  // width, so force GTK to re-request natural size
+  gtk_widget_queue_resize(data->provider_combo);
+
+  // runtime-probe the selection so the "not available, will fall back
+  // to CPU" label reflects the new EP. the value-changed signal was
+  // blocked during the rebuild, so _on_provider_changed didn't fire
+  _update_provider_status(data, selected);
+}
+
+// map combo box index to provider table index (skipping hidden providers)
+static int _combo_idx_to_provider(int combo_idx, guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
-    if(!dt_ai_providers[i].available) continue;
+    if(!_provider_visible(i, supported)) continue;
     if(++visible == combo_idx)
       return i;
   }
@@ -311,12 +440,12 @@ static int _combo_idx_to_provider(int combo_idx)
 }
 
 // map provider enum value to combo box index
-static int _provider_to_combo_idx(dt_ai_provider_t provider)
+static int _provider_to_combo_idx(dt_ai_provider_t provider, guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
-    if(!dt_ai_providers[i].available) continue;
+    if(!_provider_visible(i, supported)) continue;
     visible++;
     if(dt_ai_providers[i].value == provider)
       return visible;
@@ -336,6 +465,21 @@ static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t p
     return;
   }
 
+  // if the ORT path has changed since the page opened, the in-process
+  // ORT is stale — probing it would report the old capabilities, not
+  // what will be available after restart. show the restart notice
+  // instead for GPU providers (AUTO/CPU always work, no need to warn)
+  gchar *cur_path = dt_conf_get_string("plugins/ai/ort_library_path");
+  const gboolean restart_pending = g_strcmp0(cur_path, data->ort_path_at_open) != 0;
+  g_free(cur_path);
+  if(restart_pending
+     && provider != DT_AI_PROVIDER_AUTO && provider != DT_AI_PROVIDER_CPU)
+  {
+    gtk_label_set_markup(GTK_LABEL(data->provider_status),
+                         _("<i>restart to apply</i>"));
+    return;
+  }
+
   if(provider == DT_AI_PROVIDER_AUTO || provider == DT_AI_PROVIDER_CPU
      || dt_ai_probe_provider(provider))
   {
@@ -351,7 +495,7 @@ static void _on_provider_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   const int combo_idx = dt_bauhaus_combobox_get(widget);
-  const int pi = _combo_idx_to_provider(combo_idx);
+  const int pi = _combo_idx_to_provider(combo_idx, data->supported_providers);
   dt_conf_set_string(DT_AI_CONF_PROVIDER, dt_ai_providers[pi].config_string);
   if(darktable.ai_registry)
   {
@@ -378,13 +522,16 @@ _reset_enable_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 
 // double-click on label resets the provider combo to default
 static gboolean
-_reset_provider_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+_reset_provider_click(GtkWidget *label, GdkEventButton *event, gpointer user_data)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
+    dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
     const char *def = dt_confgen_get(DT_AI_CONF_PROVIDER, DT_DEFAULT);
     dt_ai_provider_t provider = dt_ai_provider_from_string(def);
-    dt_bauhaus_combobox_set(widget, _provider_to_combo_idx(provider));
+    dt_bauhaus_combobox_set(data->provider_combo,
+                            _provider_to_combo_idx(provider,
+                                                   data->supported_providers));
     return TRUE;
   }
   return FALSE;
@@ -859,9 +1006,13 @@ static void _on_delete_selected(GtkButton *button, gpointer user_data)
     GTK_WINDOW(data->parent_dialog),
     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
     GTK_MESSAGE_QUESTION,
-    GTK_BUTTONS_YES_NO,
+    GTK_BUTTONS_NONE,
     ngettext("delete %d selected model?", "delete %d selected models?", delete_count),
     delete_count);
+  gtk_dialog_add_buttons(GTK_DIALOG(confirm),
+                         _("_no"), GTK_RESPONSE_NO,
+                         _("_yes"), GTK_RESPONSE_YES,
+                         NULL);
 
   gint response = gtk_dialog_run(GTK_DIALOG(confirm));
   gtk_widget_destroy(confirm);
@@ -1050,14 +1201,16 @@ static gboolean _on_info_button_press(GtkWidget *widget,
 }
 
 #if !defined(__APPLE__)
-static void _show_ort_probe_result(GtkWindow *parent, const char *path, const char *version)
+static void _show_ort_probe_result(GtkWindow *parent, const char *path,
+                                   const char *version, const char *eps)
 {
   GtkWidget *dlg;
   if(version)
     dlg = gtk_message_dialog_new(parent,
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-      _("ONNX Runtime %s detected.\nRestart darktable to apply."), version);
+      _("ONNX Runtime %s [%s] detected\nrestart darktable to apply"),
+      version, eps ? eps : "CPU");
   else
     dlg = gtk_message_dialog_new(parent,
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1088,17 +1241,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
   else if(count == 1)
   {
     dt_ai_ort_found_t *f = found->data;
-    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-    dt_conf_set_string("plugins/ai/ort_library_path", f->path);
-    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
-    GtkWidget *dlg = gtk_message_dialog_new(
-      GTK_WINDOW(data->parent_dialog),
-      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-      _("ONNX Runtime %s [%s]\n%s\n\nRestart darktable to apply."),
-      f->version, f->eps, f->path);
-    gtk_dialog_run(GTK_DIALOG(dlg));
-    gtk_widget_destroy(dlg);
+    _apply_ort_path(data, f->path);
   }
   else
   {
@@ -1130,59 +1273,404 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     gtk_container_add(GTK_CONTAINER(content), combo);
     gtk_widget_show_all(content);
 
+    int sel = -1;
     if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
-    {
-      const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
-      if(sel >= 0)
-      {
-        dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
-        gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-        dt_conf_set_string("plugins/ai/ort_library_path", f->path);
-        _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
-      }
-    }
+      sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
     gtk_widget_destroy(dlg);
+    if(sel >= 0)
+    {
+      dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
+      _apply_ort_path(data, f->path);
+    }
   }
 
   g_list_free_full(found, (GDestroyNotify)dt_ai_ort_found_free);
+}
+
+#ifdef HAVE_AI_DOWNLOAD
+
+// --- ORT GPU install dialog ---
+//
+// the install flow runs a worker thread that calls dt_ort_install_gpu()
+// while the main thread drives a modal progress dialog. shared data
+// splits into two halves:
+//   _ort_install_state_t — mutex-protected, written by worker +
+//                          progress cb, read by the idle callback
+//   _ort_install_ui_t    — GTK widgets, main-thread only; holds a
+//                          back-pointer to state for the idle callback
+
+typedef struct
+{
+  GMutex mutex;
+  dt_ort_gpu_vendor_t vendor;
+  double progress;
+  gchar *status_msg;
+  gchar *error;
+  gchar *installed_path;
+  gboolean finished;
+  gboolean cancelled;
+} _ort_install_state_t;
+
+typedef struct
+{
+  GtkWidget *dialog;
+  GtkWidget *progress_bar;
+  GtkWidget *status_label;
+  _ort_install_state_t *state;
+} _ort_install_ui_t;
+
+static void _install_progress_cb(double progress, const char *status, gpointer user_data)
+{
+  _ort_install_state_t *s = user_data;
+  g_mutex_lock(&s->mutex);
+  s->progress = progress;
+  g_free(s->status_msg);
+  s->status_msg = g_strdup(status);
+  g_mutex_unlock(&s->mutex);
+}
+
+static gpointer _install_thread(gpointer data)
+{
+  _ort_install_state_t *s = data;
+  char *error = dt_ort_install_gpu(s->vendor,
+                                    _install_progress_cb, s,
+                                    &s->cancelled,
+                                    &s->installed_path);
+  g_mutex_lock(&s->mutex);
+  s->error = error;
+  s->finished = TRUE;
+  g_mutex_unlock(&s->mutex);
+  return NULL;
+}
+
+static gboolean _install_progress_idle(gpointer data)
+{
+  _ort_install_ui_t *ui = data;
+  _ort_install_state_t *s = ui->state;
+
+  g_mutex_lock(&s->mutex);
+  const double progress = s->progress;
+  gchar *status = g_strdup(s->status_msg);
+  const gboolean finished = s->finished;
+  g_mutex_unlock(&s->mutex);
+
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ui->progress_bar), progress);
+  if(status)
+  {
+    gtk_label_set_text(GTK_LABEL(ui->status_label), status);
+    g_free(status);
+  }
+
+  if(finished)
+  {
+    gtk_dialog_response(GTK_DIALOG(ui->dialog), GTK_RESPONSE_OK);
+    return G_SOURCE_REMOVE;
+  }
+  return G_SOURCE_CONTINUE;
+}
+
+// show an OK-only modal message. used for success/failure confirmations
+static void _show_message(GtkWidget *parent,
+                          GtkMessageType type,
+                          const char *format, ...) G_GNUC_PRINTF(3, 4);
+
+static void _show_message(GtkWidget *parent,
+                          GtkMessageType type,
+                          const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  gchar *msg = g_strdup_vprintf(format, ap);
+  va_end(ap);
+
+  GtkWidget *dlg = gtk_message_dialog_new
+    (GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     type, GTK_BUTTONS_OK, "%s", msg);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+  gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+  g_free(msg);
+}
+
+// --- click-handler steps ---
+
+// show "no GPU found" dialog. caller uses this when detection returns 0
+static void _show_no_gpu_dialog(GtkWidget *parent)
+{
+  _show_message
+    (parent, GTK_MESSAGE_INFO,
+     _("no supported GPU detected.\n\n"
+       "supported: NVIDIA (CUDA), AMD (ROCm/MIGraphX), Intel (OpenVINO).\n"
+       "ensure drivers are installed and the GPU is recognized by the system."));
+}
+
+// if multiple GPUs are present, prompt the user to choose one.
+// returns NULL on cancel; otherwise returns one of the entries in
+// `gpus` (not owned — caller still owns the list)
+static dt_ort_gpu_info_t *_step_select_gpu(GList *gpus, GtkWidget *parent)
+{
+  if(g_list_length(gpus) == 1) return gpus->data;
+
+  GtkWidget *dlg = gtk_dialog_new_with_buttons
+    (_("select GPU for ORT acceleration"),
+     GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
+     _("_next"), GTK_RESPONSE_ACCEPT,
+     NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+
+  GtkWidget *combo = gtk_combo_box_text_new();
+  for(GList *l = gpus; l; l = g_list_next(l))
+  {
+    dt_ort_gpu_info_t *g = l->data;
+    const char *ep = dt_ort_gpu_vendor_label(g->vendor);
+    gchar *entry = g->runtime_version
+                   ? g_strdup_printf("%s (%s) [%s]", g->label, g->runtime_version, ep)
+                   : g_strdup_printf("%s [%s]", g->label, ep);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
+    g_free(entry);
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
+
+  dt_gui_dialog_add(dlg,
+                    dt_ui_label_new(_("multiple GPUs detected. select one:")),
+                    combo);
+  gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(dlg)));
+
+  int sel = -1;
+  if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
+    sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+  gtk_widget_destroy(dlg);
+
+  return sel < 0 ? NULL : g_list_nth_data(gpus, sel);
+}
+
+// show a summary dialog and ask for user confirmation. returns TRUE to proceed
+static gboolean _step_confirm_install(dt_ort_gpu_info_t *selected,
+                                      GtkWidget *parent)
+{
+  const char *ep = dt_ort_gpu_vendor_label(selected->vendor);
+  GString *msg = g_string_new(NULL);
+  g_string_append_printf(msg, _("install ONNX Runtime with %s support\n\n"), ep);
+  g_string_append_printf(msg, _("GPU: %s\n"), selected->label);
+  if(selected->runtime_version)
+    g_string_append_printf(msg, _("runtime: %s\n"), selected->runtime_version);
+  g_string_append_printf(msg, _("download size: ~%zu MB\n"),
+                         selected->download_size_mb);
+
+  if(selected->deps_missing)
+  {
+    g_string_append_printf(msg, _("\nwarning: missing dependency: %s\n"),
+                           selected->deps_missing);
+    if(selected->deps_hint)
+      g_string_append_printf(msg, _("install with: %s\n"), selected->deps_hint);
+    g_string_append(msg, _("\nthe download will proceed, but GPU acceleration\n"
+                            "may not work until dependencies are installed."));
+  }
+
+  g_string_append(msg, _("\n\ncontinue?"));
+
+  GtkWidget *dlg = gtk_message_dialog_new
+    (GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     selected->deps_met ? GTK_MESSAGE_QUESTION : GTK_MESSAGE_WARNING,
+     GTK_BUTTONS_NONE,
+     "%s", msg->str);
+  gtk_window_set_title(GTK_WINDOW(dlg), _("install ONNX Runtime"));
+  gtk_dialog_add_buttons(GTK_DIALOG(dlg),
+                         _("_no"), GTK_RESPONSE_NO,
+                         _("_yes"), GTK_RESPONSE_YES,
+                         NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dlg), GTK_RESPONSE_NO);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+  const gint resp = gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+  g_string_free(msg, TRUE);
+  return resp == GTK_RESPONSE_YES;
+}
+
+// run the install worker behind a modal progress dialog. blocks
+// until the worker finishes. fills state->error or state->installed_path
+static void _step_run_install_with_progress(_ort_install_state_t *state,
+                                            GtkWidget *parent)
+{
+  _ort_install_ui_t ui = { .state = state };
+  ui.dialog = gtk_dialog_new_with_buttons
+    (_("installing ONNX Runtime"),
+     GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
+     NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(ui.dialog);
+#endif
+  gtk_widget_set_size_request(ui.dialog, DT_PIXEL_APPLY_DPI(400), -1);
+
+  ui.status_label = dt_ui_label_new(_("starting download..."));
+  ui.progress_bar = gtk_progress_bar_new();
+
+  dt_gui_dialog_add(ui.dialog, ui.status_label, ui.progress_bar);
+  gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ui.dialog)));
+
+  GThread *thread = g_thread_new("ort-install", _install_thread, state);
+  guint timer = g_timeout_add(100, _install_progress_idle, &ui);
+
+  const gint resp = gtk_dialog_run(GTK_DIALOG(ui.dialog));
+
+  // if user hit cancel while the worker is still running, signal cancellation
+  if(resp == GTK_RESPONSE_CANCEL && !state->finished)
+  {
+    g_mutex_lock(&state->mutex);
+    state->cancelled = TRUE;
+    g_mutex_unlock(&state->mutex);
+  }
+
+  g_thread_join(thread);
+  g_source_remove(timer);
+  gtk_widget_destroy(ui.dialog);
+}
+
+// on success, update config + UI and show a confirmation dialog.
+// on failure, show the error. state is consumed but not freed
+static void _step_apply_install_result(dt_prefs_ai_data_t *data,
+                                       const _ort_install_state_t *state)
+{
+  if(state->error)
+  {
+    _show_message(data->parent_dialog, GTK_MESSAGE_ERROR,
+                  _("ORT installation failed:\n%s"), state->error);
+    return;
+  }
+  if(!state->installed_path) return;
+
+  // auto-fill the path preference
+  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), state->installed_path);
+  dt_conf_set_string("plugins/ai/ort_library_path", state->installed_path);
+  _update_string_indicator(data->ort_path_indicator,
+                           "plugins/ai/ort_library_path");
+
+  gchar *version = dt_ai_ort_probe_library(state->installed_path);
+  char *eps = NULL;
+  dt_ai_ort_probe_library_full(state->installed_path, NULL, &eps);
+
+  // filter the provider combo to the EPs this newly-installed library
+  // advertises — same logic as _on_ort_path_changed
+  data->supported_providers = dt_ai_providers_from_eps(eps);
+  _refresh_provider_combo(data);
+
+  _show_message(data->parent_dialog, GTK_MESSAGE_INFO,
+                _("ONNX Runtime %s [%s] installed successfully\n\n"
+                  "%s\n\nrestart darktable to apply"),
+                version ? version : "?",
+                eps ? eps : "?",
+                state->installed_path);
+  g_free(version);
+  g_free(eps);
+}
+
+static void _on_install_ort_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  GList *gpus = dt_ort_detect_gpus();
+  if(!gpus)
+  {
+    _show_no_gpu_dialog(data->parent_dialog);
+    return;
+  }
+
+  dt_ort_gpu_info_t *selected = _step_select_gpu(gpus, data->parent_dialog);
+  if(selected && _step_confirm_install(selected, data->parent_dialog))
+  {
+    _ort_install_state_t state = { .vendor = selected->vendor };
+    g_mutex_init(&state.mutex);
+
+    _step_run_install_with_progress(&state, data->parent_dialog);
+    _step_apply_install_result(data, &state);
+
+    g_free(state.error);
+    g_free(state.installed_path);
+    g_free(state.status_msg);
+    g_mutex_clear(&state.mutex);
+  }
+
+  g_list_free_full(gpus, (GDestroyNotify)dt_ort_gpu_info_free);
+}
+
+#endif // HAVE_AI_DOWNLOAD
+
+// apply a new ORT library path to the preferences UI: probe it, show
+// the result, persist to config, update the entry text + indicator,
+// and refresh the provider combo to match its EP set. NULL/empty path
+// resets to the bundled library; returns TRUE on success or empty
+// (caller can trust the entry text matches config), FALSE if the probe
+// failed and the caller should revert the entry
+static gboolean _apply_ort_path(dt_prefs_ai_data_t *data, const char *path)
+{
+  if(!path || !path[0])
+  {
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
+    dt_conf_set_string("plugins/ai/ort_library_path", "");
+    _update_string_indicator(data->ort_path_indicator,
+                             "plugins/ai/ort_library_path");
+    data->supported_providers = _compute_supported_providers(NULL);
+    _refresh_provider_combo(data);
+    return TRUE;
+  }
+
+  // one probe gives us both the version (for the UI note) and the
+  // EP list (for filtering the provider combo below)
+  char *version = NULL;
+  char *eps = NULL;
+  dt_ai_ort_probe_library_full(path, &version, &eps);
+  _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), path, version, eps);
+  if(!version)
+  {
+    g_free(eps);
+    return FALSE;
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), path);
+  dt_conf_set_string("plugins/ai/ort_library_path", path);
+  _update_string_indicator(data->ort_path_indicator,
+                           "plugins/ai/ort_library_path");
+  data->supported_providers = dt_ai_providers_from_eps(eps);
+  _refresh_provider_combo(data);
+
+  g_free(version);
+  g_free(eps);
+  return TRUE;
 }
 
 static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   if(e->type != GDK_2BUTTON_PRESS) return FALSE;
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
-  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
-  dt_conf_set_string("plugins/ai/ort_library_path", "");
-  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+  _apply_ort_path(data, NULL);
   return TRUE;
 }
+
 static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   const char *text = gtk_entry_get_text(GTK_ENTRY(data->ort_path_entry));
 
-  // empty = reset to bundled
-  if(!text || !text[0])
+  if(!_apply_ort_path(data, text))
   {
-    dt_conf_set_string("plugins/ai/ort_library_path", "");
-    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
-    return;
+    // probe failed — revert the entry to the saved config so it
+    // doesn't show a path that isn't actually in effect
+    gchar *saved = dt_conf_get_string("plugins/ai/ort_library_path");
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), saved ? saved : "");
+    g_free(saved);
   }
-
-  gchar *version = dt_ai_ort_probe_library(text);
-  _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), text, version);
-  if(!version)
-  {
-    // revert entry to saved config
-    gchar *prev = dt_conf_get_string("plugins/ai/ort_library_path");
-    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), prev ? prev : "");
-    g_free(prev);
-    return;
-  }
-
-  dt_conf_set_string("plugins/ai/ort_library_path", text);
-  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
-  g_free(version);
 }
 
 static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
@@ -1231,15 +1719,9 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
 
   if(filename)
   {
-    gchar *version = dt_ai_ort_probe_library(filename);
-    _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), filename, version);
-    if(version)
-    {
-      gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), filename);
-      dt_conf_set_string("plugins/ai/ort_library_path", filename);
-      _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
-      g_free(version);
-    }
+    // _apply_ort_path handles probing + showing result + combo refresh;
+    // on probe failure we leave the saved path untouched
+    _apply_ort_path(data, filename);
     g_free(filename);
   }
 }
@@ -1249,6 +1731,10 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 {
   dt_prefs_ai_data_t *data = g_new0(dt_prefs_ai_data_t, 1);
   data->parent_dialog = dialog;
+  // snapshot the ORT path now; if it changes later in this session,
+  // the in-process ORT is stale and runtime provider probes become
+  // unreliable — _update_provider_status uses this to detect that
+  data->ort_path_at_open = dt_conf_get_string("plugins/ai/ort_library_path");
 
   // main vertical box holds two independent sections
   GtkWidget *main_box = dt_gui_vbox();
@@ -1310,24 +1796,10 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   data->provider_indicator = _create_indicator(DT_AI_CONF_PROVIDER);
   data->provider_combo = dt_bauhaus_combobox_new(NULL);
+  gtk_widget_set_size_request(data->provider_combo, DT_PIXEL_APPLY_DPI(120), -1);
 
-  // populate from central provider table, skipping unavailable providers
-  GString *tooltip = g_string_new(_("select hardware acceleration for AI inference:"));
-  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
-  {
-    if(!dt_ai_providers[i].available) continue;
-    if(dt_ai_providers[i].value == DT_AI_PROVIDER_AUTO)
-      dt_bauhaus_combobox_add(data->provider_combo, _("auto"));
-    else
-      dt_bauhaus_combobox_add(data->provider_combo, dt_ai_providers[i].display_name);
-    g_string_append_printf(tooltip, "\n- %s", dt_ai_providers[i].display_name);
-  }
-
-  char *provider_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-  dt_ai_provider_t provider = dt_ai_provider_from_string(provider_str);
-  g_free(provider_str);
-  dt_bauhaus_combobox_set(data->provider_combo, _provider_to_combo_idx(provider));
-
+  // connect signals before the first refresh — the refresh blocks the
+  // value-changed handler while it repopulates, so we need it attached
   g_signal_connect(
     data->provider_combo,
     "value-changed",
@@ -1337,12 +1809,17 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     provider_labelev,
     "button-press-event",
     G_CALLBACK(_reset_provider_click),
-    data->provider_combo);
-  gtk_widget_set_tooltip_text(data->provider_combo, tooltip->str);
-  g_string_free(tooltip, TRUE);
+    data);
+
+  // filter the combo to what the currently-configured ORT advertises
+  char *ort_path = dt_conf_get_string("plugins/ai/ort_library_path");
+  data->supported_providers = _compute_supported_providers(ort_path);
+  g_free(ort_path);
+  _refresh_provider_combo(data);
   data->provider_status = gtk_label_new(NULL);
   gtk_label_set_use_markup(GTK_LABEL(data->provider_status), TRUE);
   gtk_widget_set_halign(data->provider_status, GTK_ALIGN_START);
+  gtk_widget_set_margin_start(data->provider_status, DT_PIXEL_APPLY_DPI(8));
 
   // put combo + status in an hbox so the combo doesn't stretch
   // when column 2 expands for the ORT path entry below
@@ -1391,7 +1868,14 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     gtk_widget_set_tooltip_text(detect_btn,
                                 _("search for a system-installed ONNX Runtime library"));
 
+#ifdef HAVE_AI_DOWNLOAD
+    GtkWidget *install_btn = gtk_button_new_with_label(_("install"));
+    gtk_widget_set_tooltip_text(install_btn,
+                                _("download and install a GPU-accelerated ONNX Runtime"));
+    GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn, install_btn);
+#else
     GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn);
+#endif
     gtk_widget_set_valign(btn_box, GTK_ALIGN_CENTER);
 
     gtk_grid_attach(GTK_GRID(settings_grid), path_labelev, 0, row, 1, 1);
@@ -1401,6 +1885,9 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
     g_signal_connect(browse_btn, "clicked", G_CALLBACK(_on_ort_browse_clicked), data);
     g_signal_connect(detect_btn, "clicked", G_CALLBACK(_on_detect_system_ort), data);
+#ifdef HAVE_AI_DOWNLOAD
+    g_signal_connect(install_btn, "clicked", G_CALLBACK(_on_install_ort_clicked), data);
+#endif
     g_signal_connect(data->ort_path_entry, "activate", G_CALLBACK(_on_ort_path_changed), data);
     g_signal_connect(path_labelev, "button-press-event", G_CALLBACK(_reset_ort_path_click), data);
   }
@@ -1640,6 +2127,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data);
   dt_gui_box_add(button_box, data->delete_selected_btn);
 
+  // help button anchored to the right end of the action row,
+  // matching the convention in other preference tabs
+  GtkWidget *help_btn = gtk_button_new_with_label(_("?"));
+  dt_gui_add_help_link(help_btn, "ai");
+  g_signal_connect(help_btn, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(button_box), help_btn, FALSE, FALSE, 0);
 
   dt_gui_box_add(data->controls_box, models_grid);
 
@@ -1654,7 +2147,8 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   _refresh_model_list(data);
 
   // store data pointer for cleanup (attach to container)
-  g_object_set_data_full(G_OBJECT(tab_box), "prefs-ai-data", data, g_free);
+  g_object_set_data_full(G_OBJECT(tab_box), "prefs-ai-data", data,
+                         _prefs_ai_data_free);
 }
 
 // clang-format off
