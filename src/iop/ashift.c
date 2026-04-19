@@ -5209,7 +5209,7 @@ int scrolled(dt_iop_module_t *self,
       near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta_draw");
     else
       near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
-    const float amount = up ? 0.8f : 1.25f;
+    const float amount = up ? 1.25f : 0.8f;
     near_delta = MAX(4.0f, MIN(near_delta * amount, 100.0f));
     if(g->current_structure_method == ASHIFT_METHOD_QUAD
        || g->current_structure_method == ASHIFT_METHOD_LINES)
