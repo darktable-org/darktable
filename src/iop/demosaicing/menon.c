@@ -125,12 +125,100 @@ static inline float _menon_cnv_2d(const float *const restrict buf,
   return sum;
 }
 
+/* Specialized 3-tap k_b convolution: kernel = {0.5, 0, 0.5}.
+   For interior columns uses direct average; for boundary cols applies reflect.
+   Matches baseline _menon_cnv_h3(buf, row, col, w, h, k_b). */
+static inline float _menon_cnv_h3_kb(const float *const restrict buf,
+                                     const int row, const int col,
+                                     const int width)
+{
+  const size_t rs = (size_t)row * width;
+  if(__builtin_expect(col > 0 && col < width - 1, 1))
+    return 0.5f * (buf[rs + col - 1] + buf[rs + col + 1]);
+  int cl = col - 1, cr = col + 1;
+  if(cl < 0) cl = -cl;
+  if(cr >= width) cr = 2*(width-1) - cr;
+  return 0.5f * (buf[rs + cl] + buf[rs + cr]);
+}
+
+static inline float _menon_cnv_v3_kb(const float *const restrict buf,
+                                     const int row, const int col,
+                                     const int width, const int height)
+{
+  if(__builtin_expect(row > 0 && row < height - 1, 1))
+    return 0.5f * (buf[(size_t)(row-1) * width + col] + buf[(size_t)(row+1) * width + col]);
+  int rt = row - 1, rb = row + 1;
+  if(rt < 0) rt = -rt;
+  if(rb >= height) rb = 2*(height-1) - rb;
+  return 0.5f * (buf[(size_t)rt * width + col] + buf[(size_t)rb * width + col]);
+}
+
+/* Specialized 3-tap FIR convolution: kernel = {1/3, 1/3, 1/3}.
+   Matches baseline _menon_cnv_h3(buf, row, col, w, h, FIR). */
+static inline float _menon_cnv_h3_fir(const float *const restrict buf,
+                                      const int row, const int col,
+                                      const int width)
+{
+  const size_t rs = (size_t)row * width;
+  if(__builtin_expect(col > 0 && col < width - 1, 1))
+    return (buf[rs + col - 1] + buf[rs + col] + buf[rs + col + 1]) * (1.0f/3.0f);
+  int cl = col - 1, cr = col + 1;
+  if(cl < 0) cl = -cl;
+  if(cr >= width) cr = 2*(width-1) - cr;
+  return (buf[rs + cl] + buf[rs + col] + buf[rs + cr]) * (1.0f/3.0f);
+}
+
+static inline float _menon_cnv_v3_fir(const float *const restrict buf,
+                                      const int row, const int col,
+                                      const int width, const int height)
+{
+  const size_t rs = (size_t)row * width;
+  if(__builtin_expect(row > 0 && row < height - 1, 1))
+    return (buf[rs - width + col] + buf[rs + col] + buf[rs + width + col]) * (1.0f/3.0f);
+  int rt = row - 1, rb = row + 1;
+  if(rt < 0) rt = -rt;
+  if(rb >= height) rb = 2*(height-1) - rb;
+  return (buf[(size_t)rt * width + col] + buf[rs + col] + buf[(size_t)rb * width + col]) * (1.0f/3.0f);
+}
+
+/* Inner-region sparse classifier kernels (no boundary check).
+   clf_h has 8 non-zero taps: positions (dr,dc,weight)
+     (-2,-2,1), (-2,0,1), (-1,-1,1), (0,-2,3), (0,0,3),
+     (+1,-1,1), (+2,-2,1), (+2,0,1).
+   Caller must guarantee 2 <= row < height-2 AND 2 <= col < width-2. */
+static inline float _menon_clf_h_inner(const float *const restrict buf,
+                                       const int row, const int col, const int width)
+{
+  const size_t w = (size_t)width;
+  const size_t idx = (size_t)row * w + (size_t)col;
+  return      buf[idx - 2*w - 2] + buf[idx - 2*w]
+       +      buf[idx -   w - 1]
+       + 3.f*(buf[idx       - 2] + buf[idx])
+       +      buf[idx +   w - 1]
+       +      buf[idx + 2*w - 2] + buf[idx + 2*w];
+}
+
+/* clf_v has 8 non-zero taps (mirror of clf_h taps along anti-diagonal):
+     (-2,-2,1), (-2,0,3), (-2,+2,1),
+     (-1,-1,1), (-1,+1,1),
+     (0,-2,1), (0,0,3), (0,+2,1). */
+static inline float _menon_clf_v_inner(const float *const restrict buf,
+                                       const int row, const int col, const int width)
+{
+  const size_t w = (size_t)width;
+  const size_t idx = (size_t)row * w + (size_t)col;
+  return      buf[idx - 2*w - 2] + 3.f*buf[idx - 2*w] + buf[idx - 2*w + 2]
+       +      buf[idx -   w - 1] +                     buf[idx -   w + 1]
+       +      buf[idx       - 2] + 3.f*buf[idx]       + buf[idx       + 2];
+}
+
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
 static void menon_demosaic(float *const restrict out,
                            const float *const restrict in,
                            const int width,
                            const int height,
-                           const uint32_t filters)
+                           const uint32_t filters,
+                           const int refining_step)
 {
   const size_t numpix = (size_t)width * height;
 
@@ -160,10 +248,12 @@ static void menon_demosaic(float *const restrict out,
   }
 
   /* ---- Filter kernels ---- */
-  const float h_0[5] = { 0.0f, 0.5f, 0.0f, 0.5f, 0.0f };
-  const float h_1[5] = { -0.25f, 0.0f, 0.5f, 0.0f, -0.25f };
+  /* Step 2 used two separate kernels h_0 + h_1; by linearity we merge them
+     into one 5-tap kernel (saves one 5-tap convolution per non-green pixel). */
+  const float h_sum[5] = { -0.25f, 0.5f, 0.5f, 0.5f, -0.25f };
   const float k_b[3] = { 0.5f, 0.0f, 0.5f };
   const float FIR[3] = { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f };
+  (void)k_b; (void)FIR; /* only used via OpenMP firstprivate clauses below */
 
   /* Directional classifier kernel (5x5) for horizontal.
      scipy.ndimage.convolve flips the kernel (true convolution), but our
@@ -187,65 +277,70 @@ static void menon_demosaic(float *const restrict out,
 
   /* ---- Step 1: Extract CFA and initial R, G, B channels ---- */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(in, CFA, R, G, B, width, height, filters, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(in, CFA, R, G, B, width, height, filters))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const float val = fmaxf(in[idx], 0.0f); // clamp negative values from rawprepare
-    CFA[idx] = val;
-    const int fc = FC(row, col, filters);
-    R[idx] = (fc == 0) ? val : 0.0f;
-    G[idx] = (fc == 1) ? val : 0.0f;
-    B[idx] = (fc == 2) ? val : 0.0f;
+    const size_t rowstart = (size_t)row * width;
+    for(int col = 0; col < width; col++)
+    {
+      const size_t idx = rowstart + col;
+      const float val = fmaxf(in[idx], 0.0f);
+      CFA[idx] = val;
+      const int fc = FC(row, col, filters);
+      R[idx] = (fc == 0) ? val : 0.0f;
+      G[idx] = (fc == 1) ? val : 0.0f;
+      B[idx] = (fc == 2) ? val : 0.0f;
+    }
   }
 
   /* ---- Step 2: Tentative horizontal and vertical green estimates ---- */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(CFA, G, G_H, G_V, width, height, filters, h_0, h_1, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(CFA, G, G_H, G_V, width, height, filters, h_sum))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const int fc = FC(row, col, filters);
-    if(fc == 1)
+    const size_t rowstart = (size_t)row * width;
+    for(int col = 0; col < width; col++)
     {
-      // Green pixel: keep original
-      G_H[idx] = G[idx];
-      G_V[idx] = G[idx];
-    }
-    else
-    {
-      // Non-green pixel: interpolate green directionally
-      G_H[idx] = _menon_cnv_h5(CFA, row, col, width, height, h_0)
-               + _menon_cnv_h5(CFA, row, col, width, height, h_1);
-      G_V[idx] = _menon_cnv_v5(CFA, row, col, width, height, h_0)
-               + _menon_cnv_v5(CFA, row, col, width, height, h_1);
+      const size_t idx = rowstart + col;
+      const int fc = FC(row, col, filters);
+      if(fc == 1)
+      {
+        G_H[idx] = G[idx];
+        G_V[idx] = G[idx];
+      }
+      else
+      {
+        G_H[idx] = _menon_cnv_h5(CFA, row, col, width, height, h_sum);
+        G_V[idx] = _menon_cnv_v5(CFA, row, col, width, height, h_sum);
+      }
     }
   }
 
   /* ---- Step 3: Compute color differences for classification ---- */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(R, B, G_H, G_V, C_H, C_V, width, height, filters, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(R, B, G_H, G_V, C_H, C_V, width, height, filters))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const int fc = FC(row, col, filters);
-    if(fc == 0) // Red pixel
+    const size_t rowstart = (size_t)row * width;
+    for(int col = 0; col < width; col++)
     {
-      C_H[idx] = R[idx] - G_H[idx];
-      C_V[idx] = R[idx] - G_V[idx];
-    }
-    else if(fc == 2) // Blue pixel
-    {
-      C_H[idx] = B[idx] - G_H[idx];
-      C_V[idx] = B[idx] - G_V[idx];
-    }
-    else
-    {
-      C_H[idx] = 0.0f;
-      C_V[idx] = 0.0f;
+      const size_t idx = rowstart + col;
+      const int fc = FC(row, col, filters);
+      if(fc == 0)
+      {
+        C_H[idx] = R[idx] - G_H[idx];
+        C_V[idx] = R[idx] - G_V[idx];
+      }
+      else if(fc == 2)
+      {
+        C_H[idx] = B[idx] - G_H[idx];
+        C_V[idx] = B[idx] - G_V[idx];
+      }
+      else
+      {
+        C_H[idx] = 0.0f;
+        C_V[idx] = 0.0f;
+      }
     }
   }
 
@@ -254,23 +349,29 @@ static void menon_demosaic(float *const restrict out,
      D_V[row][col] = |C_V[row][col] - C_V[row+2][col]|  (forward shift by 2)
      Boundary: reflect (numpy pad mode='reflect') */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(C_H, C_V, D_H, D_V, width, height, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(C_H, C_V, D_H, D_V, width, height))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-
-    // Horizontal gradient with reflect padding
+    const size_t rowstart = (size_t)row * width;
+    int r2 = row + 2;
+    if(r2 >= height) r2 = 2 * (height - 1) - r2;
+    const size_t r2start = (size_t)r2 * width;
+    /* Interior cols: col+2 < width (col < width-2) */
+    const int inner_end = width - 2;
+    for(int col = 0; col < inner_end; col++)
     {
-      int c2 = col + 2;
-      if(c2 >= width) c2 = 2 * (width - 1) - c2; // reflect
-      D_H[idx] = fabsf(C_H[idx] - C_H[(size_t)row * width + c2]);
+      const size_t idx = rowstart + col;
+      D_H[idx] = fabsf(C_H[idx] - C_H[rowstart + col + 2]);
+      D_V[idx] = fabsf(C_V[idx] - C_V[r2start + col]);
     }
-    // Vertical gradient with reflect padding
+    /* Border cols: reflect */
+    for(int col = inner_end; col < width; col++)
     {
-      int r2 = row + 2;
-      if(r2 >= height) r2 = 2 * (height - 1) - r2; // reflect
-      D_V[idx] = fabsf(C_V[idx] - C_V[(size_t)r2 * width + col]);
+      const size_t idx = rowstart + col;
+      int c2 = col + 2;
+      if(c2 >= width) c2 = 2 * (width - 1) - c2;
+      D_H[idx] = fabsf(C_H[idx] - C_H[rowstart + c2]);
+      D_V[idx] = fabsf(C_V[idx] - C_V[r2start + col]);
     }
   }
 
@@ -278,22 +379,35 @@ static void menon_demosaic(float *const restrict out,
   /* d_H = convolve2d(D_H, clf_h), d_V = convolve2d(D_V, clf_v) */
   /* Step 6: Choose direction: if d_V >= d_H => horizontal (M=1), else vertical (M=0) */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(D_H, D_V, G_H, G_V, G, M, width, height, clf_h, clf_v, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(D_H, D_V, G_H, G_V, G, M, width, height, clf_h, clf_v))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const float d_h = _menon_cnv_2d(D_H, row, col, width, height, clf_h);
-    const float d_v = _menon_cnv_2d(D_V, row, col, width, height, clf_v);
-    if(d_v >= d_h)
+    const size_t rowstart = (size_t)row * width;
+    const int row_inner = (row >= 2 && row < height - 2);
+    for(int col = 0; col < width; col++)
     {
-      M[idx] = 1; // choose horizontal
-      G[idx] = G_H[idx];
-    }
-    else
-    {
-      M[idx] = 0; // choose vertical
-      G[idx] = G_V[idx];
+      const size_t idx = rowstart + col;
+      float d_h, d_v;
+      if(row_inner && col >= 2 && col < width - 2)
+      {
+        d_h = _menon_clf_h_inner(D_H, row, col, width);
+        d_v = _menon_clf_v_inner(D_V, row, col, width);
+      }
+      else
+      {
+        d_h = _menon_cnv_2d(D_H, row, col, width, height, clf_h);
+        d_v = _menon_cnv_2d(D_V, row, col, width, height, clf_v);
+      }
+      if(d_v >= d_h)
+      {
+        M[idx] = 1;
+        G[idx] = G_H[idx];
+      }
+      else
+      {
+        M[idx] = 0;
+        G[idx] = G_V[idx];
+      }
     }
   }
 
@@ -307,78 +421,76 @@ static void menon_demosaic(float *const restrict out,
   /* 7c: At green pixels on blue rows, interpolate B horizontally */
   /* 7d: At green pixels on red rows, interpolate B vertically */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(R, G, B, width, height, filters, k_b, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(R, G, B, width, height, filters, k_b))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const int fc = FC(row, col, filters);
-
-    if(fc != 1) continue; // only process green pixels
-
-    // Determine if this row is a "red row" or "blue row"
-    // A "red row" has red pixels on it; a "blue row" has blue pixels
+    const size_t rowstart = (size_t)row * width;
     const gboolean red_row = (FC(row, 0, filters) == 0) || (FC(row, 1, filters) == 0);
-
-    if(red_row)
+    for(int col = 0; col < width; col++)
     {
-      // R at green pixel on red row: interpolate horizontally
-      R[idx] = G[idx]
-             + _menon_cnv_h3(R, row, col, width, height, k_b)
-             - _menon_cnv_h3(G, row, col, width, height, k_b);
-      // B at green pixel on red row: interpolate vertically
-      B[idx] = G[idx]
-             + _menon_cnv_v3(B, row, col, width, height, k_b)
-             - _menon_cnv_v3(G, row, col, width, height, k_b);
-    }
-    else // blue_row
-    {
-      // R at green pixel on blue row: interpolate vertically
-      R[idx] = G[idx]
-             + _menon_cnv_v3(R, row, col, width, height, k_b)
-             - _menon_cnv_v3(G, row, col, width, height, k_b);
-      // B at green pixel on blue row: interpolate horizontally
-      B[idx] = G[idx]
-             + _menon_cnv_h3(B, row, col, width, height, k_b)
-             - _menon_cnv_h3(G, row, col, width, height, k_b);
+      const int fc = FC(row, col, filters);
+      if(fc != 1) continue;
+      const size_t idx = rowstart + col;
+      if(red_row)
+      {
+        R[idx] = G[idx]
+               + _menon_cnv_h3_kb(R, row, col, width)
+               - _menon_cnv_h3_kb(G, row, col, width);
+        B[idx] = G[idx]
+               + _menon_cnv_v3_kb(B, row, col, width, height)
+               - _menon_cnv_v3_kb(G, row, col, width, height);
+      }
+      else
+      {
+        R[idx] = G[idx]
+               + _menon_cnv_v3_kb(R, row, col, width, height)
+               - _menon_cnv_v3_kb(G, row, col, width, height);
+        B[idx] = G[idx]
+               + _menon_cnv_h3_kb(B, row, col, width)
+               - _menon_cnv_h3_kb(G, row, col, width);
+      }
     }
   }
 
   /* 7e: At blue pixels, interpolate R using direction mask M
      7f: At red pixels, interpolate B using direction mask M */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-    dt_omp_firstprivate(R, G, B, M, width, height, filters, k_b, numpix))
-  for(size_t idx = 0; idx < numpix; idx++)
+    dt_omp_firstprivate(R, G, B, M, width, height, filters, k_b))
+  for(int row = 0; row < height; row++)
   {
-    const int row = idx / width;
-    const int col = idx % width;
-    const int fc = FC(row, col, filters);
-
-    if(fc == 2) // Blue pixel: interpolate R
+    const size_t rowstart = (size_t)row * width;
+    for(int col = 0; col < width; col++)
     {
-      if(M[idx])
-        R[idx] = B[idx]
-               + _menon_cnv_h3(R, row, col, width, height, k_b)
-               - _menon_cnv_h3(B, row, col, width, height, k_b);
-      else
-        R[idx] = B[idx]
-               + _menon_cnv_v3(R, row, col, width, height, k_b)
-               - _menon_cnv_v3(B, row, col, width, height, k_b);
-    }
-    else if(fc == 0) // Red pixel: interpolate B
-    {
-      if(M[idx])
-        B[idx] = R[idx]
-               + _menon_cnv_h3(B, row, col, width, height, k_b)
-               - _menon_cnv_h3(R, row, col, width, height, k_b);
-      else
-        B[idx] = R[idx]
-               + _menon_cnv_v3(B, row, col, width, height, k_b)
-               - _menon_cnv_v3(R, row, col, width, height, k_b);
+      const int fc = FC(row, col, filters);
+      const size_t idx = rowstart + col;
+      if(fc == 2)
+      {
+        if(M[idx])
+          R[idx] = B[idx]
+                 + _menon_cnv_h3_kb(R, row, col, width)
+                 - _menon_cnv_h3_kb(B, row, col, width);
+        else
+          R[idx] = B[idx]
+                 + _menon_cnv_v3_kb(R, row, col, width, height)
+                 - _menon_cnv_v3_kb(B, row, col, width, height);
+      }
+      else if(fc == 0)
+      {
+        if(M[idx])
+          B[idx] = R[idx]
+                 + _menon_cnv_h3_kb(B, row, col, width)
+                 - _menon_cnv_h3_kb(R, row, col, width);
+        else
+          B[idx] = R[idx]
+                 + _menon_cnv_v3_kb(B, row, col, width, height)
+                 - _menon_cnv_v3_kb(R, row, col, width, height);
+      }
     }
   }
 
-  /* ---- Step 8: Refinement ---- */
+  /* ---- Step 8: Refinement (optional) ---- */
+  if(refining_step)
+  {
 
   /* 8a: Update green at R/B locations using FIR filter on color differences */
   {
@@ -397,65 +509,67 @@ static void menon_demosaic(float *const restrict out,
     /* At R pixels: G = R - directional_FIR(R_G)
        At B pixels: G = B - directional_FIR(B_G) */
     DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-      dt_omp_firstprivate(R, G, B, R_G, B_G, M, width, height, filters, FIR, numpix))
-    for(size_t idx = 0; idx < numpix; idx++)
+      dt_omp_firstprivate(R, G, B, R_G, B_G, M, width, height, filters, FIR))
+    for(int row = 0; row < height; row++)
     {
-      const int row = idx / width;
-      const int col = idx % width;
-      const int fc = FC(row, col, filters);
-      if(fc == 0) // Red pixel
+      const size_t rowstart = (size_t)row * width;
+      for(int col = 0; col < width; col++)
       {
-        const float r_g_m = M[idx]
-          ? _menon_cnv_h3(R_G, row, col, width, height, FIR)
-          : _menon_cnv_v3(R_G, row, col, width, height, FIR);
-        G[idx] = R[idx] - r_g_m;
-      }
-      else if(fc == 2) // Blue pixel
-      {
-        const float b_g_m = M[idx]
-          ? _menon_cnv_h3(B_G, row, col, width, height, FIR)
-          : _menon_cnv_v3(B_G, row, col, width, height, FIR);
-        G[idx] = B[idx] - b_g_m;
+        const int fc = FC(row, col, filters);
+        const size_t idx = rowstart + col;
+        if(fc == 0)
+        {
+          const float r_g_m = M[idx]
+            ? _menon_cnv_h3_fir(R_G, row, col, width)
+            : _menon_cnv_v3_fir(R_G, row, col, width, height);
+          G[idx] = R[idx] - r_g_m;
+        }
+        else if(fc == 2)
+        {
+          const float b_g_m = M[idx]
+            ? _menon_cnv_h3_fir(B_G, row, col, width)
+            : _menon_cnv_v3_fir(B_G, row, col, width, height);
+          G[idx] = B[idx] - b_g_m;
+        }
       }
     }
 
-    /* Recompute R_G after green update */
+    /* Recompute R_G and B_G after green update (fused into one pass) */
     DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-      dt_omp_firstprivate(R, G, R_G, numpix))
+      dt_omp_firstprivate(R, G, B, R_G, B_G, numpix))
     for(size_t idx = 0; idx < numpix; idx++)
+    {
       R_G[idx] = R[idx] - G[idx];
-
-    /* Recompute B_G after green update */
-    DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-      dt_omp_firstprivate(B, G, B_G, numpix))
-    for(size_t idx = 0; idx < numpix; idx++)
       B_G[idx] = B[idx] - G[idx];
+    }
 
     /* 8b: Update R at green pixels on blue rows (vertical averaging of R-G)
            Update R at green pixels on blue columns (horizontal averaging of R-G)
            Update B at green pixels on red rows (vertical averaging of B-G)
            Update B at green pixels on red columns (horizontal averaging of B-G) */
     DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-      dt_omp_firstprivate(R, G, B, R_G, B_G, width, height, filters, k_b, numpix))
-    for(size_t idx = 0; idx < numpix; idx++)
+      dt_omp_firstprivate(R, G, B, R_G, B_G, width, height, filters, k_b))
+    for(int row = 0; row < height; row++)
     {
-      const int row = idx / width;
-      const int col = idx % width;
-      const int fc = FC(row, col, filters);
-      if(fc != 1) continue; // only green pixels
-
+      const size_t rowstart = (size_t)row * width;
       const gboolean red_row = (FC(row, 0, filters) == 0) || (FC(row, 1, filters) == 0);
-      const gboolean red_col = (FC(0, col, filters) == 0) || (FC(1, col, filters) == 0);
+      for(int col = 0; col < width; col++)
+      {
+        const int fc = FC(row, col, filters);
+        if(fc != 1) continue;
+        const size_t idx = rowstart + col;
+        const gboolean red_col = (FC(0, col, filters) == 0) || (FC(1, col, filters) == 0);
 
-      if(!red_row) // blue row: update R vertically
-        R[idx] = G[idx] + _menon_cnv_v3(R_G, row, col, width, height, k_b);
-      if(!red_col) // blue column: update R horizontally
-        R[idx] = G[idx] + _menon_cnv_h3(R_G, row, col, width, height, k_b);
+        if(!red_row)
+          R[idx] = G[idx] + _menon_cnv_v3_kb(R_G, row, col, width, height);
+        if(!red_col)
+          R[idx] = G[idx] + _menon_cnv_h3_kb(R_G, row, col, width);
 
-      if(red_row) // red row: update B vertically
-        B[idx] = G[idx] + _menon_cnv_v3(B_G, row, col, width, height, k_b);
-      if(red_col) // red column: update B horizontally
-        B[idx] = G[idx] + _menon_cnv_h3(B_G, row, col, width, height, k_b);
+        if(red_row)
+          B[idx] = G[idx] + _menon_cnv_v3_kb(B_G, row, col, width, height);
+        if(red_col)
+          B[idx] = G[idx] + _menon_cnv_h3_kb(B_G, row, col, width);
+      }
     }
 
     /* 8c: Update R at blue pixels and B at red pixels using R-B differences */
@@ -467,28 +581,32 @@ static void menon_demosaic(float *const restrict out,
       R_B[idx] = R[idx] - B[idx];
 
     DT_OMP_PRAGMA(parallel for schedule(static) default(none)
-      dt_omp_firstprivate(R, B, R_B, M, width, height, filters, FIR, numpix))
-    for(size_t idx = 0; idx < numpix; idx++)
+      dt_omp_firstprivate(R, B, R_B, M, width, height, filters, FIR))
+    for(int row = 0; row < height; row++)
     {
-      const int row = idx / width;
-      const int col = idx % width;
-      const int fc = FC(row, col, filters);
-      if(fc == 2) // Blue pixel: update R from R-B
+      const size_t rowstart = (size_t)row * width;
+      for(int col = 0; col < width; col++)
       {
-        const float r_b_m = M[idx]
-          ? _menon_cnv_h3(R_B, row, col, width, height, FIR)
-          : _menon_cnv_v3(R_B, row, col, width, height, FIR);
-        R[idx] = B[idx] + r_b_m;
-      }
-      else if(fc == 0) // Red pixel: update B from R-B
-      {
-        const float r_b_m = M[idx]
-          ? _menon_cnv_h3(R_B, row, col, width, height, FIR)
-          : _menon_cnv_v3(R_B, row, col, width, height, FIR);
-        B[idx] = R[idx] - r_b_m;
+        const int fc = FC(row, col, filters);
+        const size_t idx = rowstart + col;
+        if(fc == 2)
+        {
+          const float r_b_m = M[idx]
+            ? _menon_cnv_h3_fir(R_B, row, col, width)
+            : _menon_cnv_v3_fir(R_B, row, col, width, height);
+          R[idx] = B[idx] + r_b_m;
+        }
+        else if(fc == 0)
+        {
+          const float r_b_m = M[idx]
+            ? _menon_cnv_h3_fir(R_B, row, col, width)
+            : _menon_cnv_v3_fir(R_B, row, col, width, height);
+          B[idx] = R[idx] - r_b_m;
+        }
       }
     }
   }
+  } // end if(refining_step)
 
   /* ---- Step 9: Write output in planar RGBX format ---- */
   DT_OMP_PRAGMA(parallel for schedule(static) default(none)

@@ -47,7 +47,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(7, dt_iop_demosaic_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
@@ -168,6 +168,7 @@ typedef struct dt_iop_demosaic_params_t
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
   gboolean cs_enabled;                          // $DEFAULT: FALSE $DESCRIPTION: "capture sharpen"
   dt_iop_demosaic_ari_quality_t ari_quality;    // $DEFAULT: DT_ARI_QUALITY_BALANCED $DESCRIPTION: "ARI quality"
+  gboolean menon_refine;                        // $DEFAULT: TRUE $DESCRIPTION: "Menon refining step"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -182,6 +183,7 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *dual_thrs;
   GtkWidget *lmmse_refine;
   GtkWidget *ari_quality;
+  GtkWidget *menon_refine;
   GtkWidget *cs_thrs;
   GtkWidget *cs_radius;
   GtkWidget *cs_boost;
@@ -273,6 +275,7 @@ typedef struct dt_iop_demosaic_data_t
   float cs_center;
   gboolean cs_enabled;
   dt_iop_demosaic_ari_quality_t ari_quality;
+  gboolean menon_refine;
 } dt_iop_demosaic_data_t;
 
 static gboolean _get_thumb_quality(const int width, const int height)
@@ -480,16 +483,46 @@ int legacy_params(dt_iop_module_t *self,
    return 0;
   }
 
+  typedef struct dt_iop_demosaic_params_v7_t
+  {
+    dt_iop_demosaic_greeneq_t green_eq;
+    float median_thrs;
+    dt_iop_demosaic_smooth_t color_smoothing;
+    dt_iop_demosaic_method_t demosaicing_method;
+    dt_iop_demosaic_lmmse_t lmmse_refine;
+    float dual_thrs;
+    float cs_radius;
+    float cs_thrs;
+    float cs_boost;
+    int cs_iter;
+    float cs_center;
+    gboolean cs_enabled;
+    dt_iop_demosaic_ari_quality_t ari_quality;
+  } dt_iop_demosaic_params_v7_t;
+
   if(old_version == 6)
   {
     const dt_iop_demosaic_params_v6_t *o = (dt_iop_demosaic_params_v6_t *)old_params;
-    dt_iop_demosaic_params_t *n = malloc(sizeof(dt_iop_demosaic_params_t));
+    dt_iop_demosaic_params_v7_t *n = malloc(sizeof(dt_iop_demosaic_params_v7_t));
     memcpy(n, o, sizeof *o);
     n->ari_quality = DT_ARI_QUALITY_BALANCED;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_demosaic_params_t);
+    *new_params_size = sizeof(dt_iop_demosaic_params_v7_t);
     *new_version = 7;
+    return 0;
+  }
+
+  if(old_version == 7)
+  {
+    const dt_iop_demosaic_params_v7_t *o = (dt_iop_demosaic_params_v7_t *)old_params;
+    dt_iop_demosaic_params_t *n = malloc(sizeof(dt_iop_demosaic_params_t));
+    memcpy(n, o, sizeof *o);
+    n->menon_refine = TRUE; // default: always refine (preserves previous behavior)
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_t);
+    *new_version = 8;
     return 0;
   }
 
@@ -905,7 +938,7 @@ void process(dt_iop_module_t *self,
           }
         }
         else if(method == DT_IOP_DEMOSAIC_MENON)
-          menon_demosaic(t_out, t_in, width, t_rows, filters);
+          menon_demosaic(t_out, t_in, width, t_rows, filters, d->menon_refine);
         else if(method == DT_IOP_DEMOSAIC_ARI)
           ari_demosaic(t_out, t_in, width, t_rows, filters, d->ari_quality);
         else if(method == DT_IOP_DEMOSAIC_RCD)
@@ -1417,6 +1450,7 @@ void commit_params(dt_iop_module_t *self,
   d->dual_thrs = p->dual_thrs;
   d->lmmse_refine = p->lmmse_refine;
   d->ari_quality = p->ari_quality;
+  d->menon_refine = p->menon_refine;
   dt_iop_demosaic_method_t use_method = p->demosaicing_method;
   d->cs_radius = p->cs_radius;
   d->cs_thrs = p->cs_thrs;
@@ -1631,6 +1665,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
   gtk_widget_set_visible(g->ari_quality, use_method == DT_IOP_DEMOSAIC_ARI);
+  gtk_widget_set_visible(g->menon_refine, use_method == DT_IOP_DEMOSAIC_MENON);
 
   const gboolean monomode = use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                         ||  use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX;
@@ -1826,6 +1861,11 @@ void gui_init(dt_iop_module_t *self)
       "fast: MLRI only (sharpest, fastest)\n"
       "balanced: MLRI + guided-filter RI adaptive selection\n"
       "quality: full 3-candidate adaptive selection"));
+
+  g->menon_refine = dt_bauhaus_toggle_from_params(self, "menon_refine");
+  gtk_widget_set_tooltip_text(g->menon_refine,
+    _("Menon refining step: iterative refinement of G, R, and B channels.\n"
+      "Improves quality at the cost of slightly more processing time."));
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
