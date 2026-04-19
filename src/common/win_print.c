@@ -22,6 +22,7 @@
 
 #ifdef _WIN32
 
+#include <winsock2.h>
 #include <windows.h>
 #include <shellapi.h>
 #include <winspool.h>
