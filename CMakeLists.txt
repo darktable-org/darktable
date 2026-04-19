@@ -110,20 +110,6 @@ else()
   set(SOURCE_PACKAGE 0)
 endif()
 
-if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(X86|x86)|(^i.86$)")
-  set(BUILD_SSE2_CODEPATHS OFF)
-endif()
-
-if(BUILD_SSE2_CODEPATHS)
-  CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
-  if(NOT _MSSE2)
-    MESSAGE(WARNING "Building of SSE2-optimized codepaths is enabled, but the compiler does not understand -msse2.")
-    set(BUILD_SSE2_CODEPATHS OFF)
-  endif()
-endif()
-
-MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
-
 #
 # Set platform defaults...
 #
