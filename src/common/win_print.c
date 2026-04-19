@@ -84,6 +84,8 @@ void dt_get_printer_info(const char *printer_name,
   // try to get hardware margins via a printer DC
   // Use "WINSPOOL" as driver name for proper printer DC creation
   wchar_t *wprinter = _utf8_to_wchar(printer_name);
+  if(!wprinter) return;
+  
   HDC hdc = CreateDCW(L"WINSPOOL", wprinter, NULL, NULL);
   g_free(wprinter);
 
@@ -160,13 +162,17 @@ static int _detect_printers_callback(dt_job_t *job)
       if(pi[i].Status & bad_status)
       {
         gchar *name_utf8 = _wchar_to_utf8(pi[i].pPrinterName);
-        dt_print(DT_DEBUG_PRINT, "[print] skip printer %s (status=%lu)",
-                 name_utf8, (unsigned long)pi[i].Status);
-        g_free(name_utf8);
+        if(name_utf8)
+        {
+          dt_print(DT_DEBUG_PRINT, "[print] skip printer %s (status=%lu)",
+                   name_utf8, (unsigned long)pi[i].Status);
+          g_free(name_utf8);
+        }
         continue;
       }
 
       gchar *name_utf8 = _wchar_to_utf8(pi[i].pPrinterName);
+      if(!name_utf8) continue;
 
       dt_printer_info_t pr;
       memset(&pr, 0, sizeof(pr));
@@ -274,8 +280,9 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
       continue;
 
     gchar *paper_name_utf8 = _wchar_to_utf8(wname);
+    if(!paper_name_utf8) continue;
 
-    dt_paper_info_t *paper = malloc(sizeof(dt_paper_info_t));
+    dt_paper_info_t *paper = g_malloc0(sizeof(dt_paper_info_t));
     g_strlcpy(paper->name, paper_name_utf8, MAX_NAME);
     g_strlcpy(paper->common_name, paper_name_utf8, MAX_NAME);
     paper->width  = (double)sizes[k].x / 10.0;  // convert tenths of mm to mm
@@ -344,6 +351,14 @@ void dt_print_file(const dt_imgid_t imgid,
 
   wchar_t *wfilename = _utf8_to_wchar(filename);
   wchar_t *wprinter  = _utf8_to_wchar(pinfo->printer.name);
+
+  if(!wfilename || !wprinter)
+  {
+    dt_control_log(_("error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
+    g_free(wfilename);
+    g_free(wprinter);
+    return;
+  }
 
   const HINSTANCE result = ShellExecuteW(NULL, L"printto", wfilename,
                                           wprinter, NULL, SW_HIDE);
