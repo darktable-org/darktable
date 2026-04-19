@@ -457,6 +457,13 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
                                                 g_direct_equal, NULL, dt_free_align_ptr);
     memset(&piece->processed_roi_in, 0, sizeof(piece->processed_roi_in));
     memset(&piece->processed_roi_out, 0, sizeof(piece->processed_roi_out));
+#ifdef HAVE_HALIDE
+    // Cache the Halide process function pointer (if the module exports one)
+    piece->process_halide = NULL;
+    if(module->so->module)
+      g_module_symbol(module->so->module, "process_halide",
+                      (gpointer *)&piece->process_halide);
+#endif
     dt_iop_init_pipe(piece->module, pipe, piece);
     pipe->nodes = g_list_append(pipe->nodes, piece);
   }
@@ -1444,6 +1451,19 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     }
     else
     {
+#ifdef HAVE_HALIDE
+      gboolean halide_ok = FALSE;
+      if(piece->process_halide)
+      {
+        halide_ok = (piece->process_halide(module, piece, input, *output, roi_in, roi_out) == 0);
+        if(halide_ok)
+        {
+          dt_print_pipe(DT_DEBUG_PIPE, "processed via Halide",
+                        pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "");
+        }
+      }
+      if(!halide_ok)
+#endif
       module->process(module, piece, input, *output, roi_in, roi_out);
       if(relevant)
       {
@@ -2082,6 +2102,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
       }
     }
+
+#ifdef HAVE_HALIDE
+    // If this module has a Halide CPU implementation, prefer it over OpenCL.
+    // This will be replaced by Halide Metal/GPU dispatch in the future.
+    if(possible_cl && piece->process_halide)
+      possible_cl = FALSE;
+#endif
 
     if(possible_cl)
     {

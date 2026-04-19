@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -507,6 +507,140 @@ static void _process_common_setup(dt_iop_module_t *self,
   const float white = exposure2white(exposure);
   d->scale = 1.0 / (white - d->black);
 }
+
+#ifdef HAVE_HALIDE
+#include "HalideRuntime.h"
+#include "halide_exposure.h"
+#ifdef HAVE_HALIDE_VULKAN
+#include "halide_exposure_vulkan.h"
+#endif
+#ifdef __APPLE__
+#include "halide_exposure_metal.h"
+#endif
+
+// Try a Halide GPU backend using flat 2D buffers.
+// Returns 0 on success, non-zero on failure.
+static int _halide_try_gpu_flat(const void *const i, void *const o,
+                                int width, int height, float black, float scale,
+                                int (*gpu_func)(struct halide_buffer_t *,
+                                                float, float,
+                                                struct halide_buffer_t *))
+{
+  const int row_floats = width * 4;
+  halide_dimension_t flat_in_dims[2] = {
+    {0, row_floats, 1},
+    {0, height,     row_floats},
+  };
+  halide_dimension_t flat_out_dims[2] = {
+    {0, row_floats, 1},
+    {0, height,     row_floats},
+  };
+
+  halide_buffer_t flat_in = {0};
+  flat_in.host = (uint8_t *)i;
+  flat_in.type = (struct halide_type_t){halide_type_float, 32, 1};
+  flat_in.dimensions = 2;
+  flat_in.dim = flat_in_dims;
+  flat_in.flags = halide_buffer_flag_host_dirty;
+
+  halide_buffer_t flat_out = {0};
+  flat_out.host = (uint8_t *)o;
+  flat_out.type = (struct halide_type_t){halide_type_float, 32, 1};
+  flat_out.dimensions = 2;
+  flat_out.dim = flat_out_dims;
+
+  int err = gpu_func(&flat_in, black, scale, &flat_out);
+  if(!err)
+    err = halide_copy_to_host(NULL, &flat_out);
+
+  halide_device_free(NULL, &flat_in);
+  halide_device_free(NULL, &flat_out);
+  return err;
+}
+
+__attribute__((visibility("default")))
+int process_halide(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const void *const i,
+                   void *const o,
+                   const dt_iop_roi_t *const roi_in,
+                   const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_exposure_data_t *const d = piece->data;
+
+  _process_common_setup(self, piece);
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const float black = d->black;
+  const float scale = d->scale;
+
+  int err = -1;
+
+  // GPU backends: try Metal (macOS) then Vulkan (cross-platform)
+#ifdef __APPLE__
+  err = _halide_try_gpu_flat(i, o, width, height, black, scale, dt_halide_exposure_metal);
+  if(!err)
+    dt_print(DT_DEBUG_PIPE, "[exposure] Halide backend: Metal GPU");
+  else
+    dt_print(DT_DEBUG_PIPE, "[exposure] Halide Metal failed (%d), trying Vulkan", err);
+#endif
+
+#ifdef HAVE_HALIDE_VULKAN
+  if(err)
+  {
+    err = _halide_try_gpu_flat(i, o, width, height, black, scale, dt_halide_exposure_vulkan);
+    if(!err)
+      dt_print(DT_DEBUG_PIPE, "[exposure] Halide backend: Vulkan GPU");
+    else
+      dt_print(DT_DEBUG_PIPE, "[exposure] Halide Vulkan failed (%d), trying CPU", err);
+  }
+#endif
+
+  // CPU fallback: uses 3D interleaved buffer layout
+  if(err)
+  {
+    halide_dimension_t in_dims[3] = {
+      {0, 4,         1},
+      {0, width,     4},
+      {0, height,    4 * width},
+    };
+    halide_dimension_t out_dims[3] = {
+      {0, 4,         1},
+      {0, width,     4},
+      {0, height,    4 * width},
+    };
+
+    halide_buffer_t in_buf = {0};
+    in_buf.host = (uint8_t *)i;
+    in_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+    in_buf.dimensions = 3;
+    in_buf.dim = in_dims;
+
+    halide_buffer_t out_buf = {0};
+    out_buf.host = (uint8_t *)o;
+    out_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+    out_buf.dimensions = 3;
+    out_buf.dim = out_dims;
+
+    err = dt_halide_exposure(&in_buf, black, scale, &out_buf);
+    if(!err)
+      dt_print(DT_DEBUG_PIPE, "[exposure] Halide backend: CPU");
+  }
+
+  if(err)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[exposure] Halide processing failed with error %d, falling back", err);
+    return err;
+  }
+
+  for(int k = 0; k < 3; k++)
+    piece->pipe->dsc.processed_maximum[k] *= d->scale;
+
+  return 0;
+}
+#endif /* HAVE_HALIDE */
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,

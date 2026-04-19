@@ -835,6 +835,12 @@ char *version = g_strdup_printf(
                "  OpenMP                 -> DISABLED\n"
 #endif
 
+#ifdef HAVE_HALIDE
+               "  Halide                 -> ENABLED\n"
+#else
+               "  Halide                 -> DISABLED\n"
+#endif
+
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n"
 #else

@@ -1082,6 +1082,15 @@ add_subdirectory(views ${DARKTABLE_LIBDIR}/views)
 # Compile lighttable modules
 add_subdirectory(libs ${DARKTABLE_LIBDIR}/plugins/lighttable)
 
+# Compile Halide generators (must be before iop so targets are available)
+if(USE_HALIDE)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/data/halide ${CMAKE_BINARY_DIR}/halide)
+  add_definitions("-DHAVE_HALIDE")
+  if(HALIDE_HAS_VULKAN)
+    add_definitions("-DHAVE_HALIDE_VULKAN")
+  endif()
+endif()
+
 # Compile darkroom modules
 add_subdirectory(iop ${DARKTABLE_LIBDIR}/plugins)
 

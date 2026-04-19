@@ -63,6 +63,16 @@ typedef struct dt_dev_pixelpipe_iop_t
   uint8_t xtrans[6][6];
   uint32_t filters;
   GHashTable *raster_masks;
+
+#ifdef HAVE_HALIDE
+  // Cached Halide process function pointer (looked up once via g_module_symbol)
+  int (*process_halide)(struct dt_iop_module_t *self,
+                        struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *const i,
+                        void *const o,
+                        const struct dt_iop_roi_t *const roi_in,
+                        const struct dt_iop_roi_t *const roi_out);
+#endif
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
