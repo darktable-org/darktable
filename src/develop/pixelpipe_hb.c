@@ -1690,6 +1690,84 @@ static int _pixelpipe_try_metal(dt_dev_pixelpipe_t *pipe,
                                  roi_out, module, piece, pixelpipe_flow, &ctx)
     ? -1 : 1;
 }
+
+/* Try to process the module using Metal compute with tiling.
+   Same return semantics as _pixelpipe_try_metal(). */
+static int _pixelpipe_try_metal_tiling(dt_dev_pixelpipe_t *pipe,
+                                       dt_develop_t *dev,
+                                       float *input,
+                                       dt_iop_buffer_dsc_t *input_format,
+                                       const dt_iop_roi_t *roi_in,
+                                       void **output,
+                                       dt_iop_buffer_dsc_t **out_format,
+                                       const dt_iop_roi_t *roi_out,
+                                       dt_iop_module_t *module,
+                                       dt_dev_pixelpipe_iop_t *piece,
+                                       dt_pixelpipe_flow_t *pixelpipe_flow,
+                                       const int position,
+                                       const int in_bpp)
+{
+  if(!module->process_metal
+     || !module->process_tiling_metal
+     || !darktable.metal
+     || !dt_metal_is_available(darktable.metal))
+    return 0;
+
+  if(dt_pipe_shutdown(pipe))
+    return -1;
+
+  _pixelpipe_process_ctx_t ctx;
+  if(_pixelpipe_pre_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                            roi_out, module, piece, pixelpipe_flow, position, &ctx))
+    return -1;
+
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_METAL | DT_DEBUG_TILING,
+                ctx.bcaching ? "from blend cache (Metal tile)" : "process tiles (Metal)",
+                pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s %.fMB",
+                dt_iop_colorspace_to_name(ctx.cst_to),
+                ctx.cst_to != ctx.cst_out ? " -> " : "",
+                ctx.cst_to != ctx.cst_out ? dt_iop_colorspace_to_name(ctx.cst_out) : "",
+                1e-6 * (2.0f * (ctx.m_width * ctx.m_height * ctx.m_bpp)));
+
+  if(ctx.bcaching)
+  {
+    dt_iop_image_copy(*output, pipe->bcache_data, ctx.nfloats);
+  }
+  else
+  {
+    const int err = module->process_tiling_metal(module, piece, input, *output,
+                                                  roi_in, roi_out, in_bpp);
+    if(err != 0)
+    {
+      dt_print(DT_DEBUG_METAL | DT_DEBUG_TILING,
+               "[pixelpipe] Metal tiling failed for `%s', falling back",
+               module->op);
+      return 0;  // Metal tiling failed, try other paths
+    }
+
+    dt_print(DT_DEBUG_METAL | DT_DEBUG_TILING,
+             "[pixelpipe] `%s' processed with Metal tiling", module->op);
+
+    if(ctx.relevant)
+    {
+      if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+         && !dt_pipe_shutdown(pipe))
+      {
+        float *cache = _get_fast_blendcache(ctx.nfloats, ctx.phash, pipe);
+        if(cache) dt_iop_image_copy(cache, *output, ctx.nfloats);
+      }
+      else
+        pipe->bcache_hash = DT_INVALID_HASH;
+    }
+  }
+
+  *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+  *pixelpipe_flow &= ~PIXELPIPE_FLOW_PROCESSED_ON_CPU;
+
+  return _pixelpipe_post_process(pipe, dev, input, input_format, roi_in, output, out_format,
+                                 roi_out, module, piece, pixelpipe_flow, &ctx)
+    ? -1 : 1;
+}
 #endif
 
 #ifdef HAVE_OPENCL
@@ -2149,14 +2227,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
      If the module implements process_metal() and Metal is available,
      try Metal first. If Metal fails, fall through to OpenCL, then CPU. */
   {
-    gboolean try_metal_path = TRUE;
+    gboolean try_metal_path = module->process_metal
+      && darktable.metal
+      && dt_metal_is_available(darktable.metal);
+
 #ifdef HAVE_OPENCL
     /* If input data is on GPU from a previous OpenCL module,
        copy it back to CPU before trying Metal. */
-    if(cl_mem_input != NULL
-       && module->process_metal
-       && darktable.metal
-       && dt_metal_is_available(darktable.metal))
+    if(cl_mem_input != NULL && try_metal_path)
     {
       if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
                                        roi_in.width, roi_in.height,
@@ -2169,21 +2247,67 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       }
     }
 #endif
-    const int metal_result = try_metal_path
-      ? _pixelpipe_try_metal(pipe, dev, input, input_format, &roi_in,
-                             output, out_format, roi_out,
-                             module, piece, &pixelpipe_flow, pos)
-      : 0;
-    if(metal_result < 0)
-      return TRUE;  // pipeline shutdown
-    if(metal_result > 0)
+
+    if(try_metal_path)
     {
+      /* Check if the full image fits in available memory for Metal processing.
+         On unified memory, use system RAM as the constraint. */
+      const uint32_t metal_m_bpp = MAX(in_bpp, bpp);
+      const size_t metal_m_width = MAX(roi_in.width, roi_out->width);
+      const size_t metal_m_height = MAX(roi_in.height, roi_out->height);
+      const float metal_factor = tiling.factor_cl > 0 ? tiling.factor_cl : tiling.factor;
+      const gboolean metal_fits = dt_tiling_piece_fits_host_memory(
+        piece, metal_m_width, metal_m_height, metal_m_bpp, metal_factor, tiling.overhead);
+
+      if(metal_fits)
+      {
+        /* Image fits — try direct Metal processing */
+        const int metal_result = _pixelpipe_try_metal(pipe, dev, input, input_format, &roi_in,
+                                                      output, out_format, roi_out,
+                                                      module, piece, &pixelpipe_flow, pos);
+        if(metal_result < 0)
+          return TRUE;  // pipeline shutdown
+        if(metal_result > 0)
+        {
 #ifdef HAVE_OPENCL
-      /* Metal succeeded — release any GPU input buffer */
-      dt_opencl_release_mem_object(cl_mem_input);
-      cl_mem_input = NULL;
+          dt_opencl_release_mem_object(cl_mem_input);
+          cl_mem_input = NULL;
 #endif
-      goto _metal_done;
+          goto _metal_done;
+        }
+        /* metal_result == 0: Metal failed, fall through to OpenCL/CPU */
+      }
+      else if(piece->process_tiling_ready)
+      {
+        /* Image too large — try Metal tiling */
+        dt_print(DT_DEBUG_TILING | DT_DEBUG_METAL,
+                 "[pixelpipe] image doesn't fit for Metal `%s', trying tiled Metal processing",
+                 module->op);
+        const int tiling_result = _pixelpipe_try_metal_tiling(
+          pipe, dev, input, input_format, &roi_in,
+          output, out_format, roi_out,
+          module, piece, &pixelpipe_flow, pos, in_bpp);
+        if(tiling_result < 0)
+          return TRUE;  // pipeline shutdown
+        if(tiling_result > 0)
+        {
+#ifdef HAVE_OPENCL
+          dt_opencl_release_mem_object(cl_mem_input);
+          cl_mem_input = NULL;
+#endif
+          goto _metal_done;
+        }
+        /* tiling_result == 0: Metal tiling failed, fall through to OpenCL/CPU */
+        dt_print(DT_DEBUG_METAL | DT_DEBUG_TILING,
+                 "[pixelpipe] Metal tiling failed for `%s', falling back to OpenCL/CPU",
+                 module->op);
+      }
+      else
+      {
+        dt_print(DT_DEBUG_METAL,
+                 "[pixelpipe] image doesn't fit for Metal `%s' and tiling not ready, falling back",
+                 module->op);
+      }
     }
   }
 #endif

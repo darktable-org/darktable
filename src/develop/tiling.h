@@ -77,8 +77,18 @@ float dt_tiling_estimate_cpumem(struct dt_develop_tiling_t *tiling, struct dt_de
 
 #ifdef HAVE_OPENCL
 float dt_tiling_estimate_clmem(struct dt_develop_tiling_t *tiling, struct dt_dev_pixelpipe_iop_t *piece,
-                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                          const int max_bpp);
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                           const int max_bpp);
+#endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+int default_process_tiling_metal(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out, const int bpp);
+
+int process_tiling_metal(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                         const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                         const dt_iop_roi_t *const roi_out, const int bpp);
 #endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

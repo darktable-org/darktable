@@ -280,6 +280,14 @@ OPTIONAL(int, process_metal, struct dt_iop_module_t *self,
                              void *const o,
                              const struct dt_iop_roi_t *const roi_in,
                              const struct dt_iop_roi_t *const roi_out);
+/** a tiling variant of process_metal(). */
+DEFAULT(int, process_tiling_metal, struct dt_iop_module_t *self,
+                                   struct dt_dev_pixelpipe_iop_t *piece,
+                                   const void *const i,
+                                   void *const o,
+                                   const struct dt_iop_roi_t *const roi_in,
+                                   const struct dt_iop_roi_t *const roi_out,
+                                   const int bpp);
 #endif
 
 #ifdef HAVE_OPENCL
