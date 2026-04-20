@@ -6,10 +6,20 @@
 
 find_package(Halide REQUIRED)
 
-# Build the generator executable (runs on the host at build time)
+# Build the generator executables (run on the host at build time)
 add_halide_generator(dt_halide_generators
     SOURCES
         generators/exposure_generator.cpp
+)
+
+add_halide_generator(dt_halide_bspline_generators
+    SOURCES
+        generators/bspline_generator.cpp
+)
+
+add_halide_generator(dt_halide_diffuse_generators
+    SOURCES
+        generators/diffuse_pde_generator.cpp
 )
 
 # Generate CPU-optimized code for the host platform
@@ -37,6 +47,43 @@ endif()
 # Uses the same flat 2D generator as Metal. Vulkan loader is dlopen'd at runtime,
 # so no link-time dependency — if no Vulkan driver is present, the call simply fails
 # and we fall through to CPU Halide.
+# B-spline wavelet decomposition for diffuse/sharpen module
+# CPU target: separable 5-tap blur + detail extraction in one pass
+add_halide_library(halide_bspline_decompose
+    FROM dt_halide_bspline_generators
+    GENERATOR bspline_decompose
+    TARGETS host
+    FUNCTION_NAME dt_halide_bspline_decompose
+)
+
+# Metal GPU target for B-spline decomposition (macOS only)
+if(APPLE)
+    add_halide_library(halide_bspline_decompose_metal
+        FROM dt_halide_bspline_generators
+        GENERATOR bspline_decompose
+        TARGETS host-metal
+        FUNCTION_NAME dt_halide_bspline_decompose_metal
+    )
+endif()
+
+# Heat PDE diffusion kernel for diffuse/sharpen module
+add_halide_library(halide_diffuse_pde
+    FROM dt_halide_diffuse_generators
+    GENERATOR diffuse_pde
+    TARGETS host
+    FUNCTION_NAME dt_halide_diffuse_pde
+)
+
+# Metal GPU target for PDE diffusion (macOS only)
+if(APPLE)
+    add_halide_library(halide_diffuse_pde_metal
+        FROM dt_halide_diffuse_generators
+        GENERATOR diffuse_pde
+        TARGETS host-metal
+        FUNCTION_NAME dt_halide_diffuse_pde_metal
+    )
+endif()
+
 find_package(Vulkan QUIET)
 if(Vulkan_FOUND)
     add_halide_library(halide_exposure_vulkan
@@ -44,6 +91,18 @@ if(Vulkan_FOUND)
         GENERATOR exposure_flat
         TARGETS host-vulkan
         FUNCTION_NAME dt_halide_exposure_vulkan
+    )
+    add_halide_library(halide_bspline_decompose_vulkan
+        FROM dt_halide_bspline_generators
+        GENERATOR bspline_decompose
+        TARGETS host-vulkan
+        FUNCTION_NAME dt_halide_bspline_decompose_vulkan
+    )
+    add_halide_library(halide_diffuse_pde_vulkan
+        FROM dt_halide_diffuse_generators
+        GENERATOR diffuse_pde
+        TARGETS host-vulkan
+        FUNCTION_NAME dt_halide_diffuse_pde_vulkan
     )
     set(HALIDE_HAS_VULKAN TRUE PARENT_SCOPE)
 endif()

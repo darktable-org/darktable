@@ -1450,6 +1450,546 @@ finish:
     if(HF[s]) dt_free_align(HF[s]);
 }
 
+#ifdef HAVE_HALIDE
+#include "HalideRuntime.h"
+#include "halide_bspline_decompose.h"
+#include "halide_diffuse_pde.h"
+#ifdef __APPLE__
+#include "halide_bspline_decompose_metal.h"
+#include "halide_diffuse_pde_metal.h"
+#endif
+#ifdef HAVE_HALIDE_VULKAN
+#include "halide_bspline_decompose_vulkan.h"
+#include "halide_diffuse_pde_vulkan.h"
+#endif
+
+// Halide-accelerated B-spline decomposition: replaces decompose_2D_Bspline()
+// Uses flat 2D buffer layout (xi = width*4, y).
+// Returns 0 on success, non-zero on failure.
+static int _halide_decompose_2D_Bspline(const float *const restrict in,
+                                        float *const restrict HF,
+                                        float *const restrict LF,
+                                        const size_t width,
+                                        const size_t height,
+                                        const int mult,
+                                        const char **backend_out)
+{
+  const int row_floats = (int)width * 4;
+  const int w = (int)width;
+  const int h = (int)height;
+
+  halide_dimension_t in_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+  halide_dimension_t lf_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+  halide_dimension_t hf_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+
+  halide_buffer_t in_buf = {0};
+  in_buf.host = (uint8_t *)in;
+  in_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  in_buf.dimensions = 2;
+  in_buf.dim = in_dims;
+
+  halide_buffer_t lf_buf = {0};
+  lf_buf.host = (uint8_t *)LF;
+  lf_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  lf_buf.dimensions = 2;
+  lf_buf.dim = lf_dims;
+
+  halide_buffer_t hf_buf = {0};
+  hf_buf.host = (uint8_t *)HF;
+  hf_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  hf_buf.dimensions = 2;
+  hf_buf.dim = hf_dims;
+
+  int err = -1;
+  const char *backend = NULL;
+
+  // Try Metal GPU
+#ifdef __APPLE__
+  {
+    halide_buffer_t gpu_in = in_buf;
+    halide_buffer_t gpu_lf = lf_buf;
+    halide_buffer_t gpu_hf = hf_buf;
+    gpu_in.flags = halide_buffer_flag_host_dirty;
+
+    err = dt_halide_bspline_decompose_metal(&gpu_in, w, h, mult, &gpu_lf, &gpu_hf);
+    if(!err)
+    {
+      halide_copy_to_host(NULL, &gpu_lf);
+      halide_copy_to_host(NULL, &gpu_hf);
+      backend = "Metal GPU";
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PIPE, "[diffuse] Halide Metal bspline failed (%d), trying next backend", err);
+    }
+    halide_device_free(NULL, &gpu_in);
+    halide_device_free(NULL, &gpu_lf);
+    halide_device_free(NULL, &gpu_hf);
+  }
+#endif
+
+  // Try Vulkan GPU
+#ifdef HAVE_HALIDE_VULKAN
+  if(err)
+  {
+    halide_buffer_t gpu_in = in_buf;
+    halide_buffer_t gpu_lf = lf_buf;
+    halide_buffer_t gpu_hf = hf_buf;
+    gpu_in.flags = halide_buffer_flag_host_dirty;
+
+    err = dt_halide_bspline_decompose_vulkan(&gpu_in, w, h, mult, &gpu_lf, &gpu_hf);
+    if(!err)
+    {
+      halide_copy_to_host(NULL, &gpu_lf);
+      halide_copy_to_host(NULL, &gpu_hf);
+      backend = "Vulkan GPU";
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PIPE, "[diffuse] Halide Vulkan bspline failed (%d), trying CPU", err);
+    }
+    halide_device_free(NULL, &gpu_in);
+    halide_device_free(NULL, &gpu_lf);
+    halide_device_free(NULL, &gpu_hf);
+  }
+#endif
+
+  // CPU Halide fallback
+  if(err)
+  {
+    err = dt_halide_bspline_decompose(&in_buf, w, h, mult, &lf_buf, &hf_buf);
+    if(!err) backend = "CPU";
+  }
+
+  if(backend_out) *backend_out = backend;
+  return err;
+}
+
+// Halide-accelerated heat PDE diffusion: replaces heat_PDE_diffusion()
+// Returns 0 on success, non-zero on failure.
+static int _halide_heat_PDE_diffusion(const float *const restrict high_freq,
+                                      const float *const restrict low_freq,
+                                      const uint8_t *const restrict mask,
+                                      const gboolean has_mask,
+                                      float *const restrict output,
+                                      const size_t width,
+                                      const size_t height,
+                                      const dt_aligned_pixel_t anisotropy,
+                                      const dt_isotropy_t isotropy_type[4],
+                                      const float regularization,
+                                      const float variance_threshold,
+                                      const float current_radius_square,
+                                      const int mult,
+                                      const dt_aligned_pixel_t ABCD,
+                                      const float strength,
+                                      const char **backend_out)
+{
+  const int row_floats = (int)width * 4;
+  const int w = (int)width;
+  const int h = (int)height;
+  const float regularization_factor = regularization * current_radius_square / 9.f;
+
+  // Setup flat 2D buffers for HF, LF, output
+  halide_dimension_t flat_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+
+  halide_buffer_t hf_buf = {0};
+  hf_buf.host = (uint8_t *)high_freq;
+  hf_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  hf_buf.dimensions = 2;
+  hf_buf.dim = flat_dims;
+
+  halide_dimension_t lf_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+  halide_buffer_t lf_buf = {0};
+  lf_buf.host = (uint8_t *)low_freq;
+  lf_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  lf_buf.dimensions = 2;
+  lf_buf.dim = lf_dims;
+
+  // Mask buffer: per-pixel uint8 (width, height)
+  halide_dimension_t mask_dims[2] = {
+    {0, w, 1},
+    {0, h, w},
+  };
+  halide_buffer_t mask_b = {0};
+  mask_b.host = (uint8_t *)mask;
+  mask_b.type = (struct halide_type_t){halide_type_uint, 8, 1};
+  mask_b.dimensions = 2;
+  mask_b.dim = mask_dims;
+
+  halide_dimension_t out_dims[2] = {
+    {0, row_floats, 1},
+    {0, h,          row_floats},
+  };
+  halide_buffer_t out_buf = {0};
+  out_buf.host = (uint8_t *)output;
+  out_buf.type = (struct halide_type_t){halide_type_float, 32, 1};
+  out_buf.dimensions = 2;
+  out_buf.dim = out_dims;
+
+  int err = -1;
+  const char *backend = NULL;
+
+  // Common arguments (after buffer args):
+  // width_pixels, height, mult, has_mask,
+  // anisotropy_0..3, isotropy_0..3, A, B, C, D,
+  // strength, regularization_factor, variance_threshold
+
+#ifdef __APPLE__
+  {
+    halide_buffer_t gpu_hf = hf_buf;
+    halide_buffer_t gpu_lf = lf_buf;
+    halide_buffer_t gpu_mask = mask_b;
+    halide_buffer_t gpu_out = out_buf;
+    gpu_hf.flags = halide_buffer_flag_host_dirty;
+    gpu_lf.flags = halide_buffer_flag_host_dirty;
+    if(has_mask) gpu_mask.flags = halide_buffer_flag_host_dirty;
+
+    err = dt_halide_diffuse_pde_metal(
+        &gpu_hf, &gpu_lf, &gpu_mask,
+        w, h, mult, has_mask ? 1 : 0,
+        anisotropy[0], anisotropy[1], anisotropy[2], anisotropy[3],
+        (int)isotropy_type[0], (int)isotropy_type[1],
+        (int)isotropy_type[2], (int)isotropy_type[3],
+        ABCD[0], ABCD[1], ABCD[2], ABCD[3],
+        strength, regularization_factor, variance_threshold,
+        &gpu_out);
+    if(!err)
+    {
+      halide_copy_to_host(NULL, &gpu_out);
+      backend = "Metal GPU";
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PIPE, "[diffuse] Halide Metal PDE failed (%d), trying next backend", err);
+    }
+    halide_device_free(NULL, &gpu_hf);
+    halide_device_free(NULL, &gpu_lf);
+    halide_device_free(NULL, &gpu_mask);
+    halide_device_free(NULL, &gpu_out);
+  }
+#endif
+
+#ifdef HAVE_HALIDE_VULKAN
+  if(err)
+  {
+    halide_buffer_t gpu_hf = hf_buf;
+    halide_buffer_t gpu_lf = lf_buf;
+    halide_buffer_t gpu_mask = mask_b;
+    halide_buffer_t gpu_out = out_buf;
+    gpu_hf.flags = halide_buffer_flag_host_dirty;
+    gpu_lf.flags = halide_buffer_flag_host_dirty;
+    if(has_mask) gpu_mask.flags = halide_buffer_flag_host_dirty;
+
+    err = dt_halide_diffuse_pde_vulkan(
+        &gpu_hf, &gpu_lf, &gpu_mask,
+        w, h, mult, has_mask ? 1 : 0,
+        anisotropy[0], anisotropy[1], anisotropy[2], anisotropy[3],
+        (int)isotropy_type[0], (int)isotropy_type[1],
+        (int)isotropy_type[2], (int)isotropy_type[3],
+        ABCD[0], ABCD[1], ABCD[2], ABCD[3],
+        strength, regularization_factor, variance_threshold,
+        &gpu_out);
+    if(!err)
+    {
+      halide_copy_to_host(NULL, &gpu_out);
+      backend = "Vulkan GPU";
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PIPE, "[diffuse] Halide Vulkan PDE failed (%d), trying CPU", err);
+    }
+    halide_device_free(NULL, &gpu_hf);
+    halide_device_free(NULL, &gpu_lf);
+    halide_device_free(NULL, &gpu_mask);
+    halide_device_free(NULL, &gpu_out);
+  }
+#endif
+
+  if(err)
+  {
+    err = dt_halide_diffuse_pde(
+        &hf_buf, &lf_buf, &mask_b,
+        w, h, mult, has_mask ? 1 : 0,
+        anisotropy[0], anisotropy[1], anisotropy[2], anisotropy[3],
+        (int)isotropy_type[0], (int)isotropy_type[1],
+        (int)isotropy_type[2], (int)isotropy_type[3],
+        ABCD[0], ABCD[1], ABCD[2], ABCD[3],
+        strength, regularization_factor, variance_threshold,
+        &out_buf);
+    if(!err) backend = "CPU";
+  }
+
+  if(backend_out) *backend_out = backend;
+  return err;
+}
+
+// Halide version of wavelets_process: uses Halide for B-spline decomposition,
+// keeps the PDE diffusion kernel as C code (Phase 2 will port that too).
+static inline gboolean _wavelets_process_halide(const float *const restrict in,
+                                    float *const restrict reconstructed,
+                                    const uint8_t *const restrict mask,
+                                    const size_t width,
+                                    const size_t height,
+                                    const dt_iop_diffuse_data_t *const data,
+                                    const float final_radius,
+                                    const float zoom,
+                                    const int scales,
+                                    const gboolean has_mask,
+                                    float *const restrict HF[MAX_NUM_SCALES],
+                                    float *const restrict LF_odd,
+                                    float *const restrict LF_even)
+{
+  gboolean success = TRUE;
+
+  const dt_aligned_pixel_t anisotropy
+      = { compute_anisotropy_factor(data->anisotropy_first),
+          compute_anisotropy_factor(data->anisotropy_second),
+          compute_anisotropy_factor(data->anisotropy_third),
+          compute_anisotropy_factor(data->anisotropy_fourth) };
+
+  const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
+      = { check_isotropy_mode(data->anisotropy_first),
+          check_isotropy_mode(data->anisotropy_second),
+          check_isotropy_mode(data->anisotropy_third),
+          check_isotropy_mode(data->anisotropy_fourth) };
+
+  const float regularization = powf(10.f, data->regularization) - 1.f;
+  const float variance_threshold = powf(10.f, data->variance_threshold);
+
+  // À trous decimated wavelet decompose using Halide-accelerated B-spline blur
+  float *restrict residual;
+  const char *backend = NULL;
+  for(int s = 0; s < scales; ++s)
+  {
+    const int mult = 1 << s;
+
+    const float *restrict buffer_in;
+    float *restrict buffer_out;
+
+    if(s == 0)
+    {
+      buffer_in = in;
+      buffer_out = LF_odd;
+    }
+    else if(s % 2 != 0)
+    {
+      buffer_in = LF_odd;
+      buffer_out = LF_even;
+    }
+    else
+    {
+      buffer_in = LF_even;
+      buffer_out = LF_odd;
+    }
+
+    const char *scale_backend = NULL;
+    int err = _halide_decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult, &scale_backend);
+    if(err)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[diffuse] Halide bspline decompose failed at scale %d (err=%d)", s, err);
+      success = FALSE;
+      return success;
+    }
+    if(s == 0) backend = scale_backend;
+
+    residual = buffer_out;
+  }
+
+  if(backend)
+    dt_print(DT_DEBUG_PIPE, "[diffuse] Halide bspline decompose backend: %s", backend);
+
+  // PDE diffusion reconstruction (unchanged from C version)
+  float *restrict temp = (residual == LF_even) ? LF_odd : LF_even;
+
+  int count = 0;
+  for(int s = scales - 1; s > -1; --s)
+  {
+    const int mult = 1 << s;
+    const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
+    const float real_radius = current_radius * zoom;
+
+    const float norm =
+      expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
+    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm,
+                                      data->second * KAPPA * norm,
+                                      data->third * KAPPA * norm,
+                                      data->fourth * KAPPA * norm };
+    const float strength = data->sharpness * norm + 1.f;
+
+    const float *restrict buffer_in;
+    float *restrict buffer_out;
+
+    if(count == 0)
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+    else if(count % 2 != 0)
+    {
+      buffer_in = temp;
+      buffer_out = residual;
+    }
+    else
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+
+    if(s == 0) buffer_out = reconstructed;
+
+    const char *pde_backend = NULL;
+    int pde_err = _halide_heat_PDE_diffusion(HF[s], buffer_in, mask, has_mask, buffer_out, width, height,
+                       anisotropy, isotropy_type, regularization,
+                       variance_threshold, sqf(current_radius), mult, ABCD, strength,
+                       &pde_backend);
+    if(pde_err)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[diffuse] Halide PDE diffusion failed at scale %d (err=%d), falling back to C", s, pde_err);
+      // Fall back to C implementation for this scale
+      heat_PDE_diffusion(HF[s], buffer_in, mask, has_mask, buffer_out, width, height,
+                         anisotropy, isotropy_type, regularization,
+                         variance_threshold, sqf(current_radius), mult, ABCD, strength);
+    }
+    else if(s == scales - 1 && pde_backend)
+    {
+      dt_print(DT_DEBUG_PIPE, "[diffuse] Halide PDE diffusion backend: %s", pde_backend);
+    }
+    count++;
+  }
+
+  return success;
+}
+
+__attribute__((visibility("default")))
+int process_halide(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const void *const restrict ivoid,
+                   void *const restrict ovoid,
+                   const dt_iop_roi_t *const roi_in,
+                   const dt_iop_roi_t *const roi_out)
+{
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const dt_iop_diffuse_data_t *const data = piece->data;
+
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+
+  if(fastmode)
+  {
+    const size_t ch = piece->colors;
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
+    return 0;
+  }
+
+  uint8_t *const restrict mask = dt_alloc_align_uint8(width * height);
+
+  float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
+
+  float *restrict temp1, *restrict temp2;
+  float *restrict LF_odd, *restrict LF_even;
+  float *restrict temp_in = NULL;
+  float *restrict temp_out = NULL;
+
+  gboolean out_of_memory = !mask
+    || !dt_iop_alloc_image_buffers(self, roi_in, roi_out,
+                                 4 | DT_IMGSZ_OUTPUT, &temp1,
+                                 4 | DT_IMGSZ_OUTPUT, &temp2,
+                                 4 | DT_IMGSZ_OUTPUT, &LF_odd,
+                                 4 | DT_IMGSZ_OUTPUT, &LF_even,
+                                 0, NULL);
+
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
+
+  const int iterations = MAX(ceilf((float)data->iterations), 1);
+  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  float *restrict HF[MAX_NUM_SCALES];
+  for(int s = 0; s < scales; s++)
+  {
+    HF[s] = out_of_memory ? NULL : dt_alloc_align_float(width * height * 4);
+    if(!HF[s]) out_of_memory = TRUE;
+  }
+
+  int ret = 0;
+
+  if(out_of_memory)
+  {
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
+    dt_control_log(_("diffuse/sharpen failed to allocate memory, check your RAM settings"));
+    ret = -1;
+    goto finish;
+  }
+
+  const gboolean has_mask = (data->threshold > 0.f);
+  if(has_mask)
+  {
+    build_mask(in, mask, data->threshold, roi_out->width, roi_out->height);
+    inpaint_mask(temp1, in, mask, roi_out->width, roi_out->height);
+    in = temp1;
+  }
+
+  for(int it = 0; it < iterations; it++)
+  {
+    if(it == 0)
+    {
+      temp_in = in;
+      temp_out = temp2;
+    }
+    else if(it % 2 == 0)
+    {
+      temp_in = temp1;
+      temp_out = temp2;
+    }
+    else
+    {
+      temp_in = temp2;
+      temp_out = temp1;
+    }
+
+    if(it == iterations - 1)
+      temp_out = out;
+
+    if(!_wavelets_process_halide(temp_in, temp_out, mask,
+                     roi_out->width, roi_out->height,
+                     data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even))
+    {
+      // Halide failed, signal fallback to regular process()
+      ret = -1;
+      goto finish;
+    }
+  }
+
+finish:
+  dt_free_align(mask);
+  dt_free_align(temp1);
+  dt_free_align(temp2);
+  dt_free_align(LF_even);
+  dt_free_align(LF_odd);
+  for(int s = 0; s < scales; s++)
+    if(HF[s]) dt_free_align(HF[s]);
+
+  return ret;
+}
+#endif /* HAVE_HALIDE */
+
 #if HAVE_OPENCL
 static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem in,
