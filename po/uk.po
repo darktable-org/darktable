@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-11 11:40+0200\n"
-"PO-Revision-Date: 2026-04-11 21:35+0300\n"
+"POT-Creation-Date: 2026-04-20 20:53+0200\n"
+"PO-Revision-Date: 2026-04-20 23:57+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -980,7 +980,7 @@ msgstr "Світлий стіл"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
 #: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1126
+#: ../src/gui/preferences_ai.c:1288
 msgid "general"
 msgstr "Загальні"
 
@@ -2573,7 +2573,7 @@ msgstr "Контраст і різкість"
 msgid "cyan"
 msgstr "Ціан"
 
-#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3512
+#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3517
 #: ../src/libs/filtering.c:925 ../src/libs/filtering.c:986
 #: ../src/libs/filtering.c:1654 ../src/libs/filtering.c:1961
 #: ../src/libs/tools/darktable.c:64
@@ -2605,7 +2605,7 @@ msgid "effects"
 msgstr "Ефекти"
 
 #: ../build/bin/styles_string.h:20
-#: ../src/external/lua-scripts/tools/script_manager.lua:411
+#: ../src/external/lua-scripts/tools/script_manager.lua:447
 msgid "examples"
 msgstr "Приклади"
 
@@ -3426,7 +3426,7 @@ msgstr "Базис"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1158
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1320
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4844,7 +4844,7 @@ msgstr "Увімкнути реконструкцію переекспонова
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 #: ../src/common/variables.c:197 ../src/common/variables.c:822
-#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:230
+#: ../src/develop/imageop_gui.c:194 ../src/gui/preferences_ai.c:229
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -5238,7 +5238,7 @@ msgstr "Лише ручна корекція віньєтування"
 #: ../src/dtgtk/range.c:1735 ../src/gui/accelerators.c:2626
 #: ../src/gui/accelerators.c:2698 ../src/gui/gtk.c:1615 ../src/gui/gtk.c:4075
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3614
-#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3698
+#: ../src/iop/rawdenoise.c:884 ../src/libs/collect.c:3703
 #: ../src/libs/filtering.c:1520 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/date.c:112
 #: ../src/libs/filters/date.c:125 ../src/libs/filters/rating.c:210
@@ -6109,18 +6109,18 @@ msgstr "Спадне меню"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:608
-#: ../src/gui/preferences_ai.c:784 ../src/gui/preferences_ai.c:947
-#: ../src/gui/preferences_ai.c:1034 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:609
+#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1109
+#: ../src/gui/preferences_ai.c:1196 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
 #: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:379 ../src/libs/collect.c:463
-#: ../src/libs/collect.c:3529 ../src/libs/copy_history.c:114
+#: ../src/libs/collect.c:3534 ../src/libs/copy_history.c:114
 #: ../src/libs/export_metadata.c:166 ../src/libs/geotagging.c:952
 #: ../src/libs/import.c:1815 ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2083
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2226
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6132,7 +6132,7 @@ msgid "_cancel"
 msgstr "_Скасувати"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1261
-#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3530
+#: ../src/gui/styles_dialog.c:555 ../src/libs/collect.c:3535
 #: ../src/libs/export_metadata.c:167 ../src/libs/metadata.c:846
 #: ../src/libs/metadata_view.c:1465 ../src/libs/recentcollect.c:233
 #: ../src/libs/styles.c:457 ../src/libs/styles.c:1020 ../src/libs/tagging.c:1852
@@ -6322,64 +6322,64 @@ msgstr "Невідоме розширення '.%s'"
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "Не вдалося отримати параметри з модуля формату, скасування експорту..."
 
-#: ../src/common/ai_models.c:194
+#: ../src/common/ai_models.c:196
 #, c-format
 msgid "network error: %s"
 msgstr "Помилка мережі: %s"
 
-#: ../src/common/ai_models.c:196
+#: ../src/common/ai_models.c:198
 #, c-format
 msgid "model repository \"%s\" not found"
 msgstr "Репозиторій моделі \"%s\" не знайдено"
 
-#: ../src/common/ai_models.c:198
+#: ../src/common/ai_models.c:200
 msgid "GitHub API rate limit exceeded, try again later"
 msgstr "Перевищено ліміт темпу запитів до API GitHub, спробуйте пізніше."
 
-#: ../src/common/ai_models.c:200
+#: ../src/common/ai_models.c:202
 #, c-format
 msgid "GitHub API error (HTTP %ld)"
 msgstr "Помилка API GitHub (HTTP %ld)"
 
-#: ../src/common/ai_models.c:1231 ../src/common/ai_models.c:1260
+#: ../src/common/ai_models.c:1248 ../src/common/ai_models.c:1277
 msgid "invalid parameters"
 msgstr "Недійсні параметри"
 
-#: ../src/common/ai_models.c:1234
+#: ../src/common/ai_models.c:1251
 #, c-format
 msgid "file not found: %s"
 msgstr "Файл не знайдено: %s"
 
-#: ../src/common/ai_models.c:1237
+#: ../src/common/ai_models.c:1254
 msgid "failed to extract model archive"
 msgstr "Не вдалося розпакувати архів моделі"
 
-#: ../src/common/ai_models.c:1268
+#: ../src/common/ai_models.c:1285
 msgid "model not found in registry"
 msgstr "Модель не знайдено в реєстрі"
 
-#: ../src/common/ai_models.c:1274
+#: ../src/common/ai_models.c:1291
 msgid "model has no download asset defined"
 msgstr "У моделі не визначено ресурс для завантаження"
 
-#: ../src/common/ai_models.c:1285
+#: ../src/common/ai_models.c:1302
 msgid "invalid asset filename"
 msgstr "Недійсна назва файлу ресурсу"
 
-#: ../src/common/ai_models.c:1291
+#: ../src/common/ai_models.c:1308
 msgid "model is already downloading"
 msgstr "Модель вже завантажується"
 
-#: ../src/common/ai_models.c:1322
+#: ../src/common/ai_models.c:1339
 msgid "invalid repository format"
 msgstr "Недійсний формат репозиторію"
 
-#: ../src/common/ai_models.c:1347
+#: ../src/common/ai_models.c:1364
 #, c-format
 msgid "no compatible ai model release found for darktable %s"
 msgstr "Не знайдено сумісного випуску ШІ моделі для Darktable %s"
 
-#: ../src/common/ai_models.c:1363
+#: ../src/common/ai_models.c:1380
 #, c-format
 msgid ""
 "could not obtain checksum for %s — refusing to download without integrity "
@@ -6388,38 +6388,38 @@ msgstr ""
 "Не вдалося отримати контрольну суму для %s — відмова від завантаження без "
 "перевірки цілісності"
 
-#: ../src/common/ai_models.c:1381
+#: ../src/common/ai_models.c:1398
 msgid "failed to build download url"
 msgstr "Не вдалося створити URL-адресу завантаження"
 
-#: ../src/common/ai_models.c:1392
+#: ../src/common/ai_models.c:1409
 #, c-format
 msgid "failed to create file: %s"
 msgstr "Не вдалося створити файл: %s"
 
-#: ../src/common/ai_models.c:1416
+#: ../src/common/ai_models.c:1433
 msgid "failed to initialize download"
 msgstr "Не вдалося ініціалізувати завантаження"
 
-#: ../src/common/ai_models.c:1436
+#: ../src/common/ai_models.c:1453
 msgid "download cancelled"
 msgstr "Завантаження скасовано"
 
-#: ../src/common/ai_models.c:1438
+#: ../src/common/ai_models.c:1455
 #, c-format
 msgid "download failed: %s"
 msgstr "Не вдалося завантажити: %s"
 
-#: ../src/common/ai_models.c:1449
+#: ../src/common/ai_models.c:1466
 #, c-format
 msgid "http error: %ld"
 msgstr "Помилка HTTP: %ld"
 
-#: ../src/common/ai_models.c:1472
+#: ../src/common/ai_models.c:1489
 msgid "checksum verification failed"
 msgstr "Невдала перевірка контрольної суми"
 
-#: ../src/common/ai_models.c:1482
+#: ../src/common/ai_models.c:1499
 #, c-format
 msgid ""
 "no checksum available for %s — refusing to install without integrity "
@@ -6427,7 +6427,7 @@ msgid ""
 msgstr ""
 "Немає контрольної суми для %s — відмова в установці без перевірки цілісності"
 
-#: ../src/common/ai_models.c:1492
+#: ../src/common/ai_models.c:1509
 msgid "failed to extract archive"
 msgstr "Не вдалося розпакувати архів"
 
@@ -6484,7 +6484,7 @@ msgstr "Плівка"
 
 #. manage the scripts
 #: ../src/common/collection.c:614
-#: ../src/external/lua-scripts/tools/script_manager.lua:1429
+#: ../src/external/lua-scripts/tools/script_manager.lua:1501
 msgid "folder"
 msgstr "Каталог"
 
@@ -6525,7 +6525,7 @@ msgstr "Час останнього експорту"
 msgid "print time"
 msgstr "Час останнього друку"
 
-#: ../src/common/collection.c:634 ../src/libs/collect.c:3885
+#: ../src/common/collection.c:634 ../src/libs/collect.c:3890
 #: ../src/libs/filtering.c:2224 ../src/libs/filtering.c:2244
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:98
 msgid "history"
@@ -6630,7 +6630,7 @@ msgstr "Зі змінами"
 #: ../src/common/collection.c:1527 ../src/common/collection.c:1668
 #: ../src/libs/collect.c:1306 ../src/libs/collect.c:1497
 #: ../src/libs/collect.c:1523 ../src/libs/collect.c:1689
-#: ../src/libs/collect.c:2940
+#: ../src/libs/collect.c:2945
 msgid "not tagged"
 msgstr "Без тегу"
 
@@ -7432,7 +7432,7 @@ msgstr "Видавець"
 
 #. title
 #: ../src/common/database.c:3238
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
 #: ../src/imageio/format/pdf.c:591 ../src/imageio/format/pdf.c:593
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/gallery.c:219
 #: ../src/imageio/storage/latex.c:202 ../src/imageio/storage/piwigo.c:1150
@@ -7440,8 +7440,8 @@ msgstr "Видавець"
 msgid "title"
 msgstr "Заголовок"
 
-#: ../src/common/database.c:3239 ../src/gui/preferences_ai.c:1364
-#: ../src/gui/styles_dialog.c:578 ../src/libs/filtering.c:61
+#: ../src/common/database.c:3239 ../src/gui/styles_dialog.c:578
+#: ../src/libs/filtering.c:61
 msgid "description"
 msgstr "Опис"
 
@@ -7449,7 +7449,7 @@ msgstr "Опис"
 msgid "rights"
 msgstr "Права"
 
-#: ../src/common/database.c:3241
+#: ../src/common/database.c:3241 ../src/gui/preferences_ai.c:928
 msgid "notes"
 msgstr "Нотатки"
 
@@ -7584,7 +7584,7 @@ msgstr ""
 msgid "_ok"
 msgstr "_OK"
 
-#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:165
+#: ../src/common/database.c:3912 ../src/gui/preferences_ai.c:166
 msgid "error"
 msgstr "Помилка"
 
@@ -7797,7 +7797,7 @@ msgstr[1] "Видалити порожній каталог?"
 msgstr[2] "Видалити порожній каталог?"
 
 #: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1336 ../src/gui/styles_dialog.c:571
+#: ../src/gui/preferences_ai.c:1498 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "Ім'я"
@@ -7817,11 +7817,11 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "Вам потрібно скопіювати історію із зображення, перш ніж вставити її в інше"
 
-#: ../src/common/image.c:345
+#: ../src/common/image.c:346
 msgid "orphaned image"
 msgstr "Осиротіле зображення"
 
-#: ../src/common/image.c:669
+#: ../src/common/image.c:688
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
@@ -7829,7 +7829,7 @@ msgstr[0] "Геокоординати скасовано для %d зображ�
 msgstr[1] "Геокоординати скасовано для %d зображень"
 msgstr[2] "Геокоординати скасовано для %d зображень"
 
-#: ../src/common/image.c:671
+#: ../src/common/image.c:690
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
@@ -7837,7 +7837,7 @@ msgstr[0] "Геокоординати повторно застосовано д
 msgstr[1] "Геокоординати повторно застосовано для %d зображень"
 msgstr[2] "Геокоординати повторно застосовано для %d зображень"
 
-#: ../src/common/image.c:693
+#: ../src/common/image.c:712
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
@@ -7845,7 +7845,7 @@ msgstr[0] "Дату/час скасовано для %d зображення"
 msgstr[1] "Дату/час скасовано для %d зображень"
 msgstr[2] "Дату/час скасовано для %d зображень"
 
-#: ../src/common/image.c:695
+#: ../src/common/image.c:714
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
@@ -7854,53 +7854,53 @@ msgstr[1] "Дату/час повторно застосовано для %d з�
 msgstr[2] "Дату/час повторно застосовано для %d зображень"
 
 #. FIXME make GIMP handle duplicates
-#: ../src/common/image.c:1326
+#: ../src/common/image.c:1345
 msgid "can't create a duplicate in GIMP mode"
 msgstr "Неможливо створити дублікат у режимі плагіна GIMP"
 
-#: ../src/common/image.c:2423
+#: ../src/common/image.c:2442
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:2430
+#: ../src/common/image.c:2449
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2437
+#: ../src/common/image.c:2456
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2482
+#: ../src/common/image.c:2501
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2492
+#: ../src/common/image.c:2511
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2496 ../src/common/image.c:2505
+#: ../src/common/image.c:2515 ../src/common/image.c:2524
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2807
+#: ../src/common/image.c:2826
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2821
+#: ../src/common/image.c:2840
 msgid "cannot create local copy."
 msgstr "Неможливо створити локальну копію."
 
-#: ../src/common/image.c:2900 ../src/control/jobs/control_jobs.c:955
+#: ../src/common/image.c:2919 ../src/control/jobs/control_jobs.c:955
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:3076
+#: ../src/common/image.c:3095
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -7908,11 +7908,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:3274
+#: ../src/common/image.c:3293
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
-#: ../src/common/image.c:3275
+#: ../src/common/image.c:3294
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7920,7 +7920,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://"
 "raw.pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3276
+#: ../src/common/image.c:3295
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7929,7 +7929,7 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:3279
+#: ../src/common/image.c:3298
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "інакше <b>RAW з цієї камери не буде читатися</b> у наступній версії Darktable."
@@ -8353,7 +8353,7 @@ msgid "no info"
 msgstr "Немає інформації"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:820
-#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:230
+#: ../src/develop/imageop_gui.c:195 ../src/gui/preferences_ai.c:229
 #: ../src/imageio/format/avif.c:960 ../src/imageio/format/pdf.c:653
 #: ../src/imageio/format/pdf.c:672 ../src/imageio/format/tiff.c:921
 #: ../src/libs/export.c:1578 ../src/libs/export.c:1586 ../src/libs/export.c:1594
@@ -9387,11 +9387,11 @@ msgstr "Імпортувати зображення"
 msgid "synchronize sidecars"
 msgstr "Синхронізація XMP файлів"
 
-#: ../src/develop/blend.c:298
+#: ../src/develop/blend.c:302
 msgid "detail mask blending error"
 msgstr "Помилка змішування маски деталей"
 
-#: ../src/develop/blend.c:838
+#: ../src/develop/blend.c:846
 msgid "detail mask CL blending problem"
 msgstr "Помилка змішування маски деталей (CL)"
 
@@ -9593,9 +9593,10 @@ msgid "reverse"
 msgstr "Зворотна"
 
 #. add default workspace
-#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:98
-#: ../src/gui/workspace.c:194 ../src/gui/preferences_ai.c:1399
-#: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
+#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:48
+#: ../src/gui/workspace.c:322 ../src/gui/workspace.c:526
+#: ../src/gui/preferences_ai.c:1563 ../src/imageio/format/webp.c:435
+#: ../src/libs/styles.c:1029
 msgid "default"
 msgstr "Замовчування"
 
@@ -10208,8 +10209,8 @@ msgstr "Радіус розтушовки"
 
 #: ../src/develop/blend_gui.c:3609 ../src/develop/blend_gui.c:3618
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3112
-#: ../src/iop/colorequal.c:3139 ../src/iop/demosaic.c:1795
-#: ../src/iop/demosaic.c:1814 ../src/iop/diffuse.c:1776
+#: ../src/iop/colorequal.c:3139 ../src/iop/demosaic.c:1792
+#: ../src/iop/demosaic.c:1811 ../src/iop/diffuse.c:1776
 #: ../src/iop/diffuse.c:1786 ../src/iop/retouch.c:2676
 msgid " px"
 msgstr " px"
@@ -10290,12 +10291,12 @@ msgstr ""
 "Автозбереження історії вимкнено для цього зображення через дуже велику "
 "історію або використання повільного диска"
 
-#: ../src/develop/develop.c:2603
+#: ../src/develop/develop.c:2608
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/develop/develop.c:3516
+#: ../src/develop/develop.c:3521
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Не вдається перемістити новий екземпляр модуля після базового\n"
 
@@ -10375,7 +10376,7 @@ msgid "purpose"
 msgstr "Призначення"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2183
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2326
 msgid "process"
 msgstr "Обробка"
 
@@ -10517,37 +10518,37 @@ msgstr[0] "%s було імпортовано"
 msgstr[1] "%s було імпортовано"
 msgstr[2] "%s було імпортовано"
 
-#: ../src/develop/masks/brush.c:1341 ../src/develop/masks/brush.c:1395
+#: ../src/develop/masks/brush.c:1336 ../src/develop/masks/brush.c:1390
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "Жорсткість: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1357 ../src/develop/masks/brush.c:1455
+#: ../src/develop/masks/brush.c:1352 ../src/develop/masks/brush.c:1450
 #: ../src/develop/masks/circle.c:147 ../src/develop/masks/circle.c:192
 #: ../src/develop/masks/ellipse.c:479 ../src/develop/masks/ellipse.c:540
-#: ../src/develop/masks/path.c:1886
+#: ../src/develop/masks/path.c:1884
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Розмір: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:3146
+#: ../src/develop/masks/brush.c:3141
 msgid "[BRUSH] change size"
 msgstr "[ПЕНЗЕЛЬ] змінити розмір"
 
-#: ../src/develop/masks/brush.c:3148
+#: ../src/develop/masks/brush.c:3143
 msgid "[BRUSH] change hardness"
 msgstr "[ПЕНЗЕЛЬ] змінити жорсткість"
 
-#: ../src/develop/masks/brush.c:3150
+#: ../src/develop/masks/brush.c:3145
 msgid "[BRUSH] change opacity"
 msgstr "[ПЕНЗЕЛЬ] змінити непрозорість"
 
-#: ../src/develop/masks/brush.c:3162
+#: ../src/develop/masks/brush.c:3157
 #, c-format
 msgid "brush #%d"
 msgstr "Пензель #%d"
 
-#: ../src/develop/masks/brush.c:3175
+#: ../src/develop/masks/brush.c:3170
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -10556,13 +10557,13 @@ msgstr ""
 "<b>Розмір</b>: прокрутка, <b>Жорсткість</b>: Shift+прокрутка\n"
 "<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/brush.c:3178
+#: ../src/develop/masks/brush.c:3173
 msgid "<b>size</b>: scroll"
 msgstr "<b>Розмір</b>: прокрутка"
 
 #: ../src/develop/masks/circle.c:136 ../src/develop/masks/circle.c:180
 #: ../src/develop/masks/ellipse.c:465 ../src/develop/masks/ellipse.c:525
-#: ../src/develop/masks/path.c:1820
+#: ../src/develop/masks/path.c:1818
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Розмір розтушовки: %3.2f%%"
@@ -10584,7 +10585,7 @@ msgstr "[КОЛО] змінити непрозорість"
 msgid "circle #%d"
 msgstr "Коло #%d"
 
-#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4012
+#: ../src/develop/masks/circle.c:1421 ../src/develop/masks/path.c:4010
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -10742,102 +10743,102 @@ msgstr "Використати фігури з модуля"
 msgid "masks can not contain themselves"
 msgstr "Маски не можуть містити себе"
 
-#: ../src/develop/masks/object.c:839
+#: ../src/develop/masks/object.c:843
 msgid "set raster mask root folder in preferences"
 msgstr "Встановіть кореневий каталог файлів растрових масок в Налаштуваннях"
 
-#: ../src/develop/masks/object.c:847
+#: ../src/develop/masks/object.c:851
 msgid "cannot create raster mask folder"
 msgstr "Не вдалося створити каталог файлів растрових масок"
 
-#: ../src/develop/masks/object.c:910
+#: ../src/develop/masks/object.c:914
 msgid "raster mask saved"
 msgstr "Растрову маску збережено"
 
-#: ../src/develop/masks/object.c:915
+#: ../src/develop/masks/object.c:919
 msgid "failed to save raster mask"
 msgstr "Не вдалося зберегти растрову маску"
 
-#: ../src/develop/masks/object.c:996
+#: ../src/develop/masks/object.c:1000
 msgid "no mask extracted from AI segmentation"
 msgstr "Маску не витягнуто з сегментації ШІ"
 
-#: ../src/develop/masks/object.c:1004
+#: ../src/develop/masks/object.c:1008
 msgid "ai object group"
 msgstr "Група об'єктів ШІ"
 
-#: ../src/develop/masks/object.c:1005
+#: ../src/develop/masks/object.c:1009
 msgid "ai object"
 msgstr "Об'єкт ШІ"
 
-#: ../src/develop/masks/object.c:1131
+#: ../src/develop/masks/object.c:1135
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "Згладжування: %3.2f"
 
-#: ../src/develop/masks/object.c:1142
+#: ../src/develop/masks/object.c:1146
 #, c-format
 msgid "cleanup: %d"
 msgstr "Очищення: %d"
 
-#: ../src/develop/masks/object.c:1155
+#: ../src/develop/masks/object.c:1159
 #, c-format
 msgid "opacity: %d%%"
 msgstr "Непрозорість: %d%%"
 
-#: ../src/develop/masks/object.c:1278
+#: ../src/develop/masks/object.c:1282
 #, c-format
 msgid "group '%s'"
 msgstr "Група '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1527 ../src/develop/masks/object.c:1564
+#: ../src/develop/masks/object.c:1531 ../src/develop/masks/object.c:1568
 msgid "object mask: analyzing image..."
 msgstr "Маска об'єкта: аналіз зображення..."
 
-#: ../src/develop/masks/object.c:1574
+#: ../src/develop/masks/object.c:1578
 msgid "click on object to create mask"
 msgstr "Клікніть на об'єкті, щоб створити маску"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1584
+#: ../src/develop/masks/object.c:1588
 msgid "object mask preparation failed"
 msgstr "Підготовка маски об'єкта не вдалася"
 
-#: ../src/develop/masks/object.c:1784
+#: ../src/develop/masks/object.c:1788
 msgid "[OBJECT] select / add foreground point"
 msgstr "[ОБ'ЄКТ] Вибрати / Додати точку переднього плану"
 
-#: ../src/develop/masks/object.c:1789
+#: ../src/develop/masks/object.c:1793
 msgid "[OBJECT] add background point"
 msgstr "[ОБ'ЄКТ] Додати точку тла"
 
-#: ../src/develop/masks/object.c:1794
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] clear selection"
 msgstr "[ОБ'ЄКТ] Очистити вибір"
 
-#: ../src/develop/masks/object.c:1799
+#: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] apply mask"
 msgstr "[ОБ'ЄКТ] Застосувати маску"
 
-#: ../src/develop/masks/object.c:1804
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] change smoothing"
 msgstr "[ОБ'ЄКТ] Змінити згладжування"
 
-#: ../src/develop/masks/object.c:1809
+#: ../src/develop/masks/object.c:1813
 msgid "[OBJECT] change cleanup"
 msgstr "[ОБ'ЄКТ] Змінити очищення"
 
-#: ../src/develop/masks/object.c:1814
+#: ../src/develop/masks/object.c:1818
 msgid "[OBJECT] change opacity"
 msgstr "[ОБ'ЄКТ] Змінити непрозорість"
 
-#: ../src/develop/masks/object.c:1821
+#: ../src/develop/masks/object.c:1825
 #, c-format
 msgid "object #%d"
 msgstr "Об'єкт #%d"
 
-#: ../src/develop/masks/object.c:1839
+#: ../src/develop/masks/object.c:1843
 #, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
@@ -10852,58 +10853,58 @@ msgstr ""
 "<b>Згладжування</b>: прокрутка (%3.2f), <b>Очищення</b>: Shift+прокрутка "
 "(%d), <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/object.c:1850
+#: ../src/develop/masks/object.c:1854
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Вибрати</b>: клік на об'єкті, <b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/path.c:3945
+#: ../src/develop/masks/path.c:3943
 msgid "[PATH creation] add a smooth node"
 msgstr "[КОНТУР - створення] додати плавний вузол"
 
-#: ../src/develop/masks/path.c:3947
+#: ../src/develop/masks/path.c:3945
 msgid "[PATH creation] add a sharp node"
 msgstr "[КОНТУР - створення] додати гострий вузол"
 
-#: ../src/develop/masks/path.c:3949
+#: ../src/develop/masks/path.c:3947
 msgid "[PATH creation] terminate path creation"
 msgstr "[КОНТУР - створення] завершити створення контуру"
 
-#: ../src/develop/masks/path.c:3951
+#: ../src/develop/masks/path.c:3949
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[КОНТУР - на вузлі] перемкнутися між плавним і гострим вузлом"
 
-#: ../src/develop/masks/path.c:3953
+#: ../src/develop/masks/path.c:3951
 msgid "[PATH on node] remove the node"
 msgstr "[КОНТУР - на вузлі] видалити вузол"
 
-#: ../src/develop/masks/path.c:3955
+#: ../src/develop/masks/path.c:3953
 msgid "[PATH on feather] reset curvature"
 msgstr "[КОНТУР - розтушовка] скинути вигин"
 
-#: ../src/develop/masks/path.c:3957
+#: ../src/develop/masks/path.c:3955
 msgid "[PATH on segment] add node"
 msgstr "[КОНТУР - на сегменті] додати вузол"
 
-#: ../src/develop/masks/path.c:3959
+#: ../src/develop/masks/path.c:3957
 msgid "[PATH] change size"
 msgstr "[КОНТУР] змінити розмір"
 
-#: ../src/develop/masks/path.c:3961
+#: ../src/develop/masks/path.c:3959
 msgid "[PATH] change feather size"
 msgstr "[КОНТУР] змінити розмір розтушовки"
 
-#: ../src/develop/masks/path.c:3963
+#: ../src/develop/masks/path.c:3961
 msgid "[PATH] change opacity"
 msgstr "[КОНТУР] змінити непрозорість"
 
-#: ../src/develop/masks/path.c:3975
+#: ../src/develop/masks/path.c:3973
 #, c-format
 msgid "path #%d"
 msgstr "Контур #%d"
 
-#: ../src/develop/masks/path.c:3986
+#: ../src/develop/masks/path.c:3984
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -10911,7 +10912,7 @@ msgstr ""
 "<b>Додати вузол</b>: клік, <b>Додати гострий вузол</b>: Ctrl+клік\n"
 "<b>Скасування</b>: правий клік"
 
-#: ../src/develop/masks/path.c:3991
+#: ../src/develop/masks/path.c:3989
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -10919,7 +10920,7 @@ msgstr ""
 "<b>Додати вузол</b>: клік, <b>Додати гострий вузол</b>: Ctrl+клік\n"
 "<b>Закінчити контур</b>: правий клік"
 
-#: ../src/develop/masks/path.c:3996
+#: ../src/develop/masks/path.c:3994
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -10927,7 +10928,7 @@ msgstr ""
 "<b>Перемістити вузол</b>: перетягнути, <b>Видалити вузол</b>: правий клік\n"
 "<b>Перемкнути плавний/різкий режим</b>: Ctrl+клік"
 
-#: ../src/develop/masks/path.c:4001
+#: ../src/develop/masks/path.c:3999
 msgid ""
 "<b>node curvature</b>: drag, <b>force symmetry</b>: ctrl+drag,\n"
 "<b>move single handle</b>: shift+drag, <b>reset curvature</b>: right-click"
@@ -10937,7 +10938,7 @@ msgstr ""
 "<b>Перемістити один маркер</b>: Shift+перетягнути,<b>Скинути вигин</b>: "
 "правий клік"
 
-#: ../src/develop/masks/path.c:4006
+#: ../src/develop/masks/path.c:4004
 msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
 "<b>remove path</b>: right-click"
@@ -10945,11 +10946,11 @@ msgstr ""
 "<b>Перемістити сегмент</b>: перетягнути, <b>Додати вузол</b>: Ctrl+клік\n"
 "<b>Видалити контур</b>: правий клік"
 
-#: ../src/develop/pixelpipe_hb.c:518
+#: ../src/develop/pixelpipe_hb.c:526
 msgid "enabled as required"
 msgstr "Увімкнено за необхідності"
 
-#: ../src/develop/pixelpipe_hb.c:519
+#: ../src/develop/pixelpipe_hb.c:527
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10957,11 +10958,11 @@ msgstr ""
 "В історії був вимкнений модуль, але він потрібен для цього типу зображень.\n"
 "Імовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:526
+#: ../src/develop/pixelpipe_hb.c:534
 msgid "disabled as not appropriate"
 msgstr "Вимкнено як непідходящий"
 
-#: ../src/develop/pixelpipe_hb.c:527
+#: ../src/develop/pixelpipe_hb.c:535
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10970,7 +10971,7 @@ msgstr ""
 "зображень.\n"
 "Імовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:1290
+#: ../src/develop/pixelpipe_hb.c:1298
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10981,11 +10982,11 @@ msgstr ""
 "в модулі '%s'\n"
 "Повідомте про це на GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1844
+#: ../src/develop/pixelpipe_hb.c:1852
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Фатальна помилка вирівнювання вводу, повідомте про це на GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3243
+#: ../src/develop/pixelpipe_hb.c:3251
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -11006,7 +11007,7 @@ msgstr ""
 "  - Занадто малі параметри запасу при використанні опції 'використовувати всю "
 "пам'ять пристрою'."
 
-#: ../src/develop/pixelpipe_hb.c:3435
+#: ../src/develop/pixelpipe_hb.c:3553
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -11592,6 +11593,10 @@ msgstr "Вибрати необроблені"
 #. Not Implemented
 #. Not Implemented
 #. Not Implemented
+#. handle the ROLL.NAME[n] case
+#. grab each complete variable
+#. strip of the leading $( and trailing )
+#. add one because c arrays are 0 based and lua are 1 based
 #. find the $CATEGORYn and $CATEGORY[n,m] requests and add them to the substitute list
 #. grab each complete variable
 #. strip of the leading $( and trailing )
@@ -11606,10 +11611,13 @@ msgstr "Вибрати необроблені"
 #. FILE.NAME
 #. FILE.EXTENSION
 #. ID
+#. IMAGE.ID
+#. IMAGE.ID.NEXT
 #. VERSION
 #. VERSION.IF_MULTI
 #. VERSION.NAME
 #. DARKTABLE.VERSION
+#. Xmp.darktable.version
 #. DARKTABLE.NAME
 #. SEQUENCE
 #. WIDTH.SENSOR
@@ -11675,10 +11683,15 @@ msgstr "Вибрати необроблені"
 #. LABELS
 #. LABELS.ICONS - wont be implemented
 #. TITLE
+#. Xmp.dc.title
 #. DESCRIPTION
+#. Xmp.dc.description
 #. CREATOR
+#. Xmp.dc.creator
 #. PUBLISHER
+#. Xmp.dc.publisher
 #. RIGHTS
+#. Xmp.dc.rights
 #. TAGS - wont be implemented
 #. SIDECAR.TXT - wont be implemented
 #. FOLDER.PICTURES
@@ -11690,36 +11703,48 @@ msgstr "Вибрати необроблені"
 #. JOBCODE - wont be implemented
 #. populate the substitution list
 #. do category substitutions separately
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:887
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:931
 msgid "$(ROLL.NAME) - roll of the input image"
 msgstr "$(ROLL.NAME) - плівка вхідного зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
 #: ../src/gui/gtkentry.c:38
 msgid "$(FILE.FOLDER) - folder containing the input image"
 msgstr "$(FILE.FOLDER) - каталог, що містить вхідне зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:889
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:933
 #: ../src/gui/gtkentry.c:39
 msgid "$(FILE.NAME) - basename of the input image"
 msgstr "$(FILE.NAME) - базове ім'я файлу вхідного зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:890
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
 #: ../src/gui/gtkentry.c:40
 msgid "$(FILE.EXTENSION) - extension of the input image"
 msgstr "$(FILE.EXTENSION) - розширення файлу вхідного зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:891
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
 #: ../src/gui/gtkentry.c:111
 msgid "$(ID) - image ID"
 msgstr "$(ID) - ID зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/gui/gtkentry.c:109
+msgid "$(IMAGE.ID) - image ID"
+msgstr "$(IMAGE.ID) - ID зображення"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/gui/gtkentry.c:110
+msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
+msgstr ""
+"$(IMAGE.ID.NEXT) - наступний ідентифікатор зображення, який буде призначено "
+"під час імпорту"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
 #: ../src/gui/gtkentry.c:41
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - версія дубліката"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:893
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:939
 #: ../src/gui/gtkentry.c:42
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
@@ -11728,139 +11753,143 @@ msgstr ""
 "$(VERSION.IF_MULTI) - те саме, що й $(VERSION), але без значення, якщо існує "
 "лише одна версія"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
 #: ../src/gui/gtkentry.c:43
 msgid "$(VERSION.NAME) - version name from metadata"
 msgstr "$(VERSION.NAME) - ім'я версії з метаданих"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:895
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
 #: ../src/gui/gtkentry.c:120
 msgid "$(DARKTABLE.VERSION) - current darktable version"
 msgstr "$(DARKTABLE.VERSION) - версія поточного екземпляра Darktable"
 
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+msgid "$(Xmp.darktable.version) - current darktable version"
+msgstr "$(Xmp.darktable.version) - версія поточного екземпляра Darktable"
+
 #. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:897
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
 #: ../src/gui/gtkentry.c:45
 msgid "$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
 msgstr ""
 "$(SEQUENCE[n,m]) - порядковий номер, n: кількість цифр, m: початковий номер"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:898
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:945
 #: ../src/gui/gtkentry.c:47
 msgid "$(WIDTH.SENSOR) - image sensor width"
 msgstr "$(WIDTH.SENSOR) - ширина сенсора зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
 #: ../src/gui/gtkentry.c:52
 msgid "$(HEIGHT.SENSOR) - image sensor height"
 msgstr "$(HEIGHT.SENSOR) - висота сенсора зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:900
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:947
 #: ../src/gui/gtkentry.c:48
 msgid "$(WIDTH.RAW) - RAW image width"
 msgstr "$(WIDTH.RAW) - ширина зображення raw"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:901
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:948
 #: ../src/gui/gtkentry.c:53
 msgid "$(HEIGHT.RAW) - RAW image height"
 msgstr "$(HEIGHT.RAW) - висота зображення raw"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:902
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:49
 msgid "$(WIDTH.CROP) - image width after crop"
 msgstr "$(WIDTH.CROP) - ширина зображення після обрізання"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:903
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:950
 #: ../src/gui/gtkentry.c:54
 msgid "$(HEIGHT.CROP) - image height after crop"
 msgstr "$(HEIGHT.CROP) - висота зображення після обрізання"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:904
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:951
 #: ../src/gui/gtkentry.c:50
 msgid "$(WIDTH.EXPORT) - exported image width"
 msgstr "$(WIDTH.EXPORT) - ширина експортованого зображення"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:905
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:952
 #: ../src/gui/gtkentry.c:55
 msgid "$(HEIGHT.EXPORT) - exported image height"
 msgstr "$(HEIGHT.EXPORT) - висота експортованого зображення"
 
 #. _("$(WIDTH.MAX) - maximum image export width"),  -- not implemented
 #. _("$(HEIGHT.MAX) - maximum image export height"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:908
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:955
 #: ../src/gui/gtkentry.c:56
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - рік"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:909
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:956
 #: ../src/gui/gtkentry.c:57
 msgid "$(YEAR.SHORT) - year without century"
 msgstr "$(YEAR.SHORT) - рік без століття"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:910
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:957
 #: ../src/gui/gtkentry.c:58
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - місяць"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:958
 #: ../src/gui/gtkentry.c:60
 msgid "$(MONTH.LONG) - full month name according to the current locale"
 msgstr "$(MONTH.LONG) - повна назва місяця відповідно до поточної локалі"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:912
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:959
 #: ../src/gui/gtkentry.c:59
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
 msgstr "$(MONTH.SHORT) - скорочена назва місяця відповідно до поточної локалі"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:913
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:960
 #: ../src/gui/gtkentry.c:61
 msgid "$(DAY) - day"
 msgstr "$(DAY) - день"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:914
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:961
 #: ../src/gui/gtkentry.c:62
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - година"
 
 #. _("$(HOUR.AMPM) - hour, 12-hour clock"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:963
 #: ../src/gui/gtkentry.c:64
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - хвилина"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:964
 #: ../src/gui/gtkentry.c:65
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - секунда"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:918
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:965
 #: ../src/gui/gtkentry.c:66
 msgid "$(MSEC) - millisecond"
 msgstr "$(MSEC) - мілісекунда"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:966
 #: ../src/gui/gtkentry.c:69
 msgid "$(EXIF.YEAR) - EXIF year"
 msgstr "$(EXIF.YEAR) - рік із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:967
 #: ../src/gui/gtkentry.c:70
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
 msgstr "$(EXIF.YEAR.SHORT) - рік із EXIF без століття"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:921
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:968
 #: ../src/gui/gtkentry.c:71
 msgid "$(EXIF.MONTH) - EXIF month"
 msgstr "$(EXIF.MONTH) - місяць із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:969
 #: ../src/gui/gtkentry.c:73
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
 msgstr ""
 "$(EXIF.MONTH.LONG) - повна назва місяця з EXIF відповідно до поточної локалі"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:923
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:970
 #: ../src/gui/gtkentry.c:72
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
@@ -11869,104 +11898,104 @@ msgstr ""
 "$(EXIF.MONTH.SHORT) - скорочена назва місяця з EXIF відповідно до поточної "
 "локалі"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:924
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:971
 #: ../src/gui/gtkentry.c:74
 msgid "$(EXIF.DAY) - EXIF day"
 msgstr "$(EXIF.DAY) - день із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:925
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:972
 #: ../src/gui/gtkentry.c:75
 msgid "$(EXIF.HOUR) - EXIF hour"
 msgstr "$(EXIF.HOUR) - година з EXIF"
 
 #. _("$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock") ..  "\n" .. -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:974
 #: ../src/gui/gtkentry.c:77
 msgid "$(EXIF.MINUTE) - EXIF minute"
 msgstr "$(EXIF.MINUTE) - хвилина з EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:975
 #: ../src/gui/gtkentry.c:78
 msgid "$(EXIF.SECOND) - EXIF second"
 msgstr "$(EXIF.SECOND) - секунда з EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:929
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:976
 #: ../src/gui/gtkentry.c:79
 msgid "$(EXIF.MSEC) - EXIF millisecond"
 msgstr "$(EXIF.MSEC) - мілісекунда з EXIF"
 
 #. _("$(EXIF.DATE.REGIONAL) - localized EXIF date"),  -- not implemented
 #. _("$(EXIF.TIME.REGIONAL) - localized EXIF time"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:979
 #: ../src/gui/gtkentry.c:80
 msgid "$(EXIF.ISO) - ISO value"
 msgstr "$(EXIF.ISO) - значення ISO"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:933
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:980
 #: ../src/gui/gtkentry.c:83
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF.EXPOSURE) - експозиція з EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:981
 #: ../src/gui/gtkentry.c:81
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
 msgstr "$(EXIF.EXPOSURE.BIAS) - компенсація експозиції з EXIF"
 
 #. _("$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:983
 #: ../src/gui/gtkentry.c:84
 msgid "$(EXIF.APERTURE) - EXIF aperture"
 msgstr "$(EXIF.APERTURE) - діафрагма з EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:984
 #: ../src/gui/gtkentry.c:85
 msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
 msgstr "$(EXIF.CROP_FACTOR) - кроп-фактор із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:985
 #: ../src/gui/gtkentry.c:86
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
 msgstr "$(EXIF.FOCAL.LENGTH) - фокусна відстань із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:939
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:986
 #: ../src/gui/gtkentry.c:87
 msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
 msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - еквівалентна фокусна відстань із EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:987
 #: ../src/gui/gtkentry.c:88
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF.FOCUS.DISTANCE) - дистанція фокусування з EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:988
 #: ../src/gui/gtkentry.c:89
 msgid "$(EXIF.MAKER) - camera maker"
 msgstr "$(EXIF.MAKER) - виробник камери"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:989
 #: ../src/gui/gtkentry.c:90
 msgid "$(EXIF.MODEL) - camera model"
 msgstr "$(EXIF.MODEL) - модель камери"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:990
 #: ../src/gui/gtkentry.c:91
 msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
 msgstr "$(EXIF.WHITEBALANCE) - вибраний баланс білого з EXIF"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:991
 #: ../src/gui/gtkentry.c:92
 msgid "$(EXIF.METERING) - EXIF exposure metering mode"
 msgstr "$(EXIF.METERING) - режим вимірювання експозиції з EXIF"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:945
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:992
 #: ../src/gui/gtkentry.c:93
 msgid "$(EXIF.LENS) - lens"
 msgstr "$(EXIF.LENS) - об'єктив"
 
 #. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:947
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:994
 #: ../src/gui/gtkentry.c:95
 msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
 msgstr "$(EXIF.FLASH) - чи використовувався спалах (так/ні/--)"
@@ -11976,81 +12005,101 @@ msgstr "$(EXIF.FLASH) - чи використовувався спалах (та
 #. _("$(GPS.LATITUDE) - latitude"),-- not implemented
 #. _("$(GPS.ELEVATION) - elevation"),-- not implemented
 #. _("$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:952
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:999
 #: ../src/gui/gtkentry.c:100
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) - довгота"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:953
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1000
 #: ../src/gui/gtkentry.c:101
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) - широта"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:954
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1001
 #: ../src/gui/gtkentry.c:102
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) - висота"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:955
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1002
 #: ../src/gui/gtkentry.c:103
 msgid "$(STARS) - star rating as number (-1 for rejected)"
 msgstr "$(STARS) - рейтинг в зірках як число (-1 означає відхилення)"
 
 #. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:957
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1004
 #: ../src/gui/gtkentry.c:105
 msgid "$(LABELS) - color labels as text"
 msgstr "$(LABELS) - кольорові позначки як текст"
 
 #. _("$(LABELS.ICONS) - color labels as icons"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:959
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1006
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - заголовок з метаданих"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:960
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1007
+msgid "$(Xmp.dc.title) - title from metadata"
+msgstr "$(Xmp.dc.title) - заголовок з метаданих"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1008
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - опис із метаданих"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:961
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1009
+msgid "$(Xmp.dc.description) - description from metadata"
+msgstr "$(Xmp.dc.description) - опис із метаданих"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1010
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - автор із метаданих"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:962
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1011
+msgid "$(Xmp.dc.creator) - creator from metadata"
+msgstr "$(Xmp.dc.creator) - автор із метаданих"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1012
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) - видавець із метаданих"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:963
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1013
+msgid "$(Xmp.dc.publisher) - publisher from metadata"
+msgstr "$(Xmp.dc.publisher) - видавець із метаданих"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1014
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - права з метаданих"
 
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1015
+msgid "$(Xmp.dc.rights) - rights from metadata"
+msgstr "$(Xmp.dc.rights) - права з метаданих"
+
 #. _("$(TAGS) - tags as set in metadata settings"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:965
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1017
 #: ../src/gui/gtkentry.c:117
 msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgstr "$(CATEGORY[n,category]) - підтег рівня n в ієрархічних тегах"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:966
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1018
 #: ../src/gui/gtkentry.c:121
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
 msgstr "$(SIDECAR_TXT) - вміст .txt файлу з описом зображення, якщо він є"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:967
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1019
 #: ../src/gui/gtkentry.c:113
 msgid "$(FOLDER.PICTURES) - pictures folder"
 msgstr "$(FOLDER.PICTURES) - каталог із зображеннями"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:968
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1020
 #: ../src/gui/gtkentry.c:114
 msgid "$(FOLDER.HOME) - home folder"
 msgstr "$(FOLDER.HOME) - домашній каталог"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:969
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1021
 #: ../src/gui/gtkentry.c:115
 msgid "$(FOLDER.DESKTOP) - desktop folder"
 msgstr "$(FOLDER.DESKTOP) - каталог робочого стола"
 
 #. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:971
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:1023
 #: ../src/gui/gtkentry.c:112
 msgid "$(USERNAME) - login name"
 msgstr "$(USERNAME) - ім'я облікового запису"
@@ -12062,7 +12111,11 @@ msgstr "$(USERNAME) - ім'я облікового запису"
 #. remove the var from the string
 #. string modifications
 #. replace the substitution variables in a string
+#. catch everything below 0.3 seconds
+#. catch 1/2, 1/3, ...
+#. catch 1/1.3, 1/1.6, ...
 #. change the encoding of the terminal to handle non-english characters in path
+#. otherwise, when the real command fails, script will still return "good" error code of chcp
 #. On Windows we don't need any command. (start e.g. has problems with spaces in the filename, even if we put quoter around them.) https://stackoverflow.com/questions/13691827/opening-file-with-spaces-in-windows-via-command-prompt
 #.
 #.
@@ -12101,8 +12154,12 @@ msgstr "$(USERNAME) - ім'я облікового запису"
 #.
 #. CHANGES
 #.
+#. 20251202 - fixed pattern matching bugs affecting Canon EOS R? series
+#. styles and styles being applied twice if images are reimported
+#.
+#. Added more debugging statements to pattern matching functions
+#.
 #. local df = require "lib/dtutils.file"
-#. local ds = require "lib/dtutils.string"
 #. local dtsys = require "lib/dtutils.system"
 #. local debug = require "darktable.debug"
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -12124,12 +12181,12 @@ msgstr "$(USERNAME) - ім'я облікового запису"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:94
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:99
 msgid "apply camera style"
 msgstr "Застосування стилю імітації камери"
 
 #. name of script
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:95
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:100
 msgid "apply darktable camera style to matching images"
 msgstr "Застосувати стиль імітації обробки камери до відповідних зображень"
 
@@ -12166,6 +12223,7 @@ msgstr "Застосувати стиль імітації обробки кам
 #. escape dashes
 #. make spaces optional
 #. until we end up with a set, I'll defer set processing, i.e. [...]
+#. log.msg(log.debug, "make spaces conditional again? pattern is " .. pattern)
 #. anchor the pattern to ensure we don't short match
 #. separate the styles into
 #.
@@ -12174,7 +12232,7 @@ msgstr "Застосувати стиль імітації обробки кам
 #. styles {}
 #. patterns {}
 #. strip off the maker name
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:381
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:396
 msgid "applying camera styles to images"
 msgstr "Застосування стилів камери до зображень"
 
@@ -12190,11 +12248,11 @@ msgstr "Застосування стилів камери до зображен
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. E V E N T S
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:474
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:490
 msgid "apply darktable camera styles to collection"
 msgstr "Застосувати стилі імітації камер до колекції"
 
-#: ../src/external/lua-scripts/official/apply_camera_style.lua:480
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:496
 msgid "apply darktable camera styles to selection"
 msgstr "Застосувати стилі імітації камер до вибраних зображень"
 
@@ -12943,11 +13001,11 @@ msgstr "Обмін вибору з тимчасовим буфером"
 #.
 #.
 #. return data structure for script_manager
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:52
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:56
 msgid "selection to PDF"
 msgstr "Вибрані зображення в PDF"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
 msgid "generate a pdf file of selected images"
 msgstr "Створити PDF-файл із вибраних зображень"
 
@@ -12955,15 +13013,20 @@ msgstr "Створити PDF-файл із вибраних зображень"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:65
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:69
 msgid "a pdf viewer"
 msgstr "Переглядач PDF"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
-msgid "can be an absolute pathname or the tool may be in the PATH"
-msgstr "Може бути абсолютним шляхом або інструмент може бути в PATH"
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
+msgid ""
+"can be an absolute pathname or the tool may be in the PATH\n"
+"if not specified the system default will be used to open the pdf"
+msgstr ""
+"Може бути абсолютним шляхом або інструмент може бути в PATH\n"
+"Якщо не вказано, для відкриття PDF-файлу буде використано\n"
+"системне налаштування за замовчуванням"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
 msgid "thumbs per line"
 msgstr "Мініатюр на рядок"
 
@@ -12972,29 +13035,29 @@ msgstr "Мініатюр на рядок"
 #. The hard minimum value for the slider, the user can't manually enter a value beyond this point
 #. The hard maximum value for the slider, the user can't manually enter a value beyond this point
 #. The current value of the slider
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:83
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:87
 msgid "title:"
 msgstr "Заголовок:"
 
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:85
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:89
 msgid "thumbnails per row:"
 msgstr "Мініатюр на рядок:"
 
 #. fact is that latex will get confused if the filename has multiple dots.
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:132
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
 msgid "export thumbnails to pdf"
 msgstr "Експорт мініатюр у PDF"
 
 #. convert to PDF
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:184
 msgid "problem running pdflatex"
 msgstr "Проблема під час запуску pdflatex"
 
 #. this one is probably usefull to the user
 #. open the PDF
-#: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:203
 msgid "problem running pdf viewer"
 msgstr "Проблема під час запуску програми перегляду PDF"
 
@@ -13184,6 +13247,8 @@ msgstr "Отримати та роздрукувати документацію 
 #. file to luarc and the scripts will run.
 #.
 #.
+#. figure out where we are running from
+#. assume user based
 #. api check
 #. du.check_min_api_version("9.3.0", "script_manager")
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13196,11 +13261,19 @@ msgstr "Отримати та роздрукувати документацію 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/tools/script_manager.lua:104
+#: ../src/external/lua-scripts/tools/script_manager.lua:131
+msgid "disable Lua scripts"
+msgstr "Вимкнути сценарії Lua"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:132
+msgid "do not run the Lua scripts"
+msgstr "Не запускати сценарії Lua"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:140
 msgid "check for updated scripts on start up"
 msgstr "Перевірка наявності оновлених сценаріїв під час запуску"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:105
+#: ../src/external/lua-scripts/tools/script_manager.lua:141
 msgid "automatically update scripts to correct version"
 msgstr "Автоматично оновлювати сценарії до правильної версії"
 
@@ -13270,15 +13343,15 @@ msgstr "Автоматично оновлювати сценарії до пра
 #. ----------------
 #. script handling
 #. ----------------
-#: ../src/external/lua-scripts/tools/script_manager.lua:409
+#: ../src/external/lua-scripts/tools/script_manager.lua:445
 msgid "contributed"
 msgstr "Додатки"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:413
+#: ../src/external/lua-scripts/tools/script_manager.lua:449
 msgid "official"
 msgstr "Офіційні"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:415
+#: ../src/external/lua-scripts/tools/script_manager.lua:451
 #: ../src/iop/retouch.c:2469 ../src/iop/retouch.c:2474 ../src/iop/retouch.c:2479
 #: ../src/iop/retouch.c:2484
 msgid "tools"
@@ -13291,7 +13364,7 @@ msgstr "Інструменти"
 #. break up the lines into key value pairs
 #. slurp the file
 #. assume that the second block comment is the documentation
-#: ../src/external/lua-scripts/tools/script_manager.lua:503
+#: ../src/external/lua-scripts/tools/script_manager.lua:539
 msgid "no documentation available"
 msgstr "Документація відсутня"
 
@@ -13317,6 +13390,7 @@ msgstr "Документація відсутня"
 #. change the path separator from / to \ for windows
 #. add the script data
 #. scan the scripts
+#. add a string.match to figure out which lua dir to use
 #. strip the lua dir off
 #. strip off .lua\n
 #. let's not include ourself
@@ -13324,6 +13398,18 @@ msgstr "Документація відсутня"
 #. let's not try and run libraries
 #. don't match files in the .git directory
 #. but let's make sure libraries can be found
+#: ../src/external/lua-scripts/tools/script_manager.lua:792
+#: ../src/external/lua-scripts/tools/script_manager.lua:918
+msgid ""
+"ERROR: git not found.  Install or specify the location of the git executable."
+msgstr ""
+"ПОМИЛКА: git не знайдено. Встановіть або вкажіть розташування виконуваного "
+"файлу git."
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:806
+msgid "lua scripts successfully updated"
+msgstr "Сценарії Lua успішно оновлено"
+
 #. ------------
 #. UI handling
 #. ------------
@@ -13331,27 +13417,32 @@ msgstr "Документація відсутня"
 #. get everything to the first /
 #. if we have a folder (.git doesn't)
 #. skip plugins
-#: ../src/external/lua-scripts/tools/script_manager.lua:751
-#: ../src/external/lua-scripts/tools/script_manager.lua:866
+#: ../src/external/lua-scripts/tools/script_manager.lua:901
 msgid ""
-"ERROR: git not found.  Install or specify the location of the git executable."
+"unable to create user lua directory, installing additional scripts failed"
 msgstr ""
-"ПОМИЛКА: git не знайдено. Встановіть або вкажіть розташування виконуваного "
-"файлу git."
+"Не вдається створити каталог користувача Lua, додаткові сценарії не "
+"встановлені"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:765
-msgid "lua scripts successfully updated"
-msgstr "Сценарії Lua успішно оновлено"
+#: ../src/external/lua-scripts/tools/script_manager.lua:907
+#, lua-format
+msgid "folder %s is already in use. Please specify a different folder name."
+msgstr "Папка '%s' вже використовується. Будь ласка, вкажіть іншу назву папки."
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:905
+#: ../src/external/lua-scripts/tools/script_manager.lua:939
+#, lua-format
+msgid "scripts successfully installed into folder %s"
+msgstr "Сценарії успішно встановлено в папку '%s'"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:957
 msgid "no scripts found to install"
 msgstr "Не знайдено сценаріїв для встановлення"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:910
+#: ../src/external/lua-scripts/tools/script_manager.lua:962
 msgid "failed to download scripts"
 msgstr "Не вдалося завантажити сценарії"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1062
+#: ../src/external/lua-scripts/tools/script_manager.lua:1115
 #, lua-format
 msgid "page %d of %d"
 msgstr "Сторінка %d із %d"
@@ -13365,8 +13456,8 @@ msgstr "Сторінка %d із %d"
 #. num_buttons
 #. main menu
 #. Module name
-#: ../src/external/lua-scripts/tools/script_manager.lua:1217
-#: ../src/external/lua-scripts/tools/script_manager.lua:1492
+#: ../src/external/lua-scripts/tools/script_manager.lua:1270
+#: ../src/external/lua-scripts/tools/script_manager.lua:1564
 msgid "scripts"
 msgstr "Сценарії"
 
@@ -13383,7 +13474,7 @@ msgstr "Сценарії"
 #. only make changes to clean branches
 #. probably upgraded from an earlier api version so get back to master
 #. to use the latest version of script_manager to get the proper API
-#: ../src/external/lua-scripts/tools/script_manager.lua:1263
+#: ../src/external/lua-scripts/tools/script_manager.lua:1316
 msgid "lua API version reset, please restart darktable"
 msgstr "Скидання версії Lua API, перезапустіть Darktable"
 
@@ -13392,77 +13483,79 @@ msgstr "Скидання версії Lua API, перезапустіть Darkta
 #. api version or checkout/stay on master
 #. stay on master
 #. checkout the appropriate branch for API version if it exists
-#: ../src/external/lua-scripts/tools/script_manager.lua:1310
+#: ../src/external/lua-scripts/tools/script_manager.lua:1363
 msgid "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
 "Вам потрібно перезапустити Darktable, щоб використовувати правильну версію "
 "сценаріїв Lua"
 
+#. exec user luarc file if it exists
+#. scan_script(USER_LUA_DIR)
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. update the scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1336
+#: ../src/external/lua-scripts/tools/script_manager.lua:1408
 msgid "scripts to update"
 msgstr "Сценарії для оновлення"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1337
+#: ../src/external/lua-scripts/tools/script_manager.lua:1409
 msgid "select the scripts installation to update"
 msgstr "Вибрати інсталяцію сценаріїв для оновлення"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1346
-#: ../src/external/lua-scripts/tools/script_manager.lua:1408
+#: ../src/external/lua-scripts/tools/script_manager.lua:1418
+#: ../src/external/lua-scripts/tools/script_manager.lua:1480
 msgid "update scripts"
 msgstr "Оновити сценарії"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1347
+#: ../src/external/lua-scripts/tools/script_manager.lua:1419
 msgid "update the lua scripts from the repository"
 msgstr "Оновити сценарії Lua з репозиторію"
 
 #. add additional scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1358
+#: ../src/external/lua-scripts/tools/script_manager.lua:1430
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr "Введіть URL репозиторію git, що містить сценарії, які ви хочете додати"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1363
+#: ../src/external/lua-scripts/tools/script_manager.lua:1435
 msgid "name of new folder"
 msgstr "Ім'я нового каталогу"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1364
+#: ../src/external/lua-scripts/tools/script_manager.lua:1436
 msgid "enter a folder name for the additional scripts"
 msgstr "Введіть назву каталогу для додаткових сценаріїв"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1369
+#: ../src/external/lua-scripts/tools/script_manager.lua:1441
 msgid "URL to download additional scripts from"
 msgstr "URL для завантаження додаткових сценаріїв"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1371
+#: ../src/external/lua-scripts/tools/script_manager.lua:1443
 msgid "new folder to place scripts in"
 msgstr "Новий каталог для розміщення сценаріїв"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1374
+#: ../src/external/lua-scripts/tools/script_manager.lua:1446
 msgid "install additional scripts"
 msgstr "Встановити додаткові сценарії"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1382
+#: ../src/external/lua-scripts/tools/script_manager.lua:1454
 msgid "enable \"disable scripts\" button"
 msgstr "Увімкнути кнопку \"Вимкнути сценарії\""
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1394
-#: ../src/external/lua-scripts/tools/script_manager.lua:1419
+#: ../src/external/lua-scripts/tools/script_manager.lua:1466
+#: ../src/external/lua-scripts/tools/script_manager.lua:1491
 msgid "disable scripts"
 msgstr "Вимкнути сценарії"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1400
+#: ../src/external/lua-scripts/tools/script_manager.lua:1472
 msgid "lua scripts will not run the next time darktable is started"
 msgstr "Сценарії Lua не запускатимуться під час наступного запуску Darktable"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1414
+#: ../src/external/lua-scripts/tools/script_manager.lua:1486
 msgid "add more scripts"
 msgstr "Додати більше сценаріїв"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1430
+#: ../src/external/lua-scripts/tools/script_manager.lua:1502
 msgid "select the script folder"
 msgstr "Вибрати каталог сценаріїв"
 
@@ -13470,50 +13563,50 @@ msgstr "Вибрати каталог сценаріїв"
 #. a button to start and stop the script
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
-#: ../src/external/lua-scripts/tools/script_manager.lua:1461
+#: ../src/external/lua-scripts/tools/script_manager.lua:1533
 #: ../src/iop/agx.c:2456 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2117
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2260
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "Сторінка"
 
 #. configure options
-#: ../src/external/lua-scripts/tools/script_manager.lua:1501
+#: ../src/external/lua-scripts/tools/script_manager.lua:1573
 msgid "scripts per page"
 msgstr "Сценаріїв на сторінку"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1502
+#: ../src/external/lua-scripts/tools/script_manager.lua:1574
 msgid "select number of start/stop buttons to display"
 msgstr "Вибрати кількість кнопок запуску/зупинки на сторінку"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1513
+#: ../src/external/lua-scripts/tools/script_manager.lua:1585
 msgid "change number of buttons"
 msgstr "Змінити кількість кнопок"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1523
+#: ../src/external/lua-scripts/tools/script_manager.lua:1595
 msgid "configuration"
 msgstr "Конфігурація"
 
 #. stack for the options
 #. main menu
-#: ../src/external/lua-scripts/tools/script_manager.lua:1545
+#: ../src/external/lua-scripts/tools/script_manager.lua:1617
 #: ../src/gui/accelerators.c:2922 ../src/gui/accelerators.c:3022
 #: ../src/views/view.c:1672
 msgid "action"
 msgstr "Дія"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "install/update scripts"
 msgstr "Встановлення/оновлення сценаріїв"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "configure"
 msgstr "Конфігурування"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1551
+#: ../src/external/lua-scripts/tools/script_manager.lua:1623
 msgid "start/stop scripts"
 msgstr "Запуск/зупинка сценаріїв"
 
@@ -14431,11 +14524,17 @@ msgstr "%s призначено на %s"
 msgid "short key press resets stuck keys"
 msgstr "Коротке натискання клавіші скидає застряглі клавіші"
 
-#: ../src/gui/workspace.c:59
+#. add a memory workspace just after default one
+#: ../src/gui/workspace.c:48 ../src/gui/workspace.c:327
+#: ../src/gui/workspace.c:528
+msgid "memory"
+msgstr "База в оперативній пам'яті"
+
+#: ../src/gui/workspace.c:254
 msgid "delete workspace"
 msgstr "Видалити робочий простір"
 
-#: ../src/gui/workspace.c:60
+#: ../src/gui/workspace.c:255
 #, c-format
 msgid ""
 "WARNING\n"
@@ -14450,26 +14549,58 @@ msgstr ""
 "\n"
 "Якщо запис XMP не активовано, результати редагувань будуть втрачені."
 
-#. add a memory workspace just after default one
-#: ../src/gui/workspace.c:103 ../src/gui/workspace.c:196
-msgid "memory"
-msgstr "База в оперативній пам'яті"
+#: ../src/gui/workspace.c:358 ../src/gui/workspace.c:371
+msgid "create workspace"
+msgstr "Створити робочий простір"
 
-#: ../src/gui/workspace.c:177
+#: ../src/gui/workspace.c:359
+msgid ""
+"WARNING\n"
+"\n"
+"the names \"default\" and \"memory\" are reserved.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"ПОПЕРЕДЖЕННЯ\n"
+"\n"
+"Назви \"default\" та \"memory\" зарезервовані.\n"
+"\n"
+"Виберіть іншу назву."
+
+#: ../src/gui/workspace.c:368
+#, c-format
+msgid ""
+"WARNING\n"
+"\n"
+"a workspace named \"%s\" already exists.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"ПОПЕРЕДЖЕННЯ\n"
+"\n"
+"Робочий простір з назвою \"%s\" вже існує.\n"
+"\n"
+"Виберіть іншу назву."
+
+#: ../src/gui/workspace.c:507
 msgid "darktable - select a workspace"
 msgstr "Darktable - вибрати робочий простір"
 
-#: ../src/gui/workspace.c:187
+#: ../src/gui/workspace.c:519
 msgid "select an existing workspace"
 msgstr "Виберіть існуючий робочий простір"
 
-#: ../src/gui/workspace.c:225
+#: ../src/gui/workspace.c:561
 msgid "or create a new one"
 msgstr "або створіть новий"
 
-#: ../src/gui/workspace.c:233 ../src/libs/session.c:104
+#: ../src/gui/workspace.c:569 ../src/libs/session.c:104
 msgid "create"
 msgstr "Створити"
+
+#: ../src/gui/workspace.c:583
+msgid "copy settings from existing workspace"
+msgstr "Копіювати налаштування з існуючого робочого простору"
 
 #: ../src/gui/gtk.c:194 ../src/views/darkroom.c:4822
 msgid "darktable - darkroom preview"
@@ -14797,16 +14928,6 @@ msgid "$(IMAGE.TAGS) - tags as set in metadata settings, flattened"
 msgstr ""
 "$(IMAGE.TAGS) - теги, як установлено в налаштуваннях метаданих, переведені в "
 "плоский вигляд"
-
-#: ../src/gui/gtkentry.c:109
-msgid "$(IMAGE.ID) - image ID"
-msgstr "$(IMAGE.ID) - ID зображення"
-
-#: ../src/gui/gtkentry.c:110
-msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
-msgstr ""
-"$(IMAGE.ID.NEXT) - наступний ідентифікатор зображення, який буде призначено "
-"під час імпорту"
 
 #: ../src/gui/gtkentry.c:116
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -15234,8 +15355,8 @@ msgstr "Не вдається імпортувати пресет %s"
 msgid "select preset(s) to import"
 msgstr "Виберіть пресет(и) для імпорту"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
-#: ../src/gui/preferences_ai.c:1035 ../src/gui/welcome.c:160
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:786
+#: ../src/gui/preferences_ai.c:1197 ../src/gui/welcome.c:160
 #: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/styles.c:595
@@ -15246,54 +15367,54 @@ msgstr "_Відкрити"
 msgid "darktable preset files"
 msgstr "Файли пресетів Darktable"
 
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1050
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1212
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
 msgstr "Всі файли"
 
-#: ../src/gui/preferences_ai.c:157
+#: ../src/gui/preferences_ai.c:158
 msgid "downloaded"
 msgstr "Завантажено"
 
-#: ../src/gui/preferences_ai.c:159
+#: ../src/gui/preferences_ai.c:160
 msgid "update available"
 msgstr "Доступне оновлення"
 
-#: ../src/gui/preferences_ai.c:161
+#: ../src/gui/preferences_ai.c:162
 msgid "update required"
 msgstr "Потрібне оновлення"
 
-#: ../src/gui/preferences_ai.c:163
+#: ../src/gui/preferences_ai.c:164
 msgid "downloading..."
 msgstr "Завантаження..."
 
-#: ../src/gui/preferences_ai.c:167
+#: ../src/gui/preferences_ai.c:168
 msgid "not downloaded"
 msgstr "Не завантажено"
 
-#: ../src/gui/preferences_ai.c:346
+#: ../src/gui/preferences_ai.c:347
 msgid "<i>not available, will fall back to CPU</i>"
 msgstr "<i>недоступно, буде використано CPU</i>"
 
-#: ../src/gui/preferences_ai.c:605
+#: ../src/gui/preferences_ai.c:606
 msgid "downloading AI model"
 msgstr "Завантаження моделі ШІ"
 
-#: ../src/gui/preferences_ai.c:620
+#: ../src/gui/preferences_ai.c:621
 #, c-format
 msgid "downloading: %s"
 msgstr "Завантаження: %s"
 
-#: ../src/gui/preferences_ai.c:781
+#: ../src/gui/preferences_ai.c:782
 msgid "install AI model"
 msgstr "Встановлення моделі ШІ"
 
-#: ../src/gui/preferences_ai.c:789
+#: ../src/gui/preferences_ai.c:790
 msgid "AI model packages (*.dtmodel)"
 msgstr "Пакети моделей ШІ (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:862
+#: ../src/gui/preferences_ai.c:863
 #, c-format
 msgid "delete %d selected model?"
 msgid_plural "delete %d selected models?"
@@ -15301,7 +15422,39 @@ msgstr[0] "Видалити %d вибрану модель?"
 msgstr[1] "Видалити %d вибрані моделі?"
 msgstr[2] "Видалити %d вибраних моделей?"
 
-#: ../src/gui/preferences_ai.c:898
+#: ../src/gui/preferences_ai.c:925
+msgid "scope"
+msgstr "Застосування"
+
+#: ../src/gui/preferences_ai.c:925
+msgid "author"
+msgstr "Автор"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "source"
+msgstr "Джерело"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "paper"
+msgstr "Наукова стаття"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "license"
+msgstr "Ліцензія"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "training data"
+msgstr "Навчальні дані"
+
+#: ../src/gui/preferences_ai.c:928
+msgid "data license"
+msgstr "Ліцензія на дані"
+
+#: ../src/gui/preferences_ai.c:1003
+msgid "click for model details"
+msgstr "Натисніть для отримання детальної інформації про модель"
+
+#: ../src/gui/preferences_ai.c:1060
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -15310,7 +15463,7 @@ msgstr ""
 "Виявлено ONNX Runtime %s.\n"
 "Перезапустіть Darktable, щоб застосувати."
 
-#: ../src/gui/preferences_ai.c:903
+#: ../src/gui/preferences_ai.c:1065
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -15319,7 +15472,7 @@ msgstr ""
 "Недійсна бібліотека ONNX Runtime:\n"
 "%s"
 
-#: ../src/gui/preferences_ai.c:920
+#: ../src/gui/preferences_ai.c:1082
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
@@ -15331,7 +15484,7 @@ msgstr ""
 "Встановіть її через менеджер пакетів або скористайтеся\n"
 "кнопкою перегляду, щоб вибрати власну збірку."
 
-#: ../src/gui/preferences_ai.c:936
+#: ../src/gui/preferences_ai.c:1098
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -15344,55 +15497,55 @@ msgstr ""
 "\n"
 "Перезапустіть Darktable, щоб застосувати зміни."
 
-#: ../src/gui/preferences_ai.c:944 ../src/gui/preferences_ai.c:1031
+#: ../src/gui/preferences_ai.c:1106 ../src/gui/preferences_ai.c:1193
 msgid "select ONNX Runtime library"
 msgstr "Виберіть бібліотеку ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:948 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2084
+#: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
 msgid "_select"
 msgstr "_Вибрати"
 
-#: ../src/gui/preferences_ai.c:954
+#: ../src/gui/preferences_ai.c:1116
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "Знайдено кілька бібліотек ONNX Runtime:"
 
-#: ../src/gui/preferences_ai.c:1041
+#: ../src/gui/preferences_ai.c:1203
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "ONNX Runtime (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1044
+#: ../src/gui/preferences_ai.c:1206
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "ONNX Runtime (libonnxruntime.so*)"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1097
+#: ../src/gui/preferences_ai.c:1259
 msgid "enable AI features"
 msgstr "Активація функцій ШІ"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1142
+#: ../src/gui/preferences_ai.c:1304
 msgid "execution provider"
 msgstr "Постачальник виконання"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1153
+#: ../src/gui/preferences_ai.c:1315
 msgid "select hardware acceleration for AI inference:"
 msgstr "Виберіть апаратне прискорення для генерації ШІ:"
 
-#: ../src/gui/preferences_ai.c:1197
+#: ../src/gui/preferences_ai.c:1359
 msgid "ONNX Runtime library"
 msgstr "Бібліотека ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1211
+#: ../src/gui/preferences_ai.c:1373
 msgid "bundled (DirectML)"
 msgstr "Комплектна (DirectML)"
 
-#: ../src/gui/preferences_ai.c:1214
+#: ../src/gui/preferences_ai.c:1376
 msgid "bundled (CPU only)"
 msgstr "Комплектна (лише CPU)"
 
-#: ../src/gui/preferences_ai.c:1217
+#: ../src/gui/preferences_ai.c:1379
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
@@ -15402,89 +15555,89 @@ msgstr ""
 "Залиште поле порожнім, щоб використовувати комплектну бібліотеку.\n"
 "Для набрання чинності потрібен перезапуск."
 
-#: ../src/gui/preferences_ai.c:1226
+#: ../src/gui/preferences_ai.c:1388
 msgid "select a custom ONNX Runtime shared library"
 msgstr "Виберіть власну бібліотеку ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1228
+#: ../src/gui/preferences_ai.c:1390
 msgid "detect"
 msgstr "Визначити"
 
-#: ../src/gui/preferences_ai.c:1230
+#: ../src/gui/preferences_ai.c:1392
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "Пошук встановленої системою бібліотеки ONNX Runtime"
 
-#: ../src/gui/preferences_ai.c:1265
+#: ../src/gui/preferences_ai.c:1427
 msgid "models"
 msgstr "Моделі"
 
-#: ../src/gui/preferences_ai.c:1312
+#: ../src/gui/preferences_ai.c:1474
 msgid "select/deselect all"
 msgstr "Вибрати чи скасувати вибір усіх"
 
-#: ../src/gui/preferences_ai.c:1346 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1520 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "Версія"
 
-#: ../src/gui/preferences_ai.c:1355
+#: ../src/gui/preferences_ai.c:1529
 msgid "task"
 msgstr "Завдання"
 
-#: ../src/gui/preferences_ai.c:1380
+#: ../src/gui/preferences_ai.c:1544
 msgid "enabled"
 msgstr "Увімкнено"
 
-#: ../src/gui/preferences_ai.c:1390
+#: ../src/gui/preferences_ai.c:1554
 msgid "status"
 msgstr "Статус"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1426
+#: ../src/gui/preferences_ai.c:1596
 msgid "download selected"
 msgstr "Завантажити вибране"
 
-#: ../src/gui/preferences_ai.c:1428
+#: ../src/gui/preferences_ai.c:1598
 msgid "download or update the selected models"
 msgstr "Завантажити або оновити вибрані моделі"
 
 #. download default button
-#: ../src/gui/preferences_ai.c:1437
+#: ../src/gui/preferences_ai.c:1607
 msgid "download default"
 msgstr "Завантажити за замовчуванням"
 
-#: ../src/gui/preferences_ai.c:1439
+#: ../src/gui/preferences_ai.c:1609
 msgid "download or update all default models"
 msgstr "Завантажити або оновити всі моделі за замовчуванням"
 
 #. download all button
-#: ../src/gui/preferences_ai.c:1448
+#: ../src/gui/preferences_ai.c:1618
 msgid "download all"
 msgstr "Завантажити все"
 
-#: ../src/gui/preferences_ai.c:1450
+#: ../src/gui/preferences_ai.c:1620
 msgid "download or update all available models"
 msgstr "Завантажити або оновити всі доступні моделі"
 
 #. install model button
-#: ../src/gui/preferences_ai.c:1456
+#: ../src/gui/preferences_ai.c:1626
 msgid "install model"
 msgstr "Встановити модель"
 
-#: ../src/gui/preferences_ai.c:1458
+#: ../src/gui/preferences_ai.c:1628
 msgid "install a model from a local .dtmodel file"
 msgstr "Встановити модель з локального файлу .dtmodel"
 
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1463
+#: ../src/gui/preferences_ai.c:1633
 msgid "delete selected"
 msgstr "Видалити вибране"
 
-#: ../src/gui/preferences_ai.c:1465
+#: ../src/gui/preferences_ai.c:1635
 msgid "remove the selected models from disk"
 msgstr "Видалити вибрані моделі з диска"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1481
+#: ../src/gui/preferences_ai.c:1651
 msgid "AI"
 msgstr "ШІ"
 
@@ -15893,7 +16046,7 @@ msgstr "Щасливого редагування з Darktable!"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2216
+#: ../src/libs/neural_restore.c:2359
 msgid "8 bit"
 msgstr "8 біт"
 
@@ -15917,7 +16070,7 @@ msgstr "З втратами"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:589
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2213
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2356
 msgid "bit depth"
 msgstr "Бітова глибина"
 
@@ -16044,7 +16197,7 @@ msgstr "16 біт (рухома кома)"
 
 #: ../src/imageio/format/exr.cc:591 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2216
+#: ../src/libs/neural_restore.c:2359
 msgid "32 bit (float)"
 msgstr "32 біти (рухома кома)"
 
@@ -16140,7 +16293,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2216
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2359
 msgid "16 bit"
 msgstr "16 біт"
 
@@ -16770,7 +16923,7 @@ msgstr "коригуюче і креативне"
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorharmonizer.c:134
 #: ../src/iop/colorharmonizer.c:136 ../src/iop/colorequal.c:217
 #: ../src/iop/colorin.c:130 ../src/iop/crop.c:135 ../src/iop/crop.c:137
-#: ../src/iop/demosaic.c:321 ../src/iop/denoiseprofile.c:821
+#: ../src/iop/demosaic.c:320 ../src/iop/denoiseprofile.c:821
 #: ../src/iop/denoiseprofile.c:823 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
@@ -17530,8 +17683,8 @@ msgstr "Різкість"
 msgid "denoise chroma"
 msgstr "Знешумлення кольорового шуму"
 
-#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:723
-#: ../src/libs/neural_restore.c:2120
+#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:756
+#: ../src/libs/neural_restore.c:2263
 msgid "denoise"
 msgstr "Знешумлення"
 
@@ -18358,7 +18511,7 @@ msgstr "Коригувати хроматичні аберації для сен
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:319 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:104
@@ -18369,7 +18522,7 @@ msgid "linear, raw, scene-referred"
 msgstr "лінійний простір, raw, на основі сцен"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:320 ../src/iop/invert.c:133 ../src/iop/rawdenoise.c:142
+#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133 ../src/iop/rawdenoise.c:142
 #: ../src/iop/rasterfile.c:105 ../src/iop/rawprepare.c:172
 #: ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -20742,7 +20895,7 @@ msgstr ""
 "Перетворює будь-який вхід RGB на референсний RGB конвеєра\n"
 "використовуючи кольорові профілі для відображення RGB значень"
 
-#: ../src/iop/colorin.c:127 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:318
+#: ../src/iop/colorin.c:127 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:317
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "Обов'язковий модуль"
@@ -21008,7 +21161,7 @@ msgstr "Коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1247 ../src/iop/demosaic.c:1828
+#: ../src/iop/colorreconstruction.c:1247 ../src/iop/demosaic.c:1825
 #: ../src/iop/highlights.c:1339
 msgid "not applicable"
 msgstr "Не застосовується"
@@ -21211,29 +21364,29 @@ msgstr "Радіус для виявлення кайми"
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr "Поріг для видалення кайми, вищі значення означають менше видалення"
 
-#: ../src/iop/demosaic.c:312
+#: ../src/iop/demosaic.c:311
 msgid "demosaic"
 msgstr "Демозаїкізація"
 
-#: ../src/iop/demosaic.c:317
+#: ../src/iop/demosaic.c:316
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:767 ../src/iop/demosaic.c:814
+#: ../src/iop/demosaic.c:766 ../src/iop/demosaic.c:813
 msgid "can't allocate demosaic buffer"
 msgstr "Не вдається виділити демозаїчний буфер"
 
-#: ../src/iop/demosaic.c:804
+#: ../src/iop/demosaic.c:803
 msgid "can't equilibrate greens"
 msgstr "Не вдається врівноважити зелені канали"
 
-#: ../src/iop/demosaic.c:1455
+#: ../src/iop/demosaic.c:1452
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення!"
 
-#: ../src/iop/demosaic.c:1743
+#: ../src/iop/demosaic.c:1740
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -21250,7 +21403,7 @@ msgstr ""
 "Варіанти з додатком збільшують час обробки, оскільки виконують змішування\n"
 "з варіацією методу VNG у другому проході."
 
-#: ../src/iop/demosaic.c:1748
+#: ../src/iop/demosaic.c:1745
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -21262,15 +21415,15 @@ msgstr ""
 "Варіанти з додатком збільшують час обробки, оскільки виконують\n"
 "змішування з варіацією методу VNG у другому проході."
 
-#: ../src/iop/demosaic.c:1754
+#: ../src/iop/demosaic.c:1751
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Методи демозаїкізації Bayer4."
 
-#: ../src/iop/demosaic.c:1759
+#: ../src/iop/demosaic.c:1756
 msgid "monochrome sensor demosaicing methods."
 msgstr "Методи демозаїкізації монохромних сенсорів."
 
-#: ../src/iop/demosaic.c:1763
+#: ../src/iop/demosaic.c:1760
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -21280,11 +21433,11 @@ msgstr ""
 "0.0 - для високочастотного вмісту\n"
 "1.0 - для плоского вмісту"
 
-#: ../src/iop/demosaic.c:1766
+#: ../src/iop/demosaic.c:1763
 msgid "toggle mask visualization"
 msgstr "Перемкнути візуалізацію маски"
 
-#: ../src/iop/demosaic.c:1770
+#: ../src/iop/demosaic.c:1767
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -21294,7 +21447,7 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:1773
+#: ../src/iop/demosaic.c:1770
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -21302,17 +21455,17 @@ msgstr ""
 "Кроки уточнення LMMSE. Медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:1776
+#: ../src/iop/demosaic.c:1773
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:1779
+#: ../src/iop/demosaic.c:1776
 msgid "green channels matching method. only applies for some old sensors"
 msgstr ""
 "Метод вирівнювання зелених каналів. Застосовується лише до деяких старих "
 "сенсорів"
 
-#: ../src/iop/demosaic.c:1782
+#: ../src/iop/demosaic.c:1779
 msgid ""
 "capture sharpen recovers details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -21322,15 +21475,15 @@ msgstr ""
 "в камері, яке може бути спричинене дифракцією, фільтром згладжування\n"
 "(AA-фільтром) або іншими джерелами розмиття гаусового типу"
 
-#: ../src/iop/demosaic.c:1787
+#: ../src/iop/demosaic.c:1784
 msgid "capture sharpen controls"
 msgstr "Елементи керування різкістю знімка"
 
-#: ../src/iop/demosaic.c:1791
+#: ../src/iop/demosaic.c:1788
 msgid "set effect strength by iterations"
 msgstr "Встановити силу ефекту за допомогою ітерацій"
 
-#: ../src/iop/demosaic.c:1796
+#: ../src/iop/demosaic.c:1793
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -21351,7 +21504,7 @@ msgstr ""
 "перераховано під час наступного застосування.\n"
 "Використовуйте для пресетів."
 
-#: ../src/iop/demosaic.c:1802
+#: ../src/iop/demosaic.c:1799
 msgid ""
 "calculate the capture sharpen radius from available raw sensor data.\n"
 "for best results avoid cropping or darkroom zooming in"
@@ -21359,7 +21512,7 @@ msgstr ""
 "Розрахувати радіус збільшенні різкості на основі доступних даних сенсора.\n"
 "Для найкращих результатів уникайте обрізання або збільшення масштабу"
 
-#: ../src/iop/demosaic.c:1806
+#: ../src/iop/demosaic.c:1803
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -21378,11 +21531,11 @@ msgstr ""
 "замовчуванням\n"
 "під час наступного застосування. Використовуйте для пресетів."
 
-#: ../src/iop/demosaic.c:1810
+#: ../src/iop/demosaic.c:1807
 msgid "visualize sharpened areas"
 msgstr "Візуалізувати області збільшення різкості"
 
-#: ../src/iop/demosaic.c:1815
+#: ../src/iop/demosaic.c:1812
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -21390,15 +21543,15 @@ msgstr ""
 "Додатково збільшити радіус різкості в кутах зображення,\n"
 "на різкий центр зображення це не впливає"
 
-#: ../src/iop/demosaic.c:1817
+#: ../src/iop/demosaic.c:1814
 msgid "visualize the overall radius"
 msgstr "Візуалізувати значення радіусу"
 
-#: ../src/iop/demosaic.c:1822
+#: ../src/iop/demosaic.c:1819
 msgid "adjust to the sharp image center"
 msgstr "Коригування того, що ми вважаємо різким центром зображення"
 
-#: ../src/iop/demosaic.c:1829
+#: ../src/iop/demosaic.c:1826
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -21484,7 +21637,8 @@ msgid "variance blue: "
 msgstr "Дисперсія синього: "
 
 #: ../src/iop/denoiseprofile.c:3689 ../src/libs/export.c:1599
-#: ../src/libs/print_settings.c:2518 ../src/libs/print_settings.c:2874
+#: ../src/libs/neural_restore.c:2367 ../src/libs/print_settings.c:2518
+#: ../src/libs/print_settings.c:2874
 msgid "profile"
 msgstr "Профіль"
 
@@ -23477,7 +23631,7 @@ msgstr "Відстань до об'єкта"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2140
+#: ../src/libs/neural_restore.c:2283
 msgid "scale"
 msgstr "Масштаб"
 
@@ -26308,7 +26462,7 @@ msgctxt "section"
 msgid "camera control"
 msgstr "Керування камерою"
 
-#: ../src/libs/camera.c:444 ../src/libs/histogram.c:771
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:770
 msgid "modes"
 msgstr "Режими"
 
@@ -26531,7 +26685,7 @@ msgid "use `%' as wildcard"
 msgstr "Використовуйте `%' для вибору всього"
 
 #: ../src/libs/collect.c:2742 ../src/libs/collect.c:2763
-#: ../src/libs/collect.c:3393
+#: ../src/libs/collect.c:3398
 msgid "clear this rule"
 msgstr "Очистити це правило"
 
@@ -26539,38 +26693,38 @@ msgstr "Очистити це правило"
 msgid "clear this rule or add new rules"
 msgstr "Очистити це правило чи додати нові правила"
 
-#: ../src/libs/collect.c:3399
+#: ../src/libs/collect.c:3404
 msgid "narrow down search"
 msgstr "Фільтр типу 'І' (звузити пошук)"
 
-#: ../src/libs/collect.c:3406
+#: ../src/libs/collect.c:3411
 msgid "add more images"
 msgstr "Фільтр типу 'АБО' (додати до колекції)"
 
-#: ../src/libs/collect.c:3413
+#: ../src/libs/collect.c:3418
 msgid "exclude images"
 msgstr "Фільтр типу 'КРІМ' (виключити з колекції)"
 
-#: ../src/libs/collect.c:3422
+#: ../src/libs/collect.c:3427
 msgid "change to: and"
 msgstr "Змінити на 'І'"
 
-#: ../src/libs/collect.c:3429
+#: ../src/libs/collect.c:3434
 msgid "change to: or"
 msgstr "Змінити на 'АБО'"
 
-#: ../src/libs/collect.c:3436
+#: ../src/libs/collect.c:3441
 msgid "change to: except"
 msgstr "Змінити на 'КРІМ'"
 
 #. the different categories
-#: ../src/libs/collect.c:3465 ../src/libs/filtering.c:889
+#: ../src/libs/collect.c:3470 ../src/libs/filtering.c:889
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1618
 #: ../src/libs/filtering.c:1955
 msgid "files"
 msgstr "Файли"
 
-#: ../src/libs/collect.c:3470 ../src/libs/export_metadata.c:178
+#: ../src/libs/collect.c:3475 ../src/libs/export_metadata.c:178
 #: ../src/libs/filtering.c:894 ../src/libs/filtering.c:955
 #: ../src/libs/filtering.c:1626 ../src/libs/filtering.c:1959
 #: ../src/libs/image.c:504 ../src/libs/image.c:605 ../src/libs/image.c:624
@@ -26578,49 +26732,49 @@ msgstr "Файли"
 msgid "metadata"
 msgstr "Метадані"
 
-#: ../src/libs/collect.c:3489 ../src/libs/filtering.c:902
+#: ../src/libs/collect.c:3494 ../src/libs/filtering.c:902
 #: ../src/libs/filtering.c:963 ../src/libs/filtering.c:1957
 msgid "times"
 msgstr "Позначки часу"
 
-#: ../src/libs/collect.c:3498 ../src/libs/filtering.c:911
+#: ../src/libs/collect.c:3503 ../src/libs/filtering.c:911
 #: ../src/libs/filtering.c:972 ../src/libs/filtering.c:1637
 msgid "capture details"
 msgstr "Деталі зйомки"
 
-#: ../src/libs/collect.c:3527
+#: ../src/libs/collect.c:3532
 msgid "collections settings"
 msgstr "Налаштування колекцій зображень"
 
-#: ../src/libs/collect.c:3549 ../src/libs/export.c:1427
+#: ../src/libs/collect.c:3554 ../src/libs/export.c:1427
 #: ../src/libs/metadata.c:1123 ../src/libs/metadata_view.c:1576
 #: ../src/libs/recentcollect.c:297 ../src/libs/styles.c:1048
 #: ../src/libs/tagging.c:3968
 msgid "preferences..."
 msgstr "Уподобання..."
 
-#: ../src/libs/collect.c:3673 ../src/libs/filtering.c:1491
+#: ../src/libs/collect.c:3678 ../src/libs/filtering.c:1491
 msgid "AND"
 msgstr "ТА"
 
-#: ../src/libs/collect.c:3678 ../src/libs/filtering.c:1496
+#: ../src/libs/collect.c:3683 ../src/libs/filtering.c:1496
 msgid "OR"
 msgstr "АБО"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3683 ../src/libs/filtering.c:1501
+#: ../src/libs/collect.c:3688 ../src/libs/filtering.c:1501
 msgid "BUT NOT"
 msgstr "АЛЕ НЕ"
 
-#: ../src/libs/collect.c:3789
+#: ../src/libs/collect.c:3794
 msgid "toggle collection sort order ascending/descending"
 msgstr "Перемикати порядок сортування колекції за зростанням/спаданням"
 
-#: ../src/libs/collect.c:3887 ../src/libs/filtering.c:2225
+#: ../src/libs/collect.c:3892 ../src/libs/filtering.c:2225
 msgid "revert to a previous set of rules"
 msgstr "Повернутися до попереднього набору правил"
 
-#: ../src/libs/collect.c:3941
+#: ../src/libs/collect.c:3946
 msgid "jump back to previous collection"
 msgstr "Назад до попередньої колекції"
 
@@ -27114,7 +27268,8 @@ msgstr ""
 "форматів."
 
 #: ../src/libs/export.c:1600 ../src/libs/export.c:1635
-#: ../src/libs/print_settings.c:2877 ../src/libs/print_settings.c:2923
+#: ../src/libs/neural_restore.c:2368 ../src/libs/print_settings.c:2877
+#: ../src/libs/print_settings.c:2923
 msgid "image settings"
 msgstr "Налаштування зображення"
 
@@ -27622,7 +27777,7 @@ msgstr ""
 "знак перетину: зображення, які мають усі вибрані кольорові позначки\n"
 "знак об'єднання: зображення з принаймні однією з вибраних кольорових позначок"
 
-#: ../src/libs/filters/date.c:186
+#: ../src/libs/filters/date.c:187
 msgid ""
 "filter by capture month\n"
 "click to toggle month selection"
@@ -28004,20 +28159,20 @@ msgstr "Подвійний клік для скидання"
 msgid "drag to change exposure"
 msgstr "Перетягніть, щоб змінити експозицію"
 
-#: ../src/libs/histogram.c:698 ../src/libs/scopes/histogram.c:50
+#: ../src/libs/histogram.c:697 ../src/libs/scopes/histogram.c:50
 msgid "histogram"
 msgstr "Гістограма"
 
-#: ../src/libs/histogram.c:704 ../src/libs/histogram.c:800
+#: ../src/libs/histogram.c:703 ../src/libs/histogram.c:799
 msgid "hide histogram"
 msgstr "Приховати гістограму"
 
-#: ../src/libs/histogram.c:812
+#: ../src/libs/histogram.c:811
 #, c-format
 msgid "toggle %s channel"
 msgstr "Перемикає видимість каналу: %s"
 
-#: ../src/libs/histogram.c:820
+#: ../src/libs/histogram.c:819
 msgid "toggle colors"
 msgstr "Перемикає кольори"
 
@@ -29609,123 +29764,139 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:264 ../src/libs/neural_restore.c:1545
+#: ../src/libs/neural_restore.c:290 ../src/libs/neural_restore.c:1641
 msgid "neural restore"
 msgstr "Нейронне відновлення"
 
-#: ../src/libs/neural_restore.c:268
+#: ../src/libs/neural_restore.c:294
 msgid "AI-based image restoration: denoise and upscale"
 msgstr "Відновлення зображень на основі ШІ: знешумлення та масштабування"
 
-#: ../src/libs/neural_restore.c:507
+#: ../src/libs/neural_restore.c:542
 #, c-format
 msgid "failed to open TIFF for writing: %s"
 msgstr "Не вдалося відкрити TIFF для запису: %s"
 
-#: ../src/libs/neural_restore.c:559
+#: ../src/libs/neural_restore.c:593
 msgid "out of memory for detail recovery buffer"
 msgstr "Бракує пам'яті для буфера відновлення деталей"
 
-#: ../src/libs/neural_restore.c:723 ../src/libs/neural_restore.c:2122
+#: ../src/libs/neural_restore.c:756 ../src/libs/neural_restore.c:2265
 msgid "upscale"
 msgstr "Збільшення"
 
-#: ../src/libs/neural_restore.c:725
+#: ../src/libs/neural_restore.c:758
 #, c-format
 msgid "loading %s model..."
 msgstr "Завантаження %s моделі..."
 
-#: ../src/libs/neural_restore.c:755
+#: ../src/libs/neural_restore.c:788
 #, c-format
 msgid "failed to load AI %s model"
 msgstr "Не вдалося завантажити модель ШІ %s"
 
-#: ../src/libs/neural_restore.c:825
+#: ../src/libs/neural_restore.c:859
 msgid "neural restore: cannot create output directory"
 msgstr "Нейронне відновлення: неможливо створити вихідний каталог"
 
-#: ../src/libs/neural_restore.c:853
+#: ../src/libs/neural_restore.c:887
 msgid "neural restore: too many output files"
 msgstr "Нейронне відновлення: забагато вихідних файлів"
 
-#: ../src/libs/neural_restore.c:862
+#: ../src/libs/neural_restore.c:896
 #, c-format
 msgid "denoising image %d/%d..."
 msgstr "Знешумлення зображення %d/%d..."
 
-#: ../src/libs/neural_restore.c:863
+#: ../src/libs/neural_restore.c:897
 #, c-format
 msgid "upscaling 2x image %d/%d..."
 msgstr "Збільшення зображення 2x %d/%d..."
 
-#: ../src/libs/neural_restore.c:864
+#: ../src/libs/neural_restore.c:898
 #, c-format
 msgid "upscaling 4x image %d/%d..."
 msgstr "Збільшення зображення 4x %d/%d..."
 
-#: ../src/libs/neural_restore.c:893
+#: ../src/libs/neural_restore.c:929
 msgid "neural restore: export failed"
 msgstr "Нейронне відновлення: неуспішний експорт"
 
-#: ../src/libs/neural_restore.c:984
+#: ../src/libs/neural_restore.c:947
+#, c-format
+msgid "neural %s: %d image processed"
+msgid_plural "neural %s: %d images processed"
+msgstr[0] "Нейронне %s: %d зображення оброблено"
+msgstr[1] "Нейронне %s: %d зображення оброблено"
+msgstr[2] "Нейронне %s: %d зображень оброблено"
+
+#: ../src/libs/neural_restore.c:1030
 msgid "large output - processing will be slow"
 msgstr "Великий вихідний розмір - обробка буде повільною"
 
-#: ../src/libs/neural_restore.c:1705
+#: ../src/libs/neural_restore.c:1046
+msgid "wide-gamut preserved, not denoised"
+msgstr "Кольори ширшого охоплення збережено, але не знешумлено"
+
+#: ../src/libs/neural_restore.c:1047
+msgid "wide-gamut clipped"
+msgstr "Широке охоплення обрізано"
+
+#: ../src/libs/neural_restore.c:1801
 msgid "click to select preview area"
 msgstr "Натисніть, щоб вибрати область попереднього перегляду"
 
-#: ../src/libs/neural_restore.c:1730
+#: ../src/libs/neural_restore.c:1826
 msgid "model not available"
 msgstr "Модель недоступна"
 
-#: ../src/libs/neural_restore.c:1732 ../src/libs/neural_restore.c:1894
+#: ../src/libs/neural_restore.c:1828 ../src/libs/neural_restore.c:1997
 msgid "generating preview..."
 msgstr "Створення попереднього перегляду..."
 
-#: ../src/libs/neural_restore.c:1734
+#: ../src/libs/neural_restore.c:1830
 msgid "click to generate preview"
 msgstr "Натисніть, щоб створити попередній перегляд"
 
-#: ../src/libs/neural_restore.c:1735
+#: ../src/libs/neural_restore.c:1831
 msgid "select an image to preview"
 msgstr "Виберіть зображення для попереднього перегляду"
 
-#: ../src/libs/neural_restore.c:2080 ../src/libs/neural_restore.c:2250
+#: ../src/libs/neural_restore.c:2223 ../src/libs/neural_restore.c:2454
 msgid "select output folder"
 msgstr "Вибрати папку виводу"
 
-#: ../src/libs/neural_restore.c:2121
+#: ../src/libs/neural_restore.c:2264
 msgid "AI denoising"
 msgstr "ШІ знешумлення"
 
-#: ../src/libs/neural_restore.c:2123
+#: ../src/libs/neural_restore.c:2266
 msgid "AI upscaling"
 msgstr "ШІ збільшення"
 
-#: ../src/libs/neural_restore.c:2130
+#: ../src/libs/neural_restore.c:2273
 msgid "detail recovery"
 msgstr "Відновлення деталей"
 
-#: ../src/libs/neural_restore.c:2133
+#: ../src/libs/neural_restore.c:2276
 msgid "recover fine texture lost during denoising while suppressing noise"
 msgstr ""
 "Відновити дрібну текстуру, втрачену під час знешумлення, одночасно "
 "пригнічуючи шум"
 
-#: ../src/libs/neural_restore.c:2141
+#: ../src/libs/neural_restore.c:2284
 msgid "upscale factor"
 msgstr "Фактор масштабування"
 
-#: ../src/libs/neural_restore.c:2143
+#: ../src/libs/neural_restore.c:2286
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2143
+#: ../src/libs/neural_restore.c:2286
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2160
+#: ../src/libs/neural_restore.c:2303
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
@@ -29734,27 +29905,45 @@ msgstr ""
 "зображення\n"
 "Подвійний клік, щоб скинути до центру"
 
-#: ../src/libs/neural_restore.c:2185
+#: ../src/libs/neural_restore.c:2328
 msgid "process selected images"
 msgstr "Обробити вибрані зображення"
 
-#: ../src/libs/neural_restore.c:2203
+#: ../src/libs/neural_restore.c:2346
 msgid "output parameters"
 msgstr "Вихідні параметри"
 
-#: ../src/libs/neural_restore.c:2214
+#: ../src/libs/neural_restore.c:2357
 msgid "output TIFF bit depth"
 msgstr "Розрядність вихідного TIFF"
 
-#: ../src/libs/neural_restore.c:2221
+#: ../src/libs/neural_restore.c:2399
+msgid "color profile embedded in the output TIFF"
+msgstr "Колірний профіль, вбудований у вихідний TIFF"
+
+#: ../src/libs/neural_restore.c:2409
+msgid "preserve wide-gamut colors"
+msgstr "Збереження широкого охоплення"
+
+#: ../src/libs/neural_restore.c:2416
+msgid ""
+"when on, pixels outside sRGB gamut pass through without being denoised; when "
+"off, all pixels are denoised but wide-gamut colors may be clipped; only "
+"affects denoise"
+msgstr ""
+"Коли ввімкнено, пікселі поза охопленням sRGB пропускаються без знешумлення; "
+"коли вимкнено, всі пікселі знешумлюються, але кольори широкого охоплення "
+"можуть бути обрізані; впливає лише на знешумлення"
+
+#: ../src/libs/neural_restore.c:2425
 msgid "add to catalog"
 msgstr "Додати до каталогу"
 
-#: ../src/libs/neural_restore.c:2227
+#: ../src/libs/neural_restore.c:2431
 msgid "automatically import output image into the darktable library"
 msgstr "Автоматично імпортувати вихідне зображення до бібліотеки Darktable"
 
-#: ../src/libs/neural_restore.c:2243
+#: ../src/libs/neural_restore.c:2447
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -31261,7 +31450,7 @@ msgstr "Опції Lua"
 
 #: ../src/lua/preferences.c:919
 msgid "per-script configuration options"
-msgstr "Параметри конфігурації для кожного скрипта"
+msgstr "Параметри конфігурації для кожного сценарію"
 
 #: ../src/views/darkroom.c:609
 #, c-format
@@ -34628,9 +34817,6 @@ msgstr "Дії за допомогою миші"
 #, c-format
 #~ msgid "%.0f mired"
 #~ msgstr "%.0f майред"
-
-#~ msgid "metadata list"
-#~ msgstr "список метаданих"
 
 #~ msgid "which images should be shown"
 #~ msgstr "які зображення мають бути показані"
