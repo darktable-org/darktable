@@ -328,6 +328,9 @@ changes (where available).
 - Fixed a rare bug which appeared when scale-pixels module was moved above
   the tone-mapper while applying a shift in "rotate and perspective" module.
 
+- Fixed white and middle-grey patches being swapped for Datacolor
+  SpyderCheckr 48 in the Color Calibration module.
+
 ## Lua
 
 ### API Version
