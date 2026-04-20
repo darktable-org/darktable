@@ -172,6 +172,13 @@ changes (where available).
   history stacks from instead of requiring XMP sidecar files, for people
   who do not use XMP sidecar files.
 
+- When creating a new workspace from the workspace dialog, settings
+  can optionally be copied from an existing workspace as a template.
+  The workspace-specific configuration is duplicated with paths,
+  labels, collection history, and similar keys cleared so the new
+  workspace keeps its own library database instead of reusing the
+  source library.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
