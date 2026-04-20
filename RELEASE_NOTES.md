@@ -377,11 +377,20 @@ changes (where available).
 
 ### White Balance Presets
 
-- N/A
+- Nikon D2Hs
+- Nikon Df
+- Nikon Zf
 
 ### Noise Profiles
 
-- N/A
+- Canon R5 C
+- Fujifilm X-T30 II
+- Leica M9 / M-E
+- Nikon Df
+- Nikon Z5 II
+- Nikon Z50 II
+- Panasonic DC-S5M2
+- Pentax K-500
 
 ### Missing Compression Mode Support
 
