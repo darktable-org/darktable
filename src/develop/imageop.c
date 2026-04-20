@@ -2239,7 +2239,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       }
 
       if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
-        dt_dev_pixelpipe_cache_invalidate_later(pipe, new_raster->iop_order);
+        dt_dev_pixelpipe_cache_invalidate_later(pipe, new_raster->iop_order, "blend new raster: ");
     }
   }
   piece->hash = phash;
@@ -3648,7 +3648,7 @@ void dt_iop_piece_set_raster(dt_dev_pixelpipe_iop_t *piece,
 
   // If we place a raster mask we must invalidate the following cachelines
   if(!new)
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order, "set raster: ");
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
     "write raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, roi_in, roi_out, "%s (%ix%i)",
@@ -3662,7 +3662,7 @@ void dt_iop_piece_clear_raster(dt_dev_pixelpipe_iop_t *piece, float *mask)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
         "delete raster mask", piece->pipe, piece->module, piece->pipe->devid, NULL, NULL);
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order, "clear raster: ");
   }
   dt_free_align(mask);
 }
@@ -3883,7 +3883,7 @@ void dt_iop_refresh_center(const dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->full.pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->full.pipe, module->iop_order, "refresh: ");
     //ensure that commit_params gets called to pick up any GUI changes
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate(dev);
@@ -3897,7 +3897,7 @@ void dt_iop_refresh_preview(const dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module->iop_order, "refresh: ");
     //ensure that commit_params gets called to pick up any GUI changes
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
@@ -3911,7 +3911,7 @@ void dt_iop_refresh_preview2(const dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2.pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2.pipe, module->iop_order, "refresh: ");
     //ensure that commit_params gets called to pick up any GUI changes
     dev->full.pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);

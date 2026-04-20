@@ -710,7 +710,7 @@ void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_iop_t *piece)
   if(!pipe->want_detail_mask)
   {
     dt_print_pipe(DT_DEBUG_PIPE, "details requested", pipe, piece->module, DT_DEVICE_NONE, NULL, NULL);
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, 0, "usedetails ");
     pipe->want_detail_mask = TRUE;
   }
 }
@@ -1235,7 +1235,7 @@ static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
     if(stopper >= DT_DEV_PIXELPIPE_STOP_LAST)
     {
       dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
-      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper, "pipe stop: ");
     }
   }
   return stopper != DT_DEV_PIXELPIPE_STOP_NO;
