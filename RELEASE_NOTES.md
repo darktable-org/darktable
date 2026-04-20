@@ -172,6 +172,8 @@ changes (where available).
   history stacks from instead of requiring XMP sidecar files, for people
   who do not use XMP sidecar files.
 
+- Added display name to the available sort options for film rolls.
+
 ## Performance Improvements
 
 - Increased performance for OpenCL guided filter by internal tiling.
