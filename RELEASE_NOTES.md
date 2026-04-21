@@ -172,6 +172,8 @@ changes (where available).
   history stacks from instead of requiring XMP sidecar files, for people
   who do not use XMP sidecar files.
 
+- Added display name to the available sort options for film rolls.
+
 - When creating a new workspace from the workspace dialog, settings
   can optionally be copied from an existing workspace as a template.
   The workspace-specific configuration is duplicated with paths,
