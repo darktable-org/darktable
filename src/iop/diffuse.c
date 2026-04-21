@@ -1620,14 +1620,14 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { width, height };
 
   // allow fast mode, just copy input to output
   if(fastmode)
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
 
-  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   cl_mem in = dev_in;
   cl_mem temp_in = NULL;

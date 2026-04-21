@@ -675,8 +675,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     }
     else
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
+      size_t origin[] = { 0, 0 };
+      size_t region[] = { width, height };
       err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
       if(err != CL_SUCCESS) goto error;
     }
@@ -687,8 +687,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
   }
 

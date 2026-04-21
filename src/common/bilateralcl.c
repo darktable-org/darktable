@@ -200,8 +200,8 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   cl_mem tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { b->width, b->height, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { b->width, b->height };
   err = dt_opencl_enqueue_copy_image(b->devid, out, tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 

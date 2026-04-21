@@ -100,8 +100,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { width, height };
   return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
 }
 #endif

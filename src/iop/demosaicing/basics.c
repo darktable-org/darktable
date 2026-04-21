@@ -286,8 +286,8 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
   if(dev_t1 == dev_tmp)
   {
     // copy data from dev_tmp -> dev_out
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
   }
 

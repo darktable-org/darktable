@@ -2022,8 +2022,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     // note: we need to take swap of buffers into account, so current output lies in dev_t1
     if(dev_t1 != dev_tmptmp)
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
+      size_t origin[] = { 0, 0 };
+      size_t region[] = { width, height };
       err = dt_opencl_enqueue_copy_image(devid, dev_t1, dev_tmptmp, origin, origin, region);
       if(err != CL_SUCCESS) goto error;
     }

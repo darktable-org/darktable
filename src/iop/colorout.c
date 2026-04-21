@@ -324,8 +324,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_in->width, roi_in->height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { roi_in->width, roi_in->height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;

@@ -1272,9 +1272,9 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
   {
     if(wd_fit && ht_fit)
     {
-      size_t iorigin[] = { dx, dy, 0 };
-      size_t oorigin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
+      size_t iorigin[] = { dx, dy };
+      size_t oorigin[] = { 0, 0 };
+      size_t region[] = { width, height };
       // copy original input from dev_in -> dev_out as starting point
       err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
     }

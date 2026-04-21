@@ -646,8 +646,8 @@ int process_cl(dt_iop_module_t *self,
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { width, height };
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
   }
 

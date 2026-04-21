@@ -3652,8 +3652,8 @@ int process_cl(dt_iop_module_t *self,
   // if module is set to neutral parameters we just copy input->output and are done
   if(_isneutral(d))
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_out->width, roi_out->height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { roi_out->width, roi_out->height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;

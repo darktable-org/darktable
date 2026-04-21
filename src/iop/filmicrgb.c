@@ -2231,7 +2231,7 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   // wavelets scales
   const int scales = get_scales(roi_in, piece);
@@ -2317,7 +2317,7 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
     if(err != CL_SUCCESS) goto error;
 
     // Take a backup copy of HF_RGB in HF_grey - only HF_RGB will be blurred
-    size_t origin[] = { 0, 0, 0 };
+    size_t origin[] = { 0, 0 };
     err = dt_opencl_enqueue_copy_image(devid, HF_RGB, HF_grey, origin, origin, sizes);
     if(err != CL_SUCCESS) goto error;
 

@@ -141,8 +141,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(rad == 0)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
@@ -152,8 +152,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   // normally not needed for OpenCL but implemented here for identity with CPU code path
   if(width < 2 * rad + 1 || height < 2 * rad + 1)
   {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t origin[] = { 0, 0 };
+    size_t region[] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     return CL_SUCCESS;
