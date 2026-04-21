@@ -2765,10 +2765,17 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
     (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel],
                                              CL_KERNEL_FUNCTION_NAME, sizeof(buf), buf, NULL);
   cl_event *eventp = _opencl_events_get_slot(dev, buf);
+
+  // do we have to pass the 1 for dimension greater than dimensions ?
+  // it seems not to be necessary but we always did that until now
+  // const size_t nsizes[3] = { sizes[0], dimensions > 1 ? sizes[1]: 1, dimensions > 2 ? sizes[2]: 1};
   cl_int err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue,
                                                                cl->dev[dev].kernel[kernel],
-                                                               dimensions, NULL, sizes,
-                                                               local, 0, NULL, eventp);
+                                                               dimensions,
+                                                               NULL,  // global_work_offset
+                                                               sizes, // global_work_size
+                                                               local, // local_work_size, maybe NULL
+                                                               0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -2804,7 +2811,7 @@ int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
+  const size_t sizes[2] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev) };
 
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
@@ -2826,8 +2833,7 @@ int dt_opencl_enqueue_kernel_2d_local_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t nsizes[3] = { sizes[0], sizes[1], 1 };
-  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, nsizes, local);
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, local);
 }
 
 int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
@@ -2847,7 +2853,7 @@ int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
               cl->name_saved[kernel], kernel, cl->dev[dev].fullname, dev, cl_errstr(err));
     return err;
   }
-  const size_t sizes[] = { ROUNDUPDWD(x, dev), 1, 1 };
+  const size_t sizes[1] = { ROUNDUPDWD(x, dev) };
 
   return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, NULL, 1);
 }
@@ -2980,10 +2986,15 @@ int dt_opencl_enqueue_copy_image(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  size_t osrc[3] = { orig_src[0], orig_src[1], 0 };
+  size_t odst[3] = { orig_dst[0], orig_dst[1], 0 };
+  size_t reg[3] = { region[0], region[1], 1 };
+
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Image (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)
-    (darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst,
-     region, 0, NULL, eventp);
+    (darktable.opencl->dev[devid].cmd_queue, src, dst,
+     osrc, odst, reg,
+     0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
