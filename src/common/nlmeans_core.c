@@ -608,8 +608,8 @@ static inline cl_int nlmeans_cl_horiz(
         const int bwidth,
         const int hblocksize)
 {
-  const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
-  const size_t local[3] = { hblocksize, 1, 1 };
+  const size_t sizesl[2] = { bwidth, ROUNDUPDHT(height, devid) };
+  const size_t local[2] = { hblocksize, 1 };
   return dt_opencl_enqueue_kernel_2d_local_args(devid, kernel, sizesl, local,
     CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q),
     CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
@@ -625,7 +625,7 @@ static inline cl_int nlmeans_cl_accu(
         const int q[2],
         const int height,
         const int width,
-        const size_t sizes[3])
+        const size_t sizes[2])
 {
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, sizes[0], sizes[1],
     CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q));
@@ -689,8 +689,8 @@ int nlmeans_denoise_cl(
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[3] = { ROUNDUPDWD(width, devid), bheight, 1 };
-    const size_t local[3] = { 1, vblocksize, 1 };
+    const size_t sizesl[2] = { ROUNDUPDWD(width, devid), bheight };
+    const size_t local[2] = { 1, vblocksize };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, params->kernel_vert, sizesl, local,

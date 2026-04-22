@@ -233,8 +233,8 @@ int process_cl(dt_iop_module_t *self,
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
 
-  size_t sizes[3];
-  size_t local[3];
+  size_t sizes[2];
+  size_t local[2];
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
@@ -253,10 +253,8 @@ int process_cl(dt_iop_module_t *self,
     /* horizontal blur */
     sizes[0] = bwidth;
     sizes[1] = ROUNDUPDHT(height, devid);
-    sizes[2] = 1;
     local[0] = hblocksize;
     local[1] = 1;
-    local[2] = 1;
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_soften_hblur, sizes, local,
                               CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m),
                               CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize),
@@ -267,10 +265,8 @@ int process_cl(dt_iop_module_t *self,
     /* vertical blur */
     sizes[0] = ROUNDUPDWD(width, devid);
     sizes[1] = bheight;
-    sizes[2] = 1;
     local[0] = 1;
     local[1] = vblocksize;
-    local[2] = 1;
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_soften_vblur, sizes, local,
       CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
       CLARG(wdh), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * wdh) * 4 * sizeof(float)));

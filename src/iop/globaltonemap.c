@@ -401,8 +401,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
-      size_t sizes[3];
-      size_t local[3];
+      size_t sizes[2];
+      size_t local[2];
 
       dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * bufsize);
       if(dev_m == NULL) goto finally;
@@ -414,7 +414,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       sizes[1] = bheight;
       local[0] = flocopt.sizex;
       local[1] = flocopt.sizey;
-      local[2] = 1;
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pixelmax_first, sizes, local,
         CLARG(dev_in), CLARG(width), CLARG(height),
         CLARG(dev_m), CLLOCAL(sizeof(float) * flocopt.sizex * flocopt.sizey));
@@ -424,7 +423,6 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       sizes[1] = 1;
       local[0] = slocopt.sizex;
       local[1] = 1;
-      local[2] = 1;
       err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pixelmax_second, sizes, local,
         CLARG(dev_m), CLARG(dev_r), CLARG(bufsize),
         CLLOCAL(sizeof(float) * slocopt.sizex));

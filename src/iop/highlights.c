@@ -632,8 +632,8 @@ int process_cl(dt_iop_module_t *self,
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto finish;
 
-    size_t sizes[] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey), 1 };
-    size_t local[] = { blocksizex, blocksizey, 1 };
+    size_t sizes[2] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey) };
+    size_t local[2] = { blocksizex, blocksizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),

@@ -1350,8 +1350,8 @@ int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
     goto error;
   }
 
-  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUP(height * taps, vblocksize), 1 };
-  size_t local[3] = { 1, vblocksize, 1 };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUP(height * taps, vblocksize) };
+  size_t local[2] = { 1, vblocksize };
 
   // store resampling plan to device memory hindex, vindex, hkernel,
   // vkernel: (v|h)maxtaps might be too small, so store a bit more
