@@ -1390,7 +1390,7 @@ void process(dt_iop_module_t *self,
   float *restrict HF[MAX_NUM_SCALES];
   for(int s = 0; s < scales; s++)
   {
-    HF[s] = out_of_memory ? NULL : dt_alloc_align_float(width * height * 4);
+    HF[s] = out_of_memory ? NULL : dt_calloc_align_float(width * height * 4);
     if(!HF[s]) out_of_memory = TRUE;
   }
 
@@ -1635,7 +1635,8 @@ static inline gboolean _wavelets_process_halide(const float *const restrict in,
                                     const gboolean has_mask,
                                     float *const restrict HF[MAX_NUM_SCALES],
                                     float *const restrict LF_odd,
-                                    float *const restrict LF_even)
+                                    float *const restrict LF_even,
+                                    _halide_backend_t *const backend_ptr)
 {
   const int row_floats = (int)width * 4;
   const int w = (int)width;
@@ -1678,22 +1679,50 @@ static inline gboolean _wavelets_process_halide(const float *const restrict in,
   buf_in.flags = halide_buffer_flag_host_dirty;
   if(has_mask) buf_mask.flags = halide_buffer_flag_host_dirty;
 
-  // --- Probe backend using the first bspline decompose call ---
-  // This also performs scale 0 decompose: in -> LF_odd + HF[0]
-  _halide_backend_t backend = _halide_probe_backend(
-      &buf_in, &buf_lf_odd, &buf_hf[0], w, h, 1 /* mult for scale 0 */);
-
-  if(backend == HALIDE_BACKEND_NONE)
+  // --- Use cached backend or probe on first call ---
+  _halide_backend_t backend;
+  gboolean probed = FALSE;
+  
+  if(backend_ptr && *backend_ptr != HALIDE_BACKEND_NONE)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[diffuse] Halide: all backends failed for bspline probe");
-    return FALSE;
+    // Backend was cached from a previous call, reuse it to avoid re-probing
+    backend = *backend_ptr;
+    probed = FALSE;  // We're not probing, just using cached backend
+  }
+  else
+  {
+    // First call: probe backend using the first bspline decompose call
+    // This also performs scale 0 decompose: in -> LF_odd + HF[0]
+    backend = _halide_probe_backend(
+        &buf_in, &buf_lf_odd, &buf_hf[0], w, h, 1 /* mult for scale 0 */);
+
+    if(backend == HALIDE_BACKEND_NONE)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[diffuse] Halide: all backends failed for bspline probe");
+      return FALSE;
+    }
+
+    dt_print(DT_DEBUG_PIPE, "[diffuse] Halide backend: %s",
+             _halide_backend_name(backend));
+
+    // Cache backend for subsequent calls to avoid re-probing
+    if(backend_ptr) *backend_ptr = backend;
+    probed = TRUE;  // Probe already did scale 0
   }
 
-  dt_print(DT_DEBUG_PIPE, "[diffuse] Halide backend: %s (GPU-persistent buffers)",
-           _halide_backend_name(backend));
-
-  // Scale 0 is already done by the probe. Continue with remaining scales.
+  // Scale 0: only run if we didn't probe (probe already did it)
   float *restrict residual_ptr = LF_odd;
+  
+  if(!probed)
+  {
+    // Cached backend iteration: need to run scale 0 bspline explicitly
+    int err = _halide_run_bspline(backend, &buf_in, &buf_lf_odd, &buf_hf[0], w, h, 1);
+    if(err)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[diffuse] Halide bspline failed at scale 0 (err=%d)", err);
+      goto cleanup_fail;
+    }
+  }
 
   for(int s = 1; s < scales; ++s)
   {
@@ -1770,7 +1799,13 @@ static inline gboolean _wavelets_process_halide(const float *const restrict in,
 
   // --- Copy only the final output to host ---
   if(backend != HALIDE_BACKEND_CPU)
+  {
     halide_copy_to_host(NULL, &buf_out);
+    // Force synchronization by touching the output buffer
+    // This ensures GPU has finished writing before we return
+    volatile float sync_check = ((float *)reconstructed)[0];
+    (void)sync_check;
+  }
 
   // --- Free all device memory ---
   if(backend != HALIDE_BACKEND_CPU)
@@ -1849,7 +1884,7 @@ int process_halide(dt_iop_module_t *self,
   float *restrict HF[MAX_NUM_SCALES];
   for(int s = 0; s < scales; s++)
   {
-    HF[s] = out_of_memory ? NULL : dt_alloc_align_float(width * height * 4);
+    HF[s] = out_of_memory ? NULL : dt_calloc_align_float(width * height * 4);
     if(!HF[s]) out_of_memory = TRUE;
   }
 
@@ -1863,7 +1898,7 @@ int process_halide(dt_iop_module_t *self,
     goto finish;
   }
 
-  const gboolean has_mask = (data->threshold > 0.f);
+   const gboolean has_mask = (data->threshold > 0.f);
   if(has_mask)
   {
     build_mask(in, mask, data->threshold, roi_out->width, roi_out->height);
@@ -1871,8 +1906,13 @@ int process_halide(dt_iop_module_t *self,
     in = temp1;
   }
 
+  // Cache backend across iterations to skip re-probing
+  _halide_backend_t cached_backend = HALIDE_BACKEND_NONE;
+
   for(int it = 0; it < iterations; it++)
   {
+    double iter_start = dt_get_wtime();
+    
     if(it == 0)
     {
       temp_in = in;
@@ -1894,12 +1934,17 @@ int process_halide(dt_iop_module_t *self,
 
     if(!_wavelets_process_halide(temp_in, temp_out, mask,
                      roi_out->width, roi_out->height,
-                     data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even))
+                     data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even,
+                     &cached_backend))
     {
       // Halide failed, signal fallback to regular process()
       ret = -1;
       goto finish;
     }
+    
+    double iter_time = dt_get_wtime() - iter_start;
+    dt_print(DT_DEBUG_PIPE, "[diffuse] Iteration %d/%d took %.3f secs", 
+             it + 1, iterations, iter_time);
   }
 
 finish:
