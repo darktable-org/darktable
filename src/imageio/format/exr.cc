@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <OpenEXR/ImfOutputFile.h>
 #include <OpenEXR/ImfStandardAttributes.h>
 #include <OpenEXR/ImfThreading.h>
+#include <OpenEXR/ImfCRgbaFile.h> // for macros to check HTJ2K compressions availability
 
 #include <cstdio>
 #include <cstdlib>
@@ -60,6 +61,10 @@ enum dt_imageio_exr_compression_t
                           // of 32 scanlines
   DWAB_COMPRESSION = 9,   // lossy DCT based compression, in blocks
                           // of 256 scanlines
+#ifdef IMF_HTJ2K32_COMPRESSION
+  HTJ2K256_COMPRESSION = 10, // High-Throughput JPEG2000 (HTJ2K), 256 scanlines
+  HTJ2K32_COMPRESSION = 11,  // High-Throughput JPEG2000 (HTJ2K), 32 scanlines
+#endif
   NUM_COMPRESSION_METHODS // number of different compression methods
 };                        // copy of Imf::Compression
 
@@ -98,6 +103,10 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, B44A_COMPRESSION, "b44a");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAA_COMPRESSION, "dwaa");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAB_COMPRESSION, "dwab");
+#ifdef IMF_HTJ2K32_COMPRESSION
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K256_COMPRESSION, "htj2k256");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K32_COMPRESSION, "htj2k32");
+#endif
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_exr_t, compression,
                                 dt_imageio_exr_compression_t);
@@ -607,7 +616,13 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("B44"),
                                N_("B44A"),
                                N_("DWAA"),
-                               N_("DWAB"));
+                               N_("DWAB")
+#ifdef IMF_HTJ2K32_COMPRESSION
+                               ,
+                               N_("HTJ2K256"),
+                               N_("HTJ2K32")
+#endif
+                               );
   dt_bauhaus_combobox_set_default(gui->compression,
                                   dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
