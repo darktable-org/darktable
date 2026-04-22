@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2025 darktable developers.
+    Copyright (C) 2009-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -208,8 +208,9 @@ void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
-void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
-void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
+void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t color);
+void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t color,
+                                const float opacity_coef);
 double dt_get_system_gui_ppd(GtkWidget *widget);
 double dt_get_screen_resolution(GtkWidget *widget);
 
@@ -504,10 +505,10 @@ void dt_gui_menu_popup(GtkMenu *menu,
                        GdkGravity menu_anchor);
 
 void dt_gui_draw_rounded_rectangle(cairo_t *cr,
-                                   float width,
-                                   float height,
-                                   float x,
-                                   float y);
+                                   const float width,
+                                   const float height,
+                                   const float x,
+                                   const float y);
 
 void dt_gui_widget_reallocate_now(GtkWidget *widget);
 
@@ -649,10 +650,12 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
                                   const int button);
 
 // Setup auto-commit on focus loss for editable renderers
-void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
+void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer,
+                                 GtkCellEditable **active_editable);
 
 // restore dialog size from config file
-void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
+void dt_gui_dialog_restore_size(GtkDialog *dialog,
+                                const char *conf);
 
 // returns the session type at runtime
 dt_gui_session_type_t dt_gui_get_session_type(void);

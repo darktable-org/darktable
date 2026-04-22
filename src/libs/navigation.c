@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -470,8 +470,10 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
 }
 
 static gboolean _lib_navigation_widget_to_center(GtkEventController *controller,
-                                                 gdouble in_x, gdouble in_y,
-                                                 gdouble *out_x, gdouble *out_y)
+                                                 const gdouble in_x,
+                                                 const gdouble in_y,
+                                                 gdouble *out_x,
+                                                 gdouble *out_y)
 {
   dt_develop_t *dev = darktable.develop;
   if(!dev->preview_pipe->backbuf
@@ -516,7 +518,8 @@ static gboolean _lib_navigation_widget_to_center(GtkEventController *controller,
 }
 
 static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller,
-                                            double dx, double dy,
+                                            const double dx,
+                                            const double dy,
                                             // FIXME: if unused don't pass
                                             dt_lib_module_t *self)
 {
@@ -524,10 +527,13 @@ static void _lib_navigation_scroll_callback(GtkEventControllerScroll *controller
   if(event)
   {
     GdkDevice *device = gdk_event_get_source_device(event);
-    if(device && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
+    if(device
+       && gdk_device_get_source(device) == GDK_SOURCE_TOUCHPAD
        && event->scroll.direction == GDK_SCROLL_SMOOTH)
+    {
       dt_dev_zoom_move(&darktable.develop->full, DT_ZOOM_MOVE,
                        15.0, 0, dx, dy, TRUE);
+    }
     else
     {
       const gboolean constrain = !dt_modifier_eq(controller, GDK_CONTROL_MASK);
@@ -553,7 +559,7 @@ static void _lib_navigation_pinch_begin_callback(GtkGesture *gesture,
 }
 
 static void _lib_navigation_pinch_scale_callback(GtkGesture *gesture,
-                                                 gdouble scale,
+                                                 const gdouble scale,
                                                  dt_lib_module_t *self)
 {
   gdouble wx, wy, cx, cy;

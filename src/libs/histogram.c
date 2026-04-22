@@ -29,8 +29,10 @@
 
 DT_MODULE(1)
 
-static void _lib_histogram_get_harmony(dt_lib_module_t *self, dt_color_harmony_guide_t *guide);
-static void _lib_histogram_set_harmony(dt_lib_module_t *self, const dt_color_harmony_guide_t *guide);
+static void _lib_histogram_get_harmony(dt_lib_module_t *self,
+                                       dt_color_harmony_guide_t *guide);
+static void _lib_histogram_set_harmony(dt_lib_module_t *self,
+                                       const dt_color_harmony_guide_t *guide);
 static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope);
 static void _lib_histogram_set_type(dt_lib_module_t *self, int type);
 static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
@@ -178,7 +180,8 @@ static void _scope_process
   const dt_iop_order_iccprofile_info_t *profile_info_out = !profile_info_to ? fallback : profile_info_to;
 
   dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
-                                            profile_info_from, profile_info_out, "final histogram");
+                                            profile_info_from, profile_info_out,
+                                            "final histogram");
   dt_pthread_mutex_lock(&s->lock);
 
   s->update_counter++;
@@ -304,8 +307,8 @@ void lib_histogram_update_tooltip(const dt_scopes_t *const scopes)
 }
 
 static void _drawable_drag_begin(GtkGestureDrag* gesture,
-                                 gdouble start_x,
-                                 gdouble start_y,
+                                 const gdouble start_x,
+                                 const gdouble start_y,
                                  dt_scopes_t *s)
 {
   if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
@@ -320,7 +323,10 @@ static void _drawable_drag_begin(GtkGestureDrag* gesture,
     dt_gui_deny(gesture);
 }
 
-static void _drawable_drag_end(GtkGestureDrag* g, gdouble ox, gdouble oy, dt_scopes_t *s)
+static void _drawable_drag_end(GtkGestureDrag* g,
+                               const gdouble ox,
+                               const gdouble oy,
+                               dt_scopes_t *s)
 {
   s->dragging = FALSE;
   dt_control_change_cursor(s->highlight == DT_SCOPES_HIGHLIGHT_NONE
@@ -328,8 +334,8 @@ static void _drawable_drag_end(GtkGestureDrag* g, gdouble ox, gdouble oy, dt_sco
 }
 
 static void _drawable_drag_update(GtkGestureDrag* gesture,
-                                  gdouble offset_x,
-                                  gdouble offset_y,
+                                  const gdouble offset_x,
+                                  const gdouble offset_y,
                                   dt_scopes_t *s)
 {
   dt_scopes_mode_t *const cur_mode = s->cur_mode;
@@ -353,19 +359,21 @@ static void _drawable_drag_update(GtkGestureDrag* gesture,
 }
 
 static void _drawable_button_press(GtkGestureSingle *gesture,
-                                   int n_press,
-                                   double x,
-                                   double y,
+                                   const int n_press,
+                                   const double x,
+                                   const double y,
                                    dt_scopes_t *s)
 {
-  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE && n_press == 2 && dt_gui_claim(gesture))
+  if(s->highlight != DT_SCOPES_HIGHLIGHT_NONE
+     && n_press == 2
+     && dt_gui_claim(gesture))
     dt_dev_exposure_handle_event(2, 0.0, 0,
                                  s->highlight == DT_SCOPES_HIGHLIGHT_BLACK_POINT);
 }
 
 static void _drawable_motion(GtkEventControllerMotion *controller,
-                             double x,
-                             double y,
+                             const double x,
+                             const double y,
                              dt_scopes_t *s)
 {
   if(s->dragging) return;
@@ -454,7 +462,8 @@ static void _mode_toggle(GtkWidget *button, dt_scopes_t *s)
     dt_scopes_reprocess();
 }
 
-static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
+static void _channel_toggle(GtkWidget *button,
+                            dt_scopes_t *s)
 {
   for(int i = 0; i < DT_SCOPES_RGB_N; i++)
     if(s->channel_buttons[i] == button)
@@ -470,8 +479,8 @@ static void _channel_toggle(GtkWidget *button, dt_scopes_t *s)
 }
 
 static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
-                                      gdouble dx,
-                                      gdouble dy,
+                                      const gdouble dx,
+                                      const gdouble dy,
                                       dt_scopes_t *s)
 {
   GdkEvent *event = gtk_get_current_event();
@@ -509,8 +518,8 @@ static void _eventbox_scroll_callback(GtkEventControllerScroll* self,
 }
 
 static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controller,
-                                             double x,
-                                             double y,
+                                             const double x,
+                                             const double y,
                                              dt_scopes_t *s)
 {
   // This is required in order to correctly display the button tooltips
@@ -522,8 +531,8 @@ static void _eventbox_motion_notify_callback(GtkEventControllerMotion *controlle
 }
 
 static void _eventbox_enter_notify_callback(GtkEventControllerMotion *controller,
-                                            double x,
-                                            double y,
+                                            const double x,
+                                            const double y,
                                             dt_scopes_t *s)
 {
   // FIXME: do need to do this, or should this already be updated?
@@ -891,7 +900,8 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_histogram_get_harmony(dt_lib_module_t *self, dt_color_harmony_guide_t *guide)
+static void _lib_histogram_get_harmony(dt_lib_module_t *self,
+                                       dt_color_harmony_guide_t *guide)
 {
   if(self && guide)
   {
@@ -900,7 +910,8 @@ static void _lib_histogram_get_harmony(dt_lib_module_t *self, dt_color_harmony_g
   }
 }
 
-static void _lib_histogram_set_harmony(dt_lib_module_t *self, const dt_color_harmony_guide_t *guide)
+static void _lib_histogram_set_harmony(dt_lib_module_t *self,
+                                       const dt_color_harmony_guide_t *guide)
 {
   if(self && guide)
   {
@@ -910,7 +921,8 @@ static void _lib_histogram_set_harmony(dt_lib_module_t *self, const dt_color_har
 }
 
 static void _lib_histogram_set_harmony_callback(dt_lib_module_t *self,
-    void (*cb)(const dt_color_harmony_guide_t *, void *), void *user_data)
+    void (*cb)(const dt_color_harmony_guide_t *, void *),
+    void *user_data)
 {
   if(self)
   {
@@ -928,7 +940,7 @@ static void _lib_histogram_set_scope(dt_lib_module_t *self, int scope)
   }
 }
 
-static void _lib_histogram_set_type(dt_lib_module_t *self, int type)
+static void _lib_histogram_set_type(dt_lib_module_t *self, const int type)
 {
   if(self && type >= 0)
   {
