@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1091,12 +1091,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
          _("\ndouble-click to define new shortcut")
          : "",
          def ?
-         "\n\nmultiple shortcuts can be defined for the same action;"
-         "\na different element, effect, speed or instance can be set for each in the shortcuts list."
+         _("\n\nmultiple shortcuts can be defined for the same action;"
+         "\na different element, effect, speed or instance can be set for each in the shortcuts list.")
          : "",
          def && def->fallbacks && action->type != DT_ACTION_TYPE_FALLBACK ?
-         "\n\nwith fallbacks enabled, the same shortcut can be used with additional modifiers"
-         "\nor mouse scroll/clicks/moves to affect a different element or change the effect or speed."
+         _("\n\nwith fallbacks enabled, the same shortcut can be used with additional modifiers"
+         "\nor mouse scroll/clicks/moves to affect a different element or change the effect or speed.")
          : "");
     }
   }
