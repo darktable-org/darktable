@@ -185,6 +185,7 @@ static void vng_interpolate(float *out,
   const int prow = is_xtrans ? 6 : 8;
   const int pcol = is_xtrans ? 6 : 2;
   const int colors = is_xtrans ? 3 : 4;
+  const gboolean mix_greens = !is_xtrans && !is_4bayer;
 
   // separate out G1 and G2 in RGGB Bayer patterns
   uint32_t filters4 = filters;
@@ -318,7 +319,7 @@ finish:
   DT_OMP_FOR()
   for(size_t i = 0; i < (size_t)width * height * 4; i+=4)
   {
-    if(!is_xtrans)
+    if(mix_greens)
     {
       out[i+1] = 0.5f * (out[i+1] + out[i+3]);
       out[i+3] = 0.0f;

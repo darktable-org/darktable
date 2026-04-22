@@ -482,97 +482,89 @@ static int process_default_cl(const dt_iop_module_t *self,
   cl_mem dev_med = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_monochrome, width, height,
+  if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_monochrome, width, height,
         CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height));
-      if(err != CL_SUCCESS) goto error;
-    }
-    else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_color, width, height,
+  }
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_color, width, height,
         CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
         CLARG(filters), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto error;
-    }
-    else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
+  }
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
+  {
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    if(dev_tmp == NULL) goto error;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
+          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters));
+    if(err != CL_SUCCESS) goto error;
+
+    if(d->median_thrs > 0.0f)
     {
-      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-      if(dev_tmp == NULL)
+      dev_med = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+      if(dev_med == NULL)
       {
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         goto error;
       }
 
-      {
-        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters));
-        if(err != CL_SUCCESS) goto error;
-      }
-
-      if(d->median_thrs > 0.0f)
-      {
-        dev_med = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-        if(dev_med == NULL)
-        {
-          err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-          goto error;
-        }
-
-        dt_opencl_local_buffer_t locopt
+      dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                         .cellsize = 1 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        err = dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt);
-        if(err != CL_SUCCESS) goto error;
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt);
+      if(err != CL_SUCCESS) goto error;
 
-        const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
-        const size_t local[2] = { locopt.sizex, locopt.sizey };
-        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pre_median, sizes, local,
+      const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+      const size_t local[2] = { locopt.sizex, locopt.sizey };
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_pre_median, sizes, local,
           CLARG(dev_in), CLARG(dev_med), CLARG(width),
           CLARG(height), CLARG(filters), CLARG(d->median_thrs), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
-        if(err != CL_SUCCESS) goto error;
-        dev_in = dev_out;
-      }
-      else dev_med = dev_in;
+      if(err != CL_SUCCESS) goto error;
+      dev_in = dev_out;
+    }
+    else dev_med = dev_in;
 
-      {
-        dt_opencl_local_buffer_t locopt
+    {
+      dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
                                         .cellsize = sizeof(float) * 1, .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
-        if(err != CL_SUCCESS) goto error;
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
+      if(err != CL_SUCCESS) goto error;
 
-        const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
-        const size_t local[2] = { locopt.sizex, locopt.sizey };
-        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
+      const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+      const size_t local[2] = { locopt.sizex, locopt.sizey };
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
           CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
           CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
           CLARGINT(100000));
-        if(err != CL_SUCCESS) goto error;
-      }
+      if(err != CL_SUCCESS) goto error;
+    }
 
-      {
-        dt_opencl_local_buffer_t locopt
+    {
+      dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
                                         .cellsize = 4 * sizeof(float), .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
-        if(err != CL_SUCCESS) goto error;
+      err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
+      if(err != CL_SUCCESS) goto error;
 
-        const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
-        const size_t local[2] = { locopt.sizex, locopt.sizey };
-        err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
+      const size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+      const size_t local[2] = { locopt.sizex, locopt.sizey };
+      err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
           CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
           CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
           CLARGINT(100000));
-        if(err != CL_SUCCESS) goto error;
-      }
+      if(err != CL_SUCCESS) goto error;
     }
+  }
 
 error:
   if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
