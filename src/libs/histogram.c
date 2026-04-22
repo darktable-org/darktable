@@ -860,8 +860,9 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: add (optional) propagation phase argument to dt_gui_connect_*()
   GtkEventController *scroll_controller =
-    dt_gui_connect_scroll_discrete(eventbox, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES,
-                                   _eventbox_scroll_callback, s);
+    dt_gui_connect_scroll(eventbox, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES
+                                    | GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
+                          _eventbox_scroll_callback, s);
   gtk_event_controller_set_propagation_phase(scroll_controller, GTK_PHASE_CAPTURE);
   // use GTK_PHASE_TARGET to capture enter/leave events, as
   // enter/leave events apparently not bubbled in GTK < 3.24.43.

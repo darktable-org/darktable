@@ -422,6 +422,8 @@ static gboolean _borders_button_pressed(GtkWidget *w,
   return TRUE;
 }
 
+// FIXME: if this is only called from scroll handlers, move this logic to scroll proxy
+// FIXME: just call with GdkModifierType as state
 gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
 {
   const gboolean ignore_without_mods =
@@ -793,14 +795,21 @@ static gboolean _scrolled(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean _borders_scrolled(GtkWidget *widget,
-                                  GdkEventScroll *event,
-                                  const gpointer user_data)
+static void _panel_scrolled(GtkEventControllerScroll *controller,
+                            double dx, double dy,
+                            GtkAdjustment *adj)
 {
-  // pass the scroll event to the matching side panel
-  gtk_widget_event(GTK_WIDGET(user_data), (GdkEvent*)event);
-
-  return TRUE;
+  // GTK4: don't need to clamp to upper/lower
+  const double lower = gtk_adjustment_get_lower(adj);
+  const double upper = gtk_adjustment_get_upper(adj)
+                       - gtk_adjustment_get_page_size(adj);
+  const double step = gtk_adjustment_get_step_increment(adj);
+  const double old_val = gtk_adjustment_get_value(adj);
+  const double new_val = CLAMPF(old_val + dy * step, lower, upper);
+  gtk_adjustment_set_value(adj, new_val);
+  // GTK3: explicitly consume the scroll
+  g_signal_stop_emission_by_name(controller, "scroll");
+  // GTK4: return GDK_EVENT_STOP;
 }
 
 static void _scrollbar_changed(GtkWidget *widget,
@@ -2506,6 +2515,7 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget,
   return (((event->state & gtk_accelerator_get_default_mod_mask())
            != darktable.gui->sidebar_scroll_mask)
           != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
+  // GTK4: return GDK_EVENT_PROPAGATE/GDK_EVENT_STOP
 }
 
 static gboolean _on_drag_motion_drop(GtkWidget *empty, GdkDragContext *dc, const gint x, const gint y, const guint time, const gboolean drop)
@@ -2622,42 +2632,46 @@ static gboolean _side_panel_draw(GtkWidget *widget,
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
                                                   const gboolean left)
 {
-  GtkWidget *widget;
-
   /* create the scrolled window */
-  widget = gtk_scrolled_window_new(NULL, GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 100, 1, 10, 10)));
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
+  GtkAdjustment *vadj = gtk_adjustment_new(0, 0, 100, 1, 10, 10);
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, GTK_ADJUSTMENT(vadj));
+  gtk_widget_set_can_focus(sw, TRUE);
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(sw),
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER,
+  gtk_box_pack_start(GTK_BOX(container), sw, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER,
                                  dt_conf_get_bool("panel_scrollbars_always_visible")
                                  ? GTK_POLICY_ALWAYS
                                  : GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(widget), TRUE);
+  gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(sw), TRUE);
 
-  // we want the left/right window border to scroll the module lists
-  g_signal_connect(G_OBJECT(left
-                            ? darktable.gui->widgets.right_border
-                            : darktable.gui->widgets.left_border),
-                   "scroll-event", G_CALLBACK(_borders_scrolled), widget);
+  // scrolling the left/right window border scrolls the module lists,
+  // passing on scroll via gtk_widget_event() breaks kinetic scrolling
+  // and isn't GTK4 ready, so directly change GtkAdjustment
+  dt_gui_connect_scroll(left
+                        ? darktable.gui->widgets.right_border
+                        : darktable.gui->widgets.left_border,
+                        GTK_EVENT_CONTROLLER_SCROLL_VERTICAL,
+                        _panel_scrolled, vadj);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over
-   * a control, and scroll it's value) */
-  g_signal_connect(G_OBJECT(widget), "scroll-event",
+   * a control, and scroll it's value), only scroll on modifier */
+  // GTK4: this is absolutely not GTK4 compatible, but there is no way
+  // in GTK3 to have child widgets have their own scroll behavior and
+  // have a GtkEventControllerScroll on the parent GtkScrolledWindow.
+  g_signal_connect(G_OBJECT(sw), "scroll-event",
                    G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
 
   /* create the container */
-  container = widget;
-  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(widget, "plugins_vbox_left");
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  g_signal_connect_swapped(widget, "draw", G_CALLBACK(_side_panel_draw), NULL);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(box, "plugins_vbox_left");
+  gtk_container_add(GTK_CONTAINER(sw), box);
+  g_signal_connect_swapped(box, "draw", G_CALLBACK(_side_panel_draw), NULL);
 
   GtkWidget *empty = gtk_event_box_new();
   gtk_widget_set_tooltip_text(empty, _("right-click to show/hide modules"));
-  gtk_box_pack_end(GTK_BOX(widget), empty, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(box), empty, TRUE, TRUE, 0);
   gtk_drag_dest_set(empty, 0, NULL, 0, GDK_ACTION_COPY);
   g_signal_connect(empty, "drag-motion", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(FALSE));
   g_signal_connect(empty, "drag-drop", G_CALLBACK(_on_drag_motion_drop), GINT_TO_POINTER(TRUE));
@@ -2667,8 +2681,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   dt_action_t *ac = dt_action_define(&darktable.control->actions_global, NULL,
                                      N_("show/hide modules"), empty, NULL);
   dt_action_register(ac, NULL, _add_remove_modules, 0, 0);
-
-  return widget;
+  return box;
 }
 
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
@@ -4760,92 +4773,143 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
   return controller;
 }
 
-GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
-                                            GtkEventControllerScrollFlags flags,
-                                            GCallback scroll,
-                                            gpointer data)
-{
-  GtkEventController *controller = gtk_event_controller_scroll_new(widget, flags);
-  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
-  g_object_weak_ref(G_OBJECT (widget), (GWeakNotify) g_object_unref, controller);
-  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
-  if(scroll) g_signal_connect(controller, "scroll", G_CALLBACK(scroll), data);
-  return controller;
-}
-
 typedef void (*scroll_handler_t)(GtkEventControllerScroll*, gdouble, gdouble, gpointer);
 static gdouble _scroll_discrete_dx = 0.0;
 static gdouble _scroll_discrete_dy = 0.0;
-static const char *_scroll_discrete_real_handler_key = "real-scroll-discrete-handler";
+static const char *_scroll_real_handler_key = "real-scroll-handler";
 
-static void _scroll_discrete_proxy(GtkEventControllerScroll* controller,
-                                   gdouble dx,
-                                   gdouble dy,
-                                   gpointer user_data)
+static gboolean _scroll_sidebar(GtkEventControllerScroll* controller,
+                                gdouble dy,
+                                GdkEvent* event)
 {
-  GdkEvent *event = gtk_get_current_event();
-  if(!event) return;
-  // avoid double counting real and emulated events
-  if(!gdk_event_get_pointer_emulated(event))
+  // GTK4: the sidebar scroll controller can capture scrolls then
+  // decide whether to propogate them or scroll itself depending on
+  // modifiers state, and this function will no longer be needed
+  GtkWidget *const widget =
+    gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+  const GtkWidget *panel = NULL;
+  if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, widget))
+    panel = darktable.gui->ui->panels[DT_UI_PANEL_LEFT];
+  else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, widget))
+    panel = darktable.gui->ui->panels[DT_UI_PANEL_RIGHT];
+  if(panel && dt_gui_ignore_scroll(&event->scroll))
   {
-    if(gdk_event_get_event_type(event) == GDK_SCROLL
-       && event->scroll.direction == GDK_SCROLL_SMOOTH)
+    // FIXME: do we need to even check if in left/right panel? will this break if mouse over a widget within a GtkScrolledWindow within the panel GtkScrolledWindow?
+    GtkWidget *const sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
+    if(sw)
     {
-      // MacOS scrolling is apparently distance-based, so can produce
-      // a range of large/small deltas. Most current code accumulates
-      // & attenuates via dt_gui_get_scroll_unit_deltas(). For
-      // GTK4-ready "scroll" events, use discrete scrolling based on
-      // gtk_event_controller_scroll_handle_event(), with attenuation.
-#ifdef GDK_WINDOWING_QUARTZ
-      const double scale = 0.06;
-      const double compression = 0.7;
+      GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+      _panel_scrolled(controller, 0.0, dy, vadj);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static float _scroll_attenuate(gdouble delta)
+{
+#ifndef GDK_WINDOWING_QUARTZ
+  // Linux/Windows smooth scroll events are 0 < delta <= 1, slightly
+  // amplify small deltas and damp larger deltas
+  const double scale = 0.95;
+  const double compression = 0.9;
 #else
-      const double scale = 0.95;
-      const double compression = 0.9;
+  // MacOS scrolling is apparently distance-based, so can produce a
+  // range of large/small deltas. Most are delta 1, a few can be as
+  // high as 10. Compress the higher scroll deltas in particular, and
+  // place them all in range of Linux/Windows scrolling.
+  const double scale = 0.06;
+  const double compression = 0.7;
 #endif
-      dx = scale * copysign(pow(fabs(dx), compression), dx);
-      dy = scale * copysign(pow(fabs(dy), compression), dy);
-      _scroll_discrete_dx += dx;
-      _scroll_discrete_dy += dy;
-      dx = dy = 0.0;
-      if(fabs(_scroll_discrete_dx) >= 1.0)
+  return scale * copysign(pow(fabs(delta), compression), delta);
+}
+
+static void _scroll_proxy_real(GtkEventControllerScroll* controller,
+                               gdouble dx,
+                               gdouble dy,
+                               gpointer user_data,
+                               gboolean discrete)
+{
+  GdkEvent *const event = gtk_get_current_event();
+  if(!event) return;
+  // FIXME: make sure this logic is right -- want to ignore emulated pointer events, attenuate scroll events with data, and use any deltas not emulated
+  if(gdk_event_get_event_type(event) == GDK_SCROLL
+     // don't double counting real and emulated smooth scroll events
+     && !gdk_event_get_pointer_emulated(event)
+     && !_scroll_sidebar(controller, dy, event))
+  {
+    if(event->scroll.direction == GDK_SCROLL_SMOOTH)
+    {
+      dx = _scroll_attenuate(dx);
+      dy = _scroll_attenuate(dy);
+      if(discrete)
       {
-        int steps = trunc(_scroll_discrete_dx);
-        _scroll_discrete_dx -= steps;
-        dx = steps;
+        _scroll_discrete_dx += dx;
+        _scroll_discrete_dy += dy;
+        dx = dy = 0.0;
+        // can return |delta| > 1, but clamping to -1 < delta < 1 dulls
+        // responsiveness, so it is up to the caller to handle this
+        // FIXME: actually clamp and if caller doesn't want clamping
+        //        they should not use discerete scrolling?
+        // FIXME: make another flag to setup func if want to clamp?
+        if(fabs(_scroll_discrete_dx) >= 1.0)
+        {
+          const int steps = trunc(_scroll_discrete_dx);
+          _scroll_discrete_dx -= steps;
+          dx = steps;
+        }
+        if(fabs(_scroll_discrete_dy) >= 1.0)
+        {
+          const int steps = trunc(_scroll_discrete_dy);
+          _scroll_discrete_dy -= steps;
+          dy = steps;
+        }
       }
-      if(fabs(_scroll_discrete_dy) >= 1.0)
-      {
-        int steps = trunc(_scroll_discrete_dy);
-        _scroll_discrete_dy -= steps;
-        dy = steps;
-      }
-      // FIXME: modern mouse wheels can produce smooth scroll events
-      //        with |delta| > 1, for now the caller must clamp these
     }
     if(dx != 0.0 || dy != 0.0)
     {
-      scroll_handler_t real_handler =
-        g_object_get_data(G_OBJECT(controller), _scroll_discrete_real_handler_key);
+      const scroll_handler_t real_handler =
+        g_object_get_data(G_OBJECT(controller), _scroll_real_handler_key);
       real_handler(controller, dx, dy, user_data);
     }
   }
   gdk_event_free(event);
 }
 
-GtkEventController *(dt_gui_connect_scroll_discrete)(GtkWidget *widget,
-                                                     GtkEventControllerScrollFlags flags,
-                                                     GCallback scroll_callback,
-                                                     gpointer user_data)
+static void _scroll_proxy(GtkEventControllerScroll* controller,
+                          gdouble dx,
+                          gdouble dy,
+                          gpointer data)
 {
-  // Use proxy, not GTK discrete scrolling, to attenuate. We could use
-  // GTK discrete scrolling for non-MacOS, but it makes it hard to
-  // test if a chunk of code is particular to one OS.
-  GtkEventController *controller =
-    dt_gui_connect_scroll(widget, flags & ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE,
-                          _scroll_discrete_proxy, user_data);
-  g_object_set_data(G_OBJECT(controller),
-                    _scroll_discrete_real_handler_key, scroll_callback);
+  _scroll_proxy_real(controller, dx, dy, data, FALSE);
+}
+
+static void _scroll_discrete_proxy(GtkEventControllerScroll* controller,
+                                   gdouble dx,
+                                   gdouble dy,
+                                   gpointer data)
+{
+  _scroll_proxy_real(controller, dx, dy, data, TRUE);
+}
+
+GtkEventController *(dt_gui_connect_scroll)(GtkWidget *widget,
+                                               GtkEventControllerScrollFlags flags,
+                                               GCallback scroll,
+                                               gpointer data)
+{
+  // FIXME: instead of using two proxy functions, set controller property if discrete
+  const scroll_handler_t proxy =
+    (flags & GTK_EVENT_CONTROLLER_SCROLL_DISCRETE) ?
+    _scroll_discrete_proxy : _scroll_proxy;
+  // proxy will attenuate, so bypass GTK's discrete scrolling code
+  flags &= ~GTK_EVENT_CONTROLLER_SCROLL_DISCRETE;
+
+  GtkEventController *const controller = gtk_event_controller_scroll_new(widget, flags);
+  gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_TARGET);
+  g_object_weak_ref(G_OBJECT(widget), (GWeakNotify) g_object_unref, controller);
+  // GTK4 gtk_widget_add_controller(widget, GTK_EVENT_CONTROLLER(controller));
+  g_signal_connect(controller, "scroll", G_CALLBACK(proxy), data);
+  g_object_set_data(G_OBJECT(controller), _scroll_real_handler_key, scroll);
   return controller;
 }
 
