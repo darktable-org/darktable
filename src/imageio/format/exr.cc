@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <OpenEXR/ImfOutputFile.h>
 #include <OpenEXR/ImfStandardAttributes.h>
 #include <OpenEXR/ImfThreading.h>
+#include <OpenEXR/ImfCRgbaFile.h> // for macros to check HTJ2K compressions availability
 
 #include <cstdio>
 #include <cstdlib>
@@ -60,6 +61,10 @@ enum dt_imageio_exr_compression_t
                           // of 32 scanlines
   DWAB_COMPRESSION = 9,   // lossy DCT based compression, in blocks
                           // of 256 scanlines
+#ifdef IMF_HTJ2K32_COMPRESSION
+  HTJ2K256_COMPRESSION = 10, // High-Throughput JPEG2000 (HTJ2K), 256 scanlines
+  HTJ2K32_COMPRESSION = 11,  // High-Throughput JPEG2000 (HTJ2K), 32 scanlines
+#endif
   NUM_COMPRESSION_METHODS // number of different compression methods
 };                        // copy of Imf::Compression
 
@@ -98,6 +103,10 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, B44A_COMPRESSION, "b44a");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAA_COMPRESSION, "dwaa");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAB_COMPRESSION, "dwab");
+#ifdef IMF_HTJ2K32_COMPRESSION
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K256_COMPRESSION, "htj2k256");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, HTJ2K32_COMPRESSION, "htj2k32");
+#endif
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_exr_t, compression,
                                 dt_imageio_exr_compression_t);
@@ -116,16 +125,29 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
-int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp,
-                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+int write_image(dt_imageio_module_data_t *tmp,
+                const char *filename,
+                const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type,
+                const char *over_filename,
+                void *exif,
+                int exif_len,
+                dt_imgid_t imgid,
+                int num,
+                int total,
+                struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
   Imf::setGlobalThreadCount(dt_get_num_threads());
 
-  Imf::Header header(exr->global.width, exr->global.height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
+  Imf::Header header(exr->global.width,  // image width
+                     exr->global.height, // image height
+                     1,                  // pixel aspect ratio
+                     Imath::V2f(0, 0),   // screen window center
+                     1,                  // screen window width
+                     Imf::INCREASING_Y,  // line order
                      (Imf::Compression)exr->compression);
 
   char comment[1024];
@@ -133,14 +155,15 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("comment", Imf::StringAttribute(comment));
 
-  // TODO: workaround; remove when exiv2 implements EXR write support and use dt_exif_write_blob() at the end
+  // TODO: workaround; remove when Exiv2 implements EXR write support
+  // and use dt_exif_write_blob() at the end
   if(exif && exif_len > 0)
   {
     Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
     header.insert("exif", Imf::BlobAttribute(exif_blob));
   }
 
-  // TODO: workaround; remove when exiv2 implements EXR write support and update flags()
+  // TODO: workaround; remove when Exiv2 implements EXR write support and update flags()
   // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
   if(exif && exif_len > 0)
   {
@@ -153,14 +176,20 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   }
 
   // try to add the chromaticities
-  cmsToneCurve *red_curve = NULL, *green_curve = NULL, *blue_curve = NULL;
-  cmsCIEXYZ *red_color = NULL, *green_color = NULL, *blue_color = NULL;
+  cmsToneCurve *red_curve = NULL;
+  cmsToneCurve *green_curve = NULL;
+  cmsToneCurve *blue_curve = NULL;
+
+  cmsCIEXYZ *red_color = NULL;
+  cmsCIEXYZ *green_color = NULL;
+  cmsCIEXYZ *blue_color = NULL;
   Imf::Chromaticities chromaticities; // initialized w/ Rec709 primaries and D65 white
 
   // determine the actual (export vs colorout) color profile used
   const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
 
-  if(!cmsIsMatrixShaper(cp->profile)) goto icc_error;
+  if(!cmsIsMatrixShaper(cp->profile))
+    goto icc_error;
 
   red_curve = (cmsToneCurve *)cmsReadTag(cp->profile, cmsSigRedTRCTag);
   green_curve = (cmsToneCurve *)cmsReadTag(cp->profile, cmsSigGreenTRCTag);
@@ -170,7 +199,8 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   green_color = (cmsCIEXYZ *)cmsReadTag(cp->profile, cmsSigGreenColorantTag);
   blue_color = (cmsCIEXYZ *)cmsReadTag(cp->profile, cmsSigBlueColorantTag);
 
-  if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color) goto icc_error;
+  if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color)
+    goto icc_error;
 
   if(!cmsIsToneCurveLinear(red_curve) || !cmsIsToneCurveLinear(green_curve) || !cmsIsToneCurveLinear(blue_curve))
     goto icc_error;
@@ -191,7 +221,8 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     b[0] = blue_color->X / sum;
     b[1] = blue_color->Y / sum;
 
-    // hard code the white point to D50 as the primaries from the ICC should be adapted to that
+    // hard code the white point to D50 as the primaries from the ICC
+    // should be adapted to that
     chromaticities.white = Imath::V2f(cmsD50_xyY()->x, cmsD50_xyY()->y);
 
     chromaticities.red = Imath::V2f(r[0], r[1]);
@@ -212,9 +243,10 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   goto icc_end;
 
 icc_error:
-  dt_control_log("%s", _("the selected output profile doesn't work well with EXR"));
-  dt_print(DT_DEBUG_ALWAYS, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
-                  "results when opening the image\n");
+  dt_control_log(_("the selected output profile doesn't work well with EXR"));
+  dt_print(DT_DEBUG_ALWAYS,
+           "[exr export] warning: exporting with anything but linear matrix profiles "
+           "might lead to wrong results when opening the image\n");
 icc_end:
 
   Imf::PixelType pixel_type = (Imf::PixelType)exr->pixel_type;
@@ -607,9 +639,16 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("B44"),
                                N_("B44A"),
                                N_("DWAA"),
-                               N_("DWAB"));
+                               N_("DWAB")
+#ifdef IMF_HTJ2K32_COMPRESSION
+                               ,
+                               N_("HTJ2K256"),
+                               N_("HTJ2K32")
+#endif
+                               );
   dt_bauhaus_combobox_set_default(gui->compression,
-                                  dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
+                                  dt_confgen_get_int("plugins/imageio/format/exr/compression",
+                                  DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 }
 
@@ -623,7 +662,9 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
   const int bpp = dt_confgen_get_int("plugins/imageio/format/exr/bpp", DT_DEFAULT);
   dt_bauhaus_combobox_set(gui->bpp, (bpp >> 4) - EXR_PT_HALF);
-  dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
+  dt_bauhaus_combobox_set(gui->compression,
+                          dt_confgen_get_int("plugins/imageio/format/exr/compression",
+                          DT_DEFAULT));
 }
 
 G_END_DECLS
