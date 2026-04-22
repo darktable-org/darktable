@@ -510,9 +510,9 @@ int process_cl(dt_iop_module_t *self,
     err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
   {
-    size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
-    size_t oorigin[] = { 0, 0, 0 };
-    size_t region[] = { roi_out->width, roi_out->height, 1 };
+    size_t iorigin[] = { roi_out->x, roi_out->y };
+    size_t oorigin[] = { 0, 0 };
+    size_t region[] = { roi_out->width, roi_out->height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
   }
 

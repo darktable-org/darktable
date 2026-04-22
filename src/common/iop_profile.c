@@ -1491,8 +1491,8 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   const gboolean inplace = dev_img_in == dev_img_out;
   const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { width, height };
 
   *converted_cst = cst_to;
   if(cst_from == cst_to)
@@ -1678,8 +1678,8 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
   {
     if(dev_img_in != dev_img_out)
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
+      size_t origin[] = { 0, 0 };
+      size_t region[] = { width, height };
 
       err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
       if(err != CL_SUCCESS)

@@ -1131,7 +1131,7 @@ void toneeq_process(dt_iop_module_t *self,
         compute_luminance_mask(in, luminance, width, height, d);
         g->luminance_valid = TRUE;
         dt_iop_gui_leave_critical_section(self);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order, "toneequal: ");
       }
     }
     else // make it dummy-proof

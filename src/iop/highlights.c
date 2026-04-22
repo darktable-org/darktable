@@ -544,9 +544,9 @@ int process_cl(dt_iop_module_t *self,
       return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
     else
     {
-      size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
-      size_t oorigin[] = { 0, 0, 0 };
-      size_t region[] = { roi_out->width, roi_out->height, 1 };
+      size_t iorigin[] = { roi_out->x, roi_out->y };
+      size_t oorigin[] = { 0, 0 };
+      size_t region[] = { roi_out->width, roi_out->height };
       return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
     }
   }
@@ -632,8 +632,8 @@ int process_cl(dt_iop_module_t *self,
     dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->xtrans), piece->xtrans);
     if(dev_xtrans == NULL) goto finish;
 
-    size_t sizes[] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey), 1 };
-    size_t local[] = { blocksizex, blocksizey, 1 };
+    size_t sizes[2] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey) };
+    size_t local[2] = { blocksizex, blocksizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),

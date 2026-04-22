@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -433,9 +433,9 @@ blendop_mask_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
+  float4 b = readpixel(in_b, x, y);
+  float form = readsingle(mask_in, x, y);
 
   float conditional = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
@@ -454,7 +454,7 @@ blendop_mask_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  float form = readsingle(mask_in, x, y);
 
   float opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form;
 
@@ -471,9 +471,9 @@ blendop_mask_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __r
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
+  float4 b = readpixel(in_b, x, y);
+  float form = readsingle(mask_in, x, y);
 
   const unsigned int invert_mask = (blendif >> 16) ^ (mask_combine & DEVELOP_COMBINE_INCL ? 0 : DEVELOP_BLENDIF_RGB_MASK);
 
@@ -495,9 +495,9 @@ blendop_mask_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, 
 
   if(x >= width || y >= height || use_work_profile == 0) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
+  float4 b = readpixel(in_b, x, y);
+  float form = readsingle(mask_in, x, y);
 
   const unsigned int invert_mask = (blendif >> 16) ^ (mask_combine & DEVELOP_COMBINE_INCL ? 0 : DEVELOP_BLENDIF_RGB_MASK);
 
@@ -525,15 +525,15 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
-    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    a = read_imagef(in_b, sampleri, (int2)(x, y));
+    b = readpixel(in_a, x+offs.x, y+offs.y);
+    a = readpixel(in_b, x, y);
   }
   else
   {
-    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    b = read_imagef(in_b, sampleri, (int2)(x, y));
+    a = readpixel(in_a, x+offs.x, y+offs.y);
+    b = readpixel(in_b, x, y);
   }
-  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float opacity = readsingle(mask, x, y);
 
   /* scale L down to [0; 1] and a,b to [-1; 1] */
   const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
@@ -546,7 +546,7 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
   const float4 lmax = (float4)(1.0f, 2.0f, 2.0f, 1.0f);       /* max + fabs(min) */
   const float4 halfmax = (float4)(0.5f, 1.0f, 1.0f, 0.5f);    /* lmax / 2.0f */
   const float4 doublemax = (float4)(2.0f, 4.0f, 4.0f, 2.0f);  /* lmax * 2.0f */
-  const float opacity2 = opacity*opacity;
+  const float opacity2 = fsquare(opacity);
 
   float4 la = clamp(a + fabs(min), lmin, lmax);
   float4 lb = clamp(b + fabs(min), lmin, lmax);
@@ -812,15 +812,15 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
-    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
-    a = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+    b = readsingle(in_a, x+offs.x, y+offs.y);
+    a = readsingle(in_b, x, y);
   }
   else
   {
-    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
-    b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+    a = readsingle(in_a, x+offs.x, y+offs.y);
+    b = readsingle(in_b, x, y);
   }
-  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float opacity = readsingle(mask, x, y);
 
   const float min = 0.0f;
   const float max = 1.0f;
@@ -828,7 +828,7 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
   const float lmax = 1.0f;        /* max + fabs(min) */
   const float halfmax = 0.5f;     /* lmax / 2.0f */
   const float doublemax = 2.0f;   /* lmax * 2.0f */
-  const float opacity2 = opacity*opacity;
+  const float opacity2 = fsquare(opacity);
 
   float la = clamp(a + fabs(min), lmin, lmax);
   float lb = clamp(b + fabs(min), lmin, lmax);
@@ -958,16 +958,16 @@ blendop_RAW4(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
-    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    a = read_imagef(in_b, sampleri, (int2)(x, y));
+    b = readpixel(in_a, x+offs.x, y+offs.y);
+    a = readpixel(in_b, x, y);
   }
   else
   {
-    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    b = read_imagef(in_b, sampleri, (int2)(x, y));
+    a = readpixel(in_a, x+offs.x, y+offs.y);
+    b = readpixel(in_b, x, y);
   }
 
-  float4 opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float4 opacity = readsingle(mask, x, y);
 
   const float4 min = 0.0f;
   const float4 max = 1.0f;
@@ -1108,15 +1108,15 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
-    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    a = read_imagef(in_b, sampleri, (int2)(x, y));
+    b = readpixel(in_a, x+offs.x, y+offs.y);
+    a = readpixel(in_b, x, y);
   }
   else
   {
-    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    b = read_imagef(in_b, sampleri, (int2)(x, y));
+    a = readpixel(in_a, x+offs.x, y+offs.y);
+    b = readpixel(in_b, x, y);
   }
-  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float opacity = readsingle(mask, x, y);
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
   const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1124,7 +1124,7 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
   const float4 lmax = (float4)(1.0f, 1.0f, 1.0f, 1.0f);       /* max + fabs(min) */
   const float4 halfmax = (float4)(0.5f, 0.5f, 0.5f, 1.0f);    /* lmax / 2.0f */
   const float4 doublemax = (float4)(2.0f, 2.0f, 2.0f, 1.0f);  /* lmax * 2.0f */
-  const float opacity2 = opacity*opacity;
+  const float opacity2 = fsquare(opacity);
 
   float4 la = clamp(a + fabs(min), lmin, lmax);
   float4 lb = clamp(b + fabs(min), lmin, lmax);
@@ -1266,8 +1266,8 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
       ta = RGB_2_HSV(a);
       tb = RGB_2_HSV(b);
       // blend color vectors of input and output
-      d = ta.y*cos(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*cos(DT_2PI_F*tb.x) * opacity;
-      s = ta.y*sin(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*sin(DT_2PI_F*tb.x) * opacity;
+      d = ta.y*dtcl_cos(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*dtcl_cos(DT_2PI_F*tb.x) * opacity;
+      s = ta.y*dtcl_sin(DT_2PI_F*ta.x) * (1.0f - opacity) + tb.y*dtcl_sin(DT_2PI_F*tb.x) * opacity;
       to.x = fmod(atan2(s, d)/DT_2PI_F+1.0f, 1.0f);
       to.y = dt_fast_hypot(s, d);
       to.z = ta.z;
@@ -1320,15 +1320,15 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
 
   if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
   {
-    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    a = read_imagef(in_b, sampleri, (int2)(x, y));
+    b = readpixel(in_a, x+offs.x, y+offs.y);
+    a = readpixel(in_b, x, y);
   }
   else
   {
-    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-    b = read_imagef(in_b, sampleri, (int2)(x, y));
+    a = readpixel(in_a, x+offs.x, y+offs.y);
+    b = readpixel(in_b, x, y);
   }
-  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float opacity = readsingle(mask, x, y);
   float norm_a;
   float norm_b;
 
@@ -1433,7 +1433,7 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
 
   if (x >= width || y >= height) return;
 
-  float opacity = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+  float opacity = readsingle(mask_in, x, y);
   float scaled_opacity = (2.f * opacity / gopacity - 1.f);
   if (1.f - brightness <= 0.f)
     scaled_opacity = opacity <= mask_epsilon ? -1.f : 1.f;
@@ -1480,9 +1480,9 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  float4 a = readpixel(in_a, x+offs.x, y+offs.y); // see comment in blend.c:dt_develop_blend_process_cl()
+  float4 b = readpixel(in_b, x, y);
+  float opacity = readsingle(mask, x, y);
 
   float c;
   float4 LCH;
@@ -1495,51 +1495,51 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_L:
-      c = clipf(a.x / 100.0f / exp2(boost_factors[DEVELOP_BLENDIF_L_in]));
+      c = clipf(a.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_in]));
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.x / 100.0f / exp2(boost_factors[DEVELOP_BLENDIF_L_out]));
+      c = clipf(b.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_out]));
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
-      c = clipf(a.y / 256.0f / exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
+      c = clipf(a.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.y / 256.0f / exp2(boost_factors[DEVELOP_BLENDIF_A_out]) + 0.5f);
+      c = clipf(b.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_out]) + 0.5f);
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
-      c = clipf(a.z / 256.0f / exp2(boost_factors[DEVELOP_BLENDIF_B_in]) + 0.5f);
+      c = clipf(a.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_B_in]) + 0.5f);
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.z / 256.0f / exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
+      c = clipf(b.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_R:
-      c = clipf(a.x / exp2(boost_factors[DEVELOP_BLENDIF_RED_in]));
+      c = clipf(a.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.x / exp2(boost_factors[DEVELOP_BLENDIF_RED_out]));
+      c = clipf(b.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
-      c = clipf(a.y / exp2(boost_factors[DEVELOP_BLENDIF_GREEN_in]));
+      c = clipf(a.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.y / exp2(boost_factors[DEVELOP_BLENDIF_GREEN_out]));
+      c = clipf(b.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
-      c = clipf(a.z / exp2(boost_factors[DEVELOP_BLENDIF_BLUE_in]));
+      c = clipf(a.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.z / exp2(boost_factors[DEVELOP_BLENDIF_BLUE_out]));
+      c = clipf(b.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
@@ -1547,7 +1547,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
         c = 0.3f * a.x + 0.59f * a.y + 0.11f * a.z;
       else
         c = get_rgb_matrix_luminance(a, profile_info, profile_info->matrix_in, profile_lut);
-      c = clipf(c / exp2(boost_factors[DEVELOP_BLENDIF_GRAY_in]));
+      c = clipf(c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
@@ -1555,7 +1555,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
         c = 0.3f * b.x + 0.59f * b.y + 0.11f * b.z;
       else
         c = get_rgb_matrix_luminance(b, profile_info, profile_info->matrix_in, profile_lut);
-      c = clipf(c / exp2(boost_factors[DEVELOP_BLENDIF_GRAY_out]));
+      c = clipf(c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
@@ -1615,27 +1615,27 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.x / exp2(boost_factors[DEVELOP_BLENDIF_Jz_out]));
+      c = clipf(JzCzhz.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Jz_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz:
       JzCzhz = rgb_to_JzCzhz(a, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.y / exp2(boost_factors[DEVELOP_BLENDIF_Cz_in]));
+      c = clipf(JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.y / exp2(boost_factors[DEVELOP_BLENDIF_Cz_out]));
+      c = clipf(JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_out]));
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
       JzCzhz = rgb_to_JzCzhz(a, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.z / exp2(boost_factors[DEVELOP_BLENDIF_hz_in]));
+      c = clipf(JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_in]));
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.z / exp2(boost_factors[DEVELOP_BLENDIF_hz_out]));
+      c = clipf(JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_out]));
       is_lab = 0;
       break;
     default:

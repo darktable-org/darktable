@@ -156,8 +156,8 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
 cl_int dt_bilateral_splat_cl(dt_bilateral_cl_t *b, cl_mem in)
 {
-  size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
-  size_t local[] = { b->blocksizex, b->blocksizey, 1 };
+  size_t sizes[2] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey) };
+  size_t local[2] = { b->blocksizex, b->blocksizey };
   return dt_opencl_enqueue_kernel_2d_local_args(b->devid, b->global->kernel_splat, sizes, local,
     CLARG(in), CLARG(b->dev_grid),
     CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
@@ -200,8 +200,8 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   cl_mem tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { b->width, b->height, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { b->width, b->height };
   err = dt_opencl_enqueue_copy_image(b->devid, out, tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 

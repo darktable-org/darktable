@@ -93,8 +93,8 @@ static inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, ui
   const float4 flip_comp = { 0.0f, 1.0f, 0.0f, 0.0f };
 
   // flip is a 4×1 boolean mask
-  const float4 noise = flip * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_cos(2.f * M_PI_F * u2) +
-                       flip_comp * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_sin(2.f * M_PI_F * u2);
+  const float4 noise = flip * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_cos(DT_2PI_F * u2) +
+                       flip_comp * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_sin(DT_2PI_F * u2);
   return noise * sigma + mu;
 }
 
@@ -118,8 +118,8 @@ static inline float4 poisson_noise_simd(const float4 mu, const float4 sigma, uin
   const float4 flip_comp = { 0.0f, 1.0f, 0.0f, 0.0f };
 
   // flip is a 4×1 boolean mask
-  const float4 noise = flip * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_cos(2.f * M_PI_F * u2) +
-                       flip_comp * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_sin(2.f * M_PI_F * u2);
+  const float4 noise = flip * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_cos(DT_2PI_F * u2) +
+                       flip_comp * dtcl_sqrt(-2.0f * dtcl_log(u1)) * dtcl_sin(DT_2PI_F * u2);
 
   // now we have gaussian noise, then apply Anscombe transform to get poissonian one
   const float4 r = noise * sigma + 2.0f * dtcl_sqrt(fmax(mu + (3.f / 8.f), 0.0f));

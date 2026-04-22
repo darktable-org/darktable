@@ -995,8 +995,8 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   dt_colorspaces_iccprofile_info_cl_t *work_profile_info_cl = NULL;
   cl_float *work_profile_lut_cl = NULL;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { owidth, oheight, 1 };
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { owidth, oheight };
 
   // parameters, for every channel the 4 limits + pre-computed
   // increasing slope and decreasing slope
@@ -1179,7 +1179,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
           cl_mem dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
           if(dev_guide == NULL) goto error;
 
-          size_t origin_1[] = { dx, dy, 0 };
+          size_t origin_1[] = { dx, dy };
           err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_guide, origin, origin_1, region);
           if(err != CL_SUCCESS)
           {

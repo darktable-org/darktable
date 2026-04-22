@@ -68,8 +68,8 @@ static inline float4 Lab_2_LCH(float4 Lab)
 static inline float4 LCH_2_Lab(float4 LCH)
 {
   const float L = LCH.x;
-  const float a = cos(DT_2PI_F*LCH.z) * LCH.y;
-  const float b = sin(DT_2PI_F*LCH.z) * LCH.y;
+  const float a = dtcl_cos(DT_2PI_F*LCH.z) * LCH.y;
+  const float b = dtcl_sin(DT_2PI_F*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
@@ -86,8 +86,8 @@ static inline float4 lab_f(float4 x)
 static inline float4 XYZ_to_Lab(float4 xyz)
 {
   float4 lab;
-  const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 1.0f);
-  xyz = lab_f(xyz / d50);
+  const float4 d50i = (float4)(1.0f / 0.9642f, 1.0f, 1.0f / 0.8249f, 1.0f);
+  xyz = lab_f(xyz * d50i);
   lab.x = 116.0f * xyz.y - 16.0f;
   lab.y = 500.0f * (xyz.x - xyz.y);
   lab.z = 200.0f * (xyz.y - xyz.z);
@@ -98,7 +98,7 @@ static inline float4 XYZ_to_Lab(float4 xyz)
 
 static inline float4 lab_f_inv(float4 x)
 {
-  const float4 epsilon = 0.20689655172413796f;
+  const float4 epsilon = 0.20689655172413796f; // cbrtf(216.0f/24389.0f
   const float4 kappa   = 24389.0f / 27.0f;
   return (x > epsilon) ? x*x*x : ((float4)116.0f * x - (float4)16.0f)/kappa;
 }

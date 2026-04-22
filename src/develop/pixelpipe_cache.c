@@ -374,7 +374,8 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const
 }
 
 void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
-                                             const int32_t order)
+                                             const int32_t order,
+                                             const char *info)
 {
   const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   int invalidated = 0;
@@ -394,13 +395,14 @@ void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
     dt_print_pipe(DT_DEBUG_PIPE,
     order ? "pipecache invalidate" : "pipecache flush",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i cachelines after ioporder=%i%s",
+    "%s%i cachelines after ioporder=%i%s",
+    info ? info : "",
     invalidated, order, bcache ? ", blend cache" : "");
 }
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
+  dt_dev_pixelpipe_cache_invalidate_later(pipe, 0, "flush: ");
 }
 
 void dt_dev_pixelpipe_important_cacheline(const dt_dev_pixelpipe_t *pipe,

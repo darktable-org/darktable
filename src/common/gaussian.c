@@ -927,10 +927,10 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   else
     return DT_OPENCL_PROCESS_CL;
 
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
-  size_t local[] = { blocksize, blocksize, 1 };
-  size_t sizes[3];
+  size_t origin[] = { 0, 0 };
+  size_t region[] = { width, height };
+  size_t local[2] = { blocksize, blocksize };
+  size_t sizes[2];
 
   // compute gaussian parameters
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
