@@ -77,9 +77,9 @@ static inline __m128 lab_f_m_sse2(const __m128 x)
 /** uses D50 white point. */
 static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 {
-  const __m128 d50 = _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f);
+  const __m128 d50 = _mm_set_ps(1.0f, 1.0f / 0.8249f, 1.0f, 1.0f / 0.9642f);
   const __m128 coef = _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f);
-  const __m128 f = lab_f_m_sse2(XYZ / d50);
+  const __m128 f = lab_f_m_sse2(XYZ * d50);
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return coef * (_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)) - _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3)));
 }
