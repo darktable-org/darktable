@@ -489,7 +489,7 @@ void distort_mask(dt_iop_module_t *self,
   if(roi_out->scale != roi_in->scale)
   {
     const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-    dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
+    dt_interpolation_resample_roi_mask(itor, out, roi_out, in, roi_in);
   }
   else
     dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);

@@ -179,11 +179,11 @@ int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor, int devid, 
                                      const dt_iop_roi_t *const roi_in);
 #endif
 
-void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
+void dt_interpolation_resample_mask(const dt_interpolation_t *itor,
                                   float *out, const dt_iop_roi_t *const roi_out,
                                   const float *const in, const dt_iop_roi_t *const roi_in);
 
-void dt_interpolation_resample_roi_1c(const dt_interpolation_t *itor,
+void dt_interpolation_resample_roi_mask(const dt_interpolation_t *itor,
                                       float *out, const dt_iop_roi_t *const roi_out,
                                       const float *const in, const dt_iop_roi_t *const roi_in);
 
