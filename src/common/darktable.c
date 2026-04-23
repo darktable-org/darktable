@@ -693,7 +693,7 @@ void dt_dump_pipe_diff_pfm(
     const size_t o1 = k + border;
     const size_t o2 = k + pk;
     /* we show a shaded image as background but mark NAN and inf locations */
-    const float shade = good ? 0.05f * sqrtf(CLIP(scale * fmaxf(0.0f, b[k]))) : 0.0f;
+    const float shade = good ? 0.02f * sqrtf(CLIP(scale * fmaxf(0.0f, b[k]))) : 0.0f;
     o[o1] = o[o2] = shade;
     o[o2 + pk-border] = good ? shade : 1.0f;
     /* diffs and ratios are only shown if signal is good */
@@ -706,9 +706,9 @@ void dt_dump_pipe_diff_pfm(
                           ? ((cval > gval ? cval / gval : gval / cval) - 1.0f)
                           : 0.0f;
       if(diff > 1e-7)
-        o[o1] = 0.3f + CLIP(100.0f * sqrtf(diff));
-      if(quot > 1e-3)
-        o[o2] = 0.3f + CLIP(10.0f * quot);
+        o[o1] = 0.2f + CLIP(100.0f * sqrtf(diff));
+      if(quot > 1e-5)
+        o[o2] = 0.2f + CLIP(10.0f * sqrtf(quot));
     }
     else
       invalids += 1;
