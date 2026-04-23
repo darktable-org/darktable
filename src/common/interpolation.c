@@ -1437,7 +1437,7 @@ int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor,
 /** Applies resampling (re-scaling) on *full* input and output buffers.
  *  roi_in and roi_out define the part of the buffers that is affected.
  */
-void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
+void dt_interpolation_resample_mask(const dt_interpolation_t *itor,
                                   float *out,
                                   const dt_iop_roi_t *const roi_out,
                                   const float *const in,
@@ -1464,7 +1464,7 @@ void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
   const gboolean copymode = roi_out->scale == 1.0f;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                copymode ? "resample 1:1" : "resample",
+                copymode ? "resample mask 1:1" : "resample mask",
                 NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s",
                 !copymode ? itor->name : (wd_fit && ht_fit) ? "inside" : "expanded");
 
@@ -1487,7 +1487,7 @@ void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
       else
         memset(o, 0, out_stride);
     }
-    dt_show_times_f(&start, "[resample_1c_plain]", "1:1 copy/crop of %dx%d pixels",
+    dt_show_times_f(&start, "[resample_mask]", "1:1 copy/crop of %dx%d pixels",
                     roi_in->width, roi_in->height);
     // All done, so easy case
     return;
@@ -1565,7 +1565,7 @@ void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
       // Output pixel is ready
       float *o = (float *)((char *)out + (size_t)oy * out_stride
                            + (size_t)ox * sizeof(float));
-      *o = fmaxf(0.0f, vs);
+      *o = CLIP(vs);  // masks never want under/overshoots from resampling
 
       // Reset vertical resampling context
       viidx -= vl;
@@ -1580,21 +1580,21 @@ void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
   exit:
   if(error)
     dt_print_pipe(DT_DEBUG_ALWAYS,
-      "resample 1c failed", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out);
+      "resample mask failed", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out);
 
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
-  _show_2_times(&start, &mid, "resample_1c_plain");
+  _show_2_times(&start, &mid, "resample_mask_plain");
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
  *  and output buffers hold exactly those roi's. roi_in and roi_out define the relative
  *  positions of the roi's within the full input and output image, respectively.
  */
-void dt_interpolation_resample_roi_1c(const dt_interpolation_t *itor,
+void dt_interpolation_resample_roi_mask(const dt_interpolation_t *itor,
                                       float *out,
                                       const dt_iop_roi_t *const roi_out,
                                       const float *const in,
@@ -1606,7 +1606,7 @@ void dt_interpolation_resample_roi_1c(const dt_interpolation_t *itor,
   dt_iop_roi_t iroi = *roi_in;
   iroi.x = iroi.y = 0;
 
-  dt_interpolation_resample_1c(itor, out, &oroi, in, &iroi);
+  dt_interpolation_resample_mask(itor, out, &oroi, in, &iroi);
 }
 
 // clang-format off
