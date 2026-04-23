@@ -41,12 +41,22 @@ typedef struct _workspace_t {
   char *selected_template;
 } dt_workspace_t;
 
-static gboolean _workspace_label_is_reserved(const char *label)
+static gboolean _workspace_label_is_default(const char *label)
 {
   return g_ascii_strcasecmp(label, "default") == 0
-    || g_ascii_strcasecmp(label, "memory") == 0
-    || strcmp(label, _("default")) == 0
+    || strcmp(label, _("default")) == 0;
+}
+
+static gboolean _workspace_label_is_memory(const char *label)
+{
+  return g_ascii_strcasecmp(label, "memory") == 0
     || strcmp(label, _("memory")) == 0;
+}
+
+static gboolean _workspace_label_is_reserved(const char *label)
+{
+  return _workspace_label_is_default(label)
+    || _workspace_label_is_memory(label);
 }
 
 static gboolean _workspace_db_file_exists(const char *datadir,
@@ -103,7 +113,7 @@ static void _workspace_copy_settings(const char *source_label,
   char source_rc[PATH_MAX] = { 0 };
   char dest_rc[PATH_MAX] = { 0 };
 
-  if(strcmp(source_label, "default") == 0)
+  if(_workspace_label_is_default(source_label))
   {
     snprintf(source_rc, sizeof(source_rc), "%s/darktablerc", datadir);
   }
@@ -209,6 +219,25 @@ static void _workspace_template_radio_toggled(GtkToggleButton *radio,
   session->selected_template = g_strdup(template_name);
 }
 
+static void _workspace_selected_template_sync_from_radios(dt_workspace_t *session)
+{
+  if(!session->template_radios) return;
+
+  for(GSList *l = session->template_radios; l; l = l->next)
+  {
+    GtkWidget *const radio = GTK_WIDGET(l->data);
+    if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio))) continue;
+
+    const gchar *const template_name =
+      g_object_get_data(G_OBJECT(radio), "template-name");
+    if(!template_name) return;
+
+    g_free(session->selected_template);
+    session->selected_template = g_strdup(template_name);
+    return;
+  }
+}
+
 static void _workspace_template_radios_set_visible(dt_workspace_t *session,
                                                    const gboolean visible)
 {
@@ -254,6 +283,8 @@ static void _workspace_copy_template_toggled(GtkToggleButton *check,
   const gboolean copy = gtk_toggle_button_get_active(check);
   _workspace_template_radios_set_visible(session, copy);
   gtk_widget_set_sensitive(session->memory_workspace_button, !copy);
+  if(copy)
+    _workspace_selected_template_sync_from_radios(session);
 }
 
 static void _workspace_delete_db(GtkWidget *button, dt_workspace_t *session)
@@ -333,12 +364,12 @@ static void _workspace_select_db(GtkWidget *button,
 
   const gchar *label = gtk_button_get_label(GTK_BUTTON(button));
 
-  if(strcmp(label, _("default")) == 0)
+  if(_workspace_label_is_default(label))
   {
     dt_conf_set_string("database", "library.db");
     dt_conf_set_string("workspace/label", "");
   }
-  else if(strcmp(label, _("memory")) == 0)
+  else if(_workspace_label_is_memory(label))
   {
     dt_conf_set_string("database", ":memory:");
     dt_conf_set_string("workspace/label", "memory");
@@ -395,10 +426,14 @@ static void _workspace_new_db(GtkWidget *button,
   dt_conf_set_string("workspace/label", label);
   g_free(dbname);
 
-  if(session->selected_template && strlen(session->selected_template) > 0)
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->copy_template_check)))
   {
-    _workspace_copy_settings(session->selected_template, label, session->datadir);
-    _workspace_sanitize_copied_settings(label, session->datadir);
+    _workspace_selected_template_sync_from_radios(session);
+    if(session->selected_template && strlen(session->selected_template) > 0)
+    {
+      _workspace_copy_settings(session->selected_template, label, session->datadir);
+      _workspace_sanitize_copied_settings(label, session->datadir);
+    }
   }
 
   g_free(label);
