@@ -778,23 +778,24 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
 
-  GtkWidget *dialog = gtk_file_chooser_dialog_new(
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
     _("install AI model"),
     GTK_WINDOW(data->parent_dialog),
     GTK_FILE_CHOOSER_ACTION_OPEN,
-    _("_cancel"), GTK_RESPONSE_CANCEL,
-    _("_open"), GTK_RESPONSE_ACCEPT,
-    NULL);
+    _("_open"), _("_cancel"));
 
   GtkFileFilter *filter = gtk_file_filter_new();
   gtk_file_filter_set_name(filter, _("AI model packages (*.dtmodel)"));
   gtk_file_filter_add_pattern(filter, "*.dtmodel");
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+  gtk_file_filter_add_pattern(filter, "*.DTMODEL");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser))
+     == GTK_RESPONSE_ACCEPT)
   {
-    char *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-    gtk_widget_destroy(dialog);
+    char *filepath
+      = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
     char *error = dt_ai_models_install_local(darktable.ai_registry, filepath);
     if(error)
@@ -816,10 +817,7 @@ static void _on_install_model(GtkButton *button, gpointer user_data)
     }
     g_free(filepath);
   }
-  else
-  {
-    gtk_widget_destroy(dialog);
-  }
+  g_object_unref(filechooser);
 }
 
 static void _on_delete_selected(GtkButton *button, gpointer user_data)
@@ -854,19 +852,17 @@ static void _on_delete_selected(GtkButton *button, gpointer user_data)
     return;
   }
 
-  // confirm deletion
-  GtkWidget *confirm = gtk_message_dialog_new(
-    GTK_WINDOW(data->parent_dialog),
-    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-    GTK_MESSAGE_QUESTION,
-    GTK_BUTTONS_YES_NO,
-    ngettext("delete %d selected model?", "delete %d selected models?", delete_count),
+  // confirm deletion (uses DT helper for consistent yes/no lowercase
+  // buttons with the rest of the UI, e.g. image deletion confirm)
+  const gboolean confirmed = dt_gui_show_yes_no_dialog(
+    ngettext("delete model?", "delete models?", delete_count),
+    "",
+    ngettext("do you really want to delete %d selected model?",
+             "do you really want to delete %d selected models?",
+             delete_count),
     delete_count);
 
-  gint response = gtk_dialog_run(GTK_DIALOG(confirm));
-  gtk_widget_destroy(confirm);
-
-  if(response == GTK_RESPONSE_YES)
+  if(confirmed)
   {
     gboolean any_deleted = FALSE;
     for(GList *l = to_delete; l; l = g_list_next(l))
@@ -1189,13 +1185,11 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
 
-  GtkWidget *chooser = gtk_file_chooser_dialog_new(
+  GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
     _("select ONNX Runtime library"),
     GTK_WINDOW(data->parent_dialog),
     GTK_FILE_CHOOSER_ACTION_OPEN,
-    _("_cancel"), GTK_RESPONSE_CANCEL,
-    _("_open"), GTK_RESPONSE_ACCEPT,
-    NULL);
+    _("_open"), _("_cancel"));
 
   // filter for shared libraries
   GtkFileFilter *filter = gtk_file_filter_new();
@@ -1224,10 +1218,11 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
   g_free(cur);
 
   gchar *filename = NULL;
-  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser))
+     == GTK_RESPONSE_ACCEPT)
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 
-  gtk_widget_destroy(chooser);
+  g_object_unref(chooser);
 
   if(filename)
   {
