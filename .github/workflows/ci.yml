@@ -61,7 +61,7 @@ jobs:
           - "ubuntu:26.04"
         compiler:
           - { compiler: GNU16,  CC: gcc-16,   CXX: g++-16,     packages: gcc-16 g++-16 }
-          - { compiler: LLVM21, CC: clang-21, CXX: clang++-21, packages: clang-21 libomp-21-dev llvm-21-dev libc++-21-dev libc++abi1 lld-21 clang-tools-21 mlir-21-tools libmlir-21-dev}
+          - { compiler: LLVM22, CC: clang-22, CXX: clang++-22, packages: clang-22 libomp-22-dev llvm-22-dev libc++-22-dev libc++abi1 lld-22 clang-tools-22 mlir-22-tools libmlir-22-dev}
         btype:
           - Release
         target:
