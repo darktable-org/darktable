@@ -1603,7 +1603,8 @@ static gboolean _event_button_release(GtkWidget *widget,
       else
       {
         if(table->mode != DT_THUMBTABLE_MODE_ZOOM
-           || !table->drag_thumb->moved)
+           ||
+           (table->drag_thumb && !table->drag_thumb->moved))
         {
           dt_selection_select_single(darktable.selection, id);
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
