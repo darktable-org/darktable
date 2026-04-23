@@ -36,6 +36,14 @@
       "default": false
     },
     {
+      "id": "rawdenoise-nind",
+      "name": "raw denoise nind",
+      "description": "UtNet2 raw denoiser trained on RawNIND dataset",
+      "task": "rawdenoise",
+      "github_asset": "rawdenoise-nind.dtmodel",
+      "default": true
+    },
+    {
       "id": "upscale-bsrgan",
       "name": "upscale bsrgan",
       "description": "BSRGAN 2x and 4x blind super-resolution",

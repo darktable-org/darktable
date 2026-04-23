@@ -332,7 +332,7 @@ static void test_load_opt_levels(void **state)
   // DT_AI_OPT_BASIC
   dt_ai_context_t *ctx_basic
     = dt_ai_load_model_ext(env, "test-multiply", NULL,
-                           DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC, NULL, 0);
+                           DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC, NULL, 0, 0);
   assert_non_null(ctx_basic);
 
   // verify inference still works with basic optimization
@@ -348,7 +348,7 @@ static void test_load_opt_levels(void **state)
   // DT_AI_OPT_DISABLED
   dt_ai_context_t *ctx_none
     = dt_ai_load_model_ext(env, "test-multiply", NULL,
-                           DT_AI_PROVIDER_CPU, DT_AI_OPT_DISABLED, NULL, 0);
+                           DT_AI_PROVIDER_CPU, DT_AI_OPT_DISABLED, NULL, 0, 0);
   assert_non_null(ctx_none);
   dt_ai_unload_model(ctx_none);
 }
