@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 22:36+0200\n"
-"PO-Revision-Date: 2026-04-22 22:42+0200\n"
+"POT-Creation-Date: 2026-04-23 11:32+0200\n"
+"PO-Revision-Date: 2026-04-23 12:23+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -980,8 +980,8 @@ msgid "lighttable"
 msgstr "Table lumineuse"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
-#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
-#: ../src/gui/preferences_ai.c:1288
+#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences_ai.c:1288
+#: ../src/gui/preferences.c:344
 msgid "general"
 msgstr "Général"
 
@@ -2537,8 +2537,8 @@ msgstr "Automne"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:527
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
-#: ../src/common/collection.c:1483 ../src/common/color_vocabulary.c:324
-#: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2395
+#: ../src/common/collection.c:1483 ../src/common/colorlabels.c:384
+#: ../src/common/color_vocabulary.c:324 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:4091 ../src/iop/bilateral.cc:381
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
@@ -2665,8 +2665,8 @@ msgstr "Générique"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:519
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
-#: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:277
-#: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2389
+#: ../src/common/collection.c:1481 ../src/common/colorlabels.c:383
+#: ../src/common/color_vocabulary.c:277 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:4090 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
 #: ../src/iop/channelmixer.c:611 ../src/iop/channelmixer.c:626
@@ -2725,7 +2725,7 @@ msgid "pastels"
 msgstr "Pastel"
 
 #: ../build/bin/styles_string.h:34 ../src/common/collection.c:1485
-#: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:385
+#: ../src/common/colorlabels.c:385 ../src/common/color_vocabulary.c:339
 #: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:264
 msgid "purple"
@@ -2740,8 +2740,8 @@ msgstr "Violet"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:507
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
-#: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:232
-#: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2383
+#: ../src/common/collection.c:1477 ../src/common/colorlabels.c:381
+#: ../src/common/color_vocabulary.c:232 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:4089 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
@@ -2842,8 +2842,8 @@ msgstr "Luminosité"
 #: ../src/iop/channelmixer.c:608 ../src/iop/colisa.c:274
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
-#: ../src/iop/colorcorrection.c:260 ../src/iop/colorharmonizer.c:1603
-#: ../src/iop/colorequal.c:3048 ../src/iop/colorize.c:358
+#: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3048
+#: ../src/iop/colorharmonizer.c:1603 ../src/iop/colorize.c:358
 #: ../src/iop/lowpass.c:576 ../src/iop/soften.c:376 ../src/iop/velvia.c:73
 #: ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
@@ -3153,18 +3153,22 @@ msgstr "Spécifique"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
 #: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
-#: ../src/develop/blend_gui.c:3431 ../src/gui/accelerators.c:153
-#: ../src/gui/accelerators.c:163 ../src/gui/accelerators.c:246
-#: ../src/imageio/format/avif.c:973 ../src/imageio/format/j2k.c:713
-#: ../src/libs/live_view.c:424
+#: ../src/develop/blend_gui.c:3431
+#: ../src/external/lua-scripts/official/auto_straighten.lua:141
+#: ../src/gui/accelerators.c:153 ../src/gui/accelerators.c:163
+#: ../src/gui/accelerators.c:246 ../src/imageio/format/avif.c:973
+#: ../src/imageio/format/j2k.c:713 ../src/libs/live_view.c:424
 msgid "off"
 msgstr "Désactivé(e)"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:367
+#: ../src/external/lua-scripts/official/auto_straighten.lua:141
 msgid "largest area"
 msgstr "Plus grande surface"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:368
+#: ../src/external/lua-scripts/official/auto_straighten.lua:140
+#: ../src/external/lua-scripts/official/auto_straighten.lua:141
 msgid "original format"
 msgstr "Format d’origine"
 
@@ -3443,7 +3447,7 @@ msgstr "Base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1320
+#: ../src/gui/preferences_ai.c:1320 ../src/gui/preferences.c:998
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -4005,6 +4009,51 @@ msgstr "Contraste vert ↔ magenta"
 msgid "blue-yellow contrast"
 msgstr "Contraste bleu ↔ jaune"
 
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:218
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
+msgid "saturation threshold"
+msgstr "Seuil de saturation"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:224
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
+msgid "hue curve"
+msgstr "Courbe de teinte"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
+msgid "white level"
+msgstr "Niveau du blanc"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
+msgid "hue analysis radius"
+msgstr "Rayon de l’analyse de teinte"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
+msgid "effect radius"
+msgstr "Rayon de l’effet"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
+msgid "use guided filter"
+msgstr "Utiliser un filtre guidé"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:296
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:344
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:392
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:563
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2928
+msgid "lavender"
+msgstr "Lavande"
+
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:404
+#: ../build/lib/darktable/plugins/introspection_colorequal.c:571
+msgid "node placement"
+msgstr "Placement des nœuds"
+
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:90
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:193
 msgid "harmony rule"
@@ -4102,51 +4151,6 @@ msgstr "Tétrade"
 #: ../src/libs/scopes/vectorscope.c:71
 msgid "square"
 msgstr "Carré"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:218
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:447
-msgid "saturation threshold"
-msgstr "Seuil de saturation"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:224
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:451
-msgid "hue curve"
-msgstr "Courbe de teinte"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:236
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:459
-msgid "white level"
-msgstr "Niveau du blanc"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:242
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:463
-msgid "hue analysis radius"
-msgstr "Rayon de l’analyse de teinte"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:248
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:467
-msgid "effect radius"
-msgstr "Rayon de l’effet"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:254
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:471
-msgid "use guided filter"
-msgstr "Utiliser un filtre guidé"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:296
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:344
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:392
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:499
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:531
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2928
-msgid "lavender"
-msgstr "Lavande"
-
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:404
-#: ../build/lib/darktable/plugins/introspection_colorequal.c:571
-msgid "node placement"
-msgstr "Placement des nœuds"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:150
 #: ../build/lib/darktable/plugins/introspection_colorin.c:233
@@ -6127,10 +6131,10 @@ msgstr "Menu déroulant"
 #: ../src/gui/accelerators.c:2616 ../src/gui/accelerators.c:2659
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
-#: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:609
+#: ../src/gui/hist_dialog.c:248 ../src/gui/preferences_ai.c:609
 #: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1109
-#: ../src/gui/preferences_ai.c:1196 ../src/gui/presets.c:430
+#: ../src/gui/preferences_ai.c:1196 ../src/gui/preferences.c:1221
+#: ../src/gui/preferences.c:1261 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:160 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
@@ -6717,6 +6721,139 @@ msgid_plural "<b>%d</b> images selected of <b>%d</b>"
 msgstr[0] "<b>%d</b> image sélectionnée parmi <b>%d</b>"
 msgstr[1] "<b>%d</b> images sélectionnées parmi <b>%d</b>"
 
+#: ../src/common/colorlabels.c:357
+#, c-format
+msgid "colorlabels set to %s"
+msgstr "Labels de couleur positionnés à « %s »"
+
+#: ../src/common/colorlabels.c:359
+msgid "all colorlabels removed"
+msgstr "Tous les labels de couleur sont supprimés"
+
+#: ../src/common/colorlabels.c:380
+#: ../src/external/lua-scripts/tools/executable_manager.lua:224
+#: ../src/gui/accelerators.c:193 ../src/libs/image.c:640
+msgid "clear"
+msgstr "Effacer"
+
+#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1778
+msgid "work profile"
+msgstr "Profil de travail"
+
+#: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1776
+#: ../src/views/darkroom.c:3177
+msgid "softproof profile"
+msgstr "Épreuvage écran"
+
+#: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1758
+msgid "system display profile"
+msgstr "Système"
+
+#: ../src/common/colorspaces.c:1446 ../src/common/colorspaces.c:1780
+msgid "system display profile (second window)"
+msgstr "Système (seconde fenêtre)"
+
+#: ../src/common/colorspaces.c:1459
+msgid "sRGB (web-safe)"
+msgstr "sRVB (web)"
+
+#: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1782
+msgid "Rec709 RGB"
+msgstr "Rec709 RVB"
+
+#: ../src/common/colorspaces.c:1494
+msgid "PQ Rec2020 RGB"
+msgstr "Rec2020 PQ RVB"
+
+#: ../src/common/colorspaces.c:1502
+msgid "HLG Rec2020 RGB"
+msgstr "Rec2020 HLG RVB"
+
+#: ../src/common/colorspaces.c:1509
+msgid "PQ P3 RGB"
+msgstr "P3 PQ RVB"
+
+#: ../src/common/colorspaces.c:1515
+msgid "HLG P3 RGB"
+msgstr "P3 HLG RVB"
+
+#: ../src/common/colorspaces.c:1522
+msgid "Display P3 RGB"
+msgstr "P3 Affichage RVB"
+
+#: ../src/common/colorspaces.c:1537 ../src/common/colorspaces.c:1752
+msgid "linear XYZ"
+msgstr "XYZ linéaire"
+
+#: ../src/common/colorspaces.c:1544 ../src/common/colorspaces.c:1754
+#: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2053
+#: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/common/colorspaces.c:1552 ../src/common/colorspaces.c:1756
+msgid "linear infrared BGR"
+msgstr "Infrarouge linéaire BVR"
+
+#: ../src/common/colorspaces.c:1557
+msgid "BRG (for testing)"
+msgstr "BRV (pour test)"
+
+#: ../src/common/colorspaces.c:1663
+#, c-format
+msgid ""
+"profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
+msgstr ""
+"Profil de sortie « %s » non approprié pour l’histogramme, remplacé par sRVB."
+
+#: ../src/common/colorspaces.c:1742
+msgid "no filename"
+msgstr "Pas de nom de fichier"
+
+#: ../src/common/colorspaces.c:1760
+msgid "embedded ICC profile"
+msgstr "Profil ICC intégré"
+
+#: ../src/common/colorspaces.c:1762
+msgid "embedded matrix"
+msgstr "Matrice intégrée"
+
+#: ../src/common/colorspaces.c:1764
+msgid "standard color matrix"
+msgstr "Matrice de couleur standard"
+
+#: ../src/common/colorspaces.c:1766
+msgid "enhanced color matrix"
+msgstr "Matrice de couleur améliorée"
+
+#: ../src/common/colorspaces.c:1768
+msgid "vendor color matrix"
+msgstr "Matrice de couleur du vendeur"
+
+#: ../src/common/colorspaces.c:1770
+msgid "alternate color matrix"
+msgstr "Alternative à la matrice de couleurs"
+
+#: ../src/common/colorspaces.c:1772
+msgid "BRG (experimental)"
+msgstr "BRV (expérimental)"
+
+#: ../src/common/colorspaces.c:1786
+msgid "PQ Rec2020"
+msgstr "Rec2020 PQ"
+
+#: ../src/common/colorspaces.c:1788
+msgid "HLG Rec2020"
+msgstr "Rec2020 HLG"
+
+#: ../src/common/colorspaces.c:1790
+msgid "PQ P3"
+msgstr "P3 PQ"
+
+#: ../src/common/colorspaces.c:1792
+msgid "HLG P3"
+msgstr "P3 HLG"
+
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2377
 #: ../src/develop/blend_gui.c:2425 ../src/gui/guides.c:851
 #: ../src/iop/channelmixerrgb.c:4656 ../src/iop/levels.c:675
@@ -6998,139 +7135,6 @@ msgstr "Magenta foncé"
 #: ../src/common/color_vocabulary.c:346
 msgid "color not found"
 msgstr "Couleur non trouvée"
-
-#: ../src/common/colorlabels.c:357
-#, c-format
-msgid "colorlabels set to %s"
-msgstr "Labels de couleur positionnés à « %s »"
-
-#: ../src/common/colorlabels.c:359
-msgid "all colorlabels removed"
-msgstr "Tous les labels de couleur sont supprimés"
-
-#: ../src/common/colorlabels.c:380
-#: ../src/external/lua-scripts/tools/executable_manager.lua:224
-#: ../src/gui/accelerators.c:193 ../src/libs/image.c:640
-msgid "clear"
-msgstr "Effacer"
-
-#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1778
-msgid "work profile"
-msgstr "Profil de travail"
-
-#: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1776
-#: ../src/views/darkroom.c:3177
-msgid "softproof profile"
-msgstr "Épreuvage écran"
-
-#: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1758
-msgid "system display profile"
-msgstr "Système"
-
-#: ../src/common/colorspaces.c:1446 ../src/common/colorspaces.c:1780
-msgid "system display profile (second window)"
-msgstr "Système (seconde fenêtre)"
-
-#: ../src/common/colorspaces.c:1459
-msgid "sRGB (web-safe)"
-msgstr "sRVB (web)"
-
-#: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1782
-msgid "Rec709 RGB"
-msgstr "Rec709 RVB"
-
-#: ../src/common/colorspaces.c:1494
-msgid "PQ Rec2020 RGB"
-msgstr "Rec2020 PQ RVB"
-
-#: ../src/common/colorspaces.c:1502
-msgid "HLG Rec2020 RGB"
-msgstr "Rec2020 HLG RVB"
-
-#: ../src/common/colorspaces.c:1509
-msgid "PQ P3 RGB"
-msgstr "P3 PQ RVB"
-
-#: ../src/common/colorspaces.c:1515
-msgid "HLG P3 RGB"
-msgstr "P3 HLG RVB"
-
-#: ../src/common/colorspaces.c:1522
-msgid "Display P3 RGB"
-msgstr "P3 Affichage RVB"
-
-#: ../src/common/colorspaces.c:1537 ../src/common/colorspaces.c:1752
-msgid "linear XYZ"
-msgstr "XYZ linéaire"
-
-#: ../src/common/colorspaces.c:1544 ../src/common/colorspaces.c:1754
-#: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2053
-#: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
-msgid "Lab"
-msgstr "Lab"
-
-#: ../src/common/colorspaces.c:1552 ../src/common/colorspaces.c:1756
-msgid "linear infrared BGR"
-msgstr "Infrarouge linéaire BVR"
-
-#: ../src/common/colorspaces.c:1557
-msgid "BRG (for testing)"
-msgstr "BRV (pour test)"
-
-#: ../src/common/colorspaces.c:1663
-#, c-format
-msgid ""
-"profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
-msgstr ""
-"Profil de sortie « %s » non approprié pour l’histogramme, remplacé par sRVB."
-
-#: ../src/common/colorspaces.c:1742
-msgid "no filename"
-msgstr "Pas de nom de fichier"
-
-#: ../src/common/colorspaces.c:1760
-msgid "embedded ICC profile"
-msgstr "Profil ICC intégré"
-
-#: ../src/common/colorspaces.c:1762
-msgid "embedded matrix"
-msgstr "Matrice intégrée"
-
-#: ../src/common/colorspaces.c:1764
-msgid "standard color matrix"
-msgstr "Matrice de couleur standard"
-
-#: ../src/common/colorspaces.c:1766
-msgid "enhanced color matrix"
-msgstr "Matrice de couleur améliorée"
-
-#: ../src/common/colorspaces.c:1768
-msgid "vendor color matrix"
-msgstr "Matrice de couleur du vendeur"
-
-#: ../src/common/colorspaces.c:1770
-msgid "alternate color matrix"
-msgstr "Alternative à la matrice de couleurs"
-
-#: ../src/common/colorspaces.c:1772
-msgid "BRG (experimental)"
-msgstr "BRV (expérimental)"
-
-#: ../src/common/colorspaces.c:1786
-msgid "PQ Rec2020"
-msgstr "Rec2020 PQ"
-
-#: ../src/common/colorspaces.c:1788
-msgid "HLG Rec2020"
-msgstr "Rec2020 HLG"
-
-#: ../src/common/colorspaces.c:1790
-msgid "PQ P3"
-msgstr "P3 PQ"
-
-#: ../src/common/colorspaces.c:1792
-msgid "HLG P3"
-msgstr "P3 HLG"
 
 #: ../src/common/cups_print.c:437
 #, c-format
@@ -7833,8 +7837,8 @@ msgid_plural "delete empty directories?"
 msgstr[0] "Supprimer le répertoire vide ?"
 msgstr[1] "Supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:361 ../src/gui/preferences.c:949
-#: ../src/gui/preferences_ai.c:1498 ../src/gui/styles_dialog.c:571
+#: ../src/common/film.c:361 ../src/gui/preferences_ai.c:1498
+#: ../src/gui/preferences.c:949 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "Nom"
@@ -7855,6 +7859,20 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "Il est nécessaire de copier le développement d’une image avant de le coller "
 "sur une autre"
+
+#: ../src/common/imagebuf.c:132
+msgid "insufficient memory"
+msgstr "Mémoire insuffisante"
+
+#: ../src/common/imagebuf.c:133
+msgid ""
+"this module was unable to allocate\n"
+"all of the memory required to process\n"
+"the image.  some or all processing\n"
+"has been skipped."
+msgstr ""
+"Ce module n’a pas pu allouer toute la mémoire nécessaire à son traitement,\n"
+"tout ou partie de celui-ci a été ignoré."
 
 #: ../src/common/image.c:346
 msgid "orphaned image"
@@ -8052,20 +8070,6 @@ msgstr "JPEG XL"
 #: ../src/common/image.h:235
 msgid "QOI"
 msgstr "QOI"
-
-#: ../src/common/imagebuf.c:132
-msgid "insufficient memory"
-msgstr "Mémoire insuffisante"
-
-#: ../src/common/imagebuf.c:133
-msgid ""
-"this module was unable to allocate\n"
-"all of the memory required to process\n"
-"the image.  some or all processing\n"
-"has been skipped."
-msgstr ""
-"Ce module n’a pas pu allouer toute la mémoire nécessaire à son traitement,\n"
-"tout ou partie de celui-ci a été ignoré."
 
 #: ../src/common/import_session.c:296
 msgid ""
@@ -9591,9 +9595,9 @@ msgid "reverse"
 msgstr "Inverser"
 
 #. add default workspace
-#: ../src/develop/blend_gui.c:140 ../src/gui/workspace.c:48
-#: ../src/gui/workspace.c:336 ../src/gui/workspace.c:547
-#: ../src/gui/preferences_ai.c:1563 ../src/imageio/format/webp.c:435
+#: ../src/develop/blend_gui.c:140 ../src/gui/preferences_ai.c:1563
+#: ../src/gui/workspace.c:48 ../src/gui/workspace.c:336
+#: ../src/gui/workspace.c:547 ../src/imageio/format/webp.c:435
 #: ../src/libs/styles.c:1029
 msgid "default"
 msgstr "Défaut"
@@ -11426,36 +11430,6 @@ msgstr "Non développées"
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent
 #. kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 #. clang-format on
-#. allow time for the error to display before script_manager writes it's error message
-#. allow time for the error to display before script_manager writes it's error message
-#.
-#. NAME
-#. prequire - a protected lua require
-#.
-#. SYNOPSIS
-#. local du = require "lib/dtutils"
-#.
-#. local result = du.prequire(req_name)
-#. req_name - the filename of the lua code to load without the ".lua" filetype
-#.
-#. DESCRIPTION
-#. prequire is a protected require that can survive an error in the code being loaded without
-#. bringing down the calling routine.
-#.
-#. RETURN VALUE
-#. result - the code or true on success, otherwise an error message
-#.
-#. EXAMPLE
-#. prequire("lib/dtutils.file") which would load lib/dtutils/file.lua
-#.
-#.
-#. Sort a table
-#. Code copied from http://stackoverflow.com/questions/15706270/sort-a-table-in-lua
-#. collect the keys
-#. if order function given, sort by it by passing the table and keys a, b,
-#. otherwise just sort the keys
-#. return the iterator function
-#. seed with os.time in seconds and add an extra degree of random for multiple calls in the same second
 #.
 #. This file is part of darktable,
 #. Copyright (c) 2014 Jérémy Rosen
@@ -11577,6 +11551,36 @@ msgstr "Non développées"
 #. we just need the filename, so grab it from the string
 #. Thanks, Tobias Jakobs  :-)
 #. these aren't valid for setting levels
+#. allow time for the error to display before script_manager writes it's error message
+#. allow time for the error to display before script_manager writes it's error message
+#.
+#. NAME
+#. prequire - a protected lua require
+#.
+#. SYNOPSIS
+#. local du = require "lib/dtutils"
+#.
+#. local result = du.prequire(req_name)
+#. req_name - the filename of the lua code to load without the ".lua" filetype
+#.
+#. DESCRIPTION
+#. prequire is a protected require that can survive an error in the code being loaded without
+#. bringing down the calling routine.
+#.
+#. RETURN VALUE
+#. result - the code or true on success, otherwise an error message
+#.
+#. EXAMPLE
+#. prequire("lib/dtutils.file") which would load lib/dtutils/file.lua
+#.
+#.
+#. Sort a table
+#. Code copied from http://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+#. collect the keys
+#. if order function given, sort by it by passing the table and keys a, b,
+#. otherwise just sort the keys
+#. return the iterator function
+#. seed with os.time in seconds and add an extra degree of random for multiple calls in the same second
 #. Keep &amp; first, otherwise it will double escape other characters
 #. A sanitized string must be quoted.
 #. A quoted string containing no quote characters within is sanitized.
@@ -12275,6 +12279,156 @@ msgid "apply darktable camera styles to selection"
 msgstr "Appliquer les styles de boîtier à la sélection"
 
 #.
+#.
+#. auto_straighten.lua - straighten an image in darkroom using image metadata
+#.
+#. Copyright (C) 2025 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. auto_straighten - straighten an image in darkroom using image metadata
+#.
+#. auto_straighten reads the roll and pitch angle imformation captured when
+#. an image is captured.  A correction is computed and applied to correct the
+#. roll to the nearest vertical or horizontal axis using the rotate and
+#. perspective module.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. exiftool - https://exiftool.org
+#.
+#. USAGE
+#. * add it sowewhere in your scripts directory
+#. * ensure exiftool is installed and accessible
+#. * enable it using script manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. LIMITATIONS
+#. * Roll and pitch angles are taken when an image is captured.  If you shoot
+#. in burst mode, the roll and pitch angles of the first image are used in
+#. the rest of the burst (at least for Canon).
+#. * If you are running multiple scripts that trigger on an image being opened
+#. in darkroom then the auto crop may not work.  There is a shortcut included
+#. that can have a key sequence assigned so that the auto crop will be reapplied.
+#. * Currently oply roll angle is corrected
+#.
+#. LIEENSE
+#. GPL V2
+#.
+#. local da = require "lib/dtutils.action"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/auto_straighten.lua:108
+msgid "auto_straighten"
+msgstr "Redressement auto"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/auto_straighten.lua:109
+msgid "straighten an image in darkroom using image metadata"
+msgstr "Redresser une image dans la chambre noire à l’aide des métadonnées"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/auto_straighten.lua:138
+msgid "automatic_cropping"
+msgstr "Recadrage automatique"
+
+#: ../src/external/lua-scripts/official/auto_straighten.lua:139
+msgid "what automatic cropping to perform"
+msgstr "Quelle recadrage automatique à effectuer"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#. Canon camera roll angle is as foillows
+#. * landscape orientation camera upright = 0
+#. * camera rolled to the left (shutter button up) portrait = -90
+#. * camera inverted landscape = +/- 180
+#. * camera rolled to the right (shutter button down) portrait = 90
+#.
+#. rotate and perspective corrections
+#. * rotate the image to the right is a negative correction
+#. * rotate the image left is a positive correction
+#.
+#. landscape
+#. roll left portrait
+#. inverted landscape
+#. roll right portrait
+#. Roll Angle 0 is landscape, -90 is rolled to the left in portrait, +- 180 is landscape inverted, 90 is portrait rolled to the right
+#. dt.gui.action("iop/ashift/automatic cropping", "selection", "item:" .. crop, 1.000)
+#. da.wait_until_pixelpipe_complete()
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/auto_straighten.lua:244
+msgid "exiftool not found, exiting..."
+msgstr "exiftool non trouvé, termine..."
+
+#. da.register_events(MODULE, straighten_image)
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -[[
+#. ]]
+#.
 #. This file is part of darktable,
 #. copyright (c) 2015 Tobias Ellinghaus
 #.
@@ -12670,6 +12824,200 @@ msgstr ""
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #. kate: hl Lua;
 #.
+#.
+#. extract_burst_roll_images.lua - extract burst images from a burst roll file
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. extract_burst_roll_images - extract burst images from a burst roll file
+#.
+#. Canon cameras are capable of shooting in burst mode.  When the shutter
+#. button is half pressed the camera starts "recording".  When the shutter is
+#. fully pressed the pervious 1/2 second of imformation is recorded as individual
+#. images stored in one file as well as images captured at 30 frames/sec until
+#. the buffer fills or the shutter button is released.  So a Canon R7 burst file
+#. could contain ~90 images.
+#.
+#. Extracting the images from this file required use of Canon proprietary software
+#. until recently when dnglab got the capability to extract the embedded images as
+#. DNG raws.
+#.
+#. This script can be set to run on import, scanning for burst roll containers,
+#. extracting the embedded images and grouping them with the burst roll container.
+#. The script can alsu be utilized via a short cut and applied to selected images.
+#.
+#. When set to on import the script scans each image after import using exiv2 or exiftool
+#. to check the image EXIF information to see if the file is a busrt roll container.
+#. Once the import images are scanned, the detected burst roll containers are processed,
+#. the embedded images extracted as DNSs, and grouped with the container image.
+#.
+#. In shortcut mode the user selects the burst roll containers manually and uses the shortcut
+#. to extract the embedded images as DNGs
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. - exiv2 - https://exiv2.org
+#. - exiftool - https://exiftool.org
+#. - dnglab - https://github.com/dnglab/dnglab
+#.
+#. USAGE
+#. - add the script to your lua scripts
+#. - enable in script manager
+#. - set the preferences in perferences->Lua options
+#.
+#. LIMITATIONS
+#. extract_burst_roll_images makes heavy use of external programs to identify burst roll
+#. containters and to extract the images.  Windows users may want to use it in shortcut mode
+#. to lessen the number of windows popping up.
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:106
+msgid "extract burst roll images"
+msgstr "Extraire les images d’une rafale"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:107
+msgid "extract burst images from a burst roll file"
+msgstr "Extraire les images d'une rafale à partir d’un fichier de rafale"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. exiv2 or exiftool
+#. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
+#. name
+#. type
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:164
+msgid "preferred exif tag reader"
+msgstr "Lecteur de métadonnées exif préféré"
+
+#. label
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:165
+msgid "use exiftool or exiv2 to read exif tags"
+msgstr "Utiliser exiftool ou exiv2 pour lire les métadonnées exif"
+
+#. tooltip
+#. default
+#. values
+#. run on import
+#. script: This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
+#. name
+#. type
+#. label
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:173
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:174
+msgid "extract burst roll images on import"
+msgstr "Extraire les images de rafale à l’import"
+
+#. tooltip
+#. default
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. skip blank lines created by forfiles
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:306
+#, lua-format
+msgid "extracted %d dng files from %s"
+msgstr "%d fichiers DNG extraits depuis « %s »"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:338
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:356
+msgid "scanning for burst roll images"
+msgstr "Recherche d’images en rafale"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:373
+msgid "extracting burst roll images"
+msgstr "Extraction les images d’une rafale"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:392
+msgid "dnglab executable not found"
+msgstr "exécutable dnglab non trouvé"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:393
+msgid ": dnglab executable not found, exiting..."
+msgstr ": exécutable dnglab non trouvé, termine..."
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:398
+msgid "no exif tag reader available"
+msgstr "Pas de lecteur de données exif disponible"
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:399
+msgid " no exif tag reader available, exiting..."
+msgstr " Pas de lecteur de métadonnée exif disponible, termine..."
+
+#: ../src/external/lua-scripts/official/extract_burst_roll_images.lua:407
+#, lua-format
+msgid " selected tag reader %s not available"
+msgstr " lecteur de mot-clés sélectionné « %s » non disponible"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
 #. This file is part of darktable,
 #. copyright (c) 2014 Tobias Ellinghaus
 #.
@@ -12757,6 +13105,158 @@ msgstr ""
 #. finally, run it
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent
 #. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
+#.
+#.
+#. group_persistence.lua - preserve groups between darktable instances
+#.
+#. Copyright (C) 2024-2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. group_persistence - preserve groups between darktable instances
+#.
+#. group_persistence uses "functional" tagging to maintain image groups
+#. across database instances, allowing image grouping to be restored when
+#. the database is rebuilt from the XMP sidecar files.
+#.
+#. Once the script is started it "listens" for changes in image grouping and
+#. applies or removes the necessary tags automatically.
+#.
+#. A shortcut can be assigned to read a collection and apply the necessary
+#. grouping tags so that existing collections can be maintained.
+#.
+#. If the database is lost and needs to be rebuilt then start the script before
+#. importing any images.  As images are imported the tags will be read and the
+#. grouping applied in the database.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#.
+#. None
+#.
+#. USAGE
+#.
+#. * Enable the script using script manager
+#. * Optionally, create a keystroke combination for the shortcut
+#.
+#. LIMITATIONS
+#.
+#. In normal use you wont notice that the script is running.
+#.
+#. However if you do something like import 4000+ images, then
+#. run the autogrouper script to create groups whenever there is
+#. a 5 second difference between 2 images, your system will be busy
+#. for awhile.  If for some reason you need to do something like this
+#. turn off group_persistence, run the autogrouper, turn on group_persistence
+#. and use the shortcut to read all the grouping information and apply
+#. the necessary tags.  It will still be an impact, but less than trying
+#. to do both at once.  Learned from experience :-)
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. name of script
+#: ../src/external/lua-scripts/official/group_persistence.lua:121
+msgid "preserve groups between darktable instances"
+msgstr "Préserver les groupes entre les sessions Darktable"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. table of imported images that need grouping rebuilt
+#. uuid to group leader mapping
+#. group leader to uuid mapping
+#. uuid to group tag mapping
+#. uuid to group leader tag mapping
+#. when the groups are rebuilt after import they
+#. cause the group change events to fire but the
+#. events are queued until after rebuilding completes
+#. so we need to build a table of images to ignore when
+#. the queued events catch up.  As the event fires for an
+#. image, the image is removed.
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. utilities for building/debugging
+#. rebuild grouping on import
+#. rebuild grouping on command (shortcut)
+#. handle grouping changes in the UI
+#. tag image as group leader
+#. create the uuid and leader/group tags if necessary
+#. add an image to a group
+#. create the group if necessary
+#. handle duplicate getting deleted
+#. there's either 1 or 0, so no group
+#. remove image group leader tag
+#. if it's the last image, then remove the leader/group tags
+#. remove an image from a group
+#. if it's the last image then remove the tags
+#. image.id > group_leder.id - simple remove
+#. image.id < group_leader.id - deleting old group_leader (image) with new group_leader (group_leader)
+#. remove the group leader tag from the old leader
+#. replace the old group leader tag with a group tag
+#. add the group leader tag to the new image
+#. event handling
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
 #.
 #. This file is part of darktable,
 #. copyright (c) 2014 Jérémy Rosen
@@ -12926,6 +13426,243 @@ msgstr "Filtrer l’importation"
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent
 #. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
 #.
+#.
+#. recent_bookmarks.lua - add recently edited and exported images to system recent bookmarks
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. recent_bookmarks - add recently edited and exported images to system recently used files
+#.
+#. recent_bookmarks adds images edited in darktable and the directory of images exported from
+#. darktable to the reccently-used.xbel file so that they show up in the recently used system
+#. shortcuts.
+#.
+#. Currently recent_bookmarks only works on Linux
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#.
+#. file - linux system file utility to get mime-type
+#.
+#. USAGE
+#.
+#. eanble from script manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:82
+msgid "recent_bookmarks"
+msgstr "Signets récents"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:83
+msgid "add recently edited and exported images to system recent bookmarks"
+msgstr ""
+"Ajouter les images récemment développées et exportées au signet système récent"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. format strings for writing the bookmarks
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. ------------------
+#. program functions
+#. ------------------
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:243
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:246
+msgid "failed to open bookmark file"
+msgstr "Impossible d’ouvrir le fichier de signets"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:275
+msgid " only  runs on Linux"
+msgstr "S’exécute seulement sur Linux"
+
+#: ../src/external/lua-scripts/official/recent_bookmarks.lua:281
+msgid "recent bookmarks file not found"
+msgstr "Le fichier des signets récents est introuvable"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#.
+#. regenerate_thumbnails.lua - regenerate mipmap cache for selected images
+#.
+#. Copyright (C) 2025 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. regenerate_thumbnails - regenerate mipmap cache for selected images
+#.
+#. regenerate_thumbnails drops the cached thumbnail for each selected image
+#. and generates a new thumbnail.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. * enable the script in script_manager
+#. * assign a shortcut, if desired, to apply the script by hovering
+#. over a skull and using the shortcut to regenerate the thumbnail
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:79
+msgid "regenerate_thumbnails"
+msgstr "Réinitialiser les miniatures"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:80
+msgid "regenerate mipmap cache for selected images"
+msgstr "Réinitialiser le cache des miniatures des images sélectionnées"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:215
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:219
+msgid "generate thumbnails"
+msgstr "Générer les miniatures"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
 #. This file is part of darktable,
 #. copyright (c) 2014 Jérémy Rosen
 #.
@@ -12989,6 +13726,386 @@ msgstr "Échange la sélection avec le tampon temporaire"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+#.
+#.
+#. scheduler.lua - provide scheduler services for multitasking
+#.
+#. Copyright (C) 2024 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. scheduler - provide scheduler services for multitasking
+#.
+#. scheduler implements a sinple first in first out (FIFO) scheduler
+#. necessary for lua script multitasking.
+#.
+#. Scripts voluntarily yield to the scheduler and they are placed at
+#. the end of the run queue.  The first item in the run queue is told
+#. to resume.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. start script from script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. name of script
+#: ../src/external/lua-scripts/official/scheduler.lua:99
+msgid "provide scheduler services for multitasking"
+msgstr "Fournis un ordonnanceur de services pour le multitâche"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. allow time for waiting scripts to start
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. put things to destroy (events, storages, etc) here
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. do nothing
+#.
+#.
+#. select_duplicates.lua - select duplicate images from a collection
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. select_duplicates - select duplicate images from a collection
+#.
+#. select_duplicates adds a button to the select module to select
+#. duplicate images from a collection.  If the selection2collection
+#. script is also active an option is available to have the selected
+#. duplicates appear as a temporary collection.
+#.
+#. A shortcut is available to select the duplicates from the collection
+#. but it is somewhat slower because it doesn't have access to the current
+#. image cache and therfore has to open each image separately.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#.
+#. None
+#.
+#. USAGE
+#.
+#. * enable in script manager
+#. * Press the button
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. skip if shortcut already registered
+#: ../src/external/lua-scripts/official/select_duplicates.lua:86
+#: ../src/external/lua-scripts/official/select_duplicates.lua:238
+#: ../src/external/lua-scripts/official/select_duplicates.lua:262
+msgid "select duplicates"
+msgstr "Sélectionner clones"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/select_duplicates.lua:87
+msgid "select duplicate images from a collection"
+msgstr "Sélectionne les clones d’une collection"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_duplicates.lua:131
+msgid " create collection from selection"
+msgstr "Créer une collection depuis la sélection"
+
+#: ../src/external/lua-scripts/official/select_duplicates.lua:132
+msgid "create collection of selected duplicates"
+msgstr "Créer une collection des images clones"
+
+#: ../src/external/lua-scripts/official/select_duplicates.lua:239
+msgid "select duplicated images"
+msgstr "Sélectionner les clones"
+
+#.
+#.
+#. selection2collection.lua - create a temporary collection from a selection
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. selection2collection - create a temporary collection from a selection
+#.
+#. selection2collection creates a temporary collection, using functional
+#. tagging, from a selection. The collection lasts until darktable exits
+#. and then the collections are removed, but not the images.
+#.
+#. To create the temporary collection, a function tag (darktable|functional|s2c)
+#. tag with a date and a time is applied to the selected images.  The collection
+#. module filters on the tag to display the connection.  More than one temporary
+#. collection can be created and collections can be changed by selecting the
+#. appropriate tag.
+#.
+#. The tags are autmatically destroyed when darktable exits, thus removing the
+#. collections.  There is a preference in the Lua options to keep the collections
+#. across darktable runs.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#.
+#. None
+#.
+#. USAGE
+#.
+#. * start from script_manager
+#. * make a selection
+#. * click the create temporary collection button the the actions on selected images
+#. module
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#.
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/selection2collection.lua:94
+msgid "selection2collection"
+msgstr "Sélection en collection"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/selection2collection.lua:95
+msgid "create a temporary collection from a selection"
+msgstr "Créer une collection temporaire depuis la sélection"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. script specific
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/selection2collection.lua:144
+msgid " keep collections created from selection"
+msgstr " Conserver les collections créées depuis les sélections"
+
+#: ../src/external/lua-scripts/official/selection2collection.lua:145
+msgid "keep collections created from selections"
+msgstr "Conserver les collections créées à partir des sélections"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. -----------------
+#. program functions
+#. -----------------
+#. dt.gui.libs.collect.filter returns the previous rule set when you install another
+#: ../src/external/lua-scripts/official/selection2collection.lua:269
+msgid "not enough images to create a collection"
+msgstr "Pas assez d’images pour créer une collection"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/selection2collection.lua:300
+msgid "create temporary collection"
+msgstr "Créer une collection temporaire"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. skip if shortcut already registered
+#: ../src/external/lua-scripts/official/selection2collection.lua:304
+#: ../src/external/lua-scripts/official/selection2collection.lua:335
+msgid "convert selection to collection"
+msgstr "Convertir la sélection en collection"
+
 #.
 #. This file is part of darktable,
 #. copyright (c) 2015 Jérémy Rosen & Pascal Obry
@@ -13090,6 +14207,363 @@ msgstr "Problème lors de l’exécution de l’afficheur PDF"
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #.
+#.
+#. select_raw_non_raw.lua - select raw or non raw files from a collection
+#.
+#. Copyright (C) 2025 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. select_raw_non_raw - select raw or non raw files from a collection
+#.
+#. select_raw_non_raw adds two selection buttons, one to select raw
+#. images and one to select non raw images.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. * enable the script with script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. name of script
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
+msgid "select raw or non raw files from collection"
+msgstr "Sélectionner fichier RAW et non-RAW d’une collection"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:159
+msgid "select raw"
+msgstr "Sélectionner un RAW"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:160
+msgid "select raw files"
+msgstr "Sélectionner fichiers RAW"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
+msgid "select non raw"
+msgstr "Sélectionner non RAW"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
+msgid "select non raw files"
+msgstr "Sélectionner fichier non RAW"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. put things to destroy (events, storages, etc) here
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#.
+#. select_unaltered.lua - select images that have not been altered in any way
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. select_unaltered - select images that have not been altered in any way
+#.
+#. select_unaltered selects images from the current collection that have not
+#. been altered in any way.  In other words just imported into darktable, not
+#. loaded into darkroom nor having any style applied.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. * enable with script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/select_unaltered.lua:78
+msgid "select_unaltered"
+msgstr "Sélectionner non développées"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/select_unaltered.lua:79
+msgid "select images that have not been altered in any way"
+msgstr ""
+"Sélectionne les images qui n’ont pas été modifiées d’une quelconque manière"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_unaltered.lua:151
+msgid "select unaltered"
+msgstr "Sélectionner non développées"
+
+#: ../src/external/lua-scripts/official/select_unaltered.lua:152
+msgid "select unaltered files"
+msgstr "Sélectionner fichiers non édités"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#.
+#. use_paired_jpg_as_mipmap.lua - Use the JPG from the RAW JPG pair as the full size mipmap
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. use_paired_jpg_as_mipmap - Use the JPG from the RAW JPG pair as the full size mipmap
+#.
+#. use_paired_jpg_as_mipmap looks for RAW+JPEG image pairs as images are imported.  After
+#. import the JPEG image is copied to the mipmap cache as the full resolution mipmap. Requests
+#. for smaller mipmap sizes can be satisfied by down sampling the full resolution mipmap.  User's can
+#. decide whether or not to keep the paired JPEG files.  The default is to keep them.  If the
+#. user doesn't want them, they are deleted after being copied to the mipmap cache.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#.
+#. None
+#.
+#. USAGE
+#.
+#. - Add the script to the lua-scripts
+#. - Enable the script
+#. - Turn off the keep_jpgs preference if the JPEGS are not wanted
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:84
+msgid "use paired jpg as mipmap"
+msgstr "Utiliser le JPEG apparié comme mipmap"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:85
+msgid "Use the JPG from the RAW JPG pair as the full size mipmap"
+msgstr ""
+"Utiliser les JPEG depuis le couple RAW+JPEG comme mipmap pleine résolution"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. max mipmap size - 5.4.x = 8, after is 10
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:134
+msgid "keep JPEG files"
+msgstr "Conserver les fichiers JPEG"
+
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:135
+msgid "don't delete JPEGs after copying them to mipmap folder"
+msgstr ""
+"Ne pas supprimer les JPEG après les avoir copiés dans le dossier mipmap "
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. if dt.collection is equal to count there are no
+#. RAW+JPEG pairs
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:240
+msgid "No RAW+JPEG pairs to process"
+msgstr "Aucun couple RAW+JPEG à traiter"
+
+#: ../src/external/lua-scripts/official/use_paired_jpg_as_mipmap.lua:244
+msgid "Generating cache from jpgs"
+msgstr "Génération du cache depuis JPEG"
+
+#. v["raw"]:generate_cache(true, 6, 6)
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
 #. This file is part of darktable,
 #. copyright (c) 2018 Bill Ferguson
 #.
@@ -13186,6 +14660,24 @@ msgstr "Supprimer le chemin pour %s"
 
 #. register the lib
 #.
+#. get_libdoc.lua - retrieve the included library documentation and output it
+#.
+#. Copyright (c) 2016, Bill Ferguson
+#.
+#. nothing to destroy
+#. find the libraries
+#. loop through the libraries
+#. print the documentation for the library
+#. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:65
+msgid "get library docs"
+msgstr "Récupérer la documentation"
+
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:66
+msgid "retrieve and print the documentation to the console"
+msgstr "Récupère et affiche la documentation dans la console"
+
+#.
 #. get_lib_manpages.lua - retrieve the included library documentation and output it as man pages
 #.
 #. Copyright (c) 2016, Bill Ferguson
@@ -13203,24 +14695,6 @@ msgstr "Récupère le documentation en format page de manuel"
 msgid "output the internal library documentation as man pages"
 msgstr ""
 "Générer la documentation de la bibliothèque interne comme pages de manuel"
-
-#.
-#. get_libdoc.lua - retrieve the included library documentation and output it
-#.
-#. Copyright (c) 2016, Bill Ferguson
-#.
-#. nothing to destroy
-#. find the libraries
-#. loop through the libraries
-#. print the documentation for the library
-#. print the documentation for each of the functions
-#: ../src/external/lua-scripts/tools/get_libdoc.lua:65
-msgid "get library docs"
-msgstr "Récupérer la documentation"
-
-#: ../src/external/lua-scripts/tools/get_libdoc.lua:66
-msgid "retrieve and print the documentation to the console"
-msgstr "Récupère et affiche la documentation dans la console"
 
 #.
 #. This file is part of darktable,
@@ -14605,84 +16079,6 @@ msgstr "« %s » est assigné à « %s »"
 msgid "short key press resets stuck keys"
 msgstr "Une pression courte réinitialise les touches bloquées"
 
-#. add a memory workspace just after default one
-#: ../src/gui/workspace.c:49 ../src/gui/workspace.c:341
-#: ../src/gui/workspace.c:549
-msgid "memory"
-msgstr "Mémoire"
-
-#: ../src/gui/workspace.c:265
-msgid "delete workspace"
-msgstr "Supprimer l’espace de travail"
-
-#: ../src/gui/workspace.c:266
-#, c-format
-msgid ""
-"WARNING\n"
-"\n"
-"do you really want to delete the '%s' workspace?\n"
-"\n"
-"if XMP writing is not activated, the editing work will be lost."
-msgstr ""
-"ATTENTION\n"
-"\n"
-"Voulez-vous réellement supprimer l’espace de travail « %s » ?\n"
-"\n"
-"Si l’écriture des XMP n'est pas activé, le travail d'édition sera perdu."
-
-#: ../src/gui/workspace.c:374 ../src/gui/workspace.c:387
-msgid "create workspace"
-msgstr "Créer un espace de travail"
-
-#: ../src/gui/workspace.c:375
-msgid ""
-"WARNING\n"
-"\n"
-"the names \"default\" and \"memory\" are reserved.\n"
-"\n"
-"choose a different name."
-msgstr ""
-"ATTENTION\n"
-"\n"
-"Les noms « Défaut » et « Mémoire » sont réservés.\n"
-"\n"
-"Choisir un nom différent."
-
-#: ../src/gui/workspace.c:384
-#, c-format
-msgid ""
-"WARNING\n"
-"\n"
-"a workspace named \"%s\" already exists.\n"
-"\n"
-"choose a different name."
-msgstr ""
-"ATTENTION\n"
-"\n"
-"Un espace de travail nommé « %s » existe déjà.\n"
-"\n"
-"Choisir un nom différent."
-
-#: ../src/gui/workspace.c:528
-msgid "darktable - select a workspace"
-msgstr "Darktable - Sélectionner un espace de travail"
-
-#: ../src/gui/workspace.c:540
-msgid "select an existing workspace"
-msgstr "Sélectionner un espace de travail existant"
-
-#: ../src/gui/workspace.c:582
-msgid "or create a new one"
-msgstr "Ou en créer un nouveau"
-
-#: ../src/gui/workspace.c:590 ../src/libs/session.c:104
-msgid "create"
-msgstr "Créer"
-
-#: ../src/gui/workspace.c:605
-msgid "copy settings from existing workspace"
-msgstr "Copier les paramètres d’un espace de travail existant"
-
 #: ../src/gui/gtk.c:194 ../src/views/darkroom.c:4822
 msgid "darktable - darkroom preview"
 msgstr "Darktable - prévisualisation en chambre noire"
@@ -15271,6 +16667,287 @@ msgstr ""
 "Liste des mots-clés disponibles. Cliquer sur « ajouter » ou double cliquer "
 "sur un mot-clé pour l’ajouter."
 
+#: ../src/gui/preferences_ai.c:158
+msgid "downloaded"
+msgstr "Téléchargé"
+
+#: ../src/gui/preferences_ai.c:160
+msgid "update available"
+msgstr "Mise à jour disponible"
+
+#: ../src/gui/preferences_ai.c:162
+msgid "update required"
+msgstr "Mise à jour requise"
+
+#: ../src/gui/preferences_ai.c:164
+msgid "downloading..."
+msgstr "Téléchargement..."
+
+#: ../src/gui/preferences_ai.c:168
+msgid "not downloaded"
+msgstr "Pas téléchargé"
+
+#: ../src/gui/preferences_ai.c:347
+msgid "<i>not available, will fall back to CPU</i>"
+msgstr "<i>Non disponible, repli vers le CPU</i>"
+
+#: ../src/gui/preferences_ai.c:606
+msgid "downloading AI model"
+msgstr "Téléchargement modèle IA"
+
+#: ../src/gui/preferences_ai.c:621
+#, c-format
+msgid "downloading: %s"
+msgstr "Téléchargement de « %s "
+
+#: ../src/gui/preferences_ai.c:782
+msgid "install AI model"
+msgstr "Installer le modèle IA"
+
+#: ../src/gui/preferences_ai.c:786 ../src/gui/preferences_ai.c:1197
+#: ../src/gui/preferences.c:1221 ../src/gui/welcome.c:160
+#: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
+#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
+#: ../src/libs/import.c:1927 ../src/libs/styles.c:595
+msgid "_open"
+msgstr "_Ouvrir"
+
+#: ../src/gui/preferences_ai.c:790
+msgid "AI model packages (*.dtmodel)"
+msgstr "Paquets modèles IA (*.dtmodel)"
+
+#: ../src/gui/preferences_ai.c:863
+#, c-format
+msgid "delete %d selected model?"
+msgid_plural "delete %d selected models?"
+msgstr[0] "Supprimer %d modèle sélectionné ?"
+msgstr[1] "Supprimer %d modèles sélectionnés ?"
+
+#: ../src/gui/preferences_ai.c:925
+msgid "scope"
+msgstr "Périmètre"
+
+#: ../src/gui/preferences_ai.c:925
+msgid "author"
+msgstr "Auteur"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "source"
+msgstr "Source"
+
+#: ../src/gui/preferences_ai.c:926
+msgid "paper"
+msgstr "Papier"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "license"
+msgstr "Licence"
+
+#: ../src/gui/preferences_ai.c:927
+msgid "training data"
+msgstr "Données d’entraînement"
+
+#: ../src/gui/preferences_ai.c:928
+msgid "data license"
+msgstr "Licence des données"
+
+#: ../src/gui/preferences_ai.c:1003
+msgid "click for model details"
+msgstr "Cliquer pour les détails du modèle"
+
+#: ../src/gui/preferences_ai.c:1060
+#, c-format
+msgid ""
+"ONNX Runtime %s detected.\n"
+"Restart darktable to apply."
+msgstr ""
+"Bibliothèque ONNX « %s » détectée.\n"
+"Redémarrage de Darktable nécessaire. "
+
+#: ../src/gui/preferences_ai.c:1065
+#, c-format
+msgid ""
+"not a valid ONNX Runtime library:\n"
+"%s"
+msgstr ""
+"Pas une bibliothèque ONNX valide :\n"
+"« %s »"
+
+#: ../src/gui/preferences_ai.c:1082
+msgid ""
+"no system ONNX Runtime library found.\n"
+"\n"
+"install one via your package manager or use\n"
+"the browse button to select a custom build."
+msgstr ""
+"Pas de bibliothèque ONNX trouvée.\n"
+"\n"
+"Installer ONNX depuis le système de paquet ou utiliser\n"
+"le bouton pour sélectionner une construction personnalisée."
+
+#: ../src/gui/preferences_ai.c:1098
+#, c-format
+msgid ""
+"ONNX Runtime %s [%s]\n"
+"%s\n"
+"\n"
+"Restart darktable to apply."
+msgstr ""
+"Bibliothèque ONNX « %s » [%s]\n"
+"« %s »\n"
+"\n"
+"Redémarrage nécessaire."
+
+#: ../src/gui/preferences_ai.c:1106 ../src/gui/preferences_ai.c:1193
+msgid "select ONNX Runtime library"
+msgstr "Sélectionner la bibliothèque ONNX"
+
+#: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
+msgid "_select"
+msgstr "Sélection"
+
+#: ../src/gui/preferences_ai.c:1116
+msgid "multiple ONNX Runtime libraries found:"
+msgstr "Plusieurs bibliothèques ONNX trouvées :"
+
+#: ../src/gui/preferences_ai.c:1203
+msgid "ONNX Runtime (onnxruntime*.dll)"
+msgstr "Bibliothèque ONNX (onnxruntime*.dll)"
+
+#: ../src/gui/preferences_ai.c:1206
+msgid "ONNX Runtime (libonnxruntime.so*)"
+msgstr "Bibliothèque ONNX (libonnxruntime.so*)"
+
+#: ../src/gui/preferences_ai.c:1212 ../src/gui/preferences.c:1235
+#: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
+#: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
+msgid "all files"
+msgstr "Tous les fichiers"
+
+#. enable AI toggle
+#: ../src/gui/preferences_ai.c:1259
+msgid "enable AI features"
+msgstr "Active les fonctions IA"
+
+#. provider dropdown
+#: ../src/gui/preferences_ai.c:1304
+msgid "execution provider"
+msgstr "Fournisseur d'exécution"
+
+#. populate from central provider table, skipping unavailable providers
+#: ../src/gui/preferences_ai.c:1315
+msgid "select hardware acceleration for AI inference:"
+msgstr "Sélectionner le mode d'accélération pour les inférences IA :"
+
+#: ../src/gui/preferences_ai.c:1359
+msgid "ONNX Runtime library"
+msgstr "Bibliothèque ONNX"
+
+#: ../src/gui/preferences_ai.c:1373
+msgid "bundled (DirectML)"
+msgstr "Intégré (DirectML)"
+
+#: ../src/gui/preferences_ai.c:1376
+msgid "bundled (CPU only)"
+msgstr "Embarqué (CPU seulement)"
+
+#: ../src/gui/preferences_ai.c:1379
+msgid ""
+"path to a GPU-enabled ONNX Runtime library.\n"
+"leave empty to use the bundled library.\n"
+"requires restart to take effect."
+msgstr ""
+"Chemin vers une bibliothèque GPU ONNX.\n"
+"Laisser vide pour utiliser la bibliothèque embarquée.\n"
+"Redémarrage nécessaire."
+
+#: ../src/gui/preferences_ai.c:1388
+msgid "select a custom ONNX Runtime shared library"
+msgstr "Sélectionne une bibliothèque partagée ONNX personnalisée"
+
+#: ../src/gui/preferences_ai.c:1390
+msgid "detect"
+msgstr "Détecter"
+
+#: ../src/gui/preferences_ai.c:1392
+msgid "search for a system-installed ONNX Runtime library"
+msgstr "Recherche d’une bibliothèque système ONNX "
+
+#: ../src/gui/preferences_ai.c:1427
+msgid "models"
+msgstr "Modèles"
+
+#: ../src/gui/preferences_ai.c:1474
+msgid "select/deselect all"
+msgstr "Tout sélectionner/désélectionner"
+
+#: ../src/gui/preferences_ai.c:1520 ../src/libs/metadata_view.c:137
+msgid "version"
+msgstr "Version"
+
+#: ../src/gui/preferences_ai.c:1529
+msgid "task"
+msgstr "Tâche"
+
+#: ../src/gui/preferences_ai.c:1544
+msgid "enabled"
+msgstr "Activé"
+
+#: ../src/gui/preferences_ai.c:1554
+msgid "status"
+msgstr "État"
+
+#. download selected button
+#: ../src/gui/preferences_ai.c:1596
+msgid "download selected"
+msgstr "Télécharger la sélection"
+
+#: ../src/gui/preferences_ai.c:1598
+msgid "download or update the selected models"
+msgstr "Télécharger ou mettre à jour tous les modèles sélectionnés"
+
+#. download default button
+#: ../src/gui/preferences_ai.c:1607
+msgid "download default"
+msgstr "Télécharger les défauts"
+
+#: ../src/gui/preferences_ai.c:1609
+msgid "download or update all default models"
+msgstr "Télécharger ou mettre à jour tous les modèles par défaut"
+
+#. download all button
+#: ../src/gui/preferences_ai.c:1618
+msgid "download all"
+msgstr "Tout télécharger"
+
+#: ../src/gui/preferences_ai.c:1620
+msgid "download or update all available models"
+msgstr "Télécharger ou mettre à jour tous les modèles disponibles"
+
+#. install model button
+#: ../src/gui/preferences_ai.c:1626
+msgid "install model"
+msgstr "Installer modèle"
+
+#: ../src/gui/preferences_ai.c:1628
+msgid "install a model from a local .dtmodel file"
+msgstr "Installer un modèle depuis un fichier « .dtmodel » local"
+
+#. delete selected button
+#: ../src/gui/preferences_ai.c:1633
+msgid "delete selected"
+msgstr "Supprimer les sélectionnés"
+
+#: ../src/gui/preferences_ai.c:1635
+msgid "remove the selected models from disk"
+msgstr "Supprimer les modèles sélectionnés du disque"
+
+#. add to stack
+#: ../src/gui/preferences_ai.c:1651
+msgid "AI"
+msgstr "IA"
+
 #: ../src/gui/preferences.c:314
 msgid "reset panels in all views"
 msgstr "Réinitialiser les panneaux dans toutes les vues"
@@ -15437,290 +17114,9 @@ msgstr "Échec d’importation du préréglage « %s »"
 msgid "select preset(s) to import"
 msgstr "Sélectionne le(s) préréglage(s) à importer"
 
-#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:786
-#: ../src/gui/preferences_ai.c:1197 ../src/gui/welcome.c:160
-#: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
-#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
-#: ../src/libs/import.c:1927 ../src/libs/styles.c:595
-msgid "_open"
-msgstr "_Ouvrir"
-
 #: ../src/gui/preferences.c:1230
 msgid "darktable preset files"
 msgstr "Fichiers de préréglage"
-
-#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1212
-#: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
-#: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
-msgid "all files"
-msgstr "Tous les fichiers"
-
-#: ../src/gui/preferences_ai.c:158
-msgid "downloaded"
-msgstr "Téléchargé"
-
-#: ../src/gui/preferences_ai.c:160
-msgid "update available"
-msgstr "Mise à jour disponible"
-
-#: ../src/gui/preferences_ai.c:162
-msgid "update required"
-msgstr "Mise à jour requise"
-
-#: ../src/gui/preferences_ai.c:164
-msgid "downloading..."
-msgstr "Téléchargement..."
-
-#: ../src/gui/preferences_ai.c:168
-msgid "not downloaded"
-msgstr "Pas téléchargé"
-
-#: ../src/gui/preferences_ai.c:347
-msgid "<i>not available, will fall back to CPU</i>"
-msgstr "<i>Non disponible, repli vers le CPU</i>"
-
-#: ../src/gui/preferences_ai.c:606
-msgid "downloading AI model"
-msgstr "Téléchargement modèle IA"
-
-#: ../src/gui/preferences_ai.c:621
-#, c-format
-msgid "downloading: %s"
-msgstr "Téléchargement de « %s "
-
-#: ../src/gui/preferences_ai.c:782
-msgid "install AI model"
-msgstr "Installer le modèle IA"
-
-#: ../src/gui/preferences_ai.c:790
-msgid "AI model packages (*.dtmodel)"
-msgstr "Paquets modèles IA (*.dtmodel)"
-
-#: ../src/gui/preferences_ai.c:863
-#, c-format
-msgid "delete %d selected model?"
-msgid_plural "delete %d selected models?"
-msgstr[0] "Supprimer %d modèle sélectionné ?"
-msgstr[1] "Supprimer %d modèles sélectionnés ?"
-
-#: ../src/gui/preferences_ai.c:925
-msgid "scope"
-msgstr "Périmètre"
-
-#: ../src/gui/preferences_ai.c:925
-msgid "author"
-msgstr "Auteur"
-
-#: ../src/gui/preferences_ai.c:926
-msgid "source"
-msgstr "Source"
-
-#: ../src/gui/preferences_ai.c:926
-msgid "paper"
-msgstr "Papier"
-
-#: ../src/gui/preferences_ai.c:927
-msgid "license"
-msgstr "Licence"
-
-#: ../src/gui/preferences_ai.c:927
-msgid "training data"
-msgstr "Données d’entraînement"
-
-#: ../src/gui/preferences_ai.c:928
-msgid "data license"
-msgstr "Licence des données"
-
-#: ../src/gui/preferences_ai.c:1003
-msgid "click for model details"
-msgstr "Cliquer pour les détails du modèle"
-
-#: ../src/gui/preferences_ai.c:1060
-#, c-format
-msgid ""
-"ONNX Runtime %s detected.\n"
-"Restart darktable to apply."
-msgstr ""
-"Bibliothèque ONNX « %s » détectée.\n"
-"Redémarrage de Darktable nécessaire. "
-
-#: ../src/gui/preferences_ai.c:1065
-#, c-format
-msgid ""
-"not a valid ONNX Runtime library:\n"
-"%s"
-msgstr ""
-"Pas une bibliothèque ONNX valide :\n"
-"« %s »"
-
-#: ../src/gui/preferences_ai.c:1082
-msgid ""
-"no system ONNX Runtime library found.\n"
-"\n"
-"install one via your package manager or use\n"
-"the browse button to select a custom build."
-msgstr ""
-"Pas de bibliothèque ONNX trouvée.\n"
-"\n"
-"Installer ONNX depuis le système de paquet ou utiliser\n"
-"le bouton pour sélectionner une construction personnalisée."
-
-#: ../src/gui/preferences_ai.c:1098
-#, c-format
-msgid ""
-"ONNX Runtime %s [%s]\n"
-"%s\n"
-"\n"
-"Restart darktable to apply."
-msgstr ""
-"Bibliothèque ONNX « %s » [%s]\n"
-"« %s »\n"
-"\n"
-"Redémarrage nécessaire."
-
-#: ../src/gui/preferences_ai.c:1106 ../src/gui/preferences_ai.c:1193
-msgid "select ONNX Runtime library"
-msgstr "Sélectionner la bibliothèque ONNX"
-
-#: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
-msgid "_select"
-msgstr "Sélection"
-
-#: ../src/gui/preferences_ai.c:1116
-msgid "multiple ONNX Runtime libraries found:"
-msgstr "Plusieurs bibliothèques ONNX trouvées :"
-
-#: ../src/gui/preferences_ai.c:1203
-msgid "ONNX Runtime (onnxruntime*.dll)"
-msgstr "Bibliothèque ONNX (onnxruntime*.dll)"
-
-#: ../src/gui/preferences_ai.c:1206
-msgid "ONNX Runtime (libonnxruntime.so*)"
-msgstr "Bibliothèque ONNX (libonnxruntime.so*)"
-
-#. enable AI toggle
-#: ../src/gui/preferences_ai.c:1259
-msgid "enable AI features"
-msgstr "Active les fonctions IA"
-
-#. provider dropdown
-#: ../src/gui/preferences_ai.c:1304
-msgid "execution provider"
-msgstr "Fournisseur d'exécution"
-
-#. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1315
-msgid "select hardware acceleration for AI inference:"
-msgstr "Sélectionner le mode d'accélération pour les inférences IA :"
-
-#: ../src/gui/preferences_ai.c:1359
-msgid "ONNX Runtime library"
-msgstr "Bibliothèque ONNX"
-
-#: ../src/gui/preferences_ai.c:1373
-msgid "bundled (DirectML)"
-msgstr "Intégré (DirectML)"
-
-#: ../src/gui/preferences_ai.c:1376
-msgid "bundled (CPU only)"
-msgstr "Embarqué (CPU seulement)"
-
-#: ../src/gui/preferences_ai.c:1379
-msgid ""
-"path to a GPU-enabled ONNX Runtime library.\n"
-"leave empty to use the bundled library.\n"
-"requires restart to take effect."
-msgstr ""
-"Chemin vers une bibliothèque GPU ONNX.\n"
-"Laisser vide pour utiliser la bibliothèque embarquée.\n"
-"Redémarrage nécessaire."
-
-#: ../src/gui/preferences_ai.c:1388
-msgid "select a custom ONNX Runtime shared library"
-msgstr "Sélectionne une bibliothèque partagée ONNX personnalisée"
-
-#: ../src/gui/preferences_ai.c:1390
-msgid "detect"
-msgstr "Détecter"
-
-#: ../src/gui/preferences_ai.c:1392
-msgid "search for a system-installed ONNX Runtime library"
-msgstr "Recherche d’une bibliothèque système ONNX "
-
-#: ../src/gui/preferences_ai.c:1427
-msgid "models"
-msgstr "Modèles"
-
-#: ../src/gui/preferences_ai.c:1474
-msgid "select/deselect all"
-msgstr "Tout sélectionner/désélectionner"
-
-#: ../src/gui/preferences_ai.c:1520 ../src/libs/metadata_view.c:137
-msgid "version"
-msgstr "Version"
-
-#: ../src/gui/preferences_ai.c:1529
-msgid "task"
-msgstr "Tâche"
-
-#: ../src/gui/preferences_ai.c:1544
-msgid "enabled"
-msgstr "Activé"
-
-#: ../src/gui/preferences_ai.c:1554
-msgid "status"
-msgstr "État"
-
-#. download selected button
-#: ../src/gui/preferences_ai.c:1596
-msgid "download selected"
-msgstr "Télécharger la sélection"
-
-#: ../src/gui/preferences_ai.c:1598
-msgid "download or update the selected models"
-msgstr "Télécharger ou mettre à jour tous les modèles sélectionnés"
-
-#. download default button
-#: ../src/gui/preferences_ai.c:1607
-msgid "download default"
-msgstr "Télécharger les défauts"
-
-#: ../src/gui/preferences_ai.c:1609
-msgid "download or update all default models"
-msgstr "Télécharger ou mettre à jour tous les modèles par défaut"
-
-#. download all button
-#: ../src/gui/preferences_ai.c:1618
-msgid "download all"
-msgstr "Tout télécharger"
-
-#: ../src/gui/preferences_ai.c:1620
-msgid "download or update all available models"
-msgstr "Télécharger ou mettre à jour tous les modèles disponibles"
-
-#. install model button
-#: ../src/gui/preferences_ai.c:1626
-msgid "install model"
-msgstr "Installer modèle"
-
-#: ../src/gui/preferences_ai.c:1628
-msgid "install a model from a local .dtmodel file"
-msgstr "Installer un modèle depuis un fichier « .dtmodel » local"
-
-#. delete selected button
-#: ../src/gui/preferences_ai.c:1633
-msgid "delete selected"
-msgstr "Supprimer les sélectionnés"
-
-#: ../src/gui/preferences_ai.c:1635
-msgid "remove the selected models from disk"
-msgstr "Supprimer les modèles sélectionnés du disque"
-
-#. add to stack
-#: ../src/gui/preferences_ai.c:1651
-msgid "AI"
-msgstr "IA"
 
 #: ../src/gui/presets.c:59
 msgid "non-raw"
@@ -16122,6 +17518,84 @@ msgstr ""
 #: ../src/gui/welcome.c:804
 msgid "Happy editing with darktable!"
 msgstr "Bon développement avec Darktable !"
+
+#. add a memory workspace just after default one
+#: ../src/gui/workspace.c:49 ../src/gui/workspace.c:341
+#: ../src/gui/workspace.c:549
+msgid "memory"
+msgstr "Mémoire"
+
+#: ../src/gui/workspace.c:265
+msgid "delete workspace"
+msgstr "Supprimer l’espace de travail"
+
+#: ../src/gui/workspace.c:266
+#, c-format
+msgid ""
+"WARNING\n"
+"\n"
+"do you really want to delete the '%s' workspace?\n"
+"\n"
+"if XMP writing is not activated, the editing work will be lost."
+msgstr ""
+"ATTENTION\n"
+"\n"
+"Voulez-vous réellement supprimer l’espace de travail « %s » ?\n"
+"\n"
+"Si l’écriture des XMP n'est pas activé, le travail d'édition sera perdu."
+
+#: ../src/gui/workspace.c:374 ../src/gui/workspace.c:387
+msgid "create workspace"
+msgstr "Créer un espace de travail"
+
+#: ../src/gui/workspace.c:375
+msgid ""
+"WARNING\n"
+"\n"
+"the names \"default\" and \"memory\" are reserved.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"ATTENTION\n"
+"\n"
+"Les noms « Défaut » et « Mémoire » sont réservés.\n"
+"\n"
+"Choisir un nom différent."
+
+#: ../src/gui/workspace.c:384
+#, c-format
+msgid ""
+"WARNING\n"
+"\n"
+"a workspace named \"%s\" already exists.\n"
+"\n"
+"choose a different name."
+msgstr ""
+"ATTENTION\n"
+"\n"
+"Un espace de travail nommé « %s » existe déjà.\n"
+"\n"
+"Choisir un nom différent."
+
+#: ../src/gui/workspace.c:528
+msgid "darktable - select a workspace"
+msgstr "Darktable - Sélectionner un espace de travail"
+
+#: ../src/gui/workspace.c:540
+msgid "select an existing workspace"
+msgstr "Sélectionner un espace de travail existant"
+
+#: ../src/gui/workspace.c:582
+msgid "or create a new one"
+msgstr "Ou en créer un nouveau"
+
+#: ../src/gui/workspace.c:590 ../src/libs/session.c:104
+msgid "create"
+msgstr "Créer"
+
+#: ../src/gui/workspace.c:605
+msgid "copy settings from existing workspace"
+msgstr "Copier les paramètres d’un espace de travail existant"
 
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
@@ -17011,8 +18485,8 @@ msgstr "Correctif et créatif"
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:90 ../src/iop/blurs.c:91
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
-#: ../src/iop/colorbalancergb.c:182 ../src/iop/colorharmonizer.c:134
-#: ../src/iop/colorharmonizer.c:136 ../src/iop/colorequal.c:217
+#: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:217
+#: ../src/iop/colorharmonizer.c:134 ../src/iop/colorharmonizer.c:136
 #: ../src/iop/colorin.c:130 ../src/iop/crop.c:135 ../src/iop/crop.c:137
 #: ../src/iop/demosaic.c:320 ../src/iop/denoiseprofile.c:821
 #: ../src/iop/denoiseprofile.c:823 ../src/iop/diffuse.c:140
@@ -18605,17 +20079,17 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
-#: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
-#: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:104
-#: ../src/iop/rasterfile.c:106 ../src/iop/rawprepare.c:171
+#: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:104
+#: ../src/iop/rasterfile.c:106 ../src/iop/rawdenoise.c:141
+#: ../src/iop/rawdenoise.c:143 ../src/iop/rawprepare.c:171
 #: ../src/iop/rawprepare.c:173 ../src/iop/temperature.c:250
 #: ../src/iop/temperature.c:252
 msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133 ../src/iop/rawdenoise.c:142
-#: ../src/iop/rasterfile.c:105 ../src/iop/rawprepare.c:172
+#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133 ../src/iop/rasterfile.c:105
+#: ../src/iop/rawdenoise.c:142 ../src/iop/rawprepare.c:172
 #: ../src/iop/temperature.c:251
 msgid "linear, raw"
 msgstr "Linéaire, RAW"
@@ -20503,6 +21977,164 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Règle la saturation globale"
 
+#: ../src/iop/colorequal.c:202 ../src/iop/colorequal.c:2933
+msgid "color equalizer"
+msgstr "Égaliseur de couleurs"
+
+#: ../src/iop/colorequal.c:207
+msgid "color zones|hsl"
+msgstr "zones de couleurs|hsl"
+
+#: ../src/iop/colorequal.c:214
+msgid ""
+"change saturation, hue and brightness\n"
+"depending on local hue"
+msgstr ""
+"Change la saturation, la teinte ou la luminosité\n"
+"en fonction de la teinte."
+
+#: ../src/iop/colorequal.c:218 ../src/iop/toneequal.c:331
+msgid "quasi-linear, RGB"
+msgstr "Quasi-linéaire, RVB"
+
+#: ../src/iop/colorequal.c:219 ../src/iop/toneequal.c:332
+msgid "quasi-linear, RGB, scene-referred"
+msgstr "Relatif à la scène, quasi-linéaire, RVB"
+
+#: ../src/iop/colorequal.c:2098
+msgid "bleach bypass"
+msgstr "Traitement sans blanchiment"
+
+#: ../src/iop/colorequal.c:2142
+msgid "Kodachrome 64 like"
+msgstr "Kodachrome 64"
+
+#: ../src/iop/colorequal.c:2186
+msgid "Kodak Portra 400 like"
+msgstr "Kodak Portra 400"
+
+#: ../src/iop/colorequal.c:2230
+msgid "teal & orange"
+msgstr "Teal & Orange"
+
+#. Page OPTIONS
+#: ../src/iop/colorequal.c:2886 ../src/iop/colorequal.c:3089
+#: ../src/iop/filmicrgb.c:4552
+msgid "options"
+msgstr "Options"
+
+#: ../src/iop/colorequal.c:2982
+msgid ""
+"double-click to reset the curve\n"
+"middle-click to toggle sliders visibility\n"
+"alt+scroll to change page"
+msgstr ""
+"Double-clic pour re-initialiser la courbe\n"
+"Clic-milieu pour basculer l’affichage des réglettes\n"
+"Alt+molette pour change de page"
+
+#: ../src/iop/colorequal.c:3008
+msgid "shift nodes to lower or higher hue"
+msgstr "Décale les nœuds vers les teintes adjacentes"
+
+#: ../src/iop/colorequal.c:3011
+msgid ""
+"pick hue from image and visualize it\n"
+"ctrl+click to select an area"
+msgstr ""
+"Choisir une teinte dans l’image pour la visualiser\n"
+"Ctrl+clic pour sélectionner une zone"
+
+#: ../src/iop/colorequal.c:3030
+msgid "change hue hue-wise"
+msgstr "Change la teinte d’une couleur"
+
+#: ../src/iop/colorequal.c:3048
+msgid "change saturation hue-wise"
+msgstr "Change la saturation pour une teinte de couleur"
+
+#: ../src/iop/colorequal.c:3066
+msgid "change brightness hue-wise"
+msgstr "Change la luminosité pour une teinte de couleur"
+
+#: ../src/iop/colorequal.c:3099
+msgid ""
+"the white level set manually or via the picker restricts brightness "
+"corrections\n"
+"to stay below the defined level. the default is fine for most images."
+msgstr ""
+"Le niveau du blanc défini manuellement ou depuis la pipette pour restreindre "
+"les\n"
+"corrections de luminosité pour rester en dessous du niveau défini.\n"
+"La valeur par défaut bonne pour la majorité des images."
+
+#: ../src/iop/colorequal.c:3104
+msgid "change for sharper or softer hue curve"
+msgstr "Change pour une courbe de teinte plus dure ou plus douce"
+
+#: ../src/iop/colorequal.c:3108
+msgid "restrict effect by using a guided filter based on hue and saturation"
+msgstr ""
+"Restreint l’effet en utilisant un filtre guidé basé sur la teinte et la "
+"saturation"
+
+#: ../src/iop/colorequal.c:3114
+msgid ""
+"set radius of the guided filter chroma analysis (hue).\n"
+"increase if there is large local variance of hue or strong chroma noise."
+msgstr ""
+"Le rayon de l’analyse du chroma du filtre guidé (teinte).\n"
+"Augmenter si il y a des variations locales importantes de teinte ou du bruit "
+"chromatique fort."
+
+#: ../src/iop/colorequal.c:3121
+msgid ""
+"visualize weighting function on changed output and view weighting curve.\n"
+"red shows possibly changed data, blueish parts will not be changed."
+msgstr ""
+"Affiche la fonction de pondérations sur la sortie ainsi que la courbe "
+"correspondante.\n"
+"En rouge les données qui peuvent changer, en bleu celles qui ne changeront "
+"pas."
+
+#: ../src/iop/colorequal.c:3125
+msgid ""
+"set saturation threshold for the guided filter.\n"
+" - decrease to allow changes in areas with low chromaticity\n"
+" - increase to restrict changes to higher chromaticities\n"
+"   increases contrast and avoids brightness changes in low chromaticity areas"
+msgstr ""
+"Définit le seuil de saturation pour le filtre guidé.\n"
+" • Diminuer pour permettre les changements dans des zones à faible "
+"chromacité\n"
+" • Augmenter pour restreindre les changements aux chromacités importantes.\n"
+"   Augmente le contraste et évite le changement de luminosité dans les zones "
+"à faibles chroma."
+
+#: ../src/iop/colorequal.c:3133
+msgid ""
+"set saturation contrast for the guided filter.\n"
+" - increase to favor sharp transitions between saturations leading to higher "
+"contrast\n"
+" - decrease for smoother transitions"
+msgstr ""
+"Définit le contraste de saturation pour le filtre guidé.\n"
+" • Augmenter : favorise les transitions dures entre les saturations donnant "
+"plus de contraste\n"
+" • Diminuer : pour des transitions plus douces"
+
+#: ../src/iop/colorequal.c:3140
+msgid "set radius of applied parameters for the guided filter"
+msgstr "Rayon des paramètres appliqués au filtre guidé"
+
+#: ../src/iop/colorequal.c:3143
+msgid ""
+"visualize changed output for the selected tab.\n"
+"red shows increased values, blue decreased."
+msgstr ""
+"Affiche les changements effectués pour la section sélectionnée.\n"
+"En rouge les valeurs augmentées, en bleues celles diminuées."
+
 #: ../src/iop/colorharmonizer.c:125
 msgid "color harmonizer"
 msgstr "Harmoniseur de couleurs"
@@ -20823,164 +22455,6 @@ msgstr ""
 "dessus de 100%.\n"
 "L’effet est pondéré en fonction de la proximité des pixels au nœud et "
 "respecte le paramètre « Protection des couleurs neutres »."
-
-#: ../src/iop/colorequal.c:202 ../src/iop/colorequal.c:2933
-msgid "color equalizer"
-msgstr "Égaliseur de couleurs"
-
-#: ../src/iop/colorequal.c:207
-msgid "color zones|hsl"
-msgstr "zones de couleurs|hsl"
-
-#: ../src/iop/colorequal.c:214
-msgid ""
-"change saturation, hue and brightness\n"
-"depending on local hue"
-msgstr ""
-"Change la saturation, la teinte ou la luminosité\n"
-"en fonction de la teinte."
-
-#: ../src/iop/colorequal.c:218 ../src/iop/toneequal.c:331
-msgid "quasi-linear, RGB"
-msgstr "Quasi-linéaire, RVB"
-
-#: ../src/iop/colorequal.c:219 ../src/iop/toneequal.c:332
-msgid "quasi-linear, RGB, scene-referred"
-msgstr "Relatif à la scène, quasi-linéaire, RVB"
-
-#: ../src/iop/colorequal.c:2098
-msgid "bleach bypass"
-msgstr "Traitement sans blanchiment"
-
-#: ../src/iop/colorequal.c:2142
-msgid "Kodachrome 64 like"
-msgstr "Kodachrome 64"
-
-#: ../src/iop/colorequal.c:2186
-msgid "Kodak Portra 400 like"
-msgstr "Kodak Portra 400"
-
-#: ../src/iop/colorequal.c:2230
-msgid "teal & orange"
-msgstr "Teal & Orange"
-
-#. Page OPTIONS
-#: ../src/iop/colorequal.c:2886 ../src/iop/colorequal.c:3089
-#: ../src/iop/filmicrgb.c:4552
-msgid "options"
-msgstr "Options"
-
-#: ../src/iop/colorequal.c:2982
-msgid ""
-"double-click to reset the curve\n"
-"middle-click to toggle sliders visibility\n"
-"alt+scroll to change page"
-msgstr ""
-"Double-clic pour re-initialiser la courbe\n"
-"Clic-milieu pour basculer l’affichage des réglettes\n"
-"Alt+molette pour change de page"
-
-#: ../src/iop/colorequal.c:3008
-msgid "shift nodes to lower or higher hue"
-msgstr "Décale les nœuds vers les teintes adjacentes"
-
-#: ../src/iop/colorequal.c:3011
-msgid ""
-"pick hue from image and visualize it\n"
-"ctrl+click to select an area"
-msgstr ""
-"Choisir une teinte dans l’image pour la visualiser\n"
-"Ctrl+clic pour sélectionner une zone"
-
-#: ../src/iop/colorequal.c:3030
-msgid "change hue hue-wise"
-msgstr "Change la teinte d’une couleur"
-
-#: ../src/iop/colorequal.c:3048
-msgid "change saturation hue-wise"
-msgstr "Change la saturation pour une teinte de couleur"
-
-#: ../src/iop/colorequal.c:3066
-msgid "change brightness hue-wise"
-msgstr "Change la luminosité pour une teinte de couleur"
-
-#: ../src/iop/colorequal.c:3099
-msgid ""
-"the white level set manually or via the picker restricts brightness "
-"corrections\n"
-"to stay below the defined level. the default is fine for most images."
-msgstr ""
-"Le niveau du blanc défini manuellement ou depuis la pipette pour restreindre "
-"les\n"
-"corrections de luminosité pour rester en dessous du niveau défini.\n"
-"La valeur par défaut bonne pour la majorité des images."
-
-#: ../src/iop/colorequal.c:3104
-msgid "change for sharper or softer hue curve"
-msgstr "Change pour une courbe de teinte plus dure ou plus douce"
-
-#: ../src/iop/colorequal.c:3108
-msgid "restrict effect by using a guided filter based on hue and saturation"
-msgstr ""
-"Restreint l’effet en utilisant un filtre guidé basé sur la teinte et la "
-"saturation"
-
-#: ../src/iop/colorequal.c:3114
-msgid ""
-"set radius of the guided filter chroma analysis (hue).\n"
-"increase if there is large local variance of hue or strong chroma noise."
-msgstr ""
-"Le rayon de l’analyse du chroma du filtre guidé (teinte).\n"
-"Augmenter si il y a des variations locales importantes de teinte ou du bruit "
-"chromatique fort."
-
-#: ../src/iop/colorequal.c:3121
-msgid ""
-"visualize weighting function on changed output and view weighting curve.\n"
-"red shows possibly changed data, blueish parts will not be changed."
-msgstr ""
-"Affiche la fonction de pondérations sur la sortie ainsi que la courbe "
-"correspondante.\n"
-"En rouge les données qui peuvent changer, en bleu celles qui ne changeront "
-"pas."
-
-#: ../src/iop/colorequal.c:3125
-msgid ""
-"set saturation threshold for the guided filter.\n"
-" - decrease to allow changes in areas with low chromaticity\n"
-" - increase to restrict changes to higher chromaticities\n"
-"   increases contrast and avoids brightness changes in low chromaticity areas"
-msgstr ""
-"Définit le seuil de saturation pour le filtre guidé.\n"
-" • Diminuer pour permettre les changements dans des zones à faible "
-"chromacité\n"
-" • Augmenter pour restreindre les changements aux chromacités importantes.\n"
-"   Augmente le contraste et évite le changement de luminosité dans les zones "
-"à faibles chroma."
-
-#: ../src/iop/colorequal.c:3133
-msgid ""
-"set saturation contrast for the guided filter.\n"
-" - increase to favor sharp transitions between saturations leading to higher "
-"contrast\n"
-" - decrease for smoother transitions"
-msgstr ""
-"Définit le contraste de saturation pour le filtre guidé.\n"
-" • Augmenter : favorise les transitions dures entre les saturations donnant "
-"plus de contraste\n"
-" • Diminuer : pour des transitions plus douces"
-
-#: ../src/iop/colorequal.c:3140
-msgid "set radius of applied parameters for the guided filter"
-msgstr "Rayon des paramètres appliqués au filtre guidé"
-
-#: ../src/iop/colorequal.c:3143
-msgid ""
-"visualize changed output for the selected tab.\n"
-"red shows increased values, blue decreased."
-msgstr ""
-"Affiche les changements effectués pour la section sélectionnée.\n"
-"En rouge les valeurs augmentées, en bleues celles diminuées."
 
 #: ../src/iop/colorin.c:120
 msgid "input color profile"
@@ -24860,22 +26334,6 @@ msgstr "Faire une optimisation basée sur des suppositions"
 msgid "tone mapping method"
 msgstr "Méthode de mappage des tonalités"
 
-#: ../src/iop/rawdenoise.c:134
-msgid "raw denoise"
-msgstr "Réduction du bruit RAW"
-
-#: ../src/iop/rawdenoise.c:139
-msgid "denoise the raw image early in the pipeline"
-msgstr "Débruite l’image RAW tôt dans la chaîne de traitement"
-
-#: ../src/iop/rawdenoise.c:929
-msgid ""
-"raw denoising\n"
-"only works for raw images."
-msgstr ""
-"La réduction du bruit RAW\n"
-"concerne les images RAW seulement."
-
 #: ../src/iop/rasterfile.c:91
 msgid "external raster masks"
 msgstr "Masque raster externe"
@@ -24953,6 +26411,22 @@ msgid ""
 msgstr ""
 "Vectorise le bitmap actuel et crée les masques chemins correspondants dans le "
 "gestionnaire des masques"
+
+#: ../src/iop/rawdenoise.c:134
+msgid "raw denoise"
+msgstr "Réduction du bruit RAW"
+
+#: ../src/iop/rawdenoise.c:139
+msgid "denoise the raw image early in the pipeline"
+msgstr "Débruite l’image RAW tôt dans la chaîne de traitement"
+
+#: ../src/iop/rawdenoise.c:929
+msgid ""
+"raw denoising\n"
+"only works for raw images."
+msgstr ""
+"La réduction du bruit RAW\n"
+"concerne les images RAW seulement."
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
@@ -31589,13 +33063,13 @@ msgstr "Début de sélection"
 msgid "stop selection"
 msgstr "Arrêt de sélection"
 
-#: ../src/libs/tools/view_toolbox.c:29
-msgid "view toolbox"
-msgstr "Afficher la boîte à outils"
-
 #: ../src/libs/tools/viewswitcher.c:60
 msgid "viewswitcher"
 msgstr "Changer de vue"
+
+#: ../src/libs/tools/view_toolbox.c:29
+msgid "view toolbox"
+msgstr "Afficher la boîte à outils"
 
 #: ../src/lua/preferences.c:683 ../src/lua/preferences.c:698
 #: ../src/lua/preferences.c:710 ../src/lua/preferences.c:723
@@ -33322,10 +34796,6 @@ msgstr "Actions de la souris"
 #~ msgid "percent_top"
 #~ msgstr "Centile"
 
-#, fuzzy
-#~ msgid "percent_bottom"
-#~ msgstr "Bas"
-
 #~ msgctxt "preferences"
 #~ msgid "chronological"
 #~ msgstr "Chronologique"
@@ -34534,9 +36004,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "lut 3D"
 #~ msgstr "3D lut"
-
-#~ msgid "select lut file"
-#~ msgstr "Sélectionner un fichier lut"
 
 #~ msgid "lmmse refine"
 #~ msgstr "Raffinement lmmse"
@@ -36166,9 +37633,6 @@ msgstr "Actions de la souris"
 #~ msgid "image…"
 #~ msgstr "Image…"
 
-#~ msgid "select one or more images to import"
-#~ msgstr "Sélectionner une ou plusieurs images à importer"
-
 #~ msgid "folder…"
 #~ msgstr "Dossier…"
 
@@ -37180,10 +38644,6 @@ msgstr "Actions de la souris"
 #~ msgctxt "accel"
 #~ msgid "find lens"
 #~ msgstr "Objectif"
-
-#~ msgctxt "accel"
-#~ msgid "select corrections"
-#~ msgstr "Sélectionne les corrections"
 
 #~ msgctxt "accel"
 #~ msgid "corrections"
