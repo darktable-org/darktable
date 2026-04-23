@@ -76,3 +76,18 @@ set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${CMAKE_CXX_INCLUDE_WHAT_YOU_USE_SAVE}")
 
 set(BUILD_TESTING "${BUILD_TESTING_SAVE}" CACHE BOOL "" FORCE)
 set(BUILD_BENCHMARKING "${BUILD_BENCHMARKING_SAVE}" CACHE BOOL "" FORCE)
+
+###############################################################################
+# lua-scripts section
+
+if(USE_LUA)
+#
+# lua system scripts
+#
+FILE(COPY lua-scripts DESTINATION "${DARKTABLE_DATADIR}")
+install(DIRECTORY "lua-scripts" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication
+  PATTERN "lua-scripts/.git/*" EXCLUDE
+  PATTERN "lua-scripts/.git" EXCLUDE
+  PATTERN "lua-scripts/.gitignore" EXCLUDE
+)
+endif(USE_LUA)
