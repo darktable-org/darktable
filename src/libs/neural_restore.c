@@ -843,7 +843,17 @@ static void _import_image(const char *filename, dt_imgid_t source_imgid)
   {
     dt_print(DT_DEBUG_AI, "[neural_restore] imported imgid=%d: %s", newid, filename);
     if(dt_is_valid_imgid(source_imgid))
+    {
       dt_grouping_add_to_group(source_imgid, newid);
+      // promote the output as group leader, but only when the source
+      // was the current leader — preserves any manually-set leader the
+      // user deliberately chose
+      const dt_image_t *src = dt_image_cache_get(source_imgid, 'r');
+      const gboolean source_is_leader = src && src->group_id == source_imgid;
+      dt_image_cache_read_release(src);
+      if(source_is_leader)
+        dt_grouping_change_representative(newid);
+    }
     // refresh the collection so the new image appears in the thumb grid
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
