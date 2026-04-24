@@ -953,6 +953,12 @@ gboolean dt_confgen_get_welcome_dirchooser(const char *name)
   return item ? item->welcome_dirchooser : FALSE;
 }
 
+const char *const *dt_confgen_get_welcome_options(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+  return item ? (const char *const *)item->welcome_options : NULL;
+}
+
 static gint _welcome_key_compare(gconstpointer a, gconstpointer b)
 {
   const dt_confgen_value_t *ea =

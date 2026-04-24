@@ -42,4 +42,5 @@
         pagenum CDATA #IMPLIED
         questionnum CDATA #IMPLIED
         dirchooser (yes|no) #IMPLIED
+        options CDATA #IMPLIED
 >
