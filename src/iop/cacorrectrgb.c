@@ -164,9 +164,9 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct chromatic aberrations"),
                                       _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("linear, raw"),
-                                      _("linear, raw, scene-referred"));
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 int flags()
