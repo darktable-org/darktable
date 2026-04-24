@@ -3019,10 +3019,12 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  const size_t org[3] = { origin[0], origin[1], 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Image to Buffer (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)
-    (darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin,
-     region, offset, 0, NULL, eventp);
+    (darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer,
+     org, reg, offset, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3047,10 +3049,12 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
+  const size_t org[3] = { origin[0], origin[1], 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
   cl_event *eventp = _opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)
     (darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset,
-     origin, region, 0, NULL, eventp);
+     org, reg, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
