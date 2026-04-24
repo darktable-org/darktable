@@ -661,6 +661,8 @@ if(USE_GMIC)
     add_definitions(-DHAVE_GMIC)
     include_directories(SYSTEM ${GMIC_INCLUDE_DIRS})
     list(APPEND LIBS ${GMIC_LIBRARIES})
+  else()
+    message(FATAL_ERROR "No suitable GMIC development files found, please install them or disable GMIC support")
   endif(GMIC_FOUND)
 endif(USE_GMIC)
 
