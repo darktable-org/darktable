@@ -86,7 +86,6 @@ static void _tree_selection_change(GtkTreeSelection *selection, gpointer user_da
 }
 
 GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent,
-                                   const gboolean user_editable_only,
                                    gpointer metadata_activated_callback,
                                    gpointer user_data)
 {
@@ -127,33 +126,9 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent,
   if(!taglist)
     taglist = (GList *) dt_exif_get_exiv2_taglist();
 
-  // list of user-editable tagnames for the metadata editor
-  const char *allowed_tag_names[] =
-    {
-      "Xmp.dc.",
-      "Xmp.acdsee.",
-      "Xmp.iptc.",
-      "Xmp.dwc.",
-      "Iptc."
-    };
-
   for(GList *tag = taglist; tag; tag = g_list_next(tag))
   {
     const char *tagname = tag->data;
-
-    if(user_editable_only)
-    {
-      // for the metadata editor we only want to expose user-editable fields
-      gboolean allowed = FALSE;
-      for(int i = 0; (i < sizeof(allowed_tag_names) / sizeof(allowed_tag_names[0])) && !allowed; i++)
-      {
-        if(g_strstr_len(tagname, -1, allowed_tag_names[i]) == tagname)
-          allowed = TRUE;
-      }
-
-      if(!allowed)
-        continue;
-    }
 
     char *type = g_strstr_len(tagname, -1, ",");
     if(type)
