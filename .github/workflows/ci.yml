@@ -278,7 +278,7 @@ jobs:
             SDL2:p
             sqlite3:p
             zlib:p
-          update: false
+          update: true
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v6
