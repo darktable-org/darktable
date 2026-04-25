@@ -90,7 +90,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_contrast_params_t)
 typedef struct dt_iop_contrast_params_t
 {
   float gain_local_contrast;  // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
-  float contrast_scale;       // $MIN: 1.0 $MAX: 2.0 $DEFAULT: 1.2 $DESCRIPTION: "contrast scale"
+  float contrast_scale;       // $MIN: 0.01 $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "details diameter"
   float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
   int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
   float noise_bias;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
@@ -105,7 +105,7 @@ typedef enum dt_iop_contrast_mask_t
 typedef struct dt_iop_contrast_data_t
 {
   float gain_local_contrast;
-  float blending;
+  float contrast_scale;
   float feathering;
   int radius_local;
   int iterations;
@@ -571,7 +571,7 @@ void modify_roi_in(dt_iop_module_t *self,
 
   // Get the scaled window radius for the box average
   const float max_size = (float)((piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight);
-  const float base_diameter = d->blending * max_size * roi_in->scale;
+  const float base_diameter = d->contrast_scale * max_size * roi_in->scale;
 
   const float diameter_local = base_diameter;
   d->radius_local = (int)((diameter_local - 1.0f) / 2.0f);
@@ -589,18 +589,7 @@ void commit_params(dt_iop_module_t *self,
   d->iterations = p->filter_iterations;
   d->gain_local_contrast = p->gain_local_contrast;
   d->noise_bias = p->noise_bias;
-
-  // Normalize blending and feathering to the "sensor 3:2 36 MP" as reference.
-  // diag_ref = 8848.0f is the diagonal of the "sensor 3:2 36 MP" (7360 x 4912 px).
-  // N < 1 for lower resolution sensors, N > 1 for higher resolution sensors.
-  const float diag     = sqrtf((float)piece->iwidth  * piece->iwidth
-                             + (float)piece->iheight * piece->iheight);
-  const float diag_ref = 8848.0f; // sensor 36 MP
-  const float N        = diag / diag_ref;
-
-  // UI blending param is squared to increase sensitivity to small values.
-  // Scaled by sqrt(N) so larger sensors use proportionally wider radii.
-  d->blending = (p->contrast_scale * p->contrast_scale / 100.0f) * sqrtf(N);
+  d->contrast_scale = p->contrast_scale;
 
   // UI feathering is inverted (higher = stricter edge preservation).
   // Adjust the strength based on the number of iterations to maintain a consistent overall effect regardless of iteration count.
@@ -806,11 +795,14 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(main_box, filter_label);
   
   g->contrast_scale = dt_bauhaus_slider_from_params(self, "contrast_scale");
-  dt_bauhaus_slider_set_soft_range(g->contrast_scale, 1.0, 4.0);
-  gtk_widget_set_tooltip_text
-    (g->contrast_scale,
-     _("adjusts the scale of details targeted by the sliders in the “spatial contrast” section.\n"
-       "higher values target larger features, lower values target finer details."));
+  dt_bauhaus_slider_set_soft_range(g->contrast_scale, 0.01, 0.25);
+  dt_bauhaus_slider_set_format(g->contrast_scale, "%");
+  dt_bauhaus_slider_set_factor(g->contrast_scale, 100.0);
+  gtk_widget_set_tooltip_text(g->contrast_scale,
+     _("diameter of the details adjusted by local contrast.\n"
+       "warning: big values of this parameter can make the darkroom\n"
+       "preview much slower if denoise profiled is used."));
+  
 
   g->edge_protection = dt_bauhaus_slider_from_params(self, "edge_protection");
   dt_bauhaus_slider_set_soft_range(g->edge_protection, -2.0, 2.0);
