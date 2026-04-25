@@ -279,7 +279,11 @@ GList *ras2forms(const float *mask,
   potrace_param_free(param);
   _bm_free(bm);
 
-  if(out_signs) *out_signs = signs;
+  // restore potrace's traversal order (outer first, then its holes).
+  // group consumers need the outer at list position 0 so it acts as the
+  // base while holes subtract on top with DIFFERENCE mode
+  forms = g_list_reverse(forms);
+  if(out_signs) *out_signs = g_list_reverse(signs);
   return forms;
 }
 
