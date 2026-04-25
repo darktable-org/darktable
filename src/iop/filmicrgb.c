@@ -4501,7 +4501,7 @@ void gui_init(dt_iop_module_t *self)
                                                  "increase to make highlights brighter and less compressed.\n"
                                                  "decrease to mute highlights."));
 
-  g->latitude = dt_bauhaus_slider_from_params(self, N_("latitude"));
+  g->latitude = dt_bauhaus_slider_from_params(self, NC_("curve-linear-part-width", "latitude"));
   dt_bauhaus_slider_set_soft_range(g->latitude, 0.1, 90.0);
   dt_bauhaus_slider_set_format(g->latitude, "%");
   gtk_widget_set_tooltip_text(g->latitude,

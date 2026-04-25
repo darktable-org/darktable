@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2018-2025 darktable developers.
+   Copyright (C) 2018-2026 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1524,7 +1524,7 @@ void gui_init(dt_iop_module_t *self)
   // latitude slider
   g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 0.01, 16.0, 0, p->latitude_stops, 3);
   dt_bauhaus_slider_set_soft_range(g->latitude_stops, 2, 8.0);
-  dt_bauhaus_widget_set_label(g->latitude_stops, NULL, N_("latitude"));
+  dt_bauhaus_widget_set_label(g->latitude_stops, NULL, NC_("curve-linear-part-width", "latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, _(" EV"));
   gtk_widget_set_tooltip_text(g->latitude_stops, _("width of the linear domain in the middle of the curve.\n"
                                                    "increase to get more contrast at the extreme luminances.\n"
