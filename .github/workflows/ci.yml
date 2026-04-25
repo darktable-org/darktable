@@ -267,7 +267,7 @@ jobs:
             libtiff:p
             libwebp:p
             libxml2:p
-            lua:p
+            lua54:p
             omp:p
             openexr:p
             openjpeg2:p
@@ -278,7 +278,7 @@ jobs:
             SDL2:p
             sqlite3:p
             zlib:p
-          update: false
+          update: true
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v6
