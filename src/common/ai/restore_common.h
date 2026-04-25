@@ -229,6 +229,40 @@ static inline int _mirror_in_range(int i, int lo, int hi)
   return lo + _mirror(i - lo, n);
 }
 
+// tile overlap blending weights: each tile contributes ax·ay; adjacent
+// tiles' ramps sum to 1, so strip accumulators recover the blended value
+// with no per-pixel division. seam = 2*sensor_O wide, centered on the
+// core boundary; returns 1.0 outside the seam (pure interior)
+
+static inline float _seam_ramp(int d, int sensor_O)
+{
+  return ((float)d + 0.5f) / (float)(2 * sensor_O);
+}
+
+static inline float _seam_ax(int sc,
+                             int px_base, int px_end,
+                             int sensor_O,
+                             gboolean has_left, gboolean has_right)
+{
+  if(has_left && sc < px_base + sensor_O)
+    return _seam_ramp(sc - (px_base - sensor_O), sensor_O);
+  if(has_right && sc >= px_end - sensor_O)
+    return 1.0f - _seam_ramp(sc - (px_end - sensor_O), sensor_O);
+  return 1.0f;
+}
+
+static inline float _seam_ay(int sr,
+                             int py_base, int py_end,
+                             int sensor_O,
+                             gboolean has_top, gboolean has_bot)
+{
+  if(has_top && sr < py_base + sensor_O)
+    return _seam_ramp(sr - (py_base - sensor_O), sensor_O);
+  if(has_bot && sr >= py_end - sensor_O)
+    return 1.0f - _seam_ramp(sr - (py_end - sensor_O), sensor_O);
+  return 1.0f;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -400,8 +400,34 @@ retry:;
   int res = 0;
   int tile_count = 0;
 
+  // overlap blending: at each tile boundary 2 (4 at corners) tiles emit
+  // ax·ay-weighted contributions whose ramps sum to 1. only the 2*sensor_O-
+  // wide seam regions accumulate; pure interior hard-writes. h-strips own
+  // corners. memory ~4 MB live, independent of image size
+  const int sensor_O = 2 * O;
+  const int hstrip_h = 2 * sensor_O;
+
+  // h_strip_top = seam between (ty-1) and ty: built by ty-1 as bot, flushed by ty
+  float *h_strip_top = NULL;
+  int h_strip_top_sy0 = 0;
+
   for(int ty = 0; ty < rows && res == 0; ty++)
   {
+    const gboolean has_top = ty > 0;
+    const gboolean has_bot = ty < rows - 1;
+
+    float *h_strip_bot = NULL;
+    int h_strip_bot_sy0 = 0;
+    if(has_bot)
+    {
+      h_strip_bot = g_try_malloc0((size_t)width * hstrip_h * sizeof(float));
+      if(!h_strip_bot) { res = 1; break; }
+    }
+
+    // v_strip_left = seam (tx-1)↔tx: rotated in from tx-1's right, flushed by tx
+    float *v_strip_left = NULL;
+    int v_strip_left_sx0 = 0, v_strip_left_sy0 = 0, v_strip_left_h = 0;
+
     for(int tx = 0; tx < cols && res == 0; tx++)
     {
       if(control_job
@@ -416,8 +442,6 @@ retry:;
       const int px_base = tx * step;
       const int py_end = (py_base + step > Hh) ? Hh : py_base + step;
       const int px_end = (px_base + step > Wh) ? Wh : px_base + step;
-      const int core_h = py_end - py_base;
-      const int core_w = px_end - px_base;
 
       // build 4ch input at packed half-res (T x T). geometry picks
       // the right origin and mirror-reflection bounds based on
@@ -472,6 +496,9 @@ retry:;
                    T, next_T);
           g_free(tile_in);
           g_free(tile_out);
+          g_free(h_strip_top);
+          g_free(h_strip_bot);
+          g_free(v_strip_left);
           T = next_T;
           goto retry;
         }
@@ -519,48 +546,175 @@ retry:;
                  in_mean, out_mean, (double)gain);
       }
 
-      // re-mosaic the core-valid region and un-preprocess
-      // model output dims: 2T x 2T (sensor pixels) for T x T packed tile.
-      // core valid region in model output starts at (2*O, 2*O) and spans
-      // (2*core_h) x (2*core_w) sensor pixels
-      const int core_sh = 2 * core_h;  // sensor height of core
-      const int core_sw = 2 * core_w;
-      for(int dy = 0; dy < core_sh; dy++)
+      const gboolean has_left = tx > 0;
+      const gboolean has_right = tx < cols - 1;
+      const int sensor_py_base = y0 + 2 * py_base;
+      const int sensor_py_end  = y0 + 2 * py_end;
+      const int sensor_px_base = x0 + 2 * px_base;
+      const int sensor_px_end  = x0 + 2 * px_end;
+
+      // cores edge-to-edge in y → one shared h_strip_bot origin per row
+      if(has_bot && tx == 0) h_strip_bot_sy0 = sensor_py_end - sensor_O;
+
+      // v-strip excludes top/bot corners (h-strips own them) → y extent = pure interior
+      float *v_strip_right = NULL;
+      int v_strip_right_sx0 = 0, v_strip_right_sy0 = 0, v_strip_right_h = 0;
+      if(has_right)
       {
-        const int r = y0 + 2 * py_base + dy;          // sensor row
-        const int my = 2 * O + dy;                    // model-output row
-        const size_t row_off = (size_t)my * tile_out_w;
-        for(int dx = 0; dx < core_sw; dx++)
+        v_strip_right_sx0 = sensor_px_end - sensor_O;
+        v_strip_right_sy0 = sensor_py_base + (has_top ? sensor_O : 0);
+        const int v_y_end = sensor_py_end - (has_bot ? sensor_O : 0);
+        v_strip_right_h = v_y_end - v_strip_right_sy0;
+        if(v_strip_right_h > 0)
         {
-          const int c = x0 + 2 * px_base + dx;        // sensor col
-          const int mx = 2 * O + dx;
+          v_strip_right = g_try_malloc0((size_t)(2 * sensor_O)
+                                        * v_strip_right_h * sizeof(float));
+          if(!v_strip_right) { res = 1; break; }
+        }
+      }
 
-          const int ch = FC(r, c, filters);           // 0=R, 1=G, 2=B
+      // extended extent = core ± seam where a neighbor exists; matches model-output validity
+      const int ext_y0 = has_top  ? sensor_py_base - sensor_O : sensor_py_base;
+      const int ext_y1 = has_bot  ? sensor_py_end + sensor_O  : sensor_py_end;
+      const int ext_x0 = has_left ? sensor_px_base - sensor_O : sensor_px_base;
+      const int ext_x1 = has_right? sensor_px_end + sensor_O  : sensor_px_end;
+
+      for(int sr = ext_y0; sr < ext_y1; sr++)
+      {
+        const int my = 2 * O + (sr - sensor_py_base);
+        const float ay = _seam_ay(sr, sensor_py_base, sensor_py_end,
+                                  sensor_O, has_top, has_bot);
+        const gboolean in_horiz_seam = (ay < 1.0f);
+        const size_t mo_row = (size_t)my * tile_out_w;
+
+        float *h_strip = NULL;
+        int    h_strip_sy0 = 0;
+        if(in_horiz_seam)
+        {
+          if(has_top && sr < sensor_py_base + sensor_O)
+          {
+            h_strip = h_strip_top;
+            h_strip_sy0 = h_strip_top_sy0;
+          }
+          else if(has_bot && sr >= sensor_py_end - sensor_O)
+          {
+            h_strip = h_strip_bot;
+            h_strip_sy0 = h_strip_bot_sy0;
+          }
+        }
+        const size_t h_strip_row_off = h_strip
+          ? (size_t)(sr - h_strip_sy0) * width : 0;
+
+        for(int sc = ext_x0; sc < ext_x1; sc++)
+        {
+          const int mx = 2 * O + (sc - sensor_px_base);
+          const float ax = _seam_ax(sc, sensor_px_base, sensor_px_end,
+                                    sensor_O, has_left, has_right);
+          const gboolean in_vert_seam = (ax < 1.0f);
+
+          const int ch = FC(sr, sc, filters);  // 0=R, 1=G, 2=B
           const float model_val
-            = tile_out[(size_t)ch * tile_out_plane + row_off + mx];
-
-          // reverse WB + normalisation → raw ADC
+            = tile_out[(size_t)ch * tile_out_plane + mo_row + mx];
           const float raw_val
-            = _bayer_remosaic_raw(r, c, ch, model_val, &prep);
+            = _bayer_remosaic_raw(sr, sc, ch, model_val, &prep);
 
-          // strength blend: α=1 → denoised, α=0 → source CFA
-          const size_t pidx = (size_t)r * width + c;
+          const size_t pidx = (size_t)sr * width + sc;
           const float blended
             = alpha * raw_val + inv_alpha * cfa_in[pidx];
 
-          const float clipped
-            = blended < 0.0f ? 0.0f
-              : (blended > clip_max ? clip_max : blended);
-          cfa_out[pidx] = (uint16_t)(clipped + 0.5f);
+          if(in_horiz_seam)
+          {
+            // h-strip owns corners too; weight ax·ay (other 3 tiles complete the sum)
+            if(h_strip)
+              h_strip[h_strip_row_off + sc] += ax * ay * blended;
+          }
+          else if(in_vert_seam)
+          {
+            float *v_strip = NULL;
+            int v_sx0 = 0, v_sy0 = 0;
+            if(has_left && sc < sensor_px_base + sensor_O)
+            {
+              v_strip = v_strip_left;
+              v_sx0 = v_strip_left_sx0; v_sy0 = v_strip_left_sy0;
+            }
+            else if(has_right && sc >= sensor_px_end - sensor_O)
+            {
+              v_strip = v_strip_right;
+              v_sx0 = v_strip_right_sx0; v_sy0 = v_strip_right_sy0;
+            }
+            if(v_strip)
+            {
+              const size_t vidx
+                = (size_t)(sr - v_sy0) * (2 * sensor_O) + (sc - v_sx0);
+              v_strip[vidx] += ax * blended;
+            }
+          }
+          else
+          {
+            const float clipped
+              = blended < 0.0f ? 0.0f
+                : (blended > clip_max ? clip_max : blended);
+            cfa_out[pidx] = (uint16_t)(clipped + 0.5f);
+          }
         }
       }
+
+      // tx-1 + tx ramps now sum to 1; strip = final value, flush + free
+      if(v_strip_left)
+      {
+        for(int sr = v_strip_left_sy0;
+            sr < v_strip_left_sy0 + v_strip_left_h; sr++)
+        {
+          const size_t vrow = (size_t)(sr - v_strip_left_sy0) * (2 * sensor_O);
+          for(int dxs = 0; dxs < 2 * sensor_O; dxs++)
+          {
+            const int sc = v_strip_left_sx0 + dxs;
+            const float v = v_strip_left[vrow + dxs];
+            const float clipped
+              = v < 0.0f ? 0.0f : (v > clip_max ? clip_max : v);
+            cfa_out[(size_t)sr * width + sc] = (uint16_t)(clipped + 0.5f);
+          }
+        }
+        g_free(v_strip_left);
+      }
+      v_strip_left = v_strip_right;
+      v_strip_left_sx0 = v_strip_right_sx0;
+      v_strip_left_sy0 = v_strip_right_sy0;
+      v_strip_left_h   = v_strip_right_h;
 
       tile_count++;
       if(control_job)
         dt_control_job_set_progress(control_job,
                                     (double)tile_count / total_tiles);
     }
+
+    // defensive: should be NULL after last col, free in case of mid-row break
+    g_free(v_strip_left);
+    v_strip_left = NULL;
+
+    // ramps sum to 1, flush. clamp sc to working columns — outside cells
+    // were never written and would overwrite the cfa_in margin copy
+    if(h_strip_top)
+    {
+      for(int sr = h_strip_top_sy0; sr < h_strip_top_sy0 + hstrip_h; sr++)
+      {
+        const size_t hrow = (size_t)(sr - h_strip_top_sy0) * width;
+        for(int sc = x0; sc < x0 + 2 * Wh; sc++)
+        {
+          const float v = h_strip_top[hrow + sc];
+          const float clipped
+            = v < 0.0f ? 0.0f : (v > clip_max ? clip_max : v);
+          cfa_out[(size_t)sr * width + sc] = (uint16_t)(clipped + 0.5f);
+        }
+      }
+      g_free(h_strip_top);
+    }
+    h_strip_top = h_strip_bot;
+    h_strip_top_sy0 = h_strip_bot_sy0;
   }
+
+  // last row never allocates a bottom strip — defensive free
+  g_free(h_strip_top);
 
   g_free(tile_in);
   g_free(tile_out);

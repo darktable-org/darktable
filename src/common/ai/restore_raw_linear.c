@@ -548,8 +548,31 @@ retry:;
   int res = 0;
   int tile_count = 0;
 
+  // overlap blending — see restore_raw_bayer.c for the scheme.
+  // sensor_O = O (1:1 with input), strips are 3-ch planar matching rgb_out
+  const int sensor_O = O;
+  const int hstrip_h = 2 * sensor_O;
+  const size_t hstrip_chan = (size_t)w * hstrip_h;  // floats per channel
+
+  float *h_strip_top = NULL;
+  int h_strip_top_sy0 = 0;
+
   for(int ty = 0; ty < rows && res == 0; ty++)
   {
+    const gboolean has_top = ty > 0;
+    const gboolean has_bot = ty < rows - 1;
+
+    float *h_strip_bot = NULL;
+    int h_strip_bot_sy0 = 0;
+    if(has_bot)
+    {
+      h_strip_bot = g_try_malloc0(hstrip_chan * 3 * sizeof(float));
+      if(!h_strip_bot) { res = 1; break; }
+    }
+
+    float *v_strip_left = NULL;
+    int v_strip_left_sx0 = 0, v_strip_left_sy0 = 0, v_strip_left_h = 0;
+
     for(int tx = 0; tx < cols && res == 0; tx++)
     {
       if(control_job
@@ -564,8 +587,6 @@ retry:;
       const int x_base = tx * step;
       const int y_end  = (y_base + step > h) ? h : y_base + step;
       const int x_end  = (x_base + step > w) ? w : x_base + step;
-      const int core_h = y_end - y_base;
-      const int core_w = x_end - x_base;
 
       // extract T x T tile with mirror-pad at boundaries, planar
       for(int dy = 0; dy < T; dy++)
@@ -596,6 +617,9 @@ retry:;
                    T, next_T);
           g_free(tile_in);
           g_free(tile_out);
+          g_free(h_strip_top);
+          g_free(h_strip_bot);
+          g_free(v_strip_left);
           T = next_T;
           goto retry;
         }
@@ -621,37 +645,183 @@ retry:;
                  gain_ch[0], gain_ch[1], gain_ch[2]);
       }
 
-      // blend: write (α·denoised + (1-α)·source) per channel into
-      // the core-valid region. rgb_out was pre-filled with rgb_src
-      // so overlap gaps stay as source
-      for(int dy = 0; dy < core_h; dy++)
-      {
-        const int y = y_base + dy;
-        const int my = O + dy;
-        for(int dx = 0; dx < core_w; dx++)
-        {
-          const int x = x_base + dx;
-          const int mx = O + dx;
-          const size_t tloc = (size_t)my * T + mx;
-          const size_t dst = (size_t)y * w + x;
+      const gboolean has_left = tx > 0;
+      const gboolean has_right = tx < cols - 1;
+      const int sensor_py_base = y_base;
+      const int sensor_py_end  = y_end;
+      const int sensor_px_base = x_base;
+      const int sensor_px_end  = x_end;
 
-          for(int k = 0; k < 3; k++)
+      if(has_bot && tx == 0) h_strip_bot_sy0 = sensor_py_end - sensor_O;
+
+      float *v_strip_right = NULL;
+      int v_strip_right_sx0 = 0, v_strip_right_sy0 = 0, v_strip_right_h = 0;
+      if(has_right)
+      {
+        v_strip_right_sx0 = sensor_px_end - sensor_O;
+        v_strip_right_sy0 = sensor_py_base + (has_top ? sensor_O : 0);
+        const int v_y_end = sensor_py_end - (has_bot ? sensor_O : 0);
+        v_strip_right_h = v_y_end - v_strip_right_sy0;
+        if(v_strip_right_h > 0)
+        {
+          v_strip_right = g_try_malloc0((size_t)(2 * sensor_O)
+                                        * v_strip_right_h * 3 * sizeof(float));
+          if(!v_strip_right) { res = 1; break; }
+        }
+      }
+
+      const int ext_y0 = has_top  ? sensor_py_base - sensor_O : sensor_py_base;
+      const int ext_y1 = has_bot  ? sensor_py_end + sensor_O  : sensor_py_end;
+      const int ext_x0 = has_left ? sensor_px_base - sensor_O : sensor_px_base;
+      const int ext_x1 = has_right? sensor_px_end + sensor_O  : sensor_px_end;
+
+      for(int sr = ext_y0; sr < ext_y1; sr++)
+      {
+        const int my = O + (sr - sensor_py_base);
+        const float ay = _seam_ay(sr, sensor_py_base, sensor_py_end,
+                                  sensor_O, has_top, has_bot);
+        const gboolean in_horiz_seam = (ay < 1.0f);
+
+        float *h_strip = NULL;
+        int h_strip_sy0 = 0;
+        if(in_horiz_seam)
+        {
+          if(has_top && sr < sensor_py_base + sensor_O)
           {
-            const float model_v
-              = tile_out[tloc + (size_t)k * per_ch];
-            const float src_v = rgb_src[dst + (size_t)k * plane];
-            rgb_out[dst + (size_t)k * plane]
-              = alpha * model_v + inv_alpha * src_v;
+            h_strip = h_strip_top;
+            h_strip_sy0 = h_strip_top_sy0;
+          }
+          else if(has_bot && sr >= sensor_py_end - sensor_O)
+          {
+            h_strip = h_strip_bot;
+            h_strip_sy0 = h_strip_bot_sy0;
+          }
+        }
+        const size_t h_strip_row_off = h_strip
+          ? (size_t)(sr - h_strip_sy0) * w : 0;
+
+        for(int sc = ext_x0; sc < ext_x1; sc++)
+        {
+          const int mx = O + (sc - sensor_px_base);
+          const float ax = _seam_ax(sc, sensor_px_base, sensor_px_end,
+                                    sensor_O, has_left, has_right);
+          const gboolean in_vert_seam = (ax < 1.0f);
+
+          const size_t tloc = (size_t)my * T + mx;
+          const size_t dst = (size_t)sr * w + sc;
+
+          if(in_horiz_seam)
+          {
+            if(h_strip)
+            {
+              const float wgt = ax * ay;
+              for(int k = 0; k < 3; k++)
+              {
+                const float model_v = tile_out[tloc + (size_t)k * per_ch];
+                const float src_v   = rgb_src[dst + (size_t)k * plane];
+                const float blended = alpha * model_v + inv_alpha * src_v;
+                h_strip[h_strip_row_off + sc + (size_t)k * hstrip_chan]
+                  += wgt * blended;
+              }
+            }
+          }
+          else if(in_vert_seam)
+          {
+            float *v_strip = NULL;
+            int v_sx0 = 0, v_sy0 = 0, v_h = 0;
+            if(has_left && sc < sensor_px_base + sensor_O)
+            {
+              v_strip = v_strip_left;
+              v_sx0 = v_strip_left_sx0; v_sy0 = v_strip_left_sy0;
+              v_h = v_strip_left_h;
+            }
+            else if(has_right && sc >= sensor_px_end - sensor_O)
+            {
+              v_strip = v_strip_right;
+              v_sx0 = v_strip_right_sx0; v_sy0 = v_strip_right_sy0;
+              v_h = v_strip_right_h;
+            }
+            if(v_strip)
+            {
+              const size_t vchan = (size_t)(2 * sensor_O) * v_h;
+              const size_t vidx
+                = (size_t)(sr - v_sy0) * (2 * sensor_O) + (sc - v_sx0);
+              for(int k = 0; k < 3; k++)
+              {
+                const float model_v = tile_out[tloc + (size_t)k * per_ch];
+                const float src_v   = rgb_src[dst + (size_t)k * plane];
+                const float blended = alpha * model_v + inv_alpha * src_v;
+                v_strip[vidx + (size_t)k * vchan] += ax * blended;
+              }
+            }
+          }
+          else
+          {
+            for(int k = 0; k < 3; k++)
+            {
+              const float model_v = tile_out[tloc + (size_t)k * per_ch];
+              const float src_v   = rgb_src[dst + (size_t)k * plane];
+              rgb_out[dst + (size_t)k * plane]
+                = alpha * model_v + inv_alpha * src_v;
+            }
           }
         }
       }
+
+      // tx-1 + tx ramps sum to 1; flush + free
+      if(v_strip_left)
+      {
+        const size_t vchan = (size_t)(2 * sensor_O) * v_strip_left_h;
+        for(int sr = v_strip_left_sy0;
+            sr < v_strip_left_sy0 + v_strip_left_h; sr++)
+        {
+          const size_t vrow = (size_t)(sr - v_strip_left_sy0) * (2 * sensor_O);
+          for(int dxs = 0; dxs < 2 * sensor_O; dxs++)
+          {
+            const int sc = v_strip_left_sx0 + dxs;
+            const size_t dst = (size_t)sr * w + sc;
+            for(int k = 0; k < 3; k++)
+              rgb_out[dst + (size_t)k * plane]
+                = v_strip_left[vrow + dxs + (size_t)k * vchan];
+          }
+        }
+        g_free(v_strip_left);
+      }
+      v_strip_left = v_strip_right;
+      v_strip_left_sx0 = v_strip_right_sx0;
+      v_strip_left_sy0 = v_strip_right_sy0;
+      v_strip_left_h   = v_strip_right_h;
 
       tile_count++;
       if(control_job)
         dt_control_job_set_progress(control_job,
                                     (double)tile_count / total_tiles);
     }
+
+    g_free(v_strip_left);
+    v_strip_left = NULL;
+
+    // ramps sum to 1, flush. no column clamp needed (no working-region offset)
+    if(h_strip_top)
+    {
+      for(int sr = h_strip_top_sy0; sr < h_strip_top_sy0 + hstrip_h; sr++)
+      {
+        const size_t hrow = (size_t)(sr - h_strip_top_sy0) * w;
+        for(int sc = 0; sc < w; sc++)
+        {
+          const size_t dst = (size_t)sr * w + sc;
+          for(int k = 0; k < 3; k++)
+            rgb_out[dst + (size_t)k * plane]
+              = h_strip_top[hrow + sc + (size_t)k * hstrip_chan];
+        }
+      }
+      g_free(h_strip_top);
+    }
+    h_strip_top = h_strip_bot;
+    h_strip_top_sy0 = h_strip_bot_sy0;
   }
+
+  g_free(h_strip_top);
 
   g_free(tile_in);
   g_free(tile_out);
