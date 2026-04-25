@@ -177,13 +177,23 @@ int dt_dng_write_cfa_bayer(const char *filename,
     }
   }
 
-  // default scale / crop
-  // DefaultScale=1,1; DefaultCropOrigin=0,0; DefaultCropSize=W,H.
-  // this keeps the importer from applying any additional framing;
-  // darktable's crop module handles downstream framing
+  // advertise the visible region inside the full raw buffer; without
+  // these tags the importer renders the optical-black margins too
+  const int crop_x = (img->crop_x > 0) ? img->crop_x : 0;
+  const int crop_y = (img->crop_y > 0) ? img->crop_y : 0;
+  const int vis_w  = (img->p_width  > 0 && img->p_width  <= width  - crop_x)
+                     ? img->p_width  : (width  - crop_x);
+  const int vis_h  = (img->p_height > 0 && img->p_height <= height - crop_y)
+                     ? img->p_height : (height - crop_y);
+
+  const uint32_t active_area[4] = {
+    (uint32_t)crop_y, (uint32_t)crop_x,
+    (uint32_t)(crop_y + vis_h), (uint32_t)(crop_x + vis_w),
+  };
   const float default_scale[2] = { 1.0f, 1.0f };
   const float default_crop_origin[2] = { 0.0f, 0.0f };
-  const float default_crop_size[2] = { (float)width, (float)height };
+  const float default_crop_size[2] = { (float)vis_w, (float)vis_h };
+  TIFFSetField(tif, TIFFTAG_ACTIVEAREA, active_area);
   TIFFSetField(tif, TIFFTAG_DEFAULTSCALE, default_scale);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
@@ -316,10 +326,15 @@ int dt_dng_write_linear(const char *filename,
     }
   }
 
-  // default scale / crop (full frame, no inset)
+  // linear DNG: buffer is already at visible dims (post-demosaic);
+  // ACTIVEAREA covers the full buffer, no margin to crop
+  const uint32_t active_area[4] = {
+    0, 0, (uint32_t)height, (uint32_t)width,
+  };
   const float default_scale[2] = { 1.0f, 1.0f };
   const float default_crop_origin[2] = { 0.0f, 0.0f };
   const float default_crop_size[2] = { (float)width, (float)height };
+  TIFFSetField(tif, TIFFTAG_ACTIVEAREA, active_area);
   TIFFSetField(tif, TIFFTAG_DEFAULTSCALE, default_scale);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPORIGIN, default_crop_origin);
   TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE, default_crop_size);
