@@ -85,14 +85,7 @@ Contrast is modeled through three complementary components:
 #include <omp.h>
 #endif
 
-static inline float dt_smoothstep(const float edge0, const float edge1, const float x)
-{
-  const float t = CLAMP((fabsf(x) - edge0) / fmaxf(edge1 - edge0, NORM_MIN), 0.0f, 1.0f);
-  return t * t * (3.0f - 2.0f * t);
-}
-
 DT_MODULE_INTROSPECTION(1, dt_iop_contrast_params_t)
-
 
 typedef struct dt_iop_contrast_params_t
 {
@@ -100,7 +93,7 @@ typedef struct dt_iop_contrast_params_t
   float contrast_scale;       // $MIN: 1.0 $MAX: 2.0 $DEFAULT: 1.2 $DESCRIPTION: "contrast scale"
   float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
   int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
-  float noise_threshold;      // $MIN: 0.0 $MAX: 0.01 $DEFAULT: 0.001 $DESCRIPTION: "noise threshold"
+  float noise_bias;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
 } dt_iop_contrast_params_t;
 
 typedef enum dt_iop_contrast_mask_t
@@ -116,7 +109,7 @@ typedef struct dt_iop_contrast_data_t
   float feathering;
   int radius_local;
   int iterations;
-  float noise_threshold;
+  float noise_bias;
 } dt_iop_contrast_data_t;
 
 typedef struct dt_iop_contrast_gui_data_t
@@ -146,7 +139,7 @@ typedef struct dt_iop_contrast_gui_data_t
   GtkWidget *contrast_scale;
   GtkWidget *edge_protection;
   GtkWidget *filter_iterations;
-  GtkWidget *noise_threshold;
+  GtkWidget *noise_bias;
 
   // New buttons for mask display in expanders
   GtkWidget *f_view_local;
@@ -237,6 +230,13 @@ static inline void compute_luminance_and_mask(const float *const restrict in,
   // First compute pixel-wise luminance (no boost)
   luminance_mask(in, luminance, width, height, DT_TONEEQ_NORM_2, 1.0f, 0.0f, 1.0f);
 
+  const size_t npixels = width * height;
+  DT_OMP_FOR()
+  for(size_t k = 0; k < npixels; k++)
+  {    
+    luminance[k] = fmaxf(luminance[k], 0.0f) + d->noise_bias;
+  }
+
   // Then apply the smoothing filter on a copy
   memcpy(smoothed_luminance, luminance, width * height * sizeof(float));
 
@@ -276,13 +276,6 @@ static inline void apply_local_contrast(const float *const restrict in,
 
     // The correction is the sum of (gain - 1) * detail for each scale
     float correction_ev = (gain_local - 1.0f) * local_ev;
-
-    // Noise protection (Smoothstep on detail magnitude)
-    if (d->noise_threshold > NORM_MIN) {
-        const float edge0 = d->noise_threshold * 0.5f;
-        const float edge1 = edge0 * 1.5f;
-        correction_ev *= dt_smoothstep(edge0, edge1, correction_ev);
-    }
     
     // Apply correction in linear space
     const float multiplier = exp2f(correction_ev);
@@ -595,7 +588,7 @@ void commit_params(dt_iop_module_t *self,
 
   d->iterations = p->filter_iterations;
   d->gain_local_contrast = p->gain_local_contrast;
-  d->noise_threshold = p->noise_threshold;
+  d->noise_bias = p->noise_bias;
 
   // Normalize blending and feathering to the "sensor 3:2 36 MP" as reference.
   // diag_ref = 8848.0f is the diagonal of the "sensor 3:2 36 MP" (7360 x 4912 px).
@@ -833,13 +826,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->filter_iterations, _("number of passes of the guided filter to apply\n"
        "helps diffusing the edges of the filter at the expense of speed"));
 
-  g->noise_threshold = dt_bauhaus_slider_from_params(self, "noise_threshold");
-  dt_bauhaus_slider_set_soft_range(g->noise_threshold, 0.0, 0.01);
-  dt_bauhaus_slider_set_hard_min(g->noise_threshold, 0.0);
-  dt_bauhaus_slider_set_hard_max(g->noise_threshold, 0.01);
-  dt_bauhaus_slider_set_digits(g->noise_threshold, 4);
-  dt_bauhaus_slider_set_step(g->noise_threshold, 0.0001);
-  gtk_widget_set_tooltip_text(g->noise_threshold, _("noise protection. Only affects dark parts of the image."));
+  g->noise_bias = dt_bauhaus_slider_from_params(self, "noise_bias");
+  dt_bauhaus_slider_set_soft_range(g->noise_bias, 0.0, 0.2);
+  dt_bauhaus_slider_set_digits(g->noise_bias, 4);
+  dt_bauhaus_slider_set_step(g->noise_bias, 0.0001);
+  gtk_widget_set_tooltip_text(g->noise_bias, _("add bias to reduce shadow noise amplification.\n"
+                                               "Only affects dark parts of the image."));
 
   // Restore main widget
   self->widget = main_box;
