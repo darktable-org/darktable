@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-24 19:48+0200\n"
-"PO-Revision-Date: 2026-04-24 20:44+0200\n"
+"PO-Revision-Date: 2026-04-26 10:07+0200\n"
 "Last-Translator: Hans Petter Birkeland <hpbirkeland@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -13885,7 +13885,6 @@ msgstr "velg dupliserte bilder"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection2collection.lua:94
-#| msgid "actions on selection"
 msgid "selection2collection"
 msgstr "utvalg til samling"
 
@@ -23783,7 +23782,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1527 ../src/iop/filmicrgb.c:4504
 #: ../src/libs/metadata_view.c:169
 msgid "latitude"
-msgstr "breddegrad"
+msgstr "lineær del"
 
 #: ../src/iop/filmic.c:1529
 msgid ""
