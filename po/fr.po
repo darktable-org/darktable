@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-24 19:48+0200\n"
-"PO-Revision-Date: 2026-04-24 19:51+0200\n"
+"POT-Creation-Date: 2026-04-26 19:29+0200\n"
+"PO-Revision-Date: 2026-04-26 19:33+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -995,7 +995,7 @@ msgid "lighttable"
 msgstr "Table lumineuse"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
-#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences_ai.c:1288
+#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences_ai.c:1283
 #: ../src/gui/preferences.c:344
 msgid "general"
 msgstr "Général"
@@ -2649,7 +2649,7 @@ msgid "extreme saturation"
 msgstr "Saturation extrêmes"
 
 #. cubic spline
-#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1568
+#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1585
 msgid "faded"
 msgstr "Délavé"
 
@@ -2877,7 +2877,7 @@ msgstr "Préserver la teinte"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
-#: ../src/iop/filmic.c:1490
+#: ../src/iop/filmic.c:1493
 msgid "black relative exposure"
 msgstr "Exposition relative du noir"
 
@@ -2885,7 +2885,7 @@ msgstr "Exposition relative du noir"
 #: ../build/lib/darktable/plugins/introspection_agx.c:522
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
-#: ../src/iop/filmic.c:1478
+#: ../src/iop/filmic.c:1480
 msgid "white relative exposure"
 msgstr "Exposition relative du blanc"
 
@@ -2916,8 +2916,8 @@ msgstr "Sortie cible du pivot"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:862 ../src/iop/basicadj.c:630 ../src/iop/bilat.c:464
 #: ../src/iop/colisa.c:272 ../src/iop/colorbalance.c:1889
-#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1519
-#: ../src/iop/filmicrgb.c:4492 ../src/iop/lowpass.c:574
+#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1527
+#: ../src/iop/filmicrgb.c:4499 ../src/iop/lowpass.c:574
 msgid "contrast"
 msgstr "Contraste"
 
@@ -3462,7 +3462,7 @@ msgstr "Base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences_ai.c:1320 ../src/gui/preferences.c:998
+#: ../src/gui/preferences_ai.c:1315 ../src/gui/preferences.c:998
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -3972,7 +3972,7 @@ msgstr "Tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:340
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:537
-#: ../src/iop/filmic.c:1544
+#: ../src/iop/filmic.c:1557
 msgid "global saturation"
 msgstr "Saturation globale"
 
@@ -4758,7 +4758,7 @@ msgstr "Automatique"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
-#: ../src/iop/filmic.c:1467
+#: ../src/iop/filmic.c:1468
 msgid "middle gray luminance"
 msgstr "Luminance du gris moyen"
 
@@ -4784,19 +4784,19 @@ msgstr "Structure ↔ texture"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:266
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:459
-#: ../src/iop/filmic.c:1592
+#: ../src/iop/filmic.c:1612
 msgid "target middle gray"
 msgstr "Gris moyen cible"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:272
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:463
-#: ../src/iop/filmic.c:1584
+#: ../src/iop/filmic.c:1603
 msgid "target black luminance"
 msgstr "Luminance du noir cible"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:278
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:467
-#: ../src/iop/filmic.c:1600
+#: ../src/iop/filmic.c:1621
 msgid "target white luminance"
 msgstr "Luminance du blanc cible"
 
@@ -4810,7 +4810,7 @@ msgstr "Dureté"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
-#: ../src/iop/filmic.c:1553 ../src/iop/filmicrgb.c:4666
+#: ../src/iop/filmic.c:1568 ../src/iop/filmicrgb.c:4684
 msgid "extreme luminance saturation"
 msgstr "Saturation des luminances extrêmes"
 
@@ -5624,7 +5624,7 @@ msgstr "Luma du gris moyen"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
-#: ../src/iop/filmic.c:1501
+#: ../src/iop/filmic.c:1506
 msgid "safety factor"
 msgstr "Facteur de sécurité"
 
@@ -6147,8 +6147,8 @@ msgstr "Menu déroulant"
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
 #: ../src/gui/hist_dialog.c:248 ../src/gui/preferences_ai.c:609
-#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1109
-#: ../src/gui/preferences_ai.c:1196 ../src/gui/preferences.c:1221
+#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1105
+#: ../src/gui/preferences_ai.c:1192 ../src/gui/preferences.c:1221
 #: ../src/gui/preferences.c:1261 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:169 ../src/imageio/storage/disk.c:200
@@ -7498,7 +7498,7 @@ msgstr "Description"
 msgid "rights"
 msgstr "Droits"
 
-#: ../src/common/database.c:3241 ../src/gui/preferences_ai.c:928
+#: ../src/common/database.c:3241 ../src/gui/preferences_ai.c:924
 msgid "notes"
 msgstr "Notes"
 
@@ -7852,7 +7852,7 @@ msgid_plural "delete empty directories?"
 msgstr[0] "Supprimer le répertoire vide ?"
 msgstr[1] "Supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:361 ../src/gui/preferences_ai.c:1498
+#: ../src/common/film.c:361 ../src/gui/preferences_ai.c:1493
 #: ../src/gui/preferences.c:949 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
@@ -9610,7 +9610,7 @@ msgid "reverse"
 msgstr "Inverser"
 
 #. add default workspace
-#: ../src/develop/blend_gui.c:140 ../src/gui/preferences_ai.c:1563
+#: ../src/develop/blend_gui.c:140 ../src/gui/preferences_ai.c:1558
 #: ../src/gui/workspace.c:47 ../src/gui/workspace.c:582
 #: ../src/imageio/format/webp.c:435 ../src/libs/styles.c:1029
 msgid "default"
@@ -9953,10 +9953,10 @@ msgstr ""
 #: ../src/iop/agx.c:1825 ../src/iop/agx.c:2045 ../src/iop/agx.c:2054
 #: ../src/iop/basicadj.c:623 ../src/iop/colorbalancergb.c:2000
 #: ../src/iop/colorequal.c:3097 ../src/iop/exposure.c:1215
-#: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491
-#: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4385
-#: ../src/iop/filmicrgb.c:4396 ../src/iop/filmicrgb.c:4429
-#: ../src/iop/filmicrgb.c:4439 ../src/iop/graduatednd.c:1059
+#: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1481 ../src/iop/filmic.c:1494
+#: ../src/iop/filmic.c:1537 ../src/iop/filmicrgb.c:4389
+#: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4436
+#: ../src/iop/filmicrgb.c:4446 ../src/iop/graduatednd.c:1059
 #: ../src/iop/negadoctor.c:1004 ../src/iop/profile_gamma.c:624
 #: ../src/iop/profile_gamma.c:630 ../src/iop/relight.c:249
 #: ../src/iop/soften.c:381 ../src/iop/toneequal.c:3240
@@ -15079,7 +15079,7 @@ msgstr "Sélectionner le dossier du script"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1533
 #: ../src/iop/agx.c:2456 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
-#: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
+#: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4368
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
 #: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2260
 #: ../src/views/lighttable.c:1446
@@ -16718,7 +16718,7 @@ msgstr "Téléchargement de « %s "
 msgid "install AI model"
 msgstr "Installer le modèle IA"
 
-#: ../src/gui/preferences_ai.c:786 ../src/gui/preferences_ai.c:1197
+#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1192
 #: ../src/gui/preferences.c:1221 ../src/gui/welcome.c:169
 #: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
 #: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
@@ -16726,50 +16726,56 @@ msgstr "Installer le modèle IA"
 msgid "_open"
 msgstr "_Ouvrir"
 
-#: ../src/gui/preferences_ai.c:790
+#: ../src/gui/preferences_ai.c:788
 msgid "AI model packages (*.dtmodel)"
 msgstr "Paquets modèles IA (*.dtmodel)"
 
-#: ../src/gui/preferences_ai.c:863
-#, c-format
-msgid "delete %d selected model?"
-msgid_plural "delete %d selected models?"
-msgstr[0] "Supprimer %d modèle sélectionné ?"
-msgstr[1] "Supprimer %d modèles sélectionnés ?"
+#: ../src/gui/preferences_ai.c:858
+msgid "delete model?"
+msgid_plural "delete models?"
+msgstr[0] "Supprimer le modèle ?"
+msgstr[1] "Supprimer les modèles ?"
 
-#: ../src/gui/preferences_ai.c:925
+#: ../src/gui/preferences_ai.c:860
+#, c-format
+msgid "do you really want to delete %d selected model?"
+msgid_plural "do you really want to delete %d selected models?"
+msgstr[0] "Voulez-vous vraiment supprimer %d modèle sélectionné ?"
+msgstr[1] "Voulez-vous vraiment supprimer les %d modèles sélectionnés ?"
+
+#: ../src/gui/preferences_ai.c:921
 msgid "scope"
 msgstr "Périmètre"
 
-#: ../src/gui/preferences_ai.c:925
+#: ../src/gui/preferences_ai.c:921
 msgid "author"
 msgstr "Auteur"
 
-#: ../src/gui/preferences_ai.c:926
+#: ../src/gui/preferences_ai.c:922
 msgid "source"
 msgstr "Source"
 
-#: ../src/gui/preferences_ai.c:926
+#: ../src/gui/preferences_ai.c:922
 msgid "paper"
 msgstr "Papier"
 
-#: ../src/gui/preferences_ai.c:927
+#: ../src/gui/preferences_ai.c:923
 msgid "license"
 msgstr "Licence"
 
-#: ../src/gui/preferences_ai.c:927
+#: ../src/gui/preferences_ai.c:923
 msgid "training data"
 msgstr "Données d’entraînement"
 
-#: ../src/gui/preferences_ai.c:928
+#: ../src/gui/preferences_ai.c:924
 msgid "data license"
 msgstr "Licence des données"
 
-#: ../src/gui/preferences_ai.c:1003
+#: ../src/gui/preferences_ai.c:999
 msgid "click for model details"
 msgstr "Cliquer pour les détails du modèle"
 
-#: ../src/gui/preferences_ai.c:1060
+#: ../src/gui/preferences_ai.c:1056
 #, c-format
 msgid ""
 "ONNX Runtime %s detected.\n"
@@ -16778,7 +16784,7 @@ msgstr ""
 "Bibliothèque ONNX « %s » détectée.\n"
 "Redémarrage de Darktable nécessaire. "
 
-#: ../src/gui/preferences_ai.c:1065
+#: ../src/gui/preferences_ai.c:1061
 #, c-format
 msgid ""
 "not a valid ONNX Runtime library:\n"
@@ -16787,7 +16793,7 @@ msgstr ""
 "Pas une bibliothèque ONNX valide :\n"
 "« %s »"
 
-#: ../src/gui/preferences_ai.c:1082
+#: ../src/gui/preferences_ai.c:1078
 msgid ""
 "no system ONNX Runtime library found.\n"
 "\n"
@@ -16799,7 +16805,7 @@ msgstr ""
 "Installer ONNX depuis le système de paquet ou utiliser\n"
 "le bouton pour sélectionner une construction personnalisée."
 
-#: ../src/gui/preferences_ai.c:1098
+#: ../src/gui/preferences_ai.c:1094
 #, c-format
 msgid ""
 "ONNX Runtime %s [%s]\n"
@@ -16812,61 +16818,61 @@ msgstr ""
 "\n"
 "Redémarrage nécessaire."
 
-#: ../src/gui/preferences_ai.c:1106 ../src/gui/preferences_ai.c:1193
+#: ../src/gui/preferences_ai.c:1102 ../src/gui/preferences_ai.c:1189
 msgid "select ONNX Runtime library"
 msgstr "Sélectionner la bibliothèque ONNX"
 
-#: ../src/gui/preferences_ai.c:1110 ../src/iop/lut3d.c:1575
+#: ../src/gui/preferences_ai.c:1106 ../src/iop/lut3d.c:1575
 #: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
 msgid "_select"
 msgstr "Sélection"
 
-#: ../src/gui/preferences_ai.c:1116
+#: ../src/gui/preferences_ai.c:1112
 msgid "multiple ONNX Runtime libraries found:"
 msgstr "Plusieurs bibliothèques ONNX trouvées :"
 
-#: ../src/gui/preferences_ai.c:1203
+#: ../src/gui/preferences_ai.c:1197
 msgid "ONNX Runtime (onnxruntime*.dll)"
 msgstr "Bibliothèque ONNX (onnxruntime*.dll)"
 
-#: ../src/gui/preferences_ai.c:1206
+#: ../src/gui/preferences_ai.c:1200
 msgid "ONNX Runtime (libonnxruntime.so*)"
 msgstr "Bibliothèque ONNX (libonnxruntime.so*)"
 
-#: ../src/gui/preferences_ai.c:1212 ../src/gui/preferences.c:1235
+#: ../src/gui/preferences_ai.c:1206 ../src/gui/preferences.c:1235
 #: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
 #: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
 msgid "all files"
 msgstr "Tous les fichiers"
 
 #. enable AI toggle
-#: ../src/gui/preferences_ai.c:1259
+#: ../src/gui/preferences_ai.c:1254
 msgid "enable AI features"
 msgstr "Active les fonctions IA"
 
 #. provider dropdown
-#: ../src/gui/preferences_ai.c:1304
+#: ../src/gui/preferences_ai.c:1299
 msgid "execution provider"
 msgstr "Fournisseur d'exécution"
 
 #. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1315
+#: ../src/gui/preferences_ai.c:1310
 msgid "select hardware acceleration for AI inference:"
 msgstr "Sélectionner le mode d'accélération pour les inférences IA :"
 
-#: ../src/gui/preferences_ai.c:1359
+#: ../src/gui/preferences_ai.c:1354
 msgid "ONNX Runtime library"
 msgstr "Bibliothèque ONNX"
 
-#: ../src/gui/preferences_ai.c:1373
+#: ../src/gui/preferences_ai.c:1368
 msgid "bundled (DirectML)"
 msgstr "Intégré (DirectML)"
 
-#: ../src/gui/preferences_ai.c:1376
+#: ../src/gui/preferences_ai.c:1371
 msgid "bundled (CPU only)"
 msgstr "Embarqué (CPU seulement)"
 
-#: ../src/gui/preferences_ai.c:1379
+#: ../src/gui/preferences_ai.c:1374
 msgid ""
 "path to a GPU-enabled ONNX Runtime library.\n"
 "leave empty to use the bundled library.\n"
@@ -16876,89 +16882,89 @@ msgstr ""
 "Laisser vide pour utiliser la bibliothèque embarquée.\n"
 "Redémarrage nécessaire."
 
-#: ../src/gui/preferences_ai.c:1388
+#: ../src/gui/preferences_ai.c:1383
 msgid "select a custom ONNX Runtime shared library"
 msgstr "Sélectionne une bibliothèque partagée ONNX personnalisée"
 
-#: ../src/gui/preferences_ai.c:1390
+#: ../src/gui/preferences_ai.c:1385
 msgid "detect"
 msgstr "Détecter"
 
-#: ../src/gui/preferences_ai.c:1392
+#: ../src/gui/preferences_ai.c:1387
 msgid "search for a system-installed ONNX Runtime library"
 msgstr "Recherche d’une bibliothèque système ONNX "
 
-#: ../src/gui/preferences_ai.c:1427
+#: ../src/gui/preferences_ai.c:1422
 msgid "models"
 msgstr "Modèles"
 
-#: ../src/gui/preferences_ai.c:1474
+#: ../src/gui/preferences_ai.c:1469
 msgid "select/deselect all"
 msgstr "Tout sélectionner/désélectionner"
 
-#: ../src/gui/preferences_ai.c:1520 ../src/libs/metadata_view.c:137
+#: ../src/gui/preferences_ai.c:1515 ../src/libs/metadata_view.c:137
 msgid "version"
 msgstr "Version"
 
-#: ../src/gui/preferences_ai.c:1529
+#: ../src/gui/preferences_ai.c:1524
 msgid "task"
 msgstr "Tâche"
 
-#: ../src/gui/preferences_ai.c:1544
+#: ../src/gui/preferences_ai.c:1539
 msgid "enabled"
 msgstr "Activé"
 
-#: ../src/gui/preferences_ai.c:1554
+#: ../src/gui/preferences_ai.c:1549
 msgid "status"
 msgstr "État"
 
 #. download selected button
-#: ../src/gui/preferences_ai.c:1596
+#: ../src/gui/preferences_ai.c:1591
 msgid "download selected"
 msgstr "Télécharger la sélection"
 
-#: ../src/gui/preferences_ai.c:1598
+#: ../src/gui/preferences_ai.c:1593
 msgid "download or update the selected models"
 msgstr "Télécharger ou mettre à jour tous les modèles sélectionnés"
 
 #. download default button
-#: ../src/gui/preferences_ai.c:1607
+#: ../src/gui/preferences_ai.c:1602
 msgid "download default"
 msgstr "Télécharger les défauts"
 
-#: ../src/gui/preferences_ai.c:1609
+#: ../src/gui/preferences_ai.c:1604
 msgid "download or update all default models"
 msgstr "Télécharger ou mettre à jour tous les modèles par défaut"
 
 #. download all button
-#: ../src/gui/preferences_ai.c:1618
+#: ../src/gui/preferences_ai.c:1613
 msgid "download all"
 msgstr "Tout télécharger"
 
-#: ../src/gui/preferences_ai.c:1620
+#: ../src/gui/preferences_ai.c:1615
 msgid "download or update all available models"
 msgstr "Télécharger ou mettre à jour tous les modèles disponibles"
 
 #. install model button
-#: ../src/gui/preferences_ai.c:1626
+#: ../src/gui/preferences_ai.c:1621
 msgid "install model"
 msgstr "Installer modèle"
 
-#: ../src/gui/preferences_ai.c:1628
+#: ../src/gui/preferences_ai.c:1623
 msgid "install a model from a local .dtmodel file"
 msgstr "Installer un modèle depuis un fichier « .dtmodel » local"
 
 #. delete selected button
-#: ../src/gui/preferences_ai.c:1633
+#: ../src/gui/preferences_ai.c:1628
 msgid "delete selected"
 msgstr "Supprimer les sélectionnés"
 
-#: ../src/gui/preferences_ai.c:1635
+#: ../src/gui/preferences_ai.c:1630
 msgid "remove the selected models from disk"
 msgstr "Supprimer les modèles sélectionnés du disque"
 
 #. add to stack
-#: ../src/gui/preferences_ai.c:1651
+#: ../src/gui/preferences_ai.c:1646
 msgid "AI"
 msgstr "IA"
 
@@ -18496,6 +18502,7 @@ msgstr "Correctif et créatif"
 #: ../src/iop/agx.c:59 ../src/iop/ashift.c:125 ../src/iop/ashift.c:127
 #: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:104
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:90 ../src/iop/blurs.c:91
+#: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:217
@@ -18684,7 +18691,7 @@ msgstr "Montrer la courbe"
 #: ../src/iop/agx.c:1954 ../src/iop/atrous.c:1773
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:2981
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3636
-#: ../src/iop/filmicrgb.c:4352 ../src/iop/lowlight.c:807
+#: ../src/iop/filmicrgb.c:4356 ../src/iop/lowlight.c:807
 #: ../src/iop/rawdenoise.c:910 ../src/iop/toneequal.c:3284
 msgid "graph"
 msgstr "Graphique"
@@ -18768,7 +18775,7 @@ msgstr "Exposition relative sous le gris moyen (point noir)"
 msgid "pick the black point"
 msgstr "Sélectionne le point noir"
 
-#: ../src/iop/agx.c:2065 ../src/iop/filmicrgb.c:4406
+#: ../src/iop/agx.c:2065 ../src/iop/filmicrgb.c:4412
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -18776,8 +18783,8 @@ msgstr ""
 "Augmente ou diminue la plage dynamique calculée.\n"
 "Ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
 
-#: ../src/iop/agx.c:2071 ../src/iop/agx.c:2074 ../src/iop/filmic.c:1509
-#: ../src/iop/filmicrgb.c:4412 ../src/iop/profile_gamma.c:640
+#: ../src/iop/agx.c:2071 ../src/iop/agx.c:2074 ../src/iop/filmic.c:1515
+#: ../src/iop/filmicrgb.c:4418 ../src/iop/profile_gamma.c:640
 msgid "auto tune levels"
 msgstr "Niveaux automatiques"
 
@@ -19746,9 +19753,10 @@ msgstr ""
 "pour débruiter ou lisser les textures."
 
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
-#: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:822
-#: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:132 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
+#: ../src/iop/cacorrectrgb.c:168 ../src/iop/channelmixer.c:138
+#: ../src/iop/denoiseprofile.c:822 ../src/iop/diffuse.c:141
+#: ../src/iop/enlargecanvas.c:82 ../src/iop/exposure.c:132
+#: ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
 #: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
@@ -20088,22 +20096,19 @@ msgstr ""
 "aberrations chromatiques,\n"
 "uniquement pour les capteur de Bayer."
 
-#: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
-#: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
-#: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
-#: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:104
-#: ../src/iop/rasterfile.c:106 ../src/iop/rawdenoise.c:141
-#: ../src/iop/rawdenoise.c:143 ../src/iop/rawprepare.c:171
-#: ../src/iop/rawprepare.c:173 ../src/iop/temperature.c:250
-#: ../src/iop/temperature.c:252
+#: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84 ../src/iop/demosaic.c:318
+#: ../src/iop/highlights.c:177 ../src/iop/highlights.c:179
+#: ../src/iop/hotpixels.c:74 ../src/iop/hotpixels.c:76
+#: ../src/iop/rasterfile.c:104 ../src/iop/rasterfile.c:106
+#: ../src/iop/rawdenoise.c:141 ../src/iop/rawdenoise.c:143
+#: ../src/iop/rawprepare.c:171 ../src/iop/rawprepare.c:173
+#: ../src/iop/temperature.c:250 ../src/iop/temperature.c:252
 msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
-#: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133 ../src/iop/rasterfile.c:105
-#: ../src/iop/rawdenoise.c:142 ../src/iop/rawprepare.c:172
-#: ../src/iop/temperature.c:251
+#: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:319 ../src/iop/invert.c:133
+#: ../src/iop/rasterfile.c:105 ../src/iop/rawdenoise.c:142
+#: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
 msgstr "Linéaire, RAW"
 
@@ -22032,7 +22037,7 @@ msgstr "Teal & Orange"
 
 #. Page OPTIONS
 #: ../src/iop/colorequal.c:2886 ../src/iop/colorequal.c:3089
-#: ../src/iop/filmicrgb.c:4552
+#: ../src/iop/filmicrgb.c:4565
 msgid "options"
 msgstr "Options"
 
@@ -24023,13 +24028,13 @@ msgstr "16 IL (HDR)"
 msgid "18 EV (HDR++)"
 msgstr "18 IL (HDR++)"
 
-#: ../src/iop/filmic.c:1461
+#: ../src/iop/filmic.c:1462
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "Graphe non interactif, utiliser les paramètres ci-dessous pour modifier les "
 "nœuds"
 
-#: ../src/iop/filmic.c:1469
+#: ../src/iop/filmic.c:1471
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -24037,7 +24042,7 @@ msgstr ""
 "Ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "Sauf pour les scènes sombres, cette valeur devrait être proche de 18 %."
 
-#: ../src/iop/filmic.c:1480 ../src/iop/filmicrgb.c:4387
+#: ../src/iop/filmic.c:1483 ../src/iop/filmicrgb.c:4391
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -24047,7 +24052,7 @@ msgstr ""
 "C’est la valeur que donnerait un posemètre sur la scène.\n"
 "Ajuster pour éviter de tronquer les hautes lumières."
 
-#: ../src/iop/filmic.c:1492 ../src/iop/filmicrgb.c:4398
+#: ../src/iop/filmic.c:1496 ../src/iop/filmicrgb.c:4402
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -24059,7 +24064,7 @@ msgstr ""
 "Augmenter pour avoir plus de contraste.\n"
 "Diminuer pour récupérer des détails dans les basses lumières."
 
-#: ../src/iop/filmic.c:1503
+#: ../src/iop/filmic.c:1509
 msgid ""
 "increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -24067,7 +24072,7 @@ msgstr ""
 "Augmente ou diminue la plage dynamique calculée.\n"
 "Ceci est utile avec l’utilisation des « Niveaux automatiques »."
 
-#: ../src/iop/filmic.c:1512
+#: ../src/iop/filmic.c:1519
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -24079,7 +24084,7 @@ msgstr ""
 "Marche mieux sur les paysages et images exposées uniformément\n"
 "et donnera de mauvais résultat sur des clairs-obscurs et high-key."
 
-#: ../src/iop/filmic.c:1520 ../src/iop/filmicrgb.c:4495
+#: ../src/iop/filmic.c:1529 ../src/iop/filmicrgb.c:4503
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -24087,13 +24092,12 @@ msgstr ""
 "Pente de la partie linéaire de la courbe,\n"
 "touche principalement les tons moyens"
 
-#. geotagging
-#: ../src/iop/filmic.c:1527 ../src/iop/filmicrgb.c:4504
-#: ../src/libs/metadata_view.c:169
+#: ../src/iop/filmic.c:1536 ../src/iop/filmicrgb.c:4513
+msgctxt "curve-linear-part-width"
 msgid "latitude"
-msgstr "Latitude"
+msgstr "Largeur"
 
-#: ../src/iop/filmic.c:1529
+#: ../src/iop/filmic.c:1539
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -24103,11 +24107,11 @@ msgstr ""
 "Augmenter pour obtenir plus de contraste dans les luminances extrêmes.\n"
 "Ce réglage n’a aucun effet dans les tons moyens."
 
-#: ../src/iop/filmic.c:1536
+#: ../src/iop/filmic.c:1546
 msgid "shadows/highlights balance"
 msgstr "Balance ombres/hautes lumières"
 
-#: ../src/iop/filmic.c:1538 ../src/iop/filmicrgb.c:4515
+#: ../src/iop/filmic.c:1549 ../src/iop/filmicrgb.c:4525
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -24118,7 +24122,7 @@ msgstr ""
 "aux ombres ou hautes lumières.\n"
 "À utiliser pour protéger les détails aux extrémités de l’histogramme."
 
-#: ../src/iop/filmic.c:1547
+#: ../src/iop/filmic.c:1561
 msgid ""
 "desaturates the input of the module globally.\n"
 "you need to set this value below 100%\n"
@@ -24128,7 +24132,7 @@ msgstr ""
 "La valeur doit être en dessous de 100%\n"
 "si la conservation de la chrominance est activée."
 
-#: ../src/iop/filmic.c:1556
+#: ../src/iop/filmic.c:1572
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -24138,38 +24142,37 @@ msgstr ""
 "Diminuer si les ombres et/ou les hautes lumières sont sur-saturés."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1566 ../src/libs/export.c:1617
+#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1617
 #: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2920
 #: ../src/views/darkroom.c:3148 ../src/views/lighttable.c:1353
 msgid "intent"
 msgstr "Rendu"
 
-#: ../src/iop/filmic.c:1567
+#: ../src/iop/filmic.c:1584
 msgid "contrasted"
 msgstr "Contrasté"
 
 #. centripetal spline
-#: ../src/iop/filmic.c:1569 ../src/iop/profile_gamma.c:602
+#: ../src/iop/filmic.c:1586 ../src/iop/profile_gamma.c:602
 msgid "linear"
 msgstr "Linéaire"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1570
+#: ../src/iop/filmic.c:1587
 msgid "optimized"
 msgstr "Optimisé"
 
-#. monotonic spline
-#: ../src/iop/filmic.c:1571
+#: ../src/iop/filmic.c:1589
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
 "Changer la méthode si des contrastes inversés ou des noirs fades apparaissent"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1575
+#: ../src/iop/filmic.c:1593
 msgid "preserve the chrominance"
 msgstr "Préserver la couleur"
 
-#: ../src/iop/filmic.c:1577
+#: ../src/iop/filmic.c:1596
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -24180,7 +24183,7 @@ msgstr ""
 "chromatiques,\n"
 "il est nécessaire d’ajuster manuellement la saturation dans ce mode."
 
-#: ../src/iop/filmic.c:1586 ../src/iop/filmicrgb.c:4534
+#: ../src/iop/filmic.c:1606 ../src/iop/filmicrgb.c:4546
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -24188,7 +24191,7 @@ msgstr ""
 "Luminance du noir pur de sortie, devrait être à 0%\n"
 "sauf pour obtenir des tons fades."
 
-#: ../src/iop/filmic.c:1594 ../src/iop/filmicrgb.c:4541
+#: ../src/iop/filmic.c:1615 ../src/iop/filmicrgb.c:4553
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -24196,7 +24199,7 @@ msgstr ""
 "Valeur du gris moyen de la cible de sortie ou de l’espace de couleur.\n"
 "Ne jamais modifier sauf en connaissance de cause."
 
-#: ../src/iop/filmic.c:1602 ../src/iop/filmicrgb.c:4548
+#: ../src/iop/filmic.c:1624 ../src/iop/filmicrgb.c:4561
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -24204,11 +24207,11 @@ msgstr ""
 "Luminance du blanc pur de sortie, devrait être à 100%\n"
 "sauf pour obtenir des tons fades."
 
-#: ../src/iop/filmic.c:1608
+#: ../src/iop/filmic.c:1630
 msgid "target gamma"
 msgstr "Gamma cible"
 
-#: ../src/iop/filmic.c:1609
+#: ../src/iop/filmic.c:1632
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -24218,17 +24221,17 @@ msgstr ""
 "de l’affichage ou de l’espace de couleur.\n"
 "Ne jamais modifier sauf en connaissance de cause."
 
-#: ../src/iop/filmic.c:1616
+#: ../src/iop/filmic.c:1640
 msgctxt "section"
 msgid "destination/display"
 msgstr "Destination / Affichage"
 
-#: ../src/iop/filmic.c:1625
+#: ../src/iop/filmic.c:1649
 msgctxt "section"
 msgid "logarithmic shaper"
 msgstr "Transformation logarithmique"
 
-#: ../src/iop/filmic.c:1631
+#: ../src/iop/filmic.c:1655
 msgctxt "section"
 msgid "filmic S curve"
 msgstr "Courbe filmique en S"
@@ -24306,7 +24309,7 @@ msgid "% camera"
 msgstr "% Boîtier"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3870 ../src/iop/filmicrgb.c:4528
+#: ../src/iop/filmicrgb.c:3870 ../src/iop/filmicrgb.c:4539
 msgid "display"
 msgstr "Affichage"
 
@@ -24316,7 +24319,7 @@ msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3888 ../src/iop/filmicrgb.c:4367
+#: ../src/iop/filmicrgb.c:3888 ../src/iop/filmicrgb.c:4371
 msgid "scene"
 msgstr "Scène"
 
@@ -24325,8 +24328,7 @@ msgstr "Scène"
 msgid "(EV)"
 msgstr "(IL)"
 
-#. we are over the graph area
-#: ../src/iop/filmicrgb.c:4307
+#: ../src/iop/filmicrgb.c:4309
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -24336,11 +24338,11 @@ msgstr ""
 "La courbe claire représente le mappage des tonalités,\n"
 "la courbe sombre représente la désaturation."
 
-#: ../src/iop/filmicrgb.c:4313
+#: ../src/iop/filmicrgb.c:4316
 msgid "toggle axis labels and values display"
 msgstr "Basculer les légendes des axes"
 
-#: ../src/iop/filmicrgb.c:4317
+#: ../src/iop/filmicrgb.c:4321
 msgid ""
 "cycle through graph views.\n"
 "left-click: cycle forward.\n"
@@ -24352,7 +24354,7 @@ msgstr ""
 " • Clic-droit pour la vue précédente\n"
 " • Double-clic pour réinitialiser la vue"
 
-#: ../src/iop/filmicrgb.c:4376
+#: ../src/iop/filmicrgb.c:4380
 #, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
@@ -24363,7 +24365,7 @@ msgstr ""
 "La valeur entrée sera réglée pour correspondre à 18.45 %,\n"
 "Diminuer pour augmenter la luminosité globale."
 
-#: ../src/iop/filmicrgb.c:4413
+#: ../src/iop/filmicrgb.c:4420
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -24380,16 +24382,16 @@ msgstr ""
 "S’assurer de bien comprendre l’analyse avant de l’utiliser."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4422
+#: ../src/iop/filmicrgb.c:4429
 msgid "reconstruct"
 msgstr "Reconstruire"
 
-#: ../src/iop/filmicrgb.c:4424
+#: ../src/iop/filmicrgb.c:4431
 msgctxt "section"
 msgid "highlights clipping"
 msgstr "Hautes lumières tronquées"
 
-#: ../src/iop/filmicrgb.c:4431
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -24403,7 +24405,7 @@ msgstr ""
 "0 IL signifie que le seuil est le même que le point blanc de la scène.\n"
 "Diminuer pour inclure plus de zones, augmenter pour en exclure plus."
 
-#: ../src/iop/filmicrgb.c:4441
+#: ../src/iop/filmicrgb.c:4448
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -24415,16 +24417,16 @@ msgstr ""
 "augmenter pour une transition plus douce et floutée."
 
 #. Highlight Reconstruction Mask
-#: ../src/iop/filmicrgb.c:4446 ../src/iop/filmicrgb.c:4447
+#: ../src/iop/filmicrgb.c:4453 ../src/iop/filmicrgb.c:4454
 msgid "display highlight reconstruction mask"
 msgstr "Afficher le masque de reconstruction"
 
-#: ../src/iop/filmicrgb.c:4453
+#: ../src/iop/filmicrgb.c:4460
 msgctxt "section"
 msgid "balance"
 msgstr "Répartition"
 
-#: ../src/iop/filmicrgb.c:4459
+#: ../src/iop/filmicrgb.c:4466
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24441,7 +24443,7 @@ msgstr ""
 "n’est pas tronqué, diminuer si tous les canaux RVB sont tronqués sur une "
 "large zone."
 
-#: ../src/iop/filmicrgb.c:4470
+#: ../src/iop/filmicrgb.c:4477
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24457,7 +24459,7 @@ msgstr ""
 "0% est une moyenne équilibrée des deux. Augmenter pour plus de détails,\n"
 "diminuer pour plus de flou."
 
-#: ../src/iop/filmicrgb.c:4482
+#: ../src/iop/filmicrgb.c:4489
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24474,11 +24476,11 @@ msgstr ""
 "diminuer pour éviter les hautes lumières magentas ou hors gamut."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4490
+#: ../src/iop/filmicrgb.c:4497
 msgid "look"
 msgstr "Look"
 
-#: ../src/iop/filmicrgb.c:4500
+#: ../src/iop/filmicrgb.c:4509
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -24488,7 +24490,7 @@ msgstr ""
 "Augmenter pour rendre les hautes lumières plus claires et moins compressées,\n"
 "diminuer pour contenir les hautes lumières."
 
-#: ../src/iop/filmicrgb.c:4508
+#: ../src/iop/filmicrgb.c:4517
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -24502,7 +24504,7 @@ msgstr ""
 "latitude.\n"
 "Ce réglage n’a pas d’effet sur les tons moyens."
 
-#: ../src/iop/filmicrgb.c:4523 ../src/iop/filmicrgb.c:4667
+#: ../src/iop/filmicrgb.c:4534 ../src/iop/filmicrgb.c:4686
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -24511,7 +24513,7 @@ msgstr ""
 "Désature la sortie du module, plus particulièrement aux luminances extrêmes.\n"
 "Augmenter si les ombres et/ou les hautes lumières sont sous-saturées."
 
-#: ../src/iop/filmicrgb.c:4557
+#: ../src/iop/filmicrgb.c:4570
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -24521,7 +24523,7 @@ msgstr ""
 " • V4 est la nouvelle méthode de désaturation basée sur la pureté du spectre "
 "de la lumière."
 
-#: ../src/iop/filmicrgb.c:4561
+#: ../src/iop/filmicrgb.c:4575
 msgid ""
 "ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -24531,7 +24533,7 @@ msgstr ""
 "Peut renforcer les aberrations chromatiques et le bruit chromatique,\n"
 "il est nécessaire de s’assurer qu’ils sont correctement corrigés auparavant."
 
-#: ../src/iop/filmicrgb.c:4570
+#: ../src/iop/filmicrgb.c:4585
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -24541,7 +24543,7 @@ msgstr ""
 " • Dur pour une compression tonale plus importante\n"
 " • Doux pour une compression tonale plus faible"
 
-#: ../src/iop/filmicrgb.c:4575
+#: ../src/iop/filmicrgb.c:4591
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -24551,7 +24553,7 @@ msgstr ""
 " • Dur pour une compression tonale plus importante\n"
 " • Doux pour une compression tonale plus faible"
 
-#: ../src/iop/filmicrgb.c:4582
+#: ../src/iop/filmicrgb.c:4598
 #, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -24564,7 +24566,7 @@ msgstr ""
 "« Exposition ».\n"
 "Désactiver pour utiliser un gris moyen standard de 18.45 %."
 
-#: ../src/iop/filmicrgb.c:4589
+#: ../src/iop/filmicrgb.c:4605
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -24576,7 +24578,7 @@ msgstr ""
 "Cela ne modifie pas le gris moyen et améliore les réglages rapides.\n"
 "Désactiver pour contrôler manuellement."
 
-#: ../src/iop/filmicrgb.c:4595
+#: ../src/iop/filmicrgb.c:4611
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighborhood.\n"
@@ -24590,7 +24592,7 @@ msgstr ""
 "aussi\n"
 "dans les cas difficiles de hautes lumières magentas."
 
-#: ../src/iop/filmicrgb.c:4602
+#: ../src/iop/filmicrgb.c:4619
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -24601,7 +24603,7 @@ msgstr ""
 "Cela évite des hautes lumières lisses quand l’image est un peu bruitée,\n"
 "les hautes lumières se fondent alors mieux avec le reste de l’image."
 
-#: ../src/iop/filmicrgb.c:4609
+#: ../src/iop/filmicrgb.c:4627
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern."
@@ -24609,11 +24611,11 @@ msgstr ""
 "Sélectionner la distribution statistique du bruit,\n"
 "pour ressembler au bruit naturel du capteur."
 
-#: ../src/iop/filmicrgb.c:4673
+#: ../src/iop/filmicrgb.c:4692
 msgid "mid-tones saturation"
 msgstr "Saturation des tons moyens"
 
-#: ../src/iop/filmicrgb.c:4674
+#: ../src/iop/filmicrgb.c:4694
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -24623,11 +24625,11 @@ msgstr ""
 "plus particulièrement aux luminances moyennes.\n"
 "Augmenter si les tons moyens sont sous-saturés."
 
-#: ../src/iop/filmicrgb.c:4680
+#: ../src/iop/filmicrgb.c:4700
 msgid "highlights saturation mix"
 msgstr "Saturation des hautes lumières"
 
-#: ../src/iop/filmicrgb.c:4681
+#: ../src/iop/filmicrgb.c:4702
 msgid ""
 "positive values ensure saturation is kept unchanged over the whole range.\n"
 "negative values bleach highlights at constant hue and luminance.\n"
@@ -30880,6 +30882,11 @@ msgstr "Largeur recadrée"
 msgid "export height"
 msgstr "Hauteur recadrée"
 
+#. geotagging
+#: ../src/libs/metadata_view.c:169
+msgid "latitude"
+msgstr "Latitude"
+
 #: ../src/libs/metadata_view.c:170
 msgid "longitude"
 msgstr "Longitude"
@@ -34096,6 +34103,12 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#, c-format
+#~ msgid "delete %d selected model?"
+#~ msgid_plural "delete %d selected models?"
+#~ msgstr[0] "Supprimer %d modèle sélectionné ?"
+#~ msgstr[1] "Supprimer %d modèles sélectionnés ?"
 
 #~ msgid "refresh"
 #~ msgstr "Rafraîchir"
