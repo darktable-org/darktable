@@ -70,9 +70,9 @@ DT_MODULE_INTROSPECTION(6, dt_iop_filmicrgb_params_t)
  *
  * This code ports :
  * 1. Troy Sobotka's filmic curves for Blender (and other softs)
- *      https://github.com/sobotka/OpenAgX/blob/master/lib/agx_colour.py
+ *   https://github.com/sobotka/OpenAgXTools/blob/master/agx_colour.py
  * 2. ACES camera logarithmic encoding
- *        https://github.com/ampas/aces-dev/blob/master/transforms/ctl/utilities/ACESutil.Lin_to_Log2_param.ctl
+ *   https://github.com/aces-aswf/aces-core/blob/v1.3.1/transforms/ctl/utilities/ACESutil.Lin_to_Log2_param.ctl
  *
  * The ACES log implementation is taken from the profile_gamma.c IOP
  * where it works in camera RGB space. Here, it works on an arbitrary RGB
@@ -4298,26 +4298,30 @@ static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *even
       }
     }
 
-    if(!found_something) g->active_button = DT_FILMIC_GUI_BUTTON_LAST; // mouse is over no known button
+    if(!found_something)
+      g->active_button = DT_FILMIC_GUI_BUTTON_LAST; // mouse is over no known button
 
     // update the tooltips
     if(g->active_button == DT_FILMIC_GUI_BUTTON_LAST && x < g->buttons[0].left)
     {
       // we are over the graph area
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("use the parameters below to set the nodes.\n"
-                                                         "the bright curve is the filmic tone mapping curve\n"
-                                                         "the dark curve is the desaturation curve."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area),
+                                  _("use the parameters below to set the nodes.\n"
+                                    "the bright curve is the filmic tone mapping curve\n"
+                                    "the dark curve is the desaturation curve."));
     }
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
     {
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("toggle axis labels and values display"));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area),
+                                  _("toggle axis labels and values display"));
     }
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
     {
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("cycle through graph views.\n"
-                                                         "left-click: cycle forward.\n"
-                                                         "right-click: cycle backward.\n"
-                                                         "double-click: reset to look view."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area),
+                                  _("cycle through graph views.\n"
+                                    "left-click: cycle forward.\n"
+                                    "right-click: cycle backward.\n"
+                                    "double-click: reset to look view."));
     }
     else
     {
@@ -4394,28 +4398,31 @@ void gui_init(dt_iop_module_t *self)
                             dt_bauhaus_slider_from_params(self, "black_point_source"));
   dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   dt_bauhaus_slider_set_format(g->black_point_source, _(" EV"));
-  gtk_widget_set_tooltip_text(
-      g->black_point_source, _("number of stops between middle gray and pure black.\n"
-                               "this is a reading a lightmeter would give you on the scene.\n"
-                               "increase to get more contrast.\ndecrease to recover more details in low-lights."));
+  gtk_widget_set_tooltip_text(g->black_point_source,
+                              _("number of stops between middle gray and pure black.\n"
+                                "this is a reading a lightmeter would give you on the scene.\n"
+                                "increase to get more contrast.\n"
+                                "decrease to recover more details in low-lights."));
 
   // Dynamic range scaling
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
   dt_bauhaus_slider_set_soft_max(g->security_factor, 50);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically increase or decrease the computed dynamic range.\n"
-                                                    "useful to give a safety margin to extreme luminances."));
+  gtk_widget_set_tooltip_text(g->security_factor,
+                              _("symmetrically increase or decrease the computed dynamic range.\n"
+                                "useful to give a safety margin to extreme luminances."));
 
   // Auto tune slider
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
                                        dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
-  gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
-                                                "this will fit the luminance range inside the histogram bounds.\n"
-                                                "works better for landscapes and evenly-lit images\n"
-                                                "but fails for high-keys, low-keys and high-ISO images.\n"
-                                                "this is not an artificial intelligence, but a simple guess.\n"
-                                                "ensure you understand its assumptions before using it."));
+  gtk_widget_set_tooltip_text(g->auto_button,
+                              _("try to optimize the settings with some statistical assumptions.\n"
+                                "this will fit the luminance range inside the histogram bounds.\n"
+                                "works better for landscapes and evenly-lit images\n"
+                                "but fails for high-keys, low-keys and high-ISO images.\n"
+                                "this is not an artificial intelligence, but a simple guess.\n"
+                                "ensure you understand its assumptions before using it."));
   dt_gui_box_add(self->widget, g->auto_button);
 
   // Page RECONSTRUCT
@@ -4492,16 +4499,18 @@ void gui_init(dt_iop_module_t *self)
   g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 0.5, 3.0);
   dt_bauhaus_slider_set_digits(g->contrast, 3);
-  gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
-                                             "affects mostly the mid-tones"));
+  gtk_widget_set_tooltip_text(g->contrast,
+                              _("slope of the linear part of the curve\n"
+                                "affects mostly the mid-tones"));
 
   // brightness slider
   g->output_power = dt_bauhaus_slider_from_params(self, "output_power");
-  gtk_widget_set_tooltip_text(g->output_power, _("equivalent to paper grade in analog.\n"
-                                                 "increase to make highlights brighter and less compressed.\n"
-                                                 "decrease to mute highlights."));
+  gtk_widget_set_tooltip_text(g->output_power,
+                              _("equivalent to paper grade in analog.\n"
+                                "increase to make highlights brighter and less compressed.\n"
+                                "decrease to mute highlights."));
 
-  g->latitude = dt_bauhaus_slider_from_params(self, N_("latitude"));
+  g->latitude = dt_bauhaus_slider_from_params(self, NC_("curve-linear-part-width", "latitude"));
   dt_bauhaus_slider_set_soft_range(g->latitude, 0.1, 90.0);
   dt_bauhaus_slider_set_format(g->latitude, "%");
   gtk_widget_set_tooltip_text(g->latitude,
@@ -4512,17 +4521,19 @@ void gui_init(dt_iop_module_t *self)
 
   g->balance = dt_bauhaus_slider_from_params(self, "balance");
   dt_bauhaus_slider_set_format(g->balance, "%");
-  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope\n"
-                                            "to give more room to shadows or highlights.\n"
-                                            "use it if you need to protect the details\n"
-                                            "at one extremity of the histogram."));
+  gtk_widget_set_tooltip_text(g->balance,
+                              _("slides the latitude along the slope\n"
+                                "to give more room to shadows or highlights.\n"
+                                "use it if you need to protect the details\n"
+                                "at one extremity of the histogram."));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_soft_range(g->saturation, -50.0, 50.0);
   dt_bauhaus_slider_set_format(g->saturation, "%");
-  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
-                                               "specifically at extreme luminances.\n"
-                                               "increase if shadows and/or highlights are under-saturated."));
+  gtk_widget_set_tooltip_text(g->saturation,
+                              _("desaturates the output of the module\n"
+                                "specifically at extreme luminances.\n"
+                                "increase if shadows and/or highlights are under-saturated."));
 
   // Page DISPLAY
   self->widget = dt_ui_notebook_page(g->notebook, N_("display"), NULL);
@@ -4531,8 +4542,9 @@ void gui_init(dt_iop_module_t *self)
   g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
   dt_bauhaus_slider_set_digits(g->black_point_target, 4);
   dt_bauhaus_slider_set_format(g->black_point_target, "%");
-  gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
-                                                       "this should be 0%\nexcept if you want a faded look"));
+  gtk_widget_set_tooltip_text(g->black_point_target,
+                              _("luminance of output pure black, this should be 0%\n"
+                                "except if you want a faded look"));
 
   g->grey_point_target = dt_bauhaus_slider_from_params(self, "grey_point_target");
   dt_bauhaus_slider_set_digits(g->grey_point_target, 4);
@@ -4545,8 +4557,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->white_point_target, 100.0);
   dt_bauhaus_slider_set_digits(g->white_point_target, 4);
   dt_bauhaus_slider_set_format(g->white_point_target, "%");
-  gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
-                                                       "this should be 100%\nexcept if you want a faded look"));
+  gtk_widget_set_tooltip_text(g->white_point_target,
+                              _("luminance of output pure white, this should be 100%\n"
+                                "except if you want a faded look"));
 
   // Page OPTIONS
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
@@ -4558,23 +4571,26 @@ void gui_init(dt_iop_module_t *self)
                                 "v4 is a newer desaturation method, based on spectral purity of light."));
 
   g->preserve_color = dt_bauhaus_combobox_from_params(self, "preserve_color");
-  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original colors are preserved.\n"
-                                                   "may reinforce chromatic aberrations and chroma noise,\n"
-                                                   "so ensure they are properly corrected elsewhere."));
+  gtk_widget_set_tooltip_text(g->preserve_color,
+                              _("ensure the original colors are preserved.\n"
+                                "may reinforce chromatic aberrations and chroma noise,\n"
+                                "so ensure they are properly corrected elsewhere."));
   // hide legacy Euclidean norm by default
   const int pos = dt_bauhaus_combobox_get_from_value(g->preserve_color, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1);
   dt_bauhaus_combobox_remove_at(g->preserve_color, pos);
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
-  gtk_widget_set_tooltip_text(g->highlights, _("choose the desired curvature of the filmic spline in highlights.\n"
-                                               "hard uses a high curvature resulting in more tonal compression.\n"
-                                               "soft uses a low curvature resulting in less tonal compression."));
+  gtk_widget_set_tooltip_text(g->highlights,
+                              _("choose the desired curvature of the filmic spline in highlights.\n"
+                                "hard uses a high curvature resulting in more tonal compression.\n"
+                                "soft uses a low curvature resulting in less tonal compression."));
 
   g->shadows = dt_bauhaus_combobox_from_params(self, "shadows");
-  gtk_widget_set_tooltip_text(g->shadows, _("choose the desired curvature of the filmic spline in shadows.\n"
-                                            "hard uses a high curvature resulting in more tonal compression.\n"
-                                            "soft uses a low curvature resulting in less tonal compression."));
+  gtk_widget_set_tooltip_text(g->shadows,
+                              _("choose the desired curvature of the filmic spline in shadows.\n"
+                                "hard uses a high curvature resulting in more tonal compression.\n"
+                                "soft uses a low curvature resulting in less tonal compression."));
 
   g->custom_grey = dt_bauhaus_toggle_from_params(self, "custom_grey");
   gtk_widget_set_tooltip_text(g->custom_grey,
@@ -4599,15 +4615,17 @@ void gui_init(dt_iop_module_t *self)
 
   // Highlight noise
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
-  gtk_widget_set_tooltip_text(g->noise_level, _("add statistical noise in reconstructed highlights.\n"
-                                                "this avoids highlights to look too smooth\n"
-                                                "when the image is noisy overall,\n"
-                                                "so they blend with the rest of the image."));
+  gtk_widget_set_tooltip_text(g->noise_level,
+                              _("add statistical noise in reconstructed highlights.\n"
+                                "this avoids highlights to look too smooth\n"
+                                "when the image is noisy overall,\n"
+                                "so they blend with the rest of the image."));
 
   // Noise distribution
   g->noise_distribution = dt_bauhaus_combobox_from_params(self, "noise_distribution");
-  gtk_widget_set_tooltip_text(g->noise_distribution, _("choose the statistical distribution of noise.\n"
-                                                       "this is useful to match natural sensor noise pattern."));
+  gtk_widget_set_tooltip_text(g->noise_distribution,
+                              _("choose the statistical distribution of noise.\n"
+                                "this is useful to match natural sensor noise pattern."));
 
   // start building top level widget
   self->widget = dt_gui_vbox(g->area, g->notebook);
@@ -4664,23 +4682,26 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(p->version == DT_FILMIC_COLORSCIENCE_V1 || p->version == DT_FILMIC_COLORSCIENCE_V4)
     {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
-      gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
-                                                   "specifically at extreme luminances.\n"
-                                                   "increase if shadows and/or highlights are under-saturated."));
+      gtk_widget_set_tooltip_text(g->saturation,
+                                  _("desaturates the output of the module\n"
+                                    "specifically at extreme luminances.\n"
+                                    "increase if shadows and/or highlights are under-saturated."));
     }
     else if(p->version == DT_FILMIC_COLORSCIENCE_V2 || p->version == DT_FILMIC_COLORSCIENCE_V3)
     {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("mid-tones saturation"));
-      gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
-                                                   "specifically at medium luminances.\n"
-                                                   "increase if midtones are under-saturated."));
+      gtk_widget_set_tooltip_text(g->saturation,
+                                  _("desaturates the output of the module\n"
+                                    "specifically at medium luminances.\n"
+                                    "increase if midtones are under-saturated."));
     }
     else if(p->version == DT_FILMIC_COLORSCIENCE_V5)
     {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("highlights saturation mix"));
-      gtk_widget_set_tooltip_text(g->saturation, _("positive values ensure saturation is kept unchanged over the whole range.\n"
-                                                   "negative values bleach highlights at constant hue and luminance.\n"
-                                                   "zero is an equal mix of both strategies."));
+      gtk_widget_set_tooltip_text(g->saturation,
+                                  _("positive values ensure saturation is kept unchanged over the whole range.\n"
+                                    "negative values bleach highlights at constant hue and luminance.\n"
+                                    "zero is an equal mix of both strategies."));
       gtk_widget_set_visible(GTK_WIDGET(g->preserve_color), FALSE);
     }
 
