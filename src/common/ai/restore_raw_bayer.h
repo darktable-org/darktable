@@ -23,7 +23,7 @@
 // WB, 2x2 pack), tiled inference with overlap blending, postprocessing
 // (un-WB, un-normalize), and re-mosaic back to the original CFA
 // pattern. produces a uint16 sensor-sized mosaic that is written to
-// DNG by dt_dng_write_cfa_bayer().
+// DNG by dt_imageio_dng_write_cfa_bayer().
 //
 // this is kept separate from the RGB denoise/upscale path in restore.c
 // because:

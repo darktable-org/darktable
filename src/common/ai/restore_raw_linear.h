@@ -32,7 +32,7 @@
 // output is a 3ch float RGB buffer at full sensor resolution, in the
 // same camRGB + raw ADC range as the source. the neural_restore batch
 // path re-mosaics nothing (this sensor type can't be round-tripped
-// through a CFA DNG) and writes a LinearRaw DNG via dng_writer.
+// through a CFA DNG) and writes a LinearRaw DNG via imageio_dng.
 
 #pragma once
 

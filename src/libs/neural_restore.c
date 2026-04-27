@@ -94,11 +94,11 @@
 //      - raw denoise (Bayer): pre-process the sensor CFA (black/WB/
 //        pack), run tiled inference via dt_restore_raw_bayer(), un-
 //        process and re-mosaic, write a CFA DNG via
-//        dt_dng_write_cfa_bayer().
+//        dt_imageio_dng_write_cfa_bayer().
 //      - raw denoise (X-Trans / linear): demosaic via the darktable
 //        pipe (rawprepare + highlights + demosaic only), run
 //        dt_restore_raw_linear(), write a LinearRaw DNG via
-//        dt_dng_write_linear().
+//        dt_imageio_dng_write_linear().
 //      - denoise / upscale (RGB): export via the darktable pipeline
 //        with a custom format module that intercepts the pixel
 //        buffer in _ai_write_image(). when strength < 100 (so the
@@ -195,7 +195,7 @@
 #include "common/collection.h"
 #include "common/variables.h"
 #include "common/colorspaces.h"
-#include "common/dng_writer.h"
+#include "imageio/imageio_dng.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
@@ -1046,9 +1046,9 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   uint8_t *exif_blob = NULL;
   const int exif_len = dt_exif_read_blob(&exif_blob, src_path, imgid,
                                          FALSE, width, height, TRUE);
-  res = dt_dng_write_cfa_bayer(out_filename, cfa_out,
-                               width, height, img_meta,
-                               exif_blob, exif_len);
+  res = dt_imageio_dng_write_cfa_bayer(out_filename, cfa_out,
+                                       width, height, img_meta,
+                                       exif_blob, exif_len);
   g_free(exif_blob);
   g_free(cfa_out);
   return res;
@@ -1075,8 +1075,8 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   uint8_t *exif_blob = NULL;
   const int exif_len = dt_exif_read_blob(&exif_blob, src_path, imgid,
                                          FALSE, w, h, TRUE);
-  res = dt_dng_write_linear(out_filename, rgb, w, h, img_meta,
-                            exif_blob, exif_len);
+  res = dt_imageio_dng_write_linear(out_filename, rgb, w, h, img_meta,
+                                    exif_blob, exif_len);
   g_free(exif_blob);
   dt_free_align(rgb);
   return res;

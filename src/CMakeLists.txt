@@ -160,6 +160,7 @@ FILE(GLOB SOURCE_FILES
   "gui/welcome.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
+  "imageio/imageio_dng.c"
   "imageio/imageio_jpeg.c"
   "imageio/imageio_module.c"
   "imageio/imageio_pfm.c"
@@ -465,7 +466,6 @@ if(USE_AI)
     "common/ai/restore_rgb.c"
     "common/ai/restore_raw_bayer.c"
     "common/ai/restore_raw_linear.c"
-    "common/dng_writer.c"
     "develop/masks/object.c"
     "gui/preferences_ai.c"
   )
