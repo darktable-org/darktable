@@ -249,6 +249,14 @@ typedef enum dt_neural_bpp_t
   NEURAL_BPP_32 = 2,
 } dt_neural_bpp_t;
 
+// preview-area placeholder state when no rendered preview exists
+typedef enum dt_nr_preview_err_t
+{
+  DT_NR_PREVIEW_ERR_NONE = 0,
+  DT_NR_PREVIEW_ERR_UNSUPPORTED,  // sensor class not handled by task
+  DT_NR_PREVIEW_ERR_INIT_FAILED,  // mipmap / model / cache load bailed
+} dt_nr_preview_err_t;
+
 typedef struct dt_lib_neural_restore_t
 {
   GtkNotebook *notebook;
@@ -280,6 +288,7 @@ typedef struct dt_lib_neural_restore_t
   gboolean preview_requested;
   gboolean dragging_split;
   gboolean preview_generating;
+  dt_nr_preview_err_t preview_error;
   gboolean recovery_changing;
   GThread *preview_thread;
   gint preview_sequence;
@@ -1507,6 +1516,8 @@ static void _update_info_label(dt_lib_neural_restore_t *d)
 
 static void _trigger_preview(dt_lib_module_t *self);
 static void _cancel_preview(dt_lib_module_t *self);
+static void _schedule_preview_failed(dt_lib_module_t *self,
+                                     dt_nr_preview_err_t err);
 
 static void _task_changed(dt_lib_neural_restore_t *d)
 {
@@ -1763,6 +1774,9 @@ static gpointer _preview_thread(gpointer data)
   dt_neural_preview_data_t *pd = (dt_neural_preview_data_t *)data;
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)pd->self->data;
 
+  // bail reason if we hit cleanup; stale-sequence bails are dropped
+  dt_nr_preview_err_t err = DT_NR_PREVIEW_ERR_INIT_FAILED;
+
   // reuse borrowed export if available (re-pick), otherwise export.
   // pixels points to either the borrowed buffer (not owned) or
   // cap.pixels (owned, must be freed on error or passed to result)
@@ -2018,8 +2032,13 @@ static gpointer _preview_thread(gpointer data)
   result->patch_center[0] = pd->patch_center[0];
   result->patch_center[1] = pd->patch_center[1];
   g_idle_add(_preview_result_idle, result);
+  g_free(pd);
+  return NULL;
 
 cleanup:
+  // bail: clear preview_generating on UI thread (stale-sequence bails dropped)
+  if(pd->sequence == g_atomic_int_get(&d->preview_sequence))
+    _schedule_preview_failed(pd->self, err);
   g_free(pd);
   return NULL;
 }
@@ -2256,16 +2275,33 @@ static void _schedule_raw_strength_reblend(dt_lib_module_t *self)
                     _strength_blend_timer_cb, self);
 }
 
-// fired when the raw worker bails before producing a result, so the UI
-// doesn't get stuck with preview_generating == TRUE forever.
-static gboolean _preview_raw_failed_idle(gpointer data)
+// fired when a preview worker bails: clears preview_generating and
+// records the bail reason so the placeholder shows it
+typedef struct
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  dt_lib_module_t *self;
+  dt_nr_preview_err_t err;
+} _preview_failed_data_t;
+
+static gboolean _preview_failed_idle(gpointer data)
+{
+  _preview_failed_data_t *fd = (_preview_failed_data_t *)data;
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)fd->self->data;
   d->preview_generating = FALSE;
+  d->preview_error = fd->err;
   _update_button_sensitivity(d);
   gtk_widget_queue_draw(d->preview_area);
+  g_free(fd);
   return G_SOURCE_REMOVE;
+}
+
+static void _schedule_preview_failed(dt_lib_module_t *self,
+                                     dt_nr_preview_err_t err)
+{
+  _preview_failed_data_t *fd = g_new0(_preview_failed_data_t, 1);
+  fd->self = self;
+  fd->err = err;
+  g_idle_add(_preview_failed_idle, fd);
 }
 
 static gboolean _preview_raw_result_idle(gpointer data)
@@ -2370,6 +2406,8 @@ static gpointer _preview_thread_raw(gpointer data)
   dt_neural_preview_data_t *pd = (dt_neural_preview_data_t *)data;
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)pd->self->data;
 
+  // bail reason for cleanup path; unsupported-sensor branch overrides
+  dt_nr_preview_err_t bail_err = DT_NR_PREVIEW_ERR_INIT_FAILED;
 
   // 1. load source image metadata to determine sensor type.
   //    on a fresh session dt_image_cache_get returns img_meta with a
@@ -2406,6 +2444,7 @@ static gpointer _preview_thread_raw(gpointer data)
              "[neural_restore] raw preview: imgid %d is not bayer/xtrans "
              "(filters=0x%x class=%d)",
              pd->imgid, filters, cls);
+    bail_err = DT_NR_PREVIEW_ERR_UNSUPPORTED;
     goto cleanup;
   }
   dt_print(DT_DEBUG_AI,
@@ -2747,12 +2786,9 @@ static gpointer _preview_thread_raw(gpointer data)
   return NULL;
 
 cleanup:
-  // worker bailed before producing a result. clear preview_generating
-  // on the UI thread so the user can re-trigger and the button state
-  // reflects reality. only schedule when the sequence is still current
-  // (a stale bail means a newer trigger is already in flight).
+  // bail: clear preview_generating on UI thread (stale-sequence bails dropped)
   if(pd->sequence == g_atomic_int_get(&d->preview_sequence))
-    g_idle_add(_preview_raw_failed_idle, pd->self);
+    _schedule_preview_failed(pd->self, bail_err);
   g_free(pd);
   return NULL;
 }
@@ -2822,6 +2858,7 @@ static void _trigger_preview(dt_lib_module_t *self)
 
   // invalidate current preview and bump sequence so running thread exits early
   d->preview_ready = FALSE;
+  d->preview_error = DT_NR_PREVIEW_ERR_NONE;
   g_atomic_int_inc(&d->preview_sequence);
   gtk_widget_queue_draw(d->preview_area);
 
@@ -3251,6 +3288,10 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *s
       ? _("generating preview...")
       : !d->preview_requested
       ? _("click to generate preview")
+      : d->preview_error == DT_NR_PREVIEW_ERR_UNSUPPORTED
+      ? _("image not supported by this task")
+      : d->preview_error == DT_NR_PREVIEW_ERR_INIT_FAILED
+      ? _("preview initialization failed")
       : _("select an image to preview");
     cairo_text_extents(cr, text, &ext);
     cairo_move_to(cr, (w - ext.width) / 2.0, (h + ext.height) / 2.0);
