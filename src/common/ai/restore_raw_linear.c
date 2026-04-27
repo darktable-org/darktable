@@ -85,33 +85,29 @@ static void _linear_build_M_boosted(const float input_to_cam[9],
       M[k * 3 + i] = input_to_cam[k * 3 + i] * inv_boost / wb_norm[k];
 }
 
-// per-channel scalar match_gain: tile_out[c] *= in_mean[c]/out_mean[c].
-// RawNIND linear output is arbitrary-scale camRGB-in-lin_rec2020 and
-// match_gain() is the canonical post-step that puts it back on the
-// input's scale. applied in place. out_gain[3] optional (batch uses it
-// for a tile0 diagnostic)
-static void _linear_gain_match_3ch(const float *tile_in,
-                                   float *tile_out,
-                                   size_t per_ch,
-                                   float out_gain[3])
+// scalar match_gain: tile_out *= in_mean / out_mean, where both means
+// are taken over all 3 channels and all spatial positions. mirrors the
+// upstream Python rawproc.match_gain (mean over (-1, -2, -3) dims),
+// which the model was trained against. applied in place. out_gain
+// optional (batch uses it for a tile0 diagnostic)
+static void _linear_gain_match(const float *tile_in,
+                               float *tile_out,
+                               size_t per_ch,
+                               float *out_gain)
 {
-  for(int k = 0; k < 3; k++)
+  const size_t total = per_ch * 3;
+  double in_sum = 0.0, out_sum = 0.0;
+  for(size_t i = 0; i < total; i++)
   {
-    const float *pi = tile_in + (size_t)k * per_ch;
-    float *po = tile_out + (size_t)k * per_ch;
-    double in_sum = 0.0, out_sum = 0.0;
-    for(size_t i = 0; i < per_ch; i++)
-    {
-      in_sum += pi[i];
-      out_sum += po[i];
-    }
-    const double im = in_sum / (double)per_ch;
-    const double om = out_sum / (double)per_ch;
-    const float g = (fabs(om) > 1e-8) ? (float)(im / om) : 1.0f;
-    if(g != 1.0f)
-      for(size_t i = 0; i < per_ch; i++) po[i] *= g;
-    if(out_gain) out_gain[k] = g;
+    in_sum += tile_in[i];
+    out_sum += tile_out[i];
   }
+  const double im = in_sum / (double)total;
+  const double om = out_sum / (double)total;
+  const float g = (fabs(om) > 1e-8) ? (float)(im / om) : 1.0f;
+  if(g != 1.0f)
+    for(size_t i = 0; i < total; i++) tile_out[i] *= g;
+  if(out_gain) *out_gain = g;
 }
 
 // derive + apply an exposure boost to a planar 3ch lin_rec2020 buffer.
@@ -630,20 +626,17 @@ retry:;
         break;
       }
 
-      // scalar match_gain per channel: tile_out *= in_mean / out_mean
-      // (applied in place by the helper). skipped for ABSOLUTE-scale
-      // models whose output is already calibrated
+      // scalar match_gain: tile_out *= in_mean / out_mean (applied in
+      // place by the helper). skipped for ABSOLUTE-scale models whose
+      // output is already calibrated
       const size_t per_ch = tile_plane;
-      float gain_ch[3] = { 1.0f, 1.0f, 1.0f };
+      float gain = 1.0f;
       if(ctx->output_scale == DT_RESTORE_OUT_MATCH_GAIN)
-        _linear_gain_match_3ch(tile_in, tile_out, per_ch, gain_ch);
+        _linear_gain_match(tile_in, tile_out, per_ch, &gain);
       if(tx == 0 && ty == 0)
-      {
         dt_print(DT_DEBUG_AI,
-                 "[restore_raw_linear] tile0 match_gain "
-                 "R=%.3e G=%.3e B=%.3e",
-                 gain_ch[0], gain_ch[1], gain_ch[2]);
-      }
+                 "[restore_raw_linear] tile0 match_gain=%.3e",
+                 (double)gain);
 
       const gboolean has_left = tx > 0;
       const gboolean has_right = tx < cols - 1;
@@ -1046,7 +1039,7 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
   }
 
   if(ctx->output_scale == DT_RESTORE_OUT_MATCH_GAIN)
-    _linear_gain_match_3ch(tile_in, tile_out, tile_plane, NULL);
+    _linear_gain_match(tile_in, tile_out, tile_plane, NULL);
   g_free(tile_in);
 
   // build matrix to reverse matrix + WB + boost + normalise
