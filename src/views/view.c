@@ -779,6 +779,17 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
                                                   cairo_surface_t **surface,
                                                   const gboolean quality)
 {
+  return dt_view_image_get_surface_cached(imgid, width, height, surface, quality, NULL, NULL);
+}
+
+dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
+                                                         const int32_t width,
+                                                         const int32_t height,
+                                                         cairo_surface_t **surface,
+                                                         const gboolean quality,
+                                                         cairo_surface_t **mip_cache,
+                                                         dt_mipmap_size_t *mip_cache_level)
+{
   const double tt = dt_get_debug_wtime();
 
   dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
@@ -793,6 +804,39 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   const int32_t mipwidth = width * darktable.gui->ppd;
   const int32_t mipheight = height * darktable.gui->ppd;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(mipwidth, mipheight);
+
+  // Fast path: if the caller provides a cached native-resolution surface for
+  // this exact mip level, skip the expensive mipmap fetch + color conversion
+  // and just rescale the existing cached surface.
+  if(mip_cache && *mip_cache && mip_cache_level && *mip_cache_level == mip
+     && cairo_surface_status(*mip_cache) == CAIRO_STATUS_SUCCESS)
+  {
+    const int32_t cached_wd = cairo_image_surface_get_width(*mip_cache);
+    const int32_t cached_ht = cairo_image_surface_get_height(*mip_cache);
+    if(cached_wd > 0 && cached_ht > 0)
+    {
+      float scale = fminf(width / (float)cached_wd,
+                          height / (float)cached_ht) * darktable.gui->ppd_thb;
+      const int32_t img_width  = roundf(cached_wd * scale);
+      const int32_t img_height = roundf(cached_ht * scale);
+      scale = fmaxf(img_width / (float)cached_wd, img_height / (float)cached_ht);
+      *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+      if(*surface && cairo_surface_status(*surface) == CAIRO_STATUS_SUCCESS)
+      {
+        cairo_t *cr = cairo_create(*surface);
+        cairo_scale(cr, scale, scale);
+        cairo_set_source_surface(cr, *mip_cache, 0, 0);
+        cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+        cairo_paint(cr);
+        cairo_destroy(cr);
+        return DT_VIEW_SURFACE_OK;
+      }
+      // Surface creation failed; fall through to the full path below.
+      if(*surface && cairo_surface_get_reference_count(*surface) > 0)
+        cairo_surface_destroy(*surface);
+      *surface = NULL;
+    }
+  }
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
@@ -938,6 +982,42 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
+
+    // Cache the native-resolution surface so future zoom events at the
+    // same mip level can skip the expensive mipmap fetch + color conversion.
+    // Only cache when we have the exact mip (not a fallback standin) and
+    // the image is not a skull/error placeholder.
+    if(mip_cache && mip == buf.size && buf_wd > 30)
+    {
+      if(*mip_cache && cairo_surface_get_reference_count(*mip_cache) > 0)
+        cairo_surface_destroy(*mip_cache);
+      *mip_cache = cairo_image_surface_create(CAIRO_FORMAT_RGB24, buf_wd, buf_ht);
+      if(*mip_cache && cairo_surface_status(*mip_cache) == CAIRO_STATUS_SUCCESS)
+      {
+        // Reconstruct the tmp_surface content from rgbbuf into the cached surface.
+        // We use create_for_data here (cheap, no extra alloc) since rgbbuf is still
+        // live at this point.
+        const int32_t cache_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
+        cairo_surface_t *src = cairo_image_surface_create_for_data(
+            rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, cache_stride);
+        if(src && cairo_surface_status(src) == CAIRO_STATUS_SUCCESS)
+        {
+          cairo_t *cr_cache = cairo_create(*mip_cache);
+          cairo_set_source_surface(cr_cache, src, 0, 0);
+          cairo_pattern_set_filter(cairo_get_source(cr_cache), CAIRO_FILTER_NEAREST);
+          cairo_paint(cr_cache);
+          cairo_destroy(cr_cache);
+          cairo_surface_destroy(src);
+        }
+        else
+        {
+          if(src) cairo_surface_destroy(src);
+          cairo_surface_destroy(*mip_cache);
+          *mip_cache = NULL;
+        }
+      }
+      if(mip_cache_level) *mip_cache_level = mip;
+    }
   }
 
   // we consider skull/error as ok as the image hasn't to be reload

@@ -22,6 +22,7 @@
 #include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
 #include "common/printing.h"
@@ -180,6 +181,19 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
                                                   const int32_t height,
                                                   cairo_surface_t **surface,
                                                   const gboolean quality);
+
+/** Like dt_view_image_get_surface but caches the native-resolution
+ *  (pre-scaling) color-converted mipmap surface to skip the expensive
+ *  calloc + color-transform on subsequent calls at the same mip level.
+ *  Pass non-NULL mip_cache / mip_cache_level to enable caching; pass NULL
+ *  to behave identically to dt_view_image_get_surface. */
+dt_view_surface_value_t dt_view_image_get_surface_cached(const dt_imgid_t imgid,
+                                                         const int32_t width,
+                                                         const int32_t height,
+                                                         cairo_surface_t **surface,
+                                                         const gboolean quality,
+                                                         cairo_surface_t **mip_cache,
+                                                         dt_mipmap_size_t *mip_cache_level);
 
 
 /** Set the selection bit to a given value for the specified image */

@@ -327,7 +327,8 @@ static void _set_table_zoom_ratio(dt_culling_t *table, dt_thumbnail_t *th)
 static gboolean _zoom_and_shift(dt_thumbnail_t *th,
                                 const int x_offset,
                                 const int y_offset,
-                                const float zoom_delta)
+                                const float zoom_delta,
+                                const gboolean deferred)
 {
   const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
@@ -370,7 +371,14 @@ static gboolean _zoom_and_shift(dt_thumbnail_t *th,
            "[culling _zoom_and_shift] new_zoomx=%.1f new_zoomy=%.1f",
            th->zoomx, th->zoomy);
 
-  dt_thumbnail_image_refresh(th);
+  if(deferred)
+    // Fast path: reuse existing surface via cairo scale transform in _thumb_draw_image.
+    // dt_culling_zoom_end() will trigger the proper reload when the gesture finishes.
+    dt_thumbnail_image_preview_zoom(th);
+  else
+    // Full reload: preserves the native mipmap surface cache so the expensive color
+    // conversion is skipped when zoom stays in the same mipmap bucket.
+    dt_thumbnail_image_refresh_zoom(th);
 
   return TRUE;
 }
@@ -378,16 +386,18 @@ static gboolean _zoom_and_shift(dt_thumbnail_t *th,
 static gboolean _zoom_to_x_root(dt_thumbnail_t *th,
                                 const float x_culling,
                                 const float y_culling,
-                                const float zoom_delta)
+                                const float zoom_delta,
+                                const gboolean deferred)
 {
   const int posx = x_culling - th->x;
   const int posy = y_culling - th->y;
 
-  return _zoom_and_shift(th, posx, posy, zoom_delta);
+  return _zoom_and_shift(th, posx, posy, zoom_delta, deferred);
 }
 
 static gboolean _zoom_to_center(dt_thumbnail_t *th,
-                                const float zoom_delta)
+                                const float zoom_delta,
+                                const gboolean deferred)
 {
   const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
@@ -399,12 +409,24 @@ static gboolean _zoom_to_center(dt_thumbnail_t *th,
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
-  th->zoomx = fmaxf(iw - th->img_width * z_ratio,
+  // Compute the bound from the new zoom directly. img_width * z_ratio assumes
+  // the surface is at the previous zoom, but during deferred pinch zoom the
+  // surface stays at the gesture-start zoom and z_ratio is only the per-step
+  // ratio — so img_width * z_ratio under-estimates the effective width and the
+  // image progressively drifts toward the top-left corner.
+  int img_w = 0, img_h = 0;
+  gtk_widget_get_size_request(th->w_image, &img_w, &img_h);
+  const float effective_w = (float)img_w * darktable.gui->ppd_thb * zd;
+  const float effective_h = (float)img_h * darktable.gui->ppd_thb * zd;
+  th->zoomx = fmaxf((float)iw - effective_w,
                     fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
-  th->zoomy = fmaxf(ih - th->img_height * z_ratio,
+  th->zoomy = fmaxf((float)ih - effective_h,
                     fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
 
-  dt_thumbnail_image_refresh(th);
+  if(deferred)
+    dt_thumbnail_image_preview_zoom(th);
+  else
+    dt_thumbnail_image_refresh_zoom(th);
 
   return TRUE;
 }
@@ -413,7 +435,8 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
                                  const float zoom_delta,
                                  const float x_culling,
                                  const float y_culling,
-                                 const int state)
+                                 const int state,
+                                 const gboolean deferred)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
@@ -441,7 +464,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
         dt_thumbnail_t *th = l->data;
         if(th->imgid == mouseid)
         {
-          if(_zoom_to_x_root(th, x_culling, y_culling, zoom_delta))
+          if(_zoom_to_x_root(th, x_culling, y_culling, zoom_delta, deferred))
             _set_table_zoom_ratio(table, th);
           break;
         }
@@ -471,7 +494,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
         for(GList *l = table->list; l; l = g_list_next(l))
         {
           dt_thumbnail_t *th = l->data;
-          if(_zoom_and_shift(th, posx, posy, zoom_delta))
+          if(_zoom_and_shift(th, posx, posy, zoom_delta, deferred))
             _set_table_zoom_ratio(table, th);
         }
       }
@@ -482,7 +505,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
         for(GList *l = table->list; l; l = g_list_next(l))
         {
           dt_thumbnail_t *th = l->data;
-          if(_zoom_to_center(th, zoom_delta))
+          if(_zoom_to_center(th, zoom_delta, deferred))
             _set_table_zoom_ratio(table, th);
         }
       }
@@ -492,7 +515,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
   {
     // FULL PREVIEW or CULLING with 1 image
     dt_thumbnail_t *th = table->list->data;
-    if(_zoom_to_x_root(th, x_culling, y_culling, zoom_delta))
+    if(_zoom_to_x_root(th, x_culling, y_culling, zoom_delta, deferred))
       _set_table_zoom_ratio(table, th);
   }
 
@@ -504,7 +527,7 @@ static void _zoom_thumb_fit(dt_thumbnail_t *th)
   th->zoom = 1.0;
   th->zoomx = 0;
   th->zoomy = 0;
-  dt_thumbnail_image_refresh(th);
+  dt_thumbnail_image_refresh_zoom(th);
 }
 
 static gboolean _zoom_thumb_max(dt_thumbnail_t *th,
@@ -512,7 +535,7 @@ static gboolean _zoom_thumb_max(dt_thumbnail_t *th,
                                 const float y_culling)
 {
   dt_thumbnail_get_zoom100(th);
-  return _zoom_to_x_root(th, x_culling, y_culling, ZOOM_MAX);
+  return _zoom_to_x_root(th, x_culling, y_culling, ZOOM_MAX, FALSE);
 }
 
 // toggle zoom max / zoom fit of image currently having mouse over id
@@ -554,7 +577,7 @@ static void _toggle_zoom_all(dt_culling_t *table,
   if(zmax)
     dt_culling_zoom_fit(table);
   else
-    _thumbs_zoom_add(table, ZOOM_MAX, x_culling, y_culling, 0);
+    _thumbs_zoom_add(table, ZOOM_MAX, x_culling, y_culling, 0, FALSE);
 }
 
 static void _update_selected_thumbnail(dt_culling_t *table,
@@ -619,6 +642,45 @@ static gboolean _event_scroll(GtkWidget *widget,
            e->x_root, e->y_root,
            e->delta_x, e->delta_y, e->state);
 
+  // ctrl + smooth scroll: apply fractional zoom on every event so the zoom
+  // feels seamless rather than stepped.  This must come before the integer-
+  // accumulator path below, which would otherwise batch several events into
+  // a single coarse 0.5-unit step.
+  //
+  // Scroll stop event: trigger a proper surface reload now that the gesture is done.
+  if(e->direction == GDK_SCROLL_SMOOTH && e->is_stop
+     && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  {
+    dt_culling_zoom_end(table);
+    return TRUE;
+  }
+
+  if(e->direction == GDK_SCROLL_SMOOTH && !e->is_stop
+     && dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  {
+    gdouble dx = 0.0, dy = 0.0;
+    if(dt_gui_get_scroll_deltas(e, &dx, &dy) && (dx != 0.0 || dy != 0.0))
+    {
+    // dt_gui_get_scroll_deltas gives the raw fractional platform delta.
+      // Scale so that one full unit of scroll (delta_y == 1.0) matches the
+      // 0.5 zoom_delta of a discrete mouse-wheel click.
+      const float zoom_delta = (float)(-(dx + dy) * 0.5);
+      // convert screen to culling coordinates
+      int ox = 0, oy = 0;
+      GdkWindow *win = gtk_widget_get_window(table->widget);
+      if(win)
+        gdk_window_get_origin(win, &ox, &oy);
+      const float x_culling = e->x_root - ox;
+      const float y_culling = e->y_root - oy;
+      dt_print(DT_DEBUG_INPUT,
+               "[culling scroll] ctrl+smooth zoom_delta=%.4f x_culling=%.1f y_culling=%.1f",
+               zoom_delta, x_culling, y_culling);
+      if(fabsf(zoom_delta) > 0.001f)
+        _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, TRUE);
+    }
+    return TRUE;
+  }
+
   // Smooth scroll (touchpad two-finger swipe): pan zoomed images or navigate images.
   // We check before the unit-delta path so fractional smooth scroll is used for panning
   // with full fidelity rather than being accumulated into integer steps.
@@ -672,7 +734,7 @@ static gboolean _event_scroll(GtkWidget *widget,
       dt_print(DT_DEBUG_INPUT,
                "[culling scroll] ctrl+scroll zoom_delta=%.2f x_culling=%.1f y_culling=%.1f",
                zoom_delta, x_culling, y_culling);
-      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state);
+      _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, e->state, TRUE);
     }
     else
     {
@@ -863,8 +925,8 @@ static gboolean _event_motion_notify(GtkWidget *widget,
       int iw = 0;
       int ih = 0;
       gtk_widget_get_size_request(th->w_image, &iw, &ih);
-      const int mindx = iw * darktable.gui->ppd_thb - th->img_width;
-      const int mindy = ih * darktable.gui->ppd_thb - th->img_height;
+      const int mindx = (int)(iw * darktable.gui->ppd_thb * (1.0f - th->zoom));
+      const int mindy = (int)(ih * darktable.gui->ppd_thb * (1.0f - th->zoom));
       if(th->zoomx > 0)
         th->zoomx = 0;
       if(th->zoomx < mindx)
@@ -2146,7 +2208,7 @@ void dt_culling_zoom_max(dt_culling_t *table)
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
     y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
   }
-  _thumbs_zoom_add(table, ZOOM_MAX, x, y, 0);
+  _thumbs_zoom_add(table, ZOOM_MAX, x, y, 0, FALSE);
 }
 
 void dt_culling_zoom_fit(dt_culling_t *table)
@@ -2172,7 +2234,22 @@ gboolean dt_culling_zoom_add(dt_culling_t *table,
   if(win) gdk_window_get_origin(win, &ox, &oy);
   const float x_culling = x_root - ox;
   const float y_culling = y_root - oy;
-  return _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state);
+  return _thumbs_zoom_add(table, zoom_delta, x_culling, y_culling, state, TRUE);
+}
+
+// Called when a zoom gesture ends (pinch END/CANCEL or scroll stop).
+// For each thumbnail that has a pending deferred reload, trigger the proper
+// surface reload at the current zoom level now that the gesture is done.
+void dt_culling_zoom_end(dt_culling_t *table)
+{
+  if(!table) return;
+  for(GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *th = l->data;
+    if(th->zoom_preview_pending)
+      dt_thumbnail_image_refresh_zoom(th);
+    // dt_thumbnail_image_refresh_zoom clears zoom_preview_pending
+  }
 }
 
 gboolean dt_culling_pan_move(dt_culling_t *table,
@@ -2185,7 +2262,9 @@ gboolean dt_culling_pan_move(dt_culling_t *table,
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING
      && table->thumbs_count > max_in_memory_images)
+  {
     return FALSE;
+  }
 
   // check that at least one thumbnail is zoomed in
   float fz = 1.0f;
@@ -2194,7 +2273,11 @@ gboolean dt_culling_pan_move(dt_culling_t *table,
     const dt_thumbnail_t *th = l->data;
     fz = fmaxf(fz, th->zoom);
   }
-  if(fz <= 1.0f) return FALSE;
+
+  if(fz <= 1.0f)
+  {
+    return FALSE;
+  }
 
   const float scale = darktable.gui->ppd_thb / darktable.gui->ppd;
   const float valx = dx * scale;
@@ -2230,8 +2313,8 @@ gboolean dt_culling_pan_move(dt_culling_t *table,
     dt_thumbnail_t *th = l->data;
     int iw = 0, ih = 0;
     gtk_widget_get_size_request(th->w_image, &iw, &ih);
-    const int mindx = iw * darktable.gui->ppd_thb - th->img_width;
-    const int mindy = ih * darktable.gui->ppd_thb - th->img_height;
+    const int mindx = (int)(iw * darktable.gui->ppd_thb * (1.0f - th->zoom));
+    const int mindy = (int)(ih * darktable.gui->ppd_thb * (1.0f - th->zoom));
     if(th->zoomx > 0) th->zoomx = 0;
     if(th->zoomx < mindx) th->zoomx = mindx;
     if(th->zoomy > 0) th->zoomy = 0;

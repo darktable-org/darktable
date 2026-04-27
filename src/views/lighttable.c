@@ -718,7 +718,7 @@ static dt_culling_t *_active_culling(const dt_library_t *lib)
   {
     return lib->preview;
   }
-
+  
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
      || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
@@ -747,7 +747,7 @@ gboolean gesture_pan(dt_view_t *self,
 
   const gboolean moved = dt_culling_pan_move(table, (float)dx, (float)dy, state);
   dt_print(DT_DEBUG_INPUT, "[lighttable pan] dt_culling_pan_move -> %s", moved ? "moved" : "no-op");
-  if(moved)
+  if(moved) 
   {
     gtk_widget_queue_draw(table->widget);
   }
@@ -793,6 +793,8 @@ gboolean gesture_pinch(dt_view_t *self,
     prev_scale = 1.0;
     dt_print(DT_DEBUG_INPUT, "[lighttable pinch] %s",
              phase == GDK_TOUCHPAD_GESTURE_PHASE_END ? "end" : "cancel");
+    // Gesture is done: reload surfaces at the correct zoom resolution now.
+    dt_culling_zoom_end(table);
     return TRUE;
   }
   if(phase != GDK_TOUCHPAD_GESTURE_PHASE_UPDATE)
@@ -842,7 +844,7 @@ gboolean gesture_pinch(dt_view_t *self,
 
   prev_scale = scale;
   dt_print(DT_DEBUG_INPUT, "[lighttable pinch] update done changed=%d", changed);
-  if(changed)
+  if(changed) 
   {
     gtk_widget_queue_draw(table->widget);
   }

@@ -108,6 +108,9 @@ void dt_culling_zoom_fit(dt_culling_t *table);
 // zoom by zoom_delta (in th->zoom units) centered on culling-local (x_culling, y_culling).
 // equivalent to _thumbs_zoom_add.
 gboolean dt_culling_zoom_add(dt_culling_t *table, float zoom_delta, float x_culling, float y_culling, int state);
+// Finalise a zoom gesture: reload surfaces at the correct resolution for thumbnails
+// that were in deferred-preview mode during the gesture.
+void dt_culling_zoom_end(dt_culling_t *table);
 
 // translate all zoomed thumbnails by (dx, dy) screen pixels.
 // state is used to optionally restrict panning to the hovered image (GDK_SHIFT_MASK).

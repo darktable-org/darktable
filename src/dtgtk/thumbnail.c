@@ -353,10 +353,30 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
   {
     cairo_save(cr);
     const float scaler = 1.0f / darktable.gui->ppd_thb;
+
+    // During an active zoom gesture (zoom_preview_pending) the surface may have been
+    // rendered at a different zoom level (zoom_rendered) than the current th->zoom.
+    // Compute an extra scale factor so the stale surface is displayed at the correct
+    // visual size without needing to reload/recreate it.  When zoom_rendered == th->zoom
+    // (normal case) extra_scale collapses to 1.0 and the code path is identical to before.
+    float extra_scale = 1.0f;
+    if(w > 0 && thumb->img_width > 0 && thumb->zoom > 0.0f)
+    {
+      const float zoom_rendered = (float)thumb->img_width
+                                  / ((float)w * darktable.gui->ppd_thb);
+      if(zoom_rendered > 0.0f)
+        extra_scale = CLAMP(thumb->zoom / zoom_rendered, 0.1f, 20.0f);
+    }
+
+    // Apply outer scaler (handles HiDPI) for frame; apply extra_scale inner for image.
     cairo_scale(cr, scaler, scaler);
 
-    cairo_set_source_surface(cr, thumb->img_surf, thumb->zoomx * darktable.gui->ppd,
-                             thumb->zoomy * darktable.gui->ppd);
+    // Draw the image with the zoom-corrected scale.
+    cairo_save(cr);
+    cairo_scale(cr, extra_scale, extra_scale);
+    cairo_set_source_surface(cr, thumb->img_surf,
+                             thumb->zoomx * darktable.gui->ppd / extra_scale,
+                             thumb->zoomy * darktable.gui->ppd / extra_scale);
 
     // get the transparency value
     GdkRGBA im_color;
@@ -364,8 +384,9 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb,
                                 gtk_widget_get_state_flags(thumb->w_image),
                                 &im_color);
     cairo_paint_with_alpha(cr, im_color.alpha);
+    cairo_restore(cr);
 
-    // and eventually the image border
+    // and eventually the image border (at scaler-only, not affected by extra_scale)
     gtk_render_frame(context, cr, 0, 0,
                      w * darktable.gui->ppd_thb,
                      h * darktable.gui->ppd_thb);
@@ -744,10 +765,16 @@ static gboolean _event_image_draw(GtkWidget *widget,
           if(zoom100 > 1.0f)
             thumb->zoom = MIN(thumb->zoom, zoom100);
         }
-        res = dt_view_image_get_surface(thumb->imgid,
-                                        image_w * thumb->zoom,
-                                        image_h * thumb->zoom,
-                                        &img_surf, FALSE);
+        // Use the cached variant: on zoom events where image content
+        // hasn't changed, this reuses the native-resolution
+        // color-converted surface and only re-scales it, skipping the
+        // expensive mipmap fetch + calloc + color transform.
+        res = dt_view_image_get_surface_cached(thumb->imgid,
+                                               image_w * thumb->zoom,
+                                               image_h * thumb->zoom,
+                                               &img_surf, FALSE,
+                                               &thumb->img_surf_mip_native,
+                                               &thumb->img_surf_mip_level);
       }
       else
       {
@@ -1223,8 +1250,12 @@ static void _dt_preview_updated_callback(gpointer instance,
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
      && darktable.develop->preview_pipe->backbuf)
   {
-    // reset surface
+    // reset surface and invalidate native mipmap cache (content changed)
     thumb->img_surf_dirty = TRUE;
+    if(thumb->img_surf_mip_native
+       && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+      cairo_surface_destroy(thumb->img_surf_mip_native);
+    thumb->img_surf_mip_native = NULL;
     gtk_widget_queue_draw(thumb->w_main);
   }
 }
@@ -1240,8 +1271,12 @@ static void _dt_mipmaps_updated_callback(gpointer instance,
   // we recompte the history tooltip if needed
   _thumb_update_altered_tooltip(thumb);
 
-  // reset surface
+  // reset surface and invalidate native mipmap cache (content changed)
   thumb->img_surf_dirty = TRUE;
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
   gtk_widget_queue_draw(thumb->w_main);
 }
 
@@ -2189,6 +2224,54 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb,
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
 {
   thumb->img_surf_dirty = TRUE;
+  // Invalidate the native mipmap surface cache: the image content may
+  // have changed (edit, processing, profile change) so any cached
+  // color-converted surface is now stale.
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
+
+  // we ensure that the image is not completely outside the thumbnail,
+  // otherwise the image_draw is not triggered
+  if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
+     || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
+  {
+    gtk_widget_set_margin_start(thumb->w_image_box, 0);
+    gtk_widget_set_margin_top(thumb->w_image_box, 0);
+  }
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
+// force redraw for zoom-only changes: marks the surface dirty but keeps
+// the native mipmap surface cache so the expensive calloc + color-transform
+// is skipped on the next draw if the zoom stays in the same mipmap bucket.
+void dt_thumbnail_image_refresh_zoom(dt_thumbnail_t *thumb)
+{
+  thumb->img_surf_dirty = TRUE;
+  thumb->zoom_preview_pending = FALSE;
+  // img_surf_mip_native is intentionally NOT cleared here — the mipmap
+  // content hasn't changed, only the zoom level.
+
+  // we ensure that the image is not completely outside the thumbnail,
+  // otherwise the image_draw is not triggered
+  if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
+     || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
+  {
+    gtk_widget_set_margin_start(thumb->w_image_box, 0);
+    gtk_widget_set_margin_top(thumb->w_image_box, 0);
+  }
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
+// Instant zoom preview: does NOT set img_surf_dirty, so the expensive
+// mipmap reload is skipped.  _thumb_draw_image will scale the existing
+// surface via an extra cairo transform to show the new zoom immediately.
+// Call dt_culling_zoom_end() when the gesture finishes to trigger the
+// proper surface reload at the final zoom level.
+void dt_thumbnail_image_preview_zoom(dt_thumbnail_t *thumb)
+{
+  thumb->zoom_preview_pending = TRUE;
 
   // we ensure that the image is not completely outside the thumbnail,
   // otherwise the image_draw is not triggered
@@ -2275,18 +2358,16 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb,
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
 {
   // let's sanitize and apply panning values
-  // here we have to make sure to properly align according to ppd
+  // Use thumb->zoom (always current) rather than img_width/img_height: during a
+  // deferred pinch-zoom gesture the surface may still be at zoom=1.0 while
+  // thumb->zoom has been advanced, so img_width-based bounds would clamp to 0
+  // and discard the in-flight pan. After a surface reload these formulas are
+  // algebraically identical since img_width = iw * ppd_thb * zoom.
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(thumb->w_image, &iw, &ih);
-  thumb->zoomx =
-    CLAMP(thumb->zoomx,
-          (iw * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb,
-          0);
-  thumb->zoomy =
-    CLAMP(thumb->zoomy,
-          (ih * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb,
-          0);
+  thumb->zoomx = CLAMP(thumb->zoomx, iw * (1.0f - thumb->zoom), 0);
+  thumb->zoomy = CLAMP(thumb->zoomy, ih * (1.0f - thumb->zoom), 0);
   gtk_widget_queue_draw(thumb->w_main);
 }
 
@@ -2376,6 +2457,11 @@ void dt_thumbnail_surface_destroy(dt_thumbnail_t *thumb)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
   thumb->img_surf_dirty = TRUE;
+  // Also free the cached native mipmap surface.
+  if(thumb->img_surf_mip_native
+     && cairo_surface_get_reference_count(thumb->img_surf_mip_native) > 0)
+    cairo_surface_destroy(thumb->img_surf_mip_native);
+  thumb->img_surf_mip_native = NULL;
 }
 
 void dt_thumbnail_set_selection(dt_thumbnail_t *thumb,
