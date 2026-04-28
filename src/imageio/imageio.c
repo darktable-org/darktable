@@ -1730,6 +1730,7 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
 {
   _imageio_preview_t *d = (_imageio_preview_t *)data;
 
+  if(!in) return 1;
   memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
   d->width = data->width;
   d->height = data->height;
