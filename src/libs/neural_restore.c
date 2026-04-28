@@ -4042,14 +4042,14 @@ void gui_init(dt_lib_module_t *self)
 
   // add to catalog
   GtkWidget *catalog_box = dt_gui_hbox();
-  d->catalog_toggle = gtk_check_button_new_with_label(_("add to catalog"));
+  d->catalog_toggle = gtk_check_button_new_with_label(_("add to the current collection"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->catalog_toggle),
                                dt_conf_key_exists(CONF_ADD_CATALOG)
                                  ? dt_conf_get_bool(CONF_ADD_CATALOG)
                                  : TRUE);
   gtk_widget_set_tooltip_text(d->catalog_toggle,
-                              _("automatically import output image into the"
-                                " darktable library"));
+                              _("automatically import the output image into"
+                                " the current collection"));
   g_signal_connect(d->catalog_toggle, "toggled",
                    G_CALLBACK(_catalog_toggle_changed), self);
   dt_gui_box_add(catalog_box, d->catalog_toggle);
