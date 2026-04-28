@@ -324,7 +324,7 @@ denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only imag
   if(x >= width || y >= height) return;
 
   float4 u2   = U2[gidx];
-  const float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
+  const float alpha = readalpha(in, x, y);
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
@@ -349,7 +349,7 @@ denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only i
   if(x >= width || y >= height) return;
 
   float4 u2   = U2[gidx];
-  const float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
+  const float alpha = readalpha(in, x, y);
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
