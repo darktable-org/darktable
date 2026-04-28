@@ -131,7 +131,7 @@ repository. Requirements for the decoder export:
 Removes noise from developed images using neural network inference.
 
 **Task key**: `"denoise"`
-**API**: `src/common/ai/restore.h` (`dt_restore_load_denoise`)
+**API**: `src/common/ai/restore.h` (loader: `dt_restore_load_denoise`), `src/common/ai/restore_rgb.h` (processing: `dt_restore_process_tiled`)
 **Consumer**: `src/libs/neural_restore.c`
 
 ### How It Works
@@ -222,7 +222,7 @@ torch.onnx.export(model, dummy_input, "model.onnx",
 Super-resolution upscaling of developed images (2x or 4x).
 
 **Task key**: `"upscale"`
-**API**: `src/common/ai/restore.h` (`dt_restore_load_upscale_x2`, `dt_restore_load_upscale_x4`)
+**API**: `src/common/ai/restore.h` (loaders: `dt_restore_load_upscale_x2`, `dt_restore_load_upscale_x4`), `src/common/ai/restore_rgb.h` (processing: `dt_restore_process_tiled`)
 **Consumer**: `src/libs/neural_restore.c`
 
 ### How It Works

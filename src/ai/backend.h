@@ -166,6 +166,14 @@ double dt_ai_model_attribute_double(const dt_ai_model_info_t *info,
 char *dt_ai_model_attribute_string(const dt_ai_model_info_t *info,
                                    const char *key);
 
+/** Return a newly-allocated int array from the JSON-array attribute
+ *  named `key`. *out_count is set to the array length; NULL is returned
+ *  (and *out_count = 0) when the key is absent or not a JSON array.
+ *  Caller frees the returned array with g_free(). */
+int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
+                                     const char *key,
+                                     int *out_count);
+
 /* --- Discovery --- */
 
 /**
@@ -267,7 +275,8 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
                                        dt_ai_provider_t provider,
                                        dt_ai_opt_level_t opt_level,
                                        const dt_ai_dim_override_t *dim_overrides,
-                                       int n_overrides);
+                                       int n_overrides,
+                                       uint32_t ep_flags);
 
 /**
  * @brief Tensor Data Types

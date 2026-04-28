@@ -801,7 +801,8 @@ static float _half_to_float(uint16_t h)
 static gboolean _try_provider(OrtSessionOptions *session_opts,
                               const char *symbol_name,
                               const char *provider_name,
-                              const char *device_type)
+                              const char *device_type,
+                              uint32_t flags)
 {
   OrtStatus *status = NULL;
   gboolean ok = FALSE;
@@ -851,7 +852,7 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
       // integer-argument providers (CUDA, CoreML, DML, MIGraphX, ROCm)
       typedef OrtStatus *(*ProviderAppenderInt)(OrtSessionOptions *, uint32_t);
       ProviderAppenderInt appender = (ProviderAppenderInt)func_ptr;
-      status = appender(session_opts, 0);
+      status = appender(session_opts, flags);
     }
     if(!status)
     {
@@ -880,7 +881,9 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
 }
 
 static void
-_enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
+_enable_acceleration(OrtSessionOptions *session_opts,
+                     dt_ai_provider_t provider,
+                     uint32_t coreml_flags)
 {
   switch(provider)
   {
@@ -894,14 +897,14 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL);
+      "Apple CoreML", NULL, coreml_flags);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] apple CoreML not available on this platform");
 #endif
     break;
 
   case DT_AI_PROVIDER_CUDA:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL);
+    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
     break;
 
   case DT_AI_PROVIDER_MIGRAPHX:
@@ -909,13 +912,13 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     // load time, so they must be set before CreateEnv() — see
     // _setup_amd_caches() above. OpenVINO (below) takes options
     // per-session, so its cache path is passed inline here
-    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL);
+    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0))
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
     break;
 
   case DT_AI_PROVIDER_OPENVINO:
     if(!_try_openvino_with_cache(session_opts))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
@@ -923,7 +926,7 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL);
+      "Windows DirectML", NULL, 0);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] windows DirectML not available on this platform");
 #endif
@@ -936,27 +939,27 @@ _enable_acceleration(OrtSessionOptions *session_opts, dt_ai_provider_t provider)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL);
+      "Apple CoreML", NULL, coreml_flags);
 #elif defined(_WIN32)
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL);
+      "Windows DirectML", NULL, 0);
 #elif defined(__linux__)
     // try CUDA first, then MIGraphX (cache configured at env init)
     if(!_try_provider(
          session_opts,
          "OrtSessionOptionsAppendExecutionProvider_CUDA",
-         "NVIDIA CUDA", NULL))
+         "NVIDIA CUDA", NULL, 0))
     {
       if(!_try_provider(
            session_opts,
            "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-           "AMD MIGraphX", NULL))
+           "AMD MIGraphX", NULL, 0))
         _try_provider(
           session_opts,
           "OrtSessionOptionsAppendExecutionProvider_ROCM",
-          "AMD ROCm (legacy)", NULL);
+          "AMD ROCm (legacy)", NULL, 0);
     }
 #endif
     break;
@@ -996,20 +999,20 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   switch(provider)
   {
   case DT_AI_PROVIDER_COREML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL, 0);
     break;
   case DT_AI_PROVIDER_CUDA:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
     break;
   case DT_AI_PROVIDER_MIGRAPHX:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL)
-      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0)
+      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
     break;
   case DT_AI_PROVIDER_OPENVINO:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
     break;
   case DT_AI_PROVIDER_DIRECTML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML", NULL);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML", NULL, 0);
     break;
   default:
     break;
@@ -1026,7 +1029,8 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
 dt_ai_context_t *
 dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                     dt_ai_provider_t provider, dt_ai_opt_level_t opt_level,
-                    const dt_ai_dim_override_t *dim_overrides, int n_overrides)
+                    const dt_ai_dim_override_t *dim_overrides, int n_overrides,
+                    uint32_t ep_flags)
 {
   if(!model_dir)
     return NULL;
@@ -1111,7 +1115,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
   }
 
   // optimize: enable hardware acceleration (AMD caches set at env init)
-  _enable_acceleration(session_opts, provider);
+  _enable_acceleration(session_opts, provider, ep_flags);
 
 #ifdef _WIN32
   // on windows, CreateSession expects a wide character string
@@ -1176,7 +1180,7 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
         if(s) g_ort->ReleaseStatus(s);
       }
       if(fallbacks[fb].prov != DT_AI_PROVIDER_CPU)
-        _enable_acceleration(session_opts, fallbacks[fb].prov);
+        _enable_acceleration(session_opts, fallbacks[fb].prov, ep_flags);
 #ifdef _WIN32
       status = g_ort->CreateSession(g_env, onnx_path_wide, session_opts, &ctx->session);
 #else

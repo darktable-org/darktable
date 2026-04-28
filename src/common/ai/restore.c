@@ -17,120 +17,34 @@
 */
 
 #include "common/ai/restore.h"
+#include "common/ai/restore_common.h"
 #include "ai/backend.h"
 #include "common/darktable.h"
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
-#include "common/colorspaces_inline_conversions.h"
-#include "common/imagebuf.h"
-#include "common/math.h"
-#include "common/matrices.h"
+#include "common/iop_order.h"
+#include "control/control.h"
 #include "control/jobs.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/pixelpipe_hb.h"
+#include "imageio/imageio_common.h"
 
-// forward-declare to avoid pulling in dwt.h (which
-// includes OpenCL types when HAVE_OPENCL is defined)
-extern void dwt_denoise(float *buf, int width, int height,
-                        int bands, const float *noise);
 #include <math.h>
 #include <string.h>
 
 #define OVERLAP_DENOISE 64
 #define OVERLAP_UPSCALE 16
-#define MAX_MODEL_INPUTS 4
-#define DWT_DETAIL_BANDS 5
 
 // candidate tile sizes from largest to smallest, used by both the
 // startup memory-budget selector and the runtime OOM-retry fallback.
 // the memory-budget check gates which entry is chosen at startup;
 // the tile size cache persists the result so JIT-compiling EPs
-// (MIGraphX, CoreML, TensorRT) only pay the compile cost once.
+// (MIGraphX, CoreML, TensorRT) only pay the compile cost once
 #define DT_RESTORE_TILE_LADDER_1X {2048, 1536, 1024, 768, 512, 384, 256}
 #define DT_RESTORE_TILE_LADDER_SR {768, 512, 384, 256, 192}
 
-/* --- opaque struct definitions --- */
-
-struct dt_restore_env_t
-{
-  dt_ai_environment_t *ai_env;
-};
-
-struct dt_restore_context_t
-{
-  dt_ai_context_t *ai_ctx;
-  dt_restore_env_t *env;
-  char *model_id;
-  char *model_file;
-  char *task;
-  int tile_size;    // tile size used to create the current session
-  char *dim_h;      // symbolic height dim name used for session overrides
-  char *dim_w;      // symbolic width dim name used for session overrides
-  // color management: convert from working profile to sRGB before
-  // inference (model was trained on sRGB primaries) and back after.
-  // if has_profile is FALSE, fall back to gamma-only conversion
-  // (treats working-profile numbers as if they were sRGB)
-  gboolean has_profile;
-  float wp_to_srgb[9];   // working profile RGB -> sRGB linear (row-major)
-  float srgb_to_wp[9];   // sRGB linear -> working profile RGB (row-major)
-  // when TRUE (default), out-of-sRGB-gamut pixels pass through unchanged
-  // during denoise. when FALSE, every pixel uses the model output and
-  // wide-gamut colors get clipped to sRGB but everything is denoised
-  gboolean preserve_wide_gamut;
-  // shadow_boost_capable: TRUE when the model declares the
-  // "shadow_boost" attribute in its config.json; set once at load
-  gboolean shadow_boost_capable;
-  // shadow_boost: the effective flag used at inference; recomputed
-  // per-image inside dt_restore_process_tiled() when capable, based
-  // on a luminance check (bright images skip the curve)
-  gboolean shadow_boost;
-  gint ref_count;
-};
-
-// default multipliers of residual sigma for each wavelet band.
-// band 0 (finest) gets the strongest suppression since fine-scale
-// features are hardest to distinguish from noise. coarser bands
-// preserve more because they capture real texture.
-// tunable via darktablerc: plugins/lighttable/neural_restore/detail_recovery_bands
-static const float _dwt_sigma_mul_default[DWT_DETAIL_BANDS] = {
-  0.5f,   // band 0 (finest) — suppress fine luminance noise
-  0.3f,   // band 1
-  0.1f,   // band 2
-  0.05f,  // band 3
-  0.02f   // band 4 (coarsest) — keep almost everything
-};
-
-// compute adaptive noise thresholds from residual standard deviation
-static void _compute_adaptive_noise(const float *const restrict buf,
-                                    const size_t npix,
-                                    float noise[DWT_DETAIL_BANDS])
-{
-  // read band multipliers from config (comma-separated list).
-  // e.g. "0.5,0.3,0.1,0.05,0.02" in darktablerc
-  float sigma_mul[DWT_DETAIL_BANDS];
-  memcpy(sigma_mul, _dwt_sigma_mul_default, sizeof(sigma_mul));
-  gchar *val = dt_conf_get_string("plugins/lighttable/neural_restore/detail_recovery_bands");
-  if(val && val[0])
-  {
-    gchar **parts = g_strsplit(val, ",", DWT_DETAIL_BANDS);
-    for(int b = 0; parts[b] && b < DWT_DETAIL_BANDS; b++)
-      sigma_mul[b] = g_ascii_strtod(g_strstrip(parts[b]), NULL);
-    g_strfreev(parts);
-  }
-  g_free(val);
-
-  double sum = 0.0, sum2 = 0.0;
-  for(size_t i = 0; i < npix; i++)
-  {
-    sum += (double)buf[i];
-    sum2 += (double)buf[i] * (double)buf[i];
-  }
-  const double mean = sum / (double)npix;
-  const float sigma = (float)sqrt(sum2 / (double)npix - mean * mean);
-
-  for(int b = 0; b < DWT_DETAIL_BANDS; b++)
-    noise[b] = sigma * sigma_mul[b];
-}
-
-/* --- environment lifecycle --- */
+// --- environment lifecycle ---
 
 dt_restore_env_t *dt_restore_env_init(void)
 {
@@ -156,12 +70,131 @@ void dt_restore_env_destroy(dt_restore_env_t *env)
   g_free(env);
 }
 
-/* --- model lifecycle --- */
+// --- model lifecycle ---
 
-#define TASK_DENOISE "denoise"
-#define TASK_UPSCALE "upscale"
+#define TASK_DENOISE    "denoise"
+#define TASK_RAWDENOISE "rawdenoise"
+#define TASK_UPSCALE    "upscale"
 
-static int _select_tile_size(int scale);
+// --- manifest policy parsers ---
+//
+// parse a variant's string attribute into the matching enum. unknown
+// values return UNKNOWN (for input_kind — caller validates), or the
+// supplied default (for the other three — caller has already decided
+// the default matches today's RawNIND behavior)
+
+static dt_restore_input_kind_t _parse_input_kind(const char *s)
+{
+  if(!s) return DT_RESTORE_INPUT_KIND_UNKNOWN;
+  if(!g_strcmp0(s, "bayer_v1"))  return DT_RESTORE_INPUT_KIND_BAYER_V1;
+  if(!g_strcmp0(s, "xtrans_v1")) return DT_RESTORE_INPUT_KIND_XTRANS_V1;
+  if(!g_strcmp0(s, "linear_v1")) return DT_RESTORE_INPUT_KIND_LINEAR_V1;
+  return DT_RESTORE_INPUT_KIND_UNKNOWN;
+}
+
+static const char *_input_kind_name(dt_restore_input_kind_t k)
+{
+  switch(k)
+  {
+    case DT_RESTORE_INPUT_KIND_BAYER_V1:  return "bayer_v1";
+    case DT_RESTORE_INPUT_KIND_XTRANS_V1: return "xtrans_v1";
+    case DT_RESTORE_INPUT_KIND_LINEAR_V1: return "linear_v1";
+    default:                              return "unknown";
+  }
+}
+
+static dt_restore_colorspace_t _parse_colorspace(const char *s,
+                                                 dt_restore_colorspace_t dflt)
+{
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "lin_rec2020")) return DT_RESTORE_CS_LIN_REC2020;
+  if(!g_strcmp0(s, "camRGB"))      return DT_RESTORE_CS_CAMRGB;
+  if(!g_strcmp0(s, "srgb_linear")) return DT_RESTORE_CS_SRGB_LINEAR;
+  dt_print(DT_DEBUG_AI,
+           "[restore] unknown input_colorspace '%s', using default", s);
+  return dflt;
+}
+
+static dt_restore_wb_mode_t _parse_wb_mode(const char *s,
+                                           dt_restore_wb_mode_t dflt)
+{
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "daylight")) return DT_RESTORE_WB_DAYLIGHT;
+  if(!g_strcmp0(s, "as_shot"))  return DT_RESTORE_WB_AS_SHOT;
+  if(!g_strcmp0(s, "none"))     return DT_RESTORE_WB_NONE;
+  dt_print(DT_DEBUG_AI,
+           "[restore] unknown wb_norm '%s', using default", s);
+  return dflt;
+}
+
+static dt_restore_output_scale_t _parse_output_scale(const char *s,
+                                                     dt_restore_output_scale_t dflt)
+{
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "match_gain")) return DT_RESTORE_OUT_MATCH_GAIN;
+  if(!g_strcmp0(s, "absolute"))   return DT_RESTORE_OUT_ABSOLUTE;
+  dt_print(DT_DEBUG_AI,
+           "[restore] unknown output_scale '%s', using default", s);
+  return dflt;
+}
+
+static dt_restore_bayer_orientation_t _parse_bayer_orientation(
+    const char *s, dt_restore_bayer_orientation_t dflt)
+{
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "force_rggb")) return DT_RESTORE_BAYER_FORCE_RGGB;
+  if(!g_strcmp0(s, "native"))     return DT_RESTORE_BAYER_NATIVE;
+  dt_print(DT_DEBUG_AI,
+           "[restore] unknown bayer_orientation '%s', using default", s);
+  return dflt;
+}
+
+static dt_restore_edge_pad_t _parse_edge_pad(const char *s,
+                                             dt_restore_edge_pad_t dflt)
+{
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "mirror_cropped")) return DT_RESTORE_EDGE_MIRROR_CROPPED;
+  if(!g_strcmp0(s, "mirror"))         return DT_RESTORE_EDGE_MIRROR;
+  dt_print(DT_DEBUG_AI,
+           "[restore] unknown edge_pad '%s', using default", s);
+  return dflt;
+}
+
+// target_mean accepts "null" as an explicit disable; missing key falls
+// back to the per-variant default (NAN for bayer, 0.3 for linear).
+// a numeric string parses via g_ascii_strtod
+static float _parse_target_mean(const dt_ai_model_info_t *info,
+                                const char *key, float dflt)
+{
+  char *s = dt_ai_model_attribute_string(info, key);
+  if(!s) return dflt;
+  if(!g_strcmp0(s, "null") || !g_strcmp0(s, "none"))
+  {
+    g_free(s);
+    return NAN;
+  }
+  char *endp = NULL;
+  const double v = g_ascii_strtod(s, &endp);
+  if(endp == s || !endp || *endp != '\0')
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] target_mean '%s' not parseable, using default", s);
+    g_free(s);
+    return dflt;
+  }
+  g_free(s);
+  return (float)v;
+}
+
+static int _select_tile_size(const int *ladder, int n_ladder, int scale);
+// resolve the tile ladder for a model: prefer the "input_sizes" JSON
+// array attribute from config.json when present, otherwise fall back
+// to the built-in ladder for the model's scale. always returns a
+// freshly-allocated int[] + count that the caller owns and g_free()s
+static void _resolve_tile_ladder(const dt_ai_model_info_t *info,
+                                 int scale,
+                                 int **out_sizes,
+                                 int *out_count);
 
 // returns the cached tile size for model_id+scale+provider combo, or 0 if not set
 static int _get_cached_tile_size(const char *model_id, int scale)
@@ -187,13 +220,14 @@ static void _set_cached_tile_size(const char *model_id, int scale, int tile_size
 }
 
 // internal: create an ORT session for model_id/model_file with spatial dims
-// fixed to tile_size. returns a new ai_ctx, or NULL on failure.
+// fixed to tile_size. returns a new ai_ctx, or NULL on failure
 static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
                                         const char *model_id,
                                         const char *model_file,
                                         const char *dim_h,
                                         const char *dim_w,
-                                        int tile_size)
+                                        int tile_size,
+                                        uint32_t ep_flags)
 {
   const dt_ai_dim_override_t overrides[] = {
     { "batch_size", 1 },
@@ -204,13 +238,14 @@ static dt_ai_context_t *_create_session(dt_ai_environment_t *ai_env,
   return dt_ai_load_model_ext(
     ai_env, model_id, model_file,
     DT_AI_PROVIDER_CONFIGURED, DT_AI_OPT_ALL,
-    overrides, (int)G_N_ELEMENTS(overrides));
+    overrides, (int)G_N_ELEMENTS(overrides), ep_flags);
 }
 
 // internal: resolve task -> model_id -> load with tile size dim overrides
 static dt_restore_context_t *_load(dt_restore_env_t *env,
                                    const char *task,
-                                   const char *model_file,
+                                   const char *variant,
+                                   const char *default_file,
                                    int scale)
 {
   if(!env) return NULL;
@@ -227,16 +262,158 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   dt_ai_models_get_spatial_dims(darktable.ai_registry, model_id,
                                 &dim_h, &dim_w);
 
-  // select tile size from cache or memory budget
+  const dt_ai_model_info_t *info
+    = dt_ai_get_model_info_by_id(env->ai_env, model_id);
+
+  // variant-aware config lookup: variant models must declare their ONNX
+  // filename under variants.<variant>.onnx. input_kind is stashed on ctx
+  // so raw paths can sanity-check they're pointing at the right model.
+  // non-variant models (denoise, upscale) pass variant=NULL and supply
+  // the filename directly via default_file
+  char *variant_file = NULL;
+  char *input_kind = NULL;
+  // policy strings (all optional; NULL falls through to defaults)
+  char *cs_str = NULL, *wb_str = NULL, *scale_str = NULL;
+  char *bo_str = NULL, *edge_str = NULL;
+  // expected input_kind for this variant slot. raw variants MUST match
+  // one of the declared v1 contracts; non-variant tasks pass UNKNOWN
+  // and skip the contract check entirely
+  dt_restore_input_kind_t expected_kind = DT_RESTORE_INPUT_KIND_UNKNOWN;
+  if(variant)
+  {
+    char *k_file  = g_strdup_printf("variants.%s.onnx", variant);
+    char *k_kind  = g_strdup_printf("variants.%s.input_kind", variant);
+    char *k_cs    = g_strdup_printf("variants.%s.input_colorspace", variant);
+    char *k_wb    = g_strdup_printf("variants.%s.wb_norm", variant);
+    char *k_scale = g_strdup_printf("variants.%s.output_scale", variant);
+    char *k_bo    = g_strdup_printf("variants.%s.bayer_orientation", variant);
+    char *k_edge  = g_strdup_printf("variants.%s.edge_pad", variant);
+    variant_file = dt_ai_model_attribute_string(info, k_file);
+    input_kind   = dt_ai_model_attribute_string(info, k_kind);
+    cs_str       = dt_ai_model_attribute_string(info, k_cs);
+    wb_str       = dt_ai_model_attribute_string(info, k_wb);
+    scale_str    = dt_ai_model_attribute_string(info, k_scale);
+    bo_str       = dt_ai_model_attribute_string(info, k_bo);
+    edge_str     = dt_ai_model_attribute_string(info, k_edge);
+    g_free(k_file);
+    g_free(k_kind);
+    g_free(k_cs);
+    g_free(k_wb);
+    g_free(k_scale);
+    g_free(k_bo);
+    g_free(k_edge);
+
+    if(!variant_file)
+    {
+      dt_print(DT_DEBUG_AI,
+               "[restore] model %s declares no variants.%s.onnx — "
+               "cannot load variant",
+               model_id, variant);
+      g_free(input_kind);
+      g_free(cs_str);
+      g_free(wb_str);
+      g_free(scale_str);
+      g_free(bo_str);
+      g_free(edge_str);
+      g_free(model_id);
+      return NULL;
+    }
+
+    // contract check: the variant slot name pins which input_kind we
+    // expect. older manifests predate the label; if unset, assume the
+    // expected one (back-compat). a declared-but-wrong label is a hard
+    // error — refusing to load keeps mis-packaged ONNX from crashing
+    // at inference with a confusing shape-mismatch
+    if(!g_strcmp0(task, TASK_RAWDENOISE))
+    {
+      if(!g_strcmp0(variant, "bayer"))
+        expected_kind = DT_RESTORE_INPUT_KIND_BAYER_V1;
+      else if(!g_strcmp0(variant, "xtrans"))
+        expected_kind = DT_RESTORE_INPUT_KIND_XTRANS_V1;
+      else if(!g_strcmp0(variant, "linear"))
+        expected_kind = DT_RESTORE_INPUT_KIND_LINEAR_V1;
+    }
+    if(expected_kind != DT_RESTORE_INPUT_KIND_UNKNOWN)
+    {
+      const dt_restore_input_kind_t declared = _parse_input_kind(input_kind);
+      const gboolean missing = (input_kind == NULL);
+      const gboolean mismatch
+        = !missing && declared != expected_kind;
+      if(mismatch || (!missing && declared == DT_RESTORE_INPUT_KIND_UNKNOWN))
+      {
+        dt_print(DT_DEBUG_AI,
+                 "[restore] model %s variant '%s': input_kind '%s' "
+                 "does not match expected '%s' — refusing to load",
+                 model_id, variant, input_kind,
+                 _input_kind_name(expected_kind));
+        dt_control_log(_("raw denoise model %s: incompatible input_kind"),
+                       model_id);
+        g_free(input_kind);
+        g_free(cs_str);
+        g_free(wb_str);
+        g_free(scale_str);
+        g_free(bo_str);
+        g_free(edge_str);
+        g_free(variant_file);
+        g_free(model_id);
+        return NULL;
+      }
+    }
+
+    dt_print(DT_DEBUG_AI,
+             "[restore] variant '%s': file=%s input_kind=%s",
+             variant, variant_file,
+             input_kind ? input_kind : "(none)");
+  }
+  const char *model_file = variant ? variant_file : default_file;
+
+  // resolve the tile ladder: model-declared input_sizes if present,
+  // otherwise a copy of the built-in ladder for this scale
+  int *tile_ladder = NULL;
+  int n_tile_ladder = 0;
+  _resolve_tile_ladder(info, scale, &tile_ladder, &n_tile_ladder);
+
+  // select tile size from cache, but only if the cached value is still
+  // a member of the ladder — otherwise a model upgrade that narrowed
+  // its supported input_sizes would load with a stale size and fail
+  // at graph shape inference (U-Nets are strict about spatial dims)
   int tile_size = _get_cached_tile_size(model_id, scale);
-  if(tile_size <= 0)
-    tile_size = _select_tile_size(scale);
+  gboolean cached_ok = FALSE;
+  for(int i = 0; i < n_tile_ladder && !cached_ok; i++)
+    if(tile_ladder[i] == tile_size) cached_ok = TRUE;
+  if(!cached_ok)
+  {
+    if(tile_size > 0)
+      dt_print(DT_DEBUG_AI,
+               "[restore] cached tile size %d not in ladder, re-selecting",
+               tile_size);
+    tile_size = _select_tile_size(tile_ladder, n_tile_ladder, scale);
+  }
+
+  // CoreML CPU-only flag: models whose intermediate activations
+  // overflow FP16 (e.g. raw denoise) declare this in config.json
+  // to force CoreML's CPU path which runs FP32
+  const uint32_t ep_flags
+    = dt_ai_model_attribute_bool(info, "coreml_cpu_only") ? 1 : 0;
+  if(ep_flags)
+    dt_print(DT_DEBUG_AI,
+             "[restore] model %s: coreml_cpu_only=true (ep_flags=%u)",
+             model_id, ep_flags);
 
   dt_ai_context_t *ai_ctx = _create_session(
-    env->ai_env, model_id, model_file, dim_h, dim_w, tile_size);
+    env->ai_env, model_id, model_file, dim_h, dim_w, tile_size,
+    ep_flags);
   if(!ai_ctx)
   {
     g_free(model_id);
+    g_free(tile_ladder);
+    g_free(variant_file);
+    g_free(input_kind);
+    g_free(cs_str);
+    g_free(wb_str);
+    g_free(scale_str);
+    g_free(bo_str);
+    g_free(edge_str);
     return NULL;
   }
 
@@ -245,18 +422,78 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
   ctx->ai_ctx              = ai_ctx;
   ctx->env                 = env;
   ctx->task                = g_strdup(task);
+  ctx->input_kind          = input_kind;   // take ownership
+  ctx->scale               = scale;
   ctx->model_id            = model_id;
   ctx->model_file          = g_strdup(model_file);
   ctx->tile_size           = tile_size;
+  ctx->tile_ladder         = tile_ladder;
+  ctx->n_tile_ladder       = n_tile_ladder;
+  ctx->ep_flags            = ep_flags;
   ctx->dim_h               = g_strdup(dim_h);
   ctx->dim_w               = g_strdup(dim_w);
   ctx->preserve_wide_gamut = TRUE;
+
+  // resolve policy enums: per-variant defaults reproduce today's
+  // RawNIND behavior exactly, so manifests that declare none of these
+  // keys keep working unchanged. bayer path defaults to daylight WB
+  // (training distribution); linear path defaults to as-shot WB (its
+  // re-imported DNG benefits from matching the source tonemap — see
+  // the rationale in dt_restore_raw_linear). output_scale defaults to
+  // match_gain for both. linear gets a 0.30 exposure target; bayer
+  // doesn't use one (NAN = disabled). input_colorspace only applies
+  // to the linear path
+  ctx->input_kind_enum = expected_kind;
+  {
+    // linear_v1 and xtrans_v1 share the demosaic-based pipeline
+    // defaults (as-shot WB, lin_rec2020 colorspace, 0.30 training-
+    // brightness exposure target). When a dedicated xtrans model
+    // ships these defaults may need to diverge — override in the
+    // manifest if so
+    const gboolean demosaic_pipeline
+      = (expected_kind == DT_RESTORE_INPUT_KIND_LINEAR_V1)
+        || (expected_kind == DT_RESTORE_INPUT_KIND_XTRANS_V1);
+    const dt_restore_wb_mode_t default_wb
+      = demosaic_pipeline ? DT_RESTORE_WB_AS_SHOT : DT_RESTORE_WB_DAYLIGHT;
+    const dt_restore_colorspace_t default_cs
+      = demosaic_pipeline ? DT_RESTORE_CS_LIN_REC2020 : DT_RESTORE_CS_CAMRGB;
+    const float default_tm = demosaic_pipeline ? 0.30f : NAN;
+    ctx->wb_mode          = _parse_wb_mode(wb_str, default_wb);
+    ctx->output_scale     = _parse_output_scale(scale_str, DT_RESTORE_OUT_MATCH_GAIN);
+    ctx->input_colorspace = _parse_colorspace(cs_str, default_cs);
+    char *k_tm = variant
+      ? g_strdup_printf("variants.%s.target_mean", variant) : NULL;
+    ctx->target_mean = k_tm
+      ? _parse_target_mean(info, k_tm, default_tm) : default_tm;
+    g_free(k_tm);
+
+    // bayer-only packing knobs. bayer_v1's contract pairs with
+    // force_rggb + mirror_cropped (matches RawNIND training which
+    // physically crops to RGGB before tiling — so corner-tile mirror
+    // reflections must happen in the cropped frame). a future
+    // 'native' orientation would let a model see non-RGGB sensors
+    // without any origin shift; paired default is mirror_absolute
+    // since there's no cropped frame to reflect within
+    const dt_restore_bayer_orientation_t default_bo
+      = (expected_kind == DT_RESTORE_INPUT_KIND_BAYER_V1)
+          ? DT_RESTORE_BAYER_FORCE_RGGB
+          : DT_RESTORE_BAYER_NATIVE;
+    ctx->bayer_orientation = _parse_bayer_orientation(bo_str, default_bo);
+    const dt_restore_edge_pad_t default_edge
+      = (ctx->bayer_orientation == DT_RESTORE_BAYER_FORCE_RGGB)
+          ? DT_RESTORE_EDGE_MIRROR_CROPPED
+          : DT_RESTORE_EDGE_MIRROR;
+    ctx->edge_pad = _parse_edge_pad(edge_str, default_edge);
+  }
+  g_free(cs_str);
+  g_free(wb_str);
+  g_free(scale_str);
+  g_free(bo_str);
+  g_free(edge_str);
   // shadow boost capability is declared per-model via the
   // "attributes": { "shadow_boost": true } object in config.json;
   // models that hallucinate in dark patches opt in this way;
   // other models run as-is
-  const dt_ai_model_info_t *info
-    = dt_ai_get_model_info_by_id(env->ai_env, model_id);
   ctx->shadow_boost_capable
     = dt_ai_model_attribute_bool(info, "shadow_boost");
   ctx->shadow_boost = ctx->shadow_boost_capable;
@@ -264,19 +501,28 @@ static dt_restore_context_t *_load(dt_restore_env_t *env,
     dt_print(DT_DEBUG_AI,
              "[restore] model %s declares shadow_boost attribute",
              model_id);
+  g_free(variant_file);
   return ctx;
 }
 
 // internal: recreate the ORT session with a smaller tile size after OOM.
 // updates ctx->ai_ctx and ctx->tile_size in place.
 // returns TRUE on success, FALSE if the reload also fails.
+//
+// unload the old session BEFORE creating the new one: after a GPU OOM
+// the old session is still holding VRAM, and trying to allocate even
+// a tiny new session on top triggers a cascade of init failures in
+// ORT's provider-fallback retry path. freeing first lets the new
+// session fit without the retries
 static gboolean _reload_session(dt_restore_context_t *ctx, int new_tile_size)
 {
+  dt_ai_unload_model(ctx->ai_ctx);
+  ctx->ai_ctx = NULL;
+
   dt_ai_context_t *new_ctx = _create_session(
     ctx->env->ai_env, ctx->model_id, ctx->model_file,
-    ctx->dim_h, ctx->dim_w, new_tile_size);
+    ctx->dim_h, ctx->dim_w, new_tile_size, ctx->ep_flags);
   if(!new_ctx) return FALSE;
-  dt_ai_unload_model(ctx->ai_ctx);
   ctx->ai_ctx    = new_ctx;
   ctx->tile_size = new_tile_size;
   return TRUE;
@@ -284,17 +530,63 @@ static gboolean _reload_session(dt_restore_context_t *ctx, int new_tile_size)
 
 dt_restore_context_t *dt_restore_load_denoise(dt_restore_env_t *env)
 {
-  return _load(env, TASK_DENOISE, NULL, 1);
+  return _load(env, TASK_DENOISE, NULL, NULL, 1);
+}
+
+dt_restore_sensor_class_t dt_restore_classify_sensor(const dt_image_t *img)
+{
+  if(!img || !(img->flags & DT_IMAGE_RAW))
+    return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
+  if(img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER))
+    return DT_RESTORE_SENSOR_CLASS_UNSUPPORTED;
+  const uint32_t filters = img->buf_dsc.filters;
+  if(filters == 9u) return DT_RESTORE_SENSOR_CLASS_XTRANS;
+  if(filters != 0u) return DT_RESTORE_SENSOR_CLASS_BAYER;
+  return DT_RESTORE_SENSOR_CLASS_LINEAR;
+}
+
+dt_restore_context_t *dt_restore_load_rawdenoise_bayer(dt_restore_env_t *env)
+{
+  // scale 1x, same pipeline as denoise; filename comes from the model's
+  // variants.bayer.onnx attribute. loading fails if the YAML doesn't
+  // declare it — no silent fallback for broken model packages
+  return _load(env, TASK_RAWDENOISE, "bayer", NULL, 1);
+}
+
+dt_restore_context_t *dt_restore_load_rawdenoise_linear(dt_restore_env_t *env)
+{
+  // generic-demosaic fallback: Foveon, monochrome-with-pattern, and
+  // currently also X-Trans (until dt_restore_load_rawdenoise_xtrans
+  // gets a dedicated variant to load)
+  return _load(env, TASK_RAWDENOISE, "linear", NULL, 1);
+}
+
+dt_restore_context_t *dt_restore_load_rawdenoise_xtrans(dt_restore_env_t *env)
+{
+  // prefer a dedicated xtrans variant when the manifest declares one;
+  // fall back to the linear pipeline otherwise. this lets a future
+  // RawNIND release ship a dedicated X-Trans model via just a manifest
+  // update — no code changes in darktable (assuming the dedicated model
+  // shares the linear pipeline; a structurally different X-Trans input
+  // format would still need its own preprocessing code)
+  dt_restore_context_t *ctx = _load(env, TASK_RAWDENOISE, "xtrans", NULL, 1);
+  if(!ctx)
+  {
+    dt_print(DT_DEBUG_AI,
+             "[restore] no dedicated xtrans variant; using linear as fallback");
+    ctx = _load(env, TASK_RAWDENOISE, "linear", NULL, 1);
+  }
+  return ctx;
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x2(dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, "model_x2.onnx", 2);
+  return _load(env, TASK_UPSCALE, NULL, "model_x2.onnx", 2);
 }
 
 dt_restore_context_t *dt_restore_load_upscale_x4(dt_restore_env_t *env)
 {
-  return _load(env, TASK_UPSCALE, "model_x4.onnx", 4);
+  return _load(env, TASK_UPSCALE, NULL, "model_x4.onnx", 4);
 }
 
 dt_restore_context_t *dt_restore_ref(dt_restore_context_t *ctx)
@@ -310,74 +602,14 @@ void dt_restore_unref(dt_restore_context_t *ctx)
   {
     dt_ai_unload_model(ctx->ai_ctx);
     g_free(ctx->task);
+    g_free(ctx->input_kind);
     g_free(ctx->model_id);
     g_free(ctx->model_file);
     g_free(ctx->dim_h);
     g_free(ctx->dim_w);
+    g_free(ctx->tile_ladder);
     g_free(ctx);
   }
-}
-
-void dt_restore_set_profile(dt_restore_context_t *ctx, void *profile)
-{
-  if(!ctx) return;
-  if(!profile)
-  {
-    ctx->has_profile = FALSE;
-    return;
-  }
-
-  float primaries[3][2], whitepoint[2];
-  if(!dt_colorspaces_get_primaries_and_whitepoint_from_profile(
-       (cmsHPROFILE)profile, primaries, whitepoint))
-  {
-    dt_print(DT_DEBUG_AI,
-             "[restore] could not read primaries from working profile, "
-             "falling back to gamma-only conversion");
-    ctx->has_profile = FALSE;
-    return;
-  }
-
-  // build WP -> XYZ (stored transposed by dt, convert to row-major)
-  dt_colormatrix_t wp_to_xyz_T;
-  dt_make_transposed_matrices_from_primaries_and_whitepoint(primaries,
-                                                            whitepoint,
-                                                            wp_to_xyz_T);
-  float wp_to_xyz[9];
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++)
-      wp_to_xyz[3 * i + j] = wp_to_xyz_T[j][i];
-
-  // transpose dt's sRGB<->XYZ matrices (Bradford D50) to row-major
-  float xyz_to_srgb[9], srgb_to_xyz[9];
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++)
-    {
-      xyz_to_srgb[3 * i + j] = xyz_to_srgb_transposed[j][i];
-      srgb_to_xyz[3 * i + j] = sRGB_to_xyz_transposed[j][i];
-    }
-
-  // WP -> sRGB = (XYZ -> sRGB) * (WP -> XYZ)
-  mat3mul(ctx->wp_to_srgb, xyz_to_srgb, wp_to_xyz);
-
-  // invert WP -> XYZ to get XYZ -> WP, then compose sRGB -> WP
-  float xyz_to_wp[9];
-  if(mat3inv(xyz_to_wp, wp_to_xyz) != 0)
-  {
-    dt_print(DT_DEBUG_AI,
-             "[restore] singular WP->XYZ matrix, falling back to gamma-only");
-    ctx->has_profile = FALSE;
-    return;
-  }
-  mat3mul(ctx->srgb_to_wp, xyz_to_wp, srgb_to_xyz);
-
-  ctx->has_profile = TRUE;
-  dt_print(DT_DEBUG_AI, "[restore] working profile color matrices ready");
-}
-
-void dt_restore_set_preserve_wide_gamut(dt_restore_context_t *ctx, gboolean preserve)
-{
-  if(ctx) ctx->preserve_wide_gamut = preserve;
 }
 
 static gboolean _model_available(dt_restore_env_t *env,
@@ -403,64 +635,31 @@ gboolean dt_restore_denoise_available(dt_restore_env_t *env)
   return _model_available(env, TASK_DENOISE);
 }
 
+gboolean dt_restore_rawdenoise_available(dt_restore_env_t *env)
+{
+  return _model_available(env, TASK_RAWDENOISE);
+}
+
 gboolean dt_restore_upscale_available(dt_restore_env_t *env)
 {
   return _model_available(env, TASK_UPSCALE);
 }
 
-/* --- color conversion --- */
-
-// sRGB transfer function (gamma curve only, no primaries change).
-// values > 1.0 are allowed to preserve wide-gamut colors
-static inline float _linear_to_srgb(const float v)
-{
-  if(v <= 0.0f) return 0.0f;
-  return (v <= 0.0031308f)
-    ? 12.92f * v
-    : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
-}
-
-static inline float _srgb_to_linear(const float v)
-{
-  if(v <= 0.0f) return 0.0f;
-  return (v <= 0.04045f)
-    ? v / 12.92f
-    : powf((v + 0.055f) / 1.055f, 2.4f);
-}
-
-/* --- helpers --- */
-
-static inline int _mirror(int v, int max)
-{
-  if(v < 0) v = -v;
-  if(v >= max) v = 2 * max - 2 - v;
-  if(v < 0) return 0;
-  if(v >= max) return max - 1;
-  return v;
-}
-
-/* --- public API --- */
+// --- public API ---
 
 int dt_restore_get_overlap(int scale)
 {
   return (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
 }
 
-static int _select_tile_size(int scale)
+static int _select_tile_size(const int *ladder, int n_ladder, int scale)
 {
-  const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
-  const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
-  const int *candidates = (scale > 1) ? ladder_sr : ladder_1x;
-  const int n_candidates = (scale > 1)
-    ? (int)(sizeof(ladder_sr) / sizeof(int))
-    : (int)(sizeof(ladder_1x) / sizeof(int));
-
   const size_t avail = dt_get_available_mem();
   const size_t budget = avail / 4;
 
-  for(int i = 0; i < n_candidates; i++)
+  for(int i = 0; i < n_ladder; i++)
   {
-    const size_t T = (size_t)candidates[i];
+    const size_t T = (size_t)ladder[i];
     const size_t T_out = T * scale;
     const size_t tile_in = T * T * 3 * sizeof(float);
     const size_t tile_out
@@ -474,659 +673,299 @@ static int _select_tile_size(int scale)
     {
       dt_print(DT_DEBUG_AI,
                "[restore] tile size %d (scale=%d, need %zuMB, budget %zuMB)",
-               candidates[i], scale,
+               ladder[i], scale,
                total / (1024 * 1024),
                budget / (1024 * 1024));
-      return candidates[i];
+      return ladder[i];
     }
   }
 
   dt_print(DT_DEBUG_AI,
            "[restore] using minimum tile size %d (budget %zuMB)",
-           candidates[n_candidates - 1],
+           ladder[n_ladder - 1],
            budget / (1024 * 1024));
-  return candidates[n_candidates - 1];
+  return ladder[n_ladder - 1];
 }
 
-// Rec.709 / sRGB luminance weights (Y row of sRGB->XYZ D65);
-// applied to working-profile-linear pixels in the pass-through
-// blending below; exact only when the working profile is
-// sRGB/Rec.709, but correct enough for luminance deltas
-static inline float _luma_rec709(float r, float g, float b)
+static void _resolve_tile_ladder(const dt_ai_model_info_t *info,
+                                 int scale,
+                                 int **out_sizes,
+                                 int *out_count)
 {
-  return 0.2126f * r + 0.7152f * g + 0.0722f * b;
-}
-
-int dt_restore_run_patch(dt_restore_context_t *ctx,
-                         const float *in_patch,
-                         int w, int h,
-                         float *out_patch,
-                         int scale)
-{
-  if(!ctx || !ctx->ai_ctx) return 1;
-  const size_t in_pixels = (size_t)w * h * 3;
-  const int out_w = w * scale;
-  const int out_h = h * scale;
-  const size_t out_pixels = (size_t)out_w * out_h * 3;
-  const size_t plane = (size_t)w * h;
-
-  // convert to sRGB gamma-encoded. If a working profile is set,
-  // first convert primaries (working profile -> sRGB linear) so the
-  // model sees the image as if it were native sRGB. Otherwise only
-  // apply the gamma curve (legacy path, shifts hues for wide-gamut).
-  // input layout is planar NCHW: R plane, then G plane, then B plane.
-  // in_gamut_mask records which pixels were in sRGB gamut (scale==1
-  // only) so the output pass can skip recomputing WP->sRGB
-  float *srgb_in = g_try_malloc(in_pixels * sizeof(float));
-  uint8_t *in_gamut_mask = NULL;
-  if(!srgb_in) return 1;
-  // only allocate the gamut mask when denoise pass-through is requested
-  const gboolean need_gamut_mask
-    = ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut;
-  if(need_gamut_mask)
+  // prefer the model's declared input_sizes if present: some exports
+  // ship with a fixed set of supported tile sizes (e.g. the model was
+  // compiled for specific spatial dims) and using anything outside
+  // that list will either refuse to run or produce garbage
+  int n = 0;
+  int *sizes = dt_ai_model_attribute_int_array(info, "input_sizes", &n);
+  if(sizes && n > 0)
   {
-    in_gamut_mask = g_try_malloc(plane);
-    if(!in_gamut_mask)
-    {
-      g_free(srgb_in);
-      return 1;
-    }
+    *out_sizes = sizes;
+    *out_count = n;
+    return;
   }
+  g_free(sizes);
 
-  if(ctx->has_profile)
-  {
-    const float *M = ctx->wp_to_srgb;
-    const gboolean boost = ctx->shadow_boost;
-    for(size_t p = 0; p < plane; p++)
-    {
-      const float r = in_patch[p];
-      const float g = in_patch[p + plane];
-      const float b = in_patch[p + 2 * plane];
-      float sr = M[0] * r + M[1] * g + M[2] * b;
-      float sg = M[3] * r + M[4] * g + M[5] * b;
-      float sb = M[6] * r + M[7] * g + M[8] * b;
-      // gamut check uses pre-boost values so pass-through decisions
-      // reflect the original color
-      if(in_gamut_mask)
-      {
-        const float m = 0.01f;  // ~1% margin beyond [0, 1]
-        in_gamut_mask[p] = (sr >= -m && sr <= 1.0f + m
-                           && sg >= -m && sg <= 1.0f + m
-                           && sb >= -m && sb <= 1.0f + m) ? 1 : 0;
-      }
-      if(boost)
-      {
-        sr = sr > 0.0f ? sqrtf(sr) : 0.0f;
-        sg = sg > 0.0f ? sqrtf(sg) : 0.0f;
-        sb = sb > 0.0f ? sqrtf(sb) : 0.0f;
-      }
-      srgb_in[p]             = _linear_to_srgb(sr);
-      srgb_in[p + plane]     = _linear_to_srgb(sg);
-      srgb_in[p + 2 * plane] = _linear_to_srgb(sb);
-    }
-  }
-  else if(ctx->shadow_boost)
-  {
-    // no profile: still boost shadows so the model stays within its
-    // comfort zone, even though we treat WP values as sRGB
-    for(size_t i = 0; i < in_pixels; i++)
-    {
-      const float v = in_patch[i];
-      const float boosted = v > 0.0f ? sqrtf(v) : 0.0f;
-      srgb_in[i] = _linear_to_srgb(boosted);
-    }
-  }
-  else
-  {
-    for(size_t i = 0; i < in_pixels; i++)
-      srgb_in[i] = _linear_to_srgb(in_patch[i]);
-  }
-
-  const int num_inputs = dt_ai_get_input_count(ctx->ai_ctx);
-  if(num_inputs > MAX_MODEL_INPUTS)
-  {
-    g_free(srgb_in);
-    return 1;
-  }
-
-  int64_t input_shape[] = {1, 3, h, w};
-  dt_ai_tensor_t inputs[MAX_MODEL_INPUTS];
-  memset(inputs, 0, sizeof(inputs));
-  inputs[0] = (dt_ai_tensor_t){
-    .data = (void *)srgb_in,
-    .shape = input_shape,
-    .ndim = 4,
-    .type = DT_AI_FLOAT};
-
-  // noise level map for multi-input models
-  float *noise_map = NULL;
-  int64_t noise_shape[] = {1, 1, h, w};
-  if(num_inputs >= 2)
-  {
-    const size_t map_size = (size_t)w * h;
-    noise_map = g_try_malloc(map_size * sizeof(float));
-    if(!noise_map)
-    {
-      g_free(srgb_in);
-      return 1;
-    }
-    const float sigma_norm = 25.0f / 255.0f;
-    for(size_t i = 0; i < map_size; i++)
-      noise_map[i] = sigma_norm;
-    inputs[1] = (dt_ai_tensor_t){
-      .data = (void *)noise_map,
-      .shape = noise_shape,
-      .ndim = 4,
-      .type = DT_AI_FLOAT};
-  }
-
-  int64_t output_shape[] = {1, 3, out_h, out_w};
-  dt_ai_tensor_t output = {
-    .data = (void *)out_patch,
-    .shape = output_shape,
-    .ndim = 4,
-    .type = DT_AI_FLOAT};
-
-  int ret = dt_ai_run(ctx->ai_ctx, inputs, num_inputs,
-                      &output, 1);
-  g_free(srgb_in);
-  g_free(noise_map);
-  if(ret != 0)
-  {
-    g_free(in_gamut_mask);
-    return ret;
-  }
-
-  // convert model output back to the working profile
-  //
-  // with profile: apply inverse sRGB gamma, then check if the ORIGINAL
-  // input pixel (converted to sRGB linear) is representable in sRGB
-  // gamut. if yes, use model output converted back to working profile.
-  // if no, pass through the original pixel (wide-gamut colors preserved,
-  // no denoising on those pixels). upscale has no pixel-to-pixel
-  // correspondence so pass-through is not possible — always use the
-  // model output
-  //
-  // without profile: fall back to per-channel pass-through in the
-  // original (working-profile-as-sRGB) space
-  const gboolean boost = ctx->shadow_boost;
-  if(ctx->has_profile && scale == 1 && ctx->preserve_wide_gamut)
-  {
-    const size_t out_plane = (size_t)out_w * out_h;
-    const float *Mi = ctx->srgb_to_wp;
-    // pass 1: write denoised values for in-gamut pixels; out-of-gamut
-    // pixels get plain pass-through as a fallback (used only when no
-    // in-gamut neighbors are found in pass 2)
-    for(size_t p = 0; p < out_plane; p++)
-    {
-      if(in_gamut_mask[p])
-      {
-        float sr = _srgb_to_linear(out_patch[p]);
-        float sg = _srgb_to_linear(out_patch[p + out_plane]);
-        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
-        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
-        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
-        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
-        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
-      }
-      else
-      {
-        out_patch[p]                 = in_patch[p];
-        out_patch[p + out_plane]     = in_patch[p + plane];
-        out_patch[p + 2 * out_plane] = in_patch[p + 2 * plane];
-      }
-    }
-    // pass 2: luminance-only smoothing for out-of-gamut pixels. the
-    // original pixel keeps its chroma (wide-gamut color preserved
-    // exactly) but its brightness is shifted to match the local
-    // average luminance of denoised in-gamut neighbors; this kills
-    // the single-pixel speckles that pass-through would otherwise
-    // leave visible against the denoised background
-    const int radius = 2;  // 5x5 window
-    for(int y = 0; y < out_h; y++)
-    {
-      for(int x = 0; x < out_w; x++)
-      {
-        const size_t p = (size_t)y * out_w + x;
-        if(in_gamut_mask[p]) continue;
-        const float r0 = in_patch[p];
-        const float g0 = in_patch[p + plane];
-        const float b0 = in_patch[p + 2 * plane];
-        const float Y_orig = _luma_rec709(r0, g0, b0);
-        float sumY = 0.0f;
-        int count = 0;
-        const int y0 = y - radius < 0 ? 0 : y - radius;
-        const int y1 = y + radius >= out_h ? out_h - 1 : y + radius;
-        const int x0 = x - radius < 0 ? 0 : x - radius;
-        const int x1 = x + radius >= out_w ? out_w - 1 : x + radius;
-        for(int yy = y0; yy <= y1; yy++)
-        {
-          for(int xx = x0; xx <= x1; xx++)
-          {
-            const size_t q = (size_t)yy * out_w + xx;
-            if(!in_gamut_mask[q]) continue;
-            const float rq = out_patch[q];
-            const float gq = out_patch[q + out_plane];
-            const float bq = out_patch[q + 2 * out_plane];
-            sumY += _luma_rec709(rq, gq, bq);
-            count++;
-          }
-        }
-        if(count > 0)
-        {
-          const float dY = sumY / (float)count - Y_orig;
-          out_patch[p]                 = r0 + dY;
-          out_patch[p + out_plane]     = g0 + dY;
-          out_patch[p + 2 * out_plane] = b0 + dY;
-        }
-      }
-    }
-  }
-  else if(ctx->has_profile && scale == 1)
-  {
-    // denoise with profile but NO pass-through: apply the inverse
-    // matrix to every pixel. wide-gamut inputs will have been clipped
-    // by the model, but we get denoising everywhere
-    const size_t out_plane = (size_t)out_w * out_h;
-    const float *Mi = ctx->srgb_to_wp;
-    for(size_t p = 0; p < out_plane; p++)
-    {
-      float sr = _srgb_to_linear(out_patch[p]);
-      float sg = _srgb_to_linear(out_patch[p + out_plane]);
-      float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
-      if(boost) { sr *= sr; sg *= sg; sb *= sb; }
-      out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
-      out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
-      out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
-    }
-  }
-  else if(scale == 1)
-  {
-    // no profile set: per-channel pass-through, treats working-profile
-    // numbers as if they were sRGB. colors will be slightly shifted
-    // for wide-gamut working profiles — rely on the profile path above
-    // when possible. pass-through still honored via preserve_wide_gamut
-    for(size_t i = 0; i < out_pixels; i++)
-    {
-      const float in = in_patch[i];
-      if(ctx->preserve_wide_gamut && (in < 0.0f || in > 1.0f))
-      {
-        out_patch[i] = in;
-      }
-      else
-      {
-        float v = _srgb_to_linear(out_patch[i]);
-        if(boost) v *= v;
-        out_patch[i] = v;
-      }
-    }
-  }
-  else
-  {
-    // upscale: no pixel-to-pixel correspondence, use model output as-is
-    if(ctx->has_profile)
-    {
-      const size_t out_plane = (size_t)out_w * out_h;
-      const float *Mi = ctx->srgb_to_wp;
-      for(size_t p = 0; p < out_plane; p++)
-      {
-        float sr = _srgb_to_linear(out_patch[p]);
-        float sg = _srgb_to_linear(out_patch[p + out_plane]);
-        float sb = _srgb_to_linear(out_patch[p + 2 * out_plane]);
-        if(boost) { sr *= sr; sg *= sg; sb *= sb; }
-        out_patch[p]                 = Mi[0] * sr + Mi[1] * sg + Mi[2] * sb;
-        out_patch[p + out_plane]     = Mi[3] * sr + Mi[4] * sg + Mi[5] * sb;
-        out_patch[p + 2 * out_plane] = Mi[6] * sr + Mi[7] * sg + Mi[8] * sb;
-      }
-    }
-    else
-    {
-      for(size_t i = 0; i < out_pixels; i++)
-      {
-        float v = _srgb_to_linear(out_patch[i]);
-        if(boost) v *= v;
-        out_patch[i] = v;
-      }
-    }
-  }
-
-  g_free(in_gamut_mask);
-  return 0;
-}
-
-// per-image gate for the shadow-boost curve; enable only when the image
-// has substantial near-black area to protect — bright images would only
-// pay the curve cost (minor highlight compression) for no gain;
-// thresholds tuned so localized very-dark features (a tree hollow, a
-// silhouette) do NOT trigger; only broad noisy shadow regions do
-//
-// in_data is interleaved float4 RGBA
-#define _SHADOW_BOOST_THRESHOLD 0.005f  // 0.5% linear luminance
-#define _SHADOW_BOOST_FRACTION  0.10f   // 10% of sampled pixels
-static gboolean _image_has_deep_shadows(const float *in_data, int w, int h)
-{
-  const size_t stride = 16;  // sample 1/256 of pixels for speed
-  size_t dark = 0, total = 0;
-  for(size_t y = 0; y < (size_t)h; y += stride)
-    for(size_t x = 0; x < (size_t)w; x += stride)
-    {
-      const size_t p = ((size_t)y * w + x) * 4;
-      const float luma = 0.2126f * in_data[p]
-                       + 0.7152f * in_data[p + 1]
-                       + 0.0722f * in_data[p + 2];
-      if(luma < _SHADOW_BOOST_THRESHOLD) dark++;
-      total++;
-    }
-  return total > 0 && (float)dark / total >= _SHADOW_BOOST_FRACTION;
-}
-
-int dt_restore_process_tiled(dt_restore_context_t *ctx,
-                             const float *in_data,
-                             int width, int height,
-                             int scale,
-                             dt_restore_row_writer_t row_writer,
-                             void *writer_data,
-                             struct _dt_job_t *control_job)
-{
-  if(!ctx || !in_data || !row_writer)
-    return 1;
-
-  // for shadow-boost-capable models, decide per-image whether the
-  // curve is worth applying; one analysis per call, before tiling,
-  // so all tiles see the same flag (avoids per-tile seams)
-  if(ctx->shadow_boost_capable)
-  {
-    const gboolean dark = _image_has_deep_shadows(in_data, width, height);
-    ctx->shadow_boost = dark;
-    dt_print(DT_DEBUG_AI, "[restore] shadow boost %s",
-             dark ? "enabled" : "disabled");
-  }
-
-  const int O = (scale > 1) ? OVERLAP_UPSCALE : OVERLAP_DENOISE;
-  const int S = scale;
-  const int out_w = width * S;
-  const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
-  const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
-  const int *ladder = (scale > 1) ? ladder_sr : ladder_1x;
-  const int n_ladder = (scale > 1)
+  // fall back to the built-in ladder for the model's scale
+  static const int ladder_1x[] = DT_RESTORE_TILE_LADDER_1X;
+  static const int ladder_sr[] = DT_RESTORE_TILE_LADDER_SR;
+  const int *src = (scale > 1) ? ladder_sr : ladder_1x;
+  const int src_n = (scale > 1)
     ? (int)(sizeof(ladder_sr) / sizeof(int))
     : (int)(sizeof(ladder_1x) / sizeof(int));
-  int T = ctx->tile_size;
+  int *copy = g_new(int, src_n);
+  memcpy(copy, src, src_n * sizeof(int));
+  *out_sizes = copy;
+  *out_count = src_n;
+}
 
-  // outer retry loop: on inference failure (e.g. GPU OOM) drop to the
-  // next smaller candidate in the shared ladder and try again
-retry:;
-  int step = T - 2 * O;
-  int T_out = T * S;
-  int O_out = O * S;
-  int step_out = step * S;
-  size_t in_plane = (size_t)T * T;
-  size_t out_plane = (size_t)T_out * T_out;
-  int cols = (width + step - 1) / step;
-  int rows = (height + step - 1) / step;
-  int total_tiles = cols * rows;
+int dt_restore_run_patch_bayer(dt_restore_context_t *ctx,
+                               const float *in_4ch,
+                               int w, int h,
+                               float *out_3ch)
+{
+  if(!ctx || !ctx->ai_ctx) return 1;
 
-  dt_print(DT_DEBUG_AI,
-           "[restore] tiling %dx%d (scale=%d)"
-           " -> %dx%d, %dx%d grid (%d tiles, T=%d)",
-           width, height, S, out_w, height * S,
-           cols, rows, total_tiles, T);
+  int64_t in_shape[]  = { 1, 4, h, w };
+  int64_t out_shape[] = { 1, 3, 2 * h, 2 * w };
+  dt_ai_tensor_t input = {
+    .data  = (void *)in_4ch,
+    .shape = in_shape,
+    .ndim  = 4,
+    .type  = DT_AI_FLOAT,
+  };
+  dt_ai_tensor_t output = {
+    .data  = out_3ch,
+    .shape = out_shape,
+    .ndim  = 4,
+    .type  = DT_AI_FLOAT,
+  };
+  return dt_ai_run(ctx->ai_ctx, &input, 1, &output, 1);
+}
 
-  float *tile_in = g_try_malloc(
-    in_plane * 3 * sizeof(float));
-  float *tile_out = g_try_malloc(
-    out_plane * 3 * sizeof(float));
-  float *row_buf = g_try_malloc(
-    (size_t)out_w * step_out * 3 * sizeof(float));
-  if(!tile_in || !tile_out || !row_buf)
+int dt_restore_run_patch_3ch_raw(dt_restore_context_t *ctx,
+                                 const float *in_3ch,
+                                 int w, int h,
+                                 float *out_3ch)
+{
+  if(!ctx || !ctx->ai_ctx) return 1;
+
+  int64_t in_shape[]  = { 1, 3, h, w };
+  int64_t out_shape[] = { 1, 3, h, w };
+  dt_ai_tensor_t input = {
+    .data  = (void *)in_3ch,
+    .shape = in_shape,
+    .ndim  = 4,
+    .type  = DT_AI_FLOAT,
+  };
+  dt_ai_tensor_t output = {
+    .data  = out_3ch,
+    .shape = out_shape,
+    .ndim  = 4,
+    .type  = DT_AI_FLOAT,
+  };
+  return dt_ai_run(ctx->ai_ctx, &input, 1, &output, 1);
+}
+
+const int *dt_restore_get_tile_ladder(const dt_restore_context_t *ctx,
+                                      int *out_count)
+{
+  if(!ctx)
   {
-    g_free(tile_in);
-    g_free(tile_out);
-    g_free(row_buf);
+    if(out_count) *out_count = 0;
+    return NULL;
+  }
+  if(out_count) *out_count = ctx->n_tile_ladder;
+  return ctx->tile_ladder;
+}
+
+int dt_restore_get_tile_size(const dt_restore_context_t *ctx)
+{
+  return ctx ? ctx->tile_size : 0;
+}
+
+gboolean dt_restore_reload_session(dt_restore_context_t *ctx,
+                                   int new_tile_size)
+{
+  if(!ctx) return FALSE;
+  return _reload_session(ctx, new_tile_size);
+}
+
+void dt_restore_persist_tile_size(const dt_restore_context_t *ctx)
+{
+  if(ctx && ctx->model_id)
+    _set_cached_tile_size(ctx->model_id, ctx->scale, ctx->tile_size);
+}
+
+// shared bridge: run the user's darktable pixelpipe on an arbitrary sensor
+// buffer, capture the display-referred RGB at an ROI. used by both raw-
+// denoise preview paths (Bayer CFA after re-mosaic, X-Trans CFA after
+// re-mosaic) so the preview before/after match what the user sees in
+// darkroom after Process + DNG re-import
+int dt_restore_run_user_pipe_roi(dt_imgid_t imgid,
+                                 void *input_native,
+                                 int iw,
+                                 int ih,
+                                 int roi_x, int roi_y,
+                                 int roi_w, int roi_h,
+                                 int *out_w, int *out_h,
+                                 float **out_rgb)
+{
+  if(out_rgb) *out_rgb = NULL;
+  if(out_w) *out_w = 0;
+  if(out_h) *out_h = 0;
+  if(!input_native || iw <= 0 || ih <= 0
+     || roi_w <= 0 || roi_h <= 0)
+    return 1;
+
+  dt_develop_t dev;
+  dt_dev_init(&dev, FALSE);
+  dt_dev_load_image(&dev, imgid);
+
+  dt_dev_pixelpipe_t pipe;
+  if(!dt_dev_pixelpipe_init_export(&pipe, iw, ih, IMAGEIO_FLOAT, FALSE))
+  {
+    dt_dev_cleanup(&dev);
     return 1;
   }
 
-  int res = 0;
-  int tile_count = 0;
+  // force output to linear Rec.709 (sRGB primaries, linear transfer)
+  // so the widget's sRGB-gamma encoder displays the right colours.
+  // MUST be called before create_nodes / synch_all: colorout reads
+  // pipe->icc_type during commit_params at synch_all time. setting it
+  // afterwards leaves colorout committed with the user's working
+  // profile (often Rec.2020 / ProPhoto) → the cairo path then
+  // applies sRGB gamma to wrong-primaries numbers → preview comes
+  // out noticeably brighter / wrong colours vs. the batch DNG that
+  // re-imports through the normal pipe
+  dt_dev_pixelpipe_set_icc(&pipe, DT_COLORSPACE_LIN_REC709, NULL,
+                           DT_INTENT_PERCEPTUAL);
 
-  for(int ty = 0; ty < rows; ty++)
+  dt_ioppr_resync_modules_order(&dev);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)input_native,
+                             iw, ih, 1.0f);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_synch_all(&pipe, &dev);
+
+  // skip rawdenoise — neural denoise already happened upstream.
+  // safe to do this after synch_all: this only flips piece->enabled,
+  // which the per-iop process loop checks at run time
+  for(GList *n = pipe.nodes; n; n = g_list_next(n))
   {
-    const int y = ty * step;
-    const int valid_h = (y + step > height)
-      ? height - y : step;
-    const int valid_h_out = valid_h * S;
+    dt_dev_pixelpipe_iop_t *piece = n->data;
+    if(dt_iop_module_is(piece->module->so, "rawdenoise"))
+      piece->enabled = FALSE;
+  }
 
-    memset(row_buf, 0,
-           (size_t)out_w * valid_h_out * 3
-           * sizeof(float));
+  int pw = 0, ph = 0;
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, iw, ih, &pw, &ph);
+  if(pw <= 0 || ph <= 0)
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+  pipe.processed_width = pw;
+  pipe.processed_height = ph;
 
-    for(int tx = 0; tx < cols; tx++)
+  // the ROI passed to process_no_gamma is in POST-pipe (final output)
+  // coords, but the caller hands us sensor (input) coords so the ROI
+  // lines up with the denoised CFA patch it built. forward-transform
+  // the crop rectangle's 4 corners through the user's full geometry
+  // chain (rawprepare + clipping + ashift + lens + rotatepixels + ...)
+  // and use the INSCRIBED axis-aligned rectangle of the transformed
+  // quad as the pipe ROI. the circumscribed AABB would include corner
+  // triangles that back-project to sensor positions OUTSIDE the
+  // denoised region — they'd render as noisy strips at the edges of
+  // the preview. the inscribed rect is strictly inside the quad so
+  // every sample back-projects within the patched region
+  float corners[8] = {
+    (float)roi_x,             (float)roi_y,
+    (float)(roi_x + roi_w),   (float)roi_y,
+    (float)roi_x,             (float)(roi_y + roi_h),
+    (float)(roi_x + roi_w),   (float)(roi_y + roi_h),
+  };
+  dt_dev_distort_transform_plus(&dev, &pipe, 0.0,
+                                DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY,
+                                corners, 4);
+
+  // inscribed AABB: second-smallest x/y and second-largest x/y of the
+  // 4 transformed corners. for a parallelogram these are the innermost
+  // of each pair; for small lens distortions they're still safe (i.e.
+  // lie inside the quad) because the quad stays nearly rectangular
+  float xs[4] = { corners[0], corners[2], corners[4], corners[6] };
+  float ys[4] = { corners[1], corners[3], corners[5], corners[7] };
+  for(int i = 0; i < 3; i++)
+    for(int j = i + 1; j < 4; j++)
     {
-      if(control_job
-         && dt_control_job_get_state(control_job)
-              == DT_JOB_STATE_CANCELLED)
-      {
-        res = 1;
-        goto cleanup;
-      }
-
-      const int x = tx * step;
-      const int in_x = x - O;
-      const int in_y = y - O;
-      const int needs_mirror
-        = (in_x < 0 || in_y < 0
-           || in_x + T > width
-           || in_y + T > height);
-
-      // interleaved RGBx -> planar RGB
-      if(needs_mirror)
-      {
-        for(int dy = 0; dy < T; ++dy)
-        {
-          const int sy = _mirror(in_y + dy, height);
-          for(int dx = 0; dx < T; ++dx)
-          {
-            const int sx
-              = _mirror(in_x + dx, width);
-            const size_t po = (size_t)dy * T + dx;
-            const size_t si
-              = ((size_t)sy * width + sx) * 4;
-            tile_in[po] = in_data[si + 0];
-            tile_in[po + in_plane]
-              = in_data[si + 1];
-            tile_in[po + 2 * in_plane]
-              = in_data[si + 2];
-          }
-        }
-      }
-      else
-      {
-        for(int dy = 0; dy < T; ++dy)
-        {
-          const float *row
-            = in_data
-              + ((size_t)(in_y + dy) * width
-                 + in_x) * 4;
-          const size_t ro = (size_t)dy * T;
-          for(int dx = 0; dx < T; ++dx)
-          {
-            tile_in[ro + dx] = row[dx * 4 + 0];
-            tile_in[ro + dx + in_plane]
-              = row[dx * 4 + 1];
-            tile_in[ro + dx + 2 * in_plane]
-              = row[dx * 4 + 2];
-          }
-        }
-      }
-
-      if(dt_restore_run_patch(
-           ctx, tile_in, T, T, tile_out, S) != 0)
-      {
-        // retry with the next smaller ladder entry if no rows have
-        // been delivered yet (safe to restart). once rows are written
-        // we can't rewind the row_writer (e.g. TIFF is sequential).
-        // _reload_session() recreates the ORT session for the smaller
-        // tile size (dim overrides are shape-specific).
-        int next_T = 0;
-        for(int i = 0; i < n_ladder; i++)
-          if(ladder[i] < T) { next_T = ladder[i]; break; }
-        if(next_T > 0 && ty == 0
-           && _reload_session(ctx, next_T))
-        {
-          dt_print(DT_DEBUG_AI,
-                   "[restore] inference failed at tile %d,%d "
-                   "(T=%d), retrying with T=%d",
-                   x, y, T, next_T);
-          g_free(tile_in);
-          g_free(tile_out);
-          g_free(row_buf);
-          T = next_T;
-          goto retry;
-        }
-        dt_print(DT_DEBUG_AI,
-                 "[restore] inference failed at"
-                 " tile %d,%d (T=%d, minimum reached)", x, y, T);
-        res = 1;
-        goto cleanup;
-      }
-
-      // valid region -> row buffer
-      const int valid_w = (x + step > width)
-        ? width - x : step;
-      const int valid_w_out = valid_w * S;
-
-      for(int dy = 0; dy < valid_h_out; ++dy)
-      {
-        const size_t src_row
-          = (size_t)(O_out + dy) * T_out + O_out;
-        const size_t dst_row
-          = ((size_t)dy * out_w + x * S) * 3;
-        for(int dx = 0; dx < valid_w_out; ++dx)
-        {
-          row_buf[dst_row + dx * 3 + 0]
-            = tile_out[src_row + dx];
-          row_buf[dst_row + dx * 3 + 1]
-            = tile_out[src_row + dx + out_plane];
-          row_buf[dst_row + dx * 3 + 2]
-            = tile_out[src_row + dx
-                       + 2 * out_plane];
-        }
-      }
-
-      tile_count++;
-      if(control_job)
-        dt_control_job_set_progress(control_job,
-                                    (double)tile_count / total_tiles);
+      if(xs[i] > xs[j]) { float t = xs[i]; xs[i] = xs[j]; xs[j] = t; }
+      if(ys[i] > ys[j]) { float t = ys[i]; ys[i] = ys[j]; ys[j] = t; }
     }
+  // round inward (ceil for inner min, floor for inner max) so the
+  // chosen rect stays strictly inside the transformed quad
+  int pipe_roi_x = (int)ceilf(xs[1]);
+  int pipe_roi_y = (int)ceilf(ys[1]);
+  int pipe_roi_w = (int)floorf(xs[2]) - pipe_roi_x;
+  int pipe_roi_h = (int)floorf(ys[2]) - pipe_roi_y;
 
-    // deliver completed scanlines via callback
-    for(int dy = 0; dy < valid_h_out; dy++)
+  // clamp to the pipe's actual processed extent; a sensor ROI near
+  // the edge may transform to a post-pipe ROI that spills past pw/ph
+  if(pipe_roi_x < 0) { pipe_roi_w += pipe_roi_x; pipe_roi_x = 0; }
+  if(pipe_roi_y < 0) { pipe_roi_h += pipe_roi_y; pipe_roi_y = 0; }
+  if(pipe_roi_x + pipe_roi_w > pw) pipe_roi_w = pw - pipe_roi_x;
+  if(pipe_roi_y + pipe_roi_h > ph) pipe_roi_h = ph - pipe_roi_y;
+  if(pipe_roi_w <= 0 || pipe_roi_h <= 0)
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+
+  // NB: process_no_gamma's return value signals "pipe altered
+  // mid-flight", NOT success — check backbuf instead
+  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev,
+                                    pipe_roi_x, pipe_roi_y,
+                                    pipe_roi_w, pipe_roi_h, 1.0f);
+
+  const int bw = pipe.backbuf_width;
+  const int bh = pipe.backbuf_height;
+  if(!pipe.backbuf || bw <= 0 || bh <= 0)
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    return 1;
+  }
+
+  // actual rendered dims may differ from the geometry-transformed
+  // pipe ROI if the pipe is trimmed mid-chain (rare but possible).
+  // callers must read *out_w / *out_h instead of assuming anything
+  if(bw != pipe_roi_w || bh != pipe_roi_h)
+    dt_print(DT_DEBUG_AI,
+             "[restore] pipe ROI %dx%d -> backbuf %dx%d",
+             pipe_roi_w, pipe_roi_h, bw, bh);
+
+  // pipe.backbuf is 4ch interleaved RGBA; repack to 3ch for the
+  // preview blend / display path
+  float *rgb = g_try_malloc((size_t)bw * bh * 3 * sizeof(float));
+  if(rgb)
+  {
+    const float *src = (const float *)pipe.backbuf;
+    for(size_t i = 0; i < (size_t)bw * bh; i++)
     {
-      const float *src = row_buf + (size_t)dy * out_w * 3;
-      if(row_writer(src, out_w, y * S + dy,
-                    writer_data) != 0)
-      {
-        res = 1;
-        goto cleanup;
-      }
+      rgb[i * 3 + 0] = src[i * 4 + 0];
+      rgb[i * 3 + 1] = src[i * 4 + 1];
+      rgb[i * 3 + 2] = src[i * 4 + 2];
     }
   }
 
-  // persist tile size on first full success so subsequent runs skip OOM retry
-  if(res == 0)
-    _set_cached_tile_size(ctx->model_id, S, ctx->tile_size);
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
 
-cleanup:
-  g_free(tile_in);
-  g_free(tile_out);
-  g_free(row_buf);
-  return res;
-}
-
-void dt_restore_apply_detail_recovery(const float *original_4ch,
-                                      float *denoised_4ch,
-                                      int width, int height,
-                                      float alpha)
-{
-  const size_t npix = (size_t)width * height;
-
-  float *const restrict lum_residual
-    = dt_alloc_align_float(npix);
-  if(!lum_residual) return;
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)           \
-  dt_omp_firstprivate(original_4ch, denoised_4ch,     \
-                      lum_residual, npix)             \
-  schedule(simd:static)                               \
-  aligned(original_4ch, denoised_4ch, lum_residual:64)
-#endif
-  for(size_t i = 0; i < npix; i++)
-  {
-    const size_t p = i * 4;
-    const float lum_orig
-      = 0.2126f * original_4ch[p + 0]
-        + 0.7152f * original_4ch[p + 1]
-        + 0.0722f * original_4ch[p + 2];
-    const float lum_den
-      = 0.2126f * denoised_4ch[p + 0]
-        + 0.7152f * denoised_4ch[p + 1]
-        + 0.0722f * denoised_4ch[p + 2];
-    lum_residual[i] = lum_orig - lum_den;
-  }
-
-  float noise[DWT_DETAIL_BANDS];
-  _compute_adaptive_noise(lum_residual, npix, noise);
-  dwt_denoise(lum_residual, width, height,
-              DWT_DETAIL_BANDS, noise);
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none)       \
-  dt_omp_firstprivate(denoised_4ch, lum_residual, \
-                      npix, alpha)                \
-  schedule(simd:static)                           \
-  aligned(denoised_4ch, lum_residual:64)
-#endif
-  for(size_t i = 0; i < npix; i++)
-  {
-    const size_t p = i * 4;
-    const float d = alpha * lum_residual[i];
-    denoised_4ch[p + 0] += d;
-    denoised_4ch[p + 1] += d;
-    denoised_4ch[p + 2] += d;
-  }
-
-  dt_free_align(lum_residual);
-}
-
-float *dt_restore_compute_dwt_detail(const float *before_3ch,
-                                     const float *after_3ch,
-                                     int width, int height)
-{
-  const size_t npix = (size_t)width * height;
-  float *lum_residual = dt_alloc_align_float(npix);
-  if(!lum_residual) return NULL;
-
-  for(size_t i = 0; i < npix; i++)
-  {
-    const size_t si = i * 3;
-    const float lum_orig
-      = 0.2126f * before_3ch[si + 0]
-        + 0.7152f * before_3ch[si + 1]
-        + 0.0722f * before_3ch[si + 2];
-    const float lum_den
-      = 0.2126f * after_3ch[si + 0]
-        + 0.7152f * after_3ch[si + 1]
-        + 0.0722f * after_3ch[si + 2];
-    lum_residual[i] = lum_orig - lum_den;
-  }
-
-  float noise[DWT_DETAIL_BANDS];
-  _compute_adaptive_noise(lum_residual, npix, noise);
-  dwt_denoise(lum_residual, width, height,
-              DWT_DETAIL_BANDS, noise);
-
-  return lum_residual;
+  if(!rgb) return 1;
+  *out_rgb = rgb;
+  if(out_w) *out_w = bw;
+  if(out_h) *out_h = bh;
+  return 0;
 }
 
 // clang-format off

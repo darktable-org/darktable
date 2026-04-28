@@ -693,17 +693,17 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname,
-                       d.pixels,
-                       d.wd,
-                       d.ht,
-                       exif,
-                       exif_len,
-                       d.first_filter,
-                       (const uint8_t (*)[6])d.first_xtrans,
-                       1.0f,
-                       (const float (*))d.wb_coeffs,
-                       d.adobe_XYZ_to_CAM);
+  dt_imageio_dng_write_float(pathname,
+                             d.pixels,
+                             d.wd,
+                             d.ht,
+                             exif,
+                             exif_len,
+                             d.first_filter,
+                             (const uint8_t (*)[6])d.first_xtrans,
+                             1.0f,
+                             (const float (*))d.wb_coeffs,
+                             d.adobe_XYZ_to_CAM);
   free(exif);
 
   dt_control_job_set_progress(job, 1.0);

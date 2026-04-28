@@ -225,7 +225,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
   // issues with some decoder graphs (e.g. SegNext's Concat->Reshape)
   dt_ai_context_t *decoder
     = dt_ai_load_model_ext(env, model_id, "decoder.onnx", DT_AI_PROVIDER_CPU,
-                           DT_AI_OPT_DISABLED, NULL, 0);
+                           DT_AI_OPT_DISABLED, NULL, 0, 0);
   if(!decoder)
   {
     dt_print(DT_DEBUG_AI, "[segmentation] failed to load decoder for %s", model_id);
@@ -388,7 +388,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
       const dt_ai_dim_override_t overrides[] = {{"num_labels", 1}};
       ctx->decoder = dt_ai_load_model_ext(env, model_id, "decoder.onnx",
                                            DT_AI_PROVIDER_CPU, DT_AI_OPT_BASIC,
-                                           overrides, 1);
+                                           overrides, 1, 0);
       if(!ctx->decoder)
       {
         dt_print(DT_DEBUG_AI, "[segmentation] failed to reload decoder for %s", model_id);
