@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ static void passthrough_monochrome(float *out,
       {
         out[(size_t)4 * ((size_t)j * width + i) + c] = in[(size_t)j * width + i];
       }
+      out[(size_t)4 * ((size_t)j * width + i) + 3] = 0.0f;
     }
   }
 }
@@ -42,36 +43,17 @@ static void passthrough_color(float *out,
                               const uint32_t filters,
                               const uint8_t (*const xtrans)[6])
 {
-  if(filters != 9u)
+  DT_OMP_FOR(collapse(2))
+  for(int row = 0; row < height; row++)
   {
-    DT_OMP_FOR(collapse(2))
-    for(int row = 0; row < height; row++)
+    for(int col = 0; col < width; col++)
     {
-      for(int col = 0; col < width; col++)
-      {
-        const float val = in[(size_t)col + row * width];
-        const size_t offset = (size_t)4 * ((size_t)row * width + col);
-        const size_t ch = FC(row, col, filters);
+      const float val = in[(size_t)col + row * width];
+      const size_t offset = (size_t)4 * ((size_t)row * width + col);
+      const size_t ch = fcol(row, col, filters, xtrans);
 
-        out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
-        out[offset + ch] = val;
-      }
-    }
-  }
-  else
-  {
-    DT_OMP_FOR(collapse(2))
-    for(int row = 0; row < height; row++)
-    {
-      for(int col = 0; col < width; col++)
-      {
-        const float val = in[(size_t)col + row * width];
-        const size_t offset = (size_t)4 * ((size_t)row * width + col);
-        const size_t ch = FCNxtrans(row, col, xtrans);
-
-        out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
-        out[offset + ch] = val;
-      }
+      out[offset] = out[offset + 1] = out[offset + 2] = out[offset + 3] = 0.0f;
+      out[offset + ch] = val;
     }
   }
 }

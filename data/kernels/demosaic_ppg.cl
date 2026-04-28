@@ -461,37 +461,6 @@ color_smoothing(read_only image2d_t in,
 #undef cas
 
 
-
-/**
- * downscale and clip a buffer (in) to the given roi (r_*) and write it to out.
- * output will be linear in memory.
- * operates on float4 -> float4 textures.
- */
-kernel void
-clip_and_zoom(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
-{
-  // global id is pixel in output image (float4)
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-
-  const float px_footprint = 0.5f/r_scale;
-  const int samples = ((int)px_footprint);
-  const float2 p = backtransformf((float2)(x+0.5f, y+0.5f), r_x, r_y, r_wd, r_ht, r_scale);
-  for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-  {
-    const float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
-    color += px;
-  }
-  color /= (float4)((2*samples+1)*(2*samples+1));
-  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
-}
-
-
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -552,10 +521,10 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
     const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
     // get four mosaic pattern uint16:
-    const float p1 = read_imagef(in, sampleri, (int2)(xx,   yy  )).x;
-    const float p2 = read_imagef(in, sampleri, (int2)(xx+1, yy  )).x;
-    const float p3 = read_imagef(in, sampleri, (int2)(xx,   yy+1)).x;
-    const float p4 = read_imagef(in, sampleri, (int2)(xx+1, yy+1)).x;
+    const float p1 = readsingle(in, xx,   yy  );
+    const float p2 = readsingle(in, xx+1, yy  );
+    const float p3 = readsingle(in, xx,   yy+1);
+    const float p4 = readsingle(in, xx+1, yy+1);
     color += yfilter*xfilter*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
     weight += yfilter*xfilter;
   }

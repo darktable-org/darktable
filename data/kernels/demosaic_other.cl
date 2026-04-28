@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2025 darktable developers.
+    Copyright (C) 2015-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 
   if(x >= width || y >= height) return;
 
-  const float pc = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+  const float pc = readsingle(in, x, y);
   write_imagef(out, (int2)(x, y), (float4)pc);
 }
 
@@ -46,7 +46,7 @@ passthrough_color(__read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  const float ival = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
+  const float ival = readsingle(in, x, y);
   const int c = fcol(y, x, filters, xtrans);
 
   float4 oval = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
@@ -96,7 +96,7 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in,
     const float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
     const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
-    const float px = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
+    const float px = readsingle(in, xx, yy);
     color += yfilter*xfilter*(float4)(px, px, px, 0.0f);
     weight += yfilter*xfilter;
   }

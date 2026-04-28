@@ -490,7 +490,7 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
 }
 
 /* --------------------------------------------------------------------------
- * Sample interpolation function (see usage in iop/lens.c and iop/clipping.c)
+ * Sample interpolation function (see usage in iop/lens.c and mask distortions)
  * ------------------------------------------------------------------------*/
 
 #define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
@@ -516,11 +516,11 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
   int ix = (int)x;
   int iy = (int)y;
 
+  float s = 0.0f;
   /* Now 2 cases, the pixel + filter width goes outside the image
    * in that case we have to use index clipping to keep all reads
    * in the input image (slow path) or we are sure it won't fall
    * outside and can do more simple code */
-  float r;
   if(ix >= (itor->width - 1)
       && iy >= (itor->width - 1)
       && ix < (width - itor->width)
@@ -533,7 +533,6 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
     in = in - (itor->width - 1) * (samplestride + linestride);
 
     // Apply the kernel
-    float s = 0.f;
     for(int i = 0; i < 2 * itor->width; i++)
     {
       float h = 0.0f;
@@ -544,7 +543,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       s += kernelv[i] * h;
       in += linestride;
     }
-    r = s / (normh * normv);
+    s = s / (normh * normv);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -568,7 +567,6 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
                            bordermode, 2 * itor->width, iy, height);
 
     // Apply the kernel
-    float s = 0.f;
     for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
       const ssize_t clip_y = _clip(iy + i, 0, height - 1, bordermode);
@@ -581,19 +579,13 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       }
       s += kernelv[i] * h;
     }
-
-    r = s / (normh * normv);
+    s = s / (normh * normv);
   }
-  else
-  {
-    // invalid coordinate
-    r = 0.0f;
-  }
-  return fmaxf(0.0f, r); // make sure we don't push NaNs
+  return s; // if called for masks make sure to CLIP to avoid interpolator under/overshoots
 }
 
 /* --------------------------------------------------------------------------
- * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
+ * Pixel interpolation function (see usage in ashift.c)
  * ------------------------------------------------------------------------*/
 
 void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
