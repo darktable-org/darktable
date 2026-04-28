@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 19:24+0200\n"
+"POT-Creation-Date: 2026-04-28 23:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28938,11 +28938,11 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/neural_restore.c:4045
-msgid "add to catalog"
+msgid "add to the current collection"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:4051
-msgid "automatically import output image into the darktable library"
+msgid "automatically import the output image into the current collection"
 msgstr ""
 
 #: ../src/libs/neural_restore.c:4067
