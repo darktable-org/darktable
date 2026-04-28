@@ -2099,7 +2099,7 @@ float interpolation_compute_single(read_only image2d_t in,
     }
     s = s / (normh * normv);
   }
-  return fmax(0.0f, s);
+  return s;
 }
 
 #undef MAX_KERNEL_REQ
@@ -2154,7 +2154,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   ry = clamp(ry, 0.0f, (float)(iheight - 1));
   pixel.z = read_imagef(in, samplerf, (float2)(rx, ry)).z;
 
-  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2280,7 +2280,7 @@ lens_distort_bicubic (read_only image2d_t in,
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2407,7 +2407,7 @@ lens_distort_lanczos2 (read_only image2d_t in,
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2526,7 +2526,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.z = sum/weight;
 
-  pixel = all(isfinite(pixel.xyz)) ? fmax(0.0f, pixel) : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -2861,10 +2861,10 @@ kernel void md_vignette(read_only image2d_t in,
   const float4 spline =
     _interpolate_linear_spline(knots_vig, vig, knots, r * dt_fast_hypot(cx, cy));
 
-  float4 pixel  = readpixel(in, x, y);
+  float4 pixel  = Areadpixel(in, x, y);
+  float mask = pixel.w;
   pixel /= fmax(1e-4, spline);
-  pixel.w = fmax(0.0f, pixel.w);
-
+  pixel.w = mask;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -2959,8 +2959,8 @@ kernel void md_lens_correction(read_only image2d_t in,
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
     const float xs = clamp(dr*cx + w2 - roix, 0.0f, limw);
     const float ys = clamp(dr*cy + h2 - roiy, 0.0f, limh);
-    output[c] = fmax(0.0f, interpolation_compute_single(in, itor_mode, itor_width,
-                                             xs, ys, iwidth, iheight, c));
+    output[c] = interpolation_compute_single(in, itor_mode, itor_width,
+                                             xs, ys, iwidth, iheight, c);
   }
 
   float4 pixel = {output[0], output[1], output[2], output[3]};

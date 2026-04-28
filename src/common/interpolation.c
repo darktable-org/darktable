@@ -581,7 +581,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
     }
     s = s / (normh * normv);
   }
-  return fmaxf(0.0f, s); // make sure we don't push NaNs
+  return s; // if called for masks make sure to CLIP to avoid interpolator under/overshoots
 }
 
 /* --------------------------------------------------------------------------
