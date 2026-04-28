@@ -884,7 +884,8 @@ retry:;
 // WB + camRGB->lin_rec2020 once and returns a 3ch interleaved buffer at
 // sensor resolution; neural_restore.c caches it across previews of the
 // same image
-int dt_restore_raw_linear_prepare(const dt_imgid_t imgid,
+int dt_restore_raw_linear_prepare(const dt_restore_context_t *ctx,
+                                  const dt_imgid_t imgid,
                                   float **out_rgb,
                                   int *out_w,
                                   int *out_h)
@@ -904,19 +905,17 @@ int dt_restore_raw_linear_prepare(const dt_imgid_t imgid,
   dt_image_t img_meta = *cached;
   dt_image_cache_read_release(cached);
 
-  // this prepare path has no ctx; use the default (AS_SHOT) WB. the
-  // cached lin_rec2020 buffer assumes this mode, so a future model
-  // that needs a different WB would require keying the cache on ctx
-  // too (or adding ctx to this API)
+  // WB + matrix derived from ctx so the cached buffer matches what the
+  // inference + undo paths will assume. without this, a NONE-mode model
+  // would see a buffer with WB baked in by the prepare default and the
+  // undo step (which honours ctx) would not strip it back out — magenta
+  // cast on re-mosaic
   float wb_norm[3];
-  _resolve_linear_wb(NULL, &img_meta, wb_norm);
+  _resolve_linear_wb(ctx, &img_meta, wb_norm);
 
-  // 3. camRGB -> input-space matrix. this prepare path has no ctx
-  // so we use the default (LIN_REC2020); a second model expecting a
-  // different input space would need the cache keyed on it too
   float cam_to_input[9];
   float input_to_cam[9];
-  if(!_build_cam_matrices(NULL, &img_meta, cam_to_input, input_to_cam))
+  if(!_build_cam_matrices(ctx, &img_meta, cam_to_input, input_to_cam))
   {
     for(int i = 0; i < 9; i++)
       cam_to_input[i] = (i % 4 == 0) ? 1.0f : 0.0f;

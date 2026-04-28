@@ -2533,7 +2533,7 @@ static gpointer _preview_thread_raw(gpointer data)
   }
   else if(is_xtrans)
   {
-    if(dt_restore_raw_linear_prepare(pd->imgid, &take_full_lin,
+    if(dt_restore_raw_linear_prepare(ctx, pd->imgid, &take_full_lin,
                                      &full_w, &full_h) != 0
        || !take_full_lin)
     {

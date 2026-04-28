@@ -88,14 +88,18 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
 // Slow (full-image demosaic via darktable's pipeline). neural_restore
 // caches the result across multiple preview refreshes of the same image.
 //
+// @param ctx       loaded linear context (selects WB mode / colorspace
+//                  to match the model the inference + undo paths will
+//                  use). may be NULL only if the caller knows defaults
+//                  match the downstream consumer.
 // @param imgid     image id
 // @param out_rgb   caller-frees with dt_free_align. 3ch interleaved
-//                  (sensor_w * sensor_h * 3 floats), in lin_rec2020 with
-//                  as-shot WB applied.
+//                  (sensor_w * sensor_h * 3 floats), in lin_rec2020.
 // @param out_w     out: sensor width
 // @param out_h     out: sensor height
 // @return 0 on success
-int dt_restore_raw_linear_prepare(const dt_imgid_t imgid,
+int dt_restore_raw_linear_prepare(const dt_restore_context_t *ctx,
+                                  const dt_imgid_t imgid,
                                   float **out_rgb,
                                   int *out_w,
                                   int *out_h);
