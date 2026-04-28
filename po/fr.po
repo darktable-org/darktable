@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 19:24+0200\n"
-"PO-Revision-Date: 2026-04-28 19:32+0200\n"
+"POT-Creation-Date: 2026-04-28 23:07+0200\n"
+"PO-Revision-Date: 2026-04-28 23:08+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -31678,13 +31678,12 @@ msgstr ""
 "large peuvent être écrêtées ; affecte uniquement le débruitage."
 
 #: ../src/libs/neural_restore.c:4045
-msgid "add to catalog"
-msgstr "Ajoute au catalogue"
+msgid "add to the current collection"
+msgstr "Ajouter dans la collection courante"
 
 #: ../src/libs/neural_restore.c:4051
-msgid "automatically import output image into the darktable library"
-msgstr ""
-"Importation automatique de l’image produite dans la bibliothèque de Darktable"
+msgid "automatically import the output image into the current collection"
+msgstr "Importation automatique de l’image produite dans la collection courante"
 
 #: ../src/libs/neural_restore.c:4067
 msgid ""
@@ -34170,6 +34169,9 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "add to catalog"
+#~ msgstr "Ajoute au catalogue"
 
 #~ msgid "detail recovery"
 #~ msgstr "Récupération des détails"
