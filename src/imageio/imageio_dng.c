@@ -49,13 +49,113 @@ static void _cfa_bytes_from_filters(uint32_t filters, uint8_t out[4])
   out[3] = FC(1, 1, filters);
 }
 
+// shared DNG metadata block: written on whichever IFD readers consult
+// first for camera/colour information. for single-IFD layouts that's
+// the raw IFD; for the canonical preview-leading layout (IFD0 = JPEG
+// preview, SubIFD0 = raw) it's IFD0
+static void _set_dng_shared_metadata(TIFF *tif, const dt_image_t *img)
+{
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
+
+  gchar *software = g_strdup_printf("darktable %s", darktable_package_version);
+  TIFFSetField(tif, TIFFTAG_SOFTWARE, software);
+  g_free(software);
+
+  if(img->camera_maker[0])
+    TIFFSetField(tif, TIFFTAG_MAKE, img->camera_maker);
+  if(img->camera_model[0])
+    TIFFSetField(tif, TIFFTAG_MODEL, img->camera_model);
+  if(img->camera_makermodel[0])
+    TIFFSetField(tif, TIFFTAG_UNIQUECAMERAMODEL, img->camera_makermodel);
+
+  const uint8_t dng_version[4]  = { 1, 4, 0, 0 };
+  const uint8_t dng_backward[4] = { 1, 2, 0, 0 };
+  TIFFSetField(tif, TIFFTAG_DNGVERSION, dng_version);
+  TIFFSetField(tif, TIFFTAG_DNGBACKWARDVERSION, dng_backward);
+
+  // AsShotNeutral: inverse of wb_coeffs, normalized so max=1. fallback
+  // to neutral [1,1,1] when wb_coeffs missing so the tag is always set
+  float neutral[3] = { 1.0f, 1.0f, 1.0f };
+  if(img->wb_coeffs[0] > 0.0f
+     && img->wb_coeffs[1] > 0.0f
+     && img->wb_coeffs[2] > 0.0f)
+  {
+    for(int i = 0; i < 3; i++) neutral[i] = 1.0f / img->wb_coeffs[i];
+    const float m = fmaxf(neutral[0], fmaxf(neutral[1], neutral[2]));
+    if(m > 0.0f) for(int i = 0; i < 3; i++) neutral[i] /= m;
+  }
+  TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, neutral);
+
+  // ColorMatrix1 (XYZ D50 -> cameraRGB, 3x3). row-major [camRGB][XYZ]
+  // matches darktable's adobe_XYZ_to_CAM layout exactly
+  float non_zero = 0.0f;
+  for(int k = 0; k < 3; k++)
+    for(int i = 0; i < 3; i++)
+      non_zero += fabsf(img->adobe_XYZ_to_CAM[k][i]);
+  if(non_zero > 0.0f)
+  {
+    float color_matrix[9];
+    for(int k = 0; k < 3; k++)
+      for(int i = 0; i < 3; i++)
+        color_matrix[k * 3 + i] = img->adobe_XYZ_to_CAM[k][i];
+    TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
+  }
+}
+
+// write IFD0 as the canonical Adobe-layout JPEG preview: small YCbCr
+// thumbnail + shared DNG metadata + SubIFD pointer to the raw payload
+// that the caller will write next. caller must follow with
+// TIFFCreateDirectory + raw-IFD population + TIFFWriteDirectory
+static int _write_jpeg_preview_ifd(TIFF *tif,
+                                   const dt_image_t *img,
+                                   const dt_imageio_dng_preview_t *p)
+{
+  TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_REDUCEDIMAGE);
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)p->width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)p->height);
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)8);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_YCBCR);
+  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_JPEG);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)p->height);
+
+  _set_dng_shared_metadata(tif, img);
+
+  // SubIFD pointer with one slot. libtiff fills the actual offset
+  // when the SubIFD is later written via TIFFCreateDirectory + ...
+  toff_t sub_offsets[1] = { 0 };
+  TIFFSetField(tif, TIFFTAG_SUBIFD, (uint16_t)1, sub_offsets);
+
+  // pre-encoded JPEG written as a single raw strip (libtiff does not
+  // re-encode when COMPRESSION_JPEG is paired with TIFFWriteRawStrip)
+  if(TIFFWriteRawStrip(tif, 0, (void *)p->data, (tmsize_t)p->len) < 0)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_dng] TIFFWriteRawStrip failed for JPEG preview "
+             "(%d bytes, %dx%d)", p->len, p->width, p->height);
+    return 1;
+  }
+  if(!TIFFWriteDirectory(tif))
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_dng] TIFFWriteDirectory failed for JPEG preview IFD0");
+    return 1;
+  }
+  return 0;
+}
+
 int dt_imageio_dng_write_cfa_bayer(const char *filename,
                                    const uint16_t *cfa,
                                    int width,
                                    int height,
                                    const dt_image_t *img,
                                    const void *exif_blob,
-                                   int exif_len)
+                                   int exif_len,
+                                   const dt_imageio_dng_preview_t *preview)
 {
   if(!filename || !cfa || !img || width <= 0 || height <= 0)
     return 1;
@@ -69,7 +169,28 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
 #endif
   if(!tif) return 1;
 
-  // required baseline TIFF tags for a single-plane raw image
+  // canonical Adobe layout when a preview is provided: IFD0 holds the
+  // JPEG thumbnail + DNG identification metadata, the raw payload
+  // moves into SubIFD0
+  const gboolean canonical = (preview && preview->data && preview->len > 0
+                              && preview->width > 0 && preview->height > 0);
+  if(canonical)
+  {
+    if(_write_jpeg_preview_ifd(tif, img, preview) != 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] write_cfa_bayer: preview IFD0 failed, aborting");
+      TIFFClose(tif);
+      g_unlink(filename);
+      return 1;
+    }
+    // libtiff entered INSUBIFD mode when the IFD0 carrying TIFFTAG_SUBIFD
+    // was written; subsequent TIFFSetField + scanline writes populate
+    // the SubIFD without an explicit TIFFCreateDirectory call (whose
+    // return-value convention changed between libtiff versions)
+  }
+
+  // raw payload IFD: single IFD when no preview, otherwise SubIFD0
   TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 0);
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)width);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)height);
@@ -81,29 +202,9 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  {
-    gchar *software = g_strdup_printf("darktable %s",
-                                       darktable_package_version);
-    TIFFSetField(tif, TIFFTAG_SOFTWARE, software);
-    g_free(software);
-  }
-
-  // camera identification
-  if(img->camera_maker[0])
-    TIFFSetField(tif, TIFFTAG_MAKE, img->camera_maker);
-  if(img->camera_model[0])
-    TIFFSetField(tif, TIFFTAG_MODEL, img->camera_model);
-  if(img->camera_makermodel[0])
-    TIFFSetField(tif, TIFFTAG_UNIQUECAMERAMODEL, img->camera_makermodel);
-
-  // DNG identification
-  const uint8_t dng_version[4] = { 1, 4, 0, 0 };
-  const uint8_t dng_backward[4] = { 1, 2, 0, 0 };
-  TIFFSetField(tif, TIFFTAG_DNGVERSION, dng_version);
-  TIFFSetField(tif, TIFFTAG_DNGBACKWARDVERSION, dng_backward);
+  // shared metadata only on single-IFD layout — canonical has it on IFD0
+  if(!canonical)
+    _set_dng_shared_metadata(tif, img);
 
   // CFA description
   const uint16_t cfa_repeat_dim[2] = { 2, 2 };
@@ -141,45 +242,6 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   const uint32_t white = img->raw_white_point
     ? img->raw_white_point : 65535u;
   TIFFSetField(tif, TIFFTAG_WHITELEVEL, 1, &white);
-
-  // AsShotNeutral (derived from wb_coeffs)
-  // DNG AsShotNeutral encodes the neutral white balance as a
-  // cameraRGB triple where smaller values mean more amplification.
-  // darktable's wb_coeffs are raw-to-white multipliers; AsShotNeutral
-  // is their inverse, normalized so the maximum element is 1
-  if(img->wb_coeffs[0] > 0.0f
-     && img->wb_coeffs[1] > 0.0f
-     && img->wb_coeffs[2] > 0.0f)
-  {
-    float inv[3];
-    for(int i = 0; i < 3; i++)
-      inv[i] = 1.0f / img->wb_coeffs[i];
-    const float m = fmaxf(inv[0], fmaxf(inv[1], inv[2]));
-    if(m > 0.0f)
-      for(int i = 0; i < 3; i++) inv[i] /= m;
-    TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, inv);
-  }
-
-  // ColorMatrix1 (XYZ D50 -> cameraRGB, 3x3 for trichromatic)
-  // darktable's adobe_XYZ_to_CAM is populated from the rawspeed
-  // cameras.xml matrix in row-major [camRGB][XYZ] layout, which
-  // matches the DNG ColorMatrix1 layout exactly (row = camera axis,
-  // column = XYZ axis)
-  {
-    float non_zero = 0.0f;
-    for(int k = 0; k < 3; k++)
-      for(int i = 0; i < 3; i++)
-        non_zero += fabsf(img->adobe_XYZ_to_CAM[k][i]);
-
-    if(non_zero > 0.0f)
-    {
-      float color_matrix[9];
-      for(int k = 0; k < 3; k++)
-        for(int i = 0; i < 3; i++)
-          color_matrix[k * 3 + i] = img->adobe_XYZ_to_CAM[k][i];
-      TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
-    }
-  }
 
   // advertise the visible region inside the full raw buffer; without
   // these tags the importer renders the optical-black margins too
@@ -231,7 +293,8 @@ int dt_imageio_dng_write_linear(const char *filename,
                                 int height,
                                 const dt_image_t *img,
                                 const void *exif_blob,
-                                int exif_len)
+                                int exif_len,
+                                const dt_imageio_dng_preview_t *preview)
 {
   if(!filename || !rgb || !img || width <= 0 || height <= 0)
     return 1;
@@ -245,6 +308,22 @@ int dt_imageio_dng_write_linear(const char *filename,
 #endif
   if(!tif) return 1;
 
+  // canonical layout when a preview is provided (see write_cfa_bayer)
+  const gboolean canonical = (preview && preview->data && preview->len > 0
+                              && preview->width > 0 && preview->height > 0);
+  if(canonical)
+  {
+    if(_write_jpeg_preview_ifd(tif, img, preview) != 0)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_dng] write_linear: preview IFD0 failed, aborting");
+      TIFFClose(tif);
+      g_unlink(filename);
+      return 1;
+    }
+    // libtiff is in INSUBIFD mode after IFD0 was written with TIFFTAG_SUBIFD
+  }
+
   // baseline TIFF tags, 3 samples per pixel (demosaicked)
   TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 0);
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)width);
@@ -257,29 +336,8 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  {
-    gchar *software = g_strdup_printf("darktable %s",
-                                       darktable_package_version);
-    TIFFSetField(tif, TIFFTAG_SOFTWARE, software);
-    g_free(software);
-  }
-
-  // camera identification
-  if(img->camera_maker[0])
-    TIFFSetField(tif, TIFFTAG_MAKE, img->camera_maker);
-  if(img->camera_model[0])
-    TIFFSetField(tif, TIFFTAG_MODEL, img->camera_model);
-  if(img->camera_makermodel[0])
-    TIFFSetField(tif, TIFFTAG_UNIQUECAMERAMODEL, img->camera_makermodel);
-
-  // DNG identification
-  const uint8_t dng_version[4] = { 1, 4, 0, 0 };
-  const uint8_t dng_backward[4] = { 1, 2, 0, 0 };
-  TIFFSetField(tif, TIFFTAG_DNGVERSION, dng_version);
-  TIFFSetField(tif, TIFFTAG_DNGBACKWARDVERSION, dng_backward);
+  if(!canonical)
+    _set_dng_shared_metadata(tif, img);
 
   // NO CFA tags: this is demosaicked data.
   //     encode as normalized: BlackLevel=0, WhiteLevel=65535. the
@@ -292,43 +350,6 @@ int dt_imageio_dng_write_linear(const char *filename,
   const float black3[3] = { 0.0f, 0.0f, 0.0f };
   TIFFSetField(tif, TIFFTAG_BLACKLEVEL, 3, black3);
   TIFFSetField(tif, TIFFTAG_WHITELEVEL, 1, &white_norm);
-
-  // AsShotNeutral = inverse of WB multipliers, normalized so max=1.
-  // on re-import, darktable reads this and derives WB coeffs via
-  // wb[c] = 1/AsShotNeutral[c] / wb[G-normalized]. the temperature
-  // iop then applies this WB to our un-WB'd data, giving the standard
-  // raw-pipeline result
-  if(img->wb_coeffs[0] > 0.0f
-     && img->wb_coeffs[1] > 0.0f
-     && img->wb_coeffs[2] > 0.0f)
-  {
-    float inv[3];
-    for(int i = 0; i < 3; i++) inv[i] = 1.0f / img->wb_coeffs[i];
-    const float m = fmaxf(inv[0], fmaxf(inv[1], inv[2]));
-    if(m > 0.0f) for(int i = 0; i < 3; i++) inv[i] /= m;
-    TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, inv);
-  }
-  else
-  {
-    const float neutral[3] = { 1.0f, 1.0f, 1.0f };
-    TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, neutral);
-  }
-
-  // ColorMatrix1 from camera's XYZ->CAM (3x3 portion)
-  {
-    float non_zero = 0.0f;
-    for(int k = 0; k < 3; k++)
-      for(int i = 0; i < 3; i++)
-        non_zero += fabsf(img->adobe_XYZ_to_CAM[k][i]);
-    if(non_zero > 0.0f)
-    {
-      float color_matrix[9];
-      for(int k = 0; k < 3; k++)
-        for(int i = 0; i < 3; i++)
-          color_matrix[k * 3 + i] = img->adobe_XYZ_to_CAM[k][i];
-      TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
-    }
-  }
 
   // linear DNG: buffer is already at visible dims (post-demosaic);
   // ACTIVEAREA covers the full buffer, no margin to crop

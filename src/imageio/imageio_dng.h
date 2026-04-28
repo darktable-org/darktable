@@ -35,6 +35,19 @@
 
 struct dt_image_t;
 
+// optional embedded JPEG preview for the uint16 DNG writers. when
+// non-NULL, the writer uses the canonical Adobe layout (IFD0 = JPEG
+// preview, SubIFD0 = raw payload) so library browsers (Finder,
+// Photomator, Lightroom) can render thumbnails without decoding the
+// raw. when NULL, falls back to the historical single-IFD layout
+typedef struct dt_imageio_dng_preview_t
+{
+  const uint8_t *data;     // pre-encoded JPEG bytes, 8-bit YCbCr
+  int            len;      // length of @p data in bytes
+  int            width;    // declared image width
+  int            height;   // declared image height
+} dt_imageio_dng_preview_t;
+
 // @brief Write a 32-bit float CFA DNG (Bayer or X-Trans).
 //
 // Used by HDR merge: pixel data is float pre-normalized to
@@ -91,7 +104,8 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
                                    int height,
                                    const struct dt_image_t *img,
                                    const void *exif_blob,
-                                   int exif_len);
+                                   int exif_len,
+                                   const dt_imageio_dng_preview_t *preview);
 
 // @brief Write a demosaicked 3-channel linear DNG.
 //
@@ -122,7 +136,8 @@ int dt_imageio_dng_write_linear(const char *filename,
                                 int height,
                                 const struct dt_image_t *img,
                                 const void *exif_blob,
-                                int exif_len);
+                                int exif_len,
+                                const dt_imageio_dng_preview_t *preview);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

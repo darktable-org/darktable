@@ -196,6 +196,7 @@
 #include "common/variables.h"
 #include "common/colorspaces.h"
 #include "imageio/imageio_dng.h"
+#include "imageio/imageio_jpeg.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/grouping.h"
@@ -499,6 +500,62 @@ static inline float _linear_to_srgb(float v)
   if(v <= 0.0f) return 0.0f;
   if(v >= 1.0f) return 1.0f;
   return (v <= 0.0031308f) ? 12.92f * v : 1.055f * powf(v, 1.0f / 2.4f) - 0.055f;
+}
+
+// pull the camera's embedded JPEG preview from the source raw, to embed
+// as the DNG thumbnail; output buffer is g_malloc'd (caller frees)
+static int _extract_source_jpeg_preview(const char *src_path,
+                                        uint8_t **out_jpeg,
+                                        int *out_jpeg_len,
+                                        int *out_w,
+                                        int *out_h)
+{
+  *out_jpeg = NULL;
+  *out_jpeg_len = 0;
+  *out_w = 0;
+  *out_h = 0;
+
+  uint8_t *raw_buf = NULL;
+  size_t   raw_size = 0;
+  char    *mime = NULL;
+  // dt_exif_get_thumbnail returns FALSE on success, allocates via malloc/strdup
+  if(dt_exif_get_thumbnail(src_path, &raw_buf, &raw_size, &mime) || !raw_buf)
+  {
+    free(raw_buf);
+    free(mime);
+    return 1;
+  }
+  const gboolean is_jpeg = mime && (strcmp(mime, "image/jpeg") == 0);
+  free(mime);
+  if(!is_jpeg || raw_size == 0 || raw_size > (size_t)INT_MAX)
+  {
+    free(raw_buf);
+    return 1;
+  }
+
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_decompress_header(raw_buf, raw_size, &jpg) != 0
+     || jpg.width <= 0 || jpg.height <= 0)
+  {
+    free(raw_buf);
+    return 1;
+  }
+
+  // re-allocate via glib so caller can g_free uniformly
+  uint8_t *jpeg = g_try_malloc(raw_size);
+  if(!jpeg)
+  {
+    free(raw_buf);
+    return 1;
+  }
+  memcpy(jpeg, raw_buf, raw_size);
+  free(raw_buf);
+
+  *out_jpeg     = jpeg;
+  *out_jpeg_len = (int)raw_size;
+  *out_w        = jpg.width;
+  *out_h        = jpg.height;
+  return 0;
 }
 
 // convert float RGB (3ch interleaved, linear) to cairo RGB24 surface data
@@ -1055,9 +1112,32 @@ static int _process_raw_denoise_bayer(dt_neural_job_t *j,
   uint8_t *exif_blob = NULL;
   const int exif_len = dt_exif_read_blob(&exif_blob, src_path, imgid,
                                          FALSE, width, height, TRUE);
+  uint8_t *jpeg_buf = NULL;
+  int jpeg_len = 0, jpeg_w = 0, jpeg_h = 0;
+  dt_imageio_dng_preview_t preview = {0};
+  const int prev_rc = _extract_source_jpeg_preview(src_path, &jpeg_buf,
+                                                   &jpeg_len, &jpeg_w, &jpeg_h);
+  if(prev_rc == 0)
+  {
+    preview.data   = jpeg_buf;
+    preview.len    = jpeg_len;
+    preview.width  = jpeg_w;
+    preview.height = jpeg_h;
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] embedded JPEG preview from source %dx%d (%d bytes)",
+             jpeg_w, jpeg_h, jpeg_len);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] no embedded preview in source (rc=%d) — "
+             "writing DNG without thumbnail", prev_rc);
+  }
   res = dt_imageio_dng_write_cfa_bayer(out_filename, cfa_out,
                                        width, height, img_meta,
-                                       exif_blob, exif_len);
+                                       exif_blob, exif_len,
+                                       jpeg_buf ? &preview : NULL);
+  g_free(jpeg_buf);
   g_free(exif_blob);
   g_free(cfa_out);
   return res;
@@ -1084,8 +1164,31 @@ static int _process_raw_denoise_linear(dt_neural_job_t *j,
   uint8_t *exif_blob = NULL;
   const int exif_len = dt_exif_read_blob(&exif_blob, src_path, imgid,
                                          FALSE, w, h, TRUE);
+  uint8_t *jpeg_buf = NULL;
+  int jpeg_len = 0, jpeg_w = 0, jpeg_h = 0;
+  dt_imageio_dng_preview_t preview = {0};
+  const int prev_rc = _extract_source_jpeg_preview(src_path, &jpeg_buf,
+                                                   &jpeg_len, &jpeg_w, &jpeg_h);
+  if(prev_rc == 0)
+  {
+    preview.data   = jpeg_buf;
+    preview.len    = jpeg_len;
+    preview.width  = jpeg_w;
+    preview.height = jpeg_h;
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] embedded JPEG preview from source %dx%d (%d bytes)",
+             jpeg_w, jpeg_h, jpeg_len);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_AI,
+             "[neural_restore] no embedded preview in source (rc=%d) — "
+             "writing DNG without thumbnail", prev_rc);
+  }
   res = dt_imageio_dng_write_linear(out_filename, rgb, w, h, img_meta,
-                                    exif_blob, exif_len);
+                                    exif_blob, exif_len,
+                                    jpeg_buf ? &preview : NULL);
+  g_free(jpeg_buf);
   g_free(exif_blob);
   dt_free_align(rgb);
   return res;
