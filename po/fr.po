@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 23:07+0200\n"
-"PO-Revision-Date: 2026-04-28 23:08+0200\n"
+"POT-Creation-Date: 2026-04-29 21:40+0200\n"
+"PO-Revision-Date: 2026-04-29 21:48+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -13206,6 +13206,10 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/group_persistence.lua:120
+msgid "group persistence"
+msgstr "Persistance de groupe"
+
 #. name of script
 #: ../src/external/lua-scripts/official/group_persistence.lua:121
 msgid "preserve groups between darktable instances"
@@ -13622,9 +13626,16 @@ msgstr "Le fichier des signets récents est introuvable"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:79
-msgid "regenerate_thumbnails"
-msgstr "Réinitialiser les miniatures"
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:246
+msgid "regenerate thumbnails"
+msgstr "Régénérer les miniatures"
 
 #. visible name of script
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:80
@@ -13660,6 +13671,10 @@ msgstr "Réinitialiser le cache des miniatures des images sélectionnées"
 #. -----------------
 #. helper functions
 #. -----------------
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:176
+msgid "regenerating thumbnails"
+msgstr "Régénération des miniatures"
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13671,12 +13686,6 @@ msgstr "Réinitialiser le cache des miniatures des images sélectionnées"
 msgid "generate thumbnails"
 msgstr "Générer les miniatures"
 
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. D A R K T A B L E  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. E V E N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
 #.
 #. This file is part of darktable,
 #. copyright (c) 2014 Jérémy Rosen
@@ -13804,6 +13813,10 @@ msgstr "Échange la sélection avec le tampon temporaire"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/scheduler.lua:98
+msgid "scheduler"
+msgstr "Ordonnanceur"
+
 #. name of script
 #: ../src/external/lua-scripts/official/scheduler.lua:99
 msgid "provide scheduler services for multitasking"
@@ -13824,6 +13837,14 @@ msgstr "Fournis un ordonnanceur de services pour le multitâche"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/scheduler.lua:130
+msgid "scheduler preferred time slice"
+msgstr "Intervalle de temps privilégié de l’ordonnanceur"
+
+#: ../src/external/lua-scripts/official/scheduler.lua:130
+msgid "target time slice before interrupt"
+msgstr "Durée cible avant interruption"
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. A L I A S E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -14032,6 +14053,10 @@ msgstr "Sélectionner les clones"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:91
+msgid "select raw/non-raw"
+msgstr "Sélectionner RAW/non-RAW"
+
 #. name of script
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
 msgid "select raw or non raw files from collection"
@@ -14073,12 +14098,12 @@ msgid "select raw files"
 msgstr "Sélectionner fichiers RAW"
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
-msgid "select non raw"
-msgstr "Sélectionner non RAW"
+msgid "select non-raw"
+msgstr "Sélectionner non-RAW"
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
-msgid "select non raw files"
-msgstr "Sélectionner fichier non RAW"
+msgid "select non-raw files"
+msgstr "Sélectionner fichier non-RAW"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. D A R K T A B L E  I N T E G R A T I O N
@@ -14142,16 +14167,6 @@ msgstr "Sélectionner fichier non RAW"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/select_unaltered.lua:78
-msgid "select_unaltered"
-msgstr "Sélectionner non développées"
-
-#. visible name of script
-#: ../src/external/lua-scripts/official/select_unaltered.lua:79
-msgid "select images that have not been altered in any way"
-msgstr ""
-"Sélectionne les images qui n’ont pas été modifiées d’une quelconque manière"
-
 #. purpose of script
 #. your name and optionally e-mail address
 #. URL to help/documentation
@@ -14184,9 +14199,16 @@ msgstr ""
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_unaltered.lua:78
 #: ../src/external/lua-scripts/official/select_unaltered.lua:151
 msgid "select unaltered"
 msgstr "Sélectionner non développées"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/select_unaltered.lua:79
+msgid "select images that have not been altered in any way"
+msgstr ""
+"Sélectionne les images qui n’ont pas été modifiées d’une quelconque manière"
 
 #: ../src/external/lua-scripts/official/select_unaltered.lua:152
 msgid "select unaltered files"
@@ -14270,7 +14292,7 @@ msgstr "Sélectionner fichiers non édités"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection2collection.lua:94
-msgid "selection2collection"
+msgid "selection to collection"
 msgstr "Sélection en collection"
 
 #. visible name of script
@@ -14387,7 +14409,7 @@ msgid "selection to PDF"
 msgstr "Sélection en PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
-msgid "generate a pdf file of selected images"
+msgid "generate a PDF file of selected images"
 msgstr "Générer un PDF avec les images sélectionnées"
 
 #. function to destory the script
@@ -14395,15 +14417,15 @@ msgstr "Générer un PDF avec les images sélectionnées"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:69
-msgid "a pdf viewer"
+msgid "a PDF viewer"
 msgstr "Lecteur PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
 msgid ""
 "can be an absolute pathname or the tool may be in the PATH\n"
-"if not specified the system default will be used to open the pdf"
+"if not specified the system default will be used to open the PDF"
 msgstr ""
-"Peut-être un chemin absolu or l’outil peut être dans le chemin de recherche "
+"Peut-être un chemin absolu ou l’outil peut être dans le chemin de recherche "
 "(PATH)\n"
 "Si non spécifié le défaut du système sera utilisé pour ouvrir le PDF."
 
@@ -14428,8 +14450,8 @@ msgstr "Miniatures par ligne :"
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
-msgid "export thumbnails to pdf"
-msgstr "Exporter une miniature en PDF"
+msgid "export thumbnails to PDF"
+msgstr "Exporter les miniatures en PDF"
 
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:184
@@ -14439,8 +14461,8 @@ msgstr "Problème lors de l’exécution de « pdflatex »"
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:203
-msgid "problem running pdf viewer"
-msgstr "Problème lors de l’exécution de l’afficheur PDF"
+msgid "problem running PDF viewer"
+msgstr "Problème d’exécution de l’afficheur PDF"
 
 #. this one is probably usefull to the user
 #. finally do some clean-up
@@ -34170,6 +34192,9 @@ msgstr "Créer une fenêtre flottante persistante"
 msgid "mouse actions"
 msgstr "Actions de la souris"
 
+#~ msgid "select_unaltered"
+#~ msgstr "Sélectionner non développées"
+
 #~ msgid "add to catalog"
 #~ msgstr "Ajoute au catalogue"
 
@@ -34789,9 +34814,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "canvas enlargement"
 #~ msgstr "Agrandissement du canevas"
-
-#~ msgid "group leaders"
-#~ msgstr "Tête de groupe"
 
 #~ msgid "group followers"
 #~ msgstr "Membres du groupe"
@@ -37339,9 +37361,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "reset parameters"
 #~ msgstr "Réinitialiser les paramètres"
-
-#~ msgid "search module"
-#~ msgstr "Chercher module"
 
 #~ msgid ""
 #~ "toggle yellow label\n"
