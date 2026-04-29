@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-25 07:51-0300\n"
-"PO-Revision-Date: 2026-04-25 08:41-0300\n"
+"POT-Creation-Date: 2026-04-29 14:21-0300\n"
+"PO-Revision-Date: 2026-04-29 14:38-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -999,8 +999,8 @@ msgid "lighttable"
 msgstr "mesa de luz"
 
 #: ../build/bin/preferences_gen.h:2658 ../build/bin/preferences_gen.h:3009
-#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences_ai.c:1283
-#: ../src/gui/preferences.c:344
+#: ../build/bin/preferences_gen.h:3829 ../src/gui/preferences.c:344
+#: ../src/gui/preferences_ai.c:1283
 msgid "general"
 msgstr "geral"
 
@@ -2066,13 +2066,21 @@ msgid ""
 "<b>on import:</b> an XMP file is created when the image is imported, and "
 "updated after each change"
 msgstr ""
-"Arquivos associados XMP guardam os passos de edição, classificações, etiquetas e etiquetas de cor com suas imagens em um formato aberto legível por outras aplicações, e provê um backup de emergência no caso da base de dados e seu backup serem perdidos\n"
+"Arquivos associados XMP guardam os passos de edição, classificações, "
+"etiquetas e etiquetas de cor com suas imagens em um formato aberto legível "
+"por outras aplicações, e provê um backup de emergência no caso da base de "
+"dados e seu backup serem perdidos\n"
 "\n"
-"<b>nunca:</b> informação é guardada somente na base de dados do darktable; se for perdida ou corrompida, suas edições não podem ser recuperadas dos arquivos\n"
+"<b>nunca:</b> informação é guardada somente na base de dados do darktable; "
+"se for perdida ou corrompida, suas edições não podem ser recuperadas dos "
+"arquivos\n"
 "\n"
-"<b>após edição:</b>  o arquivo XMP é criado depois da primeira edição intencional (i.e., não auto-aplicada) e atualizado depois de cada sessão de edição\n"
+"<b>após edição:</b>  o arquivo XMP é criado depois da primeira edição "
+"intencional (i.e., não auto-aplicada) e atualizado depois de cada sessão de "
+"edição\n"
 "\n"
-"<b>ao importar:</b> um arquivo XMP é criado quando a imagem é importada, e atualizado após cada mudança"
+"<b>ao importar:</b> um arquivo XMP é criado quando a imagem é importada, e "
+"atualizado após cada mudança"
 
 #: ../build/bin/preferences_gen.h:4199
 msgid "store XMP tags in compressed format"
@@ -2538,8 +2546,8 @@ msgstr "outono"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:527
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
-#: ../src/common/collection.c:1483 ../src/common/colorlabels.c:384
-#: ../src/common/color_vocabulary.c:324 ../src/develop/blend_gui.c:2395
+#: ../src/common/collection.c:1483 ../src/common/color_vocabulary.c:324
+#: ../src/common/colorlabels.c:384 ../src/develop/blend_gui.c:2395
 #: ../src/develop/blend_gui.c:2443 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:4091 ../src/iop/bilateral.cc:381
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:632
@@ -2636,7 +2644,7 @@ msgid "extreme saturation"
 msgstr "saturação extrema"
 
 #. cubic spline
-#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1568
+#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1585
 msgid "faded"
 msgstr "esmaecendo"
 
@@ -2667,8 +2675,8 @@ msgstr "genérico"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:519
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
-#: ../src/common/collection.c:1481 ../src/common/colorlabels.c:383
-#: ../src/common/color_vocabulary.c:277 ../src/develop/blend_gui.c:2389
+#: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:277
+#: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2389
 #: ../src/develop/blend_gui.c:2437 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:4090 ../src/gui/guides.c:853 ../src/iop/bilateral.cc:376
 #: ../src/iop/channelmixer.c:611 ../src/iop/channelmixer.c:626
@@ -2727,7 +2735,7 @@ msgid "pastels"
 msgstr "pastéis"
 
 #: ../build/bin/styles_string.h:34 ../src/common/collection.c:1485
-#: ../src/common/colorlabels.c:385 ../src/common/color_vocabulary.c:339
+#: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:385
 #: ../src/iop/colorzones.c:2491 ../src/libs/collect.c:2023
 #: ../src/libs/filters/colors.c:264
 msgid "purple"
@@ -2742,8 +2750,8 @@ msgstr "roxo"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:507
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
-#: ../src/common/collection.c:1477 ../src/common/colorlabels.c:381
-#: ../src/common/color_vocabulary.c:232 ../src/develop/blend_gui.c:2383
+#: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:232
+#: ../src/common/colorlabels.c:381 ../src/develop/blend_gui.c:2383
 #: ../src/develop/blend_gui.c:2431 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:4089 ../src/gui/guides.c:852 ../src/iop/bilateral.cc:371
 #: ../src/iop/channelmixer.c:610 ../src/iop/channelmixer.c:620
@@ -2865,7 +2873,7 @@ msgstr "preservar matiz"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
-#: ../src/iop/filmic.c:1490
+#: ../src/iop/filmic.c:1493
 msgid "black relative exposure"
 msgstr "exposição relativa de preto"
 
@@ -2873,7 +2881,7 @@ msgstr "exposição relativa de preto"
 #: ../build/lib/darktable/plugins/introspection_agx.c:522
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
-#: ../src/iop/filmic.c:1478
+#: ../src/iop/filmic.c:1480
 msgid "white relative exposure"
 msgstr "exposição relativa de branco"
 
@@ -2904,8 +2912,8 @@ msgstr "alvo da saída do pivô"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:862 ../src/iop/basicadj.c:630 ../src/iop/bilat.c:464
 #: ../src/iop/colisa.c:272 ../src/iop/colorbalance.c:1889
-#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1519
-#: ../src/iop/filmicrgb.c:4492 ../src/iop/lowpass.c:574
+#: ../src/iop/colorbalance.c:1895 ../src/iop/filmic.c:1527
+#: ../src/iop/filmicrgb.c:4499 ../src/iop/lowpass.c:574
 msgid "contrast"
 msgstr "contraste"
 
@@ -3450,7 +3458,7 @@ msgstr "base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences_ai.c:1315 ../src/gui/preferences.c:998
+#: ../src/gui/preferences.c:998 ../src/gui/preferences_ai.c:1315
 #: ../src/imageio/format/avif.c:1026 ../src/imageio/format/jpeg.c:597
 #: ../src/iop/ashift.c:6145 ../src/iop/basicadj.c:653 ../src/iop/flip.c:448
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1081
@@ -3557,6 +3565,7 @@ msgstr "raio"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:449 ../src/iop/velvia.c:281
+#: ../src/libs/neural_restore.c:3875 ../src/libs/neural_restore.c:3892
 msgid "strength"
 msgstr "força"
 
@@ -3960,7 +3969,7 @@ msgstr "meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:340
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:537
-#: ../src/iop/filmic.c:1544
+#: ../src/iop/filmic.c:1557
 msgid "global saturation"
 msgstr "saturação global"
 
@@ -4747,7 +4756,7 @@ msgstr "automático"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
-#: ../src/iop/filmic.c:1467
+#: ../src/iop/filmic.c:1468
 msgid "middle gray luminance"
 msgstr "luminância de cinza médio"
 
@@ -4773,19 +4782,19 @@ msgstr "estrutura ↔ textura"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:266
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:459
-#: ../src/iop/filmic.c:1592
+#: ../src/iop/filmic.c:1612
 msgid "target middle gray"
 msgstr "cinza médio alvo"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:272
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:463
-#: ../src/iop/filmic.c:1584
+#: ../src/iop/filmic.c:1603
 msgid "target black luminance"
 msgstr "luminância de preto alvo"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:278
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:467
-#: ../src/iop/filmic.c:1600
+#: ../src/iop/filmic.c:1621
 msgid "target white luminance"
 msgstr "luminância de branco alvo"
 
@@ -4799,7 +4808,7 @@ msgstr "dureza"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
-#: ../src/iop/filmic.c:1553 ../src/iop/filmicrgb.c:4666
+#: ../src/iop/filmic.c:1568 ../src/iop/filmicrgb.c:4684
 msgid "extreme luminance saturation"
 msgstr "saturação para luminância extrema"
 
@@ -5613,7 +5622,7 @@ msgstr "luma de cinza médio"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
-#: ../src/iop/filmic.c:1501
+#: ../src/iop/filmic.c:1506
 msgid "safety factor"
 msgstr "fator de segurança"
 
@@ -6135,10 +6144,10 @@ msgstr "menu flutuante"
 #: ../src/gui/accelerators.c:2616 ../src/gui/accelerators.c:2659
 #: ../src/gui/accelerators.c:2688 ../src/gui/accelerators.c:2745
 #: ../src/gui/accelerators.c:2797 ../src/gui/hist_dialog.c:236
-#: ../src/gui/hist_dialog.c:248 ../src/gui/preferences_ai.c:609
+#: ../src/gui/hist_dialog.c:248 ../src/gui/preferences.c:1221
+#: ../src/gui/preferences.c:1261 ../src/gui/preferences_ai.c:609
 #: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1105
-#: ../src/gui/preferences_ai.c:1192 ../src/gui/preferences.c:1221
-#: ../src/gui/preferences.c:1261 ../src/gui/presets.c:430
+#: ../src/gui/preferences_ai.c:1192 ../src/gui/presets.c:430
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:169 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
@@ -6148,7 +6157,7 @@ msgstr "menu flutuante"
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:2226
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:3820
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6722,139 +6731,6 @@ msgid_plural "<b>%d</b> images selected of <b>%d</b>"
 msgstr[0] "<b>%d</b> imagem selecionada de <b>%d</b>"
 msgstr[1] "<b>%d</b> imagens selecionadas de <b>%d</b>"
 
-#: ../src/common/colorlabels.c:357
-#, c-format
-msgid "colorlabels set to %s"
-msgstr "etiquetas coloridas definidas como %s"
-
-#: ../src/common/colorlabels.c:359
-msgid "all colorlabels removed"
-msgstr "todas as etiquetas coloridas foram removidas"
-
-#: ../src/common/colorlabels.c:380
-#: ../src/external/lua-scripts/tools/executable_manager.lua:224
-#: ../src/gui/accelerators.c:193 ../src/libs/image.c:640
-msgid "clear"
-msgstr "limpar"
-
-#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1778
-msgid "work profile"
-msgstr "perfil de trabalho"
-
-#: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1776
-#: ../src/views/darkroom.c:3177
-msgid "softproof profile"
-msgstr "perfil de prova digital"
-
-#: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1758
-msgid "system display profile"
-msgstr "perfil do monitor do sistema"
-
-#: ../src/common/colorspaces.c:1446 ../src/common/colorspaces.c:1780
-msgid "system display profile (second window)"
-msgstr "perfil do monitor do sistema (segunda janela)"
-
-#: ../src/common/colorspaces.c:1459
-msgid "sRGB (web-safe)"
-msgstr "sRGB (seguro para Web)"
-
-#: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1782
-msgid "Rec709 RGB"
-msgstr "RGB Rec709"
-
-#: ../src/common/colorspaces.c:1494
-msgid "PQ Rec2020 RGB"
-msgstr "RGB PQ Rec2020"
-
-#: ../src/common/colorspaces.c:1502
-msgid "HLG Rec2020 RGB"
-msgstr "RGB HLG Rec2020"
-
-#: ../src/common/colorspaces.c:1509
-msgid "PQ P3 RGB"
-msgstr "RGB PQ P3"
-
-#: ../src/common/colorspaces.c:1515
-msgid "HLG P3 RGB"
-msgstr "RGB HLG P3"
-
-#: ../src/common/colorspaces.c:1522
-msgid "Display P3 RGB"
-msgstr "Display P3 RGB"
-
-#: ../src/common/colorspaces.c:1537 ../src/common/colorspaces.c:1752
-msgid "linear XYZ"
-msgstr "XYZ linear"
-
-#: ../src/common/colorspaces.c:1544 ../src/common/colorspaces.c:1754
-#: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2053
-#: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
-msgid "Lab"
-msgstr "Lab"
-
-#: ../src/common/colorspaces.c:1552 ../src/common/colorspaces.c:1756
-msgid "linear infrared BGR"
-msgstr "BGR infravermelho linear"
-
-#: ../src/common/colorspaces.c:1557
-msgid "BRG (for testing)"
-msgstr "BRG (para teste)"
-
-#: ../src/common/colorspaces.c:1663
-#, c-format
-msgid ""
-"profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
-msgstr ""
-"perfil `%s` não usável como perfil de histograma. foi substituído por sRGB!"
-
-#: ../src/common/colorspaces.c:1742
-msgid "no filename"
-msgstr "nenhum nome do arquivo"
-
-#: ../src/common/colorspaces.c:1760
-msgid "embedded ICC profile"
-msgstr "perfil ICC embutido"
-
-#: ../src/common/colorspaces.c:1762
-msgid "embedded matrix"
-msgstr "matriz embutida"
-
-#: ../src/common/colorspaces.c:1764
-msgid "standard color matrix"
-msgstr "matriz de cor padrão"
-
-#: ../src/common/colorspaces.c:1766
-msgid "enhanced color matrix"
-msgstr "matriz de cor aprimorada"
-
-#: ../src/common/colorspaces.c:1768
-msgid "vendor color matrix"
-msgstr "matriz de cor do fabricante"
-
-#: ../src/common/colorspaces.c:1770
-msgid "alternate color matrix"
-msgstr "matriz de cor alternativa"
-
-#: ../src/common/colorspaces.c:1772
-msgid "BRG (experimental)"
-msgstr "BRG (experimental)"
-
-#: ../src/common/colorspaces.c:1786
-msgid "PQ Rec2020"
-msgstr "PQ Rec2020"
-
-#: ../src/common/colorspaces.c:1788
-msgid "HLG Rec2020"
-msgstr "HLG Rec2020"
-
-#: ../src/common/colorspaces.c:1790
-msgid "PQ P3"
-msgstr "PQ P3"
-
-#: ../src/common/colorspaces.c:1792
-msgid "HLG P3"
-msgstr "HLG P3"
-
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2377
 #: ../src/develop/blend_gui.c:2425 ../src/gui/guides.c:851
 #: ../src/iop/channelmixerrgb.c:4656 ../src/iop/levels.c:675
@@ -7135,6 +7011,139 @@ msgstr "magenta escuro"
 #: ../src/common/color_vocabulary.c:346
 msgid "color not found"
 msgstr "cor não encontrada"
+
+#: ../src/common/colorlabels.c:357
+#, c-format
+msgid "colorlabels set to %s"
+msgstr "etiquetas coloridas definidas como %s"
+
+#: ../src/common/colorlabels.c:359
+msgid "all colorlabels removed"
+msgstr "todas as etiquetas coloridas foram removidas"
+
+#: ../src/common/colorlabels.c:380
+#: ../src/external/lua-scripts/tools/executable_manager.lua:224
+#: ../src/gui/accelerators.c:193 ../src/libs/image.c:640
+msgid "clear"
+msgstr "limpar"
+
+#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1778
+msgid "work profile"
+msgstr "perfil de trabalho"
+
+#: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1776
+#: ../src/views/darkroom.c:3177
+msgid "softproof profile"
+msgstr "perfil de prova digital"
+
+#: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1758
+msgid "system display profile"
+msgstr "perfil do monitor do sistema"
+
+#: ../src/common/colorspaces.c:1446 ../src/common/colorspaces.c:1780
+msgid "system display profile (second window)"
+msgstr "perfil do monitor do sistema (segunda janela)"
+
+#: ../src/common/colorspaces.c:1459
+msgid "sRGB (web-safe)"
+msgstr "sRGB (seguro para Web)"
+
+#: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1782
+msgid "Rec709 RGB"
+msgstr "RGB Rec709"
+
+#: ../src/common/colorspaces.c:1494
+msgid "PQ Rec2020 RGB"
+msgstr "RGB PQ Rec2020"
+
+#: ../src/common/colorspaces.c:1502
+msgid "HLG Rec2020 RGB"
+msgstr "RGB HLG Rec2020"
+
+#: ../src/common/colorspaces.c:1509
+msgid "PQ P3 RGB"
+msgstr "RGB PQ P3"
+
+#: ../src/common/colorspaces.c:1515
+msgid "HLG P3 RGB"
+msgstr "RGB HLG P3"
+
+#: ../src/common/colorspaces.c:1522
+msgid "Display P3 RGB"
+msgstr "Display P3 RGB"
+
+#: ../src/common/colorspaces.c:1537 ../src/common/colorspaces.c:1752
+msgid "linear XYZ"
+msgstr "XYZ linear"
+
+#: ../src/common/colorspaces.c:1544 ../src/common/colorspaces.c:1754
+#: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2053
+#: ../src/libs/colorpicker.c:52 ../src/libs/colorpicker.c:369
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/common/colorspaces.c:1552 ../src/common/colorspaces.c:1756
+msgid "linear infrared BGR"
+msgstr "BGR infravermelho linear"
+
+#: ../src/common/colorspaces.c:1557
+msgid "BRG (for testing)"
+msgstr "BRG (para teste)"
+
+#: ../src/common/colorspaces.c:1663
+#, c-format
+msgid ""
+"profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
+msgstr ""
+"perfil `%s` não usável como perfil de histograma. foi substituído por sRGB!"
+
+#: ../src/common/colorspaces.c:1742
+msgid "no filename"
+msgstr "nenhum nome do arquivo"
+
+#: ../src/common/colorspaces.c:1760
+msgid "embedded ICC profile"
+msgstr "perfil ICC embutido"
+
+#: ../src/common/colorspaces.c:1762
+msgid "embedded matrix"
+msgstr "matriz embutida"
+
+#: ../src/common/colorspaces.c:1764
+msgid "standard color matrix"
+msgstr "matriz de cor padrão"
+
+#: ../src/common/colorspaces.c:1766
+msgid "enhanced color matrix"
+msgstr "matriz de cor aprimorada"
+
+#: ../src/common/colorspaces.c:1768
+msgid "vendor color matrix"
+msgstr "matriz de cor do fabricante"
+
+#: ../src/common/colorspaces.c:1770
+msgid "alternate color matrix"
+msgstr "matriz de cor alternativa"
+
+#: ../src/common/colorspaces.c:1772
+msgid "BRG (experimental)"
+msgstr "BRG (experimental)"
+
+#: ../src/common/colorspaces.c:1786
+msgid "PQ Rec2020"
+msgstr "PQ Rec2020"
+
+#: ../src/common/colorspaces.c:1788
+msgid "HLG Rec2020"
+msgstr "HLG Rec2020"
+
+#: ../src/common/colorspaces.c:1790
+msgid "PQ P3"
+msgstr "PQ P3"
+
+#: ../src/common/colorspaces.c:1792
+msgid "HLG P3"
+msgstr "HLG P3"
 
 #: ../src/common/cups_print.c:437
 #, c-format
@@ -7827,8 +7836,8 @@ msgid_plural "delete empty directories?"
 msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
-#: ../src/common/film.c:361 ../src/gui/preferences_ai.c:1493
-#: ../src/gui/preferences.c:949 ../src/gui/styles_dialog.c:571
+#: ../src/common/film.c:361 ../src/gui/preferences.c:949
+#: ../src/gui/preferences_ai.c:1493 ../src/gui/styles_dialog.c:571
 #: ../src/libs/geotagging.c:846 ../src/libs/import.c:1863
 msgid "name"
 msgstr "nome"
@@ -7847,22 +7856,6 @@ msgstr "falha ao analisar arquivo GPX"
 #: ../src/common/history.c:924
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
-
-#: ../src/common/imagebuf.c:132
-msgid "insufficient memory"
-msgstr "memória insuficiente"
-
-#: ../src/common/imagebuf.c:133
-msgid ""
-"this module was unable to allocate\n"
-"all of the memory required to process\n"
-"the image.  some or all processing\n"
-"has been skipped."
-msgstr ""
-"este módulo não foi capaz de alocar\n"
-"toda a memória necessária para processar\n"
-"a imagem. parte do processamento\n"
-"não foi feita."
 
 #: ../src/common/image.c:346
 msgid "orphaned image"
@@ -8053,6 +8046,22 @@ msgstr "JPEG XL"
 #: ../src/common/image.h:235
 msgid "QOI"
 msgstr "QOI"
+
+#: ../src/common/imagebuf.c:132
+msgid "insufficient memory"
+msgstr "memória insuficiente"
+
+#: ../src/common/imagebuf.c:133
+msgid ""
+"this module was unable to allocate\n"
+"all of the memory required to process\n"
+"the image.  some or all processing\n"
+"has been skipped."
+msgstr ""
+"este módulo não foi capaz de alocar\n"
+"toda a memória necessária para processar\n"
+"a imagem. parte do processamento\n"
+"não foi feita."
 
 #: ../src/common/import_session.c:296
 msgid ""
@@ -9905,10 +9914,10 @@ msgstr ""
 #: ../src/iop/agx.c:1825 ../src/iop/agx.c:2045 ../src/iop/agx.c:2054
 #: ../src/iop/basicadj.c:623 ../src/iop/colorbalancergb.c:2000
 #: ../src/iop/colorequal.c:3097 ../src/iop/exposure.c:1215
-#: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1479 ../src/iop/filmic.c:1491
-#: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4385
-#: ../src/iop/filmicrgb.c:4396 ../src/iop/filmicrgb.c:4429
-#: ../src/iop/filmicrgb.c:4439 ../src/iop/graduatednd.c:1059
+#: ../src/iop/exposure.c:1231 ../src/iop/filmic.c:1481 ../src/iop/filmic.c:1494
+#: ../src/iop/filmic.c:1537 ../src/iop/filmicrgb.c:4389
+#: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4436
+#: ../src/iop/filmicrgb.c:4446 ../src/iop/graduatednd.c:1059
 #: ../src/iop/negadoctor.c:1004 ../src/iop/profile_gamma.c:624
 #: ../src/iop/profile_gamma.c:630 ../src/iop/relight.c:249
 #: ../src/iop/soften.c:381 ../src/iop/toneequal.c:3240
@@ -10357,7 +10366,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:2326
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:3946
 msgid "process"
 msgstr "processamento"
 
@@ -11385,6 +11394,36 @@ msgstr "selecionar não modificadas"
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent
 #. kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 #. clang-format on
+#. allow time for the error to display before script_manager writes it's error message
+#. allow time for the error to display before script_manager writes it's error message
+#.
+#. NAME
+#. prequire - a protected lua require
+#.
+#. SYNOPSIS
+#. local du = require "lib/dtutils"
+#.
+#. local result = du.prequire(req_name)
+#. req_name - the filename of the lua code to load without the ".lua" filetype
+#.
+#. DESCRIPTION
+#. prequire is a protected require that can survive an error in the code being loaded without
+#. bringing down the calling routine.
+#.
+#. RETURN VALUE
+#. result - the code or true on success, otherwise an error message
+#.
+#. EXAMPLE
+#. prequire("lib/dtutils.file") which would load lib/dtutils/file.lua
+#.
+#.
+#. Sort a table
+#. Code copied from http://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+#. collect the keys
+#. if order function given, sort by it by passing the table and keys a, b,
+#. otherwise just sort the keys
+#. return the iterator function
+#. seed with os.time in seconds and add an extra degree of random for multiple calls in the same second
 #.
 #. This file is part of darktable,
 #. Copyright (c) 2014 Jérémy Rosen
@@ -11506,36 +11545,6 @@ msgstr "selecionar não modificadas"
 #. we just need the filename, so grab it from the string
 #. Thanks, Tobias Jakobs  :-)
 #. these aren't valid for setting levels
-#. allow time for the error to display before script_manager writes it's error message
-#. allow time for the error to display before script_manager writes it's error message
-#.
-#. NAME
-#. prequire - a protected lua require
-#.
-#. SYNOPSIS
-#. local du = require "lib/dtutils"
-#.
-#. local result = du.prequire(req_name)
-#. req_name - the filename of the lua code to load without the ".lua" filetype
-#.
-#. DESCRIPTION
-#. prequire is a protected require that can survive an error in the code being loaded without
-#. bringing down the calling routine.
-#.
-#. RETURN VALUE
-#. result - the code or true on success, otherwise an error message
-#.
-#. EXAMPLE
-#. prequire("lib/dtutils.file") which would load lib/dtutils/file.lua
-#.
-#.
-#. Sort a table
-#. Code copied from http://stackoverflow.com/questions/15706270/sort-a-table-in-lua
-#. collect the keys
-#. if order function given, sort by it by passing the table and keys a, b,
-#. otherwise just sort the keys
-#. return the iterator function
-#. seed with os.time in seconds and add an extra degree of random for multiple calls in the same second
 #. Keep &amp; first, otherwise it will double escape other characters
 #. A sanitized string must be quoted.
 #. A quoted string containing no quote characters within is sanitized.
@@ -13453,7 +13462,9 @@ msgstr "percentil abaixo"
 #. visible name of script
 #: ../src/external/lua-scripts/official/recent_bookmarks.lua:83
 msgid "add recently edited and exported images to system recent bookmarks"
-msgstr "adicionar imagens recentemente editadas e imagens exportadas aos marcadores recentes do sistema"
+msgstr ""
+"adicionar imagens recentemente editadas e imagens exportadas aos marcadores "
+"recentes do sistema"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -13924,6 +13935,231 @@ msgstr "selecionar imagens duplicadas"
 
 #.
 #.
+#. select_raw_non_raw.lua - select raw or non raw files from a collection
+#.
+#. Copyright (C) 2025 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. select_raw_non_raw - select raw or non raw files from a collection
+#.
+#. select_raw_non_raw adds two selection buttons, one to select raw
+#. images and one to select non raw images.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. * enable the script with script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. name of script
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
+msgid "select raw or non raw files from collection"
+msgstr "selecionar arquivos raw ou não raw da coleção"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:159
+msgid "select raw"
+msgstr "selecionar raw"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:160
+msgid "select raw files"
+msgstr "selecionar arquivos raw"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
+msgid "select non raw"
+msgstr "selecionar não raw"
+
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
+msgid "select non raw files"
+msgstr "selecionar arquivos não raw"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. put things to destroy (events, storages, etc) here
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#.
+#. select_unaltered.lua - select images that have not been altered in any way
+#.
+#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. select_unaltered - select images that have not been altered in any way
+#.
+#. select_unaltered selects images from the current collection that have not
+#. been altered in any way.  In other words just imported into darktable, not
+#. loaded into darkroom nor having any style applied.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. None
+#.
+#. USAGE
+#. * enable with script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. choose the minimum version that contains the features you need
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/select_unaltered.lua:78
+#, fuzzy
+msgid "select_unaltered"
+msgstr "selecionar não modificadas"
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/select_unaltered.lua:79
+msgid "select images that have not been altered in any way"
+msgstr "selecionar imagens que não tenham sido modificadas de nenhuma forma"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_unaltered.lua:151
+msgid "select unaltered"
+msgstr "selecionar não modificadas"
+
+#: ../src/external/lua-scripts/official/select_unaltered.lua:152
+msgid "select unaltered files"
+msgstr "selecionar arquivos não alterado"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#.
+#.
 #. selection2collection.lua - create a temporary collection from a selection
 #.
 #. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
@@ -14172,231 +14408,6 @@ msgstr "problema executando visualizador de pdf"
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #.
 #.
-#. select_raw_non_raw.lua - select raw or non raw files from a collection
-#.
-#. Copyright (C) 2025 Bill Ferguson <wpferguson@gmail.com>.
-#.
-#. This program is free software: you can redistribute it and/or modify
-#. it under the terms of the GNU General Public License as published by
-#. the Free Software Foundation; either version 3 of the License, or
-#. (at your option) any later version.
-#.
-#. This program is distributed in the hope that it will be useful,
-#. but WITHOUT ANY WARRANTY; without even the implied warranty of
-#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#. GNU General Public License for more details.
-#.
-#. You should have received a copy of the GNU General Public License
-#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#.
-#.
-#. select_raw_non_raw - select raw or non raw files from a collection
-#.
-#. select_raw_non_raw adds two selection buttons, one to select raw
-#. images and one to select non raw images.
-#.
-#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
-#. None
-#.
-#. USAGE
-#. * enable the script with script_manager
-#.
-#. BUGS, COMMENTS, SUGGESTIONS
-#. Bill Ferguson <wpferguson@gmail.com>
-#.
-#. CHANGES
-#.
-#. local df = require "lib/dtutils.file"
-#. local ds = require "lib/dtutils.string"
-#. local dtsys = require "lib/dtutils.system"
-#. local debug = require "darktable.debug"
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. C O N S T A N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. path separator
-#. command separator
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. A P I  C H E C K
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. choose the minimum version that contains the features you need
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. I 1 8 N
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. S C R I P T  M A N A G E R  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. function to destory the script
-#. set to hide for libs since we can't destroy them commpletely yet
-#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
-#. only required for libs since the destroy_method only hides them
-#. name of script
-#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
-msgid "select raw or non raw files from collection"
-msgstr "selecionar arquivos raw ou não raw da coleção"
-
-#. purpose of script
-#. your name and optionally e-mail address
-#. URL to help/documentation
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. L O G  L E V E L
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. N A M E  S P A C E
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. G L O B A L  V A R I A B L E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. P R E F E R E N C E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. A L I A S E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. F U N C T I O N S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. M A I N  P R O G R A M
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. U S E R  I N T E R F A C E
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:159
-msgid "select raw"
-msgstr "selecionar raw"
-
-#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:160
-msgid "select raw files"
-msgstr "selecionar arquivos raw"
-
-#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
-msgid "select non raw"
-msgstr "selecionar não raw"
-
-#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
-msgid "select non raw files"
-msgstr "selecionar arquivos não raw"
-
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. D A R K T A B L E  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. put things to destroy (events, storages, etc) here
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. E V E N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#.
-#.
-#. select_unaltered.lua - select images that have not been altered in any way
-#.
-#. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
-#.
-#. This program is free software: you can redistribute it and/or modify
-#. it under the terms of the GNU General Public License as published by
-#. the Free Software Foundation; either version 3 of the License, or
-#. (at your option) any later version.
-#.
-#. This program is distributed in the hope that it will be useful,
-#. but WITHOUT ANY WARRANTY; without even the implied warranty of
-#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#. GNU General Public License for more details.
-#.
-#. You should have received a copy of the GNU General Public License
-#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#.
-#.
-#. select_unaltered - select images that have not been altered in any way
-#.
-#. select_unaltered selects images from the current collection that have not
-#. been altered in any way.  In other words just imported into darktable, not
-#. loaded into darkroom nor having any style applied.
-#.
-#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
-#. None
-#.
-#. USAGE
-#. * enable with script_manager
-#.
-#. BUGS, COMMENTS, SUGGESTIONS
-#. Bill Ferguson <wpferguson@gmail.com>
-#.
-#. CHANGES
-#.
-#. local df = require "lib/dtutils.file"
-#. local ds = require "lib/dtutils.string"
-#. local dtsys = require "lib/dtutils.system"
-#. local debug = require "darktable.debug"
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. A P I  C H E C K
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. choose the minimum version that contains the features you need
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. I 1 8 N
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. S C R I P T  M A N A G E R  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - - - -
-#. function to destory the script
-#. set to hide for libs since we can't destroy them commpletely yet
-#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
-#. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/select_unaltered.lua:78
-#, fuzzy
-msgid "select_unaltered"
-msgstr "selecionar não modificadas"
-
-#. visible name of script
-#: ../src/external/lua-scripts/official/select_unaltered.lua:79
-msgid "select images that have not been altered in any way"
-msgstr "selecionar imagens que não tenham sido modificadas de nenhuma forma"
-
-#. purpose of script
-#. your name and optionally e-mail address
-#. URL to help/documentation
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. C O N S T A N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. path separator
-#. command separator
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. L O G  L E V E L
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. N A M E  S P A C E
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. G L O B A L  V A R I A B L E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. P R E F E R E N C E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. A L I A S E S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. F U N C T I O N S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. M A I N  P R O G R A M
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. U S E R  I N T E R F A C E
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#: ../src/external/lua-scripts/official/select_unaltered.lua:151
-msgid "select unaltered"
-msgstr "selecionar não modificadas"
-
-#: ../src/external/lua-scripts/official/select_unaltered.lua:152
-msgid "select unaltered files"
-msgstr "selecionar arquivos não alterado"
-
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. D A R K T A B L E  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. E V E N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#.
-#.
 #. use_paired_jpg_as_mipmap.lua - Use the JPG from the RAW JPG pair as the full size mipmap
 #.
 #. Copyright (C) 2026 Bill Ferguson <wpferguson@gmail.com>.
@@ -14622,24 +14633,6 @@ msgstr "limpar caminho para %s"
 
 #. register the lib
 #.
-#. get_libdoc.lua - retrieve the included library documentation and output it
-#.
-#. Copyright (c) 2016, Bill Ferguson
-#.
-#. nothing to destroy
-#. find the libraries
-#. loop through the libraries
-#. print the documentation for the library
-#. print the documentation for each of the functions
-#: ../src/external/lua-scripts/tools/get_libdoc.lua:65
-msgid "get library docs"
-msgstr "obter documentação da biblioteca"
-
-#: ../src/external/lua-scripts/tools/get_libdoc.lua:66
-msgid "retrieve and print the documentation to the console"
-msgstr "recuperar e mostrar a documentação no console"
-
-#.
 #. get_lib_manpages.lua - retrieve the included library documentation and output it as man pages
 #.
 #. Copyright (c) 2016, Bill Ferguson
@@ -14656,6 +14649,24 @@ msgstr "obter páginas de manual da biblioteca"
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
 msgid "output the internal library documentation as man pages"
 msgstr "produzir adocumentação interna da biblioteca como man pages"
+
+#.
+#. get_libdoc.lua - retrieve the included library documentation and output it
+#.
+#. Copyright (c) 2016, Bill Ferguson
+#.
+#. nothing to destroy
+#. find the libraries
+#. loop through the libraries
+#. print the documentation for the library
+#. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:65
+msgid "get library docs"
+msgstr "obter documentação da biblioteca"
+
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:66
+msgid "retrieve and print the documentation to the console"
+msgstr "recuperar e mostrar a documentação no console"
 
 #.
 #. This file is part of darktable,
@@ -15026,9 +15037,9 @@ msgstr "selecione a pasta do script"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1533
 #: ../src/iop/agx.c:2456 ../src/iop/channelmixerrgb.c:4454
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
-#: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4364
+#: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4368
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:2260
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:3855
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
@@ -16604,295 +16615,6 @@ msgstr ""
 "lista de etiquetas disponíveis. clique 'adicionar' ou clique-duplo na "
 "etiqueta para adicionar a etiqueta selecionado"
 
-#: ../src/gui/preferences_ai.c:158
-msgid "downloaded"
-msgstr "baixado"
-
-#: ../src/gui/preferences_ai.c:160
-msgid "update available"
-msgstr "atualização disponível"
-
-#: ../src/gui/preferences_ai.c:162
-msgid "update required"
-msgstr "atualização necessária"
-
-#: ../src/gui/preferences_ai.c:164
-msgid "downloading..."
-msgstr "baixando..."
-
-#: ../src/gui/preferences_ai.c:168
-msgid "not downloaded"
-msgstr "não baixado"
-
-#: ../src/gui/preferences_ai.c:347
-msgid "<i>not available, will fall back to CPU</i>"
-msgstr "<i>não disponível, revertendo para CPU</i>"
-
-#: ../src/gui/preferences_ai.c:606
-msgid "downloading AI model"
-msgstr "baixando modelo de IA"
-
-#: ../src/gui/preferences_ai.c:621
-#, c-format
-msgid "downloading: %s"
-msgstr "baixando: %s"
-
-#: ../src/gui/preferences_ai.c:782
-msgid "install AI model"
-msgstr "instalar modelo de IA"
-
-#: ../src/gui/preferences_ai.c:785 ../src/gui/preferences_ai.c:1192
-#: ../src/gui/preferences.c:1221 ../src/gui/welcome.c:169
-#: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
-#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
-#: ../src/libs/import.c:1927 ../src/libs/styles.c:595
-msgid "_open"
-msgstr "_abrir"
-
-#: ../src/gui/preferences_ai.c:788
-msgid "AI model packages (*.dtmodel)"
-msgstr "pacotes de modelos de IA (*.dtmodel)"
-
-#: ../src/gui/preferences_ai.c:858
-msgid "delete model?"
-msgid_plural "delete models?"
-msgstr[0] "excluir modelo?"
-msgstr[1] "excluir modelos?"
-
-#: ../src/gui/preferences_ai.c:860
-#, c-format
-msgid "do you really want to delete %d selected model?"
-msgid_plural "do you really want to delete %d selected models?"
-msgstr[0] "você realmente deseja remover %d modelo selecionado?"
-msgstr[1] "você realmente deseja remover %d modelos selecionados?"
-
-#: ../src/gui/preferences_ai.c:921
-#, fuzzy
-msgid "scope"
-msgstr "histograma"
-
-#: ../src/gui/preferences_ai.c:921
-msgid "author"
-msgstr "autor"
-
-#: ../src/gui/preferences_ai.c:922
-msgid "source"
-msgstr "fonte"
-
-#: ../src/gui/preferences_ai.c:922
-msgid "paper"
-msgstr "papel"
-
-#: ../src/gui/preferences_ai.c:923
-msgid "license"
-msgstr "licença"
-
-#: ../src/gui/preferences_ai.c:923
-msgid "training data"
-msgstr "dados de treinamento"
-
-#: ../src/gui/preferences_ai.c:924
-msgid "data license"
-msgstr "licença dos dados"
-
-#: ../src/gui/preferences_ai.c:999
-msgid "click for model details"
-msgstr "clique para detalhes do modelo"
-
-#: ../src/gui/preferences_ai.c:1056
-#, c-format
-msgid ""
-"ONNX Runtime %s detected.\n"
-"Restart darktable to apply."
-msgstr ""
-"ONNX Runtime %s detectado.\n"
-"Reinicie o darktable para aplicar."
-
-#: ../src/gui/preferences_ai.c:1061
-#, c-format
-msgid ""
-"not a valid ONNX Runtime library:\n"
-"%s"
-msgstr ""
-"não é uma biblioteca ONNX Runtime válida:\n"
-"%s"
-
-#: ../src/gui/preferences_ai.c:1078
-msgid ""
-"no system ONNX Runtime library found.\n"
-"\n"
-"install one via your package manager or use\n"
-"the browse button to select a custom build."
-msgstr ""
-"nenhuma biblioteca ONNX Runtime encontrada.\n"
-"\n"
-"instale uma usando seu gerenciador de pacotes ou use o botão de navegar para "
-"selecionar um build personalizado."
-
-#: ../src/gui/preferences_ai.c:1094
-#, c-format
-msgid ""
-"ONNX Runtime %s [%s]\n"
-"%s\n"
-"\n"
-"Restart darktable to apply."
-msgstr ""
-"ONNX Runtime %s [%s]\n"
-"%s\n"
-"\n"
-"Reinicie o darktable para aplicar."
-
-#: ../src/gui/preferences_ai.c:1102 ../src/gui/preferences_ai.c:1189
-msgid "select ONNX Runtime library"
-msgstr "selecione biblioteca runtime ONNX"
-
-#: ../src/gui/preferences_ai.c:1106 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:2227
-msgid "_select"
-msgstr "_selecionar"
-
-#: ../src/gui/preferences_ai.c:1112
-msgid "multiple ONNX Runtime libraries found:"
-msgstr "multiplas bibliotecas runtime ONNX encontradas:"
-
-#: ../src/gui/preferences_ai.c:1197
-msgid "ONNX Runtime (onnxruntime*.dll)"
-msgstr "ONNX Runtime (onnxruntime*.dll)"
-
-#: ../src/gui/preferences_ai.c:1200
-msgid "ONNX Runtime (libonnxruntime.so*)"
-msgstr "ONNX Runtime (libonnxruntime.so*)"
-
-#: ../src/gui/preferences_ai.c:1206 ../src/gui/preferences.c:1235
-#: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
-#: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
-msgid "all files"
-msgstr "todos arquivos"
-
-#. enable AI toggle
-#: ../src/gui/preferences_ai.c:1254
-msgid "enable AI features"
-msgstr "habilitar features de IA"
-
-#. provider dropdown
-#: ../src/gui/preferences_ai.c:1299
-msgid "execution provider"
-msgstr "provedor de execução"
-
-#. populate from central provider table, skipping unavailable providers
-#: ../src/gui/preferences_ai.c:1310
-msgid "select hardware acceleration for AI inference:"
-msgstr "selecione aceleração de IA para inferência por IA:"
-
-#: ../src/gui/preferences_ai.c:1354
-msgid "ONNX Runtime library"
-msgstr "biblioteca runtime ONNX"
-
-#: ../src/gui/preferences_ai.c:1368
-msgid "bundled (DirectML)"
-msgstr "agrupado (DirectML)"
-
-#: ../src/gui/preferences_ai.c:1371
-msgid "bundled (CPU only)"
-msgstr "agrupado (CPU apenas)"
-
-#: ../src/gui/preferences_ai.c:1374
-msgid ""
-"path to a GPU-enabled ONNX Runtime library.\n"
-"leave empty to use the bundled library.\n"
-"requires restart to take effect."
-msgstr ""
-"caminho para uma bilioteca ONNX Runtime habilitada para GPU.\n"
-"deixe vazio par ausar a biblioteca agrupada.\n"
-"requer reinício para surtir efeito."
-
-#: ../src/gui/preferences_ai.c:1383
-msgid "select a custom ONNX Runtime shared library"
-msgstr "selecione uma biblioteca compartilhara ONNX Runtime customizada"
-
-#: ../src/gui/preferences_ai.c:1385
-msgid "detect"
-msgstr "detectar"
-
-#: ../src/gui/preferences_ai.c:1387
-msgid "search for a system-installed ONNX Runtime library"
-msgstr "procurar uma biblioteca runtime ONNX instalada no sistema"
-
-#: ../src/gui/preferences_ai.c:1422
-msgid "models"
-msgstr "modelos"
-
-#: ../src/gui/preferences_ai.c:1469
-msgid "select/deselect all"
-msgstr "selecionar/deselecionar tudo"
-
-#: ../src/gui/preferences_ai.c:1515 ../src/libs/metadata_view.c:137
-msgid "version"
-msgstr "versão"
-
-#: ../src/gui/preferences_ai.c:1524
-msgid "task"
-msgstr "tarefa"
-
-#: ../src/gui/preferences_ai.c:1539
-msgid "enabled"
-msgstr "ativado"
-
-#: ../src/gui/preferences_ai.c:1549
-msgid "status"
-msgstr "estado"
-
-#. download selected button
-#: ../src/gui/preferences_ai.c:1591
-msgid "download selected"
-msgstr "baixar selecionado"
-
-#: ../src/gui/preferences_ai.c:1593
-msgid "download or update the selected models"
-msgstr "baixar ou atualizar os modelos selecionados"
-
-#. download default button
-#: ../src/gui/preferences_ai.c:1602
-#, fuzzy
-msgid "download default"
-msgstr "padrões desabilitados"
-
-#: ../src/gui/preferences_ai.c:1604
-msgid "download or update all default models"
-msgstr "baixar ou atualizar todos os modelos padrão"
-
-#. download all button
-#: ../src/gui/preferences_ai.c:1613
-msgid "download all"
-msgstr "baixar todos"
-
-#: ../src/gui/preferences_ai.c:1615
-msgid "download or update all available models"
-msgstr "baixar ou atualizar todos os módulos disponíveis"
-
-#. install model button
-#: ../src/gui/preferences_ai.c:1621
-msgid "install model"
-msgstr "instalar modelo"
-
-#: ../src/gui/preferences_ai.c:1623
-msgid "install a model from a local .dtmodel file"
-msgstr "instalar um modelo de um arquivo local .dtmodel"
-
-#. delete selected button
-#: ../src/gui/preferences_ai.c:1628
-msgid "delete selected"
-msgstr "deletar selecionados"
-
-#: ../src/gui/preferences_ai.c:1630
-msgid "remove the selected models from disk"
-msgstr "remover os modelos selecionados do disco"
-
-#. add to stack
-#: ../src/gui/preferences_ai.c:1646
-msgid "AI"
-msgstr "IA"
-
 #: ../src/gui/preferences.c:314
 msgid "reset panels in all views"
 msgstr "redefinir painéis em todas as vistas"
@@ -17056,9 +16778,298 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
+#: ../src/gui/preferences.c:1221 ../src/gui/preferences_ai.c:785
+#: ../src/gui/preferences_ai.c:1192 ../src/gui/welcome.c:169
+#: ../src/libs/collect.c:463 ../src/libs/copy_history.c:114
+#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1815
+#: ../src/libs/import.c:1927 ../src/libs/styles.c:595
+msgid "_open"
+msgstr "_abrir"
+
 #: ../src/gui/preferences.c:1230
 msgid "darktable preset files"
 msgstr "arquivos de predefinição do darktable"
+
+#: ../src/gui/preferences.c:1235 ../src/gui/preferences_ai.c:1206
+#: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:153
+#: ../src/libs/geotagging.c:969 ../src/libs/styles.c:609
+msgid "all files"
+msgstr "todos arquivos"
+
+#: ../src/gui/preferences_ai.c:158
+msgid "downloaded"
+msgstr "baixado"
+
+#: ../src/gui/preferences_ai.c:160
+msgid "update available"
+msgstr "atualização disponível"
+
+#: ../src/gui/preferences_ai.c:162
+msgid "update required"
+msgstr "atualização necessária"
+
+#: ../src/gui/preferences_ai.c:164
+msgid "downloading..."
+msgstr "baixando..."
+
+#: ../src/gui/preferences_ai.c:168
+msgid "not downloaded"
+msgstr "não baixado"
+
+#: ../src/gui/preferences_ai.c:347
+msgid "<i>not available, will fall back to CPU</i>"
+msgstr "<i>não disponível, revertendo para CPU</i>"
+
+#: ../src/gui/preferences_ai.c:606
+msgid "downloading AI model"
+msgstr "baixando modelo de IA"
+
+#: ../src/gui/preferences_ai.c:621
+#, c-format
+msgid "downloading: %s"
+msgstr "baixando: %s"
+
+#: ../src/gui/preferences_ai.c:782
+msgid "install AI model"
+msgstr "instalar modelo de IA"
+
+#: ../src/gui/preferences_ai.c:788
+msgid "AI model packages (*.dtmodel)"
+msgstr "pacotes de modelos de IA (*.dtmodel)"
+
+#: ../src/gui/preferences_ai.c:858
+msgid "delete model?"
+msgid_plural "delete models?"
+msgstr[0] "excluir modelo?"
+msgstr[1] "excluir modelos?"
+
+#: ../src/gui/preferences_ai.c:860
+#, c-format
+msgid "do you really want to delete %d selected model?"
+msgid_plural "do you really want to delete %d selected models?"
+msgstr[0] "você realmente deseja remover %d modelo selecionado?"
+msgstr[1] "você realmente deseja remover %d modelos selecionados?"
+
+#: ../src/gui/preferences_ai.c:921
+#, fuzzy
+msgid "scope"
+msgstr "histograma"
+
+#: ../src/gui/preferences_ai.c:921
+msgid "author"
+msgstr "autor"
+
+#: ../src/gui/preferences_ai.c:922
+msgid "source"
+msgstr "fonte"
+
+#: ../src/gui/preferences_ai.c:922
+msgid "paper"
+msgstr "papel"
+
+#: ../src/gui/preferences_ai.c:923
+msgid "license"
+msgstr "licença"
+
+#: ../src/gui/preferences_ai.c:923
+msgid "training data"
+msgstr "dados de treinamento"
+
+#: ../src/gui/preferences_ai.c:924
+msgid "data license"
+msgstr "licença dos dados"
+
+#: ../src/gui/preferences_ai.c:999
+msgid "click for model details"
+msgstr "clique para detalhes do modelo"
+
+#: ../src/gui/preferences_ai.c:1056
+#, c-format
+msgid ""
+"ONNX Runtime %s detected.\n"
+"Restart darktable to apply."
+msgstr ""
+"ONNX Runtime %s detectado.\n"
+"Reinicie o darktable para aplicar."
+
+#: ../src/gui/preferences_ai.c:1061
+#, c-format
+msgid ""
+"not a valid ONNX Runtime library:\n"
+"%s"
+msgstr ""
+"não é uma biblioteca ONNX Runtime válida:\n"
+"%s"
+
+#: ../src/gui/preferences_ai.c:1078
+msgid ""
+"no system ONNX Runtime library found.\n"
+"\n"
+"install one via your package manager or use\n"
+"the browse button to select a custom build."
+msgstr ""
+"nenhuma biblioteca ONNX Runtime encontrada.\n"
+"\n"
+"instale uma usando seu gerenciador de pacotes ou use o botão de navegar para "
+"selecionar um build personalizado."
+
+#: ../src/gui/preferences_ai.c:1094
+#, c-format
+msgid ""
+"ONNX Runtime %s [%s]\n"
+"%s\n"
+"\n"
+"Restart darktable to apply."
+msgstr ""
+"ONNX Runtime %s [%s]\n"
+"%s\n"
+"\n"
+"Reinicie o darktable para aplicar."
+
+#: ../src/gui/preferences_ai.c:1102 ../src/gui/preferences_ai.c:1189
+msgid "select ONNX Runtime library"
+msgstr "selecione biblioteca runtime ONNX"
+
+#: ../src/gui/preferences_ai.c:1106 ../src/iop/lut3d.c:1575
+#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:3821
+msgid "_select"
+msgstr "_selecionar"
+
+#: ../src/gui/preferences_ai.c:1112
+msgid "multiple ONNX Runtime libraries found:"
+msgstr "multiplas bibliotecas runtime ONNX encontradas:"
+
+#: ../src/gui/preferences_ai.c:1197
+msgid "ONNX Runtime (onnxruntime*.dll)"
+msgstr "ONNX Runtime (onnxruntime*.dll)"
+
+#: ../src/gui/preferences_ai.c:1200
+msgid "ONNX Runtime (libonnxruntime.so*)"
+msgstr "ONNX Runtime (libonnxruntime.so*)"
+
+#. enable AI toggle
+#: ../src/gui/preferences_ai.c:1254
+msgid "enable AI features"
+msgstr "habilitar features de IA"
+
+#. provider dropdown
+#: ../src/gui/preferences_ai.c:1299
+msgid "execution provider"
+msgstr "provedor de execução"
+
+#. populate from central provider table, skipping unavailable providers
+#: ../src/gui/preferences_ai.c:1310
+msgid "select hardware acceleration for AI inference:"
+msgstr "selecione aceleração de IA para inferência por IA:"
+
+#: ../src/gui/preferences_ai.c:1354
+msgid "ONNX Runtime library"
+msgstr "biblioteca runtime ONNX"
+
+#: ../src/gui/preferences_ai.c:1368
+msgid "bundled (DirectML)"
+msgstr "agrupado (DirectML)"
+
+#: ../src/gui/preferences_ai.c:1371
+msgid "bundled (CPU only)"
+msgstr "agrupado (CPU apenas)"
+
+#: ../src/gui/preferences_ai.c:1374
+msgid ""
+"path to a GPU-enabled ONNX Runtime library.\n"
+"leave empty to use the bundled library.\n"
+"requires restart to take effect."
+msgstr ""
+"caminho para uma bilioteca ONNX Runtime habilitada para GPU.\n"
+"deixe vazio par ausar a biblioteca agrupada.\n"
+"requer reinício para surtir efeito."
+
+#: ../src/gui/preferences_ai.c:1383
+msgid "select a custom ONNX Runtime shared library"
+msgstr "selecione uma biblioteca compartilhara ONNX Runtime customizada"
+
+#: ../src/gui/preferences_ai.c:1385
+msgid "detect"
+msgstr "detectar"
+
+#: ../src/gui/preferences_ai.c:1387
+msgid "search for a system-installed ONNX Runtime library"
+msgstr "procurar uma biblioteca runtime ONNX instalada no sistema"
+
+#: ../src/gui/preferences_ai.c:1422
+msgid "models"
+msgstr "modelos"
+
+#: ../src/gui/preferences_ai.c:1469
+msgid "select/deselect all"
+msgstr "selecionar/deselecionar tudo"
+
+#: ../src/gui/preferences_ai.c:1515 ../src/libs/metadata_view.c:137
+msgid "version"
+msgstr "versão"
+
+#: ../src/gui/preferences_ai.c:1524
+msgid "task"
+msgstr "tarefa"
+
+#: ../src/gui/preferences_ai.c:1539
+msgid "enabled"
+msgstr "ativado"
+
+#: ../src/gui/preferences_ai.c:1549
+msgid "status"
+msgstr "estado"
+
+#. download selected button
+#: ../src/gui/preferences_ai.c:1591
+msgid "download selected"
+msgstr "baixar selecionado"
+
+#: ../src/gui/preferences_ai.c:1593
+msgid "download or update the selected models"
+msgstr "baixar ou atualizar os modelos selecionados"
+
+#. download default button
+#: ../src/gui/preferences_ai.c:1602
+#, fuzzy
+msgid "download default"
+msgstr "padrões desabilitados"
+
+#: ../src/gui/preferences_ai.c:1604
+msgid "download or update all default models"
+msgstr "baixar ou atualizar todos os modelos padrão"
+
+#. download all button
+#: ../src/gui/preferences_ai.c:1613
+msgid "download all"
+msgstr "baixar todos"
+
+#: ../src/gui/preferences_ai.c:1615
+msgid "download or update all available models"
+msgstr "baixar ou atualizar todos os módulos disponíveis"
+
+#. install model button
+#: ../src/gui/preferences_ai.c:1621
+msgid "install model"
+msgstr "instalar modelo"
+
+#: ../src/gui/preferences_ai.c:1623
+msgid "install a model from a local .dtmodel file"
+msgstr "instalar um modelo de um arquivo local .dtmodel"
+
+#. delete selected button
+#: ../src/gui/preferences_ai.c:1628
+msgid "delete selected"
+msgstr "deletar selecionados"
+
+#: ../src/gui/preferences_ai.c:1630
+msgid "remove the selected models from disk"
+msgstr "remover os modelos selecionados do disco"
+
+#. add to stack
+#: ../src/gui/preferences_ai.c:1646
+msgid "AI"
+msgstr "IA"
 
 #: ../src/gui/presets.c:59
 msgid "non-raw"
@@ -17541,7 +17552,7 @@ msgstr "copiar configurações de uma área de trabalho existente"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2359
+#: ../src/libs/neural_restore.c:3979
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -17565,7 +17576,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:2356
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:3976
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -17693,7 +17704,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:2359
+#: ../src/libs/neural_restore.c:3979
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -17797,7 +17808,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:2359
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:3979
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -18420,6 +18431,7 @@ msgstr "corretivo e criativo"
 #: ../src/iop/agx.c:59 ../src/iop/ashift.c:125 ../src/iop/ashift.c:127
 #: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:104
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:90 ../src/iop/blurs.c:91
+#: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:217
@@ -18605,7 +18617,7 @@ msgstr "mostrar a curva"
 #: ../src/iop/agx.c:1954 ../src/iop/atrous.c:1773
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:2981
 #: ../src/iop/colorzones.c:2708 ../src/iop/denoiseprofile.c:3636
-#: ../src/iop/filmicrgb.c:4352 ../src/iop/lowlight.c:807
+#: ../src/iop/filmicrgb.c:4356 ../src/iop/lowlight.c:807
 #: ../src/iop/rawdenoise.c:910 ../src/iop/toneequal.c:3284
 msgid "graph"
 msgstr "gráfico"
@@ -18689,7 +18701,7 @@ msgstr "exposição relativa acima de meio-cinza (ponto de preto)"
 msgid "pick the black point"
 msgstr "escolher o ponto preto"
 
-#: ../src/iop/agx.c:2065 ../src/iop/filmicrgb.c:4406
+#: ../src/iop/agx.c:2065 ../src/iop/filmicrgb.c:4412
 msgid ""
 "symmetrically increase or decrease the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -18697,8 +18709,8 @@ msgstr ""
 "simetricamente aumenta ou diminui o alcance dinâmico calculado.\n"
 "útil para dar margem de segurança em luminâncias extremas."
 
-#: ../src/iop/agx.c:2071 ../src/iop/agx.c:2074 ../src/iop/filmic.c:1509
-#: ../src/iop/filmicrgb.c:4412 ../src/iop/profile_gamma.c:640
+#: ../src/iop/agx.c:2071 ../src/iop/agx.c:2074 ../src/iop/filmic.c:1515
+#: ../src/iop/filmicrgb.c:4418 ../src/iop/profile_gamma.c:640
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
 
@@ -19176,8 +19188,8 @@ msgstr "melhorar nitidez"
 msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
-#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:756
-#: ../src/libs/neural_restore.c:2263
+#: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:1271
+#: ../src/libs/neural_restore.c:3863
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -19652,9 +19664,10 @@ msgid ""
 msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
-#: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:822
-#: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:132 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
+#: ../src/iop/cacorrectrgb.c:168 ../src/iop/channelmixer.c:138
+#: ../src/iop/denoiseprofile.c:822 ../src/iop/diffuse.c:141
+#: ../src/iop/enlargecanvas.c:82 ../src/iop/exposure.c:132
+#: ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
 #: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
@@ -19992,7 +20005,6 @@ msgid "correct chromatic aberrations for Bayer sensors"
 msgstr "corrige aberrações cromáticas para sensores Bayer"
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
-#: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:104
@@ -20003,8 +20015,7 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
-#: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:319 ../src/iop/invert.c:133
+#: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:319 ../src/iop/invert.c:133
 #: ../src/iop/rasterfile.c:105 ../src/iop/rawdenoise.c:142
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -21929,7 +21940,7 @@ msgstr "verde-azulado e laranja"
 
 #. Page OPTIONS
 #: ../src/iop/colorequal.c:2886 ../src/iop/colorequal.c:3089
-#: ../src/iop/filmicrgb.c:4552
+#: ../src/iop/filmicrgb.c:4565
 msgid "options"
 msgstr "opções"
 
@@ -23007,7 +23018,7 @@ msgid "variance blue: "
 msgstr "variância de azul: "
 
 #: ../src/iop/denoiseprofile.c:3681 ../src/libs/export.c:1599
-#: ../src/libs/neural_restore.c:2367 ../src/libs/print_settings.c:2518
+#: ../src/libs/neural_restore.c:3987 ../src/libs/print_settings.c:2518
 #: ../src/libs/print_settings.c:2874
 msgid "profile"
 msgstr "perfil"
@@ -23803,12 +23814,12 @@ msgstr "16 EV (HDR)"
 msgid "18 EV (HDR++)"
 msgstr "18 EV (HDR++)"
 
-#: ../src/iop/filmic.c:1461
+#: ../src/iop/filmic.c:1462
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "gráfico somente de leitura, use os parâmetros abaixo para configurar os nós"
 
-#: ../src/iop/filmic.c:1469
+#: ../src/iop/filmic.c:1471
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -23816,7 +23827,7 @@ msgstr ""
 "ajuste para casar com a luminância média do objeto.\n"
 "exceto em situações com back-lighting, isto deveria ser em torno de 18%."
 
-#: ../src/iop/filmic.c:1480 ../src/iop/filmicrgb.c:4387
+#: ../src/iop/filmic.c:1483 ../src/iop/filmicrgb.c:4391
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -23826,7 +23837,7 @@ msgstr ""
 "esta é a leitura que um exposímetro daria na cena\n"
 "ajuste para evitar highlight clipping"
 
-#: ../src/iop/filmic.c:1492 ../src/iop/filmicrgb.c:4398
+#: ../src/iop/filmic.c:1496 ../src/iop/filmicrgb.c:4402
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -23838,7 +23849,7 @@ msgstr ""
 "aumente para obter mais contraste.\n"
 "diminua para recuperar mais detalhes com pouca luz."
 
-#: ../src/iop/filmic.c:1503
+#: ../src/iop/filmic.c:1509
 msgid ""
 "increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -23846,7 +23857,7 @@ msgstr ""
 "aumenta ou diminui o alcance dinâmico calculado.\n"
 "útil junto com \"ajustar níveis automaticamente\"."
 
-#: ../src/iop/filmic.c:1512
+#: ../src/iop/filmic.c:1519
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -23858,7 +23869,7 @@ msgstr ""
 "funciona melhor para paisagens e figuras com iluminação uniforme\n"
 "mas falha para high-key e low-key"
 
-#: ../src/iop/filmic.c:1520 ../src/iop/filmicrgb.c:4495
+#: ../src/iop/filmic.c:1529 ../src/iop/filmicrgb.c:4503
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -23866,13 +23877,12 @@ msgstr ""
 "inclinação da parte linear da curva\n"
 "afeta principalmente os meios-tons"
 
-#. geotagging
-#: ../src/iop/filmic.c:1527 ../src/iop/filmicrgb.c:4504
-#: ../src/libs/metadata_view.c:169
+#: ../src/iop/filmic.c:1536 ../src/iop/filmicrgb.c:4513
+msgctxt "curve-linear-part-width"
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1529
+#: ../src/iop/filmic.c:1539
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -23882,11 +23892,11 @@ msgstr ""
 "aumente para obter mais contraste nas luminâncias extremas.\n"
 "não tem efeito sobre os meios-tons."
 
-#: ../src/iop/filmic.c:1536
+#: ../src/iop/filmic.c:1546
 msgid "shadows/highlights balance"
 msgstr "balanço de sombras e realces"
 
-#: ../src/iop/filmic.c:1538 ../src/iop/filmicrgb.c:4515
+#: ../src/iop/filmic.c:1549 ../src/iop/filmicrgb.c:4525
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -23898,7 +23908,7 @@ msgstr ""
 "use se precisar proteger detalhes\n"
 "em uma extremidade do histograma"
 
-#: ../src/iop/filmic.c:1547
+#: ../src/iop/filmic.c:1561
 msgid ""
 "desaturates the input of the module globally.\n"
 "you need to set this value below 100%\n"
@@ -23908,7 +23918,7 @@ msgstr ""
 "você precisa determinar um valor abaixo de 100%\n"
 "se a preservação de crominância está habilitada."
 
-#: ../src/iop/filmic.c:1556
+#: ../src/iop/filmic.c:1572
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -23919,37 +23929,37 @@ msgstr ""
 "diminua se sombras e/ou realces estão saturados demais."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1566 ../src/libs/export.c:1617
+#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1617
 #: ../src/libs/print_settings.c:2573 ../src/libs/print_settings.c:2920
 #: ../src/views/darkroom.c:3148 ../src/views/lighttable.c:1353
 msgid "intent"
 msgstr "intenção"
 
-#: ../src/iop/filmic.c:1567
+#: ../src/iop/filmic.c:1584
 msgid "contrasted"
 msgstr "contrastado"
 
 #. centripetal spline
-#: ../src/iop/filmic.c:1569 ../src/iop/profile_gamma.c:602
+#: ../src/iop/filmic.c:1586 ../src/iop/profile_gamma.c:602
+#: ../src/libs/neural_restore.c:1032
 msgid "linear"
 msgstr "linear"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1570
+#: ../src/iop/filmic.c:1587
 msgid "optimized"
 msgstr "otimizado"
 
-#. monotonic spline
-#: ../src/iop/filmic.c:1571
+#: ../src/iop/filmic.c:1589
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "mude este método se perceber contraste revertido ou preto esmaecido"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1575
+#: ../src/iop/filmic.c:1593
 msgid "preserve the chrominance"
 msgstr "preservar a crominância"
 
-#: ../src/iop/filmic.c:1577
+#: ../src/iop/filmic.c:1596
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -23958,7 +23968,7 @@ msgstr ""
 "assegurar que as cores originais são preservadas.\n"
 "pode produzir cores supersaturadas e reforçar aberrações cromáticas da lente."
 
-#: ../src/iop/filmic.c:1586 ../src/iop/filmicrgb.c:4534
+#: ../src/iop/filmic.c:1606 ../src/iop/filmicrgb.c:4546
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -23966,7 +23976,7 @@ msgstr ""
 "luminância do preto puro de saída, isto deveria ser 0%\n"
 "exceto se quiser uma aparência esmaecida"
 
-#: ../src/iop/filmic.c:1594 ../src/iop/filmicrgb.c:4541
+#: ../src/iop/filmic.c:1615 ../src/iop/filmicrgb.c:4553
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -23974,7 +23984,7 @@ msgstr ""
 "valor de cinza médio do display alvo ou espaço de cor.\n"
 "você não deve tocar nisto a não ser que saiba o que está fazendo."
 
-#: ../src/iop/filmic.c:1602 ../src/iop/filmicrgb.c:4548
+#: ../src/iop/filmic.c:1624 ../src/iop/filmicrgb.c:4561
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -23982,11 +23992,11 @@ msgstr ""
 "luminância do branco puro de saída, isto deveria ser 100%\n"
 "exceto se quiser uma aparência esmaecida"
 
-#: ../src/iop/filmic.c:1608
+#: ../src/iop/filmic.c:1630
 msgid "target gamma"
 msgstr "gama alvo"
 
-#: ../src/iop/filmic.c:1609
+#: ../src/iop/filmic.c:1632
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -23996,17 +24006,17 @@ msgstr ""
 "do display ou espaço de cor.\n"
 "você nunca deveria mexer nisso a não ser que saiba o que está fazendo."
 
-#: ../src/iop/filmic.c:1616
+#: ../src/iop/filmic.c:1640
 msgctxt "section"
 msgid "destination/display"
 msgstr "destino/display"
 
-#: ../src/iop/filmic.c:1625
+#: ../src/iop/filmic.c:1649
 msgctxt "section"
 msgid "logarithmic shaper"
 msgstr "modelador logarítmico"
 
-#: ../src/iop/filmic.c:1631
+#: ../src/iop/filmic.c:1655
 msgctxt "section"
 msgid "filmic S curve"
 msgstr "curva S fílmica"
@@ -24083,7 +24093,7 @@ msgid "% camera"
 msgstr "% câmera"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3870 ../src/iop/filmicrgb.c:4528
+#: ../src/iop/filmicrgb.c:3870 ../src/iop/filmicrgb.c:4539
 msgid "display"
 msgstr "tela"
 
@@ -24093,7 +24103,7 @@ msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3888 ../src/iop/filmicrgb.c:4367
+#: ../src/iop/filmicrgb.c:3888 ../src/iop/filmicrgb.c:4371
 msgid "scene"
 msgstr "cena"
 
@@ -24102,8 +24112,7 @@ msgstr "cena"
 msgid "(EV)"
 msgstr "(EV)"
 
-#. we are over the graph area
-#: ../src/iop/filmicrgb.c:4307
+#: ../src/iop/filmicrgb.c:4309
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -24113,11 +24122,11 @@ msgstr ""
 "a curva clara é a curva de mapeamento de tons do fílmico.\n"
 "a curva escura é a de dessaturação."
 
-#: ../src/iop/filmicrgb.c:4313
+#: ../src/iop/filmicrgb.c:4316
 msgid "toggle axis labels and values display"
 msgstr "alterna exibição de rótulos dos eixos e valores."
 
-#: ../src/iop/filmicrgb.c:4317
+#: ../src/iop/filmicrgb.c:4321
 msgid ""
 "cycle through graph views.\n"
 "left-click: cycle forward.\n"
@@ -24129,7 +24138,7 @@ msgstr ""
 "clique-direito: para trás.\n"
 "clique-duplo: volta à visão de aparência."
 
-#: ../src/iop/filmicrgb.c:4376
+#: ../src/iop/filmicrgb.c:4380
 #, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
@@ -24140,7 +24149,7 @@ msgstr ""
 "o valor entrado aqui será reajustado para corresponder a 18.45%.\n"
 "diminua o valor para aumentar o brilho geral."
 
-#: ../src/iop/filmicrgb.c:4413
+#: ../src/iop/filmicrgb.c:4420
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -24157,16 +24166,16 @@ msgstr ""
 "certifique-se de entender suas suposições antes de usá-lo."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4422
+#: ../src/iop/filmicrgb.c:4429
 msgid "reconstruct"
 msgstr "reconstruir"
 
-#: ../src/iop/filmicrgb.c:4424
+#: ../src/iop/filmicrgb.c:4431
 msgctxt "section"
 msgid "highlights clipping"
 msgstr "recorte de realces"
 
-#: ../src/iop/filmicrgb.c:4431
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -24182,7 +24191,7 @@ msgstr ""
 "diminua para incluir mais áreas,\n"
 "aumente para excluir mais áreas."
 
-#: ../src/iop/filmicrgb.c:4441
+#: ../src/iop/filmicrgb.c:4448
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -24193,16 +24202,16 @@ msgstr ""
 "aumente para tornar a transição mais suave e menos nítida."
 
 #. Highlight Reconstruction Mask
-#: ../src/iop/filmicrgb.c:4446 ../src/iop/filmicrgb.c:4447
+#: ../src/iop/filmicrgb.c:4453 ../src/iop/filmicrgb.c:4454
 msgid "display highlight reconstruction mask"
 msgstr "mostrar máscara de reconstrução de realce"
 
-#: ../src/iop/filmicrgb.c:4453
+#: ../src/iop/filmicrgb.c:4460
 msgctxt "section"
 msgid "balance"
 msgstr "balanço"
 
-#: ../src/iop/filmicrgb.c:4459
+#: ../src/iop/filmicrgb.c:4466
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24219,7 +24228,7 @@ msgstr ""
 "aumente se pelo menos um canal RGB não estiver recortado.\n"
 "diminua se todos os canais RGB estiverem recortados em grandes áreas."
 
-#: ../src/iop/filmicrgb.c:4470
+#: ../src/iop/filmicrgb.c:4477
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24236,7 +24245,7 @@ msgstr ""
 "aumente se quiser mais detalhes.\n"
 "diminua se quiser mais desfoque."
 
-#: ../src/iop/filmicrgb.c:4482
+#: ../src/iop/filmicrgb.c:4489
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -24254,11 +24263,11 @@ msgstr ""
 "diminua se perceber realces magenta ou fora da gama."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4490
+#: ../src/iop/filmicrgb.c:4497
 msgid "look"
 msgstr "aparência"
 
-#: ../src/iop/filmicrgb.c:4500
+#: ../src/iop/filmicrgb.c:4509
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -24268,7 +24277,7 @@ msgstr ""
 "aumente para tornar os realces mais claros e menos comprimidos.\n"
 "diminua para deixar os realces menos expressivos."
 
-#: ../src/iop/filmicrgb.c:4508
+#: ../src/iop/filmicrgb.c:4517
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -24281,7 +24290,7 @@ msgstr ""
 "de outra forma, diminua. nenhuma dessaturação é feita na faixa da latitude.\n"
 "não tem efeitos em tons médios."
 
-#: ../src/iop/filmicrgb.c:4523 ../src/iop/filmicrgb.c:4667
+#: ../src/iop/filmicrgb.c:4534 ../src/iop/filmicrgb.c:4686
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -24291,7 +24300,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "aumente se sombras e/ou realces estão subsaturados."
 
-#: ../src/iop/filmicrgb.c:4557
+#: ../src/iop/filmicrgb.c:4570
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -24299,7 +24308,7 @@ msgstr ""
 "v3 é o método de dessaturação do darktable 3.0, o mesmo que balanço de cor.\n"
 "v4 é um método mais novo de de saturação, baseado na pureza espectral da luz."
 
-#: ../src/iop/filmicrgb.c:4561
+#: ../src/iop/filmicrgb.c:4575
 msgid ""
 "ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -24309,7 +24318,7 @@ msgstr ""
 "pode reforçar aberrações cromáticas e ruído de croma,\n"
 "portanto garanta que sejam corrigidos apropriadamente em outro lugar."
 
-#: ../src/iop/filmicrgb.c:4570
+#: ../src/iop/filmicrgb.c:4585
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -24319,7 +24328,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal"
 
-#: ../src/iop/filmicrgb.c:4575
+#: ../src/iop/filmicrgb.c:4591
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -24329,7 +24338,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal."
 
-#: ../src/iop/filmicrgb.c:4582
+#: ../src/iop/filmicrgb.c:4598
 #, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -24342,7 +24351,7 @@ msgstr ""
 "ao invés disso, ajuste a exposição global no módulo exposição.\n"
 "desabilite para usar o padrão de 18.45% de cinza médio."
 
-#: ../src/iop/filmicrgb.c:4589
+#: ../src/iop/filmicrgb.c:4605
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -24354,7 +24363,7 @@ msgstr ""
 "isto mantém o cinza médio na linha da identidade e melhora o ajusta rápido.\n"
 "desabilite se quiser controle manual."
 
-#: ../src/iop/filmicrgb.c:4595
+#: ../src/iop/filmicrgb.c:4611
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighborhood.\n"
@@ -24366,7 +24375,7 @@ msgstr ""
 "isto será mais lento, mas resultará em realces mais neutros.\n"
 "também ajuda em casos difíceis de realces magenta."
 
-#: ../src/iop/filmicrgb.c:4602
+#: ../src/iop/filmicrgb.c:4619
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -24378,7 +24387,7 @@ msgstr ""
 "quando a imagem é muito ruidosa,\n"
 "e os realces se misturam com o resto da imagem."
 
-#: ../src/iop/filmicrgb.c:4609
+#: ../src/iop/filmicrgb.c:4627
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern."
@@ -24386,11 +24395,11 @@ msgstr ""
 "seleciona a distribuição estatística do ruído.\n"
 "isto é útil para combinar com o padrão natural de ruído do sensor."
 
-#: ../src/iop/filmicrgb.c:4673
+#: ../src/iop/filmicrgb.c:4692
 msgid "mid-tones saturation"
 msgstr "saturação dos meios-tons"
 
-#: ../src/iop/filmicrgb.c:4674
+#: ../src/iop/filmicrgb.c:4694
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -24400,11 +24409,11 @@ msgstr ""
 "especificamente em luminâncias médias.\n"
 "aumente se os meios-tons estão subsaturados."
 
-#: ../src/iop/filmicrgb.c:4680
+#: ../src/iop/filmicrgb.c:4700
 msgid "highlights saturation mix"
 msgstr "mistura de realces e saturação"
 
-#: ../src/iop/filmicrgb.c:4681
+#: ../src/iop/filmicrgb.c:4702
 msgid ""
 "positive values ensure saturation is kept unchanged over the whole range.\n"
 "negative values bleach highlights at constant hue and luminance.\n"
@@ -24993,7 +25002,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:2283
+#: ../src/libs/neural_restore.c:3903
 msgid "scale"
 msgstr "escala"
 
@@ -26179,7 +26188,11 @@ msgstr ""
 "vetoriza o mapa de bits atual e cria máscaras de caminho correspondentes no "
 "gerenciador de máscaras"
 
-#: ../src/iop/rawdenoise.c:134
+#. raw denoise sits first: it runs earliest in the denoise workflow
+#. (before demosaic-stage processing). bayer / linear variant selection
+#. is driven by the active "rawdenoise" model rather than a UI toggle
+#: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1272
+#: ../src/libs/neural_restore.c:3861
 msgid "raw denoise"
 msgstr "redução de ruído raw"
 
@@ -28631,7 +28644,7 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1600 ../src/libs/export.c:1635
-#: ../src/libs/neural_restore.c:2368 ../src/libs/print_settings.c:2877
+#: ../src/libs/neural_restore.c:3988 ../src/libs/print_settings.c:2877
 #: ../src/libs/print_settings.c:2923
 msgid "image settings"
 msgstr "configurações da imagem"
@@ -30570,6 +30583,11 @@ msgstr "largura exportada"
 msgid "export height"
 msgstr "altura exportada"
 
+#. geotagging
+#: ../src/libs/metadata_view.c:169
+msgid "latitude"
+msgstr "latitude"
+
 #: ../src/libs/metadata_view.c:170
 msgid "longitude"
 msgstr "longitude"
@@ -31125,182 +31143,240 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:290 ../src/libs/neural_restore.c:1641
+#: ../src/libs/neural_restore.c:446 ../src/libs/neural_restore.c:3170
 msgid "neural restore"
 msgstr "restauração neural"
 
-#: ../src/libs/neural_restore.c:294
+#: ../src/libs/neural_restore.c:450
 msgid "AI-based image restoration: denoise and upscale"
 msgstr ""
 "restauração de imagem baseada em IA: remoção de ruído e aumento de escala"
 
-#: ../src/libs/neural_restore.c:542
+#: ../src/libs/neural_restore.c:774
 #, c-format
 msgid "failed to open TIFF for writing: %s"
 msgstr "falha ao abrir TIFF para escrita: %s"
 
-#: ../src/libs/neural_restore.c:593
+#: ../src/libs/neural_restore.c:828
 msgid "out of memory for detail recovery buffer"
 msgstr "memória insuficiente para buffer de recuperação de detalhes"
 
-#: ../src/libs/neural_restore.c:756 ../src/libs/neural_restore.c:2265
+#: ../src/libs/neural_restore.c:1024
+msgid "bayer"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:1028
+msgid "x-trans"
+msgstr "x-trans"
+
+#: ../src/libs/neural_restore.c:1039
+#, c-format, fuzzy
+msgid "failed to load AI raw denoise %s model"
+msgstr "falha ao carregar modelo de IA %s para redução de ruído em raw"
+
+#: ../src/libs/neural_restore.c:1086
+msgid "raw denoise: unsupported raw datatype"
+msgstr "redução de ruído em raw: tipo de dados raw não suportado"
+
+#: ../src/libs/neural_restore.c:1215
+msgid "raw denoise: cannot load source image"
+msgstr "redução de ruído em raw: não foi possível carrecra a imagem fonte"
+
+#: ../src/libs/neural_restore.c:1241
+msgid "raw denoise: image is not a supported raw sensor format"
+msgstr ""
+"redução de ruído em raw: imagem não é em formato suportado de sensor raw"
+
+#: ../src/libs/neural_restore.c:1273 ../src/libs/neural_restore.c:3865
 msgid "upscale"
 msgstr "aumentar escala"
 
-#: ../src/libs/neural_restore.c:758
+#: ../src/libs/neural_restore.c:1275
 #, c-format
 msgid "loading %s model..."
 msgstr "carregando modelo %s ..."
 
-#: ../src/libs/neural_restore.c:788
+#: ../src/libs/neural_restore.c:1305
 #, c-format
 msgid "failed to load AI %s model"
 msgstr "falha ao carregar modelo %s de IA"
 
-#: ../src/libs/neural_restore.c:859
+#: ../src/libs/neural_restore.c:1376
 msgid "neural restore: cannot create output directory"
 msgstr "restauração neural: nào foi possível criar o diretório de saída"
 
-#: ../src/libs/neural_restore.c:887
+#: ../src/libs/neural_restore.c:1408
 msgid "neural restore: too many output files"
 msgstr "restauração neural: arquivos de saída em quantidade excessiva"
 
-#: ../src/libs/neural_restore.c:896
+#: ../src/libs/neural_restore.c:1417
 #, c-format
 msgid "denoising image %d/%d..."
 msgstr "removendo ruído de imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:897
+#: ../src/libs/neural_restore.c:1418
+#, fuzzy, c-format
+msgid "raw denoising image %d/%d..."
+msgstr "removendo ruído de imagem %d/%d..."
+
+#: ../src/libs/neural_restore.c:1419
 #, c-format
 msgid "upscaling 2x image %d/%d..."
 msgstr "aumentando escala 2x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:898
+#: ../src/libs/neural_restore.c:1420
 #, c-format
 msgid "upscaling 4x image %d/%d..."
 msgstr "aumentando escala 4x imagem %d/%d..."
 
-#: ../src/libs/neural_restore.c:929
+#: ../src/libs/neural_restore.c:1429
+#, fuzzy, c-format
+msgid "raw denoise failed for image %d"
+msgstr "erro ao obter perfil de saída para imagem %d"
+
+#: ../src/libs/neural_restore.c:1459
 msgid "neural restore: export failed"
 msgstr "restauração neural: exportação falhou"
 
-#: ../src/libs/neural_restore.c:947
+#: ../src/libs/neural_restore.c:1482
 #, c-format
 msgid "neural %s: %d image processed"
 msgid_plural "neural %s: %d images processed"
 msgstr[0] "neural %s: %d imagem processada"
 msgstr[1] "neural %s: %d imagens processadas"
 
-#: ../src/libs/neural_restore.c:1030
+#: ../src/libs/neural_restore.c:1565
 msgid "large output - processing will be slow"
 msgstr "saída grande - o processamento será lento"
 
-#: ../src/libs/neural_restore.c:1046
+#: ../src/libs/neural_restore.c:1581
+msgid "output: Bayer CFA DNG"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:1582
+msgid "output: LinearRaw DNG"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:1601
 msgid "wide-gamut preserved, not denoised"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:1047
+#: ../src/libs/neural_restore.c:1602
 #, fuzzy
 msgid "wide-gamut clipped"
 msgstr "recorte de gama"
 
-#: ../src/libs/neural_restore.c:1801
+#: ../src/libs/neural_restore.c:3364
 msgid "click to select preview area"
 msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:1826
+#: ../src/libs/neural_restore.c:3389
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:1828 ../src/libs/neural_restore.c:1997
+#: ../src/libs/neural_restore.c:3391 ../src/libs/neural_restore.c:3581
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:1830
+#: ../src/libs/neural_restore.c:3393
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:1831
+#: ../src/libs/neural_restore.c:3395
+msgid "image not supported by this task"
+msgstr "imagem não é suportada por esta tarefa"
+
+#: ../src/libs/neural_restore.c:3397
+msgid "preview initialization failed"
+msgstr "a inicialização de pré-visualização falhou"
+
+#: ../src/libs/neural_restore.c:3398
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:2223 ../src/libs/neural_restore.c:2454
+#: ../src/libs/neural_restore.c:3817 ../src/libs/neural_restore.c:4074
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:2264
+#: ../src/libs/neural_restore.c:3862
+#, fuzzy
+msgid "AI raw denoising"
+msgstr "remoção de ruído com IA"
+
+#: ../src/libs/neural_restore.c:3864
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:2266
+#: ../src/libs/neural_restore.c:3866
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:2273
-msgid "detail recovery"
-msgstr "recuperação de detalhes"
-
-#: ../src/libs/neural_restore.c:2276
-msgid "recover fine texture lost during denoising while suppressing noise"
+#: ../src/libs/neural_restore.c:3878
+msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr ""
-"recuperar textura fina perdida durante remoção de ruído enquanto suprime "
-"ruído"
 
-#: ../src/libs/neural_restore.c:2284
+#: ../src/libs/neural_restore.c:3895
+#, c-format
+msgid ""
+"100% applies the full AI model output; lower values bring back luminance "
+"texture and grain while keeping color noise suppressed"
+msgstr ""
+
+#: ../src/libs/neural_restore.c:3904
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:2286
+#: ../src/libs/neural_restore.c:3906
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:2286
+#: ../src/libs/neural_restore.c:3906
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:2303
+#: ../src/libs/neural_restore.c:3923
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:2328
+#: ../src/libs/neural_restore.c:3948
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:2346
+#: ../src/libs/neural_restore.c:3966
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:2357
+#: ../src/libs/neural_restore.c:3977
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:2399
+#: ../src/libs/neural_restore.c:4019
 msgid "color profile embedded in the output TIFF"
 msgstr "perfil de cor embutido na saída TIFF"
 
-#: ../src/libs/neural_restore.c:2409
+#: ../src/libs/neural_restore.c:4029
 #, fuzzy
 msgid "preserve wide-gamut colors"
 msgstr "preservar cores"
 
-#: ../src/libs/neural_restore.c:2416
+#: ../src/libs/neural_restore.c:4036
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:2425
-msgid "add to catalog"
-msgstr "adicionaro ao catálogo"
+#: ../src/libs/neural_restore.c:4045
+msgid "add to the current collection"
+msgstr "adicionar à coleção atual"
 
-#: ../src/libs/neural_restore.c:2431
-msgid "automatically import output image into the darktable library"
-msgstr "automaticamente importar imagem de saída na biblioteca do darktable"
+#: ../src/libs/neural_restore.c:4051
+msgid "automatically import the output image into the current collection"
+msgstr "automaticamente importar imagem de saída na coleção atual"
 
-#: ../src/libs/neural_restore.c:2447
+#: ../src/libs/neural_restore.c:4067
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
@@ -32774,13 +32850,13 @@ msgstr "inicia seleção"
 msgid "stop selection"
 msgstr "para seleção"
 
-#: ../src/libs/tools/viewswitcher.c:60
-msgid "viewswitcher"
-msgstr "modifica vista"
-
 #: ../src/libs/tools/view_toolbox.c:29
 msgid "view toolbox"
 msgstr "visualiza instrumentos"
+
+#: ../src/libs/tools/viewswitcher.c:60
+msgid "viewswitcher"
+msgstr "modifica vista"
 
 #: ../src/lua/preferences.c:683 ../src/lua/preferences.c:698
 #: ../src/lua/preferences.c:710 ../src/lua/preferences.c:723
@@ -33791,6 +33867,17 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1630
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "detail recovery"
+#~ msgstr "recuperação de detalhes"
+
+#~ msgid "recover fine texture lost during denoising while suppressing noise"
+#~ msgstr ""
+#~ "recuperar textura fina perdida durante remoção de ruído enquanto suprime "
+#~ "ruído"
+
+#~ msgid "add to catalog"
+#~ msgstr "adicionaro ao catálogo"
 
 #, c-format
 #~ msgid "delete %d selected model?"
