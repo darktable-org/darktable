@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 23:07+0200\n"
+"POT-Creation-Date: 2026-04-29 21:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12410,6 +12410,10 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/group_persistence.lua:120
+msgid "group persistence"
+msgstr ""
+
 #. name of script
 #: ../src/external/lua-scripts/official/group_persistence.lua:121
 msgid "preserve groups between darktable instances"
@@ -12823,8 +12827,15 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:79
-msgid "regenerate_thumbnails"
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:246
+msgid "regenerate thumbnails"
 msgstr ""
 
 #. visible name of script
@@ -12861,6 +12872,10 @@ msgstr ""
 #. -----------------
 #. helper functions
 #. -----------------
+#: ../src/external/lua-scripts/official/regenerate_thumbnails.lua:176
+msgid "regenerating thumbnails"
+msgstr ""
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -12872,12 +12887,6 @@ msgstr ""
 msgid "generate thumbnails"
 msgstr ""
 
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. D A R K T A B L E  I N T E G R A T I O N
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. - - - - - - - - - - - - - - - - - - - - - - -
-#. E V E N T S
-#. - - - - - - - - - - - - - - - - - - - - - - -
 #.
 #. This file is part of darktable,
 #. copyright (c) 2014 Jérémy Rosen
@@ -13005,6 +13014,10 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/scheduler.lua:98
+msgid "scheduler"
+msgstr ""
+
 #. name of script
 #: ../src/external/lua-scripts/official/scheduler.lua:99
 msgid "provide scheduler services for multitasking"
@@ -13025,6 +13038,14 @@ msgstr ""
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/scheduler.lua:130
+msgid "scheduler preferred time slice"
+msgstr ""
+
+#: ../src/external/lua-scripts/official/scheduler.lua:130
+msgid "target time slice before interrupt"
+msgstr ""
+
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. A L I A S E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13233,6 +13254,10 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/select_raw_non_raw.lua:91
+msgid "select raw/non-raw"
+msgstr ""
+
 #. name of script
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:92
 msgid "select raw or non raw files from collection"
@@ -13274,11 +13299,11 @@ msgid "select raw files"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:161
-msgid "select non raw"
+msgid "select non-raw"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/select_raw_non_raw.lua:162
-msgid "select non raw files"
+msgid "select non-raw files"
 msgstr ""
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -13343,15 +13368,6 @@ msgstr ""
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
-#: ../src/external/lua-scripts/official/select_unaltered.lua:78
-msgid "select_unaltered"
-msgstr ""
-
-#. visible name of script
-#: ../src/external/lua-scripts/official/select_unaltered.lua:79
-msgid "select images that have not been altered in any way"
-msgstr ""
-
 #. purpose of script
 #. your name and optionally e-mail address
 #. URL to help/documentation
@@ -13384,8 +13400,14 @@ msgstr ""
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/select_unaltered.lua:78
 #: ../src/external/lua-scripts/official/select_unaltered.lua:151
 msgid "select unaltered"
+msgstr ""
+
+#. visible name of script
+#: ../src/external/lua-scripts/official/select_unaltered.lua:79
+msgid "select images that have not been altered in any way"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/select_unaltered.lua:152
@@ -13470,7 +13492,7 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection2collection.lua:94
-msgid "selection2collection"
+msgid "selection to collection"
 msgstr ""
 
 #. visible name of script
@@ -13587,7 +13609,7 @@ msgid "selection to PDF"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:57
-msgid "generate a pdf file of selected images"
+msgid "generate a PDF file of selected images"
 msgstr ""
 
 #. function to destory the script
@@ -13595,13 +13617,13 @@ msgstr ""
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:69
-msgid "a pdf viewer"
+msgid "a PDF viewer"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
 msgid ""
 "can be an absolute pathname or the tool may be in the PATH\n"
-"if not specified the system default will be used to open the pdf"
+"if not specified the system default will be used to open the PDF"
 msgstr ""
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:78
@@ -13625,7 +13647,7 @@ msgstr ""
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:137
-msgid "export thumbnails to pdf"
+msgid "export thumbnails to PDF"
 msgstr ""
 
 #. convert to PDF
@@ -13636,7 +13658,7 @@ msgstr ""
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:203
-msgid "problem running pdf viewer"
+msgid "problem running PDF viewer"
 msgstr ""
 
 #. this one is probably usefull to the user
