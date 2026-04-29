@@ -184,10 +184,11 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
       g_unlink(filename);
       return 1;
     }
-    // libtiff entered INSUBIFD mode when the IFD0 carrying TIFFTAG_SUBIFD
-    // was written; subsequent TIFFSetField + scanline writes populate
-    // the SubIFD without an explicit TIFFCreateDirectory call (whose
-    // return-value convention changed between libtiff versions)
+    // re-register default tag info on some libtiff builds CFA/DNG
+    // extension tags would be lost across the IFD write, breaking
+    // CFAREPEATPATTERNDIM / CFAPATTERN. return value differs across
+    // libtiff versions; not checked
+    TIFFCreateDirectory(tif);
   }
 
   // raw payload IFD: single IFD when no preview, otherwise SubIFD0
@@ -321,7 +322,9 @@ int dt_imageio_dng_write_linear(const char *filename,
       g_unlink(filename);
       return 1;
     }
-    // libtiff is in INSUBIFD mode after IFD0 was written with TIFFTAG_SUBIFD
+    // re-initialize directory state so DNG extension tag info is
+    // available on the SubIFD (see comment in write_cfa_bayer)
+    TIFFCreateDirectory(tif);
   }
 
   // baseline TIFF tags, 3 samples per pixel (demosaicked)
