@@ -39,6 +39,38 @@
 // these as float/double arrays and handles the conversion; we just pass
 // the values as double
 
+// libtiff error/warning handlers — replacing whatever else in the
+// process may have installed (e.g. ImageMagick's, which crashes on
+// NULL exception context). these just log to stderr and never abort
+static void _dt_dng_tiff_warning(const char *module,
+                                 const char *fmt, va_list ap)
+{
+  if(darktable.unmuted & DT_DEBUG_IMAGEIO)
+  {
+    fprintf(stderr, "%11.4f [imageio_dng] warning: %s: ",
+            dt_get_wtime() - darktable.start_wtime,
+            module ? module : "(none)");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+  }
+}
+
+static void _dt_dng_tiff_error(const char *module,
+                               const char *fmt, va_list ap)
+{
+  fprintf(stderr, "%11.4f [imageio_dng] error: %s: ",
+          dt_get_wtime() - darktable.start_wtime,
+          module ? module : "(none)");
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+}
+
+static void _install_dng_tiff_handlers(void)
+{
+  TIFFSetWarningHandler(_dt_dng_tiff_warning);
+  TIFFSetErrorHandler(_dt_dng_tiff_error);
+}
+
 // map the dcraw 2x2 CFA filters word to 4 single-byte channel indices
 // for the DNG CFAPattern tag: 0=R, 1=G, 2=B, following DNG spec §A.3.1
 static void _cfa_bytes_from_filters(uint32_t filters, uint8_t out[4])
@@ -159,6 +191,8 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
 {
   if(!filename || !cfa || !img || width <= 0 || height <= 0)
     return 1;
+
+  _install_dng_tiff_handlers();
 
 #ifdef _WIN32
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -299,6 +333,8 @@ int dt_imageio_dng_write_linear(const char *filename,
 {
   if(!filename || !rgb || !img || width <= 0 || height <= 0)
     return 1;
+
+  _install_dng_tiff_handlers();
 
 #ifdef _WIN32
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
