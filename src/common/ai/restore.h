@@ -322,6 +322,29 @@ int dt_restore_get_tile_size(const dt_restore_context_t *ctx);
 gboolean dt_restore_reload_session(dt_restore_context_t *ctx,
                                    int new_tile_size);
 
+// @brief step the loaded session down to the next smaller tile size
+//
+// shared OOM-retry helper used by all batch and preview pipelines.
+// looks up the next-smaller entry in ctx->tile_ladder and calls
+// dt_restore_reload_session. on success updates *T_inout in place
+// and returns TRUE; on failure (no smaller size or reload failed)
+// leaves *T_inout untouched and returns FALSE.
+//
+// emits no log output — callers own observability so they can phrase
+// the message with their own state (e.g. tile coordinates, pre/post
+// T value). callers are also expected to free per-tile buffers and
+// propagate the inference error.
+//
+// not thread-safe: mutates ctx->ai_ctx and ctx->tile_size. callers
+// must not invoke this on a ctx shared with another thread that may
+// be running inference.
+//
+// @param ctx loaded restore context
+// @param T_inout current tile size; replaced with the new one on success
+// @return TRUE if the session was successfully recreated at a smaller T
+gboolean dt_restore_step_down_tile_size(dt_restore_context_t *ctx,
+                                        int *T_inout);
+
 // @brief persist the current tile size to darktablerc
 //
 // once the bayer pipeline has processed an image end-to-end at

@@ -542,10 +542,6 @@ int dt_restore_process_tiled(dt_restore_context_t *ctx,
   const int O = dt_restore_get_overlap(scale);
   const int S = scale;
   const int out_w = width * S;
-  // ladder was resolved at load time (either model's input_sizes or
-  // the built-in default for this scale) and travels with the context
-  const int *ladder = ctx->tile_ladder;
-  const int n_ladder = ctx->n_tile_ladder;
   int T = ctx->tile_size;
 
   // outer retry loop: on inference failure (e.g. GPU OOM) drop to the
@@ -659,28 +655,20 @@ retry:;
       {
         // retry with the next smaller ladder entry if no rows have
         // been delivered yet (safe to restart). once rows are written
-        // we can't rewind the row_writer (e.g. TIFF is sequential).
-        // _reload_session() recreates the ORT session for the smaller
-        // tile size (dim overrides are shape-specific).
-        int next_T = 0;
-        for(int i = 0; i < n_ladder; i++)
-          if(ladder[i] < T) { next_T = ladder[i]; break; }
-        if(next_T > 0 && ty == 0
-           && dt_restore_reload_session(ctx, next_T))
+        // we can't rewind the row_writer (e.g. TIFF is sequential)
+        if(ty == 0 && dt_restore_step_down_tile_size(ctx, &T))
         {
           dt_print(DT_DEBUG_AI,
-                   "[restore_rgb] inference failed at tile %d,%d "
-                   "(T=%d), retrying with T=%d",
-                   x, y, T, next_T);
+                   "[restore_rgb] tile %d,%d failed, retrying at T=%d",
+                   tx, ty, T);
           g_free(tile_in);
           g_free(tile_out);
           g_free(row_buf);
-          T = next_T;
           goto retry;
         }
         dt_print(DT_DEBUG_AI,
-                 "[restore_rgb] inference failed at"
-                 " tile %d,%d (T=%d, minimum reached)", x, y, T);
+                 "[restore_rgb] inference failed at tile %d,%d (T=%d)",
+                 tx, ty, T);
         res = 1;
         goto cleanup;
       }

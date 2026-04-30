@@ -507,8 +507,6 @@ int dt_restore_raw_linear(dt_restore_context_t *ctx,
   // tile setup
   const int O = OVERLAP_LINEAR;
   int T = dt_restore_get_tile_size(ctx);
-  int n_ladder = 0;
-  const int *ladder = dt_restore_get_tile_ladder(ctx, &n_ladder);
   if(T <= 2 * O) T = 256;
 
 retry:;
@@ -602,26 +600,21 @@ retry:;
       // inference
       if(dt_restore_run_patch_3ch_raw(ctx, tile_in, T, T, tile_out) != 0)
       {
-        int next_T = 0;
-        for(int i = 0; i < n_ladder; i++)
-          if(ladder[i] < T) { next_T = ladder[i]; break; }
-        if(next_T > 0 && ty == 0 && tx == 0
-           && dt_restore_reload_session(ctx, next_T))
+        if(ty == 0 && tx == 0 && dt_restore_step_down_tile_size(ctx, &T))
         {
           dt_print(DT_DEBUG_AI,
-                   "[restore_raw_linear] inference failed at T=%d, retry T=%d",
-                   T, next_T);
+                   "[restore_raw_linear] tile %d,%d failed, retrying at T=%d",
+                   tx, ty, T);
           g_free(tile_in);
           g_free(tile_out);
           g_free(h_strip_top);
           g_free(h_strip_bot);
           g_free(v_strip_left);
-          T = next_T;
           goto retry;
         }
         dt_print(DT_DEBUG_AI,
-                 "[restore_raw_linear] inference failed at tile %d,%d "
-                 "(T=%d)", tx, ty, T);
+                 "[restore_raw_linear] inference failed at tile %d,%d (T=%d)",
+                 tx, ty, T);
         res = 1;
         break;
       }
@@ -973,14 +966,6 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
 
   if(width <= 0 || height <= 0 || crop_w <= 0 || crop_h <= 0) return 1;
 
-  const int T = dt_restore_get_tile_size(ctx);
-  if(T <= 0) return 1;
-  const int max_disp = T - 2 * OVERLAP_LINEAR;
-  if(crop_w > max_disp || crop_h > max_disp) return 1;
-
-  int inf_x = crop_x + crop_w / 2 - T / 2;
-  int inf_y = crop_y + crop_h / 2 - T / 2;
-
   // WB + matrix prep (same as dt_restore_raw_linear_prepare /
   // dt_restore_raw_linear_preview — but we also need the REVERSE
   // transforms to go back to camRGB raw for pipe input)
@@ -1001,11 +986,39 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
       cam_to_input[i] = input_to_cam[i] = (i % 4 == 0) ? 1.0f : 0.0f;
   }
 
+  // OOM-retry loop: on inference failure step down the model's tile
+  // ladder and rebuild the single-tile geometry. mirrors the batch
+  // path's recovery, scoped to one tile (no row_writer to rewind)
+  int T = dt_restore_get_tile_size(ctx);
+  if(T <= 0) return 1;
+
+  float *tile_in = NULL;
+  float *tile_out = NULL;
+  int inf_x = 0, inf_y = 0;
+  size_t tile_plane = 0;
+  float exposure_boost = 1.0f;
+
+retry:;
+  {
+    const int max_disp = T - 2 * OVERLAP_LINEAR;
+    if(crop_w > max_disp || crop_h > max_disp)
+    {
+      g_free(tile_in);
+      g_free(tile_out);
+      return 1;
+    }
+  }
+
+  inf_x = crop_x + crop_w / 2 - T / 2;
+  inf_y = crop_y + crop_h / 2 - T / 2;
+
   // extract crop + overlap from cached full lin_rec2020 -> tile_in
   // apply exposure boost (same as preview), run inference
-  const size_t tile_plane = (size_t)T * T;
-  float *tile_in = g_try_malloc(tile_plane * 3 * sizeof(float));
-  float *tile_out = g_try_malloc(tile_plane * 3 * sizeof(float));
+  tile_plane = (size_t)T * T;
+  g_free(tile_in);
+  g_free(tile_out);
+  tile_in = g_try_malloc(tile_plane * 3 * sizeof(float));
+  tile_out = g_try_malloc(tile_plane * 3 * sizeof(float));
   if(!tile_in || !tile_out)
   {
     g_free(tile_in);
@@ -1027,11 +1040,19 @@ int dt_restore_raw_linear_preview_piped(dt_restore_context_t *ctx,
     }
   }
 
-  float exposure_boost = 1.0f;
+  exposure_boost = 1.0f;
   _linear_exposure_boost(ctx, tile_in, tile_plane, NULL, &exposure_boost);
 
   if(dt_restore_run_patch_3ch_raw(ctx, tile_in, T, T, tile_out) != 0)
   {
+    if(dt_restore_step_down_tile_size(ctx, &T))
+    {
+      dt_print(DT_DEBUG_AI,
+               "[restore_raw_linear] preview failed, retrying at T=%d", T);
+      goto retry;
+    }
+    dt_print(DT_DEBUG_AI,
+             "[restore_raw_linear] preview inference failed at T=%d", T);
     g_free(tile_in);
     g_free(tile_out);
     return 1;
