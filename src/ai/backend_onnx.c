@@ -1099,6 +1099,21 @@ static float _half_to_float(uint16_t h)
   return f;
 }
 
+// Look up the device name for `device_id` from the provider's enumeration.
+// Returns a newly-allocated string (caller frees) or NULL if no match.
+static gchar *_lookup_device_name(dt_ai_provider_t provider, int device_id)
+{
+  GList *devices = dt_ai_enum_devices_for_provider(provider);
+  gchar *name = NULL;
+  for(GList *l = devices; l; l = g_list_next(l))
+  {
+    dt_ai_device_t *d = l->data;
+    if(d->id == device_id) { name = g_strdup(d->name); break; }
+  }
+  g_list_free_full(devices, dt_ai_device_free);
+  return name;
+}
+
 // try to find and call an ORT execution provider function at runtime via
 // dynamic symbol lookup (GModule/dlsym).  returns TRUE if the provider was
 // enabled successfully, FALSE otherwise.
@@ -1109,7 +1124,8 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
                               const char *symbol_name,
                               const char *provider_name,
                               const char *device_type,
-                              uint32_t flags)
+                              uint32_t flags,
+                              dt_ai_provider_t provider)
 {
   OrtStatus *status = NULL;
   gboolean ok = FALSE;
@@ -1163,7 +1179,14 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
     }
     if(!status)
     {
-      dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully.", provider_name);
+      // for integer-argument (device-id) providers, also log which GPU was selected
+      gchar *dev_name = device_type ? NULL : _lookup_device_name(provider, (int)flags);
+      if(dev_name)
+        dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully on device %d: %s",
+                 provider_name, (int)flags, dev_name);
+      else
+        dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully.", provider_name);
+      g_free(dev_name);
       ok = TRUE;
     }
     else
@@ -1223,7 +1246,7 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags);
+      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] apple CoreML not available on this platform");
 #endif
@@ -1234,7 +1257,7 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
                                          "DT_CUDA_DEVICE_ID");
     _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
-                  "NVIDIA CUDA", NULL, (uint32_t)dev);
+                  "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
     break;
   }
 
@@ -1247,16 +1270,16 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
                                          "DT_MIGRAPHX_DEVICE_ID");
     if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-                      "AMD MIGraphX", NULL, (uint32_t)dev))
+                      "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX))
       _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
-                    "AMD ROCm (legacy)", NULL, (uint32_t)dev);
+                    "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
     break;
   }
 
   case DT_AI_PROVIDER_OPENVINO:
     if(!_try_openvino_with_cache(session_opts))
       _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
-                    "Intel OpenVINO", "AUTO", 0);
+                    "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
@@ -1266,7 +1289,7 @@ _enable_acceleration(OrtSessionOptions *session_opts,
                                          "DT_DML_DEVICE_ID");
     _try_provider(session_opts,
                   "OrtSessionOptionsAppendExecutionProvider_DML",
-                  "Windows DirectML", NULL, (uint32_t)dev);
+                  "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
   }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] windows DirectML not available on this platform");
@@ -1280,14 +1303,14 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags);
+      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
 #elif defined(_WIN32)
     {
       const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
                                            "DT_DML_DEVICE_ID");
       _try_provider(session_opts,
                     "OrtSessionOptionsAppendExecutionProvider_DML",
-                    "Windows DirectML", NULL, (uint32_t)dev);
+                    "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
     }
 #elif defined(__linux__)
     // try CUDA first, then MIGraphX (cache configured at env init)
@@ -1299,16 +1322,16 @@ _enable_acceleration(OrtSessionOptions *session_opts,
       if(!_try_provider(
            session_opts,
            "OrtSessionOptionsAppendExecutionProvider_CUDA",
-           "NVIDIA CUDA", NULL, (uint32_t)cuda_dev))
+           "NVIDIA CUDA", NULL, (uint32_t)cuda_dev, DT_AI_PROVIDER_CUDA))
       {
         if(!_try_provider(
              session_opts,
              "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-             "AMD MIGraphX", NULL, (uint32_t)amd_dev))
+             "AMD MIGraphX", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX))
           _try_provider(
             session_opts,
             "OrtSessionOptionsAppendExecutionProvider_ROCM",
-            "AMD ROCm (legacy)", NULL, (uint32_t)amd_dev);
+            "AMD ROCm (legacy)", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX);
       }
     }
 #endif
@@ -1349,14 +1372,15 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   switch(provider)
   {
   case DT_AI_PROVIDER_COREML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL, 0);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML",
+                       "Apple CoreML", NULL, 0, DT_AI_PROVIDER_COREML);
     break;
   case DT_AI_PROVIDER_CUDA:
   {
     const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
                                          "DT_CUDA_DEVICE_ID");
     ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
-                       "NVIDIA CUDA", NULL, (uint32_t)dev);
+                       "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
     break;
   }
   case DT_AI_PROVIDER_MIGRAPHX:
@@ -1364,20 +1388,21 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
     const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
                                          "DT_MIGRAPHX_DEVICE_ID");
     ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-                       "AMD MIGraphX", NULL, (uint32_t)dev)
+                       "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX)
       || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
-                       "AMD ROCm (legacy)", NULL, (uint32_t)dev);
+                       "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
     break;
   }
   case DT_AI_PROVIDER_OPENVINO:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
+                       "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
     break;
   case DT_AI_PROVIDER_DIRECTML:
   {
     const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
                                          "DT_DML_DEVICE_ID");
     ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML",
-                       "Windows DirectML", NULL, (uint32_t)dev);
+                       "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
     break;
   }
   default:
