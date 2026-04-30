@@ -37,7 +37,6 @@ dt_local_laplacian_cl_global_t *dt_local_laplacian_init_cl_global()
 
   const int program = 19; // locallaplacian.cl, from programs.conf
   g->kernel_pad_input          = dt_opencl_create_kernel(program, "pad_input");
-  g->kernel_gauss_expand       = dt_opencl_create_kernel(program, "gauss_expand");
   g->kernel_gauss_reduce       = dt_opencl_create_kernel(program, "gauss_reduce");
   g->kernel_laplacian_assemble = dt_opencl_create_kernel(program, "laplacian_assemble");
   g->kernel_process_curve      = dt_opencl_create_kernel(program, "process_curve");
@@ -121,10 +120,9 @@ error:
   return NULL;
 }
 
-cl_int dt_local_laplacian_cl(
-    dt_local_laplacian_cl_t *b, // opencl context with temp buffers
-    cl_mem input,               // input buffer in some Labx or yuvx format
-    cl_mem output)              // output buffer with colour
+cl_int dt_local_laplacian_cl(dt_local_laplacian_cl_t *b, // opencl context with temp buffers
+                             cl_mem input,               // input buffer in some Labx or yuvx format
+                             cl_mem output)              // output buffer with colour
 {
   if(b->bwidth <= 1 || b->bheight <= 1) return DT_OPENCL_DEFAULT_ERROR;
 
