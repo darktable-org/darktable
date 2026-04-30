@@ -959,6 +959,25 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   return ok;
 }
 
+// pick a GPU device_id: env var wins, then conf, fallback to 0.
+// each multi-GPU-capable EP has its own conf key + env var so users
+// switching between providers don't carry stale indices across vendors
+static int _device_id_from_conf(const char *conf_key, const char *env_var)
+{
+  const char *env_val = g_getenv(env_var);
+  if(env_val && env_val[0])
+  {
+    const int v = atoi(env_val);
+    return v >= 0 ? v : 0;
+  }
+  if(dt_conf_key_exists(conf_key))
+  {
+    const int v = dt_conf_get_int(conf_key);
+    return v >= 0 ? v : 0;
+  }
+  return 0;
+}
+
 static void
 _enable_acceleration(OrtSessionOptions *session_opts,
                      dt_ai_provider_t provider,
@@ -983,29 +1002,44 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     break;
 
   case DT_AI_PROVIDER_CUDA:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                         "DT_CUDA_DEVICE_ID");
+    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
+                  "NVIDIA CUDA", NULL, (uint32_t)dev);
     break;
+  }
 
   case DT_AI_PROVIDER_MIGRAPHX:
+  {
     // MIGraphX reads its cache env vars once at provider library
     // load time, so they must be set before CreateEnv() — see
     // _setup_amd_caches() above. OpenVINO (below) takes options
     // per-session, so its cache path is passed inline here
-    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
+    const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                         "DT_MIGRAPHX_DEVICE_ID");
+    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+                      "AMD MIGraphX", NULL, (uint32_t)dev))
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
+                    "AMD ROCm (legacy)", NULL, (uint32_t)dev);
     break;
+  }
 
   case DT_AI_PROVIDER_OPENVINO:
     if(!_try_openvino_with_cache(session_opts))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
+                    "Intel OpenVINO", "AUTO", 0);
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
 #if defined(_WIN32)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                         "DT_DML_DEVICE_ID");
+    _try_provider(session_opts,
+                  "OrtSessionOptionsAppendExecutionProvider_DML",
+                  "Windows DirectML", NULL, (uint32_t)dev);
+  }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] windows DirectML not available on this platform");
 #endif
@@ -1020,25 +1054,34 @@ _enable_acceleration(OrtSessionOptions *session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
       "Apple CoreML", NULL, coreml_flags);
 #elif defined(_WIN32)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL, 0);
+    {
+      const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                           "DT_DML_DEVICE_ID");
+      _try_provider(session_opts,
+                    "OrtSessionOptionsAppendExecutionProvider_DML",
+                    "Windows DirectML", NULL, (uint32_t)dev);
+    }
 #elif defined(__linux__)
     // try CUDA first, then MIGraphX (cache configured at env init)
-    if(!_try_provider(
-         session_opts,
-         "OrtSessionOptionsAppendExecutionProvider_CUDA",
-         "NVIDIA CUDA", NULL, 0))
     {
+      const int cuda_dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                                "DT_CUDA_DEVICE_ID");
+      const int amd_dev  = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                                "DT_MIGRAPHX_DEVICE_ID");
       if(!_try_provider(
            session_opts,
-           "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-           "AMD MIGraphX", NULL, 0))
-        _try_provider(
-          session_opts,
-          "OrtSessionOptionsAppendExecutionProvider_ROCM",
-          "AMD ROCm (legacy)", NULL, 0);
+           "OrtSessionOptionsAppendExecutionProvider_CUDA",
+           "NVIDIA CUDA", NULL, (uint32_t)cuda_dev))
+      {
+        if(!_try_provider(
+             session_opts,
+             "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+             "AMD MIGraphX", NULL, (uint32_t)amd_dev))
+          _try_provider(
+            session_opts,
+            "OrtSessionOptionsAppendExecutionProvider_ROCM",
+            "AMD ROCm (legacy)", NULL, (uint32_t)amd_dev);
+      }
     }
 #endif
     break;
@@ -1081,18 +1124,34 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
     ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL, 0);
     break;
   case DT_AI_PROVIDER_CUDA:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                         "DT_CUDA_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
+                       "NVIDIA CUDA", NULL, (uint32_t)dev);
     break;
+  }
   case DT_AI_PROVIDER_MIGRAPHX:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0)
-      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                         "DT_MIGRAPHX_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+                       "AMD MIGraphX", NULL, (uint32_t)dev)
+      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
+                       "AMD ROCm (legacy)", NULL, (uint32_t)dev);
     break;
+  }
   case DT_AI_PROVIDER_OPENVINO:
     ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
     break;
   case DT_AI_PROVIDER_DIRECTML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                         "DT_DML_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML",
+                       "Windows DirectML", NULL, (uint32_t)dev);
     break;
+  }
   default:
     break;
   }
