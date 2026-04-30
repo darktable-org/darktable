@@ -791,6 +791,23 @@ gboolean dt_restore_reload_session(dt_restore_context_t *ctx,
   return _reload_session(ctx, new_tile_size);
 }
 
+gboolean dt_restore_step_down_tile_size(dt_restore_context_t *ctx,
+                                        int *T_inout)
+{
+  if(!ctx || !T_inout) return FALSE;
+  int next_T = 0;
+  for(int i = 0; i < ctx->n_tile_ladder; i++)
+    if(ctx->tile_ladder[i] < *T_inout)
+    {
+      next_T = ctx->tile_ladder[i];
+      break;
+    }
+  if(next_T <= 0 || !_reload_session(ctx, next_T))
+    return FALSE;
+  *T_inout = next_T;
+  return TRUE;
+}
+
 void dt_restore_persist_tile_size(const dt_restore_context_t *ctx)
 {
   if(ctx && ctx->model_id)
