@@ -73,6 +73,14 @@ static GModule *g_ort_module = NULL;  // custom ORT library loaded via g_module_
 // page detect a path change mid-session (in-process ORT stale, restart
 // needed before GPU EP probes reflect the new library)
 static gchar *g_ort_conf_path_at_load = NULL;
+// snapshot of per-EP device_id at ORT load. -1 = "no value seen yet"
+// (e.g. provider not configured at startup); the change check then
+// compares against the current conf value
+static int g_loaded_cuda_device_id     = -1;
+static int g_loaded_migraphx_device_id = -1;
+static int g_loaded_dml_device_id      = -1;
+
+static int _device_id_from_conf(const char *conf_key, const char *env_var);
 
 #if defined(__linux__)
 // check that the CUDA driver supports the installed CUDA runtime version;
@@ -193,6 +201,34 @@ void dt_ai_device_free(gpointer device)
   dt_ai_device_t *d = (dt_ai_device_t *)device;
   g_free(d->name);
   g_free(d);
+}
+
+const char *dt_ai_device_conf_key_for_provider(dt_ai_provider_t provider)
+{
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     return "plugins/ai/cuda_device_id";
+    case DT_AI_PROVIDER_MIGRAPHX: return "plugins/ai/migraphx_device_id";
+    case DT_AI_PROVIDER_DIRECTML: return "plugins/ai/dml_device_id";
+    default:                      return NULL;
+  }
+}
+
+gboolean dt_ai_device_id_changed_since_load(dt_ai_provider_t provider)
+{
+  const char *key = dt_ai_device_conf_key_for_provider(provider);
+  if(!key) return FALSE;
+  int loaded;
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     loaded = g_loaded_cuda_device_id;     break;
+    case DT_AI_PROVIDER_MIGRAPHX: loaded = g_loaded_migraphx_device_id; break;
+    case DT_AI_PROVIDER_DIRECTML: loaded = g_loaded_dml_device_id;      break;
+    default:                      return FALSE;
+  }
+  if(loaded < 0) return FALSE;  // ORT not yet loaded
+  const int cur = dt_conf_key_exists(key) ? dt_conf_get_int(key) : 0;
+  return cur != loaded;
 }
 
 // shell out to a command and return its stdout. caller frees. NULL on failure
@@ -678,9 +714,16 @@ static gpointer _init_ort_api(gpointer data)
   // compile-time default; on Windows/macOS it dynamically loads a
   // user-supplied library instead of the bundled DirectML/CoreML one.
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
-  // snapshot for dt_ai_ort_path_changed_since_load()
+  // snapshot for dt_ai_ort_path_changed_since_load() and
+  // dt_ai_device_id_changed_since_load()
   g_free(g_ort_conf_path_at_load);
   g_ort_conf_path_at_load = g_strdup(ort_conf ? ort_conf : "");
+  g_loaded_cuda_device_id     = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                                     "DT_CUDA_DEVICE_ID");
+  g_loaded_migraphx_device_id = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                                     "DT_MIGRAPHX_DEVICE_ID");
+  g_loaded_dml_device_id      = _device_id_from_conf("plugins/ai/dml_device_id",
+                                                     "DT_DML_DEVICE_ID");
   const char *ort_env = g_getenv("DT_ORT_LIBRARY");
   const char *ort_override = (ort_conf && ort_conf[0]) ? ort_conf
                            : (ort_env && ort_env[0]) ? ort_env
