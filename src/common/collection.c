@@ -2669,6 +2669,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
                                 GList *list)
 {
   int next = -1;
+  int prev = -1;
   if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY
      && darktable.gui)
   {
@@ -2717,29 +2718,35 @@ void dt_collection_update_query(const dt_collection_t *collection,
       }
       sqlite3_finalize(stmt2);
       g_free(query);
-      // 3. if next is still unvalid, let's try to find the first
-      // untouched image BEFORE the list
-      if(next < 0)
+      // 3. Search the first untouched image BEFORE the list
+      // clang-format off
+      query = g_strdup_printf("SELECT imgid"
+                              " FROM memory.collected_images"
+                              " WHERE imgid NOT IN (%s)"
+                              "   AND rowid < (SELECT rowid"
+                              "                FROM memory.collected_images"
+                              "                WHERE imgid IN (%s)"
+                              "                ORDER BY rowid LIMIT 1)"
+                              " ORDER BY rowid DESC LIMIT 1",
+                              txt, txt);
+      // clang-format on
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+      if(sqlite3_step(stmt2) == SQLITE_ROW)
       {
-        // clang-format off
-        query = g_strdup_printf("SELECT imgid"
-                                " FROM memory.collected_images"
-                                " WHERE imgid NOT IN (%s)"
-                                "   AND rowid < (SELECT rowid"
-                                "                FROM memory.collected_images"
-                                "                WHERE imgid IN (%s)"
-                                "                ORDER BY rowid LIMIT 1)"
-                                " ORDER BY rowid DESC LIMIT 1",
-                                txt, txt);
-        // clang-format on
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-        if(sqlite3_step(stmt2) == SQLITE_ROW)
-        {
-          next = sqlite3_column_int(stmt2, 0);
-        }
-        sqlite3_finalize(stmt2);
-        g_free(query);
+        prev = sqlite3_column_int(stmt2, 0);
       }
+      sqlite3_finalize(stmt2);
+      g_free(query);
+
+      // Store both neighbors for darkroom navigation. Must happen
+      // before the next/prev fallback below which overwrites next
+      // for the signal parameter.
+      ((dt_collection_t *)collection)->jump_next = next;
+      ((dt_collection_t *)collection)->jump_prev = prev;
+
+      // 4. For the signal, fall back to prev if next is invalid
+      if(next < 0)
+        next = prev;
       g_free(txt);
     }
   }

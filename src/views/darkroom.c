@@ -1445,41 +1445,91 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else if(diff > 0)
-  {
-    // past the last image in the collection - wrap around to the first
-    sqlite3_stmt *stmt2;
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1",
-      -1,
-      &stmt2,
-      NULL);
-    if(sqlite3_step(stmt2) == SQLITE_ROW)
-    {
-      new_offset = sqlite3_column_int(stmt2, 0);
-      new_id = sqlite3_column_int(stmt2, 1);
-      dt_toast_log(_("past end of collection, looped to first image"));
-    }
-    sqlite3_finalize(stmt2);
-  }
   else
   {
-    // past the first image in the collection - wrap around to the last
+    // The main query returned no row. Check if the current image
+    // is still in the collection (boundary) or was filtered out.
+    // clang-format off
+    gchar *query2 =
+      g_strdup_printf("SELECT rowid "
+                      "FROM memory.collected_images "
+                      "WHERE imgid=%d",
+                      imgid);
+    // clang-format on
     sqlite3_stmt *stmt2;
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
-      -1,
-      &stmt2,
-      NULL);
-    if(sqlite3_step(stmt2) == SQLITE_ROW)
-    {
-      new_offset = sqlite3_column_int(stmt2, 0);
-      new_id = sqlite3_column_int(stmt2, 1);
-      dt_toast_log(_("past beginning of collection, looped to last image"));
-    }
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    const gboolean in_collection = (sqlite3_step(stmt2) == SQLITE_ROW);
     sqlite3_finalize(stmt2);
+    g_free(query2);
+
+    if(in_collection)
+    {
+      // at a collection boundary - wrap around
+      sqlite3_stmt *stmt3;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        (diff > 0)
+          ? "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1"
+          : "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
+        -1, &stmt3, NULL);
+      if(sqlite3_step(stmt3) == SQLITE_ROW)
+      {
+        new_offset = sqlite3_column_int(stmt3, 0);
+        new_id = sqlite3_column_int(stmt3, 1);
+        if(diff > 0)
+          dt_toast_log(_("past end of collection, looped to first image"));
+        else
+          dt_toast_log(_("past beginning of collection, looped to last image"));
+      }
+      sqlite3_finalize(stmt3);
+    }
+    else
+    {
+      // image was filtered out - use the directional neighbor
+      // that was computed before the collection was rebuilt
+      const dt_imgid_t target = (diff > 0)
+        ? darktable.collection->jump_next
+        : darktable.collection->jump_prev;
+      if(dt_is_valid_imgid(target))
+      {
+        // clang-format off
+        gchar *query3 =
+          g_strdup_printf("SELECT rowid "
+                          "FROM memory.collected_images "
+                          "WHERE imgid=%d",
+                          target);
+        // clang-format on
+        sqlite3_stmt *stmt3;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query3, -1, &stmt3, NULL);
+        if(sqlite3_step(stmt3) == SQLITE_ROW)
+        {
+          new_offset = sqlite3_column_int(stmt3, 0);
+          new_id = target;
+        }
+        sqlite3_finalize(stmt3);
+        g_free(query3);
+      }
+      // if the target is not valid or not in the collection,
+      // fall through to wrap around
+      if(!dt_is_valid_imgid(new_id))
+      {
+        sqlite3_stmt *stmt3;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          (diff > 0)
+            ? "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1"
+            : "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
+          -1, &stmt3, NULL);
+        if(sqlite3_step(stmt3) == SQLITE_ROW)
+        {
+          new_offset = sqlite3_column_int(stmt3, 0);
+          new_id = sqlite3_column_int(stmt3, 1);
+          if(diff > 0)
+            dt_toast_log(_("past end of collection, looped to first image"));
+          else
+            dt_toast_log(_("past beginning of collection, looped to last image"));
+        }
+        sqlite3_finalize(stmt3);
+      }
+    }
   }
   g_free(query);
   sqlite3_finalize(stmt);

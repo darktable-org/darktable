@@ -168,6 +168,17 @@ typedef struct dt_collection_t
   uint32_t tagid;
   dt_collection_params_t params;
   dt_collection_params_t store;
+
+  // First untouched image after/before the last changed set,
+  // computed on the OLD collection before it is rebuilt. Used by
+  // _dev_jump_image() in darkroom.c to navigate in the correct
+  // direction when the current image is filtered out (e.g. rejected
+  // while a "not rejected" filter is active). Only meaningful
+  // between a collection update with a non-empty change list and
+  // the next image navigation. May be NO_IMGID when no neighbor
+  // exists in that direction.
+  dt_imgid_t jump_next;
+  dt_imgid_t jump_prev;
 } dt_collection_t;
 
 /* returns the name for the given collection property */
