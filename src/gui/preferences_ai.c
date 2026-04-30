@@ -1554,12 +1554,16 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   GtkWidget *provider_hbox = dt_gui_hbox(data->provider_combo,
                                          data->gpu_combo,
                                          data->provider_status);
+  // small gap between provider_combo and gpu_combo
+  gtk_widget_set_margin_start(data->gpu_combo, DT_PIXEL_APPLY_DPI(8));
   // gpu_combo is hidden by default; _refresh_gpu_combo shows it if applicable
   gtk_widget_set_no_show_all(data->gpu_combo, TRUE);
 
   gtk_grid_attach(GTK_GRID(settings_grid), provider_labelev, 0, row, 1, 1);
   gtk_grid_attach(GTK_GRID(settings_grid), data->provider_indicator, 1, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(settings_grid), provider_hbox, 2, row++, 3, 1);
+  // span only cols 2-3 (matching path_entry below) so col 4 stays sized
+  // by the button box and doesn't steal width when gpu_combo appears
+  gtk_grid_attach(GTK_GRID(settings_grid), provider_hbox, 2, row++, 2, 1);
 
   // ORT library path — not shown on macOS where ORT is statically linked with CoreML.
   // Developers can still use DT_ORT_LIBRARY env var to override on macOS
