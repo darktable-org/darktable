@@ -532,10 +532,10 @@ static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t p
     return;
   }
 
-  // path or device_id changed mid-session: in-process EP session is
-  // bound to the loaded library + device. show "restart to apply" for
-  // GPU EPs (AUTO/CPU always work)
+  // long-lived sessions (e.g. SAM2 encoder) are bound to the EP they
+  // were loaded with; show "restart to apply" for GPU EPs
   if((dt_ai_ort_path_changed_since_load()
+      || dt_ai_provider_changed_since_load()
       || dt_ai_device_id_changed_since_load(provider))
      && provider != DT_AI_PROVIDER_AUTO && provider != DT_AI_PROVIDER_CPU)
   {

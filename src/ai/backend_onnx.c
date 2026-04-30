@@ -80,6 +80,9 @@ static int g_loaded_cuda_device_id     = -1;
 static int g_loaded_migraphx_device_id = -1;
 static int g_loaded_dml_device_id      = -1;
 
+// snapshot of the provider config string at ORT load. NULL until captured
+static gchar *g_loaded_provider = NULL;
+
 static int _device_id_from_conf(const char *conf_key, const char *env_var);
 
 #if defined(__linux__)
@@ -185,12 +188,45 @@ char *dt_ai_ort_probe_library(const char *path)
 // Probe a library and return version + comma-separated list of supported EPs.
 // Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
 // FALSE before ORT is loaded (no comparison reference yet)
+// snapshot the conf values that determine which library / EP / device
+// the in-process ORT will be bound to. called eagerly at darktable
+// startup so the *_changed_since_load() helpers have a stable reference
+// independent of when ORT is lazily initialized
+void dt_ai_snapshot_conf_state(void)
+{
+  gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
+  g_free(g_ort_conf_path_at_load);
+  g_ort_conf_path_at_load = g_strdup(ort_conf ? ort_conf : "");
+  g_free(ort_conf);
+
+  g_free(g_loaded_provider);
+  g_loaded_provider = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  if(!g_loaded_provider) g_loaded_provider = g_strdup("");
+
+  g_loaded_cuda_device_id     = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                                     "DT_CUDA_DEVICE_ID");
+  g_loaded_migraphx_device_id = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                                     "DT_MIGRAPHX_DEVICE_ID");
+  g_loaded_dml_device_id      = _device_id_from_conf("plugins/ai/dml_device_id",
+                                                     "DT_DML_DEVICE_ID");
+}
+
 gboolean dt_ai_ort_path_changed_since_load(void)
 {
   if(!g_ort_conf_path_at_load) return FALSE;
   gchar *cur = dt_conf_get_string("plugins/ai/ort_library_path");
   const gboolean changed
     = g_strcmp0(cur ? cur : "", g_ort_conf_path_at_load) != 0;
+  g_free(cur);
+  return changed;
+}
+
+gboolean dt_ai_provider_changed_since_load(void)
+{
+  if(!g_loaded_provider) return FALSE;
+  gchar *cur = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  const gboolean changed
+    = g_strcmp0(cur ? cur : "", g_loaded_provider) != 0;
   g_free(cur);
   return changed;
 }
@@ -714,16 +750,7 @@ static gpointer _init_ort_api(gpointer data)
   // compile-time default; on Windows/macOS it dynamically loads a
   // user-supplied library instead of the bundled DirectML/CoreML one.
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
-  // snapshot for dt_ai_ort_path_changed_since_load() and
-  // dt_ai_device_id_changed_since_load()
-  g_free(g_ort_conf_path_at_load);
-  g_ort_conf_path_at_load = g_strdup(ort_conf ? ort_conf : "");
-  g_loaded_cuda_device_id     = _device_id_from_conf("plugins/ai/cuda_device_id",
-                                                     "DT_CUDA_DEVICE_ID");
-  g_loaded_migraphx_device_id = _device_id_from_conf("plugins/ai/migraphx_device_id",
-                                                     "DT_MIGRAPHX_DEVICE_ID");
-  g_loaded_dml_device_id      = _device_id_from_conf("plugins/ai/dml_device_id",
-                                                     "DT_DML_DEVICE_ID");
+  // snapshots are now taken eagerly at startup via dt_ai_snapshot_conf_state()
   const char *ort_env = g_getenv("DT_ORT_LIBRARY");
   const char *ort_override = (ort_conf && ort_conf[0]) ? ort_conf
                            : (ort_env && ort_env[0]) ? ort_env

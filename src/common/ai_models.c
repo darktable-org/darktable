@@ -17,6 +17,7 @@
 */
 
 #include "common/ai_models.h"
+#include "ai/backend.h"
 #include "common/darktable.h"
 #include "common/curl_tools.h"
 #include "common/file_location.h"
@@ -452,6 +453,10 @@ dt_ai_registry_t *dt_ai_models_init(void)
 
   if(registry->ai_enabled)
     _setup_registry(registry);
+
+  // capture conf snapshot so *_changed_since_load() helpers reference
+  // the startup state, not a value modified by user before first ORT use
+  dt_ai_snapshot_conf_state();
 
   return registry;
 }

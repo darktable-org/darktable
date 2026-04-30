@@ -77,9 +77,18 @@ guint dt_ai_providers_from_eps(const char *eps);
  *  cannot be probed. */
 guint dt_ai_providers_bundled(void);
 
+/** Snapshot the conf state (ORT path, provider, device ids) for the
+ *  *_changed_since_load() helpers.  Call once at darktable startup so
+ *  the snapshot is independent of when ORT is lazily initialized. */
+void dt_ai_snapshot_conf_state(void);
+
 /** TRUE if plugins/ai/ort_library_path differs from the value seen
  *  when ORT was loaded — the in-process ORT is stale, restart needed. */
 gboolean dt_ai_ort_path_changed_since_load(void);
+
+/** TRUE if the configured provider differs from the value seen when
+ *  ORT was loaded — long-lived sessions are stale, restart needed. */
+gboolean dt_ai_provider_changed_since_load(void);
 
 /** A selectable GPU device for a multi-GPU-capable execution provider. */
 typedef struct dt_ai_device_t
