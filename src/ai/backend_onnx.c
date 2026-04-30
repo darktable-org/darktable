@@ -54,6 +54,12 @@ struct dt_ai_context_t
   gboolean dynamic_outputs;
 };
 
+// minimum ORT API we'll fall back to when the runtime library is older
+// than what we were compiled against. v14 = ORT 1.14, the first release
+// with ONNX opset 18 support — older ORT can't run our models. bump
+// this in lockstep with any model that requires a newer opset
+#define DT_ORT_MIN_API_VERSION 14
+
 // global singletons (initialized exactly once via g_once)
 // ORT requires at most one OrtEnv per process.
 static const OrtApi *g_ort = NULL;
@@ -61,6 +67,10 @@ static GOnce g_ort_once = G_ONCE_INIT;
 static OrtEnv *g_env = NULL;
 static GOnce g_env_once = G_ONCE_INIT;
 static GModule *g_ort_module = NULL;  // custom ORT library loaded via g_module_open
+// snapshot of plugins/ai/ort_library_path at ORT load — lets the prefs
+// page detect a path change mid-session (in-process ORT stale, restart
+// needed before GPU EP probes reflect the new library)
+static gchar *g_ort_conf_path_at_load = NULL;
 
 #if defined(__linux__)
 // check that the CUDA driver supports the installed CUDA runtime version;
@@ -164,6 +174,17 @@ char *dt_ai_ort_probe_library(const char *path)
 
 // Probe a library and return version + comma-separated list of supported EPs.
 // Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+// FALSE before ORT is loaded (no comparison reference yet)
+gboolean dt_ai_ort_path_changed_since_load(void)
+{
+  if(!g_ort_conf_path_at_load) return FALSE;
+  gchar *cur = dt_conf_get_string("plugins/ai/ort_library_path");
+  const gboolean changed
+    = g_strcmp0(cur ? cur : "", g_ort_conf_path_at_load) != 0;
+  g_free(cur);
+  return changed;
+}
+
 int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
 {
   if(!path || !path[0]) return FALSE;
@@ -187,27 +208,82 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
 
   if(out_eps)
   {
-    // check for known EP registration symbols
-    static const struct { const char *symbol; const char *name; } ep_table[] = {
-      { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
-      { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
-      { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
-      { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
-      { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
-      { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
-      { NULL, NULL }
-    };
-
     GString *eps = g_string_new(NULL);
-    gpointer sym;
-    for(int i = 0; ep_table[i].symbol; i++)
+
+    // preferred path: ask the OrtApi for the list of providers compiled into
+    // the library; this is the only reliable method for ROCm/MIGraphX, since
+    // AMD's official builds do not export the legacy C shim symbols
+    // (OrtSessionOptionsAppendExecutionProvider_ROCM, _MIGraphX) — ROCm is
+    // only reachable through the OrtApi struct
+    const OrtApi *probe_api = base->GetApi(ORT_API_VERSION);
+    if(!probe_api)
     {
-      if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+      for(int v = ORT_API_VERSION - 1;
+          v >= DT_ORT_MIN_API_VERSION && !probe_api; v--)
+        probe_api = base->GetApi(v);
+    }
+    if(probe_api && probe_api->GetAvailableProviders)
+    {
+      char **providers = NULL;
+      int n_providers = 0;
+      if(probe_api->GetAvailableProviders(&providers, &n_providers) == NULL && providers)
       {
-        if(eps->len > 0) g_string_append(eps, ", ");
-        g_string_append(eps, ep_table[i].name);
+        // map ORT provider names to short labels
+        static const struct { const char *ort_name; const char *label; } map[] = {
+          { "CUDAExecutionProvider",     "CUDA" },
+          { "MIGraphXExecutionProvider", "MIGraphX" },
+          { "ROCMExecutionProvider",     "ROCm" },
+          { "OpenVINOExecutionProvider", "OpenVINO" },
+          { "DmlExecutionProvider",      "DirectML" },
+          { "CoreMLExecutionProvider",   "CoreML" },
+          { "TensorrtExecutionProvider", "TensorRT" },
+          { NULL, NULL }
+        };
+        for(int i = 0; i < n_providers; i++)
+        {
+          const char *label = NULL;
+          for(int j = 0; map[j].ort_name; j++)
+          {
+            if(g_strcmp0(providers[i], map[j].ort_name) == 0)
+            {
+              label = map[j].label;
+              break;
+            }
+          }
+          // skip CPU here; added below if nothing else matched
+          if(!label || g_strcmp0(providers[i], "CPUExecutionProvider") == 0) continue;
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, label);
+        }
+        if(probe_api->ReleaseAvailableProviders)
+          probe_api->ReleaseAvailableProviders(providers, n_providers);
       }
     }
+
+    // fallback: legacy C-shim symbol probing for very old ORT builds where
+    // GetAvailableProviders is unavailable
+    if(eps->len == 0)
+    {
+      static const struct { const char *symbol; const char *name; } ep_table[] = {
+        { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
+        { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
+        { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
+        { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
+        { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
+        { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
+        { NULL, NULL }
+      };
+      gpointer sym;
+      for(int i = 0; ep_table[i].symbol; i++)
+      {
+        if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+        {
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, ep_table[i].name);
+        }
+      }
+    }
+
     if(eps->len == 0) g_string_append(eps, "CPU");
     *out_eps = g_string_free(eps, FALSE);
   }
@@ -387,7 +463,7 @@ static const OrtApi *_ort_api_from_module(GModule *mod, const char *label)
   if(!api)
   {
     // minimum API version 14 = ORT 1.14, required for ONNX opset 18
-    for(int v = ORT_API_VERSION - 1; v >= 14; v--)
+    for(int v = ORT_API_VERSION - 1; v >= DT_ORT_MIN_API_VERSION; v--)
     {
       api = base->GetApi(v);
       if(api)
@@ -417,6 +493,9 @@ static gpointer _init_ort_api(gpointer data)
   // compile-time default; on Windows/macOS it dynamically loads a
   // user-supplied library instead of the bundled DirectML/CoreML one.
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
+  // snapshot for dt_ai_ort_path_changed_since_load()
+  g_free(g_ort_conf_path_at_load);
+  g_ort_conf_path_at_load = g_strdup(ort_conf ? ort_conf : "");
   const char *ort_env = g_getenv("DT_ORT_LIBRARY");
   const char *ort_override = (ort_conf && ort_conf[0]) ? ort_conf
                            : (ort_env && ort_env[0]) ? ort_env
