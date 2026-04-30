@@ -60,6 +60,11 @@ target_link_libraries(darktable_ai PUBLIC
   ${JSON_GLIB_LIBRARIES}
 )
 
+# DirectML device enumeration uses DXGI (Windows 10 1803+ for IDXGIFactory6)
+if(WIN32)
+  target_link_libraries(darktable_ai PUBLIC dxgi)
+endif()
+
 # Install the bundled ONNX Runtime shared library alongside darktable_ai
 # (skip when using system package — it's already in the system library path)
 if(ONNXRuntime_SYSTEM_PACKAGE)

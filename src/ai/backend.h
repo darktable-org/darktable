@@ -81,6 +81,21 @@ guint dt_ai_providers_bundled(void);
  *  when ORT was loaded — the in-process ORT is stale, restart needed. */
 gboolean dt_ai_ort_path_changed_since_load(void);
 
+/** A selectable GPU device for a multi-GPU-capable execution provider. */
+typedef struct dt_ai_device_t
+{
+  int    id;     /**< device_id passed to the EP (e.g. CUDA ordinal, DXGI adapter index) */
+  gchar *name;   /**< human-readable label, e.g. "NVIDIA GeForce RTX 5060" */
+} dt_ai_device_t;
+
+/** Enumerate selectable GPU devices for a provider. Returns NULL or an
+ *  empty list for AUTO/CPU/OpenVINO/CoreML (no per-device choice).
+ *  Caller frees with `g_list_free_full(list, dt_ai_device_free)`. */
+GList *dt_ai_enum_devices_for_provider(dt_ai_provider_t provider);
+
+/** Free a single dt_ai_device_t (the struct + its name). */
+void dt_ai_device_free(gpointer device);
+
 /** Test if a provider is available at runtime (checks deps, not just compile-time).
  *  @return 1 if available, 0 if not. */
 int dt_ai_probe_provider(dt_ai_provider_t provider);

@@ -29,6 +29,8 @@
 #include <string.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <dxgi1_6.h>
+#include <initguid.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -183,6 +185,189 @@ gboolean dt_ai_ort_path_changed_since_load(void)
     = g_strcmp0(cur ? cur : "", g_ort_conf_path_at_load) != 0;
   g_free(cur);
   return changed;
+}
+
+void dt_ai_device_free(gpointer device)
+{
+  if(!device) return;
+  dt_ai_device_t *d = (dt_ai_device_t *)device;
+  g_free(d->name);
+  g_free(d);
+}
+
+// shell out to a command and return its stdout. caller frees. NULL on failure
+static gchar *_run_capture(const char *cmd)
+{
+  gchar *out = NULL;
+  GError *err = NULL;
+  gint exit_status = 0;
+  if(!g_spawn_command_line_sync(cmd, &out, NULL, &exit_status, &err))
+  {
+    if(err) g_clear_error(&err);
+    g_free(out);
+    return NULL;
+  }
+  if(exit_status != 0)
+  {
+    g_free(out);
+    return NULL;
+  }
+  return out;
+}
+
+// CUDA device enumeration via nvidia-smi. respects CUDA_VISIBLE_DEVICES
+// since nvidia-smi inherits the parent process env. one row per GPU,
+// ordinal in column 1, name in column 2 (CSV)
+static GList *_enum_cuda_devices(void)
+{
+  gchar *out = _run_capture("nvidia-smi --query-gpu=index,name "
+                            "--format=csv,noheader,nounits");
+  if(!out) return NULL;
+
+  GList *result = NULL;
+  gchar **lines = g_strsplit(out, "\n", -1);
+  for(gchar **lp = lines; *lp; lp++)
+  {
+    gchar *line = g_strstrip(*lp);
+    if(!line[0]) continue;
+    gchar **fields = g_strsplit(line, ",", 2);
+    if(fields[0] && fields[1])
+    {
+      dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+      d->id = atoi(g_strstrip(fields[0]));
+      d->name = g_strdup(g_strstrip(fields[1]));
+      result = g_list_append(result, d);
+    }
+    g_strfreev(fields);
+  }
+  g_strfreev(lines);
+  g_free(out);
+  return result;
+}
+
+// MIGraphX device enumeration via rocminfo. filter by Device Type=GPU
+// to skip the CPU and Ryzen-AI NPU agents. Marketing Name appears
+// before Device Type within each agent block, so we hold the most
+// recent name and emit it when we hit a GPU agent. id is the ordinal
+// index of GPU agents (0, 1, ...) — matches MIGraphX's device_id
+static GList *_enum_migraphx_devices(void)
+{
+#ifndef __linux__
+  return NULL;  // ROCm is Linux-only
+#else
+  gchar *out = _run_capture("rocminfo");
+  if(!out) return NULL;
+
+  GList *result = NULL;
+  gchar **lines = g_strsplit(out, "\n", -1);
+  gchar *pending_name = NULL;
+  int gpu_index = 0;
+  for(gchar **lp = lines; *lp; lp++)
+  {
+    gchar *line = *lp;
+    const char *mn = strstr(line, "Marketing Name:");
+    if(mn)
+    {
+      const char *colon = strchr(mn, ':');
+      if(colon)
+      {
+        g_free(pending_name);
+        pending_name = g_strdup(g_strstrip((gchar *)colon + 1));
+      }
+      continue;
+    }
+    if(strstr(line, "Device Type:") && strstr(line, "GPU") && pending_name)
+    {
+      dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+      d->id = gpu_index++;
+      d->name = pending_name;
+      pending_name = NULL;
+      result = g_list_append(result, d);
+    }
+  }
+  g_free(pending_name);
+  g_strfreev(lines);
+  g_free(out);
+  return result;
+#endif
+}
+
+// DirectML device enumeration via DXGI. uses EnumAdapterByGpuPreference
+// (DXGI 1.6, Windows 10 1803+) with HIGH_PERFORMANCE so dGPUs come
+// before iGPUs. dedupes by AdapterLuid and skips software adapters.
+// id is the index in the returned list, which is what DirectML's EP
+// takes as device_id
+static GList *_enum_directml_devices(void)
+{
+#ifndef _WIN32
+  return NULL;
+#else
+  IDXGIFactory6 *factory = NULL;
+  HRESULT hr = CreateDXGIFactory2(0, &IID_IDXGIFactory6, (void **)&factory);
+  if(FAILED(hr) || !factory) return NULL;
+
+  GList *result = NULL;
+  // track LUIDs we've already added (dedup against the multi-adapter
+  // double-listing quirk on some Windows versions)
+  GArray *seen_luids = g_array_new(FALSE, FALSE, sizeof(LUID));
+  int next_id = 0;
+  for(UINT i = 0; ; i++)
+  {
+    IDXGIAdapter1 *adapter = NULL;
+    if(FAILED(factory->lpVtbl->EnumAdapterByGpuPreference(
+         factory, i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+         &IID_IDXGIAdapter1, (void **)&adapter)))
+      break;
+
+    DXGI_ADAPTER_DESC1 desc;
+    if(SUCCEEDED(adapter->lpVtbl->GetDesc1(adapter, &desc))
+       && (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0)
+    {
+      gboolean dup = FALSE;
+      for(guint k = 0; k < seen_luids->len; k++)
+      {
+        LUID *l = &g_array_index(seen_luids, LUID, k);
+        if(l->LowPart == desc.AdapterLuid.LowPart
+           && l->HighPart == desc.AdapterLuid.HighPart)
+        {
+          dup = TRUE;
+          break;
+        }
+      }
+      if(!dup)
+      {
+        g_array_append_val(seen_luids, desc.AdapterLuid);
+        gchar *name = g_utf16_to_utf8((const gunichar2 *)desc.Description,
+                                      -1, NULL, NULL, NULL);
+        dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+        d->id = next_id++;
+        d->name = name ? name : g_strdup("DirectML adapter");
+        result = g_list_append(result, d);
+      }
+    }
+    adapter->lpVtbl->Release(adapter);
+  }
+  g_array_free(seen_luids, TRUE);
+  factory->lpVtbl->Release(factory);
+  return result;
+#endif
+}
+
+GList *dt_ai_enum_devices_for_provider(dt_ai_provider_t provider)
+{
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     return _enum_cuda_devices();
+    case DT_AI_PROVIDER_MIGRAPHX: return _enum_migraphx_devices();
+    case DT_AI_PROVIDER_DIRECTML: return _enum_directml_devices();
+    // OpenVINO and CoreML self-manage their devices; AUTO/CPU don't apply
+    case DT_AI_PROVIDER_AUTO:
+    case DT_AI_PROVIDER_CPU:
+    case DT_AI_PROVIDER_COREML:
+    case DT_AI_PROVIDER_OPENVINO:
+    default:
+      return NULL;
+  }
 }
 
 int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
