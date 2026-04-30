@@ -179,7 +179,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 0.01
+  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 0.01 $DESCRIPTION: "linear region"
   float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.0
   float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
@@ -4510,7 +4510,7 @@ void gui_init(dt_iop_module_t *self)
                                 "increase to make highlights brighter and less compressed.\n"
                                 "decrease to mute highlights."));
 
-  g->latitude = dt_bauhaus_slider_from_params(self, NC_("curve-linear-part-width", "latitude"));
+  g->latitude = dt_bauhaus_slider_from_params(self, "latitude");
   dt_bauhaus_slider_set_soft_range(g->latitude, 0.1, 90.0);
   dt_bauhaus_slider_set_format(g->latitude, "%");
   gtk_widget_set_tooltip_text(g->latitude,
