@@ -3892,6 +3892,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->recovery_slider, NULL, N_("strength"));
   dt_bauhaus_slider_set_format(d->recovery_slider, "%");
   gtk_widget_set_tooltip_text(d->recovery_slider,
+                              /* xgettext:no-c-format */
                               _("100% applies the full AI model output; "
                                 "lower values bring back luminance texture "
                                 "and grain while keeping color noise suppressed"));
