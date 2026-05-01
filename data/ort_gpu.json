@@ -13,11 +13,11 @@
       "cuda_max": "12.99",
       "ort_version": "1.25.1",
       "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-linux-x64-gpu-1.25.1.tgz",
-      "sha256": "c5f804ff5d239b436fa59e9f2fb288a39f7eb9552f6a636c8b71e792e91a8808",
+      "sha256": "ddfc4ca4ccc9cd5345d3820edab710ee84e749569d052eed92c42693d3b448a8",
       "format": "tgz",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-cuda",
-      "size_mb": 200,
+      "size_mb": 250,
       "requirements": "CUDA 12.x, cuDNN 9.x"
     },
     {
@@ -28,7 +28,7 @@
       "cuda_max": "13.99",
       "ort_version": "1.25.1",
       "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-linux-x64-gpu_cuda13-1.25.1.tgz",
-      "sha256": "fdc6eb18317b4eaeda8b3b86595e5da7e853f72bac67ccac9b04ffc20c9f7fe0",
+      "sha256": "ebc14e1290db2a30a7bb415bd1c3e1390a7816bb4db87677dc36d071ed22833c",
       "format": "tgz",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-cuda",
@@ -43,11 +43,11 @@
       "cuda_max": "12.99",
       "ort_version": "1.25.1",
       "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-win-x64-gpu-1.25.1.zip",
-      "sha256": "ef3337a0b8184eb8beec310f7c83bd50376b3eefc43aab84ac8e452f6987df0a",
+      "sha256": "e72bc4895f84400368382d7b7287c018eabbb2be384e67446f3ab64af7fe5552",
       "format": "zip",
       "lib_pattern": "onnxruntime",
       "install_subdir": "onnxruntime-cuda",
-      "size_mb": 200,
+      "size_mb": 300,
       "requirements": "CUDA 12.x, cuDNN 9.x"
     },
     {
@@ -58,11 +58,11 @@
       "cuda_max": "13.99",
       "ort_version": "1.25.1",
       "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-win-x64-gpu_cuda13-1.25.1.zip",
-      "sha256": "971be8cf984950672934a3173669590a8ece10b44746883420da8066ba836707",
+      "sha256": "d54b465e5f9300d8928c43772751ac95c123ebd90069a0a4b8ce02e503335469",
       "format": "zip",
       "lib_pattern": "onnxruntime",
       "install_subdir": "onnxruntime-cuda",
-      "size_mb": 200,
+      "size_mb": 300,
       "requirements": "CUDA 13.x, cuDNN 9.x"
     },
     {
@@ -73,11 +73,11 @@
       "rocm_max": "7.0",
       "ort_version": "1.22.1",
       "url": "https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/onnxruntime_rocm-1.22.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
-      "sha256": "953a4e152f944391798880d88ea3d887c1109cfdc622815d81c07e2e1abc080e",
+      "sha256": "0f9c1555c31cc1bef84504807a0747486017ec4bd9b9f7df0b15e659140a7f7e",
       "format": "whl",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-migraphx",
-      "size_mb": 300,
+      "size_mb": 200,
       "requirements": "ROCm 7.0, MIGraphX",
       "required_libs": [
         "libmigraphx_c.so.3",
@@ -107,11 +107,11 @@
       "rocm_max": "7.2",
       "ort_version": "1.23.2",
       "url": "https://repo.radeon.com/rocm/manylinux/rocm-rel-7.2.2/onnxruntime_migraphx-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
-      "sha256": "45d556a6c261383f3e1f1469764a6ce94dc9daaa65fc3d494406d9cd357a3656",
+      "sha256": "76f22bba96991d6653c8169999817203cde72e6703b8211f00dc8dd80ff8e43b",
       "format": "whl",
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-migraphx",
-      "size_mb": 300,
+      "size_mb": 50,
       "requirements": "ROCm 7.2, MIGraphX"
     },
     {

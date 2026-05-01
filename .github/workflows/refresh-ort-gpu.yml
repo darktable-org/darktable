@@ -1,0 +1,31 @@
+name: Refresh ONNX Runtime GPU registry
+
+on:
+  schedule:
+    # 1st of each month at 06:00 UTC. ONNX Runtime ships every 4-6 weeks
+    # and Radeon updates ROCm patches roughly quarterly, so monthly is
+    # frequent enough to catch updates without spamming review
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Configure git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+      - name: Refresh registry and open PR if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/ai/refresh-ort-gpu.py --update --pr || true
