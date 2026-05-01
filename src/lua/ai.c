@@ -385,6 +385,177 @@ static int _tensor_dot(lua_State *L)
   return 1;
 }
 
+// tensor:fill(value) → self
+// fill all elements with a scalar value, in place
+static int _tensor_fill(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  const float v = (float)luaL_checknumber(L, 2);
+  for(size_t i = 0; i < t->size; i++) t->data[i] = v;
+  lua_settop(L, 1);  // return self for chaining
+  return 1;
+}
+
+// tensor:scale_add(scale [, offset]) → self
+// in-place: t[i] = t[i] * scale + offset (offset defaults to 0).
+// scalar arithmetic primitive — the building block for normalize,
+// black-level subtract, gain match, etc.
+static int _tensor_scale_add(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  const float s = (float)luaL_checknumber(L, 2);
+  const float b = (float)luaL_optnumber(L, 3, 0.0);
+  for(size_t i = 0; i < t->size; i++) t->data[i] = t->data[i] * s + b;
+  lua_settop(L, 1);
+  return 1;
+}
+
+// tensor:sum() → float
+// sum of all elements (double accumulation, returned as Lua number)
+static int _tensor_sum(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  double s = 0.0;
+  for(size_t i = 0; i < t->size; i++) s += t->data[i];
+  lua_pushnumber(L, s);
+  return 1;
+}
+
+// tensor:mean() → float
+// mean of all elements
+static int _tensor_mean(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  if(t->size == 0) return luaL_error(L, "mean of empty tensor");
+  double s = 0.0;
+  for(size_t i = 0; i < t->size; i++) s += t->data[i];
+  lua_pushnumber(L, s / (double)t->size);
+  return 1;
+}
+
+// tensor:bayer_pack() → tensor
+// reshape a [1,1,H,W] CFA into [1,4,H/2,W/2] with 4 spatial phases:
+//   ch 0 = pixels at (2y,   2x)    (top-left of each 2×2 block)
+//   ch 1 = pixels at (2y,   2x+1)
+//   ch 2 = pixels at (2y+1, 2x)
+//   ch 3 = pixels at (2y+1, 2x+1)  (bottom-right)
+// channel-to-color mapping depends on the CFA filter pattern at the
+// chosen origin — the caller is expected to know it (load_raw returns
+// `filters` in the metadata table; index with the FC table from there).
+// H and W must both be even.
+static int _tensor_bayer_pack(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  if(t->ndim != 4 || t->shape[0] != 1 || t->shape[1] != 1)
+    return luaL_error(L, "bayer_pack requires [1,1,H,W] tensor");
+
+  const int H = (int)t->shape[2];
+  const int W = (int)t->shape[3];
+  if((H & 1) || (W & 1))
+    return luaL_error(L, "bayer_pack requires even H,W (got %dx%d)", H, W);
+
+  const int H2 = H / 2;
+  const int W2 = W / 2;
+  const size_t plane = (size_t)H2 * W2;
+  const size_t total = plane * 4;
+
+  dt_lua_ai_tensor_t *out
+    = lua_newuserdata(L, sizeof(dt_lua_ai_tensor_t));
+  memset(out, 0, sizeof(*out));
+  out->data = g_try_malloc(total * sizeof(float));
+  if(!out->data) return luaL_error(L, "failed to allocate packed tensor");
+
+  float *c0 = out->data + 0 * plane;
+  float *c1 = out->data + 1 * plane;
+  float *c2 = out->data + 2 * plane;
+  float *c3 = out->data + 3 * plane;
+  for(int y = 0; y < H2; y++)
+  {
+    const float *r0 = t->data + (size_t)(2 * y) * W;
+    const float *r1 = r0 + W;
+    for(int x = 0; x < W2; x++)
+    {
+      const size_t k = (size_t)y * W2 + x;
+      c0[k] = r0[2 * x];
+      c1[k] = r0[2 * x + 1];
+      c2[k] = r1[2 * x];
+      c3[k] = r1[2 * x + 1];
+    }
+  }
+
+  out->ndim = 4;
+  out->shape[0] = 1;
+  out->shape[1] = 4;
+  out->shape[2] = H2;
+  out->shape[3] = W2;
+  out->size = total;
+  luaL_setmetatable(L, "dt_lua_ai_tensor_t");
+  return 1;
+}
+
+// tensor:bayer_unpack() → tensor
+// inverse of bayer_pack: [1,4,H,W] → [1,1,2H,2W], reassembling the 4
+// phases into a full CFA. channel order must match the pack convention
+// (ch 0 = (2y,2x), ch 1 = (2y,2x+1), ch 2 = (2y+1,2x), ch 3 = (2y+1,2x+1)).
+static int _tensor_bayer_unpack(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t
+    = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t->data) return luaL_error(L, "tensor has been freed");
+  if(t->ndim != 4 || t->shape[0] != 1 || t->shape[1] != 4)
+    return luaL_error(L, "bayer_unpack requires [1,4,H,W] tensor");
+
+  const int H2 = (int)t->shape[2];
+  const int W2 = (int)t->shape[3];
+  const int H = H2 * 2;
+  const int W = W2 * 2;
+  const size_t plane = (size_t)H2 * W2;
+  const size_t total = (size_t)H * W;
+
+  dt_lua_ai_tensor_t *out
+    = lua_newuserdata(L, sizeof(dt_lua_ai_tensor_t));
+  memset(out, 0, sizeof(*out));
+  out->data = g_try_malloc(total * sizeof(float));
+  if(!out->data) return luaL_error(L, "failed to allocate unpacked tensor");
+
+  const float *c0 = t->data + 0 * plane;
+  const float *c1 = t->data + 1 * plane;
+  const float *c2 = t->data + 2 * plane;
+  const float *c3 = t->data + 3 * plane;
+  for(int y = 0; y < H2; y++)
+  {
+    float *r0 = out->data + (size_t)(2 * y) * W;
+    float *r1 = r0 + W;
+    for(int x = 0; x < W2; x++)
+    {
+      const size_t k = (size_t)y * W2 + x;
+      r0[2 * x]     = c0[k];
+      r0[2 * x + 1] = c1[k];
+      r1[2 * x]     = c2[k];
+      r1[2 * x + 1] = c3[k];
+    }
+  }
+
+  out->ndim = 4;
+  out->shape[0] = 1;
+  out->shape[1] = 1;
+  out->shape[2] = H;
+  out->shape[3] = W;
+  out->size = total;
+  luaL_setmetatable(L, "dt_lua_ai_tensor_t");
+  return 1;
+}
+
 /* ================================================================
  * context implementation
  * ================================================================ */
@@ -1463,6 +1634,18 @@ int dt_lua_init_ai(lua_State *L)
   lua_setfield(L, -2, "crop");
   lua_pushcfunction(L, _tensor_paste);
   lua_setfield(L, -2, "paste");
+  lua_pushcfunction(L, _tensor_fill);
+  lua_setfield(L, -2, "fill");
+  lua_pushcfunction(L, _tensor_scale_add);
+  lua_setfield(L, -2, "scale_add");
+  lua_pushcfunction(L, _tensor_sum);
+  lua_setfield(L, -2, "sum");
+  lua_pushcfunction(L, _tensor_mean);
+  lua_setfield(L, -2, "mean");
+  lua_pushcfunction(L, _tensor_bayer_pack);
+  lua_setfield(L, -2, "bayer_pack");
+  lua_pushcfunction(L, _tensor_bayer_unpack);
+  lua_setfield(L, -2, "bayer_unpack");
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
 

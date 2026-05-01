@@ -117,6 +117,60 @@ check("wide gamut > 1.0", wg:get({0}) > 1.0)
 wg:srgb_to_linear()
 check("wide gamut round-trip", approx(wg:get({0}), 1.5, 0.01))
 
+-- fill
+local f = dt.ai.create_tensor({2, 3})
+f:fill(7.0)
+check("fill [0,0]", f:get({0, 0}) == 7.0)
+check("fill [1,2]", f:get({1, 2}) == 7.0)
+check("fill returns self", f:fill(0.0) == f)
+
+-- scale_add
+local sa = dt.ai.create_tensor({4})
+sa:set({0}, 1.0)
+sa:set({1}, 2.0)
+sa:set({2}, 3.0)
+sa:set({3}, 4.0)
+sa:scale_add(2.0, 1.0)  -- t = 2*t + 1
+check("scale_add [0]", sa:get({0}) == 3.0)
+check("scale_add [3]", sa:get({3}) == 9.0)
+sa:scale_add(0.5)  -- offset defaults to 0
+check("scale_add default offset [0]", sa:get({0}) == 1.5)
+
+-- sum / mean
+local r = dt.ai.create_tensor({4})
+r:set({0}, 1.0); r:set({1}, 2.0); r:set({2}, 3.0); r:set({3}, 4.0)
+check("sum == 10", r:sum() == 10.0)
+check("mean == 2.5", r:mean() == 2.5)
+
+-- bayer_pack / bayer_unpack round-trip
+local cfa = dt.ai.create_tensor({1, 1, 4, 4})
+for y = 0, 3 do
+  for x = 0, 3 do
+    cfa:set({0, 0, y, x}, y * 4 + x)
+  end
+end
+local packed = cfa:bayer_pack()
+check("packed shape C", packed:shape()[2] == 4)
+check("packed shape H", packed:shape()[3] == 2)
+check("packed shape W", packed:shape()[4] == 2)
+-- ch 0 = (2y, 2x) → original (0,0)=0, (0,2)=2, (2,0)=8, (2,2)=10
+check("packed ch0 [0,0]", packed:get({0, 0, 0, 0}) == 0)
+check("packed ch0 [1,1]", packed:get({0, 0, 1, 1}) == 10)
+-- ch 3 = (2y+1, 2x+1) → original (1,1)=5, (3,3)=15
+check("packed ch3 [0,0]", packed:get({0, 3, 0, 0}) == 5)
+check("packed ch3 [1,1]", packed:get({0, 3, 1, 1}) == 15)
+local back = packed:bayer_unpack()
+check("unpacked shape H", back:shape()[3] == 4)
+check("unpacked shape W", back:shape()[4] == 4)
+for y = 0, 3 do
+  for x = 0, 3 do
+    if back:get({0, 0, y, x}) ~= y * 4 + x then
+      check("bayer round-trip ["..y..","..x.."]", false)
+    end
+  end
+end
+check("bayer round-trip all", true)
+
 -- models() returns a table
 local models = dt.ai.models()
 check("models returns table", type(models) == "table")
