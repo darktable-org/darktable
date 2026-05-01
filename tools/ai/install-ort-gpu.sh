@@ -427,6 +427,17 @@ fi
 echo "Extracting..."
 mkdir -p "$INSTALL_DIR"
 
+# clean prior install of the same library family so old versioned .so
+# files (and stale symlinks) don't shadow the new install. without this
+# you get a directory containing both libonnxruntime.so.1.24.4 and
+# .so.1.25.1, with the .so.1 symlink pointing at whichever was first
+find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}*.so*" \
+  -delete 2>/dev/null || true
+for pattern in $PKG_LIB_EXTRA_PATTERNS; do
+  find "$INSTALL_DIR" -maxdepth 1 -name "${pattern}*.so*" \
+    -delete 2>/dev/null || true
+done
+
 # build the find -name expression covering the main pattern + any extras
 _extract_libs() {
   local search_root="$1"
@@ -509,10 +520,14 @@ if [ "$PLATFORM" = "linux" ]; then
 fi
 
 # --- Verify ---
-# prefer the main library (libonnxruntime.so.X.Y.Z), not providers
-ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}.so.*" -o -name "${PKG_LIB_PATTERN}.dll" 2>/dev/null | head -1)
-# fallback to any matching .so
-[ -z "$ORT_SO" ] && ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}*.so*" 2>/dev/null | grep -v providers | head -1)
+# prefer the versioned main library (libonnxruntime.so.X.Y.Z) and pick
+# the newest by version. sort -V puts 1.25.1 after 1.24.4 even when
+# the dir still has both for any reason
+ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}.so.*" 2>/dev/null \
+           | sort -V | tail -1)
+# fallback to any matching .so (skip provider libs which aren't the entry point)
+[ -z "$ORT_SO" ] && ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}*.so*" 2>/dev/null \
+                              | grep -v providers | sort -V | tail -1)
 
 if [ -z "$ORT_SO" ]; then
   echo "Error: no library found after extraction." >&2
@@ -521,7 +536,7 @@ fi
 
 echo ""
 echo "Done. Installed to: $INSTALL_DIR"
-ls -lh "$INSTALL_DIR/"*.so* 2>/dev/null || ls -lh "$INSTALL_DIR/"*.dll 2>/dev/null || true
+ls -lh "$INSTALL_DIR/"*.so* 2>/dev/null || true
 echo ""
 echo "To enable in darktable:"
 echo ""

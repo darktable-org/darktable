@@ -270,6 +270,19 @@ if ($Package.sha256) {
 Write-Host "Extracting..."
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
+# clean prior install of the same library family so old versioned DLLs
+# don't shadow the new install. matches the shell-script behavior on
+# Linux: remove ${libPattern}*.dll before extracting the new package
+$libPattern = $Package.lib_pattern
+Get-ChildItem -Path $InstallDir -Filter "${libPattern}*.dll" -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force -ErrorAction SilentlyContinue
+foreach ($extra in @($Package.lib_extra_patterns)) {
+    if ($extra) {
+        Get-ChildItem -Path $InstallDir -Filter "${extra}*.dll" -File -ErrorAction SilentlyContinue |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+    }
+}
+
 $ExtractDir = Join-Path $TempDir "extracted"
 
 switch ($Package.format) {
@@ -300,10 +313,9 @@ switch ($Package.format) {
 }
 
 # Copy matching libraries
-$libPattern = $Package.lib_pattern
 $copied = 0
 Get-ChildItem -Path $ExtractDir -Recurse -File |
-    Where-Object { $_.Name -like "${libPattern}*" -and ($_.Extension -eq ".dll" -or $_.Extension -eq ".so" -or $_.Name -match "\.so\.") } |
+    Where-Object { $_.Name -like "${libPattern}*" -and $_.Extension -eq ".dll" } |
     ForEach-Object {
         Copy-Item $_.FullName -Destination $InstallDir -Force
         $copied++
@@ -348,7 +360,7 @@ if ($Package.runtime_url) {
             $rtPattern = if ($Package.runtime_lib_pattern) { $Package.runtime_lib_pattern } else { "openvino" }
             $rtCopied = 0
             Get-ChildItem -Path $rtExtract -Recurse -File |
-                Where-Object { $_.Extension -eq ".dll" -or $_.Extension -eq ".so" -or $_.Name -match "\.so\." } |
+                Where-Object { $_.Extension -eq ".dll" } |
                 Where-Object { $_.Name -like "${rtPattern}*" -or $_.Name -like "tbb*.dll" } |
                 ForEach-Object {
                     Copy-Item $_.FullName -Destination $InstallDir -Force
@@ -439,7 +451,7 @@ if ($Selected.vendor -eq "nvidia") {
 
 # --- Verify ---
 $ortDll = Get-ChildItem "$InstallDir\$libPattern*" -File |
-    Where-Object { $_.Extension -eq ".dll" -or $_.Name -match "\.so" } |
+    Where-Object { $_.Extension -eq ".dll" } |
     Select-Object -First 1
 
 Write-Host ""
