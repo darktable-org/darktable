@@ -71,6 +71,19 @@ static void _install_dng_tiff_handlers(void)
   TIFFSetErrorHandler(_dt_dng_tiff_error);
 }
 
+// libtiff has built-in field info for most DNG tags but not all —
+// register the ones we need that aren't pre-registered. PreviewColorSpace
+// (50970) is required for spec-conformant DNG previews
+static void _register_extra_dng_fields(TIFF *tif)
+{
+  static const TIFFFieldInfo extra[] = {
+    { TIFFTAG_PREVIEWCOLORSPACE, 1, 1, TIFF_LONG, FIELD_CUSTOM,
+      TRUE /* okToChange */, FALSE /* passCount */,
+      (char *)"PreviewColorSpace" },
+  };
+  TIFFMergeFieldInfo(tif, extra, sizeof(extra) / sizeof(extra[0]));
+}
+
 // map the dcraw 2x2 CFA filters word to 4 single-byte channel indices
 // for the DNG CFAPattern tag: 0=R, 1=G, 2=B, following DNG spec §A.3.1
 static void _cfa_bytes_from_filters(uint32_t filters, uint8_t out[4])
@@ -102,38 +115,62 @@ static void _set_dng_shared_metadata(TIFF *tif, const dt_image_t *img)
   if(img->camera_makermodel[0])
     TIFFSetField(tif, TIFFTAG_UNIQUECAMERAMODEL, img->camera_makermodel);
 
+  // OriginalRawFileName: UTF-8 bytes, not zero-terminated ASCII
+  if(img->filename[0])
+  {
+    const size_t fn_len = strlen(img->filename);
+    TIFFSetField(tif, TIFFTAG_ORIGINALRAWFILENAME,
+                 (uint32_t)fn_len, img->filename);
+  }
+
   const uint8_t dng_version[4]  = { 1, 4, 0, 0 };
   const uint8_t dng_backward[4] = { 1, 2, 0, 0 };
   TIFFSetField(tif, TIFFTAG_DNGVERSION, dng_version);
   TIFFSetField(tif, TIFFTAG_DNGBACKWARDVERSION, dng_backward);
 
-  // AsShotNeutral: inverse of wb_coeffs, normalized so max=1. fallback
-  // to neutral [1,1,1] when wb_coeffs missing so the tag is always set
-  float neutral[3] = { 1.0f, 1.0f, 1.0f };
+  TIFFSetField(tif, TIFFTAG_BASELINEEXPOSURE, 0.0f);
+
+  // AsShotNeutral: inverse of wb_coeffs, normalized so max=1. omit
+  // entirely when missing so the reader derives a default from
+  // CalibrationIlluminant1 + ColorMatrix1 instead of a fake daylight
   if(img->wb_coeffs[0] > 0.0f
      && img->wb_coeffs[1] > 0.0f
      && img->wb_coeffs[2] > 0.0f)
   {
+    float neutral[3];
     for(int i = 0; i < 3; i++) neutral[i] = 1.0f / img->wb_coeffs[i];
     const float m = fmaxf(neutral[0], fmaxf(neutral[1], neutral[2]));
     if(m > 0.0f) for(int i = 0; i < 3; i++) neutral[i] /= m;
+    TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, neutral);
   }
-  TIFFSetField(tif, TIFFTAG_ASSHOTNEUTRAL, 3, neutral);
 
-  // ColorMatrix1 (XYZ D50 -> cameraRGB, 3x3). row-major [camRGB][XYZ]
-  // matches darktable's adobe_XYZ_to_CAM layout exactly
+  // ColorMatrix1 (XYZ D65 -> cameraRGB, 3x3, row-major [camRGB][XYZ]).
+  // fall back to XYZ-D65->sRGB when source has no matrix so the DNG is
+  // still renderable; mirrors dt_imageio_dng_write_float
+  float color_matrix[9];
   float non_zero = 0.0f;
   for(int k = 0; k < 3; k++)
     for(int i = 0; i < 3; i++)
       non_zero += fabsf(img->adobe_XYZ_to_CAM[k][i]);
   if(non_zero > 0.0f)
   {
-    float color_matrix[9];
     for(int k = 0; k < 3; k++)
       for(int i = 0; i < 3; i++)
         color_matrix[k * 3 + i] = img->adobe_XYZ_to_CAM[k][i];
-    TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
   }
+  else
+  {
+    static const float xyz_to_srgb_d65[9] = {
+       3.240454f, -1.537138f, -0.498531f,
+      -0.969266f,  1.876010f,  0.041556f,
+       0.055643f, -0.204025f,  1.057225f,
+    };
+    memcpy(color_matrix, xyz_to_srgb_d65, sizeof(color_matrix));
+  }
+  TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
+  // CalibrationIlluminant1 = D65 (21). required alongside ColorMatrix1
+  // — without it strict readers (and older dt) ignore the matrix
+  TIFFSetField(tif, TIFFTAG_CALIBRATIONILLUMINANT1, (uint16_t)21);
 }
 
 // write IFD0 as the canonical Adobe-layout JPEG preview: small YCbCr
@@ -154,6 +191,8 @@ static int _write_jpeg_preview_ifd(TIFF *tif,
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_JPEG);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)p->height);
+  // 2 = sRGB. camera previews are sRGB; tag prevents reader guessing
+  TIFFSetField(tif, TIFFTAG_PREVIEWCOLORSPACE, (uint32_t)2);
 
   _set_dng_shared_metadata(tif, img);
 
@@ -202,6 +241,7 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
   TIFF *tif = TIFFOpen(filename, "wl");
 #endif
   if(!tif) return 1;
+  _register_extra_dng_fields(tif);
 
   // canonical Adobe layout when a preview is provided: IFD0 holds the
   // JPEG thumbnail + DNG identification metadata, the raw payload
@@ -344,6 +384,7 @@ int dt_imageio_dng_write_linear(const char *filename,
   TIFF *tif = TIFFOpen(filename, "wl");
 #endif
   if(!tif) return 1;
+  _register_extra_dng_fields(tif);
 
   // canonical layout when a preview is provided (see write_cfa_bayer)
   const gboolean canonical = (preview && preview->data && preview->len > 0
