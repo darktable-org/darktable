@@ -23,6 +23,7 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "develop/format.h"
@@ -1097,11 +1098,30 @@ static int _ai_load_raw(lua_State *L)
   return 2; // tensor, metadata
 }
 
-// darktable.ai.save_dng(tensor, metadata, path)
-// write a CFA tensor as a DNG file.
-// tensor must be [1,1,H,W]. metadata table must contain:
-// filters, white_level, wb_coeffs, color_matrix.
-// optional: imgid (copies EXIF from source), xtrans (X-Trans)
+// read EXIF blob from the source raw image. caller frees with g_free.
+// returns blob length; 0 means none (and *out_blob stays NULL)
+static int _read_exif_for_imgid(dt_imgid_t imgid,
+                                int width, int height,
+                                uint8_t **out_blob)
+{
+  *out_blob = NULL;
+  if(!dt_is_valid_imgid(imgid)) return 0;
+
+  char srcpath[PATH_MAX] = {0};
+  dt_image_full_path(imgid, srcpath, sizeof(srcpath), NULL);
+  if(!srcpath[0]) return 0;
+
+  return dt_exif_read_blob(out_blob, srcpath, imgid, FALSE,
+                           width, height, TRUE);
+}
+
+// darktable.ai.save_dng(tensor, imgid, path)
+// write a Bayer CFA tensor as a re-importable uint16 DNG.
+// tensor must be [1,1,H,W] in raw ADC units (same range as
+// dt_image_t::raw_white_point — i.e. what load_raw returns).
+// all DNG metadata (CFA pattern, BlackLevel, WhiteLevel,
+// AsShotNeutral, ColorMatrix1, Make/Model) is sourced from imgid.
+// EXIF from the source raw is copied automatically.
 static int _ai_save_dng(lua_State *L)
 {
   dt_lua_ai_tensor_t *t = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
@@ -1111,112 +1131,103 @@ static int _ai_save_dng(lua_State *L)
     return luaL_error(L,
       "save_dng requires [1,1,H,W] CFA tensor");
 
-  luaL_checktype(L, 2, LUA_TTABLE);
+  dt_lua_image_t imgid;
+  luaA_to(L, dt_lua_image_t, &imgid, 2);
   const char *path = luaL_checkstring(L, 3);
 
   const int H = (int)t->shape[2];
   const int W = (int)t->shape[3];
+  const size_t total = (size_t)W * H;
 
-  // read metadata from table
-  lua_getfield(L, 2, "filters");
-  const uint32_t filters = (uint32_t)luaL_checkinteger(L, -1);
-  lua_pop(L, 1);
-
-  lua_getfield(L, 2, "white_level");
-  const float whitelevel = (float)luaL_checknumber(L, -1);
-  lua_pop(L, 1);
-
-  // wb_coeffs
-  dt_aligned_pixel_t wb_coeffs = {1.0f, 1.0f, 1.0f, 1.0f};
-  lua_getfield(L, 2, "wb_coeffs");
-  if(lua_istable(L, -1))
+  // quantize float CFA → uint16 (load_raw returned raw ADC units, so
+  // values are already in [0, white_point]; just clamp + cast)
+  uint16_t *cfa = g_try_malloc(total * sizeof(uint16_t));
+  if(!cfa) return luaL_error(L, "failed to allocate CFA buffer");
+  for(size_t i = 0; i < total; i++)
   {
-    for(int i = 0; i < 3; i++)
-    {
-      lua_rawgeti(L, -1, i + 1);
-      wb_coeffs[i] = (float)lua_tonumber(L, -1);
-      lua_pop(L, 1);
-    }
+    const float v = t->data[i];
+    cfa[i] = v <= 0.0f ? 0
+           : v >= 65535.0f ? 65535
+           : (uint16_t)(v + 0.5f);
   }
-  lua_pop(L, 1);
 
-  // color_matrix
-  float color_matrix[4][3];
-  memset(color_matrix, 0, sizeof(color_matrix));
-  lua_getfield(L, 2, "color_matrix");
-  if(lua_istable(L, -1))
-  {
-    for(int r = 0; r < 4; r++)
-    {
-      lua_rawgeti(L, -1, r + 1);
-      if(lua_istable(L, -1))
-      {
-        for(int c = 0; c < 3; c++)
-        {
-          lua_rawgeti(L, -1, c + 1);
-          color_matrix[r][c] = (float)lua_tonumber(L, -1);
-          lua_pop(L, 1);
-        }
-      }
-      lua_pop(L, 1);
-    }
-  }
-  lua_pop(L, 1);
-
-  // xtrans
-  uint8_t xtrans[6][6];
-  memset(xtrans, 0, sizeof(xtrans));
-  lua_getfield(L, 2, "xtrans");
-  if(lua_istable(L, -1))
-  {
-    for(int r = 0; r < 6; r++)
-    {
-      lua_rawgeti(L, -1, r + 1);
-      if(lua_istable(L, -1))
-      {
-        for(int c = 0; c < 6; c++)
-        {
-          lua_rawgeti(L, -1, c + 1);
-          xtrans[r][c] = (uint8_t)lua_tointeger(L, -1);
-          lua_pop(L, 1);
-        }
-      }
-      lua_pop(L, 1);
-    }
-  }
-  lua_pop(L, 1);
-
-  // optional: copy EXIF from source image if imgid is in metadata
   uint8_t *exif_blob = NULL;
-  int exif_len = 0;
-  lua_getfield(L, 2, "imgid");
-  if(lua_isinteger(L, -1))
-  {
-    const dt_imgid_t src_imgid = lua_tointeger(L, -1);
-    if(dt_is_valid_imgid(src_imgid))
-    {
-      const dt_image_t *img = dt_image_cache_get(src_imgid, 'r');
-      if(img)
-      {
-        char srcpath[PATH_MAX] = {0};
-        dt_image_full_path(src_imgid, srcpath, sizeof(srcpath),
-                           NULL);
-        dt_image_cache_read_release(img);
-        if(srcpath[0])
-          exif_len = dt_exif_read_blob(&exif_blob, srcpath,
-                                       src_imgid, FALSE, W, H,
-                                       TRUE);
-      }
-    }
-  }
-  lua_pop(L, 1);
+  const int exif_len = _read_exif_for_imgid(imgid, W, H, &exif_blob);
 
-  dt_imageio_write_dng(path, t->data, W, H,
-                       exif_blob, exif_len,
-                       filters, xtrans, whitelevel,
-                       wb_coeffs, color_matrix);
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(!img)
+  {
+    g_free(cfa);
+    g_free(exif_blob);
+    return luaL_error(L, "cannot access image %d", imgid);
+  }
+
+  const int rc = dt_imageio_dng_write_cfa_bayer(path, cfa, W, H,
+                                                img, exif_blob, exif_len,
+                                                NULL /* preview */);
+  dt_image_cache_read_release(img);
+  g_free(cfa);
   g_free(exif_blob);
 
+  if(rc) return luaL_error(L, "failed to write DNG '%s'", path);
+  return 0;
+}
+
+// darktable.ai.save_dng_linear(tensor, imgid, path)
+// write a demosaicked 3-channel tensor as a re-importable LinearRaw
+// DNG. tensor must be [1,3,H,W] in float-normalized camRGB
+// (1.0 = source sensor white point after black subtract). black /
+// white levels and color metadata are sourced from imgid.
+static int _ai_save_dng_linear(lua_State *L)
+{
+  dt_lua_ai_tensor_t *t = luaL_checkudata(L, 1, "dt_lua_ai_tensor_t");
+  if(!t || !t->data)
+    return luaL_error(L, "tensor has been freed");
+  if(t->ndim != 4 || t->shape[0] != 1 || t->shape[1] != 3)
+    return luaL_error(L,
+      "save_dng_linear requires [1,3,H,W] RGB tensor");
+
+  dt_lua_image_t imgid;
+  luaA_to(L, dt_lua_image_t, &imgid, 2);
+  const char *path = luaL_checkstring(L, 3);
+
+  const int H = (int)t->shape[2];
+  const int W = (int)t->shape[3];
+  const size_t plane = (size_t)W * H;
+
+  // NCHW float planar → interleaved float[3]; the DNG writer takes
+  // RGB×width×height in that order
+  float *rgb = g_try_malloc(plane * 3 * sizeof(float));
+  if(!rgb) return luaL_error(L, "failed to allocate RGB buffer");
+  const float *r = t->data;
+  const float *g = t->data + plane;
+  const float *b = t->data + 2 * plane;
+  for(size_t i = 0; i < plane; i++)
+  {
+    rgb[3 * i + 0] = r[i];
+    rgb[3 * i + 1] = g[i];
+    rgb[3 * i + 2] = b[i];
+  }
+
+  uint8_t *exif_blob = NULL;
+  const int exif_len = _read_exif_for_imgid(imgid, W, H, &exif_blob);
+
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  if(!img)
+  {
+    g_free(rgb);
+    g_free(exif_blob);
+    return luaL_error(L, "cannot access image %d", imgid);
+  }
+
+  const int rc = dt_imageio_dng_write_linear(path, rgb, W, H,
+                                             img, exif_blob, exif_len,
+                                             NULL /* preview */);
+  dt_image_cache_read_release(img);
+  g_free(rgb);
+  g_free(exif_blob);
+
+  if(rc) return luaL_error(L, "failed to write linear DNG '%s'", path);
   return 0;
 }
 
@@ -1500,6 +1511,10 @@ int dt_lua_init_ai(lua_State *L)
   lua_pushcfunction(L, _ai_save_dng);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "save_dng");
+
+  lua_pushcfunction(L, _ai_save_dng_linear);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "save_dng_linear");
 
   return 0;
 }
