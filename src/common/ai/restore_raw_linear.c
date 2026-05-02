@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/iop_order.h"
 #include "common/math.h"
 #include "common/matrices.h"
@@ -47,14 +48,13 @@
 // returns TRUE when a usable matrix is available
 static gboolean _daylight_wb(const dt_image_t *img, float wb_norm[3])
 {
-  const float D65[3] = { 0.9504f, 1.0f, 1.0889f };
   float resp[3];
   float mag = 0.0f;
   for(int c = 0; c < 3; c++)
   {
-    resp[c] = img->adobe_XYZ_to_CAM[c][0] * D65[0]
-            + img->adobe_XYZ_to_CAM[c][1] * D65[1]
-            + img->adobe_XYZ_to_CAM[c][2] * D65[2];
+    resp[c] = img->adobe_XYZ_to_CAM[c][0] * d65_white_xyz[0]
+            + img->adobe_XYZ_to_CAM[c][1] * d65_white_xyz[1]
+            + img->adobe_XYZ_to_CAM[c][2] * d65_white_xyz[2];
     mag += fabsf(img->adobe_XYZ_to_CAM[c][0])
          + fabsf(img->adobe_XYZ_to_CAM[c][1])
          + fabsf(img->adobe_XYZ_to_CAM[c][2]);
@@ -184,34 +184,10 @@ static void _resolve_linear_wb(const dt_restore_context_t *ctx,
   // DT_RESTORE_WB_NONE: leave at {1, 1, 1}
 }
 
-// D65 XYZ -> linear Rec.2020 (ITU-R BT.2020), row-major 3x3.
-// matches the lin_rec2020 color profile the RawNIND linear variant
-// was trained on
-static const float _xyz_to_rec2020[9] = {
-   1.7166511880f, -0.3556707838f, -0.2533662814f,
-  -0.6666843518f,  1.6164812366f,  0.0157685458f,
-   0.0176398574f, -0.0427706133f,  0.9421031212f,
-};
-
-static const float _rec2020_to_xyz[9] = {
-  0.6369580483f, 0.1446169036f, 0.1688809752f,
-  0.2627002120f, 0.6779980715f, 0.0593017165f,
-  0.0000000000f, 0.0280726930f, 1.0609850577f,
-};
-
-// D65 XYZ -> linear sRGB / Rec.709 (IEC 61966-2-1), row-major 3x3.
-// used when a variant declares input_colorspace: srgb_linear
-static const float _xyz_to_srgb[9] = {
-   3.2404542f, -1.5371385f, -0.4985314f,
-  -0.9692660f,  1.8760108f,  0.0415560f,
-   0.0556434f, -0.2040259f,  1.0572252f,
-};
-
-static const float _srgb_to_xyz[9] = {
-  0.4124564f, 0.3575761f, 0.1804375f,
-  0.2126729f, 0.7151522f, 0.0721750f,
-  0.0193339f, 0.1191920f, 0.9503041f,
-};
+// XYZ-D65 <-> linear sRGB / Rec.2020 matrices live in
+// colorspaces_inline_conversions.h. Rec.2020 is the lin_rec2020 color
+// profile the RawNIND linear variant was trained on; sRGB is the
+// alternate input space for the srgb_linear variant
 
 // build the per-image camRGB<->input-space matrices, where input-space
 // is chosen by ctx->input_colorspace:
@@ -253,9 +229,9 @@ static gboolean _build_cam_matrices(const dt_restore_context_t *ctx,
     return FALSE;
 
   const float *xyz_to_input = (cs == DT_RESTORE_CS_SRGB_LINEAR)
-    ? _xyz_to_srgb : _xyz_to_rec2020;
+    ? xyz_to_srgb_d65 : xyz_to_rec2020_d65;
   const float *input_to_xyz = (cs == DT_RESTORE_CS_SRGB_LINEAR)
-    ? _srgb_to_xyz : _rec2020_to_xyz;
+    ? srgb_to_xyz_d65 : rec2020_to_xyz_d65;
 
   mat3mul(cam_to_input, xyz_to_input, xyz_from_cam);
   mat3mul(input_to_cam, cam_from_xyz, input_to_xyz);

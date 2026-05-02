@@ -17,6 +17,7 @@
 */
 
 #include "imageio/imageio_dng.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/image.h"
@@ -160,11 +161,6 @@ static void _set_dng_shared_metadata(TIFF *tif, const dt_image_t *img)
   }
   else
   {
-    static const float xyz_to_srgb_d65[9] = {
-       3.240454f, -1.537138f, -0.498531f,
-      -0.969266f,  1.876010f,  0.041556f,
-       0.055643f, -0.204025f,  1.057225f,
-    };
     memcpy(color_matrix, xyz_to_srgb_d65, sizeof(color_matrix));
   }
   TIFFSetField(tif, TIFFTAG_COLORMATRIX1, 9, color_matrix);
