@@ -4,6 +4,8 @@
 ::
 
 @echo off
+chcp 65001 >nul
+
 where.exe /q sqlite3
 if %ERRORLEVEL% EQU 1 (
   echo Error: sqlite3.exe is not installed or is not in PATH
@@ -72,9 +74,15 @@ if %dryrun% EQU 0 (
 
 set ids=
 
+:: Write sqlite3 output to a temp UTF-8 file to preserve Cyrillic characters.
+:: Direct 'for /f ... in (\'sqlite3 ...\')' re-encodes output through the
+:: legacy OEM code page, corrupting non-ASCII paths even with chcp 65001.
+set TMPFILE=%TEMP%\dt_purge_tmp_%RANDOM%.txt
+sqlite3.exe -utf8 %DBFILE% %QUERY% > "%TMPFILE%"
+
 setlocal EnableDelayedExpansion
-for /f "tokens=1* delims=|" %%a in ('sqlite3.exe %DBFILE% %QUERY%') do (
-  if not exist %%b (
+for /f "usebackq tokens=1* delims=|" %%a in ("%TMPFILE%") do (
+  if not exist "%%b" (
     echo.  %%b with ID %%a
     if .!ids!==. (
       set ids=%%a
@@ -84,16 +92,18 @@ for /f "tokens=1* delims=|" %%a in ('sqlite3.exe %DBFILE% %QUERY%') do (
   )
 )
 
+del "%TMPFILE%" >nul 2>&1
+
 if %dryrun% EQU 0 (
   echo This is NOT dry run
   for %%a in (images,meta_data) do (
       echo Removing from %%a...
-      sqlite3 %DBFILE% "DELETE FROM %%a WHERE id IN (%ids%)"
+      sqlite3 %DBFILE% "DELETE FROM %%a WHERE id IN (!ids!)"
   )
 
   for %%a in (color_labels,history,masks_history,selected_images,tagged_images,history_hash,module_order) do (
       echo Removing from %%a...
-      sqlite3 %DBFILE% "DELETE FROM %%a WHERE imgid in (%ids%)"
+      sqlite3 %DBFILE% "DELETE FROM %%a WHERE imgid in (!ids!)"
   )
 
   rem delete now-empty film rolls
@@ -109,6 +119,7 @@ if %dryrun% EQU 0 (
   echo %commandline% --purge
 )
 
+endlocal
 exit 0
 
 :HELP
