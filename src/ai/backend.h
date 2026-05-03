@@ -100,7 +100,7 @@ typedef struct dt_ai_device_t
 /** Enumerate selectable GPU devices for a provider. Returns NULL or an
  *  empty list for AUTO/CPU/OpenVINO/CoreML (no per-device choice).
  *  Caller frees with `g_list_free_full(list, dt_ai_device_free)`. */
-GList *dt_ai_enum_devices_for_provider(dt_ai_provider_t provider);
+GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider);
 
 /** Free a single dt_ai_device_t (the struct + its name). */
 void dt_ai_device_free(gpointer device);
@@ -109,13 +109,13 @@ void dt_ai_device_free(gpointer device);
  *  or NULL for providers that don't support device selection
  *  (AUTO/CPU/OpenVINO/CoreML). The returned string is statically
  *  allocated and must not be freed. */
-const char *dt_ai_device_conf_key_for_provider(dt_ai_provider_t provider);
+const char *dt_ai_device_conf_key_for_provider(const dt_ai_provider_t provider);
 
 /** TRUE if the device_id conf for the given provider differs from the
  *  value used when ORT was loaded — i.e. a restart is needed before
  *  GPU selection takes effect. FALSE for providers without device
  *  selection or before ORT is loaded. */
-gboolean dt_ai_device_id_changed_since_load(dt_ai_provider_t provider);
+gboolean dt_ai_device_id_changed_since_load(const dt_ai_provider_t provider);
 
 /** Test if a provider is available at runtime (checks deps, not just compile-time).
  *  @return 1 if available, 0 if not. */

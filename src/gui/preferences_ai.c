@@ -299,17 +299,18 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
                            "plugins/ai/enabled");
 }
 
-static int _provider_to_combo_idx(dt_ai_provider_t provider, guint supported);
+static int _provider_to_combo_idx(const dt_ai_provider_t provider,
+                                  const guint supported);
 static void _on_provider_changed(GtkWidget *widget, gpointer user_data);
 static void _update_provider_status(dt_prefs_ai_data_t *data,
-                                    dt_ai_provider_t provider);
+                                    const dt_ai_provider_t provider);
 static void _on_gpu_changed(GtkWidget *widget, gpointer user_data);
 static void _refresh_gpu_combo(dt_prefs_ai_data_t *data);
 
 // a provider is visible in the combo iff it is compiled in AND the
 // currently-loaded ORT library advertises it (or it's a builtin like
 // AUTO / CPU)
-static gboolean _provider_visible(int i, guint supported)
+static gboolean _provider_visible(const int i, const guint supported)
 {
   return dt_ai_providers[i].available
          && (supported & (1u << dt_ai_providers[i].value));
@@ -494,7 +495,7 @@ static void _on_gpu_changed(GtkWidget *widget, gpointer user_data)
 }
 
 // map combo box index to provider table index (skipping unavailable providers)
-static int _combo_idx_to_provider(int combo_idx, guint supported)
+static int _combo_idx_to_provider(const int combo_idx, const guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
@@ -507,7 +508,8 @@ static int _combo_idx_to_provider(int combo_idx, guint supported)
 }
 
 // map provider enum value to combo box index
-static int _provider_to_combo_idx(dt_ai_provider_t provider, guint supported)
+static int _provider_to_combo_idx(const dt_ai_provider_t provider,
+                                  const guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
@@ -520,7 +522,8 @@ static int _provider_to_combo_idx(dt_ai_provider_t provider, guint supported)
   return 0;  // fallback to first visible (AUTO)
 }
 
-static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t provider)
+static void _update_provider_status(dt_prefs_ai_data_t *data,
+                                    const dt_ai_provider_t provider)
 {
   if(!data->provider_status) return;
 

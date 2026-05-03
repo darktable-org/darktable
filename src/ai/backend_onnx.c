@@ -239,7 +239,7 @@ void dt_ai_device_free(gpointer device)
   g_free(d);
 }
 
-const char *dt_ai_device_conf_key_for_provider(dt_ai_provider_t provider)
+const char *dt_ai_device_conf_key_for_provider(const dt_ai_provider_t provider)
 {
   switch(provider)
   {
@@ -250,7 +250,7 @@ const char *dt_ai_device_conf_key_for_provider(dt_ai_provider_t provider)
   }
 }
 
-gboolean dt_ai_device_id_changed_since_load(dt_ai_provider_t provider)
+gboolean dt_ai_device_id_changed_since_load(const dt_ai_provider_t provider)
 {
   const char *key = dt_ai_device_conf_key_for_provider(provider);
   if(!key) return FALSE;
@@ -425,7 +425,7 @@ static GList *_enum_directml_devices(void)
 #endif
 }
 
-GList *dt_ai_enum_devices_for_provider(dt_ai_provider_t provider)
+GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider)
 {
   switch(provider)
   {
@@ -1128,7 +1128,8 @@ static float _half_to_float(uint16_t h)
 
 // Look up the device name for `device_id` from the provider's enumeration.
 // Returns a newly-allocated string (caller frees) or NULL if no match.
-static gchar *_lookup_device_name(dt_ai_provider_t provider, int device_id)
+static gchar *_lookup_device_name(const dt_ai_provider_t provider,
+                                  const int device_id)
 {
   GList *devices = dt_ai_enum_devices_for_provider(provider);
   gchar *name = NULL;
@@ -1151,8 +1152,8 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
                               const char *symbol_name,
                               const char *provider_name,
                               const char *device_type,
-                              uint32_t flags,
-                              dt_ai_provider_t provider)
+                              const uint32_t flags,
+                              const dt_ai_provider_t provider)
 {
   OrtStatus *status = NULL;
   gboolean ok = FALSE;
