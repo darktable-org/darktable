@@ -80,18 +80,9 @@ DT_MODULE(1)
 
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
-/* Last-known rowid of the active darkroom image in memory.collected_images.
-   Recorded when an image is loaded and refreshed on every collection change
-   while the image is still in the collection. When the active image gets
-   filtered out (e.g. by editing its rating, color label, tags, or by changing
-   the collection filter itself), the value frozen here is the rowid the
-   image last occupied - which is now held by the next image in the rebuilt
-   collection, allowing _dev_jump_image to find it. */
-static int _active_image_rowid = 0;
-
 // Look up imgid's current rowid in memory.collected_images and store it in
-// _active_image_rowid. If imgid isn't in the collection, leave the previous
-// value untouched - it represents the last valid position of the image.
+// darktable.darkroom_active_imgid_rowid. If imgid isn't in the collection,
+// leave the previous value untouched - it represents the last valid position.
 static void _refresh_active_image_rowid(const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid))
@@ -100,7 +91,7 @@ static void _refresh_active_image_rowid(const dt_imgid_t imgid)
   gchar *q = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    _active_image_rowid = sqlite3_column_int(stmt, 0);
+    darktable.darkroom_active_imgid_rowid = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   g_free(q);
 }
@@ -1144,7 +1135,7 @@ static void _dev_change_image(dt_develop_t *dev,
   // remember the rowid of the new image so jump-image can still locate the
   // next/previous image if the current one stops matching the collection
   // filter before the user navigates away.
-  _active_image_rowid = 0;
+  darktable.darkroom_active_imgid_rowid = 0;
   _refresh_active_image_rowid(imgid);
 
   // possible enable autosaving due to conf setting but wait for some
@@ -1482,8 +1473,8 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   int target_rowid;
   if(current_rowid > 0)
     target_rowid = current_rowid + diff;
-  else if(_active_image_rowid > 0)
-    target_rowid = _active_image_rowid + (diff > 0 ? diff - 1 : diff);
+  else if(darktable.darkroom_active_imgid_rowid > 0)
+    target_rowid = darktable.darkroom_active_imgid_rowid + (diff > 0 ? diff - 1 : diff);
   else
     target_rowid = (diff > 0) ? 1 : -1;
 
@@ -1585,7 +1576,7 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
   dt_control_queue_redraw_center();
 }
 
-// Keep _active_image_rowid in sync with collection changes. While the active
+// Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
 // image still matches the collection filter, refresh the stored rowid to its
 // new position. Once the active image stops matching, leave the value frozen
 // at its last valid rowid: the rebuilt collection now has the next image at
@@ -3499,7 +3490,7 @@ void enter(dt_view_t *self)
   // seed the rowid tracker with the initial image's position so that, if the
   // active image stops matching the collection filter before the user
   // navigates away, jump-image can still find the next/previous image.
-  _active_image_rowid = 0;
+  darktable.darkroom_active_imgid_rowid = 0;
   _refresh_active_image_rowid(dev->image_storage.id);
 
   /*
