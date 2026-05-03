@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "install_docs": {
+    "nvidia": "https://developer.nvidia.com/cudnn-downloads",
+    "amd": "https://rocm.docs.amd.com/projects/install-on-linux/en/latest/"
+  },
+  "packages": [
+    {
+      "vendor": "nvidia",
+      "platform": "linux",
+      "arch": "x86_64",
+      "cuda_min": "12.0",
+      "cuda_max": "12.99",
+      "ort_version": "1.25.1",
+      "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-linux-x64-gpu-1.25.1.tgz",
+      "sha256": "ddfc4ca4ccc9cd5345d3820edab710ee84e749569d052eed92c42693d3b448a8",
+      "format": "tgz",
+      "lib_pattern": "libonnxruntime",
+      "install_subdir": "onnxruntime-cuda",
+      "size_mb": 250,
+      "requirements": "CUDA 12.x, cuDNN 9.x"
+    },
+    {
+      "vendor": "nvidia",
+      "platform": "linux",
+      "arch": "x86_64",
+      "cuda_min": "13.0",
+      "cuda_max": "13.99",
+      "ort_version": "1.25.1",
+      "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-linux-x64-gpu_cuda13-1.25.1.tgz",
+      "sha256": "ebc14e1290db2a30a7bb415bd1c3e1390a7816bb4db87677dc36d071ed22833c",
+      "format": "tgz",
+      "lib_pattern": "libonnxruntime",
+      "install_subdir": "onnxruntime-cuda",
+      "size_mb": 200,
+      "requirements": "CUDA 13.x, cuDNN 9.x"
+    },
+    {
+      "vendor": "nvidia",
+      "platform": "windows",
+      "arch": "x86_64",
+      "cuda_min": "12.0",
+      "cuda_max": "12.99",
+      "ort_version": "1.25.1",
+      "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-win-x64-gpu-1.25.1.zip",
+      "sha256": "e72bc4895f84400368382d7b7287c018eabbb2be384e67446f3ab64af7fe5552",
+      "format": "zip",
+      "lib_pattern": "onnxruntime",
+      "install_subdir": "onnxruntime-cuda",
+      "size_mb": 300,
+      "requirements": "CUDA 12.x, cuDNN 9.x"
+    },
+    {
+      "vendor": "nvidia",
+      "platform": "windows",
+      "arch": "x86_64",
+      "cuda_min": "13.0",
+      "cuda_max": "13.99",
+      "ort_version": "1.25.1",
+      "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.25.1/onnxruntime-win-x64-gpu_cuda13-1.25.1.zip",
+      "sha256": "d54b465e5f9300d8928c43772751ac95c123ebd90069a0a4b8ce02e503335469",
+      "format": "zip",
+      "lib_pattern": "onnxruntime",
+      "install_subdir": "onnxruntime-cuda",
+      "size_mb": 300,
+      "requirements": "CUDA 13.x, cuDNN 9.x"
+    },
+    {
+      "vendor": "amd",
+      "platform": "linux",
+      "arch": "x86_64",
+      "rocm_min": "7.0",
+      "rocm_max": "7.0",
+      "ort_version": "1.22.1",
+      "url": "https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/onnxruntime_rocm-1.22.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "0f9c1555c31cc1bef84504807a0747486017ec4bd9b9f7df0b15e659140a7f7e",
+      "format": "whl",
+      "lib_pattern": "libonnxruntime",
+      "install_subdir": "onnxruntime-migraphx",
+      "size_mb": 200,
+      "requirements": "ROCm 7.0, MIGraphX",
+      "required_libs": [
+        "libmigraphx_c.so.3",
+        "librocm_smi64.so.7"
+      ]
+    },
+    {
+      "vendor": "amd",
+      "platform": "linux",
+      "arch": "x86_64",
+      "rocm_min": "7.1",
+      "rocm_max": "7.1",
+      "ort_version": "1.23.1",
+      "url": "https://repo.radeon.com/rocm/manylinux/rocm-rel-7.1.1/onnxruntime_migraphx-1.23.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "0bb62f7c2b326b2435396ef90a5f3ad030fe779aa9d0da7013d8b514c27de08f",
+      "format": "whl",
+      "lib_pattern": "libonnxruntime",
+      "install_subdir": "onnxruntime-migraphx",
+      "size_mb": 100,
+      "requirements": "ROCm 7.1, MIGraphX"
+    },
+    {
+      "vendor": "amd",
+      "platform": "linux",
+      "arch": "x86_64",
+      "rocm_min": "7.2",
+      "rocm_max": "7.2",
+      "ort_version": "1.23.2",
+      "url": "https://repo.radeon.com/rocm/manylinux/rocm-rel-7.2.2/onnxruntime_migraphx-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "76f22bba96991d6653c8169999817203cde72e6703b8211f00dc8dd80ff8e43b",
+      "format": "whl",
+      "lib_pattern": "libonnxruntime",
+      "install_subdir": "onnxruntime-migraphx",
+      "size_mb": 50,
+      "requirements": "ROCm 7.2, MIGraphX"
+    },
+    {
+      "vendor": "intel",
+      "platform": "linux",
+      "arch": "x86_64",
+      "ort_version": "1.24.1",
+      "url": "https://files.pythonhosted.org/packages/50/cf/17ba72de2df0fcba349937d2788f154397bbc2d1a2d67772a97e26f6bc5f/onnxruntime_openvino-1.24.1-cp312-cp312-manylinux_2_28_x86_64.whl",
+      "sha256": "d617fac2f59a6ab5ea59a788c3e1592240a129642519aaeaa774761dfe35150e",
+      "format": "whl",
+      "lib_pattern": "libonnxruntime",
+      "lib_extra_patterns": [
+        "libopenvino",
+        "libtbb"
+      ],
+      "install_subdir": "onnxruntime-openvino",
+      "size_mb": 80,
+      "requirements": "Intel GPU driver (OpenCL)"
+    },
+    {
+      "vendor": "intel",
+      "platform": "windows",
+      "arch": "x86_64",
+      "ort_version": "1.24.1",
+      "url": "https://files.pythonhosted.org/packages/59/37/d301f2c68b19a9485ed5db3047e0fb52478f3e73eb08c7d2a7c61be7cc1c/onnxruntime_openvino-1.24.1-cp312-cp312-win_amd64.whl",
+      "sha256": "f186335a9c9b255633275290da7521d3d4d14c7773fee3127bfa040234d3fa5a",
+      "format": "whl",
+      "lib_pattern": "onnxruntime",
+      "install_subdir": "onnxruntime-openvino",
+      "size_mb": 20,
+      "requirements": "Intel GPU driver",
+      "runtime_url": "https://files.pythonhosted.org/packages/73/cb/07035dcbf60347c0706c4f8d3ffb003c34fe8205e4041699a6655cc858c3/openvino-2026.1.0-21367-cp312-cp312-win_amd64.whl",
+      "runtime_sha256": "21fbc8f9aa765d9ded024311f4e48e38118643cda0f0139dcfa5422c0c457eb6",
+      "runtime_lib_pattern": "openvino",
+      "runtime_extra_patterns": [
+        "tbb"
+      ],
+      "runtime_size_mb": 70
+    }
+  ]
+}
