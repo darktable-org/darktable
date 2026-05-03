@@ -233,6 +233,15 @@ static inline float fmax3(const float4 o)
   return fmax(fmax(o.x, o.y), o.z);
 }
 
+static inline int clip_mirror(int i, const int max)
+{
+  if(i < 0)
+    i = -i;
+  else if(i > max)
+    i = max - (i - max);
+  return i;
+}
+
 /* Some inline functions making life easier when reading photosites
    or pixels from cl_mem images.
   The variants with a leading A use the faster samplerA interpolater, only
@@ -252,6 +261,7 @@ static inline float4 readpixel(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, sampleri, (int2)(col, row));
 }
+
 static inline float4 Areadpixel(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, samplerA, (int2)(col, row));
