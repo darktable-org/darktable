@@ -80,6 +80,22 @@ DT_MODULE(1)
 
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
+// Look up imgid's current rowid in memory.collected_images and store it in
+// darktable.darkroom_active_imgid_rowid. If imgid isn't in the collection,
+// leave the previous value untouched - it represents the last valid position.
+static void _refresh_active_image_rowid(const dt_imgid_t imgid)
+{
+  if(!dt_is_valid_imgid(imgid))
+    return;
+  sqlite3_stmt *stmt;
+  gchar *q = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    darktable.darkroom_active_imgid_rowid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  g_free(q);
+}
+
 /* signal handler for filmstrip image switching */
 
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid);
@@ -1116,6 +1132,12 @@ static void _dev_change_image(dt_develop_t *dev,
   dev->requested_id = imgid;
   dt_dev_clear_chroma_troubles(dev);
 
+  // remember the rowid of the new image so jump-image can still locate the
+  // next/previous image if the current one stops matching the collection
+  // filter before the user navigates away.
+  darktable.darkroom_active_imgid_rowid = 0;
+  _refresh_active_image_rowid(imgid);
+
   // possible enable autosaving due to conf setting but wait for some
   // seconds for first save
   darktable.develop->autosaving = (double)dt_conf_get_int("autosave_interval") > 1.0;
@@ -1427,71 +1449,78 @@ static void _dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
 
-  // we new offset and imgid after the jump
+  // Locate the current image in the (possibly filtered) collection. If the
+  // user just rejected the current image while a filter excludes rejects, it
+  // is no longer in memory.collected_images and current_rowid will be 0 - in
+  // that case we use the rowid stored at load time: the same rowid in the new
+  // collection now points to whatever image came right after the removed one.
+  int current_rowid = 0;
+  sqlite3_stmt *stmt_pos;
+  gchar *query_pos =
+    g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query_pos, -1, &stmt_pos, NULL);
+  if(sqlite3_step(stmt_pos) == SQLITE_ROW)
+    current_rowid = sqlite3_column_int(stmt_pos, 0);
+  sqlite3_finalize(stmt_pos);
+  g_free(query_pos);
+
+  // target rowid in memory.collected_images. When the current image is still
+  // there, simply step from its rowid. When it's been filtered out, the slot
+  // it used to occupy is now held by the next image, so for diff > 0 we step
+  // (diff - 1) forward from that slot, and for diff < 0 we step diff back.
+  int target_rowid;
+  if(current_rowid > 0)
+    target_rowid = current_rowid + diff;
+  else if(darktable.darkroom_active_imgid_rowid > 0)
+    target_rowid = darktable.darkroom_active_imgid_rowid + (diff > 0 ? diff - 1 : diff);
+  else
+    target_rowid = (diff > 0) ? 1 : -1;
+
   sqlite3_stmt *stmt;
-  // clang-format off
-  gchar *query =
-    g_strdup_printf("SELECT rowid, imgid "
-                    "FROM memory.collected_images "
-                    "WHERE rowid=(SELECT rowid "
-                    "               FROM memory.collected_images"
-                    "               WHERE imgid=%d)+%d",
-                    imgid, diff);
-  // clang-format on
+  gchar *query = g_strdup_printf("SELECT rowid, imgid FROM memory.collected_images WHERE rowid=%d",
+                                 target_rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else if(diff > 0)
-  {
-    // past the last image in the collection - wrap around to the first
-    sqlite3_stmt *stmt2;
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1",
-      -1,
-      &stmt2,
-      NULL);
-    if(sqlite3_step(stmt2) == SQLITE_ROW)
-    {
-      new_offset = sqlite3_column_int(stmt2, 0);
-      new_id = sqlite3_column_int(stmt2, 1);
-      dt_toast_log(_("past end of collection, looped to first image"));
-    }
-    sqlite3_finalize(stmt2);
-  }
-  else
-  {
-    // past the first image in the collection - wrap around to the last
-    sqlite3_stmt *stmt2;
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
-      -1,
-      &stmt2,
-      NULL);
-    if(sqlite3_step(stmt2) == SQLITE_ROW)
-    {
-      new_offset = sqlite3_column_int(stmt2, 0);
-      new_id = sqlite3_column_int(stmt2, 1);
-      dt_toast_log(_("past beginning of collection, looped to last image"));
-    }
-    sqlite3_finalize(stmt2);
-  }
-  g_free(query);
   sqlite3_finalize(stmt);
+  g_free(query);
+
+  if(!dt_is_valid_imgid(new_id))
+  {
+    // past the start/end of the collection - wrap around
+    sqlite3_stmt *stmt2;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      diff > 0 ? "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid ASC LIMIT 1"
+               : "SELECT rowid, imgid FROM memory.collected_images ORDER BY rowid DESC LIMIT 1",
+      -1,
+      &stmt2,
+      NULL);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      new_offset = sqlite3_column_int(stmt2, 0);
+      new_id = sqlite3_column_int(stmt2, 1);
+      if(diff > 0)
+        dt_toast_log(_("past end of collection, looped to first image"));
+      else
+        dt_toast_log(_("past beginning of collection, looped to last image"));
+    }
+    sqlite3_finalize(stmt2);
+  }
 
   if(!dt_is_valid_imgid(new_id) || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   _dev_change_image(dev, new_id);
   if(dt_conf_get_bool("filmstrip/ui/auto_scroll"))
-    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+    dt_thumbtable_set_offset(table, new_offset, TRUE);
   else
-    dt_thumbtable_ensure_imgid_visibility(dt_ui_thumbtable(darktable.gui->ui), new_id);
+    dt_thumbtable_ensure_imgid_visibility(table, new_id);
 
   // if it's a change by key_press, we set mouse_over to the active image
   if(by_key) dt_control_set_mouse_over_id(new_id);
@@ -1545,6 +1574,23 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance,
                                                      gpointer data)
 {
   dt_control_queue_redraw_center();
+}
+
+// Keep darktable.darkroom_active_imgid_rowid in sync with collection changes. While the active
+// image still matches the collection filter, refresh the stored rowid to its
+// new position. Once the active image stops matching, leave the value frozen
+// at its last valid rowid: the rebuilt collection now has the next image at
+// that slot, which is what _dev_jump_image needs to navigate forward.
+static void _darkroom_collection_changed_callback(gpointer instance,
+                                                  dt_collection_change_t query_change,
+                                                  dt_collection_properties_t changed_property,
+                                                  gpointer imgs,
+                                                  const dt_imgid_t next,
+                                                  gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_develop_t *dev = self->data;
+  _refresh_active_image_rowid(dev->requested_id);
 }
 
 static void _darkroom_ui_preview2_pipe_finish_signal_callback(gpointer instance,
@@ -3406,6 +3452,7 @@ void enter(dt_view_t *self)
                            _darkroom_ui_preview2_pipe_finish_signal_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TROUBLE_MESSAGE,
                            _display_module_trouble_message_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _darkroom_collection_changed_callback);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
@@ -3440,6 +3487,11 @@ void enter(dt_view_t *self)
 
   dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
+  // seed the rowid tracker with the initial image's position so that, if the
+  // active image stops matching the collection filter before the user
+  // navigates away, jump-image can still find the next/previous image.
+  darktable.darkroom_active_imgid_rowid = 0;
+  _refresh_active_image_rowid(dev->image_storage.id);
 
   /*
    * add IOP modules to plugin list

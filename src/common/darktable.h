@@ -476,6 +476,7 @@ typedef struct darktable_t
   struct dt_backthumb_t backthumbs;
   struct dt_gimp_t gimp;
   struct dt_splash_t splash;
+  int darkroom_active_imgid_rowid;
 #ifdef HAVE_AI
   struct dt_ai_registry_t *ai_registry;
   dt_ai_seg_t ai_seg;
