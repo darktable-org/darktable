@@ -66,6 +66,57 @@ const char *dt_ai_provider_to_string(dt_ai_provider_t provider);
 /** Parse provider from config string (with legacy alias support) */
 dt_ai_provider_t dt_ai_provider_from_string(const char *str);
 
+/** Parse the comma-separated EP list produced by
+ *  dt_ai_ort_probe_library_full() into a bitmask of (1u << dt_ai_provider_t)
+ *  values. AUTO and CPU are always set. Unknown tokens are ignored. */
+guint dt_ai_providers_from_eps(const char *eps);
+
+/** Bitmask of providers that ship with darktable's bundled ORT on the
+ *  current platform. Includes AUTO and CPU always, plus CoreML on macOS
+ *  and DirectML on Windows. Use as a safe default when the loaded ORT
+ *  cannot be probed. */
+guint dt_ai_providers_bundled(void);
+
+/** Snapshot the conf state (ORT path, provider, device ids) for the
+ *  *_changed_since_load() helpers.  Call once at darktable startup so
+ *  the snapshot is independent of when ORT is lazily initialized. */
+void dt_ai_snapshot_conf_state(void);
+
+/** TRUE if plugins/ai/ort_library_path differs from the value seen
+ *  when ORT was loaded — the in-process ORT is stale, restart needed. */
+gboolean dt_ai_ort_path_changed_since_load(void);
+
+/** TRUE if the configured provider differs from the value seen when
+ *  ORT was loaded — long-lived sessions are stale, restart needed. */
+gboolean dt_ai_provider_changed_since_load(void);
+
+/** A selectable GPU device for a multi-GPU-capable execution provider. */
+typedef struct dt_ai_device_t
+{
+  int    id;     /**< device_id passed to the EP (e.g. CUDA ordinal, DXGI adapter index) */
+  gchar *name;   /**< human-readable label, e.g. "NVIDIA GeForce RTX 5060" */
+} dt_ai_device_t;
+
+/** Enumerate selectable GPU devices for a provider. Returns NULL or an
+ *  empty list for AUTO/CPU/OpenVINO/CoreML (no per-device choice).
+ *  Caller frees with `g_list_free_full(list, dt_ai_device_free)`. */
+GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider);
+
+/** Free a single dt_ai_device_t (the struct + its name). */
+void dt_ai_device_free(gpointer device);
+
+/** Return the conf key (`"plugins/ai/<ep>_device_id"`) for a provider,
+ *  or NULL for providers that don't support device selection
+ *  (AUTO/CPU/OpenVINO/CoreML). The returned string is statically
+ *  allocated and must not be freed. */
+const char *dt_ai_device_conf_key_for_provider(const dt_ai_provider_t provider);
+
+/** TRUE if the device_id conf for the given provider differs from the
+ *  value used when ORT was loaded — i.e. a restart is needed before
+ *  GPU selection takes effect. FALSE for providers without device
+ *  selection or before ORT is loaded. */
+gboolean dt_ai_device_id_changed_since_load(const dt_ai_provider_t provider);
+
 /** Test if a provider is available at runtime (checks deps, not just compile-time).
  *  @return 1 if available, 0 if not. */
 int dt_ai_probe_provider(dt_ai_provider_t provider);

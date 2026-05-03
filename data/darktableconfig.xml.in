@@ -417,6 +417,27 @@
     <shortdescription>AI models GitHub repository</shortdescription>
     <longdescription>GitHub repository for downloading AI models (format: owner/repo)</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/cuda_device_id</name>
+    <type min="0" max="15">int</type>
+    <default>0</default>
+    <shortdescription>CUDA GPU device index</shortdescription>
+    <longdescription>which NVIDIA GPU to use when CUDA is the active execution provider. matches the index reported by nvidia-smi and respects CUDA_VISIBLE_DEVICES. defaults to 0 (first GPU). takes effect on next restart. env var DT_CUDA_DEVICE_ID overrides this if set.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/migraphx_device_id</name>
+    <type min="0" max="15">int</type>
+    <default>0</default>
+    <shortdescription>MIGraphX/ROCm GPU device index</shortdescription>
+    <longdescription>which AMD GPU to use when MIGraphX or ROCm is the active execution provider. matches the GPU agent order in rocminfo. defaults to 0 (first GPU). takes effect on next restart. env var DT_MIGRAPHX_DEVICE_ID overrides this if set.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/ai/dml_device_id</name>
+    <type min="0" max="15">int</type>
+    <default>0</default>
+    <shortdescription>DirectML GPU device index</shortdescription>
+    <longdescription>which DirectX 12 adapter to use when DirectML is the active execution provider. matches IDXGIFactory1::EnumAdapters1 order. defaults to 0 (first adapter). takes effect on next restart. env var DT_DML_DEVICE_ID overrides this if set.</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl</name>
     <type>bool</type>

@@ -85,6 +85,7 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *enable_toggle;
   GtkWidget *enable_indicator;
   GtkWidget *provider_combo;
+  GtkWidget *gpu_combo;
   GtkWidget *provider_indicator;
   GtkWidget *provider_status;
   GtkWidget *model_list;
@@ -104,6 +105,7 @@ typedef struct dt_prefs_ai_data_t
   GtkWidget *ort_path_indicator;
   GtkWidget *settings_grid;
   int controls_start_row;   // first row to grey out when AI disabled
+  guint supported_providers;
 } dt_prefs_ai_data_t;
 
 #ifdef HAVE_AI_DOWNLOAD
@@ -297,13 +299,208 @@ static void _on_enable_toggled(GtkWidget *widget, gpointer user_data)
                            "plugins/ai/enabled");
 }
 
+static int _provider_to_combo_idx(const dt_ai_provider_t provider,
+                                  const guint supported);
+static void _on_provider_changed(GtkWidget *widget, gpointer user_data);
+static void _update_provider_status(dt_prefs_ai_data_t *data,
+                                    const dt_ai_provider_t provider);
+static void _on_gpu_changed(GtkWidget *widget, gpointer user_data);
+static void _refresh_gpu_combo(dt_prefs_ai_data_t *data);
+
+// a provider is visible in the combo iff it is compiled in AND the
+// currently-loaded ORT library advertises it (or it's a builtin like
+// AUTO / CPU)
+static gboolean _provider_visible(const int i, const guint supported)
+{
+  return dt_ai_providers[i].available
+         && (supported & (1u << dt_ai_providers[i].value));
+}
+
+// probe the ORT library at `path` (NULL/empty = use the bundled mask)
+// and return a bitmask of dt_ai_provider_t values it advertises;
+// falls back to the bundled mask when the probe fails, so the combo
+// only offers providers we can reasonably expect to work
+static guint _compute_supported_providers(const char *path)
+{
+  if(path && path[0])
+  {
+    char *eps = NULL;
+    if(dt_ai_ort_probe_library_full(path, NULL, &eps) && eps)
+    {
+      const guint mask = dt_ai_providers_from_eps(eps);
+      g_free(eps);
+      return mask;
+    }
+    g_free(eps);
+  }
+  return dt_ai_providers_bundled();
+}
+
+// rebuild the provider combo to reflect data->supported_providers;
+// intermediate states don't fire _on_provider_changed.
+// SIDE EFFECT: writes DT_AI_CONF_PROVIDER if the resolved selection
+// differs from the saved value (e.g. when an old GPU EP isn't in the
+// new library and we auto-fall-back to another GPU EP) so the on-disk
+// config stays consistent with what the user sees in the combo
+static void _refresh_provider_combo(dt_prefs_ai_data_t *data)
+{
+  if(!data->provider_combo) return;
+  g_signal_handlers_block_by_func(data->provider_combo,
+                                  _on_provider_changed, data);
+  gchar *cfg = dt_conf_get_string("plugins/ai/provider");
+  const dt_ai_provider_t prev = dt_ai_provider_from_string(cfg);
+  g_free(cfg);
+
+  dt_bauhaus_combobox_clear(data->provider_combo);
+  GString *tooltip =
+    g_string_new(_("select hardware acceleration for AI inference:"));
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+  {
+    if(!_provider_visible(i, data->supported_providers)) continue;
+    const char *label = dt_ai_providers[i].value == DT_AI_PROVIDER_AUTO
+                          ? _("auto") : dt_ai_providers[i].display_name;
+    dt_bauhaus_combobox_add(data->provider_combo, label);
+    g_string_append_printf(tooltip, "\n- %s", dt_ai_providers[i].display_name);
+  }
+  gtk_widget_set_tooltip_text(data->provider_combo, tooltip->str);
+  g_string_free(tooltip, TRUE);
+
+  // bauhaus sizes the combo to fit the longest entry at allocation
+  // time; after clear/repopulate the cached layout would keep the old
+  // width, so force GTK to re-request natural size
+  gtk_widget_queue_resize(data->provider_combo);
+
+  // resolve the new selection:
+  //   1. keep prev if it's still in supported_providers (covers AUTO/CPU
+  //      always, and the same GPU EP across same-vendor library swaps)
+  //   2. if prev was a GPU EP and isn't supported any more, pick the
+  //      first visible GPU EP — switching CUDA→ROCm libraries should
+  //      land on ROCm rather than dropping the user back to AUTO/CPU
+  //   3. otherwise fall back to AUTO
+  dt_ai_provider_t selected = DT_AI_PROVIDER_AUTO;
+  if(data->supported_providers & (1u << prev))
+  {
+    selected = prev;
+  }
+  else if(prev != DT_AI_PROVIDER_AUTO && prev != DT_AI_PROVIDER_CPU)
+  {
+    // previous was a specific GPU EP that's gone — find another GPU EP
+    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    {
+      if(!_provider_visible(i, data->supported_providers)) continue;
+      const dt_ai_provider_t v = dt_ai_providers[i].value;
+      if(v == DT_AI_PROVIDER_AUTO || v == DT_AI_PROVIDER_CPU) continue;
+      selected = v;
+      break;
+    }
+  }
+  dt_bauhaus_combobox_set(data->provider_combo,
+                          _provider_to_combo_idx(selected,
+                                                 data->supported_providers));
+
+  // persist the resolved selection so a subsequent close-without-change
+  // doesn't leave a stale provider in the config (e.g. CUDA still saved
+  // after the user switched to a ROCm-only library)
+  if(selected != prev)
+  {
+    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    {
+      if(dt_ai_providers[i].value == selected)
+      {
+        dt_conf_set_string(DT_AI_CONF_PROVIDER,
+                           dt_ai_providers[i].config_string);
+        break;
+      }
+    }
+  }
+
+  g_signal_handlers_unblock_by_func(data->provider_combo,
+                                    _on_provider_changed, data);
+
+  // runtime-probe the selection so the status label reflects the new
+  // EP. the value-changed signal was blocked during the rebuild, so
+  // _on_provider_changed didn't fire
+  _update_provider_status(data, selected);
+
+  // and the per-EP GPU device combo (visible only when 2+ devices)
+  _refresh_gpu_combo(data);
+}
+
+// rebuild the GPU device combo for the currently-selected EP. only
+// visible when the EP supports per-device selection AND >=2 devices
+// are enumerable (single-device or unsupported EPs leave the combo
+// hidden — AUTO/CPU naturally fall here too)
+static void _refresh_gpu_combo(dt_prefs_ai_data_t *data)
+{
+  if(!data->gpu_combo) return;
+
+  // resolve current EP from conf (matches what the rest of the UI uses)
+  gchar *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  const dt_ai_provider_t prov = dt_ai_provider_from_string(prov_str);
+  g_free(prov_str);
+
+  GList *devices = dt_ai_enum_devices_for_provider(prov);
+  const guint count = g_list_length(devices);
+  const char *conf_key = dt_ai_device_conf_key_for_provider(prov);
+
+  if(count < 2 || !conf_key)
+  {
+    gtk_widget_hide(data->gpu_combo);
+    g_list_free_full(devices, dt_ai_device_free);
+    return;
+  }
+
+  // populate without firing _on_gpu_changed
+  g_signal_handlers_block_by_func(data->gpu_combo, _on_gpu_changed, data);
+  dt_bauhaus_combobox_clear(data->gpu_combo);
+  const int saved = dt_conf_key_exists(conf_key) ? dt_conf_get_int(conf_key) : 0;
+  int sel_idx = 0, i = 0;
+  for(GList *l = devices; l; l = g_list_next(l), i++)
+  {
+    const dt_ai_device_t *d = (const dt_ai_device_t *)l->data;
+    dt_bauhaus_combobox_add(data->gpu_combo, d->name);
+    if(d->id == saved) sel_idx = i;
+  }
+  dt_bauhaus_combobox_set(data->gpu_combo, sel_idx);
+  g_signal_handlers_unblock_by_func(data->gpu_combo, _on_gpu_changed, data);
+
+  gtk_widget_show(data->gpu_combo);
+  gtk_widget_queue_resize(data->gpu_combo);
+  g_list_free_full(devices, dt_ai_device_free);
+}
+
+static void _on_gpu_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+  const int combo_idx = dt_bauhaus_combobox_get(widget);
+  if(combo_idx < 0) return;
+
+  gchar *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  const dt_ai_provider_t prov = dt_ai_provider_from_string(prov_str);
+  g_free(prov_str);
+
+  const char *conf_key = dt_ai_device_conf_key_for_provider(prov);
+  if(!conf_key) return;
+
+  // re-enumerate to get the device id at this combo position. cheap
+  // (shell-out caches in OS pagecache, ~1 ms after first call)
+  GList *devices = dt_ai_enum_devices_for_provider(prov);
+  const dt_ai_device_t *d = g_list_nth_data(devices, combo_idx);
+  if(d) dt_conf_set_int(conf_key, d->id);
+  g_list_free_full(devices, dt_ai_device_free);
+
+  // refresh the status — selecting a different GPU mid-session means
+  // restart needed (current EP session is bound to the old device)
+  _update_provider_status(data, prov);
+}
+
 // map combo box index to provider table index (skipping unavailable providers)
-static int _combo_idx_to_provider(int combo_idx)
+static int _combo_idx_to_provider(const int combo_idx, const guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
-    if(!dt_ai_providers[i].available) continue;
+    if(!_provider_visible(i, supported)) continue;
     if(++visible == combo_idx)
       return i;
   }
@@ -311,12 +508,13 @@ static int _combo_idx_to_provider(int combo_idx)
 }
 
 // map provider enum value to combo box index
-static int _provider_to_combo_idx(dt_ai_provider_t provider)
+static int _provider_to_combo_idx(const dt_ai_provider_t provider,
+                                  const guint supported)
 {
   int visible = -1;
   for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
   {
-    if(!dt_ai_providers[i].available) continue;
+    if(!_provider_visible(i, supported)) continue;
     visible++;
     if(dt_ai_providers[i].value == provider)
       return visible;
@@ -324,7 +522,8 @@ static int _provider_to_combo_idx(dt_ai_provider_t provider)
   return 0;  // fallback to first visible (AUTO)
 }
 
-static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t provider)
+static void _update_provider_status(dt_prefs_ai_data_t *data,
+                                    const dt_ai_provider_t provider)
 {
   if(!data->provider_status) return;
 
@@ -333,6 +532,18 @@ static void _update_provider_status(dt_prefs_ai_data_t *data, dt_ai_provider_t p
   if(!darktable.ai_registry || !darktable.ai_registry->ai_enabled)
   {
     gtk_label_set_text(GTK_LABEL(data->provider_status), "");
+    return;
+  }
+
+  // long-lived sessions (e.g. SAM2 encoder) are bound to the EP they
+  // were loaded with; show "restart to apply" for GPU EPs
+  if((dt_ai_ort_path_changed_since_load()
+      || dt_ai_provider_changed_since_load()
+      || dt_ai_device_id_changed_since_load(provider))
+     && provider != DT_AI_PROVIDER_AUTO && provider != DT_AI_PROVIDER_CPU)
+  {
+    gtk_label_set_markup(GTK_LABEL(data->provider_status),
+                         _("<i>restart to apply</i>"));
     return;
   }
 
@@ -351,7 +562,7 @@ static void _on_provider_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   const int combo_idx = dt_bauhaus_combobox_get(widget);
-  const int pi = _combo_idx_to_provider(combo_idx);
+  const int pi = _combo_idx_to_provider(combo_idx, data->supported_providers);
   dt_conf_set_string(DT_AI_CONF_PROVIDER, dt_ai_providers[pi].config_string);
   if(darktable.ai_registry)
   {
@@ -378,13 +589,16 @@ _reset_enable_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 
 // double-click on label resets the provider combo to default
 static gboolean
-_reset_provider_click(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+_reset_provider_click(GtkWidget *label, GdkEventButton *event, gpointer user_data)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
+    dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
     const char *def = dt_confgen_get(DT_AI_CONF_PROVIDER, DT_DEFAULT);
     dt_ai_provider_t provider = dt_ai_provider_from_string(def);
-    dt_bauhaus_combobox_set(widget, _provider_to_combo_idx(provider));
+    dt_bauhaus_combobox_set(data->provider_combo,
+                            _provider_to_combo_idx(provider,
+                                                   data->supported_providers));
     return TRUE;
   }
   return FALSE;
@@ -1063,6 +1277,17 @@ static void _show_ort_probe_result(GtkWindow *parent, const char *path, const ch
   gtk_widget_destroy(dlg);
 }
 
+// commit a new ORT library path: update conf + indicator and refresh
+// the provider combo to reflect the new library's advertised EPs
+static void _set_ort_path(dt_prefs_ai_data_t *data, const char *path)
+{
+  dt_conf_set_string("plugins/ai/ort_library_path", path ? path : "");
+  _update_string_indicator(data->ort_path_indicator,
+                           "plugins/ai/ort_library_path");
+  data->supported_providers = _compute_supported_providers(path);
+  _refresh_provider_combo(data);
+}
+
 static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
@@ -1085,8 +1310,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
   {
     dt_ai_ort_found_t *f = found->data;
     gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-    dt_conf_set_string("plugins/ai/ort_library_path", f->path);
-    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+    _set_ort_path(data, f->path);
     GtkWidget *dlg = gtk_message_dialog_new(
       GTK_WINDOW(data->parent_dialog),
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1133,8 +1357,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
       {
         dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
         gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-        dt_conf_set_string("plugins/ai/ort_library_path", f->path);
-        _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+        _set_ort_path(data, f->path);
       }
     }
     gtk_widget_destroy(dlg);
@@ -1148,8 +1371,7 @@ static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer 
   if(e->type != GDK_2BUTTON_PRESS) return FALSE;
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
-  dt_conf_set_string("plugins/ai/ort_library_path", "");
-  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+  _set_ort_path(data, "");
   return TRUE;
 }
 static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
@@ -1160,8 +1382,7 @@ static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
   // empty = reset to bundled
   if(!text || !text[0])
   {
-    dt_conf_set_string("plugins/ai/ort_library_path", "");
-    _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+    _set_ort_path(data, "");
     return;
   }
 
@@ -1176,8 +1397,7 @@ static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
     return;
   }
 
-  dt_conf_set_string("plugins/ai/ort_library_path", text);
-  _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+  _set_ort_path(data, text);
   g_free(version);
 }
 
@@ -1231,8 +1451,7 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
     if(version)
     {
       gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), filename);
-      dt_conf_set_string("plugins/ai/ort_library_path", filename);
-      _update_string_indicator(data->ort_path_indicator, "plugins/ai/ort_library_path");
+      _set_ort_path(data, filename);
       g_free(version);
     }
     g_free(filename);
@@ -1296,7 +1515,7 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   const gboolean ai_on = dt_conf_get_bool("plugins/ai/enabled");
 
   // provider dropdown
-  GtkWidget *provider_label = gtk_label_new(_("execution provider"));
+  GtkWidget *provider_label = gtk_label_new(_("AI acceleration"));
   gtk_widget_set_halign(provider_label, GTK_ALIGN_START);
   GtkWidget *provider_labelev = gtk_event_box_new();
   gtk_widget_add_events(provider_labelev, GDK_BUTTON_PRESS_MASK);
@@ -1305,47 +1524,49 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
   data->provider_indicator = _create_indicator(DT_AI_CONF_PROVIDER);
   data->provider_combo = dt_bauhaus_combobox_new(NULL);
+  data->gpu_combo      = dt_bauhaus_combobox_new(NULL);
+  gtk_widget_set_tooltip_text(data->gpu_combo,
+                              _("select which GPU to use when the active provider"
+                                " supports more than one"));
 
-  // populate from central provider table, skipping unavailable providers
-  GString *tooltip = g_string_new(_("select hardware acceleration for AI inference:"));
-  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
-  {
-    if(!dt_ai_providers[i].available) continue;
-    if(dt_ai_providers[i].value == DT_AI_PROVIDER_AUTO)
-      dt_bauhaus_combobox_add(data->provider_combo, _("auto"));
-    else
-      dt_bauhaus_combobox_add(data->provider_combo, dt_ai_providers[i].display_name);
-    g_string_append_printf(tooltip, "\n- %s", dt_ai_providers[i].display_name);
-  }
+  // connect signals before the first refresh — the refresh blocks the
+  // value-changed handler while it repopulates, so we need it attached
+  g_signal_connect(data->provider_combo,
+                   "value-changed",
+                   G_CALLBACK(_on_provider_changed),
+                   data);
+  g_signal_connect(provider_labelev,
+                   "button-press-event",
+                   G_CALLBACK(_reset_provider_click),
+                   data);
+  g_signal_connect(data->gpu_combo, "value-changed",
+                   G_CALLBACK(_on_gpu_changed), data);
 
-  char *provider_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
-  dt_ai_provider_t provider = dt_ai_provider_from_string(provider_str);
-  g_free(provider_str);
-  dt_bauhaus_combobox_set(data->provider_combo, _provider_to_combo_idx(provider));
-
-  g_signal_connect(
-    data->provider_combo,
-    "value-changed",
-    G_CALLBACK(_on_provider_changed),
-    data);
-  g_signal_connect(
-    provider_labelev,
-    "button-press-event",
-    G_CALLBACK(_reset_provider_click),
-    data->provider_combo);
-  gtk_widget_set_tooltip_text(data->provider_combo, tooltip->str);
-  g_string_free(tooltip, TRUE);
+  // filter the combo to what the currently-configured ORT advertises
+  char *ort_path = dt_conf_get_string("plugins/ai/ort_library_path");
+  data->supported_providers = _compute_supported_providers(ort_path);
+  g_free(ort_path);
+  _refresh_provider_combo(data);  // will also refresh gpu_combo
   data->provider_status = gtk_label_new(NULL);
   gtk_label_set_use_markup(GTK_LABEL(data->provider_status), TRUE);
   gtk_widget_set_halign(data->provider_status, GTK_ALIGN_START);
+  gtk_widget_set_margin_start(data->provider_status, DT_PIXEL_APPLY_DPI(8));
 
-  // put combo + status in an hbox so the combo doesn't stretch
+  // put combo + gpu + status in an hbox so the combo doesn't stretch
   // when column 2 expands for the ORT path entry below
-  GtkWidget *provider_hbox = dt_gui_hbox(data->provider_combo, data->provider_status);
+  GtkWidget *provider_hbox = dt_gui_hbox(data->provider_combo,
+                                         data->gpu_combo,
+                                         data->provider_status);
+  // small gap between provider_combo and gpu_combo
+  gtk_widget_set_margin_start(data->gpu_combo, DT_PIXEL_APPLY_DPI(8));
+  // gpu_combo is hidden by default; _refresh_gpu_combo shows it if applicable
+  gtk_widget_set_no_show_all(data->gpu_combo, TRUE);
 
   gtk_grid_attach(GTK_GRID(settings_grid), provider_labelev, 0, row, 1, 1);
   gtk_grid_attach(GTK_GRID(settings_grid), data->provider_indicator, 1, row, 1, 1);
-  gtk_grid_attach(GTK_GRID(settings_grid), provider_hbox, 2, row++, 3, 1);
+  // span only cols 2-3 (matching path_entry below) so col 4 stays sized
+  // by the button box and doesn't steal width when gpu_combo appears
+  gtk_grid_attach(GTK_GRID(settings_grid), provider_hbox, 2, row++, 2, 1);
 
   // ORT library path — not shown on macOS where ORT is statically linked with CoreML.
   // Developers can still use DT_ORT_LIBRARY env var to override on macOS
@@ -1635,6 +1856,12 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     data);
   dt_gui_box_add(button_box, data->delete_selected_btn);
 
+  // help button (right-anchored, matches other prefs tabs)
+  GtkWidget *help_btn = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_tooltip_text(help_btn, _("open help page for AI settings"));
+  dt_gui_add_help_link(help_btn, "ai");
+  g_signal_connect(help_btn, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(button_box), help_btn, FALSE, FALSE, 0);
 
   dt_gui_box_add(data->controls_box, models_grid);
 

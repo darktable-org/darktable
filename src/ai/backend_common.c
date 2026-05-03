@@ -606,6 +606,36 @@ dt_ai_provider_t dt_ai_provider_from_string(const char *str)
   return DT_AI_PROVIDER_AUTO;
 }
 
+// parse the comma-separated EP list from dt_ai_ort_probe_library_full().
+// AUTO and CPU are always set — they work regardless of what the library
+// advertises; unknown tokens (e.g. "ROCm", "TensorRT") are ignored
+guint dt_ai_providers_from_eps(const char *eps)
+{
+  guint mask = (1u << DT_AI_PROVIDER_AUTO) | (1u << DT_AI_PROVIDER_CPU);
+  if(!eps) return mask;
+
+  gchar **tokens = g_strsplit(eps, ",", -1);
+  for(int i = 0; tokens[i]; i++)
+  {
+    const dt_ai_provider_t p = dt_ai_provider_from_string(g_strstrip(tokens[i]));
+    if(p != DT_AI_PROVIDER_AUTO)  // from_string returns AUTO on unknown
+      mask |= 1u << p;
+  }
+  g_strfreev(tokens);
+  return mask;
+}
+
+guint dt_ai_providers_bundled(void)
+{
+  guint mask = (1u << DT_AI_PROVIDER_AUTO) | (1u << DT_AI_PROVIDER_CPU);
+#if defined(__APPLE__)
+  mask |= 1u << DT_AI_PROVIDER_COREML;
+#elif defined(_WIN32)
+  mask |= 1u << DT_AI_PROVIDER_DIRECTML;
+#endif
+  return mask;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

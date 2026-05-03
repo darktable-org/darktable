@@ -29,6 +29,8 @@
 #include <string.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <dxgi1_6.h>
+#include <initguid.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -54,6 +56,12 @@ struct dt_ai_context_t
   gboolean dynamic_outputs;
 };
 
+// minimum ORT API we'll fall back to when the runtime library is older
+// than what we were compiled against. v14 = ORT 1.14, the first release
+// with ONNX opset 18 support — older ORT can't run our models. bump
+// this in lockstep with any model that requires a newer opset
+#define DT_ORT_MIN_API_VERSION 14
+
 // global singletons (initialized exactly once via g_once)
 // ORT requires at most one OrtEnv per process.
 static const OrtApi *g_ort = NULL;
@@ -61,6 +69,21 @@ static GOnce g_ort_once = G_ONCE_INIT;
 static OrtEnv *g_env = NULL;
 static GOnce g_env_once = G_ONCE_INIT;
 static GModule *g_ort_module = NULL;  // custom ORT library loaded via g_module_open
+// snapshot of plugins/ai/ort_library_path at ORT load — lets the prefs
+// page detect a path change mid-session (in-process ORT stale, restart
+// needed before GPU EP probes reflect the new library)
+static gchar *g_ort_conf_path_at_load = NULL;
+// snapshot of per-EP device_id at ORT load. -1 = "no value seen yet"
+// (e.g. provider not configured at startup); the change check then
+// compares against the current conf value
+static int g_loaded_cuda_device_id     = -1;
+static int g_loaded_migraphx_device_id = -1;
+static int g_loaded_dml_device_id      = -1;
+
+// snapshot of the provider config string at ORT load. NULL until captured
+static gchar *g_loaded_provider = NULL;
+
+static int _device_id_from_conf(const char *conf_key, const char *env_var);
 
 #if defined(__linux__)
 // check that the CUDA driver supports the installed CUDA runtime version;
@@ -164,6 +187,261 @@ char *dt_ai_ort_probe_library(const char *path)
 
 // Probe a library and return version + comma-separated list of supported EPs.
 // Both out params are caller-owned (g_free). Returns FALSE if not a valid ORT.
+// FALSE before ORT is loaded (no comparison reference yet)
+// snapshot the conf values that determine which library / EP / device
+// the in-process ORT will be bound to. called eagerly at darktable
+// startup so the *_changed_since_load() helpers have a stable reference
+// independent of when ORT is lazily initialized
+void dt_ai_snapshot_conf_state(void)
+{
+  gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
+  g_free(g_ort_conf_path_at_load);
+  g_ort_conf_path_at_load = g_strdup(ort_conf ? ort_conf : "");
+  g_free(ort_conf);
+
+  g_free(g_loaded_provider);
+  g_loaded_provider = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  if(!g_loaded_provider) g_loaded_provider = g_strdup("");
+
+  g_loaded_cuda_device_id     = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                                     "DT_CUDA_DEVICE_ID");
+  g_loaded_migraphx_device_id = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                                     "DT_MIGRAPHX_DEVICE_ID");
+  g_loaded_dml_device_id      = _device_id_from_conf("plugins/ai/dml_device_id",
+                                                     "DT_DML_DEVICE_ID");
+}
+
+gboolean dt_ai_ort_path_changed_since_load(void)
+{
+  if(!g_ort_conf_path_at_load) return FALSE;
+  gchar *cur = dt_conf_get_string("plugins/ai/ort_library_path");
+  const gboolean changed
+    = g_strcmp0(cur ? cur : "", g_ort_conf_path_at_load) != 0;
+  g_free(cur);
+  return changed;
+}
+
+gboolean dt_ai_provider_changed_since_load(void)
+{
+  if(!g_loaded_provider) return FALSE;
+  gchar *cur = dt_conf_get_string(DT_AI_CONF_PROVIDER);
+  const gboolean changed
+    = g_strcmp0(cur ? cur : "", g_loaded_provider) != 0;
+  g_free(cur);
+  return changed;
+}
+
+void dt_ai_device_free(gpointer device)
+{
+  if(!device) return;
+  dt_ai_device_t *d = (dt_ai_device_t *)device;
+  g_free(d->name);
+  g_free(d);
+}
+
+const char *dt_ai_device_conf_key_for_provider(const dt_ai_provider_t provider)
+{
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     return "plugins/ai/cuda_device_id";
+    case DT_AI_PROVIDER_MIGRAPHX: return "plugins/ai/migraphx_device_id";
+    case DT_AI_PROVIDER_DIRECTML: return "plugins/ai/dml_device_id";
+    default:                      return NULL;
+  }
+}
+
+gboolean dt_ai_device_id_changed_since_load(const dt_ai_provider_t provider)
+{
+  const char *key = dt_ai_device_conf_key_for_provider(provider);
+  if(!key) return FALSE;
+  int loaded;
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     loaded = g_loaded_cuda_device_id;     break;
+    case DT_AI_PROVIDER_MIGRAPHX: loaded = g_loaded_migraphx_device_id; break;
+    case DT_AI_PROVIDER_DIRECTML: loaded = g_loaded_dml_device_id;      break;
+    default:                      return FALSE;
+  }
+  if(loaded < 0) return FALSE;  // ORT not yet loaded
+  const int cur = dt_conf_key_exists(key) ? dt_conf_get_int(key) : 0;
+  return cur != loaded;
+}
+
+// shell out to a command and return its stdout. caller frees. NULL on failure
+static gchar *_run_capture(const char *cmd)
+{
+  gchar *out = NULL;
+  GError *err = NULL;
+  gint exit_status = 0;
+  if(!g_spawn_command_line_sync(cmd, &out, NULL, &exit_status, &err))
+  {
+    if(err) g_clear_error(&err);
+    g_free(out);
+    return NULL;
+  }
+  if(exit_status != 0)
+  {
+    g_free(out);
+    return NULL;
+  }
+  return out;
+}
+
+// CUDA device enumeration via nvidia-smi. respects CUDA_VISIBLE_DEVICES
+// since nvidia-smi inherits the parent process env. one row per GPU,
+// ordinal in column 1, name in column 2 (CSV)
+static GList *_enum_cuda_devices(void)
+{
+  gchar *out = _run_capture("nvidia-smi --query-gpu=index,name "
+                            "--format=csv,noheader,nounits");
+  if(!out) return NULL;
+
+  GList *result = NULL;
+  gchar **lines = g_strsplit(out, "\n", -1);
+  for(gchar **lp = lines; *lp; lp++)
+  {
+    gchar *line = g_strstrip(*lp);
+    if(!line[0]) continue;
+    gchar **fields = g_strsplit(line, ",", 2);
+    if(fields[0] && fields[1])
+    {
+      dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+      d->id = atoi(g_strstrip(fields[0]));
+      d->name = g_strdup(g_strstrip(fields[1]));
+      result = g_list_append(result, d);
+    }
+    g_strfreev(fields);
+  }
+  g_strfreev(lines);
+  g_free(out);
+  return result;
+}
+
+// MIGraphX device enumeration via rocminfo. filter by Device Type=GPU
+// to skip the CPU and Ryzen-AI NPU agents. Marketing Name appears
+// before Device Type within each agent block, so we hold the most
+// recent name and emit it when we hit a GPU agent. id is the ordinal
+// index of GPU agents (0, 1, ...) — matches MIGraphX's device_id
+static GList *_enum_migraphx_devices(void)
+{
+#ifndef __linux__
+  return NULL;  // ROCm is Linux-only
+#else
+  gchar *out = _run_capture("rocminfo");
+  if(!out) return NULL;
+
+  GList *result = NULL;
+  gchar **lines = g_strsplit(out, "\n", -1);
+  gchar *pending_name = NULL;
+  int gpu_index = 0;
+  for(gchar **lp = lines; *lp; lp++)
+  {
+    gchar *line = *lp;
+    const char *mn = strstr(line, "Marketing Name:");
+    if(mn)
+    {
+      const char *colon = strchr(mn, ':');
+      if(colon)
+      {
+        g_free(pending_name);
+        pending_name = g_strdup(g_strstrip((gchar *)colon + 1));
+      }
+      continue;
+    }
+    if(strstr(line, "Device Type:") && strstr(line, "GPU") && pending_name)
+    {
+      dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+      d->id = gpu_index++;
+      d->name = pending_name;
+      pending_name = NULL;
+      result = g_list_append(result, d);
+    }
+  }
+  g_free(pending_name);
+  g_strfreev(lines);
+  g_free(out);
+  return result;
+#endif
+}
+
+// DirectML device enumeration via DXGI. uses EnumAdapterByGpuPreference
+// (DXGI 1.6, Windows 10 1803+) with HIGH_PERFORMANCE so dGPUs come
+// before iGPUs. dedupes by AdapterLuid and skips software adapters.
+// id is the index in the returned list, which is what DirectML's EP
+// takes as device_id
+static GList *_enum_directml_devices(void)
+{
+#ifndef _WIN32
+  return NULL;
+#else
+  IDXGIFactory6 *factory = NULL;
+  HRESULT hr = CreateDXGIFactory2(0, &IID_IDXGIFactory6, (void **)&factory);
+  if(FAILED(hr) || !factory) return NULL;
+
+  GList *result = NULL;
+  // track LUIDs we've already added (dedup against the multi-adapter
+  // double-listing quirk on some Windows versions)
+  GArray *seen_luids = g_array_new(FALSE, FALSE, sizeof(LUID));
+  int next_id = 0;
+  for(UINT i = 0; ; i++)
+  {
+    IDXGIAdapter1 *adapter = NULL;
+    if(FAILED(factory->lpVtbl->EnumAdapterByGpuPreference(
+         factory, i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+         &IID_IDXGIAdapter1, (void **)&adapter)))
+      break;
+
+    DXGI_ADAPTER_DESC1 desc;
+    if(SUCCEEDED(adapter->lpVtbl->GetDesc1(adapter, &desc))
+       && (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0)
+    {
+      gboolean dup = FALSE;
+      for(guint k = 0; k < seen_luids->len; k++)
+      {
+        LUID *l = &g_array_index(seen_luids, LUID, k);
+        if(l->LowPart == desc.AdapterLuid.LowPart
+           && l->HighPart == desc.AdapterLuid.HighPart)
+        {
+          dup = TRUE;
+          break;
+        }
+      }
+      if(!dup)
+      {
+        g_array_append_val(seen_luids, desc.AdapterLuid);
+        gchar *name = g_utf16_to_utf8((const gunichar2 *)desc.Description,
+                                      -1, NULL, NULL, NULL);
+        dt_ai_device_t *d = g_new0(dt_ai_device_t, 1);
+        d->id = next_id++;
+        d->name = name ? name : g_strdup("DirectML adapter");
+        result = g_list_append(result, d);
+      }
+    }
+    adapter->lpVtbl->Release(adapter);
+  }
+  g_array_free(seen_luids, TRUE);
+  factory->lpVtbl->Release(factory);
+  return result;
+#endif
+}
+
+GList *dt_ai_enum_devices_for_provider(const dt_ai_provider_t provider)
+{
+  switch(provider)
+  {
+    case DT_AI_PROVIDER_CUDA:     return _enum_cuda_devices();
+    case DT_AI_PROVIDER_MIGRAPHX: return _enum_migraphx_devices();
+    case DT_AI_PROVIDER_DIRECTML: return _enum_directml_devices();
+    // OpenVINO and CoreML self-manage their devices; AUTO/CPU don't apply
+    case DT_AI_PROVIDER_AUTO:
+    case DT_AI_PROVIDER_CPU:
+    case DT_AI_PROVIDER_COREML:
+    case DT_AI_PROVIDER_OPENVINO:
+    default:
+      return NULL;
+  }
+}
+
 int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **out_eps)
 {
   if(!path || !path[0]) return FALSE;
@@ -187,27 +465,82 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
 
   if(out_eps)
   {
-    // check for known EP registration symbols
-    static const struct { const char *symbol; const char *name; } ep_table[] = {
-      { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
-      { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
-      { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
-      { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
-      { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
-      { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
-      { NULL, NULL }
-    };
-
     GString *eps = g_string_new(NULL);
-    gpointer sym;
-    for(int i = 0; ep_table[i].symbol; i++)
+
+    // preferred path: ask the OrtApi for the list of providers compiled into
+    // the library; this is the only reliable method for ROCm/MIGraphX, since
+    // AMD's official builds do not export the legacy C shim symbols
+    // (OrtSessionOptionsAppendExecutionProvider_ROCM, _MIGraphX) — ROCm is
+    // only reachable through the OrtApi struct
+    const OrtApi *probe_api = base->GetApi(ORT_API_VERSION);
+    if(!probe_api)
     {
-      if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+      for(int v = ORT_API_VERSION - 1;
+          v >= DT_ORT_MIN_API_VERSION && !probe_api; v--)
+        probe_api = base->GetApi(v);
+    }
+    if(probe_api && probe_api->GetAvailableProviders)
+    {
+      char **providers = NULL;
+      int n_providers = 0;
+      if(probe_api->GetAvailableProviders(&providers, &n_providers) == NULL && providers)
       {
-        if(eps->len > 0) g_string_append(eps, ", ");
-        g_string_append(eps, ep_table[i].name);
+        // map ORT provider names to short labels
+        static const struct { const char *ort_name; const char *label; } map[] = {
+          { "CUDAExecutionProvider",     "CUDA" },
+          { "MIGraphXExecutionProvider", "MIGraphX" },
+          { "ROCMExecutionProvider",     "ROCm" },
+          { "OpenVINOExecutionProvider", "OpenVINO" },
+          { "DmlExecutionProvider",      "DirectML" },
+          { "CoreMLExecutionProvider",   "CoreML" },
+          { "TensorrtExecutionProvider", "TensorRT" },
+          { NULL, NULL }
+        };
+        for(int i = 0; i < n_providers; i++)
+        {
+          const char *label = NULL;
+          for(int j = 0; map[j].ort_name; j++)
+          {
+            if(g_strcmp0(providers[i], map[j].ort_name) == 0)
+            {
+              label = map[j].label;
+              break;
+            }
+          }
+          // skip CPU here; added below if nothing else matched
+          if(!label || g_strcmp0(providers[i], "CPUExecutionProvider") == 0) continue;
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, label);
+        }
+        if(probe_api->ReleaseAvailableProviders)
+          probe_api->ReleaseAvailableProviders(providers, n_providers);
       }
     }
+
+    // fallback: legacy C-shim symbol probing for very old ORT builds where
+    // GetAvailableProviders is unavailable
+    if(eps->len == 0)
+    {
+      static const struct { const char *symbol; const char *name; } ep_table[] = {
+        { "OrtSessionOptionsAppendExecutionProvider_CUDA",     "CUDA" },
+        { "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "MIGraphX" },
+        { "OrtSessionOptionsAppendExecutionProvider_ROCM",     "ROCm" },
+        { "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "OpenVINO" },
+        { "OrtSessionOptionsAppendExecutionProvider_Dml",      "DirectML" },
+        { "OrtSessionOptionsAppendExecutionProvider_CoreML",   "CoreML" },
+        { NULL, NULL }
+      };
+      gpointer sym;
+      for(int i = 0; ep_table[i].symbol; i++)
+      {
+        if(g_module_symbol(mod, ep_table[i].symbol, &sym) && sym)
+        {
+          if(eps->len > 0) g_string_append(eps, ", ");
+          g_string_append(eps, ep_table[i].name);
+        }
+      }
+    }
+
     if(eps->len == 0) g_string_append(eps, "CPU");
     *out_eps = g_string_free(eps, FALSE);
   }
@@ -387,7 +720,7 @@ static const OrtApi *_ort_api_from_module(GModule *mod, const char *label)
   if(!api)
   {
     // minimum API version 14 = ORT 1.14, required for ONNX opset 18
-    for(int v = ORT_API_VERSION - 1; v >= 14; v--)
+    for(int v = ORT_API_VERSION - 1; v >= DT_ORT_MIN_API_VERSION; v--)
     {
       api = base->GetApi(v);
       if(api)
@@ -417,6 +750,7 @@ static gpointer _init_ort_api(gpointer data)
   // compile-time default; on Windows/macOS it dynamically loads a
   // user-supplied library instead of the bundled DirectML/CoreML one.
   gchar *ort_conf = dt_conf_get_string("plugins/ai/ort_library_path");
+  // snapshots are now taken eagerly at startup via dt_ai_snapshot_conf_state()
   const char *ort_env = g_getenv("DT_ORT_LIBRARY");
   const char *ort_override = (ort_conf && ort_conf[0]) ? ort_conf
                            : (ort_env && ort_env[0]) ? ort_env
@@ -792,6 +1126,22 @@ static float _half_to_float(uint16_t h)
   return f;
 }
 
+// Look up the device name for `device_id` from the provider's enumeration.
+// Returns a newly-allocated string (caller frees) or NULL if no match.
+static gchar *_lookup_device_name(const dt_ai_provider_t provider,
+                                  const int device_id)
+{
+  GList *devices = dt_ai_enum_devices_for_provider(provider);
+  gchar *name = NULL;
+  for(GList *l = devices; l; l = g_list_next(l))
+  {
+    dt_ai_device_t *d = l->data;
+    if(d->id == device_id) { name = g_strdup(d->name); break; }
+  }
+  g_list_free_full(devices, dt_ai_device_free);
+  return name;
+}
+
 // try to find and call an ORT execution provider function at runtime via
 // dynamic symbol lookup (GModule/dlsym).  returns TRUE if the provider was
 // enabled successfully, FALSE otherwise.
@@ -802,7 +1152,8 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
                               const char *symbol_name,
                               const char *provider_name,
                               const char *device_type,
-                              uint32_t flags)
+                              const uint32_t flags,
+                              const dt_ai_provider_t provider)
 {
   OrtStatus *status = NULL;
   gboolean ok = FALSE;
@@ -856,7 +1207,14 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
     }
     if(!status)
     {
-      dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully.", provider_name);
+      // for integer-argument (device-id) providers, also log which GPU was selected
+      gchar *dev_name = device_type ? NULL : _lookup_device_name(provider, (int)flags);
+      if(dev_name)
+        dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully on device %d: %s",
+                 provider_name, (int)flags, dev_name);
+      else
+        dt_print(DT_DEBUG_AI, "[darktable_ai] %s enabled successfully.", provider_name);
+      g_free(dev_name);
       ok = TRUE;
     }
     else
@@ -880,6 +1238,25 @@ static gboolean _try_provider(OrtSessionOptions *session_opts,
   return ok;
 }
 
+// pick a GPU device_id: env var wins, then conf, fallback to 0.
+// each multi-GPU-capable EP has its own conf key + env var so users
+// switching between providers don't carry stale indices across vendors
+static int _device_id_from_conf(const char *conf_key, const char *env_var)
+{
+  const char *env_val = g_getenv(env_var);
+  if(env_val && env_val[0])
+  {
+    const int v = atoi(env_val);
+    return v >= 0 ? v : 0;
+  }
+  if(dt_conf_key_exists(conf_key))
+  {
+    const int v = dt_conf_get_int(conf_key);
+    return v >= 0 ? v : 0;
+  }
+  return 0;
+}
+
 static void
 _enable_acceleration(OrtSessionOptions *session_opts,
                      dt_ai_provider_t provider,
@@ -897,36 +1274,51 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags);
+      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] apple CoreML not available on this platform");
 #endif
     break;
 
   case DT_AI_PROVIDER_CUDA:
-    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                         "DT_CUDA_DEVICE_ID");
+    _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
+                  "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
     break;
+  }
 
   case DT_AI_PROVIDER_MIGRAPHX:
+  {
     // MIGraphX reads its cache env vars once at provider library
     // load time, so they must be set before CreateEnv() — see
     // _setup_amd_caches() above. OpenVINO (below) takes options
     // per-session, so its cache path is passed inline here
-    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
+    const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                         "DT_MIGRAPHX_DEVICE_ID");
+    if(!_try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+                      "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX))
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
+                    "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
     break;
+  }
 
   case DT_AI_PROVIDER_OPENVINO:
     if(!_try_openvino_with_cache(session_opts))
-      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
+      _try_provider(session_opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
+                    "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
     break;
 
   case DT_AI_PROVIDER_DIRECTML:
 #if defined(_WIN32)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                         "DT_DML_DEVICE_ID");
+    _try_provider(session_opts,
+                  "OrtSessionOptionsAppendExecutionProvider_DML",
+                  "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
+  }
 #else
     dt_print(DT_DEBUG_AI, "[darktable_ai] windows DirectML not available on this platform");
 #endif
@@ -939,27 +1331,36 @@ _enable_acceleration(OrtSessionOptions *session_opts,
     _try_provider(
       session_opts,
       "OrtSessionOptionsAppendExecutionProvider_CoreML",
-      "Apple CoreML", NULL, coreml_flags);
+      "Apple CoreML", NULL, coreml_flags, DT_AI_PROVIDER_COREML);
 #elif defined(_WIN32)
-    _try_provider(
-      session_opts,
-      "OrtSessionOptionsAppendExecutionProvider_DML",
-      "Windows DirectML", NULL, 0);
+    {
+      const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                           "DT_DML_DEVICE_ID");
+      _try_provider(session_opts,
+                    "OrtSessionOptionsAppendExecutionProvider_DML",
+                    "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
+    }
 #elif defined(__linux__)
     // try CUDA first, then MIGraphX (cache configured at env init)
-    if(!_try_provider(
-         session_opts,
-         "OrtSessionOptionsAppendExecutionProvider_CUDA",
-         "NVIDIA CUDA", NULL, 0))
     {
+      const int cuda_dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                                "DT_CUDA_DEVICE_ID");
+      const int amd_dev  = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                                "DT_MIGRAPHX_DEVICE_ID");
       if(!_try_provider(
            session_opts,
-           "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
-           "AMD MIGraphX", NULL, 0))
-        _try_provider(
-          session_opts,
-          "OrtSessionOptionsAppendExecutionProvider_ROCM",
-          "AMD ROCm (legacy)", NULL, 0);
+           "OrtSessionOptionsAppendExecutionProvider_CUDA",
+           "NVIDIA CUDA", NULL, (uint32_t)cuda_dev, DT_AI_PROVIDER_CUDA))
+      {
+        if(!_try_provider(
+             session_opts,
+             "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+             "AMD MIGraphX", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX))
+          _try_provider(
+            session_opts,
+            "OrtSessionOptionsAppendExecutionProvider_ROCM",
+            "AMD ROCm (legacy)", NULL, (uint32_t)amd_dev, DT_AI_PROVIDER_MIGRAPHX);
+      }
     }
 #endif
     break;
@@ -999,21 +1400,39 @@ int dt_ai_probe_provider(dt_ai_provider_t provider)
   switch(provider)
   {
   case DT_AI_PROVIDER_COREML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML", "Apple CoreML", NULL, 0);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CoreML",
+                       "Apple CoreML", NULL, 0, DT_AI_PROVIDER_COREML);
     break;
   case DT_AI_PROVIDER_CUDA:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA", "NVIDIA CUDA", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/cuda_device_id",
+                                         "DT_CUDA_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_CUDA",
+                       "NVIDIA CUDA", NULL, (uint32_t)dev, DT_AI_PROVIDER_CUDA);
     break;
+  }
   case DT_AI_PROVIDER_MIGRAPHX:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX", "AMD MIGraphX", NULL, 0)
-      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM", "AMD ROCm (legacy)", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/migraphx_device_id",
+                                         "DT_MIGRAPHX_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_MIGraphX",
+                       "AMD MIGraphX", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX)
+      || _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_ROCM",
+                       "AMD ROCm (legacy)", NULL, (uint32_t)dev, DT_AI_PROVIDER_MIGRAPHX);
     break;
+  }
   case DT_AI_PROVIDER_OPENVINO:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO", "Intel OpenVINO", "AUTO", 0);
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_OpenVINO",
+                       "Intel OpenVINO", "AUTO", 0, DT_AI_PROVIDER_OPENVINO);
     break;
   case DT_AI_PROVIDER_DIRECTML:
-    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML", "Windows DirectML", NULL, 0);
+  {
+    const int dev = _device_id_from_conf("plugins/ai/dml_device_id",
+                                         "DT_DML_DEVICE_ID");
+    ok = _try_provider(opts, "OrtSessionOptionsAppendExecutionProvider_DML",
+                       "Windows DirectML", NULL, (uint32_t)dev, DT_AI_PROVIDER_DIRECTML);
     break;
+  }
   default:
     break;
   }
