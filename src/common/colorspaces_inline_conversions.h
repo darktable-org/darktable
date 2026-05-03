@@ -468,6 +468,38 @@ static inline float dt_prophotorgb_to_XYZ_luma(const dt_aligned_pixel_t rgb)
           + prophotorgb_to_xyz_transpose[2][1] * rgb[2]);
 }
 
+// CIE D65 illuminant tristimulus (Y normalized to 1)
+static const float d65_white_xyz[3] = { 0.9504f, 1.0f, 1.0889f };
+
+// D65 XYZ <-> linear RGB matrices, row-major 3x3 (plain float[9]).
+// Distinct from the D50 Bradford-adapted dt_colormatrix_t variants
+// below, which are pre-transposed for SIMD-friendly multiplication.
+// Used by raw_restore_linear's input-space build and by the DNG
+// writer's ColorMatrix1 fallback (paired with CalibrationIlluminant1=D65)
+static const float xyz_to_srgb_d65[9] = {
+   3.2404542f, -1.5371385f, -0.4985314f,
+  -0.9692660f,  1.8760108f,  0.0415560f,
+   0.0556434f, -0.2040259f,  1.0572252f,
+};
+
+static const float srgb_to_xyz_d65[9] = {
+  0.4124564f, 0.3575761f, 0.1804375f,
+  0.2126729f, 0.7151522f, 0.0721750f,
+  0.0193339f, 0.1191920f, 0.9503041f,
+};
+
+static const float xyz_to_rec2020_d65[9] = {
+   1.7166511880f, -0.3556707838f, -0.2533662814f,
+  -0.6666843518f,  1.6164812366f,  0.0157685458f,
+   0.0176398574f, -0.0427706133f,  0.9421031212f,
+};
+
+static const float rec2020_to_xyz_d65[9] = {
+  0.6369580483f, 0.1446169036f, 0.1688809752f,
+  0.2627002120f, 0.6779980715f, 0.0593017165f,
+  0.0000000000f, 0.0280726930f, 1.0609850577f,
+};
+
 // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
 // (transpose and pad the conversion matrix to enable vectorization)
 static const dt_colormatrix_t sRGB_to_xyz_transposed =

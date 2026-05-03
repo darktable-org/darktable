@@ -20,6 +20,7 @@
 #include "common/ai/restore.h"
 #include "common/ai/restore_common.h"
 #include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -79,14 +80,13 @@ typedef struct _bayer_prep_t
 // writes R/B multipliers with G=1 into wb[0..2] and returns TRUE
 static gboolean _bayer_wb_daylight(const dt_image_t *img, float wb[3])
 {
-  const float D65[3] = { 0.9504f, 1.0f, 1.0889f };
   float resp[3] = { 0.0f, 0.0f, 0.0f };
   float mag = 0.0f;
   for(int c = 0; c < 3; c++)
   {
-    resp[c] = img->adobe_XYZ_to_CAM[c][0] * D65[0]
-            + img->adobe_XYZ_to_CAM[c][1] * D65[1]
-            + img->adobe_XYZ_to_CAM[c][2] * D65[2];
+    resp[c] = img->adobe_XYZ_to_CAM[c][0] * d65_white_xyz[0]
+            + img->adobe_XYZ_to_CAM[c][1] * d65_white_xyz[1]
+            + img->adobe_XYZ_to_CAM[c][2] * d65_white_xyz[2];
     mag += fabsf(img->adobe_XYZ_to_CAM[c][0])
          + fabsf(img->adobe_XYZ_to_CAM[c][1])
          + fabsf(img->adobe_XYZ_to_CAM[c][2]);
