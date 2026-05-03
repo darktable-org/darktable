@@ -72,15 +72,19 @@ static void _install_dng_tiff_handlers(void)
   TIFFSetErrorHandler(_dt_dng_tiff_error);
 }
 
-// libtiff has built-in field info for most DNG tags but not all —
-// register the ones we need that aren't pre-registered. PreviewColorSpace
-// (50970) is required for spec-conformant DNG previews
+// register DNG tags that some libtiff builds lack or drop between IFDs.
+// PreviewColorSpace is missing from the built-in table; CFA pattern
+// tags survive IFD0 but vanish in SubIFD0 on e.g. the libtiff that
+// ships with Linux Mint, breaking rawspeed re-import
 static void _register_extra_dng_fields(TIFF *tif)
 {
   static const TIFFFieldInfo extra[] = {
     { TIFFTAG_PREVIEWCOLORSPACE, 1, 1, TIFF_LONG, FIELD_CUSTOM,
-      TRUE /* okToChange */, FALSE /* passCount */,
-      (char *)"PreviewColorSpace" },
+      TRUE, FALSE, (char *)"PreviewColorSpace" },
+    { TIFFTAG_CFAREPEATPATTERNDIM, 2, 2, TIFF_SHORT, FIELD_CUSTOM,
+      TRUE, FALSE, (char *)"CFARepeatPatternDim" },
+    { TIFFTAG_CFAPATTERN, -1, -1, TIFF_BYTE, FIELD_CUSTOM,
+      TRUE, TRUE, (char *)"CFAPattern" },
   };
   TIFFMergeFieldInfo(tif, extra, sizeof(extra) / sizeof(extra[0]));
 }
