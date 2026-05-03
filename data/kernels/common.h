@@ -178,6 +178,16 @@ atomic_add_f(
 #endif
 }
 
+float fast_mexp2f(const float x)
+{
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
+  const float k0 = i1 + x * (i2 - i1);
+  union { float f; unsigned int i; } k;
+  k.i = (k0 >= (float)0x800000u) ? k0 : 0;
+  return k.f;
+}
+
 /* we use this exp approximation to maintain full identity with cpu path */
 static inline float
 dt_fast_expf(const float x)
@@ -223,6 +233,15 @@ static inline float fmax3(const float4 o)
   return fmax(fmax(o.x, o.y), o.z);
 }
 
+static inline int clip_mirror(int i, const int max)
+{
+  if(i < 0)
+    i = -i;
+  else if(i > max)
+    i = max - (i - max);
+  return i;
+}
+
 /* Some inline functions making life easier when reading photosites
    or pixels from cl_mem images.
   The variants with a leading A use the faster samplerA interpolater, only
@@ -242,6 +261,7 @@ static inline float4 readpixel(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, sampleri, (int2)(col, row));
 }
+
 static inline float4 Areadpixel(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, samplerA, (int2)(col, row));

@@ -40,10 +40,6 @@ enum border_mode
  * unnecessary modes in clip for resampling codepath*/
 #define RESAMPLING_BORDER_MODE BORDER_REPLICATE
 
-/* Supporting them all might be overkill, let the compiler trim all
- * unnecessary modes in interpolation codepath */
-#define INTERPOLATION_BORDER_MODE BORDER_MIRROR
-
 // Defines the maximum kernel half length
 // !! Make sure to sync this with the filter array !!
 #define MAX_HALF_FILTER_WIDTH 3
@@ -490,10 +486,22 @@ static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
 }
 
 /* --------------------------------------------------------------------------
- * Sample interpolation function (see usage in iop/lens.c and mask distortions)
- * ------------------------------------------------------------------------*/
+  Sample interpolation function (see usage in iop/lens.c and mask distortions)
+  using INTERPOLATION_BORDER_MODE = BORDER_MIRROR
+  ---------------------------------------------------------------------------
+*/
 
 #define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
+
+static inline ssize_t _mirror(ssize_t i, const ssize_t max)
+{
+  if(i < 0)
+    i = -i;
+  else if(i > max)
+    i = max - (i - max);
+
+  return i;
+}
 
 float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
                                       const float *in,
@@ -527,7 +535,6 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       && iy < (height - itor->width))
   {
     // Inside image boundary case
-
     // Go to top left pixel
     in = (float *)in + linestride * iy + ix * samplestride;
     in = in - (itor->width - 1) * (samplestride + linestride);
@@ -548,32 +555,18 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
     // At least a valid coordinate
-
     // Point to the upper left pixel index wise
     iy -= itor->width - 1;
     ix -= itor->width - 1;
 
-    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
-    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
-
-    int xtap_first;
-    int xtap_last;
-    _prepare_tap_boundaries(&xtap_first, &xtap_last,
-                           bordermode, 2 * itor->width, ix, width);
-
-    int ytap_first;
-    int ytap_last;
-    _prepare_tap_boundaries(&ytap_first, &ytap_last,
-                           bordermode, 2 * itor->width, iy, height);
-
     // Apply the kernel
-    for(ssize_t i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = 0; i < 2 * itor->width; i++)
     {
-      const ssize_t clip_y = _clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = _mirror(iy + i, height - 1);
       float h = 0.0f;
-      for(ssize_t j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = 0; j < 2 * itor->width; j++)
       {
-        const ssize_t clip_x = _clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = _mirror(ix + j, width - 1);
         const float *ipixel = in + clip_y * linestride + clip_x * samplestride;
         h += kernelh[j] * ipixel[0];
       }
@@ -586,7 +579,9 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
 
 /* --------------------------------------------------------------------------
  * Pixel interpolation function (see usage in ashift.c)
- * ------------------------------------------------------------------------*/
+  using INTERPOLATION_BORDER_MODE = BORDER_MIRROR
+  ---------------------------------------------------------------------------
+*/
 
 void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
                                       const float *in,
@@ -623,7 +618,6 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     && iy < (height - itor->width))
   {
     // Inside image boundary case
-
     // Go to top left pixel
     in = (float *)in + linestride * iy + ix * 4;
     in = in - (itor->width - 1) * (4 + linestride);
@@ -654,34 +648,20 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
     // At least a valid coordinate
-
     // Point to the upper left pixel index wise
     iy -= itor->width - 1;
     ix -= itor->width - 1;
 
-    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
-    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
-
-    int xtap_first;
-    int xtap_last;
-    _prepare_tap_boundaries(&xtap_first, &xtap_last,
-                           bordermode, 2 * itor->width, ix, width);
-
-    int ytap_first;
-    int ytap_last;
-    _prepare_tap_boundaries(&ytap_first, &ytap_last,
-                           bordermode, 2 * itor->width, iy, height);
-
     // Apply the kernel
     dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for(ssize_t i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = 0; i < 2 * itor->width; i++)
     {
-      const ssize_t clip_y = _clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = _mirror(iy + i, height - 1);
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       const float *ipixel = in + clip_y * linestride;
-      for(ssize_t j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = 0; j < 2 * itor->width; j++)
       {
-        const ssize_t clip_x = _clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = _mirror(ix + j, width - 1);
         dt_aligned_pixel_t inpx;
         copy_pixel(inpx, ipixel + 4 * clip_x);
         const float kern = kernelh[j];

@@ -1727,7 +1727,7 @@ clip_rotate_bicubic(read_only image2d_t in,
     float wy = interpolation_func_bicubic((float)j - po.y);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * w;
+    pixel += Areadpixel(in, clip_mirror(i, in_width-1), clip_mirror(j, in_height-1)) * (float4)w;
     weight += w;
   }
 
@@ -1788,7 +1788,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
     float wy = interpolation_func_lanczos(2, (float)j - po.y);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * w;
+    pixel += Areadpixel(in, clip_mirror(i, in_width-1), clip_mirror(j, in_height-1)) * (float4)w;
     weight += w;
   }
 
@@ -1850,7 +1850,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
     float wy = interpolation_func_lanczos(3, (float)j - po.y);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * w;
+    pixel += Areadpixel(in, clip_mirror(i, in_width-1), clip_mirror(j, in_height-1)) * (float4)w;
     weight += w;
   }
 
@@ -2084,16 +2084,13 @@ float interpolation_compute_single(read_only image2d_t in,
     iy -= itor_width - 1;
     ix -= itor_width - 1;
 
-    int tap_last = 2 * itor_width;
     // Apply the kernel
-    for(int i = 0; i < tap_last; i++)
+    for(int i = 0; i < 2 * itor_width; i++)
     {
-      int clip_y = clamp(iy+i, 0, height-1);
       float h = 0.0f;
-      for(int j = 0; j < tap_last; j++)
+      for(int j = 0; j < 2 * itor_width; j++)
       {
-        int clip_x = clamp(ix + j, 0, width-1);
-        h += kernelh[j] * get_image_channel(in, clip_x, clip_y, channel);
+        h += kernelh[j] * get_image_channel(in, clip_mirror(ix+j, width-1), clip_mirror(iy+i, height-1), channel);
       }
       s += kernelv[i] * h;
     }
@@ -2630,8 +2627,8 @@ ashift_bicubic (read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = rx;
-  int ty = ry;
+  int tx = (int)rx;
+  int ty = (int)ry;
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -2645,7 +2642,7 @@ ashift_bicubic (read_only image2d_t in,
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * (float4)w;
+    pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
     weight += w;
   }
 
@@ -2706,8 +2703,8 @@ ashift_lanczos2(read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = rx;
-  int ty = ry;
+  int tx = (int)rx;
+  int ty = (int)ry;
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -2721,7 +2718,7 @@ ashift_lanczos2(read_only image2d_t in,
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * (float4)w;
+    pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
     weight += w;
   }
 
@@ -2782,8 +2779,8 @@ ashift_lanczos3(read_only image2d_t in,
   // get output values by interpolation from input image
   float rx = pin[0];
   float ry = pin[1];
-  int tx = rx;
-  int ty = ry;
+  int tx = (int)rx;
+  int ty = (int)ry;
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -2797,7 +2794,7 @@ ashift_lanczos3(read_only image2d_t in,
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = wx * wy;
 
-    pixel += readpixel(in, i, j) * (float4)w;
+    pixel += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)) * (float4)w;
     weight += w;
   }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2025 darktable developers.
+    copyright (c) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,84 +18,84 @@
 
 #include "common.h"
 
-
-
 /*
     To speed up processing we use an algorithm proposed by B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips,
     "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57.
 */
 
-float fast_mexp2f(const float x)
-{
-  const float i1 = (float)0x3f800000u; // 2^0
-  const float i2 = (float)0x3f000000u; // 2^-1
-  const float k0 = i1 + x * (i2 - i1);
-  union { float f; unsigned int i; } k;
-  k.i = (k0 >= (float)0x800000u) ? k0 : 0;
-  return k.f;
-}
-
-
-float ddirac(const int2 q)
+static inline float ddirac(const int2 q)
 {
   return ((q.x || q.y) ? 1.0f : 0.0f);
 }
 
-
 kernel void
-denoiseprofile_precondition(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                             const float4 a, const float4 sigma2)
+denoiseprofile_precondition(read_only image2d_t in,
+                            write_only image2d_t out,
+                            const int width,
+                            const int height,
+                            const float4 a,
+                            const float4 sigma2)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   const float alpha = pixel.w;
 
   float4 t = fmax(pixel / a, 0.f);
   float4 d = fmax((float4)0.0f, t + (float4)0.375f + sigma2);
-  float4 s = 2.0f*sqrt(d);
+  float4 s = 2.0f * dtcl_sqrt(d);
 
   s.w = alpha;
-
   write_imagef (out, (int2)(x, y), s);
 }
 
 
 kernel void
-denoiseprofile_precondition_v2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                             const float4 a, const float4 p, const float4 b, const float4 wb)
+denoiseprofile_precondition_v2(read_only image2d_t in,
+                               write_only image2d_t out,
+                               const int width,
+                               const int height,
+                               const float4 a,
+                               const float4 p,
+                               const float4 b,
+                               const float4 wb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   const float alpha = pixel.w;
 
-  float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
+  float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * dtcl_sqrt(a)), 0.f);
 
   t.w = alpha;
 
   write_imagef (out, (int2)(x, y), t);
 }
 
-kernel void
-denoiseprofile_precondition_Y0U0V0(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                             const float4 a, const float4 p, const float4 b, global float *toY0U0V0)
+kernel void denoiseprofile_precondition_Y0U0V0(read_only image2d_t in,
+                                               write_only image2d_t out,
+                                               const int width,
+                                               const int height,
+                                               const float4 a,
+                                               const float4 p,
+                                               const float4 b,
+                                               global float *toY0U0V0)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   const float alpha = pixel.w;
 
-  const float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a)), 0.f);
+  const float4 t = fmax(2.0f * dtcl_pow(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * dtcl_sqrt(a)), 0.f);
 
   float4 outpx = (float4)0.0f;
   outpx.x += toY0U0V0[0] * t.x;
@@ -144,8 +144,8 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
   xpq *= (x+q.x < width && x+q.x >= 0) ? 1 : 0;
   ypq *= (y+q.y < height && y+q.y >= 0) ? 1 : 0;
 
-  float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
-  float4 p2 = read_imagef(in, sampleri, (int2)(xpq, ypq));
+  float4 p1 = readpixel(in, x, y);
+  float4 p2 = readpixel(in, xpq, ypq);
   float4 tmp = (p1 - p2)*(p1 - p2);
   float dist = tmp.x + tmp.y + tmp.z;
 
@@ -298,8 +298,8 @@ denoiseprofile_accu(read_only image2d_t in, global float4* U2, global float* U4,
   wpq *= (y+q.y < height) ? 1 : 0;
   wmq *= (y-q.y < height) ? 1 : 0;
 
-  float4 u1_pq = wpq ? read_imagef(in, sampleri, (int2)(x, y) + q) : (float4)0.0f;
-  float4 u1_mq = wmq ? read_imagef(in, sampleri, (int2)(x, y) - q) : (float4)0.0f;
+  float4 u1_pq = wpq ? readpixel(in, x+q.x, y+q.y) : (float4)0.0f;
+  float4 u1_mq = wmq ? readpixel(in, x-q.x, y-q.y) : (float4)0.0f;
 
   float  u4    = U4[gidx];
   float  u4_mq = U4[mad24(clamp(y-q.y, 0, height-1), width, clamp(x-q.x, 0, width-1))];
@@ -329,7 +329,7 @@ denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only imag
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
   px = (px < (float4)0.5f ? (float4)0.0f :
-    0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
+    0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*dtcl_sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
 
   px *= a;
   px.w = alpha;
@@ -355,7 +355,7 @@ denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only i
 
   float4 delta = px * px + (float4)bias;
   float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
-  float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
+  float4 z1 = (px + dtcl_sqrt(fmax((float4)0.0f, delta))) / denominator;
   px = fmax(dtcl_pow(z1, 1.0f / (1.0f - p / 2.0f)) - b, 0.f);
   px = px * wb;
   px.w = alpha;
@@ -375,7 +375,7 @@ denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, c
 
   if(x >= width || y >= height) return;
 
-  float4 px = read_imagef(in, sampleri, (int2)(x, y));
+  float4 px = readpixel(in, x, y);
   const float alpha = px.w;
 
   px = (px < (float4)0.5f ? (float4)0.0f :
@@ -422,7 +422,7 @@ denoiseprofile_backtransform_Y0U0V0(read_only image2d_t in, write_only image2d_t
 
   if(x >= width || y >= height) return;
 
-  const float4 t = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 t = readpixel(in, x, y);
   const float alpha = t.w;
 
   float4 px = (float4)0.0f;
@@ -471,7 +471,7 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
 
   const int mult = 1<<scale;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
   float4 sum = (float4)(0.0f);
   float4 wgt = (float4)(0.0f);
 
@@ -481,7 +481,7 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
     int yy = mad24(mult, j - 2, y);
     int k  = mad24(j, 5, i);
 
-    float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
+    float4 px = readpixel(in, xx, yy);
     float4 w = filter[k]*weight(pixel, px, inv_sigma2);
 
     sum += w*px;
@@ -506,8 +506,8 @@ denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail
 
   if(x >= width || y >= height) return;
 
-  float4 c = read_imagef(coarse, sampleri, (int2)(x, y));
-  float4 d = read_imagef(detail, sampleri, (int2)(x, y));
+  float4 c = readpixel(coarse, x, y);
+  float4 d = readpixel(detail, x, y);
   float4 amount = copysign(fmax((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
   sum.w = c.w;
@@ -529,7 +529,7 @@ denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int h
   const int l = mad24(ylid, xlsz, xlid);
 
   const int isinimage = (x < width && y < height);
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = readpixel(in, x, y);
 
   buffer[l] = isinimage ? pixel*pixel : (float4)0.0f;
 

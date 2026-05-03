@@ -20,7 +20,6 @@
 typedef struct dt_local_laplacian_cl_global_t
 {
   int kernel_pad_input;
-  int kernel_gauss_expand;
   int kernel_gauss_reduce;
   int kernel_laplacian_assemble;
   int kernel_process_curve;

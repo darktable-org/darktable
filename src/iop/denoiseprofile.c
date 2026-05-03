@@ -43,6 +43,7 @@
 
 // which version of the non-local means code should be used?  0=old
 // (this file), 1=new (src/common/nlmeans_core.c)
+// new mode seems to have a perf penalty of 30% without quality improvements as observed in astrophoto denoise
 #define USE_NEW_IMPL_CL 0
 
 #define REDUCESIZE 64
@@ -1674,9 +1675,9 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
   compute_wb_factors(wb,d,piece,wb_weights);
 
   // adaptive p depending on white balance
-  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
-  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
-  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[0] = MAX(d->shadows + 0.1f * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1f * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1f * logf(scale / wb[2]), 0.0f);
   p[3] = 0.0f;
 
   // update the coeffs with strength and scale
@@ -1717,9 +1718,9 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   wb[3] = 0.0;
 
   // adaptive p depending on white balance
-  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
-  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
-  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[0] = MAX(d->shadows + 0.1f * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1f * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1f * logf(scale / wb[2]), 0.0f);
   p[3] = 1.0f;
 
   // update the coeffs with strength and scale

@@ -624,10 +624,9 @@ static inline cl_int nlmeans_cl_accu(
         cl_mem dev_out,
         const int q[2],
         const int height,
-        const int width,
-        const size_t sizes[2])
+        const int width)
 {
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, sizes[0], sizes[1],
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q));
 }
 
@@ -674,7 +673,6 @@ int nlmeans_denoise_cl(
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
-    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -699,7 +697,7 @@ int nlmeans_denoise_cl(
     if(err != CL_SUCCESS) break;
 
     // add weighted proportion of patch's center pixel to output pixel
-    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
+    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width);
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
@@ -759,8 +757,7 @@ int nlmeans_denoiseprofile_cl(
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
-    int q[2] = { patch->rows, patch->cols };
-    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+    const int q[2] = { patch->rows, patch->cols };
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -774,8 +771,8 @@ int nlmeans_denoiseprofile_cl(
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[3] = { ROUNDUPDWD(width, devid), bheight, 1 };
-    const size_t local[3] = { 1, vblocksize, 1 };
+    const size_t sizesl[2] = { ROUNDUPDWD(width, devid), bheight };
+    const size_t local[2] = { 1, vblocksize };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, params->kernel_vert, sizesl, local,
@@ -785,7 +782,7 @@ int nlmeans_denoiseprofile_cl(
     if(err != CL_SUCCESS) break;
 
     // add weighted proportion of patch's center pixel to output pixel
-    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
+    err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width);
     if(err != CL_SUCCESS) break;
 
     dt_opencl_finish_sync_pipe(devid, params->pipetype);
