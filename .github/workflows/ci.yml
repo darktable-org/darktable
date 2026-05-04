@@ -100,7 +100,7 @@ jobs:
         run: |
           sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
       - name: Update base packages
-        timeout-minutes: 1
+        timeout-minutes: 15
         run: |
           set -xe
           rm -rf /var/lib/apt/lists/*
