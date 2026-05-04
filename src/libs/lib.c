@@ -130,10 +130,13 @@ static dt_lib_module_info_t *_get_module_info_for_module(dt_lib_module_t *module
 static void _set_module_preset_label(dt_lib_module_t *module,
                                      const gchar *preset_name)
 {
-  if(!module->expander || !module->has_preset_label(module)) return;
+  if(!module->expander || !module->has_preset_label(module))
+    return;
 
-  gchar *preset_label_text = (*preset_name == '\0')? g_strdup("")
-                                                   : g_strdup_printf("• %s", preset_name);
+  gchar *preset_label_text =
+    (*preset_name == '\0' || (!dt_conf_get_bool("darkroom/ui/auto_module_name_update")))?
+    g_strdup("") : g_strdup_printf("• %s", preset_name);
+
   gtk_label_set_text(GTK_LABEL(module->preset_label), preset_label_text);
   g_free(preset_label_text);
 }
