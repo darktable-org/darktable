@@ -549,6 +549,31 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
   return TRUE;
 }
 
+// find libonnxruntime.so.* recursively, skip auditwheel *.libs/ peers
+static gchar *_scan_for_ort_lib(const char *root)
+{
+  GDir *d = g_dir_open(root, 0, NULL);
+  if(!d) return NULL;
+  gchar *result = NULL;
+  const gchar *name;
+  while((name = g_dir_read_name(d)) && !result)
+  {
+    gchar *p = g_build_filename(root, name, NULL);
+    if(g_file_test(p, G_FILE_TEST_IS_DIR))
+    {
+      if(!g_str_has_suffix(name, ".libs"))
+        result = _scan_for_ort_lib(p);
+    }
+    else if(g_str_has_prefix(name, "libonnxruntime.so."))
+    {
+      result = g_strdup(p);
+    }
+    g_free(p);
+  }
+  g_dir_close(d);
+  return result;
+}
+
 // Scan system and user-space paths for valid ORT libraries.
 // Returns a GList of dt_ai_ort_found_t (caller owns list and contents).
 GList *dt_ai_ort_find_libraries(void)
@@ -624,20 +649,8 @@ GList *dt_ai_ort_find_libraries(void)
       else
       {
         g_free(exact);
-        GDir *d = g_dir_open(dir, 0, NULL);
-        if(d)
-        {
-          const gchar *name;
-          while((name = g_dir_read_name(d)))
-          {
-            if(g_str_has_prefix(name, "libonnxruntime.so."))
-            {
-              user_paths[i] = g_build_filename(dir, name, NULL);
-              break;
-            }
-          }
-          g_dir_close(d);
-        }
+        // preserve_layout puts the lib in onnxruntime/capi/
+        user_paths[i] = _scan_for_ort_lib(dir);
       }
 #endif
     }
