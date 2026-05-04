@@ -359,6 +359,10 @@ PKG_LIB_PATTERN=$(_field lib_pattern "libonnxruntime")
 # wheels that bundle their own dependencies alongside ORT (e.g. the
 # Linux onnxruntime-openvino wheel ships libopenvino*, libtbb*)
 PKG_LIB_EXTRA_PATTERNS=$(echo "$PKG_JSON" | jq -r '.lib_extra_patterns // [] | .[]' 2>/dev/null || true)
+# preserve_layout: TRUE for manylinux wheels with auditwheel-bundled deps
+# whose providers .so RPATH is `$ORIGIN/../../<ep>.libs` (e.g. AMD MIGraphX).
+# default flat extraction matches OpenVINO's $ORIGIN-only RPATH
+PKG_PRESERVE_LAYOUT=$(echo "$PKG_JSON" | jq -r '.preserve_layout // false' 2>/dev/null || echo false)
 PKG_INSTALL_SUBDIR=$(_field install_subdir "onnxruntime-gpu")
 PKG_SIZE_MB=$(_field size_mb "0")
 PKG_ORT_VERSION=$(_field ort_version "")
@@ -425,29 +429,27 @@ fi
 
 # --- Extract ---
 echo "Extracting..."
+
+# nuke any prior install — preserve_layout creates subdirs that a
+# per-pattern depth-1 clean wouldn't catch
+rm -rf "$INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 
-# clean prior install of the same library family so old versioned .so
-# files (and stale symlinks) don't shadow the new install. without this
-# you get a directory containing both libonnxruntime.so.1.24.4 and
-# .so.1.25.1, with the .so.1 symlink pointing at whichever was first
-find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}*.so*" \
-  -delete 2>/dev/null || true
-for pattern in $PKG_LIB_EXTRA_PATTERNS; do
-  find "$INSTALL_DIR" -maxdepth 1 -name "${pattern}*.so*" \
-    -delete 2>/dev/null || true
-done
-
-# build the find -name expression covering the main pattern + any extras
+# flat: copy matched files to INSTALL_DIR/<basename>
+# preserve_layout: keep archive's relative paths (required for manylinux
+# wheels whose providers .so RPATH is `$ORIGIN/../../<ep>.libs`)
 _extract_libs() {
   local search_root="$1"
-  local pattern
-  find "$search_root" -name "${PKG_LIB_PATTERN}*" -type f | while read -r f; do
-    cp "$f" "$INSTALL_DIR/"
-  done
-  for pattern in $PKG_LIB_EXTRA_PATTERNS; do
+  local pattern f rel
+  for pattern in "$PKG_LIB_PATTERN" $PKG_LIB_EXTRA_PATTERNS; do
     find "$search_root" -name "${pattern}*" -type f | while read -r f; do
-      cp "$f" "$INSTALL_DIR/"
+      if [ "$PKG_PRESERVE_LAYOUT" = "true" ]; then
+        rel="${f#$search_root/}"
+        mkdir -p "$INSTALL_DIR/$(dirname "$rel")"
+        cp "$f" "$INSTALL_DIR/$rel"
+      else
+        cp "$f" "$INSTALL_DIR/"
+      fi
     done
   done
 }
@@ -513,20 +515,22 @@ PY
 }
 
 if [ "$PLATFORM" = "linux" ]; then
-  for f in "$INSTALL_DIR"/*.so*; do
-    [ -f "$f" ] || continue
+  find "$INSTALL_DIR" -name "*.so*" -type f | while read -r f; do
     clear_execstack "$f" || true
   done
 fi
 
 # --- Verify ---
-# prefer the versioned main library (libonnxruntime.so.X.Y.Z) and pick
-# the newest by version. sort -V puts 1.25.1 after 1.24.4 even when
-# the dir still has both for any reason
-ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}.so.*" 2>/dev/null \
+# preserve_layout: recurse, skip auditwheel-bundled *.libs/ dirs
+# flat: only look at depth 1
+if [ "$PKG_PRESERVE_LAYOUT" = "true" ]; then
+  _find_args=(! -path '*/*.libs/*')
+else
+  _find_args=(-maxdepth 1)
+fi
+ORT_SO=$(find "$INSTALL_DIR" "${_find_args[@]}" -name "${PKG_LIB_PATTERN}.so.*" -type f 2>/dev/null \
            | sort -V | tail -1)
-# fallback to any matching .so (skip provider libs which aren't the entry point)
-[ -z "$ORT_SO" ] && ORT_SO=$(find "$INSTALL_DIR" -maxdepth 1 -name "${PKG_LIB_PATTERN}*.so*" 2>/dev/null \
+[ -z "$ORT_SO" ] && ORT_SO=$(find "$INSTALL_DIR" "${_find_args[@]}" -name "${PKG_LIB_PATTERN}*.so*" -type f 2>/dev/null \
                               | grep -v providers | sort -V | tail -1)
 
 if [ -z "$ORT_SO" ]; then
@@ -536,7 +540,7 @@ fi
 
 echo ""
 echo "Done. Installed to: $INSTALL_DIR"
-ls -lh "$INSTALL_DIR/"*.so* 2>/dev/null || true
+echo "Library: $ORT_SO"
 echo ""
 echo "To enable in darktable:"
 echo ""

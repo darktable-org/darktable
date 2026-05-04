@@ -82,7 +82,11 @@
       "required_libs": [
         "libmigraphx_c.so.3",
         "librocm_smi64.so.7"
-      ]
+      ],
+      "lib_extra_patterns": [
+        "libhipblas"
+      ],
+      "preserve_layout": true
     },
     {
       "vendor": "amd",
@@ -97,7 +101,13 @@
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-migraphx",
       "size_mb": 100,
-      "requirements": "ROCm 7.1, MIGraphX"
+      "requirements": "ROCm 7.1, MIGraphX",
+      "lib_extra_patterns": [
+        "libamd",
+        "librocprofiler",
+        "libzstd"
+      ],
+      "preserve_layout": true
     },
     {
       "vendor": "amd",
@@ -112,7 +122,8 @@
       "lib_pattern": "libonnxruntime",
       "install_subdir": "onnxruntime-migraphx",
       "size_mb": 50,
-      "requirements": "ROCm 7.2, MIGraphX"
+      "requirements": "ROCm 7.2, MIGraphX",
+      "preserve_layout": false
     },
     {
       "vendor": "intel",
