@@ -1811,7 +1811,16 @@ static void _rebuild_cairo_after(dt_lib_neural_restore_t *d)
 static gboolean _preview_result_idle(gpointer data)
 {
   dt_neural_preview_result_t *res = (dt_neural_preview_result_t *)data;
+  // skip if gui_cleanup ran between schedule and dispatch
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)res->self->data;
+  if(!d)
+  {
+    g_free(res->before);
+    g_free(res->after);
+    g_free(res->export_pixels);
+    g_free(res);
+    return G_SOURCE_REMOVE;
+  }
 
   // discard stale results
   if(res->sequence != g_atomic_int_get(&d->preview_sequence))
@@ -2389,7 +2398,13 @@ typedef struct
 static gboolean _preview_failed_idle(gpointer data)
 {
   _preview_failed_data_t *fd = (_preview_failed_data_t *)data;
+  // skip if gui_cleanup ran between schedule and dispatch
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)fd->self->data;
+  if(!d)
+  {
+    g_free(fd);
+    return G_SOURCE_REMOVE;
+  }
   d->preview_generating = FALSE;
   d->preview_error = fd->err;
   _update_button_sensitivity(d);
@@ -2411,8 +2426,19 @@ static gboolean _preview_raw_result_idle(gpointer data)
 {
   dt_neural_preview_result_raw_t *res
     = (dt_neural_preview_result_raw_t *)data;
+  // skip if gui_cleanup ran between schedule and dispatch
   dt_lib_neural_restore_t *d
     = (dt_lib_neural_restore_t *)res->self->data;
+  if(!d)
+  {
+    g_free(res->src_rgb);
+    g_free(res->denoised_rgb);
+    g_free(res->take_full_cfa);
+    dt_free_align(res->take_full_lin);
+    g_free(res->take_export_pixels);
+    g_free(res);
+    return G_SOURCE_REMOVE;
+  }
 
   // discard stale results
   if(res->sequence != g_atomic_int_get(&d->preview_sequence))
@@ -4107,27 +4133,27 @@ void gui_cleanup(dt_lib_module_t *self)
 
   if(d)
   {
-    // cancel any pending debounced trigger before tearing down state
+    // cancel all pending timers first, before any state teardown
     if(d->preview_trigger_timer)
     {
       g_source_remove(d->preview_trigger_timer);
       d->preview_trigger_timer = 0;
     }
-    // signal preview thread to exit and wait for it. join blocks
-    // here (unlike _cancel_preview during runtime, where we can't
-    // afford to freeze the UI) — happens once on shutdown only
+    if(d->preview_strength_timer)
+    {
+      g_source_remove(d->preview_strength_timer);
+      d->preview_strength_timer = 0;
+    }
+    // signal preview thread to exit and join (blocks; shutdown only)
     g_atomic_int_inc(&d->preview_sequence);
     if(d->preview_thread)
     {
       g_thread_join(d->preview_thread);
       d->preview_thread = NULL;
     }
-    // any worker idle callbacks queued just before the join may still
-    // fire after this point. they check sequence and discard, but they
-    // dereference `d` to do that — drain the main context once so they
-    // run while `d` is still alive
-    while(g_main_context_pending(NULL))
-      g_main_context_iteration(NULL, FALSE);
+    // do not drain the main context here: dispatching arbitrary pending
+    // sources during cleanup crashed on a stale GSource owned by another
+    // lib (issue #20928). idle callbacks guard against d == NULL instead
     g_mutex_clear(&d->preview_inference_lock);
 
     g_free(d->preview_before);
@@ -4138,12 +4164,6 @@ void gui_cleanup(dt_lib_module_t *self)
     g_free(d->export_pixels);
     g_free(d->export_cairo);
 
-    // raw denoise preview cache
-    if(d->preview_strength_timer)
-    {
-      g_source_remove(d->preview_strength_timer);
-      d->preview_strength_timer = 0;
-    }
     g_free(d->preview_full_cfa);
     dt_free_align(d->preview_full_lin);
     g_free(d->preview_raw_src_rgb);
