@@ -90,7 +90,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_contrast_params_t)
 typedef struct dt_iop_contrast_params_t
 {
   float gain_local_contrast;  // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0  $DESCRIPTION: "local contrast"
-  float contrast_scale;       // $MIN: 0.01 $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "details diameter"
+  float detail_level;       // $MIN: 0.0 $MAX: 15.0 $DEFAULT: 4.0 $DESCRIPTION: "detail level"
   float edge_protection;      // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "adjust edge protection"
   int filter_iterations;      // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter iterations"  
   float noise_bias;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.001 $DESCRIPTION: "noise bias"
@@ -136,7 +136,7 @@ typedef struct dt_iop_contrast_gui_data_t
 
   // GTK widgets
   GtkWidget *gain_local_contrast;
-  GtkWidget *contrast_scale;
+  GtkWidget *detail_level;
   GtkWidget *edge_protection;
   GtkWidget *filter_iterations;
   GtkWidget *noise_bias;
@@ -589,12 +589,15 @@ void commit_params(dt_iop_module_t *self,
   d->iterations = p->filter_iterations;
   d->gain_local_contrast = p->gain_local_contrast;
   d->noise_bias = p->noise_bias;
-  d->contrast_scale = p->contrast_scale;
+
+  // UI contrast scale is inverse logarithmic with 0 as 100% of image width.
+  // Convert it to a linear scale for processing.
+  d->contrast_scale = powf(2.0f, -p->detail_level);
 
   // UI feathering is inverted (higher = stricter edge preservation).
   // Adjust the strength based on the number of iterations to maintain a consistent overall effect regardless of iteration count.
   const float default_feathering = 0.2f;  // Base value based on Christian's experiments for a good balance of edge preservation and contrast boost at default settings.
-  d->feathering = default_feathering * powf(2.0, -p->edge_protection) / (p->filter_iterations * p->filter_iterations);
+  d->feathering = default_feathering * powf(2.0f, -p->edge_protection) / (p->filter_iterations * p->filter_iterations);
 }
 
 
@@ -682,7 +685,7 @@ static void show_guiding_controls(const dt_iop_module_t *self)
   const dt_iop_contrast_gui_data_t *g = self->gui_data;
 
   // All filters need these controls
-  gtk_widget_set_visible(g->contrast_scale, TRUE);
+  gtk_widget_set_visible(g->detail_level, TRUE);
   gtk_widget_set_visible(g->edge_protection, TRUE);
 }
 
@@ -693,7 +696,7 @@ void gui_changed(dt_iop_module_t *self,
 {
   const dt_iop_contrast_gui_data_t *g = self->gui_data;
 
-  if(w == g->contrast_scale || w == g->edge_protection)
+  if(w == g->detail_level || w == g->edge_protection)
   {
     invalidate_luminance_cache(self);
   }
@@ -794,14 +797,12 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *filter_label = dt_ui_section_label_new(C_("section", "filter settings"));
   dt_gui_box_add(main_box, filter_label);
   
-  g->contrast_scale = dt_bauhaus_slider_from_params(self, "contrast_scale");
-  dt_bauhaus_slider_set_soft_range(g->contrast_scale, 0.01, 0.25);
-  dt_bauhaus_slider_set_format(g->contrast_scale, "%");
-  dt_bauhaus_slider_set_factor(g->contrast_scale, 100.0);
-  gtk_widget_set_tooltip_text(g->contrast_scale,
-     _("diameter of the details adjusted by local contrast.\n"
-       "warning: big values of this parameter can make the darkroom\n"
-       "preview much slower if denoise profiled is used."));
+  g->detail_level = dt_bauhaus_slider_from_params(self, "detail_level");
+  dt_bauhaus_slider_set_soft_range(g->detail_level, 2.0, 10.0);
+  gtk_widget_set_tooltip_text(g->detail_level,
+     _("detail level adjusted by the local contrast.\n"
+       "higher = more contrast boost in finer details\n"
+       "lower = more contrast boost in coarser details"));
   
 
   g->edge_protection = dt_bauhaus_slider_from_params(self, "edge_protection");
