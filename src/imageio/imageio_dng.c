@@ -36,6 +36,11 @@
 #include <wchar.h>
 #endif
 
+// fallback for libtiff < 4.6
+#ifndef TIFFTAG_PREVIEWCOLORSPACE
+#define TIFFTAG_PREVIEWCOLORSPACE 50970
+#endif
+
 // DNG uses SRATIONAL / RATIONAL for matrix and WB tags. libtiff accepts
 // these as float/double arrays and handles the conversion; we just pass
 // the values as double
