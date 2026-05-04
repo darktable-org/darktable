@@ -520,6 +520,8 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
   // Compute both horizontal and vertical kernels
   const float normh = _compute_upsampling_kernel(itor, kernelh, NULL, x);
   const float normv = _compute_upsampling_kernel(itor, kernelv, NULL, y);
+  // Precompute the inverse of the filter norm for later use
+  const float oonorm = (1.f / (normh * normv));
 
   int ix = (int)x;
   int iy = (int)y;
@@ -550,7 +552,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       s += kernelv[i] * h;
       in += linestride;
     }
-    s = s / (normh * normv);
+    s = _interpolated_out(s * oonorm);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -572,7 +574,7 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       }
       s += kernelv[i] * h;
     }
-    s = s / (normh * normv);
+    s = _interpolated_out(s * oonorm);
   }
   return s; // if called for masks make sure to CLIP to avoid interpolator under/overshoots
 }
@@ -643,7 +645,7 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = fmaxf(0.0f, oonorm * pixel[c]);
+      out[c] = _interpolated_out(pixel[c] * oonorm);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -673,7 +675,7 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = fmaxf(0.0f, oonorm * pixel[c]);
+      out[c] = _interpolated_out(pixel[c] * oonorm);
   }
   else
   {
@@ -1114,11 +1116,9 @@ void dt_interpolation_resample(const dt_interpolation_t *itor,
       // Output pixel is ready
       const size_t baseidx = (size_t)oy * out_stride_floats + (size_t)ox * 4;
 
-      // Clip negative RGB that may be produced by Lanczos undershooting
-      // Negative RGB are invalid values no matter the RGB space (light is positive)
       dt_aligned_pixel_t pixel;
       for_each_channel(c, aligned(vs:16))
-        pixel[c] = fmaxf(0.0f, vs[c]);
+        pixel[c] = _interpolated_out(vs[c]);
       copy_pixel_nontemporal(out + baseidx, pixel);
 
       // Reset vertical resampling context

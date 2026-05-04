@@ -1658,7 +1658,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
   float4 o = (ii >=0 && jj >= 0 && ii < in_width && jj < in_height) ? read_imagef(in, samplerf, po) : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), o);
+  write_ipixel(out, (int2)(x, y), o);
 }
 
 
@@ -1733,7 +1733,7 @@ clip_rotate_bicubic(read_only image2d_t in,
 
   pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -1794,7 +1794,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
   pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -1856,7 +1856,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 
   pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 float maketaps_bilinear(float *taps,
@@ -2153,7 +2153,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 /* kernels for the lens plugin: bicubic interpolation */
@@ -2199,66 +2199,54 @@ lens_distort_bicubic (read_only image2d_t in,
     }
   }
 
-
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_bicubic((float)i - rx);
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
 
-
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_bicubic((float)i - rx);
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = wx * wy;
 
-    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
+    sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
 
-
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
@@ -2272,14 +2260,13 @@ lens_distort_bicubic (read_only image2d_t in,
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -2329,25 +2316,22 @@ lens_distort_lanczos2 (read_only image2d_t in,
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(2, (float)i - rx);
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
@@ -2355,58 +2339,50 @@ lens_distort_lanczos2 (read_only image2d_t in,
 
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(2, (float)i - rx);
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = wx * wy;
 
-    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
+    sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
 
-
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(2, (float)i - rx);
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -2448,84 +2424,72 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(3, (float)i - rx);
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
 
-
   rx = ppi[2] - (float)roi_in_x;
   ry = ppi[3] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum2 = (float2)0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(3, (float)i - rx);
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = wx * wy;
 
-    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
+    sum2 += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
 
-
   rx = ppi[4] - (float)roi_in_x;
   ry = ppi[5] - (float)roi_in_y;
-  rx = clamp(rx, 0.0f, (float)(iwidth - 1));
-  ry = clamp(ry, 0.0f, (float)(iheight - 1));
-
-  tx = rx;
-  ty = ry;
+  tx = (int)rx;
+  ty = (int)ry;
 
   sum = 0.0f;
   weight = 0.0f;
   for(int jj = 1 - kwidth; jj <= kwidth; jj++)
     for(int ii= 1 - kwidth; ii <= kwidth; ii++)
   {
-    int i = clamp(tx + ii, 0, iwidth - 1);
-    int j = clamp(ty + jj, 0, iheight - 1);
+    int i = tx + ii;
+    int j = ty + jj;
 
     float wx = interpolation_func_lanczos(3, (float)i - rx);
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = wx * wy;
 
-    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
+    sum += Areadpixel(in, clip_mirror(i, iwidth-1), clip_mirror(j, iheight-1)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
-
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -2572,10 +2536,10 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   int ty = ry;
 
   float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
-                ? fmax(0.0f, read_imagef(in, samplerf, (float2)(rx, ry)))
+                ? read_imagef(in, samplerf, (float2)(rx+0.5f, ry+0.5f))
                 : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 /* kernel for the ashift module: bicubic interpolation */
@@ -2647,10 +2611,10 @@ ashift_bicubic (read_only image2d_t in,
   }
 
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
-          ? fmax(0.0f, pixel/weight)
+          ? pixel/weight
           : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -2723,10 +2687,10 @@ ashift_lanczos2(read_only image2d_t in,
   }
 
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
-        ? fmax(0.0f, pixel/weight)
+        ? pixel/weight
         : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -2799,10 +2763,10 @@ ashift_lanczos3(read_only image2d_t in,
   }
 
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight)
-          ? fmax(0.0f, pixel/weight)
+          ? pixel/weight
           : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 float _calc_vignette_spline(const float radius,
@@ -2909,7 +2873,7 @@ lens_vignette (read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   float4 pixel = Areadpixel(in, x, y);
-  float4 scale = pi[mad24(y, width, x)]/(float4)0.5f;
+  float4 scale = 2.0f * pi[mad24(y, width, x)];
 
   pixel.xyz *= scale.xyz;
 
@@ -2961,7 +2925,7 @@ kernel void md_lens_correction(read_only image2d_t in,
   }
 
   float4 pixel = {output[0], output[1], output[2], output[3]};
-  write_imagef(out, (int2)(x, y), pixel);
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 #undef MAXKNOTS
 
@@ -3760,7 +3724,7 @@ interpolation_resample (read_only image2d_t in,
   {
     // Clip negative RGB that may be produced by Lanczos undershooting
     // Negative RGB are invalid values no matter the RGB space (light is positive)
-    write_imagef (out, (int2)(x, y), fmax(buffer[ylid], 0.f));
+    write_ipixel(out, (int2)(x, y), buffer[ylid]);
   }
 }
 
