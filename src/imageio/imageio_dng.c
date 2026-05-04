@@ -258,11 +258,10 @@ int dt_imageio_dng_write_cfa_bayer(const char *filename,
       g_unlink(filename);
       return 1;
     }
-    // re-register default tag info on some libtiff builds CFA/DNG
-    // extension tags would be lost across the IFD write, breaking
-    // CFAREPEATPATTERNDIM / CFAPATTERN. return value differs across
-    // libtiff versions; not checked
+    // some libtiff builds drop merged field info on TIFFCreateDirectory,
+    // so re-register or CFA tags are rejected as unknown on the SubIFD
     TIFFCreateDirectory(tif);
+    _register_extra_dng_fields(tif);
   }
 
   // raw payload IFD: single IFD when no preview, otherwise SubIFD0
@@ -399,9 +398,9 @@ int dt_imageio_dng_write_linear(const char *filename,
       g_unlink(filename);
       return 1;
     }
-    // re-initialize directory state so DNG extension tag info is
-    // available on the SubIFD (see comment in write_cfa_bayer)
+    // see comment in write_cfa_bayer
     TIFFCreateDirectory(tif);
+    _register_extra_dng_fields(tif);
   }
 
   // baseline TIFF tags, 3 samples per pixel (demosaicked)
