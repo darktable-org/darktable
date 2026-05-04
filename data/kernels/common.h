@@ -252,6 +252,7 @@ static inline float readsingle(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, sampleri, (int2)(col, row)).x;
 }
+
 static inline float Areadsingle(read_only image2d_t in, int col, int row)
 {
   return read_imagef(in, samplerA, (int2)(col, row)).x;
@@ -267,7 +268,17 @@ static inline float4 Areadpixel(read_only image2d_t in, int col, int row)
   return read_imagef(in, samplerA, (int2)(col, row));
 }
 
+static inline float4 Creadpixel(read_only image2d_t in, int col, int row)
+{
+  return read_imagef(in, samplerc, (int2)(col, row));
+}
+
 static inline float readalpha(read_only image2d_t in, int col, int row)
 {
   return clipf(read_imagef(in, sampleri, (int2)(col, row)).w);
+}
+
+static inline void write_ipixel(write_only image2d_t out, const int2 pos, const float4 pixel)
+{
+  write_imagef(out, pos, fmax(0.0f, pixel));
 }

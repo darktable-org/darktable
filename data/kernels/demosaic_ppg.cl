@@ -521,15 +521,15 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
     const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
     // get four mosaic pattern uint16:
-    const float p1 = readsingle(in, xx,   yy  );
-    const float p2 = readsingle(in, xx+1, yy  );
-    const float p3 = readsingle(in, xx,   yy+1);
-    const float p4 = readsingle(in, xx+1, yy+1);
+    const float p1 = fmax(0.0f, readsingle(in, xx,   yy  ));
+    const float p2 = fmax(0.0f, readsingle(in, xx+1, yy  ));
+    const float p3 = fmax(0.0f, readsingle(in, xx,   yy+1));
+    const float p4 = fmax(0.0f, readsingle(in, xx+1, yy+1));
     color += yfilter*xfilter*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
     weight += yfilter*xfilter;
   }
-  color = (weight > 0.0f) ? fmax(0.0f, color)/weight : (float4)0.0f;
-  write_imagef (out, (int2)(x, y), color);
+  color = (weight > 0.0f) ? color/weight : (float4)0.0f;
+  write_ipixel(out, (int2)(x, y), color);
 }
 
 
