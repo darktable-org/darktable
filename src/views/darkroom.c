@@ -4245,6 +4245,7 @@ gboolean gesture_pinch(dt_view_t *self,
   dt_develop_t *dev = self->data;
   if(!dev) return FALSE;
 
+  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const double pinch_step_ratio = 1.1;
 
   static double pinch_last_scale = 0.0;
@@ -4294,7 +4295,7 @@ gboolean gesture_pinch(dt_view_t *self,
     dt_print(DT_DEBUG_INPUT,
              "[darkroom pinch] zoom step=%d x=%.2f y=%.2f ratio=%.6f scale=%.6f last=%.6f",
              zoom_step, x, y, ratio, scale, pinch_last_scale);
-    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, FALSE);
+    dt_dev_zoom_move(&dev->full, DT_ZOOM_SCROLL, 0.0f, zoom_step, x, y, constrained);
     pinch_last_scale = scale;
   }
   else
