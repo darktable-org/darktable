@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2021-2025 darktable developers.
+    copyright (c) 2021-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,8 +23,10 @@
 kernel void convolve(read_only image2d_t in,
                      __global const float *kern,
                      write_only image2d_t out,
-                     const int width, const int height,
-                     const int radius, const int kernel_width)
+                     const int width,
+                     const int height,
+                     const int radius,
+                     const int kernel_width)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -56,7 +58,8 @@ kernel void convolve_sparse(read_only image2d_t in,
                              __global const int *offsets_y,
                              __global const float *values,
                              write_only image2d_t out,
-                             const int width, const int height,
+                             const int width,
+                             const int height,
                              const int n_entries)
 {
   const int x = get_global_id(0);
@@ -82,7 +85,8 @@ kernel void convolve_sparse(read_only image2d_t in,
 kernel void restore_alpha(read_only image2d_t original,
                           read_only image2d_t blurred,
                           write_only image2d_t out,
-                          const int width, const int height)
+                          const int width,
+                          const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);

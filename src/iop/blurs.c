@@ -601,108 +601,111 @@ void process(dt_iop_module_t *self,
     DT_OMP_FOR_SIMD(aligned(in, out : 64))
     for(size_t k = 0; k < npix; k++)
       out[k * 4 + 3] = in[k * 4 + 3];
-
-    return;
   }
-
-  // ── Lens / motion: sparse spatial convolution ──
-  //
-  // With tiling_callback declaring overlap = radius, the pipeline provides
-  // roi_in with a halo of (at least) radius pixels on each side.
-  // ox/oy are the position of roi_out's origin within the roi_in buffer.
-  const int in_width = roi_in->width;
-  const int in_height = roi_in->height;
-  const int ox = roi_out->x - roi_in->x; // >= 0
-  const int oy = roi_out->y - roi_in->y; // >= 0
-
-  const size_t kernel_width = 2 * radius + 1;
-  const size_t max_entries = kernel_width * kernel_width;
-
-  float *const restrict kernel = dt_alloc_align_float(max_entries);
-  ptrdiff_t *const restrict offsets = dt_alloc_aligned(max_entries * sizeof(ptrdiff_t));
-  float *const restrict values = dt_alloc_align_float(max_entries);
-
-  if(!kernel || !offsets || !values)
+  else
   {
-    dt_free_align(kernel);
-    dt_free_align(offsets);
-    dt_free_align(values);
-    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
-    return;
-  }
 
-  _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+    // ── Lens / motion: sparse spatial convolution ──
+    //
+    // With tiling_callback declaring overlap = radius, the pipeline provides
+    // roi_in with a halo of (at least) radius pixels on each side.
+    // ox/oy are the position of roi_out's origin within the roi_in buffer.
+    const int in_width = roi_in->width;
+    const int in_height = roi_in->height;
+    const int ox = roi_out->x - roi_in->x; // >= 0
+    const int oy = roi_out->y - roi_in->y; // >= 0
 
-  // Build sparse list: pixel-offset (in floats) from center, for the interior
-  // fast path where no clamping is needed.
-  int n_nonzero = 0;
-  for(int l = -radius; l <= radius; l++)
-    for(int m = -radius; m <= radius; m++)
+    const size_t kernel_width = 2 * radius + 1;
+    const size_t max_entries = kernel_width * kernel_width;
+
+    float *const restrict kernel = dt_alloc_align_float(max_entries);
+    ptrdiff_t *const restrict offsets = dt_alloc_aligned(max_entries * sizeof(ptrdiff_t));
+    float *const restrict values = dt_alloc_align_float(max_entries);
+
+    if(!kernel || !offsets || !values)
     {
-      const float k = kernel[(l + radius) * kernel_width + (m + radius)];
-      if(k > 1e-6f)
-      {
-        offsets[n_nonzero] = ((ptrdiff_t)l * in_width + m) * 4;
-        values[n_nonzero] = k;
-        n_nonzero++;
-      }
+      dt_free_align(kernel);
+      dt_free_align(offsets);
+      dt_free_align(values);
+      dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     }
-
-  DT_OMP_FOR(collapse(2))
-  for(int i = 0; i < roi_out->height; i++)
-    for(int j = 0; j < roi_out->width; j++)
+    else
     {
-      const size_t idx_out = ((size_t)i * roi_out->width + j) * 4;
-      float DT_ALIGNED_PIXEL acc[4] = { 0.f };
 
-      // Position of this output pixel inside the roi_in buffer
-      const int ci = i + oy;
-      const int cj = j + ox;
+      _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
 
-      if(ci >= radius && cj >= radius && ci < in_height - radius && cj < in_width - radius)
-      {
-        // Interior: all neighbours are within roi_in — no clamping needed
-        const float *in_center = in + ((size_t)ci * in_width + cj) * 4;
-        for(int s = 0; s < n_nonzero; s++)
+      // Build sparse list: pixel-offset (in floats) from center, for the interior
+      // fast path where no clamping is needed.
+      int n_nonzero = 0;
+      for(int l = -radius; l <= radius; l++)
+        for(int m = -radius; m <= radius; m++)
         {
-          const float *p_src = in_center + offsets[s];
-          const float w = values[s];
-          acc[0] += w * p_src[0];
-          acc[1] += w * p_src[1];
-          acc[2] += w * p_src[2];
-          acc[3] += w * p_src[3];
-        }
-      }
-      else
-      {
-        // Edge: clamp neighbours to roi_in bounds
-        for(int l = -radius; l <= radius; l++)
-          for(int m = -radius; m <= radius; m++)
+          const float k = kernel[(l + radius) * kernel_width + (m + radius)];
+          if(k > 1e-6f)
           {
-            const float k = kernel[(l + radius) * kernel_width + (m + radius)];
-            if(k > 1e-6f)
+            offsets[n_nonzero] = ((ptrdiff_t)l * in_width + m) * 4;
+            values[n_nonzero] = k;
+            n_nonzero++;
+          }
+        }
+
+      DT_OMP_FOR(collapse(2))
+      for(int i = 0; i < roi_out->height; i++)
+        for(int j = 0; j < roi_out->width; j++)
+        {
+          const size_t idx_out = ((size_t)i * roi_out->width + j) * 4;
+          float DT_ALIGNED_PIXEL acc[4] = { 0.f };
+
+          // Position of this output pixel inside the roi_in buffer
+          const int ci = i + oy;
+          const int cj = j + ox;
+
+          if(ci >= radius && cj >= radius && ci < in_height - radius && cj < in_width - radius)
+          {
+            // Interior: all neighbours are within roi_in — no clamping needed
+            const float *in_center = in + ((size_t)ci * in_width + cj) * 4;
+            for(int s = 0; s < n_nonzero; s++)
             {
-              const int ii = CLAMP(ci + l, 0, in_height - 1);
-              const int jj = CLAMP(cj + m, 0, in_width - 1);
-              const float *p_src = in + ((size_t)ii * in_width + jj) * 4;
-              acc[0] += k * p_src[0];
-              acc[1] += k * p_src[1];
-              acc[2] += k * p_src[2];
-              acc[3] += k * p_src[3];
+              const float *p_src = in_center + offsets[s];
+              const float w = values[s];
+              acc[0] += w * p_src[0];
+              acc[1] += w * p_src[1];
+              acc[2] += w * p_src[2];
+              acc[3] += w * p_src[3];
             }
           }
-      }
+          else
+          {
+            // Edge: clamp neighbours to roi_in bounds
+            for(int l = -radius; l <= radius; l++)
+              for(int m = -radius; m <= radius; m++)
+              {
+                const float k = kernel[(l + radius) * kernel_width + (m + radius)];
+                if(k > 1e-6f)
+                {
+                  const int ii = CLAMP(ci + l, 0, in_height - 1);
+                  const int jj = CLAMP(cj + m, 0, in_width - 1);
+                  const float *p_src = in + ((size_t)ii * in_width + jj) * 4;
+                  acc[0] += k * p_src[0];
+                  acc[1] += k * p_src[1];
+                  acc[2] += k * p_src[2];
+                  acc[3] += k * p_src[3];
+                }
+              }
+          }
 
-      out[idx_out + 0] = acc[0];
-      out[idx_out + 1] = acc[1];
-      out[idx_out + 2] = acc[2];
-      // preserve original alpha (pipeline mask)
-      out[idx_out + 3] = in[((size_t)ci * in_width + cj) * 4 + 3];
+          out[idx_out + 0] = acc[0];
+          out[idx_out + 1] = acc[1];
+          out[idx_out + 2] = acc[2];
+          // preserve original alpha (pipeline mask)
+          out[idx_out + 3] = in[((size_t)ci * in_width + cj) * 4 + 3];
+        }
+
+      dt_free_align(kernel);
+      dt_free_align(offsets);
+      dt_free_align(values);
     }
-
-  dt_free_align(kernel);
-  dt_free_align(offsets);
-  dt_free_align(values);
+  }
 }
 
 
