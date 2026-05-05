@@ -1382,7 +1382,7 @@ void process(dt_iop_module_t *self,
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
-  const int iterations = MAX(ceilf((float)data->iterations), 1);
+  const int iterations = MAX(data->iterations, 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
@@ -1614,7 +1614,7 @@ int process_cl(dt_iop_module_t *self,
 
   gboolean out_of_memory = FALSE;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_SUCCESS;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1627,23 +1627,21 @@ int process_cl(dt_iop_module_t *self,
   if(fastmode)
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-
   cl_mem in = dev_in;
   cl_mem temp_in = NULL;
   cl_mem temp_out = NULL;
 
-  cl_mem temp1 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
-  cl_mem temp2 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
-  cl_mem mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(uint8_t));
+  cl_mem temp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  cl_mem temp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  cl_mem mask = dt_opencl_alloc_device(devid, width, height, sizeof(uint8_t));
   // temp buffer for blurs. We will need to cycle between them for memory efficiency
-  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+  cl_mem LF_even = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  cl_mem LF_odd = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
-  const int iterations = MAX(ceilf((float)data->iterations), 1);
+  const int iterations = MAX(data->iterations, 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
@@ -1651,7 +1649,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem HF[MAX_NUM_SCALES];
   for(int s = 0; s < scales; s++)
   {
-    HF[s] = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+    HF[s] = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(!HF[s]) out_of_memory = TRUE;
   }
 
@@ -1668,7 +1666,6 @@ int process_cl(dt_iop_module_t *self,
   if(has_mask)
   {
     // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
-    // FIXME OPENCL these kernels don't check for width & height
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_diffuse_build_mask, width, height,
                               CLARG(in), CLARG(mask), CLARG(data->threshold),
                               CLARG(roi_out->width), CLARG(roi_out->height));
@@ -1684,7 +1681,7 @@ int process_cl(dt_iop_module_t *self,
     in = temp1;
   }
 
-  for(int it = 0; it < iterations; it++)
+  for(int it = 0; it < iterations && err == CL_SUCCESS; it++)
   {
     if(it == 0)
     {
@@ -1704,9 +1701,12 @@ int process_cl(dt_iop_module_t *self,
 
     if(it == iterations - 1)
       temp_out = dev_out;
+
     err = wavelets_process_cl(devid, temp_in, temp_out, mask,
                               width, height, data, gd, final_radius,
                               scale, scales, has_mask, HF, LF_odd, LF_even);
+    if(err == CL_SUCCESS)
+      dt_opencl_finish(devid);
   }
 
 error:

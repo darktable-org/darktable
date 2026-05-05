@@ -304,8 +304,8 @@ build_mask(read_only image2d_t in, write_only image2d_t mask,
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  float4 pix_in = read_imagef(in, samplerA, (int2)(x, y));
-  float m = (pix_in.x > threshold || pix_in.y > threshold || pix_in.z > threshold);
+  float4 pix_in = Areadpixel(in, x, y);
+  char m = (pix_in.x > threshold || pix_in.y > threshold || pix_in.z > threshold);
   write_imageui(mask, (int2)(x, y), m);
 }
 
@@ -317,7 +317,7 @@ inpaint_mask(write_only image2d_t inpainted, read_only image2d_t original,
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  float4 pix_in = read_imagef(original, samplerA, (int2)(x, y));
+  float4 pix_in = Areadpixel(original, x, y);
   char m = read_imageui(mask, samplerA, (int2)(x, y)).x;
   float4 pix_out = pix_in;
 
