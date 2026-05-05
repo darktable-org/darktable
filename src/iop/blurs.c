@@ -24,7 +24,9 @@
 #include "iop/iop_api.h"
 
 // #include <fftw3.h> // one day, include FFT convolution
+#include "common/gaussian.h"
 #include "common/math.h"
+#include "develop/tiling.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -70,6 +72,8 @@ typedef struct dt_iop_blurs_gui_data_t
 typedef struct dt_iop_blurs_global_data_t
 {
   int kernel_blurs_convolve;
+  int kernel_blurs_convolve_sparse;
+  int kernel_blurs_restore_alpha;
 } dt_iop_blurs_global_data_t;
 
 
@@ -93,7 +97,7 @@ const char **description(dt_iop_module_t *self)
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 
@@ -114,6 +118,26 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   memcpy(piece->data, p1, self->params_size);
+}
+
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
+{
+  const dt_iop_blurs_params_t *p = piece->data;
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const int radius = MAX(roundf(p->radius / scale), 2);
+
+  // Gaussian uses IIR which handles tiling internally (no halo needed).
+  // Lens/motion need full radius overlap so the convolution neighbourhood is intact.
+  tiling->factor = 2.5f;
+  tiling->factor_cl = 3.5f;
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = (p->type == DT_BLUR_GAUSSIAN) ? 0 : radius;
+  tiling->align = 1;
 }
 
 // B spline filter
@@ -533,12 +557,12 @@ cleanup:
 }
 #endif
 
-// Spatial convolution should be slower for large blurs because it is o(N²) where N is the width of the kernel
-// but code is much simpler and easier to debug
-
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                    const void *const restrict ivoid, void *const restrict ovoid,
-                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict ivoid,
+             void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_blurs_params_t *p = piece->data;
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -549,64 +573,139 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float *const restrict in = DT_IS_ALIGNED(ivoid);
   float *const restrict out = DT_IS_ALIGNED(ovoid);
 
-  // Init the blur kernel
   const int radius = MAX(roundf(p->radius / scale), 2);
-  const size_t kernel_width = 2 * radius + 1;
 
-  float *const restrict kernel = dt_alloc_align_float(kernel_width * kernel_width);
-  _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+  // ── Gaussian fast path: IIR separable filter, O(n) regardless of radius ──
+  if(p->type == DT_BLUR_GAUSSIAN)
+  {
+    // sigma matched to the original expf(-4*(d/radius)²) kernel shape
+    const float sigma = (float)(radius - 1) / (2.0f * sqrtf(2.0f));
+    const float range = 1.0e9f;
+    const dt_aligned_pixel_t maxv = { range, range, range, range };
+    const dt_aligned_pixel_t minv = { -range, -range, -range, -range };
 
-  DT_OMP_FOR(collapse(2))
-  for(int i = 0; i < roi_out->height; i++)
-    for(int j = 0; j < roi_out->width; j++)
+    dt_gaussian_t *g =
+      dt_gaussian_init(roi_in->width, roi_in->height, 4, maxv, minv, sigma, DT_IOP_GAUSSIAN_ZERO);
+    if(g)
     {
-      const size_t index = ((i * roi_out->width) + j) * 4;
-      float DT_ALIGNED_PIXEL acc[4] = { 0.f };
-
-      if(i >= radius && j >= radius && i < roi_out->height - radius && j < roi_out->width - radius)
-      {
-        // We are in the safe area, no need to check for out-of-bounds
-        for(int l = -radius; l <= radius; l++)
-          for(int m = -radius; m <= radius; m++)
-          {
-            const int ii = i + l;
-            const int jj = j + m;
-            const size_t idx_shift = ((ii * roi_out->width) + jj) * 4;
-
-            const int ik = l + radius;
-            const int jk = m + radius;
-            const size_t idx_kernel = (ik * kernel_width) + jk;
-            const float k = kernel[idx_kernel];
-
-            for_four_channels(c, aligned(in : 64)) acc[c] += k * in[idx_shift + c];
-          }
-      }
-      else
-      {
-        // We are close to borders, we need to clamp indices to bounds
-        // assume constant boundary conditions
-        for(int l = -radius; l <= radius; l++)
-          for(int m = -radius; m <= radius; m++)
-          {
-            const int ii = CLAMP((int)i + l, (int)0, (int)roi_out->height - 1);
-            const int jj = CLAMP((int)j + m, (int)0, (int)roi_out->width - 1);
-            const size_t idx_shift = ((ii * roi_out->width) + jj) * 4;
-
-            const int ik = l + radius;
-            const int jk = m + radius;
-            const size_t idx_kernel = (ik * kernel_width) + jk;
-            const float k = kernel[idx_kernel];
-
-            for_four_channels(c, aligned(in : 64)) acc[c] += k * in[idx_shift + c];
-          }
-      }
-
-      for_each_channel(c, aligned(out : 64) aligned(acc : 16)) out[index + c] = acc[c];
-
-      // copy alpha
-      out[index + 3] = in[index + 3];
+      dt_gaussian_blur_4c(g, in, out);
+      dt_gaussian_free(g);
     }
-  dt_free_align(kernel);
+    else
+    {
+      dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
+    }
+
+    // dt_gaussian_blur_4c also blurs alpha; restore original pipeline mask
+    const size_t npix = (size_t)roi_out->width * roi_out->height;
+    DT_OMP_FOR_SIMD(aligned(in, out : 64))
+    for(size_t k = 0; k < npix; k++)
+      out[k * 4 + 3] = in[k * 4 + 3];
+  }
+  else
+  {
+
+    // ── Lens / motion: sparse spatial convolution ──
+    //
+    // With tiling_callback declaring overlap = radius, the pipeline provides
+    // roi_in with a halo of (at least) radius pixels on each side.
+    // ox/oy are the position of roi_out's origin within the roi_in buffer.
+    const int in_width = roi_in->width;
+    const int in_height = roi_in->height;
+    const int ox = roi_out->x - roi_in->x; // >= 0
+    const int oy = roi_out->y - roi_in->y; // >= 0
+
+    const size_t kernel_width = 2 * radius + 1;
+    const size_t max_entries = kernel_width * kernel_width;
+
+    float *const restrict kernel = dt_alloc_align_float(max_entries);
+    ptrdiff_t *const restrict offsets = dt_alloc_aligned(max_entries * sizeof(ptrdiff_t));
+    float *const restrict values = dt_alloc_align_float(max_entries);
+
+    if(!kernel || !offsets || !values)
+    {
+      dt_free_align(kernel);
+      dt_free_align(offsets);
+      dt_free_align(values);
+      dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
+    }
+    else
+    {
+
+      _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+
+      // Build sparse list: pixel-offset (in floats) from center, for the interior
+      // fast path where no clamping is needed.
+      int n_nonzero = 0;
+      for(int l = -radius; l <= radius; l++)
+        for(int m = -radius; m <= radius; m++)
+        {
+          const float k = kernel[(l + radius) * kernel_width + (m + radius)];
+          if(k > 1e-6f)
+          {
+            offsets[n_nonzero] = ((ptrdiff_t)l * in_width + m) * 4;
+            values[n_nonzero] = k;
+            n_nonzero++;
+          }
+        }
+
+      DT_OMP_FOR(collapse(2))
+      for(int i = 0; i < roi_out->height; i++)
+        for(int j = 0; j < roi_out->width; j++)
+        {
+          const size_t idx_out = ((size_t)i * roi_out->width + j) * 4;
+          float DT_ALIGNED_PIXEL acc[4] = { 0.f };
+
+          // Position of this output pixel inside the roi_in buffer
+          const int ci = i + oy;
+          const int cj = j + ox;
+
+          if(ci >= radius && cj >= radius && ci < in_height - radius && cj < in_width - radius)
+          {
+            // Interior: all neighbours are within roi_in — no clamping needed
+            const float *in_center = in + ((size_t)ci * in_width + cj) * 4;
+            for(int s = 0; s < n_nonzero; s++)
+            {
+              const float *p_src = in_center + offsets[s];
+              const float w = values[s];
+              acc[0] += w * p_src[0];
+              acc[1] += w * p_src[1];
+              acc[2] += w * p_src[2];
+              acc[3] += w * p_src[3];
+            }
+          }
+          else
+          {
+            // Edge: clamp neighbours to roi_in bounds
+            for(int l = -radius; l <= radius; l++)
+              for(int m = -radius; m <= radius; m++)
+              {
+                const float k = kernel[(l + radius) * kernel_width + (m + radius)];
+                if(k > 1e-6f)
+                {
+                  const int ii = CLAMP(ci + l, 0, in_height - 1);
+                  const int jj = CLAMP(cj + m, 0, in_width - 1);
+                  const float *p_src = in + ((size_t)ii * in_width + jj) * 4;
+                  acc[0] += k * p_src[0];
+                  acc[1] += k * p_src[1];
+                  acc[2] += k * p_src[2];
+                  acc[3] += k * p_src[3];
+                }
+              }
+          }
+
+          out[idx_out + 0] = acc[0];
+          out[idx_out + 1] = acc[1];
+          out[idx_out + 2] = acc[2];
+          // preserve original alpha (pipeline mask)
+          out[idx_out + 3] = in[((size_t)ci * in_width + cj) * 4 + 3];
+        }
+
+      dt_free_align(kernel);
+      dt_free_align(offsets);
+      dt_free_align(values);
+    }
+  }
 }
 
 
@@ -618,38 +717,138 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const dt_iop_blurs_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
-  cl_mem kernel_cl = NULL;
   const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
 
-
-  // Init the blur kernel
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const int radius = MAX(roundf(p->radius / scale), 2);
-  const size_t kernel_width = 2 * radius + 1;
 
-  float *const restrict kernel = dt_alloc_align_float(kernel_width * kernel_width);
-  if(kernel)
+  // ── Gaussian fast path: IIR separable filter ──
+  if(p->type == DT_BLUR_GAUSSIAN)
   {
-    _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
-    kernel_cl = dt_opencl_copy_host_to_device(devid, kernel, kernel_width, kernel_width, sizeof(float));
-    if(kernel_cl)
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_blurs_convolve, width, height,
-        CLARG(dev_in), CLARG(kernel_cl), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
-        CLARG(radius));
+    const float sigma = (float)(radius - 1) / (2.0f * sqrtf(2.0f));
+    const float range = 1.0e9f;
+    const dt_aligned_pixel_t maxv = { range, range, range, range };
+    const dt_aligned_pixel_t minv = { -range, -range, -range, -range };
+
+    cl_mem dev_blurred = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    dt_gaussian_cl_t *g =
+      dt_gaussian_init_cl(devid, width, height, 4, maxv, minv, sigma, DT_IOP_GAUSSIAN_ZERO);
+    if(dev_blurred && g)
+    {
+      err = dt_gaussian_blur_cl(g, dev_in, dev_blurred);
+      if(err == CL_SUCCESS)
+        err = dt_opencl_enqueue_kernel_2d_args(devid,
+                                               gd->kernel_blurs_restore_alpha,
+                                               width,
+                                               height,
+                                               CLARG(dev_in),
+                                               CLARG(dev_blurred),
+                                               CLARG(dev_out),
+                                               CLARG(width),
+                                               CLARG(height));
+    }
+    dt_gaussian_free_cl(g);
+    dt_opencl_release_mem_object(dev_blurred);
+    return err;
   }
+
+  // ── Lens / motion: sparse convolution ──
+  const size_t kernel_width = 2 * radius + 1;
+  const size_t max_entries = kernel_width * kernel_width;
+
+  float *const restrict kernel = dt_alloc_align_float(max_entries);
+  int *const restrict offsets_x = dt_alloc_aligned(max_entries * sizeof(int));
+  int *const restrict offsets_y = dt_alloc_aligned(max_entries * sizeof(int));
+  float *const restrict values = dt_alloc_align_float(max_entries);
+
+  cl_mem dev_offsets_x = NULL;
+  cl_mem dev_offsets_y = NULL;
+  cl_mem dev_values = NULL;
+  cl_mem dev_kernel = NULL;
+
+  if(!kernel || !offsets_x || !offsets_y || !values)
+    goto cleanup_cl;
+
+  _build_pixel_kernel(kernel, kernel_width, kernel_width, p);
+
+  // Build sparse list
+  int n_nonzero = 0;
+  for(int l = -radius; l <= radius; l++)
+    for(int m = -radius; m <= radius; m++)
+    {
+      const float k = kernel[(l + radius) * kernel_width + (m + radius)];
+      if(k > 1e-6f)
+      {
+        offsets_x[n_nonzero] = m;
+        offsets_y[n_nonzero] = l;
+        values[n_nonzero] = k;
+        n_nonzero++;
+      }
+    }
+
+  // Try sparse path first; fall back to dense if allocation fails
+  dev_offsets_x = dt_opencl_copy_host_to_device_constant(devid, n_nonzero * sizeof(int), offsets_x);
+  dev_offsets_y = dt_opencl_copy_host_to_device_constant(devid, n_nonzero * sizeof(int), offsets_y);
+  dev_values = dt_opencl_copy_host_to_device_constant(devid, n_nonzero * sizeof(float), values);
+
+  if(dev_offsets_x && dev_offsets_y && dev_values)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid,
+                                           gd->kernel_blurs_convolve_sparse,
+                                           width,
+                                           height,
+                                           CLARG(dev_in),
+                                           CLARG(dev_offsets_x),
+                                           CLARG(dev_offsets_y),
+                                           CLARG(dev_values),
+                                           CLARG(dev_out),
+                                           CLARG(width),
+                                           CLARG(height),
+                                           CLARG(n_nonzero));
+  }
+  else
+  {
+    // Dense fallback: kernel as read-only buffer (L2-cacheable on GPU)
+    dev_kernel = dt_opencl_copy_host_to_device_constant(devid, max_entries * sizeof(float), kernel);
+    if(dev_kernel)
+    {
+      const int kw = (int)kernel_width;
+      err = dt_opencl_enqueue_kernel_2d_args(devid,
+                                             gd->kernel_blurs_convolve,
+                                             width,
+                                             height,
+                                             CLARG(dev_in),
+                                             CLARG(dev_kernel),
+                                             CLARG(dev_out),
+                                             CLARG(width),
+                                             CLARG(height),
+                                             CLARG(radius),
+                                             CLARG(kw));
+    }
+  }
+
+cleanup_cl:
   dt_free_align(kernel);
-  dt_opencl_release_mem_object(kernel_cl);
+  dt_free_align(offsets_x);
+  dt_free_align(offsets_y);
+  dt_free_align(values);
+  dt_opencl_release_mem_object(dev_offsets_x);
+  dt_opencl_release_mem_object(dev_offsets_y);
+  dt_opencl_release_mem_object(dev_values);
+  dt_opencl_release_mem_object(dev_kernel);
   return err;
 }
 
 void init_global(dt_iop_module_so_t *self)
 {
-  const int program = 34;
+  const int program = 34; // blurs.cl
   dt_iop_blurs_global_data_t *gd = malloc(sizeof(dt_iop_blurs_global_data_t));
   self->data = gd;
   gd->kernel_blurs_convolve = dt_opencl_create_kernel(program, "convolve");
+  gd->kernel_blurs_convolve_sparse = dt_opencl_create_kernel(program, "convolve_sparse");
+  gd->kernel_blurs_restore_alpha = dt_opencl_create_kernel(program, "restore_alpha");
 }
 
 
@@ -657,6 +856,8 @@ void cleanup_global(dt_iop_module_so_t *self)
 {
   const dt_iop_blurs_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_blurs_convolve);
+  dt_opencl_free_kernel(gd->kernel_blurs_convolve_sparse);
+  dt_opencl_free_kernel(gd->kernel_blurs_restore_alpha);
   free(self->data);
   self->data = NULL;
 }
