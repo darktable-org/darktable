@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-04 21:15-0300\n"
-"PO-Revision-Date: 2026-05-04 21:14-0300\n"
+"POT-Creation-Date: 2026-05-05 17:03-0300\n"
+"PO-Revision-Date: 2026-05-05 17:10-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3567,7 +3567,7 @@ msgstr "raio"
 #: ../src/iop/bloom.c:390 ../src/iop/denoiseprofile.c:3701
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
 #: ../src/iop/hotpixels.c:449 ../src/iop/nlmeans.c:443 ../src/iop/velvia.c:281
-#: ../src/libs/neural_restore.c:3875 ../src/libs/neural_restore.c:3892
+#: ../src/libs/neural_restore.c:3901 ../src/libs/neural_restore.c:3918
 msgid "strength"
 msgstr "força"
 
@@ -4081,9 +4081,8 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:102
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:201
-#, fuzzy
 msgid "pull strength"
-msgstr "força"
+msgstr "força de atração"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:108
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:205
@@ -4092,17 +4091,15 @@ msgstr "proteção de cores neutras"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:114
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:209
-#, fuzzy
 msgid "pull width"
-msgstr "largura para impressão"
+msgstr "largura da atração"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:120
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:126
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:213
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:217
-#, fuzzy
 msgid "custom node hue"
-msgstr "ordenação personalizada"
+msgstr "nó de matiz personalizada"
 
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:132
 #: ../build/lib/darktable/plugins/introspection_colorharmonizer.c:221
@@ -6153,13 +6150,13 @@ msgstr "menu flutuante"
 #: ../src/gui/presets.c:575 ../src/gui/styles_dialog.c:554
 #: ../src/gui/welcome.c:169 ../src/imageio/storage/disk.c:200
 #: ../src/imageio/storage/gallery.c:149 ../src/imageio/storage/latex.c:145
-#: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:379
+#: ../src/iop/lut3d.c:1575 ../src/iop/rasterfile.c:382
 #: ../src/libs/collect.c:463 ../src/libs/collect.c:3534
 #: ../src/libs/copy_history.c:114 ../src/libs/export_metadata.c:166
 #: ../src/libs/geotagging.c:952 ../src/libs/import.c:1815
 #: ../src/libs/import.c:1927 ../src/libs/import.c:2019
 #: ../src/libs/metadata.c:845 ../src/libs/metadata_view.c:1464
-#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:3820
+#: ../src/libs/modulegroups.c:3729 ../src/libs/neural_restore.c:3846
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:457
 #: ../src/libs/styles.c:503 ../src/libs/styles.c:595 ../src/libs/styles.c:656
 #: ../src/libs/styles.c:1019 ../src/libs/tagging.c:1670
@@ -6537,7 +6534,7 @@ msgstr "pasta"
 msgid "camera"
 msgstr "câmera"
 
-#: ../src/common/collection.c:618 ../src/gui/metadata_tags.c:117
+#: ../src/common/collection.c:618 ../src/gui/metadata_tags.c:116
 #: ../src/libs/tagging.c:3720
 msgid "tag"
 msgstr "etiqueta"
@@ -7810,12 +7807,12 @@ msgstr ""
 "o filtro guiado independente de exposição não conseguiu alocar memória, "
 "verifique sua configuração de RAM"
 
-#: ../src/common/exif.cc:6045
+#: ../src/common/exif.cc:6062
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:6104
+#: ../src/common/exif.cc:6121
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
@@ -10368,7 +10365,7 @@ msgid "purpose"
 msgstr "propósito"
 
 #. process button
-#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:3947
+#: ../src/develop/imageop.c:2982 ../src/libs/neural_restore.c:3973
 msgid "process"
 msgstr "processamento"
 
@@ -10732,103 +10729,102 @@ msgstr "usar as mesmas formas que"
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
-#: ../src/develop/masks/object.c:843
+#: ../src/develop/masks/object.c:851
 msgid "set raster mask root folder in preferences"
 msgstr "determinar pasta raiz de máscaras de pixels nas preferências"
 
-#: ../src/develop/masks/object.c:851
+#: ../src/develop/masks/object.c:859
 msgid "cannot create raster mask folder"
 msgstr "não foi possível ler o arquivo de máscara de pixels"
 
-#: ../src/develop/masks/object.c:914
+#: ../src/develop/masks/object.c:922
 msgid "raster mask saved"
 msgstr "máscara de pixels gravada"
 
-#: ../src/develop/masks/object.c:919
+#: ../src/develop/masks/object.c:927
 msgid "failed to save raster mask"
 msgstr "falha ao gravar máscara de pixels"
 
-#: ../src/develop/masks/object.c:1000
+#: ../src/develop/masks/object.c:1008
 msgid "no mask extracted from AI segmentation"
 msgstr "nenhuma máscara foi extraída da segmentação por IA"
 
-#: ../src/develop/masks/object.c:1008
+#: ../src/develop/masks/object.c:1016
 msgid "ai object group"
 msgstr "grupo de objetos de ia"
 
-#: ../src/develop/masks/object.c:1009
+#: ../src/develop/masks/object.c:1017
 msgid "ai object"
 msgstr "objeto de ia"
 
-#: ../src/develop/masks/object.c:1135
+#: ../src/develop/masks/object.c:1145
 #, c-format
 msgid "smoothing: %3.2f"
 msgstr "suavização: %3.2f"
 
-#: ../src/develop/masks/object.c:1146
+#: ../src/develop/masks/object.c:1156
 #, c-format
 msgid "cleanup: %d"
 msgstr "limpeza: %d"
 
-#: ../src/develop/masks/object.c:1159
+#: ../src/develop/masks/object.c:1169
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidade: %.0d%%"
 
-#: ../src/develop/masks/object.c:1282
+#: ../src/develop/masks/object.c:1292
 #, c-format
 msgid "group '%s'"
 msgstr "grupo '%s'"
 
 #. keep the message visible while the thread is working
-#: ../src/develop/masks/object.c:1531 ../src/develop/masks/object.c:1568
+#: ../src/develop/masks/object.c:1541 ../src/develop/masks/object.c:1578
 msgid "object mask: analyzing image..."
 msgstr "máscara de objeto: analisando imagem..."
 
-#: ../src/develop/masks/object.c:1578
+#: ../src/develop/masks/object.c:1588
 msgid "click on object to create mask"
 msgstr "clique no objeto para criar a máscara"
 
 #. log only once when the thread is first joined
-#: ../src/develop/masks/object.c:1588
+#: ../src/develop/masks/object.c:1598
 msgid "object mask preparation failed"
 msgstr "a preparação de máscara de objeto falhou"
 
-#: ../src/develop/masks/object.c:1788
+#: ../src/develop/masks/object.c:1798
 msgid "[OBJECT] select / add foreground point"
 msgstr "[OBJETO] selecionar / adicionar ponto em primeiro plano"
 
-#: ../src/develop/masks/object.c:1793
+#: ../src/develop/masks/object.c:1803
 msgid "[OBJECT] add background point"
 msgstr "[OBJETO] adicionar ponto em segundo plano"
 
-#: ../src/develop/masks/object.c:1798
+#: ../src/develop/masks/object.c:1808
 msgid "[OBJECT] clear selection"
 msgstr "[OBJETO] limpar seleção"
 
-#: ../src/develop/masks/object.c:1803
+#: ../src/develop/masks/object.c:1813
 msgid "[OBJECT] apply mask"
 msgstr "[OBJETO] aplicar máscara"
 
-#: ../src/develop/masks/object.c:1808
+#: ../src/develop/masks/object.c:1818
 msgid "[OBJECT] change smoothing"
 msgstr "[OBJETO] mudar suavização"
 
-#: ../src/develop/masks/object.c:1813
-#, fuzzy
+#: ../src/develop/masks/object.c:1823
 msgid "[OBJECT] change cleanup"
-msgstr "[CAMINHO] mudar opacidade"
+msgstr "[CAMINHO] mudar limpeza"
 
-#: ../src/develop/masks/object.c:1818
+#: ../src/develop/masks/object.c:1828
 msgid "[OBJECT] change opacity"
 msgstr "[OBJETO] mudar opacidade"
 
-#: ../src/develop/masks/object.c:1825
+#: ../src/develop/masks/object.c:1835
 #, c-format
 msgid "object #%d"
 msgstr "objeto #%d"
 
-#: ../src/develop/masks/object.c:1843
+#: ../src/develop/masks/object.c:1853
 #, fuzzy, c-format
 msgid ""
 "<b>add</b>: click, <b>subtract</b>: shift+click, <b>clear</b>: "
@@ -10841,7 +10837,7 @@ msgstr ""
 "<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</"
 "b>: ctrl+scroll (%d%%)"
 
-#: ../src/develop/masks/object.c:1854
+#: ../src/develop/masks/object.c:1864
 #, c-format
 msgid "<b>select</b>: click on object, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
@@ -13164,7 +13160,7 @@ msgstr ""
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/group_persistence.lua:120
 msgid "group persistence"
-msgstr ""
+msgstr "persistência de grupo"
 
 #. name of script
 #: ../src/external/lua-scripts/official/group_persistence.lua:121
@@ -15058,7 +15054,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/clipping.c:2093 ../src/iop/colorbalancergb.c:1781
 #: ../src/iop/colorequal.c:2972 ../src/iop/filmicrgb.c:4368
 #: ../src/iop/negadoctor.c:837 ../src/iop/toneequal.c:3233
-#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:3855
+#: ../src/libs/image.c:499 ../src/libs/neural_restore.c:3881
 #: ../src/views/lighttable.c:1446
 msgid "page"
 msgstr "página"
@@ -15902,7 +15898,7 @@ msgstr ""
 "resultados"
 
 #: ../src/gui/accelerators.c:3030 ../src/gui/guides.c:840
-#: ../src/gui/metadata_tags.c:120
+#: ../src/gui/metadata_tags.c:119
 msgid "type"
 msgstr "tipo"
 
@@ -16610,23 +16606,23 @@ msgstr "predefinições de etiquetas"
 msgid "comma separated list of tags"
 msgstr "lista de etiquetas separadas por vírgula"
 
-#: ../src/gui/metadata_tags.c:93
+#: ../src/gui/metadata_tags.c:92
 msgid "select tag"
 msgstr "seleciona etiqueta"
 
-#: ../src/gui/metadata_tags.c:95
+#: ../src/gui/metadata_tags.c:94
 msgid "_add"
 msgstr "_adicionar"
 
-#: ../src/gui/metadata_tags.c:96 ../src/libs/geotagging.c:833
+#: ../src/gui/metadata_tags.c:95 ../src/libs/geotagging.c:833
 msgid "_done"
 msgstr "_feito"
 
-#: ../src/gui/metadata_tags.c:106
+#: ../src/gui/metadata_tags.c:105
 msgid "list filter"
 msgstr "filtrar a lista"
 
-#: ../src/gui/metadata_tags.c:112
+#: ../src/gui/metadata_tags.c:111
 msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
@@ -16958,7 +16954,7 @@ msgid "select ONNX Runtime library"
 msgstr "selecione biblioteca runtime ONNX"
 
 #: ../src/gui/preferences_ai.c:1330 ../src/iop/lut3d.c:1575
-#: ../src/iop/rasterfile.c:379 ../src/libs/neural_restore.c:3821
+#: ../src/iop/rasterfile.c:382 ../src/libs/neural_restore.c:3847
 msgid "_select"
 msgstr "_selecionar"
 
@@ -17581,7 +17577,7 @@ msgstr "copiar configurações de uma área de trabalho existente"
 #: ../src/imageio/format/avif.c:95 ../src/imageio/format/jxl.c:587
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:690
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:3980
+#: ../src/libs/neural_restore.c:4006
 msgid "8 bit"
 msgstr "8 bit"
 
@@ -17605,7 +17601,7 @@ msgstr "com perdas"
 #: ../src/imageio/format/avif.c:936 ../src/imageio/format/exr.cc:621
 #: ../src/imageio/format/jxl.c:585 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:688 ../src/imageio/format/tiff.c:880
-#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:3977
+#: ../src/imageio/format/xcf.c:358 ../src/libs/neural_restore.c:4003
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -17733,7 +17729,7 @@ msgstr "16 bit (ponto flutuante)"
 
 #: ../src/imageio/format/exr.cc:623 ../src/imageio/format/jxl.c:588
 #: ../src/imageio/format/tiff.c:884 ../src/imageio/format/xcf.c:361
-#: ../src/libs/neural_restore.c:3980
+#: ../src/libs/neural_restore.c:4006
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -17837,7 +17833,7 @@ msgstr "4:4:0"
 
 #: ../src/imageio/format/jxl.c:588 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:690 ../src/imageio/format/tiff.c:884
-#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:3980
+#: ../src/imageio/format/xcf.c:361 ../src/libs/neural_restore.c:4006
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -18459,7 +18455,7 @@ msgstr "corretivo e criativo"
 
 #: ../src/iop/agx.c:59 ../src/iop/ashift.c:125 ../src/iop/ashift.c:127
 #: ../src/iop/basicadj.c:169 ../src/iop/bilateral.cc:104
-#: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:90 ../src/iop/blurs.c:91
+#: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:94 ../src/iop/blurs.c:95
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
@@ -18957,7 +18953,7 @@ msgstr "rotaciona ou distorce a perspectiva automaticamente"
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:181
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
 #: ../src/iop/crop.c:134 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:73
-#: ../src/iop/rasterfile.c:103
+#: ../src/iop/rasterfile.c:105
 msgid "corrective or creative"
 msgstr "corretivo ou criativo"
 
@@ -19218,7 +19214,7 @@ msgid "denoise chroma"
 msgstr "reduz ruido do croma"
 
 #: ../src/iop/atrous.c:808 ../src/libs/neural_restore.c:1271
-#: ../src/libs/neural_restore.c:3863
+#: ../src/libs/neural_restore.c:3889
 msgid "denoise"
 msgstr "reduz ruído"
 
@@ -19522,7 +19518,7 @@ msgid "apply usual image adjustments"
 msgstr "aplicar ajustes usuais à imagem"
 
 #: ../src/iop/basicadj.c:168 ../src/iop/bilat.c:85 ../src/iop/bloom.c:81
-#: ../src/iop/blurs.c:90 ../src/iop/borders.c:317 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:94 ../src/iop/borders.c:317 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:87 ../src/iop/colorcontrast.c:86
 #: ../src/iop/colorize.c:95 ../src/iop/colormapping.c:152
 #: ../src/iop/colorzones.c:142 ../src/iop/grain.c:391 ../src/iop/highpass.c:75
@@ -19692,7 +19688,7 @@ msgid ""
 "to denoise or smoothen textures"
 msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 
-#: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
+#: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:94
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/channelmixer.c:138
 #: ../src/iop/denoiseprofile.c:823 ../src/iop/diffuse.c:141
 #: ../src/iop/enlargecanvas.c:82 ../src/iop/exposure.c:132
@@ -19753,20 +19749,20 @@ msgstr "o limiar de luz"
 msgid "the strength of bloom"
 msgstr "a força da luz suave"
 
-#: ../src/iop/blurs.c:78
+#: ../src/iop/blurs.c:82
 msgid "blurs"
 msgstr "desfoques"
 
-#: ../src/iop/blurs.c:83
+#: ../src/iop/blurs.c:87
 msgid "blur|lens|motion"
 msgstr "desfoque|lente|movimento"
 
-#: ../src/iop/blurs.c:89
+#: ../src/iop/blurs.c:93
 msgid "simulate physically-accurate lens and motion blurs"
 msgstr "simula fisicamente e com precisão o desfoque de lente e de movimento"
 
 #. add the tooltips
-#: ../src/iop/blurs.c:806
+#: ../src/iop/blurs.c:1007
 msgid ""
 "size of the blur in pixels\n"
 "<b>caution</b>: doubling the radius quadruples the run-time!"
@@ -19774,13 +19770,13 @@ msgstr ""
 "tamanho do desfoque em pixels\n"
 "<b>cuidado</b>: dobrar o raio quadruplica o tempo de execução!"
 
-#: ../src/iop/blurs.c:808
+#: ../src/iop/blurs.c:1009
 msgid "shifts towards a star shape as value approaches blades-1"
 msgstr ""
 "muda gradualmente para uma forma de estrela quando o valor se aproxima de "
 "blades-1"
 
-#: ../src/iop/blurs.c:810
+#: ../src/iop/blurs.c:1011
 msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
@@ -19788,15 +19784,15 @@ msgstr ""
 "ajusta retidão das bordas de 0=círculo perfeito\n"
 "até 1=completamente reto"
 
-#: ../src/iop/blurs.c:811
+#: ../src/iop/blurs.c:1012
 msgid "set amount by which to rotate shape around its center"
 msgstr "determina quanto rotacionar a forma ao redor de seu centro"
 
-#: ../src/iop/blurs.c:813
+#: ../src/iop/blurs.c:1014
 msgid "orientation of the motion's path"
 msgstr "orientação do caminho do movimento"
 
-#: ../src/iop/blurs.c:814
+#: ../src/iop/blurs.c:1015
 msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
@@ -19804,7 +19800,7 @@ msgstr ""
 "quão curvo será o movimento relativo à\n"
 "sua orientação geral"
 
-#: ../src/iop/blurs.c:815
+#: ../src/iop/blurs.c:1016
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
@@ -20036,8 +20032,8 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/demosaic.c:318 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
-#: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:104
-#: ../src/iop/rasterfile.c:106 ../src/iop/rawdenoise.c:141
+#: ../src/iop/hotpixels.c:76 ../src/iop/rasterfile.c:106
+#: ../src/iop/rasterfile.c:108 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rawprepare.c:171
 #: ../src/iop/rawprepare.c:173 ../src/iop/temperature.c:250
 #: ../src/iop/temperature.c:252
@@ -20045,7 +20041,7 @@ msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/demosaic.c:319 ../src/iop/invert.c:133
-#: ../src/iop/rasterfile.c:105 ../src/iop/rawdenoise.c:142
+#: ../src/iop/rasterfile.c:107 ../src/iop/rawdenoise.c:142
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
 msgstr "linear, raw"
@@ -23047,7 +23043,7 @@ msgid "variance blue: "
 msgstr "variância de azul: "
 
 #: ../src/iop/denoiseprofile.c:3682 ../src/libs/export.c:1599
-#: ../src/libs/neural_restore.c:3988 ../src/libs/print_settings.c:2518
+#: ../src/libs/neural_restore.c:4014 ../src/libs/print_settings.c:2518
 #: ../src/libs/print_settings.c:2874
 msgid "profile"
 msgstr "perfil"
@@ -25031,7 +25027,7 @@ msgstr "distância do objeto"
 #. upscale page: scale factor selector
 #: ../src/iop/lens.cc:4459 ../src/iop/overlay.c:1121 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1480 ../src/libs/export.c:1557
-#: ../src/libs/neural_restore.c:3904
+#: ../src/libs/neural_restore.c:3930
 msgid "scale"
 msgstr "escala"
 
@@ -26140,19 +26136,19 @@ msgstr "tenta otimizar com alguns chutes"
 msgid "tone mapping method"
 msgstr "método de mapeamento de tom"
 
-#: ../src/iop/rasterfile.c:91
+#: ../src/iop/rasterfile.c:93
 msgid "external raster masks"
 msgstr "máscara externa de pixels"
 
-#: ../src/iop/rasterfile.c:96
+#: ../src/iop/rasterfile.c:98
 msgid "raster|mask"
 msgstr "matriz de pixels|máscara"
 
-#: ../src/iop/rasterfile.c:102
+#: ../src/iop/rasterfile.c:104
 msgid "read PFM/PNG files recorded for use as raster masks"
 msgstr "ler arquivos PFM/PNG gravados para uso como máscaras de pixels"
 
-#: ../src/iop/rasterfile.c:174
+#: ../src/iop/rasterfile.c:177
 msgid ""
 "no mask extracted from the raster file\n"
 "make sure the masks have proper contrast"
@@ -26160,38 +26156,38 @@ msgstr ""
 "nenhuma máscaraextraída do arquivo de pixels\n"
 "certifique-se de que as máscaras tem contraste apropriado"
 
-#: ../src/iop/rasterfile.c:179
+#: ../src/iop/rasterfile.c:182
 #, c-format
 msgid "%d mask extracted from the raster file"
 msgid_plural "%d masks extracted from the raster file"
 msgstr[0] "%d máscara extraída do arquivo de pixels"
 msgstr[1] "%d máscaras extraídas do arquivo de pixels<"
 
-#: ../src/iop/rasterfile.c:206 ../src/iop/rasterfile.c:217
-#: ../src/iop/rasterfile.c:225 ../src/iop/rasterfile.c:236
-#: ../src/iop/rasterfile.c:285
+#: ../src/iop/rasterfile.c:209 ../src/iop/rasterfile.c:220
+#: ../src/iop/rasterfile.c:228 ../src/iop/rasterfile.c:239
+#: ../src/iop/rasterfile.c:288
 #, c-format
 msgid "can't read raster mask file '%s'"
 msgstr "não foi possível ler o arquivo de máscara de pixels '%s'"
 
-#: ../src/iop/rasterfile.c:371
+#: ../src/iop/rasterfile.c:374
 msgid "raster mask files root folder not defined"
 msgstr "pasta raiz de máscaras de pixels não definida"
 
-#: ../src/iop/rasterfile.c:378
+#: ../src/iop/rasterfile.c:381
 msgid "select raster mask file"
 msgstr "seleciona arquivo com máscara de pixels"
 
-#: ../src/iop/rasterfile.c:412
+#: ../src/iop/rasterfile.c:415
 msgid "selected file not within raster masks root folder"
 msgstr ""
 "o arquivo selecionado não está dentro da pasta raiz das máscaras de pixels"
 
-#: ../src/iop/rasterfile.c:740
+#: ../src/iop/rasterfile.c:743
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr "selecionar os canais RGB levados em conta ao gerar a máscara de pixels"
 
-#: ../src/iop/rasterfile.c:746
+#: ../src/iop/rasterfile.c:749
 msgid ""
 "select the PFM/PNG file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
@@ -26200,16 +26196,16 @@ msgstr ""
 "ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes "
 "de escolher o arquivo"
 
-#: ../src/iop/rasterfile.c:755
+#: ../src/iop/rasterfile.c:758
 msgid "the mask file path is saved with the image history"
 msgstr "o caminho do arquivo de máscara é gravado com o histórico da imagem"
 
 #. Vectorize button
-#: ../src/iop/rasterfile.c:761
+#: ../src/iop/rasterfile.c:764
 msgid "vectorize"
 msgstr "vetorizar"
 
-#: ../src/iop/rasterfile.c:764
+#: ../src/iop/rasterfile.c:767
 msgid ""
 "vectorize the current bitmap and create corresponding path masks in the mask "
 "manager"
@@ -26221,7 +26217,7 @@ msgstr ""
 #. (before demosaic-stage processing). bayer / linear variant selection
 #. is driven by the active "rawdenoise" model rather than a UI toggle
 #: ../src/iop/rawdenoise.c:134 ../src/libs/neural_restore.c:1272
-#: ../src/libs/neural_restore.c:3861
+#: ../src/libs/neural_restore.c:3887
 msgid "raw denoise"
 msgstr "redução de ruído raw"
 
@@ -28673,7 +28669,7 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1600 ../src/libs/export.c:1635
-#: ../src/libs/neural_restore.c:3989 ../src/libs/print_settings.c:2877
+#: ../src/libs/neural_restore.c:4015 ../src/libs/print_settings.c:2877
 #: ../src/libs/print_settings.c:2923
 msgid "image settings"
 msgstr "configurações da imagem"
@@ -31172,7 +31168,7 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/neural_restore.c:446 ../src/libs/neural_restore.c:3170
+#: ../src/libs/neural_restore.c:446 ../src/libs/neural_restore.c:3196
 msgid "neural restore"
 msgstr "restauração neural"
 
@@ -31216,7 +31212,7 @@ msgid "raw denoise: image is not a supported raw sensor format"
 msgstr ""
 "redução de ruído em raw: imagem não é em formato suportado de sensor raw"
 
-#: ../src/libs/neural_restore.c:1273 ../src/libs/neural_restore.c:3865
+#: ../src/libs/neural_restore.c:1273 ../src/libs/neural_restore.c:3891
 msgid "upscale"
 msgstr "aumentar escala"
 
@@ -31294,56 +31290,56 @@ msgstr "gama ampla de cores preservada, sem redução de ruído"
 msgid "wide-gamut clipped"
 msgstr "gama ampla de cores recortada"
 
-#: ../src/libs/neural_restore.c:3364
+#: ../src/libs/neural_restore.c:3390
 msgid "click to select preview area"
 msgstr "clique para selecionar área de pré-visualização"
 
-#: ../src/libs/neural_restore.c:3389
+#: ../src/libs/neural_restore.c:3415
 msgid "model not available"
 msgstr "modelo não disponível"
 
-#: ../src/libs/neural_restore.c:3391 ../src/libs/neural_restore.c:3581
+#: ../src/libs/neural_restore.c:3417 ../src/libs/neural_restore.c:3607
 msgid "generating preview..."
 msgstr "gerando pré-visualização"
 
-#: ../src/libs/neural_restore.c:3393
+#: ../src/libs/neural_restore.c:3419
 msgid "click to generate preview"
 msgstr "clique para gerar pré-visualização"
 
-#: ../src/libs/neural_restore.c:3395
+#: ../src/libs/neural_restore.c:3421
 msgid "image not supported by this task"
 msgstr "imagem não é suportada por esta tarefa"
 
-#: ../src/libs/neural_restore.c:3397
+#: ../src/libs/neural_restore.c:3423
 msgid "preview initialization failed"
 msgstr "a inicialização de pré-visualização falhou"
 
-#: ../src/libs/neural_restore.c:3398
+#: ../src/libs/neural_restore.c:3424
 msgid "select an image to preview"
 msgstr "selecionar uma imagem para pré-visualizar"
 
-#: ../src/libs/neural_restore.c:3817 ../src/libs/neural_restore.c:4075
+#: ../src/libs/neural_restore.c:3843 ../src/libs/neural_restore.c:4101
 msgid "select output folder"
 msgstr "selecione a pasta de saída"
 
-#: ../src/libs/neural_restore.c:3862
+#: ../src/libs/neural_restore.c:3888
 #, fuzzy
 msgid "AI raw denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:3864
+#: ../src/libs/neural_restore.c:3890
 msgid "AI denoising"
 msgstr "remoção de ruído com IA"
 
-#: ../src/libs/neural_restore.c:3866
+#: ../src/libs/neural_restore.c:3892
 msgid "AI upscaling"
 msgstr "aumento da escala com IA"
 
-#: ../src/libs/neural_restore.c:3878
+#: ../src/libs/neural_restore.c:3904
 msgid "blend between the source CFA (0%) and the denoised output (100%)"
 msgstr "mesclar entre CFA de origem (0%) e a saída com remoção de ruído (100%)"
 
-#: ../src/libs/neural_restore.c:3896
+#: ../src/libs/neural_restore.c:3922
 #, no-c-format
 msgid ""
 "100% applies the full AI model output; lower values bring back luminance "
@@ -31352,60 +31348,60 @@ msgstr ""
 "100% aplica a saida completa do modelo de IA; valores menores trazem de "
 "volta luminância textura e granulação enquanto mantém ruído de cor suprimido"
 
-#: ../src/libs/neural_restore.c:3905
+#: ../src/libs/neural_restore.c:3931
 msgid "upscale factor"
 msgstr "fator de aumento de escala"
 
-#: ../src/libs/neural_restore.c:3907
+#: ../src/libs/neural_restore.c:3933
 msgid "2x"
 msgstr "2x"
 
-#: ../src/libs/neural_restore.c:3907
+#: ../src/libs/neural_restore.c:3933
 msgid "4x"
 msgstr "4x"
 
-#: ../src/libs/neural_restore.c:3924
+#: ../src/libs/neural_restore.c:3950
 msgid ""
 "click to pick preview area on the image thumbnail\n"
 "double-click to reset to center"
 msgstr "clique para escolher área de pré-visualização na miniatura"
 
-#: ../src/libs/neural_restore.c:3949
+#: ../src/libs/neural_restore.c:3975
 msgid "process selected images"
 msgstr "processar imagens selecionadas"
 
-#: ../src/libs/neural_restore.c:3967
+#: ../src/libs/neural_restore.c:3993
 msgid "output parameters"
 msgstr "parâmetros de saída"
 
-#: ../src/libs/neural_restore.c:3978
+#: ../src/libs/neural_restore.c:4004
 msgid "output TIFF bit depth"
 msgstr "profundidade de bits do TIFF de saída"
 
-#: ../src/libs/neural_restore.c:4020
+#: ../src/libs/neural_restore.c:4046
 msgid "color profile embedded in the output TIFF"
 msgstr "perfil de cor embutido na saída TIFF"
 
-#: ../src/libs/neural_restore.c:4030
+#: ../src/libs/neural_restore.c:4056
 msgid "preserve wide-gamut colors"
 msgstr "preservar gama ampla de cores"
 
-#: ../src/libs/neural_restore.c:4037
+#: ../src/libs/neural_restore.c:4063
 msgid ""
 "when on, pixels outside sRGB gamut pass through without being denoised; when "
 "off, all pixels are denoised but wide-gamut colors may be clipped; only "
 "affects denoise"
 msgstr ""
 
-#: ../src/libs/neural_restore.c:4046
+#: ../src/libs/neural_restore.c:4072
 msgid "add to the current collection"
 msgstr "adicionar à coleção atual"
 
-#: ../src/libs/neural_restore.c:4052
+#: ../src/libs/neural_restore.c:4078
 msgid "automatically import the output image into the current collection"
 msgstr "automaticamente importar imagem de saída na coleção atual"
 
-#: ../src/libs/neural_restore.c:4068
+#: ../src/libs/neural_restore.c:4094
 msgid ""
 "output folder — supports darktable variables\n"
 "$(FILE_FOLDER) = source image folder"
