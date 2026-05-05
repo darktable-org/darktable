@@ -31,10 +31,12 @@
    returned: '+' for outer boundaries, '-' for holes.
    The caller must free this list with g_list_free().
 */
+// pixels with mask < threshold are inside the form
 GList *ras2forms(const float *mask,
                  const int width,
                  const int height,
                  const dt_image_t *const image,
+                 const float threshold,
                  const int turdsize,
                  const double alphamax,
                  GList **out_signs);
