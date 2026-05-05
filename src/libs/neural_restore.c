@@ -233,6 +233,8 @@ DT_MODULE(1)
 #define CONF_PRESERVE_WIDE_GAMUT "plugins/lighttable/neural_restore/preserve_wide_gamut"
 #define CONF_EXPAND_OUTPUT "plugins/lighttable/neural_restore/expand_output"
 #define CONF_PREVIEW_HEIGHT "plugins/lighttable/neural_restore/preview_height"
+#define CONF_PREVIEW_TOOLTIP_ZOOM \
+  "plugins/lighttable/neural_restore/preview_tooltip_zoom"
 
 typedef enum dt_neural_task_t
 {
@@ -3293,6 +3295,153 @@ static gboolean _pick_double_click(GtkWidget *widget,
   return TRUE;
 }
 
+// upper bound on tooltip pixel dimensions so we never overflow the
+// active monitor on very large preview widgets
+#define DT_NR_TOOLTIP_MAX_PX 1024
+
+// draw the cached preview surfaces into the tooltip widget at zoom,
+// preserving the user's split divider position. read-only inspector;
+// no interactive elements
+static gboolean _zoom_tooltip_draw(GtkWidget *widget, cairo_t *cr,
+                                   dt_lib_module_t *self)
+{
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  if(!d->cairo_before || !d->cairo_after) return FALSE;
+
+  const int pw = d->preview_w;
+  const int ph = d->preview_h;
+  if(pw <= 0 || ph <= 0) return FALSE;
+
+  const int w = gtk_widget_get_allocated_width(widget);
+  const int h = gtk_widget_get_allocated_height(widget);
+
+  // background
+  cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
+  cairo_rectangle(cr, 0, 0, w, h);
+  cairo_fill(cr);
+
+  cairo_surface_t *before_surf = cairo_image_surface_create_for_data(
+    d->cairo_before, CAIRO_FORMAT_RGB24, pw, ph, d->cairo_stride);
+  cairo_surface_t *after_surf = cairo_image_surface_create_for_data(
+    d->cairo_after, CAIRO_FORMAT_RGB24, pw, ph, d->cairo_stride);
+
+  // fit-to-widget scale (widget is pre-sized to fit the preview at zoom)
+  const double sx = (double)w / pw;
+  const double sy = (double)h / ph;
+  const double scale = fmin(sx, sy);
+  const double img_w = pw * scale;
+  const double img_h = ph * scale;
+  const double ox = (w - img_w) / 2.0;
+  const double oy = (h - img_h) / 2.0;
+  const double div_x = ox + d->split_pos * img_w;
+
+  // before (left of divider)
+  cairo_save(cr);
+  cairo_rectangle(cr, ox, oy, div_x - ox, img_h);
+  cairo_clip(cr);
+  cairo_translate(cr, ox, oy);
+  cairo_scale(cr, scale, scale);
+  cairo_set_source_surface(cr, before_surf, 0, 0);
+  // NEAREST when scaling up — show actual pixels, not blurred ones
+  cairo_pattern_set_filter(cairo_get_source(cr),
+                           scale >= 1.0 ? CAIRO_FILTER_NEAREST
+                                        : CAIRO_FILTER_BILINEAR);
+  cairo_paint(cr);
+  cairo_restore(cr);
+
+  // after (right of divider)
+  cairo_save(cr);
+  cairo_rectangle(cr, div_x, oy, ox + img_w - div_x, img_h);
+  cairo_clip(cr);
+  cairo_translate(cr, ox, oy);
+  cairo_scale(cr, scale, scale);
+  cairo_set_source_surface(cr, after_surf, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr),
+                           scale >= 1.0 ? CAIRO_FILTER_NEAREST
+                                        : CAIRO_FILTER_BILINEAR);
+  cairo_paint(cr);
+  cairo_restore(cr);
+
+  // divider line
+  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  cairo_set_line_width(cr, 1.5);
+  cairo_move_to(cr, div_x, oy);
+  cairo_line_to(cr, div_x, oy + img_h);
+  cairo_stroke(cr);
+
+  cairo_surface_destroy(before_surf);
+  cairo_surface_destroy(after_surf);
+
+  // zoom label, bottom-right. shows the actual scale (may be < the
+  // requested zoom if the size cap kicked in)
+  {
+    char text[32];
+    snprintf(text, sizeof(text), _("zoom %.0f%%"), scale * 100.0);
+    cairo_select_font_face(cr, "sans-serif",
+                           CAIRO_FONT_SLANT_NORMAL,
+                           CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 11.0);
+    cairo_text_extents_t ext;
+    cairo_text_extents(cr, text, &ext);
+    const double pad = 4.0;
+    const double bw = ext.width + pad * 2;
+    const double bh = ext.height + pad * 2;
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.6);
+    cairo_rectangle(cr, w - bw, h - bh, bw, bh);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_move_to(cr, w - bw + pad, h - pad);
+    cairo_show_text(cr, text);
+  }
+
+  return FALSE;
+}
+
+// inspector tooltip: shows the same before/after split as the preview
+// area at the configured zoom factor (default 2×), so the user can
+// actually see individual pixels when assessing noise reduction.
+// suppressed during states where it would be misleading or interfere
+static gboolean _preview_query_tooltip(GtkWidget *widget,
+                                       gint x, gint y,
+                                       gboolean keyboard_mode,
+                                       GtkTooltip *tooltip,
+                                       dt_lib_module_t *self)
+{
+  dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
+  if(!d->preview_ready) return FALSE;
+  if(!d->cairo_before || !d->cairo_after) return FALSE;
+  if(d->preview_generating) return FALSE;
+  if(d->dragging_split) return FALSE;
+  if(d->picking_thumbnail) return FALSE;
+  if(d->preview_w <= 0 || d->preview_h <= 0) return FALSE;
+
+  // rc preference. 0 disables the tooltip entirely; anything
+  // else is clamped to [1, 8] so a typo doesn't open a window the
+  // size of a billboard
+  float zoom = dt_conf_key_exists(CONF_PREVIEW_TOOLTIP_ZOOM)
+    ? (float)dt_conf_get_float(CONF_PREVIEW_TOOLTIP_ZOOM) : 2.0f;
+  if(zoom <= 0.0f) return FALSE;
+  zoom = CLAMPF(zoom, 1.0f, 8.0f);
+
+  int tw = (int)(d->preview_w * zoom);
+  int th = (int)(d->preview_h * zoom);
+  if(tw > DT_NR_TOOLTIP_MAX_PX || th > DT_NR_TOOLTIP_MAX_PX)
+  {
+    const double s = (double)DT_NR_TOOLTIP_MAX_PX
+                     / (double)MAX(tw, th);
+    tw = (int)(tw * s);
+    th = (int)(th * s);
+  }
+
+  GtkWidget *area = gtk_drawing_area_new();
+  gtk_widget_set_size_request(area, tw, th);
+  g_signal_connect(area, "draw",
+                   G_CALLBACK(_zoom_tooltip_draw), self);
+  gtk_widget_show(area);
+  gtk_tooltip_set_custom(tooltip, area);
+  return TRUE;
+}
+
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
   dt_lib_neural_restore_t *d = (dt_lib_neural_restore_t *)self->data;
@@ -3968,6 +4117,12 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_preview_button_release), self);
   g_signal_connect(d->preview_area, "motion-notify-event",
                    G_CALLBACK(_preview_motion), self);
+  // hover-zoom tooltip: shows the same preview at 2x so the user can
+  // see individual pixels. only fires when there's a valid preview;
+  // suppressed during inference / picking / dragging
+  gtk_widget_set_has_tooltip(d->preview_area, TRUE);
+  g_signal_connect(d->preview_area, "query-tooltip",
+                   G_CALLBACK(_preview_query_tooltip), self);
 
   // process button
   d->process_button = dt_action_button_new(self, N_("process"),

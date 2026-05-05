@@ -3790,6 +3790,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/neural_restore/preview_tooltip_zoom</name>
+    <type min="0.0" max="8.0">float</type>
+    <default>2.0</default>
+    <shortdescription>hover-zoom factor for the neural restore preview tooltip</shortdescription>
+    <longdescription>multiplier applied when hovering over the preview to show pixels at higher scale. set to 0 to disable the hover tooltip; otherwise clamped to [1, 8] and capped at the active monitor size. the actual percentage is shown in the tooltip's bottom-right corner</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
