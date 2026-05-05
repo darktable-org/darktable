@@ -1423,18 +1423,22 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
 
 
 __kernel void
-blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t mask_out,
-			const int width, const int height,
-			const float e, const float brightness, const float gopacity)
+blendop_mask_tone_curve(__read_only image2d_t mask_in,
+                        __write_only image2d_t mask_out,
+                        const int width,
+                        const int height,
+			                  const float e,
+                        const float brightness,
+                        const float gopacity)
 {
-  const float mask_epsilon = 16 * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
+  const float mask_epsilon = 16.0f * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if (x >= width || y >= height) return;
 
   float opacity = readsingle(mask_in, x, y);
-  float scaled_opacity = (2.f * opacity / gopacity - 1.f);
+  float scaled_opacity = 2.f * opacity / gopacity - 1.f;
   if (1.f - brightness <= 0.f)
     scaled_opacity = opacity <= mask_epsilon ? -1.f : 1.f;
   else if (1.f + brightness <= 0.f)
@@ -1449,7 +1453,8 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
     scaled_opacity = (scaled_opacity + brightness) / (1.f + brightness);
     scaled_opacity = fmax(scaled_opacity, -1.f);
   }
-  opacity = clipf(((scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) / 2.f + 0.5f) * gopacity);
+  opacity = 0.5f * (scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) + 0.5f;
+  opacity = clipf(opacity > 1e-6 ? opacity : 0.0f) * gopacity;
   write_imagef(mask_out, (int2)(x, y), opacity);
 }
 
