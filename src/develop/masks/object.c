@@ -797,6 +797,11 @@ static void _update_preview(_object_data_t *d)
      && !dt_conf_get_bool(CONF_OBJECT_PATH_PREVIEW_KEY))
     return;
 
+  // ras2forms inherits potrace's convention: pixels < threshold are
+  // "inside the form" (black ink on white paper). our AI mask uses the
+  // opposite — high values = inside the object — so we invert both the
+  // mask and the threshold here. result: the path traces the same
+  // contour as the red overlay (mask > user_threshold)
   const size_t n = (size_t)d->mask_w * d->mask_h;
   float *inv_mask = g_try_malloc(n * sizeof(float));
   if(!inv_mask) return;
@@ -804,7 +809,10 @@ static void _update_preview(_object_data_t *d)
   for(size_t i = 0; i < n; i++)
     inv_mask[i] = 1.0f - d->mask[i];
 
+  const float thresh = 1.0f - CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
+                                    0.3f, 0.9f);
   d->preview_forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
+                               thresh,
                                d->preview_cleanup, (double)d->preview_smoothing,
                                &d->preview_signs);
   g_free(inv_mask);
@@ -1100,9 +1108,11 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
 
   const int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
   const float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
+  const float thresh = 1.0f - CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
+                                    0.3f, 0.9f);
   GList *signs = NULL;
   GList *forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
-                           cleanup, (double)smoothing, &signs);
+                           thresh, cleanup, (double)smoothing, &signs);
   g_free(inv_mask);
 
   return _register_vectorized_forms(module, forms, signs, d->mask_w, d->mask_h);

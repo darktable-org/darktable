@@ -50,6 +50,8 @@
 #include <omp.h>
 #endif
 
+#define SET_THRESHOLD 0.6f
+
 DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
@@ -164,7 +166,8 @@ static void _vectorize_button_clicked(GtkWidget *widget,
   dt_pthread_mutex_lock(&cd->lock);
 
   const dt_image_t *const image = &(self->dev->image_storage);
-  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image, 0, 0.0, NULL);
+  GList *forms = ras2forms(cd->mask, cd->width, cd->height, image,
+                           SET_THRESHOLD, 0, 0.0, NULL);
 
   dt_pthread_mutex_unlock(&cd->lock);
 
