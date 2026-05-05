@@ -246,7 +246,11 @@ changes (where available).
   and collection filters.
 
 - Added `--library` option to `darktable-cli` to use the image library
-  instead of XMP files for reading processing history. 
+  instead of XMP files for reading processing history.
+
+- Exif tags which are added to the metadata editor are now read from
+  the image file on import. For already imported images this can be
+  performed by an exif refresh.
 
 ## Bug Fixes
 
