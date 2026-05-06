@@ -514,9 +514,8 @@ int process_cl(dt_iop_module_t *self,
   else
   {
     size_t iorigin[] = { roi_out->x, roi_out->y };
-    size_t oorigin[] = { 0, 0 };
     size_t region[] = { roi_out->width, roi_out->height };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, CLIMG_ORIGIN, region);
   }
 
   if(dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID)

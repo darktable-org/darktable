@@ -525,10 +525,9 @@ int process_cl(dt_iop_module_t *self,
     if(dev_detail[k] == NULL) goto error;
   }
 
-  size_t origin[] = { 0, 0 };
   size_t region[] = { width, height };
   // copy original input from dev_in -> dev_out as starting point
-  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS) goto error;
 
   /* decompose image into detail scales and coarse (the latter is left

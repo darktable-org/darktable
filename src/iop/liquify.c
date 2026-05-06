@@ -1558,9 +1558,8 @@ int process_cl(dt_iop_module_t *self,
   // 1. copy the whole image (we'll change only a small part of it)
   {
     size_t src[]    = { roi_out->x - roi_in->x, roi_out->y - roi_in->y };
-    size_t dest[]   = { 0, 0 };
     size_t extent[] = { width, height };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, dest, extent);
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, CLIMG_ORIGIN, extent);
     if(err != CL_SUCCESS) return err;
   }
 

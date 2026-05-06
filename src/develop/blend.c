@@ -998,7 +998,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   dt_colorspaces_iccprofile_info_cl_t *work_profile_info_cl = NULL;
   cl_float *work_profile_lut_cl = NULL;
 
-  size_t origin[] = { 0, 0 };
   size_t region[] = { owidth, oheight };
 
   // parameters, for every channel the 4 limits + pre-computed
@@ -1183,7 +1182,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
           if(dev_guide == NULL) goto error;
 
           size_t origin_1[] = { dx, dy };
-          err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_guide, origin, origin_1, region);
+          err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_guide, CLIMG_ORIGIN, origin_1, region);
           if(err != CL_SUCCESS)
           {
             dt_opencl_release_mem_object(dev_guide);
@@ -1253,7 +1252,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
   if(dev_tmp == NULL) goto error;
-  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS) goto error;
 
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
@@ -1406,14 +1405,12 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel =
     dt_opencl_create_kernel(program, "blendop_display_channel");
-
-  const int program_rcd = 31;
   b->kernel_calc_Y0_mask =
-    dt_opencl_create_kernel(program_rcd, "calc_Y0_mask");
+    dt_opencl_create_kernel(program, "calc_Y0_mask");
   b->kernel_calc_scharr_mask =
-    dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
+    dt_opencl_create_kernel(program, "calc_scharr_mask");
   b->kernel_calc_blend =
-    dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
+    dt_opencl_create_kernel(program, "calc_detail_blend");
 
   return b;
 #else

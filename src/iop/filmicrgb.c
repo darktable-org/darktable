@@ -2317,8 +2317,7 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
     if(err != CL_SUCCESS) goto error;
 
     // Take a backup copy of HF_RGB in HF_grey - only HF_RGB will be blurred
-    size_t origin[] = { 0, 0 };
-    err = dt_opencl_enqueue_copy_image(devid, HF_RGB, HF_grey, origin, origin, sizes);
+    err = dt_opencl_enqueue_copy_image(devid, HF_RGB, HF_grey, CLIMG_ORIGIN, CLIMG_ORIGIN, sizes);
     if(err != CL_SUCCESS) goto error;
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes

@@ -609,10 +609,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  size_t origin[] = { 0, 0 };
   size_t region[] = { roi_out->width, roi_out->height };
-  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
-                                            origin, origin, region);
+  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
 }
 #endif
 

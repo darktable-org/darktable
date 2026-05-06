@@ -557,7 +557,7 @@ _BLEND_FUNC _blend_average(const float *const a,
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      out[j + k] = a[j + k] * (1.0f - local_opacity) + (a[j + k] + b[j + k]) / 2.0f * local_opacity;
+      out[j + k] = a[j + k] * (1.0f - local_opacity) + 0.5f * (a[j + k] + b[j + k]) * local_opacity;
     }
     out[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }

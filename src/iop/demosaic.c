@@ -1109,9 +1109,8 @@ int process_cl(dt_iop_module_t *self,
                tile_nr, num_tiles, group, first_in, last_in, t_rows);
 
         size_t insrc[]  = { 0, first_in };
-        size_t tdest[]  = { 0, 0 };
         size_t iarea[]  = { iwidth, t_rows };
-        err = dt_opencl_enqueue_copy_image(devid, in_image, t_in, insrc, tdest, iarea);
+        err = dt_opencl_enqueue_copy_image(devid, in_image, t_in, insrc, CLIMG_ORIGIN, iarea);
         if(err != CL_SUCCESS) goto finish;
       }
 
@@ -1119,10 +1118,8 @@ int process_cl(dt_iop_module_t *self,
         err = demosaic_box3_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_rows, filters);
       else if(method == DT_IOP_DEMOSAIC_MONO)
       {
-        size_t insrc[]  = { 0, 0 };
-        size_t tdest[]  = { 0, 0 };
         size_t iarea[]  = { iwidth, t_rows };
-        err = dt_opencl_enqueue_copy_image(devid, t_in, t_high, insrc, tdest, iarea);
+        err = dt_opencl_enqueue_copy_image(devid, t_in, t_high, CLIMG_ORIGIN, CLIMG_ORIGIN, iarea);
       }
       else if(passthru || method == DT_IOP_DEMOSAIC_PPG)
         err = process_default_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_rows, method, filters);
