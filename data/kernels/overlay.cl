@@ -37,7 +37,7 @@ kernel void overlay_blend(read_only  image2d_t in,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 i   = read_imagef(in, samplerA, (int2)(x, y));
+  const float4 i   = Areadpixel(in, x, y);
   const int    off = y * stride + x * 4;
 
   const float b = overlay_argb[off + 0] / 255.f;

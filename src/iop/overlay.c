@@ -599,8 +599,7 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   else if(data->alignment == 2 || data->alignment == 5 || data->alignment == 8)
     tx = iw - svg_width - bX;
 
-  cairo_t *cr     = cairo_create(surface);
-  cairo_t *cr_two = cairo_create(surface_two);
+  cairo_t *cr = cairo_create(surface);
 
   cairo_translate(cr, -roi_in->x, -roi_in->y);
   tx += data->xoffset * wbase;
@@ -613,10 +612,9 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   cairo_rotate(cr, angle);
   cairo_translate(cr, -cX, -cY);
 
-  cairo_translate(cr_two, 0.f, 0.f);
   cairo_scale(cr, scale, scale);
   cairo_surface_flush(surface_two);
-  cairo_set_source_surface(cr, surface_two, 0.f, 0.f);
+  cairo_set_source_surface(cr, surface_two, 0.0, 0.0);
   cairo_paint(cr);
 
   // cairo_paint() is synchronous for CPU surfaces: *pbuf is no longer read.
@@ -624,7 +622,6 @@ static guint8 *_get_overlay_argb(dt_iop_module_t *self,
   dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
 
   cairo_destroy(cr);
-  cairo_destroy(cr_two);
   cairo_surface_flush(surface);
   cairo_surface_destroy(surface);
   cairo_surface_destroy(surface_two);  // drops reference to *pbuf, not ownership
@@ -698,8 +695,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(!image)
   {
     // No overlay: copy input to output on GPU
-    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out,
-      (size_t[]){0,0,0}, (size_t[]){0,0,0}, (size_t[]){width,height,1});
+    return dt_opencl_enqueue_copy_image(
+      devid, dev_in, dev_out, (size_t[]){ 0, 0 }, (size_t[]){ 0, 0 }, (size_t[]){ width, height });
   }
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
