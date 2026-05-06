@@ -1340,7 +1340,7 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       break;
 
     case DEVELOP_BLEND_AVERAGE:
-      o = a * (1.0f - opacity) + (a + b)/2.0f * opacity;
+      o = a * (1.0f - opacity) + 0.5f * (a + b) * opacity;
       break;
 
     case DEVELOP_BLEND_ADD:
@@ -1500,51 +1500,51 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_L:
-      c = clipf(a.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_in]));
+      c = a.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_in]);
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_out]));
+      c = b.x / 100.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_L_out]);
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
-      c = clipf(a.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
+      c = a.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f;
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_out]) + 0.5f);
+      c = b.y / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_out]) + 0.5f;
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
-      c = clipf(a.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_B_in]) + 0.5f);
+      c = a.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_B_in]) + 0.5f;
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f);
+      c = b.z / 256.0f / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_A_in]) + 0.5f;
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_R:
-      c = clipf(a.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_in]));
+      c = a.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_out]));
+      c = b.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_RED_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
-      c = clipf(a.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_in]));
+      c = a.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_out]));
+      c = b.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GREEN_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
-      c = clipf(a.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_in]));
+      c = a.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clipf(b.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_out]));
+      c = b.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_BLUE_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
@@ -1552,7 +1552,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
         c = 0.3f * a.x + 0.59f * a.y + 0.11f * a.z;
       else
         c = get_rgb_matrix_luminance(a, profile_info, profile_info->matrix_in, profile_lut);
-      c = clipf(c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_in]));
+      c = c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
@@ -1560,87 +1560,87 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
         c = 0.3f * b.x + 0.59f * b.y + 0.11f * b.z;
       else
         c = get_rgb_matrix_luminance(b, profile_info, profile_info->matrix_in, profile_lut);
-      c = clipf(c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_out]));
+      c = c / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_GRAY_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
       LCH = Lab_2_LCH(a);
-      c = clipf(LCH.y / (128.0f * M_SQRT2_F / exp2(boost_factors[DEVELOP_BLENDIF_C_in])));
+      c = LCH.y / (128.0f * M_SQRT2_F / exp2(boost_factors[DEVELOP_BLENDIF_C_in]));
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       LCH = Lab_2_LCH(b);
-      c = clipf(LCH.y / (128.0f * M_SQRT2_F) / exp2(boost_factors[DEVELOP_BLENDIF_C_out]));
+      c = LCH.y / (128.0f * M_SQRT2_F) / exp2(boost_factors[DEVELOP_BLENDIF_C_out]);
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
       LCH = Lab_2_LCH(a);
-      c = clipf(LCH.z); // no boost for hues
+      c = LCH.z; // no boost for hues
       is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       LCH = Lab_2_LCH(b);
-      c = clipf(LCH.z); // no boost for hues
+      c = LCH.z; // no boost for hues
       is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
       HSL = RGB_2_HSL(a);
-      c = clipf(HSL.x); // no boost for hues
+      c = HSL.x; // no boost for hues
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
-      c = clipf(HSL.x); // no boost for hues
+      c = HSL.x; // no boost for hues
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
       HSL = RGB_2_HSL(a);
-      c = clipf(HSL.y); // no boost for HSL
+      c = HSL.y; // no boost for HSL
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
-      c = clipf(HSL.y); // no boost for HSL
+      c = HSL.y; // no boost for HSL
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
       HSL = RGB_2_HSL(a);
-      c = clipf(HSL.z); // no boost for HSL
+      c = HSL.z; // no boost for HSL
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
-      c = clipf(HSL.z); // no boost for HSL
+      c = HSL.z; // no boost for HSL
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz:
       JzCzhz = rgb_to_JzCzhz(a, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.x / exp2(boost_factors[DEVELOP_BLENDIF_Jz_in]));
+      c = JzCzhz.x / exp2(boost_factors[DEVELOP_BLENDIF_Jz_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Jz_out]));
+      c = JzCzhz.x / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Jz_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz:
       JzCzhz = rgb_to_JzCzhz(a, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_in]));
+      c = JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_out]));
+      c = JzCzhz.y / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_Cz_out]);
       is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
       JzCzhz = rgb_to_JzCzhz(a, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_in]));
+      c = JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_in]);
       is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       JzCzhz = rgb_to_JzCzhz(b, profile_info, profile_lut, use_profile);
-      c = clipf(JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_out]));
+      c = JzCzhz.z / dtcl_exp2(boost_factors[DEVELOP_BLENDIF_hz_out]);
       is_lab = 0;
       break;
     default:
@@ -1649,7 +1649,7 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
       break;
   }
 
-  a.x = a.y = a.z = c;
+  a.x = a.y = a.z = clipf(c);
   a.w = opacity;
 
   if(is_lab)
@@ -1668,4 +1668,53 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
   }
 
   write_imagef(out, (int2)(x, y), a);
+}
+
+static inline float calcBlendFactor(float val, float threshold)
+{
+    // sigmoid function
+    // result is in ]0;1] range
+    // inflexion point is at (x, y) (threshold, 0.5)
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
+}
+
+__kernel void calc_Y0_mask(global float *mask,
+                          __read_only image2d_t in,
+                          const int w,
+                          const int height,
+                          const float4 wb)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  const float4 pt = wb * fmax(0.0f, Areadpixel(in, col, row));
+  mask[idx] = dtcl_sqrt((pt.x + pt.y + pt.z) / 3.0f);
+}
+
+__kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  const int oidx = mad24(row, w, col);
+  const int incol = clamp(col, 1, w - 2);
+  const int inrow = clamp(row, 1, height -2);
+  const int idx = mad24(inrow, w, incol);
+  const float gradient_magnitude = scharr_gradient(in, idx, w);
+  out[oidx] = clipf(gradient_magnitude / 16.0f);
+}
+
+__kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  const int idx = mad24(row, w, col);
+
+  const float blend = clipf(calcBlendFactor(in[idx], threshold));
+  out[idx] = detail ? blend : 1.0f - blend;
 }

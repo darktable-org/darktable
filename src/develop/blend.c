@@ -1406,14 +1406,12 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
     dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel =
     dt_opencl_create_kernel(program, "blendop_display_channel");
-
-  const int program_rcd = 31;
   b->kernel_calc_Y0_mask =
-    dt_opencl_create_kernel(program_rcd, "calc_Y0_mask");
+    dt_opencl_create_kernel(program, "calc_Y0_mask");
   b->kernel_calc_scharr_mask =
-    dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
+    dt_opencl_create_kernel(program, "calc_scharr_mask");
   b->kernel_calc_blend =
-    dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
+    dt_opencl_create_kernel(program, "calc_detail_blend");
 
   return b;
 #else

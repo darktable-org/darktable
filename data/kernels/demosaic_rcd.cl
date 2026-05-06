@@ -18,14 +18,6 @@
 
 #include "common.h"
 
-static inline float calcBlendFactor(float val, float threshold)
-{
-    // sigmoid function
-    // result is in ]0;1] range
-    // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
-}
-
 // Populate cfa and rgb data by normalized input
 __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters, const float scale)
 {
@@ -313,46 +305,6 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void calc_Y0_mask(global float *mask,
-                          __read_only image2d_t in,
-                          const int w,
-                          const int height,
-                          const float4 wb)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
-
-  const float4 pt = wb * fmax(0.0f, Areadpixel(in, col, row));
-  mask[idx] = dtcl_sqrt((pt.x + pt.y + pt.z) / 3.0f);
-}
-
-__kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int oidx = mad24(row, w, col);
-  const int incol = clamp(col, 1, w - 2);
-  const int inrow = clamp(row, 1, height -2);
-  const int idx = mad24(inrow, w, incol);
-  const float gradient_magnitude = scharr_gradient(in, idx, w);
-  out[oidx] = clipf(gradient_magnitude / 16.0f);
-}
-
-__kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int idx = mad24(row, w, col);
-
-  const float blend = clipf(calcBlendFactor(in[idx], threshold));
-  out[idx] = detail ? blend : 1.0f - blend;
-}
 
 kernel void demosaic_box3(read_only image2d_t in,
                           write_only image2d_t out,

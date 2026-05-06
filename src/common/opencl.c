@@ -899,10 +899,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].clroundup_ht = 16;
   }
 
+  const gboolean fastopencl = dt_conf_get_bool("opencl_fast");
   dt_print_nts(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   EVENTS HANDLED:           %s\n", STR_YESNO(cl->dev[dev].use_events));
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   OPENCL FAST MODE:         %s\n", STR_YESNO(fastopencl));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -981,7 +984,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  const char* compile_opt = dt_conf_get_bool("opencl_fast") ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
+  const char* compile_opt = fastopencl ? DT_OPENCL_DEFAULT_COMPILE_OPTI : DT_OPENCL_DEFAULT_COMPILE_DEFAULT;
   cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
                                 compile_opt,
                                 cl->dev[dev].cuda && cl->dev[dev].atomic_support ? " -DNVIDIA_SM_20=1" : "",
@@ -1139,6 +1142,7 @@ void dt_opencl_init(dt_opencl_t *cl,
   cl->enabled = FALSE;
   cl->stopped = FALSE;
   cl->error_count = 0;
+  cl->fastcl = dt_conf_get_bool("opencl_fast");
 #if CL_TARGET_OPENCL_VERSION == 300
   cl->api30 = TRUE;
 #else
@@ -1523,7 +1527,7 @@ finally:
         cl->dev[i].max_global_mem = reserved;
         cl->dev[i].max_mem_alloc = MIN(cl->dev[i].max_mem_alloc, reserved);
         dt_print_nts(DT_DEBUG_OPENCL,
-               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s' id=%d",
+               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s' id=%d\n",
                (double)reserved / 1024.0 / 1024.0, cl->dev[i].cname, i);
         res->total_memory -= reserved;
       }
@@ -3490,8 +3494,8 @@ void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
   cl_mem new = dt_opencl_alloc_device(devid, width, height, el);
   if(new == NULL) return NULL;
 
-  size_t origin[]   = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
+  size_t origin[]   = { 0, 0 };
+  size_t region[] = { width, height };
   const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, origin, origin, region);
   if(err != CL_SUCCESS)
   {
@@ -3686,6 +3690,12 @@ gboolean dt_opencl_running(void)
   return _cl_running();
 }
 
+/** runtime check for cl system running in fast mode */
+gboolean dt_opencl_running_fast(void)
+{
+  return _cl_running() ? darktable.opencl->fastcl : FALSE;
+}
+
 /** update enabled flag and profile with value from preferences */
 void dt_opencl_update_settings(void)
 {
@@ -3780,7 +3790,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
   // if first time called: allocate initial buffers
   if(*eventlist == NULL)
   {
-    int newevents = DT_OPENCL_EVENTLISTSIZE;
+    int newevents = DT_OPENCL_EVENTS;
     *eventlist = calloc(newevents, sizeof(cl_event));
     *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!*eventlist || !*eventtags)
@@ -3823,7 +3833,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
   // if no more space left in eventlist: grow buffer
   if(*numevents == *maxevents)
   {
-    int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
+    int newevents = *maxevents + DT_OPENCL_EVENTS;
     cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
     dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!neweventlist || !neweventtags)

@@ -21,7 +21,6 @@
 #define DT_OPENCL_MAX_PLATFORMS 5
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
-#define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_ERRORS 5
 #define DT_OPENCL_MAX_INCLUDES 8
@@ -32,13 +31,14 @@
 #define DT_OPENCL_CBUFFSIZE 1024
 #define DT_OPENCL_DEFAULT_HEADROOM 600
 
-/* The number of events handled by the driver is principally not limited.
+/* The number of events handled by the driver is principally not limited and can't be checked.
    If a device handler can't process a function handling an event it will return
    an error codition that will be checked in darktable.
    Still we don't want to stress the device resources too much so we try to keep
    handled events in a safe range.
+   The internal list of events takes this as granularity too.
 */
-#define DT_OPENCL_EVENTS 4096
+#define DT_OPENCL_EVENTS 2048
 
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
@@ -229,6 +229,7 @@ typedef struct dt_opencl_t
   gboolean print_statistics;
   gboolean enabled;
   gboolean stopped;
+  gboolean fastcl;  // for fast runtime checks instead of reading the conf
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -422,6 +423,9 @@ gboolean dt_opencl_is_enabled(void);
 
 /** runtime check for cl system running */
 gboolean dt_opencl_running(void);
+
+/** runtime check for cl system running in fast mode */
+gboolean dt_opencl_running_fast(void);
 
 /** update enabled flag and profile with value from preferences */
 void dt_opencl_update_settings(void);
@@ -708,6 +712,10 @@ static inline gboolean dt_opencl_is_enabled(void)
   return FALSE;
 }
 static inline gboolean dt_opencl_running(void)
+{
+  return FALSE;
+}
+static inline gboolean dt_opencl_running_fast(void)
 {
   return FALSE;
 }
