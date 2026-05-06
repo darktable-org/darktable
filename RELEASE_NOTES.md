@@ -216,6 +216,11 @@ changes (where available).
 
 - Increased performance for OpenCL guided filter by internal tiling.
 
+- Increased performance of `blurs` module for both CPU and OpenCL code paths for large radii,
+  which made it possible to increase Gaussian blur's maximum radius from 128px to 256px.
+
+- Increased performance of `overlay` (composite) module and added OpenCL code path.
+
 ## Other Changes
 
 - Added 2 apertures, f/0.95 and f/1.2, to the aperture section of the
