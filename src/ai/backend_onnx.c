@@ -513,7 +513,10 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
           g_string_append(eps, label);
         }
         if(probe_api->ReleaseAvailableProviders)
-          probe_api->ReleaseAvailableProviders(providers, n_providers);
+        {
+          OrtStatus *rs = probe_api->ReleaseAvailableProviders(providers, n_providers);
+          if(rs) probe_api->ReleaseStatus(rs);
+        }
       }
     }
 
@@ -875,7 +878,10 @@ static gboolean _ort_has_provider(const char *name)
   for(int i = 0; i < n && !found; i++)
     if(g_strcmp0(providers[i], name) == 0) found = TRUE;
   if(g_ort->ReleaseAvailableProviders)
-    g_ort->ReleaseAvailableProviders(providers, n);
+  {
+    OrtStatus *rs = g_ort->ReleaseAvailableProviders(providers, n);
+    if(rs) g_ort->ReleaseStatus(rs);
+  }
   return found;
 }
 
