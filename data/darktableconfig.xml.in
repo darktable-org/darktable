@@ -3587,13 +3587,6 @@
     <longdescription>sigmoid threshold for converting AI mask to binary. higher values (0.6-0.7) tighten boundaries, lower values include more area.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/object/morph_radius</name>
-    <type min="0" max="5">int</type>
-    <default>3</default>
-    <shortdescription>AI mask morphological cleanup radius</shortdescription>
-    <longdescription>radius of structuring element for morphological open+close cleanup. removes small protrusions and fills small holes in the mask. 0 = disabled, 1-3 = typical values.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/masks/object/guided_radius</name>
     <type min="0" max="20">int</type>
     <default>5</default>
