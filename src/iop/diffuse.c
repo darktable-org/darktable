@@ -1620,12 +1620,11 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t origin[] = { 0, 0 };
   size_t region[] = { width, height };
 
   // allow fast mode, just copy input to output
   if(fastmode)
-    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
 
   cl_mem in = dev_in;
   cl_mem temp_in = NULL;
@@ -1657,7 +1656,7 @@ int process_cl(dt_iop_module_t *self,
   // because we use a lot of memory here.
   if(!temp1 || !temp2 || !LF_odd || !LF_even || !mask || out_of_memory)
   {
-    dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }

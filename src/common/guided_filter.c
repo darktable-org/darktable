@@ -560,9 +560,8 @@ static int _guided_filter_cl_impl(int devid,
       if(tiling)
       {
         size_t insrc[]  = { 0, first_in };
-        size_t tdest[]  = { 0, 0 };
         size_t iarea[]  = { width, t_height };
-        err = dt_opencl_enqueue_copy_image(devid, dev_in, in, insrc, tdest, iarea);
+        err = dt_opencl_enqueue_copy_image(devid, dev_in, in, insrc, CLIMG_ORIGIN, iarea);
       }
 
       if(err == CL_SUCCESS) err = _cl_split_rgb(devid, width, t_height, first_in, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);

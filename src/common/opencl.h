@@ -62,6 +62,9 @@
 
 G_BEGIN_DECLS
 
+// instead of declaring the size_t struct for origin we have a #define for this for readability
+#define CLIMG_ORIGIN (size_t[]){0,0}
+
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here

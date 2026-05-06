@@ -1491,14 +1491,13 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   const gboolean inplace = dev_img_in == dev_img_out;
   const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
 
-  size_t origin[] = { 0, 0 };
   size_t region[] = { width, height };
 
   *converted_cst = cst_to;
   if(cst_from == cst_to)
   {
     if(!inplace)
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     return err == CL_SUCCESS;
   }
 
@@ -1508,7 +1507,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   {
     *converted_cst = cst_from;
     if(!inplace && !anyraw)
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
 
     if(!inplace || cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW)
       dt_print(DT_DEBUG_PIPE,
@@ -1579,7 +1578,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
         goto cleanup;
       }
 
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS)
         goto cleanup;
     }
@@ -1678,10 +1677,8 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
   {
     if(dev_img_in != dev_img_out)
     {
-      size_t origin[] = { 0, 0 };
       size_t region[] = { width, height };
-
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL,
@@ -1723,8 +1720,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
 
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
+    size_t region[] = { width, height };
 
     kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_rgb;
 
@@ -1746,7 +1742,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
         goto cleanup;
       }
 
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS)
          goto cleanup;
      }

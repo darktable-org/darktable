@@ -3494,9 +3494,8 @@ void *dt_opencl_duplicate_image(const int devid, const cl_mem src)
   cl_mem new = dt_opencl_alloc_device(devid, width, height, el);
   if(new == NULL) return NULL;
 
-  size_t origin[]   = { 0, 0 };
   size_t region[] = { width, height };
-  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, origin, origin, region);
+  const cl_int err = dt_opencl_enqueue_copy_image(devid, src, new, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS)
   {
     dt_opencl_release_mem_object(new);

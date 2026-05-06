@@ -774,9 +774,8 @@ int process_cl_fusion(dt_iop_module_t *self,
         CLARG(dev_col[0]), CLARG(dev_out), CLARG(dev_tmp1), CLARG(width), CLARG(height));
       if(err != CL_SUCCESS) goto error;
 
-      size_t origin[] = { 0, 0 };
       size_t region[] = { width, height };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_col[0], origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_col[0], CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -814,9 +813,8 @@ int process_cl_fusion(dt_iop_module_t *self,
           CLARG(dev_comb[k]), CLARG(dev_col[k]), CLARG(dev_tmp1), CLARG(w), CLARG(h));
         if(err != CL_SUCCESS) goto error;
 
-        size_t origin[] = { 0, 0 };
         size_t region[] = { w, h };
-        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], CLIMG_ORIGIN, CLIMG_ORIGIN, region);
         if(err != CL_SUCCESS) goto error;
       }
       else
@@ -826,9 +824,8 @@ int process_cl_fusion(dt_iop_module_t *self,
           CLARG(dev_comb[k]), CLARG(dev_col[k]), CLARG(dev_tmp2), CLARG(dev_tmp1), CLARG(w), CLARG(h));
         if(err != CL_SUCCESS) goto error;
 
-        size_t origin[] = { 0, 0 };
         size_t region[] = { w, h };
-        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], CLIMG_ORIGIN, CLIMG_ORIGIN, region);
         if(err != CL_SUCCESS) goto error;
       }
     }
@@ -853,9 +850,8 @@ int process_cl_fusion(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
 
       // dev_tmp1[k] -> dev_comb[k]
-      size_t origin[] = { 0, 0 };
       size_t region[] = { w, h };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -873,9 +869,8 @@ int process_cl_fusion(dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
 
       // dev_tmp2 -> dev_comb[k]
-      size_t origin[] = { 0, 0 };
       size_t region[] = { w, h };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp2, dev_comb[k], origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp2, dev_comb[k], CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
   }

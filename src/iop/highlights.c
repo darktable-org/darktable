@@ -545,9 +545,8 @@ int process_cl(dt_iop_module_t *self,
     else
     {
       size_t iorigin[] = { roi_out->x, roi_out->y };
-      size_t oorigin[] = { 0, 0 };
       size_t region[] = { roi_out->width, roi_out->height };
-      return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+      return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, CLIMG_ORIGIN, region);
     }
   }
 
