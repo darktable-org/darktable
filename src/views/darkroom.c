@@ -291,11 +291,12 @@ void _display_module_trouble_message_callback(gpointer instance,
       if(label_widget)
       {
         // set the warning message in the module's message area just below the header
-        gtk_label_set_text(GTK_LABEL(label_widget), trouble_msg);
+        gtk_label_set_markup(GTK_LABEL(label_widget), trouble_msg);
       }
       else
       {
-        label_widget = gtk_label_new(trouble_msg);;
+        label_widget = gtk_label_new(NULL);
+        gtk_label_set_markup(GTK_LABEL(label_widget), trouble_msg);
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");

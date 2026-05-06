@@ -2064,7 +2064,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (chr->temperature,
-        _("white balance applied twice"),
+        _("white balance applied twice (<u>details</u>)"),
         _("the color calibration module is enabled and already provides\n"
           "chromatic adaptation.\n"
           "set the white balance here to camera reference (D65)\n"
@@ -2073,7 +2073,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
     dt_iop_set_module_trouble_message
       (self,
-        _("white balance module error"),
+        _("white balance module error (<u>details</u>)"),
         _("the white balance module is not using the camera\n"
           "reference illuminant, which will cause issues here\n"
           "with chromatic adaptation. either set it to reference\n"
@@ -2086,7 +2086,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
   {
     dt_iop_set_module_trouble_message
       (chr->temperature,
-        _("white balance missing"),
+        _("white balance missing (<u>details</u>)"),
         _("this module is not providing a valid reference illuminant\n"
           "causing chromatic adaptation issues in color calibration.\n"
           "enable this module and either set it to reference\n"
@@ -2095,7 +2095,7 @@ static void _set_trouble_messages(dt_iop_module_t *self)
 
     dt_iop_set_module_trouble_message
       (self,
-        _("white balance missing"),
+        _("white balance missing (<u>details</u>)"),
         _("the white balance module is not providing a valid reference\n"
           "illuminant causing issues with chromatic adaptation here.\n"
           "enable white balance and either set it to reference\n"
