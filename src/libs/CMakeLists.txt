@@ -22,6 +22,7 @@ set(MODULES ${MODULES} hinter)
 set(MODULES ${MODULES} global_toolbox)
 set(MODULES ${MODULES} timeline)
 set(MODULES ${MODULES} image_infos)
+set(MODULES ${MODULES} log_history)
 
 # modules
 add_library(import MODULE "import.c")
@@ -64,6 +65,7 @@ add_library(hinter MODULE "tools/hinter.c")
 add_library(global_toolbox MODULE "tools/global_toolbox.c")
 add_library(timeline MODULE "tools/timeline.c")
 add_library(image_infos MODULE "tools/image_infos.c")
+add_library(log_history MODULE "tools/log_history.c")
 
 if(PortMidi_FOUND)
   add_definitions("-DHAVE_PORTMIDI")
