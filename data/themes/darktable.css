@@ -2660,3 +2660,26 @@ popover *
 {
   background-color: @selected_bg_color;
 }
+
+/* log history popover */
+popover#log-history-popover scrolledwindow
+{
+  background-color: @bg_color;
+  border: none;
+}
+
+popover#log-history-popover row
+{
+  padding: 0;
+}
+
+popover#log-history-popover label
+{
+  color: @fg_color;
+}
+
+#log-history-popover overshoot,
+#log-history-popover undershoot
+{
+  all: unset;
+}

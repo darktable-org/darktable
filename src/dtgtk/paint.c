@@ -2243,6 +2243,38 @@ void dtgtk_cairo_paint_text_label(cairo_t *cr, const gint x, const gint y, const
   FINISH
 }
 
+void dtgtk_cairo_paint_messages(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // speech bubble outline
+  cairo_move_to(cr, 0.15, 0.1);
+  cairo_line_to(cr, 0.85, 0.1);
+  cairo_curve_to(cr, 0.92, 0.1, 0.95, 0.15, 0.95, 0.22);
+  cairo_line_to(cr, 0.95, 0.68);
+  cairo_curve_to(cr, 0.95, 0.75, 0.92, 0.8, 0.85, 0.8);
+  cairo_line_to(cr, 0.35, 0.8);
+  cairo_line_to(cr, 0.15, 1.0);
+  cairo_line_to(cr, 0.2, 0.8);
+  cairo_line_to(cr, 0.15, 0.8);
+  cairo_curve_to(cr, 0.08, 0.8, 0.05, 0.75, 0.05, 0.68);
+  cairo_line_to(cr, 0.05, 0.22);
+  cairo_curve_to(cr, 0.05, 0.15, 0.08, 0.1, 0.15, 0.1);
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+
+  // text lines inside
+  cairo_move_to(cr, 0.2, 0.3);
+  cairo_line_to(cr, 0.8, 0.3);
+  cairo_move_to(cr, 0.2, 0.47);
+  cairo_line_to(cr, 0.65, 0.47);
+  cairo_move_to(cr, 0.2, 0.64);
+  cairo_line_to(cr, 0.7, 0.64);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_union(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
