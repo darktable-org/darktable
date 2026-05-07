@@ -20,7 +20,6 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
-#include "common/guided_filter.h"
 #include "common/mipmap_cache.h"
 #include "common/ras2vect.h"
 #include "control/conf.h"
@@ -40,8 +39,6 @@
 #define CONF_OBJECT_MODEL_KEY "plugins/darkroom/masks/object/model"
 #define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
-#define CONF_OBJECT_GUIDED_RADIUS_KEY "plugins/darkroom/masks/object/guided_radius"
-#define CONF_OBJECT_GUIDED_EPS_KEY "plugins/darkroom/masks/object/guided_eps"
 #define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
 #define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
@@ -534,53 +531,6 @@ static void _keep_seed_component(float *mask,
   g_free(labels);
 }
 
-// edge-aware mask refinement using guided filter: smooths the mask in
-// flat regions while preserving sharp transitions at image edges.
-// the stored RGB image is used as the guide
-static void _guided_filter_refine(float *mask,
-                                  const int mw,
-                                  const int mh,
-                                  const uint8_t *rgb,
-                                  const int rgb_w,
-                                  const int rgb_h,
-                                  const int radius,
-                                  const float sqrt_eps)
-{
-  if(!rgb || rgb_w < 3 || rgb_h < 3)
-    return;
-  if(mw != rgb_w || mh != rgb_h)
-    return;
-
-  const size_t npix = (size_t)mw * mh;
-
-  // convert uint8 RGB to float RGBA guide (guided_filter expects 4ch)
-  float *guide = dt_alloc_align_float(npix * 4);
-  if(!guide) return;
-
-  for(size_t i = 0; i < npix; i++)
-  {
-    guide[i * 4 + 0] = (float)rgb[i * 3 + 0] / 255.0f;
-    guide[i * 4 + 1] = (float)rgb[i * 3 + 1] / 255.0f;
-    guide[i * 4 + 2] = (float)rgb[i * 3 + 2] / 255.0f;
-    guide[i * 4 + 3] = 0.0f;
-  }
-
-  // run guided filter: smooths mask but preserves edges from the guide
-  float *mask_bak = dt_alloc_align_float(npix);
-  if(!mask_bak)
-  {
-    dt_free_align(guide);
-    return;
-  }
-
-  memcpy(mask_bak, mask, npix * sizeof(float));
-  guided_filter(guide, mask_bak, mask, mw, mh, 4,
-                radius, sqrt_eps, 1.0f, 0.0f, 1.0f);
-
-  dt_free_align(mask_bak);
-  dt_free_align(guide);
-}
-
 // run the decoder with accumulated points and update the cached mask
 static void _run_decoder(dt_masks_form_gui_t *gui)
 {
@@ -662,16 +612,6 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     seed_y = CLAMP(seed_y, 0, mh - 1);
     const float threshold = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
                                   0.3f, 0.9f);
-
-    // guided filter edge refinement: snap mask boundary to image edges
-    const int gf_radius = CLAMP(dt_conf_get_int(CONF_OBJECT_GUIDED_RADIUS_KEY),
-                                0, 20);
-    const float gf_eps = CLAMP(dt_conf_get_float(CONF_OBJECT_GUIDED_EPS_KEY),
-                               0.001f, 1.0f);
-    if(gf_radius > 0 && d->encode_rgb)
-      _guided_filter_refine(mask, mw, mh,
-                            d->encode_rgb, d->encode_rgb_w, d->encode_rgb_h,
-                            gf_radius, sqrtf(gf_eps));
 
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
 

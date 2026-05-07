@@ -3587,20 +3587,6 @@
     <longdescription>sigmoid threshold for converting AI mask to binary. higher values (0.6-0.7) tighten boundaries, lower values include more area.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/object/guided_radius</name>
-    <type min="0" max="20">int</type>
-    <default>5</default>
-    <shortdescription>AI mask guided filter radius</shortdescription>
-    <longdescription>radius of the guided filter used to snap the mask boundary to image edges. larger values produce smoother boundaries. 0 = disabled.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/masks/object/guided_eps</name>
-    <type min="0.001" max="1.0">float</type>
-    <default>0.01</default>
-    <shortdescription>AI mask guided filter edge sensitivity</shortdescription>
-    <longdescription>edge sensitivity for the guided filter. smaller values preserve finer edges. 0.001 = very sharp, 0.1 = soft, 1.0 = nearly no edge preservation.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/masks/object/render_size</name>
     <type min="1024">int</type>
     <default>1024</default>
