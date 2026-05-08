@@ -248,9 +248,16 @@ changes (where available).
 - Added `--library` option to `darktable-cli` to use the image library
   instead of XMP files for reading processing history.
 
+<<<<<<< Updated upstream
 - Exif tags which are added to the metadata editor are now read from
   the image file on import. For already imported images this can be
   performed by an exif refresh.
+=======
+- The active preset name is now displayed in the header of suitable
+  library modules (import, export). This can be turned off in the
+  "miscellaneous" section in the preferences ("automatically update
+  module name").
+>>>>>>> Stashed changes
 
 ## Bug Fixes
 
