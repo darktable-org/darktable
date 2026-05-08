@@ -25,6 +25,7 @@
 #include "common/grealpath.h"
 #include <inttypes.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 // SAM encoder expects 1024x1024 input
@@ -88,6 +89,10 @@ struct dt_seg_context_t
   int encoded_height;
   float scale; // SAM_INPUT_SIZE / max(w, h)
   gboolean image_encoded;
+
+  // RGB at encoded resolution, used as JBU guide when upsampling
+  // decoder masks back to encoded dimensions
+  uint8_t *encoded_rgb;
 
   char *model_id;      // model identifier (for cache validation)
   char *model_version; // model version (for cache validation)
@@ -158,22 +163,68 @@ _preprocess_image(const uint8_t *rgb_data,
   return output;
 }
 
-/* --- bilinear crop+resize helper --- */
+/* --- bilinear / joint-bilateral mask upsampling --- */
 
-// crop the valid (non-padded) region from a SAM-space mask and bilinear-
-// resize to the encoded image dimensions
-static void _crop_resize_mask(const float *src,
+// Rec.709 luma weights, scaled by 256 so the >> 8 below recovers [0, 255]
+#define LUMA_R 54
+#define LUMA_G 183
+#define LUMA_B 19
+
+static inline int _luma709(const uint8_t *p)
+{
+  return (LUMA_R * p[0] + LUMA_G * p[1] + LUMA_B * p[2]) >> 8;
+}
+
+static inline float _bilinear4(const float v00,
+                               const float v01,
+                               const float v10,
+                               const float v11,
+                               const float fx,
+                               const float fy)
+{
+  return v00 * (1.0f - fx) * (1.0f - fy) + v01 * fx * (1.0f - fy)
+       + v10 * (1.0f - fx) * fy + v11 * fx * fy;
+}
+
+// crop the valid (non-padded) region of a decoder mask and upsample to
+// the encoded image dimensions. when guide_rgb is provided and matches
+// dst dims, uses joint-bilateral upsampling (spatial × range weights on
+// luma) so the soft mask snaps to image gradients; otherwise plain bilinear
+static void _crop_resize_mask(const float *const restrict src,
                               const int src_w,
                               const int src_h,
-                              float *dst,
+                              float *const restrict dst,
                               const int dst_w,
                               const int dst_h,
                               const float scale,
-                              const gboolean apply_sigmoid)
+                              const gboolean apply_sigmoid,
+                              const uint8_t *const restrict guide_rgb,
+                              const int guide_w,
+                              const int guide_h,
+                              const float sigma_range)
 {
   const int valid_w = MIN((int)(dst_w * scale + 0.5f), src_w);
   const int valid_h = MIN((int)(dst_h * scale + 0.5f), src_h);
 
+  const gboolean use_jbu = (guide_rgb != NULL && sigma_range > 1e-4f
+                            && guide_w == dst_w && guide_h == dst_h);
+
+  // precompute the gaussian range kernel as a 256-entry LUT indexed by
+  // |luma_ref - l_corner|, replacing 4 expf() per output pixel with a
+  // single table lookup
+  float range_lut[256];
+  if(use_jbu)
+  {
+    const float inv_2sigma2 = 1.0f / (2.0f * sigma_range * sigma_range);
+    const float inv255 = 1.0f / 255.0f;
+    for(int i = 0; i < 256; i++)
+    {
+      const float d = (float)i * inv255;
+      range_lut[i] = expf(-d * d * inv_2sigma2);
+    }
+  }
+
+  DT_OMP_FOR(shared(range_lut))
   for(int y = 0; y < dst_h; y++)
   {
     const float sy = (dst_h > 1) ? (float)y * (float)(valid_h - 1) / (float)(dst_h - 1) : 0.0f;
@@ -193,8 +244,49 @@ static void _crop_resize_mask(const float *src,
       const float v10 = src[y1 * src_w + x0];
       const float v11 = src[y1 * src_w + x1];
 
-      float val = v00 * (1.0f - fx) * (1.0f - fy) + v01 * fx * (1.0f - fy)
-        + v10 * (1.0f - fx) * fy + v11 * fx * fy;
+      float val;
+      if(!use_jbu)
+      {
+        val = _bilinear4(v00, v01, v10, v11, fx, fy);
+      }
+      else
+      {
+        // reference luma at the output pixel (guide is at dst resolution)
+        const int luma_ref = _luma709(&guide_rgb[(y * guide_w + x) * 3]);
+
+        // map the 4 source-grid corners back into guide coords
+        const float gx0 = (valid_w > 1) ? (float)x0 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
+        const float gx1 = (valid_w > 1) ? (float)x1 * (float)(dst_w - 1) / (float)(valid_w - 1) : 0.0f;
+        const float gy0 = (valid_h > 1) ? (float)y0 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
+        const float gy1 = (valid_h > 1) ? (float)y1 * (float)(dst_h - 1) / (float)(valid_h - 1) : 0.0f;
+
+        const int ix00 = MIN(MAX((int)(gx0 + 0.5f), 0), guide_w - 1);
+        const int ix01 = MIN(MAX((int)(gx1 + 0.5f), 0), guide_w - 1);
+        const int iy00 = MIN(MAX((int)(gy0 + 0.5f), 0), guide_h - 1);
+        const int iy01 = MIN(MAX((int)(gy1 + 0.5f), 0), guide_h - 1);
+
+        const int l00 = _luma709(&guide_rgb[(iy00 * guide_w + ix00) * 3]);
+        const int l01 = _luma709(&guide_rgb[(iy00 * guide_w + ix01) * 3]);
+        const int l10 = _luma709(&guide_rgb[(iy01 * guide_w + ix00) * 3]);
+        const int l11 = _luma709(&guide_rgb[(iy01 * guide_w + ix01) * 3]);
+
+        const float r00 = range_lut[abs(luma_ref - l00)];
+        const float r01 = range_lut[abs(luma_ref - l01)];
+        const float r10 = range_lut[abs(luma_ref - l10)];
+        const float r11 = range_lut[abs(luma_ref - l11)];
+
+        const float w00 = (1.0f - fx) * (1.0f - fy) * r00;
+        const float w01 = fx * (1.0f - fy) * r01;
+        const float w10 = (1.0f - fx) * fy * r10;
+        const float w11 = fx * fy * r11;
+        const float wsum = w00 + w01 + w10 + w11;
+
+        // if every range weight collapsed to ~0, fall back to bilinear
+        // rather than dividing by zero
+        val = (wsum > 1e-6f)
+          ? (v00 * w00 + v01 * w01 + v10 * w10 + v11 * w11) / wsum
+          : _bilinear4(v00, v01, v10, v11, fx, fy);
+      }
 
       if(apply_sigmoid)
         val = 1.0f / (1.0f + expf(-val));
@@ -243,7 +335,7 @@ dt_seg_context_t *dt_seg_load(dt_ai_environment_t *env, const char *model_id)
     sscanf(min_ver, "%d", &min_major);
     if(ver_major < min_major)
     {
-      dt_print(DT_DEBUG_ALWAYS,
+      dt_print(DT_DEBUG_AI,
                "[segmentation] model %s v%s incompatible "
                "(requires v%s) - please update model",
                model_id, version, min_ver);
@@ -740,6 +832,18 @@ dt_seg_encode_image(dt_seg_context_t *ctx,
   ctx->image_encoded = TRUE;
   ctx->has_prev_mask = FALSE;
 
+  g_free(ctx->encoded_rgb);
+  const size_t rgb_bytes = (size_t)width * height * 3;
+  ctx->encoded_rgb = g_try_malloc(rgb_bytes);
+  if(ctx->encoded_rgb)
+    memcpy(ctx->encoded_rgb, rgb_data, rgb_bytes);
+  else
+    dt_print(DT_DEBUG_AI,
+             "[segmentation] failed to allocate %zu bytes for JBU guide; "
+             "mask upsampling will fall back to plain bilinear "
+             "and edge refinement will be unavailable",
+             rgb_bytes);
+
   dt_print(DT_DEBUG_AI, "[segmentation] image encoded successfully (%.3fs)", enc_elapsed);
   return TRUE;
 }
@@ -973,7 +1077,9 @@ float *dt_seg_compute_mask(dt_seg_context_t *ctx,
   _crop_resize_mask(masks + (size_t)best * per_mask,
                     dec_w, dec_h,
                     result, final_w, final_h,
-                    mask_scale, is_sam);
+                    mask_scale, is_sam,
+                    ctx->encoded_rgb, ctx->encoded_width, ctx->encoded_height,
+                    0.1f);
   // SegNext decoder already outputs sigmoid probabilities; SAM outputs logits
   dt_print(DT_DEBUG_AI,
            "[segmentation] resized mask (%dx%d -> %dx%d, scale=%.4f)",
@@ -1026,6 +1132,8 @@ void dt_seg_reset_encoding(dt_seg_context_t *ctx)
   ctx->scale = 0.0f;
   ctx->image_encoded = FALSE;
   ctx->has_prev_mask = FALSE;
+  g_free(ctx->encoded_rgb);
+  ctx->encoded_rgb = NULL;
   if(ctx->prev_mask)
     memset(ctx->prev_mask, 0,
            (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim * sizeof(float));
@@ -1389,6 +1497,7 @@ void dt_seg_free(dt_seg_context_t *ctx)
   for(int i = 0; i < MAX_ENCODER_OUTPUTS; i++)
     g_free(ctx->enc_data[i]);
   g_free(ctx->prev_mask);
+  g_free(ctx->encoded_rgb);
   g_free(ctx->model_id);
   g_free(ctx->model_version);
   g_free(ctx);
