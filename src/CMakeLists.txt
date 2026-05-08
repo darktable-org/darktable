@@ -809,6 +809,7 @@ if(USE_LUA)
       "lua/lua.c"
       "lua/lualib.c"
       "lua/luastorage.c"
+      "lua/metadata.c"
       "lua/modules.c"
       "lua/password.c"
       "lua/preferences.c"
