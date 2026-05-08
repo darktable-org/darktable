@@ -20,7 +20,6 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
-#include "common/guided_filter.h"
 #include "common/mipmap_cache.h"
 #include "common/ras2vect.h"
 #include "control/conf.h"
@@ -40,9 +39,6 @@
 #define CONF_OBJECT_MODEL_KEY "plugins/darkroom/masks/object/model"
 #define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
-#define CONF_OBJECT_MORPH_KEY "plugins/darkroom/masks/object/morph_radius"
-#define CONF_OBJECT_GUIDED_RADIUS_KEY "plugins/darkroom/masks/object/guided_radius"
-#define CONF_OBJECT_GUIDED_EPS_KEY "plugins/darkroom/masks/object/guided_eps"
 #define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"
 #define CONF_OBJECT_SMOOTHING_KEY "plugins/darkroom/masks/object/smoothing"
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
@@ -535,149 +531,6 @@ static void _keep_seed_component(float *mask,
   g_free(labels);
 }
 
-// morphological erode: output pixel is 1 only if all pixels in the
-// square structuring element of given radius are 1
-static void _morph_erode(const uint8_t *src,
-                         uint8_t *dst,
-                         const int w,
-                         const int h,
-                         const int radius)
-{
-  for(int y = 0; y < h; y++)
-  {
-    const int y0 = MAX(y - radius, 0);
-    const int y1 = MIN(y + radius, h - 1);
-    for(int x = 0; x < w; x++)
-    {
-      const int x0 = MAX(x - radius, 0);
-      const int x1 = MIN(x + radius, w - 1);
-      uint8_t val = 1;
-      for(int ny = y0; ny <= y1 && val; ny++)
-        for(int nx = x0; nx <= x1 && val; nx++)
-          if(!src[ny * w + nx]) val = 0;
-      dst[y * w + x] = val;
-    }
-  }
-}
-
-// morphological dilate: output pixel is 1 if any pixel in the
-// square structuring element of given radius is 1
-static void _morph_dilate(const uint8_t *src,
-                          uint8_t *dst,
-                          const int w,
-                          const int h,
-                          const int radius)
-{
-  for(int y = 0; y < h; y++)
-  {
-    const int y0 = MAX(y - radius, 0);
-    const int y1 = MIN(y + radius, h - 1);
-    for(int x = 0; x < w; x++)
-    {
-      const int x0 = MAX(x - radius, 0);
-      const int x1 = MIN(x + radius, w - 1);
-      uint8_t val = 0;
-      for(int ny = y0; ny <= y1 && !val; ny++)
-        for(int nx = x0; nx <= x1 && !val; nx++)
-          if(src[ny * w + nx]) val = 1;
-      dst[y * w + x] = val;
-    }
-  }
-}
-
-// morphological open+close on a float mask,
-// open (erode->dilate) removes small protrusions/bridges,
-// close (dilate->erode) fills small holes/gaps
-static void _morph_open_close(float *mask,
-                              const int w,
-                              const int h,
-                              const float threshold,
-                              const int radius)
-{
-  if(radius <= 0) return;
-
-  const size_t n = (size_t)w * h;
-  uint8_t *bin = g_try_malloc(n);
-  uint8_t *tmp = g_try_malloc(n);
-  if(!bin || !tmp)
-  {
-    g_free(bin);
-    g_free(tmp);
-    return;
-  }
-
-  // binarize
-  for(size_t i = 0; i < n; i++)
-    bin[i] = mask[i] > threshold ? 1 : 0;
-
-  // open: erode into tmp, then dilate back into bin
-  _morph_erode(bin, tmp, w, h, radius);
-  _morph_dilate(tmp, bin, w, h, radius);
-
-  // close: dilate into tmp, then erode back into bin
-  _morph_dilate(bin, tmp, w, h, radius);
-  _morph_erode(tmp, bin, w, h, radius);
-
-  // apply result back to float mask
-  for(size_t i = 0; i < n; i++)
-  {
-    if(bin[i] && mask[i] <= threshold)
-      mask[i] = 1.0f;  // filled by close
-    else if(!bin[i] && mask[i] > threshold)
-      mask[i] = 0.0f;  // removed by open
-  }
-
-  g_free(bin);
-  g_free(tmp);
-}
-
-// edge-aware mask refinement using guided filter: smooths the mask in
-// flat regions while preserving sharp transitions at image edges.
-// the stored RGB image is used as the guide
-static void _guided_filter_refine(float *mask,
-                                  const int mw,
-                                  const int mh,
-                                  const uint8_t *rgb,
-                                  const int rgb_w,
-                                  const int rgb_h,
-                                  const int radius,
-                                  const float sqrt_eps)
-{
-  if(!rgb || rgb_w < 3 || rgb_h < 3)
-    return;
-  if(mw != rgb_w || mh != rgb_h)
-    return;
-
-  const size_t npix = (size_t)mw * mh;
-
-  // convert uint8 RGB to float RGBA guide (guided_filter expects 4ch)
-  float *guide = dt_alloc_align_float(npix * 4);
-  if(!guide) return;
-
-  for(size_t i = 0; i < npix; i++)
-  {
-    guide[i * 4 + 0] = (float)rgb[i * 3 + 0] / 255.0f;
-    guide[i * 4 + 1] = (float)rgb[i * 3 + 1] / 255.0f;
-    guide[i * 4 + 2] = (float)rgb[i * 3 + 2] / 255.0f;
-    guide[i * 4 + 3] = 0.0f;
-  }
-
-  // run guided filter: smooths mask but preserves edges from the guide
-  float *mask_bak = dt_alloc_align_float(npix);
-  if(!mask_bak)
-  {
-    dt_free_align(guide);
-    return;
-  }
-
-  memcpy(mask_bak, mask, npix * sizeof(float));
-  guided_filter(guide, mask_bak, mask, mw, mh, 4,
-                radius, sqrt_eps, 1.0f, 0.0f, 1.0f);
-
-  dt_free_align(mask_bak);
-  dt_free_align(guide);
-}
-
 // run the decoder with accumulated points and update the cached mask
 static void _run_decoder(dt_masks_form_gui_t *gui)
 {
@@ -760,21 +613,7 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
     const float threshold = CLAMP(dt_conf_get_float(CONF_OBJECT_THRESHOLD_KEY),
                                   0.3f, 0.9f);
 
-    // guided filter edge refinement: snap mask boundary to image edges
-    const int gf_radius = CLAMP(dt_conf_get_int(CONF_OBJECT_GUIDED_RADIUS_KEY),
-                                0, 20);
-    const float gf_eps = CLAMP(dt_conf_get_float(CONF_OBJECT_GUIDED_EPS_KEY),
-                               0.001f, 1.0f);
-    if(gf_radius > 0 && d->encode_rgb)
-      _guided_filter_refine(mask, mw, mh,
-                            d->encode_rgb, d->encode_rgb_w, d->encode_rgb_h,
-                            gf_radius, sqrtf(gf_eps));
-
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
-
-    // morphological open+close to remove small protrusions and fill holes
-    const int morph_radius = CLAMP(dt_conf_get_int(CONF_OBJECT_MORPH_KEY), 0, 5);
-    _morph_open_close(mask, mw, mh, threshold, morph_radius);
 
     g_free(d->mask);
     d->mask = mask;
