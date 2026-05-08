@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.18)
 
-add_library(darktable_ai STATIC
+set(_ai_sources
   backend.h
   backend_common.c
   backend_onnx.c
 )
+# macOS statically links ORT with CoreML — no path to install
+if(NOT APPLE)
+  list(APPEND _ai_sources ort_install.c ort_install.h)
+endif()
+
+add_library(darktable_ai STATIC ${_ai_sources})
 
 # Find ONNX Runtime (auto-downloads if not present)
 find_package(ONNXRuntime REQUIRED)
@@ -64,6 +70,20 @@ target_link_libraries(darktable_ai PUBLIC
 # dxguid provides GUID constants (IID_IDXGIFactory6, IID_IDXGIAdapter1, ...).
 if(WIN32)
   target_link_libraries(darktable_ai PUBLIC dxgi dxguid)
+endif()
+
+# ort_install.c needs curl + libarchive
+if(NOT APPLE)
+  find_package(CURL 7.56 QUIET)
+  find_package(LibArchive QUIET)
+  if(CURL_FOUND AND LibArchive_FOUND)
+    target_compile_definitions(darktable_ai PRIVATE HAVE_AI_DOWNLOAD)
+    target_include_directories(darktable_ai PRIVATE
+      ${LibArchive_INCLUDE_DIRS})
+    target_link_libraries(darktable_ai PRIVATE
+      CURL::libcurl
+      ${LibArchive_LIBRARIES})
+  endif()
 endif()
 
 # Install the bundled ONNX Runtime shared library alongside darktable_ai

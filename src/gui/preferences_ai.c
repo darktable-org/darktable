@@ -21,11 +21,18 @@
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "ai/backend.h"
+#if !defined(__APPLE__)
+#include "ai/ort_install.h"
+#endif
 #include "common/ai_models.h"
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
+
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <glib/gi18n.h>
 
@@ -780,10 +787,10 @@ static gboolean _update_progress_idle(gpointer user_data)
       if(dl->dialog && GTK_IS_WIDGET(dl->dialog))
         gtk_dialog_response(GTK_DIALOG(dl->dialog), GTK_RESPONSE_OK);
     }
-    return G_SOURCE_REMOVE;
   }
 
   g_free(error);
+  // caller removes via g_source_remove; don't self-remove
   return G_SOURCE_CONTINUE;
 }
 
@@ -1260,14 +1267,16 @@ static gboolean _on_info_button_press(GtkWidget *widget,
 }
 
 #if !defined(__APPLE__)
-static void _show_ort_probe_result(GtkWindow *parent, const char *path, const char *version)
+static void _show_ort_probe_result(GtkWindow *parent, const char *path,
+                                   const char *version, const char *eps)
 {
   GtkWidget *dlg;
   if(version)
     dlg = gtk_message_dialog_new(parent,
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-      _("ONNX Runtime %s detected.\nRestart darktable to apply."), version);
+      _("ONNX Runtime %s [%s] detected\nrestart darktable to apply"),
+      version, eps ? eps : "CPU");
   else
     dlg = gtk_message_dialog_new(parent,
       GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1277,15 +1286,42 @@ static void _show_ort_probe_result(GtkWindow *parent, const char *path, const ch
   gtk_widget_destroy(dlg);
 }
 
-// commit a new ORT library path: update conf + indicator and refresh
-// the provider combo to reflect the new library's advertised EPs
-static void _set_ort_path(dt_prefs_ai_data_t *data, const char *path)
+// probe + persist + refresh combo. NULL/empty resets to bundled.
+// returns FALSE on probe failure so the caller can revert the entry
+static gboolean _apply_ort_path(dt_prefs_ai_data_t *data, const char *path)
 {
-  dt_conf_set_string("plugins/ai/ort_library_path", path ? path : "");
+  if(!path || !path[0])
+  {
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
+    dt_conf_set_string("plugins/ai/ort_library_path", "");
+    _update_string_indicator(data->ort_path_indicator,
+                             "plugins/ai/ort_library_path");
+    data->supported_providers = _compute_supported_providers(NULL);
+    _refresh_provider_combo(data);
+    return TRUE;
+  }
+
+  // one probe gives both version (for the dialog) and EP list (for the combo)
+  char *version = NULL;
+  char *eps = NULL;
+  dt_ai_ort_probe_library_full(path, &version, &eps);
+  _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), path, version, eps);
+  if(!version)
+  {
+    g_free(eps);
+    return FALSE;
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), path);
+  dt_conf_set_string("plugins/ai/ort_library_path", path);
   _update_string_indicator(data->ort_path_indicator,
                            "plugins/ai/ort_library_path");
-  data->supported_providers = _compute_supported_providers(path);
+  data->supported_providers = dt_ai_providers_from_eps(eps);
   _refresh_provider_combo(data);
+
+  g_free(version);
+  g_free(eps);
+  return TRUE;
 }
 
 static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
@@ -1309,16 +1345,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
   else if(count == 1)
   {
     dt_ai_ort_found_t *f = found->data;
-    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-    _set_ort_path(data, f->path);
-    GtkWidget *dlg = gtk_message_dialog_new(
-      GTK_WINDOW(data->parent_dialog),
-      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-      _("ONNX Runtime %s [%s]\n%s\n\nRestart darktable to apply."),
-      f->version, f->eps, f->path);
-    gtk_dialog_run(GTK_DIALOG(dlg));
-    gtk_widget_destroy(dlg);
+    _apply_ort_path(data, f->path);
   }
   else
   {
@@ -1342,7 +1369,7 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     for(GList *l = found; l; l = g_list_next(l))
     {
       dt_ai_ort_found_t *f = l->data;
-      gchar *entry = g_strdup_printf("ORT %s [%s]  %s", f->version, f->eps, f->path);
+      gchar *entry = g_strdup_printf("ONNX Runtime %s [%s]  %s", f->version, f->eps, f->path);
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
       g_free(entry);
     }
@@ -1350,55 +1377,334 @@ static void _on_detect_system_ort(GtkButton *button, gpointer user_data)
     gtk_container_add(GTK_CONTAINER(content), combo);
     gtk_widget_show_all(content);
 
+    int sel = -1;
     if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
-    {
-      const int sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
-      if(sel >= 0)
-      {
-        dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
-        gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), f->path);
-        _set_ort_path(data, f->path);
-      }
-    }
+      sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
     gtk_widget_destroy(dlg);
+    if(sel >= 0)
+    {
+      dt_ai_ort_found_t *f = g_list_nth_data(found, sel);
+      _apply_ort_path(data, f->path);
+    }
   }
 
   g_list_free_full(found, (GDestroyNotify)dt_ai_ort_found_free);
 }
 
+#ifdef HAVE_AI_DOWNLOAD
+
+// --- ORT GPU install dialog ---
+// worker thread calls dt_ort_install_gpu(); main thread drives a modal
+// progress dialog. _ort_install_state_t = mutex-protected shared state;
+// _ort_install_ui_t = GTK widgets, main-thread only
+
+typedef struct
+{
+  GMutex mutex;
+  dt_ort_gpu_vendor_t vendor;
+  double progress;
+  gchar *status_msg;
+  gchar *error;
+  gchar *installed_path;
+  gboolean finished;
+  gboolean cancelled;
+} _ort_install_state_t;
+
+typedef struct
+{
+  GtkWidget *dialog;
+  GtkWidget *progress_bar;
+  GtkWidget *status_label;
+  _ort_install_state_t *state;
+} _ort_install_ui_t;
+
+static void _install_progress_cb(double progress, const char *status, gpointer user_data)
+{
+  _ort_install_state_t *s = user_data;
+  g_mutex_lock(&s->mutex);
+  s->progress = progress;
+  g_free(s->status_msg);
+  s->status_msg = g_strdup(status);
+  g_mutex_unlock(&s->mutex);
+}
+
+static gpointer _install_thread(gpointer data)
+{
+  _ort_install_state_t *s = data;
+  char *error = dt_ort_install_gpu(s->vendor,
+                                   _install_progress_cb, s,
+                                   &s->cancelled,
+                                   &s->installed_path);
+  g_mutex_lock(&s->mutex);
+  s->error = error;
+  s->finished = TRUE;
+  g_mutex_unlock(&s->mutex);
+  return NULL;
+}
+
+static gboolean _install_progress_idle(gpointer data)
+{
+  _ort_install_ui_t *ui = data;
+  _ort_install_state_t *s = ui->state;
+
+  g_mutex_lock(&s->mutex);
+  const double progress = s->progress;
+  gchar *status = g_strdup(s->status_msg);
+  const gboolean finished = s->finished;
+  g_mutex_unlock(&s->mutex);
+
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ui->progress_bar), progress);
+  if(status)
+  {
+    gtk_label_set_text(GTK_LABEL(ui->status_label), status);
+    g_free(status);
+  }
+
+  if(finished)
+    gtk_dialog_response(GTK_DIALOG(ui->dialog), GTK_RESPONSE_OK);
+  // caller removes via g_source_remove(timer); we don't self-remove,
+  // otherwise that explicit remove warns on an already-gone source
+  return G_SOURCE_CONTINUE;
+}
+
+static void _show_message(GtkWidget *parent,
+                          GtkMessageType type,
+                          const char *format, ...) G_GNUC_PRINTF(3, 4);
+
+static void _show_message(GtkWidget *parent,
+                          GtkMessageType type,
+                          const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  gchar *msg = g_strdup_vprintf(format, ap);
+  va_end(ap);
+
+  GtkWidget *dlg = gtk_message_dialog_new
+    (GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     type, GTK_BUTTONS_OK, "%s", msg);
+  gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER_ON_PARENT);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+  gtk_dialog_run(GTK_DIALOG(dlg));
+  gtk_widget_destroy(dlg);
+  g_free(msg);
+}
+
+static void _show_no_gpu_dialog(GtkWidget *parent)
+{
+  _show_message
+    (parent, GTK_MESSAGE_INFO,
+     _("no supported GPU detected\n\n"
+       "supported vendors: NVIDIA, AMD, Intel\n"
+       "make sure your GPU drivers are installed"));
+}
+
+// returns NULL on cancel; otherwise an entry of `gpus` (not owned)
+static dt_ort_gpu_info_t *_step_select_gpu(GList *gpus, GtkWidget *parent)
+{
+  if(g_list_length(gpus) == 1) return gpus->data;
+
+  GtkWidget *dlg = gtk_dialog_new_with_buttons
+    (_("select GPU for ONNX Runtime acceleration"),
+     GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
+     _("_next"), GTK_RESPONSE_ACCEPT,
+     NULL);
+  gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER_ON_PARENT);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dlg);
+#endif
+
+  GtkWidget *combo = gtk_combo_box_text_new();
+  for(GList *l = gpus; l; l = g_list_next(l))
+  {
+    dt_ort_gpu_info_t *g = l->data;
+    const char *ep = dt_ort_gpu_vendor_label(g->vendor);
+    gchar *entry = g->runtime_version
+                   ? g_strdup_printf("%s (%s) [%s]", g->label, g->runtime_version, ep)
+                   : g_strdup_printf("%s [%s]", g->label, ep);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), entry);
+    g_free(entry);
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
+
+  dt_gui_dialog_add(dlg,
+                    dt_ui_label_new(_("multiple GPUs detected. select one:")),
+                    combo);
+  gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(dlg)));
+
+  int sel = -1;
+  if(gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
+    sel = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+  gtk_widget_destroy(dlg);
+
+  return sel < 0 ? NULL : g_list_nth_data(gpus, sel);
+}
+
+static gboolean _step_confirm_install(dt_ort_gpu_info_t *selected,
+                                      GtkWidget *parent)
+{
+  const char *ep = dt_ort_gpu_vendor_label(selected->vendor);
+  GString *msg = g_string_new(NULL);
+  g_string_append_printf(msg, _("install ONNX Runtime with %s support\n\n"), ep);
+  g_string_append_printf(msg, _("GPU: %s\n"), selected->label);
+  if(selected->runtime_version)
+    g_string_append_printf(msg, _("runtime: %s\n"), selected->runtime_version);
+  g_string_append_printf(msg, _("download size: ~%zu MB\n"),
+                         selected->download_size_mb);
+
+  if(selected->deps_missing)
+  {
+    g_string_append_printf(msg, _("\nmissing component: %s\n"),
+                           selected->deps_missing);
+    if(selected->deps_hint)
+      g_string_append_printf(msg, _("you can install it with: %s\n"), selected->deps_hint);
+    g_string_append(msg, _("\nthe download will continue, but GPU acceleration\n"
+                           "may not work until this component is installed"));
+  }
+
+  g_string_append(msg, _("\n\ncontinue?"));
+
+  // dt_gui_show_yes_no_dialog picks the active toplevel as parent;
+  // drain events so present() takes effect before the helper iterates
+  gtk_window_present(GTK_WINDOW(parent));
+  while(gtk_events_pending()) gtk_main_iteration();
+
+  const gboolean yes = dt_gui_show_yes_no_dialog(
+    _("install ONNX Runtime"), "ai_install_ort",
+    "%s", msg->str);
+  g_string_free(msg, TRUE);
+  return yes;
+}
+
+// run the install worker behind a modal progress dialog
+static void _step_run_install_with_progress(_ort_install_state_t *state,
+                                            GtkWidget *parent)
+{
+  _ort_install_ui_t ui = { .state = state };
+  ui.dialog = gtk_dialog_new_with_buttons
+    (_("installing ONNX Runtime"),
+     GTK_WINDOW(parent),
+     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
+     NULL);
+  gtk_window_set_position(GTK_WINDOW(ui.dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(ui.dialog);
+#endif
+  gtk_widget_set_size_request(ui.dialog, DT_PIXEL_APPLY_DPI(400), -1);
+
+  ui.status_label = dt_ui_label_new(_("starting download..."));
+  ui.progress_bar = gtk_progress_bar_new();
+
+  dt_gui_dialog_add(ui.dialog, ui.status_label, ui.progress_bar);
+  gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ui.dialog)));
+
+  GThread *thread = g_thread_new("ort-install", _install_thread, state);
+  guint timer = g_timeout_add(100, _install_progress_idle, &ui);
+
+  const gint resp = gtk_dialog_run(GTK_DIALOG(ui.dialog));
+
+  if(resp == GTK_RESPONSE_CANCEL && !state->finished)
+  {
+    g_mutex_lock(&state->mutex);
+    state->cancelled = TRUE;
+    g_mutex_unlock(&state->mutex);
+  }
+
+  g_thread_join(thread);
+  g_source_remove(timer);
+  gtk_widget_destroy(ui.dialog);
+}
+
+static void _step_apply_install_result(dt_prefs_ai_data_t *data,
+                                       const _ort_install_state_t *state)
+{
+  if(state->error)
+  {
+    _show_message(data->parent_dialog, GTK_MESSAGE_ERROR,
+                  _("ONNX Runtime installation failed:\n%s"), state->error);
+    return;
+  }
+  if(!state->installed_path) return;
+
+  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), state->installed_path);
+  dt_conf_set_string("plugins/ai/ort_library_path", state->installed_path);
+  _update_string_indicator(data->ort_path_indicator,
+                           "plugins/ai/ort_library_path");
+
+  char *version = NULL;
+  char *eps = NULL;
+  dt_ai_ort_probe_library_full(state->installed_path, &version, &eps);
+
+  data->supported_providers = dt_ai_providers_from_eps(eps);
+  _refresh_provider_combo(data);
+
+  _show_message(data->parent_dialog, GTK_MESSAGE_INFO,
+                _("ONNX Runtime %s [%s] installed successfully\n\n"
+                  "%s\n\nrestart darktable to apply"),
+                version ? version : "?",
+                eps ? eps : "?",
+                state->installed_path);
+  g_free(version);
+  g_free(eps);
+}
+
+static void _on_install_ort_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
+
+  GList *gpus = dt_ort_detect_gpus();
+  if(!gpus)
+  {
+    _show_no_gpu_dialog(data->parent_dialog);
+    return;
+  }
+
+  dt_ort_gpu_info_t *selected = _step_select_gpu(gpus, data->parent_dialog);
+  if(selected && _step_confirm_install(selected, data->parent_dialog))
+  {
+    _ort_install_state_t state = { .vendor = selected->vendor };
+    g_mutex_init(&state.mutex);
+
+    _step_run_install_with_progress(&state, data->parent_dialog);
+    _step_apply_install_result(data, &state);
+
+    g_free(state.error);
+    g_free(state.installed_path);
+    g_free(state.status_msg);
+    g_mutex_clear(&state.mutex);
+  }
+
+  g_list_free_full(gpus, (GDestroyNotify)dt_ort_gpu_info_free);
+}
+
+#endif // HAVE_AI_DOWNLOAD
+
 static gboolean _reset_ort_path_click(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   if(e->type != GDK_2BUTTON_PRESS) return FALSE;
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
-  gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), "");
-  _set_ort_path(data, "");
+  _apply_ort_path(data, NULL);
   return TRUE;
 }
+
 static void _on_ort_path_changed(GtkEntry *entry, gpointer user_data)
 {
   dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   const char *text = gtk_entry_get_text(GTK_ENTRY(data->ort_path_entry));
 
-  // empty = reset to bundled
-  if(!text || !text[0])
+  if(!_apply_ort_path(data, text))
   {
-    _set_ort_path(data, "");
-    return;
+    // probe failed — revert entry to the saved config
+    gchar *saved = dt_conf_get_string("plugins/ai/ort_library_path");
+    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), saved ? saved : "");
+    g_free(saved);
   }
-
-  gchar *version = dt_ai_ort_probe_library(text);
-  _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), text, version);
-  if(!version)
-  {
-    // revert entry to saved config
-    gchar *prev = dt_conf_get_string("plugins/ai/ort_library_path");
-    gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), prev ? prev : "");
-    g_free(prev);
-    return;
-  }
-
-  _set_ort_path(data, text);
-  g_free(version);
 }
 
 static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
@@ -1446,14 +1752,9 @@ static void _on_ort_browse_clicked(GtkButton *button, gpointer user_data)
 
   if(filename)
   {
-    gchar *version = dt_ai_ort_probe_library(filename);
-    _show_ort_probe_result(GTK_WINDOW(data->parent_dialog), filename, version);
-    if(version)
-    {
-      gtk_entry_set_text(GTK_ENTRY(data->ort_path_entry), filename);
-      _set_ort_path(data, filename);
-      g_free(version);
-    }
+    // _apply_ort_path handles probe + persist + combo; on failure the
+    // saved path is left untouched
+    _apply_ort_path(data, filename);
     g_free(filename);
   }
 }
@@ -1607,7 +1908,14 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
     gtk_widget_set_tooltip_text(detect_btn,
                                 _("search for a system-installed ONNX Runtime library"));
 
+#ifdef HAVE_AI_DOWNLOAD
+    GtkWidget *install_btn = gtk_button_new_with_label(_("install"));
+    gtk_widget_set_tooltip_text(install_btn,
+                                _("download and install a GPU-accelerated ONNX Runtime"));
+    GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn, install_btn);
+#else
     GtkWidget *btn_box = dt_gui_hbox(browse_btn, detect_btn);
+#endif
     gtk_widget_set_valign(btn_box, GTK_ALIGN_CENTER);
 
     gtk_grid_attach(GTK_GRID(settings_grid), path_labelev, 0, row, 1, 1);
@@ -1617,6 +1925,9 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
 
     g_signal_connect(browse_btn, "clicked", G_CALLBACK(_on_ort_browse_clicked), data);
     g_signal_connect(detect_btn, "clicked", G_CALLBACK(_on_detect_system_ort), data);
+#ifdef HAVE_AI_DOWNLOAD
+    g_signal_connect(install_btn, "clicked", G_CALLBACK(_on_install_ort_clicked), data);
+#endif
     g_signal_connect(data->ort_path_entry, "activate", G_CALLBACK(_on_ort_path_changed), data);
     g_signal_connect(path_labelev, "button-press-event", G_CALLBACK(_reset_ort_path_click), data);
   }
