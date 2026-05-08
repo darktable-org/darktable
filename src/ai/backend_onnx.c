@@ -552,6 +552,7 @@ int dt_ai_ort_probe_library_full(const char *path, char **out_version, char **ou
   return TRUE;
 }
 
+#if !defined(_WIN32)
 // find libonnxruntime.so.* recursively, skip auditwheel *.libs/ peers
 static gchar *_scan_for_ort_lib(const char *root)
 {
@@ -576,6 +577,7 @@ static gchar *_scan_for_ort_lib(const char *root)
   g_dir_close(d);
   return result;
 }
+#endif
 
 // Scan system and user-space paths for valid ORT libraries.
 // Returns a GList of dt_ai_ort_found_t (caller owns list and contents).
