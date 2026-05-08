@@ -113,6 +113,7 @@ typedef struct dt_iop_overlay_global_data_t
   size_t cwidth[MAX_OVERLAY];
   size_t cheight[MAX_OVERLAY];
   dt_pthread_mutex_t overlay_threadsafe;
+  int kernel_overlay_blend;
 } dt_iop_overlay_global_data_t;
 
 typedef struct dt_iop_overlay_gui_data_t
@@ -304,9 +305,6 @@ static void _setup_overlay(dt_iop_module_t *self,
 
   if(image_exists)
   {
-    const size_t width  = dev->image_storage.width;
-    const size_t height = dev->image_storage.height;
-
     if(g)
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
 
@@ -315,6 +313,15 @@ static void _setup_overlay(dt_iop_module_t *self,
     size_t bh;
 
     GList *disabled_modules = _get_disabled_modules(self, imgid);
+
+    // Render at the parent image's storage resolution. The result is
+    // scale-stable and cached across host-pipe zoom changes; Cairo handles
+    // any final downscaling at composite time. Rendering at a smaller,
+    // zoom-dependent target would change the output of scale-dependent
+    // modules in the overlay's pipeline (sharpen, denoise, local contrast,
+    // lens correction, ...) and break preview/export consistency.
+    const size_t width  = dev->image_storage.width;
+    const size_t height = dev->image_storage.height;
 
     dt_dev_image(imgid, width, height,
                  -1,
@@ -334,173 +341,129 @@ static void _setup_overlay(dt_iop_module_t *self,
   }
 }
 
-void process(dt_iop_module_t *self,
-             dt_dev_pixelpipe_iop_t *piece,
-             const void *const ivoid,
-             void *const ovoid,
-             const dt_iop_roi_t *const roi_in,
-             const dt_iop_roi_t *const roi_out)
+/* Render the composite overlay into an ARGB32 Cairo buffer at roi_out dimensions.
+ *
+ * Locking: overlay_threadsafe is held until cairo_paint() returns so that the
+ * cached overlay pixel buffer (*pbuf) stays stable while Cairo reads it.
+ * plugin_threadsafe guards the Cairo call (not thread-safe).  The two mutexes
+ * are always acquired in the order overlay_threadsafe → plugin_threadsafe, so
+ * there is no deadlock risk.
+ *
+ * Returns a g_malloc'd ARGB32 buffer of roi_out->height × (*out_stride) bytes
+ * that the caller must g_free(), or NULL on failure.
+ */
+static guint8 *_get_overlay_argb(dt_iop_module_t *self,
+                                  dt_dev_pixelpipe_iop_t *piece,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out,
+                                  int *out_stride)
 {
   dt_iop_overlay_data_t *data = piece->data;
   dt_iop_overlay_global_data_t *gd = self->global_data;
+  const int index = self->multi_priority;
+  const float angle = deg2radf(-data->rotate);
 
-  /* We have several pixelpipes that might want to save the processed overlay in
-     the internal cache (both previews and full).
-     By using a mutex here we ensure
-     a) safe data pointer and dimension
-     b) only the first darkroom pipe being here has the hard work via _setup_overlay().
-  */
+  // ── Acquire / refresh the scaled overlay buffer ──────────────────────────
   dt_pthread_mutex_lock(&gd->overlay_threadsafe);
 
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
-  const float angle = deg2radf(-data->rotate);
-  const int index   = self->multi_priority;
+  const gboolean use_cache =
+    (self->dev->image_storage.id == darktable.develop->image_storage.id);
+
+  uint8_t *cbuf    = NULL;
+  size_t   cwidth  = 0;
+  size_t   cheight = 0;
+  uint8_t **pbuf   = use_cache ? &gd->cache[index]   : &cbuf;
+  size_t  *pwidth  = use_cache ? &gd->cwidth[index]  : &cwidth;
+  size_t  *pheight = use_cache ? &gd->cheight[index] : &cheight;
 
   if(!dt_is_valid_imgid(data->imgid))
     _clear_cache_entry(self, index);
 
-  // scratch buffer data and dimension
-  uint8_t *cbuf = NULL;
-  size_t cwidth = 0;
-  size_t cheight = 0;
-
-  uint8_t **pbuf;
-  size_t *pwidth;
-  size_t *pheight;
-
-  // if called from darkroom (the edited image is the one in
-  // darktable->develop) we use the cache, otherwise we just use a
-  // scratch buffer local to process for rendering.
-  if(self->dev->image_storage.id == darktable.develop->image_storage.id)
-  {
-    pbuf = &gd->cache[index];
-    pwidth = &gd->cwidth[index];
-    pheight = &gd->cheight[index];
-  }
-  else
-  {
-    pbuf = &cbuf;
-    pwidth = &cwidth;
-    pheight = &cheight;
-  }
-
+  // The overlay is rendered once at parent-image resolution and reused
+  // across zoom levels; Cairo handles any final scaling below.
   if(!*pbuf)
-  {
-    // need the overlay - either because we use the scratch buffer or the cacheline
-    // is still empty - create the buffer now and leave address dimension
     _setup_overlay(self, piece, pbuf, pwidth, pheight);
-  }
-
-  dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
-
-  /*
-     From here on we check every processing step for success, if there is a problem
-     we return after plain copy input -> output and possible leave a log note.
-  */
 
   if(!*pbuf)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
   }
 
-  /* setup stride for performance */
+  // ── Allocate the Cairo output canvas ─────────────────────────────────────
+  // overlay_threadsafe is held on every path below through cairo_paint() so
+  // that *pbuf stays valid while Cairo reads it. For the scratch
+  // path this is slightly conservative but harmless: cbuf is local and cannot
+  // be freed by another thread, yet holding the same lock keeps the analysis
+  // uniform and avoids the -Wthread-safety-analysis fatal error.
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
-  if(stride == -1)
+  if(stride < 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo stride error");
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
   }
 
-  /* create a cairo memory surface that is later used for reading
-   * overlay overlay data */
   guint8 *image = (guint8 *)g_try_malloc0_n(roi_out->height, stride);
   if(!image)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory - could not allocate %d*%d",
-             roi_out->height, stride);
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory %d*%d", roi_out->height, stride);
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
   }
-  cairo_surface_t *surface =
-    cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32,
-                                        roi_out->width,
-                                        roi_out->height, stride);
 
-  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(
+    image, CAIRO_FORMAT_ARGB32, roi_out->width, roi_out->height, stride);
+
+  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
   {
     dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo surface error: %s",
              cairo_status_to_string(cairo_surface_status(surface)));
+    cairo_surface_destroy(surface);
     g_free(image);
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    return NULL;
   }
 
-  // rsvg (or some part of cairo which is used underneath) isn't
-  // thread safe, for example when handling fonts
-
-  // we use a second surface
-  cairo_surface_t *surface_two = NULL;
-
-  /* get the dimension of svg or png */
-  RsvgDimensionData dimension;
-
+  // ── Cairo rendering ───────────────────────────────────────────────────────
+  // plugin_threadsafe guards Cairo/rsvg.  Ordering: overlay_threadsafe first,
+  // then plugin_threadsafe — consistent everywhere, no deadlock risk.
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   const size_t bw = *pwidth;
   const size_t bh = *pheight;
 
-  const size_t size_buf = bw * bh * sizeof(uint32_t);
-  uint8_t *buf = (uint8_t *)dt_alloc_aligned(size_buf);
-  memcpy(buf, *pbuf, size_buf);
+  // Wrap *pbuf directly — no memcpy of the (potentially large) buffer.
+  cairo_surface_t *surface_two = dt_view_create_surface(*pbuf, bw, bh);
 
-  // load overlay image into surface 2
-  surface_two = dt_view_create_surface(buf, bw, bh);
-
-  if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
+  if(cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo png surface 2 error: %s",
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo overlay surface error: %s",
              cairo_status_to_string(cairo_surface_status(surface_two)));
-    cairo_surface_destroy(surface);
-    g_free(image);
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    return;
+    dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
+    cairo_surface_destroy(surface_two);
+    cairo_surface_destroy(surface);
+    if(!use_cache) dt_free_align(cbuf);
+    g_free(image);
+    return NULL;
   }
 
-  dimension.width = cairo_image_surface_get_width(surface_two);
+  RsvgDimensionData dimension;
+  dimension.width  = cairo_image_surface_get_width(surface_two);
   dimension.height = cairo_image_surface_get_height(surface_two);
+  if(!dimension.width)  dimension.width  = 1;
+  if(!dimension.height) dimension.height = 1;
 
-  // if no text is given dimensions are null
-  if(!dimension.width)
-    dimension.width = 1;
-  if(!dimension.height)
-    dimension.height = 1;
+  const float iw     = piece->buf_in.width;
+  const float ih     = piece->buf_in.height;
+  const float uscale = data->scale / 100.0f;
 
-  //  width/height of current (possibly cropped) image
-  const float iw = piece->buf_in.width;
-  const float ih = piece->buf_in.height;
-  const float uscale = data->scale / 100.0f; // user scale, from GUI in percent
-
-  // wbase, hbase are the base width and height, this is the
-  // multiplicator used for the offset computing scale is the scale of
-  // the overlay itself and is used only to render it.
-  // sbase is used for scale calculation in the larger/smaller modes
   float wbase, hbase, scale, sbase;
-
-  // in larger/smaller (legacy) side mode, set wbase and hbase to the largest
-  // or smallest side of the image
   const float larger = dimension.width > dimension.height
-    ? (float)dimension.width
-    : (float)dimension.height;
+    ? (float)dimension.width : (float)dimension.height;
 
-  // set the base width and height to either large or smaller
-  // border of current image and calculate scale using either
-  // marker (SVG object) width or height
-  switch (data->scale_base)
+  switch(data->scale_base)
   {
     case DT_SCALE_MAINMENU_LARGER_BORDER:
       sbase = wbase = hbase = (iw > ih) ? iw : ih;
@@ -511,13 +474,11 @@ void process(dt_iop_module_t *self,
       scale = sbase / larger;
       break;
     case DT_SCALE_MAINMENU_MARKERHEIGHT:
-      wbase = iw;
-      sbase = hbase = ih;
+      wbase = iw; sbase = hbase = ih;
       scale = sbase / dimension.height;
       break;
     case DT_SCALE_MAINMENU_ADVANCED:
-      wbase = iw;
-      hbase = ih;
+      wbase = iw; hbase = ih;
       if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         sbase = iw;
@@ -536,50 +497,36 @@ void process(dt_iop_module_t *self,
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
-      else // data->scale_img == DT_SCALE_IMG_SMALLER
+      else
       {
         sbase = (iw < ih) ? iw : ih;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
       break;
-
-    // default to "image" mode
     case DT_SCALE_MAINMENU_IMAGE:
     default:
-      // in image mode, the wbase and hbase are just the image width and height
-      wbase = iw;
-      hbase = ih;
-      if(dimension.width > dimension.height)
-        scale = iw / dimension.width;
-      else
-        scale = ih / dimension.height;
+      wbase = iw; hbase = ih;
+      scale = (dimension.width > dimension.height)
+        ? iw / dimension.width : ih / dimension.height;
   }
 
   scale *= roi_out->scale;
   scale *= uscale;
 
-  // compute the width and height of the SVG object in image
-  // dimension. This is only used to properly layout the overlay
-  // based on the alignment.
-
   float svg_width, svg_height;
+  gboolean svg_calc_heightfromwidth;
+  float svg_calc_base;
 
-  // help to reduce the number of if clauses
-  gboolean svg_calc_heightfromwidth;   // calculate svg_height from svg_width if TRUE
-                                       // calculate svg_width from svg_height if FALSE
-  float svg_calc_base;                 // this value is used as svg_width or svg_height,
-                                       // depending on svg_calc_heightfromwidth
-
-  switch (data->scale_base)
+  switch(data->scale_base)
   {
     case DT_SCALE_MAINMENU_LARGER_BORDER:
       svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
-      svg_calc_heightfromwidth = (dimension.width > dimension.height) ? TRUE : FALSE;
+      svg_calc_heightfromwidth = (dimension.width > dimension.height);
       break;
     case DT_SCALE_MAINMENU_SMALLER_BORDER:
       svg_calc_base = ((iw < ih) ? iw : ih) * uscale;
-      svg_calc_heightfromwidth = (dimension.width > dimension.height) ? TRUE : FALSE;
+      svg_calc_heightfromwidth = (dimension.width > dimension.height);
       break;
     case DT_SCALE_MAINMENU_MARKERHEIGHT:
       svg_calc_base = ih * uscale;
@@ -589,26 +536,24 @@ void process(dt_iop_module_t *self,
       if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         svg_calc_base = iw * uscale;
-        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH);
       }
       else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         svg_calc_base = ih * uscale;
-        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH);
       }
       else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
-        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH);
       }
-      else // data->scale_img == DT_SCALE_IMG_SMALLER
+      else
       {
         svg_calc_base = ((iw < ih) ? iw : ih) * uscale;
-        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH);
       }
       break;
-
-    // default to "image" mode
     case DT_SCALE_MAINMENU_IMAGE:
     default:
       if(dimension.width > dimension.height)
@@ -625,45 +570,26 @@ void process(dt_iop_module_t *self,
 
   if(svg_calc_heightfromwidth)
   {
-    // calculate svg_height from svg_width
-    svg_width = svg_calc_base;
+    svg_width  = svg_calc_base;
     svg_height = dimension.height * (svg_width / dimension.width);
   }
   else
   {
-    // calculate svg_width from svg_height
     svg_height = svg_calc_base;
-    svg_width = dimension.width * (svg_height / dimension.height);
+    svg_width  = dimension.width * (svg_height / dimension.height);
   }
 
-  /* For the rotation we need an extra cairo image as rotations are
-     buggy via rsvg_handle_render_cairo.  distortions and blurred
-     images are obvious but you also can easily have crashes.
-  */
-
-  float svg_offset_x = 0;
-  float svg_offset_y = 0;
-
-  /* create cairo context and setup transformation/scale */
-  cairo_t *cr = cairo_create(surface);
-
-  /* create cairo context for the scaled overlay */
-  cairo_t *cr_two = cairo_create(surface_two);
-
-  // compute bounding box of rotated overlay
-  const float bb_width = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
+  const float bb_width  = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
   const float bb_height = fabsf(svg_width * sinf(angle)) + fabsf(svg_height * cosf(angle));
-  const float bX = bb_width / 2.0f - svg_width / 2.0f;
+  const float bX = bb_width  / 2.0f - svg_width  / 2.0f;
   const float bY = bb_height / 2.0f - svg_height / 2.0f;
 
-  // compute translation for the given alignment in image dimension
-
-  float ty = 0, tx = 0;
-  if(data->alignment >= 0 && data->alignment < 3) // Align to verttop
+  float ty = 0.f, tx = 0.f;
+  if(data->alignment >= 0 && data->alignment < 3)
     ty = bY;
-  else if(data->alignment >= 3 && data->alignment < 6) // Align to vertcenter
+  else if(data->alignment >= 3 && data->alignment < 6)
     ty = (ih / 2.0f) - (svg_height / 2.0f);
-  else if(data->alignment >= 6 && data->alignment < 9) // Align to vertbottom
+  else if(data->alignment >= 6 && data->alignment < 9)
     ty = ih - svg_height - bY;
 
   if(data->alignment == 0 || data->alignment == 3 || data->alignment == 6)
@@ -673,66 +599,127 @@ void process(dt_iop_module_t *self,
   else if(data->alignment == 2 || data->alignment == 5 || data->alignment == 8)
     tx = iw - svg_width - bX;
 
-  // translate to position
-  cairo_translate(cr, -roi_in->x, -roi_in->y);
+  cairo_t *cr = cairo_create(surface);
 
-  // add translation for the given value in GUI (xoffset,yoffset)
+  cairo_translate(cr, -roi_in->x, -roi_in->y);
   tx += data->xoffset * wbase;
   ty += data->yoffset * hbase;
-
   cairo_translate(cr, tx * roi_out->scale, ty * roi_out->scale);
 
-  // compute the center of the svg to rotate from the center
-  const float cX = svg_width / 2.0f * roi_out->scale;
+  const float cX = svg_width  / 2.0f * roi_out->scale;
   const float cY = svg_height / 2.0f * roi_out->scale;
-
   cairo_translate(cr, cX, cY);
   cairo_rotate(cr, angle);
   cairo_translate(cr, -cX, -cY);
 
-  // now set proper scale and translationfor the overlay itself
-  cairo_translate(cr_two, svg_offset_x, svg_offset_y);
-
   cairo_scale(cr, scale, scale);
   cairo_surface_flush(surface_two);
-
-  // paint the overlay
-  cairo_set_source_surface(cr, surface_two, -svg_offset_x, -svg_offset_y);
+  cairo_set_source_surface(cr, surface_two, 0.0, 0.0);
   cairo_paint(cr);
 
-  // no more non-thread safe rsvg usage
+  // cairo_paint() is synchronous for CPU surfaces: *pbuf is no longer read.
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  dt_pthread_mutex_unlock(&gd->overlay_threadsafe);
 
   cairo_destroy(cr);
-  cairo_destroy(cr_two);
-
-  /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
+  cairo_surface_destroy(surface);
+  cairo_surface_destroy(surface_two);  // drops reference to *pbuf, not ownership
 
-  /* render surface on output */
-  const float opacity = data->opacity / 100.0f;
+  // Scratch overlay was local to this call; free it now that Cairo is done.
+  if(!use_cache) dt_free_align(cbuf);
 
-  DT_OMP_FOR()
-  for(int j = 0; j < roi_out->height * roi_out->width; j++)
+  *out_stride = stride;
+  return image;
+}
+
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_overlay_data_t *data = piece->data;
+  const int ch = piece->colors;
+  const float *const in  = (const float *)ivoid;
+  float *const       out = (float *)ovoid;
+
+  int stride = 0;
+  guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+
+  if(!image)
   {
-    float *const i = in + ch*j;
-    float *const o = out + ch*j;
-    guint8 *const s = image + 4*j;
-
-    const float alpha = (s[3] / 255.0f) * opacity;
-
-    o[0] = (1.0f - alpha) * i[0] + (opacity * s[2] / 255.0f);
-    o[1] = (1.0f - alpha) * i[1] + (opacity * s[1] / 255.0f);
-    o[2] = (1.0f - alpha) * i[2] + (opacity * s[0] / 255.0f);
-    o[3] = in[3];
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
   }
 
-  /* clean up */
-  cairo_surface_destroy(surface);
-  cairo_surface_destroy(surface_two);
+  const float opacity = data->opacity / 100.0f;
+
+  DT_OMP_FOR(collapse(2))
+  for(int y = 0; y < roi_out->height; y++)
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      const int    j = y * roi_out->width + x;
+      const float *i = in  + ch * j;
+      float       *o = out + ch * j;
+      // Cairo ARGB32 (little-endian): byte order is [B, G, R, A]
+      const guint8 *s = image + (size_t)y * stride + (size_t)x * 4;
+
+      const float alpha = (s[3] / 255.0f) * opacity;
+      o[0] = (1.0f - alpha) * i[0] + opacity * s[2] / 255.0f;
+      o[1] = (1.0f - alpha) * i[1] + opacity * s[1] / 255.0f;
+      o[2] = (1.0f - alpha) * i[2] + opacity * s[0] / 255.0f;
+      o[3] = i[3];
+    }
+
   g_free(image);
-  dt_free_align(buf);
 }
+
+#ifdef HAVE_OPENCL
+// GPU alpha-blend path. Cairo still runs on CPU (_get_overlay_argb),
+// but the pixel-blending of the full output image runs on the GPU.
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_overlay_data_t *data = piece->data;
+  const dt_iop_overlay_global_data_t *gd = self->global_data;
+  const int devid  = piece->pipe->devid;
+  const int width  = roi_out->width;
+  const int height = roi_out->height;
+
+  int stride = 0;
+  guint8 *image = _get_overlay_argb(self, piece, roi_in, roi_out, &stride);
+
+  if(!image)
+  {
+    // No overlay: copy input to output on GPU
+    return dt_opencl_enqueue_copy_image(
+      devid, dev_in, dev_out, (size_t[]){ 0, 0 }, (size_t[]){ 0, 0 }, (size_t[]){ width, height });
+  }
+
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+
+  // Upload the Cairo ARGB32 buffer to GPU as a plain byte buffer
+  const size_t overlay_size = (size_t)height * stride;
+  cl_mem dev_overlay = dt_opencl_alloc_device_buffer(devid, overlay_size);
+  if(!dev_overlay) goto cleanup;
+
+  err = dt_opencl_write_buffer_to_device(devid, image, dev_overlay, 0, overlay_size, CL_TRUE);
+  if(err != CL_SUCCESS) goto cleanup;
+
+  const float opacity = data->opacity / 100.0f;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_overlay_blend, width, height,
+    CLARG(dev_in), CLARG(dev_overlay), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(opacity), CLARG(stride));
+
+cleanup:
+  dt_opencl_release_mem_object(dev_overlay);
+  g_free(image);
+  return err;
+}
+#endif
 
 static gboolean _draw_thumb(GtkWidget *area,
                             cairo_t *crf,
@@ -955,6 +942,14 @@ void init_global(dt_iop_module_so_t *self)
   pthread_mutexattr_init(&recursive_locking);
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&gd->overlay_threadsafe, &recursive_locking);
+
+#ifdef HAVE_OPENCL
+  const int program = 41; // overlay.cl
+  gd->kernel_overlay_blend = dt_opencl_create_kernel(program, "overlay_blend");
+#else
+  gd->kernel_overlay_blend = -1;
+#endif
+
   self->data = gd;
 }
 
@@ -966,6 +961,11 @@ void cleanup_global(dt_iop_module_so_t *self)
     dt_free_align(gd->cache[k]);
 
   dt_pthread_mutex_destroy(&gd->overlay_threadsafe);
+
+#ifdef HAVE_OPENCL
+  dt_opencl_free_kernel(gd->kernel_overlay_blend);
+#endif
+
   free(gd);
   self->data = NULL;
 }
