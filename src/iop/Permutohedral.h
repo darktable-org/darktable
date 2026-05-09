@@ -691,6 +691,40 @@ public:
     delete[] offset_remap;
   }
 
+  /* Zero the value array of the canonical hash table (table 0).
+   *
+   * Used in iterative algorithms (e.g. mean-field inference for DenseCRF)
+   * where the same lattice topology is reused across iterations with
+   * different splatted values. After splat → merge → blur → slice, all
+   * values that subsequent ops read live in table 0; clearing it lets the
+   * next iteration start from a clean state without rebuilding the lattice.
+   */
+  void clearValues()
+  {
+    Value *vals = hashTables[0].getValues();
+    const size_t n = hashTables[0].size();
+    for(size_t i = 0; i < n; i++)
+      Value::clear((float *)&vals[i].value);
+  }
+
+  /* Re-splat using cached replay info from a prior splat() call.
+   *
+   * Skips the expensive barycentric-coordinate computation (already done
+   * during the original splat) and writes only into table 0. Single-threaded
+   * by design — for iterative algorithms whose first iteration uses full
+   * multi-threaded splat, then reuses the lattice topology with fresh
+   * values via this fast path.
+   *
+   * Caller must clearValues() between iterations to avoid accumulation.
+   */
+  void quickSplat(const float *value, size_t replay_index)
+  {
+    Value *vals = hashTables[0].getValues();
+    const ReplayEntry &r = replay[replay_index];
+    for(int i = 0; i <= D; i++)
+      vals[r.offset[i]].add(value, r.weight[i]);
+  }
+
   /* Performs slicing out of position vectors. Note that the barycentric weights and the simplex
    * containing each position vector were calculated and stored in the splatting step.
    * We may reuse this to accelerate the algorithm. (See pg. 6 in paper.)

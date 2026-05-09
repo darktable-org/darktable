@@ -3568,7 +3568,7 @@
   <dtconfig>
     <name>plugins/darkroom/masks/object/smoothing</name>
     <type min="0.0" max="1.3">float</type>
-    <default>1.0</default>
+    <default>0.0</default>
     <shortdescription>AI mask smoothing</shortdescription>
     <longdescription>corner threshold for AI mask vectorization. 0 = all sharp corners (most points), 1.0 = balanced, 1.3 = maximum smoothing (fewest points).</longdescription>
   </dtconfig>
@@ -3613,6 +3613,13 @@
     <default>TRUE</default>
     <shortdescription>keep AI mask model loaded</shortdescription>
     <longdescription>keep the AI segmentation model loaded in memory between mask creation sessions within the same darkroom view. reduces latency when creating multiple masks but uses more memory</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/edge_refine</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>refine AI mask edges with DenseCRF on commit</shortdescription>
+    <longdescription>when enabled, runs DenseCRF post-processing on the soft mask at finalize time to align mask boundaries with image edges (recovers fine detail like feathers, fur). adds 1-3 seconds per commit; live preview is unaffected</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>

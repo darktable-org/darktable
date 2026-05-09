@@ -20,6 +20,7 @@
 #include "common/ai_models.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/densecrf.h"
 #include "common/mipmap_cache.h"
 #include "common/ras2vect.h"
 #include "control/conf.h"
@@ -44,6 +45,7 @@
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 #define CONF_OBJECT_PATH_PREVIEW_KEY "plugins/darkroom/masks/object/path_preview"
+#define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
 
 // default render target (longest side in pixels).
 // the SAM encoder internally downscales to 1024 so encoding quality
@@ -938,12 +940,40 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
     return NULL;
 
   const size_t n = (size_t)d->mask_w * d->mask_h;
+  const float *src_mask = d->mask;
+
+  // optional DenseCRF edge refinement on a copy of the soft mask
+  float *refined = NULL;
+  if(d->encode_rgb
+     && d->encode_rgb_w == d->mask_w
+     && d->encode_rgb_h == d->mask_h
+     && dt_conf_key_exists(CONF_OBJECT_EDGE_REFINE_KEY)
+     && dt_conf_get_bool(CONF_OBJECT_EDGE_REFINE_KEY))
+  {
+    refined = g_try_malloc(n * sizeof(float));
+    if(refined)
+    {
+      memcpy(refined, d->mask, n * sizeof(float));
+      const double t0 = dt_get_wtime();
+      dt_dense_crf_binary(refined, d->encode_rgb,
+                          d->mask_w, d->mask_h,
+                          5.0f, 10.0f, 3.0f, 10.0f, 3);
+      dt_print(DT_DEBUG_AI,
+               "[object mask] CRF refinement: %dx%d (%.2fs)",
+               d->mask_w, d->mask_h, dt_get_wtime() - t0);
+      src_mask = refined;
+    }
+  }
+
   float *inv_mask = g_try_malloc(n * sizeof(float));
   if(!inv_mask)
+  {
+    g_free(refined);
     return NULL;
+  }
 
   for(size_t i = 0; i < n; i++)
-    inv_mask[i] = 1.0f - d->mask[i];
+    inv_mask[i] = 1.0f - src_mask[i];
 
   const int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
   const float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
@@ -953,6 +983,7 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
   GList *forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
                            thresh, cleanup, (double)smoothing, &signs);
   g_free(inv_mask);
+  g_free(refined);
 
   return _register_vectorized_forms(module, forms, signs, d->mask_w, d->mask_h);
 }
@@ -1108,9 +1139,15 @@ static int _object_events_button_pressed(dt_iop_module_t *module,
       _save_raster_mask(d->mask, d->mask_w, d->mask_h, thresh);
     }
 
-    // right-click: finalize mask (prefer cached preview forms)
+    // right-click: finalize mask. when edge refinement is enabled the
+    // cached preview polyline (built from the unrefined soft mask) is
+    // stale, so fall through to _finalize_mask which re-runs ras2forms
+    // on the refined mask
+    const gboolean edge_refine =
+      dt_conf_key_exists(CONF_OBJECT_EDGE_REFINE_KEY)
+      && dt_conf_get_bool(CONF_OBJECT_EDGE_REFINE_KEY);
     dt_masks_form_t *new_grp = NULL;
-    if(d && d->preview_forms)
+    if(d && d->preview_forms && !edge_refine)
       new_grp = _finalize_from_preview(module, gui);
     else if(gui->guipoints_count > 0)
       new_grp = _finalize_mask(module, form, gui);
