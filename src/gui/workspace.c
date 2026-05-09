@@ -34,6 +34,7 @@ typedef struct _workspace_t {
   GtkWidget *create;
   GtkWidget *grid;
   GtkWidget *copy_template_check;
+  GtkWidget *remember_selection_check;
   GtkWidget *memory_workspace_button;
   GSList *template_radios;
   GtkWidget *template_radio_leader;
@@ -244,7 +245,7 @@ static void _workspace_template_radios_set_visible(dt_workspace_t *session,
   for(GSList *l = session->template_radios; l; l = l->next)
   {
     GtkWidget *const radio = GTK_WIDGET(l->data);
-    gtk_widget_set_opacity(radio, visible ? 1.0 : 0.0);
+    gtk_widget_set_visible(radio, visible);
   }
 }
 
@@ -382,6 +383,9 @@ static void _workspace_select_db(GtkWidget *button,
     g_free(dbname);
   }
 
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->remember_selection_check)))
+    dt_conf_set_bool("database/multiple_workspace", FALSE);
+
   _workspace_screen_destroy(session);
 }
 
@@ -435,6 +439,9 @@ static void _workspace_new_db(GtkWidget *button,
       _workspace_sanitize_copied_settings(label, session->datadir);
     }
   }
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(session->remember_selection_check)))
+    dt_conf_set_bool("database/multiple_workspace", FALSE);
 
   g_free(label);
   _workspace_screen_destroy(session);
@@ -494,7 +501,7 @@ static GtkWidget *_insert_button(dt_workspace_t *session,
 
   GtkWidget *b = gtk_button_new_with_label(label);
   gtk_widget_set_hexpand(GTK_WIDGET(b), TRUE);
-  gtk_grid_attach(GTK_GRID(session->grid), b, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(session->grid), b, 1, row, with_del ? 1 : 2, 1);
 
   g_signal_connect(G_OBJECT(b), "clicked",
                    G_CALLBACK(_workspace_select_db), session);
@@ -513,7 +520,6 @@ static GtkWidget *_insert_button(dt_workspace_t *session,
     gtk_widget_set_hexpand(del, FALSE);
 #endif
   }
-
   return b;
 }
 
@@ -604,6 +610,15 @@ gboolean dt_workspace_create(const char *datadir)
   }
 
   dt_gui_dialog_add(session->db_screen, session->grid);
+
+  GtkWidget *remember_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+  gtk_widget_set_valign(remember_box, GTK_ALIGN_CENTER);
+  session->remember_selection_check =
+    gtk_check_button_new_with_label(_("remember selection and don't ask again"));
+  gtk_widget_set_valign(session->remember_selection_check, GTK_ALIGN_CENTER);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(session->remember_selection_check), FALSE);
+  dt_gui_box_add(remember_box, session->remember_selection_check);
+  dt_gui_dialog_add(session->db_screen, remember_box);
 
   g_list_free_full(dbs, g_free);
 

@@ -1628,7 +1628,7 @@ int dt_init(int argc,
   const char *dblabel = dt_conf_get_string("workspace/label");
   const gboolean multiple_db = dt_conf_get_bool("database/multiple_workspace");
 
-  const gboolean default_dbname = !has_workspace || strcmp(dblabel, "") == 0;
+  const gboolean default_dbname = strcmp(dblabel, "") == 0;
 
   char darktablerc[PATH_MAX] = { 0 };
   snprintf(darktablerc, sizeof(darktablerc),
