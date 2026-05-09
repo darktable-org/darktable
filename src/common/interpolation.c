@@ -549,7 +549,6 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       s += kernelv[i] * h;
       in += linestride;
     }
-    s = _interpolated_out(s * oonorm);
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -571,9 +570,8 @@ float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
       }
       s += kernelv[i] * h;
     }
-    s = _interpolated_out(s * oonorm);
   }
-  return s; // if called for masks make sure to CLIP to avoid interpolator under/overshoots
+  return s * oonorm; // if called for masks make sure to CLIP to avoid interpolator under/overshoots
 }
 
 /* --------------------------------------------------------------------------
@@ -642,7 +640,7 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = _interpolated_out(pixel[c] * oonorm);
+      out[c] = pixel[c] * oonorm;
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -672,7 +670,7 @@ void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
     }
 
     for_each_channel(c,aligned(out))
-      out[c] = _interpolated_out(pixel[c] * oonorm);
+      out[c] = pixel[c] * oonorm;
   }
   else
   {
@@ -1115,7 +1113,7 @@ void dt_interpolation_resample(const dt_interpolation_t *itor,
 
       dt_aligned_pixel_t pixel;
       for_each_channel(c, aligned(vs:16))
-        pixel[c] = _interpolated_out(vs[c]);
+        pixel[c] = vs[c];
       copy_pixel_nontemporal(out + baseidx, pixel);
 
       // Reset vertical resampling context
