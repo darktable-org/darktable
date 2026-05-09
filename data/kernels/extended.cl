@@ -42,7 +42,7 @@ graduatedndp (read_only image2d_t in,
   float len = length_base + y*length_inc_y + x*length_inc_x;
   float dens = dtcl_exp2(density * clipf(0.5f + len));
   pixel = pixel / (color + ((float4)1.0f - color) * (float4)dens);
-  write_imagef (out, (int2)(x, y), fmax(0.0f, pixel));
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 
@@ -67,7 +67,7 @@ graduatedndm (read_only image2d_t in,
   float len = length_base + y*length_inc_y + x*length_inc_x;
   float dens = dtcl_exp2(-density * clipf(0.5f - len));
   pixel = pixel * (color + ((float4)1.0f - color) * (float4)dens);
-  write_imagef(out, (int2)(x, y), fmax(0.0f, pixel));
+  write_ipixel(out, (int2)(x, y), pixel);
 }
 
 __kernel void

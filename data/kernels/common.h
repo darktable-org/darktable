@@ -280,5 +280,5 @@ static inline float readalpha(read_only image2d_t in, int col, int row)
 
 static inline void write_ipixel(write_only image2d_t out, const int2 pos, const float4 pixel)
 {
-  write_imagef(out, pos, fmax(0.0f, pixel));
+  write_imagef(out, pos, pixel);
 }

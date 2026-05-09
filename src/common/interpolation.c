@@ -44,9 +44,6 @@ enum border_mode
 // !! Make sure to sync this with the filter array !!
 #define MAX_HALF_FILTER_WIDTH 3
 
-// Add *verbose* (like one msg per pixel out) debug message to stderr
-#define DEBUG_PRINT_VERBOSE 0
-
 /* --------------------------------------------------------------------------
  * Debug helpers
  * ------------------------------------------------------------------------*/

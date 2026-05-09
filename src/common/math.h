@@ -816,7 +816,7 @@ static inline double rad2deg(const double radians)
 */
 static inline float _interpolated_out(const float val)
 {
-  return MAX(0.0f, val);
+  return val;
 }
 
 
