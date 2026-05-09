@@ -257,6 +257,13 @@ changes (where available).
   "miscellaneous" section in the preferences ("automatically update
   module name").
 
+- A new log history viewer has been added to the bottom toolbar,
+  providing a persistent record of all dt_control_log messages (e.g.,
+  export progress, library updates, warnings). Click the speech-bubble
+  icon in the center-bottom-right area to open a scrollable popover
+  showing all logged messages with timestamps, automatically
+  deduplicating consecutive identical entries.
+
 ## Bug Fixes
 
 - Properly apply the iop-order when applying a style at export
