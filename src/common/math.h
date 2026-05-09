@@ -811,15 +811,6 @@ static inline double rad2deg(const double radians)
   return radians / M_PI * 180.0;
 }
 
-/* Reminder: keep in sync with opencl write_ipixel()
-   All pixel interpolators use this, currently we restrict output of resampling to be at least zero
-*/
-static inline float _interpolated_out(const float val)
-{
-  return MAX(0.0f, val);
-}
-
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

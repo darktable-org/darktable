@@ -743,35 +743,9 @@ int scrolled(
   return 0;
 }
 
-DT_OMP_DECLARE_SIMD(simdlen(4))
-static inline float _density_times_length(const float dens, const float length)
-{
-  return (dens * CLIP(0.5f + length) / 8.0f);
-}
-
-DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float _compute_density(const float dens, const float length)
 {
-#ifdef __FAST_MATH__
-  // !!! approximation is ok only when highest density is 8
-  // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
-  // use exp2f approximation to calculate e^(ln2*x/8)
-  // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-  const float t = M_LN2f * _density_times_length(dens,length);
-  const float d1 = t * t * 0.5f;
-  const float d2 = d1 * t * 0.333333333f;
-  const float d3 = d2 * t * 0.25f;
-  const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-  float density = d * d;
-  density = density * density;
-  density = density * density;
-#else
-  // use fair exp2f
-  // for GCC10 on recent hardware, exp2f is actually faster than the above approximation,
-  // but it does not vectorize so it is slower overall
-  const float density = exp2f(dens * CLIP(0.5f + length));
-#endif
-  return density;
+  return exp2f(dens * CLIP(0.5f + length));
 }
 
 void process(dt_iop_module_t *self,
@@ -813,7 +787,6 @@ void process(dt_iop_module_t *self,
   // these into registers when it vectorizes
   const dt_aligned_pixel_t color = { data->color[0], data->color[1], data->color[2], data->color[3] };
   const dt_aligned_pixel_t color1 = { data->color1[0], data->color1[1], data->color1[2], data->color1[3] };
-  const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   if(density > 0)
   {
@@ -843,7 +816,7 @@ void process(dt_iop_module_t *self,
           dt_aligned_pixel_t res;	// the compiler will optimize this into a register
           for_each_channel(l, aligned(in : 16))
           {
-            res[l] = MAX(zero[l], (in[4*(x+i)+l] / (color[l] + color1[l] * curr_density[i])));
+            res[l] = in[4*(x+i)+l] / (color[l] + color1[l] * curr_density[i]);
           }
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
@@ -857,7 +830,7 @@ void process(dt_iop_module_t *self,
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
         {
-          res[l] = MAX(zero[l], (in[4*x+l] / (color[l] + color1[l] * curr_density)));
+          res[l] = in[4*x+l] / (color[l] + color1[l] * curr_density);
         }
         // use streaming writes to eliminate the memory reads from loading cache lines
         copy_pixel_nontemporal(out + 4*x, res);
@@ -894,7 +867,7 @@ void process(dt_iop_module_t *self,
           dt_aligned_pixel_t res;	// the compiler will optimize this into a register
           for_each_channel(l, aligned(in : 16))
           {
-            res[l] = MAX(zero[l], (in[4*(x+i)+l] * (color[l] + color1[l] * curr_density[i])));
+            res[l] = in[4*(x+i)+l] * (color[l] + color1[l] * curr_density[i]);
           }
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
@@ -908,7 +881,7 @@ void process(dt_iop_module_t *self,
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
         {
-          res[l] = MAX(zero[l], (in[4*x+l] * (color[l] + color1[l] * curr_density)));
+          res[l] = in[4*x+l] * (color[l] + color1[l] * curr_density);
         }
         // use streaming writes to eliminate the memory reads from loading cache lines
         copy_pixel_nontemporal(out + 4*x, res);

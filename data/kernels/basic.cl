@@ -3722,8 +3722,6 @@ interpolation_resample (read_only image2d_t in,
   // store final result
   if (iy == 0 && x < width && y < height)
   {
-    // Clip negative RGB that may be produced by Lanczos undershooting
-    // Negative RGB are invalid values no matter the RGB space (light is positive)
     write_ipixel(out, (int2)(x, y), buffer[ylid]);
   }
 }
