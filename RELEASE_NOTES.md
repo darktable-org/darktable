@@ -179,7 +179,10 @@ changes (where available).
   The workspace-specific configuration is duplicated with paths,
   labels, collection history, and similar keys cleared so the new
   workspace keeps its own library database instead of reusing the
-  source library.
+  source library. The workspace dialog allows selecting a workspace as
+  the default for startup; if one is chosen as default, the dialog is
+  not shown on the next launch until “allow for multiple workspaces” is
+  enabled again in preferences (storage).
 
 ## Performance Improvements
 
