@@ -37,7 +37,6 @@
 #include <math.h>
 #include <string.h>
 
-#define CONF_OBJECT_MODEL_KEY "plugins/darkroom/masks/object/model"
 #define CONF_OBJECT_THRESHOLD_KEY "plugins/darkroom/masks/object/threshold"
 #define CONF_OBJECT_REFINE_KEY "plugins/darkroom/masks/object/refine_passes"
 #define CONF_OBJECT_CLEANUP_KEY "plugins/darkroom/masks/object/cleanup"

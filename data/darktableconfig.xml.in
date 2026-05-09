@@ -3601,18 +3601,18 @@
     <longdescription>target resolution (longest side in pixels) for rendering the image before AI mask encoding. higher values improve edge accuracy but increase processing time. the AI encoder always works at 1024px internally.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/object/brush_size</name>
-    <type min="0.005" max="0.5">float</type>
-    <default>0.03</default>
-    <shortdescription>AI mask brush size</shortdescription>
-    <longdescription>brush radius as a fraction of the shorter image dimension. used for the brush tool in the AI object mask to paint over the target object.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/masks/object/persist_model</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription>keep AI mask model loaded</shortdescription>
     <longdescription>keep the AI segmentation model loaded in memory between mask creation sessions within the same darkroom view. reduces latency when creating multiple masks but uses more memory</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/object/path_preview</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>show AI mask path preview overlay</shortdescription>
+    <longdescription>display the vectorized path (with anchor points) on top of the AI mask while creating it. useful for previewing the final shape before committing</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/edge_refine</name>
