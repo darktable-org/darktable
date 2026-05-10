@@ -411,7 +411,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     }
 
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
-                                            sizeof(float) * 2 * reducesize, CL_TRUE);
+                                            sizeof(float) * 2 * reducesize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
     double sum1 = 0.0;

@@ -2882,11 +2882,10 @@ int dt_opencl_read_host_from_device_rowpitch(const int devid,
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
+  const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_read_host_from_device_raw(devid, host, device, origin,
-                                             region, rowpitch, CL_TRUE);
+  return dt_opencl_read_host_from_device_raw(devid, host, device, CLIMG_ORIGIN,
+                                             region, rowpitch, TRUE);
 }
 
 int dt_opencl_read_host_from_device_raw(const int devid,
@@ -2895,10 +2894,13 @@ int dt_opencl_read_host_from_device_raw(const int devid,
                                         const size_t *origin,
                                         const size_t *region,
                                         const int rowpitch,
-                                        const int blocking)
+                                        const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
+
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
@@ -2906,7 +2908,7 @@ int dt_opencl_read_host_from_device_raw(const int devid,
     (darktable.opencl->dev[devid].cmd_queue,
      device,
      blocking ? CL_TRUE : CL_FALSE,
-     origin, region, rowpitch,
+     org, reg, rowpitch,
      0, host, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
@@ -2942,11 +2944,10 @@ int dt_opencl_write_host_to_device_rowpitch(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
-  const size_t origin[] = { 0, 0, 0 };
-  const size_t region[] = { width, height, 1 };
+  const size_t region[2] = { width, height };
   // blocking.
-  return dt_opencl_write_host_to_device_raw(devid, host, device, origin,
-                                            region, rowpitch, CL_TRUE);
+  return dt_opencl_write_host_to_device_raw(devid, host, device, CLIMG_ORIGIN,
+                                            region, rowpitch, TRUE);
 }
 
 int dt_opencl_write_host_to_device_raw(const int devid,
@@ -2955,17 +2956,20 @@ int dt_opencl_write_host_to_device_raw(const int devid,
                                        const size_t *origin,
                                        const size_t *region,
                                        const int rowpitch,
-                                       const int blocking)
+                                       const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
+
+  const size_t org[3] = { origin ? origin[0] : 0, origin ? origin[1] : 0, 0 };
+  const size_t reg[3] = { region[0], region[1], 1 };
 
   cl_event *eventp = _opencl_events_get_slot(devid, "[Write Image (from host to device)]");
   const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)
     (darktable.opencl->dev[devid].cmd_queue,
      device, blocking ? CL_TRUE : CL_FALSE,
-     origin, region,
-     rowpitch, 0, host, 0, NULL, eventp);
+     org, reg, rowpitch, 0, host, 0, NULL, eventp);
+
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_write_host_to_device_raw] could not write image to device '%s' id=%d: %s",
@@ -3106,7 +3110,7 @@ int dt_opencl_read_buffer_from_device(const int devid,
                                       void *device,
                                       const size_t offset,
                                       const size_t size,
-                                      const int blocking)
+                                      const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
@@ -3135,7 +3139,7 @@ int dt_opencl_write_buffer_to_device(const int devid,
                                      void *device,
                                      const size_t offset,
                                      const size_t size,
-                                     const int blocking)
+                                     const gboolean blocking)
 {
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
@@ -3268,7 +3272,7 @@ void dt_opencl_release_mem_object(cl_mem mem)
 
 void *dt_opencl_map_buffer(const int devid,
                            cl_mem buffer,
-                           const int blocking,
+                           const gboolean blocking,
                            const int flags,
                            size_t offset,
                            size_t size)

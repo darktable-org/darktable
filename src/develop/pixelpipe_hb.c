@@ -962,8 +962,8 @@ static void _pixelpipe_picker_cl(const int devid,
                          picker_source, box))
     return;
 
-  const size_t origin[3] = { box[0], box[1], 0 };
-  const size_t region[3] = { box[2] - box[0], box[3] - box[1], 1 };
+  const size_t origin[2] = { box[0], box[1] };
+  const size_t region[2] = { box[2] - box[0], box[3] - box[1] };
 
   float *pixel = NULL;
   float *tmpbuf = NULL;
@@ -982,7 +982,7 @@ static void _pixelpipe_picker_cl(const int devid,
 
   // get the required part of the image from opencl device
   if(dt_opencl_read_host_from_device_raw(devid, pixel, img,
-                                         origin, region, region[0] * bpp, CL_TRUE) != CL_SUCCESS)
+                                         origin, region, region[0] * bpp, TRUE) != CL_SUCCESS)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   picker_source == PIXELPIPE_PICKER_INPUT

@@ -435,7 +435,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
         goto finally;
       }
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
-                                            sizeof(float) * reducesize, CL_TRUE);
+                                            sizeof(float) * reducesize, TRUE);
       if(err != CL_SUCCESS) goto finally;
 
       dt_opencl_release_mem_object(dev_r);

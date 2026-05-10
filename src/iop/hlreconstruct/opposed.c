@@ -516,7 +516,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
             CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, CL_TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
     // collect row data and accumulate

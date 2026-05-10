@@ -1467,7 +1467,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
   if(use_pinned_memory)
   {
 
-    input_buffer = dt_opencl_map_buffer(devid, pinned_input, CL_TRUE, CL_MAP_WRITE, 0,
+    input_buffer = dt_opencl_map_buffer(devid, pinned_input, TRUE, CL_MAP_WRITE, 0,
                                         (size_t)width * height * in_bpp);
     if(input_buffer == NULL)
     {
@@ -1497,7 +1497,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
   if(use_pinned_memory)
   {
 
-    output_buffer = dt_opencl_map_buffer(devid, pinned_output, CL_TRUE, CL_MAP_READ, 0,
+    output_buffer = dt_opencl_map_buffer(devid, pinned_output, TRUE, CL_MAP_READ, 0,
                                          (size_t)width * height * out_bpp);
     if(output_buffer == NULL)
     {
@@ -1523,8 +1523,8 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
       if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
 
       /* origin and region of effective part of tile, which we want to store later */
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { wd, ht, 1 };
+      size_t origin[2] = { 0, 0 };
+      size_t region[2] = { wd, ht };
 
       /* roi_in and roi_out for process_cl on subbuffer */
       dt_iop_roi_t iroi = { roi_in->x + tx * tile_wd, roi_in->y + ty * tile_ht, wd, ht, roi_in->scale };
@@ -1567,14 +1567,13 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
 
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region,
-                                                 wd * in_bpp, CL_TRUE);
+                                                 wd * in_bpp, TRUE);
         if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
-        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch,
-                                                 CL_TRUE);
+        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, TRUE);
       }
       if(err != CL_SUCCESS) goto error;
 
@@ -1602,7 +1601,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
       {
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, origin, region,
-                                                  wd * out_bpp, CL_TRUE);
+                                                  wd * out_bpp, TRUE);
         if(err != CL_SUCCESS)
         {
           use_pinned_memory = FALSE;
@@ -1638,7 +1637,7 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
       {
         /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region,
-                                                  opitch, CL_TRUE);
+                                                  opitch, TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -1852,7 +1851,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
   if(use_pinned_memory)
   {
 
-    input_buffer = dt_opencl_map_buffer(devid, pinned_input, CL_TRUE, CL_MAP_WRITE, 0,
+    input_buffer = dt_opencl_map_buffer(devid, pinned_input, TRUE, CL_MAP_WRITE, 0,
                                         (size_t)width * height * in_bpp);
     if(input_buffer == NULL)
     {
@@ -1881,7 +1880,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
   if(use_pinned_memory)
   {
 
-    output_buffer = dt_opencl_map_buffer(devid, pinned_output, CL_TRUE, CL_MAP_READ, 0,
+    output_buffer = dt_opencl_map_buffer(devid, pinned_output, TRUE, CL_MAP_READ, 0,
                                          (size_t)width * height * out_bpp);
     if(output_buffer == NULL)
     {
@@ -1992,16 +1991,16 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       const size_t ooffs = (size_t)(out_dy * opitch) + (size_t)(out_dx * out_bpp);
 
       /* origin and region of full input tile */
-      size_t iorigin[] = { 0, 0, 0 };
-      size_t iregion[] = { iroi_full.width, iroi_full.height, 1 };
+      size_t iorigin[2] = { 0, 0 };
+      size_t iregion[2] = { iroi_full.width, iroi_full.height };
 
       /* origin and region of full output tile */
-      size_t oforigin[] = { 0, 0, 0 };
-      size_t ofregion[] = { oroi_full.width, oroi_full.height, 1 };
+      size_t oforigin[2] = { 0, 0 };
+      size_t ofregion[2] = { oroi_full.width, oroi_full.height };
 
       /* origin and region of good part of output tile */
-      size_t oorigin[] = { oroi_good.x - oroi_full.x, oroi_good.y - oroi_full.y, 0 };
-      size_t oregion[] = { oroi_good.width, oroi_good.height, 1 };
+      size_t oorigin[2] = { oroi_good.x - oroi_full.x, oroi_good.y - oroi_full.y };
+      size_t oregion[2] = { oroi_good.width, oroi_good.height };
 
       dt_print(DT_DEBUG_TILING,
                "[default_process_tiling_cl_roi] [%s] process tile (%zu,%zu) size %dx%d at origin [%d,%d]",
@@ -2046,14 +2045,14 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
 
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, iorigin, iregion,
-                                                 (size_t)iroi_full.width * in_bpp, CL_TRUE);
+                                                 (size_t)iroi_full.width * in_bpp, TRUE);
         if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion,
-                                                 ipitch, CL_TRUE);
+                                                 ipitch, TRUE);
       }
       if(err != CL_SUCCESS) goto error;
 
@@ -2083,7 +2082,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       {
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, oforigin, ofregion,
-                                                  (size_t)oroi_full.width * out_bpp, CL_TRUE);
+                                                  (size_t)oroi_full.width * out_bpp, TRUE);
         if(err != CL_SUCCESS)
         {
           use_pinned_memory = FALSE;
@@ -2100,7 +2099,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
       {
         /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion,
-                                                  opitch, CL_TRUE);
+                                                  opitch, TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
