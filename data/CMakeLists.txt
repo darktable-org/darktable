@@ -5,6 +5,10 @@ if(USE_OPENCL)
 	add_subdirectory(kernels ${DARKTABLE_DATADIR}/kernels)
 endif(USE_OPENCL)
 
+if(APPLE)
+  add_subdirectory(metal ${DARKTABLE_DATADIR}/metal)
+endif(APPLE)
+
 FILE(GLOB THEME_FILES "themes/*.css")
 FILE(COPY ${THEME_FILES} DESTINATION "${DARKTABLE_DATADIR}/themes")
 install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)

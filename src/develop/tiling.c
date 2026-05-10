@@ -42,7 +42,6 @@
    Needs to be increased if tiling fails due to insufficient buffer sizes. */
 #define RESERVE 5
 
-#ifdef HAVE_OPENCL
 /* greatest common divisor */
 static unsigned _gcd(unsigned a, unsigned b)
 {
@@ -61,7 +60,6 @@ static unsigned _lcm(const unsigned a, const unsigned b)
 {
   return (((unsigned long)a * b) / _gcd(a, b));
 }
-#endif
 
 static inline int _align_up(const int n, const int a)
 {
@@ -2164,6 +2162,262 @@ int default_process_tiling_cl(dt_iop_module_t *self,
   return -1;
 }
 #endif
+
+
+#if defined(__APPLE__) && defined(__aarch64__)
+/* Metal tiling for Apple Silicon unified memory.
+   Simplified version of _default_process_tiling_cl_ptp(): no host<->device copies needed
+   since Metal operates on CPU-accessible buffers via unified memory.
+   For each tile: extract tile region (with overlap) into temp buffer, call process_metal(),
+   composite "good" part (minus overlap) back to output. */
+static int _default_process_tiling_metal_ptp(dt_iop_module_t *self,
+                                              dt_dev_pixelpipe_iop_t *piece,
+                                              const void *const ivoid,
+                                              void *const ovoid,
+                                              const dt_iop_roi_t *const roi_in,
+                                              const dt_iop_roi_t *const roi_out,
+                                              const int in_bpp)
+{
+  void *tile_ibuf = NULL;
+  void *tile_obuf = NULL;
+
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
+  const int ipitch = roi_in->width * in_bpp;
+  const int opitch = roi_out->width * out_bpp;
+  const int max_bpp = MAX(in_bpp, out_bpp);
+
+  /* get tiling requirements of module */
+  dt_develop_tiling_t tiling = { 0 };
+  tiling.factor_cl = tiling.maxbuf_cl = -1;
+  self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  /* Metal reuses factor_cl since it's GPU processing */
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor;
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
+
+  /* On Apple Silicon, GPU and CPU share the same memory pool.
+     Use available pipe memory (system RAM aware) as the constraint. */
+  float available = dt_get_available_pipe_mem(piece->pipe);
+  /* subtract input and output buffers which are already allocated */
+  available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
+                   - ((float)roi_in->width * roi_in->height * in_bpp) - tiling.overhead,
+                   0);
+
+  const float factor = fmaxf(tiling.factor_cl, 1.0f);
+  const float singlebuffer = fmaxf(available / factor, 0.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
+
+  int width = roi_in->width;
+  int height = roi_in->height;
+
+  /* shrink tile size in case it would exceed singlebuffer size */
+  if((float)width * height * max_bpp * maxbuf > singlebuffer)
+  {
+    const float scale = singlebuffer / ((float)width * height * max_bpp * maxbuf);
+
+    if(width < height && scale >= 0.333f)
+    {
+      height = floorf(height * scale);
+    }
+    else if(height <= width && scale >= 0.333f)
+    {
+      width = floorf(width * scale);
+    }
+    else
+    {
+      width = floorf(width * sqrtf(scale));
+      height = floorf(height * sqrtf(scale));
+    }
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
+             "[default_process_tiling_metal_ptp] buffer exceeds singlebuffer, corrected to %dx%d",
+             width, height);
+  }
+
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
+  if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
+  {
+    width = height = floorf(sqrtf((float)width * height));
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
+             "[default_process_tiling_metal_ptp] use squares because of overlap, corrected to %dx%d",
+             width, height);
+  }
+
+  /* alignment */
+  const unsigned int walign = _lcm(tiling.align, 1);  /* no CL_ALIGNMENT needed for Metal */
+  const unsigned int halign = tiling.align;
+  assert(walign != 0 && halign != 0);
+
+  if(width < roi_in->width) width = (width / walign) * walign;
+  if(height < roi_in->height) height = (height / halign) * halign;
+
+  /* align overlap */
+  const int overlap = tiling.overlap % tiling.align != 0
+    ? (tiling.overlap / tiling.align + 1) * tiling.align
+    : tiling.overlap;
+
+  /* effective tile size */
+  const int tile_wd = width - 2 * overlap > 0 ? width - 2 * overlap : 1;
+  const int tile_ht = height - 2 * overlap > 0 ? height - 2 * overlap : 1;
+
+  /* number of tiles */
+  const int tiles_x = width < roi_in->width ? ceilf(roi_in->width / (float)tile_wd) : 1;
+  const int tiles_y = height < roi_in->height ? ceilf(roi_in->height / (float)tile_ht) : 1;
+
+  /* sanity check */
+  const int max_tiles = (darktable.dtresources.level == 3) ? 0x40000000 : 10000;
+  if(tiles_x * tiles_y > max_tiles)
+  {
+    dt_print(DT_DEBUG_TILING,
+             "[default_process_tiling_metal_ptp] aborted tiling for module '%s%s'. "
+             "too many tiles: %d x %d",
+             self->op, dt_iop_get_instance_id(self), tiles_x, tiles_y);
+    return 1;
+  }
+
+  dt_print(DT_DEBUG_TILING,
+           "[default_process_tiling_metal_ptp] processing %dx%d tiles, size=%dx%d, overlap=%d for '%s%s'",
+           tiles_x, tiles_y, tile_wd, tile_ht, overlap, self->op, dt_iop_get_instance_id(self));
+
+  /* store processed_maximum to be re-used and aggregated */
+  dt_aligned_pixel_t processed_maximum_saved;
+  dt_aligned_pixel_t processed_maximum_new = { 1.0f };
+  for_four_channels(k) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
+
+  /* iterate over tiles */
+  for(int tx = 0; tx < tiles_x; tx++)
+  {
+    for(int ty = 0; ty < tiles_y; ty++)
+    {
+      piece->pipe->tiling = TRUE;
+
+      const int wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
+      const int ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
+
+      /* skip degenerate end-tiles */
+      if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
+
+      /* roi for this tile */
+      dt_iop_roi_t iroi = { roi_in->x + tx * tile_wd, roi_in->y + ty * tile_ht, wd, ht, roi_in->scale };
+      dt_iop_roi_t oroi = { roi_out->x + tx * tile_wd, roi_out->y + ty * tile_ht, wd, ht, roi_out->scale };
+
+      /* allocate tile buffers */
+      tile_ibuf = dt_alloc_aligned((size_t)wd * ht * in_bpp);
+      tile_obuf = dt_alloc_aligned((size_t)wd * ht * out_bpp);
+      if(tile_ibuf == NULL || tile_obuf == NULL)
+      {
+        dt_print(DT_DEBUG_TILING,
+                 "[default_process_tiling_metal_ptp] could not alloc tile buffers for '%s%s'",
+                 self->op, dt_iop_get_instance_id(self));
+        goto error;
+      }
+
+      /* copy tile region from input image (with overlap border) */
+      const size_t ioffs = (size_t)(ty * tile_ht) * ipitch + (size_t)(tx * tile_wd) * in_bpp;
+      DT_OMP_FOR()
+      for(int j = 0; j < ht; j++)
+        memcpy((char *)tile_ibuf + (size_t)j * wd * in_bpp,
+               (const char *)ivoid + ioffs + (size_t)j * ipitch,
+               (size_t)wd * in_bpp);
+
+      /* restore processed_maximum for this tile */
+      for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
+      dt_dev_prepare_piece_cfa(piece, &iroi);
+
+      /* call process_metal on the tile */
+      dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE,
+               "[default_process_tiling_metal_ptp] tile (%d,%d) size %dx%d at origin [%d,%d]",
+               tx, ty, wd, ht, tx * tile_wd, ty * tile_ht);
+
+      const int err = self->process_metal(self, piece, tile_ibuf, tile_obuf, &iroi, &oroi);
+      if(err != 0)
+      {
+        dt_print(DT_DEBUG_TILING,
+                 "[default_process_tiling_metal_ptp] process_metal() failed for '%s%s' on tile (%d,%d)",
+                 self->op, dt_iop_get_instance_id(self), tx, ty);
+        goto error;
+      }
+
+      /* aggregate processed_maximum */
+      for(int k = 0; k < 4; k++)
+      {
+        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
+          dt_print(DT_DEBUG_TILING,
+                   "[default_process_tiling_metal_ptp] processed_maximum[%d] differs between tiles in module '%s%s'",
+                   k, self->op, dt_iop_get_instance_id(self));
+        processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
+      }
+
+      /* copy "good" part of tile output (minus overlap on non-first tiles) to output image */
+      int origin_x = 0, origin_y = 0;
+      int region_w = wd, region_h = ht;
+      size_t ooffs = (size_t)(ty * tile_ht) * opitch + (size_t)(tx * tile_wd) * out_bpp;
+
+      if(tx > 0)
+      {
+        origin_x += overlap;
+        region_w -= overlap;
+        ooffs += (size_t)overlap * out_bpp;
+      }
+      if(ty > 0)
+      {
+        origin_y += overlap;
+        region_h -= overlap;
+        ooffs += (size_t)overlap * opitch;
+      }
+
+      DT_OMP_FOR()
+      for(int j = 0; j < region_h; j++)
+        memcpy((char *)ovoid + ooffs + (size_t)j * opitch,
+               (const char *)tile_obuf + (size_t)((j + origin_y) * wd + origin_x) * out_bpp,
+               (size_t)region_w * out_bpp);
+
+      /* free tile buffers for this iteration */
+      dt_free_align(tile_ibuf);
+      tile_ibuf = NULL;
+      dt_free_align(tile_obuf);
+      tile_obuf = NULL;
+    }
+  }
+
+  /* copy back final processed_maximum */
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
+
+  piece->pipe->tiling = FALSE;
+  return 0;
+
+error:
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
+  dt_free_align(tile_ibuf);
+  dt_free_align(tile_obuf);
+  piece->pipe->tiling = FALSE;
+  return 1;
+}
+
+
+/* Default Metal tiling dispatcher. Dispatches to ptp (point-to-point) variant.
+   roi variant (geometric distortion) not yet supported — falls back to error. */
+int default_process_tiling_metal(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid,
+                                 void *const ovoid,
+                                 const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out,
+                                 const int in_bpp)
+{
+  const gboolean use_roi = memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t))
+                            || (self->flags() & IOP_FLAGS_TILING_FULL_ROI);
+  if(use_roi)
+  {
+    dt_print(DT_DEBUG_TILING,
+             "[default_process_tiling_metal] roi tiling not yet implemented for module '%s%s'",
+             self->op, dt_iop_get_instance_id(self));
+    return 1;  /* fall back to OpenCL/CPU */
+  }
+  return _default_process_tiling_metal_ptp(self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);
+}
+#endif /* __APPLE__ && __aarch64__ */
 
 
 /* If a module does not implement tiling_callback() by itself, this function is called instead.
