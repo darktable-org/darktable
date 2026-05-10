@@ -38,6 +38,11 @@ static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self);
 static gboolean _button_press_release(GtkWidget *button,
                                       GdkEventButton *event,
                                       dt_lib_module_t *self);
+static gboolean _suppress_popup(GtkWidget *widget,
+                                gpointer user_data);
+static gboolean _label_button_press(GtkWidget *widget,
+                                    GdkEventButton *event,
+                                    gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -81,17 +86,21 @@ static void _populate_list_box(dt_lib_module_t *self)
   {
     entries = g_list_reverse(entries); // show newest entries at the top
 
-    for(GList *elem = g_list_first(entries);
-        elem;
-        elem = g_list_next(elem))
-    {
-      gchar *line = (gchar *)elem->data;
-      GtkWidget *label = gtk_label_new(line);
-      gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
-      gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      dt_gui_add_class(label, "dt_monospace");
-      gtk_list_box_insert(GTK_LIST_BOX(d->list_box), label, -1);
-    }
+     for(GList *elem = g_list_first(entries);
+         elem;
+         elem = g_list_next(elem))
+     {
+       gchar *line = (gchar *)elem->data;
+       GtkWidget *label = gtk_label_new(line);
+       gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+       dt_gui_add_class(label, "dt_monospace");
+       g_signal_connect(G_OBJECT(label), "button-press-event",
+                       G_CALLBACK(_label_button_press), NULL);
+       g_signal_connect(G_OBJECT(label), "popup-menu",
+                       G_CALLBACK(_suppress_popup), NULL);
+       gtk_list_box_insert(GTK_LIST_BOX(d->list_box), label, -1);
+     }
     g_list_free_full(entries, g_free);
   }
   gtk_widget_show_all(d->popover);
@@ -102,6 +111,21 @@ static void _log_redraw_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_log_history_t *d = self->data;
   if(d->popover && gtk_widget_is_visible(d->popover))
     _populate_list_box(self);
+}
+
+static gboolean _suppress_popup(GtkWidget *widget,
+                                gpointer user_data)
+{
+  return TRUE;
+}
+
+static gboolean _label_button_press(GtkWidget *widget,
+                                    GdkEventButton *event,
+                                    gpointer user_data)
+{
+  if(event->button == GDK_BUTTON_SECONDARY)
+    return TRUE;
+  return FALSE;
 }
 
 static gboolean _button_press_release(GtkWidget *button,
