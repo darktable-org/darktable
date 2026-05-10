@@ -262,6 +262,8 @@ darktable.configuration.verbose:set_text([[True if the Lua logdomain is enabled.
 darktable.configuration.tmp_dir:set_text([[The name of the directory where darktable will store temporary files.]])
 darktable.configuration.config_dir:set_text([[The name of the directory where darktable will find its global configuration objects (modules).]])
 darktable.configuration.cache_dir:set_text([[The name of the directory where darktable will store its mipmaps.]])
+darktable.configuration.pixmaps_dir:set_text([[The directory where darktable installs pixmap assets (logos, miscellaneous images, and the `plugins/darkroom/` tree of module icons as SVG or PNG). Build a full pathname by appending a relative file path for use with GUI widgets that accept an image file, for example a button `image` field.]])
+darktable.configuration.icons_dir:set_text([[The directory that darktable prepends to the GTK icon theme search path (multi-size `hicolor` layout, including the `darktable` application icon).]])
 darktable.configuration.api_version_major:set_text([[The major version number of the lua API.]])
 darktable.configuration.api_version_minor:set_text([[The minor version number of the lua API.]])
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])

@@ -119,6 +119,22 @@ int dt_lua_init_configuration(lua_State *L)
   lua_pushstring(L, tmp_path);
   lua_settable(L, -3);
 
+  lua_pushstring(L, "pixmaps_dir");
+  {
+    gchar *pixmaps_dir = g_build_filename(tmp_path, "pixmaps", NULL);
+    lua_pushstring(L, pixmaps_dir);
+    g_free(pixmaps_dir);
+  }
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "icons_dir");
+  {
+    gchar *icons_dir = g_build_filename(tmp_path, "icons", NULL);
+    lua_pushstring(L, icons_dir);
+    g_free(icons_dir);
+  }
+  lua_settable(L, -3);
+
   lua_pushstring(L, "version");
   lua_pushstring(L, darktable_package_version);
   lua_settable(L, -3);

@@ -47,7 +47,7 @@
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 7
+#define LUA_API_VERSION_MINOR 8
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
