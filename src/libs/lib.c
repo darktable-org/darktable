@@ -915,7 +915,7 @@ void dt_lib_gui_update(dt_lib_module_t *module)
     module->gui_uptodate = TRUE;
   }
 
-  if(module->has_preset_label(module))
+  if(module && module->has_preset_label(module))
   {
     dt_lib_module_info_t *mi = _get_module_info_for_module(module);
     gchar *active_preset_name = dt_lib_get_active_preset_name(mi);
@@ -1388,14 +1388,17 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->expander = expander;
 
   // get active preset and set preset_label
-  dt_lib_module_info_t *mi = _get_module_info_for_module(module);
-  gchar *preset_name = dt_lib_get_active_preset_name(mi);
-  if(preset_name)
+  if(module->has_preset_label && module->has_preset_label(module))
   {
-    _set_module_preset_label(mi->module, preset_name);
-    g_free(preset_name);
+    dt_lib_module_info_t *mi = _get_module_info_for_module(module);
+    gchar *preset_name = dt_lib_get_active_preset_name(mi);
+    if(preset_name)
+    {
+      _set_module_preset_label(mi->module, preset_name);
+      g_free(preset_name);
+    }
+    _free_module_info(NULL, mi);
   }
-  _free_module_info(NULL, mi);
 
   return module->expander;
 }
