@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 edgardo hoszowski.
+    Copyright (C) 2019-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,15 +20,19 @@
 #include "colorspace.h"
 
 kernel void
-colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info, read_only image2d_t lut)
+colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in,
+                                        write_only image2d_t out,
+                                        const int width,
+                                        const int height,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                        read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = Areadpixel(in, x, y);
   pixel.xyz = Lab_to_XYZ(pixel).xyz;
   pixel = matrix_product(pixel, profile_info->matrix_out);
 
@@ -39,15 +43,19 @@ colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in, write_only image
 }
 
 kernel void
-colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info, read_only image2d_t lut)
+colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in,
+                                        write_only image2d_t out,
+                                        const int width,
+                                        const int height,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                        read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = Areadpixel(in, x, y);
 
   if(profile_info->nonlinearlut)
     pixel = apply_trc_in(pixel, profile_info, lut);
@@ -59,17 +67,22 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image
 }
 
 kernel void
-colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_from, read_only image2d_t lut_from,
-    constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_to, read_only image2d_t lut_to,
-    constant const float *const matrix)
+colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in,
+                                        write_only image2d_t out,
+                                        const int width,
+                                        const int height,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_from,
+                                        read_only image2d_t lut_from,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_to,
+                                        read_only image2d_t lut_to,
+                                        constant const float *const matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = Areadpixel(in, x, y);
 
   if(profile_info_from->nonlinearlut)
     pixel = apply_trc_in(pixel, profile_info_from, lut_from);
@@ -83,13 +96,17 @@ colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image
 }
 
 kernel void
-colorspaces_transform_gamma(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float gamma)
+colorspaces_transform_gamma(read_only image2d_t in,
+                            write_only image2d_t out,
+                            const int width,
+                            const int height,
+                            const float gamma)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  const float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)) );
+  float4 pixel = fmax(0.0f, Areadpixel(in, x, y));
   write_imagef(out, (int2)(x, y), dtcl_pow(pixel, gamma));
 }

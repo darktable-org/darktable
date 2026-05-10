@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -516,8 +516,7 @@ static inline void _transform_matrix_rgb
    const dt_iop_order_iccprofile_info_t *const profile_info_from,
    const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
-  const int ch = 4;
-  const size_t stride = (size_t)width * height * ch;
+  const size_t stride = (size_t)width * height * 4;
 
   // RGB -> XYZ -> RGB are 2 matrices products, they can be premultiplied globally ahead
   // and put in a new matrix. then we spare one matrix product per pixel.
@@ -1429,7 +1428,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
   }
   else
   {
-    profile_lut_cl = malloc(sizeof(cl_float) * 1 * 6);
+    profile_lut_cl = calloc(1, sizeof(cl_float) * 1 * 6);
 
     if(profile_lut_cl)
       dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
@@ -1491,7 +1490,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   const gboolean inplace = dev_img_in == dev_img_out;
   const gboolean anyraw = cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW;
 
-  size_t region[] = { width, height };
+  const size_t region[2] = { width, height };
 
   *converted_cst = cst_to;
   if(cst_from == cst_to)
@@ -1524,11 +1523,9 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     return err == CL_SUCCESS;
   }
 
-  const size_t ch = 4;
   float *src_buffer = NULL;
 
   int kernel_transform = 0;
-  cl_mem dev_tmp = NULL;
   cl_mem dev_profile_info = NULL;
   cl_mem dev_lut = NULL;
   dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
@@ -1569,47 +1566,24 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     _ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
     lut_cl = _ioppr_get_trc_cl(profile_info);
 
-    if(inplace)
-    {
-      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-      if(dev_tmp == NULL)
-      {
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-        goto cleanup;
-      }
-
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
-      if(err != CL_SUCCESS)
-        goto cleanup;
-    }
-    else
-    {
-      dev_tmp = dev_img_in;
-    }
-
     dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl),
                                                               &profile_info_cl);
-    if(dev_profile_info == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
     dev_lut = dt_opencl_copy_host_to_device(devid, lut_cl, 256, 256 * 6, sizeof(float));
-    if(dev_lut == NULL)
+
+    if(dev_profile_info == NULL || dev_lut == NULL)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_transform, width, height,
-                                           CLARG(dev_tmp), CLARG(dev_img_out),
+                                           CLARG(dev_img_in), CLARG(dev_img_out),
                                            CLARG(width), CLARG(height),
                                            CLARG(dev_profile_info), CLARG(dev_lut));
-    if(err != CL_SUCCESS)
-      goto cleanup;
-
-    dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]",
+    if(err == CL_SUCCESS)
+      dt_print(DT_DEBUG_PERF,
+             "[dt_ioppr_transform_image_colorspace_cl]%s %s-->%s took %.3f secs (%.3f GPU) [%s%s]",
+             inplace ? " inplace" : "",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
@@ -1618,7 +1592,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   else
   {
     // no matrix, call lcms2
-    src_buffer = dt_alloc_align_float(ch * width * height);
+    src_buffer = dt_alloc_align_float((size_t)4 * width * height);
     if(src_buffer == NULL)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -1626,7 +1600,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     }
 
     err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_img_in,
-                                        width, height, ch * sizeof(float));
+                                        width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
 
@@ -1636,7 +1610,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
                                         converted_cst, profile_info);
 
     err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out,
-                                         width, height, ch * sizeof(float));
+                                         width, height, 4 * sizeof(float));
   }
 
 cleanup:
@@ -1645,8 +1619,6 @@ cleanup:
              "[dt_ioppr_transform_image_colorspace_cl] had error: %s", cl_errstr(err));
 
   dt_free_align(src_buffer);
-  if(dev_tmp && inplace)
-    dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_profile_info);
   dt_opencl_release_mem_object(dev_lut);
   if(lut_cl)
@@ -1672,12 +1644,14 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
   {
     return FALSE;
   }
+
+  const size_t region[2] = { width, height };
+
   if(profile_info_from->type == profile_info_to->type
      && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
   {
     if(dev_img_in != dev_img_out)
     {
-      size_t region[] = { width, height };
       err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS)
       {
@@ -1691,13 +1665,11 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     return TRUE;
   }
 
-  const size_t ch = 4;
   float *src_buffer_in = NULL;
   float *src_buffer_out = NULL;
-  int in_place = (dev_img_in == dev_img_out);
+  const gboolean in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
-  cl_mem dev_tmp = NULL;
 
   cl_mem dev_profile_info_from = NULL;
   cl_mem dev_lut_from = NULL;
@@ -1720,8 +1692,6 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     dt_times_t start_time = { 0 };
     dt_get_perf_times(&start_time);
 
-    size_t region[] = { width, height };
-
     kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_rgb;
 
     _ioppr_get_profile_info_cl(profile_info_from, &profile_info_from_cl);
@@ -1733,92 +1703,54 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     dt_colormatrix_t matrix;
     dt_colormatrix_mul(matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
 
-    if(in_place)
-    {
-      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-      if(dev_tmp == NULL)
-      {
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-        goto cleanup;
-      }
-
-      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
-      if(err != CL_SUCCESS)
-         goto cleanup;
-     }
-    else
-    {
-      dev_tmp = dev_img_in;
-    }
-
-    dev_profile_info_from
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_from_cl),
+    dev_profile_info_from = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_from_cl),
                                                  &profile_info_from_cl);
-    if(dev_profile_info_from == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
     dev_lut_from = dt_opencl_copy_host_to_device(devid, lut_from_cl, 256, 256 * 6, sizeof(float));
-    if(dev_lut_from == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
 
-    dev_profile_info_to
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_to_cl),
+    dev_profile_info_to = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_to_cl),
                                                  &profile_info_to_cl);
-    if(dev_profile_info_to == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
     dev_lut_to = dt_opencl_copy_host_to_device(devid, lut_to_cl, 256, 256 * 6, sizeof(float));
-    if(dev_lut_to == NULL)
-    {
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
+
     float matrix3x3[9];
     pack_3xSSE_to_3x3(matrix, matrix3x3);
     matrix_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix3x3), &matrix3x3);
-    if(matrix_cl == NULL)
+
+    if(dev_lut_to == NULL || dev_profile_info_to == NULL || dev_lut_from == NULL || dev_profile_info_from == NULL || matrix_cl == NULL)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_transform, width, height,
-                                           CLARG(dev_tmp), CLARG(dev_img_out),
+                                           CLARG(dev_img_in), CLARG(dev_img_out),
                                            CLARG(width), CLARG(height),
                                            CLARG(dev_profile_info_from),
                                            CLARG(dev_lut_from),
                                            CLARG(dev_profile_info_to),
                                            CLARG(dev_lut_to),
                                            CLARG(matrix_cl));
-    if(err != CL_SUCCESS)
-      goto cleanup;
-
-  dt_print(DT_DEBUG_PIPE,
-    "dt_ioppr_transform_image_colorspace_rgb_CL `%s' -> `%s' [%s]",
+    if(err == CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_PIPE, "dt_ioppr_transform_image_colorspace_rgb_CL%s `%s' -> `%s' [%s]",
+             in_place ? " inplace" : "",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
             message ? message : "");
 
-    dt_print(DT_DEBUG_PERF,
-             "image colorspace transform_rgb_CL  `%s' -> `%s' took %.3f secs (%.3f GPU) [%s]",
+      dt_print(DT_DEBUG_PERF, "image colorspace transform_rgb_CL%s  `%s' -> `%s' took %.3f secs (%.3f GPU) [%s]",
+             in_place ? " inplace" : "",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
              message ? message : "");
+    }
   }
   else
   {
     // no matrix, call lcms2
-    src_buffer_in  = dt_alloc_align_float(ch * width * height);
-    src_buffer_out = dt_alloc_align_float(ch * width * height);
+    src_buffer_in  = dt_alloc_align_float((size_t)4 * width * height);
+    src_buffer_out = dt_alloc_align_float((size_t)4 * width * height);
     if(src_buffer_in == NULL || src_buffer_out == NULL)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -1826,7 +1758,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
     }
 
     err = dt_opencl_copy_device_to_host(devid, src_buffer_in, dev_img_in,
-                                        width, height, ch * sizeof(float));
+                                        width, height, 4 * sizeof(float));
     if(err != CL_SUCCESS)
       goto cleanup;
 
@@ -1836,7 +1768,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
                                             profile_info_to, message);
 
     err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out,
-                                         width, height, ch * sizeof(float));
+                                         width, height, 4 * sizeof(float));
   }
 
 cleanup:
@@ -1853,7 +1785,6 @@ cleanup:
   dt_opencl_release_mem_object(dev_lut_to);
   dt_opencl_release_mem_object(matrix_cl);
 
-  if(dev_tmp && in_place) dt_opencl_release_mem_object(dev_tmp);
   if(lut_from_cl) free(lut_from_cl);
   if(lut_to_cl) free(lut_to_cl);
 
