@@ -79,6 +79,7 @@ static void _initial_splat(PermutohedralLattice<D, 2> &lattice,
     const int thread = dt_get_thread_num();
     lattice.splat(pos, const_cast<float *>(val), (size_t)i, thread);
   }
+  // single-threaded: combines per-thread hash tables into hashTables[0]
   lattice.merge_splat_threads();
 }
 

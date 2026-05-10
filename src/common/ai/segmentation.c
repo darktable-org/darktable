@@ -1278,10 +1278,7 @@ gboolean dt_seg_disk_cache_save(dt_seg_context_t *ctx,
 
 gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
                                 const dt_imgid_t imgid,
-                                const dt_hash_t distort_hash,
-                                uint8_t **out_rgb,
-                                int *out_rgb_w,
-                                int *out_rgb_h)
+                                const dt_hash_t distort_hash)
 {
   if(!ctx) return FALSE;
 
@@ -1470,14 +1467,27 @@ gboolean dt_seg_disk_cache_load(dt_seg_context_t *ctx,
     memset(ctx->prev_mask, 0,
            (size_t)ctx->prev_mask_dim * ctx->prev_mask_dim * sizeof(float));
 
-  if(out_rgb) *out_rgb = rgb; else g_free(rgb);
-  if(out_rgb_w) *out_rgb_w = rw;
-  if(out_rgb_h) *out_rgb_h = rh;
+  // install the RGB guide so JBU/CRF still work after a cache hit
+  g_free(ctx->encoded_rgb);
+  ctx->encoded_rgb = rgb;
 
   dt_print(DT_DEBUG_AI,
            "[segmentation] disk cache: loaded imgid %d (%dx%d, rgb=%dx%d)",
            imgid, enc_w, enc_h, rw, rh);
   return TRUE;
+}
+
+const uint8_t *dt_seg_get_encoded_rgb(const dt_seg_context_t *ctx,
+                                      int *out_w,
+                                      int *out_h)
+{
+  // dims must reflect the buffer's validity, not just the encoding state:
+  // ctx->encoded_rgb can be NULL (alloc failure) while encoded_width/height
+  // hold the encoder's resolution
+  const uint8_t *const rgb = ctx ? ctx->encoded_rgb : NULL;
+  if(out_w) *out_w = rgb ? ctx->encoded_width : 0;
+  if(out_h) *out_h = rgb ? ctx->encoded_height : 0;
+  return rgb;
 }
 
 const char *dt_seg_get_model_id(const dt_seg_context_t *ctx)

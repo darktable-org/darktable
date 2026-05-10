@@ -3581,10 +3581,10 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/refine_passes</name>
-    <type min="1" max="5">int</type>
-    <default>1</default>
+    <type min="1" max="3">int</type>
+    <default>2</default>
     <shortdescription>AI mask refinement passes</shortdescription>
-    <longdescription>number of iterative decoder passes. each pass feeds back the mask to tighten boundaries. higher values give tighter edges at the cost of more processing time.</longdescription>
+    <longdescription>number of decoder passes for automatic mask refinement. each extra pass augments the prompts (interior point from the prior mask, plus a tight bounding box for SAM) so the model converges without manual clicks. higher values can produce tighter masks at the cost of more processing time.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/masks/object/threshold</name>
