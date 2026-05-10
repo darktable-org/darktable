@@ -1325,6 +1325,9 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
   cl_int err = CL_SUCCESS; // we take care for errors below
   cl_mem input = NULL;
   cl_mem output = NULL;
+  size_t cltile_w = 0;
+  size_t cltile_h = 0;
+
   cl_mem pinned_input = NULL;
   cl_mem pinned_output = NULL;
   void *input_buffer = NULL;
@@ -1539,17 +1542,24 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
                wd, ht, tx * tile_wd, ty * tile_ht);
 
       /* get input and output buffers */
-      input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
-      output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
-      if(output == NULL || input == NULL)
+      if(cltile_w != wd || cltile_h != ht)
       {
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-        goto error;
+        dt_opencl_release_mem_object(input);
+        dt_opencl_release_mem_object(output);
+        input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
+        output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
+        if(output == NULL || input == NULL)
+        {
+          err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+          goto error;
+        }
+        cltile_w = wd;
+        cltile_h = ht;
       }
 
       if(use_pinned_memory)
       {
-/* prepare pinned input tile buffer: copy part of input image */
+        /* prepare pinned input tile buffer: copy part of input image */
         DT_OMP_FOR()
         for(size_t j = 0; j < ht; j++)
           memcpy((char *)input_buffer + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1558,19 +1568,15 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region,
                                                  wd * in_bpp, CL_TRUE);
-        if(err != CL_SUCCESS)
-        {
-          use_pinned_memory = FALSE;
-          goto error;
-        }
+        if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch,
                                                  CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
       }
+      if(err != CL_SUCCESS) goto error;
 
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
@@ -1621,8 +1627,8 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
 
       if(use_pinned_memory)
       {
-/* copy "good" part of tile from pinned output buffer to output image */
-//        DT_OMP_FOR(shared(origin, region))
+        /* copy "good" part of tile from pinned output buffer to output image */
+        //        DT_OMP_FOR(shared(origin, region))
         for(size_t j = 0; j < region[1]; j++)
           memcpy((char *)ovoid + ooffs + j * opitch,
                  (char *)output_buffer + ((j + origin[1]) * wd + origin[0]) * out_bpp,
@@ -1635,12 +1641,6 @@ static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
                                                   opitch, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
-
-      /* release input and output buffers */
-      dt_opencl_release_mem_object(input);
-      input = NULL;
-      dt_opencl_release_mem_object(output);
-      output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
@@ -1693,6 +1693,10 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
   cl_int err = CL_SUCCESS; // we take care for errors below
   cl_mem input = NULL;
   cl_mem output = NULL;
+  size_t cltile_ow = 0;
+  size_t cltile_oh = 0;
+  size_t cltile_iw = 0;
+  size_t cltile_ih = 0;
   cl_mem pinned_input = NULL;
   cl_mem pinned_output = NULL;
   void *input_buffer = NULL;
@@ -2010,8 +2014,22 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
                out_dx, out_dy, delta);
 
       /* get opencl input and output buffers */
-      input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
-      output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
+      if(cltile_iw != iroi_full.width || cltile_ih != iroi_full.height)
+      {
+        dt_opencl_release_mem_object(input);
+        input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
+        cltile_iw = iroi_full.width;
+        cltile_ih = iroi_full.height;
+      }
+
+      if(cltile_ow != oroi_full.width || cltile_oh != oroi_full.height)
+      {
+        dt_opencl_release_mem_object(output);
+        output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
+        cltile_ow = oroi_full.width;
+        cltile_oh = oroi_full.height;
+      }
+
       if(output == NULL || input == NULL)
       {
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -2020,7 +2038,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
 
       if(use_pinned_memory)
       {
-/* prepare pinned input tile buffer: copy part of input image */
+        /* prepare pinned input tile buffer: copy part of input image */
         DT_OMP_FOR(shared(iroi_full))
         for(size_t j = 0; j < iroi_full.height; j++)
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -2029,19 +2047,15 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, iorigin, iregion,
                                                  (size_t)iroi_full.width * in_bpp, CL_TRUE);
-        if(err != CL_SUCCESS)
-        {
-          use_pinned_memory = FALSE;
-          goto error;
-        }
+        if(err != CL_SUCCESS) use_pinned_memory = FALSE;
       }
       else
       {
         /* blocking direct memory transfer: host input image -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion,
                                                  ipitch, CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
       }
+      if(err != CL_SUCCESS) goto error;
 
       /* take original processed_maximum as starting point */
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
@@ -2075,7 +2089,7 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
           use_pinned_memory = FALSE;
           goto error;
         }
-/* copy "good" part of tile from pinned output buffer to output image */
+        /* copy "good" part of tile from pinned output buffer to output image */
         DT_OMP_FOR(shared(oroi_full, oorigin, oregion))
         for(size_t j = 0; j < oregion[1]; j++)
           memcpy((char *)ovoid + ooffs + j * opitch,
@@ -2089,12 +2103,6 @@ static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
                                                   opitch, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
-
-      /* release input and output buffers */
-      dt_opencl_release_mem_object(input);
-      input = NULL;
-      dt_opencl_release_mem_object(output);
-      output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
