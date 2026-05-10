@@ -44,14 +44,17 @@
 #define CONF_OBJECT_FEATHER_KEY "plugins/darkroom/masks/object/feather"
 #define CONF_OBJECT_PERSIST_KEY "plugins/darkroom/masks/object/persist_model"
 #define CONF_OBJECT_PATH_PREVIEW_KEY "plugins/darkroom/masks/object/path_preview"
-#define CONF_OBJECT_EDGE_REFINE_KEY "plugins/darkroom/masks/object/edge_refine"
+#define CONF_OBJECT_REFINE_BOUNDARY_KEY "plugins/darkroom/masks/object/refine_boundary"
+#define CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY "plugins/darkroom/masks/object/refine_boundary_iterations"
+#define CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY "plugins/darkroom/masks/object/refine_boundary_sigma_color"
+#define CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY "plugins/darkroom/masks/object/refine_boundary_weight_bilateral"
 
 // default render target (longest side in pixels).
 // the SAM encoder internally downscales to 1024 so encoding quality
 // is the same, but higher render resolution gives the guided filter
 // and vectorizer more detail for edge refinement.
 // configurable via plugins/darkroom/masks/object/render_size
-#define SEG_RENDER_DEFAULT 1024
+#define SEG_RENDER_DEFAULT 1536
 #define CONF_OBJECT_RENDER_SIZE_KEY "plugins/darkroom/masks/object/render_size"
 
 // --- per-session segmentation state (stored in gui->scratchpad) ---
@@ -93,6 +96,7 @@ typedef struct _object_data_t
   int preview_cleanup;              // current cleanup (potrace turdsize, 0-100)
   float preview_smoothing;          // current smoothing (potrace alphamax, 0.0-1.3)
   float preview_feather;            // path border/feather (0.0-0.5, normalized)
+  gboolean preview_refine;          // run DenseCRF edge refinement on each decode
 } _object_data_t;
 
 static _object_data_t *_get_data(dt_masks_form_gui_t *gui)
@@ -616,6 +620,30 @@ static void _run_decoder(dt_masks_form_gui_t *gui)
 
     _keep_seed_component(mask, mw, mh, threshold, seed_x, seed_y);
 
+    // optional DenseCRF edge refinement using the encoded RGB as guide
+    if(d->preview_refine
+       && d->encode_rgb
+       && d->encode_rgb_w == mw
+       && d->encode_rgb_h == mh)
+    {
+      const int crf_iter
+        = CLAMP(dt_conf_get_int(CONF_OBJECT_REFINE_BOUNDARY_ITER_KEY),
+                1, 10);
+      const float crf_sigma_color
+        = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_SIGMA_COLOR_KEY),
+                1.0f, 50.0f);
+      const float crf_w_bilateral
+        = CLAMP(dt_conf_get_float(CONF_OBJECT_REFINE_BOUNDARY_W_BILATERAL_KEY),
+                0.5f, 30.0f);
+      const double t0 = dt_get_wtime();
+      dt_dense_crf_binary(mask, d->encode_rgb, mw, mh,
+                          5.0f, crf_sigma_color,
+                          3.0f, crf_w_bilateral, crf_iter);
+      dt_print(DT_DEBUG_AI,
+               "[object mask] CRF refinement: %dx%d (%.2fs)",
+               mw, mh, dt_get_wtime() - t0);
+    }
+
     g_free(d->mask);
     d->mask = mask;
     d->mask_w = mw;
@@ -939,40 +967,12 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
     return NULL;
 
   const size_t n = (size_t)d->mask_w * d->mask_h;
-  const float *src_mask = d->mask;
-
-  // optional DenseCRF edge refinement on a copy of the soft mask
-  float *refined = NULL;
-  if(d->encode_rgb
-     && d->encode_rgb_w == d->mask_w
-     && d->encode_rgb_h == d->mask_h
-     && dt_conf_key_exists(CONF_OBJECT_EDGE_REFINE_KEY)
-     && dt_conf_get_bool(CONF_OBJECT_EDGE_REFINE_KEY))
-  {
-    refined = g_try_malloc(n * sizeof(float));
-    if(refined)
-    {
-      memcpy(refined, d->mask, n * sizeof(float));
-      const double t0 = dt_get_wtime();
-      dt_dense_crf_binary(refined, d->encode_rgb,
-                          d->mask_w, d->mask_h,
-                          5.0f, 10.0f, 3.0f, 10.0f, 3);
-      dt_print(DT_DEBUG_AI,
-               "[object mask] CRF refinement: %dx%d (%.2fs)",
-               d->mask_w, d->mask_h, dt_get_wtime() - t0);
-      src_mask = refined;
-    }
-  }
-
   float *inv_mask = g_try_malloc(n * sizeof(float));
   if(!inv_mask)
-  {
-    g_free(refined);
     return NULL;
-  }
 
   for(size_t i = 0; i < n; i++)
-    inv_mask[i] = 1.0f - src_mask[i];
+    inv_mask[i] = 1.0f - d->mask[i];
 
   const int cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
   const float smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
@@ -982,7 +982,6 @@ static dt_masks_form_t *_finalize_mask(dt_iop_module_t *module,
   GList *forms = ras2forms(inv_mask, d->mask_w, d->mask_h, NULL,
                            thresh, cleanup, (double)smoothing, &signs);
   g_free(inv_mask);
-  g_free(refined);
 
   return _register_vectorized_forms(module, forms, signs, d->mask_w, d->mask_h);
 }
@@ -1138,15 +1137,9 @@ static int _object_events_button_pressed(dt_iop_module_t *module,
       _save_raster_mask(d->mask, d->mask_w, d->mask_h, thresh);
     }
 
-    // right-click: finalize mask. when edge refinement is enabled the
-    // cached preview polyline (built from the unrefined soft mask) is
-    // stale, so fall through to _finalize_mask which re-runs ras2forms
-    // on the refined mask
-    const gboolean edge_refine =
-      dt_conf_key_exists(CONF_OBJECT_EDGE_REFINE_KEY)
-      && dt_conf_get_bool(CONF_OBJECT_EDGE_REFINE_KEY);
+    // right-click: finalize mask (prefer cached preview forms)
     dt_masks_form_t *new_grp = NULL;
-    if(d && d->preview_forms && !edge_refine)
+    if(d && d->preview_forms)
       new_grp = _finalize_from_preview(module, gui);
     else if(gui->guipoints_count > 0)
       new_grp = _finalize_mask(module, form, gui);
@@ -1336,6 +1329,8 @@ static void _object_events_post_expose(cairo_t *cr,
     d->preview_cleanup = dt_conf_get_int(CONF_OBJECT_CLEANUP_KEY);
     d->preview_smoothing = dt_conf_get_float(CONF_OBJECT_SMOOTHING_KEY);
     d->preview_feather = dt_conf_get_float(CONF_OBJECT_FEATHER_KEY);
+    d->preview_refine = dt_conf_key_exists(CONF_OBJECT_REFINE_BOUNDARY_KEY)
+                        && dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
 
     // restore persistent model (stays loaded across mask sessions)
     // if the active model changed in preferences, discard the old one
@@ -1804,6 +1799,19 @@ static void _object_modify_property(dt_masks_form_t *const form,
         *max = fminf(*max, 1.0f / feather);
         *min = fmaxf(*min, 0.0005f / feather);
         *count += 2; // both borders (same as path)
+      }
+      break;
+    case DT_MASKS_PROPERTY_REFINE:
+      // toggle applies on the next decoder run, not immediately
+      if(has_mask)
+      {
+        if(new_val != old_val)
+          dt_conf_set_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY, new_val > 0.5f);
+        const gboolean enabled
+          = dt_conf_get_bool(CONF_OBJECT_REFINE_BOUNDARY_KEY);
+        d->preview_refine = enabled;
+        *sum += enabled ? 1.0f : 0.0f;
+        ++*count;
       }
       break;
     default:;

@@ -99,22 +99,25 @@ typedef enum dt_masks_tree_cols_t
   TREE_COUNT
 } dt_masks_tree_cols_t;
 
+// boolean = TRUE renders as a checkbox; min/max/relative are unused
 const struct
 {
   gchar *name;
   gchar *format;
   float min, max;
   gboolean relative;
+  gboolean boolean;
 } _masks_properties[DT_MASKS_PROPERTY_LAST]
-  = { [ DT_MASKS_PROPERTY_OPACITY] = {N_("opacity"), "%", 0, 1, FALSE },
-      [ DT_MASKS_PROPERTY_SIZE] = { N_("size"), "%", 0.0001, 1, TRUE },
-      [ DT_MASKS_PROPERTY_HARDNESS] = { N_("hardness"), "%", 0.0001, 1, TRUE },
-      [ DT_MASKS_PROPERTY_FEATHER] = { N_("feather"), "%", 0.0001, 1, TRUE },
-      [ DT_MASKS_PROPERTY_ROTATION] = { N_("rotation"), "°", 0, 360, FALSE },
-      [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", -1, 1, FALSE },
-      [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE },
-      [ DT_MASKS_PROPERTY_CLEANUP] = { N_("cleanup"), "", 0, 100, FALSE },
-      [ DT_MASKS_PROPERTY_SMOOTHING] = { N_("smoothing"), "", 0, 1.3, FALSE },
+  = { [ DT_MASKS_PROPERTY_OPACITY] = {N_("opacity"), "%", 0, 1, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_SIZE] = { N_("size"), "%", 0.0001, 1, TRUE, FALSE },
+      [ DT_MASKS_PROPERTY_HARDNESS] = { N_("hardness"), "%", 0.0001, 1, TRUE, FALSE },
+      [ DT_MASKS_PROPERTY_FEATHER] = { N_("feather"), "%", 0.0001, 1, TRUE, FALSE },
+      [ DT_MASKS_PROPERTY_ROTATION] = { N_("rotation"), "°", 0, 360, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", -1, 1, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE, FALSE },
+      [ DT_MASKS_PROPERTY_CLEANUP] = { N_("cleanup"), "", 0, 100, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_SMOOTHING] = { N_("smoothing"), "", 0, 1.3, FALSE, FALSE },
+      [ DT_MASKS_PROPERTY_REFINE] = { N_("refine mask boundary"), "", 0, 1, FALSE, TRUE },
 };
 
 gboolean _timeout_show_all_feathers(gpointer userdata)
@@ -138,20 +141,26 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     return;
   }
 
-  const float value = dt_bauhaus_slider_get(widget);
+  const gboolean is_bool = _masks_properties[prop].boolean;
+  const float value = is_bool
+    ? (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
+    : dt_bauhaus_slider_get(widget);
 
   ++darktable.gui->reset;
   int count = 0, pos = 0;
   float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
-  if(_masks_properties[prop].relative)
+  if(!is_bool)
   {
-    max /= min;
-    min /= _masks_properties[prop].max;
-  }
-  else
-  {
-    max -= min;
-    min -= _masks_properties[prop].max;
+    if(_masks_properties[prop].relative)
+    {
+      max /= min;
+      min /= _masks_properties[prop].max;
+    }
+    else
+    {
+      max -= min;
+      min -= _masks_properties[prop].max;
+    }
   }
 
   if(prop == DT_MASKS_PROPERTY_OPACITY && gui->creation)
@@ -225,23 +234,33 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
       dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
     }
 
-    if(_masks_properties[prop].relative)
+    if(is_bool)
     {
-      max *= sum / count;
-      min *= sum / count;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                                   (sum / count) > 0.5f);
+      d->last_value[prop] =
+        (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     }
     else
     {
-      max += sum / count;
-      min += sum / count;
+      if(_masks_properties[prop].relative)
+      {
+        max *= sum / count;
+        min *= sum / count;
+      }
+      else
+      {
+        max += sum / count;
+        min += sum / count;
+      }
+
+      if(dt_isnan(min)) min = _masks_properties[prop].min;
+      if(dt_isnan(max)) max = _masks_properties[prop].max;
+      dt_bauhaus_slider_set_soft_range(widget, min, max);
+
+      dt_bauhaus_slider_set(widget, sum / count);
+      d->last_value[prop] = dt_bauhaus_slider_get(widget);
     }
-
-    if(dt_isnan(min)) min = _masks_properties[prop].min;
-    if(dt_isnan(max)) max = _masks_properties[prop].max;
-    dt_bauhaus_slider_set_soft_range(widget, min, max);
-
-    dt_bauhaus_slider_set(widget, sum / count);
-    d->last_value[prop] = dt_bauhaus_slider_get(widget);
 
     gtk_widget_hide(d->none_label);
     dt_control_queue_redraw_center();
@@ -1923,22 +1942,34 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
   {
-    GtkWidget *slider = d->property[i]
-      = dt_bauhaus_slider_new_action(DT_ACTION(self),
-                                     _masks_properties[i].min,
-                                     _masks_properties[i].max,
-                                     0, 0.0, 2);
-    dt_bauhaus_widget_set_label(slider, N_("properties"),
-                                _masks_properties[i].name);
-    dt_bauhaus_slider_set_format(slider, _masks_properties[i].format);
-    dt_bauhaus_slider_set_digits(slider, 2);
-    if(_masks_properties[i].relative)
-      dt_bauhaus_slider_set_log_curve(slider);
-
-    d->last_value[i] = dt_bauhaus_slider_get(slider);
-    dt_gui_box_add(d->cs.container, slider);
-    g_signal_connect(G_OBJECT(slider), "value-changed",
-                     G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+    GtkWidget *w;
+    if(_masks_properties[i].boolean)
+    {
+      w = gtk_check_button_new_with_label(_(_masks_properties[i].name));
+      dt_action_define(DT_ACTION(self), N_("properties"),
+                       _masks_properties[i].name, w, &dt_action_def_toggle);
+      d->last_value[i] = (float)gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+      g_signal_connect(G_OBJECT(w), "toggled",
+                       G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+    }
+    else
+    {
+      w = dt_bauhaus_slider_new_action(DT_ACTION(self),
+                                       _masks_properties[i].min,
+                                       _masks_properties[i].max,
+                                       0, 0.0, 2);
+      dt_bauhaus_widget_set_label(w, N_("properties"),
+                                  _masks_properties[i].name);
+      dt_bauhaus_slider_set_format(w, _masks_properties[i].format);
+      dt_bauhaus_slider_set_digits(w, 2);
+      if(_masks_properties[i].relative)
+        dt_bauhaus_slider_set_log_curve(w);
+      d->last_value[i] = dt_bauhaus_slider_get(w);
+      g_signal_connect(G_OBJECT(w), "value-changed",
+                       G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+    }
+    d->property[i] = w;
+    dt_gui_box_add(d->cs.container, w);
   }
 
   d->pressure = dt_gui_preferences_enum(DT_ACTION(self), "pressure_sensitivity");
