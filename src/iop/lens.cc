@@ -1386,7 +1386,7 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
                                              dev_tmpbuf, 0,
-                                             tmpbufsize, CL_TRUE);
+                                             tmpbufsize, TRUE);
       if(err != CL_SUCCESS) goto error;
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, ldkernel, owidth, oheight,
@@ -1421,7 +1421,7 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
       const size_t bsize =
         (size_t)ch * roi_out->width * roi_out->height * sizeof(float);
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, TRUE);
       if(err != CL_SUCCESS) goto error;
 
       err = dt_opencl_enqueue_kernel_2d_args
@@ -1463,7 +1463,7 @@ static int _process_cl_lf(dt_iop_module_t *self,
       const size_t bsize =
         (size_t)ch * roi_in->width * roi_in->height * sizeof(float);
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
-                                             dev_tmpbuf, 0, bsize, CL_TRUE);
+                                             dev_tmpbuf, 0, bsize, TRUE);
       if(err != CL_SUCCESS) goto error;
 
       err = dt_opencl_enqueue_kernel_2d_args
@@ -1497,7 +1497,7 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
       err = dt_opencl_write_buffer_to_device(devid, tmpbuf,
                                              dev_tmpbuf, 0,
-                                             tmpbufsize, CL_TRUE);
+                                             tmpbufsize, TRUE);
       if(err != CL_SUCCESS) goto error;
 
       err = dt_opencl_enqueue_kernel_2d_args

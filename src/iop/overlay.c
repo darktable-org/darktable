@@ -706,7 +706,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_mem dev_overlay = dt_opencl_alloc_device_buffer(devid, overlay_size);
   if(!dev_overlay) goto cleanup;
 
-  err = dt_opencl_write_buffer_to_device(devid, image, dev_overlay, 0, overlay_size, CL_TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, image, dev_overlay, 0, overlay_size, TRUE);
   if(err != CL_SUCCESS) goto cleanup;
 
   const float opacity = data->opacity / 100.0f;

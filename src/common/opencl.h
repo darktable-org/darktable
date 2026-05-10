@@ -455,7 +455,7 @@ int dt_opencl_read_host_from_device_raw(const int devid,
                                         const size_t *origin,
                                         const size_t *region,
                                         const int rowpitch,
-                                        const int blocking);
+                                        const gboolean blocking);
 
 int dt_opencl_write_host_to_device(const int devid,
                                    const void *host,
@@ -477,7 +477,7 @@ int dt_opencl_write_host_to_device_raw(const int devid,
                                        const size_t *origin,
                                        const size_t *region,
                                        const int rowpitch,
-                                       const int blocking);
+                                       const gboolean blocking);
 
 void *dt_opencl_copy_host_to_device(const int devid,
                                     void *host,
@@ -527,14 +527,14 @@ int dt_opencl_read_buffer_from_device(const int devid,
                                       void *device,
                                       const size_t offset,
                                       const size_t size,
-                                      const int blocking);
+                                      const gboolean blocking);
 
 int dt_opencl_write_buffer_to_device(const int devid,
                                      void *host,
                                      void *device,
                                      const size_t offset,
                                      const size_t size,
-                                     const int blocking);
+                                     const gboolean blocking);
 
 void *dt_opencl_alloc_device_buffer(const int devid,
                                     const size_t size);
@@ -547,7 +547,7 @@ void dt_opencl_release_mem_object(cl_mem mem);
 
 void *dt_opencl_map_buffer(const int devid,
                            cl_mem buffer,
-                           const int blocking,
+                           const gboolean blocking,
                            const int flags,
                            size_t offset,
                            size_t size);

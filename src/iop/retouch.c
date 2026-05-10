@@ -3930,8 +3930,7 @@ cl_int rt_process_stats_cl(dt_iop_module_t *self,
 
   err = dt_opencl_read_buffer_from_device(devid,
                                           (void *)src_buffer, dev_img, 0,
-                                          (size_t)width * height * ch * sizeof(float),
-                                          CL_TRUE);
+                                          (size_t)width * height * ch * sizeof(float), TRUE);
   if(err != CL_SUCCESS)
     goto cleanup;
 
@@ -3939,8 +3938,7 @@ cl_int rt_process_stats_cl(dt_iop_module_t *self,
   rt_process_stats(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0,
-                                         sizeof(float) * ch * width * height,
-                                         CL_TRUE);
+                                         sizeof(float) * ch * width * height, TRUE);
 cleanup:
   dt_free_align(src_buffer);
 
@@ -3968,8 +3966,7 @@ cl_int rt_adjust_levels_cl(dt_iop_module_t *self,
   }
 
   err = dt_opencl_read_buffer_from_device(devid, (void *)src_buffer, dev_img, 0,
-                                          (size_t)width * height * ch * sizeof(float),
-                                          CL_TRUE);
+                                          (size_t)width * height * ch * sizeof(float), TRUE);
   if(err != CL_SUCCESS)
     goto cleanup;
 
@@ -3977,8 +3974,7 @@ cl_int rt_adjust_levels_cl(dt_iop_module_t *self,
   rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0,
-                                         sizeof(float) * ch * width * height,
-                                         CL_TRUE);
+                                         sizeof(float) * ch * width * height, TRUE);
 
 cleanup:
   dt_free_align(src_buffer);
@@ -4045,7 +4041,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid,
     goto cleanup;
 
   err = dt_opencl_write_buffer_to_device(devid, *mask_scaled, dev_mask_scaled, 0,
-          sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, CL_TRUE);
+          sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, TRUE);
   if(err != CL_SUCCESS)
     goto cleanup;
 

@@ -2433,7 +2433,7 @@ int process_cl(dt_iop_module_t *self,
 
   uint32_t is_clipped = 0;
   clipped = dt_opencl_alloc_device_buffer(devid, sizeof(uint32_t));
-  err = dt_opencl_write_buffer_to_device(devid, &is_clipped, clipped, 0, sizeof(uint16_t), CL_TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, &is_clipped, clipped, 0, sizeof(uint16_t), TRUE);
   if(err != CL_SUCCESS) goto error;
 
   // build a mask of clipped pixels
@@ -2444,7 +2444,7 @@ int process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   // check for clipped pixels
-  err = dt_opencl_read_buffer_from_device(devid, &is_clipped, clipped, 0, sizeof(uint32_t), CL_TRUE);
+  err = dt_opencl_read_buffer_from_device(devid, &is_clipped, clipped, 0, sizeof(uint32_t), TRUE);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(clipped);
   clipped = NULL;

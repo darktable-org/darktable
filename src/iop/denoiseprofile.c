@@ -2435,7 +2435,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
-                                            sizeof(float) * 4 * reducesize, CL_TRUE);
+                                            sizeof(float) * 4 * reducesize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
     for(int k = 0; k < reducesize; k++)
