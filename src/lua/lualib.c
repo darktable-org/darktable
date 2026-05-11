@@ -38,7 +38,7 @@ typedef struct
   dt_view_type_flags_t views;
 } lua_lib_data_t;
 
-static int expandable_wrapper(struct dt_lib_module_t *self)
+static gboolean expandable_wrapper(struct dt_lib_module_t *self)
 {
   return ((lua_lib_data_t *)self->data)->expandable;
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2025 darktable developers.
+    Copyright (C) 2011-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "control/signal.h"
-#include "dtgtk/button.h"
-#include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -39,16 +36,15 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT;
 }
 
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 int position(const dt_lib_module_t *self)
 {
   return 100;
 }
-
 
 void gui_init(dt_lib_module_t *self)
 {
