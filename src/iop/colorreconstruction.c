@@ -934,9 +934,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
 {
   cl_int err = DT_OPENCL_PROCESS_CL;
   if(!b) return err;
-  int pref = precedence;
-  size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey) };
-  size_t local[] = { b->blocksizex, b->blocksizey };
+  const int pref = precedence;
+  const size_t sizes[2] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey) };
+  const size_t local[2] = { b->blocksizex, b->blocksizey };
   err = dt_opencl_enqueue_kernel_2d_local_args(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local,
     CLARG(in), CLARG(b->dev_grid),
     CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),

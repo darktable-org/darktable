@@ -438,8 +438,8 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
     err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+    size_t local[2] = { locopt.sizex, locopt.sizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_green, sizes, local,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters),
         CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)), CLARGINT(32));
@@ -455,8 +455,8 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
     err = dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    size_t sizes[2] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey) };
+    size_t local[2] = { locopt.sizex, locopt.sizey };
     err = dt_opencl_enqueue_kernel_2d_local_args(devid, gd->kernel_ppg_redblue, sizes, local,
       CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(filters),
       CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)), CLARGINT(16));

@@ -231,6 +231,40 @@ static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
 {
   return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
 }
+
+static inline gboolean dt_pipe_is_fast(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_FAST);
+}
+static inline gboolean dt_pipe_is_full(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_FULL);
+}
+static inline gboolean dt_pipe_is_basic(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+}
+static inline gboolean dt_pipe_is_canvas(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_CANVAS);
+}
+static inline gboolean dt_pipe_is_preview(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
+}
+static inline gboolean dt_pipe_is_screen(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_SCREEN);
+}
+static inline gboolean dt_pipe_no_mask_display(const dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
+}
+static inline gboolean dt_pipe_mask_display(const dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
+}
+
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
 
