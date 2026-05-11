@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2023 darktable developers.
+    copyright (c) 2023-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -193,7 +193,7 @@ sigmoid_loglogistic_per_channel (read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = Areadpixel(in, x, y);
   float alpha = i.w;
 
   i = matrix_product_float4(i, pipe_to_base);
@@ -239,7 +239,7 @@ sigmoid_loglogistic_rgb_ratio(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = Areadpixel(in, x, y);
   float alpha = i.w;
 
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2025 darktable developers.
+    Copyright (C) 2020-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -797,12 +797,6 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const float white_target = d->white_target;
-  const float paper_exp = d->paper_exposure;
-  const float film_fog = d->film_fog;
-  const float contrast_power = d->film_power;
-  const float skew_power = d->paper_power;
-
   const dt_iop_order_iccprofile_info_t *pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *base_profile = _get_base_profile(self->dev, pipe_work_profile, d->base_primaries);
   dt_colormatrix_t pipe_to_base_transposed, base_to_rendering_transposed,
@@ -822,20 +816,17 @@ int process_cl(dt_iop_module_t *self,
 
   if(d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    const float hue_preservation = d->hue_preservation;
     err = dt_opencl_enqueue_kernel_2d_args(
         devid, gd->kernel_sigmoid_loglogistic_per_channel, width, height, CLARG(dev_in), CLARG(dev_out),
-        CLARG(width), CLARG(height), CLARG(white_target), CLARG(paper_exp), CLARG(film_fog), CLARG(contrast_power),
-        CLARG(skew_power), CLARG(hue_preservation), CLARG(dev_pipe_to_base), CLARG(dev_base_to_rendering), CLARG(dev_rendering_to_pipe));
+        CLARG(width), CLARG(height), CLARG(d->white_target), CLARG(d->paper_exposure), CLARG(d->film_fog), CLARG(d->film_power),
+        CLARG(d->paper_power), CLARG(d->hue_preservation), CLARG(dev_pipe_to_base), CLARG(dev_base_to_rendering), CLARG(dev_rendering_to_pipe));
   }
   else
   {
-    const float black_target = d->black_target;
-
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_rgb_ratio, width, height,
                                            CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-                                           CLARG(white_target), CLARG(black_target), CLARG(paper_exp),
-                                           CLARG(film_fog), CLARG(contrast_power), CLARG(skew_power));
+                                           CLARG(d->white_target), CLARG(d->black_target), CLARG(d->paper_exposure),
+                                           CLARG(d->film_fog), CLARG(d->film_power), CLARG(d->paper_power));
   }
 
 cleanup:

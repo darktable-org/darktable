@@ -33,7 +33,7 @@ kernel void guided_filter_split_rgb_image(const int width,
   if(x >= width || y >= height) return;
 
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
-  const float4 pixel = weight * fmin(100.0f, fmax(0.0f, readpixel(guide, x, y+first)));
+  const float4 pixel = weight * fmin(100.0f, readpixel(guide, x, y+first));
   write_imagef(out_r, (int2)(x, y), pixel.x);
   write_imagef(out_g, (int2)(x, y), pixel.y);
   write_imagef(out_b, (int2)(x, y), pixel.z);
@@ -178,7 +178,7 @@ kernel void guided_filter_covariances(const int width,
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
   const float img_ = readsingle(img, x, y);
   const float4 imgv = { img_, img_, img_, 0.0f };
-  const float4 pixel = imgv * weight * fmin(100.0f, fmax(0.0f, readpixel(guide, x, y+first)));
+  const float4 pixel = imgv * weight * fmin(100.0f, readpixel(guide, x, y+first));
   write_imagef(cov_imgg_img_r, (int2)(x, y), pixel.x);
   write_imagef(cov_imgg_img_g, (int2)(x, y), pixel.y);
   write_imagef(cov_imgg_img_b, (int2)(x, y), pixel.z);
@@ -202,7 +202,7 @@ kernel void guided_filter_variances(const int width,
   if(x >= width || y >= height) return;
 
   const float4 weight = { guide_weight, guide_weight, guide_weight, 0.0f };
-  const float4 pixel = weight * fmin(100.0f, fmax(0.0f, readpixel(guide, x, y+first)));
+  const float4 pixel = weight * fmin(100.0f, readpixel(guide, x, y+first));
   write_imagef(var_imgg_rr, (int2)(x, y), pixel.x * pixel.x);
   write_imagef(var_imgg_rg, (int2)(x, y), pixel.x * pixel.y);
   write_imagef(var_imgg_rb, (int2)(x, y), pixel.x * pixel.z);
@@ -315,7 +315,7 @@ kernel void guided_filter_generate_result(const int width,
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
 
-  const float4 pixel = fmin(100.0f, fmax(0.0f, readpixel(guide, x, y+first)));
+  const float4 pixel = fmin(100.0f, readpixel(guide, x, y+first));
   const float a_r_ = pixel.x * readsingle(a_r, x, y);
   const float a_g_ = pixel.y * readsingle(a_g, x, y);
   const float a_b_ = pixel.z * readsingle(a_b, x, y);
