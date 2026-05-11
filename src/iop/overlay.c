@@ -206,8 +206,8 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
   {
     dt_iop_module_t *mod = l->data;
     if((after
-          && !dt_iop_module_is(mod->so, "gamma")
-          && !dt_iop_module_is(mod->so, "finalscale")
+          && !dt_iop_module_is_gamma(mod)
+          && !dt_iop_module_is_finalscale(mod)
           && !dt_iop_module_is(mod->so, "crop")
           && !dt_iop_module_is(mod->so, "ashift"))
     || (is_current

@@ -84,7 +84,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(dt_pipe_is_full(pipe))
   {
     dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f",
     (double)(cache->hits) / fmax(1.0, pipe->runs),
@@ -136,7 +136,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
     const gboolean included = piece->module->enabled || piece->enabled;
     // don't take skipped modules into account
     const gboolean skipped = dt_iop_module_is_skipped(piece->module->dev, piece->module)
-      && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+      && dt_pipe_is_basic(pipe);
     if(!skipped && included)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));

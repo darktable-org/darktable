@@ -2231,7 +2231,7 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
+  const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   // wavelets scales
   const int scales = get_scales(roi_in, piece);
@@ -2321,15 +2321,14 @@ static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mas
     if(err != CL_SUCCESS) goto error;
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    const int blur_size = 1;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_vertical, width, height,
       CLARG(HF_RGB), CLARG(temp),
-      CLARG(width), CLARG(height), CLARG(blur_size));
+      CLARG(width), CLARG(height), CLARGINT(1));
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic_bspline_horizontal, width, height,
       CLARG(temp), CLARG(HF_RGB),
-      CLARG(width), CLARG(height), CLARG(blur_size));
+      CLARG(width), CLARG(height), CLARGINT(1));
     if(err != CL_SUCCESS) goto error;
 
     // Reconstruct clipped parts
@@ -2372,7 +2371,7 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  const size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   cl_mem in = dev_in;
   cl_mem inpainted = NULL;
