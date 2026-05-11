@@ -67,9 +67,9 @@ int position(const dt_lib_module_t *self)
   return 1;
 }
 
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 void gui_init(dt_lib_module_t *self)

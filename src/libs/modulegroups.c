@@ -205,9 +205,9 @@ uint32_t container(dt_lib_module_t *self)
 
 
 /* this module should always be shown without expander */
-int expandable(dt_lib_module_t *self)
+gboolean expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 int position(const dt_lib_module_t *self)
