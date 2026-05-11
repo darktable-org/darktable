@@ -268,22 +268,58 @@ if ($Package.sha256) {
 
 # --- Extract ---
 Write-Host "Extracting..."
+
+# preserve_layout: keep the archive's relative paths (required for wheels
+# whose DLLs reference sibling files via relative paths).
+# flat (default): copy matched DLLs straight into the install dir.
+$preserveLayout = [bool]$Package.preserve_layout
+$libPattern = $Package.lib_pattern
+$libPatterns = @($libPattern) + @($Package.lib_extra_patterns | Where-Object { $_ })
+
+# nuke any prior install — preserve_layout creates subdirs that a
+# per-pattern depth-1 clean wouldn't catch
+if ($preserveLayout) {
+    if (Test-Path $InstallDir) {
+        Remove-Item -Path $InstallDir -Recurse -Force
+    }
+}
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
-# clean prior install of the same library family so old versioned DLLs
-# don't shadow the new install. matches the shell-script behavior on
-# Linux: remove ${libPattern}*.dll before extracting the new package
-$libPattern = $Package.lib_pattern
-Get-ChildItem -Path $InstallDir -Filter "${libPattern}*.dll" -File -ErrorAction SilentlyContinue |
-    Remove-Item -Force -ErrorAction SilentlyContinue
-foreach ($extra in @($Package.lib_extra_patterns)) {
-    if ($extra) {
-        Get-ChildItem -Path $InstallDir -Filter "${extra}*.dll" -File -ErrorAction SilentlyContinue |
+if (-not $preserveLayout) {
+    # flat install: drop old versioned DLLs of the same family so they
+    # don't shadow the new install
+    foreach ($pat in $libPatterns) {
+        Get-ChildItem -Path $InstallDir -Filter "${pat}*.dll" -File -ErrorAction SilentlyContinue |
             Remove-Item -Force -ErrorAction SilentlyContinue
     }
 }
 
 $ExtractDir = Join-Path $TempDir "extracted"
+
+# copy DLLs matching any of $patterns from $searchRoot into $InstallDir,
+# either flat or preserving relative paths
+function Copy-MatchingLibs([string]$searchRoot, [string[]]$patterns, [bool]$preserve) {
+    $count = 0
+    Get-ChildItem -Path $searchRoot -Recurse -File |
+        Where-Object { $_.Extension -eq ".dll" } |
+        Where-Object {
+            $name = $_.Name
+            $null -ne ($patterns | Where-Object { $name -like "${_}*" } | Select-Object -First 1)
+        } |
+        ForEach-Object {
+            if ($preserve) {
+                $rel = $_.FullName.Substring($searchRoot.Length).TrimStart('\','/')
+                $dest = Join-Path $InstallDir $rel
+                $destDir = Split-Path -Parent $dest
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                Copy-Item $_.FullName -Destination $dest -Force
+            } else {
+                Copy-Item $_.FullName -Destination $InstallDir -Force
+            }
+            $count++
+        }
+    return $count
+}
 
 switch ($Package.format) {
     "zip" {
@@ -312,14 +348,7 @@ switch ($Package.format) {
     }
 }
 
-# Copy matching libraries
-$copied = 0
-Get-ChildItem -Path $ExtractDir -Recurse -File |
-    Where-Object { $_.Name -like "${libPattern}*" -and $_.Extension -eq ".dll" } |
-    ForEach-Object {
-        Copy-Item $_.FullName -Destination $InstallDir -Force
-        $copied++
-    }
+$copied = Copy-MatchingLibs $ExtractDir $libPatterns $preserveLayout
 
 # Clean up
 Remove-Item -Recurse -Force $TempDir
@@ -358,14 +387,8 @@ if ($Package.runtime_url) {
             $rtExtract = Join-Path $rtTempDir "extracted"
             Expand-Archive -Path $rtArchive -DestinationPath $rtExtract -Force
             $rtPattern = if ($Package.runtime_lib_pattern) { $Package.runtime_lib_pattern } else { "openvino" }
-            $rtCopied = 0
-            Get-ChildItem -Path $rtExtract -Recurse -File |
-                Where-Object { $_.Extension -eq ".dll" } |
-                Where-Object { $_.Name -like "${rtPattern}*" -or $_.Name -like "tbb*.dll" } |
-                ForEach-Object {
-                    Copy-Item $_.FullName -Destination $InstallDir -Force
-                    $rtCopied++
-                }
+            $rtPatterns = @($rtPattern) + @($Package.runtime_extra_patterns | Where-Object { $_ })
+            $rtCopied = Copy-MatchingLibs $rtExtract $rtPatterns $preserveLayout
             if ($rtCopied -gt 0) {
                 Write-Host "Bundled $rtCopied runtime DLLs."
             }
@@ -450,13 +473,28 @@ if ($Selected.vendor -eq "nvidia") {
 }
 
 # --- Verify ---
-$ortDll = Get-ChildItem "$InstallDir\$libPattern*" -File |
-    Where-Object { $_.Extension -eq ".dll" } |
-    Select-Object -First 1
+# preserve_layout: recurse, skip auditwheel-bundled *.libs/ dirs (Linux
+# convention; harmless on Windows). flat: only look at depth 1.
+if ($preserveLayout) {
+    $ortDll = Get-ChildItem -Path $InstallDir -Recurse -File -Filter "$libPattern*.dll" |
+        Where-Object { $_.FullName -notmatch '\\[^\\]+\.libs\\' } |
+        Select-Object -First 1
+    $listing = Get-ChildItem -Path $InstallDir -Recurse -File |
+        Where-Object { $_.FullName -notmatch '\\[^\\]+\.libs\\' }
+} else {
+    $ortDll = Get-ChildItem -Path $InstallDir -File -Filter "$libPattern*.dll" |
+        Select-Object -First 1
+    $listing = Get-ChildItem -Path $InstallDir -File
+}
+
+if (-not $ortDll) {
+    Write-Host "Error: no $libPattern*.dll found after extraction." -ForegroundColor Red
+    exit 1
+}
 
 Write-Host ""
 Write-Host "Done. Installed to: $InstallDir"
-Get-ChildItem "$InstallDir\*" -File | Format-Table Name, Length -AutoSize
+$listing | Format-Table Name, Length -AutoSize
 Write-Host ""
 Write-Host "To enable in darktable:"
 Write-Host ""
