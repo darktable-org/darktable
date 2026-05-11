@@ -69,7 +69,7 @@ enum
 {
   COL_SELECTED,
   COL_NAME,
-  COL_INFO,     // info icon column (static "ℹ" text)
+  COL_INFO,     // info icon column (static "ⓘ" text)
   COL_VERSION,
   COL_TASK,
   COL_ENABLED,
@@ -237,7 +237,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       COL_ID,
       model->id,
       COL_INFO,
-      is_downloaded ? "\xe2\x84\xb9" : "",
+      is_downloaded ? "\xe2\x93\x98" : "",  // U+24D8 CIRCLED LATIN SMALL LETTER I
       -1);
     dt_ai_model_free(model);
   }
@@ -1256,7 +1256,7 @@ static gboolean _on_tree_motion(GtkWidget *widget,
   return FALSE;
 }
 
-// click on the ℹ info column opens the model card
+// click on the ⓘ info column opens the model card
 static gboolean _on_info_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
