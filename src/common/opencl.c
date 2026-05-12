@@ -342,7 +342,9 @@ void dt_opencl_write_device_config(const int devid)
   g_snprintf(dat, 510, "%i %i %i %i %i %.3f %.3f",
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
-    cl->dev[devid].use_events ? DT_OPENCL_EVENTS : 0,
+
+    // this used to define the number of slots, now a bool and using DT_OPENCL_EVENTS if true
+    cl->dev[devid].use_events ? 1 : 0,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
     cl->dev[devid].advantage,
