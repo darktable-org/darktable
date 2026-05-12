@@ -696,7 +696,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   {
     // No overlay: copy input to output on GPU
     return dt_opencl_enqueue_copy_image(
-      devid, dev_in, dev_out, (size_t[]){ 0, 0 }, (size_t[]){ 0, 0 }, (size_t[]){ width, height });
+      devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, (size_t[2]){ width, height });
   }
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
