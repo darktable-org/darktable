@@ -768,7 +768,7 @@ static void _capture_radius(dt_iop_module_t *self,
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
 
   gboolean reliable;
@@ -804,7 +804,7 @@ static void _capture_noise(dt_iop_module_t *self,
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   dt_iop_demosaic_params_t *p = self->params;
   const dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const float thrs = 0.01f * (int)(100.0f * _get_variance_threshold(self));
   const gboolean same_thrs = feqf(p->cs_thrs, thrs, 0.01f);
 
@@ -829,7 +829,7 @@ static inline gboolean _noise_requested(dt_iop_module_t *self,
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_thrs = d->cs_thrs <= 0.0f;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   // do we require a calculation of the noise threshold?
 
@@ -848,7 +848,7 @@ static inline gboolean _radius_requested(dt_iop_module_t *self,
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_radius = d->cs_radius <= 0.0f;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
 
   // do we require a calculation of the capture radius?
 
@@ -882,7 +882,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(pipe))
   {
     const gboolean hqthumb = _get_thumb_quality(pipe->final_width, pipe->final_height);
     if(!hqthumb) return;
@@ -1035,7 +1035,7 @@ static int _capture_sharpen_cl(dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *const d = piece->data;
   dt_iop_demosaic_global_data_t *const gd = self->global_data;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(pipe))
   {
     const gboolean hqthumb = _get_thumb_quality(pipe->final_width, pipe->final_height);
     if(!hqthumb) return CL_SUCCESS;

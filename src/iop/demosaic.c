@@ -279,10 +279,10 @@ static gboolean _demosaic_full(const dt_dev_pixelpipe_iop_t *const piece,
       || piece->pipe->want_detail_mask)
     return TRUE;
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(dt_pipe_is_thumb(piece->pipe))
     return _get_thumb_quality(roi_out->width, roi_out->height);
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(piece->pipe))
     return roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.667f : 0.5f);
 
   return TRUE;
@@ -650,8 +650,8 @@ void process(dt_iop_module_t *self,
 
   dt_dev_clear_scharr_mask(pipe);
 
-  const gboolean run_fast = pipe->type & (DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_PREVIEW);
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean run_fast = dt_pipe_is_fast(pipe) || dt_pipe_is_preview(pipe);
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
 
   const uint8_t(*const xtrans)[6] = piece->xtrans;
   const dt_iop_demosaic_data_t *d = piece->data;
@@ -710,7 +710,7 @@ void process(dt_iop_module_t *self,
   }
 
   const gboolean demosaic_mask = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-  const gboolean no_masking = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  const gboolean no_masking = dt_pipe_no_mask_display(pipe);
   const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast && !show_sigma && !show_capture && !demosaic_mask;
   const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const gboolean passthru = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
@@ -912,8 +912,8 @@ int process_cl(dt_iop_module_t *self,
 {
   const dt_image_t *img = &self->dev->image_storage;
   dt_dev_pixelpipe_t *const pipe = piece->pipe;
-  const gboolean run_fast = pipe->type & (DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_PREVIEW);
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean run_fast = dt_pipe_is_fast(pipe) || dt_pipe_is_preview(pipe);
+  const gboolean fullpipe = dt_pipe_is_full(pipe);
   const gboolean true_monochrome = dt_image_is_mono_sraw(img);
 
   uint8_t(*const xtrans)[6] = piece->xtrans;
@@ -1001,7 +1001,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   const gboolean direct = roi_out->width == iwidth && roi_out->height == iheight && feqf(roi_in->scale, roi_out->scale, 1e-8f);
-  const gboolean no_masking = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  const gboolean no_masking = dt_pipe_no_mask_display(pipe);
   const gboolean demosaic_mask = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast && !show_sigma && !show_capture && !demosaic_mask;
   const gboolean passthru = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME

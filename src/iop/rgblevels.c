@@ -847,7 +847,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_rgblevels_data_t *d = piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(pipe))
     piece->request_histogram |= DT_REQUEST_ON;
   else
     piece->request_histogram &= ~DT_REQUEST_ON;
@@ -1267,7 +1267,7 @@ void process(dt_iop_module_t *self,
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)
@@ -1420,7 +1420,7 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_out->height;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)

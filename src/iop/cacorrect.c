@@ -263,7 +263,7 @@ void process(dt_iop_module_t *self,
 
   // the colorshift avoiding requires non-downscaled data for sure so we
   // don't do this for preview
-  const gboolean avoidshift = d->avoidshift && !(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
+  const gboolean avoidshift = d->avoidshift && !dt_pipe_is_preview(piece->pipe);
   const int iterations = d->iterations;
 
   // Because we can't break parallel processing, we need a switch do handle the errors

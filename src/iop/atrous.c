@@ -289,7 +289,7 @@ static void process_wavelets(dt_iop_module_t *self,
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -376,7 +376,7 @@ int process_cl(dt_iop_module_t *self,
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -486,7 +486,7 @@ int process_cl(dt_iop_module_t *self,
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(self->dev->gui_attached && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -525,7 +525,7 @@ int process_cl(dt_iop_module_t *self,
     if(dev_detail[k] == NULL) goto error;
   }
 
-  size_t region[] = { width, height };
+  const size_t region[2] = { width, height };
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   if(err != CL_SUCCESS) goto error;

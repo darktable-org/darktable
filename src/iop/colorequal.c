@@ -987,7 +987,7 @@ void process(dt_iop_module_t *self,
   }
   const dt_iop_colorequal_data_t *d = piece->data;
   const dt_iop_colorequal_gui_data_t *g = self->gui_data;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
@@ -1528,7 +1528,7 @@ int process_cl(dt_iop_module_t *self,
   const size_t bsize = (size_t) width * height * sizeof(float);
 
   const dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const int guiding = d->use_filter;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;

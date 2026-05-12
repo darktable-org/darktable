@@ -638,8 +638,8 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
   }
 
-  size_t oorigin[] = { binfo.border_in_x, binfo.border_in_y };
-  size_t region[]  = { roi_in->width, roi_in->height };
+  const size_t oorigin[2] = { binfo.border_in_x, binfo.border_in_y };
+  const size_t region[2]  = { roi_in->width, roi_in->height };
 
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, oorigin, region);

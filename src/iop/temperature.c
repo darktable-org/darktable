@@ -723,7 +723,7 @@ void commit_params(dt_iop_module_t *self,
   */
   chr->late_correction = p->preset == DT_IOP_TEMP_D65_LATE;
   chr->temperature = piece->enabled ? self : NULL;
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW && !piece->enabled)
+  if(dt_pipe_is_preview(pipe) && !piece->enabled)
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
 

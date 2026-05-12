@@ -240,6 +240,14 @@ static inline gboolean dt_pipe_is_full(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_FULL);
 }
+static inline gboolean dt_pipe_is_thumb(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL);
+}
+static inline gboolean dt_pipe_is_export(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_EXPORT);
+}
 static inline gboolean dt_pipe_is_basic(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_BASIC);
@@ -251,6 +259,10 @@ static inline gboolean dt_pipe_is_canvas(const dt_dev_pixelpipe_t *pipe)
 static inline gboolean dt_pipe_is_preview(const dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
+}
+static inline gboolean dt_pipe_is_preview2(const dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2);
 }
 static inline gboolean dt_pipe_is_screen(const dt_dev_pixelpipe_t *pipe)
 {

@@ -263,7 +263,7 @@ static void _update_histogram(dt_iop_module_t *self,
                               const float *ivoid,
                               const dt_iop_roi_t *roi_in)
 {
-  if(!self->gui_data || !((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW))
+  if(!self->gui_data || !dt_pipe_is_preview(piece->pipe))
     return;
 
   dt_iop_colorharmonizer_gui_data_t *g = self->gui_data;
@@ -669,7 +669,7 @@ int process_cl(dt_iop_module_t *self,
     CLARG(p->pull_strength), CLARG(p->neutral_protection),
     CLARG(L_white));
 
-  if(err == CL_SUCCESS && self->gui_data && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(err == CL_SUCCESS && self->gui_data && dt_pipe_is_preview(piece->pipe))
   {
     float *host_in = dt_alloc_align_float((size_t)width * height * 4);
     if(host_in)

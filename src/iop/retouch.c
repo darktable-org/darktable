@@ -3807,7 +3807,7 @@ void process(dt_iop_module_t *self,
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, 4, p->num_scales,
                       (!display_wavelet_scale
-                       || !(piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+                       || !dt_pipe_is_full(piece->pipe))
                       ? 0
                       : p->curr_scale,
                       p->merge_from_scale, &usr_data,
@@ -3815,7 +3815,7 @@ void process(dt_iop_module_t *self,
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && g
+  if(dt_pipe_is_full(piece->pipe) && g
      && (g->mask_display || display_wavelet_scale)
      && dt_iop_has_focus(self) && (piece->pipe == self->dev->full.pipe))
   {
@@ -3828,7 +3828,7 @@ void process(dt_iop_module_t *self,
     usr_data.mask_display = TRUE;
   }
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  if(dt_pipe_is_full(piece->pipe))
   {
     // check if the image support this number of scales
     if(dt_iop_has_focus(self))
@@ -3851,7 +3851,7 @@ void process(dt_iop_module_t *self,
                                 p->preview_levels[2] };
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(g && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)
@@ -4596,7 +4596,7 @@ int process_cl(dt_iop_module_t *self,
 
   // copy input image to the new buffer
   {
-    size_t region[] = { roi_rt->width, roi_rt->height };
+    const size_t region[2] = { roi_rt->width, roi_rt->height };
     err = dt_opencl_enqueue_copy_image_to_buffer(devid, dev_in, in_retouch, CLIMG_ORIGIN, region, 0);
     if(err != CL_SUCCESS) goto cleanup;
   }
@@ -4614,8 +4614,7 @@ int process_cl(dt_iop_module_t *self,
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,
-                         (!display_wavelet_scale
-                          || !(piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+                         (!display_wavelet_scale || !dt_pipe_is_full(piece->pipe))
                          ? 0 : p->curr_scale,
                          p->merge_from_scale,
                          &usr_data,
@@ -4627,7 +4626,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   // check if this module should expose mask.
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  if(dt_pipe_is_full(piece->pipe)
      && g && g->mask_display
      && dt_iop_has_focus(self)
      && (piece->pipe == self->dev->full.pipe))
@@ -4645,7 +4644,7 @@ int process_cl(dt_iop_module_t *self,
     usr_data.mask_display = TRUE;
   }
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  if(dt_pipe_is_full(piece->pipe))
   {
     // check if the image support this number of scales
     if(dt_iop_has_focus(self))
@@ -4669,7 +4668,7 @@ int process_cl(dt_iop_module_t *self,
                                 p->preview_levels[2] };
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(g && dt_pipe_is_full(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)

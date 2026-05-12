@@ -448,7 +448,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float sigma_r = 8.0f; // does not depend on scale
 
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (data->flag & ACQUIRE))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe) && (data->flag & ACQUIRE))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->buffer) dt_free_align(g->buffer);
@@ -594,7 +594,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && (data->flag & ACQUIRE))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe) && (data->flag & ACQUIRE))
   {
     dt_iop_gui_enter_critical_section(self);
     dt_free_align(g->buffer);
@@ -675,7 +675,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     }
     else
     {
-      size_t region[] = { width, height };
+      const size_t region[2] = { width, height };
       err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
       if(err != CL_SUCCESS) goto error;
     }
@@ -686,7 +686,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else
   {
-    size_t region[] = { width, height };
+    const size_t region[2] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }
 

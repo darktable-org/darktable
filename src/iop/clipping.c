@@ -480,7 +480,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
+  if(dt_pipe_is_preview(piece->pipe)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -548,7 +548,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
+  if(dt_pipe_is_preview(piece->pipe)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -908,7 +908,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
     roi_out->height = roi_in->height;
     piece->enabled = FALSE;
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(dt_pipe_is_full(piece->pipe))
       dt_control_log
         (_("module '%s' has insane data so it is bypassed for now. you should disable it or change parameters\n"),
          self->name());
@@ -1086,7 +1086,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width
      && roi_in->height == roi_out->height)
   {
-    size_t region[] = { width, height };
+    const size_t region[2] = { width, height };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
     if(err != CL_SUCCESS) goto error;
   }

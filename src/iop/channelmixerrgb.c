@@ -2131,7 +2131,7 @@ void process(dt_iop_module_t *self,
     return; // image has been copied through to output and module's
             // trouble flag has been updated
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(piece->pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   dt_colormatrix_t RGB_to_XYZ;
@@ -2172,7 +2172,7 @@ void process(dt_iop_module_t *self,
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES
        || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
-      if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+      if(dt_pipe_is_full(piece->pipe))
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
@@ -2305,7 +2305,7 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  if(dt_pipe_is_preview(piece->pipe))
     _declare_cat_on_pipe(self, FALSE);
 
   if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
@@ -3157,7 +3157,7 @@ void commit_params(dt_iop_module_t *self,
         || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
-           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) )
+           dt_pipe_is_full(piece->pipe))
 #endif
       )
     {

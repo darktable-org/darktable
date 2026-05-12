@@ -457,7 +457,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->xtrans;
   const uint32_t filters = piece->filters;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = dt_pipe_is_full(piece->pipe);
   const float clipval = MAX(0.1f, highlights_clip_magics[DT_IOP_HIGHLIGHTS_SEGMENTS] * d->clip);
 
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};

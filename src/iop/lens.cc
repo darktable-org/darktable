@@ -1324,8 +1324,8 @@ static int _process_cl_lf(dt_iop_module_t *self,
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
 
-  size_t iregion[] = { (size_t)iwidth, (size_t)iheight };
-  size_t oregion[] = { (size_t)owidth, (size_t)oheight };
+  const size_t iregion[2] = { (size_t)iwidth, (size_t)iheight };
+  const size_t oregion[2] = { (size_t)owidth, (size_t)oheight };
 
   int modflags;
   int ldkernel = -1;
@@ -1896,9 +1896,7 @@ static void _commit_params_lf(dt_iop_module_t *self,
   }
 
   /* calculate which corrections will be applied by Lensfun */
-  if(self->dev->gui_attached
-     && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
     const int used_lf_mask = (raw_monochrome)
@@ -2561,8 +2559,7 @@ static void _commit_params_md(dt_iop_module_t *self,
      || (d->scale_md > 2.0f)) // reset image scale if unproper data
     d->scale_md = 1.0f;
 
-  if(self->dev->gui_attached && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = _check_corrections_md(d);
@@ -2577,8 +2574,7 @@ static void _commit_params_vig(dt_iop_module_t *self,
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
-  if(self->dev->gui_attached && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  if(self->dev->gui_attached && g && dt_pipe_is_preview(piece->pipe))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = 0;
@@ -2833,7 +2829,7 @@ static int _process_cl_md(dt_iop_module_t *self,
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
   {
-    size_t oregion[] = { (size_t)roi_out->width, (size_t)roi_out->height };
+    const size_t oregion[2] = { (size_t)roi_out->width, (size_t)roi_out->height };
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out,
                                         CLIMG_ORIGIN, CLIMG_ORIGIN, oregion);
   }
@@ -3009,7 +3005,7 @@ void process(dt_iop_module_t *self,
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean mask = g && g->vig_masking && dt_pipe_is_full(piece->pipe);
   const gboolean pre_vignette = mask || (d->v_strength > 0.0f);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   float *data = (float *)ivoid;
@@ -3088,7 +3084,7 @@ int process_cl(dt_iop_module_t *self,
 
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean mask = g && g->vig_masking && dt_pipe_is_full(piece->pipe);
   const gboolean pre_vignette = mask || (d->v_strength > 0.0f);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
@@ -3124,7 +3120,7 @@ int process_cl(dt_iop_module_t *self,
   }
   else
   {
-    size_t region[] = { (size_t)roi_in->width, (size_t)roi_in->height };
+    const size_t region[2] = { (size_t)roi_in->width, (size_t)roi_in->height };
     err = dt_opencl_enqueue_copy_image(piece->pipe->devid, data,
                                        dev_out, CLIMG_ORIGIN, CLIMG_ORIGIN, region);
   }
