@@ -3617,7 +3617,7 @@
   <dtconfig>
     <name>plugins/darkroom/masks/object/refine_boundary</name>
     <type>bool</type>
-    <default>FALSE</default>
+    <default>TRUE</default>
     <shortdescription>refine AI mask boundary with DenseCRF on each decode</shortdescription>
     <longdescription>when enabled, runs DenseCRF post-processing on each decoder pass to snap the mask boundary to nearby image edges. helps recover small notches and bumps the model missed. adds a few hundred ms per click</longdescription>
   </dtconfig>
