@@ -3849,13 +3849,6 @@
     <longdescription>if more images are display in expose mode, zooming will be deactivated</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>codepaths/openmp_simd</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>enable usage of OpenMP SIMD codepaths. if enabled, and such codepath exists, it will have the highest priority</shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>allow_lab_output</name>
     <type>bool</type>
     <default>false</default>
