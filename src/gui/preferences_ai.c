@@ -69,7 +69,7 @@ enum
 {
   COL_SELECTED,
   COL_NAME,
-  COL_INFO,     // info icon column (static "ℹ" text)
+  COL_INFO,     // info icon column (static "ⓘ" text)
   COL_VERSION,
   COL_TASK,
   COL_ENABLED,
@@ -237,7 +237,7 @@ static void _refresh_model_list(dt_prefs_ai_data_t *data)
       COL_ID,
       model->id,
       COL_INFO,
-      "\xe2\x84\xb9",  // ℹ (U+2139)
+      is_downloaded ? "\xe2\x93\x98" : "",  // U+24D8 CIRCLED LATIN SMALL LETTER I
       -1);
     dt_ai_model_free(model);
   }
@@ -1185,7 +1185,30 @@ static void _show_model_card(dt_prefs_ai_data_t *data,
   dt_ai_model_card_free(card);
 }
 
-// show tooltip and hand cursor over the info column
+// is the info column at bin-window coords (bx,by) active (downloaded row)?
+static gboolean _info_active_at_bin(dt_prefs_ai_data_t *data,
+                                    GtkTreeView *tv, gint bx, gint by)
+{
+  GtkTreePath *path = NULL;
+  GtkTreeViewColumn *column = NULL;
+  gboolean active = FALSE;
+  if(gtk_tree_view_get_path_at_pos(tv, bx, by, &path, &column, NULL, NULL)
+     && column == data->info_col)
+  {
+    GtkTreeIter iter;
+    gchar *info = NULL;
+    if(gtk_tree_model_get_iter(GTK_TREE_MODEL(data->model_store), &iter, path))
+      gtk_tree_model_get(GTK_TREE_MODEL(data->model_store),
+                         &iter, COL_INFO, &info, -1);
+    active = (info && info[0]);
+    g_free(info);
+  }
+  if(path) gtk_tree_path_free(path);
+  return active;
+}
+
+// tooltip on info column for downloaded rows. query-tooltip x/y are
+// in widget coords; convert to bin-window coords for the row lookup
 static gboolean _on_query_tooltip(GtkWidget *widget,
                                   gint x, gint y,
                                   gboolean keyboard_mode,
@@ -1193,32 +1216,47 @@ static gboolean _on_query_tooltip(GtkWidget *widget,
                                   gpointer user_data)
 {
   (void)keyboard_mode;
-  dt_prefs_ai_data_t *data = (dt_prefs_ai_data_t *)user_data;
   GtkTreeView *tv = GTK_TREE_VIEW(widget);
-  GtkTreeViewColumn *column = NULL;
   gint bx, by;
-  gtk_tree_view_convert_widget_to_bin_window_coords(
-    tv, x, y, &bx, &by);
+  gtk_tree_view_convert_widget_to_bin_window_coords(tv, x, y, &bx, &by);
+  if(!_info_active_at_bin(user_data, tv, bx, by)) return FALSE;
+  gtk_tooltip_set_text(tooltip, _("click for model details"));
+  return TRUE;
+}
 
-  if(!gtk_tree_view_get_path_at_pos(
-       tv, bx, by, NULL, &column, NULL, NULL))
-    return FALSE;
-
-  GdkWindow *win = gtk_tree_view_get_bin_window(tv);
-  if(column == data->info_col)
+// hand cursor on info column for downloaded rows
+static gboolean _on_tree_motion(GtkWidget *widget,
+                                GdkEventMotion *event,
+                                gpointer user_data)
+{
+  GtkTreeView *tv = GTK_TREE_VIEW(widget);
+  GdkWindow *bin = gtk_tree_view_get_bin_window(tv);
+  if(!bin) return FALSE;
+  gint bx, by;
+  if(event->window == bin)
   {
-    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(win), "pointer");
-    gdk_window_set_cursor(win, cursor);
-    g_object_unref(cursor);
-    gtk_tooltip_set_text(tooltip, _("click for model details"));
-    return TRUE;
+    bx = (gint)event->x;
+    by = (gint)event->y;
   }
-
-  gdk_window_set_cursor(win, NULL);
+  else
+  {
+    gtk_tree_view_convert_widget_to_bin_window_coords(
+      tv, (gint)event->x, (gint)event->y, &bx, &by);
+  }
+  if(_info_active_at_bin(user_data, tv, bx, by))
+  {
+    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(bin), "pointer");
+    gdk_window_set_cursor(bin, cursor);
+    g_object_unref(cursor);
+  }
+  else
+  {
+    gdk_window_set_cursor(bin, NULL);
+  }
   return FALSE;
 }
 
-// click on the ℹ info column opens the model card
+// click on the ⓘ info column opens the model card
 static gboolean _on_info_button_press(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
@@ -1247,13 +1285,13 @@ static gboolean _on_info_button_press(GtkWidget *widget,
   if(gtk_tree_model_get_iter(GTK_TREE_MODEL(data->model_store), &iter, path))
   {
     gchar *model_id = NULL;
+    gchar *info = NULL;
     gtk_tree_model_get(GTK_TREE_MODEL(data->model_store),
-                       &iter, COL_ID, &model_id, -1);
-    if(model_id)
-    {
+                       &iter, COL_ID, &model_id, COL_INFO, &info, -1);
+    if(model_id && info && info[0])
       _show_model_card(data, model_id);
-      g_free(model_id);
-    }
+    g_free(model_id);
+    g_free(info);
   }
   gtk_tree_path_free(path);
   return TRUE;
@@ -1786,6 +1824,9 @@ void init_tab_ai(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_has_tooltip(data->model_list, TRUE);
   g_signal_connect(data->model_list, "query-tooltip",
                    G_CALLBACK(_on_query_tooltip), data);
+  gtk_widget_add_events(data->model_list, GDK_POINTER_MOTION_MASK);
+  g_signal_connect(data->model_list, "motion-notify-event",
+                   G_CALLBACK(_on_tree_motion), data);
   g_signal_connect(data->model_list, "button-press-event",
                    G_CALLBACK(_on_info_button_press), data);
 
