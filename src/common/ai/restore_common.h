@@ -165,7 +165,6 @@ struct dt_restore_context_t
   // startup budget selector and the runtime OOM retry loop iterate it
   int *tile_ladder;
   int n_tile_ladder;
-  uint32_t ep_flags;  // execution provider flags (e.g. CoreML CPU-only)
   gint ref_count;
 };
 

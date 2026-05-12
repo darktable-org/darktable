@@ -173,6 +173,29 @@ static void _scan_directory(dt_ai_environment_t *env, const char *root_path)
                 }
               }
 
+              // capture top-level "cpu_only" (sibling to "attributes")
+              // as a JSON string; can be either an array (applies to all
+              // models in the package) or an object (keyed by onnx filename)
+              info->cpu_only = NULL;
+              if(json_object_has_member(obj, "cpu_only"))
+              {
+                JsonNode *co_node = json_object_get_member(obj, "cpu_only");
+                if(co_node
+                   && (JSON_NODE_HOLDS_ARRAY(co_node)
+                       || JSON_NODE_HOLDS_OBJECT(co_node)))
+                {
+                  JsonGenerator *gen = json_generator_new();
+                  json_generator_set_root(gen, co_node);
+                  gchar *s = json_generator_to_data(gen, NULL);
+                  if(s)
+                  {
+                    _store_string(env, s, &info->cpu_only);
+                    g_free(s);
+                  }
+                  g_object_unref(gen);
+                }
+              }
+
               env->models = g_list_prepend(env->models, info);
               g_hash_table_insert(
                 env->model_paths,
@@ -360,6 +383,10 @@ dt_ai_onnx_load_ext(const char *model_dir, const char *model_file,
                     const dt_ai_dim_override_t *dim_overrides, int n_overrides,
                     uint32_t ep_flags);
 
+static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
+                                   const char *model_file,
+                                   dt_ai_provider_t configured);
+
 // model loading with backend dispatch
 
 dt_ai_context_t *dt_ai_load_model(dt_ai_environment_t *env,
@@ -398,6 +425,47 @@ dt_ai_context_t *dt_ai_load_model_ext(dt_ai_environment_t *env,
     char *prov_str = dt_conf_get_string(DT_AI_CONF_PROVIDER);
     provider = dt_ai_provider_from_string(prov_str);
     g_free(prov_str);
+  }
+
+  // EP safety: if the model declares the configured provider unsafe via
+  // its cpu_only attribute, override the load to fall back to CPU. on
+  // CoreML this stays inside the EP via USE_CPU_ONLY (preserves BNNS
+  // kernels); on every other GPU EP we load with the plain CPU EP. AUTO
+  // and CPU providers are exempt from the check
+  const dt_ai_model_info_t *model_info
+    = dt_ai_get_model_info_by_id(env, model_id);
+  if(model_info
+     && _provider_cpu_only(model_info, model_file, provider))
+  {
+    const char *prov_name = NULL;
+    for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+      if(dt_ai_providers[i].value == provider)
+      {
+        prov_name = dt_ai_providers[i].config_string;
+        break;
+      }
+    if(provider == DT_AI_PROVIDER_COREML)
+    {
+      ep_flags |= 1;  // COREML_FLAG_USE_CPU_ONLY
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] model %s%s%s prefers CPU on %s; "
+               "using CoreML CPU compute units",
+               model_id,
+               model_file ? " file=" : "",
+               model_file ? model_file : "",
+               prov_name);
+    }
+    else
+    {
+      dt_print(DT_DEBUG_AI,
+               "[darktable_ai] model %s%s%s prefers CPU on %s; "
+               "switching to CPU provider",
+               model_id,
+               model_file ? " file=" : "",
+               model_file ? model_file : "",
+               prov_name);
+      provider = DT_AI_PROVIDER_CPU;
+    }
   }
 
   g_mutex_lock(&env->lock);
@@ -570,6 +638,88 @@ int *dt_ai_model_attribute_int_array(const dt_ai_model_info_t *info,
     }
   }
   if(p) g_object_unref(p);
+  return result;
+}
+
+// resolve the model's "cpu_only" block against `configured`. the block
+// can take two forms:
+//
+//   cpu_only: [coreml, directml]        (flat list — applies to all)
+//   cpu_only:                           (keyed by onnx filename stem)
+//     model_bayer: [coreml, directml]
+//     model_linear: []
+//
+// when `configured` appears (case-insensitively) in the relevant list,
+// the model declares it unsafe and the caller (dt_ai_load_model_ext)
+// overrides the load: CoreML keeps the EP but sets USE_CPU_ONLY; any
+// other GPU EP is replaced by DT_AI_PROVIDER_CPU. returns FALSE for
+// AUTO/CPU providers, missing block, or providers not in the list
+static gboolean _provider_cpu_only(const dt_ai_model_info_t *info,
+                                   const char *model_file,
+                                   dt_ai_provider_t configured)
+{
+  if(!info || !info->cpu_only
+     || configured == DT_AI_PROVIDER_AUTO
+     || configured == DT_AI_PROVIDER_CPU
+     || configured == DT_AI_PROVIDER_CONFIGURED)
+    return FALSE;
+
+  // map provider enum to its config_string (e.g. "CoreML", "DirectML")
+  const char *prov_name = NULL;
+  for(int i = 0; i < DT_AI_PROVIDER_COUNT; i++)
+    if(dt_ai_providers[i].value == configured)
+    {
+      prov_name = dt_ai_providers[i].config_string;
+      break;
+    }
+  if(!prov_name) return FALSE;
+
+  JsonParser *parser = json_parser_new();
+  gboolean result = FALSE;
+  if(json_parser_load_from_data(parser, info->cpu_only, -1, NULL))
+  {
+    JsonNode *root = json_parser_get_root(parser);
+
+    // "cpu_only" can be either a flat array (applies to every model in
+    // the package) or an object keyed by onnx filename stem — the
+    // basename without the ".onnx" extension. dropping the extension
+    // keeps the YAML readable (no quoting needed for keys with dots)
+    JsonArray *arr = NULL;
+    gchar *stem = NULL;
+    if(root && JSON_NODE_HOLDS_ARRAY(root))
+    {
+      arr = json_node_get_array(root);
+    }
+    else if(root && JSON_NODE_HOLDS_OBJECT(root) && model_file)
+    {
+      const char *dot = strrchr(model_file, '.');
+      stem = dot ? g_strndup(model_file, dot - model_file)
+                 : g_strdup(model_file);
+      JsonObject *obj = json_node_get_object(root);
+      if(json_object_has_member(obj, stem))
+      {
+        JsonNode *vn = json_object_get_member(obj, stem);
+        if(vn && JSON_NODE_HOLDS_ARRAY(vn))
+          arr = json_node_get_array(vn);
+      }
+    }
+
+    if(arr)
+    {
+      const guint n = json_array_get_length(arr);
+      for(guint i = 0; i < n; i++)
+      {
+        const gchar *s = json_array_get_string_element(arr, i);
+        if(s && !g_ascii_strcasecmp(s, prov_name))
+        {
+          result = TRUE;
+          break;
+        }
+      }
+    }
+    g_free(stem);
+  }
+  g_object_unref(parser);
   return result;
 }
 
